@@ -21,6 +21,7 @@ import {
 import { ButtonTooltip } from '../ui/ButtonTooltip'
 import { useFeaturePreviewModal } from './App/FeaturePreview/FeaturePreviewContext'
 import { TimezoneDropdown } from './UserDropdown/TimezoneDropdown'
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher'
 import { ProfileImage } from '@/components/ui/ProfileImage'
 import { UpgradePlanButton } from '@/components/ui/UpgradePlanButton'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
@@ -164,6 +165,14 @@ export function UserDropdown({
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>
+        </DropdownMenuGroup>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuGroup>
+          <div className="px-2 py-1.5">
+            <LanguageSwitcher />
+          </div>
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator />
