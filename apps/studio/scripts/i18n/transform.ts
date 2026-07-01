@@ -7,7 +7,12 @@ const I18N_IMPORT = '@/lib/i18n'
 // Turn an English source string into a valid single-quoted t() call, escaping
 // backslashes and single quotes.
 function tCall(key: string): string {
-  const escaped = key.replace(/\\/g, '\\\\').replace(/'/g, "\\'")
+  const escaped = key
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\t/g, '\\t')
   return `t('${escaped}')`
 }
 
@@ -44,8 +49,12 @@ export function transformSourceFile(sf: SourceFile): { keys: string[]; changed: 
       // Preserve surrounding whitespace around the wrapped expression.
       const leading = raw.slice(0, raw.indexOf(trimmed))
       const trailing = raw.slice(raw.indexOf(trimmed) + trimmed.length)
-      node.replaceWithText(`${leading}{${tCall(trimmed)}}${trailing}`)
-      record(trimmed)
+      // Collapse internal whitespace runs (including newlines from Prettier-wrapped
+      // multi-line JSX text) to a single space, matching JSX's own runtime
+      // whitespace-collapsing so the key matches the rendered English.
+      const collapsed = trimmed.replace(/\s+/g, ' ')
+      node.replaceWithText(`${leading}{${tCall(collapsed)}}${trailing}`)
+      record(collapsed)
     }
   })
 
