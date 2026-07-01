@@ -19,6 +19,21 @@ function tCall(key: string): string {
   return `$t('${escaped}')`
 }
 
+function directivePrologueCount(sf: SourceFile): number {
+  let count = 0
+  for (const stmt of sf.getStatements()) {
+    if (Node.isExpressionStatement(stmt)) {
+      const expr = stmt.getExpression()
+      if (Node.isStringLiteral(expr) || Node.isNoSubstitutionTemplateLiteral(expr)) {
+        count++
+        continue
+      }
+    }
+    break
+  }
+  return count
+}
+
 function ensureImport(sf: SourceFile): void {
   // ts-morph defaults newly-generated nodes to double quotes; force single
   // quotes to match the codebase style for any import text we insert.
@@ -32,7 +47,7 @@ function ensureImport(sf: SourceFile): void {
     }
     return
   }
-  sf.insertImportDeclaration(0, {
+  sf.insertImportDeclaration(directivePrologueCount(sf), {
     moduleSpecifier: I18N_IMPORT,
     namedImports: [{ name: 't', alias: '$t' }],
   })

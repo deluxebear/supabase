@@ -1,4 +1,4 @@
-import { Project } from 'ts-morph'
+import { Node, Project, SyntaxKind, type ExpressionStatement, type StringLiteral } from 'ts-morph'
 import { describe, expect, it } from 'vitest'
 
 import { transformSourceFile } from './transform'
@@ -83,5 +83,40 @@ describe('transformSourceFile', () => {
     const sf = project.createSourceFile('C3.tsx', text)
     expect(() => transformSourceFile(sf)).not.toThrow()
     expect(transformSourceFile(sf).changed).toBe(false)
+  })
+
+  it('inserts the injected import after a leading "use client" directive', () => {
+    const source = `'use client'\n\nimport { Foo } from 'foo'\n\nexport const C = () => <div>Save changes</div>\n`
+    const { text } = run(source)
+
+    expect(text).not.toContain(`;('use client')`)
+    expect(text).toContain(`$t('Save changes')`)
+
+    const project = new Project({ useInMemoryFileSystem: true })
+    const sf = project.createSourceFile('C5.tsx', text)
+    const statements = sf.getStatements()
+    const first = statements[0]
+    expect(first.getKind()).toBe(SyntaxKind.ExpressionStatement)
+    const firstExpr = (first as ExpressionStatement).getExpression()
+    expect(Node.isStringLiteral(firstExpr)).toBe(true)
+    expect((firstExpr as StringLiteral).getLiteralValue()).toBe('use client')
+
+    const importIndex = statements.findIndex(
+      (s) => Node.isImportDeclaration(s) && s.getModuleSpecifierValue() === '@/lib/i18n'
+    )
+    expect(importIndex).toBeGreaterThan(0)
+
+    // A second transform pass over the emitted output should be a no-op — this
+    // confirms the output is well-formed enough to reparse and re-analyze
+    // without spuriously re-triggering the codemod.
+    expect(transformSourceFile(sf).changed).toBe(false)
+  })
+
+  it('inserts the injected import at the top when there is no directive prologue', () => {
+    const source = `import { Foo } from 'foo'\n\nexport const C = () => <div>Save changes</div>\n`
+    const { text } = run(source)
+
+    const lines = text.split('\n').filter((l) => l.trim().length > 0)
+    expect(lines[0]).toContain(`import { t as $t } from '@/lib/i18n'`)
   })
 })
