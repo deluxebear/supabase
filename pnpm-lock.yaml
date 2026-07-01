@@ -1366,6 +1366,9 @@ importers:
       require-in-the-middle:
         specifier: ^8.0.0
         version: 8.0.1(supports-color@8.1.1)
+      ts-morph:
+        specifier: ^22.0.0
+        version: 22.0.0
       tsconfig:
         specifier: workspace:*
         version: link:../../packages/tsconfig
@@ -9689,9 +9692,6 @@ packages:
 
   cobe@0.6.5:
     resolution: {integrity: sha512-MA8bu81EFY6JjQpj+FovEuhyJ25khx2Q7Lh+ot/UkCJe5yKyDgzdc6u2lGZIOmsZTXK6Itg1i4lQZIJZbPWnAg==}
-
-  code-block-writer@13.0.1:
-    resolution: {integrity: sha512-c5or4P6erEA69TxaxTNcHUNcIn+oyxSRTOWV+pSYF+z4epXqNvwvJ70XPGjPNgue83oAFAPBRQYwpAJ/Hpe/Sg==}
 
   code-block-writer@13.0.3:
     resolution: {integrity: sha512-Oofo0pq3IKnsFtuHqSF7TqBfr71aeyZDVJ0HpmqB7FBM2qEigL0iPONSCZSO9pE9dZTAxANe5XHG9Uy0YMv8cg==}
@@ -25403,7 +25403,7 @@ snapshots:
 
   babel-plugin-macros@3.1.0:
     dependencies:
-      '@babel/runtime': 7.26.10
+      '@babel/runtime': 7.29.7
       cosmiconfig: 7.1.0
       resolve: 1.22.10
     optional: true
@@ -25900,8 +25900,6 @@ snapshots:
   cobe@0.6.5:
     dependencies:
       phenomenon: 1.6.0
-
-  code-block-writer@13.0.1: {}
 
   code-block-writer@13.0.3: {}
 
@@ -34163,7 +34161,7 @@ snapshots:
   ts-morph@22.0.0:
     dependencies:
       '@ts-morph/common': 0.23.0
-      code-block-writer: 13.0.1
+      code-block-writer: 13.0.3
 
   ts-morph@26.0.0:
     dependencies:

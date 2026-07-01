@@ -208,6 +208,7 @@
     "postcss": "catalog:",
     "raw-loader": "^4.0.2",
     "require-in-the-middle": "^8.0.0",
+    "ts-morph": "^22.0.0",
     "tsconfig": "workspace:*",
     "tsx": "catalog:",
     "typescript": "catalog:",
