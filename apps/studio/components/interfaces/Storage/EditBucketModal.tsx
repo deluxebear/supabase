@@ -38,6 +38,7 @@ import { useProjectStorageConfigQuery } from '@/data/config/project-storage-conf
 import { useBucketUpdateMutation } from '@/data/storage/bucket-update-mutation'
 import { Bucket } from '@/data/storage/buckets-query'
 import { DOCS_URL, IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export interface EditBucketModalProps {
   visible: boolean
@@ -213,7 +214,7 @@ export const EditBucketModal = ({ visible, bucket, onClose }: EditBucketModalPro
                   <FormItemLayout
                     hideMessage
                     name="name"
-                    label="Bucket name"
+                    label={$t('Bucket name')}
                     labelOptional="Cannot be changed after creation"
                   >
                     <FormControl>
@@ -232,8 +233,8 @@ export const EditBucketModal = ({ visible, bucket, onClose }: EditBucketModalPro
                     <FormItemLayout
                       hideMessage
                       name="public"
-                      label="Public bucket"
-                      description="Allow anyone to read objects without authorization"
+                      label={$t('Public bucket')}
+                      description={$t('Allow anyone to read objects without authorization')}
                       layout="flex"
                     >
                       <FormControl>
@@ -255,24 +256,28 @@ export const EditBucketModal = ({ visible, bucket, onClose }: EditBucketModalPro
                     description={
                       <>
                         {isMakingBucketPublic && (
-                          <p>This will make all objects in your bucket publicly accessible.</p>
+                          <p>
+                            {$t('This will make all objects in your bucket publicly accessible.')}
+                          </p>
                         )}
 
                         {isMakingBucketPrivate && (
                           <>
                             <p className="mb-2 leading-normal!">
-                              All objects in your bucket will only accessible via signed URLs, or
-                              downloaded with the right authorization headers.
+                              {$t(
+                                'All objects in your bucket will only accessible via signed URLs, or downloaded with the right authorization headers.'
+                              )}
                             </p>
                             <p className="leading-normal!">
-                              Assets cached in the CDN may still be publicly accessible. You can
-                              consider{' '}
+                              {$t(
+                                'Assets cached in the CDN may still be publicly accessible. You can consider'
+                              )}{' '}
                               <InlineLink
                                 href={`${DOCS_URL}/guides/storage/cdn/smart-cdn#cache-eviction`}
                               >
-                                purging the cache
+                                {$t('purging the cache')}
                               </InlineLink>{' '}
-                              or moving your assets to a new bucket.
+                              {$t('or moving your assets to a new bucket.')}
                             </p>
                           </>
                         )}
@@ -293,8 +298,8 @@ export const EditBucketModal = ({ visible, bucket, onClose }: EditBucketModalPro
                 render={({ field }) => (
                   <FormItemLayout
                     name="has_file_size_limit"
-                    label="Restrict file size"
-                    description="Prevent uploading of files larger than a specified limit"
+                    label={$t('Restrict file size')}
+                    description={$t('Prevent uploading of files larger than a specified limit')}
                     layout="flex"
                   >
                     <FormControl>
@@ -318,14 +323,14 @@ export const EditBucketModal = ({ visible, bucket, onClose }: EditBucketModalPro
                       <FormItemLayout
                         hideMessage
                         name="formatted_size_limit"
-                        label="File size limit"
+                        label={$t('File size limit')}
                       >
                         <div className="grid grid-cols-12 gap-x-2">
                           <div className="col-span-8">
                             <FormControl>
                               <Input
                                 id="formatted_size_limit"
-                                aria-label="File size limit"
+                                aria-label={$t('File size limit')}
                                 type="number"
                                 min={0}
                                 placeholder="0"
@@ -335,7 +340,7 @@ export const EditBucketModal = ({ visible, bucket, onClose }: EditBucketModalPro
                           </div>
                           <div className="col-span-4">
                             <Select value={selectedUnit} onValueChange={setSelectedUnit}>
-                              <SelectTrigger aria-label="File size limit unit" size="small">
+                              <SelectTrigger aria-label={$t('File size limit unit')} size="small">
                                 <SelectValue>{selectedUnit}</SelectValue>
                               </SelectTrigger>
                               <SelectContent>
@@ -353,13 +358,14 @@ export const EditBucketModal = ({ visible, bucket, onClose }: EditBucketModalPro
                   />
                   {formattedSizeLimitError?.message === 'exceed_global_limit' && (
                     <FormMessage className="mt-2">
-                      Exceeds global limit of {formattedGlobalUploadLimit}. Increase limit in{' '}
+                      {$t('Exceeds global limit of')} {formattedGlobalUploadLimit}
+                      {$t('. Increase limit in')}{' '}
                       <InlineLink
                         className="text-destructive decoration-destructive-500 hover:decoration-destructive"
                         href={`/project/${ref}/storage/settings`}
                         onClick={onClose}
                       >
-                        Storage Settings
+                        {$t('Storage Settings')}
                       </InlineLink>{' '}
                       first.
                     </FormMessage>
@@ -367,13 +373,13 @@ export const EditBucketModal = ({ visible, bucket, onClose }: EditBucketModalPro
 
                   {IS_PLATFORM && (
                     <p className="text-sm text-foreground-lighter mt-2">
-                      This project has a{' '}
+                      {$t('This project has a')}{' '}
                       <InlineLink
                         className="text-foreground-light hover:text-foreground"
                         href={`/project/${ref}/storage/settings`}
                         onClick={onClose}
                       >
-                        global file size limit
+                        {$t('global file size limit')}
                       </InlineLink>{' '}
                       of {formattedGlobalUploadLimit}.
                     </p>
@@ -387,8 +393,8 @@ export const EditBucketModal = ({ visible, bucket, onClose }: EditBucketModalPro
             <DialogSection className="space-y-2">
               <FormItemLayout
                 name="has_allowed_mime_types"
-                label="Restrict MIME types"
-                description="Allow only certain types of files to be uploaded"
+                label={$t('Restrict MIME types')}
+                description={$t('Allow only certain types of files to be uploaded')}
                 layout="flex"
               >
                 <FormControl>
@@ -408,15 +414,15 @@ export const EditBucketModal = ({ visible, bucket, onClose }: EditBucketModalPro
                   render={({ field }) => (
                     <FormItemLayout
                       name="allowed_mime_types"
-                      label="Allowed MIME types"
+                      label={$t('Allowed MIME types')}
                       labelOptional="Comma separated values"
-                      description="Wildcards are allowed, e.g. image/*."
+                      description={$t('Wildcards are allowed, e.g. image/*.')}
                     >
                       <FormControl>
                         <Input
                           id="allowed_mime_types"
                           {...field}
-                          placeholder="e.g image/jpeg, image/png, audio/mpeg, video/mp4, etc"
+                          placeholder={$t('e.g image/jpeg, image/png, audio/mpeg, video/mp4, etc')}
                         />
                       </FormControl>
                     </FormItemLayout>
@@ -429,10 +435,10 @@ export const EditBucketModal = ({ visible, bucket, onClose }: EditBucketModalPro
 
         <DialogFooter>
           <Button variant="default" disabled={isUpdating} onClick={closeModal}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button form={formId} type="submit" loading={isUpdating}>
-            Save
+            {$t('Save')}
           </Button>
         </DialogFooter>
       </DialogContent>

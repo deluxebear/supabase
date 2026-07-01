@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { Button, cn, CriticalIcon, WarningIcon } from 'ui'
 
 import { useOrganizationRestrictions } from '@/hooks/misc/useOrganizationRestrictions'
+import { t as $t } from '@/lib/i18n'
 
 const bannerMotionProps = {
   initial: { height: 0, opacity: 0 },
@@ -112,7 +113,7 @@ export const HeaderBanner = ({ variant, title, description, onDismiss }: HeaderB
             size="tiny"
             className="opacity-75 z-1 shrink-0 p-0.5 h-auto absolute right-5 md:right-4 top-1/2 -translate-y-1/2"
             onClick={onDismiss}
-            aria-label="Dismiss banner"
+            aria-label={$t('Dismiss banner')}
           >
             <XIcon size={16} className="text-foreground" />
           </Button>

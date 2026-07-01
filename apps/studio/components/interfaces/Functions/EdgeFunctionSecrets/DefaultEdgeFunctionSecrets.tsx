@@ -15,6 +15,7 @@ import {
 } from 'ui'
 
 import type { DefaultEdgeFunctionSecret } from './DefaultEdgeFunctionSecrets.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface DefaultEdgeFunctionSecretsProps {
   secrets: DefaultEdgeFunctionSecret[]
@@ -26,8 +27,8 @@ export const DefaultEdgeFunctionSecrets = ({ secrets }: DefaultEdgeFunctionSecre
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Description</TableHead>
+            <TableHead>{$t('Name')}</TableHead>
+            <TableHead>{$t('Description')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -56,10 +57,10 @@ const SecretRow = ({ secret }: { secret: DefaultEdgeFunctionSecret }) => {
                 <code className="text-code-inline">{secret.name}</code>
               </p>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Click to copy</TooltipContent>
+            <TooltipContent side="bottom">{$t('Click to copy')}</TooltipContent>
           </Tooltip>
 
-          {secret.isDeprecated && <Badge variant="warning">Deprecated</Badge>}
+          {secret.isDeprecated && <Badge variant="warning">{$t('Deprecated')}</Badge>}
         </div>
       </TableCell>
       <TableCell>

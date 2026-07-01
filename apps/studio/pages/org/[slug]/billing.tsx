@@ -6,6 +6,7 @@ import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import OrganizationLayout from '@/components/layouts/OrganizationLayout'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 import {
   ORG_SETTINGS_PANEL_KEYS,
   useOrgSettingsPageStateSnapshot,
@@ -36,7 +37,7 @@ const OrgBillingSettings: NextPageWithLayout = () => {
 
 OrgBillingSettings.getLayout = (page) => (
   <DefaultLayout>
-    <OrganizationLayout title="Billing">{page}</OrganizationLayout>
+    <OrganizationLayout title={$t('Billing')}>{page}</OrganizationLayout>
   </DefaultLayout>
 )
 export default OrgBillingSettings

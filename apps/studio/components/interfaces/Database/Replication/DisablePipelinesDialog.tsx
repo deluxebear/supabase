@@ -15,6 +15,7 @@ import {
 import { Admonition } from 'ui-patterns/admonition'
 
 import { useDeleteReplicationTenantMutation } from '@/data/replication/delete-tenant-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface DisablePipelinesDialogProps {
   open: boolean
@@ -28,7 +29,7 @@ export const DisablePipelinesDialog = ({ open, setOpen }: DisablePipelinesDialog
   const { mutateAsync: deleteReplicationTenant, isPending: isSubmitting } =
     useDeleteReplicationTenantMutation({
       onSuccess: () => {
-        toast.success('Pipelines has been disabled')
+        toast.success($t('Pipelines has been disabled'))
         setOpen(false)
       },
       onError: () => {},
@@ -50,29 +51,30 @@ export const DisablePipelinesDialog = ({ open, setOpen }: DisablePipelinesDialog
     <AlertDialog open={open} onOpenChange={(open) => !isSubmitting && setOpen(open)}>
       <AlertDialogContent size="small">
         <AlertDialogHeader>
-          <AlertDialogTitle>Disable Pipelines</AlertDialogTitle>
+          <AlertDialogTitle>{$t('Disable Pipelines')}</AlertDialogTitle>
           <AlertDialogDescription className="space-y-2 text-sm">
             <p>
-              This will remove the <code className="text-code-inline">etl</code> schema and all
-              connected resources from your database. Any active replication pipelines sending
-              changes to external destinations will stop.
+              {$t('This will remove the')} <code className="text-code-inline">etl</code>{' '}
+              {$t(
+                'schema and all connected resources from your database. Any active replication pipelines sending changes to external destinations will stop.'
+              )}
             </p>
-            <p>Read replicas are not affected.</p>
+            <p>{$t('Read replicas are not affected.')}</p>
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && (
           <AlertDialogBody>
             <Admonition
               type="destructive"
-              title="Unable to disable Pipelines"
+              title={$t('Unable to disable Pipelines')}
               description={error}
             />
           </AlertDialogBody>
         )}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isSubmitting}>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction variant="danger" loading={isSubmitting} onClick={onConfirm}>
-            Disable
+            {$t('Disable')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

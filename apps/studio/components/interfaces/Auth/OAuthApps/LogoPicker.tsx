@@ -17,6 +17,7 @@ import { BucketFilePickerExplorer } from '../../Storage/BucketFilePickerDialog/B
 import { BucketFilePickerStateContextProvider } from '../../Storage/BucketFilePickerDialog/BucketFilePickerState'
 import { BucketsPicker } from '../../Storage/BucketsPickerDialog/BucketsPicker'
 import type { Bucket } from '@/data/storage/buckets-query'
+import { t as $t } from '@/lib/i18n'
 
 export type StorageFilePickerProps = {
   open: boolean
@@ -54,13 +55,13 @@ export function LogoPicker({ open, onOpenChange, onSelect }: StorageFilePickerPr
                   className="shrink-0"
                   onClick={() => setSelectedBucket(null)}
                 >
-                  Buckets
+                  {$t('Buckets')}
                 </Button>
-                <SheetTitle className="min-w-0 flex-1">Choose a file</SheetTitle>
+                <SheetTitle className="min-w-0 flex-1">{$t('Choose a file')}</SheetTitle>
               </SheetHeader>
             ) : (
               <SheetHeader className="flex flex-row items-center gap-2 border-b border-overlay px-6 py-4">
-                <SheetTitle className="min-w-0 flex-1">Select a bucket</SheetTitle>
+                <SheetTitle className="min-w-0 flex-1">{$t('Select a bucket')}</SheetTitle>
               </SheetHeader>
             )}
             <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col px-2 pb-3 pt-2">
@@ -93,13 +94,13 @@ export function LogoPicker({ open, onOpenChange, onSelect }: StorageFilePickerPr
                   className="shrink-0"
                   onClick={() => setSelectedBucket(null)}
                 >
-                  Buckets
+                  {$t('Buckets')}
                 </Button>
-                <DialogTitle className="min-w-0 flex-1">Choose a file</DialogTitle>
+                <DialogTitle className="min-w-0 flex-1">{$t('Choose a file')}</DialogTitle>
               </DialogHeader>
             ) : (
               <DialogHeader className="flex flex-row items-center gap-2 border-b border-overlay px-6 py-4 h-[60px]">
-                <DialogTitle className="min-w-0 flex-1">Select a bucket</DialogTitle>
+                <DialogTitle className="min-w-0 flex-1">{$t('Select a bucket')}</DialogTitle>
               </DialogHeader>
             )}
 

@@ -28,6 +28,7 @@ import { InlineLink } from '@/components/ui/InlineLink'
 import { DatabaseMigration, useMigrationsQuery } from '@/data/database/migrations-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { formatMigrationVersionLabel, parseMigrationVersion } from '@/lib/migration-utils'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -80,14 +81,17 @@ const Migrations = () => {
         {isError && (
           <Admonition
             type="warning"
-            title="Failed to retrieve migration history for database"
+            title={$t('Failed to retrieve migration history for database')}
             description={
               <>
                 <p className="mb-1">
-                  Try refreshing your browser, but if the issue persists for more than a few
-                  minutes, please reach out to us via support.
+                  {$t(
+                    'Try refreshing your browser, but if the issue persists for more than a few minutes, please reach out to us via support.'
+                  )}
                 </p>
-                <p className="mb-4">Error: {error?.message ?? 'Unknown'}</p>
+                <p className="mb-4">
+                  {$t('Error:')} {error?.message ?? 'Unknown'}
+                </p>
               </>
             }
           >
@@ -99,7 +103,7 @@ const Migrations = () => {
                   subject: 'Unable to view database migrations',
                 }}
               >
-                Contact support
+                {$t('Contact support')}
               </SupportLink>
             </Button>
           </Admonition>
@@ -113,7 +117,7 @@ const Migrations = () => {
                 <Input
                   ref={searchInputRef}
                   size="tiny"
-                  placeholder="Search for a migration"
+                  placeholder={$t('Search for a migration')}
                   value={search}
                   className="w-full lg:w-52"
                   onChange={(e: any) => setSearch(e.target.value)}
@@ -124,10 +128,10 @@ const Migrations = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead key="version" style={{ width: '180px' }}>
-                          Version
+                          {$t('Version')}
                         </TableHead>
-                        <TableHead key="name">Name</TableHead>
-                        <TableHead key="insertedAt">Inserted at (UTC)</TableHead>
+                        <TableHead key="name">{$t('Name')}</TableHead>
+                        <TableHead key="insertedAt">{$t('Inserted at (UTC)')}</TableHead>
                         <TableHead key="buttons" />
                       </TableRow>
                     </TableHeader>
@@ -158,19 +162,20 @@ const Migrations = () => {
                                         utcTimestamp={insertedAt}
                                       />
                                     ) : (
-                                      <p className="text-foreground-lighter">Unknown</p>
+                                      <p className="text-foreground-lighter">{$t('Unknown')}</p>
                                     )}
                                   </TooltipTrigger>
                                   {!insertedAt && (
                                     <TooltipContent side="right" className="w-64 text-center">
-                                      This migration was not generated via the{' '}
+                                      {$t('This migration was not generated via the')}{' '}
                                       <InlineLink
                                         href={`${DOCS_URL}/guides/deployment/database-migrations`}
                                       >
-                                        Supabase CLI
+                                        {$t('Supabase CLI')}
                                       </InlineLink>{' '}
-                                      and hence we're unable to parse when this migration was
-                                      inserted at.
+                                      {$t(
+                                        "and hence we're unable to parse when this migration was inserted at."
+                                      )}
                                     </TooltipContent>
                                   )}
                                 </Tooltip>
@@ -180,7 +185,7 @@ const Migrations = () => {
                                   variant="default"
                                   onClick={() => setSelectedMigration(migration)}
                                 >
-                                  View migration SQL
+                                  {$t('View migration SQL')}
                                 </Button>
                               </TableCell>
                             </TableRow>
@@ -189,9 +194,11 @@ const Migrations = () => {
                       ) : (
                         <TableRow>
                           <TableCell colSpan={3}>
-                            <p className="text-sm text-foreground">No results found</p>
+                            <p className="text-sm text-foreground">{$t('No results found')}</p>
                             <p className="text-sm text-foreground-light">
-                              Your search for "{search}" did not return any results
+                              {$t('Your search for "')}
+                              {search}
+                              {$t('" did not return any results')}
                             </p>
                           </TableCell>
                         </TableRow>
@@ -213,7 +220,7 @@ const Migrations = () => {
         customFooter={
           <div className="flex items-center justify-end p-4 border-t border-overlay-border">
             <Button variant="default" onClick={() => setSelectedMigration(undefined)}>
-              Close
+              {$t('Close')}
             </Button>
           </div>
         }

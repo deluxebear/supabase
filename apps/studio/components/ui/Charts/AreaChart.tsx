@@ -8,6 +8,7 @@ import NoDataPlaceholder from './NoDataPlaceholder'
 import { useChartHoverState } from './useChartHoverState'
 import { CHART_COLORS, DateTimeFormats } from '@/components/ui/Charts/Charts.constants'
 import { formatDateTime, useFormatDateTime } from '@/lib/datetime'
+import { t as $t } from '@/lib/i18n'
 
 export interface AreaChartProps<D = Datum> extends CommonChartProps<D> {
   yAxisKey: string
@@ -61,7 +62,7 @@ const AreaChart = ({
   if (data.length === 0) {
     return (
       <NoDataPlaceholder
-        description="It may take up to 24 hours for data to refresh"
+        description={$t('It may take up to 24 hours for data to refresh')}
         size={size}
         className={className}
         attribute={title}

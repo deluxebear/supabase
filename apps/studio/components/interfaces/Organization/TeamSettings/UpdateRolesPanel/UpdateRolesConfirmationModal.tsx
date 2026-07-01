@@ -21,6 +21,7 @@ import {
 import { organizationKeys as organizationKeysV1 } from '@/data/organizations/keys'
 import { OrganizationMember } from '@/data/organizations/organization-members-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 interface UpdateRolesConfirmationModal {
   visible: boolean
@@ -136,7 +137,7 @@ export const UpdateRolesConfirmationModal = ({
       size="medium"
       visible={visible}
       loading={saving}
-      title="Confirm to change roles of member"
+      title={$t('Confirm to change roles of member')}
       confirmLabel="Update roles"
       confirmLabelLoading="Updating"
       onCancel={() => onClose()}
@@ -144,16 +145,16 @@ export const UpdateRolesConfirmationModal = ({
     >
       <div className="flex flex-col gap-y-3">
         <p className="text-sm text-foreground-light">
-          You are making the following changes to the role of{' '}
-          <span className="text-foreground">{member.username}</span> in the organization{' '}
+          {$t('You are making the following changes to the role of')}{' '}
+          <span className="text-foreground">{member.username}</span> {$t('in the organization')}{' '}
           <span className="text-foreground">{organization?.name}</span>:
         </p>
         <div className="flex flex-col gap-y-2">
           {changesToRoles.removed.length !== 0 && (
             <div>
               <p className="text-sm">
-                Removing {changesToRoles.removed.length} role
-                {changesToRoles.removed.length > 1 ? 's' : ''} for user:
+                {$t('Removing')} {changesToRoles.removed.length} role
+                {changesToRoles.removed.length > 1 ? 's' : ''} {$t('for user:')}
               </p>
               <ul className="list-disc pl-6">
                 {changesToRoles.removed.map((x, i) => {
@@ -175,8 +176,8 @@ export const UpdateRolesConfirmationModal = ({
           {changesToRoles.added.length !== 0 && (
             <div>
               <p className="text-sm">
-                Adding {changesToRoles.added.length} role
-                {changesToRoles.added.length > 1 ? 's' : ''} for user:
+                {$t('Adding')} {changesToRoles.added.length} role
+                {changesToRoles.added.length > 1 ? 's' : ''} {$t('for user:')}
               </p>
               <ul className="list-disc pl-6">
                 {changesToRoles.added.map((x, i) => {
@@ -194,8 +195,8 @@ export const UpdateRolesConfirmationModal = ({
           {changesToRoles.updated.length !== 0 && (
             <div>
               <p className="text-sm">
-                Updating {changesToRoles.updated.length} role
-                {changesToRoles.updated.length > 1 ? 's' : ''} for user:
+                {$t('Updating')} {changesToRoles.updated.length} role
+                {changesToRoles.updated.length > 1 ? 's' : ''} {$t('for user:')}
               </p>
               <ul className="list-disc pl-6">
                 {changesToRoles.updated.map((x, i) => {
@@ -207,7 +208,7 @@ export const UpdateRolesConfirmationModal = ({
 
                   return (
                     <li key={`update-${i}`} className="text-sm text-foreground-light">
-                      From <span className="text-foreground">{originalRoleName}</span> to{' '}
+                      {$t('From')} <span className="text-foreground">{originalRoleName}</span> to{' '}
                       <span className="text-foreground">{updatedRole?.name ?? 'Unknown'}</span> on{' '}
                       <span className="text-foreground">{x?.name ?? 'organization'}</span>
                     </li>
@@ -218,7 +219,7 @@ export const UpdateRolesConfirmationModal = ({
           )}
         </div>
         <p className="text-sm text-foreground">
-          By changing the role of this member their permissions will change.
+          {$t('By changing the role of this member their permissions will change.')}
         </p>
       </div>
     </ConfirmationModal>

@@ -25,6 +25,7 @@ import {
 import { useEdgeFunctionQuery } from '@/data/edge-functions/edge-function-query'
 import { useFillTimeseriesSorted } from '@/hooks/analytics/useFillTimeseriesSorted'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import type { ChartIntervals, NextPageWithLayout } from '@/types'
 
 const CHART_INTERVALS: ChartIntervals[] = [
@@ -168,21 +169,21 @@ const LegacyEdgeFunctionOverview = () => {
             </div>
 
             <span className="text-xs text-foreground-light">
-              Statistics for past {selectedInterval.label}
+              {$t('Statistics for past')} {selectedInterval.label}
             </span>
           </div>
           <div>
             <div className="grid grid-cols-1 md:grid-cols-2 md:gap-4 lg:grid-cols-2 lg:gap-8">
               <ReportWidget
-                title="Execution time"
-                tooltip="Average execution time of function invocations"
+                title={$t('Execution time')}
+                tooltip={$t('Average execution time of function invocations')}
                 data={combinedStatsChartData}
                 isLoading={combinedStatsResults.isLoading}
                 renderer={(props) => {
                   return isErrorCombinedStats ? (
                     <Alert variant="warning">
                       <WarningIcon />
-                      <AlertTitle>Failed to reterieve execution time</AlertTitle>
+                      <AlertTitle>{$t('Failed to reterieve execution time')}</AlertTitle>
                       <AlertDescription>
                         {combinedStatsError?.message ?? 'Unknown error'}
                       </AlertDescription>
@@ -190,7 +191,7 @@ const LegacyEdgeFunctionOverview = () => {
                   ) : (
                     <div className="space-y-8">
                       <AreaChart
-                        title="Average execution time"
+                        title={$t('Average execution time')}
                         className="w-full"
                         xAxisKey="timestamp"
                         customDateFormat={selectedInterval.format}
@@ -200,7 +201,7 @@ const LegacyEdgeFunctionOverview = () => {
                         highlightedValue={meanBy(props.data, 'avg_execution_time')}
                       />
                       <AreaChart
-                        title="Max execution time"
+                        title={$t('Max execution time')}
                         className="w-full"
                         xAxisKey="timestamp"
                         customDateFormat={selectedInterval.format}
@@ -216,8 +217,10 @@ const LegacyEdgeFunctionOverview = () => {
                 }}
               />
               <ReportWidget
-                title="Invocations"
-                tooltip="Requests made to a function are considered invocations, and each invocation may have worker logs."
+                title={$t('Invocations')}
+                tooltip={$t(
+                  'Requests made to a function are considered invocations, and each invocation may have worker logs.'
+                )}
                 data={combinedStatsChartData}
                 isLoading={combinedStatsResults.isLoading}
                 renderer={(props) => {
@@ -225,7 +228,7 @@ const LegacyEdgeFunctionOverview = () => {
                     return (
                       <Alert variant="warning">
                         <WarningIcon />
-                        <AlertTitle>Failed to reterieve invocations</AlertTitle>
+                        <AlertTitle>{$t('Failed to reterieve invocations')}</AlertTitle>
                         <AlertDescription>
                           {combinedStatsError?.message ?? 'Unknown error'}
                         </AlertDescription>
@@ -280,7 +283,7 @@ const LegacyEdgeFunctionOverview = () => {
                     return (
                       <div className="space-y-8">
                         <StackedBarChart
-                          title="Invocation Requests"
+                          title={$t('Invocation Requests')}
                           className="w-full"
                           xAxisKey="timestamp"
                           yAxisKey="count"
@@ -296,7 +299,7 @@ const LegacyEdgeFunctionOverview = () => {
                           }}
                         />
                         <StackedBarChart
-                          title="Worker Logs"
+                          title={$t('Worker Logs')}
                           className="w-full"
                           xAxisKey="timestamp"
                           yAxisKey="count"
@@ -317,15 +320,15 @@ const LegacyEdgeFunctionOverview = () => {
                 }}
               />
               <ReportWidget
-                title="CPU time"
-                tooltip="Average CPU time usage for the function"
+                title={$t('CPU time')}
+                tooltip={$t('Average CPU time usage for the function')}
                 data={combinedStatsChartData}
                 isLoading={combinedStatsResults.isLoading}
                 renderer={(props) => {
                   return isErrorCombinedStats ? (
                     <Alert variant="warning">
                       <WarningIcon />
-                      <AlertTitle>Failed to retrieve CPU time</AlertTitle>
+                      <AlertTitle>{$t('Failed to retrieve CPU time')}</AlertTitle>
                       <AlertDescription>
                         {combinedStatsError?.message ?? 'Unknown error'}
                       </AlertDescription>
@@ -333,7 +336,7 @@ const LegacyEdgeFunctionOverview = () => {
                   ) : (
                     <div className="space-y-8">
                       <AreaChart
-                        title="Average CPU Time"
+                        title={$t('Average CPU Time')}
                         className="w-full"
                         xAxisKey="timestamp"
                         customDateFormat={selectedInterval.format}
@@ -343,7 +346,7 @@ const LegacyEdgeFunctionOverview = () => {
                         highlightedValue={meanBy(props.data, 'avg_cpu_time_used')}
                       />
                       <AreaChart
-                        title="Max CPU Time"
+                        title={$t('Max CPU Time')}
                         className="w-full"
                         xAxisKey="timestamp"
                         customDateFormat={selectedInterval.format}
@@ -357,8 +360,8 @@ const LegacyEdgeFunctionOverview = () => {
                 }}
               />
               <ReportWidget
-                title="Memory"
-                tooltip="Average memory usage for the function"
+                title={$t('Memory')}
+                tooltip={$t('Average memory usage for the function')}
                 data={combinedStatsChartData}
                 isLoading={combinedStatsResults.isLoading}
                 renderer={(props) => {
@@ -366,7 +369,7 @@ const LegacyEdgeFunctionOverview = () => {
                     return (
                       <Alert variant="warning">
                         <WarningIcon />
-                        <AlertTitle>Failed to retrieve memory usage</AlertTitle>
+                        <AlertTitle>{$t('Failed to retrieve memory usage')}</AlertTitle>
                         <AlertDescription>
                           {combinedStatsError?.message ?? 'Unknown error'}
                         </AlertDescription>
@@ -392,7 +395,7 @@ const LegacyEdgeFunctionOverview = () => {
                   return (
                     <div className="space-y-8">
                       <AreaChart
-                        title="Average Memory Usage"
+                        title={$t('Average Memory Usage')}
                         className="w-full"
                         xAxisKey="timestamp"
                         customDateFormat={selectedInterval.format}
@@ -402,7 +405,7 @@ const LegacyEdgeFunctionOverview = () => {
                         highlightedValue={meanBy(props.data, 'avg_memory_used')}
                       />
                       <StackedBarChart
-                        title="Average Memory Usage by Type"
+                        title={$t('Average Memory Usage by Type')}
                         className="w-full"
                         xAxisKey="timestamp"
                         yAxisKey="count"
@@ -442,7 +445,7 @@ const PageLayout: NextPageWithLayout = () => {
 
 PageLayout.getLayout = (page) => (
   <DefaultLayout>
-    <EdgeFunctionDetailsLayout title="Overview">{page}</EdgeFunctionDetailsLayout>
+    <EdgeFunctionDetailsLayout title={$t('Overview')}>{page}</EdgeFunctionDetailsLayout>
   </DefaultLayout>
 )
 

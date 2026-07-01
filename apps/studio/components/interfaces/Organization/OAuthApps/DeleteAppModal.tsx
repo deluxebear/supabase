@@ -14,6 +14,7 @@ import { Admonition } from 'ui-patterns/admonition'
 
 import { useOAuthAppDeleteMutation } from '@/data/oauth/oauth-app-delete-mutation'
 import type { OAuthApp } from '@/data/oauth/oauth-apps-query'
+import { t as $t } from '@/lib/i18n'
 
 export interface DeleteAppModalProps {
   selectedApp?: OAuthApp
@@ -43,7 +44,7 @@ export const DeleteAppModal = ({ selectedApp, onClose }: DeleteAppModalProps) =>
           <div className="flex flex-col space-y-2">
             <Admonition
               type="warning"
-              title="This action cannot be undone"
+              title={$t('This action cannot be undone')}
               description={`Deleting ${selectedApp?.name} will invalidate any access tokens from this application that
           were authorized by users.`}
             />
@@ -51,11 +52,12 @@ export const DeleteAppModal = ({ selectedApp, onClose }: DeleteAppModalProps) =>
               <li className="flex gap-3 text-sm">
                 <Lock size={14} className="shrink-0" />
                 <div>
-                  <strong>Before you remove this application, consider:</strong>
+                  <strong>{$t('Before you remove this application, consider:')}</strong>
                   <ul className="space-y-2 mt-2">
                     <li className="list-disc ml-4">
-                      No users are currently using this application. It will no longer be available
-                      for use after deletion.
+                      {$t(
+                        'No users are currently using this application. It will no longer be available for use after deletion.'
+                      )}
                     </li>
                   </ul>
                 </div>
@@ -64,9 +66,9 @@ export const DeleteAppModal = ({ selectedApp, onClose }: DeleteAppModalProps) =>
           </div>
         </AlertDialogDescription>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction onClick={onConfirmDelete} variant="danger">
-            Confirm
+            {$t('Confirm')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

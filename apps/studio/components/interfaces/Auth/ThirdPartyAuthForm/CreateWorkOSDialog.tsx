@@ -22,6 +22,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import * as z from 'zod'
 
 import { useCreateThirdPartyAuthIntegrationMutation } from '@/data/third-party-auth/integration-create-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface CreateWorkOSIntegrationProps {
   visible: boolean
@@ -128,7 +129,7 @@ export const CreateWorkOSIntegrationDialog = ({
             <Separator /> */}
 
               <p className="text-sm text-foreground-light">
-                Enables a JWT from WorkOS to access data from this Supabase project.
+                {$t('Enables a JWT from WorkOS to access data from this Supabase project.')}
               </p>
               <FormField
                 key="issuerURL"
@@ -136,8 +137,8 @@ export const CreateWorkOSIntegrationDialog = ({
                 name="issuerURL"
                 render={({ field }) => (
                   <FormItemLayout
-                    label="WorkOS Issuer URL"
-                    description="Obtain your issuer URL from the WorkOS dashboard."
+                    label={$t('WorkOS Issuer URL')}
+                    description={$t('Obtain your issuer URL from the WorkOS dashboard.')}
                   >
                     <FormControl>
                       <Input
@@ -155,13 +156,13 @@ export const CreateWorkOSIntegrationDialog = ({
           {!isCreating && (
             <div className="flex-1">
               <Button variant="danger" onClick={() => onDelete()} icon={<Trash />}>
-                Remove connection
+                {$t('Remove connection')}
               </Button>
             </div>
           )}
 
           <Button disabled={isPending} variant="default" onClick={() => onClose()}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button form={FORM_ID} type="submit" disabled={isPending} loading={isPending}>
             {isCreating ? 'Create connection' : 'Update connection'}

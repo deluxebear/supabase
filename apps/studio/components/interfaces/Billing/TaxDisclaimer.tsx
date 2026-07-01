@@ -1,5 +1,7 @@
 import { cn } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface TaxDisclaimerProps {
   className?: string
 }
@@ -7,7 +9,7 @@ interface TaxDisclaimerProps {
 export const TaxDisclaimer = ({ className }: TaxDisclaimerProps) => {
   return (
     <p className={cn('text-xs text-foreground-muted', className)}>
-      Prices shown do not include applicable taxes.
+      {$t('Prices shown do not include applicable taxes.')}
     </p>
   )
 }

@@ -12,6 +12,8 @@ import {
 } from 'ui'
 import { CodeBlock } from 'ui-patterns/CodeBlock'
 
+import { t as $t } from '@/lib/i18n'
+
 interface ErrorDetailsDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -32,14 +34,14 @@ export const ErrorDetailsDialog = ({
       <DialogContent size="xlarge" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>
-            Replication error on <code className="text-code-inline">{tableName}</code>
+            {$t('Replication error on')} <code className="text-code-inline">{tableName}</code>
           </DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection className="p-0!">
           <div className="px-4 py-3">
             <p className="text-sm text-foreground-light">
-              The following error occurred during replication:
+              {$t('The following error occurred during replication:')}
             </p>
           </div>
           <CodeBlock
@@ -60,7 +62,7 @@ export const ErrorDetailsDialog = ({
         </DialogSection>
         <DialogFooter>
           <DialogClose>
-            <Button variant="default">Close</Button>
+            <Button variant="default">{$t('Close')}</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

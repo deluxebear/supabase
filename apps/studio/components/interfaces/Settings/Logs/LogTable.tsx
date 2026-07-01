@@ -41,6 +41,7 @@ import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { DownloadResultsButton } from '@/components/ui/DownloadResultsButton'
 import { useSelectedLog } from '@/hooks/analytics/useSelectedLog'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -486,7 +487,7 @@ export const LogTable = ({
             icon={isHistogramShowing ? <Eye /> : <EyeOff />}
             onClick={onHistogramToggle}
           >
-            Histogram
+            {$t('Histogram')}
           </Button>
         </div>
       )}
@@ -507,7 +508,7 @@ export const LogTable = ({
               },
             }}
           >
-            Save query
+            {$t('Save query')}
           </ButtonTooltip>
         )}
         <Button
@@ -518,7 +519,7 @@ export const LogTable = ({
           iconRight={<Play size={12} />}
           loading={isLoading}
         >
-          Run
+          {$t('Run')}
         </Button>
       </div>
     </div>
@@ -591,13 +592,13 @@ export const LogTable = ({
                     const eventMessage = activeRow?.event_message
                     if (eventMessage) {
                       copyToClipboard(eventMessage, () => {
-                        toast.success('Copied to clipboard')
+                        toast.success($t('Copied to clipboard'))
                       })
                     }
                   }}
                 >
                   <Copy size={14} />
-                  <span className="text-xs">Copy event message</span>
+                  <span className="text-xs">{$t('Copy event message')}</span>
                 </ContextMenuItem>
               </ContextMenuContent>
             </ContextMenu>

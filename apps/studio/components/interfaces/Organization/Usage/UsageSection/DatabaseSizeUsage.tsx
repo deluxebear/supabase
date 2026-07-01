@@ -10,6 +10,7 @@ import { PricingMetric } from '@/data/analytics/org-daily-stats-query'
 import type { OrgSubscription } from '@/data/subscriptions/types'
 import { OrgUsageResponse } from '@/data/usage/org-usage-query'
 import { formatBytes } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export interface DatabaseSizeUsageProps {
   slug: string
@@ -43,10 +44,11 @@ const DatabaseSizeUsage = ({
           {currentBillingCycleSelected && hasProjectsExceedingDatabaseSize && (
             <Alert variant="warning">
               <CriticalIcon />
-              <AlertTitle>Projects exceeding quota</AlertTitle>
+              <AlertTitle>{$t('Projects exceeding quota')}</AlertTitle>
               <AlertDescription>
-                You have projects that are exceeding 0.5 GB of database size. Reduce the database
-                size or upgrade to a paid plan.
+                {$t(
+                  'You have projects that are exceeding 0.5 GB of database size. Reduce the database size or upgrade to a paid plan.'
+                )}
               </AlertDescription>
             </Alert>
           )}
@@ -62,13 +64,13 @@ const DatabaseSizeUsage = ({
               <>
                 <div className="flex items-center justify-between border-b py-1">
                   <p className="text-xs text-foreground-light">
-                    Included in {subscription?.plan?.name} Plan
+                    {$t('Included in')} {subscription?.plan?.name} {$t('Plan')}
                   </p>
-                  <p className="text-xs">0.5 GB per project</p>
+                  <p className="text-xs">{$t('0.5 GB per project')}</p>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-foreground-light">Max database size</p>
+                  <p className="text-xs text-foreground-light">{$t('Max database size')}</p>
                   <p className="text-xs">
                     {databaseSizeUsage?.usage
                       ? formatBytes(databaseSizeUsage?.usage_original)
@@ -82,16 +84,16 @@ const DatabaseSizeUsage = ({
           {currentBillingCycleSelected && subscription?.plan.id !== 'platform' ? (
             <div className="space-y-4">
               <div className="space-y-1">
-                <p className="text-sm">Current database size per project</p>
+                <p className="text-sm">{$t('Current database size per project')}</p>
               </div>
 
               {databaseSizeUsage?.project_allocations.length === 0 && (
                 <Panel>
                   <Panel.Content>
                     <div className="flex flex-col items-center justify-center">
-                      <p className="text-sm">No active projects</p>
+                      <p className="text-sm">{$t('No active projects')}</p>
                       <p className="text-sm text-foreground-light">
-                        You don't have any active projects in this organization.
+                        {$t("You don't have any active projects in this organization.")}
                       </p>
                     </div>
                   </Panel.Content>
@@ -116,7 +118,7 @@ const DatabaseSizeUsage = ({
                         <Link
                           href={`/project/${project.ref}/observability/database#database-size-report`}
                         >
-                          Manage Database Size
+                          {$t('Manage Database Size')}
                         </Link>
                       </Button>
                     </div>
@@ -126,11 +128,12 @@ const DatabaseSizeUsage = ({
                           <span className="text-foreground font-semibold font-mono mt-[-2px]">
                             {formatBytes(project.usage)}
                           </span>{' '}
-                          Database Size
+                          {$t('Database Size')}
                         </span>
                         <InfoTooltip side="top">
                           <p>
-                            {formatBytes(project.usage)} GB database size as reported by Postgres.
+                            {formatBytes(project.usage)}{' '}
+                            {$t('GB database size as reported by Postgres.')}
                           </p>
                         </InfoTooltip>
                       </div>
@@ -143,9 +146,11 @@ const DatabaseSizeUsage = ({
             <Panel>
               <Panel.Content>
                 <div className="flex flex-col items-center justify-center">
-                  <p className="text-sm">Data not available</p>
+                  <p className="text-sm">{$t('Data not available')}</p>
                   <p className="text-sm text-foreground-light">
-                    Switch to current billing cycle to see current database size per project.
+                    {$t(
+                      'Switch to current billing cycle to see current database size per project.'
+                    )}
                   </p>
                 </div>
               </Panel.Content>

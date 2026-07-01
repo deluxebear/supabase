@@ -18,6 +18,7 @@ import { orderCommandSectionsByPriority } from './ordering'
 import { useAPIKeys } from '@/data/api-keys/api-keys-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 const API_KEYS_PAGE_NAME = 'API Keys'
 
@@ -47,14 +48,16 @@ export function useApiKeysCommands() {
           name: `Copy publishable key`,
           action: () => {
             copyToClipboard(publishableKey.api_key ?? '', () => {
-              toast.success('Publishable key copied to clipboard')
+              toast.success($t('Publishable key copied to clipboard'))
             })
             setIsOpen(false)
             resetCommandMenu()
           },
           badge: () => (
             <span className="flex items-center gap-x-1">
-              <Badge>Project: {project?.name}</Badge>
+              <Badge>
+                {$t('Project:')} {project?.name}
+              </Badge>
               <Badge>{publishableKey.type}</Badge>
             </span>
           ),
@@ -66,14 +69,16 @@ export function useApiKeysCommands() {
             name: `Copy secret key (${key.name})`,
             action: () => {
               copyToClipboard(key.api_key ?? '', () => {
-                toast.success('Secret key copied to clipboard')
+                toast.success($t('Secret key copied to clipboard'))
               })
               setIsOpen(false)
               resetCommandMenu()
             },
             badge: () => (
               <span className="flex items-center gap-x-1">
-                <Badge>Project: {project?.name}</Badge>
+                <Badge>
+                  {$t('Project:')} {project?.name}
+                </Badge>
                 <Badge>{key.type}</Badge>
               </span>
             ),
@@ -86,15 +91,17 @@ export function useApiKeysCommands() {
           name: `Copy anonymous API key`,
           action: () => {
             copyToClipboard(anonKey.api_key ?? '', () => {
-              toast.success('Anonymous API key copied to clipboard')
+              toast.success($t('Anonymous API key copied to clipboard'))
             })
             setIsOpen(false)
             resetCommandMenu()
           },
           badge: () => (
             <span className="flex items-center gap-x-1">
-              <Badge>Project: {project?.name}</Badge>
-              <Badge>Public</Badge>
+              <Badge>
+                {$t('Project:')} {project?.name}
+              </Badge>
+              <Badge>{$t('Public')}</Badge>
               <Badge>{anonKey.type}</Badge>
             </span>
           ),
@@ -106,15 +113,17 @@ export function useApiKeysCommands() {
           name: `Copy service API key`,
           action: () => {
             copyToClipboard(serviceKey.api_key ?? '', () => {
-              toast.success('Service key copied to clipboard')
+              toast.success($t('Service key copied to clipboard'))
             })
             setIsOpen(false)
             resetCommandMenu()
           },
           badge: () => (
             <span className="flex items-center gap-x-1">
-              <Badge>Project: {project?.name}</Badge>
-              <Badge variant="destructive">Secret</Badge>
+              <Badge>
+                {$t('Project:')} {project?.name}
+              </Badge>
+              <Badge variant="destructive">{$t('Secret')}</Badge>
               <Badge>{serviceKey.type}</Badge>
             </span>
           ),

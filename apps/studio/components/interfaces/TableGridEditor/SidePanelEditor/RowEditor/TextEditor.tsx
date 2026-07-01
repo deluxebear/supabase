@@ -15,6 +15,7 @@ import { useTableEditorQuery } from '@/data/table-editor/table-editor-query'
 import { isTableLike } from '@/data/table-editor/table-editor-types'
 import { useGetCellValueMutation } from '@/data/table-rows/get-cell-value-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface TextEditorProps {
   visible: boolean
@@ -59,7 +60,7 @@ export const TextEditor = ({
     )
       return
     if (selectedTable.primary_keys.length === 0) {
-      return toast('Unable to load value as table has no primary keys')
+      return toast($t('Unable to load value as table has no primary keys'))
     }
 
     const pkMatch = selectedTable.primary_keys.reduce((a, b) => {
@@ -121,7 +122,7 @@ export const TextEditor = ({
       header={
         <div className="flex items-center justify-between">
           <p>
-            {readOnly ? 'Viewing' : 'Editing'} value of: <code>{column}</code>
+            {readOnly ? 'Viewing' : 'Editing'} {$t('value of:')} <code>{column}</code>
           </p>
           {(!isTruncated || (isTruncated && isSuccess)) && (
             <TwoOptionToggle
@@ -173,14 +174,17 @@ export const TextEditor = ({
             )}
           >
             <div className="flex flex-col gap-y-1 w-80">
-              <p>Text value is larger than {MAX_CHARACTERS.toLocaleString()} characters</p>
+              <p>
+                {$t('Text value is larger than')} {MAX_CHARACTERS.toLocaleString()} characters
+              </p>
               <p className="text-foreground-light">
-                You may try to render the entire text value, but your browser may run into
-                performance issues
+                {$t(
+                  'You may try to render the entire text value, but your browser may run into performance issues'
+                )}
               </p>
             </div>
             <Button variant="default" loading={isPending} onClick={loadFullValue}>
-              Load full text data
+              {$t('Load full text data')}
             </Button>
           </div>
         )}

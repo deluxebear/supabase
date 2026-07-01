@@ -5,6 +5,7 @@ import { Admonition } from 'ui-patterns/admonition'
 
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface SpendCapDisabledSectionProps {
   currentDiskSizeGb?: number
@@ -39,26 +40,27 @@ export function SpendCapDisabledSection({ currentDiskSizeGb }: SpendCapDisabledS
         >
           {showAutoExpandNotice && (
             <Admonition type="default">
-              <AlertTitle>Your disk will auto-expand to 8 GB</AlertTitle>
+              <AlertTitle>{$t('Your disk will auto-expand to 8 GB')}</AlertTitle>
               <AlertDescription>
-                The first time your database usage triggers a resize, your disk will automatically
-                expand to at least 8 GB. You don&apos;t need to disable spend cap or do anything
-                manually for this to happen.
+                {$t(
+                  'The first time your database usage triggers a resize, your disk will automatically expand to at least 8 GB. You don&apos;t need to disable spend cap or do anything manually for this to happen.'
+                )}
               </AlertDescription>
             </Admonition>
           )}
           <Admonition type="default">
-            <AlertTitle>Spend cap limits disk size to 8 GB</AlertTitle>
+            <AlertTitle>{$t('Spend cap limits disk size to 8 GB')}</AlertTitle>
             <AlertDescription>
-              You can resize your disk up to 8 GB with spend cap enabled. To expand beyond 8 GB or
-              configure IOPS, throughput, and storage type, disable your spend cap.
+              {$t(
+                'You can resize your disk up to 8 GB with spend cap enabled. To expand beyond 8 GB or configure IOPS, throughput, and storage type, disable your spend cap.'
+              )}
             </AlertDescription>
             <div className="mt-3">
               <Link
                 href={`/org/${org?.slug}/billing?panel=costControl`}
                 className={cn(buttonVariants({ variant: 'default', size: 'tiny' }))}
               >
-                Disable spend cap
+                {$t('Disable spend cap')}
               </Link>
             </div>
           </Admonition>

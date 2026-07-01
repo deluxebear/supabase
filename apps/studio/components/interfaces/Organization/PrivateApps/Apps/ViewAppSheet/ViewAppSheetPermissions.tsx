@@ -10,6 +10,7 @@ import {
 } from 'ui'
 
 import type { Permission } from '../Apps.constants'
+import { t as $t } from '@/lib/i18n'
 
 interface ViewAppSheetPermissionsProps {
   permissions: Permission[]
@@ -19,9 +20,9 @@ interface ViewAppSheetPermissionsProps {
 export function ViewAppSheetPermissions({ permissions, isLoading }: ViewAppSheetPermissionsProps) {
   return (
     <div className="px-5 sm:px-6 py-6 space-y-3">
-      <h3 className="text-sm font-medium text-foreground">Permissions</h3>
+      <h3 className="text-sm font-medium text-foreground">{$t('Permissions')}</h3>
       {isLoading ? (
-        <p className="text-sm text-foreground-light py-4">Loading permissions...</p>
+        <p className="text-sm text-foreground-light py-4">{$t('Loading permissions...')}</p>
       ) : (
         <Card className="w-full overflow-hidden bg-surface-100">
           <CardContent className="p-0">
@@ -29,10 +30,10 @@ export function ViewAppSheetPermissions({ permissions, isLoading }: ViewAppSheet
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-left font-mono uppercase text-xs text-foreground-lighter h-auto py-2 w-[40%]">
-                    Permission
+                    {$t('Permission')}
                   </TableHead>
                   <TableHead className="text-left font-mono uppercase text-xs text-foreground-lighter h-auto py-2 w-[60%]">
-                    Description
+                    {$t('Description')}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -41,7 +42,7 @@ export function ViewAppSheetPermissions({ permissions, isLoading }: ViewAppSheet
                   <TableRow>
                     <TableCell colSpan={2}>
                       <p className="text-foreground-light text-center py-4">
-                        No permissions configured
+                        {$t('No permissions configured')}
                       </p>
                     </TableCell>
                   </TableRow>

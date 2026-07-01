@@ -29,6 +29,7 @@ import { AlertError } from '@/components/ui/AlertError'
 import { AlphaNotice } from '@/components/ui/AlphaNotice'
 import { useProjectStorageConfigQuery } from '@/data/config/project-storage-config-query'
 import { useAnalyticsBucketsQuery } from '@/data/storage/analytics-buckets-query'
+import { t as $t } from '@/lib/i18n'
 import { createNavigationHandler } from '@/lib/navigation'
 
 export const AnalyticsBuckets = () => {
@@ -88,7 +89,7 @@ export const AnalyticsBuckets = () => {
                 ) : (
                   <div className="flex flex-col gap-y-4">
                     <div className="flex flex-row items-center gap-x-2">
-                      <PageSectionTitle>Buckets</PageSectionTitle>
+                      <PageSectionTitle>{$t('Buckets')}</PageSectionTitle>
                       {analyticsBuckets.length > 0 && (
                         <Tooltip>
                           <TooltipTrigger>
@@ -97,8 +98,8 @@ export const AnalyticsBuckets = () => {
                             </span>
                           </TooltipTrigger>
                           <TooltipContent side="bottom" className="w-72 text-center">
-                            Each project can only have up to {maxAnalyticsBuckets} buckets while
-                            analytics buckets are in alpha{' '}
+                            {$t('Each project can only have up to')} {maxAnalyticsBuckets}{' '}
+                            {$t('buckets while analytics buckets are in alpha')}{' '}
                           </TooltipContent>
                         </Tooltip>
                       )}
@@ -107,7 +108,7 @@ export const AnalyticsBuckets = () => {
                       <Input
                         size="tiny"
                         className="grow lg:grow-0 w-52"
-                        placeholder="Search for a bucket"
+                        placeholder={$t('Search for a bucket')}
                         value={filterString}
                         onChange={(e) => setFilterString(e.target.value)}
                         icon={<Search />}
@@ -124,13 +125,13 @@ export const AnalyticsBuckets = () => {
                             <TableRow>
                               {analyticsBuckets.length > 0 && (
                                 <TableHead className="w-2 pr-1">
-                                  <span className="sr-only">Icon</span>
+                                  <span className="sr-only">{$t('Icon')}</span>
                                 </TableHead>
                               )}
-                              <TableHead>Name</TableHead>
-                              <TableHead>Created at</TableHead>
+                              <TableHead>{$t('Name')}</TableHead>
+                              <TableHead>{$t('Created at')}</TableHead>
                               <TableHead>
-                                <span className="sr-only">Actions</span>
+                                <span className="sr-only">{$t('Actions')}</span>
                               </TableHead>
                             </TableRow>
                           </TableHeader>
@@ -138,9 +139,13 @@ export const AnalyticsBuckets = () => {
                             {analyticsBuckets.length === 0 && filterString.length > 0 && (
                               <TableRow className="[&>td]:hover:bg-inherit">
                                 <TableCell colSpan={3}>
-                                  <p className="text-sm text-foreground">No results found</p>
+                                  <p className="text-sm text-foreground">
+                                    {$t('No results found')}
+                                  </p>
                                   <p className="text-sm text-foreground-light">
-                                    Your search for "{filterString}" did not return any results
+                                    {$t('Your search for "')}
+                                    {filterString}
+                                    {$t('" did not return any results')}
                                   </p>
                                 </TableCell>
                               </TableRow>

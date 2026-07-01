@@ -27,6 +27,7 @@ import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { useReadReplicasStatusesQuery } from '@/data/read-replicas/replicas-status-query'
 import { useReportDateRange } from '@/hooks/misc/useReportDateRange'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const attribute = 'physical_replication_lag_physical_replication_lag_seconds'
 
@@ -86,7 +87,7 @@ export const ReadReplicaDetails = () => {
         <ChartCard className="rounded-none border-x-0">
           <ChartHeader className="px-10">
             <ChartMetric
-              label="Replication lag"
+              label={$t('Replication lag')}
               value={lagDuration !== undefined ? `${lagDuration}s` : '-'}
             />
           </ChartHeader>
@@ -95,8 +96,8 @@ export const ReadReplicaDetails = () => {
             emptyState={
               <ChartEmptyState
                 icon={<BarChart2 size={16} />}
-                title="No data to show"
-                description="It may take up to 24 hours for data to refresh"
+                title={$t('No data to show')}
+                description={$t('It may take up to 24 hours for data to refresh')}
               />
             }
             loadingState={<ChartLoadingState className="h-[228px]" />}
@@ -124,7 +125,7 @@ export const ReadReplicaDetails = () => {
         <ScaffoldSection isFullWidth>
           <Card>
             <CardHeader>
-              <CardTitle>Replica Information</CardTitle>
+              <CardTitle>{$t('Replica Information')}</CardTitle>
             </CardHeader>
             {isLoadingDatabases ? (
               <CardContent>
@@ -136,24 +137,26 @@ export const ReadReplicaDetails = () => {
                   <FormItemLayout
                     isReactForm={false}
                     layout="horizontal"
-                    label="Load Balancer URL"
-                    description="RESTful endpoint for querying and managing your databases through your load balancer."
+                    label={$t('Load Balancer URL')}
+                    description={$t(
+                      'RESTful endpoint for querying and managing your databases through your load balancer.'
+                    )}
                   >
                     <Input readOnly copy className="input-mono" value={loadBalancer?.endpoint} />
                   </FormItemLayout>
                 </CardContent>
                 <CardContent className="flex flex-col gap-y-4">
-                  <FormItemLayout isReactForm={false} layout="horizontal" label="Replica URL">
+                  <FormItemLayout isReactForm={false} layout="horizontal" label={$t('Replica URL')}>
                     <Input readOnly copy className="input-mono" value={restUrl} />
                   </FormItemLayout>
-                  <FormItemLayout isReactForm={false} layout="horizontal" label="Region">
+                  <FormItemLayout isReactForm={false} layout="horizontal" label={$t('Region')}>
                     <Input
                       readOnly
                       className="input-mono"
                       value={regionLabel}
                       icon={
                         <img
-                          alt="region icon"
+                          alt={$t('region icon')}
                           className="w-5 rounded-xs"
                           src={`${BASE_PATH}/img/regions/${region ?? ''}.svg`}
                         />
@@ -163,8 +166,8 @@ export const ReadReplicaDetails = () => {
                   <FormItemLayout
                     isReactForm={false}
                     layout="horizontal"
-                    label="Compute Size"
-                    description="Size of replica will be identical to the primary database."
+                    label={$t('Compute Size')}
+                    description={$t('Size of replica will be identical to the primary database.')}
                   >
                     <Input readOnly className="input-mono" value={size} />
                   </FormItemLayout>

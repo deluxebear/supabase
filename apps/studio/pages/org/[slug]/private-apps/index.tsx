@@ -29,6 +29,7 @@ import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import OrganizationLayout from '@/components/layouts/OrganizationLayout'
 import { OrganizationSettingsLayout } from '@/components/layouts/ProjectLayout/OrganizationSettingsLayout'
 import { Shortcut } from '@/components/ui/Shortcut'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import type { NextPageWithLayout } from '@/types'
 
@@ -41,9 +42,9 @@ function PrivateAppsContent() {
       <PageHeader size="default">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Private Apps</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Private Apps')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Create private apps to generate scoped access tokens for your organization
+              {$t('Create private apps to generate scoped access tokens for your organization')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -53,9 +54,9 @@ function PrivateAppsContent() {
         <PageSection id="apps">
           <PageSectionMeta>
             <PageSectionSummary>
-              <PageSectionTitle>Apps</PageSectionTitle>
+              <PageSectionTitle>{$t('Apps')}</PageSectionTitle>
               <PageSectionDescription>
-                Registered private apps and their credentials
+                {$t('Registered private apps and their credentials')}
               </PageSectionDescription>
             </PageSectionSummary>
             {!isLoading && apps.length > 0 && (
@@ -71,7 +72,7 @@ function PrivateAppsContent() {
                     icon={<Plus size={14} />}
                     onClick={() => setShowCreate(true)}
                   >
-                    Create app
+                    {$t('Create app')}
                   </Button>
                 </Shortcut>
               </PageSectionAside>
@@ -101,7 +102,7 @@ const PrivateAppsPage: NextPageWithLayout = () => {
 
 PrivateAppsPage.getLayout = (page) => (
   <DefaultLayout>
-    <OrganizationLayout title="Private Apps">
+    <OrganizationLayout title={$t('Private Apps')}>
       <OrganizationSettingsLayout>
         <PrivateAppsProvider>{page}</PrivateAppsProvider>
       </OrganizationSettingsLayout>

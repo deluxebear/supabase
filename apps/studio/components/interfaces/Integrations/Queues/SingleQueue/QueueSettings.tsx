@@ -46,6 +46,7 @@ import {
 import { useTablesQuery } from '@/data/tables/tables-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { getErrorMessage } from '@/lib/get-error-message'
+import { t as $t } from '@/lib/i18n'
 
 const ACTIONS = ['select', 'insert', 'update', 'delete']
 const ROLES = ['anon', 'authenticated', 'postgres', 'service_role']
@@ -211,7 +212,7 @@ export const QueueSettings = ({}: QueueSettingsProps) => {
             ]
           : []),
       ])
-      toast.success('Successfully updated permissions')
+      toast.success($t('Successfully updated permissions'))
       setOpen(false)
     } catch (error: unknown) {
       toast.error(`Failed to update permissions: ${getErrorMessage(error)}`)
@@ -242,19 +243,22 @@ export const QueueSettings = ({}: QueueSettingsProps) => {
           variant="text"
           className="px-1.5"
           icon={<Settings />}
-          title="Settings"
+          title={$t('Settings')}
           tooltip={{ content: { side: 'bottom', text: 'Queue settings' } }}
         />
       </SheetTrigger>
       <SheetContent size="lg" className="overflow-auto flex flex-col gap-y-0">
         <SheetHeader>
-          <SheetTitle>Manage queue permissions on {name}</SheetTitle>
+          <SheetTitle>
+            {$t('Manage queue permissions on')} {name}
+          </SheetTitle>
           <SheetDescription>
-            Configure permissions for the following roles to grant access to the relevant actions on
-            the queue.{' '}
+            {$t(
+              'Configure permissions for the following roles to grant access to the relevant actions on the queue.'
+            )}{' '}
             {isExposed && (
               <>
-                These will also determine access to each function available from the{' '}
+                {$t('These will also determine access to each function available from the')}{' '}
                 <code className="text-code-inline">pgmq_public</code> schema.
               </>
             )}
@@ -266,16 +270,19 @@ export const QueueSettings = ({}: QueueSettingsProps) => {
             <Admonition
               type="default"
               className="rounded-none border-x-0 border-t-0"
-              title="Queue permissions are only relevant if exposure through PostgREST has been enabled"
+              title={$t(
+                'Queue permissions are only relevant if exposure through PostgREST has been enabled'
+              )}
               description={
                 <>
-                  You may opt to manage your queues via any Supabase client libraries or PostgREST
-                  endpoints by enabling this in the{' '}
+                  {$t(
+                    'You may opt to manage your queues via any Supabase client libraries or PostgREST endpoints by enabling this in the'
+                  )}{' '}
                   <Link
                     href={`/project/${project?.ref}/integrations/queues/settings`}
                     className="underline transition underline-offset-2 decoration-foreground-lighter hover:decoration-foreground"
                   >
-                    queues settings
+                    {$t('queues settings')}
                   </Link>
                 </>
               }
@@ -284,13 +291,15 @@ export const QueueSettings = ({}: QueueSettingsProps) => {
             <Admonition
               type="default"
               className="rounded-none border-x-0 border-t-0"
-              description="Only relevant roles for managing queues via client libraries or PostgREST are shown here."
+              description={$t(
+                'Only relevant roles for managing queues via client libraries or PostgREST are shown here.'
+              )}
             />
           )}
           <Table>
             <TableHeader className="[&_th]:h-8">
               <TableRow className="py-2">
-                <TableHead>Role</TableHead>
+                <TableHead>{$t('Role')}</TableHead>
                 {ACTIONS.map((x) => {
                   const relatedFunctions = getQueueFunctionsMapping(x)
                   return (
@@ -303,7 +312,7 @@ export const QueueSettings = ({}: QueueSettingsProps) => {
                         {isExposed && (
                           <TooltipContent side="bottom" className="w-64 flex flex-col gap-y-1">
                             <p>
-                              Required for{' '}
+                              {$t('Required for')}{' '}
                               {relatedFunctions.length === 6
                                 ? 'all'
                                 : `the following ${relatedFunctions.length}`}{' '}
@@ -373,10 +382,10 @@ export const QueueSettings = ({}: QueueSettingsProps) => {
         </SheetSection>
         <SheetFooter>
           <Button variant="default" disabled={isSaving} onClick={() => setOpen(false)}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button variant="primary" loading={isSaving} onClick={onSaveConfiguration}>
-            Save changes
+            {$t('Save changes')}
           </Button>
         </SheetFooter>
       </SheetContent>

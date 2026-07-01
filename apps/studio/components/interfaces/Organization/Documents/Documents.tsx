@@ -16,6 +16,7 @@ import {
 } from '@/components/layouts/Scaffold'
 import { InlineLinkClassName } from '@/components/ui/InlineLink'
 import { useCustomContent } from '@/hooks/custom-content/useCustomContent'
+import { t as $t } from '@/lib/i18n'
 
 export const Documents = () => {
   const { organizationLegalDocuments } = useCustomContent(['organization:legal_documents'])
@@ -73,8 +74,12 @@ export const Documents = () => {
         <ScaffoldSection className="py-12">
           <ScaffoldSectionDetail className="col-span-full">
             <p className="text-sm text-foreground-light m-0">
-              <SupportLink className={InlineLinkClassName}>Submit a support request</SupportLink> if
-              you require additional documents for financial or tax reasons, such as a W-9 form.
+              <SupportLink className={InlineLinkClassName}>
+                {$t('Submit a support request')}
+              </SupportLink>{' '}
+              {$t(
+                'if you require additional documents for financial or tax reasons, such as a W-9 form.'
+              )}
             </p>
           </ScaffoldSectionDetail>
         </ScaffoldSection>

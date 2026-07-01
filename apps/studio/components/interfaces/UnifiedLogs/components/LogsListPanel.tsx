@@ -5,6 +5,7 @@ import { Button, cn, ResizableHandle, ResizablePanel } from 'ui'
 
 import { ColumnSchema } from '../UnifiedLogs.schema'
 import { LogsList } from './LogsList'
+import { t as $t } from '@/lib/i18n'
 
 export const LogsListPanel = ({ selectedRow }: { selectedRow?: Row<ColumnSchema> }) => {
   const [open, setOpenState] = useState(true)
@@ -24,7 +25,7 @@ export const LogsListPanel = ({ selectedRow }: { selectedRow?: Row<ColumnSchema>
         <div className="h-full flex flex-col overflow-hidden">
           <div className="min-h-12 flex justify-between items-center px-5">
             <div className="flex flex-row items-center gap-2">
-              <h3 className="text-sm font-medium">Event logs</h3>
+              <h3 className="text-sm font-medium">{$t('Event logs')}</h3>
               <span className="text-muted-foreground text-xs bg-muted rounded-md px-1.5 py-0.5">
                 {logs.length}
               </span>

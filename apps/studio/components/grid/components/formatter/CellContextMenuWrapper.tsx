@@ -10,6 +10,7 @@ import {
 } from 'ui'
 
 import { formatClipboardValue } from '../../utils/common'
+import { t as $t } from '@/lib/i18n'
 
 /**
  * [Joshen] RowRenderer should be using this so that we can deprecate `react-contextify`
@@ -22,7 +23,7 @@ export const CellContextMenuWrapper = ({
   const onCopyCellContent = () => {
     const text = formatClipboardValue(value)
     copyToClipboard(text)
-    toast.success('Copied cell value to clipboard')
+    toast.success($t('Copied cell value to clipboard'))
   }
 
   return (
@@ -31,7 +32,7 @@ export const CellContextMenuWrapper = ({
       <ContextMenuContent>
         <ContextMenuItem className="gap-x-2" onSelect={onCopyCellContent}>
           <Copy size={12} />
-          <span className="text-xs">Copy cell</span>
+          <span className="text-xs">{$t('Copy cell')}</span>
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>

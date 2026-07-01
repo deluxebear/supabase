@@ -23,6 +23,7 @@ import { DocsButton } from '@/components/ui/DocsButton'
 import { ObservabilityLink } from '@/components/ui/ObservabilityLink'
 import { useApiReport } from '@/data/reports/api-report-query'
 import { useReportDateRange } from '@/hooks/misc/useReportDateRange'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const REPORT_TITLE = 'API Gateway'
@@ -120,8 +121,10 @@ export const ApiReport: NextPageWithLayout = () => {
             <UpgradePrompt
               show={showUpgradePrompt}
               setShowUpgradePrompt={setShowUpgradePrompt}
-              title="Report date range"
-              description="Report data can be stored for a maximum of 3 months depending on the plan that your project is on."
+              title={$t('Report date range')}
+              description={$t(
+                'Report data can be stored for a maximum of 3 months depending on the plan that your project is on.'
+              )}
               source="apiReportDateRange"
             />
           </div>
@@ -131,8 +134,8 @@ export const ApiReport: NextPageWithLayout = () => {
           isLoading={isLoading}
           params={params.requestsByCountry}
           error={error.requestsByCountry}
-          title="Requests by Geography"
-          tooltip="Number of API Gateway requests per geography"
+          title={$t('Requests by Geography')}
+          tooltip={$t('Number of API Gateway requests per geography')}
           data={data.requestsByCountry || []}
           renderer={RequestsByCountryMapRenderer}
           contentClassName="p-0 overflow-hidden"
@@ -141,7 +144,7 @@ export const ApiReport: NextPageWithLayout = () => {
         <ReportWidget
           isLoading={isLoading}
           params={params.totalRequests}
-          title="Total Requests"
+          title={$t('Total Requests')}
           data={data.totalRequests || []}
           error={error.totalRequest}
           renderer={TotalRequestsChartRenderer}
@@ -151,8 +154,8 @@ export const ApiReport: NextPageWithLayout = () => {
         <ReportWidget
           isLoading={isLoading}
           params={params.errorCounts}
-          title="Response Errors"
-          tooltip="Error responses with 4XX or 5XX status codes"
+          title={$t('Response Errors')}
+          tooltip={$t('Error responses with 4XX or 5XX status codes')}
           data={data.errorCounts || []}
           error={error.errorCounts}
           renderer={ErrorCountsChartRenderer}
@@ -165,8 +168,8 @@ export const ApiReport: NextPageWithLayout = () => {
         <ReportWidget
           isLoading={isLoading}
           params={params.responseSpeed}
-          title="Response Speed"
-          tooltip="Average response speed of a request (in ms)"
+          title={$t('Response Speed')}
+          tooltip={$t('Average response speed of a request (in ms)')}
           data={data.responseSpeed || []}
           error={error.responseSpeed}
           renderer={ResponseSpeedChartRenderer}
@@ -178,8 +181,8 @@ export const ApiReport: NextPageWithLayout = () => {
           isLoading={isLoading}
           params={params.networkTraffic}
           error={error.networkTraffic}
-          title="Network Traffic"
-          tooltip="Ingress and egress of requests and responses respectively"
+          title={$t('Network Traffic')}
+          tooltip={$t('Ingress and egress of requests and responses respectively')}
           data={data.networkTraffic || []}
           renderer={NetworkTrafficRenderer}
         />
@@ -193,7 +196,7 @@ export const ApiReport: NextPageWithLayout = () => {
 
 ApiReport.getLayout = (page) => (
   <DefaultLayout>
-    <ObservabilityLayout title="API Gateway">{page}</ObservabilityLayout>
+    <ObservabilityLayout title={$t('API Gateway')}>{page}</ObservabilityLayout>
   </DefaultLayout>
 )
 

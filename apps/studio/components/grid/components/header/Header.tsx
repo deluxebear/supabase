@@ -35,6 +35,7 @@ import { Shortcut } from '@/components/ui/Shortcut'
 import { useTableRowsCountQuery } from '@/data/table-rows/table-rows-count-query'
 import { useTableRowsQuery } from '@/data/table-rows/table-rows-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { RoleImpersonationState } from '@/lib/role-impersonation'
 import {
   useRoleImpersonationStateSnapshot,
@@ -216,7 +217,7 @@ const RowHeader = ({ rows: visibleRows, tableQueriesEnabled = true }: RowHeaderP
   }
 
   const onCopyRows = (type: 'csv' | 'json' | 'sql') => {
-    if (!project) return toast.error('Project is required')
+    if (!project) return toast.error($t('Project is required'))
 
     const selected = allRows.filter((x) => snap.selectedRows.has(x.idx))
 
@@ -226,10 +227,11 @@ const RowHeader = ({ rows: visibleRows, tableQueriesEnabled = true }: RowHeaderP
     if (hasTruncated && (!snap.table.primaryKey || snap.table.primaryKey.length === 0)) {
       return toast(
         <div>
-          <p>Unable to copy selected rows</p>
+          <p>{$t('Unable to copy selected rows')}</p>
           <p className="text-foreground-light text-sm">
-            A selected row has a column value that needs to be fetched on demand due to its size,
-            but the table has no primary key.
+            {$t(
+              'A selected row has a column value that needs to be fetched on demand due to its size, but the table has no primary key.'
+            )}
           </p>
         </div>,
         { duration: 8000 }
@@ -261,7 +263,7 @@ const RowHeader = ({ rows: visibleRows, tableQueriesEnabled = true }: RowHeaderP
       }
     })()
 
-    copyToClipboard(formatted, () => toast.success('Copied rows to clipboard')).finally(() => {
+    copyToClipboard(formatted, () => toast.success($t('Copied rows to clipboard'))).finally(() => {
       setIsCopying(false)
     })
   }
@@ -293,7 +295,7 @@ const RowHeader = ({ rows: visibleRows, tableQueriesEnabled = true }: RowHeaderP
       : { enabled: false }
   )
   const onRowsExportCSV = async () => {
-    if (!project) return toast.error('Project is required')
+    if (!project) return toast.error($t('Project is required'))
 
     setIsExporting(true)
     await exportCsv()
@@ -312,7 +314,7 @@ const RowHeader = ({ rows: visibleRows, tableQueriesEnabled = true }: RowHeaderP
       : { enabled: false }
   )
   const onRowsExportSQL = async () => {
-    if (!project) return toast.error('Project is required')
+    if (!project) return toast.error($t('Project is required'))
 
     setIsExporting(true)
     await exportSql()
@@ -331,7 +333,7 @@ const RowHeader = ({ rows: visibleRows, tableQueriesEnabled = true }: RowHeaderP
       : { enabled: false }
   )
   const onRowsExportJSON = async () => {
-    if (!project) return toast.error('Project is required')
+    if (!project) return toast.error($t('Project is required'))
 
     setIsExporting(true)
     await exportJson()
@@ -357,13 +359,19 @@ const RowHeader = ({ rows: visibleRows, tableQueriesEnabled = true }: RowHeaderP
                   iconRight={<ChevronDown />}
                   loading={isCopying}
                 >
-                  Copy
+                  {$t('Copy')}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-40">
-                <DropdownMenuItem onClick={() => onCopyRows('csv')}>Copy as CSV</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onCopyRows('sql')}>Copy as SQL</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onCopyRows('json')}>Copy as JSON</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onCopyRows('csv')}>
+                  {$t('Copy as CSV')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onCopyRows('sql')}>
+                  {$t('Copy as SQL')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onCopyRows('json')}>
+                  {$t('Copy as JSON')}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
@@ -378,7 +386,7 @@ const RowHeader = ({ rows: visibleRows, tableQueriesEnabled = true }: RowHeaderP
                 },
               }}
             >
-              Copy
+              {$t('Copy')}
             </ButtonTooltip>
           )}
 
@@ -390,21 +398,23 @@ const RowHeader = ({ rows: visibleRows, tableQueriesEnabled = true }: RowHeaderP
                 iconRight={<ChevronDown />}
                 loading={isExporting}
               >
-                Export
+                {$t('Export')}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className={snap.allRowsSelected ? 'w-52' : 'w-40'}>
-              <DropdownMenuItem onClick={onRowsExportCSV}>Export as CSV</DropdownMenuItem>
-              <DropdownMenuItem onClick={onRowsExportSQL}>Export as SQL</DropdownMenuItem>
+              <DropdownMenuItem onClick={onRowsExportCSV}>{$t('Export as CSV')}</DropdownMenuItem>
+              <DropdownMenuItem onClick={onRowsExportSQL}>{$t('Export as SQL')}</DropdownMenuItem>
               {snap.allRowsSelected ? (
                 <DropdownMenuItem className="group" onClick={() => setShowExportModal(true)}>
                   <div>
-                    <p className="group-hover:text-foreground">Export via CLI</p>
-                    <p className="text-foreground-lighter">Recommended for large tables</p>
+                    <p className="group-hover:text-foreground">{$t('Export via CLI')}</p>
+                    <p className="text-foreground-lighter">{$t('Recommended for large tables')}</p>
                   </div>
                 </DropdownMenuItem>
               ) : (
-                <DropdownMenuItem onClick={onRowsExportJSON}>Export as JSON</DropdownMenuItem>
+                <DropdownMenuItem onClick={onRowsExportJSON}>
+                  {$t('Export as JSON')}
+                </DropdownMenuItem>
               )}
             </DropdownMenuContent>
           </DropdownMenu>

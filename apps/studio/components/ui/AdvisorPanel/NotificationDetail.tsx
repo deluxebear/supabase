@@ -6,6 +6,7 @@ import { Markdown } from '@/components/interfaces/Markdown'
 import { Notification, NotificationData } from '@/data/notifications/notifications-v2-query'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
+import { t as $t } from '@/lib/i18n'
 
 interface NotificationDetailProps {
   notification: Notification
@@ -34,7 +35,7 @@ export const NotificationDetail = ({ notification, onUpdateStatus }: Notificatio
     <div>
       {(project !== undefined || organization !== undefined) && (
         <>
-          <h3 className="text-sm mb-2">Context</h3>
+          <h3 className="text-sm mb-2">{$t('Context')}</h3>
           <div className="flex items-center gap-2 flex-wrap mb-6">
             {organization !== undefined && (
               <Link
@@ -60,7 +61,7 @@ export const NotificationDetail = ({ notification, onUpdateStatus }: Notificatio
 
       {data.message !== undefined && (
         <>
-          <h3 className="text-sm mb-2">Message</h3>
+          <h3 className="text-sm mb-2">{$t('Message')}</h3>
           <Markdown
             className="leading-6 text-sm text-foreground-light mb-6"
             content={data.message}
@@ -68,7 +69,7 @@ export const NotificationDetail = ({ notification, onUpdateStatus }: Notificatio
         </>
       )}
 
-      <h3 className="text-sm mb-2">Actions</h3>
+      <h3 className="text-sm mb-2">{$t('Actions')}</h3>
       <div className="flex items-center gap-2">
         {(data.actions ?? []).map((action, idx) => {
           const key = `${notification.id}-action-${idx}`
@@ -105,7 +106,7 @@ export const NotificationDetail = ({ notification, onUpdateStatus }: Notificatio
             icon={<ArchiveRestoreIcon size={14} strokeWidth={1.5} />}
             onClick={() => onUpdateStatus(notification.id, 'seen')}
           >
-            Unarchive
+            {$t('Unarchive')}
           </Button>
         ) : (
           <Button
@@ -113,7 +114,7 @@ export const NotificationDetail = ({ notification, onUpdateStatus }: Notificatio
             icon={<Archive size={14} strokeWidth={1.5} />}
             onClick={() => onUpdateStatus(notification.id, 'archived')}
           >
-            Archive
+            {$t('Archive')}
           </Button>
         )}
       </div>

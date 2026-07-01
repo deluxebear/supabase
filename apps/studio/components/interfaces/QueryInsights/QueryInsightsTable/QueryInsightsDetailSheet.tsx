@@ -19,6 +19,7 @@ import type { ClassifiedQuery } from '../QueryInsightsHealth/QueryInsightsHealth
 import { ExplainVisualizer } from '@/components/interfaces/ExplainVisualizer/ExplainVisualizer'
 import type { QueryPlanRow } from '@/components/interfaces/ExplainVisualizer/ExplainVisualizer.types'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -52,8 +53,10 @@ export const QueryInsightsDetailSheet = ({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange} modal={false}>
-      <SheetTitle className="sr-only">Query details</SheetTitle>
-      <SheetDescription className="sr-only">Query Insights Details &amp; Indexes</SheetDescription>
+      <SheetTitle className="sr-only">{$t('Query details')}</SheetTitle>
+      <SheetDescription className="sr-only">
+        {$t('Query Insights Details &amp; Indexes')}
+      </SheetDescription>
       <SheetContent
         side="right"
         className="flex flex-col h-full bg-studio border-l lg:w-[calc(100vw-802px)]! max-w-[700px] w-full"
@@ -78,20 +81,20 @@ export const QueryInsightsDetailSheet = ({
                 value="details"
                 className="px-0 pb-0 data-[state=active]:bg-transparent shadow-none!"
               >
-                Query details
+                {$t('Query details')}
               </TabsTrigger_Shadcn_>
               <TabsTrigger_Shadcn_
                 value="indexes"
                 className="px-0 pb-0 data-[state=active]:bg-transparent shadow-none!"
               >
-                Indexes
+                {$t('Indexes')}
               </TabsTrigger_Shadcn_>
               {activeSheetRow?.issueType !== 'error' && (
                 <TabsTrigger_Shadcn_
                   value="explain"
                   className="px-0 pb-0 data-[state=active]:bg-transparent shadow-none!"
                 >
-                  Explain
+                  {$t('Explain')}
                 </TabsTrigger_Shadcn_>
               )}
             </TabsList_Shadcn_>
@@ -114,12 +117,12 @@ export const QueryInsightsDetailSheet = ({
           >
             {explainLoadingQuery ? (
               <div className="px-6 py-4 flex items-center gap-2 text-sm text-foreground-light">
-                <Loader2 size={14} className="animate-spin" /> Running EXPLAIN ANALYZE...
+                <Loader2 size={14} className="animate-spin" /> {$t('Running EXPLAIN ANALYZE...')}
               </div>
             ) : activeSheetRow && explainResults[activeSheetRow.query]?.length > 0 ? (
               <>
                 <div className="flex items-center justify-between px-5 py-2 border-b shrink-0">
-                  <p className="text-xs text-foreground-lighter">EXPLAIN ANALYZE output</p>
+                  <p className="text-xs text-foreground-lighter">{$t('EXPLAIN ANALYZE output')}</p>
                   <Button
                     variant="default"
                     size="tiny"
@@ -142,7 +145,7 @@ export const QueryInsightsDetailSheet = ({
                       })
                     }}
                   >
-                    Optimize with AI
+                    {$t('Optimize with AI')}
                   </Button>
                 </div>
                 <div className="flex-1 min-h-0 overflow-y-auto">
@@ -151,7 +154,7 @@ export const QueryInsightsDetailSheet = ({
               </>
             ) : (
               <div className="px-6 py-4 text-sm text-foreground-lighter">
-                No explain results available.
+                {$t('No explain results available.')}
               </div>
             )}
           </TabsContent_Shadcn_>

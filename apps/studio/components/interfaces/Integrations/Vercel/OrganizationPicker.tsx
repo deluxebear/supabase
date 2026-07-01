@@ -20,6 +20,7 @@ import PartnerIcon from '@/components/ui/PartnerIcon'
 import { useIntegrationsQuery } from '@/data/integrations/integrations-query'
 import type { IntegrationName } from '@/data/integrations/integrations.types'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
+import { t as $t } from '@/lib/i18n'
 import type { Organization } from '@/types'
 
 export interface OrganizationPickerProps {
@@ -79,16 +80,16 @@ const OrganizationPicker = ({
                 {selectedOrg?.name ? selectedOrg?.name : 'Choose an organization'}
               </span>
               {selectedOrg && configurationId && installed[selectedOrg.slug] && (
-                <Badge>Integration Installed</Badge>
+                <Badge>{$t('Integration Installed')}</Badge>
               )}
             </div>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="p-0 w-full" side="bottom" align="center" sameWidthAsTrigger>
           <Command>
-            <CommandInput placeholder="Search organizations..." />
+            <CommandInput placeholder={$t('Search organizations...')} />
             <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandEmpty>{$t('No results found.')}</CommandEmpty>
               <CommandGroup>
                 {organizationsData?.map((org) => {
                   return (
@@ -110,7 +111,7 @@ const OrganizationPicker = ({
                       <PartnerIcon organization={org} />
                       <span className="truncate">{org.name}</span>{' '}
                       {configurationId && installed[org.slug] && (
-                        <Badge className="flex-none!">Integration Installed</Badge>
+                        <Badge className="flex-none!">{$t('Integration Installed')}</Badge>
                       )}
                     </CommandItem>
                   )

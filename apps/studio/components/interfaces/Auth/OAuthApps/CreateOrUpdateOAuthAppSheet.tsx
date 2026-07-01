@@ -48,6 +48,7 @@ import { useOAuthServerAppCreateMutation } from '@/data/oauth-server-apps/oauth-
 import { useOAuthServerAppRegenerateSecretMutation } from '@/data/oauth-server-apps/oauth-server-app-regenerate-secret-mutation'
 import { useOAuthServerAppUpdateMutation } from '@/data/oauth-server-apps/oauth-server-app-update-mutation'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface CreateOrUpdateOAuthAppSheetProps {
   visible: boolean
@@ -270,7 +271,7 @@ export const CreateOrUpdateOAuthAppSheet = ({
                 )}
               >
                 <X className="h-3 w-3" />
-                <span className="sr-only">Close</span>
+                <span className="sr-only">{$t('Close')}</span>
               </SheetClose>
               <SheetTitle className="truncate">
                 {isEditMode ? 'Update OAuth app' : 'Create a new OAuth app'}
@@ -286,9 +287,9 @@ export const CreateOrUpdateOAuthAppSheet = ({
                       control={form.control}
                       name="name"
                       render={({ field }) => (
-                        <FormItemLayout label="Name">
+                        <FormItemLayout label={$t('Name')}>
                           <FormControl>
-                            <Input {...field} placeholder="My OAuth App" />
+                            <Input {...field} placeholder={$t('My OAuth App')} />
                           </FormControl>
                         </FormItemLayout>
                       )}
@@ -298,7 +299,7 @@ export const CreateOrUpdateOAuthAppSheet = ({
                       name="logo_uri"
                       render={({ field }) => (
                         <FormItemLayout
-                          label="Logo"
+                          label={$t('Logo')}
                           description={`Paste an absolute image URL/path or select one from a public File Storage bucket.`}
                         >
                           <FormControl>
@@ -337,7 +338,7 @@ export const CreateOrUpdateOAuthAppSheet = ({
                                         onClick={() => setStoragePickerOpen(true)}
                                       >
                                         <span className="hidden whitespace-nowrap opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
-                                          Select from Storage
+                                          {$t('Select from Storage')}
                                         </span>
                                       </Button>
                                     ) : null}
@@ -370,7 +371,7 @@ export const CreateOrUpdateOAuthAppSheet = ({
                             control={form.control}
                             name="client_id"
                             render={() => (
-                              <FormItemLayout label="Client ID">
+                              <FormItemLayout label={$t('Client ID')}>
                                 <FormControl>
                                   <PasswordInput
                                     copy
@@ -378,7 +379,9 @@ export const CreateOrUpdateOAuthAppSheet = ({
                                     className="input-mono"
                                     value={appToEdit.client_id}
                                     onChange={() => {}}
-                                    onCopy={() => toast.success('Client ID copied to clipboard')}
+                                    onCopy={() =>
+                                      toast.success($t('Client ID copied to clipboard'))
+                                    }
                                   />
                                 </FormControl>
                               </FormItemLayout>
@@ -392,8 +395,10 @@ export const CreateOrUpdateOAuthAppSheet = ({
                                 name="client_secret"
                                 render={() => (
                                   <FormItemLayout
-                                    label="Client Secret"
-                                    description="Client secret is hidden for security. Use the regenerate button to create a new one."
+                                    label={$t('Client Secret')}
+                                    description={$t(
+                                      'Client secret is hidden for security. Use the regenerate button to create a new one.'
+                                    )}
                                   >
                                     <FormControl>
                                       <Input
@@ -414,7 +419,7 @@ export const CreateOrUpdateOAuthAppSheet = ({
                                 className="w-min"
                                 disabled={isRegenerating}
                               >
-                                Regenerate client secret
+                                {$t('Regenerate client secret')}
                               </Button>
                             </>
                           )}
@@ -425,7 +430,7 @@ export const CreateOrUpdateOAuthAppSheet = ({
                 )}
 
                 <div className="px-5 gap-2 flex flex-col">
-                  <FormLabel className="text-foreground">Redirect URIs</FormLabel>
+                  <FormLabel className="text-foreground">{$t('Redirect URIs')}</FormLabel>
                   <SingleValueFieldArray
                     control={form.control}
                     name="redirect_uris"
@@ -438,7 +443,7 @@ export const CreateOrUpdateOAuthAppSheet = ({
                     rowsClassName="space-y-2"
                   />
                   <FormDescription className="text-foreground-lighter">
-                    URLs where users will be redirected after authentication.
+                    {$t('URLs where users will be redirected after authentication.')}
                   </FormDescription>
                 </div>
 
@@ -448,18 +453,17 @@ export const CreateOrUpdateOAuthAppSheet = ({
                   name="client_type"
                   render={({ field }) => (
                     <FormItemLayout
-                      label="Public Client"
+                      label={$t('Public Client')}
                       layout="flex"
                       description={
                         <>
-                          If enabled, the Authorization Code with PKCE (Proof Key for Code Exchange)
-                          flow can be used, particularly beneficial for applications that cannot
-                          securely store Client Secrets, such as native and mobile apps. This cannot
-                          be changed after creation.{' '}
+                          {$t(
+                            'If enabled, the Authorization Code with PKCE (Proof Key for Code Exchange) flow can be used, particularly beneficial for applications that cannot securely store Client Secrets, such as native and mobile apps. This cannot be changed after creation.'
+                          )}{' '}
                           <InlineLink
                             href={`${DOCS_URL}/guides/auth/oauth-server/getting-started#register-an-oauth-client`}
                           >
-                            Learn more
+                            {$t('Learn more')}
                           </InlineLink>
                         </>
                       }
@@ -489,8 +493,10 @@ export const CreateOrUpdateOAuthAppSheet = ({
                     name="token_endpoint_auth_method"
                     render={({ field }) => (
                       <FormItemLayout
-                        label="Token Endpoint Auth Method"
-                        description="How the client authenticates with the token endpoint. The client secret is included in either the Authorization header or the request body."
+                        label={$t('Token Endpoint Auth Method')}
+                        description={$t(
+                          'How the client authenticates with the token endpoint. The client secret is included in either the Authorization header or the request body.'
+                        )}
                         className="px-5"
                       >
                         <FormControl>
@@ -500,10 +506,10 @@ export const CreateOrUpdateOAuthAppSheet = ({
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="client_secret_basic" className="text-sm">
-                                HTTP Basic Auth header (client_secret_basic)
+                                {$t('HTTP Basic Auth header (client_secret_basic)')}
                               </SelectItem>
                               <SelectItem value="client_secret_post" className="text-sm">
-                                Request body (client_secret_post)
+                                {$t('Request body (client_secret_post)')}
                               </SelectItem>
                             </SelectContent>
                           </Select>
@@ -517,7 +523,7 @@ export const CreateOrUpdateOAuthAppSheet = ({
           </SheetSection>
           <SheetFooter>
             <Button variant="default" disabled={isCreating || isUpdating} onClick={onClose}>
-              Cancel
+              {$t('Cancel')}
             </Button>
             <Button type="submit" form={FORM_ID} loading={isCreating || isUpdating}>
               {isEditMode ? 'Update app' : 'Create app'}
@@ -530,14 +536,17 @@ export const CreateOrUpdateOAuthAppSheet = ({
         variant="warning"
         visible={showRegenerateDialog}
         loading={isRegenerating}
-        title="Confirm regenerating client secret"
+        title={$t('Confirm regenerating client secret')}
         confirmLabel="Confirm"
         onCancel={() => setShowRegenerateDialog(false)}
         onConfirm={handleConfirmRegenerate}
       >
         <p className="text-sm text-foreground-light">
-          Are you sure you wish to regenerate the client secret for "{appToEdit?.client_name}"?
-          You'll need to update it in all applications that use it. This action cannot be undone.
+          {$t('Are you sure you wish to regenerate the client secret for "')}
+          {appToEdit?.client_name}
+          {$t(
+            '"? You\'ll need to update it in all applications that use it. This action cannot be undone.'
+          )}
         </p>
       </ConfirmationModal>
     </>

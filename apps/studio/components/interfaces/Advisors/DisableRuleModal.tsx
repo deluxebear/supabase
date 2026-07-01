@@ -17,6 +17,7 @@ import {
 import { LintInfo } from '../Linter/Linter.constants'
 import { lintInfoMap } from '../Linter/Linter.utils'
 import { useLintRuleCreateMutation } from '@/data/lint/create-lint-rule-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface DisableRuleModalProps {
   lint: LintInfo
@@ -63,25 +64,28 @@ export const DisableRuleModal = ({ lint }: DisableRuleModalProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="default">Disable rule</Button>
+        <Button variant="default">{$t('Disable rule')}</Button>
       </DialogTrigger>
       <DialogContent size="small">
         <DialogHeader>
-          <DialogTitle>Confirm to disable rule</DialogTitle>
+          <DialogTitle>{$t('Confirm to disable rule')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection>
           <p className="text-sm">
-            This will silence the "{lint.title}" by hiding this rule in the Advisor reports, as well
-            omitting this rule from email notifications for this project.
+            {$t('This will silence the "')}
+            {lint.title}
+            {$t(
+              '" by hiding this rule in the Advisor reports, as well omitting this rule from email notifications for this project.'
+            )}
           </p>
         </DialogSection>
         <DialogFooter>
           <Button disabled={isCreating} variant="default" onClick={() => setOpen(false)}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button loading={isCreating} variant="primary" onClick={onCreateRule}>
-            Disable
+            {$t('Disable')}
           </Button>
         </DialogFooter>
       </DialogContent>

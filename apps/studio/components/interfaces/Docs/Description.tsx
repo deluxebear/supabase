@@ -10,6 +10,7 @@ import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { timeout } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 // Removes some auto-generated Postgrest text
 // Ideally PostgREST wouldn't add this if there is already a comment
@@ -89,7 +90,7 @@ const Description = ({ content, metadata, onChange = noop }: DescrptionProps) =>
     <div className="space-y-2 px-0.5">
       <ExpandingTextArea
         className="w-full min-h-auto"
-        placeholder="Click to edit."
+        placeholder={$t('Click to edit.')}
         value={value}
         onChange={(e: any) => setValue(e.target.value)}
       />
@@ -106,13 +107,13 @@ const Description = ({ content, metadata, onChange = noop }: DescrptionProps) =>
             setIsUpdating(false)
           }}
         >
-          Cancel
+          {$t('Cancel')}
         </Button>
         <Button disabled={!hasChanged} onClick={updateDescription}>
           {isUpdating ? (
             <Loader className="mx-auto animate-spin" size={14} strokeWidth={2} />
           ) : (
-            <span>Save</span>
+            <span>{$t('Save')}</span>
           )}
         </Button>
       </div>

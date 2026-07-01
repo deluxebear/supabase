@@ -16,6 +16,7 @@ import {
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { SSOConfigFormSchema } from './SSOConfig'
+import { t as $t } from '@/lib/i18n'
 
 export const SSOMetadata = ({
   form,
@@ -59,9 +60,9 @@ export const SSOMetadata = ({
 
   return (
     <FormItemLayout
-      label="Metadata"
+      label={$t('Metadata')}
       layout="flex-row-reverse"
-      description="Provide a link to your metadata .xml file or upload one."
+      description={$t('Provide a link to your metadata .xml file or upload one.')}
       className="gap-1"
     >
       <div className=" w-96">
@@ -75,7 +76,7 @@ export const SSOMetadata = ({
               URL
             </TabsTrigger_Shadcn_>
             <TabsTrigger_Shadcn_ className=" " value="file">
-              Upload file
+              {$t('Upload file')}
             </TabsTrigger_Shadcn_>
           </TabsList_Shadcn_>
           <TabsContent_Shadcn_ value="url">
@@ -113,7 +114,7 @@ export const SSOMetadata = ({
                       icon={<Upload className="w-4 h-4" />}
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      Upload XML
+                      {$t('Upload XML')}
                     </Button>
                     {fileName && <span className="text-xs text-foreground-light">{fileName}</span>}
                   </div>

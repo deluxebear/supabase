@@ -11,6 +11,7 @@ import AccountLayout from '@/components/layouts/AccountLayout/AccountLayout'
 import { AppLayout } from '@/components/layouts/AppLayout/AppLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { NewScopedAccessToken } from '@/data/scoped-access-tokens/scoped-access-token-create-mutation'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const ScopedTokens: NextPageWithLayout = () => {
@@ -37,7 +38,7 @@ const ScopedTokens: NextPageWithLayout = () => {
             onChange={(e) => setSearchString(e.target.value)}
             name="search"
             id="search"
-            placeholder="Filter by name"
+            placeholder={$t('Filter by name')}
           />
           <div className="flex items-center gap-x-2">
             <Button asChild variant="default" icon={<ExternalLink />}>
@@ -46,7 +47,7 @@ const ScopedTokens: NextPageWithLayout = () => {
                 target="_blank"
                 rel="noreferrer"
               >
-                API Docs
+                {$t('API Docs')}
               </a>
             </Button>
             <Button asChild variant="default" icon={<ExternalLink />}>
@@ -55,7 +56,7 @@ const ScopedTokens: NextPageWithLayout = () => {
                 target="_blank"
                 rel="noreferrer"
               >
-                CLI docs
+                {$t('CLI docs')}
               </a>
             </Button>
             <NewScopedTokenButton onCreateToken={setNewToken} />
@@ -70,12 +71,12 @@ const ScopedTokens: NextPageWithLayout = () => {
         />
 
         <p className="text-sm text-foreground-muted text-center mt-6">
-          Looking for Private Apps?{' '}
+          {$t('Looking for Private Apps?')}{' '}
           <a
             href="/org"
             className="text-foreground-light underline hover:text-foreground transition-colors"
           >
-            Go to Organization Settings → Connections → Private Apps
+            {$t('Go to Organization Settings → Connections → Private Apps')}
           </a>
         </p>
       </div>
@@ -86,7 +87,7 @@ const ScopedTokens: NextPageWithLayout = () => {
 ScopedTokens.getLayout = (page) => (
   <AppLayout>
     <DefaultLayout headerTitle="Account">
-      <AccountLayout title="Access Tokens">{page}</AccountLayout>
+      <AccountLayout title={$t('Access Tokens')}>{page}</AccountLayout>
     </DefaultLayout>
   </AppLayout>
 )

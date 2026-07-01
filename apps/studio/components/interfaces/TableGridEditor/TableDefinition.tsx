@@ -11,6 +11,7 @@ import { useViewDefinitionQuery } from '@/data/database/view-definition-query'
 import { Entity, isTableLike, isViewLike } from '@/data/table-editor/table-editor-types'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { formatSql } from '@/lib/formatSql'
+import { t as $t } from '@/lib/i18n'
 
 export interface TableDefinitionProps {
   entity?: Entity
@@ -72,7 +73,7 @@ export const TableDefinition = ({ entity }: TableDefinitionProps) => {
               formattedDefinition ?? ''
             )}`}
           >
-            Open in SQL Editor
+            {$t('Open in SQL Editor')}
           </Link>
         </Button>
 

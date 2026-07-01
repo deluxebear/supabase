@@ -4,6 +4,7 @@ import { Admonition } from 'ui-patterns/admonition'
 
 import { OrganizationInviteByToken } from '@/data/organization-members/organization-invitation-token-query'
 import { useSignOut } from '@/lib/auth'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import type { ResponseError } from '@/types'
 
@@ -33,7 +34,9 @@ export const OrganizationInviteError = ({
     return (
       <Admonition
         type="warning"
-        description="Open the full invite link again, or ask the organization owner for a new invite."
+        description={$t(
+          'Open the full invite link again, or ask the organization owner for a new invite.'
+        )}
       />
     )
   }
@@ -55,9 +58,9 @@ export const OrganizationInviteError = ({
           description={
             profile?.primary_email ? (
               <>
-                You are signed in as{' '}
-                <span className="font-medium text-foreground">{profile.primary_email}</span>. Sign
-                in with the email address that received this invite.
+                {$t('You are signed in as')}{' '}
+                <span className="font-medium text-foreground">{profile.primary_email}</span>
+                {$t('. Sign in with the email address that received this invite.')}
               </>
             ) : (
               'Sign in with the email address that received this invite.'
@@ -65,7 +68,7 @@ export const OrganizationInviteError = ({
           }
         />
         <Button variant="default" block onClick={handleSignOut}>
-          Sign out
+          {$t('Sign out')}
         </Button>
       </div>
     )
@@ -75,7 +78,7 @@ export const OrganizationInviteError = ({
     return (
       <Admonition
         type="warning"
-        description="Ask the organization owner to send you a new invite."
+        description={$t('Ask the organization owner to send you a new invite.')}
       />
     )
   }
@@ -83,7 +86,9 @@ export const OrganizationInviteError = ({
   return (
     <Admonition
       type="warning"
-      description="Open the full invite link again, or ask the organization owner for a new invite."
+      description={$t(
+        'Open the full invite link again, or ask the organization owner for a new invite.'
+      )}
     />
   )
 }

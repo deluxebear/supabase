@@ -35,6 +35,7 @@ import {
 } from '@/data/tables/tables-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 
 export function useSqlEditorGotoCommands(options?: CommandOptions) {
@@ -136,7 +137,8 @@ function LoadingState() {
     <div className="p-6">
       <p className="text-center">
         <Loader2 className="inline-block mr-2 animate-spin" />
-        Loading...
+
+        {$t('Loading...')}
       </p>
     </div>
   )
@@ -147,7 +149,8 @@ function ErrorState() {
     <div className="p-6">
       <p className="text-center">
         <AlertTriangle className="inline-block mr-2" />
-        Couldn&apos;t load snippets
+
+        {$t('Couldn&apos;t load snippets')}
       </p>
     </div>
   )
@@ -164,7 +167,7 @@ function EmptyState({
 
   return (
     <div className="p-6">
-      <p className="mb-2 text-center">No snippets found.</p>
+      <p className="mb-2 text-center">{$t('No snippets found.')}</p>
       <CommandList className="py-2">
         <CommandGroup>
           <CommandItem
@@ -228,7 +231,7 @@ function SnippetSelector({
                 onSelect={() => router.push(`/project/${projectRef ?? '_'}/sql/new`)}
                 forceMount={true}
               >
-                Create new snippet
+                {$t('Create new snippet')}
               </CommandItem>
             </CommandGroup>
           </div>
@@ -348,7 +351,7 @@ function TableSelector() {
         <Breadcrumb />
         <CommandMenuInput
           autoFocus
-          placeholder="Search for schema or a table to query"
+          placeholder={$t('Search for schema or a table to query')}
           value={filterString}
           onValueChange={setFilterString}
         />
@@ -376,7 +379,7 @@ function TableSelector() {
             </CommandGroup>
             {tables.length === 0 && debouncedFilterString && (
               <p className="text-xs text-center text-foreground-lighter py-3">
-                No tables found based on your search
+                {$t('No tables found based on your search')}
               </p>
             )}
             {tables.length > 0 && (
@@ -386,11 +389,11 @@ function TableSelector() {
                   <div className="flex items-center gap-x-2">
                     {isFetchingNextTablesPage ? (
                       <span className="flex items-center gap-2">
-                        <Loader2 size={14} className="animate-spin" /> Loading...
+                        <Loader2 size={14} className="animate-spin" /> {$t('Loading...')}
                       </span>
                     ) : (
                       <span>
-                        Total: {tables.length} {tables.length === 1 ? 'table' : 'tables'}
+                        {$t('Total:')} {tables.length} {tables.length === 1 ? 'table' : 'tables'}
                         {hasNextTablesPage ? ' loaded' : ''}
                       </span>
                     )}

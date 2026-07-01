@@ -17,6 +17,7 @@ import { AlertError } from '@/components/ui/AlertError'
 import { type OrganizationBillingSubscriptionPreviewQueryResult } from '@/data/organizations/organization-billing-subscription-preview'
 import { DOCS_URL } from '@/lib/constants'
 import { formatCurrency } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 const CELL_CLASSNAME = 'py-2 px-0'
 
@@ -40,16 +41,16 @@ export const InvoiceEstimateTooltip = ({
         <HelpCircle size={12} />
       </HoverCardTrigger>
       <HoverCardContent side="right" align="start" className="w-[400px] -translate-y-6">
-        <h4 className="font-medium">Your new monthly invoice</h4>
+        <h4 className="font-medium">{$t('Your new monthly invoice')}</h4>
         <p className="prose text-xs mb-2 text-balance">
-          First project included. Additional projects cost <span translate="no">$10</span>+/month
-          regardless of activity.{' '}
+          {$t('First project included. Additional projects cost')} <span translate="no">$10</span>
+          {$t('+/month regardless of activity.')}{' '}
           <Link
             target="_blank"
             rel="noopener noreferrer"
             href={`${DOCS_URL}/guides/platform/manage-your-usage/compute`}
           >
-            Learn more
+            {$t('Learn more')}
           </Link>
           .
         </p>
@@ -60,7 +61,7 @@ export const InvoiceEstimateTooltip = ({
 
         {subscriptionPreviewIsLoading && (
           <div className="space-y-2">
-            <span className="text-sm">Estimating monthly costs...</span>
+            <span className="text-sm">{$t('Estimating monthly costs...')}</span>
             <GenericSkeletonLoader />
           </div>
         )}
@@ -123,7 +124,7 @@ export const InvoiceEstimateTooltip = ({
                         <>
                           <TableRow className="text-foreground-light">
                             <TableCell className={cn(CELL_CLASSNAME)}>
-                              <span>Compute</span>
+                              <span>{$t('Compute')}</span>
                             </TableCell>
                             <TableCell
                               translate="no"
@@ -160,7 +161,7 @@ export const InvoiceEstimateTooltip = ({
                           {computeCreditsItem && (
                             <TableRow className="text-foreground-lighter">
                               <TableCell translate="no" className={cn(CELL_CLASSNAME, 'pl-6')}>
-                                Compute Credits
+                                {$t('Compute Credits')}
                               </TableCell>
                               <TableCell
                                 translate="no"
@@ -181,7 +182,9 @@ export const InvoiceEstimateTooltip = ({
                               <span>{item.description ?? 'Unknown'}</span>
                               {item.breakdown && item.breakdown.length > 0 && (
                                 <InfoTooltip className="max-w-sm">
-                                  <p>Projects using {item.description}:</p>
+                                  <p>
+                                    {$t('Projects using')} {item.description}:
+                                  </p>
                                   <ul className="ml-6 list-disc">
                                     {item.breakdown.map((breakdown) => (
                                       <li
@@ -210,7 +213,7 @@ export const InvoiceEstimateTooltip = ({
 
                 <TableRow>
                   <TableCell className="font-medium py-2 px-0">
-                    Total per month (excluding other usage)
+                    {$t('Total per month (excluding other usage)')}
                   </TableCell>
                   <TableCell className="text-right font-medium py-2 px-0" translate="no">
                     {formatCurrency(

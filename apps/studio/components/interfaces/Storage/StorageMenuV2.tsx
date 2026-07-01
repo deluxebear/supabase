@@ -12,6 +12,7 @@ import {
 } from '@/data/config/project-storage-config-query'
 import { useDeploymentMode } from '@/hooks/misc/useDeploymentMode'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS, type ShortcutId } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -64,7 +65,7 @@ export const StorageMenuV2 = () => {
     <Menu type="pills" className="my-2 md:my-4 flex grow flex-col">
       <div className="space-y-4">
         <div className="md:mx-3">
-          <Menu.Group title={<span className="uppercase font-mono">Manage</span>} />
+          <Menu.Group title={<span className="uppercase font-mono">{$t('Manage')}</span>} />
 
           {bucketTypes.map(([type, config]) => {
             const isSelected = page === type
@@ -78,7 +79,7 @@ export const StorageMenuV2 = () => {
                 <Menu.Item rounded active={isSelected}>
                   <div className="flex items-center justify-between">
                     <p className="truncate">{config.displayName}</p>
-                    {isAlphaEnabled && <Badge variant="success">New</Badge>}
+                    {isAlphaEnabled && <Badge variant="success">{$t('New')}</Badge>}
                   </div>
                 </Menu.Item>
               </Link>
@@ -102,7 +103,9 @@ export const StorageMenuV2 = () => {
           <>
             <div className="h-px w-[calc(100%-1.5rem)] mx-auto md:w-full bg-border" />
             <div className="md:mx-3">
-              <Menu.Group title={<span className="uppercase font-mono">Configuration</span>} />
+              <Menu.Group
+                title={<span className="uppercase font-mono">{$t('Configuration')}</span>}
+              />
 
               <ShortcutTooltip
                 shortcutId={SHORTCUT_IDS.NAV_STORAGE_S3}

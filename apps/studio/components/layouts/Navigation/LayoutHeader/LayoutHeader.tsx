@@ -29,6 +29,7 @@ import { useOrgUsageQuery } from '@/data/usage/org-usage-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useIsShortcutEnabled } from '@/state/shortcuts/useIsShortcutEnabled'
@@ -169,7 +170,7 @@ export const LayoutHeader = ({
                           href={`/org/${selectedOrganization?.slug}/usage`}
                           onClick={() => track('header_exceeding_usage_badge_clicked')}
                         >
-                          <Badge variant="destructive">Exceeding usage limits</Badge>
+                          <Badge variant="destructive">{$t('Exceeding usage limits')}</Badge>
                         </Link>
                       </div>
                     )}
@@ -231,7 +232,7 @@ export const LayoutHeader = ({
                 <div className="flex items-center gap-1 md:gap-2">
                   <CommandMenuTriggerInput
                     showShortcut={commandMenuEnabled}
-                    placeholder="Search..."
+                    placeholder={$t('Search...')}
                     className={cn(
                       'hidden md:flex md:min-w-32 xl:min-w-32 rounded-full bg-transparent',
                       '[&_.command-shortcut]:border-none',
@@ -259,7 +260,7 @@ export const LayoutHeader = ({
                 <LocalVersionPopover />
                 <div className="flex items-center gap-1 md:gap-2">
                   <CommandMenuTriggerInput
-                    placeholder="Search..."
+                    placeholder={$t('Search...')}
                     className="hidden md:flex md:min-w-32 xl:min-w-32 rounded-full bg-transparent
                         [&_.command-shortcut]:border-none
                         [&_.command-shortcut]:pr-2

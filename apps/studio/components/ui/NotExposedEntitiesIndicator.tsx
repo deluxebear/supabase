@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { type ReactNode } from 'react'
 import { cn } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface NotExposedEntitiesIndicatorProps {
   count: number
   /** Singular noun, e.g. "table" or "function" */
@@ -42,7 +44,7 @@ export const NotExposedEntitiesIndicator = ({
         className ?? 'px-4 pt-2 text-sm'
       )}
     >
-      {count} {noun} not exposed
+      {count} {noun} {$t('not exposed')}
     </Link>
   )
 }

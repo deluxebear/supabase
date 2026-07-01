@@ -3,6 +3,7 @@ import { Admonition } from 'ui-patterns/admonition'
 
 import { OrganizationCard } from './OrganizationCard'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
+import { t as $t } from '@/lib/i18n'
 
 export const OrgNotFound = ({ slug }: { slug?: string }) => {
   const {
@@ -18,24 +19,28 @@ export const OrgNotFound = ({ slug }: { slug?: string }) => {
       {slug !== '_' && (
         <Admonition
           type="destructive"
-          title="Organization not found"
+          title={$t('Organization not found')}
           description={
             <>
               {slug ? (
                 <>
-                  The organization <code className="text-code-inline">{slug}</code>{' '}
+                  {$t('The organization')} <code className="text-code-inline">{slug}</code>{' '}
                 </>
               ) : (
-                <>This organization </>
+                <>{$t('This organization')} </>
               )}
-              does not exist or you do not have permission to access to it. Contact the the owner if
-              you believe this is a mistake.
+
+              {$t(
+                'does not exist or you do not have permission to access to it. Contact the the owner if you believe this is a mistake.'
+              )}
             </>
           }
         />
       )}
 
-      <h3 className="text-sm">Select a different organization to create your new project in</h3>
+      <h3 className="text-sm">
+        {$t('Select a different organization to create your new project in')}
+      </h3>
 
       <div className="grid gap-2 grid-cols-2">
         {isOrganizationsLoading && (
@@ -48,7 +53,7 @@ export const OrgNotFound = ({ slug }: { slug?: string }) => {
         {isOrganizationsError && (
           <Admonition
             type="destructive"
-            title="Failed to load organizations"
+            title={$t('Failed to load organizations')}
             description={organizationsError?.message}
           />
         )}

@@ -9,6 +9,8 @@ import {
   AlertDialogTitle,
 } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface ValidationWarningsDialogProps {
   open: boolean
   isLoading: boolean
@@ -42,7 +44,7 @@ export const ValidationWarningsDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isLoading}>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction
             variant={hasWarnings ? 'warning' : 'primary'}
             disabled={isLoading}

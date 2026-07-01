@@ -21,6 +21,7 @@ import {
 } from '../../AccessToken.constants'
 import { type TokenFormValues } from '../../AccessToken.schemas'
 import { DatePicker } from '@/components/ui/DatePicker'
+import { t as $t } from '@/lib/i18n'
 
 interface BasicInfoProps {
   control: Control<TokenFormValues>
@@ -70,9 +71,9 @@ export const BasicInfo = ({
         name="tokenName"
         control={control}
         render={({ field }) => (
-          <FormItemLayout name="tokenName" label="Name">
+          <FormItemLayout name="tokenName" label={$t('Name')}>
             <FormControl>
-              <Input id="tokenName" {...field} placeholder="Provide a name for your token" />
+              <Input id="tokenName" {...field} placeholder={$t('Provide a name for your token')} />
             </FormControl>
           </FormItemLayout>
         )}
@@ -83,7 +84,7 @@ export const BasicInfo = ({
         name="expiresAt"
         control={control}
         render={({ field }) => (
-          <FormItemLayout name="expiresAt" label="Expires in">
+          <FormItemLayout name="expiresAt" label={$t('Expires in')}>
             <div className="flex gap-2">
               <FormControl className="grow">
                 <Select
@@ -91,7 +92,7 @@ export const BasicInfo = ({
                   onValueChange={(value) => handleExpiryChange(value, field)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Expires at" />
+                    <SelectValue placeholder={$t('Expires at')} />
                   </SelectTrigger>
                   <SelectContent>
                     {Object.values(EXPIRES_AT_OPTIONS).map(
@@ -128,7 +129,7 @@ export const BasicInfo = ({
               <div className="w-full flex gap-x-2 items-center mt-3 mx-0.5">
                 <WarningIcon />
                 <span className="text-xs text-left text-foreground-lighter">
-                  Make sure to keep your non-expiring token safe and secure.
+                  {$t('Make sure to keep your non-expiring token safe and secure.')}
                 </span>
               </div>
             )}

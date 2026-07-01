@@ -11,6 +11,7 @@ import {
 
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -58,7 +59,7 @@ export const InsertButton = () => {
           size="tiny"
           icon={<ChevronDown strokeWidth={1.5} />}
         >
-          Insert
+          {$t('Insert')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent side="bottom" align="end">
@@ -80,7 +81,7 @@ export const InsertButton = () => {
                       ])}
                     />
                   </div>
-                  <p className="flex-1 min-w-0 pr-4">Insert row</p>
+                  <p className="flex-1 min-w-0 pr-4">{$t('Insert row')}</p>
                   <ShortcutBadge
                     shortcutId={SHORTCUT_IDS.TABLE_EDITOR_INSERT_ROW}
                     className="shrink-0"
@@ -101,7 +102,7 @@ export const InsertButton = () => {
                       ])}
                     />
                   </div>
-                  <p className="flex-1 min-w-0 pr-4">Insert column</p>
+                  <p className="flex-1 min-w-0 pr-4">{$t('Insert column')}</p>
                   <ShortcutBadge
                     shortcutId={SHORTCUT_IDS.TABLE_EDITOR_INSERT_COLUMN}
                     className="shrink-0"
@@ -130,7 +131,7 @@ export const InsertButton = () => {
                       size={12}
                     />
                   </div>
-                  <p className="flex-1 min-w-0 pr-4">Import data from CSV</p>
+                  <p className="flex-1 min-w-0 pr-4">{$t('Import data from CSV')}</p>
                   <ShortcutBadge
                     shortcutId={SHORTCUT_IDS.TABLE_EDITOR_IMPORT_CSV}
                     className="shrink-0"

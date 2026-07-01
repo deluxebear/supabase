@@ -11,6 +11,7 @@ import { convertKVStringArrayToJson, formatWrapperTables } from './Wrappers.util
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import type { FDW } from '@/data/fdw/fdws-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 interface WrapperRowProps {
   wrapper: FDW
@@ -29,7 +30,11 @@ export const WrapperRow = ({ wrapper }: WrapperRowProps) => {
   const integration = INTEGRATIONS.find((i) => i.id === id)
 
   if (!integration || integration.type !== 'wrapper') {
-    return <p className="text-foreground-lighter text-sm">A wrapper with this ID does not exist</p>
+    return (
+      <p className="text-foreground-lighter text-sm">
+        {$t('A wrapper with this ID does not exist')}
+      </p>
+    )
   }
 
   const serverOptions = convertKVStringArrayToJson(wrapper.server_options ?? [])

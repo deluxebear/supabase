@@ -7,6 +7,7 @@ import { cn, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 import { ActionCard } from '@/components/ui/ActionCard'
 import PartnerIcon from '@/components/ui/PartnerIcon'
 import { useOrgProjectsInfiniteQuery } from '@/data/projects/org-projects-infinite-query'
+import { t as $t } from '@/lib/i18n'
 import type { Organization } from '@/types'
 
 export const OrganizationCard = ({
@@ -48,7 +49,9 @@ export const OrganizationCard = ({
         shouldRenderDefaultDescription ? (
           <div className="flex items-center justify-between text-xs text-foreground-light font-sans">
             <div className="flex items-center gap-x-1">
-              <span>{organization.plan.name} Plan</span>
+              <span>
+                {organization.plan.name} {$t('Plan')}
+              </span>
               {numProjects > 0 && (
                 <>
                   <span className="text-foreground-lighter">·</span>
@@ -66,7 +69,7 @@ export const OrganizationCard = ({
                     <Lock size={12} />
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className={!isUserMFAEnabled ? 'w-80' : ''}>
-                    MFA enforced
+                    {$t('MFA enforced')}
                   </TooltipContent>
                 </Tooltip>
               )}

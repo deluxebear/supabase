@@ -14,6 +14,7 @@ import { ScaffoldColumn, ScaffoldContainer } from '@/components/layouts/Scaffold
 import { useIntegrationsQuery } from '@/data/integrations/integrations-query'
 import { useVercelIntegrationCreateMutation } from '@/data/integrations/vercel-integration-create-mutation'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
+import { t as $t } from '@/lib/i18n'
 import { useIntegrationInstallationSnapshot } from '@/state/integration-installation'
 import type { NextPageWithLayout, Organization } from '@/types'
 
@@ -131,19 +132,19 @@ const VercelIntegration: NextPageWithLayout = () => {
     const isIntegrationInstalled = orgSlug ? installed[orgSlug] : false
 
     if (!orgSlug) {
-      return toast.error('Please select an organization')
+      return toast.error($t('Please select an organization'))
     }
 
     if (!code) {
-      return toast.error('Vercel code missing')
+      return toast.error($t('Vercel code missing'))
     }
 
     if (!configurationId) {
-      return toast.error('Vercel Configuration ID missing')
+      return toast.error($t('Vercel Configuration ID missing'))
     }
 
     if (!source) {
-      return toast.error('Vercel Configuration source missing')
+      return toast.error($t('Vercel Configuration source missing'))
     }
 
     /**
@@ -189,7 +190,7 @@ const VercelIntegration: NextPageWithLayout = () => {
     <>
       <ScaffoldContainer className="flex flex-col gap-6 grow py-8">
         <ScaffoldColumn className="mx-auto w-full max-w-md">
-          <h2>Choose organization</h2>
+          <h2>{$t('Choose organization')}</h2>
           <>
             <Markdown content={`Choose the Supabase organization you wish to install in`} />
             <OrganizationPicker
@@ -205,19 +206,20 @@ const VercelIntegration: NextPageWithLayout = () => {
             {alreadyInstalled && (
               <Alert variant="warning">
                 <AlertTriangle className="h-4 w-4" strokeWidth={2} />
-                <AlertTitle>Vercel Integration is already installed.</AlertTitle>
+                <AlertTitle>{$t('Vercel Integration is already installed.')}</AlertTitle>
                 <AlertDescription>
-                  You will need to choose another organization to install the integration.
+                  {$t('You will need to choose another organization to install the integration.')}
                 </AlertDescription>
               </Alert>
             )}
             {noOrganizations && (
               <Alert variant="warning">
                 <AlertTriangle className="h-4 w-4" strokeWidth={2} />
-                <AlertTitle>No Supabase Organizations to install Integration.</AlertTitle>
+                <AlertTitle>{$t('No Supabase Organizations to install Integration.')}</AlertTitle>
                 <AlertDescription className="prose">
-                  You will need to create a Supabase Organization before you can install the Vercel
-                  Integration. You can create a new organization{' '}
+                  {$t(
+                    'You will need to create a Supabase Organization before you can install the Vercel Integration. You can create a new organization'
+                  )}{' '}
                   <Link href="https://supabase.com/dashboard/new" target="_blank">
                     here
                   </Link>
@@ -233,7 +235,7 @@ const VercelIntegration: NextPageWithLayout = () => {
                 loading={isLoadingVercelIntegrationCreateMutation}
                 onClick={onInstall}
               >
-                Install integration
+                {$t('Install integration')}
               </Button>
             </div>
           </>
@@ -242,9 +244,9 @@ const VercelIntegration: NextPageWithLayout = () => {
       <ScaffoldContainer className="flex flex-col gap-6 py-3">
         <Alert variant="default">
           <Info className="h-4 w-4" strokeWidth={2} />
-          <AlertTitle>You can uninstall this Integration at any time.</AlertTitle>
+          <AlertTitle>{$t('You can uninstall this Integration at any time.')}</AlertTitle>
           <AlertDescription>
-            Remove this integration at any time from Vercel or the Supabase dashboard.
+            {$t('Remove this integration at any time from Vercel or the Supabase dashboard.')}
           </AlertDescription>
         </Alert>
       </ScaffoldContainer>

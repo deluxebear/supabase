@@ -8,6 +8,7 @@ import { useDatabasePublicationUpdateMutation } from '@/data/database-publicatio
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useProtectedSchemas } from '@/hooks/useProtectedSchemas'
+import { t as $t } from '@/lib/i18n'
 
 interface PublicationsTableItemProps {
   table: PGTable
@@ -82,8 +83,8 @@ export const PublicationsTableItem = ({
         <div className="flex justify-end gap-2">
           {enabledForAllTables ? (
             <Badge>
-              <span>Enabled</span>
-              <span className="hidden lg:inline-block">&nbsp;for all tables</span>
+              <span>{$t('Enabled')}</span>
+              <span className="hidden lg:inline-block">{$t('&nbsp;for all tables')}</span>
             </Badge>
           ) : (
             <Tooltip>
@@ -97,7 +98,9 @@ export const PublicationsTableItem = ({
               </TooltipTrigger>
               {isProtected && (
                 <TooltipContent side="bottom" className="w-64 text-center">
-                  This table belongs to a protected schema, and its publication cannot be toggled
+                  {$t(
+                    'This table belongs to a protected schema, and its publication cannot be toggled'
+                  )}
                 </TooltipContent>
               )}
             </Tooltip>

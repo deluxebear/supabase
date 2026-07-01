@@ -54,6 +54,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useIsProtectedSchema } from '@/hooks/useProtectedSchemas'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import type { SafePostgresTable } from '@/lib/postgres-types'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
@@ -272,15 +273,15 @@ export const TableList = ({
                     variant={visibleTypes.length !== 5 ? 'default' : 'dashed'}
                     className="px-1"
                     icon={<Filter />}
-                    aria-label="Filter"
+                    aria-label={$t('Filter')}
                   />
                 </TooltipTrigger>
-                <TooltipContent>Filter</TooltipContent>
+                <TooltipContent>{$t('Filter')}</TooltipContent>
               </Tooltip>
             </PopoverTrigger>
             <PopoverContent className="p-0 w-56" side="bottom" align="center">
               <div className="px-3 pt-3 pb-2 flex flex-col gap-y-2">
-                <p className="text-xs">Show entity types</p>
+                <p className="text-xs">{$t('Show entity types')}</p>
                 <div className="flex flex-col">
                   {Object.entries(ENTITY_TYPE).map(([key, value]) => (
                     <div key={key} className="group flex items-center justify-between py-0.5">
@@ -307,7 +308,7 @@ export const TableList = ({
                         onClick={() => setVisibleTypes([value])}
                         className="transition opacity-0 group-hover:opacity-100 h-auto px-1 py-0.5"
                       >
-                        Select only
+                        {$t('Select only')}
                       </Button>
                     </div>
                   ))}
@@ -321,7 +322,7 @@ export const TableList = ({
             ref={searchInputRef}
             size="tiny"
             containerClassName="grow lg:grow-0 w-52"
-            placeholder="Search for a table"
+            placeholder={$t('Search for a table')}
             value={filterString}
             onChange={(e) => setFilterString(e.target.value)}
             onKeyDown={onSearchInputEscape(filterString, setFilterString)}
@@ -332,12 +333,12 @@ export const TableList = ({
             (canAddTables ? (
               <Shortcut
                 id={SHORTCUT_IDS.LIST_PAGE_NEW_ITEM}
-                label="Create new table"
+                label={$t('Create new table')}
                 onTrigger={() => onAddTable()}
                 side="bottom"
               >
                 <Button className="w-auto ml-auto" icon={<Plus />} onClick={() => onAddTable()}>
-                  New table
+                  {$t('New table')}
                 </Button>
               </Shortcut>
             ) : (
@@ -352,7 +353,7 @@ export const TableList = ({
                   },
                 }}
               >
-                New table
+                {$t('New table')}
               </ButtonTooltip>
             ))}
         </div>
@@ -372,12 +373,12 @@ export const TableList = ({
                 <TableRow>
                   <TableHead key="icon" className="w-0 px-0!" />
                   <TableHead key="name" className="max-w-[160px] sm:max-w-[280px]">
-                    Name
+                    {$t('Name')}
                   </TableHead>
-                  <TableHead key="columns">Columns</TableHead>
-                  <TableHead key="rows">Rows (Estimated)</TableHead>
-                  <TableHead key="size">Size (Estimated)</TableHead>
-                  <TableHead key="realtime">Realtime</TableHead>
+                  <TableHead key="columns">{$t('Columns')}</TableHead>
+                  <TableHead key="rows">{$t('Rows (Estimated)')}</TableHead>
+                  <TableHead key="size">{$t('Size (Estimated)')}</TableHead>
+                  <TableHead key="realtime">{$t('Realtime')}</TableHead>
                   <TableHead key="buttons"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -389,18 +390,19 @@ export const TableList = ({
                         {visibleTypes.length === 0 ? (
                           <>
                             <p className="text-sm text-foreground">
-                              Please select at least one entity type to filter with
+                              {$t('Please select at least one entity type to filter with')}
                             </p>
                             <p className="text-sm text-foreground-light">
-                              There are currently no results based on the filter that you have
-                              applied
+                              {$t(
+                                'There are currently no results based on the filter that you have applied'
+                              )}
                             </p>
                           </>
                         ) : (
                           <>
-                            <p className="text-sm text-foreground">No tables created yet</p>
+                            <p className="text-sm text-foreground">{$t('No tables created yet')}</p>
                             <p className="text-sm text-foreground-light">
-                              There are no{' '}
+                              {$t('There are no')}{' '}
                               {visibleTypes.length === 5
                                 ? 'tables'
                                 : visibleTypes.length === 1
@@ -411,7 +413,8 @@ export const TableList = ({
                                       .join(
                                         ', '
                                       )}, and ${formatTooltipText(visibleTypes[visibleTypes.length - 1])}s`}{' '}
-                              found in the schema "{selectedSchema}"
+                              {$t('found in the schema "')}
+                              {selectedSchema}"
                             </p>
                           </>
                         )}
@@ -421,9 +424,11 @@ export const TableList = ({
                   {entities.length === 0 && filterString.length > 0 && (
                     <TableRow key={selectedSchema}>
                       <TableCell colSpan={7}>
-                        <p className="text-sm text-foreground">No results found</p>
+                        <p className="text-sm text-foreground">{$t('No results found')}</p>
                         <p className="text-sm text-foreground-light">
-                          Your search for "{filterString}" did not return any results
+                          {$t('Your search for "')}
+                          {filterString}
+                          {$t('" did not return any results')}
                         </p>
                       </TableCell>
                     </TableRow>
@@ -495,12 +500,12 @@ export const TableList = ({
                           ) ? (
                             <div className="flex items-center gap-x-2">
                               <Check size={16} strokeWidth={2} className="text-brand-link" />
-                              <p className="text-foreground-light">Enabled</p>
+                              <p className="text-foreground-light">{$t('Enabled')}</p>
                             </div>
                           ) : (
                             <div className="flex items-center gap-x-2">
                               <X size={16} strokeWidth={2} className="text-foreground-muted" />
-                              <p className="text-foreground-lighter">Disabled</p>
+                              <p className="text-foreground-lighter">{$t('Disabled')}</p>
                             </div>
                           )}
                         </TableCell>
@@ -508,7 +513,7 @@ export const TableList = ({
                           <div className="flex justify-end gap-2">
                             <Button asChild variant="default">
                               <Link href={`/project/${ref}/database/tables/${x.id}`}>
-                                View columns
+                                {$t('View columns')}
                               </Link>
                             </Button>
 
@@ -541,7 +546,7 @@ export const TableList = ({
                                     }
                                   >
                                     <Eye size={12} />
-                                    <p>View in Table Editor</p>
+                                    <p>{$t('View in Table Editor')}</p>
                                   </DropdownMenuItem>
 
                                   {x.type === ENTITY_TYPE.TABLE && (
@@ -561,7 +566,7 @@ export const TableList = ({
                                         }}
                                       >
                                         <Edit size={12} />
-                                        <p>Edit table</p>
+                                        <p>{$t('Edit table')}</p>
                                       </DropdownMenuItemTooltip>
                                       <DropdownMenuItemTooltip
                                         key="duplicate-table"
@@ -578,7 +583,7 @@ export const TableList = ({
                                         }}
                                       >
                                         <Copy size={12} />
-                                        <span>Duplicate Table</span>
+                                        <span>{$t('Duplicate Table')}</span>
                                       </DropdownMenuItemTooltip>
                                       <DropdownMenuSeparator />
                                       <DropdownMenuItemTooltip
@@ -597,7 +602,7 @@ export const TableList = ({
                                         }}
                                       >
                                         <Trash size={12} />
-                                        <p>Delete table</p>
+                                        <p>{$t('Delete table')}</p>
                                       </DropdownMenuItemTooltip>
                                     </>
                                   )}

@@ -15,6 +15,7 @@ import {
 import * as z from 'zod'
 
 import { useSendResetMutation } from '@/data/telemetry/send-reset-mutation'
+import { t as $t } from '@/lib/i18n'
 
 const AnalyticsSchema = z.object({
   telemetryEnabled: z.boolean(),
@@ -34,7 +35,9 @@ export const AnalyticsSettings = () => {
   const handleToggle = (value: boolean) => {
     if (!hasLoaded) {
       toast.error(
-        "We couldn't load the privacy settings due to an ad blocker or network error. Please disable any ad blockers and try again. If the problem persists, please contact support."
+        $t(
+          "We couldn't load the privacy settings due to an ad blocker or network error. Please disable any ad blockers and try again. If the problem persists, please contact support."
+        )
       )
       form.setValue('telemetryEnabled', !value)
       return
@@ -54,9 +57,9 @@ export const AnalyticsSettings = () => {
     <PageSection>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Analytics and Marketing</PageSectionTitle>
+          <PageSectionTitle>{$t('Analytics and Marketing')}</PageSectionTitle>
           <PageSectionDescription>
-            Control whether telemetry and marketing data is sent from Supabase services.
+            {$t('Control whether telemetry and marketing data is sent from Supabase services.')}
           </PageSectionDescription>
         </PageSectionSummary>
       </PageSectionMeta>
@@ -70,8 +73,10 @@ export const AnalyticsSettings = () => {
                 render={({ field }) => (
                   <FormItemLayout
                     layout="flex-row-reverse"
-                    label="Send telemetry data from Supabase services"
-                    description="By opting in to sharing telemetry data, Supabase can analyze usage patterns to enhance user experience and use it for marketing and advertising purposes"
+                    label={$t('Send telemetry data from Supabase services')}
+                    description={$t(
+                      'By opting in to sharing telemetry data, Supabase can analyze usage patterns to enhance user experience and use it for marketing and advertising purposes'
+                    )}
                   >
                     <FormControl>
                       <Switch

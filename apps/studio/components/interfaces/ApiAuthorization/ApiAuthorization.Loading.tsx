@@ -3,6 +3,7 @@ import { Card, CardContent } from 'ui'
 import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { InterstitialLayout, SupabaseLogo } from '@/components/layouts/InterstitialLayout'
+import { t as $t } from '@/lib/i18n'
 
 export function ApiAuthorizationLoadingScreen(): ReactNode {
   return (
@@ -12,7 +13,7 @@ export function ApiAuthorizationLoadingScreen(): ReactNode {
       description={<ShimmeringLoader className="mx-auto h-4 w-56 max-w-full py-0" />}
     >
       <div className="px-6 pb-6">
-        <span className="sr-only">Loading...</span>
+        <span className="sr-only">{$t('Loading...')}</span>
         <div className="flex flex-col gap-5">
           <Card className="shadow-none">
             <CardContent className="flex items-center gap-3 border-none px-4 py-3">

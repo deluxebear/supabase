@@ -6,6 +6,7 @@ import { cn, LoadingLine } from 'ui'
 import { ScaffoldContainer } from '../Scaffold'
 import { withAuth } from '@/hooks/misc/withAuth'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export type IntegrationWindowLayoutProps = {
   title: string
@@ -35,7 +36,8 @@ const IntegrationWindowLayout = ({
             className="flex items-center gap-2 text-xs text-foreground-light hover:text"
           >
             <Book size={16} />
-            Docs
+
+            {$t('Docs')}
           </Link>
         )}
         <Link
@@ -45,7 +47,8 @@ const IntegrationWindowLayout = ({
           className="flex items-center gap-2 text-xs text-light hover:text"
         >
           <LifeBuoy size={16} />
-          Support
+
+          {$t('Support')}
         </Link>
       </ScaffoldContainer>
     </div>
@@ -70,7 +73,11 @@ const Header = ({ title, integrationIcon }: HeaderProps) => {
         <div className="flex items-center gap-6 w-full">
           <div className="flex gap-2 items-center">
             <div className="bg-white shadow-sm border rounded-sm p-1 w-8 h-8 flex justify-center items-center">
-              <img src={`${BASE_PATH}/img/supabase-logo.svg`} alt="Supabase" className="w-4" />
+              <img
+                src={`${BASE_PATH}/img/supabase-logo.svg`}
+                alt={$t('Supabase')}
+                className="w-4"
+              />
             </div>
             <X className="text-border-stronger" strokeWidth={2} size={16} />
             {integrationIcon}

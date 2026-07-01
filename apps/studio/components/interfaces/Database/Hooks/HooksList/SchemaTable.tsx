@@ -1,5 +1,6 @@
 import { HookList } from './HookList'
 import Table from '@/components/to-be-cleaned/Table'
+import { t as $t } from '@/lib/i18n'
 
 interface SchemaTableProps {
   schema: string
@@ -20,16 +21,16 @@ export const SchemaTable = ({ schema, filterString }: SchemaTableProps) => {
         head={
           <>
             <Table.th key="name" className="w-[20%]">
-              <p className="translate-x-[36px]">Name</p>
+              <p className="translate-x-[36px]">{$t('Name')}</p>
             </Table.th>
             <Table.th key="table" className="w-[15%] hidden lg:table-cell">
-              Table
+              {$t('Table')}
             </Table.th>
             <Table.th key="events" className="w-[24%] hidden xl:table-cell">
-              Events
+              {$t('Events')}
             </Table.th>
             <Table.th key="webhook" className="hidden xl:table-cell">
-              Webhook
+              {$t('Webhook')}
             </Table.th>
             <Table.th key="buttons" className="w-[5%]"></Table.th>
           </>

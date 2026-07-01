@@ -20,6 +20,7 @@ import { getAuthTemplateType } from './EmailTemplates.utils'
 import { AuthConfigResponse } from '@/data/auth/auth-config-query'
 import { useAuthTemplateResetMutation } from '@/data/auth/auth-template-reset-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 export const ResetTemplateDialog = ({
   template,
@@ -50,7 +51,7 @@ export const ResetTemplateDialog = ({
       { projectRef, template: templateType },
       {
         onSuccess: (config) => {
-          toast.success('Email template reset to default')
+          toast.success($t('Email template reset to default'))
           onResetSuccess(config)
         },
       }
@@ -61,12 +62,12 @@ export const ResetTemplateDialog = ({
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <Button variant="default" type="button" disabled={!canUpdateConfig}>
-          Reset template
+          {$t('Reset template')}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Reset template to default</AlertDialogTitle>
+          <AlertDialogTitle>{$t('Reset template to default')}</AlertDialogTitle>
           <AlertDialogDescription>
             {hasUnsavedChanges
               ? 'This will discard your unsaved changes and use the default subject line and email body content.'
@@ -74,7 +75,7 @@ export const ResetTemplateDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction
             variant="warning"
             loading={isResetting}
@@ -83,7 +84,7 @@ export const ResetTemplateDialog = ({
               resetTemplateToDefault()
             }}
           >
-            Reset
+            {$t('Reset')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

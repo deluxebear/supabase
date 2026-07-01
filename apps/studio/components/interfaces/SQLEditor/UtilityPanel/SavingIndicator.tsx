@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
 import ReadOnlyBadge from './ReadOnlyBadge'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
 import { isSaveFailed, isSaving } from '@/state/sql-editor/sql-editor-lifecycle'
@@ -53,7 +54,7 @@ const SavingIndicator = ({ id }: SavingIndicatorProps) => {
             icon={<RefreshCcw className="text-gray-1100" strokeWidth={2} />}
             onClick={retry}
           >
-            Retry
+            {$t('Retry')}
           </Button>
         )}
         {showSavedText ? (
@@ -61,14 +62,14 @@ const SavingIndicator = ({ id }: SavingIndicatorProps) => {
             <TooltipTrigger>
               <Check className="text-brand" size={14} strokeWidth={3} />
             </TooltipTrigger>
-            <TooltipContent side="bottom">All changes saved</TooltipContent>
+            <TooltipContent side="bottom">{$t('All changes saved')}</TooltipContent>
           </Tooltip>
         ) : saving ? (
           <Tooltip>
             <TooltipTrigger>
               <Loader2 className="animate-spin" size={14} strokeWidth={2} />
             </TooltipTrigger>
-            <TooltipContent>Saving changes...</TooltipContent>
+            <TooltipContent>{$t('Saving changes...')}</TooltipContent>
           </Tooltip>
         ) : saveFailed ? (
           snippetIsOwned ? (
@@ -76,7 +77,7 @@ const SavingIndicator = ({ id }: SavingIndicatorProps) => {
               <TooltipTrigger>
                 <AlertCircle className="text-red-900" size={14} strokeWidth={2} />
               </TooltipTrigger>
-              <TooltipContent>Failed to save changes</TooltipContent>
+              <TooltipContent>{$t('Failed to save changes')}</TooltipContent>
             </Tooltip>
           ) : (
             <ReadOnlyBadge id={id} />

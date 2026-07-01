@@ -9,6 +9,7 @@ import { getStatusConfig } from './ReplicationPipelineStatus.utils'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { InlineLinkClassName } from '@/components/ui/InlineLink'
 import { ReplicationPipelineTableStatus } from '@/data/replication/pipeline-replication-status-query'
+import { t as $t } from '@/lib/i18n'
 
 interface TableReplicationRowProps {
   table: ReplicationPipelineTableStatus
@@ -61,9 +62,9 @@ export const TableReplicationRow = ({
 
       <TableCell className="align-top">
         {isRestarting ? (
-          <Badge variant="default">Restarting</Badge>
+          <Badge variant="default">{$t('Restarting')}</Badge>
         ) : showDisabledState ? (
-          <Badge variant="default">Not Available</Badge>
+          <Badge variant="default">{$t('Not Available')}</Badge>
         ) : (
           statusConfig.badge
         )}
@@ -72,7 +73,9 @@ export const TableReplicationRow = ({
       <TableCell className="align-top">
         {isRestarting ? (
           <p className="text-sm text-foreground-lighter">
-            Replication is being restarted for this table. The pipeline will restart automatically.
+            {$t(
+              'Replication is being restarted for this table. The pipeline will restart automatically.'
+            )}
           </p>
         ) : showDisabledState ? (
           <p className="text-sm text-foreground-lighter">{disabledStateMessage}</p>
@@ -82,7 +85,7 @@ export const TableReplicationRow = ({
               {statusConfig.description}{' '}
               {isErrorState && 'reason' in table.state && (
                 <button className={InlineLinkClassName} onClick={() => onSelectShowError()}>
-                  View error.
+                  {$t('View error.')}
                 </button>
               )}
             </div>

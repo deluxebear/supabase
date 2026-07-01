@@ -17,6 +17,7 @@ import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useMfaListFactorsQuery } from '@/data/profile/mfa-list-factors-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const Security: NextPageWithLayout = () => {
@@ -33,9 +34,9 @@ const Security: NextPageWithLayout = () => {
       <PageHeader size="small">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Security</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Security')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Manage your account security settings and authentication methods.
+              {$t('Manage your account security settings and authentication methods.')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -46,15 +47,17 @@ const Security: NextPageWithLayout = () => {
             className="mt-8"
             type="danger"
             layout="horizontal"
-            title="Avoid being locked out"
-            description="Add a backup sign-in method now. Otherwise, losing access to your authenticator app will permanently lock you out of your account."
+            title={$t('Avoid being locked out')}
+            description={$t(
+              'Add a backup sign-in method now. Otherwise, losing access to your authenticator app will permanently lock you out of your account.'
+            )}
           />
         )}
         <Card className="mt-8">
           <CardHeader className="py-3 flex flex-row items-center justify-between">
             <div className="flex flex-row gap-4 items-center py-1 mb-0">
               <Lock size={18} strokeWidth={1.5} />
-              <span className="text-sm">Multi-factor authentication (MFA)</span>
+              <span className="text-sm">{$t('Multi-factor authentication (MFA)')}</span>
             </div>
 
             {data ? (
@@ -75,7 +78,7 @@ const Security: NextPageWithLayout = () => {
 Security.getLayout = (page) => (
   <AppLayout>
     <DefaultLayout headerTitle="Account">
-      <AccountLayout title="Security">{page}</AccountLayout>
+      <AccountLayout title={$t('Security')}>{page}</AccountLayout>
     </DefaultLayout>
   </AppLayout>
 )

@@ -28,6 +28,7 @@ import {
   useScopedAccessTokensQuery,
 } from '@/data/scoped-access-tokens/scoped-access-token-query'
 import { useScopedAccessTokenDeleteMutation } from '@/data/scoped-access-tokens/scoped-access-tokens-delete-mutation'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export interface ScopedTokenListProps {
@@ -54,7 +55,7 @@ export const ScopedTokenList = ({ searchString = '', onDeleteSuccess }: ScopedTo
     onSuccess: (_, vars) => {
       track('access_token_removed', { tokenType: 'scoped' })
       onDeleteSuccess(vars.id)
-      toast.success('Successfully deleted access token')
+      toast.success($t('Successfully deleted access token'))
       setIsOpen(false)
     },
     onError: (error) => {
@@ -103,9 +104,11 @@ export const ScopedTokenList = ({ searchString = '', onDeleteSuccess }: ScopedTo
       <TableContainer sort={sort} onSortChange={onSortChange}>
         <TableRow>
           <TableCell colSpan={4} className="py-12">
-            <p className="text-sm text-center text-foreground">No scoped access tokens found</p>
+            <p className="text-sm text-center text-foreground">
+              {$t('No scoped access tokens found')}
+            </p>
             <p className="text-sm text-center text-foreground-light">
-              You do not have any scoped tokens created yet
+              {$t('You do not have any scoped tokens created yet')}
             </p>
           </TableCell>
         </TableRow>
@@ -127,7 +130,7 @@ export const ScopedTokenList = ({ searchString = '', onDeleteSuccess }: ScopedTo
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="default"
-                      title="More options"
+                      title={$t('More options')}
                       className="w-7"
                       icon={<MoreVertical />}
                     />
@@ -141,7 +144,7 @@ export const ScopedTokenList = ({ searchString = '', onDeleteSuccess }: ScopedTo
                       }}
                     >
                       <Key size={12} />
-                      <p>View permissions</p>
+                      <p>{$t('View permissions')}</p>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="gap-x-2"
@@ -151,7 +154,7 @@ export const ScopedTokenList = ({ searchString = '', onDeleteSuccess }: ScopedTo
                       }}
                     >
                       <Trash size={12} />
-                      <p>Delete token</p>
+                      <p>{$t('Delete token')}</p>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -164,7 +167,7 @@ export const ScopedTokenList = ({ searchString = '', onDeleteSuccess }: ScopedTo
       <ConfirmationModal
         visible={isOpen}
         variant="destructive"
-        title="Confirm to delete"
+        title={$t('Confirm to delete')}
         confirmLabel="Delete"
         confirmLabelLoading="Deleting"
         onCancel={() => setIsOpen(false)}
@@ -173,7 +176,9 @@ export const ScopedTokenList = ({ searchString = '', onDeleteSuccess }: ScopedTo
         }}
       >
         <p className="py-4 text-sm text-foreground-light">
-          This action cannot be undone. Are you sure you want to delete "{token?.name}" token?
+          {$t('This action cannot be undone. Are you sure you want to delete "')}
+          {token?.name}
+          {$t('" token?')}
         </p>
       </ConfirmationModal>
 

@@ -14,6 +14,7 @@ import { SlotWalStatus } from './ReplicationPipelineStatus.types'
 import { getWalStatusMeta, WAL_STATUS_LEGEND } from './ReplicationPipelineStatus.utils'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export type SlotStatusContext = 'pipeline' | 'table'
 
@@ -64,7 +65,7 @@ export const SlotStatusLegend = () => {
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label="What do the slot statuses mean?"
+          aria-label={$t('What do the slot statuses mean?')}
           className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-surface-200 text-foreground-lighter transition-colors hover:bg-surface-300 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-foreground-lighter"
         >
           <Info size={12} />
@@ -72,9 +73,9 @@ export const SlotStatusLegend = () => {
       </PopoverTrigger>
       <PopoverContent side="bottom" align="center" className="w-[26rem] p-0">
         <div className="px-4 py-3 border-b border-overlay">
-          <p className="text-sm text-foreground">Slot statuses</p>
+          <p className="text-sm text-foreground">{$t('Slot statuses')}</p>
           <p className="text-xs text-foreground-light">
-            How safely your database is keeping the changes the pipeline still needs.
+            {$t('How safely your database is keeping the changes the pipeline still needs.')}
           </p>
         </div>
         <ul className="flex flex-col divide-y divide-overlay">
@@ -94,7 +95,7 @@ export const SlotStatusLegend = () => {
             href={`${DOCS_URL}/guides/database/replication/pipelines-monitoring`}
             className="text-xs text-foreground-light"
           >
-            Learn more about monitoring replication
+            {$t('Learn more about monitoring replication')}
           </InlineLink>
         </div>
       </PopoverContent>

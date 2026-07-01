@@ -35,6 +35,7 @@ import { useOrganizationQuery } from '@/data/organizations/organization-query'
 import { useOrgBalanceQuery } from '@/data/subscriptions/org-balance-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useLatest } from '@/hooks/misc/useLatest'
+import { t as $t } from '@/lib/i18n'
 
 const FORM_ID = 'credit-code-redemption'
 
@@ -168,7 +169,7 @@ export const CreditCodeRedemption = ({
               },
             }}
           >
-            Redeem Code
+            {$t('Redeem Code')}
           </ButtonTooltip>
         </DialogTrigger>
       )}
@@ -201,14 +202,14 @@ export const CreditCodeRedemption = ({
             </div>
 
             <div className="text-center">
-              <p className=" text-lg mt-2">Credits redeemed!</p>
+              <p className=" text-lg mt-2">{$t('Credits redeemed!')}</p>
             </div>
             <Separator className="my-4" />
             <div className="flex w-full justify-center items-center">
               <div className="flex items-center space-x-1">
                 <p className="opacity-50 text-sm">$</p>
                 <p className="text-2xl">{codeRedemptionResult.amount_cents / 100}</p>
-                <p className="opacity-50 text-sm"> credits applied</p>
+                <p className="opacity-50 text-sm"> {$t('credits applied')}</p>
               </div>
             </div>
 
@@ -216,7 +217,7 @@ export const CreditCodeRedemption = ({
               <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground bg-muted/50 py-3 px-4 rounded-lg">
                 <Calendar className="h-4 w-4" />
                 <span>
-                  Expires on{' '}
+                  {$t('Expires on')}{' '}
                   <TimestampInfo
                     className="text-sm"
                     utcTimestamp={codeRedemptionResult.credits_expire_at}
@@ -232,13 +233,13 @@ export const CreditCodeRedemption = ({
                 <div className="flex justify-center items-center gap-x-2">
                   {org?.plan.id === 'free' && (
                     <UpgradePlanButton plan="Pro" source="code-redeem" slug={org.slug}>
-                      Upgrade organization
+                      {$t('Upgrade organization')}
                     </UpgradePlanButton>
                   )}
 
                   {!router.pathname.includes('/org/') && (
                     <Button asChild variant="default">
-                      <Link href={`/org/${org?.slug}`}>Go to organization</Link>
+                      <Link href={`/org/${org?.slug}`}>{$t('Go to organization')}</Link>
                     </Button>
                   )}
                 </div>
@@ -248,9 +249,9 @@ export const CreditCodeRedemption = ({
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>Redeem Code</DialogTitle>
+              <DialogTitle>{$t('Redeem Code')}</DialogTitle>
               <DialogDescription className="space-y-2">
-                Redeem your credit code to add credits to your organization
+                {$t('Redeem your credit code to add credits to your organization')}
               </DialogDescription>
             </DialogHeader>
 
@@ -274,14 +275,14 @@ export const CreditCodeRedemption = ({
                       render={({ field }) => (
                         <FormItemLayout
                           hideMessage
-                          label="Code"
+                          label={$t('Code')}
                           className="gap-1"
                           layout="horizontal"
                         >
                           <Input
                             {...field}
                             className="uppercase w-56 ml-auto"
-                            placeholder="ABCD-1234-EFGH-5678"
+                            placeholder={$t('ABCD-1234-EFGH-5678')}
                           />
                         </FormItemLayout>
                       )}
@@ -289,7 +290,7 @@ export const CreditCodeRedemption = ({
 
                     {combinedCreditBalanceCents !== undefined && combinedCreditBalanceCents > 0 && (
                       <div className="flex w-full justify-between items-center">
-                        <span className="text-sm">Current Balance</span>
+                        <span className="text-sm">{$t('Current Balance')}</span>
                         <div className="flex items-center gap-x-1">
                           <p className="opacity-50 text-sm">$</p>
                           <p className="text-2xl">{combinedCreditBalanceCents / 100}</p>
@@ -298,22 +299,24 @@ export const CreditCodeRedemption = ({
                       </div>
                     )}
 
-                    <Admonition type="note" title="Potential future charges">
+                    <Admonition type="note" title={$t('Potential future charges')}>
                       <p>
-                        Credits are applied to <strong>{org?.name}</strong> only and cannot be
-                        shared or transferred to other organizations. Credits are automatically used
-                        toward invoices.
+                        {$t('Credits are applied to')} <strong>{org?.name}</strong>{' '}
+                        {$t(
+                          'only and cannot be shared or transferred to other organizations. Credits are automatically used toward invoices.'
+                        )}
                       </p>
                       <p className="mt-2">
-                        When credits run out on a paid plan, your default payment method will be
-                        charged—your plan won't be downgraded automatically.
+                        {$t(
+                          "When credits run out on a paid plan, your default payment method will be charged—your plan won't be downgraded automatically."
+                        )}
                       </p>
                     </Admonition>
 
                     {errorRedeemingCode && (
                       <Admonition
                         type="warning"
-                        title="Unable to redeem code"
+                        title={$t('Unable to redeem code')}
                         description={errorRedeemingCode?.message}
                       />
                     )}
@@ -336,7 +339,7 @@ export const CreditCodeRedemption = ({
                         },
                       }}
                     >
-                      Redeem
+                      {$t('Redeem')}
                     </ButtonTooltip>
                   </DialogFooter>
                 </form>

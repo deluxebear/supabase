@@ -12,6 +12,7 @@ import {
   useTableIndexAdvisorQuery,
 } from '@/data/database/table-index-advisor-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface TableIndexAdvisorContextValue {
   isLoading: boolean
@@ -130,7 +131,7 @@ export function TableIndexAdvisorProvider({
       <Sheet open={isSheetOpen} onOpenChange={(open) => !open && closeSheet()}>
         <SheetContent className="flex flex-col gap-0 p-0 lg:w-[calc(100vw-802px)]! max-w-[700px]">
           <SheetHeader className="border-b px-5 py-3">
-            <SheetTitle>Index Recommendation</SheetTitle>
+            <SheetTitle>{$t('Index Recommendation')}</SheetTitle>
           </SheetHeader>
           {selectedSuggestion && (
             <QueryIndexes

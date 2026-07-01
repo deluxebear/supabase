@@ -25,6 +25,7 @@ import { useEnabledLogDrainTypes } from './useEnabledLogDrainTypes'
 import { VoteLink } from './VoteLink'
 import { AlertError } from '@/components/ui/AlertError'
 import { LogDrainData } from '@/data/log-drains/log-drains-query'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 export function LogDrainsList({
@@ -101,11 +102,11 @@ export function LogDrainsList({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="max-w-[200px]">Name</TableHead>
-              <TableHead className="w-96">Description</TableHead>
-              <TableHead className="w-48">Destination</TableHead>
+              <TableHead className="max-w-[200px]">{$t('Name')}</TableHead>
+              <TableHead className="w-96">{$t('Description')}</TableHead>
+              <TableHead className="w-48">{$t('Destination')}</TableHead>
               <TableHead className="text-right">
-                <div className="sr-only">Actions</div>
+                <div className="sr-only">{$t('Actions')}</div>
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -155,7 +156,8 @@ export function LogDrainsList({
                         {onTestDrain && (
                           <DropdownMenuItem onClick={() => onTestDrain(drain)}>
                             <PlugZap className="h-4 w-4 mr-2" />
-                            Test connection
+
+                            {$t('Test connection')}
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuItem
@@ -165,7 +167,8 @@ export function LogDrainsList({
                           }}
                         >
                           <TrashIcon className="h-4 w-4 mr-2" />
-                          Delete
+
+                          {$t('Delete')}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -177,7 +180,7 @@ export function LogDrainsList({
           <ConfirmationModal
             confirmLabel="Delete"
             variant="destructive"
-            title="Delete Log Drain"
+            title={$t('Delete Log Drain')}
             visible={isDeleteModalOpen}
             loading={isDeleting}
             onConfirm={() => {
@@ -189,10 +192,10 @@ export function LogDrainsList({
           >
             <div className="text-foreground-light text-sm">
               <p>
-                Are you sure you want to delete{' '}
+                {$t('Are you sure you want to delete')}{' '}
                 <span className="text-foreground">{selectedLogDrain?.name}</span>?
               </p>
-              <p>This action cannot be undone.</p>
+              <p>{$t('This action cannot be undone.')}</p>
             </div>
           </ConfirmationModal>
         </Table>

@@ -52,6 +52,7 @@ import {
 } from '@/data/tables/table-update-mutation'
 import { getTables } from '@/data/tables/tables-query'
 import { isObject, isObjectContainingKeys, timeout, tryParseJson } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import type { SafePostgresColumn } from '@/lib/postgres-types'
 import type { useTrack } from '@/lib/telemetry/track'
 import type { DeepReadonly } from '@/lib/type-helpers'
@@ -218,7 +219,7 @@ export const createColumn = async ({
 
     // Firing createColumn in createTable will bypass this block
     if (isPrimaryKey) {
-      toast.loading('Assigning primary key to column...', { id: toastId })
+      toast.loading($t('Assigning primary key to column...'), { id: toastId })
       // Same logic in createTable: Remove any primary key constraints first (we'll add it back later)
       const existingPrimaryKeys = selectedTable.primary_keys.map((x) => x.name)
 
@@ -654,7 +655,7 @@ export const createTable = async ({
 
           if (error !== undefined) {
             span.setAttribute('import.error', 1)
-            toast.error('Do check your spreadsheet if there are any discrepancies.')
+            toast.error($t('Do check your spreadsheet if there are any discrepancies.'))
             const message = isObjectContainingKeys(error, ['message'])
               ? String(error.message)
               : 'An unknown error occurred during data import.'

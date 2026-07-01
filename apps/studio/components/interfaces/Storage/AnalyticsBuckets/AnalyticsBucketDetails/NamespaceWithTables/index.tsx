@@ -39,6 +39,7 @@ import { useIcebergNamespaceTableDeleteMutation } from '@/data/storage/iceberg-n
 import { useIcebergNamespaceTablesQuery } from '@/data/storage/iceberg-namespace-tables-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 type NamespaceWithTablesProps = {
   namespace: string
@@ -228,12 +229,12 @@ export const NamespaceWithTables = ({
           <div className="flex flex-row items-center gap-x-3 text-foreground">
             <img
               src={`${BASE_PATH}/img/icons/iceberg-icon.svg`}
-              alt="Apache Iceberg icon"
+              alt={$t('Apache Iceberg icon')}
               className="w-5 h-5"
             />
             <div className="flex flex-col gap-y-0.5">
               <p className="text-xs font-mono uppercase text-foreground-lighter">
-                Iceberg namespace
+                {$t('Iceberg namespace')}
               </p>
               <p className="text-sm">{namespace}</p>
             </div>
@@ -259,7 +260,10 @@ export const NamespaceWithTables = ({
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
-                  <p>Postgres schema{tables.length === 0 && ' that will be created'}</p>
+                  <p>
+                    {$t('Postgres schema')}
+                    {tables.length === 0 && ' that will be created'}
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </>
@@ -273,13 +277,13 @@ export const NamespaceWithTables = ({
                 <div className="flex items-center gap-x-2 text-foreground-lighter">
                   <Loader2 size={14} className="animate-spin" />
                   <p className="text-sm">
-                    Connecting {publicationTablesNotSyncedToNamespaceTables.length} table
+                    {$t('Connecting')} {publicationTablesNotSyncedToNamespaceTables.length} table
                     {publicationTablesNotSyncedToNamespaceTables.length > 1 ? 's' : ''}
                   </p>
                 </div>
               </TooltipTrigger>
               <TooltipContent side="bottom" align="end">
-                <p className="mb-1">Waiting for namespace table to be created for:</p>
+                <p className="mb-1">{$t('Waiting for namespace table to be created for:')}</p>
                 <ul className="list-disc pl-6">
                   {publicationTablesNotSyncedToNamespaceTables.map((x) => {
                     const value = `${x.schema}.${x.name}`
@@ -309,7 +313,7 @@ export const NamespaceWithTables = ({
                       onClick={() => setShowConfirmDeleteNamespace(true)}
                     >
                       <Trash size={12} className="text-foreground-lighter" />
-                      <p>Delete namespace</p>
+                      <p>{$t('Delete namespace')}</p>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -335,11 +339,11 @@ export const NamespaceWithTables = ({
         <TableHeader>
           <TableRow>
             <TableHead className={allTables.length === 0 ? 'text-foreground-muted' : undefined}>
-              <span className="pl-8">Table name</span>
+              <span className="pl-8">{$t('Table name')}</span>
             </TableHead>
             {!!publication && (
               <TableHead className={allTables.length === 0 ? 'hidden' : undefined}>
-                Replication Status
+                {$t('Replication Status')}
               </TableHead>
             )}
             <TableHead />
@@ -349,7 +353,7 @@ export const NamespaceWithTables = ({
           {allTables.length === 0 ? (
             <TableRow className="[&>td]:hover:bg-inherit">
               <TableCell colSpan={3}>
-                <p className="text-sm text-foreground">No tables yet</p>
+                <p className="text-sm text-foreground">{$t('No tables yet')}</p>
                 <p className="text-sm text-foreground-lighter">
                   {sourceType === 'direct'
                     ? ' Publish an analytics table from your Iceberg client'
@@ -382,14 +386,15 @@ export const NamespaceWithTables = ({
         variant="warning"
         loading={isDeletingNamespace}
         title={`Confirm to delete "${namespace}"`}
-        description="This action cannot be undone."
+        description={$t('This action cannot be undone.')}
         visible={showConfirmDeleteNamespace}
         onCancel={() => setShowConfirmDeleteNamespace(false)}
         onConfirm={() => onConfirmDeleteNamespace()}
       >
         <p className="text-sm">
-          This will remove all Iceberg tables under the namespace, as well as any associated foreign
-          tables. Are you sure?
+          {$t(
+            'This will remove all Iceberg tables under the namespace, as well as any associated foreign tables. Are you sure?'
+          )}
         </p>
       </ConfirmationModal>
     </Card>

@@ -37,6 +37,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { getCloudProviderArchitecture } from '@/lib/cloudprovider-utils'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const INITIALLY_VISIBLE_COUNT = 6
 
@@ -140,7 +141,7 @@ export function ComputeSizeField({ form, disabled }: ComputeSizeFieldProps) {
         >
           <FormItemLayout
             layout="horizontal"
-            label="Compute size"
+            label={$t('Compute size')}
             id={field.name}
             className="gap-5"
             labelOptional={
@@ -157,7 +158,7 @@ export function ComputeSizeField({ form, disabled }: ComputeSizeFieldProps) {
                   free={showUpgradeBadge && computeSize === 'ci_micro' ? true : false}
                 />
                 <p className="text-foreground-lighter">
-                  Hardware resources allocated to your Postgres database
+                  {$t('Hardware resources allocated to your Postgres database')}
                 </p>
 
                 <div className="mt-3">
@@ -172,8 +173,10 @@ export function ComputeSizeField({ form, disabled }: ComputeSizeFieldProps) {
                     showIcon={false}
                     type="default"
                     className="mt-3 border-violet-900 bg-violet-200 [&_h5]:text-violet-1100"
-                    title="Upgrade to Micro Compute"
-                    description="This Project is already paying for Micro Compute. You can upgrade to Micro Compute at any time when convenient."
+                    title={$t('Upgrade to Micro Compute')}
+                    description={$t(
+                      'This Project is already paying for Micro Compute. You can upgrade to Micro Compute at any time when convenient.'
+                    )}
                   />
                 )}
               </>
@@ -245,7 +248,7 @@ export function ComputeSizeField({ form, disabled }: ComputeSizeFieldProps) {
                               <div>
                                 {showUpgradeBadge && compute.identifier === 'ci_micro' && (
                                   <div className="absolute -top-4 -right-3 text-violet-1100 flex items-center gap-1 bg-surface-75 py-0.5 px-2 rounded-full border border-violet-900">
-                                    <span>No additional charge</span>
+                                    <span>{$t('No additional charge')}</span>
                                   </div>
                                 )}
                                 <div className="w-full flex flex-col gap-3 justify-between">
@@ -291,7 +294,7 @@ export function ComputeSizeField({ form, disabled }: ComputeSizeFieldProps) {
                                         />
                                         <span>
                                           {compute.identifier === 'ci_nano' && 'Up to '}
-                                          {compute.meta?.memory_gb ?? 0} GB memory
+                                          {compute.meta?.memory_gb ?? 0} {$t('GB memory')}
                                         </span>
                                       </div>
                                       <div className="text-foreground-light flex gap-2 items-center">
@@ -309,12 +312,13 @@ export function ComputeSizeField({ form, disabled }: ComputeSizeFieldProps) {
                             </TooltipTrigger>
                             {lockedMicroDueToPITR && (
                               <TooltipContent side="bottom" className="w-64 text-center">
-                                Project has PITR enabled which requires a minimum of Small compute.
-                                Please{' '}
+                                {$t(
+                                  'Project has PITR enabled which requires a minimum of Small compute. Please'
+                                )}{' '}
                                 <InlineLink href="/project/_/settings/addons?panel=pitr">
-                                  disable PITR
+                                  {$t('disable PITR')}
                                 </InlineLink>{' '}
-                                first before selecting Micro
+                                {$t('first before selecting Micro')}
                               </TooltipContent>
                             )}
                           </Tooltip>
@@ -346,7 +350,9 @@ export function ComputeSizeField({ form, disabled }: ComputeSizeFieldProps) {
                               <ComputeBadge infraComputeSize=">16XL" />
 
                               <div className="flex items-center space-x-1 opacity-50 ">
-                                <span className="text-foreground-light text-sm">Contact Us</span>
+                                <span className="text-foreground-light text-sm">
+                                  {$t('Contact Us')}
+                                </span>
                               </div>
                             </div>
                             <div className="w-full">
@@ -357,7 +363,7 @@ export function ComputeSizeField({ form, disabled }: ComputeSizeFieldProps) {
                                     size={14}
                                     className="text-foreground-lighter"
                                   />
-                                  <span>Custom memory</span>
+                                  <span>{$t('Custom memory')}</span>
                                 </div>
                                 <div className="text-foreground-light flex gap-2 items-center">
                                   <CpuIcon
@@ -365,7 +371,7 @@ export function ComputeSizeField({ form, disabled }: ComputeSizeFieldProps) {
                                     size={14}
                                     className="text-foreground-lighter"
                                   />
-                                  <span>Custom CPU</span>
+                                  <span>{$t('Custom CPU')}</span>
                                 </div>
                               </div>
                             </div>

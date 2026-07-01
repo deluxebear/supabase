@@ -17,6 +17,7 @@ import { CollapsibleAlert } from 'ui-patterns/collapsible-alert'
 
 import { SupportLink } from '../Support/SupportLink'
 import { InlineLink, InlineLinkClassName } from '@/components/ui/InlineLink'
+import { t as $t } from '@/lib/i18n'
 
 interface SessionTimeoutModalProps {
   visible: boolean
@@ -53,21 +54,22 @@ export const SessionTimeoutModal = ({
     >
       <AlertDialogContent size="small">
         <AlertDialogHeader>
-          <AlertDialogTitle>Session expired</AlertDialogTitle>
+          <AlertDialogTitle>{$t('Session expired')}</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-4">
-              <p>Please sign in again to continue.</p>
+              <p>{$t('Please sign in again to continue.')}</p>
               <CollapsibleAlert trigger="Having trouble?">
                 <div className="space-y-3 text-foreground-light">
                   <p>
-                    Try a different browser or disable extensions that block network requests. If
-                    the problem persists:
+                    {$t(
+                      'Try a different browser or disable extensions that block network requests. If the problem persists:'
+                    )}
                   </p>
                   <Button variant="default" size="tiny" onClick={handleClearStorage}>
-                    Clear site data and reload
+                    {$t('Clear site data and reload')}
                   </Button>
                   <p>
-                    Still stuck?{' '}
+                    {$t('Still stuck?')}{' '}
                     <SupportLink
                       className={InlineLinkClassName}
                       queryParams={{
@@ -80,13 +82,13 @@ export const SessionTimeoutModal = ({
                       }}
                       onClick={onClose}
                     >
-                      Contact support
+                      {$t('Contact support')}
                     </SupportLink>{' '}
-                    and include a{' '}
+                    {$t('and include a')}{' '}
                     <InlineLink href="https://github.com/orgs/supabase/discussions/36540">
-                      HAR file
+                      {$t('HAR file')}
                     </InlineLink>{' '}
-                    from your session to help us investigate.
+                    {$t('from your session to help us investigate.')}
                   </p>
                 </div>
               </CollapsibleAlert>
@@ -94,8 +96,8 @@ export const SessionTimeoutModal = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Close</AlertDialogCancel>
-          <AlertDialogAction onClick={redirectToSignIn}>Sign in again</AlertDialogAction>
+          <AlertDialogCancel>{$t('Close')}</AlertDialogCancel>
+          <AlertDialogAction onClick={redirectToSignIn}>{$t('Sign in again')}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

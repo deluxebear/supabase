@@ -29,6 +29,7 @@ import { useGitHubAuthorizationDeleteMutation } from '@/data/integrations/github
 import { useGitHubAuthorizationQuery } from '@/data/integrations/github-authorization-query'
 import { BASE_PATH } from '@/lib/constants'
 import { openInstallGitHubIntegrationWindow } from '@/lib/github'
+import { t as $t } from '@/lib/i18n'
 
 export const AccountConnections = () => {
   const {
@@ -46,7 +47,7 @@ export const AccountConnections = () => {
   const { mutate: removeAuthorization, isPending: isRemoving } =
     useGitHubAuthorizationDeleteMutation({
       onSuccess: () => {
-        toast.success('GitHub authorization removed successfully')
+        toast.success($t('GitHub authorization removed successfully'))
         setIsRemoveModalOpen(false)
       },
     })
@@ -67,9 +68,9 @@ export const AccountConnections = () => {
     <PageSection>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Connections</PageSectionTitle>
+          <PageSectionTitle>{$t('Connections')}</PageSectionTitle>
           <PageSectionDescription>
-            Connect your Supabase account with other services.
+            {$t('Connect your Supabase account with other services.')}
           </PageSectionDescription>
         </PageSectionSummary>
       </PageSectionMeta>
@@ -83,7 +84,7 @@ export const AccountConnections = () => {
           {isError && (
             <CardContent>
               <p className="text-sm text-destructive">
-                Failed to load GitHub connection status: {error?.message}
+                {$t('Failed to load GitHub connection status:')} {error?.message}
               </p>
             </CardContent>
           )}
@@ -99,11 +100,13 @@ export const AccountConnections = () => {
                 />
                 <div>
                   <div className="flex items-center gap-x-2">
-                    <p className="text-sm">GitHub</p>
-                    {isConnected && <Badge variant="success">Connected</Badge>}
+                    <p className="text-sm">{$t('GitHub')}</p>
+                    {isConnected && <Badge variant="success">{$t('Connected')}</Badge>}
                   </div>
                   <p className="text-sm text-foreground-lighter">
-                    Sync repos to Supabase projects for automatic branch creation and merging
+                    {$t(
+                      'Sync repos to Supabase projects for automatic branch creation and merging'
+                    )}
                   </p>
                 </div>
               </div>
@@ -112,7 +115,7 @@ export const AccountConnections = () => {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button iconRight={<ChevronDown size={14} />} variant="default">
-                        <span>Manage</span>
+                        <span>{$t('Manage')}</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent side="bottom" align="end" className="w-44">
@@ -124,7 +127,7 @@ export const AccountConnections = () => {
                         }}
                       >
                         <RefreshCw size={14} />
-                        <p>Re-authenticate</p>
+                        <p>{$t('Re-authenticate')}</p>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -132,13 +135,13 @@ export const AccountConnections = () => {
                         onSelect={() => setIsRemoveModalOpen(true)}
                       >
                         <Unlink size={14} />
-                        <p>Remove connection</p>
+                        <p>{$t('Remove connection')}</p>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
                   <Button variant="primary" onClick={handleConnect}>
-                    Connect
+                    {$t('Connect')}
                   </Button>
                 )}
               </div>
@@ -149,15 +152,16 @@ export const AccountConnections = () => {
           variant="destructive"
           size="small"
           visible={isRemoveModalOpen}
-          title="Confirm to remove GitHub authorization"
+          title={$t('Confirm to remove GitHub authorization')}
           confirmLabel="Remove connection"
           onCancel={() => setIsRemoveModalOpen(false)}
           onConfirm={handleRemove}
           loading={isRemoving}
         >
           <p className="text-sm text-foreground-light">
-            Removing this authorization will disconnect your GitHub account from Supabase. You can
-            reconnect at any time.
+            {$t(
+              'Removing this authorization will disconnect your GitHub account from Supabase. You can reconnect at any time.'
+            )}
           </p>
         </ConfirmationModal>
       </PageSectionContent>

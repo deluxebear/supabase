@@ -19,6 +19,7 @@ import { createEmptyIpRange, getRelativeDatetimeByMode } from './JitDbAccess.uti
 import { DatePicker } from '@/components/ui/DatePicker'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const EXPIRY_MODE_OPTIONS: Array<{ value: JitRoleGrantDraft['expiryMode']; label: string }> = [
   { value: '1h', label: '1 hour' },
@@ -105,14 +106,16 @@ export function JitDbAccessRoleGrantFields({
                 type="warning"
                 layout="vertical"
                 className="mb-3"
-                title="The selected role has unrestricted access and bypasses row-level security"
+                title={$t(
+                  'The selected role has unrestricted access and bypasses row-level security'
+                )}
                 description={
                   <>
-                    Consider using a{' '}
+                    {$t('Consider using a')}{' '}
                     <InlineLink href={`${DOCS_URL}/guides/database/postgres/roles`}>
-                      custom Postgres role
+                      {$t('custom Postgres role')}
                     </InlineLink>{' '}
-                    with only the permissions required.
+                    {$t('with only the permissions required.')}
                   </>
                 }
               />
@@ -122,14 +125,14 @@ export function JitDbAccessRoleGrantFields({
               <Admonition
                 type="warning"
                 layout="vertical"
-                title="The selected role has read-only access to all schemas"
+                title={$t('The selected role has read-only access to all schemas')}
                 description={
                   <>
-                    Consider using a{' '}
+                    {$t('Consider using a')}{' '}
                     <InlineLink href={`${DOCS_URL}/guides/database/postgres/roles`}>
-                      custom Postgres role
+                      {$t('custom Postgres role')}
                     </InlineLink>{' '}
-                    with only the permissions required.
+                    {$t('with only the permissions required.')}
                   </>
                 }
                 className="mb-3"
@@ -138,7 +141,7 @@ export function JitDbAccessRoleGrantFields({
 
             <FormItemLayout
               isReactForm={false}
-              label="Applies to"
+              label={$t('Applies to')}
               description={
                 <p className="text-xs text-foreground-lighter">
                   {grant.branchesOnly
@@ -152,7 +155,7 @@ export function JitDbAccessRoleGrantFields({
                 onValueChange={(value) => onChange({ ...grant, branchesOnly: value === 'preview' })}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select database scope" />
+                  <SelectValue placeholder={$t('Select database scope')} />
                 </SelectTrigger>
                 <SelectContent>
                   {BRANCH_SCOPE_OPTIONS.map((option) => (
@@ -166,11 +169,11 @@ export function JitDbAccessRoleGrantFields({
 
             <FormItemLayout
               isReactForm={false}
-              label="Expires in"
+              label={$t('Expires in')}
               description={
                 grant.hasExpiry && grant.expiry ? (
                   <p className="text-xs text-foreground-lighter">
-                    Expires at{' '}
+                    {$t('Expires at')}{' '}
                     <TimestampInfo
                       utcTimestamp={grant.expiry}
                       className="text-foreground-lighter"
@@ -181,7 +184,7 @@ export function JitDbAccessRoleGrantFields({
                   <div className="mt-3 mx-0.5 flex w-full items-center gap-x-2">
                     <WarningIcon />
                     <span className="text-left text-xs text-foreground-lighter">
-                      No expiry means ongoing database access until manually revoked.
+                      {$t('No expiry means ongoing database access until manually revoked.')}
                     </span>
                   </div>
                 ) : undefined
@@ -221,7 +224,7 @@ export function JitDbAccessRoleGrantFields({
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Expires in" />
+                      <SelectValue placeholder={$t('Expires in')} />
                     </SelectTrigger>
                     <SelectContent>
                       {EXPIRY_MODE_OPTIONS.map((option) => (
@@ -261,7 +264,7 @@ export function JitDbAccessRoleGrantFields({
               isReactForm={false}
               label={
                 <p className="text-sm text-foreground">
-                  Restricted IP addresses{' '}
+                  {$t('Restricted IP addresses')}{' '}
                   <span className="font-normal text-foreground-lighter">(optional)</span>
                 </p>
               }

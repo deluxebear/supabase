@@ -21,6 +21,7 @@ import { useOrgSubscriptionQuery } from '@/data/subscriptions/org-subscription-q
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const ProjectSettings: NextPageWithLayout = () => {
@@ -42,9 +43,9 @@ const ProjectSettings: NextPageWithLayout = () => {
       <PageHeader size="small">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Project Settings</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Project Settings')}</PageHeaderTitle>
             <PageHeaderDescription>
-              General configuration, domains, ownership, and lifecycle
+              {$t('General configuration, domains, ownership, and lifecycle')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -68,7 +69,7 @@ const ProjectSettings: NextPageWithLayout = () => {
 
 ProjectSettings.getLayout = (page) => (
   <DefaultLayout>
-    <SettingsLayout title="General">{page}</SettingsLayout>
+    <SettingsLayout title={$t('General')}>{page}</SettingsLayout>
   </DefaultLayout>
 )
 export default ProjectSettings

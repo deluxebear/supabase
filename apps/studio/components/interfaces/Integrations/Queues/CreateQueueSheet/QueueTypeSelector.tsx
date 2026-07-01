@@ -12,6 +12,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { QUEUE_TYPES } from '../Queues.constants'
 import { usePgPartmanStatus } from '../usePgPartmanStatus'
 import { CreateQueueForm } from './CreateQueueSheet.schema'
+import { t as $t } from '@/lib/i18n'
 
 export function QueueTypeSelector({ form }: { form: UseFormReturn<CreateQueueForm> }) {
   const { isInstalled } = usePgPartmanStatus()
@@ -22,7 +23,7 @@ export function QueueTypeSelector({ form }: { form: UseFormReturn<CreateQueueFor
         control={form.control}
         name="values.type"
         render={({ field }) => (
-          <FormItemLayout label="Type" layout="vertical" className="gap-1">
+          <FormItemLayout label={$t('Type')} layout="vertical" className="gap-1">
             <FormControl>
               <RadioGroupStacked
                 id="queue_type"
@@ -49,7 +50,7 @@ export function QueueTypeSelector({ form }: { form: UseFormReturn<CreateQueueFor
                         <div className="flex flex-col gap-y-1">
                           <div className="flex items-center gap-x-2">
                             <p className="text-foreground text-left">{definition.label}</p>
-                            {isPartitioned && <Badge variant="success">Recommended</Badge>}
+                            {isPartitioned && <Badge variant="success">{$t('Recommended')}</Badge>}
                           </div>
                           <p className="text-foreground-lighter text-left">
                             {isPartitioned

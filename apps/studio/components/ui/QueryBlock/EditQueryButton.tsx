@@ -15,6 +15,7 @@ import { useIsInlineEditorEnabled } from '@/components/interfaces/Account/Prefer
 import { useNewQuery } from '@/components/interfaces/SQLEditor/hooks'
 import { DiffType } from '@/components/interfaces/SQLEditor/SQLEditor.types'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { editorPanelState } from '@/state/editor-panel-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -103,13 +104,13 @@ export const EditQueryButton = ({
       {!!sql && (
         <DropdownMenuContent className="w-36">
           <DropdownMenuItem onClick={() => diffRequest.requestDiff(sql, DiffType.Addition)}>
-            Insert code
+            {$t('Insert code')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => diffRequest.requestDiff(sql, DiffType.Modification)}>
-            Replace code
+            {$t('Replace code')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => newQuery(sql, title)}>
-            Create new snippet
+            {$t('Create new snippet')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       )}

@@ -9,6 +9,7 @@ import { useApiDocsFunctions, useApiDocsTables } from './useApiDocsEntities'
 import { useEdgeFunctionsQuery } from '@/data/edge-functions/edge-functions-query'
 import { useBucketInfoQueryPreferCached } from '@/data/storage/buckets-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useAppStateSnapshot } from '@/state/app-state'
 
 const EntitiesSecondLevelNav = () => {
@@ -17,7 +18,7 @@ const EntitiesSecondLevelNav = () => {
   return (
     <SecondLevelNavLayout
       category={API_DOCS_CATEGORIES.ENTITIES}
-      title="Tables & Views"
+      title={$t('Tables & Views')}
       docsUrl={`${DOCS_URL}/reference/javascript/select`}
       renderResourceList={(props) => (
         <ResourcePickerList {...props} items={tables} emptyMessage="No tables available" />
@@ -32,7 +33,7 @@ const StoredProceduresSecondLevelNav = () => {
   return (
     <SecondLevelNavLayout
       category={API_DOCS_CATEGORIES.STORED_PROCEDURES}
-      title="Database Functions"
+      title={$t('Database Functions')}
       docsUrl={`${DOCS_URL}/reference/javascript/rpc`}
       renderResourceList={(props) => (
         <ResourcePickerList
@@ -53,7 +54,7 @@ const EdgeFunctionsSecondLevelNav = () => {
   return (
     <SecondLevelNavLayout
       category={API_DOCS_CATEGORIES.EDGE_FUNCTIONS}
-      title="Edge Functions"
+      title={$t('Edge Functions')}
       docsUrl={`${DOCS_URL}/reference/javascript/functions-invoke`}
       renderResourceList={(props) => (
         <ResourcePickerList
@@ -85,7 +86,7 @@ const StorageSecondLevelNav = () => {
   return (
     <SecondLevelNavLayout
       category={API_DOCS_CATEGORIES.STORAGE}
-      title="Storage"
+      title={$t('Storage')}
       docsUrl={`${DOCS_URL}/reference/javascript/storage-createbucket`}
       menuItemFilter={menuItemFilter}
       renderResourceList={(props) => <StorageResourceList {...props} projectRef={ref} />}

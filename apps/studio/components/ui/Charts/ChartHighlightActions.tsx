@@ -13,6 +13,7 @@ import {
 
 import { ChartHighlight } from './useChartHighlight'
 import { useFormatDateTime } from '@/lib/datetime'
+import { t as $t } from '@/lib/i18n'
 
 export type UpdateDateRange = (from: string, to: string) => void
 
@@ -64,7 +65,7 @@ export const ChartHighlightActions = ({
         id: 'zoom-in',
         label: 'Zoom in',
         icon: <SearchIcon className="text-foreground-lighter" size={12} />,
-        rightSlot: isDisabled ? <span className="text-xs">Min. 10 minutes</span> : null,
+        rightSlot: isDisabled ? <span className="text-xs">{$t('Min. 10 minutes')}</span> : null,
         isDisabled: () => isDisabled,
         onSelect: ({ start, end, clear }) => {
           if (isDisabled) return

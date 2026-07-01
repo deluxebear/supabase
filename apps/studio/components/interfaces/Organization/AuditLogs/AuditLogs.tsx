@@ -30,6 +30,7 @@ import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { useOrgProjectsInfiniteQuery } from '@/data/projects/org-projects-infinite-query'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -171,7 +172,7 @@ export const AuditLogs = () => {
             {showFilters && (
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <p className="text-xs prose">Filter by</p>
+                  <p className="text-xs prose">{$t('Filter by')}</p>
                   <FilterPopover
                     name="Users"
                     options={activeMembers}
@@ -231,7 +232,9 @@ export const AuditLogs = () => {
                   {isSuccess && (
                     <>
                       <div className="h-[20px] border-r border-strong ml-4! mr-2!" />
-                      <p className="prose text-xs">Viewing {sortedLogs.length} logs in total</p>
+                      <p className="prose text-xs">
+                        {$t('Viewing')} {sortedLogs.length} {$t('logs in total')}
+                      </p>
                     </>
                   )}
                 </div>
@@ -258,12 +261,13 @@ export const AuditLogs = () => {
 
             {isError &&
               (isRangeExceededError ? (
-                <Alert variant="destructive" title="Date range too large">
+                <Alert variant="destructive" title={$t('Date range too large')}>
                   <WarningIcon />
-                  <AlertTitle>Date range too large</AlertTitle>
+                  <AlertTitle>{$t('Date range too large')}</AlertTitle>
                   <AlertDescription>
-                    The selected date range exceeds the maximum allowed period. Please select a
-                    smaller time range.
+                    {$t(
+                      'The selected date range exceeds the maximum allowed period. Please select a smaller time range.'
+                    )}
                   </AlertDescription>
                 </Alert>
               ) : (
@@ -275,30 +279,30 @@ export const AuditLogs = () => {
                 {logs.length === 0 ? (
                   <div className="bg-surface-100 border rounded-sm p-4 flex items-center justify-between">
                     <p className="prose text-sm">
-                      Your organization does not have any audit logs available yet
+                      {$t('Your organization does not have any audit logs available yet')}
                     </p>
                   </div>
                 ) : logs.length > 0 && sortedLogs.length === 0 ? (
                   <div className="bg-surface-100 border rounded-sm p-4 flex items-center justify-between">
                     <p className="prose text-sm">
-                      No audit logs found based on the filters applied
+                      {$t('No audit logs found based on the filters applied')}
                     </p>
                   </div>
                 ) : (
                   <Table
                     head={[
                       <Table.th key="user" className="py-2">
-                        User
+                        {$t('User')}
                       </Table.th>,
                       <Table.th key="action" className="py-2">
-                        Action
+                        {$t('Action')}
                       </Table.th>,
                       <Table.th key="target" className="py-2">
-                        Target
+                        {$t('Target')}
                       </Table.th>,
                       <Table.th key="date" className="py-2">
                         <div className="flex items-center space-x-2">
-                          <p>Date</p>
+                          <p>{$t('Date')}</p>
 
                           <ButtonTooltip
                             variant="text"
@@ -413,7 +417,7 @@ export const AuditLogs = () => {
                               )}
                             </Table.td>
                             <Table.td align="right">
-                              <Button variant="default">View details</Button>
+                              <Button variant="default">{$t('View details')}</Button>
                             </Table.td>
                           </Table.tr>
                         )

@@ -8,6 +8,7 @@ import { MarkdownContent } from './MarkdownContent'
 import { RequiredExtensionsSection } from './RequiredExtensionsSection'
 import { useDatabaseExtensionsQuery } from '@/data/database-extensions/database-extensions-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export interface IntegrationOverviewTabProps {
   actions?: ReactNode
@@ -36,7 +37,7 @@ export const OverviewTabSharedContent = ({
   })
 
   if (!integration) {
-    return <div>Unsupported integration type</div>
+    return <div>{$t('Unsupported integration type')}</div>
   }
 
   const installableExtensions = (extensions ?? []).filter((ext) =>
@@ -84,7 +85,7 @@ export const IntegrationOverviewTab = ({
   const integration = INTEGRATIONS.find((i) => i.id === id)
 
   if (!integration) {
-    return <div>Unsupported integration type</div>
+    return <div>{$t('Unsupported integration type')}</div>
   }
 
   return (

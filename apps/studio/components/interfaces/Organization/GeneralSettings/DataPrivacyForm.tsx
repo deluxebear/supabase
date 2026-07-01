@@ -6,6 +6,7 @@ import { AIOptInLevelSelector } from './AIOptInLevelSelector'
 import { FormActions } from '@/components/ui/Forms/FormActions'
 import { useAIOptInForm } from '@/hooks/forms/useAIOptInForm'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 export const DataPrivacyForm = () => {
   const { form, onSubmit, isUpdating, currentOptInLevel } = useAIOptInForm()
@@ -31,7 +32,7 @@ export const DataPrivacyForm = () => {
               control={form.control}
               disabled={!canUpdateOrganization || isUpdating}
               layout="flex-row-reverse"
-              label="Supabase Assistant Opt-in Level"
+              label={$t('Supabase Assistant Opt-in Level')}
             />
           </CardContent>
           <CardFooter className="flex justify-end p-4 md:px-8">

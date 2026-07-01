@@ -32,6 +32,7 @@ import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { formatCurrency } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 interface DiskManagementReviewAndSubmitDialogProps {
   loading: boolean
@@ -112,13 +113,15 @@ export const DiskManagementReviewAndSubmitDialog = ({
             },
           }}
         >
-          Review changes
+          {$t('Review changes')}
         </ButtonTooltip>
       </DialogTrigger>
       <DialogContent className="min-w-[560px] p-0 gap-0 overflow-hidden">
         <DialogHeader className="px-5 py-4">
-          <DialogTitle>Review changes</DialogTitle>
-          <DialogDescription>Changes will be applied shortly after confirmation.</DialogDescription>
+          <DialogTitle>{$t('Review changes')}</DialogTitle>
+          <DialogDescription>
+            {$t('Changes will be applied shortly after confirmation.')}
+          </DialogDescription>
         </DialogHeader>
         <DialogSectionSeparator />
 
@@ -127,13 +130,13 @@ export const DiskManagementReviewAndSubmitDialog = ({
             <div className="relative flex border-b">
               <div className="flex-1 flex flex-col items-center gap-2 py-6 px-4 border-r bg-linear-to-t from-[hsl(var(--background-surface-100))] to-transparent">
                 <span className="text-xs uppercase tracking-widest font-mono text-foreground-lighter">
-                  Before
+                  {$t('Before')}
                 </span>
                 <span className="text-3xl text-foreground-light tabular-nums" translate="no">
                   {formatCurrency(totalBeforePrice)}
                 </span>
                 <span className="text-xs uppercase tracking-widest font-mono text-foreground-lighter">
-                  per month
+                  {$t('per month')}
                 </span>
               </div>
 
@@ -145,13 +148,13 @@ export const DiskManagementReviewAndSubmitDialog = ({
 
               <div className="flex-1 flex flex-col items-center gap-2 py-6 px-4 bg-linear-to-t from-[hsl(var(--background-surface-100))] to-transparent">
                 <span className="text-xs uppercase tracking-widest font-mono text-foreground-lighter">
-                  After
+                  {$t('After')}
                 </span>
                 <span className="text-3xl text-foreground tabular-nums" translate="no">
                   {formatCurrency(totalAfterPrice)}
                 </span>
                 <span className="text-xs uppercase tracking-widest font-mono text-foreground-lighter">
-                  per month
+                  {$t('per month')}
                 </span>
               </div>
             </div>
@@ -163,8 +166,8 @@ export const DiskManagementReviewAndSubmitDialog = ({
           <div className="py-0.5 px-5">
             {hasComputeChanges && (
               <BreakdownRow
-                label="Compute size"
-                description="Project will restart automatically on confirmation."
+                label={$t('Compute size')}
+                description={$t('Project will restart automatically on confirmation.')}
               >
                 <div className="flex flex-col items-end gap-0.5">
                   <ValueChange from={oldComputeLabel} to={newComputeLabel} />
@@ -175,7 +178,7 @@ export const DiskManagementReviewAndSubmitDialog = ({
               </BreakdownRow>
             )}
             {hasStorageTypeChanges && (
-              <BreakdownRow label="Storage type">
+              <BreakdownRow label={$t('Storage type')}>
                 <ValueChange
                   from={(form.formState.defaultValues?.storageType ?? '').toUpperCase()}
                   to={form.getValues('storageType').toUpperCase()}
@@ -201,7 +204,7 @@ export const DiskManagementReviewAndSubmitDialog = ({
               </BreakdownRow>
             )}
             {showThroughputRow && (
-              <BreakdownRow label="Throughput">
+              <BreakdownRow label={$t('Throughput')}>
                 <div className="flex flex-col items-end gap-0.5">
                   <ValueChange
                     from={`${(form.formState.defaultValues?.throughput ?? 0).toLocaleString()} MB/s`}
@@ -215,8 +218,10 @@ export const DiskManagementReviewAndSubmitDialog = ({
             )}
             {(hasTotalSizeChanges || hasStorageTypeChanges) && (
               <BreakdownRow
-                label="Disk size"
-                description="For 4 hours after changes you will not be able to modify disk attributes."
+                label={$t('Disk size')}
+                description={$t(
+                  'For 4 hours after changes you will not be able to modify disk attributes.'
+                )}
               >
                 <div className="flex flex-col items-end gap-0.5">
                   <ValueChange
@@ -230,7 +235,7 @@ export const DiskManagementReviewAndSubmitDialog = ({
               </BreakdownRow>
             )}
             {hasGrowthPercentChanges && (
-              <BreakdownRow label="Growth percent">
+              <BreakdownRow label={$t('Growth percent')}>
                 <ValueChange
                   from={`${form.formState.defaultValues?.growthPercent ?? DISK_AUTOSCALE_CONFIG_DEFAULTS.growthPercent}%`}
                   to={`${form.getValues('growthPercent') ?? DISK_AUTOSCALE_CONFIG_DEFAULTS.growthPercent}%`}
@@ -238,7 +243,7 @@ export const DiskManagementReviewAndSubmitDialog = ({
               </BreakdownRow>
             )}
             {hasMinIncrementChanges && (
-              <BreakdownRow label="Min increment">
+              <BreakdownRow label={$t('Min increment')}>
                 <ValueChange
                   from={`${form.formState.defaultValues?.minIncrementGb ?? DISK_AUTOSCALE_CONFIG_DEFAULTS.minIncrementSize} GB`}
                   to={`${form.getValues('minIncrementGb') ?? DISK_AUTOSCALE_CONFIG_DEFAULTS.minIncrementSize} GB`}
@@ -246,7 +251,7 @@ export const DiskManagementReviewAndSubmitDialog = ({
               </BreakdownRow>
             )}
             {hasMaxSizeChanges && (
-              <BreakdownRow label="Max disk size">
+              <BreakdownRow label={$t('Max disk size')}>
                 <ValueChange
                   from={(
                     form.formState.defaultValues?.maxSizeGb ??
@@ -260,7 +265,7 @@ export const DiskManagementReviewAndSubmitDialog = ({
             )}
             {numReplicas > 0 && (
               <div className="py-2 text-xs text-foreground-muted">
-                Price change includes primary database and {numReplicas} replica
+                {$t('Price change includes primary database and')} {numReplicas} replica
                 {numReplicas > 1 ? 's' : ''}
               </div>
             )}
@@ -269,7 +274,7 @@ export const DiskManagementReviewAndSubmitDialog = ({
 
         <DialogFooter className="px-5 py-4">
           <Button block size="large" variant="default" onClick={() => setIsDialogOpen(false)}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button
             block
@@ -281,7 +286,7 @@ export const DiskManagementReviewAndSubmitDialog = ({
               await onSubmit(form.getValues())
             }}
           >
-            Confirm changes
+            {$t('Confirm changes')}
           </Button>
         </DialogFooter>
         {message && (

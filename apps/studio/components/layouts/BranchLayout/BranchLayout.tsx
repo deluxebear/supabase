@@ -7,6 +7,7 @@ import { generateBranchMenu } from './BranchLayout.utils'
 import { GitHubStatus } from '@/components/interfaces/Settings/Integrations/GithubIntegration/GitHubStatus'
 import { ProductMenu } from '@/components/ui/ProductMenu'
 import { withAuth } from '@/hooks/misc/withAuth'
+import { t as $t } from '@/lib/i18n'
 
 const BranchProductMenu = () => {
   const router = useRouter()
@@ -17,7 +18,9 @@ const BranchProductMenu = () => {
     <>
       <ProductMenu page={page} menu={generateBranchMenu(projectRef)} />
       <div className="px-6">
-        <h3 className="text-sm font-mono text-foreground-lighter uppercase mb-3">Configure</h3>
+        <h3 className="text-sm font-mono text-foreground-lighter uppercase mb-3">
+          {$t('Configure')}
+        </h3>
         <GitHubStatus />
       </div>
     </>

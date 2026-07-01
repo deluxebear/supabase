@@ -6,6 +6,7 @@ import { BannerCard } from '../BannerCard'
 import { useBannerStack } from '../BannerStackProvider'
 import { EnableIndexAdvisorButton } from '@/components/interfaces/QueryPerformance/IndexAdvisor/EnableIndexAdvisorButton'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export const BannerIndexAdvisor = () => {
@@ -32,9 +33,9 @@ export const BannerIndexAdvisor = () => {
           </div>
         </div>
         <div className="flex flex-col gap-y-1 mb-2">
-          <p className="text-sm font-medium">Enable Index Advisor</p>
+          <p className="text-sm font-medium">{$t('Enable Index Advisor')}</p>
           <p className="text-xs text-foreground-lighter text-balance">
-            Recommends indexes to improve query performance.
+            {$t('Recommends indexes to improve query performance.')}
           </p>
         </div>
         <div className="flex gap-2">

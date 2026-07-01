@@ -23,6 +23,7 @@ import { DocsButton } from '@/components/ui/DocsButton'
 import { ObservabilityLink } from '@/components/ui/ObservabilityLink'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useRefreshHandler, useReportDateRange } from '@/hooks/misc/useReportDateRange'
+import { t as $t } from '@/lib/i18n'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -38,7 +39,7 @@ const PostgRESTReport: NextPageWithLayout = () => {
 
 PostgRESTReport.getLayout = (page) => (
   <DefaultLayout>
-    <ObservabilityLayout title="PostgREST">{page}</ObservabilityLayout>
+    <ObservabilityLayout title={$t('PostgREST')}>{page}</ObservabilityLayout>
   </DefaultLayout>
 )
 
@@ -127,7 +128,7 @@ const PostgrestReport = () => {
               <DocsButton href={OBSERVABILITY_DOCS_HREFS.dataApi} topic={REPORT_TITLE} />
               <ShortcutTooltip
                 shortcutId={SHORTCUT_IDS.OBSERVABILITY_REFRESH}
-                label="Refresh report"
+                label={$t('Refresh report')}
                 side="bottom"
               >
                 <Button
@@ -149,8 +150,10 @@ const PostgrestReport = () => {
               <UpgradePrompt
                 show={showUpgradePrompt}
                 setShowUpgradePrompt={setShowUpgradePrompt}
-                title="Report date range"
-                description="Report data can be stored for a maximum of 3 months depending on the plan that your project is on."
+                title={$t('Report date range')}
+                description={$t(
+                  'Report data can be stored for a maximum of 3 months depending on the plan that your project is on.'
+                )}
                 source="postgrestReportDateRange"
               />
               {selectedDateRange && (

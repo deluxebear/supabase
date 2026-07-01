@@ -40,6 +40,7 @@ import { AuthorizedApp, useAuthorizedAppsQuery } from '@/data/oauth/authorized-a
 import { OAuthAppCreateResponse } from '@/data/oauth/oauth-app-create-mutation'
 import { OAuthApp, useOAuthAppsQuery } from '@/data/oauth/oauth-apps-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 // [Joshen] Note on nav UX
@@ -155,9 +156,9 @@ export const OAuthApps = () => {
         <PageSection id="published-apps" className="pt-12">
           <PageSectionMeta>
             <PageSectionSummary>
-              <PageSectionTitle>Published apps</PageSectionTitle>
+              <PageSectionTitle>{$t('Published apps')}</PageSectionTitle>
               <PageSectionDescription>
-                Build integrations that extend Supabase's functionality
+                {$t("Build integrations that extend Supabase's functionality")}
               </PageSectionDescription>
             </PageSectionSummary>
             <PageSectionAside>
@@ -182,7 +183,7 @@ export const OAuthApps = () => {
                     },
                   }}
                 >
-                  Publish OAuth app
+                  {$t('Publish OAuth app')}
                 </ButtonTooltip>
               </Shortcut>
             </PageSectionAside>
@@ -225,22 +226,23 @@ export const OAuthApps = () => {
                   <div className="flex flex-col gap-0">
                     <div className="flex items-center gap-2">
                       <Check size={14} className="text-brand" strokeWidth={3} />
-                      <p className="text-sm">You've created your new OAuth application.</p>
+                      <p className="text-sm">{$t("You've created your new OAuth application.")}</p>
                     </div>
                     <p className="text-sm text-foreground-light">
-                      Ensure that you store the client secret securely - you will not be able to see
-                      it again.
+                      {$t(
+                        'Ensure that you store the client secret securely - you will not be able to see it again.'
+                      )}
                     </p>
                   </div>
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm text-foreground-light">Client ID</p>
+                      <p className="text-sm text-foreground-light">{$t('Client ID')}</p>
                       <p className="font-mono text-sm">{createdApp.client_id}</p>
                       <CopyButton text={createdApp.client_id} variant="default" iconOnly />
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <p className="text-sm text-foreground-light">Client Secret</p>
+                      <p className="text-sm text-foreground-light">{$t('Client Secret')}</p>
                       <p className="font-mono text-sm">{createdApp.client_secret}</p>
                       <CopyButton text={createdApp.client_secret} variant="default" iconOnly />
                     </div>
@@ -260,13 +262,13 @@ export const OAuthApps = () => {
                           !hasPublishedApps && 'text-foreground-muted'
                         )}
                       >
-                        <span className="sr-only">Avatar</span>
+                        <span className="sr-only">{$t('Avatar')}</span>
                       </TableHead>
                       <TableHead className={cn(!hasPublishedApps && 'text-foreground-muted')}>
-                        Name
+                        {$t('Name')}
                       </TableHead>
                       <TableHead className={cn(!hasPublishedApps && 'text-foreground-muted')}>
-                        Client ID
+                        {$t('Client ID')}
                       </TableHead>
                       <TableHead className={cn(!hasPublishedApps && 'text-foreground-muted')}>
                         {hasPublishedApps ? (
@@ -284,7 +286,7 @@ export const OAuthApps = () => {
                       <TableHead
                         className={cn('text-right', !hasPublishedApps && 'text-foreground-muted')}
                       >
-                        <span className="sr-only">Actions</span>
+                        <span className="sr-only">{$t('Actions')}</span>
                       </TableHead>
                     </TableRow>
                   </TableHeader>
@@ -304,9 +306,9 @@ export const OAuthApps = () => {
                     ) : (
                       <TableRow className="[&>td]:hover:bg-inherit">
                         <TableCell colSpan={5}>
-                          <p className="text-sm text-foreground">No results found</p>
+                          <p className="text-sm text-foreground">{$t('No results found')}</p>
                           <p className="text-sm text-foreground-lighter">
-                            You do not have any published applications yet
+                            {$t('You do not have any published applications yet')}
                           </p>
                         </TableCell>
                       </TableRow>
@@ -321,9 +323,9 @@ export const OAuthApps = () => {
         <PageSection id="authorized-apps">
           <PageSectionMeta>
             <PageSectionSummary>
-              <PageSectionTitle>Authorized apps</PageSectionTitle>
+              <PageSectionTitle>{$t('Authorized apps')}</PageSectionTitle>
               <PageSectionDescription>
-                Applications that have access to your organization's settings and projects
+                {$t("Applications that have access to your organization's settings and projects")}
               </PageSectionDescription>
             </PageSectionSummary>
           </PageSectionMeta>
@@ -351,16 +353,16 @@ export const OAuthApps = () => {
                           !hasAuthorizedApps && 'text-foreground-muted'
                         )}
                       >
-                        <span className="sr-only">Avatar</span>
+                        <span className="sr-only">{$t('Avatar')}</span>
                       </TableHead>
                       <TableHead className={cn(!hasAuthorizedApps && 'text-foreground-muted')}>
-                        Name
+                        {$t('Name')}
                       </TableHead>
                       <TableHead className={cn(!hasAuthorizedApps && 'text-foreground-muted')}>
-                        Author
+                        {$t('Author')}
                       </TableHead>
                       <TableHead className={cn(!hasAuthorizedApps && 'text-foreground-muted')}>
-                        App ID
+                        {$t('App ID')}
                       </TableHead>
                       <TableHead className={cn(!hasAuthorizedApps && 'text-foreground-muted')}>
                         {hasAuthorizedApps ? (
@@ -378,7 +380,7 @@ export const OAuthApps = () => {
                       <TableHead
                         className={cn('text-right', !hasAuthorizedApps && 'text-foreground-muted')}
                       >
-                        <span className="sr-only">Actions</span>
+                        <span className="sr-only">{$t('Actions')}</span>
                       </TableHead>
                     </TableRow>
                   </TableHeader>
@@ -394,9 +396,9 @@ export const OAuthApps = () => {
                     ) : (
                       <TableRow className="[&>td]:hover:bg-inherit">
                         <TableCell colSpan={6}>
-                          <p className="text-sm text-foreground">No results found</p>
+                          <p className="text-sm text-foreground">{$t('No results found')}</p>
                           <p className="text-sm text-foreground-lighter">
-                            You do not have any authorized applications yet
+                            {$t('You do not have any authorized applications yet')}
                           </p>
                         </TableCell>
                       </TableRow>

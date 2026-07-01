@@ -13,6 +13,7 @@ import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useJwtSecretUpdatingStatusQuery } from '@/data/config/jwt-secret-updating-status-query'
 import { configKeys } from '@/data/config/keys'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const JWTKeysLegacyPage: NextPageWithLayout = () => {
@@ -39,7 +40,7 @@ const JWTKeysLegacyPage: NextPageWithLayout = () => {
           client.invalidateQueries({ queryKey: configKeys.api(projectRef) })
           client.invalidateQueries({ queryKey: configKeys.settings(projectRef) })
           client.invalidateQueries({ queryKey: configKeys.postgrest(projectRef) })
-          toast.success('Successfully updated JWT secret')
+          toast.success($t('Successfully updated JWT secret'))
           break
         case Failed:
           toast.error(`JWT secret update failed: ${jwtSecretUpdateErrorMessage}`)
@@ -63,7 +64,7 @@ const JWTKeysLegacyPage: NextPageWithLayout = () => {
 
 JWTKeysLegacyPage.getLayout = (page) => (
   <DefaultLayout>
-    <SettingsLayout title="JWT Keys (Legacy)">{page}</SettingsLayout>
+    <SettingsLayout title={$t('JWT Keys (Legacy)')}>{page}</SettingsLayout>
   </DefaultLayout>
 )
 

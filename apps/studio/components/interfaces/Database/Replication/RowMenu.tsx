@@ -27,6 +27,7 @@ import { Pipeline } from '@/data/replication/pipelines-query'
 import { useRestartPipelineHelper } from '@/data/replication/restart-pipeline-helper'
 import { useStartPipelineMutation } from '@/data/replication/start-pipeline-mutation'
 import { useStopPipelineMutation } from '@/data/replication/stop-pipeline-mutation'
+import { t as $t } from '@/lib/i18n'
 import {
   PipelineStatusRequestStatus,
   usePipelineRequestStatus,
@@ -90,7 +91,7 @@ export const RowMenu = ({
 
   const onEnablePipeline = async () => {
     if (!projectRef) return console.error('Project ref is required')
-    if (!pipeline) return toast.error('No pipeline found')
+    if (!pipeline) return toast.error($t('No pipeline found'))
 
     try {
       // Only show 'enabling' when transitioning from allowed states
@@ -106,7 +107,7 @@ export const RowMenu = ({
 
   const onDisablePipeline = async () => {
     if (!projectRef) return console.error('Project ref is required')
-    if (!pipeline) return toast.error('No pipeline found')
+    if (!pipeline) return toast.error($t('No pipeline found'))
 
     try {
       // Only show 'disabling' when transitioning from allowed states
@@ -122,7 +123,7 @@ export const RowMenu = ({
 
   const onRestartPipeline = async () => {
     if (!projectRef) return console.error('Project ref is required')
-    if (!pipeline) return toast.error('No pipeline found')
+    if (!pipeline) return toast.error($t('No pipeline found'))
 
     try {
       setGlobalRequestStatus(pipeline.id, PipelineStatusRequestStatus.RestartRequested, statusName)
@@ -145,7 +146,8 @@ export const RowMenu = ({
             </span>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="max-w-xs">
-            Couldn't load status{error?.message ? `: ${error.message}` : '.'}
+            {$t("Couldn't load status")}
+            {error?.message ? `: ${error.message}` : '.'}
           </TooltipContent>
         </Tooltip>
       )}
@@ -165,7 +167,7 @@ export const RowMenu = ({
             <>
               <DropdownMenuItem className="space-x-2" onClick={() => onUpdateClick?.()}>
                 <ArrowUpCircle size={14} />
-                <p>Update available</p>
+                <p>{$t('Update available')}</p>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
@@ -174,7 +176,7 @@ export const RowMenu = ({
             <>
               <DropdownMenuItem className="space-x-2" onClick={onEnablePipeline}>
                 <Play size={14} />
-                <p>Start pipeline</p>
+                <p>{$t('Start pipeline')}</p>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
@@ -183,11 +185,11 @@ export const RowMenu = ({
             <>
               <DropdownMenuItem className="space-x-2" onClick={onRestartPipeline}>
                 <RotateCcw size={14} />
-                <p>Restart pipeline</p>
+                <p>{$t('Restart pipeline')}</p>
               </DropdownMenuItem>
               <DropdownMenuItem className="space-x-2" onClick={onDisablePipeline}>
                 <Pause size={14} />
-                <p>Stop pipeline</p>
+                <p>{$t('Stop pipeline')}</p>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
@@ -195,11 +197,11 @@ export const RowMenu = ({
 
           <DropdownMenuItem className="space-x-2" onClick={() => setEdit(destinationId)}>
             <Edit size={14} />
-            <p>Edit destination</p>
+            <p>{$t('Edit destination')}</p>
           </DropdownMenuItem>
           <DropdownMenuItem className="space-x-2" onClick={onDeleteClick}>
             <Trash size={14} />
-            <p>Delete destination</p>
+            <p>{$t('Delete destination')}</p>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

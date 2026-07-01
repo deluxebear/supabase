@@ -19,6 +19,7 @@ import { useAPIKeysQuery } from '@/data/api-keys/api-keys-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useDeploymentMode } from '@/hooks/misc/useDeploymentMode'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const ApiKeysNewPage: NextPageWithLayout = () => {
@@ -45,11 +46,12 @@ const ApiKeysNewPage: NextPageWithLayout = () => {
         {isCli && (
           <Admonition
             type="default"
-            title="Local development with the Supabase CLI"
+            title={$t('Local development with the Supabase CLI')}
             description={
               <p>
-                The API keys are automatically managed by the Supabase CLI and are not manually
-                configurable.
+                {$t(
+                  'The API keys are automatically managed by the Supabase CLI and are not manually configurable.'
+                )}
               </p>
             }
             actions={<DocsButton href={`${DOCS_URL}/guides/local-development`} />}
@@ -58,12 +60,12 @@ const ApiKeysNewPage: NextPageWithLayout = () => {
         {isSelfHosted && (
           <Admonition
             type="default"
-            title="Self-hosted Supabase"
+            title={$t('Self-hosted Supabase')}
             description={
               <p>
                 <code className="text-code-inline">SUPABASE_PUBLISHABLE_KEY</code> and{' '}
-                <code className="text-code-inline">SUPABASE_SECRET_KEY</code> are set via
-                environment variables.
+                <code className="text-code-inline">SUPABASE_SECRET_KEY</code>{' '}
+                {$t('are set via environment variables.')}
               </p>
             }
             actions={<DocsButton href={`${DOCS_URL}/guides/self-hosting/self-hosted-auth-keys`} />}
@@ -91,7 +93,7 @@ const ApiKeysNewPage: NextPageWithLayout = () => {
 
 ApiKeysNewPage.getLayout = (page) => (
   <DefaultLayout>
-    <SettingsLayout title="API Keys">
+    <SettingsLayout title={$t('API Keys')}>
       <ApiKeysLayout>{page}</ApiKeysLayout>
     </SettingsLayout>
   </DefaultLayout>

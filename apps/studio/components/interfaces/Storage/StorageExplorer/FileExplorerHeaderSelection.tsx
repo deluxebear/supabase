@@ -6,6 +6,7 @@ import { bulkActionBarClassName } from './storageExplorerChrome'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useStorageExplorerStateSnapshot } from '@/state/storage-explorer'
 
@@ -43,7 +44,7 @@ export const FileExplorerHeaderSelection = () => {
               }
             }}
           >
-            Download
+            {$t('Download')}
           </Button>
         </ShortcutTooltip>
 
@@ -67,7 +68,7 @@ export const FileExplorerHeaderSelection = () => {
               },
             }}
           >
-            Delete
+            {$t('Delete')}
           </ButtonTooltip>
         </ShortcutTooltip>
 
@@ -89,7 +90,7 @@ export const FileExplorerHeaderSelection = () => {
               },
             }}
           >
-            Move
+            {$t('Move')}
           </ButtonTooltip>
         </ShortcutTooltip>
 
@@ -97,7 +98,7 @@ export const FileExplorerHeaderSelection = () => {
           variant="text"
           size="tiny"
           icon={<X size={12} />}
-          title="Clear selection"
+          title={$t('Clear selection')}
           className="px-1.5 text-foreground-lighter hover:text-foreground"
           onClick={() => clearSelectedItems()}
         />

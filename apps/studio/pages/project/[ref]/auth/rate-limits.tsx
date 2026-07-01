@@ -21,6 +21,7 @@ import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const RateLimitsPage: NextPageWithLayout = () => {
@@ -45,9 +46,11 @@ const RateLimitsPage: NextPageWithLayout = () => {
       <PageHeader size="default">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Rate Limits</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Rate Limits')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Safeguard against bursts of incoming traffic to prevent abuse and maximize stability
+              {$t(
+                'Safeguard against bursts of incoming traffic to prevent abuse and maximize stability'
+              )}
             </PageHeaderDescription>
           </PageHeaderSummary>
           <PageHeaderAside>
@@ -74,7 +77,7 @@ const RateLimitsPage: NextPageWithLayout = () => {
 
 RateLimitsPage.getLayout = (page) => (
   <DefaultLayout>
-    <AuthLayout title="Rate Limits">{page}</AuthLayout>
+    <AuthLayout title={$t('Rate Limits')}>{page}</AuthLayout>
   </DefaultLayout>
 )
 

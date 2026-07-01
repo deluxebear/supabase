@@ -8,6 +8,7 @@ import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { PageLayout } from '@/components/layouts/PageLayout/PageLayout'
 import { NoPermission } from '@/components/ui/NoPermission'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const DatabasePublications: NextPageWithLayout = () => {
@@ -21,7 +22,7 @@ const DatabasePublications: NextPageWithLayout = () => {
   }
 
   return (
-    <PageLayout title="Database Publications" size="large">
+    <PageLayout title={$t('Database Publications')} size="large">
       <PageContainer size="large">
         <PageSection className="gap-y-4">
           <PublicationsList />
@@ -33,7 +34,7 @@ const DatabasePublications: NextPageWithLayout = () => {
 
 DatabasePublications.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Publications">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Publications')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

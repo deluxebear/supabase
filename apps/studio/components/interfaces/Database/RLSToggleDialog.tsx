@@ -11,6 +11,7 @@ import {
 
 import { InlineLink } from '@/components/ui/InlineLink'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface RLSToggleDialogProps {
   open: boolean
@@ -38,23 +39,23 @@ export function RLSToggleDialog({
           <AlertDialogDescription>
             {isEnabled ? (
               <>
-                This table will become publicly readable and writable.{' '}
+                {$t('This table will become publicly readable and writable.')}{' '}
                 <span className="font-medium text-foreground">
-                  Anyone can view, add, update, or delete data in this table
+                  {$t('Anyone can view, add, update, or delete data in this table')}
                 </span>
-                , and existing RLS policies will no longer apply.
+                {$t(', and existing RLS policies will no longer apply.')}
               </>
             ) : (
               'RLS restricts table access until policies allow a request. Existing queries may stop returning rows until policies are added.'
             )}{' '}
             <InlineLink href={`${DOCS_URL}/guides/database/postgres/row-level-security`}>
-              Learn more
+              {$t('Learn more')}
             </InlineLink>
             .
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction
             variant={isEnabled ? 'danger' : 'primary'}
             loading={isSubmitting}

@@ -6,6 +6,7 @@ import { PageLayout } from '../PageLayout/PageLayout'
 import AdvisorsLayout from './AdvisorsLayout'
 import { useIsAdvisorRulesEnabled } from '@/components/interfaces/App/FeaturePreview/FeaturePreviewContext'
 import { FeaturePreviewBadge } from '@/components/ui/FeaturePreviewBadge'
+import { t as $t } from '@/lib/i18n'
 
 export const AdvisorRulesLayout = ({ children }: PropsWithChildren<{}>) => {
   const { ref } = useParams()
@@ -16,7 +17,7 @@ export const AdvisorRulesLayout = ({ children }: PropsWithChildren<{}>) => {
         <PageLayout
           title={
             <span className="flex items-center gap-x-4">
-              Advisor Settings
+              {$t('Advisor Settings')}
               {isAdvisorRulesEnabled && (
                 <FeaturePreviewBadge featureKey={LOCAL_STORAGE_KEYS.UI_PREVIEW_ADVISOR_RULES} />
               )}

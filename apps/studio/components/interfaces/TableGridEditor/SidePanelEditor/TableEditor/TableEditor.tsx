@@ -39,6 +39,7 @@ import { useUrlState } from '@/hooks/ui/useUrlState'
 import { useVisibleKey } from '@/hooks/ui/useVisibleKey'
 import { useProtectedSchemas } from '@/hooks/useProtectedSchemas'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { SafePostgresTable } from '@/lib/postgres-types'
 import { useTrack } from '@/lib/telemetry/track'
 import { type PlainObject } from '@/lib/type-helpers'
@@ -406,7 +407,7 @@ export const TableEditor = ({
           id="name"
           isReactForm={false}
           layout="horizontal"
-          label="Name"
+          label={$t('Name')}
           error={errors.name ? String(errors.name) : undefined}
         >
           <Input
@@ -421,11 +422,11 @@ export const TableEditor = ({
           id="description"
           isReactForm={false}
           layout="horizontal"
-          label="Description"
+          label={$t('Description')}
         >
           <Input
             id="description"
-            placeholder="Optional"
+            placeholder={$t('Optional')}
             type="text"
             value={tableFields?.comment ?? ''}
             onChange={(event) => onUpdateField({ comment: event.target.value })}
@@ -453,11 +454,11 @@ export const TableEditor = ({
               htmlFor="enable-rls"
               className="text-sm text-foreground-light flex items-center space-x-2 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              <span>Enable Row Level Security (RLS)</span>
-              <Badge>Recommended</Badge>
+              <span>{$t('Enable Row Level Security (RLS)')}</span>
+              <Badge>{$t('Recommended')}</Badge>
             </label>
             <p className="text-sm text-foreground-muted">
-              Restrict access to your table by enabling RLS and writing Postgres policies.
+              {$t('Restrict access to your table by enabling RLS and writing Postgres policies.')}
             </p>
           </div>
         </div>
@@ -466,12 +467,13 @@ export const TableEditor = ({
           <Admonition
             type="default"
             className="mt-3!"
-            title="Policies are required to query data"
+            title={$t('Policies are required to query data')}
             description={
               <>
-                You need to create an access policy before you can query data from this table.
-                Without a policy, querying this table will return an{' '}
-                <u className="text-foreground">empty array</u> of results.{' '}
+                {$t(
+                  'You need to create an access policy before you can query data from this table. Without a policy, querying this table will return an'
+                )}{' '}
+                <u className="text-foreground">{$t('empty array')}</u> {$t('of results.')}{' '}
                 {isNewRecord ? 'You can create policies after saving this table.' : ''}
               </>
             }
@@ -486,11 +488,11 @@ export const TableEditor = ({
           <Admonition
             type="warning"
             className="mt-3!"
-            title="You are allowing anonymous access to your table"
+            title={$t('You are allowing anonymous access to your table')}
             description={
               <>
-                {tableFields.name ? `The table ${tableFields.name}` : 'Your table'} will be publicly
-                writable and readable
+                {tableFields.name ? `The table ${tableFields.name}` : 'Your table'}{' '}
+                {$t('will be publicly writable and readable')}
               </>
             }
           >
@@ -522,10 +524,10 @@ export const TableEditor = ({
                 htmlFor="enable-realtime"
                 className="text-sm text-foreground-light flex items-center space-x-2 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                Enable Realtime
+                {$t('Enable Realtime')}
               </label>
               <p className="text-sm text-foreground-muted">
-                Broadcast changes on this table to authorized subscribers.
+                {$t('Broadcast changes on this table to authorized subscribers.')}
               </p>
             </div>
           </div>
@@ -565,10 +567,10 @@ export const TableEditor = ({
                   htmlFor="duplicate-rows"
                   className="text-sm text-foreground-light flex items-center space-x-2 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Duplicate table entries
+                  {$t('Duplicate table entries')}
                 </label>
                 <p className="text-sm text-foreground-muted">
-                  This will copy all the data in the table into the new table
+                  {$t('This will copy all the data in the table into the new table')}
                 </p>
               </div>
             </div>

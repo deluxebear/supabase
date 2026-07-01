@@ -39,6 +39,7 @@ import { useTableNamesQuery } from '@/data/tables/table-names-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export interface FormContentsProps {
   form: UseFormReturn<WebhookFormValues>
@@ -103,18 +104,20 @@ export const FormContents = ({ form, selectedHook }: FormContentsProps) => {
 
   return (
     <div>
-      <FormSection header={<FormSectionLabel className="lg:col-span-4!">General</FormSectionLabel>}>
+      <FormSection
+        header={<FormSectionLabel className="lg:col-span-4!">{$t('General')}</FormSectionLabel>}
+      >
         <FormSectionContent loading={false} className="lg:col-span-8!">
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
-              <FormItemLayout label="Name" layout="vertical" className="gap-1">
+              <FormItemLayout label={$t('Name')} layout="vertical" className="gap-1">
                 <FormControl>
                   <Input {...field} placeholder="my_webhook" />
                 </FormControl>
                 <p className="mt-2 text-xs text-foreground-lighter">
-                  Do not use spaces/whitespaces
+                  {$t('Do not use spaces/whitespaces')}
                 </p>
               </FormItemLayout>
             )}
@@ -128,11 +131,11 @@ export const FormContents = ({ form, selectedHook }: FormContentsProps) => {
             className="lg:col-span-4!"
             description={
               <p className="text-sm text-foreground-light">
-                Select which table and events will trigger your webhook
+                {$t('Select which table and events will trigger your webhook')}
               </p>
             }
           >
-            Conditions to fire webhook
+            {$t('Conditions to fire webhook')}
           </FormSectionLabel>
         }
       >
@@ -142,15 +145,17 @@ export const FormContents = ({ form, selectedHook }: FormContentsProps) => {
             name="table_id"
             render={({ field }) => (
               <FormItemLayout
-                label="Table"
+                label={$t('Table')}
                 layout="vertical"
                 className="gap-1"
-                description="This is the table the trigger will watch for changes. You can only select 1 table for a trigger."
+                description={$t(
+                  'This is the table the trigger will watch for changes. You can only select 1 table for a trigger.'
+                )}
               >
                 <Select value={field.value} onValueChange={field.onChange}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a table" />
+                      <SelectValue placeholder={$t('Select a table')} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -173,10 +178,12 @@ export const FormContents = ({ form, selectedHook }: FormContentsProps) => {
             name="events"
             render={({ field }) => (
               <FormItemLayout
-                label="Events"
+                label={$t('Events')}
                 layout="vertical"
                 className="gap-1"
-                description="These are the events that are watched by the webhook, only the events selected above will fire the webhook on the table you've selected."
+                description={$t(
+                  "These are the events that are watched by the webhook, only the events selected above will fire the webhook on the table you've selected."
+                )}
               >
                 <div className="space-y-3">
                   {HOOK_EVENTS.map((event) => (
@@ -212,7 +219,9 @@ export const FormContents = ({ form, selectedHook }: FormContentsProps) => {
       <SidePanel.Separator />
       <FormSection
         header={
-          <FormSectionLabel className="lg:col-span-4!">Webhook configuration</FormSectionLabel>
+          <FormSectionLabel className="lg:col-span-4!">
+            {$t('Webhook configuration')}
+          </FormSectionLabel>
         }
       >
         <FormSectionContent loading={false} className="lg:col-span-8!">
@@ -220,7 +229,7 @@ export const FormContents = ({ form, selectedHook }: FormContentsProps) => {
             control={form.control}
             name="function_type"
             render={({ field }) => (
-              <FormItemLayout label="Type of webhook" layout="vertical" className="gap-1">
+              <FormItemLayout label={$t('Type of webhook')} layout="vertical" className="gap-1">
                 <FormControl>
                   <RadioGroupStacked
                     value={field.value}

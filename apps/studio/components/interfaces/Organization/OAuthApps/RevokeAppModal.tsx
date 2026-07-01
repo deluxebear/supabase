@@ -15,6 +15,7 @@ import { Admonition } from 'ui-patterns/admonition'
 
 import { useAuthorizedAppRevokeMutation } from '@/data/oauth/authorized-app-revoke-mutation'
 import type { AuthorizedApp } from '@/data/oauth/authorized-apps-query'
+import { t as $t } from '@/lib/i18n'
 
 export interface RevokeAppModalProps {
   selectedApp?: AuthorizedApp
@@ -52,7 +53,7 @@ export const RevokeAppModal = ({
             <div className="flex flex-col space-y-2">
               <Admonition
                 type="warning"
-                title="This action cannot be undone"
+                title={$t('This action cannot be undone')}
                 description={`${selectedApp?.name} will no longer have access to your organization's settings
           and projects.`}
               />
@@ -60,18 +61,22 @@ export const RevokeAppModal = ({
                 <li className="flex gap-3 text-sm">
                   <Lock size={14} className="shrink-0" />
                   <div>
-                    <strong>Before you remove this app, consider:</strong>
+                    <strong>{$t('Before you remove this app, consider:')}</strong>
                     <ul className="space-y-2 mt-2">
                       <li className="list-disc ml-4">
-                        The application will no longer have access to your organization after being
-                        revoked.
+                        {$t(
+                          'The application will no longer have access to your organization after being revoked.'
+                        )}
                       </li>
                       <li className="list-disc ml-4">
-                        This will remove the application for all members in your organization.
+                        {$t(
+                          'This will remove the application for all members in your organization.'
+                        )}
                       </li>
                       <li className="list-disc ml-4">
-                        Restoring access will require an organization administrator to re-authorize
-                        the application.
+                        {$t(
+                          'Restoring access will require an organization administrator to re-authorize the application.'
+                        )}
                       </li>
                     </ul>
                   </div>
@@ -81,8 +86,8 @@ export const RevokeAppModal = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirmDelete}>Confirm</AlertDialogAction>
+          <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirmDelete}>{$t('Confirm')}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

@@ -6,6 +6,7 @@ import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import { getContentById } from '@/data/content/content-id-query'
 import { useContentUpsertMutation } from '@/data/content/content-upsert-mutation'
 import { Snippet } from '@/data/content/sql-folders-query'
+import { t as $t } from '@/lib/i18n'
 import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
 import type { SqlSnippets } from '@/types'
 
@@ -41,7 +42,7 @@ export const ShareSnippetModal = ({
 
     // [Joshen] Just as a final check - to ensure that the content is minimally there (empty string is fine)
     if (snippetContent === undefined) {
-      return toast.error('Unable to update snippet visibility: Content is missing')
+      return toast.error($t('Unable to update snippet visibility: Content is missing'))
     }
 
     upsertContent(
@@ -61,7 +62,7 @@ export const ShareSnippetModal = ({
             snippet: { visibility: 'project', folder_id: null },
             skipSave: true,
           })
-          toast.success('Snippet is now shared to the project')
+          toast.success($t('Snippet is now shared to the project'))
           onSuccess?.()
           onClose()
         },
@@ -87,11 +88,11 @@ export const ShareSnippetModal = ({
       <ul className="text-sm text-foreground-light space-y-5">
         <li className="flex gap-3 items-center">
           <Eye size={16} />
-          <span>Project members will have read-only access to this query.</span>
+          <span>{$t('Project members will have read-only access to this query.')}</span>
         </li>
         <li className="flex gap-3 items-center">
           <Unlock size={16} />
-          <span>Anyone will be able to duplicate it to their personal snippets.</span>
+          <span>{$t('Anyone will be able to duplicate it to their personal snippets.')}</span>
         </li>
       </ul>
     </ConfirmationModal>

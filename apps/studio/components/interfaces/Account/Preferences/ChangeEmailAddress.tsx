@@ -9,25 +9,26 @@ import * as z from 'zod'
 
 import { InlineLink } from '@/components/ui/InlineLink'
 import { useEmailUpdateMutation } from '@/data/profile/profile-update-email-mutation'
+import { t as $t } from '@/lib/i18n'
 
 export const GitHubChangeEmailAddress = () => {
   return (
     <DialogSection className="flex flex-col gap-y-2">
       <p className="text-sm">
-        Email addresses for GitHub identities should be updated through GitHub
+        {$t('Email addresses for GitHub identities should be updated through GitHub')}
       </p>
       <ol className="flex flex-col gap-y-0.5 text-sm ml-4 pl-2 list-decimal text-foreground-light">
-        <li>Log out of Supabase</li>
+        <li>{$t('Log out of Supabase')}</li>
         <li>
-          Change your Primary Email in{' '}
+          {$t('Change your Primary Email in')}{' '}
           <InlineLink href="https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/changing-your-primary-email-address">
-            GitHub
+            {$t('GitHub')}
           </InlineLink>{' '}
-          (your primary email)
+          {$t('(your primary email)')}
         </li>
-        <li>Log out of GitHub</li>
-        <li>Log back into GitHub (with the new, desired email set as primary)</li>
-        <li>Log back into Supabase</li>
+        <li>{$t('Log out of GitHub')}</li>
+        <li>{$t('Log back into GitHub (with the new, desired email set as primary)')}</li>
+        <li>{$t('Log back into Supabase')}</li>
       </ol>
     </DialogSection>
   )
@@ -37,10 +38,10 @@ export const SSOChangeEmailAddress = () => {
   return (
     <DialogSection className="flex flex-col gap-y-2">
       <p className="text-sm">
-        Email addresses for SSO should be updated through your identity provider
+        {$t('Email addresses for SSO should be updated through your identity provider')}
       </p>
       <ol className="flex flex-col gap-y-0.5 text-sm ml-4 pl-2 list-decimal text-foreground-light">
-        <li>Contact the owner / admin for your team to change your email</li>
+        <li>{$t('Contact the owner / admin for your team to change your email')}</li>
       </ol>
     </DialogSection>
   )
@@ -101,8 +102,8 @@ export const ChangeEmailAddressForm = ({ onClose }: { onClose: () => void }) => 
             control={form.control}
             render={({ field }) => (
               <FormItemLayout
-                label="Provide a new email address"
-                description="A confirmation email will be sent to the provided email address"
+                label={$t('Provide a new email address')}
+                description={$t('A confirmation email will be sent to the provided email address')}
               >
                 <FormControl>
                   <Input {...field} placeholder="example@email.com" />
@@ -114,10 +115,10 @@ export const ChangeEmailAddressForm = ({ onClose }: { onClose: () => void }) => 
 
         <DialogFooter>
           <Button variant="default" disabled={isPending} onClick={onClose}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button type="submit" loading={isPending} disabled={isPending}>
-            Confirm
+            {$t('Confirm')}
           </Button>
         </DialogFooter>
       </form>

@@ -8,6 +8,7 @@ import { DataApiProjectUrlCard } from '@/components/interfaces/Settings/API/Data
 import { useIsDataApiEnabled } from '@/hooks/misc/useIsDataApiEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM, PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const DataApiURLSettings = () => {
   const { ref: projectRef } = useParams()
@@ -20,7 +21,7 @@ export const DataApiURLSettings = () => {
       {!isProjectLoading && project?.status !== PROJECT_STATUS.ACTIVE_HEALTHY ? (
         <Alert variant="destructive">
           <AlertCircle size={16} />
-          <AlertTitle>API settings are unavailable as the project is not active</AlertTitle>
+          <AlertTitle>{$t('API settings are unavailable as the project is not active')}</AlertTitle>
         </Alert>
       ) : (
         <>
@@ -36,8 +37,10 @@ export const DataApiURLSettings = () => {
           ) : (
             <Admonition
               type="default"
-              title="Managed via configuration variables"
-              description="Data API settings are configured via config.toml for CLI and local development, or via docker-compose.yml and .env for self-hosted deployments."
+              title={$t('Managed via configuration variables')}
+              description={$t(
+                'Data API settings are configured via config.toml for CLI and local development, or via docker-compose.yml and .env for self-hosted deployments.'
+              )}
             />
           )}
         </>

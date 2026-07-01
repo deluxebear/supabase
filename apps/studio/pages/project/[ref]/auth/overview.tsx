@@ -17,6 +17,7 @@ import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { useAuthOverviewQuery } from '@/data/auth/auth-overview-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { NextPageWithLayout } from '@/types'
 
 const AuthOverview: NextPageWithLayout = () => {
@@ -47,12 +48,12 @@ const AuthOverview: NextPageWithLayout = () => {
       <PageHeader size="large">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Overview</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Overview')}</PageHeaderTitle>
           </PageHeaderSummary>
           <PageHeaderAside>
             <div className="flex items-center gap-2">
               <span className="text-sm text-foreground-light">
-                <span className="text-foreground">Last 24 hours</span>
+                <span className="text-foreground">{$t('Last 24 hours')}</span>
               </span>
               <DocsButton href={`${DOCS_URL}/guides/auth`} />
             </div>
@@ -69,7 +70,7 @@ const AuthOverview: NextPageWithLayout = () => {
 
 AuthOverview.getLayout = (page) => (
   <DefaultLayout>
-    <AuthLayout title="Overview">{page}</AuthLayout>
+    <AuthLayout title={$t('Overview')}>{page}</AuthLayout>
   </DefaultLayout>
 )
 

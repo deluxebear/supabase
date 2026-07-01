@@ -6,6 +6,7 @@ import { Button, cn, DialogSectionSeparator } from 'ui'
 import { Admonition } from 'ui-patterns/admonition'
 
 import { LinkSupportTicketForm } from './LinkSupportTicketForm'
+import { t as $t } from '@/lib/i18n'
 
 export function LinkSupportTicketPage() {
   return (
@@ -29,8 +30,8 @@ function LinkSupportTicketPageContent() {
     return (
       <Admonition
         type="warning"
-        title="Missing conversation ID"
-        description="Please provide a conversationId in the URL to link your support ticket."
+        title={$t('Missing conversation ID')}
+        description={$t('Please provide a conversationId in the URL to link your support ticket.')}
       />
     )
   }
@@ -64,16 +65,16 @@ function LinkSupportTicketSuccess() {
           </div>
         </div>
         <div className="flex items-center flex-col gap-y-2 text-center">
-          <h3 className="text-xl">Support ticket linked</h3>
+          <h3 className="text-xl">{$t('Support ticket linked')}</h3>
           <p className="text-sm text-foreground-light">
-            Your support conversation has been linked to your account.
+            {$t('Your support conversation has been linked to your account.')}
           </p>
         </div>
       </div>
       <DialogSectionSeparator />
       <div className="w-full py-4 px-4 flex items-center justify-end">
         <Button asChild variant="default">
-          <Link href="/">Finish</Link>
+          <Link href="/">{$t('Finish')}</Link>
         </Button>
       </div>
     </div>

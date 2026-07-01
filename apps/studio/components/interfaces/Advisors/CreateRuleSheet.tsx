@@ -37,6 +37,7 @@ import { generateRuleDescription } from './AdvisorRules.utils'
 import { useLintRuleCreateMutation } from '@/data/lint/create-lint-rule-mutation'
 import { useOrganizationMembersQuery } from '@/data/organizations/organization-members-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 interface CreateRuleSheetProps {
   lint?: LintInfo
@@ -123,7 +124,10 @@ export const CreateRuleSheet = ({ lint, open, onOpenChange }: CreateRuleSheetPro
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex flex-col gap-0">
         <SheetHeader className="shrink-0 flex items-center gap-4">
-          <SheetTitle>Create a rule for "{lint?.title}"</SheetTitle>
+          <SheetTitle>
+            {$t('Create a rule for "')}
+            {lint?.title}"
+          </SheetTitle>
         </SheetHeader>
         <SheetSection className="overflow-auto grow px-0">
           <Form {...form}>
@@ -140,7 +144,7 @@ export const CreateRuleSheet = ({ lint, open, onOpenChange }: CreateRuleSheetPro
                     layout="flex-row-reverse"
                     className="px-5"
                     label={`Disable this lint for ${assigned_to === 'all' ? 'project' : 'the assigned member'}`}
-                    description="Toggles the visiblity of this lint in the Advisor reports"
+                    description={$t('Toggles the visiblity of this lint in the Advisor reports')}
                   >
                     <Tooltip>
                       <TooltipTrigger type="button">
@@ -154,10 +158,11 @@ export const CreateRuleSheet = ({ lint, open, onOpenChange }: CreateRuleSheetPro
                       </TooltipTrigger>
                       {assigned_to === 'all' && (
                         <TooltipContent side="bottom" className="w-72">
-                          Assign this rule to a specific project member before toggling this option
-                          off. This will then configure the rule to{' '}
-                          <span className="text-brand">only be visible</span> to that member in the
-                          advisor reports.
+                          {$t(
+                            'Assign this rule to a specific project member before toggling this option off. This will then configure the rule to'
+                          )}{' '}
+                          <span className="text-brand">{$t('only be visible')}</span>{' '}
+                          {$t('to that member in the advisor reports.')}
                         </TooltipContent>
                       )}
                     </Tooltip>
@@ -171,7 +176,7 @@ export const CreateRuleSheet = ({ lint, open, onOpenChange }: CreateRuleSheetPro
                 name="assigned_to"
                 control={form.control}
                 render={({ field }) => (
-                  <FormItemLayout label="Assign rule to" layout="vertical" className="px-5">
+                  <FormItemLayout label={$t('Assign rule to')} layout="vertical" className="px-5">
                     <Select
                       onValueChange={(val) => {
                         field.onChange(val)
@@ -183,7 +188,7 @@ export const CreateRuleSheet = ({ lint, open, onOpenChange }: CreateRuleSheetPro
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All project members</SelectItem>
+                        <SelectItem value="all">{$t('All project members')}</SelectItem>
                         {members.map((m) => (
                           <SelectItem key={m.gotrue_id} value={m.gotrue_id}>
                             {m.username || m.primary_email}
@@ -216,7 +221,7 @@ export const CreateRuleSheet = ({ lint, open, onOpenChange }: CreateRuleSheetPro
                   <FormItemLayout
                     layout="vertical"
                     className="px-5"
-                    label="Description"
+                    label={$t('Description')}
                     labelOptional="Optional"
                   >
                     <FormControl>
@@ -224,7 +229,7 @@ export const CreateRuleSheet = ({ lint, open, onOpenChange }: CreateRuleSheetPro
                         {...field}
                         rows={4}
                         className="text-sm"
-                        placeholder="e.g Describe why this rule is being set"
+                        placeholder={$t('e.g Describe why this rule is being set')}
                       />
                     </FormControl>
                   </FormItemLayout>
@@ -235,10 +240,10 @@ export const CreateRuleSheet = ({ lint, open, onOpenChange }: CreateRuleSheetPro
         </SheetSection>
         <SheetFooter>
           <Button disabled={isCreating} variant="default" onClick={() => onOpenChange(false)}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button form={formId} type="submit" loading={isCreating}>
-            Create rule
+            {$t('Create rule')}
           </Button>
         </SheetFooter>
       </SheetContent>

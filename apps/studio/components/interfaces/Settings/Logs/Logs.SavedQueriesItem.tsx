@@ -12,6 +12,7 @@ import { UpdateSavedQueryModal } from './Logs.UpdateSavedQueryModal'
 import { LogsSidebarItem } from './SidebarV2/SidebarItem'
 import { useContentDeleteMutation } from '@/data/content/content-delete-mutation'
 import { useContentUpsertMutation } from '@/data/content/content-upsert-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface SavedQueriesItemProps {
   item: {
@@ -45,7 +46,7 @@ export const SavedQueriesItem = ({ item }: SavedQueriesItemProps) => {
       if (queryId && vars.ids.includes(queryId)) {
         setParams({ queryId: '', q: '', s: '', its: '', ite: '' })
       }
-      toast.success('Successfully deleted query')
+      toast.success($t('Successfully deleted query'))
     },
     onError: (error) => {
       toast.error(`Failed to delete saved query: ${error.message}`)
@@ -54,7 +55,7 @@ export const SavedQueriesItem = ({ item }: SavedQueriesItemProps) => {
   const { mutateAsync: updateContent } = useContentUpsertMutation({
     onSuccess: () => {
       setShowUpdateModal(false)
-      toast.success('Successfully updated query')
+      toast.success($t('Successfully updated query'))
     },
     onError: (error) => {
       toast.error(`Failed to update query: ${error.message}`)
@@ -93,7 +94,8 @@ export const SavedQueriesItem = ({ item }: SavedQueriesItemProps) => {
           <>
             <DropdownMenuItem onClick={() => setShowUpdateModal(true)}>
               <Edit size={14} className="mr-2" />
-              Edit query
+
+              {$t('Edit query')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -102,7 +104,8 @@ export const SavedQueriesItem = ({ item }: SavedQueriesItemProps) => {
               }}
             >
               <Trash size={14} className="mr-2" />
-              Delete query
+
+              {$t('Delete query')}
             </DropdownMenuItem>
           </>
         }
@@ -111,12 +114,12 @@ export const SavedQueriesItem = ({ item }: SavedQueriesItemProps) => {
         variant="destructive"
         visible={showConfirmModal}
         confirmLabel="Delete query"
-        title="Confirm to delete saved query"
+        title={$t('Confirm to delete saved query')}
         onCancel={() => setShowConfirmModal(false)}
         onConfirm={onConfirmDelete}
       >
         <p className="text-sm text-foreground-light">
-          Are you sure you want to delete {item.name}?
+          {$t('Are you sure you want to delete')} {item.name}?
         </p>
       </ConfirmationModal>
       <UpdateSavedQueryModal

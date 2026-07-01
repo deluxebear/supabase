@@ -30,6 +30,7 @@ import {
 } from '@/data/analytics/project-daily-stats-query'
 import { METRICS } from '@/lib/constants/metrics'
 import { useFormatDateTime } from '@/lib/datetime'
+import { t as $t } from '@/lib/i18n'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 import type { Dashboards } from '@/types'
 
@@ -247,7 +248,7 @@ export const ChartBlock = ({
             size="tiny"
             disabled={loading}
             className="h-7 px-1.5 font-mono text-[10px]"
-            icon={<span className="font-mono text-[10px] leading-none">Log</span>}
+            icon={<span className="font-mono text-[10px] leading-none">{$t('Log')}</span>}
             onClick={() => {
               const next = !logScale
               if (onUpdateChartConfig) onUpdateChartConfig({ chartConfig: { logScale: next } })
@@ -267,13 +268,15 @@ export const ChartBlock = ({
       {loading ? (
         <div className="flex grow w-full flex-col items-center justify-center gap-y-2 px-4">
           <Loader2 size={18} className="animate-spin text-border-strong" />
-          <p className="text-xs text-foreground-lighter text-center">Loading data for {label}</p>
+          <p className="text-xs text-foreground-lighter text-center">
+            {$t('Loading data for')} {label}
+          </p>
         </div>
       ) : chartData === undefined ? (
         <div className="flex grow w-full flex-col items-center justify-center gap-y-2 px-4">
           <WarningIcon />
           <p className="text-xs text-foreground-lighter text-center">
-            Unable to load data for {label}
+            {$t('Unable to load data for')} {label}
           </p>
         </div>
       ) : data.length === 0 ? (
@@ -281,7 +284,7 @@ export const ChartBlock = ({
           <NoDataPlaceholder
             size="small"
             className="border-0"
-            description="It may take up to 24 hours for data to refresh"
+            description={$t('It may take up to 24 hours for data to refresh')}
           />
         </div>
       ) : (
@@ -289,14 +292,14 @@ export const ChartBlock = ({
           {latestValue && (
             <div className="pt-2 px-3 w-full text-left leading-tight">
               <span className="text-xs font-mono uppercase text-foreground-light">
-                Most recently
+                {$t('Most recently')}
               </span>
               <p className="text-lg text">{latestValue}</p>
             </div>
           )}
           {hasNonPositiveValues && (
             <p className="px-3 pt-1 text-xs text-foreground-light">
-              Log scale is unavailable because the data contains zero or negative values.
+              {$t('Log scale is unavailable because the data contains zero or negative values.')}
             </p>
           )}
           <ChartContainer

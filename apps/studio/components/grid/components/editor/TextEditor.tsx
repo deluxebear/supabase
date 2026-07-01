@@ -26,6 +26,7 @@ import { useTableEditorQuery } from '@/data/table-editor/table-editor-query'
 import { isTableLike } from '@/data/table-editor/table-editor-types'
 import { useGetCellValueMutation } from '@/data/table-rows/get-cell-value-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const TextEditor = <TRow, TSummaryRow = unknown>({
   row,
@@ -64,7 +65,7 @@ export const TextEditor = <TRow, TSummaryRow = unknown>({
   const loadFullValue = () => {
     if (selectedTable === undefined || project === undefined || !isTableLike(selectedTable)) return
     if (selectedTable.primary_keys.length === 0) {
-      return toast('Unable to load value as table has no primary keys')
+      return toast($t('Unable to load value as table has no primary keys'))
     }
 
     const pkMatch = selectedTable.primary_keys.reduce((a, b) => {
@@ -165,9 +166,9 @@ export const TextEditor = <TRow, TSummaryRow = unknown>({
                     </div>
                     <div className="flex items-center space-x-2">
                       <div className="px-1 py-[2.5px] rounded-sm bg-surface-300 border border-strong flex items-center justify-center">
-                        <span className="text-[10px]">Esc</span>
+                        <span className="text-[10px]">{$t('Esc')}</span>
                       </div>
-                      <p className="text-xs text-foreground-light">Cancel changes</p>
+                      <p className="text-xs text-foreground-light">{$t('Cancel changes')}</p>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-y-1">
@@ -178,10 +179,10 @@ export const TextEditor = <TRow, TSummaryRow = unknown>({
                           className="px-1"
                           onClick={() => onSelectExpand()}
                           icon={<Maximize size={12} strokeWidth={2} />}
-                          aria-label="Expand editor"
+                          aria-label={$t('Expand editor')}
                         />
                       </TooltipTrigger>
-                      <TooltipContent side="bottom">Expand editor</TooltipContent>
+                      <TooltipContent side="bottom">{$t('Expand editor')}</TooltipContent>
                     </Tooltip>
                     {isNullable && (
                       <Button
@@ -197,7 +198,7 @@ export const TextEditor = <TRow, TSummaryRow = unknown>({
                           }
                         }}
                       >
-                        Set to NULL
+                        {$t('Set to NULL')}
                       </Button>
                     )}
                   </div>
@@ -209,7 +210,7 @@ export const TextEditor = <TRow, TSummaryRow = unknown>({
       </Popover>
       <ConfirmationModal
         visible={isConfirmNextModalOpen}
-        title="Confirm setting value to NULL"
+        title={$t('Confirm setting value to NULL')}
         confirmLabel="Confirm"
         onCancel={() => setIsConfirmNextModalOpen(false)}
         onConfirm={() => {
@@ -217,7 +218,7 @@ export const TextEditor = <TRow, TSummaryRow = unknown>({
         }}
       >
         <p className="text-sm text-foreground-light">
-          Are you sure you wish to set this value to NULL? This action cannot be undone.
+          {$t('Are you sure you wish to set this value to NULL? This action cannot be undone.')}
         </p>
       </ConfirmationModal>
     </>

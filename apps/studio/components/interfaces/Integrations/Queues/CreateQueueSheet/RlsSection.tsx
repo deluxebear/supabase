@@ -5,6 +5,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { CreateQueueForm } from './CreateQueueSheet.schema'
 import { Markdown } from '@/components/interfaces/Markdown'
+import { t as $t } from '@/lib/i18n'
 
 export function RlsSection({
   form,
@@ -25,11 +26,13 @@ export function RlsSection({
             layout="flex"
             label={
               <div className="flex items-center gap-x-2">
-                <p>Enable Row Level Security (RLS)</p>
-                <Badge variant="success">Recommended</Badge>
+                <p>{$t('Enable Row Level Security (RLS)')}</p>
+                <Badge variant="success">{$t('Recommended')}</Badge>
               </div>
             }
-            description="Restrict access to your queue by enabling RLS and writing Postgres policies to control access for each role."
+            description={$t(
+              'Restrict access to your queue by enabling RLS and writing Postgres policies to control access for each role.'
+            )}
           >
             <FormControl>
               <Switch
@@ -44,7 +47,9 @@ export function RlsSection({
       {!isExposed ? (
         <Admonition
           type="default"
-          title="Row Level Security for queues is only relevant if exposure through PostgREST has been enabled"
+          title={$t(
+            'Row Level Security for queues is only relevant if exposure through PostgREST has been enabled'
+          )}
         >
           <Markdown
             className="[&>p]:leading-normal!"
@@ -55,8 +60,8 @@ export function RlsSection({
       ) : (
         <Admonition
           type="default"
-          title="RLS must be enabled as queues are exposed via PostgREST"
-          description="This is to prevent anonymous access to any of your queues"
+          title={$t('RLS must be enabled as queues are exposed via PostgREST')}
+          description={$t('This is to prevent anonymous access to any of your queues')}
         />
       )}
     </SheetSection>

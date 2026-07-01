@@ -28,6 +28,7 @@ import * as z from 'zod'
 
 import { useUserUpdateMutation } from '@/data/auth/user-update-mutation'
 import { User } from '@/data/auth/users-infinite-query'
+import { t as $t } from '@/lib/i18n'
 
 interface BanUserModalProps {
   visible: boolean
@@ -88,22 +89,23 @@ export const BanUserModal = ({ visible, user, onClose }: BanUserModalProps) => {
     <Dialog open={visible} onOpenChange={() => onClose()}>
       <DialogContent size="small">
         <DialogHeader>
-          <DialogTitle>Confirm to ban user</DialogTitle>
+          <DialogTitle>{$t('Confirm to ban user')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <DialogSection className="flex flex-col gap-y-3">
               <p className="text-sm">
-                This will revoke the user's access to your project and prevent them from logging in
-                for a specified duration.
+                {$t(
+                  "This will revoke the user's access to your project and prevent them from logging in for a specified duration."
+                )}
               </p>
               <div className="flex items-start gap-x-2 [&>div:first-child]:grow">
                 <FormField
                   control={form.control}
                   name="value"
                   render={({ field }) => (
-                    <FormItemLayout label="Set a ban duration">
+                    <FormItemLayout label={$t('Set a ban duration')}>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -118,7 +120,7 @@ export const BanUserModal = ({ visible, user, onClose }: BanUserModalProps) => {
                       <FormControl>
                         <Select
                           {...field}
-                          aria-label="Duration unit"
+                          aria-label={$t('Duration unit')}
                           value={field.value}
                           onValueChange={(value) =>
                             form.setValue('unit', value as 'hours' | 'days')
@@ -126,8 +128,8 @@ export const BanUserModal = ({ visible, user, onClose }: BanUserModalProps) => {
                         >
                           <SelectTrigger className="capitalize w-24">{field.value}</SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="hours">Hours</SelectItem>
-                            <SelectItem value="days">Days</SelectItem>
+                            <SelectItem value="hours">{$t('Hours')}</SelectItem>
+                            <SelectItem value="days">{$t('Days')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </FormControl>
@@ -138,7 +140,7 @@ export const BanUserModal = ({ visible, user, onClose }: BanUserModalProps) => {
 
               <div>
                 <p className="text-sm text-foreground-lighter">
-                  This user will not be able to log in until:
+                  {$t('This user will not be able to log in until:')}
                 </p>
                 <p className={cn('text-sm', !value && 'text-foreground-light')}>
                   {!!value ? bannedUntil : 'Invalid duration set'}
@@ -147,10 +149,10 @@ export const BanUserModal = ({ visible, user, onClose }: BanUserModalProps) => {
             </DialogSection>
             <DialogFooter>
               <Button variant="default" disabled={isBanningUser} onClick={() => onClose()}>
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button variant="warning" type="submit" loading={isBanningUser}>
-                Confirm ban
+                {$t('Confirm ban')}
               </Button>
             </DialogFooter>
           </form>

@@ -3,6 +3,7 @@ import { PropsWithChildren } from 'react'
 
 import { PageLayout } from '@/components/layouts/PageLayout/PageLayout'
 import { ScaffoldContainer } from '@/components/layouts/Scaffold'
+import { t as $t } from '@/lib/i18n'
 
 const JWTKeysLayout = ({ children }: PropsWithChildren) => {
   const { ref: projectRef } = useParams()
@@ -22,7 +23,7 @@ const JWTKeysLayout = ({ children }: PropsWithChildren) => {
 
   return (
     <PageLayout
-      title="JWT Keys"
+      title={$t('JWT Keys')}
       subtitle="Control the keys used to sign JSON Web Tokens for your project"
       navigationItems={navigationItems}
     >

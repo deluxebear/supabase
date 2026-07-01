@@ -43,6 +43,7 @@ import { useCustomContent } from '@/hooks/custom-content/useCustomContent'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const SSLConfiguration = () => {
   const { ref } = useParams()
@@ -60,7 +61,7 @@ export const SSLConfiguration = () => {
   const { mutate: updateSSLEnforcement, isPending: isSubmitting } = useSSLEnforcementUpdateMutation(
     {
       onSuccess: () => {
-        toast.success('Successfully updated SSL configuration')
+        toast.success($t('Successfully updated SSL configuration'))
       },
       onError: (error) => {
         setIsEnforced(initialIsEnforced)
@@ -114,7 +115,7 @@ export const SSLConfiguration = () => {
     <PageSection id="ssl-configuration">
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>SSL configuration</PageSectionTitle>
+          <PageSectionTitle>{$t('SSL configuration')}</PageSectionTitle>
         </PageSectionSummary>
         <DocsButton href={`${DOCS_URL}/guides/platform/ssl-enforcement`} />
       </PageSectionMeta>
@@ -123,8 +124,8 @@ export const SSLConfiguration = () => {
           <CardContent className="space-y-4">
             <FormLayout
               layout="flex-row-reverse"
-              label="Enforce SSL on incoming connections"
-              description="Reject non-SSL connections to your database"
+              label={$t('Enforce SSL on incoming connections')}
+              description={$t('Reject non-SSL connections to your database')}
             >
               <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -165,15 +166,16 @@ export const SSLConfiguration = () => {
                 <AlertDialogContent size="medium">
                   <AlertDialogHeader>
                     <AlertDialogTitle>
-                      Updating SSL enforcement involves a brief downtime
+                      {$t('Updating SSL enforcement involves a brief downtime')}
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      A database restart is required for SSL enforcement changes to take place, and
-                      this involves a few minutes of downtime. Confirm to proceed now?
+                      {$t(
+                        'A database restart is required for SSL enforcement changes to take place, and this involves a few minutes of downtime. Confirm to proceed now?'
+                      )}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel disabled={isSubmitting}>{$t('Cancel')}</AlertDialogCancel>
                     <AlertDialogAction
                       variant="warning"
                       disabled={isSubmitting}
@@ -189,12 +191,12 @@ export const SSLConfiguration = () => {
               <Admonition
                 type="warning"
                 layout="horizontal"
-                title="SSL enforcement was not updated successfully"
+                title={$t('SSL enforcement was not updated successfully')}
                 description={
                   <>
-                    Please try updating again, or contact{' '}
-                    <SupportLink className={InlineLinkClassName}>support</SupportLink> if this error
-                    persists
+                    {$t('Please try updating again, or contact')}{' '}
+                    <SupportLink className={InlineLinkClassName}>support</SupportLink>{' '}
+                    {$t('if this error persists')}
                   </>
                 }
               />
@@ -203,8 +205,10 @@ export const SSLConfiguration = () => {
           <CardContent>
             <FormLayout
               layout="flex-row-reverse"
-              label="SSL Certificate"
-              description="Use this certificate when connecting to your database to prevent snooping and man-in-the-middle attacks."
+              label={$t('SSL Certificate')}
+              description={$t(
+                'Use this certificate when connecting to your database to prevent snooping and man-in-the-middle attacks.'
+              )}
             >
               <div className="flex items-end justify-end">
                 {!hasSSLCertificate ? (
@@ -219,11 +223,11 @@ export const SSLConfiguration = () => {
                       },
                     }}
                   >
-                    Download certificate
+                    {$t('Download certificate')}
                   </ButtonTooltip>
                 ) : (
                   <Button variant="default" icon={<Download />}>
-                    <a href={sslCertificateUrl}>Download certificate</a>
+                    <a href={sslCertificateUrl}>{$t('Download certificate')}</a>
                   </Button>
                 )}
               </div>

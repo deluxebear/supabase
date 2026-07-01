@@ -6,6 +6,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { OptInToOpenAIToggle } from './OptInToOpenAIToggle'
 import { AIOptInFormValues } from '@/hooks/forms/useAIOptInForm'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 
 interface AIOptInLevelSelectorProps {
   control: Control<AIOptInFormValues>
@@ -82,14 +83,14 @@ export const AIOptInLevelSelector = ({
       description={
         <div className="flex flex-col gap-y-4 my-4 max-w-xl">
           <p>
-            Supabase AI can provide more relevant answers if you choose to share different levels of
-            data. This feature is powered by third-party AI providers. This is an organization-wide
-            setting, so please select the level of data you are comfortable sharing.
+            {$t(
+              'Supabase AI can provide more relevant answers if you choose to share different levels of data. This feature is powered by third-party AI providers. This is an organization-wide setting, so please select the level of data you are comfortable sharing.'
+            )}
           </p>
           <p>
-            For organizations with HIPAA compliance enabled in their Supabase configuration, any
-            consented information will only be shared with third-party AI providers with whom
-            Supabase has established a Business Associate Agreement (BAA).
+            {$t(
+              'For organizations with HIPAA compliance enabled in their Supabase configuration, any consented information will only be shared with third-party AI providers with whom Supabase has established a Business Associate Agreement (BAA).'
+            )}
           </p>
           <OptInToOpenAIToggle />
         </div>

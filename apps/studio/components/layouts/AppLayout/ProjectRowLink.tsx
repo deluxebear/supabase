@@ -6,6 +6,7 @@ import { Badge, cn } from 'ui'
 import { sanitizeRoute } from './ProjectDropdown.utils'
 import PartnerIcon from '@/components/ui/PartnerIcon'
 import { getManagedByFromOrganizationPartner } from '@/data/organizations/managed-by-utils'
+import { t as $t } from '@/lib/i18n'
 
 export interface ProjectRowLinkProps {
   project: {
@@ -43,7 +44,7 @@ export function ProjectRowLink({
         )}
       >
         <span className="truncate">{project.name}</span>
-        {isPaused && <Badge className="ml-2">Paused</Badge>}
+        {isPaused && <Badge className="ml-2">{$t('Paused')}</Badge>}
         <PartnerIcon organization={{ managed_by: managedBy }} />
       </span>
       {isSelected && <Check size={16} />}

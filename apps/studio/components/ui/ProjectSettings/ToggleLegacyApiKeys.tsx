@@ -22,6 +22,7 @@ import { useLegacyJWTSigningKeyQuery } from '@/data/jwt-signing-keys/legacy-jwt-
 import { useAuthorizedAppsQuery } from '@/data/oauth/authorized-apps-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 export const ToggleLegacyApiKeysPanel = () => {
   const { ref: projectRef } = useParams()
@@ -57,7 +58,7 @@ export const ToggleLegacyApiKeysPanel = () => {
       rel="noreferrer"
       className="underline"
     >
-      OAuth apps
+      {$t('OAuth apps')}
     </a>
   )
 
@@ -66,9 +67,10 @@ export const ToggleLegacyApiKeysPanel = () => {
         title: 'Check your OAuth apps before continuing',
         description: (
           <>
-            Disabling legacy API keys can break apps that integrate with Supabase. Before
-            continuing, check your organization's {oauthAppsLink} to ensure none of them depend on
-            the legacy API keys.
+            {$t(
+              "Disabling legacy API keys can break apps that integrate with Supabase. Before continuing, check your organization's"
+            )}{' '}
+            {oauthAppsLink} {$t('to ensure none of them depend on the legacy API keys.')}
           </>
         ),
       }
@@ -76,9 +78,10 @@ export const ToggleLegacyApiKeysPanel = () => {
         title: 'Apps using Supabase may break',
         description: (
           <>
-            Your project uses apps that integrate with Supabase. Disabling the legacy API keys is a
-            brand new feature and the apps you're using may not have added support for this yet. It
-            can cause them to stop functioning. Check your {oauthAppsLink} before continuing.
+            {$t(
+              "Your project uses apps that integrate with Supabase. Disabling the legacy API keys is a brand new feature and the apps you're using may not have added support for this yet. It can cause them to stop functioning. Check your"
+            )}{' '}
+            {oauthAppsLink} {$t('before continuing.')}
           </>
         ),
       }
@@ -147,9 +150,9 @@ export const ToggleLegacyApiKeysPanel = () => {
             <AlertDialogDescription>{appsWarning.description}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
             <AlertDialogAction variant="danger" onClick={() => setIsConfirmOpen(true)}>
-              Disable API keys
+              {$t('Disable API keys')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -209,15 +212,15 @@ const ToggleApiKeysModal = ({
               title: 'Ensure legacy keys are no longer in use before disabling',
               description: (
                 <span className="prose text-sm">
-                  Disabling <code>anon</code> and <code>service_role</code> keys while they are in
-                  use will cause downtime for your application. Ensure they are no longer in use
-                  before proceeding. If you have not created a publishable and at least one secret
-                  API key, some dashboard functionality may become unavailable.
+                  {$t('Disabling')} <code>anon</code> and <code>service_role</code>{' '}
+                  {$t(
+                    'keys while they are in use will cause downtime for your application. Ensure they are no longer in use before proceeding. If you have not created a publishable and at least one secret API key, some dashboard functionality may become unavailable.'
+                  )}
                   <br />
                   <br />
                   <span className="text-danger">
-                    This disables API keys when used in the <code>apikey</code> header. They remain
-                    valid as a JWT.
+                    {$t('This disables API keys when used in the')} <code>apikey</code>{' '}
+                    {$t('header. They remain valid as a JWT.')}
                   </span>
                 </span>
               ),
@@ -226,9 +229,10 @@ const ToggleApiKeysModal = ({
               title: 'Publishable and secret keys are preferred',
               description: (
                 <span className="prose text-sm">
-                  Re-enabling <code>anon</code> and <code>service_role</code> keys may be
-                  appropriate in certain cases, but using a publishable and secret key is more
-                  secure. We recommend against re-enabling legacy API keys.
+                  {$t('Re-enabling')} <code>anon</code> and <code>service_role</code>{' '}
+                  {$t(
+                    'keys may be appropriate in certain cases, but using a publishable and secret key is more secure. We recommend against re-enabling legacy API keys.'
+                  )}
                 </span>
               ),
             }

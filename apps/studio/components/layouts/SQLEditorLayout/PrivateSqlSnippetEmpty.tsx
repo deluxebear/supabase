@@ -2,10 +2,12 @@ import { Pointer } from 'lucide-react'
 import { TreeViewItem } from 'ui'
 import { InnerSideBarEmptyPanel } from 'ui-patterns/InnerSideMenu'
 
+import { t as $t } from '@/lib/i18n'
+
 export const EmptyPrivateQueriesPanel = () => (
   <InnerSideBarEmptyPanel
-    title="No private queries created yet"
-    description="Queries will be automatically saved once you start writing in the editor"
+    title={$t('No private queries created yet')}
+    description={$t('Queries will be automatically saved once you start writing in the editor')}
     className="mx-4"
   >
     <div className="top-0 left-6 flex flex-col opacity-50 cursor-not-allowed bg-dash-sidebar -mb-7 pointer-events-none scale-75">

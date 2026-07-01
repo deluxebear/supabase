@@ -74,6 +74,7 @@ import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants/infrastructure'
 import { cleanPointerEventsNoneOnBody, isAtBottom } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useRoleImpersonationStateSnapshot } from '@/state/role-impersonation-state'
 
@@ -229,7 +230,7 @@ export const UsersV2 = () => {
   const { mutate: updateAuthConfig, isPending: isUpdatingAuthConfig } = useAuthConfigUpdateMutation(
     {
       onSuccess: () => {
-        toast.success('Initiated creation of user search indexes')
+        toast.success($t('Initiated creation of user search indexes'))
       },
       onError: (error) => {
         toast.error(`Failed to initiate creation of user search indexes: ${error?.message}`)
@@ -521,7 +522,7 @@ export const UsersV2 = () => {
   return (
     <>
       <div className="h-full flex flex-col">
-        <FormHeader className="py-4 px-6 mb-0! border-b" title="Users" />
+        <FormHeader className="py-4 px-6 mb-0! border-b" title={$t('Users')} />
 
         {showImprovedSearchOptIn && (
           <Alert className="rounded-none mb-0 border-0 relative">
@@ -532,13 +533,15 @@ export const UsersV2 = () => {
               >
                 <X size={14} className="text-foreground-light" />
               </TooltipTrigger>
-              <TooltipContent side="bottom">Dismiss</TooltipContent>
+              <TooltipContent side="bottom">{$t('Dismiss')}</TooltipContent>
             </Tooltip>
             <InfoIcon className="size-4" />
-            <AlertTitle>Upgrade to an improved search experience</AlertTitle>
+            <AlertTitle>{$t('Upgrade to an improved search experience')}</AlertTitle>
             <AlertDescription className="flex justify-between items-center">
               <div>
-                Enable faster and more reliable searching, sorting, and filtering of your users.
+                {$t(
+                  'Enable faster and more reliable searching, sorting, and filtering of your users.'
+                )}
               </div>
               <Button
                 icon={<WandSparklesIcon />}
@@ -546,7 +549,7 @@ export const UsersV2 = () => {
                 loading={isUpdatingAuthConfig}
                 variant="default"
               >
-                Upgrade search
+                {$t('Upgrade search')}
               </Button>
             </AlertDescription>
           </Alert>
@@ -555,11 +558,12 @@ export const UsersV2 = () => {
         {indexWorkerInProgress && (
           <Alert className="rounded-none mb-0 border-0 border-t">
             <InfoIcon className="size-4" />
-            <AlertTitle>Index creation is in progress</AlertTitle>
+            <AlertTitle>{$t('Index creation is in progress')}</AlertTitle>
             <AlertDescription className="flex justify-between items-center">
               <div>
-                The indexes are currently being created. This process may take some time depending
-                on the number of users in your project.
+                {$t(
+                  'The indexes are currently being created. This process may take some time depending on the number of users in your project.'
+                )}
               </div>
 
               <Button variant="link" iconRight={<ExternalLinkIcon />} asChild>
@@ -567,7 +571,7 @@ export const UsersV2 = () => {
                   href={`/project/${projectRef}/logs/explorer?q=${encodeURI(INDEX_WORKER_LOGS_SEARCH_STRING)}`}
                   target="_blank"
                 >
-                  View logs
+                  {$t('View logs')}
                 </Link>
               </Button>
             </AlertDescription>
@@ -578,7 +582,7 @@ export const UsersV2 = () => {
           {selectedUsers.size > 0 ? (
             <div className="flex items-center gap-x-2">
               <Button variant="default" icon={<Trash />} onClick={() => setShowDeleteModal(true)}>
-                Delete {selectedUsers.size} users
+                {$t('Delete')} {selectedUsers.size} users
               </Button>
               <ButtonTooltip
                 variant="default"
@@ -635,16 +639,16 @@ export const UsersV2 = () => {
                       <SelectContent>
                         <SelectGroup>
                           <SelectItem value="all" className="text-xs">
-                            All users
+                            {$t('All users')}
                           </SelectItem>
                           <SelectItem value="verified" className="text-xs">
-                            Verified users
+                            {$t('Verified users')}
                           </SelectItem>
                           <SelectItem value="unverified" className="text-xs">
-                            Unverified users
+                            {$t('Unverified users')}
                           </SelectItem>
                           <SelectItem value="anonymous" className="text-xs">
-                            Anonymous users
+                            {$t('Anonymous users')}
                           </SelectItem>
                         </SelectGroup>
                       </SelectContent>
@@ -678,7 +682,7 @@ export const UsersV2 = () => {
 
                 <FilterPopover
                   name={selectedColumns.length === 0 ? 'All columns' : 'Columns'}
-                  title="Select columns to show"
+                  title={$t('Select columns to show')}
                   buttonType={selectedColumns.length === 0 ? 'dashed' : 'default'}
                   options={userTableColumns.slice(1)} // Ignore user image column
                   labelKey="name"
@@ -754,7 +758,7 @@ export const UsersV2 = () => {
                   loading={isRefetching && !isFetchingNextPage}
                   onClick={handleRefresh}
                   tooltip={{ content: { side: 'bottom', text: 'Refresh' } }}
-                  aria-label="Refresh"
+                  aria-label={$t('Refresh')}
                 />
                 <AddUserDropdown />
               </div>
@@ -889,7 +893,7 @@ export const UsersV2 = () => {
         }}
       >
         <p className="text-sm text-foreground-light">
-          This is permanent! Are you sure you want to delete the{' '}
+          {$t('This is permanent! Are you sure you want to delete the')}{' '}
           {selectedUsers.size === 1 ? '' : `selected ${selectedUsers.size} `}user
           {selectedUsers.size > 1 ? 's' : ''}
           {selectedUsers.size === 1 ? (
@@ -907,7 +911,7 @@ export const UsersV2 = () => {
         variant="warning"
         visible={showFreeformWarning}
         confirmLabel="Confirm"
-        title="Confirm to search across all columns"
+        title={$t('Confirm to search across all columns')}
         onConfirm={() => {
           updateStorageFilter('freeform')
           setShowFreeformWarning(false)
@@ -921,9 +925,9 @@ export const UsersV2 = () => {
         }}
       >
         <p className="text-foreground-light text-sm">
-          This will allow you to search across user ID, email, phone number, and display name
-          through a single input field. You will also be able to filter users by provider and sort
-          on users across different columns.
+          {$t(
+            'This will allow you to search across user ID, email, phone number, and display name through a single input field. You will also be able to filter users by provider and sort on users across different columns.'
+          )}
         </p>
       </ConfirmationModal>
 
@@ -931,7 +935,7 @@ export const UsersV2 = () => {
         size="medium"
         visible={showCreateIndexesModal}
         confirmLabel="Upgrade search"
-        title="Upgrade to improved search"
+        title={$t('Upgrade to improved search')}
         onConfirm={() => {
           handleEnableUserSearchIndexes()
           setShowCreateIndexesModal(false)
@@ -945,24 +949,25 @@ export const UsersV2 = () => {
       >
         <ul className="text-sm list-disc pl-4 my-3 flex flex-col gap-2">
           <li className="marker:text-foreground-light">
-            Creating these indexes may temporarily impact database performance.
+            {$t('Creating these indexes may temporarily impact database performance.')}
           </li>
           <li className="marker:text-foreground-light">
-            Depending on the number of users, this may take some time to complete.
+            {$t('Depending on the number of users, this may take some time to complete.')}
           </li>
           <li className="marker:text-foreground-light">
-            You can continue using the Auth Users page while the indexes are being created, but
-            improvements will only take effect once complete.
+            {$t(
+              'You can continue using the Auth Users page while the indexes are being created, but improvements will only take effect once complete.'
+            )}
           </li>
           <li className="marker:text-foreground-light">
-            You can monitor the progress in the{' '}
+            {$t('You can monitor the progress in the')}{' '}
             <InlineLink
               href={`/project/${projectRef}/logs/explorer?q=${encodeURI(INDEX_WORKER_LOGS_SEARCH_STRING)}`}
               target="_blank"
             >
-              project logs
+              {$t('project logs')}
             </InlineLink>
-            . If you encounter any issues, please contact Supabase support for assistance.
+            {$t('. If you encounter any issues, please contact Supabase support for assistance.')}
           </li>
         </ul>
       </ConfirmationModal>

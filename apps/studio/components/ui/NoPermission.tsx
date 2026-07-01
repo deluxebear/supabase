@@ -1,5 +1,7 @@
 import { Admonition } from 'ui-patterns/admonition'
 
+import { t as $t } from '@/lib/i18n'
+
 interface NoPermissionProps {
   resourceText: string
   isFullPage?: boolean
@@ -10,7 +12,7 @@ export const NoPermission = ({ resourceText, isFullPage = false }: NoPermissionP
     <Admonition
       type="warning"
       title={`You need additional permissions to ${resourceText}`}
-      description="Contact your organization owner or administrator for assistance."
+      description={$t('Contact your organization owner or administrator for assistance.')}
     />
   )
 

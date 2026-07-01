@@ -43,6 +43,7 @@ import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/L
 import { AlertError } from '@/components/ui/AlertError'
 import { ErrorCodeTooltip } from '@/components/ui/ErrorCodeTooltip/ErrorCodeTooltip'
 import { Service } from '@/data/graphql/graphql'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -108,12 +109,12 @@ const LogsLink = ({ href }: { href: string }) => (
         className="p-1.5 text-foreground-lighter hover:text-foreground"
         asChild
       >
-        <Link href={href} aria-label="Go to Logs">
+        <Link href={href} aria-label={$t('Go to Logs')}>
           <ChevronRight size={12} />
         </Link>
       </Button>
     </TooltipTrigger>
-    <TooltipContent>Go to Logs</TooltipContent>
+    <TooltipContent>{$t('Go to Logs')}</TooltipContent>
   </Tooltip>
 )
 
@@ -222,13 +223,13 @@ export const OverviewMetrics = ({ metrics, isLoading, error }: OverviewMetricsPr
         <PageSectionMeta>
           <PageSectionSummary>
             <div className="flex items-center justify-between">
-              <PageSectionTitle>Usage</PageSectionTitle>
+              <PageSectionTitle>{$t('Usage')}</PageSectionTitle>
               <Link
                 href={`/project/${ref}/reports/auth?its=${startDate}&ite=${endDate}&isHelper=true&helperText=Last+24+hours`}
                 className="text-foreground underline underline-offset-2 decoration-foreground-muted hover:decoration-foreground transition-all text-sm inline-flex items-center gap-x-1.5"
               >
                 <Telescope size={14} className="text-foreground-lighter" />
-                <span>Go to observability</span>
+                <span>{$t('Go to observability')}</span>
                 <ChevronRight size={14} className="text-foreground-lighter" />
               </Link>
             </div>
@@ -237,15 +238,17 @@ export const OverviewMetrics = ({ metrics, isLoading, error }: OverviewMetricsPr
         <PageSectionContent>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <StatCard
-              title="Auth Activity"
+              title={$t('Auth Activity')}
               current={activeUsersCurrent}
               previous={activeUsersChange}
               loading={isLoading}
               href={`/project/${ref}/reports/auth?its=${startDate}&ite=${endDate}#usage`}
-              tooltip="Users who generated any Auth event in this period. This metric tracks authentication activity, not total product usage. Some active users won't appear here if their session stayed valid."
+              tooltip={$t(
+                "Users who generated any Auth event in this period. This metric tracks authentication activity, not total product usage. Some active users won't appear here if their session stayed valid."
+              )}
             />
             <StatCard
-              title="Sign ups"
+              title={$t('Sign ups')}
               current={signUpsCurrent}
               previous={signUpsChange}
               loading={isLoading}
@@ -258,13 +261,13 @@ export const OverviewMetrics = ({ metrics, isLoading, error }: OverviewMetricsPr
       <PageSection>
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>Monitoring</PageSectionTitle>
+            <PageSectionTitle>{$t('Monitoring')}</PageSectionTitle>
           </PageSectionSummary>
         </PageSectionMeta>
         <PageSectionContent>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             <StatCard
-              title="Auth API Success Rate"
+              title={$t('Auth API Success Rate')}
               current={apiSuccessRateCurrent}
               previous={apiSuccessRateChange}
               loading={isLoading}
@@ -272,7 +275,7 @@ export const OverviewMetrics = ({ metrics, isLoading, error }: OverviewMetricsPr
               href={`/project/${ref}/reports/auth?its=${startDate}&ite=${endDate}#monitoring`}
             />
             <StatCard
-              title="Auth Server Success Rate"
+              title={$t('Auth Server Success Rate')}
               current={authSuccessRateCurrent}
               previous={authSuccessRateChange}
               loading={isLoading}
@@ -285,7 +288,7 @@ export const OverviewMetrics = ({ metrics, isLoading, error }: OverviewMetricsPr
             <Chart isLoading={isLoadingResp}>
               <ChartCard>
                 <ChartHeader>
-                  <ChartTitle>Auth API Errors</ChartTitle>
+                  <ChartTitle>{$t('Auth API Errors')}</ChartTitle>
                 </ChartHeader>
                 <ChartContent
                   className="p-0!"
@@ -294,8 +297,8 @@ export const OverviewMetrics = ({ metrics, isLoading, error }: OverviewMetricsPr
                     <div className="p-6">
                       <ChartEmptyState
                         icon={<BarChart2 size={16} />}
-                        title="No data to show"
-                        description="It may take up to 24 hours for data to refresh"
+                        title={$t('No data to show')}
+                        description={$t('It may take up to 24 hours for data to refresh')}
                       />
                     </div>
                   }
@@ -347,7 +350,7 @@ export const OverviewMetrics = ({ metrics, isLoading, error }: OverviewMetricsPr
             <Chart isLoading={isLoadingCodes}>
               <ChartCard>
                 <ChartHeader>
-                  <ChartTitle>Auth Server Errors</ChartTitle>
+                  <ChartTitle>{$t('Auth Server Errors')}</ChartTitle>
                   <ChartActions actions={errorCodesActions} />
                 </ChartHeader>
                 <ChartContent
@@ -357,8 +360,8 @@ export const OverviewMetrics = ({ metrics, isLoading, error }: OverviewMetricsPr
                     <div className="p-6">
                       <ChartEmptyState
                         icon={<BarChart2 size={16} />}
-                        title="No data to show"
-                        description="It may take up to 24 hours for data to refresh"
+                        title={$t('No data to show')}
+                        description={$t('It may take up to 24 hours for data to refresh')}
                       />
                     </div>
                   }

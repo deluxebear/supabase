@@ -8,6 +8,7 @@ import ObservabilityLayout from '@/components/layouts/ObservabilityLayout/Observ
 import { DatabaseSelector } from '@/components/ui/DatabaseSelector'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { useReportDateRange } from '@/hooks/misc/useReportDateRange'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const PRESETS = [
@@ -60,7 +61,7 @@ const QueryInsightsReport: NextPageWithLayout = () => {
 
 QueryInsightsReport.getLayout = (page) => (
   <DefaultLayout>
-    <ObservabilityLayout title="Query insights">{page}</ObservabilityLayout>
+    <ObservabilityLayout title={$t('Query insights')}>{page}</ObservabilityLayout>
   </DefaultLayout>
 )
 

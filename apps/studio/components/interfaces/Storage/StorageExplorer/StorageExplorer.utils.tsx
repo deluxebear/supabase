@@ -5,6 +5,7 @@ import { inverseValidObjectKeyRegex, validObjectKeyRegex } from '../CreateBucket
 import { STORAGE_ROW_STATUS, STORAGE_ROW_TYPES } from '../Storage.constants'
 import { StorageItem, StorageItemMetadata } from '../Storage.types'
 import type { StorageObject } from '@/data/storage/bucket-objects-list-mutation'
+import { t as $t } from '@/lib/i18n'
 import type { StorageExplorerState } from '@/state/storage-explorer'
 
 type UploadProgress = {
@@ -202,7 +203,7 @@ export const getFile = async (fileEntry: FileSystemFileEntry): Promise<File | un
 
 // Referenced from: // https://stackoverflow.com/a/53058574
 export const getFilesDataTransferItems = async (items: DataTransferItemList) => {
-  const toastId = toast('Retrieving items to upload...')
+  const toastId = toast($t('Retrieving items to upload...'))
   const files: (File & { path: string })[] = []
   const queue: FileSystemEntry[] = []
   for (const item of items) {

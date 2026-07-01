@@ -14,6 +14,7 @@ import DatabaseLayout from '@/components/layouts/DatabaseLayout/DatabaseLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const MigrationsPage: NextPageWithLayout = () => {
@@ -22,8 +23,10 @@ const MigrationsPage: NextPageWithLayout = () => {
       <PageHeader size="large">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Database Migrations</PageHeaderTitle>
-            <PageHeaderDescription>Track changes to your database over time</PageHeaderDescription>
+            <PageHeaderTitle>{$t('Database Migrations')}</PageHeaderTitle>
+            <PageHeaderDescription>
+              {$t('Track changes to your database over time')}
+            </PageHeaderDescription>
           </PageHeaderSummary>
           <PageHeaderAside>
             <DocsButton
@@ -46,7 +49,7 @@ const MigrationsPage: NextPageWithLayout = () => {
 
 MigrationsPage.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Migrations">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Migrations')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

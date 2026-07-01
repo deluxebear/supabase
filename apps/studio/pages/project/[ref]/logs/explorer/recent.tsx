@@ -9,6 +9,7 @@ import LogsLayout from '@/components/layouts/LogsLayout/LogsLayout'
 import Table from '@/components/to-be-cleaned/Table'
 import LogsExplorerHeader from '@/components/ui/Logs/LogsExplorerHeader'
 import { useLocalStorage } from '@/hooks/misc/useLocalStorage'
+import { t as $t } from '@/lib/i18n'
 import type { LogSqlSnippets, NextPageWithLayout } from '@/types'
 
 export const LogsSavedPage: NextPageWithLayout = () => {
@@ -27,10 +28,10 @@ export const LogsSavedPage: NextPageWithLayout = () => {
         <Table
           head={
             <>
-              <Table.th>Snippets</Table.th>
+              <Table.th>{$t('Snippets')}</Table.th>
               <Table.th className="w-24">
                 <Button size="tiny" variant="default" onClick={() => setRecentLogSnippets([])}>
-                  Clear history
+                  {$t('Clear history')}
                 </Button>
               </Table.th>
             </>
@@ -44,13 +45,13 @@ export const LogsSavedPage: NextPageWithLayout = () => {
         <>
           <div className="my-auto flex h-full grow flex-col items-center justify-center gap-1">
             <Clock className="animate-bounce" />
-            <h3 className="text-lg text-foreground">No Recent Queries Yet</h3>
+            <h3 className="text-lg text-foreground">{$t('No Recent Queries Yet')}</h3>
             <p className="text-sm text-foreground-lighter">
-              Your recent queries run from the{' '}
+              {$t('Your recent queries run from the')}{' '}
               <Link href={`/project/${ref}/logs/explorer`}>
-                <span className="cursor-pointer font-bold underline">Query</span>
+                <span className="cursor-pointer font-bold underline">{$t('Query')}</span>
               </Link>{' '}
-              tab will show here.
+              {$t('tab will show here.')}
             </p>
           </div>
         </>
@@ -61,7 +62,7 @@ export const LogsSavedPage: NextPageWithLayout = () => {
 
 LogsSavedPage.getLayout = (page) => (
   <DefaultLayout>
-    <LogsLayout title="Recent">{page}</LogsLayout>
+    <LogsLayout title={$t('Recent')}>{page}</LogsLayout>
   </DefaultLayout>
 )
 

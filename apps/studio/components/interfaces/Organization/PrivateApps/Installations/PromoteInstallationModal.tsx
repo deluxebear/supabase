@@ -4,6 +4,7 @@ import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import { Installation, PrivateApp, usePrivateApps } from '../PrivateAppsContext'
 import { usePlatformAppInstallationCreateMutation } from '@/data/platform-apps/platform-app-installation-create-mutation'
 import { usePlatformAppInstallationDeleteMutation } from '@/data/platform-apps/platform-app-installation-delete-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface PromoteInstallationModalProps {
   appToPromote: PrivateApp | undefined
@@ -71,13 +72,16 @@ export function PromoteInstallationModal({
       <p className="text-sm text-foreground-light py-2">
         {currentInstallation ? (
           <>
-            This will replace <strong>{currentApp?.name ?? currentInstallation.app_id}</strong> with{' '}
-            <strong>{appToPromote?.name}</strong> as the installed app. Any tokens generated through
-            the current installation will stop working.
+            {$t('This will replace')}{' '}
+            <strong>{currentApp?.name ?? currentInstallation.app_id}</strong> with{' '}
+            <strong>{appToPromote?.name}</strong>{' '}
+            {$t(
+              'as the installed app. Any tokens generated through the current installation will stop working.'
+            )}
           </>
         ) : (
           <>
-            <strong>{appToPromote?.name}</strong> will be installed for this organization.
+            <strong>{appToPromote?.name}</strong> {$t('will be installed for this organization.')}
           </>
         )}
       </p>

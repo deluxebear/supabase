@@ -40,6 +40,7 @@ import {
 import { useGetIndexesFromSelectQuery } from '@/data/database/retrieve-index-from-select-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 interface QueryIndexesProps {
@@ -176,9 +177,9 @@ export const QueryIndexes = ({
       <QueryPanelContainer className="h-full">
         <QueryPanelSection className="pt-2">
           <div className="border rounded-sm border-dashed flex flex-col items-center justify-center py-4 px-12 gap-y-1 text-center">
-            <p className="text-sm text-foreground-light">Enable Index Advisor</p>
+            <p className="text-sm text-foreground-light">{$t('Enable Index Advisor')}</p>
             <p className="text-center text-xs text-foreground-lighter mb-2">
-              Recommends indexes to improve query performance.
+              {$t('Recommends indexes to improve query performance.')}
             </p>
             <div className="flex items-center gap-x-2">
               <DocsButton href={`${DOCS_URL}/guides/database/extensions/index_advisor`} />
@@ -196,16 +197,18 @@ export const QueryIndexes = ({
         <QueryPanelSection className="pt-2 pb-6 border-b">
           <div className="flex flex-col gap-y-3">
             <div>
-              <h4 className="mb-2">Recommendation reason</h4>
+              <h4 className="mb-2">{$t('Recommendation reason')}</h4>
               {columnName && (
                 <p className="text-sm text-foreground-light">
-                  Recommendation for column: <span className="font-mono">{columnName}</span>
+                  {$t('Recommendation for column:')} <span className="font-mono">{columnName}</span>
                 </p>
               )}
             </div>
             {suggestedSelectQuery && (
               <div className="flex flex-col gap-y-4">
-                <p className="text-sm text-foreground-light">Based on the following query:</p>
+                <p className="text-sm text-foreground-light">
+                  {$t('Based on the following query:')}
+                </p>
                 <CodeBlock
                   hideLineNumbers
                   value={suggestedSelectQuery}
@@ -225,9 +228,10 @@ export const QueryIndexes = ({
         className={cn('mb-6', !suggestedSelectQuery && !columnName ? 'pt-2' : 'pt-6')}
       >
         <div className="mb-4 flex flex-col gap-y-1">
-          <h4 className="mb-2">Indexes in use</h4>
+          <h4 className="mb-2">{$t('Indexes in use')}</h4>
           <p className="text-sm text-foreground-light">
-            This query is using the following index{(usedIndexes ?? []).length > 1 ? 's' : ''}:
+            {$t('This query is using the following index')}
+            {(usedIndexes ?? []).length > 1 ? 's' : ''}:
           </p>
         </div>
         {isLoading && <GenericSkeletonLoader />}
@@ -243,11 +247,12 @@ export const QueryIndexes = ({
             {usedIndexes.length === 0 && (
               <div className="border rounded-sm border-dashed flex flex-col items-center justify-center py-4 px-12 gap-y-1 text-center">
                 <p className="text-sm text-foreground-light">
-                  No indexes are involved in this query
+                  {$t('No indexes are involved in this query')}
                 </p>
                 <p className="text-center text-xs text-foreground-lighter">
-                  Indexes may not necessarily be used if they incur a higher cost when executing the
-                  query
+                  {$t(
+                    'Indexes may not necessarily be used if they incur a higher cost when executing the query'
+                  )}
                 </p>
               </div>
             )}
@@ -273,7 +278,7 @@ export const QueryIndexes = ({
       <QueryPanelSection className="flex flex-col gap-y-6 py-6 border-t">
         <div className="flex flex-col gap-y-1">
           {(!isSuccessIndexAdvisorResult || indexAdvisorResult !== null) && (
-            <h4 className="mb-2">New index recommendations</h4>
+            <h4 className="mb-2">{$t('New index recommendations')}</h4>
           )}
           {isLoadingExtensions ? (
             <GenericSkeletonLoader />
@@ -295,15 +300,17 @@ export const QueryIndexes = ({
                     <Admonition
                       type="default"
                       showIcon={true}
-                      title="Index recommendations not available"
-                      description="Index advisor could not analyze this query. This can happen if the query references tables, functions, or extensions that no longer exist or were deleted."
+                      title={$t('Index recommendations not available')}
+                      description={$t(
+                        'Index advisor could not analyze this query. This can happen if the query references tables, functions, or extensions that no longer exist or were deleted.'
+                      )}
                     />
                   ) : (index_statements ?? []).length === 0 ? (
                     <Alert className="[&>svg]:rounded-full">
                       <Check />
-                      <AlertTitle>This query is optimized</AlertTitle>
+                      <AlertTitle>{$t('This query is optimized')}</AlertTitle>
                       <AlertDescription>
-                        Recommendations for indexes will show here
+                        {$t('Recommendations for indexes will show here')}
                       </AlertDescription>
                     </Alert>
                   ) : (
@@ -315,13 +322,13 @@ export const QueryIndexes = ({
                         >
                           <Lightbulb />
                           <AlertTitle>
-                            We have {index_statements.length} index recommendation
+                            {$t('We have')} {index_statements.length} {$t('index recommendation')}
                             {index_statements.length > 1 ? 's' : ''}
                           </AlertTitle>
                           <AlertDescription>
-                            You can improve this query's performance by{' '}
-                            <span className="text-brand">{totalImprovement.toFixed(2)}%</span> by
-                            adding the following suggested{' '}
+                            {$t("You can improve this query's performance by")}{' '}
+                            <span className="text-brand">{totalImprovement.toFixed(2)}%</span>{' '}
+                            {$t('by adding the following suggested')}{' '}
                             {index_statements.length > 1 ? 'indexes' : 'index'}
                           </AlertDescription>
                         </Alert>
@@ -344,9 +351,9 @@ export const QueryIndexes = ({
                         )}
                       />
                       <p className="text-sm text-foreground-light mt-3">
-                        This recommendation serves to prevent your queries from slowing down as your
-                        application grows, and hence the index may not be used immediately after
-                        it's created (e.g If your table is still small at this time).
+                        {$t(
+                          "This recommendation serves to prevent your queries from slowing down as your application grows, and hence the index may not be used immediately after it's created (e.g If your table is still small at this time)."
+                        )}
                       </p>
                     </>
                   )}
@@ -360,11 +367,13 @@ export const QueryIndexes = ({
         <>
           <QueryPanelSection className="py-6 border-t">
             <div className="flex flex-col gap-y-1">
-              <h4 className="mb-2">Query costs</h4>
+              <h4 className="mb-2">{$t('Query costs')}</h4>
               <div className="border rounded-md flex flex-col bg-surface-100">
                 <QueryPanelScoreSection
                   name="Total cost of query"
-                  description="An estimate of how long it will take to return all the rows (Includes start up cost)"
+                  description={$t(
+                    'An estimate of how long it will take to return all the rows (Includes start up cost)'
+                  )}
                   before={total_cost_before}
                   after={total_cost_after}
                 />
@@ -374,13 +383,15 @@ export const QueryIndexes = ({
                       hideArrowMarkers
                       className="border-t"
                       name="Start up cost"
-                      description="An estimate of how long it will take to fetch the first row"
+                      description={$t(
+                        'An estimate of how long it will take to fetch the first row'
+                      )}
                       before={startup_cost_before}
                       after={startup_cost_after}
                     />
                   </CollapsibleContent>
                   <CollapsibleTrigger className="text-xs py-1.5 border-t text-foreground-light bg-studio w-full rounded-b-md">
-                    View {showStartupCosts ? 'less' : 'more'}
+                    {$t('View')} {showStartupCosts ? 'less' : 'more'}
                   </CollapsibleTrigger>
                 </Collapsible>
               </div>
@@ -392,29 +403,31 @@ export const QueryIndexes = ({
               <Accordion collapsible type="single" className="border rounded-md">
                 <AccordionItem value="1">
                   <AccordionTrigger className="px-4 py-3 text-sm font-normal text-foreground-light hover:text-foreground transition data-open:text-foreground">
-                    What units are cost in?
+                    {$t('What units are cost in?')}
                   </AccordionTrigger>
                   <AccordionContent className="px-4 text-foreground-light">
-                    Costs are in an arbitrary unit, and do not represent a unit of time. The units
-                    are anchored (by default) to a single sequential page read costing 1.0 units.
-                    They do, however, serve as a predictor of higher execution times.
+                    {$t(
+                      'Costs are in an arbitrary unit, and do not represent a unit of time. The units are anchored (by default) to a single sequential page read costing 1.0 units. They do, however, serve as a predictor of higher execution times.'
+                    )}
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="2" className="border-b-0">
                   <AccordionTrigger className="px-4 py-3 text-sm font-normal text-foreground-light hover:text-foreground transition data-open:text-foreground">
-                    How should I prioritize start up and total cost?
+                    {$t('How should I prioritize start up and total cost?')}
                   </AccordionTrigger>
                   <AccordionContent className="px-4 text-foreground-light [&>div]:space-y-2">
-                    <p>This depends on the expected size of the result set from the query.</p>
                     <p>
-                      For queries that return a small number or rows, the startup cost is more
-                      critical and minimizing startup cost can lead to faster response times,
-                      especially in interactive applications.
+                      {$t('This depends on the expected size of the result set from the query.')}
                     </p>
                     <p>
-                      For queries that return a large number of rows, the total cost becomes more
-                      important, and optimizing it will help in efficiently using resources and
-                      reducing overall query execution time.
+                      {$t(
+                        'For queries that return a small number or rows, the startup cost is more critical and minimizing startup cost can lead to faster response times, especially in interactive applications.'
+                      )}
+                    </p>
+                    <p>
+                      {$t(
+                        'For queries that return a large number of rows, the total cost becomes more important, and optimizing it will help in efficiently using resources and reducing overall query execution time.'
+                      )}
                     </p>
                   </AccordionContent>
                 </AccordionItem>
@@ -427,9 +440,9 @@ export const QueryIndexes = ({
       {isIndexAdvisorEnabled && hasIndexRecommendation && (
         <div className="bg-studio sticky bottom-0 border-t py-3 flex items-center justify-between px-5">
           <div className="flex flex-col gap-y-0.5 text-xs">
-            <span>Apply index to database</span>
+            <span>{$t('Apply index to database')}</span>
             <span className="text-xs text-foreground-light">
-              This will run the SQL that is shown above
+              {$t('This will run the SQL that is shown above')}
             </span>
           </div>
           <Button
@@ -438,7 +451,7 @@ export const QueryIndexes = ({
             variant="primary"
             onClick={() => createIndex()}
           >
-            Create index
+            {$t('Create index')}
           </Button>
         </div>
       )}

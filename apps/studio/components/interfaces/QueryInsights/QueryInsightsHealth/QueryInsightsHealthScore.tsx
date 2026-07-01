@@ -1,3 +1,5 @@
+import { t as $t } from '@/lib/i18n'
+
 export const QueryInsightsHealthScore = ({
   score,
   color,
@@ -23,7 +25,7 @@ export const QueryInsightsHealthScore = ({
     </div>
     <div className="flex flex-col">
       <span className="text-xs text-foreground-lighter uppercase font-mono tracking-wider">
-        Health Score
+        {$t('Health Score')}
       </span>
       <span className="text-xl text-foreground-light" style={{ color }}>
         {label}

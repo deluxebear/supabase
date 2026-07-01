@@ -4,6 +4,7 @@ import { Admonition } from 'ui-patterns/admonition'
 
 import { type ResourceGroup } from './MarketplaceIntegrationSettingsTab.types'
 import { type ConnectedResource } from '@/components/interfaces/Integrations/Landing/Landing.utils'
+import { t as $t } from '@/lib/i18n'
 
 export const ResourceGroupSection = ({
   group,
@@ -20,7 +21,8 @@ export const ResourceGroupSection = ({
           {group.missing ? (
             <Badge variant="warning" className="gap-x-1.5">
               <TriangleAlert size={12} strokeWidth={1.5} />
-              Not connected
+
+              {$t('Not connected')}
             </Badge>
           ) : (
             group.badge && (
@@ -77,7 +79,7 @@ export const ResourceGroupSection = ({
                   icon={<Trash2 className="text-foreground-light" />}
                   onClick={() => onRemove(item.resource)}
                 >
-                  Remove
+                  {$t('Remove')}
                 </Button>
               </div>
             </div>

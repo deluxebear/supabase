@@ -40,6 +40,7 @@ import { useAuthConfigUpdateMutation } from '@/data/auth/auth-config-update-muta
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const schema = z.object({
   DISABLE_SIGNUP: z.boolean(),
@@ -114,7 +115,7 @@ export const BasicAuthSettingsForm = () => {
           toast.error(`Failed to update settings: ${error?.message}`)
         },
         onSuccess: () => {
-          toast.success('Successfully updated settings')
+          toast.success($t('Successfully updated settings'))
         },
       }
     )
@@ -124,7 +125,7 @@ export const BasicAuthSettingsForm = () => {
     <PageSection>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>User Signups</PageSectionTitle>
+          <PageSectionTitle>{$t('User Signups')}</PageSectionTitle>
         </PageSectionSummary>
       </PageSectionMeta>
       <PageSectionContent>
@@ -170,8 +171,10 @@ export const BasicAuthSettingsForm = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Allow new users to sign up"
-                        description="If this is disabled, new users will not be able to sign up to your application"
+                        label={$t('Allow new users to sign up')}
+                        description={$t(
+                          'If this is disabled, new users will not be able to sign up to your application'
+                        )}
                       >
                         <FormControl>
                           <Switch
@@ -192,17 +195,17 @@ export const BasicAuthSettingsForm = () => {
                       render={({ field }) => (
                         <FormItemLayout
                           layout="flex-row-reverse"
-                          label="Allow manual linking"
+                          label={$t('Allow manual linking')}
                           description={
                             <>
-                              Enable{' '}
+                              {$t('Enable')}{' '}
                               <InlineLink
                                 className="text-foreground-light hover:text-foreground"
                                 href={`${DOCS_URL}/guides/auth/auth-identity-linking#manual-linking-beta`}
                               >
-                                manual linking APIs
+                                {$t('manual linking APIs')}
                               </InlineLink>{' '}
-                              for your project
+                              {$t('for your project')}
                             </>
                           }
                         >
@@ -225,17 +228,17 @@ export const BasicAuthSettingsForm = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Allow anonymous sign-ins"
+                        label={$t('Allow anonymous sign-ins')}
                         description={
                           <>
-                            Enable{' '}
+                            {$t('Enable')}{' '}
                             <InlineLink
                               className="text-foreground-light hover:text-foreground"
                               href={`${DOCS_URL}/guides/auth/auth-anonymous`}
                             >
-                              anonymous sign-ins
+                              {$t('anonymous sign-ins')}
                             </InlineLink>{' '}
-                            for your project
+                            {$t('for your project')}
                           </>
                         }
                       >
@@ -258,23 +261,25 @@ export const BasicAuthSettingsForm = () => {
                       <WarningIcon />
                       <div>
                         <AlertTitle>
-                          Anonymous users will use the{' '}
-                          <code className="text-code-inline">authenticated</code> role when signing
-                          in
+                          {$t('Anonymous users will use the')}{' '}
+                          <code className="text-code-inline">authenticated</code>{' '}
+                          {$t('role when signing in')}
                         </AlertTitle>
                         <AlertDescription className="flex flex-col gap-y-3">
                           <p>
-                            As a result, anonymous users will be subjected to RLS policies that
-                            apply to the <code className="text-code-inline">public</code> and{' '}
-                            <code className="text-code-inline">authenticated</code> roles. We
-                            strongly advise{' '}
+                            {$t(
+                              'As a result, anonymous users will be subjected to RLS policies that apply to the'
+                            )}{' '}
+                            <code className="text-code-inline">public</code> and{' '}
+                            <code className="text-code-inline">authenticated</code>{' '}
+                            {$t('roles. We strongly advise')}{' '}
                             <Link
                               href={`/project/${projectRef}/database/policies`}
                               className="text-foreground underline"
                             >
-                              reviewing your RLS policies
+                              {$t('reviewing your RLS policies')}
                             </Link>{' '}
-                            to ensure that access to your data is restricted where required.
+                            {$t('to ensure that access to your data is restricted where required.')}
                           </p>
                           <Button
                             asChild
@@ -283,7 +288,7 @@ export const BasicAuthSettingsForm = () => {
                             icon={<ExternalLink />}
                           >
                             <Link href={`${DOCS_URL}/guides/auth/auth-anonymous#access-control`}>
-                              View access control docs
+                              {$t('View access control docs')}
                             </Link>
                           </Button>
                         </AlertDescription>
@@ -296,15 +301,16 @@ export const BasicAuthSettingsForm = () => {
                       <Alert className="mt-4">
                         <WarningIcon />
                         <AlertTitle>
-                          We highly recommend{' '}
+                          {$t('We highly recommend')}{' '}
                           <InlineLink href={`/project/${projectRef}/auth/protection`}>
-                            enabling captcha
+                            {$t('enabling captcha')}
                           </InlineLink>{' '}
-                          for anonymous sign-ins
+                          {$t('for anonymous sign-ins')}
                         </AlertTitle>
                         <AlertDescription>
-                          This will prevent potential abuse on sign-ins which may bloat your
-                          database and incur costs for monthly active users (MAU)
+                          {$t(
+                            'This will prevent potential abuse on sign-ins which may bloat your database and incur costs for monthly active users (MAU)'
+                          )}
                         </AlertDescription>
                       </Alert>
                     )}
@@ -316,8 +322,10 @@ export const BasicAuthSettingsForm = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Confirm email"
-                        description="Users will need to confirm their email address before signing in for the first time"
+                        label={$t('Confirm email')}
+                        description={$t(
+                          'Users will need to confirm their email address before signing in for the first time'
+                        )}
                       >
                         <FormControl>
                           <Switch
@@ -333,7 +341,7 @@ export const BasicAuthSettingsForm = () => {
                 <CardFooter className="justify-end space-x-2">
                   {isDirty && (
                     <Button variant="default" onClick={() => form.reset()}>
-                      Cancel
+                      {$t('Cancel')}
                     </Button>
                   )}
                   <Button
@@ -342,7 +350,7 @@ export const BasicAuthSettingsForm = () => {
                     disabled={!canUpdateConfig || isUpdatingConfig || !isDirty}
                     loading={isUpdatingConfig}
                   >
-                    Save changes
+                    {$t('Save changes')}
                   </Button>
                 </CardFooter>
               </Card>

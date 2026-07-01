@@ -9,6 +9,7 @@ import {
   ProjectUpgradeEligibilityWarning,
 } from '@/data/config/project-upgrade-eligibility-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const ReadReplicasWarning = ({ latestPgVersion }: { latestPgVersion: string }) => {
   const { ref } = useParams()
@@ -17,11 +18,11 @@ export const ReadReplicasWarning = ({ latestPgVersion }: { latestPgVersion: stri
     <Admonition
       type="note"
       showIcon={false}
-      title="A newer version of Postgres is available"
+      title={$t('A newer version of Postgres is available')}
       description={`You will need to remove all read replicas prior to upgrading your Postgres version to the latest available (${latestPgVersion}).`}
       actions={
         <Button asChild variant="default">
-          <Link href={`/project/${ref}/database/replication`}>Manage read replicas</Link>
+          <Link href={`/project/${ref}/database/replication`}>{$t('Manage read replicas')}</Link>
         </Button>
       }
     />
@@ -125,7 +126,7 @@ const ValidationErrorItem = ({ error }: { error: ProjectUpgradeEligibilityValida
       </div>
       {manageLink && (
         <Button size="tiny" variant="default" asChild>
-          <Link href={manageLink}>Manage</Link>
+          <Link href={manageLink}>{$t('Manage')}</Link>
         </Button>
       )}
     </li>
@@ -140,11 +141,11 @@ export const ValidationErrorsWarning = ({
   if (validationErrors.length === 0) return null
 
   return (
-    <Admonition type="note" showIcon={false} title="A newer version of Postgres is available">
+    <Admonition type="note" showIcon={false} title={$t('A newer version of Postgres is available')}>
       <div className="flex flex-col gap-3">
         <p>
-          The following issues must be resolved before upgrading.{' '}
-          <InlineLink href={`${DOCS_URL}/guides/platform/upgrading`}>Learn more</InlineLink>
+          {$t('The following issues must be resolved before upgrading.')}{' '}
+          <InlineLink href={`${DOCS_URL}/guides/platform/upgrading`}>{$t('Learn more')}</InlineLink>
         </p>
         <ul className="border-t border-border-muted flex flex-col divide-y divide-border-muted">
           {validationErrors.map((error, idx) => (
@@ -205,7 +206,7 @@ export const ValidationWarningsAdmonition = ({
     >
       <Button asChild variant="default" className="mt-2">
         <Link href={getWarningLink(warning)} target="_blank" rel="noreferrer">
-          Read upgrade notes
+          {$t('Read upgrade notes')}
         </Link>
       </Button>
     </Admonition>

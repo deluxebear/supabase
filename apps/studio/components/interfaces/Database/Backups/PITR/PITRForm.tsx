@@ -15,6 +15,7 @@ import { TimezoneSelection } from './TimezoneSelection'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { FormPanel } from '@/components/ui/Forms/FormPanel'
 import InformationBox from '@/components/ui/InformationBox'
+import { t as $t } from '@/lib/i18n'
 
 type Props = {
   onSubmit: (data: {
@@ -119,7 +120,7 @@ export function PITRForm({
                 },
               }}
             >
-              Continue
+              {$t('Continue')}
             </ButtonTooltip>
           </div>
         }
@@ -149,7 +150,9 @@ export function PITRForm({
             {availableDates.length > 1 && (
               <div className="flex items-center space-x-2">
                 <div className="border w-4 h-4 border-stronger bg-overlay-hover" />
-                <p className="text-xs text-foreground-light">Point in time back up available</p>
+                <p className="text-xs text-foreground-light">
+                  {$t('Point in time back up available')}
+                </p>
               </div>
             )}
           </div>
@@ -162,14 +165,14 @@ export function PITRForm({
                     defaultVisibility
                     hideCollapse
                     icon={<HelpCircle size={14} strokeWidth={2} />}
-                    title="Select a date which you'd like to restore your database to"
+                    title={$t("Select a date which you'd like to restore your database to")}
                   />
                 </div>
               </div>
             ) : (
               <div className="space-y-8 py-2">
                 <div className="space-y-1">
-                  <p className="text-sm text-foreground-light">Date to restore to</p>
+                  <p className="text-sm text-foreground-light">{$t('Date to restore to')}</p>
                   <p className="text-3xl">
                     <span>{dayjs(selectedDate).format('DD MMM YYYY')}</span>
                     <span>
@@ -181,7 +184,7 @@ export function PITRForm({
                 </div>
                 <div className="space-y-2">
                   <div className="space-y-1">
-                    <p className="text-sm text-foreground-light">Time zone</p>
+                    <p className="text-sm text-foreground-light">{$t('Time zone')}</p>
                     <div className="w-[350px]">
                       <TimezoneSelection
                         selectedTimezone={selectedTimezone}
@@ -191,7 +194,7 @@ export function PITRForm({
                   </div>
                   <div>
                     <div className="space-y-1">
-                      <p className="text-sm text-foreground-light">Recovery time</p>
+                      <p className="text-sm text-foreground-light">{$t('Recovery time')}</p>
                       <TimeInput
                         defaultTime={selectedTime}
                         minimumTime={
@@ -210,23 +213,23 @@ export function PITRForm({
                     </div>
 
                     <p className="text-sm text-foreground-light mt-8">
-                      Enter a time within the available range to restore from. <br /> Backups are
-                      captured every 2 minutes, allowing you to enter a time and restore your
-                      database to the closest backup point. We'll match the time you enter to the
-                      closest backup within the 2-minute window
+                      {$t('Enter a time within the available range to restore from.')} <br />{' '}
+                      {$t(
+                        "Backups are captured every 2 minutes, allowing you to enter a time and restore your database to the closest backup point. We'll match the time you enter to the closest backup within the 2-minute window"
+                      )}
                     </p>
                   </div>
                   <div className="mt-4! space-y-1">
                     <h3 className="text-sm text-foreground-light"></h3>
                     {isSelectedOnEarliestDay && (
                       <p className="text-sm text-foreground-light">
-                        <strong>Earliest backup available for this date</strong>:{' '}
+                        <strong>{$t('Earliest backup available for this date')}</strong>:{' '}
                         {earliestAvailableBackup.format('HH:mm:ss')}
                       </p>
                     )}
                     {isSelectedOnLatestDay && (
                       <p className="text-sm text-foreground-light">
-                        <strong>Latest backup available for this date</strong>:{' '}
+                        <strong>{$t('Latest backup available for this date')}</strong>:{' '}
                         {latestAvailableBackup.format('HH:mm:ss')}
                       </p>
                     )}

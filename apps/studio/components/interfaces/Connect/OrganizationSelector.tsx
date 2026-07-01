@@ -7,6 +7,7 @@ import {
   OrganizationCard,
 } from '@/components/interfaces/Organization/OrganizationCard'
 import { useLastVisitedOrganization } from '@/hooks/misc/useLastVisitedOrganization'
+import { t as $t } from '@/lib/i18n'
 import type { Organization } from '@/types'
 
 const VISIBLE_ORGANIZATIONS_LIMIT = 3
@@ -88,10 +89,10 @@ export const OrganizationSelector = ({
   const hasUnavailableOrganizations = unavailableOrganizations.length > 0
 
   return (
-    <section className="space-y-2" aria-label="Organizations">
+    <section className="space-y-2" aria-label={$t('Organizations')}>
       <div className="space-y-1">
         <p className="text-xs font-medium uppercase tracking-wider text-foreground-light">
-          Organization
+          {$t('Organization')}
         </p>
         {description && <p className="text-xs text-foreground-lighter pr-4">{description}</p>}
       </div>
@@ -146,7 +147,7 @@ export const OrganizationSelector = ({
         {hasUnavailableOrganizations && (
           <Collapsible>
             <CollapsibleTrigger className={CONNECT_DISCLOSURE_TRIGGER_CLASSNAME}>
-              <span>Organizations that can't be linked</span>
+              <span>{$t("Organizations that can't be linked")}</span>
               <ChevronDown className="size-3.5 transition-transform" />
             </CollapsibleTrigger>
             <CollapsibleContent className="data-closed:animate-collapsible-up data-open:animate-collapsible-down overflow-hidden">

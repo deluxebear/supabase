@@ -50,6 +50,7 @@ import { useProjectMembersQuery } from '@/data/projects/project-members-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const grantSchema = z.object({
   roleId: z.string(),
@@ -208,7 +209,7 @@ export function JitDbAccessRuleSheet({
 
   useEffect(() => {
     if (!!ruleIdToEdit && isDataReady && !user) {
-      toast('Access rule cannot be found')
+      toast($t('Access rule cannot be found'))
       setRuleIdToEdit(null)
     }
   }, [isDataReady, ruleIdToEdit, setRuleIdToEdit, user])
@@ -231,7 +232,7 @@ export function JitDbAccessRuleSheet({
               {mode === 'edit' ? 'Edit temporary access rule' : 'New temporary access rule'}
             </SheetTitle>
             <SheetDescription className="sr-only">
-              Configure which database roles a user can request with temporary access.
+              {$t('Configure which database roles a user can request with temporary access.')}
             </SheetDescription>
           </SheetHeader>
 
@@ -242,7 +243,7 @@ export function JitDbAccessRuleSheet({
                   control={form.control}
                   name="memberId"
                   render={({ field }) => (
-                    <FormItemLayout layout="vertical" label="Member">
+                    <FormItemLayout layout="vertical" label={$t('Member')}>
                       <FormControl>
                         <Select
                           value={field.value}
@@ -252,7 +253,7 @@ export function JitDbAccessRuleSheet({
                           onValueChange={field.onChange}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a member" />
+                            <SelectValue placeholder={$t('Select a member')} />
                           </SelectTrigger>
                           <SelectContent>
                             {memberOptions.map((member) => (
@@ -275,8 +276,9 @@ export function JitDbAccessRuleSheet({
 
                       {mode === 'add' && availableMembersForAddCount === 0 && (
                         <p className="mt-2 text-foreground-lighter">
-                          All project members already have temporary access rules. Edit an existing
-                          rule from the table above.
+                          {$t(
+                            'All project members already have temporary access rules. Edit an existing rule from the table above.'
+                          )}
                         </p>
                       )}
                     </FormItemLayout>
@@ -289,24 +291,26 @@ export function JitDbAccessRuleSheet({
                   render={() => (
                     <FormItemLayout
                       layout="vertical"
-                      label="Roles and settings"
+                      label={$t('Roles and settings')}
                       description={
                         <>
-                          Use{' '}
+                          {$t('Use')}{' '}
                           <InlineLink
                             href={`${DOCS_URL}/guides/database/postgres/roles`}
                             className="decoration-foreground-muted"
                           >
-                            custom Postgres roles
+                            {$t('custom Postgres roles')}
                           </InlineLink>{' '}
-                          with narrow permissions to reduce the impact of direct database access.
+                          {$t(
+                            'with narrow permissions to reduce the impact of direct database access.'
+                          )}
                         </>
                       }
                     >
                       {grants.length === 0 ? (
                         <Admonition
                           type="note"
-                          description="No assignable roles found."
+                          description={$t('No assignable roles found.')}
                           className="bg-background"
                         />
                       ) : (
@@ -333,7 +337,7 @@ export function JitDbAccessRuleSheet({
 
           <SheetFooter className="mt-auto w-full border-t py-4">
             <Button variant="default" onClick={confirmOnClose} disabled={isSubmitting}>
-              Cancel
+              {$t('Cancel')}
             </Button>
             <Button
               variant="primary"

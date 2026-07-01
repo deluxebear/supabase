@@ -45,6 +45,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { usePreventNavigationOnUnsavedChanges } from '@/hooks/ui/usePreventNavigationOnUnsavedChanges'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -150,7 +151,7 @@ const NewFunctionPage = () => {
   } = useEdgeFunctionDeployMutation({
     // [Joshen] To investigate: For some reason, the invalidation for list of edge functions isn't triggering
     onSuccess: () => {
-      toast.success('Successfully deployed edge function')
+      toast.success($t('Successfully deployed edge function'))
       const functionName = form.getValues('functionName')
       // Allow the mutation state (isSuccess) to propagate before navigating
       // to prevent unnecessary dialog about unsaved changes
@@ -286,7 +287,7 @@ const NewFunctionPage = () => {
     <PageLayout
       size="full"
       isCompact
-      title="Create new edge function"
+      title={$t('Create new edge function')}
       breadcrumbs={[
         {
           label: 'Edge Functions',
@@ -305,14 +306,14 @@ const NewFunctionPage = () => {
                 aria-controls={templatesListboxId}
                 icon={<Book size={14} />}
               >
-                Templates
+                {$t('Templates')}
               </Button>
             </PopoverTrigger>
             <PopoverContent id={templatesListboxId} className="w-[300px] p-0" align="end">
               <Command>
-                <CommandInput placeholder="Search templates..." />
+                <CommandInput placeholder={$t('Search templates...')} />
                 <CommandList>
-                  <CommandEmpty>No templates found.</CommandEmpty>
+                  <CommandEmpty>{$t('No templates found.')}</CommandEmpty>
                   <CommandGroup>
                     {templates.map((template) => (
                       <CommandItem
@@ -352,7 +353,7 @@ const NewFunctionPage = () => {
             onClick={handleChat}
             icon={<AiIconAnimation size={16} />}
           >
-            Chat
+            {$t('Chat')}
           </Button>
         </>
       }
@@ -376,7 +377,7 @@ const NewFunctionPage = () => {
           className="flex items-center bg-background-muted justify-end p-4 border-t bg-surface-100 gap-3"
         >
           <div className="flex items-center gap-3">
-            <Label htmlFor="functionName">Function name</Label>
+            <Label htmlFor="functionName">{$t('Function name')}</Label>
             <FormField
               control={form.control}
               name="functionName"
@@ -388,7 +389,7 @@ const NewFunctionPage = () => {
                         id="functionName"
                         type="text"
                         size={'large'}
-                        placeholder="Give your function a name..."
+                        placeholder={$t('Give your function a name...')}
                         className="w-[250px]"
                         {...field}
                       />
@@ -414,7 +415,7 @@ const NewFunctionPage = () => {
             disabled={files.length === 0 || isDeploying}
             onClick={handleDeploy}
           >
-            Deploy function
+            {$t('Deploy function')}
           </Button>
         </form>
       </Form>
@@ -430,7 +431,7 @@ const NewFunctionPage = () => {
 NewFunctionPage.getLayout = (page: React.ReactNode) => {
   return (
     <DefaultLayout>
-      <EdgeFunctionsLayout title="New">{page}</EdgeFunctionsLayout>
+      <EdgeFunctionsLayout title={$t('New')}>{page}</EdgeFunctionsLayout>
     </DefaultLayout>
   )
 }

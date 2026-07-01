@@ -2,6 +2,7 @@ import { X } from 'lucide-react'
 import { Button } from 'ui'
 
 import { useBucketFilePickerStateSnapshot } from './BucketFilePickerState'
+import { t as $t } from '@/lib/i18n'
 
 export const BucketFilePickerHeaderSelection = () => {
   const { selectedItems, clearSelectedItems } = useBucketFilePickerStateSnapshot()
@@ -12,12 +13,12 @@ export const BucketFilePickerHeaderSelection = () => {
         icon={<X size={16} strokeWidth={2} />}
         variant="text"
         onClick={() => clearSelectedItems()}
-        aria-label="Clear selected items"
+        aria-label={$t('Clear selected items')}
       />
       <div className="ml-1 flex items-center space-x-3">
         <p className="mb-0 text-sm text-foreground">
-          <span style={{ fontVariantNumeric: 'tabular-nums' }}>{selectedItems.length}</span> items
-          selected
+          <span style={{ fontVariantNumeric: 'tabular-nums' }}>{selectedItems.length}</span>{' '}
+          {$t('items selected')}
         </p>
 
         <div className="border-r border-green-900 py-3 opacity-50" />

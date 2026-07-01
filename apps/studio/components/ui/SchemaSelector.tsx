@@ -23,6 +23,7 @@ import {
 import { useSchemasQuery } from '@/data/database/schemas-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 type SchemaSelectorProps = Omit<ComponentPropsWithoutRef<'div'>, 'onSelect'> & {
   disabled?: boolean
@@ -106,12 +107,14 @@ export const SchemaSelector = forwardRef<HTMLDivElement, SchemaSelectorProps>(
 
         {showError && isSchemasError && (
           <Alert variant="warning" className="px-3! py-3!">
-            <AlertTitle className="text-xs text-amber-900">Failed to load schemas</AlertTitle>
+            <AlertTitle className="text-xs text-amber-900">
+              {$t('Failed to load schemas')}
+            </AlertTitle>
             <AlertDescription className="text-xs mb-2 wrap-break-word">
-              Error: {(schemasError as any)?.message}
+              {$t('Error:')} {(schemasError as any)?.message}
             </AlertDescription>
             <Button variant="default" size="tiny" onClick={() => refetchSchemas()}>
-              Reload schemas
+              {$t('Reload schemas')}
             </Button>
           </Alert>
         )}
@@ -150,11 +153,11 @@ export const SchemaSelector = forwardRef<HTMLDivElement, SchemaSelectorProps>(
               sameWidthAsTrigger
             >
               <Command>
-                <CommandInput className="text-xs" placeholder="Find schema..." />
+                <CommandInput className="text-xs" placeholder={$t('Find schema...')} />
                 <CommandList
                   onWheel={stopScrollPropagation ? (event) => event.stopPropagation() : undefined}
                 >
-                  <CommandEmpty>No schemas found</CommandEmpty>
+                  <CommandEmpty>{$t('No schemas found')}</CommandEmpty>
                   <CommandGroup>
                     <ScrollArea className={(schemas || []).length > 7 ? 'h-[210px]' : ''}>
                       {supportSelectAll && (
@@ -170,7 +173,7 @@ export const SchemaSelector = forwardRef<HTMLDivElement, SchemaSelectorProps>(
                             setOpen(false)
                           }}
                         >
-                          <span>All schemas</span>
+                          <span>{$t('All schemas')}</span>
                           {selectedSchemaName === '*' && (
                             <Check className="text-brand" strokeWidth={2} size={16} />
                           )}
@@ -213,7 +216,8 @@ export const SchemaSelector = forwardRef<HTMLDivElement, SchemaSelectorProps>(
                           }}
                         >
                           <Plus size={12} />
-                          Create a new schema
+
+                          {$t('Create a new schema')}
                         </CommandItem>
                       </CommandGroup>
                     </>

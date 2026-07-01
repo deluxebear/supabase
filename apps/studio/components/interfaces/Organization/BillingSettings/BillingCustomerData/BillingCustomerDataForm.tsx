@@ -31,6 +31,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { z } from 'zod'
 
 import { TAX_IDS } from './TaxID.constants'
+import { t as $t } from '@/lib/i18n'
 
 interface BillingCustomerDataFormProps {
   form: UseFormReturn<TaxIdFormValues>
@@ -124,17 +125,16 @@ export const BillingCustomerDataForm = ({
             <FormItemLayout
               hideMessage
               layout="vertical"
-              label="Business Tax ID"
+              label={$t('Business Tax ID')}
               afterLabel={
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Info size={14} className="text-foreground-lighter cursor-pointer" />
                   </TooltipTrigger>
                   <TooltipContent side="right" className="max-w-xs text-left">
-                    If you are an individual, no need to add a Tax ID. If you are a business below
-                    your country's income threshold and don't have a Tax ID, you can leave this
-                    blank. Taxes will be added to your invoice according to your country's tax laws
-                    in the near future.
+                    {$t(
+                      "If you are an individual, no need to add a Tax ID. If you are a business below your country's income threshold and don't have a Tax ID, you can leave this blank. Taxes will be added to your invoice according to your country's tax laws in the near future."
+                    )}
                   </TooltipContent>
                 </Tooltip>
               }
@@ -170,9 +170,9 @@ export const BillingCustomerDataForm = ({
                   align="start"
                 >
                   <Command>
-                    <CommandInput placeholder="Search tax ID..." />
+                    <CommandInput placeholder={$t('Search tax ID...')} />
                     <CommandList>
-                      <CommandEmpty>No tax ID found.</CommandEmpty>
+                      <CommandEmpty>{$t('No tax ID found.')}</CommandEmpty>
                       <CommandGroup>
                         {availableTaxIds.map((option) => (
                           <CommandItem

@@ -23,6 +23,7 @@ import * as z from 'zod'
 
 import { Content } from '@/data/content/content-query'
 import { useContentUpsertMutation } from '@/data/content/content-upsert-mutation'
+import { t as $t } from '@/lib/i18n'
 
 const formSchema = z.object({
   name: z.string().min(1, 'Required'),
@@ -45,7 +46,7 @@ export const UpdateCustomReportModal = ({
   const { ref } = useParams()
   const { mutate: updateReport, isPending: isUpdating } = useContentUpsertMutation({
     onSuccess: () => {
-      toast.success('Successfully updated report')
+      toast.success($t('Successfully updated report'))
       onCancel()
     },
     onError: (error) => {
@@ -93,7 +94,7 @@ export const UpdateCustomReportModal = ({
     <Dialog open={selectedReport !== undefined} onOpenChange={handleCancel}>
       <DialogContent size="small">
         <DialogHeader>
-          <DialogTitle>Update custom report</DialogTitle>
+          <DialogTitle>{$t('Update custom report')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <Form {...form}>
@@ -103,7 +104,7 @@ export const UpdateCustomReportModal = ({
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItemLayout name="name" layout="vertical" label="Name">
+                  <FormItemLayout name="name" layout="vertical" label={$t('Name')}>
                     <FormControl>
                       <Input {...field} id="name" />
                     </FormControl>
@@ -116,13 +117,13 @@ export const UpdateCustomReportModal = ({
                 control={form.control}
                 name="description"
                 render={({ field }) => (
-                  <FormItemLayout name="description" layout="vertical" label="Description">
+                  <FormItemLayout name="description" layout="vertical" label={$t('Description')}>
                     <FormControl>
                       <Textarea
                         {...field}
                         id="description"
                         rows={4}
-                        placeholder="Describe your custom report"
+                        placeholder={$t('Describe your custom report')}
                         className="resize-none"
                       />
                     </FormControl>
@@ -132,10 +133,10 @@ export const UpdateCustomReportModal = ({
             </DialogSection>
             <DialogFooter>
               <Button type="reset" variant="default" onClick={handleCancel} disabled={isUpdating}>
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button type="submit" loading={isUpdating} disabled={isUpdating || !isDirty}>
-                Save custom report
+                {$t('Save custom report')}
               </Button>
             </DialogFooter>
           </form>

@@ -2,6 +2,7 @@ import Link from 'next/link'
 
 import { ForgotPasswordWizard } from '@/components/interfaces/SignIn/ForgotPasswordWizard'
 import { ForgotPasswordLayout } from '@/components/layouts/SignInLayout/ForgotPasswordLayout'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const ForgotPasswordPage: NextPageWithLayout = () => {
@@ -12,9 +13,9 @@ const ForgotPasswordPage: NextPageWithLayout = () => {
       </div>
 
       <div className="my-8 self-center text-sm">
-        <span className="text-foreground-light">Already have an account?</span>{' '}
+        <span className="text-foreground-light">{$t('Already have an account?')}</span>{' '}
         <Link href="/sign-in" className="underline hover:text-foreground-light">
-          Sign In
+          {$t('Sign In')}
         </Link>
       </div>
     </>

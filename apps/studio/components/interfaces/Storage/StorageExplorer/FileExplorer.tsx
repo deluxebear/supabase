@@ -6,6 +6,7 @@ import { STORAGE_ROW_STATUS, STORAGE_VIEWS } from '../Storage.constants'
 import type { StorageColumn, StorageItemWithColumn } from '../Storage.types'
 import { FileExplorerColumn } from './FileExplorerColumn'
 import { useStoragePreference } from './useStoragePreference'
+import { t as $t } from '@/lib/i18n'
 import { useStorageExplorerStateSnapshot } from '@/state/storage-explorer'
 
 export interface FileExplorerProps {
@@ -87,7 +88,9 @@ export const FileExplorer = ({
           )}
         </>
       ) : (
-        <div>Unknown view: {view}</div>
+        <div>
+          {$t('Unknown view:')} {view}
+        </div>
       )}
     </div>
   )

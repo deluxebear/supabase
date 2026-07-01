@@ -25,6 +25,7 @@ import { useBackupsQuery } from '@/data/database/backups-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsOrioleDbInAws } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const DatabaseScheduledBackups: NextPageWithLayout = () => {
@@ -51,7 +52,7 @@ const DatabaseScheduledBackups: NextPageWithLayout = () => {
       <PageHeader>
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Database Backups</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Database Backups')}</PageHeaderTitle>
           </PageHeaderSummary>
         </PageHeaderMeta>
         <PageHeaderNavigationTabs>
@@ -64,8 +65,10 @@ const DatabaseScheduledBackups: NextPageWithLayout = () => {
             {isOrioleDbInAws ? (
               <Admonition
                 type="default"
-                title="Database backups are not available for OrioleDB"
-                description="OrioleDB is currently in public alpha and projects created are strictly ephemeral with no database backups"
+                title={$t('Database backups are not available for OrioleDB')}
+                description={$t(
+                  'OrioleDB is currently in public alpha and projects created are strictly ephemeral with no database backups'
+                )}
               >
                 <DocsButton abbrev={false} className="mt-2" href={`${DOCS_URL}`} />
               </Admonition>
@@ -81,8 +84,9 @@ const DatabaseScheduledBackups: NextPageWithLayout = () => {
                   <>
                     {!isPitrEnabled && (
                       <p className="text-sm text-foreground-light">
-                        Projects are backed up daily around midnight of your project’s region and
-                        can be restored at any time.
+                        {$t(
+                          'Projects are backed up daily around midnight of your project’s region and can be restored at any time.'
+                        )}
                       </p>
                     )}
 
@@ -91,17 +95,17 @@ const DatabaseScheduledBackups: NextPageWithLayout = () => {
                         hideCollapse
                         defaultVisibility
                         icon={<Info strokeWidth={2} />}
-                        title="Point-In-Time-Recovery (PITR) enabled"
+                        title={$t('Point-In-Time-Recovery (PITR) enabled')}
                         description={
                           <div>
-                            Your project uses PITR and full daily backups are no longer taken. PITR
-                            lets you restore to a specific time (down to the second) within your
-                            selected PITR retention period.{' '}
+                            {$t(
+                              'Your project uses PITR and full daily backups are no longer taken. PITR lets you restore to a specific time (down to the second) within your selected PITR retention period.'
+                            )}{' '}
                             <a
                               className="text-brand transition-colors hover:text-brand-600"
                               href={`${DOCS_URL}/guides/platform/backups`}
                             >
-                              Learn more
+                              {$t('Learn more')}
                             </a>
                           </div>
                         }
@@ -126,7 +130,7 @@ const DatabaseScheduledBackups: NextPageWithLayout = () => {
 
 DatabaseScheduledBackups.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Backups">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Backups')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

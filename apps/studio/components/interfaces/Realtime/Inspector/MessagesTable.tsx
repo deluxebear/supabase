@@ -18,6 +18,7 @@ import ShimmerLine from '@/components/ui/ShimmerLine'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -43,7 +44,7 @@ const NoResultAlert = ({
 
   const broadcastButton = (
     <Button variant="default" onClick={showSendMessage}>
-      Broadcast a message
+      {$t('Broadcast a message')}
     </Button>
   )
 
@@ -57,8 +58,10 @@ const NoResultAlert = ({
         <NoChannelEmptyState />
       ) : (
         <>
-          {enabled && <p className="text-foreground">No Realtime messages found</p>}
-          <p className="text-foreground-lighter">Realtime message logs will be shown here</p>
+          {enabled && <p className="text-foreground">{$t('No Realtime messages found')}</p>}
+          <p className="text-foreground-lighter">
+            {$t('Realtime message logs will be shown here')}
+          </p>
 
           <div className="mt-4 border bg-surface-100 border-border rounded-md justify-start items-center flex flex-col w-full">
             <div className="w-full px-5 py-4 items-center gap-4 inline-flex border-b">
@@ -67,8 +70,10 @@ const NoResultAlert = ({
                 className="text-background bg-foreground rounded-sm w-6"
               />
               <div className="grow flex-col flex">
-                <p className="text-foreground">Create a Broadcast message</p>
-                <p className="text-foreground-lighter text-xs">Send a message in the channel</p>
+                <p className="text-foreground">{$t('Create a Broadcast message')}</p>
+                <p className="text-foreground-lighter text-xs">
+                  {$t('Send a message in the channel')}
+                </p>
               </div>
               {enabled ? (
                 <ShortcutTooltip shortcutId={SHORTCUT_IDS.INSPECTOR_BROADCAST} side="bottom">
@@ -84,14 +89,14 @@ const NoResultAlert = ({
                 className="text-background bg-foreground rounded-sm w-6"
               />
               <div className="grow flex-col flex">
-                <p className="text-foreground">Join from another browser tab</p>
+                <p className="text-foreground">{$t('Join from another browser tab')}</p>
                 <p className="text-foreground-lighter text-xs">
-                  Send messages between multiple clients
+                  {$t('Send messages between multiple clients')}
                 </p>
               </div>
               <Link href={`/project/${ref}/realtime/inspector`} target="_blank" rel="noreferrer">
                 <Button variant="default" iconRight={<ExternalLink />}>
-                  Open inspector
+                  {$t('Open inspector')}
                 </Button>
               </Link>
             </div>
@@ -102,19 +107,21 @@ const NoResultAlert = ({
                 className="text-background bg-foreground rounded-sm w-6"
               />
               <div className="grow flex-col flex">
-                <p className="text-foreground">Listen to a table for changes</p>
-                <p className="text-foreground-lighter text-xs">Tables must have realtime enabled</p>
+                <p className="text-foreground">{$t('Listen to a table for changes')}</p>
+                <p className="text-foreground-lighter text-xs">
+                  {$t('Tables must have realtime enabled')}
+                </p>
               </div>
               <Link href={`/project/${ref}/database/publications`} target="_blank" rel="noreferrer">
                 <Button variant="default" iconRight={<ExternalLink />}>
-                  Publications settings
+                  {$t('Publications settings')}
                 </Button>
               </Link>
             </div>
             <div className="w-full px-5 py-4 items-center gap-4 inline-flex rounded-b-md bg-studio">
               <div className="grow flex-col flex">
-                <p className="text-foreground">Not sure what to do?</p>
-                <p className="text-foreground-lighter text-xs">Browse our documentation</p>
+                <p className="text-foreground">{$t('Not sure what to do?')}</p>
+                <p className="text-foreground-lighter text-xs">{$t('Browse our documentation')}</p>
               </div>
               <DocsButton href={`${DOCS_URL}/guides/realtime`} />
             </div>
@@ -168,7 +175,7 @@ const MessagesTable = ({
               <div className="w-full h-9 px-4 bg-surface-100 items-center inline-flex justify-between text-foreground-light">
                 <div className="inline-flex gap-2.5 text-xs">
                   <Loader2 size="16" className="animate-spin" />
-                  <div>Listening</div>
+                  <div>{$t('Listening')}</div>
                   <div>•</div>
                   <div>
                     {data.length > 0
@@ -184,7 +191,7 @@ const MessagesTable = ({
                     onClick={showSendMessage}
                     icon={<Megaphone strokeWidth={1.5} />}
                   >
-                    <span>Broadcast a message</span>
+                    <span>{$t('Broadcast a message')}</span>
                   </Button>
                 </ShortcutTooltip>
               </div>

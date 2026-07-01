@@ -12,6 +12,7 @@ import {
 
 import InformationBox from '@/components/ui/InformationBox'
 import { useNetworkRestrictionsApplyMutation } from '@/data/network-restrictions/network-retrictions-apply-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface DisallowAllModalProps {
   visible: boolean
@@ -36,26 +37,31 @@ const DisallowAllModal = ({ visible, onClose }: DisallowAllModalProps) => {
     <AlertDialog open={visible} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Restrict access from all IP addresses</AlertDialogTitle>
+          <AlertDialogTitle>{$t('Restrict access from all IP addresses')}</AlertDialogTitle>
           <AlertDialogDescription>
             <div className="flex flex-col space-y-4">
               <p>
-                This will prevent any external IP addresses from accessing your project's database.
-                Are you sure?
+                {$t(
+                  "This will prevent any external IP addresses from accessing your project's database. Are you sure?"
+                )}
               </p>
               <InformationBox
                 defaultVisibility
                 hideCollapse
-                title="Note: Restrictions only apply to direct connections to your database and connection pooler"
-                description="They do not currently apply to APIs offered over HTTPS, such as PostgREST, Storage, or Authentication."
+                title={$t(
+                  'Note: Restrictions only apply to direct connections to your database and connection pooler'
+                )}
+                description={$t(
+                  'They do not currently apply to APIs offered over HTTPS, such as PostgREST, Storage, or Authentication.'
+                )}
               />
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isApplying}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isApplying}>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction onClick={onSubmit} disabled={isApplying} loading={isApplying}>
-            Confirm
+            {$t('Confirm')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

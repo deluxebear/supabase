@@ -14,6 +14,7 @@ import { useProjectSettingsV2Query } from '@/data/config/project-settings-v2-que
 import { useOrgSubscriptionQuery } from '@/data/subscriptions/org-subscription-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 import { useSqlEditorSessionSnapshot } from '@/state/sql-editor/sql-editor-session-state'
 
@@ -52,7 +53,7 @@ export const UtilityTabResults = forwardRef<HTMLDivElement, UtilityTabResultsPro
       return (
         <div className="flex items-center gap-x-4 px-6 py-4 bg-table-header-light in-data-[theme*=dark]:bg-table-header-dark">
           <Loader2 size={14} className="animate-spin" />
-          <p className="m-0 border-0 font-mono text-sm">Running...</p>
+          <p className="m-0 border-0 font-mono text-sm">{$t('Running...')}</p>
         </div>
       )
     } else if (result?.error) {
@@ -70,25 +71,25 @@ export const UtilityTabResults = forwardRef<HTMLDivElement, UtilityTabResultsPro
             {isTimeout ? (
               <div className="flex flex-col gap-y-1">
                 <p className="font-mono text-sm tracking-tight">
-                  Error: SQL query ran into an upstream timeout
+                  {$t('Error: SQL query ran into an upstream timeout')}
                 </p>
                 <p className="text-sm text-foreground-light">
-                  You can either{' '}
+                  {$t('You can either')}{' '}
                   <InlineLink
                     href={`${DOCS_URL}/guides/platform/performance#examining-query-performance`}
                   >
-                    optimize your query
+                    {$t('optimize your query')}
                   </InlineLink>
-                  , or{' '}
+                  {$t(', or')}{' '}
                   <InlineLink href={`${DOCS_URL}/guides/database/timeouts`}>
-                    increase the statement timeout
+                    {$t('increase the statement timeout')}
                   </InlineLink>
                   {' or '}
                   <span
                     className={cn(InlineLinkClassName, 'cursor-pointer')}
                     onClick={() => setShowConnect(true)}
                   >
-                    connect to your database directly
+                    {$t('connect to your database directly')}
                   </span>
                   .
                 </p>
@@ -102,28 +103,33 @@ export const UtilityTabResults = forwardRef<HTMLDivElement, UtilityTabResultsPro
                     </pre>
                   ))
                 ) : (
-                  <p className="font-mono text-sm tracking-tight">Error: {result.error?.message}</p>
+                  <p className="font-mono text-sm tracking-tight">
+                    {$t('Error:')} {result.error?.message}
+                  </p>
                 )}
                 {!isTimeout && !isNetWorkError && result.autoLimit && (
                   <p className="text-sm text-foreground-light">
-                    Note: A limit of {result.autoLimit} was applied to your query. If this was the
-                    cause of a syntax error, try selecting "No limit" instead and re-run the query.
+                    {$t('Note: A limit of')} {result.autoLimit}{' '}
+                    {$t(
+                      'was applied to your query. If this was the cause of a syntax error, try selecting "No limit" instead and re-run the query.'
+                    )}
                   </p>
                 )}
                 {readReplicaError && (
                   <p className="text-sm text-foreground-light">
-                    Note: Read replicas are for read only queries. Run write queries on the primary
-                    database instead.
+                    {$t(
+                      'Note: Read replicas are for read only queries. Run write queries on the primary database instead.'
+                    )}
                   </p>
                 )}
                 {payloadTooLargeError && (
                   <p className="text-sm text-foreground-light flex items-center gap-x-1">
-                    Run this query by{' '}
+                    {$t('Run this query by')}{' '}
                     <span
                       onClick={() => setShowConnect(true)}
                       className={cn(InlineLinkClassName, 'flex items-center gap-x-1')}
                     >
-                      connecting to your database directly
+                      {$t('connecting to your database directly')}
                       <ExternalLink size={12} />
                     </span>
                     .
@@ -142,7 +148,7 @@ export const UtilityTabResults = forwardRef<HTMLDivElement, UtilityTabResultsPro
                     sessionSnap.resetResults(id)
                   }}
                 >
-                  Switch to primary database
+                  {$t('Switch to primary database')}
                 </Button>
               )}
               {errorLines.length > 0 && (
@@ -151,13 +157,13 @@ export const UtilityTabResults = forwardRef<HTMLDivElement, UtilityTabResultsPro
                     <CopyButton iconOnly variant="default" text={errorLines.join('\n')} />
                   </TooltipTrigger>
                   <TooltipContent side="bottom" align="center">
-                    <span>Copy error</span>
+                    <span>{$t('Copy error')}</span>
                   </TooltipContent>
                 </Tooltip>
               )}
               {!hasHipaaAddon && (
                 <AiAssistantDropdown
-                  label="Debug with Assistant"
+                  label={$t('Debug with Assistant')}
                   buildPrompt={buildDebugPrompt}
                   onOpenAssistant={onDebug}
                   telemetrySource="sql_debug"
@@ -173,14 +179,17 @@ export const UtilityTabResults = forwardRef<HTMLDivElement, UtilityTabResultsPro
       return (
         <div className="bg-table-header-light in-data-[theme*=dark]:bg-table-header-dark overflow-y-auto">
           <p className="m-0 border-0 px-4 py-4 text-sm text-foreground-light">
-            Click <code className="text-code-inline">Run</code> to execute your query
+            {$t('Click')} <code className="text-code-inline">{$t('Run')}</code>{' '}
+            {$t('to execute your query')}
           </p>
         </div>
       )
     } else if (result.rows.length <= 0) {
       return (
         <div className="bg-table-header-light in-data-[theme*=dark]:bg-table-header-dark overflow-y-auto">
-          <p className="m-0 border-0 px-6 py-4 font-mono text-sm">Success. No rows returned</p>
+          <p className="m-0 border-0 px-6 py-4 font-mono text-sm">
+            {$t('Success. No rows returned')}
+          </p>
         </div>
       )
     }

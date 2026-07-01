@@ -18,6 +18,7 @@ import { DocsButton } from '@/components/ui/DocsButton'
 import { NoPermission } from '@/components/ui/NoPermission'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const Hooks: NextPageWithLayout = () => {
@@ -35,8 +36,10 @@ const Hooks: NextPageWithLayout = () => {
       <PageHeader size="default">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Auth Hooks</PageHeaderTitle>
-            <PageHeaderDescription>Customize your authentication flow</PageHeaderDescription>
+            <PageHeaderTitle>{$t('Auth Hooks')}</PageHeaderTitle>
+            <PageHeaderDescription>
+              {$t('Customize your authentication flow')}
+            </PageHeaderDescription>
           </PageHeaderSummary>
           <PageHeaderAside>
             <DocsButton href={`${DOCS_URL}/guides/auth/auth-hooks`} />
@@ -60,7 +63,7 @@ const Hooks: NextPageWithLayout = () => {
 
 Hooks.getLayout = (page) => (
   <DefaultLayout>
-    <AuthLayout title="Auth Hooks">{page}</AuthLayout>
+    <AuthLayout title={$t('Auth Hooks')}>{page}</AuthLayout>
   </DefaultLayout>
 )
 

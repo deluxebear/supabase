@@ -36,6 +36,7 @@ import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const FormSchema = z.object({
   API_MAX_REQUEST_DURATION: z.coerce
@@ -127,7 +128,7 @@ export const PerformanceSettingsForm = () => {
           setIsUpdatingRequestDurationForm(false)
         },
         onSuccess: () => {
-          toast.success('Successfully updated request duration settings')
+          toast.success($t('Successfully updated request duration settings'))
           setIsUpdatingRequestDurationForm(false)
         },
       }
@@ -151,7 +152,7 @@ export const PerformanceSettingsForm = () => {
           setIsUpdatingDatabaseForm(false)
         },
         onSuccess: () => {
-          toast.success('Successfully updated connection settings')
+          toast.success($t('Successfully updated connection settings'))
           setIsUpdatingDatabaseForm(false)
         },
       }
@@ -217,7 +218,7 @@ export const PerformanceSettingsForm = () => {
       </ScaffoldSection>
 
       <ScaffoldSection isFullWidth>
-        <ScaffoldSectionTitle className="mb-4">Request duration</ScaffoldSectionTitle>
+        <ScaffoldSectionTitle className="mb-4">{$t('Request duration')}</ScaffoldSectionTitle>
 
         <Form {...requestDurationForm}>
           <form onSubmit={requestDurationForm.handleSubmit(onSubmitRequestDurationForm)}>
@@ -229,11 +230,12 @@ export const PerformanceSettingsForm = () => {
                   render={({ field }) => (
                     <FormItemLayout
                       layout="flex-row-reverse"
-                      label="Maximum allowed duration for an Auth request"
+                      label={$t('Maximum allowed duration for an Auth request')}
                       description={
                         <p className="text-balance">
-                          Requests that exceed this time limit are terminated to help manage server
-                          load.
+                          {$t(
+                            'Requests that exceed this time limit are terminated to help manage server load.'
+                          )}
                         </p>
                       }
                     >
@@ -256,7 +258,7 @@ export const PerformanceSettingsForm = () => {
                         </div>
 
                         <p className="text-xs text-right text-foreground-muted">
-                          10+ seconds recommended
+                          {$t('10+ seconds recommended')}
                         </p>
                       </div>
                     </FormItemLayout>
@@ -267,7 +269,7 @@ export const PerformanceSettingsForm = () => {
               <CardFooter className="justify-end space-x-2">
                 {requestDurationForm.formState.isDirty && (
                   <Button variant="default" onClick={() => requestDurationForm.reset()}>
-                    Cancel
+                    {$t('Cancel')}
                   </Button>
                 )}
                 <Button
@@ -281,7 +283,7 @@ export const PerformanceSettingsForm = () => {
                   }
                   loading={isUpdatingRequestDurationForm}
                 >
-                  Save changes
+                  {$t('Save changes')}
                 </Button>
               </CardFooter>
             </Card>
@@ -290,7 +292,7 @@ export const PerformanceSettingsForm = () => {
       </ScaffoldSection>
 
       <ScaffoldSection isFullWidth>
-        <ScaffoldSectionTitle className="mb-4">Connection management</ScaffoldSectionTitle>
+        <ScaffoldSectionTitle className="mb-4">{$t('Connection management')}</ScaffoldSectionTitle>
 
         <Form {...databaseForm}>
           <form onSubmit={databaseForm.handleSubmit(onSubmitDatabaseForm)} className="space-y-4">
@@ -302,12 +304,12 @@ export const PerformanceSettingsForm = () => {
                   render={({ field }) => (
                     <FormItemLayout
                       layout="flex-row-reverse"
-                      label="Allocation strategy"
+                      label={$t('Allocation strategy')}
                       description={
                         <p className="text-balance">
-                          Choose whether to allocate a percentage or a fixed number of connections
-                          to the Auth server. We recommend a percentage, as it scales automatically
-                          with your instance size.
+                          {$t(
+                            'Choose whether to allocate a percentage or a fixed number of connections to the Auth server. We recommend a percentage, as it scales automatically with your instance size.'
+                          )}
                         </p>
                       }
                     >
@@ -347,10 +349,10 @@ export const PerformanceSettingsForm = () => {
                           </SelectTrigger>
                           <SelectContent align="end">
                             <SelectItem value="connections" className="text-xs">
-                              Absolute number of connections
+                              {$t('Absolute number of connections')}
                             </SelectItem>
                             <SelectItem value="percent" className="text-xs">
-                              Percent of max connections
+                              {$t('Percent of max connections')}
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -366,14 +368,16 @@ export const PerformanceSettingsForm = () => {
                   render={({ field }) => (
                     <FormItemLayout
                       layout="flex-row-reverse"
-                      label="Maximum connections"
+                      label={$t('Maximum connections')}
                       description={
                         <p className="text-balance">
-                          The maximum number of connections the Auth server can use under peak load.{' '}
+                          {$t(
+                            'The maximum number of connections the Auth server can use under peak load.'
+                          )}{' '}
                           <em className="text-foreground-light font-medium not-italic">
-                            Connections are not reserved
+                            {$t('Connections are not reserved')}
                           </em>{' '}
-                          and are returned to Postgres after a short idle period.
+                          {$t('and are returned to Postgres after a short idle period.')}
                         </p>
                       }
                     >
@@ -417,7 +421,7 @@ export const PerformanceSettingsForm = () => {
               <CardFooter className="justify-end space-x-2">
                 {databaseForm.formState.isDirty && (
                   <Button variant="default" onClick={() => databaseForm.reset()}>
-                    Cancel
+                    {$t('Cancel')}
                   </Button>
                 )}
                 <Button
@@ -428,7 +432,7 @@ export const PerformanceSettingsForm = () => {
                   }
                   loading={isUpdatingDatabaseForm}
                 >
-                  Save changes
+                  {$t('Save changes')}
                 </Button>
               </CardFooter>
             </Card>

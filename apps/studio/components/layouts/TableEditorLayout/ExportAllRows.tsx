@@ -32,6 +32,7 @@ import { isTableLike } from '@/data/table-editor/table-editor-types'
 import { fetchAllTableRows } from '@/data/table-rows/table-rows-query'
 import { useLatest } from '@/hooks/misc/useLatest'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { RoleImpersonationState } from '@/lib/role-impersonation'
 
 // [Joshen] CSV exports require this guard as a fail-safe if the table is
@@ -40,10 +41,11 @@ import type { RoleImpersonationState } from '@/lib/role-impersonation'
 const MAX_EXPORT_ROW_COUNT = 500000
 const MAX_EXPORT_ROW_COUNT_MESSAGE = (
   <p>
-    Sorry! We're unable to support exporting row counts larger than{' '}
-    {MAX_EXPORT_ROW_COUNT.toLocaleString('en-US')} at the moment. Alternatively, you may consider
-    using <InlineLink href={`${DOCS_URL}/reference/cli/supabase-db-dump`}>pg_dump</InlineLink> via
-    our CLI instead.
+    {$t("Sorry! We're unable to support exporting row counts larger than")}{' '}
+    {MAX_EXPORT_ROW_COUNT.toLocaleString('en-US')}{' '}
+    {$t('at the moment. Alternatively, you may consider using')}{' '}
+    <InlineLink href={`${DOCS_URL}/reference/cli/supabase-db-dump`}>pg_dump</InlineLink>{' '}
+    {$t('via our CLI instead.')}
   </p>
 )
 
@@ -412,7 +414,7 @@ export const useExportAllRowsGeneric = (
     exportInDesiredFormat,
     confirmationModal: confirmationMessage ? (
       <ConfirmationModal
-        title="Confirm to export data"
+        title={$t('Confirm to export data')}
         visible={true}
         onCancel={onCancelExport}
         onConfirm={onConfirmExport}

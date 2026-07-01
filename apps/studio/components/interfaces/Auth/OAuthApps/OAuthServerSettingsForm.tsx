@@ -31,6 +31,7 @@ import { useAuthConfigUpdateMutation } from '@/data/auth/auth-config-update-muta
 import { useOAuthServerAppsQuery } from '@/data/oauth-server-apps/oauth-server-apps-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const configUrlSchema = z.object({
   id: z.string(),
@@ -83,7 +84,7 @@ export const OAuthServerSettingsForm = () => {
 
   const { mutate: updateAuthConfig, isPending } = useAuthConfigUpdateMutation({
     onSuccess: (_, variables) => {
-      toast.success('OAuth server settings updated successfully')
+      toast.success($t('OAuth server settings updated successfully'))
       form.reset({
         OAUTH_SERVER_ENABLED: variables.config.OAUTH_SERVER_ENABLED ?? false,
         OAUTH_SERVER_ALLOW_DYNAMIC_REGISTRATION:
@@ -220,8 +221,10 @@ export const OAuthServerSettingsForm = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Enable the Supabase OAuth Server"
-                        description="Enable OAuth server functionality for your project to create and manage OAuth applications."
+                        label={$t('Enable the Supabase OAuth Server')}
+                        description={$t(
+                          'Enable OAuth server functionality for your project to create and manage OAuth applications.'
+                        )}
                       >
                         <FormControl>
                           <Switch
@@ -238,17 +241,17 @@ export const OAuthServerSettingsForm = () => {
                   <>
                     <CardContent>
                       <FormItemLayout
-                        label="Site URL"
+                        label={$t('Site URL')}
                         layout="flex-row-reverse"
                         description={
                           <>
-                            The base URL of your application, configured in{' '}
+                            {$t('The base URL of your application, configured in')}{' '}
                             <Link
                               href={`/project/${projectRef}/auth/url-configuration`}
                               rel="noreferrer"
                               className="text-foreground-light underline hover:text-foreground transition"
                             >
-                              Auth URL Configuration
+                              {$t('Auth URL Configuration')}
                             </Link>{' '}
                             settings.
                           </>
@@ -267,9 +270,11 @@ export const OAuthServerSettingsForm = () => {
                         name="OAUTH_SERVER_AUTHORIZATION_PATH"
                         render={({ field }) => (
                           <FormItemLayout
-                            label="Authorization Path"
+                            label={$t('Authorization Path')}
                             layout="flex-row-reverse"
-                            description="Path where you'll implement the OAuth authorization UI (consent screens)."
+                            description={$t(
+                              "Path where you'll implement the OAuth authorization UI (consent screens)."
+                            )}
                           >
                             <FormControl>
                               <Input {...field} placeholder="/auth/authorize" />
@@ -286,10 +291,10 @@ export const OAuthServerSettingsForm = () => {
                         return (
                           <Admonition
                             type="tip"
-                            title="Make sure this path is implemented in your application."
+                            title={$t('Make sure this path is implemented in your application.')}
                             description={
                               <>
-                                Preview Authorization URL:{' '}
+                                {$t('Preview Authorization URL:')}{' '}
                                 {authorizationUrl ? (
                                   <a
                                     href={authorizationUrl}
@@ -301,7 +306,7 @@ export const OAuthServerSettingsForm = () => {
                                   </a>
                                 ) : (
                                   <span className="text-foreground-light">
-                                    Set a Site URL to preview
+                                    {$t('Set a Site URL to preview')}
                                   </span>
                                 )}
                               </>
@@ -317,15 +322,16 @@ export const OAuthServerSettingsForm = () => {
                         render={({ field }) => (
                           <FormItemLayout
                             layout="flex-row-reverse"
-                            label="Allow Dynamic OAuth Apps"
+                            label={$t('Allow Dynamic OAuth Apps')}
                             description={
                               <>
-                                Enable dynamic OAuth app registration. Apps can be registered
-                                programmatically via APIs.{' '}
+                                {$t(
+                                  'Enable dynamic OAuth app registration. Apps can be registered programmatically via APIs.'
+                                )}{' '}
                                 <InlineLink
                                   href={`${DOCS_URL}/guides/auth/oauth-server/mcp-authentication#oauth-client-setup`}
                                 >
-                                  Learn more
+                                  {$t('Learn more')}
                                 </InlineLink>
                               </>
                             }
@@ -346,7 +352,7 @@ export const OAuthServerSettingsForm = () => {
 
                 <CardFooter className="justify-end space-x-2">
                   <Button variant="default" onClick={() => form.reset()} disabled={isPending}>
-                    Cancel
+                    {$t('Cancel')}
                   </Button>
                   <Button
                     variant="primary"
@@ -354,7 +360,7 @@ export const OAuthServerSettingsForm = () => {
                     disabled={!canUpdateConfig || !form.formState.isDirty}
                     loading={isPending}
                   >
-                    Save changes
+                    {$t('Save changes')}
                   </Button>
                 </CardFooter>
               </Card>
@@ -371,7 +377,7 @@ export const OAuthServerSettingsForm = () => {
         variant="warning"
         visible={showDynamicAppsConfirmation}
         size="large"
-        title="Enable dynamic OAuth app registration"
+        title={$t('Enable dynamic OAuth app registration')}
         confirmLabel="Enable dynamic app registration"
         onConfirm={confirmDynamicApps}
         onCancel={cancelDynamicApps}
@@ -381,17 +387,19 @@ export const OAuthServerSettingsForm = () => {
         }}
       >
         <p className="text-sm text-foreground-lighter pb-4">
-          Dynamic OAuth apps (also known as dynamic client registration) exposes a public endpoint
-          allowing anyone to register OAuth clients. Bad actors could create malicious apps with
-          legitimate-sounding names to phish your users for authorization.
+          {$t(
+            'Dynamic OAuth apps (also known as dynamic client registration) exposes a public endpoint allowing anyone to register OAuth clients. Bad actors could create malicious apps with legitimate-sounding names to phish your users for authorization.'
+          )}
         </p>
         <p className="text-sm text-foreground-lighter pb-4">
-          You may also see spam registrations that are difficult to trace or moderate, making it
-          harder to identify trustworthy applications in your OAuth apps list.
+          {$t(
+            'You may also see spam registrations that are difficult to trace or moderate, making it harder to identify trustworthy applications in your OAuth apps list.'
+          )}
         </p>
         <p className="text-sm text-foreground-lighter pb-4">
-          Only enable this if you have a specific use case requiring programmatic client
-          registration and understand the security implications.
+          {$t(
+            'Only enable this if you have a specific use case requiring programmatic client registration and understand the security implications.'
+          )}
         </p>
       </ConfirmationModal>
 
@@ -400,7 +408,7 @@ export const OAuthServerSettingsForm = () => {
         variant="warning"
         visible={showDisableOAuthServerConfirmation}
         size="large"
-        title="Disable OAuth Server"
+        title={$t('Disable OAuth Server')}
         confirmLabel="Disable OAuth Server"
         onConfirm={confirmDisableOAuthServer}
         onCancel={cancelDisableOAuthServer}
@@ -409,21 +417,21 @@ export const OAuthServerSettingsForm = () => {
         }}
       >
         <p className="text-sm text-foreground-lighter pb-4">
-          Disabling the OAuth Server will immediately deactivate all OAuth applications and prevent
-          new authentication flows from working. This action will affect all users currently using
-          your OAuth applications.
+          {$t(
+            'Disabling the OAuth Server will immediately deactivate all OAuth applications and prevent new authentication flows from working. This action will affect all users currently using your OAuth applications.'
+          )}
         </p>
         <p className="text-sm text-foreground-lighter pb-4">
-          <strong>What will happen:</strong>
+          <strong>{$t('What will happen:')}</strong>
         </p>
         <ul className="text-sm text-foreground-lighter pb-4 list-disc list-inside space-y-1">
-          <li>All OAuth apps will be deactivated</li>
-          <li>Existing access tokens will become invalid</li>
-          <li>Users won't be able to sign in through OAuth flows</li>
-          <li>Third-party integrations will stop working</li>
+          <li>{$t('All OAuth apps will be deactivated')}</li>
+          <li>{$t('Existing access tokens will become invalid')}</li>
+          <li>{$t("Users won't be able to sign in through OAuth flows")}</li>
+          <li>{$t('Third-party integrations will stop working')}</li>
         </ul>
         <p className="text-sm text-foreground-lighter pb-4">
-          You can re-enable the OAuth Server at any time.
+          {$t('You can re-enable the OAuth Server at any time.')}
         </p>
       </ConfirmationModal>
     </>

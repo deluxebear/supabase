@@ -1,4 +1,5 @@
 import { TextConfirmModal } from '@/components/ui/TextConfirmModalWrapper'
+import { t as $t } from '@/lib/i18n'
 
 interface DeleteDestinationProps {
   visible: boolean
@@ -20,7 +21,7 @@ export const DeleteDestination = ({
       variant="destructive"
       visible={visible}
       loading={isLoading}
-      title="Delete this destination"
+      title={$t('Delete this destination')}
       confirmLabel={isLoading ? 'Deleting...' : `Delete destination`}
       confirmPlaceholder="Type in name of destination"
       confirmString={name ?? 'Unknown'}

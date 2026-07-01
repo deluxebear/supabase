@@ -10,6 +10,7 @@ import { useOrgSubscriptionQuery } from '@/data/subscriptions/org-subscription-q
 import { useProjectAddonsQuery } from '@/data/subscriptions/project-addons-query'
 import { ResourceWarning } from '@/data/usage/resource-warnings-query'
 import { getCloudProviderArchitecture } from '@/lib/cloudprovider-utils'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export const ChevronsUpAnimated = () => (
@@ -133,7 +134,7 @@ export const ComputeBadgeWrapper = ({
         className="p-0 overflow-hidden w-96"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-2 px-5 text-xs text-foreground-lighter">Compute size</div>
+        <div className="p-2 px-5 text-xs text-foreground-lighter">{$t('Compute size')}</div>
         <Separator />
         <div className="p-3 px-5 flex flex-row gap-4">
           <div>
@@ -153,7 +154,7 @@ export const ComputeBadgeWrapper = ({
                   {computeSize === 'nano' ? (
                     <>
                       <Row label="CPU" stat="Shared" />
-                      <Row label="Memory" stat="Up to 0.5 GB" />
+                      <Row label={$t('Memory')} stat="Up to 0.5 GB" />
                     </>
                   ) : meta !== undefined ? (
                     <>
@@ -161,7 +162,7 @@ export const ComputeBadgeWrapper = ({
                         label="CPU"
                         stat={`${meta.cpu_cores ?? '?'}-core ${cpuArchitecture} ${meta.cpu_dedicated ? '(Dedicated)' : '(Shared)'}`}
                       />
-                      <Row label="Memory" stat={`${meta.memory_gb ?? '-'} GB`} />
+                      <Row label={$t('Memory')} stat={`${meta.memory_gb ?? '-'} GB`} />
                     </>
                   ) : null}
                 </div>
@@ -202,7 +203,7 @@ export const ComputeBadgeWrapper = ({
                   }}
                 >
                   <Link href={`/project/${projectRef}/settings/compute-and-disk`}>
-                    Upgrade compute
+                    {$t('Upgrade compute')}
                   </Link>
                 </Button>
               </div>

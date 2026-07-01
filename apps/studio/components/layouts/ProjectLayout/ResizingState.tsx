@@ -3,6 +3,7 @@ import { Loader2 } from 'lucide-react'
 
 import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const ResizingState = () => {
   const { ref } = useParams()
@@ -28,12 +29,14 @@ export const ResizingState = () => {
               <Loader2 className="animate-spin text-foreground-light" size={18} />
             </div>
             <div className="flex flex-col gap-1">
-              <p>Resizing Project Compute size</p>
+              <p>{$t('Resizing Project Compute size')}</p>
               <p className="text-sm text-foreground-light">
-                Your project is being restarted to apply compute size changes.
+                {$t('Your project is being restarted to apply compute size changes.')}
               </p>
               <p className="text-sm text-foreground-light">
-                This can take a few minutes. Project will be offline while it is being restarted.
+                {$t(
+                  'This can take a few minutes. Project will be offline while it is being restarted.'
+                )}
               </p>
             </div>
           </div>

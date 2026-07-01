@@ -49,6 +49,7 @@ import { useHasAccessToProjectLevelPermissions } from '@/data/subscriptions/org-
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { DOCS_URL } from '@/lib/constants'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
+import { t as $t } from '@/lib/i18n'
 
 interface UpdateRolesPanelProps {
   visible: boolean
@@ -181,7 +182,7 @@ export const UpdateRolesPanel = ({ visible, member, onClose }: UpdateRolesPanelP
           <div className="flex flex-col grow w-full">
             <SheetHeader className="py-3 flex flex-row justify-between gap-x-4 items-center border-b bg-transparent">
               <p className="truncate" title={`Manage access for ${member.username}`}>
-                Manage access for {member.username}
+                {$t('Manage access for')} {member.username}
               </p>
               <DocsButton href={`${DOCS_URL}/guides/platform/access-control`} />
             </SheetHeader>
@@ -194,16 +195,18 @@ export const UpdateRolesPanel = ({ visible, member, onClose }: UpdateRolesPanelP
                     checked={isApplyingRoleToAllProjects}
                     onCheckedChange={onToggleApplyToAllProjects}
                   />
-                  <p className="text-sm">Apply roles to all projects in the organization</p>
+                  <p className="text-sm">{$t('Apply roles to all projects in the organization')}</p>
                 </div>
               )}
 
               {projectsRoleConfiguration.length === 0 && (
                 <Alert>
                   <WarningIcon />
-                  <AlertTitle>Team members need to be assigned at least one role</AlertTitle>
+                  <AlertTitle>
+                    {$t('Team members need to be assigned at least one role')}
+                  </AlertTitle>
                   <AlertDescription>
-                    You may not remove all roles from a team member
+                    {$t('You may not remove all roles from a team member')}
                   </AlertDescription>
                 </Alert>
               )}
@@ -222,8 +225,8 @@ export const UpdateRolesPanel = ({ visible, member, onClose }: UpdateRolesPanelP
                     </CollapsibleTrigger>
                     <CollapsibleContent className="text-foreground-light text-sm px-4">
                       <p>
-                        {member.username} {hasNoChanges ? 'does' : 'will'} not have access to the
-                        following {noAccessProjects.length} project
+                        {member.username} {hasNoChanges ? 'does' : 'will'}{' '}
+                        {$t('not have access to the following')} {noAccessProjects.length} project
                         {noAccessProjects.length > 1 ? 's' : ''}:
                       </p>
                       <ul className="list-disc pl-6">
@@ -260,7 +263,7 @@ export const UpdateRolesPanel = ({ visible, member, onClose }: UpdateRolesPanelP
                               </div>
                             </TooltipTrigger>
                             <TooltipContent side="bottom">
-                              Additional permissions required to update role
+                              {$t('Additional permissions required to update role')}
                             </TooltipContent>
                           </Tooltip>
                         ) : (
@@ -347,7 +350,7 @@ export const UpdateRolesPanel = ({ visible, member, onClose }: UpdateRolesPanelP
                   onSelect={onSelectProject}
                   renderTrigger={() => (
                     <Button variant="default" className="w-min">
-                      Add project
+                      {$t('Add project')}
                     </Button>
                   )}
                   renderRow={(project) => {
@@ -357,7 +360,9 @@ export const UpdateRolesPanel = ({ visible, member, onClose }: UpdateRolesPanelP
                     return (
                       <div className="w-full flex items-center justify-between">
                         <span className="truncate">{project.name}</span>
-                        {hasRoleAssigned && <p className="w-[45%] text-right">Already assigned</p>}
+                        {hasRoleAssigned && (
+                          <p className="w-[45%] text-right">{$t('Already assigned')}</p>
+                        )}
                       </div>
                     )
                   }}
@@ -370,7 +375,7 @@ export const UpdateRolesPanel = ({ visible, member, onClose }: UpdateRolesPanelP
 
             <SheetFooter className="flex items-center justify-end! px-5 py-4 w-full border-t">
               <Button variant="default" disabled={false} onClick={() => onClose()}>
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button
                 loading={false}
@@ -379,7 +384,7 @@ export const UpdateRolesPanel = ({ visible, member, onClose }: UpdateRolesPanelP
                   setShowConfirmation(true)
                 }}
               >
-                Save roles
+                {$t('Save roles')}
               </Button>
             </SheetFooter>
           </div>

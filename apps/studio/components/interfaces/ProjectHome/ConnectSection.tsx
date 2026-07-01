@@ -8,6 +8,7 @@ import { useAvailableConnectModes } from '../ConnectSheet/useAvailableConnectMod
 import { CONNECT_ACTIONS } from './ConnectSection.config'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH, IS_PLATFORM, PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAppStateSnapshot } from '@/state/app-state'
 
@@ -53,7 +54,7 @@ export const ConnectSection = () => {
   return (
     <section className="w-full">
       <div className="mb-6">
-        <h3 className="heading-section">Get connected</h3>
+        <h3 className="heading-section">{$t('Get connected')}</h3>
       </div>
 
       <Card className="bg-background/25 border-dashed relative overflow-hidden">

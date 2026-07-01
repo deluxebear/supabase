@@ -28,6 +28,7 @@ import { useReplicationPipelineReplicationStatusQuery } from '@/data/replication
 import { useReplicationPipelineStatusQuery } from '@/data/replication/pipeline-status-query'
 import { useReplicationPipelineVersionQuery } from '@/data/replication/pipeline-version-query'
 import { useStopPipelineMutation } from '@/data/replication/stop-pipeline-mutation'
+import { t as $t } from '@/lib/i18n'
 import {
   PipelineStatusRequestStatus,
   usePipelineRequestStatus,
@@ -111,7 +112,7 @@ export const DestinationRow = ({ destinationId }: DestinationRowProps) => {
       return console.error('Project ref is required')
     }
     if (!pipeline) {
-      return toast.error('No pipeline found')
+      return toast.error($t('No pipeline found'))
     }
 
     try {
@@ -169,7 +170,7 @@ export const DestinationRow = ({ destinationId }: DestinationRowProps) => {
             ) : (
               <div>
                 <p>
-                  {type} (Pipeline ID: {pipeline?.id})
+                  {type} {$t('(Pipeline ID:')} {pipeline?.id})
                 </p>
                 <p className="text-foreground-lighter">{destinationName}</p>
               </div>
@@ -200,7 +201,7 @@ export const DestinationRow = ({ destinationId }: DestinationRowProps) => {
             ) : isReplicationStatusError || !applyLag ? (
               <Minus size={18} className="text-foreground-lighter" />
             ) : isCaughtUp ? (
-              <span className="text-foreground-light whitespace-nowrap">Caught up</span>
+              <span className="text-foreground-light whitespace-nowrap">{$t('Caught up')}</span>
             ) : (
               <span className="text-foreground whitespace-nowrap">{lag.display}</span>
             )}
@@ -222,13 +223,14 @@ export const DestinationRow = ({ destinationId }: DestinationRowProps) => {
                     <WarningIcon />
                   </TooltipTrigger>
                   <TooltipContent side="bottom">
-                    {errorCount} table{errorCount === 1 ? '' : 's'} encountered replication errors.
+                    {errorCount} table{errorCount === 1 ? '' : 's'}{' '}
+                    {$t('encountered replication errors.')}
                   </TooltipContent>
                 </Tooltip>
               )}
               <Button asChild variant="default" className="relative">
                 <Link href={`/project/${projectRef}/database/replication/${pipeline?.id}`}>
-                  View pipeline
+                  {$t('View pipeline')}
                 </Link>
               </Button>
               <RowMenu

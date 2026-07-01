@@ -16,6 +16,7 @@ import {
 } from 'ui'
 
 import type { Installation, PrivateApp } from '../../PrivateAppsContext'
+import { t as $t } from '@/lib/i18n'
 
 interface ViewAppSheetInfoProps {
   app: PrivateApp
@@ -57,24 +58,24 @@ function CopyableId({ id, label }: { id: string; label: string }) {
 export function ViewAppSheetInfo({ app, isInstalled, installation }: ViewAppSheetInfoProps) {
   return (
     <div className="px-5 sm:px-6 py-6 space-y-3">
-      <h3 className="text-sm font-medium text-foreground">Metadata</h3>
+      <h3 className="text-sm font-medium text-foreground">{$t('Metadata')}</h3>
       <Card className="w-full overflow-hidden bg-surface-100">
         <CardContent className="p-0">
           <Table className="table-fixed w-full">
             <TableHeader>
               <TableRow>
                 <TableHead className="text-left font-mono uppercase text-xs text-foreground-lighter h-auto py-2 w-[40%]">
-                  Field
+                  {$t('Field')}
                 </TableHead>
                 <TableHead className="text-left font-mono uppercase text-xs text-foreground-lighter h-auto py-2 w-[60%]">
-                  Value
+                  {$t('Value')}
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow>
                 <TableCell>
-                  <p className="text-foreground-light truncate">Name</p>
+                  <p className="text-foreground-light truncate">{$t('Name')}</p>
                 </TableCell>
                 <TableCell>
                   <p className="font-medium truncate">{app.name}</p>
@@ -82,7 +83,7 @@ export function ViewAppSheetInfo({ app, isInstalled, installation }: ViewAppShee
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <p className="text-foreground-light truncate">Created</p>
+                  <p className="text-foreground-light truncate">{$t('Created')}</p>
                 </TableCell>
                 <TableCell>
                   <p className="truncate">
@@ -92,35 +93,35 @@ export function ViewAppSheetInfo({ app, isInstalled, installation }: ViewAppShee
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <p className="text-foreground-light truncate">Status</p>
+                  <p className="text-foreground-light truncate">{$t('Status')}</p>
                 </TableCell>
                 <TableCell>
                   {isInstalled ? (
                     <Badge variant="success" className="uppercase">
-                      Installed
+                      {$t('Installed')}
                     </Badge>
                   ) : (
                     <Badge variant="default" className="uppercase">
-                      Uninstalled
+                      {$t('Uninstalled')}
                     </Badge>
                   )}
                 </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <p className="text-foreground-light truncate">App ID</p>
+                  <p className="text-foreground-light truncate">{$t('App ID')}</p>
                 </TableCell>
                 <TableCell>
-                  <CopyableId id={app.id} label="App ID" />
+                  <CopyableId id={app.id} label={$t('App ID')} />
                 </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <p className="text-foreground-light truncate">Installation ID</p>
+                  <p className="text-foreground-light truncate">{$t('Installation ID')}</p>
                 </TableCell>
                 <TableCell>
                   {installation ? (
-                    <CopyableId id={installation.id} label="Installation ID" />
+                    <CopyableId id={installation.id} label={$t('Installation ID')} />
                   ) : (
                     <p className="font-mono text-xs text-foreground-light">—</p>
                   )}

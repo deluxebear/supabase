@@ -7,6 +7,7 @@ import { useTableRowOperations } from '../../hooks/useTableRowOperations'
 import { formatClipboardValue } from '../../utils/common'
 import { buildFilterFromCellValue, isComplexValue } from '../header/filter/FilterPopoverNew.utils'
 import type { SupaRow } from '@/components/grid/types'
+import { t as $t } from '@/lib/i18n'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
 import { useTableEditorTableStateSnapshot } from '@/state/table-editor-table'
 
@@ -26,7 +27,7 @@ export const RowContextMenuContent = ({
 
   const onDeleteRow = useCallback(() => {
     if (!row) {
-      toast.error('Row not found')
+      toast.error($t('Row not found'))
       return
     }
     deleteRows({ rows: [row], table: snap.originalTable })
@@ -46,13 +47,13 @@ export const RowContextMenuContent = ({
     const text = formatClipboardValue(value)
 
     void copyToClipboard(text, () => {
-      toast.success('Copied cell value to clipboard')
+      toast.success($t('Copied cell value to clipboard'))
     })
   }, [activeCellPosition, row, snap.gridColumns])
 
   const onCopyRowContent = useCallback(() => {
     void copyToClipboard(JSON.stringify(row), () => {
-      toast.success('Copied row to clipboard')
+      toast.success($t('Copied row to clipboard'))
     })
   }, [row])
 
@@ -88,16 +89,16 @@ export const RowContextMenuContent = ({
     <DropdownMenuContent align="start" side="right" sideOffset={0} className="w-36 min-w-36!">
       <DropdownMenuItem className="gap-x-2" onSelect={onCopyCellContent}>
         <Copy size={12} />
-        <span className="text-xs">Copy cell</span>
+        <span className="text-xs">{$t('Copy cell')}</span>
       </DropdownMenuItem>
       <DropdownMenuItem className="gap-x-2" onSelect={onCopyRowContent}>
         <Copy size={12} />
-        <span className="text-xs">Copy row</span>
+        <span className="text-xs">{$t('Copy row')}</span>
       </DropdownMenuItem>
       {isFilterByValueVisible() && (
         <DropdownMenuItem className="gap-x-2" onSelect={onFilterByValue}>
           <ListFilter size={12} />
-          <span className="text-xs">Filter by value</span>
+          <span className="text-xs">{$t('Filter by value')}</span>
         </DropdownMenuItem>
       )}
       {snap.editable && (
@@ -105,12 +106,12 @@ export const RowContextMenuContent = ({
           <DropdownMenuSeparator />
           <DropdownMenuItem className="gap-x-2" onSelect={onEditRowClick}>
             <Edit size={12} />
-            <span className="text-xs">Edit row</span>
+            <span className="text-xs">{$t('Edit row')}</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="gap-x-2" onSelect={onDeleteRow}>
             <Trash size={12} />
-            <span className="text-xs">Delete row</span>
+            <span className="text-xs">{$t('Delete row')}</span>
           </DropdownMenuItem>
         </>
       )}

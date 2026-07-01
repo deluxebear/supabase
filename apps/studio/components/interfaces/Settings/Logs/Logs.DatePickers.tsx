@@ -22,6 +22,7 @@ import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { TimeSplitInput } from '@/components/ui/DatePicker/TimeSplitInput'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
+import { t as $t } from '@/lib/i18n'
 import type { ShortcutId } from '@/state/shortcuts/registry'
 
 type Unit = 'minute' | 'hour' | 'day'
@@ -363,7 +364,7 @@ export const LogsDatePicker = ({
         <div className="border-r p-2 flex flex-col gap-px">
           <Input
             type="text"
-            placeholder="e.g. 2h, 30m, 7d"
+            placeholder={$t('e.g. 2h, 30m, 7d')}
             value={customValue}
             onChange={(e) => setCustomValue(e.target.value)}
             className="mb-2 text-xs h-7 rounded-xs"
@@ -456,7 +457,7 @@ export const LogsDatePicker = ({
           </div>
           {isLargeRange && !hideWarnings && (
             <div className="text-xs px-3 py-1.5 border-y bg-warning-300 text-warning-foreground border-warning-500 text-warning">
-              Large ranges may result in memory errors for <br /> big projects.
+              {$t('Large ranges may result in memory errors for')} <br /> {$t('big projects.')}
             </div>
           )}
           <div className="flex items-center justify-end gap-2 p-2 border-t">
@@ -482,9 +483,9 @@ export const LogsDatePicker = ({
                 setEndDate(new Date(today))
               }}
             >
-              Today
+              {$t('Today')}
             </Button>
-            <Button onClick={handleApply}>Apply</Button>
+            <Button onClick={handleApply}>{$t('Apply')}</Button>
           </div>
         </div>
       </PopoverContent>

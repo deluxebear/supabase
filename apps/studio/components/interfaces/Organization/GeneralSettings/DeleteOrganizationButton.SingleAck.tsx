@@ -1,5 +1,7 @@
 import { Checkbox } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 type Props = {
   acknowledgedAll: boolean
   setAcknowledgedAll: (value: boolean) => void
@@ -14,7 +16,7 @@ export const DeleteOrganizationButtonSingleAck = ({
   return (
     <div className="mt-2 rounded-md border border-warning bg-warning/5 px-3 py-3">
       <p className="text-sm text-foreground">
-        This organization contains more than {max} projects.
+        {$t('This organization contains more than')} {max} projects.
       </p>
 
       <div
@@ -26,7 +28,8 @@ export const DeleteOrganizationButtonSingleAck = ({
           onCheckedChange={(checked) => setAcknowledgedAll(checked === true)}
           onClick={(e) => e.stopPropagation()}
         />
-        I understand that all projects will be permanently deleted.
+
+        {$t('I understand that all projects will be permanently deleted.')}
       </div>
     </div>
   )

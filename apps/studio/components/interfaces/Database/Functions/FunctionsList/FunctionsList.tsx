@@ -40,6 +40,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useIsProtectedSchema } from '@/hooks/useProtectedSchemas'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useEditorPanelStateSnapshot } from '@/state/editor-panel-state'
@@ -219,21 +220,21 @@ export const FunctionsList = () => {
 
   useEffect(() => {
     if (isSuccess && !!functionIdToEdit && !functionToEdit) {
-      toast('Function not found')
+      toast($t('Function not found'))
       setSelectedFunctionToEdit(null)
     }
   }, [functionIdToEdit, functionToEdit, isSuccess, setSelectedFunctionToEdit])
 
   useEffect(() => {
     if (isSuccess && !!functionIdToDuplicate && !functionToDuplicate) {
-      toast('Function not found')
+      toast($t('Function not found'))
       setSelectedFunctionIdToDuplicate(null)
     }
   }, [functionIdToDuplicate, functionToDuplicate, isSuccess, setSelectedFunctionIdToDuplicate])
 
   useEffect(() => {
     if (isSuccess && !!functionIdToDelete && !functionToDelete && !isSuccessDelete) {
-      toast('Function not found')
+      toast($t('Function not found'))
       setSelectedFunctionToDelete(null)
     }
   }, [
@@ -273,7 +274,7 @@ export const FunctionsList = () => {
             </Shortcut>
             <Input
               ref={searchInputRef}
-              placeholder="Search for a function"
+              placeholder={$t('Search for a function')}
               size="tiny"
               icon={<Search />}
               value={filterString}
@@ -282,7 +283,7 @@ export const FunctionsList = () => {
               onKeyDown={onSearchInputEscape(filterString, setFilterString)}
             />
             <ReportsSelectFilter
-              label="Return Type"
+              label={$t('Return Type')}
               options={uniqueReturnTypes.map((type) => ({
                 label: type,
                 value: type,
@@ -292,7 +293,7 @@ export const FunctionsList = () => {
               showSearch
             />
             <ReportsSelectFilter
-              label="Security"
+              label={$t('Security')}
               options={securityOptions}
               value={securityFilter ?? []}
               onChange={setSecurityFilter}
@@ -335,8 +336,10 @@ export const FunctionsList = () => {
           <>
             <EmptyStatePresentational
               icon={Database}
-              title="Add your first function"
-              description="PostgreSQL functions are a set of SQL and procedural commands such as declarations, assignments, loops, or flow-of-control."
+              title={$t('Add your first function')}
+              description={$t(
+                'PostgreSQL functions are a set of SQL and procedural commands such as declarations, assignments, loops, or flow-of-control.'
+              )}
             >
               <CreateFunctionButton hideIcon variant="default" createFunction={createFunction} />
             </EmptyStatePresentational>
@@ -346,16 +349,16 @@ export const FunctionsList = () => {
             <Table className="table-fixed overflow-x-auto">
               <TableHeader>
                 <TableRow>
-                  <TableHead key="name">Name</TableHead>
-                  <TableHead key="type">Type</TableHead>
+                  <TableHead key="name">{$t('Name')}</TableHead>
+                  <TableHead key="type">{$t('Type')}</TableHead>
                   <TableHead key="arguments" className="table-cell">
-                    Arguments
+                    {$t('Arguments')}
                   </TableHead>
                   <TableHead key="return_type" className="table-cell">
-                    Return type
+                    {$t('Return type')}
                   </TableHead>
                   <TableHead key="security" className="table-cell w-[100px]">
-                    Security
+                    {$t('Security')}
                   </TableHead>
                   <TableHead key="buttons" className="w-1/6"></TableHead>
                 </TableRow>
@@ -392,16 +395,16 @@ export const FunctionsList = () => {
         visible={!!functionToDelete}
         onCancel={() => setSelectedFunctionToDelete(null)}
         onConfirm={onDeleteFunction}
-        title="Delete this function"
+        title={$t('Delete this function')}
         loading={isDeletingFunction}
         confirmLabel={`Delete function ${functionToDelete?.name}`}
         confirmPlaceholder="Type in name of function"
         confirmString={functionToDelete?.name ?? 'Unknown'}
         text={
           <>
-            <span>This will delete the function</span>{' '}
+            <span>{$t('This will delete the function')}</span>{' '}
             <span className="text-bold text-foreground">{functionToDelete?.name}</span>{' '}
-            <span>from the schema</span>{' '}
+            <span>{$t('from the schema')}</span>{' '}
             <span className="text-bold text-foreground">{functionToDelete?.schema}</span>
           </>
         }
@@ -432,7 +435,7 @@ const CreateFunctionButton = ({
     return (
       <Shortcut
         id={SHORTCUT_IDS.LIST_PAGE_NEW_ITEM}
-        label="Create new function"
+        label={$t('Create new function')}
         onTrigger={() => createFunction()}
         side="bottom"
       >
@@ -442,7 +445,7 @@ const CreateFunctionButton = ({
           onClick={() => createFunction()}
           icon={hideIcon ? null : <Plus />}
         >
-          New function
+          {$t('New function')}
         </Button>
       </Shortcut>
     )
@@ -460,7 +463,7 @@ const CreateFunctionButton = ({
           },
         }}
       >
-        New function
+        {$t('New function')}
       </ButtonTooltip>
     )
   }

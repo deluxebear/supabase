@@ -23,6 +23,7 @@ import { z } from 'zod'
 import { useCreatePublicationMutation } from '@/data/replication/publication-create-mutation'
 import { useReplicationTablesQuery } from '@/data/replication/tables-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface NewPublicationPanelProps {
   visible: boolean
@@ -39,7 +40,7 @@ export const NewPublicationPanel = ({ visible, sourceId, onClose }: NewPublicati
   const { mutate: createPublication, isPending: creatingPublication } =
     useCreatePublicationMutation({
       onSuccess: (_, vars) => {
-        toast.success('Successfully created publication')
+        toast.success($t('Successfully created publication'))
         form.reset(defaultValues)
         onClose(vars.name)
       },
@@ -86,8 +87,8 @@ export const NewPublicationPanel = ({ visible, sourceId, onClose }: NewPublicati
         <SheetContent size="default">
           <div className="flex flex-col h-full">
             <SheetHeader>
-              <SheetTitle>Create a new Publication</SheetTitle>
-              <SheetDescription>Replicate table changes to destinations</SheetDescription>
+              <SheetTitle>{$t('Create a new Publication')}</SheetTitle>
+              <SheetDescription>{$t('Replicate table changes to destinations')}</SheetDescription>
             </SheetHeader>
             <SheetSection className="grow overflow-auto">
               <Form {...form}>
@@ -100,9 +101,9 @@ export const NewPublicationPanel = ({ visible, sourceId, onClose }: NewPublicati
                     control={form.control}
                     name="name"
                     render={({ field }) => (
-                      <FormItemLayout label="Name" layout="vertical">
+                      <FormItemLayout label={$t('Name')} layout="vertical">
                         <FormControl>
-                          <Input {...field} placeholder="Name" />
+                          <Input {...field} placeholder={$t('Name')} />
                         </FormControl>
                       </FormItemLayout>
                     )}
@@ -112,8 +113,8 @@ export const NewPublicationPanel = ({ visible, sourceId, onClose }: NewPublicati
                     name="tables"
                     render={({ field }) => (
                       <FormItemLayout
-                        label="Tables"
-                        description="Which tables to replicate to destinations"
+                        label={$t('Tables')}
+                        description={$t('Which tables to replicate to destinations')}
                       >
                         <FormControl>
                           <MultiSelector
@@ -123,7 +124,7 @@ export const NewPublicationPanel = ({ visible, sourceId, onClose }: NewPublicati
                           >
                             <MultiSelector.Trigger
                               badgeLimit="wrap"
-                              label="Select tables..."
+                              label={$t('Select tables...')}
                               mode="inline-combobox"
                             />
                             <MultiSelector.Content>
@@ -148,10 +149,10 @@ export const NewPublicationPanel = ({ visible, sourceId, onClose }: NewPublicati
             </SheetSection>
             <SheetFooter>
               <Button variant="default" disabled={creatingPublication} onClick={() => onClose()}>
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button variant="primary" disabled={creatingPublication} form={formId} type="submit">
-                Create publication
+                {$t('Create publication')}
               </Button>
             </SheetFooter>
           </div>

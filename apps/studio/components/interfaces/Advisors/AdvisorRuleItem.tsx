@@ -27,6 +27,7 @@ import { useLintRuleDeleteMutation } from '@/data/lint/delete-lint-rule-mutation
 import { useProjectLintRulesQuery } from '@/data/lint/lint-rules-query'
 import { useOrganizationMembersQuery } from '@/data/organizations/organization-members-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 interface AdvisorRuleItemProps {
   lint: LintInfo
@@ -61,7 +62,7 @@ export const AdvisorRuleItem = ({ lint }: AdvisorRuleItemProps) => {
 
   const { mutate: deleteRule, isPending: isDeleting } = useLintRuleDeleteMutation({
     onSuccess: () => {
-      toast.success('Successfully deleted rule')
+      toast.success($t('Successfully deleted rule'))
       setSelectedRuleToDelete(undefined)
     },
   })
@@ -81,7 +82,7 @@ export const AdvisorRuleItem = ({ lint }: AdvisorRuleItemProps) => {
           </div>
           <div className="flex-1 flex items-center gap-x-2">
             <span>{lint.title}</span>
-            {rules.length > 0 && <Badge>Disabled</Badge>}
+            {rules.length > 0 && <Badge>{$t('Disabled')}</Badge>}
           </div>
           <div className="flex items-center gap-x-2">
             <DocsButton href={lint.docsLink} />
@@ -129,7 +130,7 @@ export const AdvisorRuleItem = ({ lint }: AdvisorRuleItemProps) => {
                     setOpen(true)
                   }}
                 >
-                  Create rule
+                  {$t('Create rule')}
                 </Button>
               </div>
               <ChevronRight strokeWidth={1.5} size={16} className="transition" />
@@ -159,11 +160,11 @@ export const AdvisorRuleItem = ({ lint }: AdvisorRuleItemProps) => {
               {rules.length === 0 ? (
                 <div className="px-6 py-3">
                   <p className="text-sm text-foreground">
-                    Lint is visible to all project members in the{' '}
-                    <span className="capitalize">{lint.category}</span> Advisor.
+                    {$t('Lint is visible to all project members in the')}{' '}
+                    <span className="capitalize">{lint.category}</span> {$t('Advisor.')}
                   </p>
                   <p className="text-sm text-foreground-lighter">
-                    Create a rule to configure the visibility of this lint in your project
+                    {$t('Create a rule to configure the visibility of this lint in your project')}
                   </p>
                 </div>
               ) : (
@@ -210,7 +211,7 @@ export const AdvisorRuleItem = ({ lint }: AdvisorRuleItemProps) => {
         loading={isDeleting}
         visible={!!selectedRuleToDelete}
         onCancel={() => setSelectedRuleToDelete(undefined)}
-        title="Confirm to delete selected rule"
+        title={$t('Confirm to delete selected rule')}
         onConfirm={() => onDeleteRule()}
         alert={{
           base: { variant: 'warning' },
@@ -223,10 +224,10 @@ export const AdvisorRuleItem = ({ lint }: AdvisorRuleItemProps) => {
         {!!selectedRuleMeta && (
           <>
             <p className="text-sm text-foreground">
-              The selected lint will appear under the{' '}
-              <span className="capitalize">{lint.category}</span> Advisor again
-              {!!selectedRuleMeta.assigned_to ? ' for all project members' : ''} once this rule is
-              removed.
+              {$t('The selected lint will appear under the')}{' '}
+              <span className="capitalize">{lint.category}</span> {$t('Advisor again')}
+              {!!selectedRuleMeta.assigned_to ? ' for all project members' : ''}{' '}
+              {$t('once this rule is removed.')}
             </p>
           </>
         )}

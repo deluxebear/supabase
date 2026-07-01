@@ -28,6 +28,7 @@ import { useDiskUtilizationQuery } from '@/data/config/disk-utilization-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL, GB } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 type DiskSizeFieldProps = {
   form: UseFormReturn<DiskStorageSchemaType>
@@ -97,7 +98,7 @@ export function DiskSizeField({
           name="totalSize"
           control={control}
           render={({ field, fieldState: { isDirty } }) => (
-            <FormItemLayout label="Disk Size" layout="vertical" id={field.name}>
+            <FormItemLayout label={$t('Disk Size')} layout="vertical" id={field.name}>
               <FormControl className="max-w-32">
                 <InputGroup>
                   <FormInputGroupInput
@@ -128,7 +129,7 @@ export function DiskSizeField({
                           resetField('totalSize')
                           trigger('provisionedIOPS')
                         }}
-                        title="Reset"
+                        title={$t('Reset')}
                       >
                         <RotateCcw className="h-4 w-4" aria-hidden="true" />
                       </InputGroupButton>
@@ -167,7 +168,7 @@ export function DiskSizeField({
                   setAdvancedSettingsOpenState(true)
                 }}
               >
-                Change to High Performance SSD
+                {$t('Change to High Performance SSD')}
               </Button>
             }
           />

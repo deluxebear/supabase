@@ -43,6 +43,7 @@ import { useGenerateAttachmentURLsMutation } from '@/data/support/generate-attac
 import { useDeploymentCommitQuery } from '@/data/utils/deployment-commit-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { detectBrowser } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 
 const useIsSimplifiedForm = (slug: string, subscriptionPlanId?: OrganizationPlanID) => {
@@ -313,14 +314,14 @@ function SupportFormV3AdditionalInfoSection({
     <div className="flex flex-col gap-y-5">
       {showPlanExpectationInfo && orgSlug && (
         <div className="flex flex-col gap-y-2">
-          <h5 className="text-foreground">Support varies by plan</h5>
+          <h5 className="text-foreground">{$t('Support varies by plan')}</h5>
           <PlanExpectationInfoContent orgSlug={orgSlug} planId={subscriptionPlanId} />
         </div>
       )}
 
       {showDirectEmailInfo && (
         <div className="flex flex-col gap-y-2">
-          <h5 className="text-foreground">Having trouble submitting the form?</h5>
+          <h5 className="text-foreground">{$t('Having trouble submitting the form?')}</h5>
           <SupportFormDirectEmailContent projectRef={projectRef} />
         </div>
       )}

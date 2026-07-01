@@ -5,6 +5,7 @@ import { ReportWidgetProps, ReportWidgetRendererProps } from '../ReportWidget'
 import { TextFormatter } from '@/components/interfaces/Settings/Logs/LogsFormatters'
 import Table from '@/components/to-be-cleaned/Table'
 import StackedBarChart from '@/components/ui/Charts/StackedBarChart'
+import { t as $t } from '@/lib/i18n'
 
 export const CacheHitRateChartRenderer = (
   props: ReportWidgetProps<{
@@ -52,13 +53,13 @@ export const TopCacheMissesRenderer = (
 
   return (
     <>
-      <h3 className="py-4 px-6">Top Cache Misses</h3>
+      <h3 className="py-4 px-6">{$t('Top Cache Misses')}</h3>
       <Table
         containerClassName="overflow-x-auto"
         head={
           <>
-            <Table.th className={headerClasses}>Request</Table.th>
-            <Table.th className={headerClasses + ' text-right'}>Count</Table.th>
+            <Table.th className={headerClasses}>{$t('Request')}</Table.th>
+            <Table.th className={headerClasses + ' text-right'}>{$t('Count')}</Table.th>
           </>
         }
         body={

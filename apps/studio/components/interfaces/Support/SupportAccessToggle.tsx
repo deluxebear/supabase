@@ -9,6 +9,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import type { ExtendedSupportCategories } from './Support.constants'
 import type { SupportFormValues } from './SupportForm.schema'
+import { t as $t } from '@/lib/i18n'
 
 export const DISABLE_SUPPORT_ACCESS_CATEGORIES: ExtendedSupportCategories[] = [
   SupportCategories.ACCOUNT_DELETION,
@@ -37,14 +38,16 @@ export function SupportAccessToggle({ form, align = 'left', className }: Support
             align={align}
             label={
               <div className="flex items-center gap-x-2">
-                <span className="text-foreground">Allow support access to your project</span>
-                <Badge>Recommended</Badge>
+                <span className="text-foreground">
+                  {$t('Allow support access to your project')}
+                </span>
+                <Badge>{$t('Recommended')}</Badge>
               </div>
             }
             description={
               <div className="flex flex-col">
                 <span className="text-foreground-light">
-                  Human support and AI diagnostic access.
+                  {$t('Human support and AI diagnostic access.')}
                 </span>
                 <Collapsible className="mt-2">
                   <CollapsibleTrigger
@@ -56,26 +59,25 @@ export function SupportAccessToggle({ form, align = 'left', className }: Support
                       size={14}
                       className="transition-all group-data-open:rotate-90 text-foreground-muted -ml-1"
                     />
-                    <span className="text-sm">More information</span>
+                    <span className="text-sm">{$t('More information')}</span>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="text-sm text-foreground-light mt-2 space-y-2">
                     <p>
-                      By enabling this, you grant permission for our support team to access your
-                      project temporarily and, if applicable, to use AI tools to assist in
-                      diagnosing and resolving issues. This access may involve analyzing database
-                      configurations, query performance, and other relevant data to expedite
-                      troubleshooting and enhance support accuracy.
+                      {$t(
+                        'By enabling this, you grant permission for our support team to access your project temporarily and, if applicable, to use AI tools to assist in diagnosing and resolving issues. This access may involve analyzing database configurations, query performance, and other relevant data to expedite troubleshooting and enhance support accuracy.'
+                      )}
                     </p>
                     <p>
-                      We are committed to maintaining strict data privacy and security standards in
-                      all support activities.{' '}
+                      {$t(
+                        'We are committed to maintaining strict data privacy and security standards in all support activities.'
+                      )}{' '}
                       <Link
                         href="https://supabase.com/privacy"
                         target="_blank"
                         rel="noreferrer"
                         className="text-foreground-light underline hover:text-foreground transition"
                       >
-                        Privacy Policy
+                        {$t('Privacy Policy')}
                       </Link>
                     </p>
                   </CollapsibleContent>

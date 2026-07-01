@@ -12,6 +12,7 @@ import { lintKeys } from '@/data/lint/keys'
 import { Lint } from '@/data/lint/lint-query'
 import { useExecuteSqlMutation } from '@/data/sql/execute-sql-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 const GRAPHQL_EXPOSURE_LINT_NAMES = [
   'pg_graphql_anon_table_exposed',
@@ -116,13 +117,15 @@ export const GraphqlExposureLintCTA = ({
         onConfirm={handleRevoke}
       >
         <div className="text-sm text-foreground mb-6">
-          <p>This change affects both schema visibility and data access for {audience.lower}.</p>
           <p>
-            Alternatively, you can{' '}
+            {$t('This change affects both schema visibility and data access for')} {audience.lower}.
+          </p>
+          <p>
+            {$t('Alternatively, you can')}{' '}
             <InlineLink href={`/project/${projectRef}/database/extensions`}>
-              disable GraphQL
+              {$t('disable GraphQL')}
             </InlineLink>{' '}
-            to remove schema visibility.
+            {$t('to remove schema visibility.')}
           </p>
         </div>
 
@@ -131,12 +134,13 @@ export const GraphqlExposureLintCTA = ({
             <Lock className="text-foreground-light shrink-0 mt-0.5" size={20} strokeWidth={1.5} />
             <div>
               <div className="flex items-center gap-2">
-                <p className="text-sm text-foreground">Data API access removed</p>
-                <Badge variant="warning">Breaking change</Badge>
+                <p className="text-sm text-foreground">{$t('Data API access removed')}</p>
+                <Badge variant="warning">{$t('Breaking change')}</Badge>
               </div>
               <p className="text-sm text-foreground-light mt-1">
-                {audience.upper} will no longer be able to read or write to this {objectType} via
-                Supabase APIs (GraphQL or Data API), even if RLS policies allow it.
+                {audience.upper} {$t('will no longer be able to read or write to this')}{' '}
+                {objectType}{' '}
+                {$t('via Supabase APIs (GraphQL or Data API), even if RLS policies allow it.')}
               </p>
             </div>
           </div>
@@ -144,10 +148,11 @@ export const GraphqlExposureLintCTA = ({
           <div className="flex gap-3">
             <EyeOff className="text-foreground-light shrink-0 mt-0.5" size={20} strokeWidth={1.5} />
             <div>
-              <p className="text-sm text-foreground">Schema hidden from GraphQL</p>
+              <p className="text-sm text-foreground">{$t('Schema hidden from GraphQL')}</p>
               <p className="text-sm text-foreground-light mt-1">
-                This {objectType} will no longer appear in the GraphQL schema. {audience.upper}{' '}
-                won't be able to discover its name, columns, or relationships.
+                {$t('This')} {objectType} {$t('will no longer appear in the GraphQL schema.')}{' '}
+                {audience.upper}{' '}
+                {$t("won't be able to discover its name, columns, or relationships.")}
               </p>
             </div>
           </div>
@@ -155,13 +160,13 @@ export const GraphqlExposureLintCTA = ({
 
         <Admonition
           type="warning"
-          title="When to keep access"
+          title={$t('When to keep access')}
           description={`If your app needs ${audience.lower} to query this ${objectType}, keep access and ignore this warning. Be aware that this ${objectType}'s schema will remain visible via the GraphQL API.`}
           className="mt-6"
         />
 
         <p className="text-sm text-foreground-light mt-6">
-          The following statement will be executed:
+          {$t('The following statement will be executed:')}
         </p>
         <pre className="mt-2 px-3 py-2 rounded bg-surface-200 text-xs font-mono whitespace-pre-wrap break-all">
           {revokeSql}
@@ -175,13 +180,14 @@ export const GraphqlExposureCallout = ({ projectRef }: { projectRef: string }) =
   return (
     <Admonition
       type="default"
-      title="Why this appears"
+      title={$t('Why this appears')}
       description={
         <p>
-          These warnings are triggered by GraphQL exposing your table schemas. If you're not using
-          GraphQL, disable it from the{' '}
+          {$t(
+            "These warnings are triggered by GraphQL exposing your table schemas. If you're not using GraphQL, disable it from the"
+          )}{' '}
           <InlineLink href={`/project/${projectRef}/database/extensions`}>
-            Database extensions page
+            {$t('Database extensions page')}
           </InlineLink>
           .
         </p>

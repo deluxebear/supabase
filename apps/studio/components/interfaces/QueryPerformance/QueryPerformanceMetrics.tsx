@@ -5,6 +5,7 @@ import { cn, Skeleton, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
 import { useQueryPerformanceQuery } from './useQueryPerformanceQuery'
 import { NumericFilter } from '@/components/interfaces/Reports/v2/ReportsNumericFilter'
+import { t as $t } from '@/lib/i18n'
 
 export const QueryPerformanceMetrics = () => {
   const { data: queryMetrics, isLoading } = useQueryPerformanceQuery({ preset: 'queryMetrics' })
@@ -69,7 +70,7 @@ export const QueryPerformanceMetrics = () => {
                       <TooltipTrigger asChild>
                         <button
                           type="button"
-                          aria-label="How are slow queries calculated?"
+                          aria-label={$t('How are slow queries calculated?')}
                           className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-surface-200 text-foreground-lighter transition-colors hover:bg-surface-300 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-foreground-lighter"
                           onClick={(e) => {
                             e.stopPropagation()
@@ -79,8 +80,9 @@ export const QueryPerformanceMetrics = () => {
                         </button>
                       </TooltipTrigger>
                       <TooltipContent side="top" align="start" className="max-w-xs text-xs">
-                        Slow queries are those with total execution time (execution time + planning
-                        time) greater than 1000ms.
+                        {$t(
+                          'Slow queries are those with total execution time (execution time + planning time) greater than 1000ms.'
+                        )}
                       </TooltipContent>
                     </Tooltip>
                   )}

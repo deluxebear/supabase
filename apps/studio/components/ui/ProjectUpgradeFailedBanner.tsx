@@ -10,6 +10,7 @@ import { SupportLink } from '@/components/interfaces/Support/SupportLink'
 import { useProjectUpgradingStatusQuery } from '@/data/config/project-upgrade-status-query'
 import { IS_PLATFORM } from '@/lib/constants'
 import { guessLocalTimezone } from '@/lib/dayjs'
+import { t as $t } from '@/lib/i18n'
 
 // [Joshen] Think twice about the category though - it doesn't correspond
 
@@ -55,19 +56,20 @@ export const ProjectUpgradeFailedBanner = () => {
                 message,
               }}
             >
-              Contact support
+              {$t('Contact support')}
             </SupportLink>
           </Button>
         }
       >
         <div>
-          Your project and its data are not affected. Please reach out to us via our support form
-          for assistance with the upgrade.
+          {$t(
+            'Your project and its data are not affected. Please reach out to us via our support form for assistance with the upgrade.'
+          )}
         </div>
         <div>
-          You may also view logs related to the failed upgrade in your{' '}
+          {$t('You may also view logs related to the failed upgrade in your')}{' '}
           <InlineLink href={`/project/${ref}/logs/pg-upgrade-logs?${timestampFilter}`}>
-            project's logs
+            {$t("project's logs")}
           </InlineLink>
           .
         </div>

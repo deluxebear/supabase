@@ -1,6 +1,7 @@
 import { lintInfoMap } from '../Linter/Linter.utils'
 import { LintException } from '@/data/lint/lint-rules-query'
 import { Member } from '@/data/organizations/organization-members-query'
+import { t as $t } from '@/lib/i18n'
 
 export const generateRuleText = (e: LintException, member?: Member) => {
   const lintName = lintInfoMap.find((x) => x.name === e.lint_name)?.title
@@ -24,9 +25,13 @@ export const generateRuleDescription = ({
   const lint = lintInfoMap.find((x) => x.name === name)
   return (
     <>
-      <p className="font-mono uppercase text-xs text-foreground-lighter">What this rule means:</p>
+      <p className="font-mono uppercase text-xs text-foreground-lighter">
+        {$t('What this rule means:')}
+      </p>
       <p className="mb-0!">
-        The "{lint?.title}" lint will be{' '}
+        {$t('The "')}
+        {lint?.title}
+        {$t('" lint will be')}{' '}
         {disabled
           ? `ignored for ${!!member ? `this user only` : 'this project'}`
           : `visible to ${!!member ? `this user only` : ''}`}
@@ -35,22 +40,23 @@ export const generateRuleDescription = ({
         {!!member ? (
           disabled ? (
             <>
-              Only {member.username ?? member.primary_email} will no longer see this lint in the{' '}
-              <span className="capitalize">{lint?.category}</span> Advisor, the lint will still be
-              visible to all other project members
+              {$t('Only')} {member.username ?? member.primary_email}{' '}
+              {$t('will no longer see this lint in the')}{' '}
+              <span className="capitalize">{lint?.category}</span>{' '}
+              {$t('Advisor, the lint will still be visible to all other project members')}
             </>
           ) : (
             <>
-              Only {member.username ?? member.primary_email} will see this lint in the{' '}
-              <span className="capitalize">{lint?.category}</span> Advisor, the lint will no longer
-              be visible to all other project members
+              {$t('Only')} {member.username ?? member.primary_email}{' '}
+              {$t('will see this lint in the')} <span className="capitalize">{lint?.category}</span>{' '}
+              {$t('Advisor, the lint will no longer be visible to all other project members')}
             </>
           )
         ) : (
           <>
-            All project members will no longer see this lint in the{' '}
-            <span className="capitalize">{lint?.category}</span> Advisor, nor receive notifications
-            via emails about this lint
+            {$t('All project members will no longer see this lint in the')}{' '}
+            <span className="capitalize">{lint?.category}</span>{' '}
+            {$t('Advisor, nor receive notifications via emails about this lint')}
           </>
         )}
       </p>

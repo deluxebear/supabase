@@ -6,6 +6,7 @@ import { Branch } from '@/data/branches/branches-query'
 import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
 import { useTablesQuery } from '@/data/tables/tables-query'
 import { tablesToSQL } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -122,7 +123,7 @@ export const ReviewWithAI = ({
       }}
     >
       <AiIconAnimation size={16} />
-      <span className="sr-only">Review with Assistant</span>
+      <span className="sr-only">{$t('Review with Assistant')}</span>
     </ButtonTooltip>
   )
 }

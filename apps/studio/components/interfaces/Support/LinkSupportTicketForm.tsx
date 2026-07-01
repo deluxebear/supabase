@@ -18,6 +18,7 @@ import { DISABLE_SUPPORT_ACCESS_CATEGORIES, SupportAccessToggle } from './Suppor
 import { getOrgSubscriptionPlan, NO_ORG_MARKER, NO_PROJECT_MARKER } from './SupportForm.utils'
 import { useLinkSupportTicketMutation } from '@/data/feedback/link-support-ticket-mutation'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
+import { t as $t } from '@/lib/i18n'
 
 interface LinkSupportTicketFormProps {
   conversationId: string
@@ -53,7 +54,7 @@ export const LinkSupportTicketForm = ({
 
   const { mutate: linkSupportTicket, isPending } = useLinkSupportTicketMutation({
     onSuccess: () => {
-      toast.success('Support ticket linked successfully!')
+      toast.success($t('Support ticket linked successfully!'))
       onSuccess()
     },
     onError: (error) => {
@@ -68,10 +69,10 @@ export const LinkSupportTicketForm = ({
   })
 
   const onSubmit: SubmitHandler<LinkSupportTicketFormValues> = (values) => {
-    if (!organizations) return toast.error('Organizations not loaded. Please try again.')
+    if (!organizations) return toast.error($t('Organizations not loaded. Please try again.'))
 
     const selectedOrg = organizations.find((org) => org.slug === values.organizationSlug)
-    if (!selectedOrg) return toast.error('Selected organization not found. Please try again.')
+    if (!selectedOrg) return toast.error($t('Selected organization not found. Please try again.'))
 
     linkSupportTicket({
       conversation_id: values.conversation_id,
@@ -109,13 +110,13 @@ export const LinkSupportTicketForm = ({
         className="flex flex-col"
       >
         <div className="flex flex-col py-6 gap-y-6">
-          <h3 className="px-6 text-xl">Link support ticket to account</h3>
+          <h3 className="px-6 text-xl">{$t('Link support ticket to account')}</h3>
           <div className="px-6 flex flex-col gap-y-8">
             <FormField
               control={form.control}
               name="conversation_id"
               render={({ field }) => (
-                <FormItemLayout hideMessage layout="vertical" label="Conversation ID">
+                <FormItemLayout hideMessage layout="vertical" label={$t('Conversation ID')}>
                   <FormControl>
                     <Input {...field} readOnly />
                   </FormControl>
@@ -164,7 +165,7 @@ export const LinkSupportTicketForm = ({
             icon={<Link2 />}
             loading={isPending}
           >
-            Link support ticket to account
+            {$t('Link support ticket to account')}
           </Button>
         </div>
       </form>

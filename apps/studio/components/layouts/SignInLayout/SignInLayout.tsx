@@ -21,6 +21,7 @@ import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { BASE_PATH, DOCS_URL } from '@/lib/constants'
 import { getProviderDisplay } from '@/lib/external-identity-providers'
 import { auth, buildPathWithParams, getReturnToPath } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 
 type Quote = {
   text: string
@@ -44,10 +45,10 @@ type SignInLayoutProps = {
 
 const TermsText = () => (
   <>
-    By continuing, you agree to Supabase’s{' '}
-    <InlineLink href="https://supabase.com/terms">Terms of Service</InlineLink> and{' '}
-    <InlineLink href="https://supabase.com/privacy">Privacy Policy</InlineLink>, and to receive
-    periodic emails with updates.
+    {$t('By continuing, you agree to Supabase’s')}{' '}
+    <InlineLink href="https://supabase.com/terms">{$t('Terms of Service')}</InlineLink> and{' '}
+    <InlineLink href="https://supabase.com/privacy">{$t('Privacy Policy')}</InlineLink>
+    {$t(', and to receive periodic emails with updates.')}
   </>
 )
 
@@ -211,7 +212,7 @@ export const SignInLayout = ({
                         ? `${BASE_PATH}/img/supabase-dark.svg`
                         : `${BASE_PATH}/img/supabase-light.svg`
                     }
-                    alt="Supabase Logo"
+                    alt={$t('Supabase Logo')}
                     className={largeLogo ? 'h-[48px]' : 'h-[24px]'}
                   />
                 </Link>

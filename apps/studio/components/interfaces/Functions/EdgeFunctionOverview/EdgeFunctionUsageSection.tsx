@@ -19,6 +19,7 @@ import {
 } from './EdgeFunctionOverview.utils'
 import type { EdgeFunctionChartDatum } from './EdgeFunctionOverview.utils'
 import { EdgeFunctionTimeSeriesChartCard } from './EdgeFunctionTimeSeriesChartCard'
+import { t as $t } from '@/lib/i18n'
 
 interface EdgeFunctionUsageSectionProps {
   data: EdgeFunctionChartDatum[]
@@ -57,33 +58,33 @@ export const EdgeFunctionUsageSection = ({
   const cpuMetrics = (
     <div className="flex flex-wrap gap-x-8 gap-y-4">
       <ChartMetric
-        label="Average CPU Time"
+        label={$t('Average CPU Time')}
         value={formatMetric(averageCpuTime, 'ms')}
-        tooltip="Average CPU time usage for the function"
+        tooltip={$t('Average CPU time usage for the function')}
       />
       <ChartMetric
-        label="Max CPU Time"
+        label={$t('Max CPU Time')}
         value={formatMetric(maxCpuTime, 'ms')}
-        tooltip="Maximum CPU time usage for the function"
+        tooltip={$t('Maximum CPU time usage for the function')}
       />
     </div>
   )
   const memoryMetrics = (
     <div className="flex flex-wrap gap-x-8 gap-y-4">
       <ChartMetric
-        label="Average Memory Usage"
+        label={$t('Average Memory Usage')}
         value={formatMetric(averageMemoryUsage, 'MB')}
-        tooltip="Average memory usage for the function"
+        tooltip={$t('Average memory usage for the function')}
       />
       <ChartMetric
-        label="Heap"
+        label={$t('Heap')}
         value={formatRate(totalHeapMemory, totalMemoryByType)}
-        tooltip="Share of memory attributed to heap usage over the selected interval"
+        tooltip={$t('Share of memory attributed to heap usage over the selected interval')}
       />
       <ChartMetric
-        label="External"
+        label={$t('External')}
         value={formatRate(totalExternalMemory, totalMemoryByType)}
-        tooltip="Share of memory attributed to external usage over the selected interval"
+        tooltip={$t('Share of memory attributed to external usage over the selected interval')}
       />
     </div>
   )
@@ -95,7 +96,7 @@ export const EdgeFunctionUsageSection = ({
           <div className="flex flex-col gap-6">
             <PageSectionMeta>
               <PageSectionSummary>
-                <PageSectionTitle>Usage</PageSectionTitle>
+                <PageSectionTitle>{$t('Usage')}</PageSectionTitle>
               </PageSectionSummary>
             </PageSectionMeta>
 

@@ -14,6 +14,7 @@ import {
 import { navigateToSection } from './Content/Content.utils'
 import { DOCS_RESOURCE_CONTENT } from './ProjectAPIDocs.constants'
 import { DocsButton } from '@/components/ui/DocsButton'
+import { t as $t } from '@/lib/i18n'
 import { useAppStateSnapshot } from '@/state/app-state'
 
 type DocsResourceContentItem = (typeof DOCS_RESOURCE_CONTENT)[keyof typeof DOCS_RESOURCE_CONTENT]
@@ -171,15 +172,16 @@ const MoreInformation = ({ docsUrl }: MoreInformationProps) => {
   return (
     <Alert className="p-3">
       <AlertTitle>
-        <p className="text-xs">Unable to find what you're looking for?</p>
+        <p className="text-xs">{$t("Unable to find what you're looking for?")}</p>
       </AlertTitle>
       <AlertDescription className="space-y-1">
         <p className="text-xs leading-normal!">
-          The API methods shown here are only the commonly used ones to get you started building
-          quickly.
+          {$t(
+            'The API methods shown here are only the commonly used ones to get you started building quickly.'
+          )}
         </p>
         <p className="text-xs leading-normal!">
-          Head over to our docs site for the full API documentation.
+          {$t('Head over to our docs site for the full API documentation.')}
         </p>
         <DocsButton className="mt-2!" href={docsUrl} />
       </AlertDescription>

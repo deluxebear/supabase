@@ -1,13 +1,15 @@
 import { Card, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 export function AppsListLoading() {
   return (
     <Card>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="max-w-xs">Name</TableHead>
-            <TableHead className="w-48">Created</TableHead>
+            <TableHead className="max-w-xs">{$t('Name')}</TableHead>
+            <TableHead className="w-48">{$t('Created')}</TableHead>
             <TableHead />
           </TableRow>
         </TableHeader>

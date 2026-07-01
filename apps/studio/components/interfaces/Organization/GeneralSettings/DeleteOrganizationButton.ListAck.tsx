@@ -2,6 +2,7 @@ import { Checkbox } from 'ui'
 
 import { getComputeSize } from '@/data/projects/org-projects-infinite-query'
 import type { OrgProject } from '@/data/projects/org-projects-infinite-query'
+import { t as $t } from '@/lib/i18n'
 
 type Props = {
   projects: OrgProject[]
@@ -17,7 +18,7 @@ export const DeleteOrganizationButtonListAck = ({
   return (
     <>
       <p className="mb-2 text-sm text-foreground-lighter">
-        Acknowledge each project that will be deleted:
+        {$t('Acknowledge each project that will be deleted:')}
       </p>
 
       <div className="mt-4 overflow-hidden rounded-md border border-default">

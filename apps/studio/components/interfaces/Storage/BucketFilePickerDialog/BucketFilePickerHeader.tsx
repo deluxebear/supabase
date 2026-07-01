@@ -34,6 +34,7 @@ import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { useProjectApiUrl } from '@/data/config/project-endpoint-query'
 import { storageKeys } from '@/data/storage/keys'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 const VIEW_OPTIONS = [
   { key: STORAGE_VIEWS.COLUMNS, name: 'As columns' },
@@ -243,7 +244,7 @@ export const BucketFilePickerHeader = () => {
                 loading={isRefreshing}
                 onClick={refreshData}
               >
-                Reload
+                {$t('Reload')}
               </Button>
 
               <DropdownMenu>
@@ -258,7 +259,7 @@ export const BucketFilePickerHeader = () => {
                       )
                     }
                   >
-                    View
+                    {$t('View')}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-40 min-w-0">
@@ -274,7 +275,7 @@ export const BucketFilePickerHeader = () => {
                   ))}
                   <DropdownMenuSeparator />
                   <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>Sort by</DropdownMenuSubTrigger>
+                    <DropdownMenuSubTrigger>{$t('Sort by')}</DropdownMenuSubTrigger>
                     <DropdownMenuSubContent className="w-44">
                       {SORT_BY_OPTIONS.map((option) => (
                         <DropdownMenuItem key={option.key} onClick={() => setSortBy(option.key)}>
@@ -289,7 +290,7 @@ export const BucketFilePickerHeader = () => {
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
                   <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>Sort order</DropdownMenuSubTrigger>
+                    <DropdownMenuSubTrigger>{$t('Sort order')}</DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
                       {SORT_ORDER_OPTIONS.map((option) => (
                         <DropdownMenuItem
@@ -330,7 +331,7 @@ export const BucketFilePickerHeader = () => {
                   },
                 }}
               >
-                Upload files
+                {$t('Upload files')}
               </ButtonTooltip>
             </div>
 
@@ -352,7 +353,7 @@ export const BucketFilePickerHeader = () => {
                       className="p-0 h-5 w-5"
                     />,
                   ]}
-                  placeholder="Search for a file or folder"
+                  placeholder={$t('Search for a file or folder')}
                   type="text"
                   value={itemSearchString}
                   onChange={(event) => setItemSearchString(event.target.value)}

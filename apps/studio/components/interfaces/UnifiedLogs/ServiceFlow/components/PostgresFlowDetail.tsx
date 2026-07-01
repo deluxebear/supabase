@@ -10,6 +10,7 @@ import { BlockFieldConfig } from '../types'
 import { DetailRow } from './shared/DetailRow'
 import { DetailSectionHeader } from './shared/DetailSection'
 import { DataTableFilterField } from '@/components/ui/DataTable/DataTable.types'
+import { t as $t } from '@/lib/i18n'
 
 interface PostgresFlowDetailProps {
   data: ColumnSchema
@@ -71,14 +72,14 @@ export const PostgresFlowDetail = memo(function PostgresFlowDetail({
   return (
     <div>
       <DetailSectionHeader
-        title="Request started"
+        title={$t('Request started')}
         icon={Clock}
         summary={formattedTime ?? undefined}
       />
 
       <Collapsible defaultOpen>
         <CollapsibleTrigger className="w-full flex items-center justify-between pr-4 [&[data-state=open]>svg]:-rotate-180! transition hover:bg-surface-100">
-          <DetailSectionHeader title="Postgres" icon={Database} />
+          <DetailSectionHeader title={$t('Postgres')} icon={Database} />
           <ChevronDown className="transition-transform duration-200" strokeWidth={1.5} size={14} />
         </CollapsibleTrigger>
         <CollapsibleContent className="[&>*:nth-child(odd)]:bg-surface-100/50">
@@ -98,7 +99,7 @@ export const PostgresFlowDetail = memo(function PostgresFlowDetail({
 
       <Collapsible defaultOpen>
         <CollapsibleTrigger className="w-full flex items-center justify-between pr-4 [&[data-state=open]>svg]:-rotate-180! transition hover:bg-surface-100">
-          <DetailSectionHeader title="Connection & Session Details" icon={Cable} />
+          <DetailSectionHeader title={$t('Connection & Session Details')} icon={Cable} />
           <ChevronDown className="transition-transform duration-200" strokeWidth={1.5} size={14} />
         </CollapsibleTrigger>
         <CollapsibleContent className="[&>*:nth-child(odd)]:bg-surface-100/50">
@@ -117,7 +118,7 @@ export const PostgresFlowDetail = memo(function PostgresFlowDetail({
       </Collapsible>
 
       <DetailSectionHeader
-        title="Operation result"
+        title={$t('Operation result')}
         icon={Clock}
         topDivider
         summary={

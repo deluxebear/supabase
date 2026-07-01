@@ -21,6 +21,7 @@ import { OrgProject } from '@/data/projects/org-projects-infinite-query'
 import { useLastVisitedOrganization } from '@/hooks/misc/useLastVisitedOrganization'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface ProjectCreationFooterProps {
   form: UseFormReturn<CreateProjectForm>
@@ -72,30 +73,33 @@ export const ProjectCreationFooter = ({
           canCreateProject &&
           additionalMonthlySpend > 0 && (
             <div className="flex justify-between text-sm">
-              <span>Additional costs</span>
+              <span>{$t('Additional costs')}</span>
               <div className="text-brand flex gap-1 items-center font-mono font-medium">
                 <span>${additionalMonthlySpend}/m</span>
                 <InfoTooltip side="top" className="max-w-[450px] p-0">
                   <div className="p-4 text-sm text-foreground-light space-y-1">
                     <p>
-                      Each project includes a dedicated Postgres instance running on its own server.
-                      You are charged for the{' '}
+                      {$t(
+                        'Each project includes a dedicated Postgres instance running on its own server. You are charged for the'
+                      )}{' '}
                       <InlineLink href={`${DOCS_URL}/guides/platform/billing-on-supabase`}>
-                        Compute resource
+                        {$t('Compute resource')}
                       </InlineLink>{' '}
-                      of that server, independent of your database usage.
+                      {$t('of that server, independent of your database usage.')}
                     </p>
                     {monthlyComputeCosts > 0 && (
-                      <p>Compute costs are applied on top of your subscription plan costs.</p>
+                      <p>
+                        {$t('Compute costs are applied on top of your subscription plan costs.')}
+                      </p>
                     )}
                   </div>
 
                   <Table className="mt-2">
                     <TableHeader className="[&_th]:h-7">
                       <TableRow className="py-2">
-                        <TableHead className="w-[170px]">Project</TableHead>
-                        <TableHead>Compute Size</TableHead>
-                        <TableHead className="text-right">Monthly Costs</TableHead>
+                        <TableHead className="w-[170px]">{$t('Project')}</TableHead>
+                        <TableHead>{$t('Compute Size')}</TableHead>
+                        <TableHead className="text-right">{$t('Monthly Costs')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody className="[&_td]:py-2">
@@ -121,7 +125,7 @@ export const ProjectCreationFooter = ({
                           <span className="truncate">
                             {form.getValues('projectName') || 'New project'}
                           </span>
-                          <Badge variant="success">New</Badge>
+                          <Badge variant="success">{$t('New')}</Badge>
                         </TableCell>
                         <TableCell className="text-center">{instanceLabel(instanceSize)}</TableCell>
                         <TableCell className="text-right">
@@ -134,7 +138,7 @@ export const ProjectCreationFooter = ({
                   <Table>
                     <TableHeader className="[&_th]:h-7">
                       <TableRow>
-                        <TableHead colSpan={2}>Compute Credits</TableHead>
+                        <TableHead colSpan={2}>{$t('Compute Credits')}</TableHead>
                         <TableHead colSpan={1} className="text-right">
                           -$10
                         </TableHead>
@@ -143,14 +147,14 @@ export const ProjectCreationFooter = ({
                     <TableBody className="[&_td]:py-2">
                       <TableRow className="text-foreground">
                         <TableCell colSpan={2}>
-                          Total Monthly Compute Costs
+                          {$t('Total Monthly Compute Costs')}
                           {/**
                            * API currently doesnt output replica information on the projects list endpoint. Until then, we cannot correctly calculate the costs including RRs.
                            * Will be adjusted in the future [kevin]
                            */}
                           {organizationProjects.length > 0 && (
                             <p className="text-xs text-foreground-lighter">
-                              Excluding Read replicas
+                              {$t('Excluding Read replicas')}
                             </p>
                           )}
                         </TableCell>
@@ -175,14 +179,14 @@ export const ProjectCreationFooter = ({
             else router.push('/organizations')
           }}
         >
-          Cancel
+          {$t('Cancel')}
         </Button>
         <Button
           type="submit"
           loading={isCreatingNewProject || isSuccessNewProject}
           disabled={!canCreateProject}
         >
-          Create new project
+          {$t('Create new project')}
         </Button>
       </div>
     </div>

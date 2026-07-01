@@ -6,6 +6,7 @@ import { BillingChangeBadge } from './BillingChangeBadge'
 import { DISK_LIMITS, DISK_PRICING, DiskType } from './DiskManagement.constants'
 import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { formatDatabaseID } from '@/data/read-replicas/replicas.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface DiskManagementDiskSizeReadReplicasProps {
   isDirty: boolean
@@ -46,16 +47,19 @@ export const DiskManagementDiskSizeReadReplicas = ({
             <Alert variant="default" className="bg-transparent">
               <InfoIcon />
               <AlertTitle>
-                Read replicas are provisioned with extra 25% disk size to account for WAL files
+                {$t(
+                  'Read replicas are provisioned with extra 25% disk size to account for WAL files'
+                )}
               </AlertTitle>
               <AlertDescription>
-                Each replica will have a disk size of {newTotalSize}GB, and are billed separately
+                {$t('Each replica will have a disk size of')} {newTotalSize}
+                {$t('GB, and are billed separately')}
                 <ul className="list-disc pl-4 my-3 flex flex-col gap-2">
                   {readReplicas.map((replica, index) => (
                     <li key={index} className="marker:text-foreground-light">
                       <div className="flex items-center gap-2">
                         <span>
-                          ID: {formatDatabaseID(replica.identifier)} ({replica.region}):
+                          {$t('ID:')} {formatDatabaseID(replica.identifier)} ({replica.region}):
                         </span>
                         <BillingChangeBadge
                           show
@@ -158,14 +162,16 @@ export const DiskManagementIOPSReadReplicas = ({
         >
           <Alert variant="default" className="bg-transparent">
             <InfoIcon />
-            <AlertTitle>Read replica IOPS will also be updated to the same value</AlertTitle>
+            <AlertTitle>
+              {$t('Read replica IOPS will also be updated to the same value')}
+            </AlertTitle>
             <AlertDescription>
               <ul className="list-disc pl-4 my-3 flex flex-col gap-2">
                 {readReplicas.map((replica, index) => (
                   <li key={index} className="marker:text-foreground-light">
                     <div className="flex items-center gap-2">
                       <span>
-                        ID: {formatDatabaseID(replica.identifier)} ({replica.region}):
+                        {$t('ID:')} {formatDatabaseID(replica.identifier)} ({replica.region}):
                       </span>
                       <BillingChangeBadge show beforePrice={beforePrice} afterPrice={afterPrice} />
                     </div>
@@ -221,14 +227,16 @@ export const DiskManagementThroughputReadReplicas = ({
         >
           <Alert variant="default" className="bg-transparent">
             <InfoIcon />
-            <AlertTitle>Read replica throughput will also be updated to the same value</AlertTitle>
+            <AlertTitle>
+              {$t('Read replica throughput will also be updated to the same value')}
+            </AlertTitle>
             <AlertDescription>
               <ul className="list-disc pl-4 my-3 flex flex-col gap-2">
                 {readReplicas.map((replica, index) => (
                   <li key={index} className="marker:text-foreground-light">
                     <div className="flex items-center gap-2">
                       <span>
-                        ID: {formatDatabaseID(replica.identifier)} ({replica.region}):
+                        {$t('ID:')} {formatDatabaseID(replica.identifier)} ({replica.region}):
                       </span>
                       <BillingChangeBadge show beforePrice={beforePrice} afterPrice={afterPrice} />
                     </div>

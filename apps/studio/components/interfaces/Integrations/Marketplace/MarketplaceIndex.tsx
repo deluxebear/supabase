@@ -35,6 +35,7 @@ import { DocsButton } from '@/components/ui/DocsButton'
 import { useMarketplaceCategoriesQuery } from '@/data/marketplace/integration-categories-query'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -224,8 +225,9 @@ export const MarketplaceIndex = () => {
           <PageHeaderSummary>
             <PageHeaderTitle>{pageTitle}</PageHeaderTitle>
             <PageHeaderDescription>
-              Explore native and third-party integrations to add functionality to your Supabase
-              project.
+              {$t(
+                'Explore native and third-party integrations to add functionality to your Supabase project.'
+              )}
             </PageHeaderDescription>
           </PageHeaderSummary>
           <div className="flex shrink-0 items-center gap-2">
@@ -280,9 +282,9 @@ export const MarketplaceIndex = () => {
             />
 
             {filtered.length === 0 && (
-              <EmptyStatePresentational title="No results found">
+              <EmptyStatePresentational title={$t('No results found')}>
                 <Button variant="default" onClick={clearAll}>
-                  Clear filters
+                  {$t('Clear filters')}
                 </Button>
               </EmptyStatePresentational>
             )}

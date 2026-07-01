@@ -6,6 +6,7 @@ import { Markdown } from '@/components/interfaces/Markdown'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { useCustomContent } from '@/hooks/custom-content/useCustomContent'
 import { BASE_PATH, DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const CLSPreview = () => {
   const { ref } = useParams()
@@ -26,13 +27,14 @@ export const CLSPreview = () => {
         <Alert variant="warning" className="mt-2">
           <WarningIcon />
           <AlertTitle>
-            Changes to column privileges will not be reflected in migrations when running{' '}
-            <code className="text-code-inline">supabase db diff</code>.
+            {$t('Changes to column privileges will not be reflected in migrations when running')}{' '}
+            <code className="text-code-inline">{$t('supabase db diff')}</code>.
           </AlertTitle>
           <AlertDescription>
-            Column privileges are not supported in the current version of the Supabase CLI.
+            {$t('Column privileges are not supported in the current version of the Supabase CLI.')}
             <br />
-            You will need to manually apply these changes to your database.
+
+            {$t('You will need to manually apply these changes to your database.')}
           </AlertDescription>
         </Alert>
       </div>
@@ -44,10 +46,10 @@ export const CLSPreview = () => {
         className="rounded-sm border"
       />
       <div className="space-y-2 mt-4!">
-        <p className="text-sm">Enabling this preview will:</p>
+        <p className="text-sm">{$t('Enabling this preview will:')}</p>
         <ul className="list-disc pl-6 text-sm text-foreground-light space-y-1">
           <li>
-            Grant access to a new UI for granting and/or revoking column-level privileges{' '}
+            {$t('Grant access to a new UI for granting and/or revoking column-level privileges')}{' '}
             <InlineLink href={`/project/${ref}/database/column-privileges`}>here</InlineLink>.
           </li>
         </ul>

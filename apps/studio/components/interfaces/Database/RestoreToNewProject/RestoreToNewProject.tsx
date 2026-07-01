@@ -32,6 +32,7 @@ import {
 } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL, PROJECT_STATUS } from '@/lib/constants'
 import { getDatabaseMajorVersion } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export const RestoreToNewProject = () => {
   const { data: project } = useSelectedProjectQuery()
@@ -126,8 +127,10 @@ export const RestoreToNewProject = () => {
     return (
       <Admonition
         type="default"
-        title="Restoring to new projects are not available for OrioleDB"
-        description="OrioleDB is currently in public alpha and projects created are strictly ephemeral with no database backups"
+        title={$t('Restoring to new projects are not available for OrioleDB')}
+        description={$t(
+          'OrioleDB is currently in public alpha and projects created are strictly ephemeral with no database backups'
+        )}
       />
     )
   }
@@ -136,7 +139,9 @@ export const RestoreToNewProject = () => {
     return (
       <Admonition
         type="default"
-        description="Restoring to new projects is temporarily not available for AWS (Revamped) projects."
+        description={$t(
+          'Restoring to new projects is temporarily not available for AWS (Revamped) projects.'
+        )}
       />
     )
   }
@@ -153,7 +158,7 @@ export const RestoreToNewProject = () => {
     return (
       <Admonition
         type="default"
-        title="Restore to new project is not available for this database version"
+        title={$t('Restore to new project is not available for this database version')}
       >
         <Markdown
           className="max-w-full"
@@ -170,11 +175,11 @@ export const RestoreToNewProject = () => {
     return (
       <Admonition
         type="default"
-        title="Physical backups are required"
+        title={$t('Physical backups are required')}
         description={
           <>
-            Physical backups must be enabled to restore your database to a new project.{' '}
-            <InlineLink href={`${DOCS_URL}/guides/platform/backups`}>Learn more</InlineLink>
+            {$t('Physical backups must be enabled to restore your database to a new project.')}{' '}
+            <InlineLink href={`${DOCS_URL}/guides/platform/backups`}>{$t('Learn more')}</InlineLink>
           </>
         }
       />
@@ -193,8 +198,10 @@ export const RestoreToNewProject = () => {
     return (
       <Admonition
         type="default"
-        title="Restore to new project is not available while project is offline"
-        description="Your project needs to be online to restore your database to a new project"
+        title={$t('Restore to new project is not available while project is offline')}
+        description={$t(
+          'Your project needs to be online to restore your database to a new project'
+        )}
       />
     )
   }
@@ -207,8 +214,10 @@ export const RestoreToNewProject = () => {
     return (
       <Admonition
         type="default"
-        title="No backups found"
-        description="PITR is enabled, but no backups were found. Check again in a few minutes."
+        title={$t('No backups found')}
+        description={$t(
+          'PITR is enabled, but no backups were found. Check again in a few minutes.'
+        )}
       />
     )
   }
@@ -218,8 +227,8 @@ export const RestoreToNewProject = () => {
       <>
         <Admonition
           type="default"
-          title="No backups found"
-          description="Backups are enabled, but no backups were found. Check again tomorrow."
+          title={$t('No backups found')}
+          description={$t('Backups are enabled, but no backups were found. Check again tomorrow.')}
         />
       </>
     )
@@ -259,15 +268,17 @@ export const RestoreToNewProject = () => {
       {isRestoring ? (
         <Alert className="[&>svg]:bg-none! [&>svg]:text-foreground-light mb-6">
           <Loader2 className="animate-spin" />
-          <AlertTitle>Restoration in progress</AlertTitle>
+          <AlertTitle>{$t('Restoration in progress')}</AlertTitle>
           <AlertDescription>
             <p>
-              The new project {(restoringClone?.target_project as any)?.name || ''} is currently
-              being created. You'll be able to restore again once the project is ready.
+              {$t('The new project')} {(restoringClone?.target_project as any)?.name || ''}{' '}
+              {$t(
+                "is currently being created. You'll be able to restore again once the project is ready."
+              )}
             </p>
             <Button asChild variant="default" className="mt-2">
               <Link href={`/project/${restoringClone?.target_project?.ref ?? '_'}`}>
-                Go to new project
+                {$t('Go to new project')}
               </Link>
             </Button>
           </AlertDescription>
@@ -275,7 +286,7 @@ export const RestoreToNewProject = () => {
       ) : null}
       {previousClones?.length ? (
         <div className="flex flex-col gap-2">
-          <h3 className="text-sm font-medium">Previous restorations</h3>
+          <h3 className="text-sm font-medium">{$t('Previous restorations')}</h3>
           <Panel className="flex flex-col divide-y divide-border">
             {previousClones?.map((c) => (
               <PreviousRestoreItem key={c.inserted_at} clone={c} />

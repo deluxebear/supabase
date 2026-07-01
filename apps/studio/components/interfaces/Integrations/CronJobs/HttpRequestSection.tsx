@@ -20,6 +20,7 @@ import {
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { CreateCronJobForm } from './CreateCronJobSheet/CreateCronJobSheet.constants'
+import { t as $t } from '@/lib/i18n'
 
 interface HttpRequestSectionProps {
   form: UseFormReturn<CreateCronJobForm>
@@ -33,11 +34,11 @@ export const HttpRequestSection = ({ form }: HttpRequestSectionProps) => {
         name="values.method"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Method</FormLabel>
+            <FormLabel>{$t('Method')}</FormLabel>
             <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a method for the HTTP request" />
+                  <SelectValue placeholder={$t('Select a method for the HTTP request')} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -54,7 +55,7 @@ export const HttpRequestSection = ({ form }: HttpRequestSectionProps) => {
         control={form.control}
         name="values.endpoint"
         render={({ field: { ref, ...rest } }) => (
-          <FormItemLayout label="Endpoint URL" className="gap-1">
+          <FormItemLayout label={$t('Endpoint URL')} className="gap-1">
             <FormControl>
               <Input {...rest} placeholder="https://api.example.com/endpoint" />
             </FormControl>
@@ -66,7 +67,7 @@ export const HttpRequestSection = ({ form }: HttpRequestSectionProps) => {
         control={form.control}
         name="values.timeoutMs"
         render={({ field: { ref, ...rest } }) => (
-          <FormItemLayout label="Timeout" className="gap-1">
+          <FormItemLayout label={$t('Timeout')} className="gap-1">
             <InputGroup>
               <InputGroupInput {...rest} type="number" placeholder="1000" />
               <InputGroupAddon align="inline-end">

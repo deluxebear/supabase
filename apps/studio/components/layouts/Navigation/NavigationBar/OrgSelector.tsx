@@ -27,6 +27,7 @@ import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { useOrgProjectsInfiniteQuery } from '@/data/projects/org-projects-infinite-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 export function OrgSelector() {
   const router = useRouter()
@@ -108,9 +109,9 @@ export function OrgSelector() {
           <PopoverTrigger asChild>{triggerButton}</PopoverTrigger>
           <PopoverContent className="p-0" side="bottom" align="start">
             <Command>
-              <CommandInput placeholder="Find organization..." />
+              <CommandInput placeholder={$t('Find organization...')} />
               <CommandList>
-                <CommandEmpty>No organizations found</CommandEmpty>
+                <CommandEmpty>{$t('No organizations found')}</CommandEmpty>
                 <CommandGroup>
                   <ScrollArea
                     className={(organizations || []).length > 7 ? 'h-full md:h-[210px]' : ''}
@@ -138,7 +139,7 @@ export function OrgSelector() {
                     onClick={() => setOpen(false)}
                   >
                     <Link href="/organizations" className="flex items-center gap-2 w-full">
-                      <p>All Organizations</p>
+                      <p>{$t('All Organizations')}</p>
                     </Link>
                   </CommandItem>
                 </CommandGroup>
@@ -156,7 +157,7 @@ export function OrgSelector() {
                       >
                         <Link href="/new" className="flex items-center gap-2 w-full">
                           <Plus size={14} strokeWidth={1.5} />
-                          <p>New organization</p>
+                          <p>{$t('New organization')}</p>
                         </Link>
                       </CommandItem>
                     </CommandGroup>

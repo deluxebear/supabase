@@ -18,6 +18,7 @@ import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 import CopyButton from '@/components/ui/CopyButton'
 import type { OAuthApp } from '@/data/oauth/oauth-apps-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 export interface OAuthAppRowProps {
   app: OAuthApp
@@ -82,12 +83,12 @@ export const OAuthAppRow = ({ app, onSelectEdit, onSelectDelete }: OAuthAppRowPr
                   }}
                 >
                   <Edit size={16} />
-                  <p>Edit app</p>
+                  <p>{$t('Edit app')}</p>
                 </DropdownMenuItem>
               </TooltipTrigger>
               {!canUpdateOAuthApps && (
                 <TooltipContent side="left">
-                  You need additional permissions to edit apps
+                  {$t('You need additional permissions to edit apps')}
                 </TooltipContent>
               )}
             </Tooltip>
@@ -103,12 +104,12 @@ export const OAuthAppRow = ({ app, onSelectEdit, onSelectDelete }: OAuthAppRowPr
                   }}
                 >
                   <Trash size={16} />
-                  <p>Delete app</p>
+                  <p>{$t('Delete app')}</p>
                 </DropdownMenuItem>
               </TooltipTrigger>
               {!canDeleteOAuthApps && (
                 <TooltipContent side="left">
-                  You need additional permissions to delete apps
+                  {$t('You need additional permissions to delete apps')}
                 </TooltipContent>
               )}
             </Tooltip>

@@ -24,6 +24,7 @@ import { useContentQuery } from '@/data/content/content-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { Metric, METRIC_CATEGORIES, METRICS } from '@/lib/constants/metrics'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { editorPanelState } from '@/state/editor-panel-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -119,14 +120,14 @@ export const MetricOptions = ({ config, handleChartSelection }: MetricOptionsPro
             strokeWidth={1.5}
             className="fill-foreground-light w-5 h-4 shrink-0 grow-0 -ml-0.5"
           />
-          <p>SQL Snippets</p>
+          <p>{$t('SQL Snippets')}</p>
         </DropdownMenuSubTrigger>
         <DropdownMenuPortal>
           <DropdownMenuSubContent className="p-0">
             <Command shouldFilter={false}>
               <CommandInput
                 autoFocus
-                placeholder="Search snippets..."
+                placeholder={$t('Search snippets...')}
                 value={search}
                 onValueChange={setSearch}
               />
@@ -138,7 +139,7 @@ export const MetricOptions = ({ config, handleChartSelection }: MetricOptionsPro
                   </div>
                 ) : !snippets?.length ? (
                   <p className="text-xs text-center text-foreground-lighter py-3">
-                    No snippets found
+                    {$t('No snippets found')}
                   </p>
                 ) : null}
                 <CommandGroup>
@@ -179,7 +180,7 @@ export const MetricOptions = ({ config, handleChartSelection }: MetricOptionsPro
                 >
                   <div className="w-full flex items-center gap-2">
                     <Plus size={14} strokeWidth={1.5} />
-                    <p>Create snippet</p>
+                    <p>{$t('Create snippet')}</p>
                   </div>
                 </CommandItem>
               </CommandGroup>

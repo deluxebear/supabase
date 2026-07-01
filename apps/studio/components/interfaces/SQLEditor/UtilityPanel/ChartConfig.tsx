@@ -27,6 +27,7 @@ import BarChart from '@/components/ui/Charts/BarChart'
 import NoDataPlaceholder from '@/components/ui/Charts/NoDataPlaceholder'
 import { getCumulativeResults } from '@/components/ui/QueryBlock/QueryBlock.utils'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
+import { t as $t } from '@/lib/i18n'
 
 type Results = { rows: readonly any[] }
 
@@ -112,7 +113,7 @@ export const ChartConfig = ({
       <div className="p-2">
         <NoDataPlaceholder
           size="normal"
-          description="Execute a query and configure the chart options."
+          description={$t('Execute a query and configure the chart options.')}
         />
       </div>
     )
@@ -125,8 +126,8 @@ export const ChartConfig = ({
           <ResizablePanel className="p-4 h-full" defaultSize="75">
             <NoDataPlaceholder
               size="normal"
-              title="Configure your chart"
-              description="Select your X and Y axis in the chart options panel"
+              title={$t('Configure your chart')}
+              description={$t('Select your X and Y axis in the chart options panel')}
             />
           </ResizablePanel>
         ) : config.type === 'bar' ? (
@@ -165,7 +166,7 @@ export const ChartConfig = ({
         className="px-3 py-3 space-y-4 overflow-y-auto!"
       >
         <div className="flex justify-between items-center h-5">
-          <h2 className="text-sm text-foreground-lighter">Chart options</h2>
+          <h2 className="text-sm text-foreground-lighter">{$t('Chart options')}</h2>
           {config.xKey && config.yKey && (
             <ButtonTooltip
               variant="text"
@@ -183,7 +184,7 @@ export const ChartConfig = ({
                 },
               }}
             >
-              Flip
+              {$t('Flip')}
             </ButtonTooltip>
           )}
         </div>
@@ -197,23 +198,25 @@ export const ChartConfig = ({
               >
                 <X size={14} className="text-foreground-light" />
               </TooltipTrigger>
-              <TooltipContent side="bottom">Dismiss</TooltipContent>
+              <TooltipContent side="bottom">{$t('Dismiss')}</TooltipContent>
             </Tooltip>
             <div className="flex items-center gap-x-2">
-              <Badge variant="success">New</Badge>
-              <p className="text-xs">Add this chart to custom reports</p>
+              <Badge variant="success">{$t('New')}</Badge>
+              <p className="text-xs">{$t('Add this chart to custom reports')}</p>
             </div>
             <p className="text-xs text-foreground-light mt-1!">
-              SQL snippets can now be added and saved to your custom reports. Try it out now!
+              {$t(
+                'SQL snippets can now be added and saved to your custom reports. Try it out now!'
+              )}
             </p>
             <Button asChild size="tiny" variant="default" className="mt-1">
-              <Link href={`/project/${ref}/reports`}>Head to Reports</Link>
+              <Link href={`/project/${ref}/reports`}>{$t('Head to Reports')}</Link>
             </Button>
           </Admonition>
         )}
 
         <div>
-          <Label className="text-xs text-foreground-light">X Axis</Label>
+          <Label className="text-xs text-foreground-light">{$t('X Axis')}</Label>
           <Select
             value={config.xKey}
             onValueChange={(value) => {
@@ -234,7 +237,7 @@ export const ChartConfig = ({
         </div>
 
         <div>
-          <Label className="text-xs text-foreground-light">Y Axis</Label>
+          <Label className="text-xs text-foreground-light">{$t('Y Axis')}</Label>
           <Select
             value={config.yKey}
             onValueChange={(value) => {
@@ -261,7 +264,8 @@ export const ChartConfig = ({
               checked={config.cumulative}
               onClick={() => onConfigChange({ ...config, cumulative: !config.cumulative })}
             />
-            Cumulative
+
+            {$t('Cumulative')}
           </Label>
 
           <Label htmlFor="showLabels">
@@ -271,7 +275,8 @@ export const ChartConfig = ({
               checked={config.showLabels}
               onClick={() => onConfigChange({ ...config, showLabels: !config.showLabels })}
             />
-            Show labels
+
+            {$t('Show labels')}
           </Label>
 
           <Label htmlFor="showGrid">
@@ -281,7 +286,8 @@ export const ChartConfig = ({
               checked={config.showGrid}
               onClick={() => onConfigChange({ ...config, showGrid: !config.showGrid })}
             />
-            Show grid
+
+            {$t('Show grid')}
           </Label>
         </div>
       </ResizablePanel>

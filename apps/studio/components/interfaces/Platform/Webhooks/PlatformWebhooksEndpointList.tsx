@@ -24,6 +24,7 @@ import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 import type { WebhookEndpoint } from './PlatformWebhooks.types'
 import { getWebhookEndpointDisplayName } from './PlatformWebhooks.utils'
 import { Shortcut } from '@/components/ui/Shortcut'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { createNavigationHandler } from '@/lib/navigation'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
@@ -102,13 +103,13 @@ export const PlatformWebhooksEndpointList = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-foreground text-xl">Endpoints</h2>
+        <h2 className="text-foreground text-xl">{$t('Endpoints')}</h2>
       </div>
 
       <div className="flex items-center justify-between gap-x-2">
         <Input
           ref={searchInputRef}
-          placeholder="Search endpoints"
+          placeholder={$t('Search endpoints')}
           size="tiny"
           icon={<Search />}
           value={search}
@@ -119,11 +120,11 @@ export const PlatformWebhooksEndpointList = ({
 
         <Shortcut
           id={SHORTCUT_IDS.LIST_PAGE_NEW_ITEM}
-          label="New endpoint"
+          label={$t('New endpoint')}
           onTrigger={onCreateEndpoint}
         >
           <Button variant="primary" icon={<Plus />} onClick={onCreateEndpoint}>
-            New endpoint
+            {$t('New endpoint')}
           </Button>
         </Shortcut>
       </div>
@@ -131,11 +132,11 @@ export const PlatformWebhooksEndpointList = ({
       {filteredEndpoints.length === 0 ? (
         <EmptyStatePresentational
           icon={Webhook}
-          title="No endpoints yet"
-          description="Create an endpoint to start receiving webhook deliveries."
+          title={$t('No endpoints yet')}
+          description={$t('Create an endpoint to start receiving webhook deliveries.')}
         >
           <Button variant="default" onClick={onCreateEndpoint}>
-            Create endpoint
+            {$t('Create endpoint')}
           </Button>
         </EmptyStatePresentational>
       ) : (
@@ -145,18 +146,18 @@ export const PlatformWebhooksEndpointList = ({
               <TableRow>
                 <TableHead aria-sort={getAriaSort('status')}>
                   <TableHeadSort column="status" currentSort={sort} onSortChange={handleSortChange}>
-                    Status
+                    {$t('Status')}
                   </TableHeadSort>
                 </TableHead>
-                <TableHead>Endpoint</TableHead>
-                <TableHead>Events</TableHead>
+                <TableHead>{$t('Endpoint')}</TableHead>
+                <TableHead>{$t('Events')}</TableHead>
                 <TableHead aria-sort={getAriaSort('created')}>
                   <TableHeadSort
                     column="created"
                     currentSort={sort}
                     onSortChange={handleSortChange}
                   >
-                    Created
+                    {$t('Created')}
                   </TableHeadSort>
                 </TableHead>
                 <TableHead className="w-20"></TableHead>
@@ -229,7 +230,7 @@ export const PlatformWebhooksEndpointList = ({
                               }}
                             >
                               <Eye size={14} />
-                              <span>View details</span>
+                              <span>{$t('View details')}</span>
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
@@ -237,7 +238,7 @@ export const PlatformWebhooksEndpointList = ({
                               onClick={() => onDeleteEndpoint(endpoint.id)}
                             >
                               <Trash2 size={14} />
-                              <span>Delete</span>
+                              <span>{$t('Delete')}</span>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -247,7 +248,7 @@ export const PlatformWebhooksEndpointList = ({
                           className="text-foreground-muted/60"
                         />
                         <button tabIndex={-1} className="sr-only">
-                          Go to endpoint details
+                          {$t('Go to endpoint details')}
                         </button>
                       </div>
                     </TableCell>

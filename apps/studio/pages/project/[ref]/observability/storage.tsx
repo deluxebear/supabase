@@ -34,6 +34,7 @@ import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useStorageReport } from '@/data/reports/storage-report-query'
 import { useRefreshHandler, useReportDateRange } from '@/hooks/misc/useReportDateRange'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 import type { NextPageWithLayout } from '@/types'
@@ -100,7 +101,7 @@ export const StorageReport: NextPageWithLayout = () => {
               <DocsButton href={OBSERVABILITY_DOCS_HREFS.storage} topic={REPORT_TITLE} />
               <ShortcutTooltip
                 shortcutId={SHORTCUT_IDS.OBSERVABILITY_REFRESH}
-                label="Refresh report"
+                label={$t('Refresh report')}
                 side="bottom"
               >
                 <Button
@@ -135,8 +136,10 @@ export const StorageReport: NextPageWithLayout = () => {
               <UpgradePrompt
                 show={showUpgradePrompt}
                 setShowUpgradePrompt={setShowUpgradePrompt}
-                title="Report date range"
-                description="Report data can be stored for a maximum of 3 months depending on the plan that your project is on."
+                title={$t('Report date range')}
+                description={$t(
+                  'Report data can be stored for a maximum of 3 months depending on the plan that your project is on.'
+                )}
                 source="storageReportDateRange"
               />
             </div>
@@ -162,7 +165,7 @@ export const StorageReport: NextPageWithLayout = () => {
           <ReportWidget
             isLoading={isLoading}
             params={params.totalRequests}
-            title="Total Requests"
+            title={$t('Total Requests')}
             data={data.totalRequests || []}
             error={error.totalRequest}
             renderer={TotalRequestsChartRenderer}
@@ -172,8 +175,8 @@ export const StorageReport: NextPageWithLayout = () => {
           <ReportWidget
             isLoading={isLoading}
             params={params.responseSpeed}
-            title="Response Speed"
-            tooltip="Average response speed of a request (in ms)"
+            title={$t('Response Speed')}
+            tooltip={$t('Average response speed of a request (in ms)')}
             data={data.responseSpeed || []}
             error={error.responseSpeed}
             renderer={ResponseSpeedChartRenderer}
@@ -184,8 +187,8 @@ export const StorageReport: NextPageWithLayout = () => {
             isLoading={isLoading}
             params={params.networkTraffic}
             error={error.networkTraffic}
-            title="Network Traffic"
-            tooltip="Ingress and egress of requests and responses respectively"
+            title={$t('Network Traffic')}
+            tooltip={$t('Ingress and egress of requests and responses respectively')}
             data={data.networkTraffic || []}
             renderer={NetworkTrafficRenderer}
           />
@@ -193,14 +196,15 @@ export const StorageReport: NextPageWithLayout = () => {
           <ReportWidget
             isLoading={isLoading}
             params={params.cacheHitRate}
-            title="Request Caching"
+            title={$t('Request Caching')}
             tooltip={
               <div>
-                The number of storage requests that are cached at the edge level. A higher number of
-                hits is better.{' '}
+                {$t(
+                  'The number of storage requests that are cached at the edge level. A higher number of hits is better.'
+                )}{' '}
                 <span className="flex items-center gap-1 text-foreground-lighter">
                   <Link href={`${DOCS_URL}/guides/storage/cdn/fundamentals`} target="_blank">
-                    Read More
+                    {$t('Read More')}
                   </Link>
                   <ExternalLinkIcon className="w-3 h-3" />
                 </span>
@@ -222,7 +226,7 @@ export const StorageReport: NextPageWithLayout = () => {
 
 StorageReport.getLayout = (page) => (
   <DefaultLayout>
-    <ObservabilityLayout title="Storage">{page}</ObservabilityLayout>
+    <ObservabilityLayout title={$t('Storage')}>{page}</ObservabilityLayout>
   </DefaultLayout>
 )
 

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Button, Popover, PopoverContent, PopoverTrigger } from 'ui'
 
 import { type Lint } from '@/data/lint/lint-query'
+import { t as $t } from '@/lib/i18n'
 
 export const SecurityDefinerViewPopover = ({
   lint,
@@ -18,25 +19,30 @@ export const SecurityDefinerViewPopover = ({
     <Popover modal={false}>
       <PopoverTrigger asChild>
         <Button variant="warning" icon={<Unlock strokeWidth={1.5} />}>
-          Security Definer view
+          {$t('Security Definer view')}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="min-w-[395px] text-sm" align="end">
         <h4 className="flex items-center gap-2">
-          <Unlock size={14} /> Secure your view
+          <Unlock size={14} /> {$t('Secure your view')}
         </h4>
         <div className="grid gap-2 mt-2 text-foreground-light text-sm">
           <p>
-            This view is defined with the Security Definer property, giving it permissions of the
-            view's creator (Postgres), rather than the permissions of the querying user.
+            {$t(
+              "This view is defined with the Security Definer property, giving it permissions of the view's creator (Postgres), rather than the permissions of the querying user."
+            )}
           </p>
 
-          <p>Since this view is in the public schema, it is accessible via your project's APIs.</p>
+          <p>
+            {$t(
+              "Since this view is in the public schema, it is accessible via your project's APIs."
+            )}
+          </p>
 
           <div className="mt-2 flex items-center gap-2">
             {!!onAutofix && (
               <Button variant="secondary" onClick={onAutofix}>
-                Autofix
+                {$t('Autofix')}
               </Button>
             )}
             <Button variant="default" asChild>
@@ -45,7 +51,7 @@ export const SecurityDefinerViewPopover = ({
                 rel="noopener noreferrer"
                 href={`/project/${ref}/advisors/security?preset=${lint?.level}&id=${lint?.cache_key}`}
               >
-                Learn more
+                {$t('Learn more')}
               </Link>
             </Button>
           </div>

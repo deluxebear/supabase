@@ -9,6 +9,7 @@ import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/L
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { EditorTablePageLink } from '@/data/prefetchers/project.$ref.editor.$id'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -58,19 +59,19 @@ export const PolicyTableRowHeader = ({
           <CardTitle className="m-0 normal-case">{table.name}</CardTitle>
           {!table.rls_enabled && (
             <Badge variant="warning" className="shrink-0">
-              RLS Disabled
+              {$t('RLS Disabled')}
             </Badge>
           )}
           {!isLoadingApiAccess && !hasApiAccess && (
             <Badge variant="default" className="shrink-0">
-              API Disabled
+              {$t('API Disabled')}
             </Badge>
           )}
         </EditorTablePageLink>
         {isTableLocked && (
           <Badge>
             <span className="flex gap-2 items-center text-xs uppercase text-foreground-lighter">
-              <Lock size={12} /> Locked
+              <Lock size={12} /> {$t('Locked')}
             </span>
           </Badge>
         )}
@@ -112,7 +113,7 @@ export const PolicyTableRowHeader = ({
                 },
               }}
             >
-              Create policy
+              {$t('Create policy')}
             </ButtonTooltip>
 
             <ButtonTooltip

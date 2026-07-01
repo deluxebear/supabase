@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import { PlatformWebhooksPage } from '@/components/interfaces/Platform/Webhooks'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import SettingsLayout from '@/components/layouts/ProjectSettingsLayout/SettingsLayout'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const ProjectWebhookEndpointSettings: NextPageWithLayout = () => {
@@ -14,7 +15,7 @@ const ProjectWebhookEndpointSettings: NextPageWithLayout = () => {
 
 ProjectWebhookEndpointSettings.getLayout = (page) => (
   <DefaultLayout>
-    <SettingsLayout title="Webhooks">{page}</SettingsLayout>
+    <SettingsLayout title={$t('Webhooks')}>{page}</SettingsLayout>
   </DefaultLayout>
 )
 

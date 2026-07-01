@@ -16,6 +16,8 @@ import {
   ScrollArea,
 } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 // copied from https://docs.aws.amazon.com/general/latest/gr/cognito_identity.html
 export const AWS_IDP_REGIONS = [
   'af-south-1',
@@ -79,9 +81,9 @@ export const AwsRegionSelector = ({
       </PopoverTrigger>
       <PopoverContent id={listboxId} className="p-0" sameWidthAsTrigger>
         <Command>
-          <CommandInput placeholder="Search AWS regions..." />
+          <CommandInput placeholder={$t('Search AWS regions...')} />
           <CommandList>
-            <CommandEmpty>No regions found.</CommandEmpty>
+            <CommandEmpty>{$t('No regions found.')}</CommandEmpty>
             <CommandGroup>
               <ScrollArea className="h-72">
                 {AWS_IDP_REGIONS.map((option) => (

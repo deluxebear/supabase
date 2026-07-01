@@ -57,6 +57,7 @@ import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { withAuth } from '@/hooks/misc/withAuth'
 import { PROJECT_STATUS } from '@/lib/constants'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
+import { t as $t } from '@/lib/i18n'
 import { buildStudioPageTitle } from '@/lib/page-title'
 import { getPathnameWithoutQuery } from '@/lib/pathname.utils'
 import { useAppStateSnapshot } from '@/state/app-state'
@@ -333,9 +334,9 @@ export const ProjectLayout = forwardRef<HTMLDivElement, PropsWithChildren<Projec
                       size="medium"
                     />
                     <div className="flex-1">
-                      <AlertTitle>This project is connected to Stripe</AlertTitle>
+                      <AlertTitle>{$t('This project is connected to Stripe')}</AlertTitle>
                       <AlertDescription>
-                        Changes made here may affect your connected Stripe project.
+                        {$t('Changes made here may affect your connected Stripe project.')}
                       </AlertDescription>
                     </div>
                     <ButtonTooltip
@@ -343,7 +344,7 @@ export const ProjectLayout = forwardRef<HTMLDivElement, PropsWithChildren<Projec
                       icon={<XIcon size={14} />}
                       className="h-7 w-7 p-0"
                       onClick={() => setIsProjectIntegrationBannerDismissed(true)}
-                      aria-label="Dismiss project integration banner"
+                      aria-label={$t('Dismiss project integration banner')}
                       tooltip={{ content: { text: 'Dismiss' } }}
                     />
                   </Alert>

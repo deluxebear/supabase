@@ -18,6 +18,7 @@ import {
   type NewMarketplaceOrgForm,
 } from './NewAwsMarketplaceOrgForm'
 import { useAwsManagedOrganizationCreateMutation } from '@/data/organizations/organization-create-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface Props {
   buyerId: string
@@ -92,9 +93,11 @@ const AwsMarketplaceOrgCreationDialog = ({
         }}
       >
         <DialogHeader>
-          <DialogTitle>Create and link organization</DialogTitle>
+          <DialogTitle>{$t('Create and link organization')}</DialogTitle>
           <DialogDescription className="text-balance">
-            A new organization will be created and linked to your AWS Marketplace subscription
+            {$t(
+              'A new organization will be created and linked to your AWS Marketplace subscription'
+            )}
           </DialogDescription>
         </DialogHeader>
         <DialogSectionSeparator />
@@ -107,7 +110,7 @@ const AwsMarketplaceOrgCreationDialog = ({
             type="submit"
             loading={isCreatingOrganization}
           >
-            Create and link organization
+            {$t('Create and link organization')}
           </Button>
         </DialogFooter>
       </DialogContent>

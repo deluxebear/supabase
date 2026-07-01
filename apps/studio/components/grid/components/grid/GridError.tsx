@@ -15,6 +15,7 @@ import { ENTITY_TYPE } from '@/data/entity-types/entity-type-constants'
 import { COST_THRESHOLD_ERROR } from '@/data/sql/execute-sql-mutation'
 import { tableRowKeys } from '@/data/table-rows/keys'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
 import { useTableEditorTableStateSnapshot } from '@/state/table-editor-table'
 import { ResponseError } from '@/types'
@@ -102,21 +103,27 @@ const ForeignTableMissingVaultKeyError = () => {
     <Admonition
       type="warning"
       className="pointer-events-auto"
-      title="Failed to retrieve rows from foreign table"
+      title={$t('Failed to retrieve rows from foreign table')}
     >
       <p>
-        The key that's used to retrieve data from your foreign table is either incorrect or missing.
-        Verify the key in your{' '}
+        {$t(
+          "The key that's used to retrieve data from your foreign table is either incorrect or missing. Verify the key in your"
+        )}{' '}
         <InlineLink href={`/project/${ref}/integrations?category=wrapper`}>
-          wrapper's settings
+          {$t("wrapper's settings")}
         </InlineLink>{' '}
-        or in <InlineLink href={`/project/${ref}/integrations/vault/overview`}>Vault</InlineLink>.
+        {$t('or in')}{' '}
+        <InlineLink href={`/project/${ref}/integrations/vault/overview`}>{$t('Vault')}</InlineLink>.
       </p>
       {isBranch && (
         <p>
-          Note: Vault keys from the main project do not sync to branches. You may add them manually
-          into <InlineLink href={`/project/${ref}/integrations/vault/overview`}>Vault</InlineLink>{' '}
-          if you want to query foreign tables while on a branch.
+          {$t(
+            'Note: Vault keys from the main project do not sync to branches. You may add them manually into'
+          )}{' '}
+          <InlineLink href={`/project/${ref}/integrations/vault/overview`}>
+            {$t('Vault')}
+          </InlineLink>{' '}
+          {$t('if you want to query foreign tables while on a branch.')}
         </p>
       )}
     </Admonition>
@@ -128,14 +135,15 @@ const FilterError = ({ removeAllFilters }: { removeAllFilters: () => void }) => 
     <Admonition
       type="note"
       className="pointer-events-auto"
-      title="No results found — check your filter values"
+      title={$t('No results found — check your filter values')}
     >
       <p className="mb-4!">
-        One or more of your filters may have a value or operator that doesn't match the column's
-        data type. Try updating or removing the filter.
+        {$t(
+          "One or more of your filters may have a value or operator that doesn't match the column's data type. Try updating or removing the filter."
+        )}
       </p>
       <Button variant="default" onClick={removeAllFilters}>
-        Remove filters
+        {$t('Remove filters')}
       </Button>
     </Admonition>
   )
@@ -155,20 +163,21 @@ const InvalidOrderingOperatorError = ({ error }: { error: ResponseError }) => {
       title={`Sorting is not supported on ${sorts.length > 1 ? 'one of the selected columns' : 'the selected column'}`}
     >
       <p className="mb-0!">
-        Unable to retrieve results as sorting is not supported on{' '}
-        {sorts.length > 1 ? 'one of the selected columns' : 'the selected column'} due to its data
-        type. ({formattedInvalidDataType})
+        {$t('Unable to retrieve results as sorting is not supported on')}{' '}
+        {sorts.length > 1 ? 'one of the selected columns' : 'the selected column'}{' '}
+        {$t('due to its data type. (')}
+        {formattedInvalidDataType})
       </p>
       <p className="mb-2!">
-        Remove any sorts on columns with the data type {formattedInvalidDataType} applying the sorts
-        again.
+        {$t('Remove any sorts on columns with the data type')} {formattedInvalidDataType}{' '}
+        {$t('applying the sorts again.')}
       </p>
       <p className="text-sm text-foreground-lighter prose max-w-full mb-4!">
-        Error: <code className="text-code-inline">{error.message}</code>
+        {$t('Error:')} <code className="text-code-inline">{error.message}</code>
       </p>
 
       <Button variant="default" onClick={() => onApplySorts([])}>
-        Remove sorts
+        {$t('Remove sorts')}
       </Button>
     </Admonition>
   )
@@ -181,17 +190,19 @@ const IcebergUnauthorizedError = ({ error }: { error: ResponseError }) => {
     <Admonition
       type="warning"
       className="pointer-events-auto"
-      title="Failed to retrieve rows from Iceberg foreign table"
+      title={$t('Failed to retrieve rows from Iceberg foreign table')}
     >
       <p className="text-balance">
-        The API key from your project that's used to retrieve data from your foreign table is either
-        incorrect or missing. Verify the API key (token) in your{' '}
-        <InlineLink href={`/project/${ref}/storage/analytics`}>Iceberg Bucket</InlineLink>.
-        Alternatively, you can also verify the token value in your{' '}
+        {$t(
+          "The API key from your project that's used to retrieve data from your foreign table is either incorrect or missing. Verify the API key (token) in your"
+        )}{' '}
+        <InlineLink href={`/project/${ref}/storage/analytics`}>{$t('Iceberg Bucket')}</InlineLink>
+        {$t('. Alternatively, you can also verify the token value in your')}{' '}
         <InlineLink href={`/project/${ref}/integrations/iceberg_wrapper/wrappers`}>
-          wrapper's settings
+          {$t("wrapper's settings")}
         </InlineLink>{' '}
-        or in <InlineLink href={`/project/${ref}/integrations/vault/overview`}>Vault</InlineLink>.
+        {$t('or in')}{' '}
+        <InlineLink href={`/project/${ref}/integrations/vault/overview`}>{$t('Vault')}</InlineLink>.
       </p>
       <ExpandError error={error} />
     </Admonition>
@@ -209,8 +220,9 @@ const GeneralError = ({ error }: { error: ResponseError }) => {
     >
       {filters.length > 0 && (
         <p>
-          Verify that the filter values are correct, as the error may stem from an incorrectly
-          applied filter
+          {$t(
+            'Verify that the filter values are correct, as the error may stem from an incorrectly applied filter'
+          )}
         </p>
       )}
     </AlertError>
@@ -222,7 +234,7 @@ const ExpandError = ({ error }: { error: ResponseError }) => {
     <Collapsible>
       <CollapsibleTrigger className="mt-2 group font-normal p-0 [&[data-state=open]>div>svg]:-rotate-180!">
         <div className="flex items-center gap-x-2 w-full cursor-pointer">
-          <span className="font-mono uppercase tracking-tight">View error</span>
+          <span className="font-mono uppercase tracking-tight">{$t('View error')}</span>
           <ChevronDown className="transition-transform" size={14} />
         </div>
       </CollapsibleTrigger>

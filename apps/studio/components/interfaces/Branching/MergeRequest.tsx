@@ -24,6 +24,7 @@ import { useProjectGitHubConnectionQuery } from '@/data/integrations/github-conn
 import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
 import { useBranchMergeDiff } from '@/hooks/branches/useBranchMergeDiff'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export const MergeTitle = () => {
@@ -47,7 +48,7 @@ export const MergeTitle = () => {
   return (
     <div className="flex items-center gap-x-4">
       <div className="flex items-center gap-x-2">
-        <span>Merge</span>
+        <span>{$t('Merge')}</span>
 
         <code className="flex items-center text-code-inline gap-x-1.5 px-2 py-1 border border-border">
           <GitBranchIcon strokeWidth={1.5} size={14} className="text-foreground-lighter" />
@@ -96,7 +97,7 @@ export const MergeSubtitle = () => {
     const reviewRequestedTime = dayjs(currentBranch.review_requested_at).fromNow()
     return (
       <>
-        Request opened{' '}
+        {$t('Request opened')}{' '}
         <TimestampInfo
           className="text-sm"
           utcTimestamp={currentBranch.review_requested_at}
@@ -197,7 +198,7 @@ export const MergeActions = ({
           onClick={onSelectMerge}
           icon={<GitMerge size={16} strokeWidth={1.5} className="text-brand" />}
         >
-          Merge branch
+          {$t('Merge branch')}
         </ButtonTooltip>
       ) : (
         <Button
@@ -206,7 +207,7 @@ export const MergeActions = ({
           onClick={onSelectMerge}
           icon={<GitMerge size={16} strokeWidth={1.5} className="text-brand" />}
         >
-          Merge branch
+          {$t('Merge branch')}
         </Button>
       )}
 
@@ -232,7 +233,7 @@ export const MergeActions = ({
                 },
                 {
                   onSuccess: () => {
-                    toast.success('Successfully closed merge request')
+                    toast.success($t('Successfully closed merge request'))
                     router.push(`/project/${project?.ref}/branches?tab=prs`)
                     track('branch_close_merge_request_button_clicked', undefined, {
                       project: parentProjectRef,
@@ -242,7 +243,7 @@ export const MergeActions = ({
               )
             }}
           >
-            Close this merge request
+            {$t('Close this merge request')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -31,6 +31,7 @@ import {
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -81,9 +82,10 @@ export const FunctionList = ({
     return (
       <TableRow key={schema}>
         <TableCell colSpan={5}>
-          <p className="text-sm text-foreground">No functions created yet</p>
+          <p className="text-sm text-foreground">{$t('No functions created yet')}</p>
           <p className="text-sm text-foreground-light">
-            There are no functions found in the schema "{schema}"
+            {$t('There are no functions found in the schema "')}
+            {schema}"
           </p>
         </TableCell>
       </TableRow>
@@ -94,9 +96,11 @@ export const FunctionList = ({
     return (
       <TableRow key={schema}>
         <TableCell colSpan={5}>
-          <p className="text-sm text-foreground">No results found</p>
+          <p className="text-sm text-foreground">{$t('No results found')}</p>
           <p className="text-sm text-foreground-light">
-            Your search for "{filterString}" did not return any results
+            {$t('Your search for "')}
+            {filterString}
+            {$t('" did not return any results')}
           </p>
         </TableCell>
       </TableRow>
@@ -174,7 +178,7 @@ export const FunctionList = ({
                             />
                           </DropdownMenuTrigger>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom">More options</TooltipContent>
+                        <TooltipContent side="bottom">{$t('More options')}</TooltipContent>
                       </Tooltip>
                       <DropdownMenuContent side="left" className="w-52">
                         {isApiDocumentAvailable && (
@@ -188,14 +192,14 @@ export const FunctionList = ({
                               }
                             >
                               <FileText size={14} />
-                              <p>Client API docs</p>
+                              <p>{$t('Client API docs')}</p>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                           </>
                         )}
                         <DropdownMenuItem className="space-x-2" onClick={() => editFunction(x)}>
                           <Edit2 size={14} />
-                          <p>Edit function</p>
+                          <p>{$t('Edit function')}</p>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="space-x-2"
@@ -228,19 +232,19 @@ export const FunctionList = ({
                           }}
                         >
                           <Edit size={14} />
-                          <p>Edit function with Assistant</p>
+                          <p>{$t('Edit function with Assistant')}</p>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="space-x-2"
                           onClick={() => duplicateFunction(x)}
                         >
                           <Copy size={14} />
-                          <p>Duplicate function</p>
+                          <p>{$t('Duplicate function')}</p>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="space-x-2" onClick={() => deleteFunction(x)}>
                           <Trash size={14} className="text-destructive" />
-                          <p>Delete function</p>
+                          <p>{$t('Delete function')}</p>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

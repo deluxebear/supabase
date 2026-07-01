@@ -18,6 +18,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsAwsCloudProvider } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
 import { formatCurrency } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useAddonsPagePanel } from '@/state/addons-page'
 
 const IPv4SidePanel = () => {
@@ -141,7 +142,7 @@ const IPv4SidePanel = () => {
       }
       header={
         <div className="flex w-full items-center justify-between">
-          <h4>Dedicated IPv4 address</h4>
+          <h4>{$t('Dedicated IPv4 address')}</h4>
           <DocsButton href={`${DOCS_URL}/guides/platform/ipv4-address`} />
         </div>
       }
@@ -149,19 +150,21 @@ const IPv4SidePanel = () => {
       <SidePanel.Content>
         <div className="py-6 space-y-4">
           <p className="text-sm">
-            Your project’s direct connection endpoint and dedicated pooler are IPv6-only by default.
-            Enable the dedicated IPv4 address add-on to connect from IPv4-only networks.
+            {$t(
+              'Your project’s direct connection endpoint and dedicated pooler are IPv6-only by default. Enable the dedicated IPv4 address add-on to connect from IPv4-only networks.'
+            )}
           </p>
 
           <p className="text-sm">
-            The shared pooler endpoint accepts IPv4 connections by default and does not require this
-            add-on.
+            {$t(
+              'The shared pooler endpoint accepts IPv4 connections by default and does not require this add-on.'
+            )}
           </p>
 
           {!isAws && (
             <Admonition
               type="default"
-              description="Dedicated IPv4 address is only available for AWS projects."
+              description={$t('Dedicated IPv4 address is only available for AWS projects.')}
             />
           )}
 
@@ -207,24 +210,30 @@ const IPv4SidePanel = () => {
             <>
               <Admonition
                 type="note"
-                title="Potential downtime"
-                description="There might be some downtime when enabling the add-on since some DNS clients might
-                have cached the old DNS entry. Generally, this should be less than a minute."
+                title={$t('Potential downtime')}
+                description={$t(
+                  'There might be some downtime when enabling the add-on since some DNS clients might\n                have cached the old DNS entry. Generally, this should be less than a minute.'
+                )}
               />
               {selectedOption !== 'ipv4_none' && (
                 <p className="text-sm text-foreground-light">
-                  By default, this is only applied to the primary database for your project. If{' '}
+                  {$t(
+                    'By default, this is only applied to the primary database for your project. If'
+                  )}{' '}
                   <InlineLink href={`${DOCS_URL}/guides/platform/read-replicas`} target="_blank">
-                    read replicas
+                    {$t('read replicas')}
                   </InlineLink>{' '}
-                  are used, each replica also gets its own IPv4 address, with a corresponding{' '}
+                  {$t(
+                    'are used, each replica also gets its own IPv4 address, with a corresponding'
+                  )}{' '}
                   <span className="text-foreground">{formatCurrency(selectedIPv4?.price)}</span>{' '}
                   charge.
                 </p>
               )}
               <p className="text-sm text-foreground-light">
-                There are no immediate charges. The add-on is billed at the end of your billing
-                cycle based on your usage and prorated to the hour.
+                {$t(
+                  'There are no immediate charges. The add-on is billed at the end of your billing cycle based on your usage and prorated to the hour.'
+                )}
               </p>
             </>
           )}

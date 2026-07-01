@@ -28,6 +28,7 @@ import type { Sort } from '@/components/grid/types'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { useTableRowsCountQuery } from '@/data/table-rows/table-rows-count-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import {
   useRoleImpersonationStateSnapshot,
   type RoleImpersonationState,
@@ -270,9 +271,11 @@ export const SortPopoverPrimitive = ({
             </DndContext>
             {localSorts.length === 0 && (
               <div className="space-y-1 px-3">
-                <h5 className="text-xs text-foreground-light">No sorts applied to this view</h5>
+                <h5 className="text-xs text-foreground-light">
+                  {$t('No sorts applied to this view')}
+                </h5>
                 <p className="text-xs text-foreground-lighter">
-                  Add a column below to sort the view
+                  {$t('Add a column below to sort the view')}
                 </p>
               </div>
             )}
@@ -293,11 +296,14 @@ export const SortPopoverPrimitive = ({
                     className="my-1"
                     data-testid="table-editor-pick-column-to-sort-button"
                   >
-                    <span>Pick {localSorts.length > 1 ? 'another' : 'a'} column to sort by</span>
+                    <span>
+                      {$t('Pick')} {localSorts.length > 1 ? 'another' : 'a'}{' '}
+                      {$t('column to sort by')}
+                    </span>
                   </Button>
                 </DropdownControl>
               ) : (
-                <p className="text-sm text-foreground-light">All columns have been added</p>
+                <p className="text-sm text-foreground-light">{$t('All columns have been added')}</p>
               )}
               <div className="flex items-center">
                 <Button
@@ -316,7 +322,7 @@ export const SortPopoverPrimitive = ({
                     onSelectApplySorts()
                   }}
                 >
-                  Apply sorting
+                  {$t('Apply sorting')}
                 </Button>
               </div>
             </div>
@@ -329,7 +335,7 @@ export const SortPopoverPrimitive = ({
         variant="warning"
         visible={showWarning}
         confirmLabel="Confirm"
-        title="Sorting on a large table"
+        title={$t('Sorting on a large table')}
         onConfirm={() => {
           onSelectApplySorts()
           setShowWarning(false)
@@ -346,13 +352,13 @@ export const SortPopoverPrimitive = ({
         }}
       >
         <p className="text-foreground-light text-sm">
-          We highly recommend only sorting on columns which are{' '}
+          {$t('We highly recommend only sorting on columns which are')}{' '}
           <InlineLink
             href={`/project/${ref}/database/indexes?search=${tableName}&schema=${tableSchema}`}
           >
             indexed
           </InlineLink>
-          , such as your primary key columns.
+          {$t(', such as your primary key columns.')}
         </p>
       </ConfirmationModal>
     </>

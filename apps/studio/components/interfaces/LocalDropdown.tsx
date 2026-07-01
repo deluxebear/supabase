@@ -20,6 +20,7 @@ import {
 import { ButtonTooltip } from '../ui/ButtonTooltip'
 import { useFeaturePreviewModal } from './App/FeaturePreview/FeaturePreviewContext'
 import { ProfileImage } from '@/components/ui/ProfileImage'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAppStateSnapshot } from '@/state/app-state'
 
@@ -49,7 +50,7 @@ export const LocalDropdown = ({
           tooltip={{ content: { text: 'Settings' } }}
         >
           <ProfileImage className="w-8 h-8 rounded-md" />
-          <span className="sr-only">Settings</span>
+          <span className="sr-only">{$t('Settings')}</span>
         </ButtonTooltip>
       </DropdownMenuTrigger>
       <DropdownMenuContent side="bottom" align="end" className={cn('w-44', contentClassName)}>
@@ -63,7 +64,8 @@ export const LocalDropdown = ({
             }}
           >
             <Settings size={14} strokeWidth={1.5} className="text-foreground-lighter" />
-            Preferences
+
+            {$t('Preferences')}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -72,11 +74,12 @@ export const LocalDropdown = ({
           onSelect={() => toggleFeaturePreviewModal(true)}
         >
           <FlaskConical size={14} strokeWidth={1.5} className="text-foreground-lighter" />
-          Feature previews
+
+          {$t('Feature previews')}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Theme</DropdownMenuLabel>
+          <DropdownMenuLabel>{$t('Theme')}</DropdownMenuLabel>
           <DropdownMenuRadioGroup
             value={theme}
             onValueChange={(value) => {

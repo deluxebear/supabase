@@ -21,6 +21,7 @@ import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { IS_PLATFORM } from '@/lib/constants'
 import { pluckObjectFields } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 const DB_FIELDS = ['db_host', 'db_name', 'db_port', 'db_user'] as const
 const EMPTY_CONNECTION_INFO = {
@@ -183,7 +184,7 @@ export const ProjectConnectionPopover = ({ projectRef }: ProjectConnectionPopove
               <ChevronDown size={14} className={cn('transition-transform', open && 'rotate-180')} />
             }
           >
-            Copy
+            {$t('Copy')}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="bottom" align="end" className="w-80 p-1">
@@ -235,7 +236,7 @@ export const ProjectConnectionPopover = ({ projectRef }: ProjectConnectionPopove
                 setShowConnect(true)
               }}
             >
-              Get Connected
+              {$t('Get Connected')}
             </Button>
           </div>
         </DropdownMenuContent>

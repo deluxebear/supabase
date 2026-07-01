@@ -23,6 +23,7 @@ import {
   SpecificFilterColumn,
   UUIDV4_LEFT_PREFIX_REGEX,
 } from './Users.constants'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { useTrack } from '@/lib/telemetry/track'
 
@@ -116,18 +117,18 @@ export const UsersSearch = forwardRef<HTMLInputElement, UsersSearchProps>(functi
         <SelectContent>
           <SelectGroup>
             <SelectItem value="id" className="text-xs">
-              User ID
+              {$t('User ID')}
             </SelectItem>
             <SelectItem value="email" className="text-xs">
-              Email address
+              {$t('Email address')}
             </SelectItem>
             {improvedSearchEnabled && (
               <SelectItem value="name" className="text-xs">
-                Name
+                {$t('Name')}
               </SelectItem>
             )}
             <SelectItem value="phone" className="text-xs">
-              Phone number
+              {$t('Phone number')}
             </SelectItem>
             {!improvedSearchEnabled && (
               <>
@@ -135,12 +136,13 @@ export const UsersSearch = forwardRef<HTMLInputElement, UsersSearchProps>(functi
                 <Tooltip>
                   <TooltipTrigger>
                     <SelectItem value="freeform" className="text-xs">
-                      Unified search
+                      {$t('Unified search')}
                     </SelectItem>
                   </TooltipTrigger>
                   <TooltipContent side="right" className="w-64 text-center">
-                    Search by all columns at once, including mid-string search. May impact database
-                    performance if you have many users.
+                    {$t(
+                      'Search by all columns at once, including mid-string search. May impact database performance if you have many users.'
+                    )}
                   </TooltipContent>
                 </Tooltip>
               </>

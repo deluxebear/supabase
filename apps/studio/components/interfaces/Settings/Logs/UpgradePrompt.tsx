@@ -12,6 +12,7 @@ import {
 
 import { TIER_QUERY_LIMITS } from './Logs.constants'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 interface Props {
   show: boolean
@@ -49,24 +50,24 @@ const UpgradePrompt: React.FC<Props> = ({
             <p className="text-sm">{description}</p>
             <div className="border-control bg-surface-300 rounded-sm border">
               <div className="flex items-center px-4 pt-2 pb-1">
-                <p className="text-foreground-light w-[40%] text-sm">Plan</p>
-                <p className="text-foreground-light w-[60%] text-sm">Retention duration</p>
+                <p className="text-foreground-light w-[40%] text-sm">{$t('Plan')}</p>
+                <p className="text-foreground-light w-[60%] text-sm">{$t('Retention duration')}</p>
               </div>
               <div className="py-1">
                 <div className="flex items-center px-4 py-1">
-                  <p className="w-[40%] text-sm">Free</p>
+                  <p className="w-[40%] text-sm">{$t('Free')}</p>
                   <p className="w-[60%] text-sm">{TIER_QUERY_LIMITS.FREE.text}</p>
                 </div>
                 <div className="flex items-center px-4 py-1">
-                  <p className="w-[40%] text-sm">Pro</p>
+                  <p className="w-[40%] text-sm">{$t('Pro')}</p>
                   <p className="w-[60%] text-sm">{TIER_QUERY_LIMITS.PRO.text}</p>
                 </div>
                 <div className="flex items-center px-4 py-1">
-                  <p className="w-[40%] text-sm">Team</p>
+                  <p className="w-[40%] text-sm">{$t('Team')}</p>
                   <p className="w-[60%] text-sm">{TIER_QUERY_LIMITS.TEAM.text}</p>
                 </div>
                 <div className="flex items-center px-4 py-1">
-                  <p className="w-[40%] text-sm">Enterprise</p>
+                  <p className="w-[40%] text-sm">{$t('Enterprise')}</p>
                   <p className="w-[60%] text-sm">{TIER_QUERY_LIMITS.ENTERPRISE.text}</p>
                 </div>
               </div>
@@ -75,13 +76,13 @@ const UpgradePrompt: React.FC<Props> = ({
         </DialogSection>
         <DialogFooter className="flex justify-end gap-3">
           <Button variant="default" onClick={() => setShowUpgradePrompt(false)}>
-            Close
+            {$t('Close')}
           </Button>
           <Button asChild size="tiny">
             <Link
               href={`/org/${organization?.slug}/billing?panel=subscriptionPlan&source=${source}`}
             >
-              Upgrade
+              {$t('Upgrade')}
             </Link>
           </Button>
         </DialogFooter>

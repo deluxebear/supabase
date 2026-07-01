@@ -22,6 +22,7 @@ import { getStableRowIdentifiers } from '@/components/grid/utils/queueOperationU
 import { useIsQueueOperationsEnabled } from '@/components/interfaces/Account/Preferences/useDashboardSettings'
 import { useForeignKeyConstraintsQuery } from '@/data/database/foreign-key-constraints-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import type { Dictionary } from '@/types'
 
 export interface RowEditorProps {
@@ -200,7 +201,7 @@ export const RowEditor = ({
                 checked={createMore}
                 onCheckedChange={(checked) => setCreateMore(checked)}
               />
-              <Label htmlFor="create-more">Create more</Label>
+              <Label htmlFor="create-more">{$t('Create more')}</Label>
             </div>
           )}
         </ActionBar>
@@ -236,9 +237,9 @@ export const RowEditor = ({
                 <SidePanel.Content>
                   <div className="space-y-10 py-6">
                     <div>
-                      <h3 className="text-base text-foreground">Optional Fields</h3>
+                      <h3 className="text-base text-foreground">{$t('Optional Fields')}</h3>
                       <p className="text-sm text-foreground-lighter">
-                        These are columns that do not need any value
+                        {$t('These are columns that do not need any value')}
                       </p>
                     </div>
                     {optionalFields.map((field: RowField) => {

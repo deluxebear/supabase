@@ -5,6 +5,7 @@ import { Button } from 'ui'
 
 import { SupportLink } from '@/components/interfaces/Support/SupportLink'
 import { detectBrowser } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 interface InsertBeforeRemoveChildErrorHandlerProps {
   message: string
@@ -28,29 +29,35 @@ export const InsertBeforeRemoveChildErrorHandler = ({
     <>
       <div className="flex flex-col gap-y-4 text-left py-2 w-full">
         <div className="flex items-center gap-x-3">
-          <p className="text-lg font-bold">Sorry! A browser extension may have caused an error.</p>
+          <p className="text-lg font-bold">
+            {$t('Sorry! A browser extension may have caused an error.')}
+          </p>
           <Blocks className="text-foreground-lighter" />
         </div>
 
         <div className="flex flex-col gap-y-2">
           <p className="text-sm text-foreground-light">
-            Browser translation tools (like Chrome's built-in Translate) or some third-party browser
-            extensions are known to cause errors when using the Supabase Dashboard.
+            {$t(
+              "Browser translation tools (like Chrome's built-in Translate) or some third-party browser extensions are known to cause errors when using the Supabase Dashboard."
+            )}
           </p>
 
           <p className="text-sm text-foreground-light">
-            We highly recommend{' '}
+            {$t('We highly recommend')}{' '}
             <span className="text-foreground">
               {browser === 'Chrome'
                 ? 'disabling Chrome Translate or certain browser extensions'
                 : 'avoiding the use of browser translation tools or disabling certain extensions'}
             </span>{' '}
-            while using the Supabase Dashboard to avoid running into this error. Try to refresh the
-            browser to see if it occurs again.
+            {$t(
+              'while using the Supabase Dashboard to avoid running into this error. Try to refresh the browser to see if it occurs again.'
+            )}
           </p>
         </div>
 
-        <p className="text-foreground-lighter text-sm">Error: {message}</p>
+        <p className="text-foreground-lighter text-sm">
+          {$t('Error:')} {message}
+        </p>
       </div>
 
       <div className="flex gap-x-2 justify-center items-center">
@@ -66,11 +73,11 @@ export const InsertBeforeRemoveChildErrorHandler = ({
                   : '/'
             }
           >
-            More information
+            {$t('More information')}
           </a>
         </Button>
         <Button variant="outline" onClick={() => router.reload()}>
-          Refresh page
+          {$t('Refresh page')}
         </Button>
       </div>
       <SupportLink
@@ -82,7 +89,7 @@ export const InsertBeforeRemoveChildErrorHandler = ({
           error: urlMessage,
         }}
       >
-        Still stuck?
+        {$t('Still stuck?')}
       </SupportLink>
     </>
   )

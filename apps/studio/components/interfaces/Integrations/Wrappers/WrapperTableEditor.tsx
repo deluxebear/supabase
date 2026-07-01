@@ -52,6 +52,7 @@ import { getTableFormSchema } from './Wrappers.utils'
 import { ActionBar } from '@/components/interfaces/TableGridEditor/SidePanelEditor/ActionBar'
 import { useSchemasQuery } from '@/data/database/schemas-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export type WrapperTableEditorProps = {
   visible: boolean
@@ -102,7 +103,7 @@ const WrapperTableEditor = ({
       size="medium"
       visible={visible}
       onCancel={handleCancel}
-      header={<span>Edit foreign table</span>}
+      header={<span>{$t('Edit foreign table')}</span>}
       customFooter={
         <ActionBar
           backButtonLabel="Cancel"
@@ -115,7 +116,9 @@ const WrapperTableEditor = ({
       <SidePanel.Content>
         <div className="my-4 flex flex-col gap-y-6">
           <div className="flex flex-col gap-y-2">
-            <Label className="text-foreground-light">Select a target the table will point to</Label>
+            <Label className="text-foreground-light">
+              {$t('Select a target the table will point to')}
+            </Label>
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -137,9 +140,9 @@ const WrapperTableEditor = ({
               </PopoverTrigger>
               <PopoverContent id={listboxId} className="p-0" sameWidthAsTrigger>
                 <Command>
-                  <CommandInput placeholder="Find a table..." />
+                  <CommandInput placeholder={$t('Find a table...')} />
                   <CommandList>
-                    <CommandEmpty>No targets found</CommandEmpty>
+                    <CommandEmpty>{$t('No targets found')}</CommandEmpty>
                     <CommandGroup>
                       <ScrollArea className={(tables ?? []).length > 7 ? 'h-[200px]' : ''}>
                         {(tables ?? []).map((table, i) => (
@@ -195,7 +198,7 @@ const Option = ({ option, control }: { option: TableOption; control: Control<Fie
             <FormControl>
               <Select value={field.value} onValueChange={field.onChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select an option" />
+                  <SelectValue placeholder={$t('Select an option')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectSeparator />
@@ -344,7 +347,7 @@ const TableForm = ({
           control={form.control}
           name="schema"
           render={({ field }) => (
-            <FormItemLayout layout="vertical" label="Select a schema for the foreign table">
+            <FormItemLayout layout="vertical" label={$t('Select a schema for the foreign table')}>
               <FormControl>
                 <Select
                   name="schema"
@@ -355,10 +358,10 @@ const TableForm = ({
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select an option" />
+                    <SelectValue placeholder={$t('Select an option')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="custom">Create a new schema</SelectItem>
+                    <SelectItem value="custom">{$t('Create a new schema')}</SelectItem>
                     <SelectSeparator />
                     {(schemas ?? [])?.map((schema) => {
                       return (
@@ -378,7 +381,7 @@ const TableForm = ({
             control={form.control}
             name="schema_name"
             render={({ field }) => (
-              <FormItemLayout name="schema_name" layout="vertical" label="Schema name">
+              <FormItemLayout name="schema_name" layout="vertical" label={$t('Schema name')}>
                 <FormControl>
                   <Input {...field} id="schema_name" />
                 </FormControl>
@@ -394,8 +397,8 @@ const TableForm = ({
             <FormItemLayout
               layout="vertical"
               name="table_name"
-              label="Table name"
-              description="You can query from this table after the wrapper is enabled."
+              label={$t('Table name')}
+              description={$t('You can query from this table after the wrapper is enabled.')}
             >
               <FormControl>
                 <Input {...field} id="table_name" />
@@ -416,7 +419,7 @@ const TableForm = ({
             render={() => (
               <FormItemLayout
                 layout="vertical"
-                label="Select the columns to be added to your table."
+                label={$t('Select the columns to be added to your table.')}
               >
                 <div>
                   <MultiSelector
@@ -473,7 +476,7 @@ const TableForm = ({
                     <FormItemLayout
                       layout="vertical"
                       name={`columns.${columnIndex}.name`}
-                      label="Name"
+                      label={$t('Name')}
                     >
                       <FormControl>
                         <Input {...field} id={`columns.${columnIndex}.name`} />
@@ -502,7 +505,7 @@ const TableForm = ({
               onClick={() => appendColumn({ name: '', type: 'text' })}
               className="self-start"
             >
-              Add column
+              {$t('Add column')}
             </Button>
             {errors.columns != null && errors.columns.message != null && (
               <span className="text-red-900 text-sm mt-2">{errors.columns.message.toString()}</span>

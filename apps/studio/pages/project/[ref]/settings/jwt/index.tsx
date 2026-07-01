@@ -11,6 +11,7 @@ import { NoPermission } from '@/components/ui/NoPermission'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useDeploymentMode } from '@/hooks/misc/useDeploymentMode'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const JWTSigningKeysPage: NextPageWithLayout = () => {
@@ -28,8 +29,9 @@ const JWTSigningKeysPage: NextPageWithLayout = () => {
             variant="cli"
             body={
               <p>
-                The asymmetric key pair used to sign user session JWTs is configured by the Supabase
-                CLI.
+                {$t(
+                  'The asymmetric key pair used to sign user session JWTs is configured by the Supabase CLI.'
+                )}
               </p>
             }
             docsHref={`${DOCS_URL}/guides/local-development`}
@@ -40,8 +42,9 @@ const JWTSigningKeysPage: NextPageWithLayout = () => {
             variant="selfHosted"
             body={
               <p>
-                The asymmetric key pair used to sign user session JWTs is configured via environment
-                variables.
+                {$t(
+                  'The asymmetric key pair used to sign user session JWTs is configured via environment variables.'
+                )}
               </p>
             }
             docsHref={`${DOCS_URL}/guides/self-hosting/self-hosted-auth-keys`}
@@ -66,7 +69,7 @@ const JWTSigningKeysPage: NextPageWithLayout = () => {
 
 JWTSigningKeysPage.getLayout = (page) => (
   <DefaultLayout>
-    <SettingsLayout title="JWT Keys">
+    <SettingsLayout title={$t('JWT Keys')}>
       <JWTKeysLayout>{page}</JWTKeysLayout>
     </SettingsLayout>
   </DefaultLayout>

@@ -8,6 +8,7 @@ import CountdownTimerRadial from '@/components/ui/CountdownTimer/CountdownTimerR
 import CountdownTimerSpan from '@/components/ui/CountdownTimer/CountdownTimerSpan'
 import { useRemainingDurationForDiskAttributeUpdate } from '@/data/config/disk-attributes-query'
 import { COOLDOWN_DURATION } from '@/data/config/disk-attributes-update-mutation'
+import { t as $t } from '@/lib/i18n'
 
 export function DiskCountdownRadial() {
   const { ref } = useParams()
@@ -52,11 +53,12 @@ export function DiskCountdownRadial() {
               <div className="flex flex-col gap-2">
                 <div>
                   <p className="text-foreground text-sm p-0">
-                    4-hour cooldown period is in progress
+                    {$t('4-hour cooldown period is in progress')}
                   </p>
                   <p className="text-foreground-lighter text-sm p-0">
-                    You can't modify your disk configuration again until the 4-hour cool down period
-                    ends.
+                    {$t(
+                      "You can't modify your disk configuration again until the 4-hour cool down period ends."
+                    )}
                   </p>
                 </div>
                 <CountdownTimerSpan seconds={remainingTime} />

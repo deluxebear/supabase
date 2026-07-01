@@ -18,6 +18,7 @@ import { DropdownMenuItemTooltip } from '@/components/ui/DropdownMenuItemTooltip
 import { useVaultSecretDecryptedValueQuery } from '@/data/vault/vault-secret-decrypted-value-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import type { VaultSecret } from '@/types'
 
 interface SecretRowProps {
@@ -55,7 +56,12 @@ export const SecretRow = ({ row, col }: SecretRowProps) => {
       <div className="flex items-center justify-end w-full" onClick={(e) => e.stopPropagation()}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button title="Manage Secret" variant="text" className="px-1" icon={<MoreVertical />} />
+            <Button
+              title={$t('Manage Secret')}
+              variant="text"
+              className="px-1"
+              icon={<MoreVertical />}
+            />
           </DropdownMenuTrigger>
           <DropdownMenuContent side="bottom" align="end" className="w-40">
             <DropdownMenuItemTooltip
@@ -67,7 +73,7 @@ export const SecretRow = ({ row, col }: SecretRowProps) => {
               }}
             >
               <Edit3 size={12} />
-              <p>Edit</p>
+              <p>{$t('Edit')}</p>
             </DropdownMenuItemTooltip>
 
             <DropdownMenuSeparator />
@@ -84,7 +90,7 @@ export const SecretRow = ({ row, col }: SecretRowProps) => {
               }}
             >
               <Trash size={12} />
-              <p className="text-foreground-light">Delete</p>
+              <p className="text-foreground-light">{$t('Delete')}</p>
             </DropdownMenuItemTooltip>
           </DropdownMenuContent>
         </DropdownMenu>

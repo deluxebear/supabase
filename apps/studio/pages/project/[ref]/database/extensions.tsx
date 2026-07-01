@@ -17,6 +17,7 @@ import { DocsButton } from '@/components/ui/DocsButton'
 import { NoPermission } from '@/components/ui/NoPermission'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const DatabaseExtensions: NextPageWithLayout = () => {
@@ -34,9 +35,9 @@ const DatabaseExtensions: NextPageWithLayout = () => {
       <PageHeader size="large">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Database Extensions</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Database Extensions')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Manage what extensions are installed in your database
+              {$t('Manage what extensions are installed in your database')}
             </PageHeaderDescription>
           </PageHeaderSummary>
           <PageHeaderAside>
@@ -57,7 +58,7 @@ const DatabaseExtensions: NextPageWithLayout = () => {
 
 DatabaseExtensions.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Extensions">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Extensions')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

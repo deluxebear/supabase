@@ -32,6 +32,7 @@ import type { CustomerAddress, CustomerTaxId } from '@/data/organizations/types'
 import { SetupIntentResponse } from '@/data/stripe/setup-intent-mutation'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { BASE_PATH, STRIPE_PUBLIC_KEY } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const stripePromise = loadStripe(STRIPE_PUBLIC_KEY)
 
@@ -287,14 +288,14 @@ const PaymentMethodSelection = forwardRef(function PaymentMethodSelection(
         {isLoading || isCustomerProfileLoading ? (
           <div className="flex items-center px-4 py-2 space-x-4 border rounded-md border-strong bg-surface-200">
             <Loader className="animate-spin" size={14} />
-            <p className="text-sm text-foreground-light">Retrieving payment methods</p>
+            <p className="text-sm text-foreground-light">{$t('Retrieving payment methods')}</p>
           </div>
         ) : paymentMethods?.data && paymentMethods?.data.length > 0 && !setupNewPaymentMethod ? (
           <FormItemLayout
             id="payment-method"
             isReactForm={false}
             layout={layout}
-            label="Payment method"
+            label={$t('Payment method')}
             className="gap-[2px]"
             size="tiny"
           >
@@ -318,7 +319,7 @@ const PaymentMethodSelection = forwardRef(function PaymentMethodSelection(
                     <SelectItem key={method.id} value={method.id}>
                       <div className="flex gap-2">
                         <img
-                          alt="Credit Card Brand"
+                          alt={$t('Credit Card Brand')}
                           src={`${BASE_PATH}/img/payment-methods/${method.card?.brand
                             .replace(' ', '-')
                             .toLowerCase()}.png`}
@@ -333,7 +334,7 @@ const PaymentMethodSelection = forwardRef(function PaymentMethodSelection(
                   <div className="flex gap-2">
                     <Plus size={16} />
                     <p className="transition text-foreground-light group-hover:text-foreground">
-                      Add new payment method
+                      {$t('Add new payment method')}
                     </p>
                   </div>
                 </SelectItem>
@@ -371,7 +372,7 @@ const PaymentMethodSelection = forwardRef(function PaymentMethodSelection(
                   htmlFor="defaultBillingAddress"
                   className="text-sm leading-none text-foreground-light"
                 >
-                  Use address as my org's billing address
+                  {$t("Use address as my org's billing address")}
                 </label>
               </div>
             )}

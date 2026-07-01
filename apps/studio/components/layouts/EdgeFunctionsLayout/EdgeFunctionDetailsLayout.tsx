@@ -52,6 +52,7 @@ import { useEdgeFunctionQuery } from '@/data/edge-functions/edge-function-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { withAuth } from '@/hooks/misc/withAuth'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -158,7 +159,7 @@ const EdgeFunctionDetailsLayout = ({
     : []
 
   const downloadFunction = async () => {
-    if (filesError) return toast.error('Failed to retrieve edge function files')
+    if (filesError) return toast.error($t('Failed to retrieve edge function files'))
 
     const zipFileWriter = new BlobWriter('application/zip')
     const zipWriter = new ZipWriter(zipFileWriter, { bufferedWrite: true })
@@ -229,7 +230,7 @@ const EdgeFunctionDetailsLayout = ({
     let cancel = false
 
     if (!!functionSlug && isError && error.code === 404 && !cancel) {
-      toast('Edge function cannot be found in your project')
+      toast($t('Edge function cannot be found in your project'))
       router.push(`/project/${ref}/functions`)
     }
 
@@ -249,7 +250,7 @@ const EdgeFunctionDetailsLayout = ({
   const copyFunctionUrl = () => {
     if (!functionUrl) return
     copyToClipboard(functionUrl)
-    toast.success('Function URL copied to clipboard')
+    toast.success($t('Function URL copied to clipboard'))
   }
 
   useFunctionsDetailShortcuts({
@@ -323,7 +324,7 @@ const EdgeFunctionDetailsLayout = ({
                   <HoverCardContent side="bottom" align="start" className="w-40 p-0">
                     {createdRelative && (
                       <div className="px-4 py-2 space-y-1">
-                        <h3 className="heading-meta text-foreground-light">Created</h3>
+                        <h3 className="heading-meta text-foreground-light">{$t('Created')}</h3>
                         {!!selectedFunction && (
                           <TimestampInfo
                             className="text-sm"
@@ -335,7 +336,9 @@ const EdgeFunctionDetailsLayout = ({
                     )}
                     {updatedRelative && (
                       <div className="px-4 py-2 space-y-1">
-                        <h3 className="heading-meta text-foreground-light">Last deployed</h3>
+                        <h3 className="heading-meta text-foreground-light">
+                          {$t('Last deployed')}
+                        </h3>
                         {!!selectedFunction && (
                           <TimestampInfo
                             className="text-sm"
@@ -347,7 +350,7 @@ const EdgeFunctionDetailsLayout = ({
                     )}
                     {selectedFunction?.version !== undefined && (
                       <div className="px-4 py-2 space-y-1">
-                        <h3 className="heading-meta text-foreground-light">Deployments</h3>
+                        <h3 className="heading-meta text-foreground-light">{$t('Deployments')}</h3>
                         <p className="text-sm text-foreground">{selectedFunction.version}</p>
                       </div>
                     )}
@@ -367,7 +370,7 @@ const EdgeFunctionDetailsLayout = ({
                   >
                     <PopoverTrigger asChild>
                       <Button variant="default" icon={<Download />}>
-                        Download
+                        {$t('Download')}
                       </Button>
                     </PopoverTrigger>
                   </ShortcutTooltip>
@@ -375,7 +378,7 @@ const EdgeFunctionDetailsLayout = ({
                     {IS_PLATFORM && (
                       <>
                         <div className="p-3 flex flex-col gap-y-2">
-                          <p className="text-xs text-foreground-light">Download via CLI</p>
+                          <p className="text-xs text-foreground-light">{$t('Download via CLI')}</p>
                           <Input
                             copy
                             showCopyOnHover
@@ -395,7 +398,7 @@ const EdgeFunctionDetailsLayout = ({
                         icon={<FileArchive />}
                         onClick={downloadFunction}
                       >
-                        Download as ZIP
+                        {$t('Download as ZIP')}
                       </Button>
                     </div>
                   </PopoverContent>
@@ -406,7 +409,7 @@ const EdgeFunctionDetailsLayout = ({
                     side="bottom"
                   >
                     <Button variant="default" icon={<Send />} onClick={openTestSheet}>
-                      Test
+                      {$t('Test')}
                     </Button>
                   </ShortcutTooltip>
                 )}

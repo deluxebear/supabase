@@ -15,6 +15,7 @@ import {
 import { PipelineStatusName } from './Replication.constants'
 import { ReplicationPipelineTableStatus } from '@/data/replication/pipeline-replication-status-query'
 import { useRollbackTablesMutation } from '@/data/replication/rollback-tables-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface BatchRestartDialogProps {
   open: boolean
@@ -74,7 +75,7 @@ export const BatchRestartDialog = ({
   })
 
   const handleReset = () => {
-    if (!projectRef) return toast.error('Project ref is required')
+    if (!projectRef) return toast.error($t('Project ref is required'))
 
     onRestartStart?.(affectedTableIds)
 
@@ -94,22 +95,22 @@ export const BatchRestartDialog = ({
           description: (
             <div className="space-y-3 text-sm">
               <p>
-                This will restart replication for all
-                {totalTables === 0 ? '' : totalTables} table{totalTables > 1 ? 's' : ''} in this
-                pipeline from scratch:
+                {$t('This will restart replication for all')}
+                {totalTables === 0 ? '' : totalTables} table{totalTables > 1 ? 's' : ''}{' '}
+                {$t('in this pipeline from scratch:')}
               </p>
               <ul className="list-disc list-inside space-y-1.5 pl-2">
                 <li>
-                  <strong>All table copies will be re-initialized.</strong> Every table will be
-                  copied again from the source.
+                  <strong>{$t('All table copies will be re-initialized.')}</strong>{' '}
+                  {$t('Every table will be copied again from the source.')}
                 </li>
                 <li>
-                  <strong>All downstream data will be deleted.</strong> All replicated data will be
-                  removed.
+                  <strong>{$t('All downstream data will be deleted.')}</strong>{' '}
+                  {$t('All replicated data will be removed.')}
                 </li>
                 <li>
-                  <strong>The pipeline will restart automatically.</strong> This is required to
-                  apply this change.
+                  <strong>{$t('The pipeline will restart automatically.')}</strong>{' '}
+                  {$t('This is required to apply this change.')}
                 </li>
               </ul>
             </div>
@@ -121,25 +122,28 @@ export const BatchRestartDialog = ({
           description: (
             <div className="space-y-3 text-sm">
               <p>
-                This will restart replication for{' '}
-                <strong>all {erroredTablesCount} failed tables</strong> from scratch:
+                {$t('This will restart replication for')}{' '}
+                <strong>
+                  all {erroredTablesCount} {$t('failed tables')}
+                </strong>{' '}
+                {$t('from scratch:')}
               </p>
               <ul className="list-disc list-inside space-y-1.5 pl-2">
                 <li>
-                  <strong>Failed table copies will be re-initialized.</strong> These tables will be
-                  copied again from the source.
+                  <strong>{$t('Failed table copies will be re-initialized.')}</strong>{' '}
+                  {$t('These tables will be copied again from the source.')}
                 </li>
                 <li>
-                  <strong>Existing downstream data will be deleted.</strong> Replicated data for
-                  these tables will be removed.
+                  <strong>{$t('Existing downstream data will be deleted.')}</strong>{' '}
+                  {$t('Replicated data for these tables will be removed.')}
                 </li>
                 <li>
-                  <strong>All other tables remain untouched.</strong> Only failed tables are
-                  affected.
+                  <strong>{$t('All other tables remain untouched.')}</strong>{' '}
+                  {$t('Only failed tables are affected.')}
                 </li>
                 <li>
-                  <strong>The pipeline will restart automatically.</strong> This is required to
-                  apply this change.
+                  <strong>{$t('The pipeline will restart automatically.')}</strong>{' '}
+                  {$t('This is required to apply this change.')}
                 </li>
               </ul>
             </div>
@@ -155,7 +159,7 @@ export const BatchRestartDialog = ({
           <AlertDialogDescription asChild>{dialogContent.description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isResetting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isResetting}>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction disabled={isResetting} onClick={handleReset} variant="warning">
             {isResetting ? 'Restarting replication...' : dialogContent.action}
           </AlertDialogAction>

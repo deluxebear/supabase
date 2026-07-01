@@ -29,6 +29,7 @@ import { useDatabasePublicationsQuery } from '@/data/database-publications/datab
 import { useDatabasePublicationUpdateMutation } from '@/data/database-publications/database-publications-update-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -69,7 +70,7 @@ export const PublicationsList = () => {
   })
   const { mutate: updatePublications } = useDatabasePublicationUpdateMutation({
     onSuccess: () => {
-      toast.success('Successfully updated event')
+      toast.success($t('Successfully updated event'))
       setToggleListenEventValue(null)
     },
   })
@@ -119,7 +120,7 @@ export const PublicationsList = () => {
             size="tiny"
             icon={<Search />}
             className="w-48"
-            placeholder="Search for a publication"
+            placeholder={$t('Search for a publication')}
             value={filterString}
             onChange={(e) => setFilterString(e.target.value)}
             onKeyDown={onSearchInputEscape(filterString, setFilterString)}
@@ -129,7 +130,7 @@ export const PublicationsList = () => {
           <div className="w-[500px]">
             <InformationBox
               icon={<AlertCircle className="text-foreground-light" strokeWidth={2} />}
-              title="You need additional permissions to update database publications"
+              title={$t('You need additional permissions to update database publications')}
             />
           </div>
         )}
@@ -140,12 +141,12 @@ export const PublicationsList = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>System ID</TableHead>
-                <TableHead>Insert</TableHead>
-                <TableHead>Update</TableHead>
-                <TableHead>Delete</TableHead>
-                <TableHead>Truncate</TableHead>
+                <TableHead>{$t('Name')}</TableHead>
+                <TableHead>{$t('System ID')}</TableHead>
+                <TableHead>{$t('Insert')}</TableHead>
+                <TableHead>{$t('Update')}</TableHead>
+                <TableHead>{$t('Delete')}</TableHead>
+                <TableHead>{$t('Truncate')}</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -248,8 +249,9 @@ export const PublicationsList = () => {
         }}
       >
         <p className="text-sm text-foreground-light">
-          Are you sure you want to {toggleListenEventValue?.currentStatus ? 'stop' : 'start'}{' '}
-          sending {toggleListenEventValue?.event.event.toLowerCase()} events for{' '}
+          {$t('Are you sure you want to')}{' '}
+          {toggleListenEventValue?.currentStatus ? 'stop' : 'start'} sending{' '}
+          {toggleListenEventValue?.event.event.toLowerCase()} {$t('events for')}{' '}
           {toggleListenEventValue?.publication.name}?
         </p>
       </ConfirmationModal>

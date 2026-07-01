@@ -17,6 +17,7 @@ import {
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const SERVICE_STATUS_THRESHOLD = 5 // minutes
 
@@ -333,7 +334,7 @@ export const ServiceStatus = () => {
               </div>
             )
           }
-          label={<span>Status</span>}
+          label={<span>{$t('Status')}</span>}
           value={<span>{overallStatusLabel}</span>}
         />
       </HoverCardTrigger>
@@ -366,7 +367,7 @@ export const ServiceStatus = () => {
               </div>
             </div>
             <div className="flex items-center gap-x-1 transition opacity-0 group-hover:opacity-100">
-              <span className="text-xs text-foreground">View logs</span>
+              <span className="text-xs text-foreground">{$t('View logs')}</span>
               <ChevronRight size={14} className="text-foreground" />
             </div>
           </Link>
@@ -378,17 +379,17 @@ export const ServiceStatus = () => {
             </div>
             <div className="flex flex-col gap-y-1">
               <p>
-                {isProjectNew ? 'New' : 'Recently restored'} projects can take up to{' '}
-                {SERVICE_STATUS_THRESHOLD} minutes to become fully operational.
+                {isProjectNew ? 'New' : 'Recently restored'} {$t('projects can take up to')}{' '}
+                {SERVICE_STATUS_THRESHOLD} {$t('minutes to become fully operational.')}
               </p>
               <p>
-                If services stay unhealthy, refer to our{' '}
+                {$t('If services stay unhealthy, refer to our')}{' '}
                 <InlineLink
                   href={`${DOCS_URL}/guides/troubleshooting/project-status-reports-unhealthy-services`}
                 >
                   docs
                 </InlineLink>{' '}
-                for more information.
+                {$t('for more information.')}
               </p>
             </div>
           </div>

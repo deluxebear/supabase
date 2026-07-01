@@ -5,6 +5,7 @@ import { AnimatedCursors } from './AnimatedCursors'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -28,16 +29,18 @@ export const EmptyRealtime = ({ projectRef }: { projectRef: string }) => {
       <div className="w-full max-w-4xl flex flex-col items-center gap-0">
         <div className="text-center mb-12">
           <AnimatedCursors />
-          <h2 className="heading-section mb-1">Create realtime experiences</h2>
+          <h2 className="heading-section mb-1">{$t('Create realtime experiences')}</h2>
           <p className="text-foreground-light mb-6">
-            Send your first realtime message from your database, application code or edge function
+            {$t(
+              'Send your first realtime message from your database, application code or edge function'
+            )}
           </p>
           <Button
             variant="default"
             icon={<AiIconAnimation />}
             onClick={handleCreateTriggerWithAssistant}
           >
-            Set up realtime for me
+            {$t('Set up realtime for me')}
           </Button>
         </div>
 
@@ -51,13 +54,17 @@ export const EmptyRealtime = ({ projectRef }: { projectRef: string }) => {
               >
                 1
               </span>
-              <h3 className="heading-default">Broadcast messages</h3>
+              <h3 className="heading-default">{$t('Broadcast messages')}</h3>
             </div>
             <p className="text-foreground-light text-sm mb-4 flex-1">
-              Send messages to a channel from your client application or database via triggers.
+              {$t(
+                'Send messages to a channel from your client application or database via triggers.'
+              )}
             </p>
             <Button variant="default" className="w-full">
-              <Link href={`/project/${projectRef}/database/triggers`}>Create a trigger</Link>
+              <Link href={`/project/${projectRef}/database/triggers`}>
+                {$t('Create a trigger')}
+              </Link>
             </Button>
           </div>
 
@@ -70,13 +77,15 @@ export const EmptyRealtime = ({ projectRef }: { projectRef: string }) => {
               >
                 2
               </span>
-              <h3 className="heading-default">Write policies</h3>
+              <h3 className="heading-default">{$t('Write policies')}</h3>
             </div>
             <p className="text-foreground-light text-sm mb-4 flex-1">
-              Set up Row Level Security policies to control who can see messages within a channel
+              {$t(
+                'Set up Row Level Security policies to control who can see messages within a channel'
+              )}
             </p>
             <Button variant="default">
-              <Link href={`/project/${projectRef}/realtime/policies`}>Write a policy</Link>
+              <Link href={`/project/${projectRef}/realtime/policies`}>{$t('Write a policy')}</Link>
             </Button>
           </div>
 
@@ -89,10 +98,10 @@ export const EmptyRealtime = ({ projectRef }: { projectRef: string }) => {
               >
                 3
               </span>
-              <h3 className="heading-default">Subscribe to a channel</h3>
+              <h3 className="heading-default">{$t('Subscribe to a channel')}</h3>
             </div>
             <p className="text-foreground-light text-sm mb-4 flex-1">
-              Receive realtime messages in your application by listening to a channel
+              {$t('Receive realtime messages in your application by listening to a channel')}
             </p>
             <DocsButton
               abbrev={false}

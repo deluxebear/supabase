@@ -17,6 +17,7 @@ import { FloatingMobileToolbar } from '@/components/layouts/Navigation/FloatingM
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const ICON_SIZE = 20
 export const ICON_STROKE_WIDTH = 1.5
@@ -73,7 +74,7 @@ const MobileNavigationBar = ({
           {IS_PLATFORM ? <UserDropdown /> : <LocalDropdown />}
           {!hideMobileMenu && (
             <Button
-              title="Menu dropdown button"
+              title={$t('Menu dropdown button')}
               variant="default"
               className="flex lg:hidden border-default bg-surface-100/75 text-foreground-light rounded-md min-w-[30px] w-[30px] h-[30px] data-open:bg-overlay-hover/30"
               icon={<Menu />}

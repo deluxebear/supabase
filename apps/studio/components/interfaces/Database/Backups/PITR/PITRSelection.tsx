@@ -32,6 +32,7 @@ import { usePitrRestoreMutation } from '@/data/database/pitr-restore-mutation'
 import { useSetProjectStatus } from '@/data/projects/project-detail-query'
 import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const PITRSelection = () => {
   const router = useRouter()
@@ -80,8 +81,10 @@ export const PITRSelection = () => {
   return (
     <>
       <FormHeader
-        title="Restore your database from a backup"
-        description="Database changes are watched and recorded, so that you can restore your database to any point in time"
+        title={$t('Restore your database from a backup')}
+        description={$t(
+          'Database changes are watched and recorded, so that you can restore your database to any point in time'
+        )}
       />
       <BackupsStorageAlert />
       {hasNoBackupsAvailable ? (
@@ -92,17 +95,18 @@ export const PITRSelection = () => {
             <Alert variant="warning">
               <WarningIcon />
               <AlertTitle>
-                Unable to restore from PITR as project has read replicas enabled
+                {$t('Unable to restore from PITR as project has read replicas enabled')}
               </AlertTitle>
               <AlertDescription>
-                You will need to remove all read replicas first from your project's infrastructure
-                settings prior to starting a PITR restore.
+                {$t(
+                  "You will need to remove all read replicas first from your project's infrastructure settings prior to starting a PITR restore."
+                )}
               </AlertDescription>
               <div className="flex items-center gap-x-2 mt-2">
                 {/* [Joshen] Ideally we have some links to a docs to explain why so */}
                 <Button variant="default">
                   <Link href={`/project/${ref}/settings/infrastructure`}>
-                    Infrastructure settings
+                    {$t('Infrastructure settings')}
                   </Link>
                 </Button>
               </div>
@@ -130,13 +134,15 @@ export const PITRSelection = () => {
       <AlertDialog open={showConfirmation} onOpenChange={(open) => setShowConfirmation(open)}>
         <AlertDialogContent size="medium">
           <AlertDialogHeader>
-            <AlertDialogTitle>Point in time recovery review</AlertDialogTitle>
+            <AlertDialogTitle>{$t('Point in time recovery review')}</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="flex flex-col space-y-2">
-                <p className="text-sm text-foreground-light">Your database will be restored to:</p>
+                <p className="text-sm text-foreground-light">
+                  {$t('Your database will be restored to:')}
+                </p>
                 <div className="py-2 flex flex-col gap-3">
                   <div>
-                    <p className="text-sm font-mono text-foreground-lighter">Local Time</p>
+                    <p className="text-sm font-mono text-foreground-lighter">{$t('Local Time')}</p>
                     <p className="text-2xl">{selectedRecoveryPoint?.recoveryTimeString}</p>
                   </div>
                   <div>
@@ -150,25 +156,28 @@ export const PITRSelection = () => {
             <DialogSection>
               <Alert variant="warning">
                 <WarningIcon />
-                <AlertTitle>This action cannot be undone, not canceled once started</AlertTitle>
+                <AlertTitle>
+                  {$t('This action cannot be undone, not canceled once started')}
+                </AlertTitle>
                 <AlertDescription>
-                  Any changes made to your database after this point in time will be lost. This
-                  includes any changes to your project's storage and authentication.
+                  {$t(
+                    "Any changes made to your database after this point in time will be lost. This includes any changes to your project's storage and authentication."
+                  )}
                 </AlertDescription>
               </Alert>
             </DialogSection>
             <DialogSectionSeparator />
             <DialogSection>
               <p className="text-sm text-foreground-light">
-                Restores may take from a few minutes up to several hours depending on the size of
-                your database. During this period, your project will not be available, until the
-                restoration is completed.
+                {$t(
+                  'Restores may take from a few minutes up to several hours depending on the size of your database. During this period, your project will not be available, until the restoration is completed.'
+                )}
               </p>
             </DialogSection>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
               <AlertDialogAction variant="warning" onClick={onConfirmRestore}>
-                I understand, begin restore
+                {$t('I understand, begin restore')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogHeader>

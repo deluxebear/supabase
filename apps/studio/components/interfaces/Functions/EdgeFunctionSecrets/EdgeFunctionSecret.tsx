@@ -20,6 +20,7 @@ import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import type { ProjectSecret } from '@/data/secrets/secrets-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 interface EdgeFunctionSecretProps {
   secret: ProjectSecret
@@ -44,7 +45,7 @@ const EdgeFunctionSecret = ({ secret, onSelectEdit, onSelectDelete }: EdgeFuncti
               <code className="text-code-inline">{secret.name}</code>
             </p>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Click to copy</TooltipContent>
+          <TooltipContent side="bottom">{$t('Click to copy')}</TooltipContent>
         </Tooltip>
       </TableCell>
       <TableCell>
@@ -69,7 +70,7 @@ const EdgeFunctionSecret = ({ secret, onSelectEdit, onSelectDelete }: EdgeFuncti
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                aria-label="More options"
+                aria-label={$t('More options')}
                 variant="default"
                 className="px-1"
                 icon={<MoreVertical />}
@@ -92,7 +93,7 @@ const EdgeFunctionSecret = ({ secret, onSelectEdit, onSelectDelete }: EdgeFuncti
                     },
                   }}
                 >
-                  Edit secret
+                  {$t('Edit secret')}
                 </ButtonTooltip>
               </DropdownMenuItem>
 
@@ -114,7 +115,7 @@ const EdgeFunctionSecret = ({ secret, onSelectEdit, onSelectDelete }: EdgeFuncti
                     },
                   }}
                 >
-                  Delete secret
+                  {$t('Delete secret')}
                 </ButtonTooltip>
               </DropdownMenuItem>
             </DropdownMenuContent>

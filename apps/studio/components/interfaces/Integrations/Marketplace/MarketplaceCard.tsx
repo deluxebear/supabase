@@ -5,6 +5,7 @@ import { Badge, Card } from 'ui'
 import { IntegrationLogo } from '../Integration/IntegrationLogo'
 import { getMarketplaceSource, MarketplaceSourceBadge } from './Marketplace.constants'
 import type { IntegrationDefinition } from '@/components/interfaces/Integrations/Landing/Integrations.constants'
+import { t as $t } from '@/lib/i18n'
 
 interface MarketplaceCardProps {
   integration: IntegrationDefinition
@@ -23,7 +24,7 @@ export const MarketplaceCard = ({ integration, isInstalled }: MarketplaceCardPro
       <Card className="flex min-h-[168px] h-full flex-col gap-2.5 hover:border-stronger p-4">
         <div className="flex items-start justify-between">
           <IntegrationLogo integration={integration} size="h-9 w-9" />
-          {isInstalled && <Badge variant="success">Installed</Badge>}
+          {isInstalled && <Badge variant="success">{$t('Installed')}</Badge>}
         </div>
         <div>
           <div className="mb-1 text-sm font-medium">{integration.name}</div>
@@ -40,7 +41,7 @@ export const MarketplaceCard = ({ integration, isInstalled }: MarketplaceCardPro
             {integration.status && <Badge variant="warning">{integration.status}</Badge>}
           </div>
           <div className="text-xs flex items-center gap-1 text-foreground-lighter">
-            <span>Built by</span>
+            <span>{$t('Built by')}</span>
             <span>{integration.author?.name}</span>
           </div>
         </div>

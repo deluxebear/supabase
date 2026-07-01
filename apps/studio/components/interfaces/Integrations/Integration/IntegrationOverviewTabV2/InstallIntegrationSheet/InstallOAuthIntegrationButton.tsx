@@ -6,6 +6,7 @@ import { Button } from 'ui'
 import { isOAuthInstalled, useProjectOAuthIntegrationData } from '../../../Landing/Landing.utils'
 import type { IntegrationDefinition } from '@/components/interfaces/Integrations/Landing/Integrations.constants'
 import { useInstallOAuthIntegrationMutation } from '@/data/marketplace/install-oauth-integration-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface InstallOAuthIntegrationButtonProps {
   integration: IntegrationDefinition
@@ -21,12 +22,12 @@ export function InstallOAuthIntegrationButton({ integration }: InstallOAuthInteg
       onSuccess: (data) => {
         if ('redirectUrl' in data) {
           if (!data.redirectUrl) {
-            toast.error('Failed to redirect because redirect URL is invalid')
+            toast.error($t('Failed to redirect because redirect URL is invalid'))
             return
           }
           window.open(data.redirectUrl, '_blank', 'noreferrer')
         } else {
-          toast.error('Failed to start integration installation')
+          toast.error($t('Failed to start integration installation'))
         }
       },
     })
@@ -39,7 +40,7 @@ export function InstallOAuthIntegrationButton({ integration }: InstallOAuthInteg
 
   const handleInstallClick = async () => {
     if (!integration || !projectRef) return
-    if (!integration.id) return toast.error('Listing ID is required')
+    if (!integration.id) return toast.error($t('Listing ID is required'))
 
     installOAuthIntegration({ projectRef, listingSlug: integration.id })
   }
@@ -48,7 +49,7 @@ export function InstallOAuthIntegrationButton({ integration }: InstallOAuthInteg
     <>
       {isIntegrationInstalled ? (
         <Button disabled variant="outline" className="shrink-0">
-          Installed
+          {$t('Installed')}
         </Button>
       ) : (
         <Button
@@ -58,7 +59,7 @@ export function InstallOAuthIntegrationButton({ integration }: InstallOAuthInteg
           disabled={isLoading}
           onClick={handleInstallClick}
         >
-          Install integration
+          {$t('Install integration')}
         </Button>
       )}
     </>

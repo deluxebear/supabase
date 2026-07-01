@@ -47,6 +47,7 @@ import { useEdgeFunctionTestMutation } from '@/data/edge-functions/edge-function
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { IS_PLATFORM } from '@/lib/constants'
 import { prettifyJSON } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { getRoleImpersonationJWT } from '@/lib/role-impersonation'
 import { useTrack } from '@/lib/telemetry/track'
 import {
@@ -254,7 +255,7 @@ const EdgeFunctionTesterSheetContent = ({ visible, onClose }: EdgeFunctionTester
           icon={<Plus size={14} />}
           onClick={() => addKeyValuePair(type)}
         >
-          Add {label}
+          {$t('Add')} {label}
         </Button>
       </div>
       <div className="border rounded-md bg-surface-200">
@@ -268,7 +269,7 @@ const EdgeFunctionTesterSheetContent = ({ visible, onClose }: EdgeFunctionTester
                   <Input
                     {...field}
                     size="tiny"
-                    placeholder="Enter key..."
+                    placeholder={$t('Enter key...')}
                     disabled={isPending}
                     className="h-auto py-2 font-mono rounded-none shadow-none bg-transparent border-l-0 border-r border-t-0 border-b-0 border-border"
                   />
@@ -283,7 +284,7 @@ const EdgeFunctionTesterSheetContent = ({ visible, onClose }: EdgeFunctionTester
                   <Input
                     {...field}
                     size="tiny"
-                    placeholder="Enter value..."
+                    placeholder={$t('Enter value...')}
                     disabled={isPending}
                     className="h-auto py-2 font-mono rounded-none shadow-none bg-transparent border-none"
                   />
@@ -333,7 +334,9 @@ const EdgeFunctionTesterSheetContent = ({ visible, onClose }: EdgeFunctionTester
         }}
       >
         <SheetHeader>
-          <SheetTitle>Test {functionSlug}</SheetTitle>
+          <SheetTitle>
+            {$t('Test')} {functionSlug}
+          </SheetTitle>
         </SheetHeader>
 
         <Form {...form}>
@@ -348,7 +351,7 @@ const EdgeFunctionTesterSheetContent = ({ visible, onClose }: EdgeFunctionTester
                     control={form.control}
                     name="method"
                     render={({ field }) => (
-                      <FormItemLayout layout="vertical" label="HTTP Method">
+                      <FormItemLayout layout="vertical" label={$t('HTTP Method')}>
                         <FormControl>
                           <Select
                             value={field.value}
@@ -356,7 +359,7 @@ const EdgeFunctionTesterSheetContent = ({ visible, onClose }: EdgeFunctionTester
                             disabled={isPending}
                           >
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select method" />
+                              <SelectValue placeholder={$t('Select method')} />
                             </SelectTrigger>
                             <SelectContent>
                               {HTTP_METHODS.map((m) => (
@@ -375,11 +378,11 @@ const EdgeFunctionTesterSheetContent = ({ visible, onClose }: EdgeFunctionTester
                       control={form.control}
                       name="body"
                       render={({ field }) => (
-                        <FormItemLayout layout="vertical" label="Request Body">
+                        <FormItemLayout layout="vertical" label={$t('Request Body')}>
                           <FormControl>
                             <Textarea
                               {...field}
-                              placeholder="Request body (JSON)"
+                              placeholder={$t('Request body (JSON)')}
                               rows={3}
                               disabled={isPending}
                               className="font-mono text-xs"
@@ -402,7 +405,7 @@ const EdgeFunctionTesterSheetContent = ({ visible, onClose }: EdgeFunctionTester
                       {error ? (
                         <>
                           <div className="flex gap-2 items-center p-5 text-sm pb-3">
-                            Function responded with
+                            {$t('Function responded with')}
                             <Badge variant={response.status >= 400 ? 'destructive' : 'success'}>
                               {response.status}
                             </Badge>
@@ -417,10 +420,10 @@ const EdgeFunctionTesterSheetContent = ({ visible, onClose }: EdgeFunctionTester
                           <TabsList className="gap-4 px-5 pt-2">
                             <div className="flex items-center gap-4 flex-1">
                               <TabsTrigger className="text-sm" value="body">
-                                Body
+                                {$t('Body')}
                               </TabsTrigger>
                               <TabsTrigger className="text-sm" value="headers">
-                                Headers
+                                {$t('Headers')}
                               </TabsTrigger>
                             </div>
                             <Badge
@@ -452,12 +455,14 @@ const EdgeFunctionTesterSheetContent = ({ visible, onClose }: EdgeFunctionTester
                   ) : isPending ? (
                     <div className="h-full flex flex-col items-center justify-center gap-2">
                       <Loader2 size={24} className="text-foreground-muted animate-spin" />
-                      <p className="text-sm text-foreground-light">Sending request...</p>
+                      <p className="text-sm text-foreground-light">{$t('Sending request...')}</p>
                     </div>
                   ) : (
                     <div className="h-full flex flex-col items-center justify-center gap-2">
                       <Send size={24} className="text-foreground-muted" />
-                      <p className="text-sm text-foreground-light">Send your first test request</p>
+                      <p className="text-sm text-foreground-light">
+                        {$t('Send your first test request')}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -480,7 +485,7 @@ const EdgeFunctionTesterSheetContent = ({ visible, onClose }: EdgeFunctionTester
                       track('edge_function_test_send_button_clicked', { httpMethod: method })
                     }
                   >
-                    Send Request
+                    {$t('Send Request')}
                   </Button>
                 </ShortcutTooltip>
               </div>

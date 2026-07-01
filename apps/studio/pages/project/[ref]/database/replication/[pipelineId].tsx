@@ -8,6 +8,7 @@ import DatabaseLayout from '@/components/layouts/DatabaseLayout/DatabaseLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { ScaffoldContainer, ScaffoldSection } from '@/components/layouts/Scaffold'
 import { FormHeader } from '@/components/ui/Forms/FormHeader'
+import { t as $t } from '@/lib/i18n'
 import { PipelineRequestStatusProvider } from '@/state/replication-pipeline-request-status'
 import type { NextPageWithLayout } from '@/types'
 
@@ -30,7 +31,7 @@ const DatabaseReplicationPage: NextPageWithLayout = () => {
           <ScaffoldContainer>
             <ScaffoldSection>
               <div className="col-span-12">
-                <FormHeader title="Replication" />
+                <FormHeader title={$t('Replication')} />
                 <ReplicationPipelineStatus />
               </div>
             </ScaffoldSection>
@@ -43,7 +44,7 @@ const DatabaseReplicationPage: NextPageWithLayout = () => {
 
 DatabaseReplicationPage.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Replication">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Replication')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

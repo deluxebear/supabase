@@ -53,6 +53,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
 import { formatBytes } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 const formId = 'storage-settings-form'
 
@@ -163,7 +164,7 @@ export const StorageSettings = () => {
 
   const { mutate: updateStorageConfig } = useProjectStorageConfigUpdateUpdateMutation({
     onSuccess: () => {
-      toast.success('Successfully updated storage settings')
+      toast.success($t('Successfully updated storage settings'))
       setIsUpdating(false)
     },
     onError: (error) => {
@@ -255,8 +256,10 @@ export const StorageSettings = () => {
             {!IS_PLATFORM ? (
               <Admonition
                 type="default"
-                title="Storage settings are not available for self-hosted projects"
-                description="Storage settings are only available for Supabase Platform projects."
+                title={$t('Storage settings are not available for self-hosted projects')}
+                description={$t(
+                  'Storage settings are only available for Supabase Platform projects.'
+                )}
               />
             ) : isLoading ? (
               <GenericSkeletonLoader />
@@ -281,14 +284,14 @@ export const StorageSettings = () => {
                           render={({ field }) => (
                             <FormItemLayout
                               layout="flex-row-reverse"
-                              label="Enable image transformation"
+                              label={$t('Enable image transformation')}
                               description={
                                 <>
-                                  Optimize and resize images on the fly.{' '}
+                                  {$t('Optimize and resize images on the fly.')}{' '}
                                   <InlineLink
                                     href={`${DOCS_URL}/guides/storage/serving/image-transformations`}
                                   >
-                                    Learn more
+                                    {$t('Learn more')}
                                   </InlineLink>
                                   .
                                 </>
@@ -317,20 +320,21 @@ export const StorageSettings = () => {
                             <FormItemLayout
                               hideMessage
                               layout="flex-row-reverse"
-                              label="Global file size limit"
+                              label={$t('Global file size limit')}
                               description={
                                 <>
-                                  Restrict the size of files uploaded across all buckets.{' '}
+                                  {$t('Restrict the size of files uploaded across all buckets.')}{' '}
                                   <InlineLink
                                     href={`${DOCS_URL}/guides/storage/uploads/file-limits`}
                                   >
-                                    Learn more
+                                    {$t('Learn more')}
                                   </InlineLink>
                                   .
                                   {!shouldAutoValidateBucketLimits && (
                                     <p>
-                                      Ensure that the global limit is greater than that of
-                                      individual buckets
+                                      {$t(
+                                        'Ensure that the global limit is greater than that of individual buckets'
+                                      )}
                                     </p>
                                   )}
                                 </>
@@ -366,7 +370,7 @@ export const StorageSettings = () => {
                                         }
                                       >
                                         <SelectTrigger className="w-[90px] text-xs font-mono rounded-l-none bg-surface-300">
-                                          <SelectValue placeholder="Choose a prefix">
+                                          <SelectValue placeholder={$t('Choose a prefix')}>
                                             {storageUnit}
                                           </SelectValue>
                                         </SelectTrigger>
@@ -435,7 +439,7 @@ export const StorageSettings = () => {
                       {!canUpdateStorageSettings && (
                         <CardContent>
                           <p className="text-sm text-foreground-light">
-                            You need additional permissions to update storage settings
+                            {$t('You need additional permissions to update storage settings')}
                           </p>
                         </CardContent>
                       )}
@@ -450,7 +454,7 @@ export const StorageSettings = () => {
                               !form.formState.isDirty || !canUpdateStorageSettings || isUpdating
                             }
                           >
-                            Cancel
+                            {$t('Cancel')}
                           </Button>
                         )}
                         <Button
@@ -461,7 +465,7 @@ export const StorageSettings = () => {
                             !canUpdateStorageSettings || isUpdating || !form.formState.isDirty
                           }
                         >
-                          Save
+                          {$t('Save')}
                         </Button>
                       </CardFooter>
                     </Card>

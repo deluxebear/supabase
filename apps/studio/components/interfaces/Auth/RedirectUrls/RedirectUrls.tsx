@@ -32,6 +32,7 @@ import { HorizontalShimmerWithIcon } from '@/components/ui/Shimmers'
 import { useAuthConfigQuery } from '@/data/auth/auth-config-query'
 import { useAuthConfigUpdateMutation } from '@/data/auth/auth-config-update-mutation'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const RedirectUrls = () => {
   const { ref: projectRef } = useParams()
@@ -70,7 +71,7 @@ export const RedirectUrls = () => {
         onSuccess: () => {
           setSelectedUrls([])
           setOpenRemoveSelected(false)
-          toast.success('Successfully removed URL(s)')
+          toast.success($t('Successfully removed URL(s)'))
         },
       }
     )
@@ -80,10 +81,11 @@ export const RedirectUrls = () => {
     <PageSection>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Redirect URLs</PageSectionTitle>
+          <PageSectionTitle>{$t('Redirect URLs')}</PageSectionTitle>
           <PageSectionDescription>
-            URLs that auth providers are permitted to redirect to post authentication. Wildcards are
-            allowed, for example, https://*.domain.com
+            {$t(
+              'URLs that auth providers are permitted to redirect to post authentication. Wildcards are allowed, for example, https://*.domain.com'
+            )}
           </PageSectionDescription>
         </PageSectionSummary>
         <PageSectionAside>
@@ -132,11 +134,11 @@ export const RedirectUrls = () => {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Remove URLs</AlertDialogTitle>
+              <AlertDialogTitle>{$t('Remove URLs')}</AlertDialogTitle>
               <AlertDialogDescription asChild>
                 <div className="flex flex-col gap-y-2">
                   <p className="mb-2 text-sm text-foreground-light">
-                    Are you sure you want to remove the following {selectedUrls.length} URL
+                    {$t('Are you sure you want to remove the following')} {selectedUrls.length} URL
                     {selectedUrls.length > 1 ? 's' : ''}?
                   </p>
                   <ScrollArea className={cn(selectedUrls.length > 4 ? 'h-[250px]' : '')}>
@@ -151,14 +153,14 @@ export const RedirectUrls = () => {
                     </div>
                   </ScrollArea>
                   <p className="text-foreground-light text-sm">
-                    These URLs will no longer work with your authentication configuration.
+                    {$t('These URLs will no longer work with your authentication configuration.')}
                   </p>
                 </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
 
             <AlertDialogFooter className="flex items-center gap-x-2">
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
               <AlertDialogAction variant="warning" onClick={() => onConfirmDeleteUrl(selectedUrls)}>
                 {isUpdatingConfig ? 'Removing...' : 'Remove URL'}
               </AlertDialogAction>

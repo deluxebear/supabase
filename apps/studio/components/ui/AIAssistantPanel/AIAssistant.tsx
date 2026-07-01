@@ -48,6 +48,7 @@ import {
 } from '@/lib/ai/model.utils'
 import { IS_PLATFORM } from '@/lib/constants'
 import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import type { AssistantModel } from '@/state/ai-assistant-state'
 import { useAiAssistantState, useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
@@ -450,7 +451,7 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
                             onClick={() => snap.newChat()}
                             className="text-xs"
                           >
-                            New chat
+                            {$t('New chat')}
                           </Button>
                         ) : (
                           <>
@@ -460,7 +461,7 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
                               onClick={() => regenerate()}
                               className="text-xs"
                             >
-                              Retry
+                              {$t('Retry')}
                             </Button>
                             <ButtonTooltip
                               variant="default"
@@ -485,7 +486,7 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
                 />
               )}
               <p className="text-center text-xs text-foreground-muted mt-6">
-                Supabase AI may not always produce correct answers. Double check responses.
+                {$t('Supabase AI may not always produce correct answers. Double check responses.')}
               </p>
             </ConversationContent>
             <ConversationScrollButton />
@@ -526,7 +527,7 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
                   <div className="-translate-x-1/2 bg-alternative dark:bg-muted border rounded-md px-3 py-2 min-w-[180px] flex items-center justify-between gap-x-2">
                     <div className="flex items-center gap-x-2 text-sm text-foreground">
                       <Pencil size={14} />
-                      <span>Editing message</span>
+                      <span>{$t('Editing message')}</span>
                     </div>
                     <ButtonTooltip
                       variant="outline"
@@ -534,8 +535,8 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
                       icon={<X size={14} />}
                       onClick={cancelEdit}
                       className="w-6 h-6 p-0"
-                      title="Cancel editing"
-                      aria-label="Cancel editing"
+                      title={$t('Cancel editing')}
+                      aria-label={$t('Cancel editing')}
                       tooltip={{
                         content: { side: 'top', text: <KeyboardShortcut keys={['Meta', 'Esc']} /> },
                       }}
@@ -552,15 +553,15 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
             <Admonition
               showIcon={false}
               type="default"
-              title="Assistant has been temporarily disabled"
-              description="We're currently looking into getting it back online"
+              title={$t('Assistant has been temporarily disabled')}
+              description={$t("We're currently looking into getting it back online")}
             />
           )}
 
           {isSuccess && !isApiKeySet && (
             <Admonition
               type="default"
-              title="OpenAI API key not set"
+              title={$t('OpenAI API key not set')}
               description={
                 <Markdown
                   content={

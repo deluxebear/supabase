@@ -22,6 +22,7 @@ import { DropdownMenuItemTooltip } from '@/components/ui/DropdownMenuItemTooltip
 import { useAuthConfigQuery } from '@/data/auth/auth-config-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -132,7 +133,7 @@ export const PolicyRow = ({
             <DropdownMenuContent side="bottom" align="end" className="w-52">
               <DropdownMenuItem className="gap-x-2" onClick={() => onSelectEditPolicy(policy)}>
                 <Edit size={14} />
-                <p>Edit policy</p>
+                <p>{$t('Edit policy')}</p>
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="space-x-2"
@@ -164,7 +165,7 @@ export const PolicyRow = ({
                 }}
               >
                 <Edit size={14} />
-                <p>Edit policy with Assistant</p>
+                <p>{$t('Edit policy with Assistant')}</p>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItemTooltip
@@ -179,7 +180,7 @@ export const PolicyRow = ({
                 }}
               >
                 <Trash size={14} />
-                <p>Delete policy</p>
+                <p>{$t('Delete policy')}</p>
               </DropdownMenuItemTooltip>
             </DropdownMenuContent>
           </DropdownMenu>

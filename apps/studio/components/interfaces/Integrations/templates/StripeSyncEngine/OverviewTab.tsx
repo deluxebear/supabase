@@ -45,6 +45,7 @@ import { useStripeSyncUninstallMutation } from '@/data/database-integrations/str
 import { useSchemasQuery } from '@/data/database/schemas-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const installFormSchema = z.object({
@@ -125,7 +126,7 @@ const StripeSyncContent = ({ hideInstallCTA = false }: { hideInstallCTA?: boolea
   const { mutate: uninstallStripeSync, isPending: isUninstallRequested } =
     useStripeSyncUninstallMutation({
       onSuccess: () => {
-        toast.success('Stripe Sync uninstallation started')
+        toast.success($t('Stripe Sync uninstallation started'))
         setShowUninstallModal(false)
         setIsUninstallInitiated(true)
       },
@@ -264,7 +265,7 @@ const StripeSyncContent = ({ hideInstallCTA = false }: { hideInstallCTA?: boolea
             >
               <SheetHeader>
                 <SheetTitle>
-                  {upgradeAvailable ? 'Upgrade' : 'Install'} Stripe Sync Engine
+                  {upgradeAvailable ? 'Upgrade' : 'Install'} {$t('Stripe Sync Engine')}
                 </SheetTitle>
               </SheetHeader>
               <SheetSection className="flex-1 flex flex-col gap-y-6">
@@ -273,7 +274,7 @@ const StripeSyncContent = ({ hideInstallCTA = false }: { hideInstallCTA?: boolea
                   isUpgrade={upgradeAvailable}
                 />
 
-                <h3 className="heading-default">Configuration</h3>
+                <h3 className="heading-default">{$t('Configuration')}</h3>
 
                 <div className="flex flex-col gap-y-2">
                   <FormField
@@ -282,14 +283,16 @@ const StripeSyncContent = ({ hideInstallCTA = false }: { hideInstallCTA?: boolea
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Stripe API secret key"
-                        description="Your Stripe secret key. Requires write access to Webhook Endpoints and read-only access to all other categories."
+                        label={$t('Stripe API secret key')}
+                        description={$t(
+                          'Your Stripe secret key. Requires write access to Webhook Endpoints and read-only access to all other categories.'
+                        )}
                       >
                         <FormControl className="col-span-8">
                           <Input
                             id="stripe_api_key"
                             name="stripe_api_key"
-                            placeholder="Enter your Stripe API key"
+                            placeholder={$t('Enter your Stripe API key')}
                             autoComplete="stripe-api-key"
                             reveal={false}
                             disabled={isInstallRequested}
@@ -309,7 +312,7 @@ const StripeSyncContent = ({ hideInstallCTA = false }: { hideInstallCTA?: boolea
                         rel="noopener noreferrer"
                         href="https://dashboard.stripe.com/apikeys"
                       >
-                        Get Stripe API key
+                        {$t('Get Stripe API key')}
                       </Link>
                     </Button>
                     <Button asChild variant="default" icon={<ExternalLink />}>
@@ -318,7 +321,7 @@ const StripeSyncContent = ({ hideInstallCTA = false }: { hideInstallCTA?: boolea
                         rel="noopener noreferrer"
                         href="https://support.stripe.com/questions/what-are-stripe-api-keys-and-how-to-find-them"
                       >
-                        What are Stripe API keys?
+                        {$t('What are Stripe API keys?')}
                       </Link>
                     </Button>
                   </div>
@@ -327,7 +330,7 @@ const StripeSyncContent = ({ hideInstallCTA = false }: { hideInstallCTA?: boolea
                 {installRequestError && (
                   <Admonition
                     type="destructive"
-                    title="Installation failed"
+                    title={$t('Installation failed')}
                     description={installRequestError.message}
                   />
                 )}
@@ -339,7 +342,7 @@ const StripeSyncContent = ({ hideInstallCTA = false }: { hideInstallCTA?: boolea
                   disabled={isInstallRequested}
                   onClick={() => handleCloseInstallSheet(false)}
                 >
-                  Cancel
+                  {$t('Cancel')}
                 </Button>
                 <Button
                   form={formId}
@@ -364,7 +367,7 @@ const StripeSyncContent = ({ hideInstallCTA = false }: { hideInstallCTA?: boolea
 
       <ConfirmationModal
         visible={showUninstallModal}
-        title="Uninstall Stripe Sync Engine"
+        title={$t('Uninstall Stripe Sync Engine')}
         confirmLabel="Uninstall"
         confirmLabelLoading="Uninstalling..."
         variant="destructive"
@@ -373,18 +376,19 @@ const StripeSyncContent = ({ hideInstallCTA = false }: { hideInstallCTA?: boolea
         onConfirm={handleUninstall}
       >
         <p className="text-sm text-foreground-light">
-          Are you sure you want to uninstall the Stripe Sync Engine? This will:
+          {$t('Are you sure you want to uninstall the Stripe Sync Engine? This will:')}
         </p>
         <ul className="list-disc pl-5 mt-2 text-sm text-foreground-light space-y-1">
           <li>
-            Remove the <code className="text-code-inline">stripe</code> schema and all tables
+            {$t('Remove the')} <code className="text-code-inline">stripe</code>{' '}
+            {$t('schema and all tables')}
           </li>
-          <li>Delete all synced Stripe data</li>
-          <li>Remove the associated Edge Functions</li>
-          <li>Remove the scheduled sync jobs</li>
+          <li>{$t('Delete all synced Stripe data')}</li>
+          <li>{$t('Remove the associated Edge Functions')}</li>
+          <li>{$t('Remove the scheduled sync jobs')}</li>
         </ul>
         <p className="mt-4 text-sm text-foreground-light font-medium">
-          This action cannot be undone.
+          {$t('This action cannot be undone.')}
         </p>
       </ConfirmationModal>
     </>

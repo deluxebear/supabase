@@ -16,6 +16,7 @@ import {
 
 import { useInfiniteTablesQuery } from '@/data/tables/tables-query'
 import { useDebouncedValue } from '@/hooks/misc/useDebouncedValue'
+import { t as $t } from '@/lib/i18n'
 import type { SafePostgresTable } from '@/lib/postgres-types'
 
 type FindTableSelectorProps = Omit<ComponentPropsWithoutRef<'div'>, 'onSelect'> & {
@@ -80,14 +81,14 @@ export const FindTableSelector = forwardRef<HTMLDivElement, FindTableSelectorPro
               data-testid="find-table-selector"
               icon={<Search size={14} strokeWidth={1.5} className="text-foreground-muted" />}
             >
-              <span className="text-foreground-lighter">Find table…</span>
+              <span className="text-foreground-lighter">{$t('Find table…')}</span>
             </Button>
           </PopoverTrigger>
           <PopoverContent className="p-0 w-[260px] pointer-events-auto" side="bottom" align="start">
             <Command shouldFilter={false}>
               <CommandInput
                 className="text-xs"
-                placeholder="Find table…"
+                placeholder={$t('Find table…')}
                 value={search}
                 onValueChange={setSearch}
               />
@@ -95,11 +96,11 @@ export const FindTableSelector = forwardRef<HTMLDivElement, FindTableSelectorPro
                 {isFetching && tables.length === 0 ? (
                   <div className="flex items-center justify-center gap-x-2 py-6 text-xs text-foreground-light">
                     <Loader2 className="animate-spin" size={14} />
-                    <span>Loading tables</span>
+                    <span>{$t('Loading tables')}</span>
                   </div>
                 ) : (
                   <>
-                    <CommandEmpty>No tables found</CommandEmpty>
+                    <CommandEmpty>{$t('No tables found')}</CommandEmpty>
                     <CommandGroup>
                       <ScrollArea className={tables.length > 7 ? 'h-[210px]' : ''}>
                         {tables.map((table) => (
@@ -124,7 +125,7 @@ export const FindTableSelector = forwardRef<HTMLDivElement, FindTableSelectorPro
                               loading={isFetchingNextPage}
                               onClick={() => fetchNextPage()}
                             >
-                              Load more
+                              {$t('Load more')}
                             </Button>
                           </div>
                         )}

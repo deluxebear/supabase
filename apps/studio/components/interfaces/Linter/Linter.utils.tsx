@@ -18,6 +18,7 @@ import { asGraphqlExposureLint, GraphqlExposureLintCTA } from './GraphqlExposure
 import { LINTER_LEVELS, LintInfo } from '@/components/interfaces/Linter/Linter.constants'
 import { Lint, LINT_TYPES } from '@/data/lint/lint-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const lintInfoMap: LintInfo[] = [
   {
@@ -456,9 +457,11 @@ export const NoIssuesFound = ({ level }: { level: string }) => {
     <div className="absolute top-28 px-6 flex flex-col items-center justify-center w-full gap-y-2">
       <TextSearch className="text-foreground-muted" strokeWidth={1} />
       <div className="text-center">
-        <p className="text-foreground">No {noun} detected</p>
+        <p className="text-foreground">
+          {$t('No')} {noun} detected
+        </p>
         <p className="text-foreground-light">
-          Congrats! There are no {noun} detected for this database
+          {$t('Congrats! There are no')} {noun} {$t('detected for this database')}
         </p>
       </div>
     </div>

@@ -14,6 +14,7 @@ import { Admonition } from 'ui-patterns/admonition'
 
 import { useNetworkRestrictionsQuery } from '@/data/network-restrictions/network-restrictions-query'
 import { useNetworkRestrictionsApplyMutation } from '@/data/network-restrictions/network-retrictions-apply-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface RemoveRestrictionModalProps {
   visible: boolean
@@ -71,12 +72,13 @@ const RemoveRestrictionModal = ({
     <AlertDialog open={visible} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Confirm to remove restriction</AlertDialogTitle>
+          <AlertDialogTitle>{$t('Confirm to remove restriction')}</AlertDialogTitle>
           <AlertDialogDescription>
             <div className="flex flex-col space-y-4">
               <p>
-                The IPv4 address <code className="text-code-inline">{selectedRestriction}</code>{' '}
-                will be removed from your list of network restrictions
+                {$t('The IPv4 address')}{' '}
+                <code className="text-code-inline">{selectedRestriction}</code>{' '}
+                {$t('will be removed from your list of network restrictions')}
                 {isRemovingOnlyRestriction
                   ? '.'
                   : ", and no longer have access to your project's database."}
@@ -84,23 +86,24 @@ const RemoveRestrictionModal = ({
               {isRemovingOnlyRestriction && (
                 <Admonition
                   type="warning"
-                  title="Database access will no longer be restricted"
-                  description="Removing all network restrictions will default to your database being accessible from
-                  all IP addresses."
+                  title={$t('Database access will no longer be restricted')}
+                  description={$t(
+                    'Removing all network restrictions will default to your database being accessible from\n                  all IP addresses.'
+                  )}
                 />
               )}
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isApplying}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isApplying}>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onSubmit}
             disabled={isApplying}
             loading={isApplying}
             variant="danger"
           >
-            Remove restriction
+            {$t('Remove restriction')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

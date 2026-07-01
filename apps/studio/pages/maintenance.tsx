@@ -5,6 +5,7 @@ import { useMemo } from 'react'
 import { Button, cn } from 'ui'
 
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const MaintenancePage: NextPageWithLayout = () => {
@@ -20,20 +21,22 @@ const MaintenancePage: NextPageWithLayout = () => {
   return (
     <>
       <Head>
-        <title>Supabase | Under Maintenance</title>
+        <title>{$t('Supabase | Under Maintenance')}</title>
       </Head>
       <div className="flex flex-col items-center gap-6 text-center">
         <div className="flex items-center justify-center mb-4">
-          <img src={imgUrl} alt="Supabase" className="h-8" />
+          <img src={imgUrl} alt={$t('Supabase')} className="h-8" />
         </div>
         <div className="space-y-1">
-          <h1 className="text-2xl font-medium text-foreground">Under Maintenance</h1>
+          <h1 className="text-2xl font-medium text-foreground">{$t('Under Maintenance')}</h1>
           <p className="text-foreground-light max-w-xs mx-auto">
-            We are currently improving our services. The dashboard will be back online shortly.
+            {$t(
+              'We are currently improving our services. The dashboard will be back online shortly.'
+            )}
           </p>
         </div>
         <p className="text-sm text-foreground-lighter max-w-xs mx-auto">
-          If you need support while the dashboard is inaccessible, you can email us at{' '}
+          {$t('If you need support while the dashboard is inaccessible, you can email us at')}{' '}
           <a
             href="mailto:support+maintenance@supabase.io"
             className="text-foreground-light underline hover:text-foreground"
@@ -43,10 +46,10 @@ const MaintenancePage: NextPageWithLayout = () => {
         </p>
         <div className="flex flex-col items-center gap-2 mt-4">
           <p className="text-sm text-foreground-lighter">
-            Reload the page to check if the maintenance window has ended
+            {$t('Reload the page to check if the maintenance window has ended')}
           </p>
           <Button onClick={() => window.location.reload()} variant="primary" icon={<RefreshCw />}>
-            Reload
+            {$t('Reload')}
           </Button>
         </div>
       </div>

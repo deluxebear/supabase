@@ -14,6 +14,7 @@ import {
 
 import { SERVICE_OPTIONS, type ExtendedSupportCategories } from './Support.constants'
 import type { SupportFormValues } from './SupportForm.schema'
+import { t as $t } from '@/lib/i18n'
 
 interface AffectedServicesSelectorProps {
   form: UseFormReturn<SupportFormValues>
@@ -33,7 +34,7 @@ export function AffectedServicesSelector({ form, category }: AffectedServicesSel
       name="affectedServices"
       control={form.control}
       render={({ field }) => (
-        <FormItemLayout hideMessage layout="vertical" label="Which services are affected?">
+        <FormItemLayout hideMessage layout="vertical" label={$t('Which services are affected?')}>
           <FormControl>
             <MultiSelector
               values={field.value.length === 0 ? [] : field.value?.split(', ')}

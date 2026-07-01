@@ -1,6 +1,7 @@
 import { cn } from 'ui'
 
 import { formatCurrency } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export interface ChargeBreakdownProps {
   subtotal: number
@@ -34,7 +35,10 @@ export const ChargeBreakdown = ({
 
       {taxStatus === 'calculated' && tax && tax.amount > 0 && (
         <div className="flex items-center justify-between gap-2 border-b border-muted text-sm">
-          <div className="py-2">Tax ({tax.percentage}%)</div>
+          <div className="py-2">
+            {$t('Tax (')}
+            {tax.percentage}%)
+          </div>
           <div className="py-2 text-right tabular-nums" translate="no">
             {formatCurrency(tax.amount)}
           </div>
@@ -44,13 +48,13 @@ export const ChargeBreakdown = ({
       {taxStatus === 'failed' && (
         <div className="flex items-center justify-between gap-2 border-b border-muted text-sm">
           <div className="py-2 text-foreground-lighter">
-            Tax could not be estimated and may be applied separately
+            {$t('Tax could not be estimated and may be applied separately')}
           </div>
         </div>
       )}
 
       <div className="flex items-center justify-between gap-2 text-foreground text-base">
-        <div className="py-2">Total due today</div>
+        <div className="py-2">{$t('Total due today')}</div>
         <div className="py-2 text-right tabular-nums" translate="no">
           {formatCurrency(total)}
         </div>

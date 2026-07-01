@@ -56,6 +56,7 @@ import { TaxDisclaimer } from '@/components/interfaces/Billing/TaxDisclaimer'
 import { Shortcut } from '@/components/ui/Shortcut'
 import { LogDrainData } from '@/data/log-drains/log-drains-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { httpEndpointUrlSchema } from '@/lib/validation/http-url'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -418,7 +419,7 @@ export function LogDrainDestinationSheetForm({
         className="overflow-y-auto flex flex-col"
       >
         <SheetHeader>
-          <SheetTitle>Add destination</SheetTitle>
+          <SheetTitle>{$t('Add destination')}</SheetTitle>
         </SheetHeader>
         <SheetSection className="px-0! pb-0!">
           <Form {...form}>
@@ -432,7 +433,7 @@ export function LogDrainDestinationSheetForm({
                 const logDrainName = form.getValues('name')
                 const logDrainExists = existingDrainNames.includes(logDrainName)
                 if (logDrainExists && mode === 'create') {
-                  toast.error('Log drain name already exists')
+                  toast.error($t('Log drain name already exists'))
                   return
                 }
 
@@ -445,20 +446,20 @@ export function LogDrainDestinationSheetForm({
               <div className="space-y-8 px-content">
                 <LogDrainFormItem
                   value="name"
-                  placeholder="My Destination"
-                  label="Name"
+                  placeholder={$t('My Destination')}
+                  label={$t('Name')}
                   formControl={form.control}
                 />
                 <LogDrainFormItem
                   value="description"
-                  placeholder="Optional description"
-                  label="Description"
+                  placeholder={$t('Optional description')}
+                  label={$t('Description')}
                   formControl={form.control}
                 />
                 {mode === 'create' && (
                   <FormItemLayout
                     layout="horizontal"
-                    label="Type"
+                    label={$t('Type')}
                     description={LOG_DRAIN_TYPES.find((t) => t.value === type)?.description || ''}
                   >
                     <Select
@@ -492,7 +493,7 @@ export function LogDrainDestinationSheetForm({
                     <div className="px-content space-y-8">
                       <LogDrainFormItem
                         value="url"
-                        label="Endpoint URL"
+                        label={$t('Endpoint URL')}
                         formControl={form.control}
                         placeholder="https://example.com/log-drain"
                       />
@@ -500,7 +501,7 @@ export function LogDrainDestinationSheetForm({
                         control={form.control}
                         name="http"
                         render={({ field }) => (
-                          <FormItemLayout layout="horizontal" label="HTTP Version">
+                          <FormItemLayout layout="horizontal" label={$t('HTTP Version')}>
                             <FormControl>
                               <RadioGroupCard
                                 className="flex gap-2"
@@ -509,12 +510,12 @@ export function LogDrainDestinationSheetForm({
                               >
                                 <FormItem asChild>
                                   <FormControl>
-                                    <RadioGroupCardItem value="http1" label="HTTP/1" />
+                                    <RadioGroupCardItem value="http1" label={$t('HTTP/1')} />
                                   </FormControl>
                                 </FormItem>
                                 <FormItem asChild>
                                   <FormControl>
-                                    <RadioGroupCardItem value="http2" label="HTTP/2" />
+                                    <RadioGroupCardItem value="http2" label={$t('HTTP/2')} />
                                   </FormControl>
                                 </FormItem>
                               </RadioGroupCard>
@@ -533,9 +534,9 @@ export function LogDrainDestinationSheetForm({
                             <FormControl>
                               <Switch checked={field.value} onCheckedChange={field.onChange} />
                             </FormControl>
-                            <FormLabel className="text-base">Gzip</FormLabel>
+                            <FormLabel className="text-base">{$t('Gzip')}</FormLabel>
                             <InfoTooltip align="start">
-                              Gzip compresses logs before sending it to the destination.
+                              {$t('Gzip compresses logs before sending it to the destination.')}
                             </InfoTooltip>
                           </div>
                         </FormItem>
@@ -548,11 +549,11 @@ export function LogDrainDestinationSheetForm({
                     <LogDrainFormItem
                       type="password"
                       value="api_key"
-                      label="API Key"
+                      label={$t('API Key')}
                       formControl={form.control}
                       description={
                         <>
-                          The API Key obtained from the Datadog dashboard{' '}
+                          {$t('The API Key obtained from the Datadog dashboard')}{' '}
                           <a
                             target="_blank"
                             rel="noopener noreferrer"
@@ -573,7 +574,9 @@ export function LogDrainDestinationSheetForm({
                           label={'Region'}
                           description={
                             <p>
-                              The Datadog region to send logs to. Read more about Datadog regions{' '}
+                              {$t(
+                                'The Datadog region to send logs to. Read more about Datadog regions'
+                              )}{' '}
                               <a
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -589,11 +592,11 @@ export function LogDrainDestinationSheetForm({
                           <FormControl>
                             <Select value={field.value} onValueChange={field.onChange}>
                               <SelectTrigger className="col-span-3">
-                                <SelectValue placeholder="Select a region" />
+                                <SelectValue placeholder={$t('Select a region')} />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectGroup>
-                                  <SelectLabel>Region</SelectLabel>
+                                  <SelectLabel>{$t('Region')}</SelectLabel>
                                   {DATADOG_REGIONS.map((reg) => (
                                     <SelectItem key={reg.value} value={reg.value}>
                                       {reg.label}
@@ -614,20 +617,20 @@ export function LogDrainDestinationSheetForm({
                       type="url"
                       value="url"
                       placeholder="https://my-logs-endpoint.grafana.net/loki/api/v1/push"
-                      label="Loki URL"
+                      label={$t('Loki URL')}
                       formControl={form.control}
-                      description="The Loki HTTP(S) endpoint to send events."
+                      description={$t('The Loki HTTP(S) endpoint to send events.')}
                     />
                     <LogDrainFormItem
                       value="username"
-                      label="Username"
+                      label={$t('Username')}
                       placeholder="123456789"
                       formControl={form.control}
                     />
                     <LogDrainFormItem
                       type="password"
                       value="password"
-                      label="Password"
+                      label={$t('Password')}
                       placeholder="glc_ABCD1234567890"
                       formControl={form.control}
                     />
@@ -643,7 +646,7 @@ export function LogDrainDestinationSheetForm({
                       formControl={form.control}
                       description={
                         <>
-                          The DSN obtained from the Sentry dashboard. Read more about DSNs{' '}
+                          {$t('The DSN obtained from the Sentry dashboard. Read more about DSNs')}{' '}
                           <a
                             target="_blank"
                             rel="noopener noreferrer"
@@ -662,42 +665,43 @@ export function LogDrainDestinationSheetForm({
                   <div className="grid gap-4 px-content">
                     <LogDrainFormItem
                       value="s3_bucket"
-                      label="S3 Bucket"
+                      label={$t('S3 Bucket')}
                       placeholder="my-log-bucket"
                       formControl={form.control}
-                      description="The name of an existing S3 bucket."
+                      description={$t('The name of an existing S3 bucket.')}
                     />
                     <LogDrainFormItem
                       value="storage_region"
-                      label="Region"
+                      label={$t('Region')}
                       placeholder="us-east-1"
                       formControl={form.control}
-                      description="AWS region where the bucket is located."
+                      description={$t('AWS region where the bucket is located.')}
                     />
                     <LogDrainFormItem
                       value="access_key_id"
-                      label="Access Key ID"
-                      placeholder="AKIA..."
+                      label={$t('Access Key ID')}
+                      placeholder={$t('AKIA...')}
                       formControl={form.control}
                     />
                     <LogDrainFormItem
                       type="password"
                       value="secret_access_key"
-                      label="Secret Access Key"
+                      label={$t('Secret Access Key')}
                       placeholder="••••••••••••••••"
                       formControl={form.control}
                     />
                     <LogDrainFormItem
                       type="number"
                       value="batch_timeout"
-                      label="Batch Timeout (ms)"
+                      label={$t('Batch Timeout (ms)')}
                       placeholder="3000"
                       formControl={form.control}
-                      description="Recommended 2000–5000ms."
+                      description={$t('Recommended 2000–5000ms.')}
                     />
                     <p className="text-xs text-foreground-lighter">
-                      Ensure the account tied to the Access Key ID can write to the specified
-                      bucket.
+                      {$t(
+                        'Ensure the account tied to the Access Key ID can write to the specified bucket.'
+                      )}
                     </p>
                   </div>
                 )}
@@ -706,18 +710,18 @@ export function LogDrainDestinationSheetForm({
                     <LogDrainFormItem
                       type="text"
                       value="dataset_name"
-                      label="Dataset name"
+                      label={$t('Dataset name')}
                       placeholder="dataset"
                       formControl={form.control}
-                      description="Name of the dataset in Axiom where the logs will be sent."
+                      description={$t('Name of the dataset in Axiom where the logs will be sent.')}
                     />
                     <LogDrainFormItem
                       type="text"
                       value="api_token"
-                      label="API Token"
+                      label={$t('API Token')}
                       placeholder="xaat-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
                       formControl={form.control}
-                      description="Token allowing ingest access to the specified dataset"
+                      description={$t('Token allowing ingest access to the specified dataset')}
                     />
                   </div>
                 )}
@@ -727,10 +731,12 @@ export function LogDrainDestinationSheetForm({
                       <LogDrainFormItem
                         type="url"
                         value="endpoint"
-                        label="OTLP Endpoint"
+                        label={$t('OTLP Endpoint')}
                         placeholder="https://otlp.example.com:4318/v1/logs"
                         formControl={form.control}
-                        description="The HTTP endpoint for OTLP log ingestion (typically ends with /v1/logs)"
+                        description={$t(
+                          'The HTTP endpoint for OTLP log ingestion (typically ends with /v1/logs)'
+                        )}
                       />
                       <FormField
                         name="protocol"
@@ -738,17 +744,19 @@ export function LogDrainDestinationSheetForm({
                         render={({ field }) => (
                           <FormItemLayout
                             layout="horizontal"
-                            label="Protocol"
-                            description="Only HTTP with Protocol Buffers is currently supported"
+                            label={$t('Protocol')}
+                            description={$t(
+                              'Only HTTP with Protocol Buffers is currently supported'
+                            )}
                           >
                             <FormControl>
                               <Select value={field.value} onValueChange={field.onChange}>
                                 <SelectTrigger className="col-span-3">
-                                  <SelectValue placeholder="Select protocol" />
+                                  <SelectValue placeholder={$t('Select protocol')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectGroup>
-                                    <SelectLabel>Protocol</SelectLabel>
+                                    <SelectLabel>{$t('Protocol')}</SelectLabel>
                                     {OTLP_PROTOCOLS.map((proto) => (
                                       <SelectItem key={proto.value} value={proto.value}>
                                         {proto.label}
@@ -772,9 +780,11 @@ export function LogDrainDestinationSheetForm({
                             <FormControl>
                               <Switch checked={field.value} onCheckedChange={field.onChange} />
                             </FormControl>
-                            <FormLabel className="text-base">Gzip Compression</FormLabel>
+                            <FormLabel className="text-base">{$t('Gzip Compression')}</FormLabel>
                             <InfoTooltip align="start">
-                              Enable gzip compression for log data sent to the OTLP endpoint.
+                              {$t(
+                                'Enable gzip compression for log data sent to the OTLP endpoint.'
+                              )}
                             </InfoTooltip>
                           </div>
                         </FormItem>
@@ -793,19 +803,20 @@ export function LogDrainDestinationSheetForm({
                           label={'Region'}
                           description={
                             <p>
-                              The Last9 region to send logs to. Credentials can be obtained from the
-                              Last9 OTEL integration panel.
+                              {$t(
+                                'The Last9 region to send logs to. Credentials can be obtained from the Last9 OTEL integration panel.'
+                              )}
                             </p>
                           }
                         >
                           <FormControl>
                             <Select value={field.value} onValueChange={field.onChange}>
                               <SelectTrigger className="col-span-3">
-                                <SelectValue placeholder="Select a region" />
+                                <SelectValue placeholder={$t('Select a region')} />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectGroup>
-                                  <SelectLabel>Region</SelectLabel>
+                                  <SelectLabel>{$t('Region')}</SelectLabel>
                                   {LAST9_REGIONS.map((reg) => (
                                     <SelectItem key={reg.value} value={reg.value}>
                                       {reg.label}
@@ -821,18 +832,18 @@ export function LogDrainDestinationSheetForm({
                     <LogDrainFormItem
                       type="text"
                       value="username"
-                      label="Username"
+                      label={$t('Username')}
                       placeholder="username"
                       formControl={form.control}
-                      description="Username for authentication from Last9 OTEL integration."
+                      description={$t('Username for authentication from Last9 OTEL integration.')}
                     />
                     <LogDrainFormItem
                       type="password"
                       value="password"
-                      label="Password"
+                      label={$t('Password')}
                       placeholder="••••••••••••••••"
                       formControl={form.control}
-                      description="Password for authentication from Last9 OTEL integration."
+                      description={$t('Password for authentication from Last9 OTEL integration.')}
                     />
                   </div>
                 )}
@@ -841,33 +852,37 @@ export function LogDrainDestinationSheetForm({
                     <div className="grid gap-4 px-content">
                       <LogDrainFormItem
                         value="host"
-                        label="Host"
+                        label={$t('Host')}
                         placeholder="logs.example.com"
                         formControl={form.control}
-                        description="Hostname or IP address of the syslog receiver."
+                        description={$t('Hostname or IP address of the syslog receiver.')}
                       />
                       <LogDrainFormItem
                         type="number"
                         value="port"
-                        label="Port"
+                        label={$t('Port')}
                         placeholder="514"
                         formControl={form.control}
-                        description="Port of the syslog receiver (0–65535)."
+                        description={$t('Port of the syslog receiver (0–65535).')}
                       />
                       <LogDrainFormItem
                         value="structured_data"
-                        label="Structured Data"
-                        placeholder='[exampleSDID@32473 iut="3" eventSource="Application"]'
+                        label={$t('Structured Data')}
+                        placeholder={$t('[exampleSDID@32473 iut="3" eventSource="Application"]')}
                         formControl={form.control}
-                        description="Static RFC 5424 Structured Data included in every log frame."
+                        description={$t(
+                          'Static RFC 5424 Structured Data included in every log frame.'
+                        )}
                       />
                       <LogDrainFormItem
                         type="password"
                         value="cipher_key"
-                        label="Cipher Key"
+                        label={$t('Cipher Key')}
                         placeholder="••••••••••••••••"
                         formControl={form.control}
-                        description="Base64-encoded 32-byte key for AES-256-GCM encryption of the log body."
+                        description={$t(
+                          'Base64-encoded 32-byte key for AES-256-GCM encryption of the log body.'
+                        )}
                       />
                     </div>
 
@@ -882,7 +897,7 @@ export function LogDrainDestinationSheetForm({
                             </FormControl>
                             <FormLabel className="text-base">TLS</FormLabel>
                             <InfoTooltip align="start">
-                              Connect via SSL/TLS instead of plain TCP.
+                              {$t('Connect via SSL/TLS instead of plain TCP.')}
                             </InfoTooltip>
                           </div>
                         </FormItem>
@@ -897,13 +912,15 @@ export function LogDrainDestinationSheetForm({
                           render={({ field }) => (
                             <FormItemLayout
                               layout="horizontal"
-                              label="CA Certificate"
-                              description="PEM encoded CA certificate for verifying the server. Falls back to the system CA bundle if omitted."
+                              label={$t('CA Certificate')}
+                              description={$t(
+                                'PEM encoded CA certificate for verifying the server. Falls back to the system CA bundle if omitted.'
+                              )}
                             >
                               <FormControl>
                                 <TextArea
                                   className="font-mono text-xs"
-                                  placeholder="-----BEGIN CERTIFICATE-----"
+                                  placeholder={$t('-----BEGIN CERTIFICATE-----')}
                                   rows={4}
                                   {...field}
                                 />
@@ -917,13 +934,13 @@ export function LogDrainDestinationSheetForm({
                           render={({ field }) => (
                             <FormItemLayout
                               layout="horizontal"
-                              label="Client Certificate"
-                              description="PEM encoded client certificate for mTLS."
+                              label={$t('Client Certificate')}
+                              description={$t('PEM encoded client certificate for mTLS.')}
                             >
                               <FormControl>
                                 <TextArea
                                   className="font-mono text-xs"
-                                  placeholder="-----BEGIN CERTIFICATE-----"
+                                  placeholder={$t('-----BEGIN CERTIFICATE-----')}
                                   rows={4}
                                   {...field}
                                 />
@@ -937,13 +954,15 @@ export function LogDrainDestinationSheetForm({
                           render={({ field }) => (
                             <FormItemLayout
                               layout="horizontal"
-                              label="Client Key"
-                              description="PEM encoded client private key for mTLS. Required when a client certificate is provided."
+                              label={$t('Client Key')}
+                              description={$t(
+                                'PEM encoded client private key for mTLS. Required when a client certificate is provided.'
+                              )}
                             >
                               <FormControl>
                                 <TextArea
                                   className="font-mono text-xs"
-                                  placeholder="-----BEGIN PRIVATE KEY-----"
+                                  placeholder={$t('-----BEGIN PRIVATE KEY-----')}
                                   rows={4}
                                   {...field}
                                 />
@@ -963,7 +982,7 @@ export function LogDrainDestinationSheetForm({
                       render={({ fieldState }) => (
                         <FormItemLayout
                           layout="horizontal"
-                          label="Custom Headers"
+                          label={$t('Custom Headers')}
                           description={getHeadersDescription(type)}
                           hideMessage={!fieldState.error?.message}
                         >
@@ -996,15 +1015,15 @@ export function LogDrainDestinationSheetForm({
           >
             <ul className="text-right text-foreground-light divide-y divide-dashed text-sm">
               <li className="flex items-center justify-between gap-2 py-2" translate="no">
-                <span className="text-foreground-lighter">Additional drain cost</span>
-                <span className="text-foreground">$60 per month</span>
+                <span className="text-foreground-lighter">{$t('Additional drain cost')}</span>
+                <span className="text-foreground">{$t('$60 per month')}</span>
               </li>
               <li className="flex items-center justify-between gap-2 py-2" translate="no">
-                <span className="text-foreground-lighter">Per million events</span>
+                <span className="text-foreground-lighter">{$t('Per million events')}</span>
                 <span>+$0.20</span>
               </li>
               <li className="flex items-center justify-between gap-2 py-2" translate="no">
-                <span className="text-foreground-lighter">Per GB egress</span>
+                <span className="text-foreground-lighter">{$t('Per GB egress')}</span>
                 <span>+$0.09</span>
               </li>
             </ul>
@@ -1013,7 +1032,7 @@ export function LogDrainDestinationSheetForm({
           <SheetFooter className="p-content mt-0! justify-between! flex-row! w-full items-center">
             <div className="flex flex-col gap-0.5">
               <span className="text-sm text-foreground-light">
-                <span>See full pricing breakdown</span>{' '}
+                <span>{$t('See full pricing breakdown')}</span>{' '}
                 <Link
                   href={`${DOCS_URL}/guides/platform/manage-your-usage/log-drains`}
                   target="_blank"
@@ -1031,7 +1050,7 @@ export function LogDrainDestinationSheetForm({
               side="top"
             >
               <Button form={FORM_ID} loading={isLoading} type="submit" variant="primary">
-                Save destination
+                {$t('Save destination')}
               </Button>
             </Shortcut>
           </SheetFooter>

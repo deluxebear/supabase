@@ -4,6 +4,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { CreateCronJobForm } from './CreateCronJobSheet/CreateCronJobSheet.constants'
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
+import { t as $t } from '@/lib/i18n'
 
 interface SqlSnippetSectionProps {
   form: UseFormReturn<CreateCronJobForm>
@@ -16,7 +17,7 @@ export const SqlSnippetSection = ({ form }: SqlSnippetSectionProps) => {
         control={form.control}
         name="values.snippet"
         render={({ field }) => (
-          <FormItemLayout label="SQL Snippet" className="[&>div>label]:px-content">
+          <FormItemLayout label={$t('SQL Snippet')} className="[&>div>label]:px-content">
             <CodeEditor
               id="create-cron-job-editor"
               language="pgsql"

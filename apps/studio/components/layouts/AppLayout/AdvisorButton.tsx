@@ -8,6 +8,7 @@ import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { useProjectLintsQuery } from '@/data/lint/lint-query'
 import { useNotificationsV2Query } from '@/data/notifications/notifications-v2-query'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -69,7 +70,7 @@ export const AdvisorButton = ({ projectRef }: { projectRef?: string }) => {
             isOpen && 'text-background group-hover:text-background'
           )}
         />
-        <span className="sr-only">Advisor Center</span>
+        <span className="sr-only">{$t('Advisor Center')}</span>
       </ButtonTooltip>
       {hasCriticalIssues ? (
         <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-destructive" />

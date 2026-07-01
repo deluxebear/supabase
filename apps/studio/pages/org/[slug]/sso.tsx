@@ -13,6 +13,7 @@ import OrganizationLayout from '@/components/layouts/OrganizationLayout'
 import { OrganizationSettingsLayout } from '@/components/layouts/ProjectLayout/OrganizationSettingsLayout'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const OrgSSO: NextPageWithLayout = () => {
@@ -28,9 +29,9 @@ const OrgSSO: NextPageWithLayout = () => {
       <PageHeader size="small">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Single Sign-On</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Single Sign-On')}</PageHeaderTitle>
             <PageHeaderDescription>
-              SAML SSO configuration and domain access controls
+              {$t('SAML SSO configuration and domain access controls')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>

@@ -1,6 +1,8 @@
 import type { PGPolicy } from '@supabase/pg-meta'
 import { Lock } from 'lucide-react'
 
+import { t as $t } from '@/lib/i18n'
+
 interface LockedCreateQuerySection {
   schema: string
   selectedPolicy?: PGPolicy
@@ -25,14 +27,14 @@ export const LockedCreateQuerySection = ({
             <Lock size={14} className="text-foreground-lighter" />
           </div>
           <p className="text-xs text-foreground-lighter font-mono uppercase">
-            Use options above to edit
+            {$t('Use options above to edit')}
           </p>
         </div>
       </div>
       <div className="flex items-start" style={{ fontSize: '14px' }}>
         <p className="px-6 font-mono text-sm text-foreground-light select-none">1</p>
         <p className="font-mono tracking-tighter">
-          <span className="text-[#569cd6]">{isEditing ? 'alter' : 'create'}</span> policy "
+          <span className="text-[#569cd6]">{isEditing ? 'alter' : 'create'}</span> {$t('policy "')}
           {isRenamingPolicy ? selectedPolicy?.name : name.length === 0 ? 'policy_name' : name}"
         </p>
       </div>
@@ -98,7 +100,8 @@ export const LockedRenameQuerySection = ({
           </p>
         </div>
         <p className="font-mono tracking-tighter">
-          <span className="text-[#569cd6]">alter</span> policy "{oldName}"
+          <span className="text-[#569cd6]">alter</span> {$t('policy "')}
+          {oldName}"
         </p>
       </div>
       <div className="flex items-center" style={{ fontSize: '14px' }}>
@@ -118,7 +121,8 @@ export const LockedRenameQuerySection = ({
           </p>
         </div>
         <p className="font-mono tracking-tighter">
-          <span className="text-[#569cd6]">rename</span> to "{newName}";
+          <span className="text-[#569cd6]">rename</span> {$t('to "')}
+          {newName}";
         </p>
       </div>
     </div>

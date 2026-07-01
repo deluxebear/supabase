@@ -15,6 +15,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { CreateProjectForm } from './ProjectCreation.schema'
 import { useCustomContent } from '@/hooks/custom-content/useCustomContent'
 import { PROVIDERS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const HA_SUPPORTED_PROVIDERS = ['AWS_K8S']
 
@@ -32,11 +33,13 @@ export const CloudProviderSelector = ({ form }: CloudProviderSelectorProps) => {
       name="cloudProvider"
       render={({ field }) => (
         <FormItemLayout
-          label="Cloud provider"
+          label={$t('Cloud provider')}
           layout="horizontal"
           description={
             highAvailability ? (
-              <p className="text-warning">High availability is only supported on AWS (Revamped)</p>
+              <p className="text-warning">
+                {$t('High availability is only supported on AWS (Revamped)')}
+              </p>
             ) : (
               'Select which cloud provider to spin up project from'
             )
@@ -49,7 +52,7 @@ export const CloudProviderSelector = ({ form }: CloudProviderSelectorProps) => {
           >
             <FormControl>
               <SelectTrigger>
-                <SelectValue placeholder="Select a cloud provider" />
+                <SelectValue placeholder={$t('Select a cloud provider')} />
               </SelectTrigger>
             </FormControl>
             <SelectContent>

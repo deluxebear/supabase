@@ -12,6 +12,7 @@ import { SYSTEM_ROLES } from '@/components/interfaces/Database/Roles/Roles.const
 import { AlertError } from '@/components/ui/AlertError'
 import { useDatabaseRolesQuery } from '@/data/database-roles/database-roles-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface PolicyRolesProps {
   selectedRoles: string[]
@@ -49,9 +50,11 @@ export const PolicyRoles = ({ selectedRoles, onUpdateSelectedRoles }: PolicyRole
     <div className="flex flex-col md:flex-row gap-4 md:gap-12">
       <div className="flex md:w-1/3 flex-col space-y-2">
         <label className="text-foreground-light text-base" htmlFor="policy-name">
-          Target roles
+          {$t('Target roles')}
         </label>
-        <p className="text-foreground-lighter text-sm">Apply policy to the selected roles</p>
+        <p className="text-foreground-lighter text-sm">
+          {$t('Apply policy to the selected roles')}
+        </p>
       </div>
       <div className="relative md:w-2/3">
         {isLoading && <ShimmeringLoader className="py-4" />}

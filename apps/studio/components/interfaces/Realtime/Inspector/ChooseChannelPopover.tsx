@@ -27,6 +27,7 @@ import { DocsButton } from '@/components/ui/DocsButton'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { getTemporaryAPIKey } from '@/data/api-keys/temp-api-keys-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -133,14 +134,14 @@ export const ChooseChannelPopover = ({
                     render={({ field }) => (
                       <FormItem className="flex flex-col gap-y-2">
                         <div className="flex flex-col gap-y-1">
-                          <label className="text-foreground text-xs">Name of channel</label>
+                          <label className="text-foreground text-xs">{$t('Name of channel')}</label>
                           <InputGroup>
                             <FormControl>
                               <InputGroupInput
                                 {...field}
                                 autoComplete="off"
                                 className="rounded-r-none text-xs px-2.5 py-1 h-auto"
-                                placeholder="Enter a channel name"
+                                placeholder={$t('Enter a channel name')}
                               />
                             </FormControl>
                             <InputGroupAddon align="inline-end">
@@ -149,21 +150,22 @@ export const ChooseChannelPopover = ({
                                 disabled={form.getValues().channel.length === 0}
                                 onClick={() => onSubmit()}
                               >
-                                Listen to channel
+                                {$t('Listen to channel')}
                               </InputGroupButton>
                             </InputGroupAddon>
                           </InputGroup>
                         </div>
                         <FormDescription className="text-xs text-foreground-lighter">
-                          The channel you initialize with the Supabase Realtime client. Learn more
-                          in{' '}
+                          {$t(
+                            'The channel you initialize with the Supabase Realtime client. Learn more in'
+                          )}{' '}
                           <a
                             target="_blank"
                             rel="noreferrer"
                             className="underline hover:text-foreground transition"
                             href={`${DOCS_URL}/guides/realtime/concepts#channels`}
                           >
-                            our docs
+                            {$t('our docs')}
                           </a>
                         </FormDescription>
                       </FormItem>
@@ -184,11 +186,12 @@ export const ChooseChannelPopover = ({
                               disabled={field.disabled}
                             />
                           </FormControl>
-                          <FormLabel className="text-xs">Is channel private?</FormLabel>
+                          <FormLabel className="text-xs">{$t('Is channel private?')}</FormLabel>
                         </div>
                         <FormDescription className="text-xs text-foreground-lighter mt-2">
-                          If the channel is marked as private, it will use RLS policies to filter
-                          messages.
+                          {$t(
+                            'If the channel is marked as private, it will use RLS policies to filter messages.'
+                          )}
                         </FormDescription>
                       </FormItem>
                     )}
@@ -206,7 +209,7 @@ export const ChooseChannelPopover = ({
             <div className="space-y-2">
               <div className="flex items-center gap-x-2">
                 <p className="text-foreground text-xs">
-                  Currently joined{' '}
+                  {$t('Currently joined')}{' '}
                   <span className={config.isChannelPrivate ? 'text-brand' : 'text-warning'}>
                     {config.isChannelPrivate ? 'private' : 'public'}
                   </span>{' '}
@@ -217,13 +220,15 @@ export const ChooseChannelPopover = ({
                 </p>
               </div>
               <p className="text-xs text-foreground-lighter mt-2">
-                If you leave this channel, all of the messages populated on this page will disappear
+                {$t(
+                  'If you leave this channel, all of the messages populated on this page will disappear'
+                )}
               </p>
               <Button
                 variant="default"
                 onClick={() => onChangeConfig({ ...config, channelName: '', enabled: false })}
               >
-                Leave channel
+                {$t('Leave channel')}
               </Button>
             </div>
           )}

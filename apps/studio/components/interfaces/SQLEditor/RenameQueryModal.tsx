@@ -35,6 +35,7 @@ import { Snippet } from '@/data/content/sql-folders-query'
 import type { SqlSnippet } from '@/data/content/sql-snippets-query'
 import { useOrgAiOptInLevel } from '@/hooks/misc/useOrgOptedIntoAi'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
 import { createTabId, useTabsStateSnapshot } from '@/state/tabs'
 
@@ -93,7 +94,7 @@ export const RenameQueryModal = ({
         const { content } = await getContentById({ projectRef: ref, id: snippet.id })
         if ('unchecked_sql' in content) getGeneratedValues({ sql: content.unchecked_sql })
       } catch (error) {
-        toast.error('Unable to generate title based on query contents')
+        toast.error($t('Unable to generate title based on query contents'))
       }
     }
   }
@@ -145,7 +146,7 @@ export const RenameQueryModal = ({
         }
       }
 
-      toast.success('Successfully renamed snippet!')
+      toast.success($t('Successfully renamed snippet!'))
       if (onComplete) onComplete()
     } catch (error: any) {
       // [Joshen] We probably need some rollback cause all the saving is async
@@ -174,7 +175,7 @@ export const RenameQueryModal = ({
     <Dialog open={visible} onOpenChange={handleCancel}>
       <DialogContent size="small">
         <DialogHeader>
-          <DialogTitle>Rename</DialogTitle>
+          <DialogTitle>{$t('Rename')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <Form {...form}>
@@ -184,7 +185,7 @@ export const RenameQueryModal = ({
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItemLayout name="name" layout="vertical" label="Name">
+                  <FormItemLayout name="name" layout="vertical" label={$t('Name')}>
                     <FormControl>
                       <Input {...field} id="name" />
                     </FormControl>
@@ -219,7 +220,7 @@ export const RenameQueryModal = ({
                     <div className="scale-75">
                       <AiIconAnimation loading={isTitleGenerationLoading} />
                     </div>
-                    <span>Rename with Supabase AI</span>
+                    <span>{$t('Rename with Supabase AI')}</span>
                   </div>
                 </ButtonTooltip>
               </div>
@@ -227,13 +228,13 @@ export const RenameQueryModal = ({
                 control={form.control}
                 name="description"
                 render={({ field }) => (
-                  <FormItemLayout name="description" layout="vertical" label="Description">
+                  <FormItemLayout name="description" layout="vertical" label={$t('Description')}>
                     <FormControl>
                       <Textarea
                         {...field}
                         id="description"
                         rows={4}
-                        placeholder="Describe query"
+                        placeholder={$t('Describe query')}
                         className="resize-none"
                       />
                     </FormControl>
@@ -243,10 +244,10 @@ export const RenameQueryModal = ({
             </DialogSection>
             <DialogFooter>
               <Button type="reset" variant="default" onClick={handleCancel} disabled={isSubmitting}>
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button type="submit" loading={isSubmitting} disabled={isSubmitting || !isDirty}>
-                Rename query
+                {$t('Rename query')}
               </Button>
             </DialogFooter>
           </form>

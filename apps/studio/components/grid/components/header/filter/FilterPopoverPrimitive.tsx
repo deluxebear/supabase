@@ -5,6 +5,7 @@ import { Button, Popover, PopoverContent, PopoverSeparator, PopoverTrigger } fro
 
 import FilterRow from './FilterRow'
 import type { Filter } from '@/components/grid/types'
+import { t as $t } from '@/lib/i18n'
 import { useTableEditorTableStateSnapshot } from '@/state/table-editor-table'
 
 export interface FilterPopoverPrimitiveProps {
@@ -101,9 +102,11 @@ export const FilterPopoverPrimitive = ({
             ))}
             {localFilters.length == 0 && (
               <div className="space-y-1 px-3">
-                <h5 className="text-xs text-foreground-light">No filters applied to this view</h5>
+                <h5 className="text-xs text-foreground-light">
+                  {$t('No filters applied to this view')}
+                </h5>
                 <p className="text-xs text-foreground-lighter">
-                  Add a column below to filter the view
+                  {$t('Add a column below to filter the view')}
                 </p>
               </div>
             )}
@@ -111,14 +114,14 @@ export const FilterPopoverPrimitive = ({
           <PopoverSeparator />
           <div className="px-3 flex flex-row justify-between">
             <Button icon={<Plus />} variant="dashed" onClick={onAddFilter}>
-              Add filter
+              {$t('Add filter')}
             </Button>
             <Button
               disabled={isEqual(localFilters, filters)}
               variant="default"
               onClick={() => onSelectApplyFilters()}
             >
-              Apply filter
+              {$t('Apply filter')}
             </Button>
           </div>
         </div>

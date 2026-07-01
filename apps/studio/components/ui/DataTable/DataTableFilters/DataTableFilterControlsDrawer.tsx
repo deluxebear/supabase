@@ -19,6 +19,7 @@ import {
 import { useMediaQuery } from '../hooks/useMediaQuery'
 import { Kbd } from '../primitives/Kbd'
 import { DataTableFilterControls } from './DataTableFilterControls'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -41,13 +42,13 @@ export function DataTableFilterControlsDrawer() {
               icon={<FilterIcon />}
               className="w-[26px]"
               ref={isMobile ? triggerButtonRef : null}
-              aria-label="Open filters"
+              aria-label={$t('Open filters')}
             />
           </DrawerTrigger>
         </TooltipTrigger>
         <TooltipContent side="right">
           <p>
-            Toggle controls with{' '}
+            {$t('Toggle controls with')}{' '}
             <Kbd className="ml-1 text-muted-foreground group-hover:text-accent-foreground">
               <span className="mr-1">⌘</span>
               <span>B</span>
@@ -58,8 +59,8 @@ export function DataTableFilterControlsDrawer() {
       <DrawerContent className="max-h-[calc(100dvh-4rem)]">
         <VisuallyHidden.VisuallyHidden>
           <DrawerHeader>
-            <DrawerTitle>Filters</DrawerTitle>
-            <DrawerDescription>Adjust your table filters</DrawerDescription>
+            <DrawerTitle>{$t('Filters')}</DrawerTitle>
+            <DrawerDescription>{$t('Adjust your table filters')}</DrawerDescription>
           </DrawerHeader>
         </VisuallyHidden.VisuallyHidden>
         <div className="px-4 flex-1 overflow-y-auto">
@@ -68,7 +69,7 @@ export function DataTableFilterControlsDrawer() {
         <DrawerFooter>
           <DrawerClose asChild>
             <Button variant="outline" className="w-full">
-              Close
+              {$t('Close')}
             </Button>
           </DrawerClose>
         </DrawerFooter>

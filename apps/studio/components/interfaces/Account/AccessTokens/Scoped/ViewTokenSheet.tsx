@@ -22,6 +22,7 @@ import { formatAccessText, getRealAccess } from '../AccessToken.utils'
 import { useOrgAndProjectData } from '../hooks/useOrgAndProjectData'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { useScopedAccessTokenQuery } from '@/data/scoped-access-tokens/scoped-access-token-query'
+import { t as $t } from '@/lib/i18n'
 
 interface ViewTokenSheetProps {
   visible: boolean
@@ -108,7 +109,7 @@ export function ViewTokenSheet({ visible, tokenId, onClose }: ViewTokenSheetProp
             className={cn('flex flex-row justify-between gap-x-4 items-center border-b')}
           >
             <p className="truncate" title={`Manage access for ${token?.name}`}>
-              View access for {token?.name}
+              {$t('View access for')} {token?.name}
             </p>
             <DocsButton href="https://supabase.com/docs/reference/api/introduction" />
           </SheetHeader>
@@ -116,14 +117,14 @@ export function ViewTokenSheet({ visible, tokenId, onClose }: ViewTokenSheetProp
             <div className="space-y-8 px-5 sm:px-6 py-6">
               {isTokenLoading && (
                 <div className="flex items-center justify-center py-8">
-                  <p className="text-foreground-light">Loading token information...</p>
+                  <p className="text-foreground-light">{$t('Loading token information...')}</p>
                 </div>
               )}
 
               {tokenError && (
                 <div className="flex items-center justify-center py-8">
                   <p className="text-foreground-light text-red-500">
-                    Error loading token information. Please try again.
+                    {$t('Error loading token information. Please try again.')}
                   </p>
                 </div>
               )}
@@ -131,24 +132,26 @@ export function ViewTokenSheet({ visible, tokenId, onClose }: ViewTokenSheetProp
               {token && (
                 <>
                   <div className="space-y-3">
-                    <h3 className="text-sm font-medium text-foreground">Token Information</h3>
+                    <h3 className="text-sm font-medium text-foreground">
+                      {$t('Token Information')}
+                    </h3>
                     <Card className="w-full overflow-hidden bg-surface-100">
                       <CardContent className="p-0">
                         <Table className="p-5 table-auto">
                           <TableHeader>
                             <TableRow className="bg-200">
                               <TableHead className="text-left font-mono uppercase text-xs text-foreground-lighter h-auto py-2 w-[60%]">
-                                Info
+                                {$t('Info')}
                               </TableHead>
                               <TableHead className="text-left font-mono uppercase text-xs text-foreground-lighter h-auto py-2">
-                                Date
+                                {$t('Date')}
                               </TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
                             <TableRow>
                               <TableCell>
-                                <p className="truncate text-foreground-light">Created</p>
+                                <p className="truncate text-foreground-light">{$t('Created')}</p>
                               </TableCell>
                               <TableCell>
                                 {token?.created_at ? (
@@ -158,13 +161,13 @@ export function ViewTokenSheet({ visible, tokenId, onClose }: ViewTokenSheetProp
                                     className="text-sm"
                                   />
                                 ) : (
-                                  <span className="text-foreground">Unknown</span>
+                                  <span className="text-foreground">{$t('Unknown')}</span>
                                 )}
                               </TableCell>
                             </TableRow>
                             <TableRow>
                               <TableCell>
-                                <p className="truncate text-foreground-light">Last used</p>
+                                <p className="truncate text-foreground-light">{$t('Last used')}</p>
                               </TableCell>
                               <TableCell>
                                 {token?.last_used_at ? (
@@ -174,13 +177,13 @@ export function ViewTokenSheet({ visible, tokenId, onClose }: ViewTokenSheetProp
                                     className="text-sm"
                                   />
                                 ) : (
-                                  <span className="text-foreground">Never</span>
+                                  <span className="text-foreground">{$t('Never')}</span>
                                 )}
                               </TableCell>
                             </TableRow>
                             <TableRow>
                               <TableCell>
-                                <p className="truncate text-foreground-light">Expires</p>
+                                <p className="truncate text-foreground-light">{$t('Expires')}</p>
                               </TableCell>
                               <TableCell>
                                 {token?.expires_at ? (
@@ -190,7 +193,7 @@ export function ViewTokenSheet({ visible, tokenId, onClose }: ViewTokenSheetProp
                                     className="text-sm"
                                   />
                                 ) : (
-                                  <span className="text-foreground">Never</span>
+                                  <span className="text-foreground">{$t('Never')}</span>
                                 )}
                               </TableCell>
                             </TableRow>
@@ -201,17 +204,17 @@ export function ViewTokenSheet({ visible, tokenId, onClose }: ViewTokenSheetProp
                   </div>
 
                   <div className="space-y-3">
-                    <h3 className="text-sm font-medium text-foreground">Resource Access</h3>
+                    <h3 className="text-sm font-medium text-foreground">{$t('Resource Access')}</h3>
                     <Card className="w-full overflow-hidden bg-surface-100">
                       <CardContent className="p-0">
                         <Table className="p-5 table-auto">
                           <TableHeader>
                             <TableRow className="bg-200">
                               <TableHead className="text-left font-mono uppercase text-xs text-foreground-lighter h-auto py-2 w-[60%]">
-                                Resource
+                                {$t('Resource')}
                               </TableHead>
                               <TableHead className="text-left font-mono uppercase text-xs text-foreground-lighter h-auto py-2">
-                                Type
+                                {$t('Type')}
                               </TableHead>
                             </TableRow>
                           </TableHeader>
@@ -252,17 +255,17 @@ export function ViewTokenSheet({ visible, tokenId, onClose }: ViewTokenSheetProp
                   </div>
 
                   <div className="space-y-3">
-                    <h3 className="text-sm font-medium text-foreground">Permissions</h3>
+                    <h3 className="text-sm font-medium text-foreground">{$t('Permissions')}</h3>
                     <Card className="w-full overflow-hidden bg-surface-100">
                       <CardContent className="p-0">
                         <Table className="p-5 table-auto">
                           <TableHeader>
                             <TableRow className="bg-200">
                               <TableHead className="text-left font-mono uppercase text-xs text-foreground-lighter h-auto py-2 w-[60%]">
-                                Permission
+                                {$t('Permission')}
                               </TableHead>
                               <TableHead className="text-left font-mono uppercase text-xs text-foreground-lighter h-auto py-2">
-                                Access
+                                {$t('Access')}
                               </TableHead>
                             </TableRow>
                           </TableHeader>
@@ -271,7 +274,7 @@ export function ViewTokenSheet({ visible, tokenId, onClose }: ViewTokenSheetProp
                               <TableRow>
                                 <TableCell colSpan={2}>
                                   <p className="text-foreground-light text-center py-4">
-                                    No permissions configured for this token.
+                                    {$t('No permissions configured for this token.')}
                                   </p>
                                 </TableCell>
                               </TableRow>

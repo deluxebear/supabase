@@ -20,6 +20,7 @@ import { usePrimaryDatabase } from '@/data/read-replicas/replicas-query'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { sqlKeys } from '@/data/sql/keys'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 import type { Dashboards, SqlSnippets } from '@/types'
 
@@ -110,7 +111,7 @@ export const ReportBlock = ({
       const connectionString = readOnlyConnectionString ?? postgresConnectionString
 
       if (!connectionString) {
-        toast.error('Unable to establish a database connection for this project.')
+        toast.error($t('Unable to establish a database connection for this project.'))
         return null
       }
 

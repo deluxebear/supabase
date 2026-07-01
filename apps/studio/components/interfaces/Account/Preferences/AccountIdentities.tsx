@@ -48,6 +48,7 @@ import {
 } from '@/lib/external-identity-providers'
 import { getErrorMessage } from '@/lib/get-error-message'
 import { auth, buildPathWithParams } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 
 export const AccountIdentities = () => {
   const router = useRouter()
@@ -127,9 +128,9 @@ export const AccountIdentities = () => {
     <PageSection>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Account identities</PageSectionTitle>
+          <PageSectionTitle>{$t('Account identities')}</PageSectionTitle>
           <PageSectionDescription>
-            Manage the providers linked to your Supabase account and update their details.
+            {$t('Manage the providers linked to your Supabase account and update their details.')}
           </PageSectionDescription>
         </PageSectionSummary>
       </PageSectionMeta>
@@ -160,9 +161,11 @@ export const AccountIdentities = () => {
                           {provider === 'email' && data.new_email && !isChangeExpired && (
                             <Tooltip>
                               <TooltipTrigger className="flex items-center">
-                                <Badge variant="default">Pending change</Badge>
+                                <Badge variant="default">{$t('Pending change')}</Badge>
                               </TooltipTrigger>
-                              <TooltipContent>Changing to {data.new_email}</TooltipContent>
+                              <TooltipContent>
+                                {$t('Changing to')} {data.new_email}
+                              </TooltipContent>
                             </Tooltip>
                           )}
                         </div>
@@ -175,7 +178,7 @@ export const AccountIdentities = () => {
                     <div className="flex items-center gap-x-1">
                       {provider === 'email' && (
                         <Button asChild variant="default">
-                          <Link href="/reset-password?type=change">Change password</Link>
+                          <Link href="/reset-password?type=change">{$t('Change password')}</Link>
                         </Button>
                       )}
                       {canUpdateEmail && (
@@ -211,7 +214,7 @@ export const AccountIdentities = () => {
                       <div>
                         <p className="text-sm">{provider.displayName}</p>
                         <p className="text-sm text-foreground-lighter">
-                          Link your {provider.displayName} account to sign in with{' '}
+                          {$t('Link your')} {provider.displayName} {$t('account to sign in with')}{' '}
                           {provider.displayName}
                         </p>
                       </div>
@@ -222,7 +225,7 @@ export const AccountIdentities = () => {
                       disabled={!!linkingProviderId}
                       onClick={() => onLinkExternalProvider(provider)}
                     >
-                      Connect
+                      {$t('Connect')}
                     </Button>
                   </CardContent>
                 )

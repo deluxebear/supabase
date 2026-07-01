@@ -15,6 +15,7 @@ import {
 } from '@/components/interfaces/Support/SupportSidebarForm'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -82,10 +83,11 @@ export const HelpPanel = ({
             />
             <div className="flex flex-col gap-4 border-t pt-5">
               <div className="px-5 flex flex-col gap-0.5">
-                <h5 className="text-foreground">Community support</h5>
+                <h5 className="text-foreground">{$t('Community support')}</h5>
                 <p className="text-xs text-foreground-lighter text-balance">
-                  Our Discord community can help with code-related issues. Many questions are
-                  answered in minutes.
+                  {$t(
+                    'Our Discord community can help with code-related issues. Many questions are answered in minutes.'
+                  )}
                 </p>
               </div>
               <div className="px-5">
@@ -104,7 +106,7 @@ export const HelpPanel = ({
                       src={`${router.basePath}/img/support/discord-bg-small.jpg`}
                       layout="fill"
                       objectFit="cover"
-                      alt="Discord illustration"
+                      alt={$t('Discord illustration')}
                     />
                     <Button
                       variant="secondary"
@@ -113,7 +115,7 @@ export const HelpPanel = ({
                         <SVG src={`${router.basePath}/img/discord-icon.svg`} className="h-4 w-4" />
                       }
                     >
-                      <span style={{ color: '#404EED' }}>Join us on Discord</span>
+                      <span style={{ color: '#404EED' }}>{$t('Join us on Discord')}</span>
                     </Button>
                   </a>
                 </div>

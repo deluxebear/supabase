@@ -16,6 +16,7 @@ import {
 } from '@/data/database-cron-jobs/database-cron-jobs-runs-infinite-query'
 import { useInfiniteScroll } from '@/hooks/misc/useInfiniteScroll'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 const cronJobColumns = [
   {
@@ -47,7 +48,7 @@ const cronJobColumns = [
               align="start"
               className="min-w-[200px] max-w-[300px] text-wrap p-0"
             >
-              <p className="text-xs font-mono px-2 py-1 border-b bg-surface-100">Message</p>
+              <p className="text-xs font-mono px-2 py-1 border-b bg-surface-100">{$t('Message')}</p>
               <CodeBlock
                 hideLineNumbers
                 language="sql"
@@ -223,7 +224,7 @@ function StatusBadge({ status }: StatusBadgeProps) {
   if (status === 'succeeded') {
     return (
       <span className="text-brand-600 flex items-center gap-1 text-xs">
-        <CircleCheck size={14} /> Succeeded
+        <CircleCheck size={14} /> {$t('Succeeded')}
       </span>
     )
   }
@@ -231,7 +232,7 @@ function StatusBadge({ status }: StatusBadgeProps) {
   if (status === 'failed') {
     return (
       <span className="text-destructive flex items-center gap-1 text-xs">
-        <CircleX size={14} /> Failed
+        <CircleX size={14} /> {$t('Failed')}
       </span>
     )
   }
@@ -239,7 +240,7 @@ function StatusBadge({ status }: StatusBadgeProps) {
   if (['running', 'starting', 'sending', 'connecting'].includes(status)) {
     return (
       <span className="text-_secondary flex items-center gap-1 text-xs">
-        <Loader size={14} className="animate-spin" /> Running
+        <Loader size={14} className="animate-spin" /> {$t('Running')}
       </span>
     )
   }

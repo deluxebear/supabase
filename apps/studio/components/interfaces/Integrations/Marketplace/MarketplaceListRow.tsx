@@ -11,6 +11,7 @@ import {
 } from './Marketplace.constants'
 import type { IntegrationDefinition } from '@/components/interfaces/Integrations/Landing/Integrations.constants'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface MarketplaceListRowProps {
   integration: IntegrationDefinition
@@ -67,7 +68,7 @@ export const MarketplaceListRow = ({ integration, isInstalled }: MarketplaceList
       </TableCell>
 
       <TableCell className="w-24">
-        {isInstalled ? <Badge variant="success">Installed</Badge> : null}
+        {isInstalled ? <Badge variant="success">{$t('Installed')}</Badge> : null}
       </TableCell>
     </TableRow>
   )
@@ -83,9 +84,9 @@ export const MarketplaceListHeader = ({
   <TableRow>
     <TableHead className="w-10 pr-0 @lg:w-12" />
     <TableHead>{integrationsLabel}</TableHead>
-    <TableHead className={`w-28 ${HIDE_BELOW_XL}`}>Category</TableHead>
-    <TableHead className={`w-40 ${HIDE_BELOW_4XL}`}>Type</TableHead>
-    <TableHead className={`w-40 ${HIDE_BELOW_4XL}`}>Built by</TableHead>
+    <TableHead className={`w-28 ${HIDE_BELOW_XL}`}>{$t('Category')}</TableHead>
+    <TableHead className={`w-40 ${HIDE_BELOW_4XL}`}>{$t('Type')}</TableHead>
+    <TableHead className={`w-40 ${HIDE_BELOW_4XL}`}>{$t('Built by')}</TableHead>
     <TableHead className="w-32"></TableHead>
   </TableRow>
 )

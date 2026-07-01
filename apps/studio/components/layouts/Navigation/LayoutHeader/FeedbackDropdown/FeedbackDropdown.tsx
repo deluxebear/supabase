@@ -11,6 +11,7 @@ import { getSupportLinkQueryParams } from '@/components/ui/HelpPanel/HelpPanel.u
 import { HelpSection } from '@/components/ui/HelpPanel/HelpSection'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -52,7 +53,7 @@ export const FeedbackDropdown = ({ className }: { className?: string }) => {
           variant="text"
           className="rounded-full h-[32px] text-foreground-light hover:text-foreground"
         >
-          <span className={className}>Feedback</span>
+          <span className={className}>{$t('Feedback')}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -63,14 +64,14 @@ export const FeedbackDropdown = ({ className }: { className?: string }) => {
       >
         {stage === 'select' && (
           <div className="flex flex-col gap-4 p-4">
-            <div className="font-medium text-sm">What would you like to share?</div>
+            <div className="font-medium text-sm">{$t('What would you like to share?')}</div>
             <div className="grid grid-cols-2 gap-3">
               <Button variant="default" className="h-32" onClick={() => setStage('issue-options')}>
                 <div className="grid gap-1.5 text-center">
                   <TriangleAlert size="28" className="mx-auto text-destructive-600" />
                   <div className="flex flex-col items-center">
-                    <span className="text-base">Issue</span>
-                    <span className="text-xs text-foreground-lighter">with my project</span>
+                    <span className="text-base">{$t('Issue')}</span>
+                    <span className="text-xs text-foreground-lighter">{$t('with my project')}</span>
                   </div>
                 </div>
               </Button>
@@ -78,8 +79,10 @@ export const FeedbackDropdown = ({ className }: { className?: string }) => {
                 <div className="grid gap-1.5 text-center">
                   <Lightbulb size="28" className="mx-auto text-warning" />
                   <div className="flex flex-col items-center">
-                    <span className="text-base">Idea</span>
-                    <span className="text-xs text-foreground-lighter">to improve Supabase</span>
+                    <span className="text-base">{$t('Idea')}</span>
+                    <span className="text-xs text-foreground-lighter">
+                      {$t('to improve Supabase')}
+                    </span>
                   </div>
                 </div>
               </Button>
@@ -105,7 +108,7 @@ export const FeedbackDropdown = ({ className }: { className?: string }) => {
             <PopoverSeparator />
             <div className="px-4 pt-4 pb-4">
               <Button variant="default" size="tiny" onClick={() => setStage('widget')}>
-                Leave feedback instead
+                {$t('Leave feedback instead')}
               </Button>
             </div>
           </>

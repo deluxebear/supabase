@@ -11,6 +11,7 @@ import {
   TIMESTAMP_MICROS_PER_MS,
   type AuditLog,
 } from '@/data/organizations/organization-audit-logs-query'
+import { t as $t } from '@/lib/i18n'
 
 interface LogDetailsPanelProps {
   selectedLog?: AuditLog
@@ -33,9 +34,13 @@ export const LogDetailsPanel = ({ selectedLog, onClose }: LogDetailsPanelProps) 
       onCancel={onClose}
       cancelText="Close"
     >
-      <FormSection header={<FormSectionLabel>General</FormSectionLabel>}>
+      <FormSection header={<FormSectionLabel>{$t('General')}</FormSectionLabel>}>
         <FormSectionContent loading={false}>
-          <FormItemLayout label="Occurred at" description={timestampWithTz} isReactForm={false}>
+          <FormItemLayout
+            label={$t('Occurred at')}
+            description={timestampWithTz}
+            isReactForm={false}
+          >
             <Input
               readOnly
               size="small"
@@ -46,16 +51,16 @@ export const LogDetailsPanel = ({ selectedLog, onClose }: LogDetailsPanelProps) 
               }
             />
           </FormItemLayout>
-          <FormItemLayout label="Request ID" isReactForm={false}>
+          <FormItemLayout label={$t('Request ID')} isReactForm={false}>
             <Input readOnly size="small" value={selectedLog?.request_id ?? ''} />
           </FormItemLayout>
           {selectedLog?.organization_slug && (
-            <FormItemLayout label="Organization" isReactForm={false}>
+            <FormItemLayout label={$t('Organization')} isReactForm={false}>
               <Input readOnly size="small" value={selectedLog.organization_slug} />
             </FormItemLayout>
           )}
           {selectedLog?.project_ref && (
-            <FormItemLayout label="Project ref" isReactForm={false}>
+            <FormItemLayout label={$t('Project ref')} isReactForm={false}>
               <Input readOnly size="small" value={selectedLog.project_ref} />
             </FormItemLayout>
           )}
@@ -64,33 +69,33 @@ export const LogDetailsPanel = ({ selectedLog, onClose }: LogDetailsPanelProps) 
 
       <SidePanel.Separator />
 
-      <FormSection header={<FormSectionLabel>Actor</FormSectionLabel>}>
+      <FormSection header={<FormSectionLabel>{$t('Actor')}</FormSectionLabel>}>
         <FormSectionContent loading={false}>
-          <FormItemLayout label="Token type" isReactForm={false}>
+          <FormItemLayout label={$t('Token type')} isReactForm={false}>
             <Input readOnly size="small" value={selectedLog?.actor.token_type ?? ''} />
           </FormItemLayout>
           {selectedLog?.actor.email && (
-            <FormItemLayout label="Email" isReactForm={false}>
+            <FormItemLayout label={$t('Email')} isReactForm={false}>
               <Input readOnly size="small" value={selectedLog?.actor.email ?? ''} />
             </FormItemLayout>
           )}
           {selectedLog?.actor.user_id && (
-            <FormItemLayout label="User ID" isReactForm={false}>
+            <FormItemLayout label={$t('User ID')} isReactForm={false}>
               <Input readOnly size="small" value={selectedLog?.actor.user_id ?? ''} />
             </FormItemLayout>
           )}
           {selectedLog?.actor.ip && (
-            <FormItemLayout label="IP address" isReactForm={false}>
+            <FormItemLayout label={$t('IP address')} isReactForm={false}>
               <Input readOnly size="small" value={selectedLog?.actor.ip ?? ''} />
             </FormItemLayout>
           )}
           {selectedLog?.actor.oauth_app_name && (
-            <FormItemLayout label="OAuth app" isReactForm={false}>
+            <FormItemLayout label={$t('OAuth app')} isReactForm={false}>
               <Input readOnly size="small" value={selectedLog?.actor.oauth_app_name ?? ''} />
             </FormItemLayout>
           )}
           {selectedLog?.actor.app_name && (
-            <FormItemLayout label="App" isReactForm={false}>
+            <FormItemLayout label={$t('App')} isReactForm={false}>
               <Input readOnly size="small" value={selectedLog?.actor.app_name ?? ''} />
             </FormItemLayout>
           )}
@@ -99,22 +104,22 @@ export const LogDetailsPanel = ({ selectedLog, onClose }: LogDetailsPanelProps) 
 
       <SidePanel.Separator />
 
-      <FormSection header={<FormSectionLabel>Action</FormSectionLabel>}>
+      <FormSection header={<FormSectionLabel>{$t('Action')}</FormSectionLabel>}>
         <FormSectionContent loading={false}>
-          <FormItemLayout label="Name" isReactForm={false}>
+          <FormItemLayout label={$t('Name')} isReactForm={false}>
             <Input readOnly size="small" value={selectedLog?.action.name ?? ''} />
           </FormItemLayout>
-          <FormItemLayout label="Method" isReactForm={false}>
+          <FormItemLayout label={$t('Method')} isReactForm={false}>
             <Input readOnly size="small" value={selectedLog?.action.method ?? ''} />
           </FormItemLayout>
-          <FormItemLayout label="Route" isReactForm={false}>
+          <FormItemLayout label={$t('Route')} isReactForm={false}>
             <Input readOnly size="small" value={selectedLog?.action.route ?? ''} />
           </FormItemLayout>
-          <FormItemLayout label="Status" isReactForm={false}>
+          <FormItemLayout label={$t('Status')} isReactForm={false}>
             <Input readOnly size="small" value={String(selectedLog?.action.status ?? '')} />
           </FormItemLayout>
           {selectedLog?.action.metadata && (
-            <FormItemLayout label="Metadata" isReactForm={false}>
+            <FormItemLayout label={$t('Metadata')} isReactForm={false}>
               <TextArea
                 readOnly
                 rows={5}

@@ -14,6 +14,7 @@ import { Admonition } from 'ui-patterns/admonition'
 
 import { useOrganizationPaymentMethodDeleteMutation } from '@/data/organizations/organization-payment-method-delete-mutation'
 import type { OrganizationPaymentMethod } from '@/data/organizations/organization-payment-methods-query'
+import { t as $t } from '@/lib/i18n'
 
 export interface DeletePaymentMethodModalProps {
   selectedPaymentMethod?: OrganizationPaymentMethod
@@ -49,14 +50,14 @@ const DeletePaymentMethodModal = ({
           <AlertDialogDescription>
             <Admonition
               type="default"
-              title="This will permanently delete your payment method."
-              description="You can re-add the payment method any time."
+              title={$t('This will permanently delete your payment method.')}
+              description={$t('You can re-add the payment method any time.')}
             />
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirmDelete}>Confirm</AlertDialogAction>
+          <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirmDelete}>{$t('Confirm')}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

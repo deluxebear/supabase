@@ -27,6 +27,7 @@ import {
   ReplicaInitializationStatus,
   useReadReplicasStatusesQuery,
 } from '@/data/read-replicas/replicas-status-query'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const DatabaseReadReplicaPage: NextPageWithLayout = () => {
@@ -88,7 +89,7 @@ const DatabaseReadReplicaPage: NextPageWithLayout = () => {
     <PageLayout
       title={
         <div className="flex items-center gap-x-3">
-          <ScaffoldTitle>Read Replica</ScaffoldTitle>
+          <ScaffoldTitle>{$t('Read Replica')}</ScaffoldTitle>
           {isSuccessDatabases && (
             <>
               <Badge
@@ -112,7 +113,9 @@ const DatabaseReadReplicaPage: NextPageWithLayout = () => {
           <ShimmeringLoader className="py-[11px]" />
         ) : (
           <div className="flex items-center gap-x-2 mt-0!">
-            <ScaffoldDescription>ID: {identifier}</ScaffoldDescription>
+            <ScaffoldDescription>
+              {$t('ID:')} {identifier}
+            </ScaffoldDescription>
             <CopyButton iconOnly variant="default" text={identifier ?? ''} />
           </div>
         )
@@ -147,7 +150,7 @@ const DatabaseReadReplicaPage: NextPageWithLayout = () => {
           <Link
             href={`/project/${ref}/logs/postgres-logs${!!identifier ? `?db=${identifier}` : ''}`}
           >
-            View logs
+            {$t('View logs')}
           </Link>
         </Button>,
         <Button
@@ -156,7 +159,7 @@ const DatabaseReadReplicaPage: NextPageWithLayout = () => {
           disabled={status !== 'ACTIVE_HEALTHY'}
           onClick={() => setShowConfirmRestart(true)}
         >
-          Restart replica
+          {$t('Restart replica')}
         </Button>,
       ]}
     >
@@ -179,7 +182,7 @@ const DatabaseReadReplicaPage: NextPageWithLayout = () => {
 
 DatabaseReadReplicaPage.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Replication">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Replication')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

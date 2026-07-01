@@ -1,6 +1,7 @@
 import { PlatformWebhooksPage } from '@/components/interfaces/Platform/Webhooks'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import SettingsLayout from '@/components/layouts/ProjectSettingsLayout/SettingsLayout'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const ProjectWebhooksSettings: NextPageWithLayout = () => {
@@ -9,7 +10,7 @@ const ProjectWebhooksSettings: NextPageWithLayout = () => {
 
 ProjectWebhooksSettings.getLayout = (page) => (
   <DefaultLayout>
-    <SettingsLayout title="Webhooks">{page}</SettingsLayout>
+    <SettingsLayout title={$t('Webhooks')}>{page}</SettingsLayout>
   </DefaultLayout>
 )
 

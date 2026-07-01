@@ -28,6 +28,7 @@ import {
   type ActionStatus,
 } from '@/data/actions/action-runs-query'
 import type { Branch } from '@/data/branches/branches-query'
+import { t as $t } from '@/lib/i18n'
 
 interface WorkflowLogsProps {
   branch: Branch
@@ -78,19 +79,21 @@ export const WorkflowLogs = ({ branch }: WorkflowLogsProps) => {
           }
           onClick={(e) => e.stopPropagation()}
         >
-          View Logs
+          {$t('View Logs')}
         </Button>
       </DialogTrigger>
 
       <DialogContent size="xlarge">
         <DialogHeader>
-          <DialogTitle>Workflow logs for {name}</DialogTitle>
+          <DialogTitle>
+            {$t('Workflow logs for')} {name}
+          </DialogTitle>
           <DialogDescription>
             {!selectedWorkflowRun ? (
               'Select a workflow run to view logs'
             ) : (
               <>
-                Run created at{' '}
+                {$t('Run created at')}{' '}
                 <TimestampInfo className="text-sm" utcTimestamp={selectedWorkflowRun.created_at} />
               </>
             )}
@@ -138,7 +141,7 @@ export const WorkflowLogs = ({ branch }: WorkflowLogsProps) => {
                   </ul>
                 ) : (
                   <p className="text-center text-sm text-foreground-light py-4">
-                    No workflow runs found.
+                    {$t('No workflow runs found.')}
                   </p>
                 ))}
             </>
@@ -150,7 +153,7 @@ export const WorkflowLogs = ({ branch }: WorkflowLogsProps) => {
                 icon={<ArrowLeft />}
                 className="self-start"
               >
-                Back to workflow runs
+                {$t('Back to workflow runs')}
               </Button>
 
               {isWorkflowRunLogsLoading && <GenericSkeletonLoader className="py-2" />}

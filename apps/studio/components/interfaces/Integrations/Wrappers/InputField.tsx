@@ -7,6 +7,7 @@ import { Input as PasswordInput } from 'ui-patterns/DataInputs/Input'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import type { ServerOption } from './Wrappers.types'
+import { t as $t } from '@/lib/i18n'
 
 interface InputFieldProps<TFieldValues extends FieldValues = FieldValues> {
   option: ServerOption
@@ -36,7 +37,7 @@ const InputField = <
               <p>{option.label}</p>
               {option.urlHelper !== undefined && (
                 <Link href={option.urlHelper} target="_blank" rel="noreferrer">
-                  <span className="sr-only">Documentation</span>
+                  <span className="sr-only">{$t('Documentation')}</span>
                   <HelpCircle
                     strokeWidth={2}
                     size={14}
@@ -52,7 +53,7 @@ const InputField = <
           <FormControl>
             {loading ? (
               <span className={cn(InputVariants({ size: 'small' }))}>
-                Fetching value from Vault...
+                {$t('Fetching value from Vault...')}
               </span>
             ) : option.isTextArea ? (
               <Textarea {...field} id={option.name} rows={6} className="input-mono resize-none" />

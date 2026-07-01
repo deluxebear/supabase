@@ -27,6 +27,7 @@ import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useIsAwsCloudProvider, useIsAwsK8sCloudProvider } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const DatabaseSettings: NextPageWithLayout = () => {
@@ -42,9 +43,9 @@ const DatabaseSettings: NextPageWithLayout = () => {
       <PageHeader size="small">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Database Settings</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Database Settings')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Connections, security, and network configuration
+              {$t('Connections, security, and network configuration')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -84,7 +85,7 @@ const DatabaseSettings: NextPageWithLayout = () => {
 
 DatabaseSettings.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Settings">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Settings')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

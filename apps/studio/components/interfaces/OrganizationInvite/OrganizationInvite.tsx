@@ -20,6 +20,7 @@ import {
 import { useOrganizationAcceptInvitationMutation } from '@/data/organization-members/organization-invitation-accept-mutation'
 import { useOrganizationInvitationTokenQuery } from '@/data/organization-members/organization-invitation-token-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 import { useProfile, useProfileNameAndPicture } from '@/lib/profile'
 
 export const OrganizationInvite = () => {
@@ -113,11 +114,11 @@ export const OrganizationInvite = () => {
     return withLayout(
       <div className="flex flex-col gap-2">
         <Button asChild variant="primary" block>
-          <Link href={loginRedirectLink}>Sign in</Link>
+          <Link href={loginRedirectLink}>{$t('Sign in')}</Link>
         </Button>
         {isSignUpEnabled && (
           <Button asChild variant="default" block>
-            <Link href={signupRedirectLink}>Create an account</Link>
+            <Link href={signupRedirectLink}>{$t('Create an account')}</Link>
           </Button>
         )}
       </div>
@@ -149,10 +150,10 @@ export const OrganizationInvite = () => {
       <div className="flex flex-col gap-3">
         <Admonition
           type="warning"
-          description="This invite has already been accepted or declined."
+          description={$t('This invite has already been accepted or declined.')}
         />
         <Button variant="default" block asChild>
-          <Link href="/">Back to dashboard</Link>
+          <Link href="/">{$t('Back to dashboard')}</Link>
         </Button>
       </div>
     )
@@ -162,7 +163,7 @@ export const OrganizationInvite = () => {
     return withLayout(
       <div className="flex flex-col gap-3">
         <Button variant="default" block asChild>
-          <Link href="/account/security">Go to account settings</Link>
+          <Link href="/account/security">{$t('Go to account settings')}</Link>
         </Button>
       </div>
     )
@@ -191,10 +192,10 @@ export const OrganizationInvite = () => {
           disabled={isJoining}
           onClick={handleJoinOrganization}
         >
-          Accept invite
+          {$t('Accept invite')}
         </Button>
         <Button asChild variant="text" block>
-          <Link href="/projects">Decline</Link>
+          <Link href="/projects">{$t('Decline')}</Link>
         </Button>
       </div>
     </div>

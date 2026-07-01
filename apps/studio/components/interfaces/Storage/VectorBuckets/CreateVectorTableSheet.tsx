@@ -37,6 +37,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useDeploymentMode } from '@/hooks/misc/useDeploymentMode'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const isStagingLocal = process.env.NEXT_PUBLIC_ENVIRONMENT !== 'prod'
 
@@ -214,20 +215,22 @@ export const CreateVectorTableSheet = ({ bucketName }: CreateVectorTableSheetPro
             },
           }}
         >
-          Create table
+          {$t('Create table')}
         </ButtonTooltip>
       </SheetTrigger>
 
       <SheetContent size="default" className="flex flex-col gap-0 p-0">
         <SheetHeader>
-          <SheetTitle>Create vector table</SheetTitle>
+          <SheetTitle>{$t('Create vector table')}</SheetTitle>
         </SheetHeader>
 
         {showIndexCreationNotice && (
           <Admonition
             type="warning"
             className="border-x-0 border-t-0 rounded-none"
-            title="Vector table creation is currently only supported for projects in us-east-1"
+            title={$t(
+              'Vector table creation is currently only supported for projects in us-east-1'
+            )}
             description={`This is only applicable to projects on local/staging (Project is currently in ${project.region})`}
           />
         )}
@@ -246,8 +249,10 @@ export const CreateVectorTableSheet = ({ bucketName }: CreateVectorTableSheetPro
                 render={({ field }) => (
                   <FormItemLayout
                     name="name"
-                    label="Name"
-                    description="Must be between 3–63 characters. Valid characters are a-z, 0-9, hyphens, and periods."
+                    label={$t('Name')}
+                    description={$t(
+                      'Must be between 3–63 characters. Valid characters are a-z, 0-9, hyphens, and periods.'
+                    )}
                     layout="horizontal"
                   >
                     <FormControl>
@@ -258,7 +263,7 @@ export const CreateVectorTableSheet = ({ bucketName }: CreateVectorTableSheetPro
                         data-form-type="other"
                         data-bwignore
                         {...field}
-                        placeholder="Enter a table name"
+                        placeholder={$t('Enter a table name')}
                       />
                     </FormControl>
                   </FormItemLayout>
@@ -274,15 +279,15 @@ export const CreateVectorTableSheet = ({ bucketName }: CreateVectorTableSheetPro
                 render={({ field }) => (
                   <FormItemLayout
                     name="dimension"
-                    label="Dimension"
-                    description="Must be an integer between 1–4096."
+                    label={$t('Dimension')}
+                    description={$t('Must be an integer between 1–4096.')}
                     layout="horizontal"
                   >
                     <FormControl>
                       <Input
                         id="dimension"
                         type="number"
-                        placeholder="Enter a numeric value"
+                        placeholder={$t('Enter a numeric value')}
                         {...field}
                         onChange={(e) => {
                           const value = e.target.value
@@ -302,7 +307,7 @@ export const CreateVectorTableSheet = ({ bucketName }: CreateVectorTableSheetPro
                 render={({ field }) => (
                   <FormItemLayout
                     name="distanceMetric"
-                    label="Distance metric"
+                    label={$t('Distance metric')}
                     layout="horizontal"
                     className="gap-1"
                   >
@@ -333,7 +338,7 @@ export const CreateVectorTableSheet = ({ bucketName }: CreateVectorTableSheetPro
             <Separator />
             <SheetSection className="space-y-4">
               <div className="flex items-center justify-between">
-                <label className="text-sm text-foreground">Metadata keys</label>
+                <label className="text-sm text-foreground">{$t('Metadata keys')}</label>
                 <DocsButton
                   href={`${DOCS_URL}/guides/storage/vector/storing-vectors#metadata-best-practices`}
                 />
@@ -361,7 +366,7 @@ export const CreateVectorTableSheet = ({ bucketName }: CreateVectorTableSheetPro
                                 value={field.value}
                                 size="small"
                                 className="w-full"
-                                placeholder="Enter a metadata key name"
+                                placeholder={$t('Enter a metadata key name')}
                                 data-1p-ignore
                                 data-lpignore="true"
                                 data-form-type="other"
@@ -384,7 +389,7 @@ export const CreateVectorTableSheet = ({ bucketName }: CreateVectorTableSheetPro
               </div>
               <div className="flex items-center justify-center rounded-sm border border-strong border-dashed py-3">
                 <Button variant="default" size="tiny" onClick={() => append({ value: '' })}>
-                  Add metadata key
+                  {$t('Add metadata key')}
                 </Button>
               </div>
             </SheetSection>
@@ -393,7 +398,7 @@ export const CreateVectorTableSheet = ({ bucketName }: CreateVectorTableSheetPro
 
         <SheetFooter>
           <Button variant="default" disabled={isCreating} onClick={() => setVisible(false)}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button
             form={formId}
@@ -401,7 +406,7 @@ export const CreateVectorTableSheet = ({ bucketName }: CreateVectorTableSheetPro
             loading={isCreating}
             disabled={isCreating || !bucketName}
           >
-            Create
+            {$t('Create')}
           </Button>
         </SheetFooter>
       </SheetContent>

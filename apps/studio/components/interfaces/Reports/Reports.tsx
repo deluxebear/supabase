@@ -32,6 +32,7 @@ import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { usePreventNavigationOnUnsavedChanges } from '@/hooks/ui/usePreventNavigationOnUnsavedChanges'
 import { Metric, TIME_PERIODS_REPORTS } from '@/lib/constants/metrics'
 import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { useTrack } from '@/lib/telemetry/track'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
@@ -65,7 +66,7 @@ const Reports = () => {
   const { mutate: upsertContent, isPending: isSaving } = useContentUpsertMutation({
     onSuccess: (_, vars) => {
       setHasEdits(false)
-      if (vars.payload.type === 'report') toast.success('Successfully saved report!')
+      if (vars.payload.type === 'report') toast.success($t('Successfully saved report!'))
     },
     onError: (error, vars) => {
       if (vars.payload.type === 'report') toast.error(`Failed to update report: ${error.message}`)
@@ -385,7 +386,7 @@ const Reports = () => {
                 disabled={isSaving}
                 onClick={() => setConfig(currentReportContent)}
               >
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button
                 variant="primary"
@@ -393,7 +394,7 @@ const Reports = () => {
                 loading={isSaving}
                 onClick={() => onSaveReport()}
               >
-                Save changes
+                {$t('Save changes')}
               </Button>
             </div>
           )}
@@ -410,7 +411,7 @@ const Reports = () => {
                 footer={
                   <div className="px-2 py-1">
                     <p className="text-xs text-foreground-lighter">
-                      SQL blocks are independent of the selected date range
+                      {$t('SQL blocks are independent of the selected date range')}
                     </p>
                   </div>
                 }
@@ -432,7 +433,7 @@ const Reports = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="default" icon={<Plus />}>
-                    <span>Add block</span>
+                    <span>{$t('Add block')}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="bottom" align="center" className="w-44">
@@ -452,7 +453,7 @@ const Reports = () => {
                   },
                 }}
               >
-                Add block
+                {$t('Add block')}
               </ButtonTooltip>
             )}
             <DatabaseSelector />
@@ -473,7 +474,7 @@ const Reports = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="default" iconRight={<Plus size={14} />}>
-                    Add your first chart
+                    {$t('Add your first chart')}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="bottom" align="center">
@@ -481,7 +482,9 @@ const Reports = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <p className="text-sm text-foreground-light">No charts set up yet in report</p>
+              <p className="text-sm text-foreground-light">
+                {$t('No charts set up yet in report')}
+              </p>
             )}
           </div>
         ) : (

@@ -8,6 +8,7 @@ import { useAdvisorSignals } from './useAdvisorSignals'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
 import { InlineLink } from '@/components/ui/InlineLink'
+import { t as $t } from '@/lib/i18n'
 import { useAdvisorStateSnapshot } from '@/state/advisor-state'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -35,9 +36,10 @@ export const AdvisorSignalDetail = ({ item }: AdvisorSignalDetailProps) => {
 
   const issueDescription = (
     <>
-      The IP address <code className="text-code-inline">{item.sourceData.ip}</code> is temporarily
-      blocked because of suspicious traffic or repeated failed password attempts. If this block is
-      expected, you can dismiss this signal or remove the ban.
+      {$t('The IP address')} <code className="text-code-inline">{item.sourceData.ip}</code>{' '}
+      {$t(
+        'is temporarily blocked because of suspicious traffic or repeated failed password attempts. If this block is expected, you can dismiss this signal or remove the ban.'
+      )}
     </>
   )
 
@@ -56,7 +58,7 @@ export const AdvisorSignalDetail = ({ item }: AdvisorSignalDetailProps) => {
 
   return (
     <div>
-      <h3 className="text-sm mb-2">Entity</h3>
+      <h3 className="text-sm mb-2">{$t('Entity')}</h3>
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center gap-2 px-2 py-0.5 bg-surface-200 border rounded-lg text-sm mb-6 w-fit">
@@ -66,23 +68,25 @@ export const AdvisorSignalDetail = ({ item }: AdvisorSignalDetailProps) => {
             <span>{item.sourceData.ip}</span>
           </div>
         </TooltipTrigger>
-        <TooltipContent side="bottom">IP address currently blocked by network bans</TooltipContent>
+        <TooltipContent side="bottom">
+          {$t('IP address currently blocked by network bans')}
+        </TooltipContent>
       </Tooltip>
 
-      <h3 className="text-sm mb-2">Issue</h3>
+      <h3 className="text-sm mb-2">{$t('Issue')}</h3>
       <p className="text-sm text-foreground-light mb-6">
         {issueDescription}{' '}
         {item.docsUrl !== undefined && (
           <>
-            <InlineLink href={item.docsUrl}>Learn more</InlineLink>.
+            <InlineLink href={item.docsUrl}>{$t('Learn more')}</InlineLink>.
           </>
         )}
       </p>
 
-      <h3 className="text-sm mb-2">Resolve</h3>
+      <h3 className="text-sm mb-2">{$t('Resolve')}</h3>
       <div className="flex items-center gap-2">
         <AiAssistantDropdown
-          label="Ask Assistant"
+          label={$t('Ask Assistant')}
           buildPrompt={() => buildSignalAssistantPrompt(item)}
           onOpenAssistant={handleAskAssistant}
           telemetrySource="advisor_signal_detail"
@@ -99,7 +103,7 @@ export const AdvisorSignalDetail = ({ item }: AdvisorSignalDetailProps) => {
           icon={<EyeOff size={14} strokeWidth={1.5} />}
           onClick={onDismissSignal}
         >
-          Dismiss
+          {$t('Dismiss')}
         </Button>
       </div>
     </div>

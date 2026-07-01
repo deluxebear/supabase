@@ -9,6 +9,7 @@ import { AVAILABLE_REPLICA_REGIONS } from '@/components/interfaces/Settings/Infr
 import { AlphaNotice } from '@/components/ui/AlphaNotice'
 import { InlineLinkClassName } from '@/components/ui/InlineLink'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const VECTOR_BUCKETS_AVAILABLE_REGIONS = [
   'us-east-1',
@@ -39,19 +40,21 @@ export const RegionLimitation = () => {
           <EmptyStatePresentational
             icon={VectorBucket}
             className="[&>div>div>h3]:flex [&>div>div>h3]:items-center [&>div>div>h3]:gap-x-2"
-            title="Coming soon to your project's region"
+            title={$t("Coming soon to your project's region")}
             description={
               <>
-                Your project is in{' '}
+                {$t('Your project is in')}{' '}
                 <Tooltip>
                   <TooltipTrigger className={InlineLinkClassName}>
                     {regionLabel?.name}
                   </TooltipTrigger>
                   <TooltipContent side="bottom">{regionLabel?.region}</TooltipContent>
                 </Tooltip>
-                , but Vector buckets are only available for{' '}
+                {$t(', but Vector buckets are only available for')}{' '}
                 <Tooltip>
-                  <TooltipTrigger className={InlineLinkClassName}>certain regions</TooltipTrigger>
+                  <TooltipTrigger className={InlineLinkClassName}>
+                    {$t('certain regions')}
+                  </TooltipTrigger>
                   <TooltipContent side="bottom">
                     <ul>
                       {VECTOR_BUCKETS_AVAILABLE_REGIONS.map((x) => (
@@ -63,7 +66,7 @@ export const RegionLimitation = () => {
                     </ul>
                   </TooltipContent>
                 </Tooltip>
-                . We're actively looking to expand that soon.
+                {$t(". We're actively looking to expand that soon.")}
               </>
             }
           />

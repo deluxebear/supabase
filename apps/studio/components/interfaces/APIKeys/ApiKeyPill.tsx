@@ -10,6 +10,7 @@ import { useRevealedSecret } from './useRevealedSecret'
 import CopyButton from '@/components/ui/CopyButton'
 import { APIKeysData } from '@/data/api-keys/api-keys-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 export function ApiKeyPill({
   apiKey,
@@ -60,7 +61,7 @@ export function ApiKeyPill({
       try {
         await reveal()
       } catch {
-        toast.error('Failed to reveal secret API key')
+        toast.error($t('Failed to reveal secret API key'))
         setShow(false)
       }
     }
@@ -75,7 +76,7 @@ export function ApiKeyPill({
       clear()
       return key ?? ''
     } catch {
-      toast.error('Failed to copy secret API key')
+      toast.error($t('Failed to copy secret API key'))
       return ''
     }
   }
@@ -136,7 +137,7 @@ export function ApiKeyPill({
         <TooltipTrigger asChild>
           <CopyButton
             variant="default"
-            aria-label="Copy API key"
+            aria-label={$t('Copy API key')}
             asyncText={onCopy}
             iconOnly
             className="rounded-full px-2 pointer-events-auto"

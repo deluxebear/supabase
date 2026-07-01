@@ -3,6 +3,7 @@ import { Badge, NavMenu, NavMenuItem } from 'ui'
 
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 type Props = {
   active: 'pitr' | 'scheduled' | 'rtnp'
@@ -30,7 +31,7 @@ function DatabaseBackupsNav({ active }: Props) {
       id: 'rtnp',
       label: (
         <div className="flex items-center gap-2">
-          Restore to new project <Badge variant="warning">Beta</Badge>
+          {$t('Restore to new project')} <Badge variant="warning">{$t('Beta')}</Badge>
         </div>
       ),
       href: `/project/${ref}/database/backups/restore-to-new-project`,

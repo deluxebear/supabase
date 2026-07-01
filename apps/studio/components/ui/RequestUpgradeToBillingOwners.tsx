@@ -33,6 +33,7 @@ import {
 } from '@/data/organizations/request-upgrade-mutation'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const FormSchema = z.object({
@@ -79,7 +80,7 @@ export const RequestUpgradeToBillingOwners = ({
         addon,
         currentPlan,
       })
-      toast.success('Successfully sent request to billing owners!')
+      toast.success($t('Successfully sent request to billing owners!'))
       setOpen(false)
     },
   })
@@ -172,7 +173,7 @@ export const RequestUpgradeToBillingOwners = ({
             <DialogHeader>
               <DialogTitle>{titleText}</DialogTitle>
               <DialogDescription>
-                Let your organization's billing owners know your interest in this
+                {$t("Let your organization's billing owners know your interest in this")}
               </DialogDescription>
             </DialogHeader>
 
@@ -181,8 +182,9 @@ export const RequestUpgradeToBillingOwners = ({
             <DialogSection className="flex flex-col gap-y-6">
               <div className="flex flex-col gap-y-2">
                 <p className="text-sm">
-                  Your request will be sent to the following emails, who are billing owners of your
-                  organization:
+                  {$t(
+                    'Your request will be sent to the following emails, who are billing owners of your organization:'
+                  )}
                 </p>
                 <div className="text-sm flex gap-x-2">
                   <p>
@@ -194,7 +196,7 @@ export const RequestUpgradeToBillingOwners = ({
                   {billingOwners.length > 2 && (
                     <Tooltip>
                       <TooltipTrigger tabIndex={-1}>
-                        <Badge>+1 others</Badge>
+                        <Badge>{$t('+1 others')}</Badge>
                       </TooltipTrigger>
                       <TooltipContent side="bottom">
                         <ul className="">
@@ -213,7 +215,7 @@ export const RequestUpgradeToBillingOwners = ({
                 render={({ field }) => (
                   <FormItemLayout
                     name="note"
-                    label="Add a note to your request (optional)"
+                    label={$t('Add a note to your request (optional)')}
                     layout="vertical"
                   >
                     <FormControl>
@@ -237,10 +239,10 @@ export const RequestUpgradeToBillingOwners = ({
 
             <DialogFooter>
               <Button variant="default" disabled={isSubmitting} onClick={() => setOpen(false)}>
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button type="submit" form={formId} loading={isSubmitting}>
-                Submit request
+                {$t('Submit request')}
               </Button>
             </DialogFooter>
           </form>

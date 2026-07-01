@@ -9,6 +9,7 @@ import { useDatabasePolicyDeleteMutation } from '@/data/database-policies/databa
 import { useBucketDeleteMutation } from '@/data/storage/bucket-delete-mutation'
 import { Bucket } from '@/data/storage/buckets-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export interface DeleteBucketModalProps {
   visible: boolean
@@ -88,8 +89,8 @@ export const DeleteBucketModal = ({ visible, bucket, onClose }: DeleteBucketModa
       }}
     >
       <p className="text-sm">
-        Your bucket <span className="font-bold text-foreground">{bucket.id}</span> and all of its
-        contents will be permanently deleted.
+        {$t('Your bucket')} <span className="font-bold text-foreground">{bucket.id}</span>{' '}
+        {$t('and all of its contents will be permanently deleted.')}
       </p>
     </TextConfirmModal>
   )

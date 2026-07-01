@@ -6,6 +6,7 @@ import { EgressType, PricingMetric } from '@/data/analytics/org-daily-stats-quer
 import type { OrgSubscription } from '@/data/subscriptions/types'
 import type { OrgUsageResponse } from '@/data/usage/org-usage-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const COLOR_MAP = {
   white: { bar: 'fill-foreground', marker: 'bg-foreground' },
@@ -163,8 +164,9 @@ export const USAGE_CATEGORIES: (subscription?: OrgSubscription) => CategoryMeta[
               >
                 <div className="flex w-full items-center flex-col justify-center space-y-2 md:flex-row md:justify-between">
                   <div>
-                    When you reach your database size limit, your project can go into read-only
-                    mode.{' '}
+                    {$t(
+                      'When you reach your database size limit, your project can go into read-only mode.'
+                    )}{' '}
                     {onFreePlan
                       ? 'Please upgrade your Plan.'
                       : "Disable your spend cap to scale seamlessly, and pay for over-usage beyond your Plan's quota."}

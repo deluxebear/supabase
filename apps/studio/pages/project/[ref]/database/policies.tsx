@@ -51,6 +51,7 @@ import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useIsProtectedSchema } from '@/hooks/useProtectedSchemas'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { useEditorPanelStateSnapshot } from '@/state/editor-panel-state'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
@@ -286,9 +287,9 @@ const DatabasePoliciesPage: NextPageWithLayout = () => {
       <PageHeader size="large">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Policies</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Policies')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Manage Row Level Security policies for your tables
+              {$t('Manage Row Level Security policies for your tables')}
             </PageHeaderDescription>
           </PageHeaderSummary>
           <PageHeaderAside>
@@ -328,7 +329,7 @@ const DatabasePoliciesPage: NextPageWithLayout = () => {
               <Input
                 ref={searchInputRef}
                 size="tiny"
-                placeholder="Filter tables and policies"
+                placeholder={$t('Filter tables and policies')}
                 className="block w-full lg:w-52"
                 containerClassName="[&>div>svg]:-mt-0.5"
                 value={searchString || ''}
@@ -403,7 +404,7 @@ const DatabasePoliciesPage: NextPageWithLayout = () => {
 
 DatabasePoliciesPage.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Policies">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Policies')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

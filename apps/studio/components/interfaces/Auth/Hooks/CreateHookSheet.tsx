@@ -47,6 +47,7 @@ import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface CreateHookSheetProps {
   visible: boolean
@@ -343,15 +344,17 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
 
               {hook.id === 'send-email' && enabled && (
                 <div className="px-5">
-                  <Admonition type="default" title="This hook replaces your email templates">
+                  <Admonition type="default" title={$t('This hook replaces your email templates')}>
                     <p className="text-balance">
-                      While enabled, email data is sent to this hook instead. Your configured{' '}
+                      {$t(
+                        'While enabled, email data is sent to this hook instead. Your configured'
+                      )}{' '}
                       <InlineLink href={`/project/${projectRef}/auth/templates`}>
-                        email templates
+                        {$t('email templates')}
                       </InlineLink>{' '}
-                      will not be used.{' '}
+                      {$t('will not be used.')}{' '}
                       <InlineLink href={`${DOCS_URL}/guides/auth/auth-hooks/send-email-hook`}>
-                        Learn more
+                        {$t('Learn more')}
                       </InlineLink>
                       .
                     </p>
@@ -365,7 +368,7 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
                 control={form.control}
                 name="selectedType"
                 render={({ field }) => (
-                  <FormItemLayout layout="horizontal" label="Hook type" className="px-5">
+                  <FormItemLayout layout="horizontal" label={$t('Hook type')} className="px-5">
                     <FormControl>
                       <RadioGroupStacked
                         value={field.value}
@@ -375,15 +378,15 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
                           value="postgres"
                           id="postgres"
                           key="postgres"
-                          label="Postgres"
-                          description="Used to call a Postgres function."
+                          label={$t('Postgres')}
+                          description={$t('Used to call a Postgres function.')}
                         />
                         <RadioGroupStackedItem
                           value="https"
                           id="https"
                           key="https"
                           label="HTTPS"
-                          description="Used to call any HTTPS endpoint."
+                          description={$t('Used to call any HTTPS endpoint.')}
                         />
                       </RadioGroupStacked>
                     </FormControl>
@@ -400,8 +403,8 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
                       <FormItemLayout
                         layout="horizontal"
                         className="px-5"
-                        label="Postgres Schema"
-                        description="Postgres schema where the function is defined"
+                        label={$t('Postgres Schema')}
+                        description={$t('Postgres schema where the function is defined')}
                       >
                         <FormControl>
                           <SchemaSelector
@@ -424,8 +427,10 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
                       <FormItemLayout
                         layout="horizontal"
                         className="px-5"
-                        label="Postgres function"
-                        description="This function will be called by Supabase Auth each time the hook is triggered"
+                        label={$t('Postgres function')}
+                        description={$t(
+                          'This function will be called by Supabase Auth each time the hook is triggered'
+                        )}
                       >
                         <FormControl>
                           <FunctionSelector
@@ -448,13 +453,13 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
                             }}
                             noResultsLabel={
                               <span>
-                                No function with a single JSON/B argument
+                                {$t('No function with a single JSON/B argument')}
                                 <br />
-                                and JSON/B
+                                {$t('and JSON/B')}
                                 {definition.enabledKey === 'HOOK_SEND_EMAIL_ENABLED'
                                   ? ' or void'
                                   : ''}{' '}
-                                return type found in this schema.
+                                {$t('return type found in this schema.')}
                               </span>
                             }
                           />
@@ -468,7 +473,9 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
                       <Separator className="mb-4" />
                       <div className="h-72 w-full gap-3 flex flex-col">
                         <p className="text-sm text-foreground-light px-5">
-                          The following statements will be executed on the selected function:
+                          {$t(
+                            'The following statements will be executed on the selected function:'
+                          )}
                         </p>
                         <CodeEditor
                           isReadOnly
@@ -490,7 +497,9 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
                       <FormItemLayout
                         layout="horizontal"
                         label="URL"
-                        description="Supabase Auth will send a HTTPS POST request to this URL each time the hook is triggered."
+                        description={$t(
+                          'Supabase Auth will send a HTTPS POST request to this URL each time the hook is triggered.'
+                        )}
                       >
                         <FormControl>
                           <Input {...field} placeholder="https://www.example.com" />
@@ -505,17 +514,18 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
                     render={({ field }) => (
                       <FormItemLayout
                         layout="horizontal"
-                        label="Secret"
+                        label={$t('Secret')}
                         description={
                           <div className="flex items-center gap-x-2">
                             <p>
-                              Should be a base64 encoded secret with a prefix{' '}
+                              {$t('Should be a base64 encoded secret with a prefix')}{' '}
                               <code className="text-code-inline">v1,whsec_</code>.
                             </p>
                             <InfoTooltip side="bottom" className="w-60 text-center">
-                              <code className="text-code-inline">v1</code> denotes the signature
-                              version and <code className="text-code-inline">whsec_</code> signifies
-                              a symmetric secret.
+                              <code className="text-code-inline">v1</code>{' '}
+                              {$t('denotes the signature version and')}{' '}
+                              <code className="text-code-inline">whsec_</code>{' '}
+                              {$t('signifies a symmetric secret.')}
                             </InfoTooltip>
                           </div>
                         }
@@ -533,7 +543,7 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
                                 })
                               }}
                             >
-                              Generate secret
+                              {$t('Generate secret')}
                             </Button>
                           </div>
                         </FormControl>
@@ -549,13 +559,13 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
           {!isCreating && (
             <div className="flex-1">
               <Button variant="danger" onClick={() => onDelete()}>
-                Delete hook
+                {$t('Delete hook')}
               </Button>
             </div>
           )}
 
           <Button disabled={isUpdatingAuthHooks} variant="default" onClick={confirmOnClose}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button
             form={FORM_ID}

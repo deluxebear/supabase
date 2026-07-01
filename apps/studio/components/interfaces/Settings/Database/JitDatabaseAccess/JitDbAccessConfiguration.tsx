@@ -58,6 +58,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const JitDbAccessConfiguration = () => {
   const { ref } = useParams()
@@ -113,7 +114,7 @@ export const JitDbAccessConfiguration = () => {
         const nextEnabled = variables.requestedConfig.state === 'enabled'
 
         if (nextEnabled) {
-          toast.success('Temporary access enabled')
+          toast.success($t('Temporary access enabled'))
         } else {
           toast.success(
             activeRuleCount > 0
@@ -128,7 +129,7 @@ export const JitDbAccessConfiguration = () => {
   const { mutateAsync: revokeUserAccess, isPending: isRevokingAccess } =
     useJitDbAccessRevokeMutation({
       onSuccess: (_, variables) => {
-        toast.success('Successfully revoked user access')
+        toast.success($t('Successfully revoked user access'))
         setSelectedUserToDelete(null)
         if (ruleIdToEdit === variables.userId) resetSheetState()
       },
@@ -292,7 +293,7 @@ export const JitDbAccessConfiguration = () => {
 
   const projectReference = ref ? (
     <>
-      This project <code className="text-code-inline">{ref}</code>
+      {$t('This project')} <code className="text-code-inline">{ref}</code>
     </>
   ) : (
     'This project'
@@ -323,7 +324,7 @@ export const JitDbAccessConfiguration = () => {
           <PageSectionSummary>
             <PageSectionTitle>
               <span className="flex items-center gap-x-4">
-                Temporary access
+                {$t('Temporary access')}
                 <FeaturePreviewBadge featureKey={LOCAL_STORAGE_KEYS.UI_PREVIEW_JIT_DB_ACCESS} />
               </span>
             </PageSectionTitle>
@@ -335,15 +336,16 @@ export const JitDbAccessConfiguration = () => {
           {parentProjectRef && (
             <Admonition
               type="note"
-              title="Managed in the main branch"
+              title={$t('Managed in the main branch')}
               description={
                 <>
-                  Temporary access rules are configured in the main branch and apply across all
-                  preview branches. Return to the{' '}
+                  {$t(
+                    'Temporary access rules are configured in the main branch and apply across all preview branches. Return to the'
+                  )}{' '}
                   <InlineLink href={`/project/${parentProjectRef}/settings/database`}>
-                    main branch
+                    {$t('main branch')}
                   </InlineLink>{' '}
-                  to manage your access rules.
+                  {$t('to manage your access rules.')}
                 </>
               }
             />
@@ -375,7 +377,9 @@ export const JitDbAccessConfiguration = () => {
               actions={
                 unavailableReason === 'postgres_upgrade_required' && ref ? (
                   <Button variant="default" asChild>
-                    <Link href={`/project/${ref}/settings/infrastructure`}>Upgrade Postgres</Link>
+                    <Link href={`/project/${ref}/settings/infrastructure`}>
+                      {$t('Upgrade Postgres')}
+                    </Link>
                   </Button>
                 ) : (
                   <Button variant="default" asChild>
@@ -386,7 +390,7 @@ export const JitDbAccessConfiguration = () => {
                         subject: unavailableTitle,
                       }}
                     >
-                      Contact support
+                      {$t('Contact support')}
                     </SupportLink>
                   </Button>
                 )
@@ -399,8 +403,8 @@ export const JitDbAccessConfiguration = () => {
               <CardContent className="space-y-4">
                 <FormLayout
                   layout="flex-row-reverse"
-                  label="Allow temporary access"
-                  description="Let project members request temporary database access."
+                  label={$t('Allow temporary access')}
+                  description={$t('Let project members request temporary database access.')}
                 >
                   <div className="flex w-fit shrink-0 items-center justify-end gap-2">
                     {(isLoadingConfiguration || isUpdatingJitDbAccess) && (
@@ -433,10 +437,12 @@ export const JitDbAccessConfiguration = () => {
                 <Admonition
                   type="warning"
                   layout="horizontal"
-                  title="Temporary access update didn’t apply"
+                  title={$t('Temporary access update didn’t apply')}
                   description={
                     <>
-                      The change didn’t apply. Try enabling or disabling temporary access again, or{' '}
+                      {$t(
+                        'The change didn’t apply. Try enabling or disabling temporary access again, or'
+                      )}{' '}
                       <SupportLink
                         queryParams={{
                           category: SupportCategories.DASHBOARD_BUG,
@@ -444,9 +450,9 @@ export const JitDbAccessConfiguration = () => {
                         }}
                         className={InlineLinkClassName}
                       >
-                        contact support
+                        {$t('contact support')}
                       </SupportLink>{' '}
-                      if the issue persists.
+                      {$t('if the issue persists.')}
                     </>
                   }
                   className="mb-0 rounded-none border-0"
@@ -501,13 +507,14 @@ export const JitDbAccessConfiguration = () => {
       <AlertDialog open={showEnableJitDialog} onOpenChange={setShowEnableJitDialog}>
         <AlertDialogContent size="small">
           <AlertDialogHeader>
-            <AlertDialogTitle>This will activate existing rules</AlertDialogTitle>
+            <AlertDialogTitle>{$t('This will activate existing rules')}</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="text-sm">
                 <p>
-                  Enabling temporary access will allow {activeRuleCount} pre-configured member
-                  {activeRuleCount === 1 ? '' : 's'} to request temporary database access
-                  immediately.
+                  {$t('Enabling temporary access will allow')} {activeRuleCount}{' '}
+                  {$t('pre-configured member')}
+                  {activeRuleCount === 1 ? '' : 's'}{' '}
+                  {$t('to request temporary database access immediately.')}
                 </p>
               </div>
             </AlertDialogDescription>
@@ -516,19 +523,19 @@ export const JitDbAccessConfiguration = () => {
             <AlertDialogBody>
               <Admonition
                 type="destructive"
-                title="Unable to enable temporary access"
+                title={$t('Unable to enable temporary access')}
                 description={enableJitError}
               />
             </AlertDialogBody>
           )}
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isUpdatingJitDbAccess}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isUpdatingJitDbAccess}>{$t('Cancel')}</AlertDialogCancel>
             <AlertDialogAction
               variant="warning"
               loading={isUpdatingJitDbAccess}
               onClick={handleConfirmEnableJit}
             >
-              Enable temporary access
+              {$t('Enable temporary access')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

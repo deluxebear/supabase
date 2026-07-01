@@ -38,6 +38,7 @@ import { usePaginatedBucketsQuery } from '@/data/storage/buckets-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const DUCKLAKE_MODE_OPTIONS = [
   {
@@ -65,7 +66,7 @@ const DuckLakeModeSelector = ({
   return (
     <div
       role="radiogroup"
-      aria-label="DuckLake configuration mode"
+      aria-label={$t('DuckLake configuration mode')}
       className="grid grid-cols-2 gap-3"
     >
       {DUCKLAKE_MODE_OPTIONS.map((option) => {
@@ -151,7 +152,7 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
     const name = newBucketName.trim()
     if (!name || !ducklakeStorageProjectRef) return
     if (name.includes('/')) {
-      return toast.error('Bucket name cannot contain "/"')
+      return toast.error($t('Bucket name cannot contain "/"'))
     }
 
     createBucket({
@@ -177,9 +178,11 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
   return (
     <div className="flex flex-col gap-y-6">
       <div className="flex flex-col gap-y-1">
-        <p className="text-sm font-medium text-foreground">Catalog</p>
+        <p className="text-sm font-medium text-foreground">{$t('Catalog')}</p>
         <p className="text-sm text-foreground-light">
-          The selected project's Postgres database is used as the PostgreSQL DuckLake catalog
+          {$t(
+            "The selected project's Postgres database is used as the PostgreSQL DuckLake catalog"
+          )}
         </p>
       </div>
 
@@ -189,13 +192,14 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
         render={({ field }) => (
           <FormItemLayout
             layout="horizontal"
-            label="Catalog project"
+            label={$t('Catalog project')}
             description={
               <div className="flex flex-col gap-y-2">
                 {renderRegionWarning(field.value)}
                 <span>
-                  Warehouse connects to this project's Postgres instance to store the DuckLake
-                  catalog
+                  {$t(
+                    "Warehouse connects to this project's Postgres instance to store the DuckLake catalog"
+                  )}
                 </span>
               </div>
             }
@@ -204,7 +208,7 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
               <ProjectSelection
                 value={field.value}
                 onChange={field.onChange}
-                placeholder="Select a project"
+                placeholder={$t('Select a project')}
               />
             </FormControl>
           </FormItemLayout>
@@ -217,8 +221,8 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
         render={({ field }) => (
           <FormItemLayout
             layout="horizontal"
-            label="Pool size"
-            description="Number of concurrent DuckDB connections to the catalog"
+            label={$t('Pool size')}
+            description={$t('Number of concurrent DuckDB connections to the catalog')}
           >
             <FormControl>
               <Input
@@ -226,7 +230,7 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
                 min={1}
                 max={6}
                 value={field.value ?? ''}
-                placeholder="Default: 4"
+                placeholder={$t('Default: 4')}
                 onChange={(event) =>
                   field.onChange(event.target.value === '' ? undefined : Number(event.target.value))
                 }
@@ -242,8 +246,8 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
         render={({ field }) => (
           <FormItemLayout
             layout="horizontal"
-            label="Metadata schema"
-            description="Schema used for DuckLake metadata tables in the catalog's Postgres"
+            label={$t('Metadata schema')}
+            description={$t("Schema used for DuckLake metadata tables in the catalog's Postgres")}
           >
             <FormControl>
               <Input {...field} placeholder="ducklake" value={field.value ?? ''} />
@@ -253,9 +257,9 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
       />
 
       <div className="flex flex-col gap-y-1">
-        <p className="text-sm font-medium text-foreground">Object storage</p>
+        <p className="text-sm font-medium text-foreground">{$t('Object storage')}</p>
         <p className="text-sm text-foreground-light">
-          Replicated data files are written to a Storage bucket in the selected project.
+          {$t('Replicated data files are written to a Storage bucket in the selected project.')}
         </p>
       </div>
 
@@ -265,11 +269,11 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
         render={({ field }) => (
           <FormItemLayout
             layout="horizontal"
-            label="Storage project"
+            label={$t('Storage project')}
             description={
               <div className="flex flex-col gap-y-2">
                 {renderRegionWarning(field.value)}
-                <span>The project whose object storage holds the DuckLake data files</span>
+                <span>{$t('The project whose object storage holds the DuckLake data files')}</span>
               </div>
             }
           >
@@ -281,7 +285,7 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
                   // Buckets are project-scoped, so clear the selection when the project changes
                   form.setValue('ducklakeStorageBucket', '')
                 }}
-                placeholder="Select a project"
+                placeholder={$t('Select a project')}
               />
             </FormControl>
           </FormItemLayout>
@@ -294,8 +298,8 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
         render={({ field }) => (
           <FormItemLayout
             layout="horizontal"
-            label="Bucket"
-            description="The bucket in which DuckLake data files will be stored."
+            label={$t('Bucket')}
+            description={$t('The bucket in which DuckLake data files will be stored.')}
           >
             <div className="flex items-center gap-x-2">
               <div className="grow">
@@ -310,7 +314,7 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
                 disabled={!ducklakeStorageProjectRef}
                 onClick={() => setShowNewBucketDialog(true)}
               >
-                New bucket
+                {$t('New bucket')}
               </Button>
             </div>
           </FormItemLayout>
@@ -320,12 +324,12 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
       <Dialog open={showNewBucketDialog} onOpenChange={setShowNewBucketDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create a new file bucket</DialogTitle>
+            <DialogTitle>{$t('Create a new file bucket')}</DialogTitle>
           </DialogHeader>
           <DialogSectionSeparator />
           <DialogSection className="flex flex-col gap-y-2">
             <label htmlFor="ducklake-new-bucket-name" className="text-sm text-foreground-light">
-              Bucket name
+              {$t('Bucket name')}
             </label>
             <Input
               id="ducklake-new-bucket-name"
@@ -341,7 +345,7 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
               disabled={isCreatingBucket}
               onClick={() => setShowNewBucketDialog(false)}
             >
-              Cancel
+              {$t('Cancel')}
             </Button>
             <Button
               type="button"
@@ -349,7 +353,7 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
               disabled={!newBucketName.trim()}
               onClick={handleCreateBucket}
             >
-              Create bucket
+              {$t('Create bucket')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -365,9 +369,11 @@ const DuckLakeCustomFields = ({ form }: { form: UseFormReturn<DestinationPanelSc
   return (
     <div className="flex flex-col gap-y-6">
       <div className="flex flex-col gap-y-1">
-        <p className="text-sm font-medium text-foreground">Catalog</p>
+        <p className="text-sm font-medium text-foreground">{$t('Catalog')}</p>
         <p className="text-sm text-foreground-light">
-          Configure the PostgreSQL DuckLake catalog and S3-compatible storage for replicated data
+          {$t(
+            'Configure the PostgreSQL DuckLake catalog and S3-compatible storage for replicated data'
+          )}
         </p>
       </div>
 
@@ -378,8 +384,8 @@ const DuckLakeCustomFields = ({ form }: { form: UseFormReturn<DestinationPanelSc
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="Catalog URL"
-              description="A PostgreSQL connection string for the DuckLake catalog"
+              label={$t('Catalog URL')}
+              description={$t('A PostgreSQL connection string for the DuckLake catalog')}
             >
               <FormControl>
                 <PasswordInput
@@ -409,8 +415,8 @@ const DuckLakeCustomFields = ({ form }: { form: UseFormReturn<DestinationPanelSc
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="Data path"
-              description="An S3 path where DuckLake data files will be written"
+              label={$t('Data path')}
+              description={$t('An S3 path where DuckLake data files will be written')}
             >
               <FormControl>
                 <Input {...field} placeholder="s3://bucket/path" value={field.value ?? ''} />
@@ -425,8 +431,8 @@ const DuckLakeCustomFields = ({ form }: { form: UseFormReturn<DestinationPanelSc
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="Pool size"
-              description="Number of concurrent DuckDB connections to use"
+              label={$t('Pool size')}
+              description={$t('Number of concurrent DuckDB connections to use')}
             >
               <FormControl>
                 <Input
@@ -434,7 +440,7 @@ const DuckLakeCustomFields = ({ form }: { form: UseFormReturn<DestinationPanelSc
                   min={1}
                   max={6}
                   value={field.value ?? ''}
-                  placeholder="Default: 4"
+                  placeholder={$t('Default: 4')}
                   onChange={(event) =>
                     field.onChange(
                       event.target.value === '' ? undefined : Number(event.target.value)
@@ -448,9 +454,9 @@ const DuckLakeCustomFields = ({ form }: { form: UseFormReturn<DestinationPanelSc
       </div>
 
       <div className="flex flex-col gap-y-1">
-        <p className="text-sm font-medium text-foreground">Object storage</p>
+        <p className="text-sm font-medium text-foreground">{$t('Object storage')}</p>
         <p className="text-sm text-foreground-light">
-          Optional credentials and endpoint settings for S3-compatible storage providers.
+          {$t('Optional credentials and endpoint settings for S3-compatible storage providers.')}
         </p>
       </div>
 
@@ -461,8 +467,8 @@ const DuckLakeCustomFields = ({ form }: { form: UseFormReturn<DestinationPanelSc
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="S3 Access Key ID"
-              description="Required access key ID for the object storage provider"
+              label={$t('S3 Access Key ID')}
+              description={$t('Required access key ID for the object storage provider')}
             >
               <FormControl>
                 <Input {...field} placeholder="my-access-key" value={field.value ?? ''} />
@@ -477,8 +483,8 @@ const DuckLakeCustomFields = ({ form }: { form: UseFormReturn<DestinationPanelSc
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="S3 Secret Access Key"
-              description="Required secret access key for the object storage provider"
+              label={$t('S3 Secret Access Key')}
+              description={$t('Required secret access key for the object storage provider')}
               className="relative"
             >
               <FormControl>
@@ -505,8 +511,8 @@ const DuckLakeCustomFields = ({ form }: { form: UseFormReturn<DestinationPanelSc
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="S3 Region"
-              description="Required region for the object storage provider"
+              label={$t('S3 Region')}
+              description={$t('Required region for the object storage provider')}
             >
               <FormControl>
                 <Input {...field} placeholder="us-east-1" value={field.value ?? ''} />
@@ -521,8 +527,10 @@ const DuckLakeCustomFields = ({ form }: { form: UseFormReturn<DestinationPanelSc
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="S3 Endpoint"
-              description="Required endpoint without the protocol scheme, for example `127.0.0.1:5000/s3`"
+              label={$t('S3 Endpoint')}
+              description={$t(
+                'Required endpoint without the protocol scheme, for example `127.0.0.1:5000/s3`'
+              )}
             >
               <FormControl>
                 <Input {...field} placeholder="127.0.0.1:5000/s3" value={field.value ?? ''} />
@@ -537,8 +545,10 @@ const DuckLakeCustomFields = ({ form }: { form: UseFormReturn<DestinationPanelSc
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="S3 URL style"
-              description="Choose `path` for MinIO/Supabase-style endpoints or `vhost` for AWS-style virtual host addressing"
+              label={$t('S3 URL style')}
+              description={$t(
+                'Choose `path` for MinIO/Supabase-style endpoints or `vhost` for AWS-style virtual host addressing'
+              )}
             >
               <FormControl>
                 <Select value={field.value ?? 'path'} onValueChange={field.onChange}>
@@ -559,8 +569,8 @@ const DuckLakeCustomFields = ({ form }: { form: UseFormReturn<DestinationPanelSc
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="Use SSL"
-              description="Whether to use SSL when connecting to the S3-compatible endpoint"
+              label={$t('Use SSL')}
+              description={$t('Whether to use SSL when connecting to the S3-compatible endpoint')}
             >
               <FormControl>
                 <Select
@@ -580,9 +590,9 @@ const DuckLakeCustomFields = ({ form }: { form: UseFormReturn<DestinationPanelSc
       </div>
 
       <div className="flex flex-col gap-y-1">
-        <p className="text-sm font-medium text-foreground">Metadata</p>
+        <p className="text-sm font-medium text-foreground">{$t('Metadata')}</p>
         <p className="text-sm text-foreground-light">
-          Optional schema setting for DuckLake metadata tables.
+          {$t('Optional schema setting for DuckLake metadata tables.')}
         </p>
       </div>
 
@@ -593,8 +603,8 @@ const DuckLakeCustomFields = ({ form }: { form: UseFormReturn<DestinationPanelSc
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="Metadata schema"
-              description="Schema used for DuckLake metadata tables in PostgreSQL"
+              label={$t('Metadata schema')}
+              description={$t('Schema used for DuckLake metadata tables in PostgreSQL')}
             >
               <FormControl>
                 <Input {...field} placeholder="ducklake" value={field.value ?? ''} />
@@ -622,12 +632,12 @@ export const DuckLakeFields = ({
 
   return (
     <div className="flex flex-col gap-y-6 p-5">
-      <p className="text-sm font-medium text-foreground">DuckLake settings</p>
+      <p className="text-sm font-medium text-foreground">{$t('DuckLake settings')}</p>
 
       {!editMode && (
         <div className="flex flex-col gap-y-3">
           <p className="text-xs uppercase tracking-wider text-foreground-lighter">
-            How should this DuckLake be configured?
+            {$t('How should this DuckLake be configured?')}
           </p>
           <DuckLakeModeSelector
             value={effectiveMode}
@@ -695,7 +705,7 @@ const ProjectSelection = ({
         size="small"
         iconRight={<Loader2 className="animate-spin" />}
       >
-        Retrieving projects
+        {$t('Retrieving projects')}
       </Button>
     )
   }
@@ -708,7 +718,7 @@ const ProjectSelection = ({
         size="small"
         icon={<WarningIcon />}
       >
-        Failed to retrieve projects
+        {$t('Failed to retrieve projects')}
       </Button>
     )
   }
@@ -719,7 +729,7 @@ const ProjectSelection = ({
         <SelectGroup>
           {projects.length === 0 ? (
             <SelectItem value="__no_projects__" disabled>
-              No active projects available
+              {$t('No active projects available')}
             </SelectItem>
           ) : (
             projects.map((project) => (
@@ -770,7 +780,7 @@ const BucketSelection = ({
   if (!ducklakeStorageProjectRef) {
     return (
       <Button disabled variant="default" className="w-full justify-start" size="small">
-        Select a storage project first
+        {$t('Select a storage project first')}
       </Button>
     )
   }
@@ -783,7 +793,7 @@ const BucketSelection = ({
         size="small"
         iconRight={<Loader2 className="animate-spin" />}
       >
-        Retrieving buckets
+        {$t('Retrieving buckets')}
       </Button>
     )
   }
@@ -796,7 +806,7 @@ const BucketSelection = ({
         size="small"
         icon={<WarningIcon />}
       >
-        Failed to retrieve buckets
+        {$t('Failed to retrieve buckets')}
       </Button>
     )
   }
@@ -813,7 +823,7 @@ const BucketSelection = ({
         <SelectGroup>
           {buckets.length === 0 ? (
             <SelectItem value="__no_buckets__" disabled>
-              No buckets available
+              {$t('No buckets available')}
             </SelectItem>
           ) : (
             buckets.map((bucket) => (

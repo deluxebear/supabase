@@ -48,6 +48,7 @@ import { useProjectApiUrl } from '@/data/config/project-endpoint-query'
 import { useOAuthCustomProviderUpdateMutation } from '@/data/oauth-custom-providers/oauth-custom-provider-update-mutation'
 import { useOAuthCustomProvidersQuery } from '@/data/oauth-custom-providers/oauth-custom-providers-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -86,7 +87,7 @@ const NewProviderButton = ({
       onClick={() => setShowCreateSheet(true)}
       className="grow"
     >
-      New Provider
+      {$t('New Provider')}
     </Button>
   )
 }
@@ -104,7 +105,7 @@ export const CustomAuthProvidersList = () => {
   const queryClient = useQueryClient()
   const { mutate: updateAuthConfig, isPending: isEnabling } = useAuthConfigUpdateMutation({
     onSuccess: () => {
-      toast.success('Custom providers have been enabled')
+      toast.success($t('Custom providers have been enabled'))
       // Invalidate and refetch custom providers query so it retries after enabling
       queryClient.invalidateQueries({
         queryKey: ['projects', projectRef, 'oauth-custom-providers'],
@@ -114,7 +115,7 @@ export const CustomAuthProvidersList = () => {
 
   const { mutate: updateCustomProvider } = useOAuthCustomProviderUpdateMutation({
     onSuccess: () => {
-      toast.success('Custom provider enabled')
+      toast.success($t('Custom provider enabled'))
     },
   })
 
@@ -260,8 +261,10 @@ export const CustomAuthProvidersList = () => {
     return (
       <Admonition
         type="default"
-        title="Custom providers are not enabled"
-        description="Enable custom OAuth/OIDC providers to configure your own identity providers for authentication."
+        title={$t('Custom providers are not enabled')}
+        description={$t(
+          'Enable custom OAuth/OIDC providers to configure your own identity providers for authentication.'
+        )}
       >
         <Button
           variant="primary"
@@ -269,7 +272,7 @@ export const CustomAuthProvidersList = () => {
           disabled={isEnabling}
           onClick={handleEnableCustomProviders}
         >
-          Enable Custom Providers
+          {$t('Enable Custom Providers')}
         </Button>
       </Admonition>
     )
@@ -280,8 +283,10 @@ export const CustomAuthProvidersList = () => {
       return (
         <Admonition
           type="default"
-          title="Custom providers are not enabled"
-          description="Enable custom OAuth/OIDC providers to configure your own identity providers for authentication."
+          title={$t('Custom providers are not enabled')}
+          description={$t(
+            'Enable custom OAuth/OIDC providers to configure your own identity providers for authentication.'
+          )}
         >
           <Button
             variant="primary"
@@ -289,7 +294,7 @@ export const CustomAuthProvidersList = () => {
             disabled={isEnabling}
             onClick={handleEnableCustomProviders}
           >
-            Enable Custom Providers
+            {$t('Enable Custom Providers')}
           </Button>
         </Admonition>
       )
@@ -306,7 +311,7 @@ export const CustomAuthProvidersList = () => {
               <InputGroupInput
                 ref={searchInputRef}
                 size="tiny"
-                placeholder="Search custom providers"
+                placeholder={$t('Search custom providers')}
                 value={filterString}
                 onChange={(e) => setFilterString(e.target.value)}
                 onKeyDown={onSearchInputEscape(filterString, setFilterString)}
@@ -365,7 +370,7 @@ export const CustomAuthProvidersList = () => {
                 >
                   {!isCustomProvidersEnabled ? (
                     <div className="flex flex-col gap-y-2">
-                      <p>Custom providers are not enabled for this project.</p>
+                      <p>{$t('Custom providers are not enabled for this project.')}</p>
                       <Button
                         variant="primary"
                         size="tiny"
@@ -373,12 +378,15 @@ export const CustomAuthProvidersList = () => {
                         disabled={isEnabling}
                         onClick={handleEnableCustomProviders}
                       >
-                        Enable Custom Providers
+                        {$t('Enable Custom Providers')}
                       </Button>
                     </div>
                   ) : (
                     <>
-                      <p>You've reached the limit of {providerLimit} providers for your plan.</p>
+                      <p>
+                        {$t("You've reached the limit of")} {providerLimit}{' '}
+                        {$t('providers for your plan.')}
+                      </p>
                       <UpgradePlanButton
                         source={`customAuthProviders-${organization?.plan.id}`}
                         plan={nextPlan ?? 'Pro'}
@@ -390,7 +398,7 @@ export const CustomAuthProvidersList = () => {
             ) : (
               <Shortcut
                 id={SHORTCUT_IDS.LIST_PAGE_NEW_ITEM}
-                label="Create new provider"
+                label={$t('Create new provider')}
                 onTrigger={() => setShowCreateSheet(true)}
                 side="bottom"
               >
@@ -401,7 +409,7 @@ export const CustomAuthProvidersList = () => {
                   onClick={() => setShowCreateSheet(true)}
                   className="grow"
                 >
-                  New Provider
+                  {$t('New Provider')}
                 </Button>
               </Shortcut>
             )}
@@ -415,7 +423,7 @@ export const CustomAuthProvidersList = () => {
                 <TableRow>
                   <TableHead>
                     <TableHeadSort column="name" currentSort={sort} onSortChange={handleSortChange}>
-                      Name
+                      {$t('Name')}
                     </TableHeadSort>
                   </TableHead>
                   <TableHead>
@@ -424,7 +432,7 @@ export const CustomAuthProvidersList = () => {
                       currentSort={sort}
                       onSortChange={handleSortChange}
                     >
-                      Identifier
+                      {$t('Identifier')}
                     </TableHeadSort>
                   </TableHead>
                   <TableHead>
@@ -433,10 +441,10 @@ export const CustomAuthProvidersList = () => {
                       currentSort={sort}
                       onSortChange={handleSortChange}
                     >
-                      Type
+                      {$t('Type')}
                     </TableHeadSort>
                   </TableHead>
-                  <TableHead>Enabled</TableHead>
+                  <TableHead>{$t('Enabled')}</TableHead>
                   <TableHead className="w-8 px-0">
                     <div className="bg-200! px-4 w-full h-full flex items-center border-l @[944px]:border-l-0" />
                   </TableHead>
@@ -446,7 +454,7 @@ export const CustomAuthProvidersList = () => {
                 {filteredAndSortedCustomProviders.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={5}>
-                      <p className="text-foreground-lighter">No custom providers found</p>
+                      <p className="text-foreground-lighter">{$t('No custom providers found')}</p>
                     </TableCell>
                   </TableRow>
                 )}
@@ -488,7 +496,7 @@ export const CustomAuthProvidersList = () => {
                                 }}
                               >
                                 <Edit size={12} />
-                                <p>Update</p>
+                                <p>{$t('Update')}</p>
                               </DropdownMenuItem>
                               {provider.enabled ? (
                                 <DropdownMenuItem
@@ -496,7 +504,7 @@ export const CustomAuthProvidersList = () => {
                                   onClick={() => setSelectedProviderToDisable(provider.id)}
                                 >
                                   <PowerOff size={12} />
-                                  <p>Disable</p>
+                                  <p>{$t('Disable')}</p>
                                 </DropdownMenuItem>
                               ) : (
                                 <DropdownMenuItem
@@ -511,7 +519,7 @@ export const CustomAuthProvidersList = () => {
                                   }
                                 >
                                   <Power size={12} />
-                                  <p>Enable</p>
+                                  <p>{$t('Enable')}</p>
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuItem
@@ -519,7 +527,7 @@ export const CustomAuthProvidersList = () => {
                                 onClick={() => setSelectedProviderToDelete(provider.id)}
                               >
                                 <Trash size={12} />
-                                <p>Delete</p>
+                                <p>{$t('Delete')}</p>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

@@ -61,6 +61,7 @@ import { useExecuteSqlMutation } from '@/data/sql/execute-sql-mutation'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { editorPanelState, useEditorPanelStateSnapshot } from '@/state/editor-panel-state'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
@@ -332,17 +333,17 @@ export const EditorPanel = () => {
             <PopoverContent align="end" className="w-[300px] p-0">
               <Command shouldFilter={false}>
                 <CommandInput
-                  placeholder="Search snippets..."
+                  placeholder={$t('Search snippets...')}
                   value={snippetSearch}
                   onValueChange={setSnippetSearch}
                 />
                 <CommandList>
                   {isLoadingSnippets ? (
                     <div className="py-6 text-center text-sm text-foreground-light">
-                      Loading snippets...
+                      {$t('Loading snippets...')}
                     </div>
                   ) : (
-                    <CommandEmpty>No snippets found.</CommandEmpty>
+                    <CommandEmpty>{$t('No snippets found.')}</CommandEmpty>
                   )}
                   <CommandGroup>
                     {(snippetsData?.content ?? []).map((snippet) => (
@@ -375,14 +376,14 @@ export const EditorPanel = () => {
                   aria-expanded={isTemplatesOpen}
                   icon={<Book size={14} />}
                 >
-                  Templates
+                  {$t('Templates')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-[300px] p-0">
                 <Command>
-                  <CommandInput placeholder="Search templates..." />
+                  <CommandInput placeholder={$t('Search templates...')} />
                   <CommandList>
-                    <CommandEmpty>No templates found.</CommandEmpty>
+                    <CommandEmpty>{$t('No templates found.')}</CommandEmpty>
                     <CommandGroup>
                       {templates.map((template) => (
                         <HoverCard key={template.name}>
@@ -471,7 +472,7 @@ export const EditorPanel = () => {
                 side: 'bottom',
                 text: (
                   <div className="flex items-center gap-4">
-                    <span>Close Editor</span>
+                    <span>{$t('Close Editor')}</span>
                     {isInlineEditorHotkeyEnabled && <KeyboardShortcut keys={['Meta', 'e']} />}
                   </div>
                 ),
@@ -586,7 +587,7 @@ export const EditorPanel = () => {
         {results !== undefined && results.length === 0 && !error && (
           <div className="shrink-0">
             <p className="text-xs text-foreground-light font-mono py-2 px-5">
-              Success. No rows returned.
+              {$t('Success. No rows returned.')}
             </p>
           </div>
         )}

@@ -3,6 +3,7 @@ import { DragEvent, useCallback, useRef, useState, type ChangeEvent } from 'reac
 import { Button, cn } from 'ui'
 
 import { SparkBar } from '@/components/ui/SparkBar'
+import { t as $t } from '@/lib/i18n'
 
 interface SpreadSheetFileUploadProps {
   parseProgress: number
@@ -50,13 +51,16 @@ function UploadInstructions() {
   return (
     <div>
       <p className="mb-2 text-sm text-foreground-light">
-        Upload a CSV or TSV file. The first row should be the headers of the table, and your headers
-        should not include any special characters other than hyphens (
-        <span className="text-code">-</span>) or underscores (<span className="text-code">_</span>
+        {$t(
+          'Upload a CSV or TSV file. The first row should be the headers of the table, and your headers should not include any special characters other than hyphens ('
+        )}
+        <span className="text-code">-</span>
+        {$t(') or underscores (')}
+        <span className="text-code">_</span>
         ).
       </p>
       <p className="text-sm text-foreground-light">
-        Tip: Datetime columns should be formatted as YYYY-MM-DD HH:mm:ss
+        {$t('Tip: Datetime columns should be formatted as YYYY-MM-DD HH:mm:ss')}
       </p>
     </div>
   )
@@ -97,7 +101,7 @@ function DropZone({ onDrop: onDropFromParent, onClickUpload }: DropZoneProps) {
       onClick={onClickUpload}
     >
       <p className="text-sm">
-        Drag and drop, or <span className="text-brand">browse</span> your files
+        {$t('Drag and drop, or')} <span className="text-brand">browse</span> {$t('your files')}
       </p>
     </div>
   )
@@ -123,7 +127,7 @@ function FileDetails({ file, parseProgress, removeFile }: FileDetailsProps) {
       </div>
       {parseProgress === 100 ? (
         <Button variant="outline" onClick={removeFile}>
-          Remove File
+          {$t('Remove File')}
         </Button>
       ) : (
         <div className="flex w-3/5 items-center space-x-2">

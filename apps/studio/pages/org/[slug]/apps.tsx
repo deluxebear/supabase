@@ -10,6 +10,7 @@ import { OAuthApps } from '@/components/interfaces/Organization/OAuthApps/OAuthA
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import OrganizationLayout from '@/components/layouts/OrganizationLayout'
 import { OrganizationSettingsLayout } from '@/components/layouts/ProjectLayout/OrganizationSettingsLayout'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const OrgOAuthApps: NextPageWithLayout = () => {
@@ -18,9 +19,9 @@ const OrgOAuthApps: NextPageWithLayout = () => {
       <PageHeader size="default">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>OAuth Apps</PageHeaderTitle>
+            <PageHeaderTitle>{$t('OAuth Apps')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Published and authorized OAuth applications
+              {$t('Published and authorized OAuth applications')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -32,7 +33,7 @@ const OrgOAuthApps: NextPageWithLayout = () => {
 
 OrgOAuthApps.getLayout = (page) => (
   <DefaultLayout>
-    <OrganizationLayout title="OAuth Apps">
+    <OrganizationLayout title={$t('OAuth Apps')}>
       <OrganizationSettingsLayout>{page}</OrganizationSettingsLayout>
     </OrganizationLayout>
   </DefaultLayout>

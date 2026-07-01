@@ -29,6 +29,7 @@ import { DownloadResultsButton } from '@/components/ui/DownloadResultsButton'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useLoadBalancersQuery } from '@/data/read-replicas/load-balancers-query'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -131,13 +132,13 @@ const PreviewFilterPanel = ({
           <InputGroup className="w-60">
             <ShortcutTooltip
               shortcutId={SHORTCUT_IDS.LIST_PAGE_FOCUS_SEARCH}
-              label="Search logs"
+              label={$t('Search logs')}
               side="bottom"
             >
               <InputGroupInput
                 ref={searchInputRef}
                 size="tiny"
-                placeholder="Search events"
+                placeholder={$t('Search events')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={onSearchInputEscape(search, (next) => {
@@ -162,7 +163,7 @@ const PreviewFilterPanel = ({
                         <span>↲</span>
                       </InputGroupButton>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom">Search for events</TooltipContent>
+                    <TooltipContent side="bottom">{$t('Search for events')}</TooltipContent>
                   </Tooltip>
                 )}
 
@@ -179,7 +180,7 @@ const PreviewFilterPanel = ({
                         <X />
                       </InputGroupButton>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom">Clear search</TooltipContent>
+                    <TooltipContent side="bottom">{$t('Clear search')}</TooltipContent>
                   </Tooltip>
                 )}
               </div>
@@ -261,7 +262,7 @@ const PreviewFilterPanel = ({
               onClick={() => onToggleEventChart()}
               icon={isShowingEventChart ? <Eye /> : <EyeOff />}
             >
-              Chart
+              {$t('Chart')}
             </Button>
           </ShortcutTooltip>
         </div>
@@ -285,7 +286,7 @@ const PreviewFilterPanel = ({
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="text-xs">
-              Open query in Logs Explorer
+              {$t('Open query in Logs Explorer')}
             </TooltipContent>
           </Tooltip>
           <DatabaseSelector
@@ -301,7 +302,7 @@ const PreviewFilterPanel = ({
         </div>
       ) : (
         <Button asChild variant="default" onClick={onExploreClick}>
-          <Link href={queryUrl}>Explore via query</Link>
+          <Link href={queryUrl}>{$t('Explore via query')}</Link>
         </Button>
       )}
     </div>

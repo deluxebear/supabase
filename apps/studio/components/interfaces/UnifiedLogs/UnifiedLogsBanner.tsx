@@ -8,6 +8,7 @@ import {
   useUnifiedLogsPreview,
 } from '../App/FeaturePreview/FeaturePreviewContext'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 
 interface UnifiedLogsBannerProps {
   className?: string
@@ -41,7 +42,7 @@ export function UnifiedLogsBanner({ className = 'mx-4 mt-4' }: UnifiedLogsBanner
       <div className={cn('rounded-lg border px-4 py-3', 'bg-muted/10 border-border/50', className)}>
         <div className="flex items-center justify-between gap-3">
           <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-            Go back to old logs
+            {$t('Go back to old logs')}
           </p>
           <ButtonTooltip
             variant="default"
@@ -58,9 +59,9 @@ export function UnifiedLogsBanner({ className = 'mx-4 mt-4' }: UnifiedLogsBanner
   return (
     <div className={cardClassName}>
       <div className="flex justify-start">
-        <Badge variant="success">New</Badge>
+        <Badge variant="success">{$t('New')}</Badge>
       </div>
-      <h3 className="font-medium text-sm text-foreground">Introducing unified logs</h3>
+      <h3 className="font-medium text-sm text-foreground">{$t('Introducing unified logs')}</h3>
       <div className="flex justify-start items-start gap-x-2">
         {isDefaultOptIn ? (
           <Button
@@ -68,12 +69,12 @@ export function UnifiedLogsBanner({ className = 'mx-4 mt-4' }: UnifiedLogsBanner
             icon={<CircleHelpIcon />}
             onClick={() => selectFeaturePreview('supabase-ui-preview-unified-logs')}
           >
-            More information
+            {$t('More information')}
           </Button>
         ) : (
           <>
             <Button variant="default" onClick={onEnable}>
-              Enable preview
+              {$t('Enable preview')}
             </Button>
             <ButtonTooltip
               variant="default"

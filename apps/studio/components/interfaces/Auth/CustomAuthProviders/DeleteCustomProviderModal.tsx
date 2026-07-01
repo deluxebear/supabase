@@ -5,6 +5,7 @@ import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 
 import { useProjectApiUrl } from '@/data/config/project-endpoint-query'
 import { useOAuthCustomProviderDeleteMutation } from '@/data/oauth-custom-providers/oauth-custom-provider-delete-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface DeleteCustomProviderModalProps {
   visible: boolean
@@ -21,7 +22,7 @@ export const DeleteCustomProviderModal = ({
   const { hostEndpoint: clientEndpoint } = useProjectApiUrl({ projectRef })
   const { mutate, isPending } = useOAuthCustomProviderDeleteMutation({
     onSuccess: () => {
-      toast.success('Custom provider deleted successfully')
+      toast.success($t('Custom provider deleted successfully'))
       onClose()
     },
   })
@@ -42,7 +43,7 @@ export const DeleteCustomProviderModal = ({
       visible={visible}
       title={
         <>
-          Confirm to delete custom provider{' '}
+          {$t('Confirm to delete custom provider')}{' '}
           <code className="text-sm">{selectedProvider?.name}</code>
         </>
       }
@@ -56,12 +57,14 @@ export const DeleteCustomProviderModal = ({
           'You will need to re-create the custom provider if you want to revert the deletion.',
       }}
     >
-      <p className="text-sm">Before deleting this custom provider, consider:</p>
+      <p className="text-sm">{$t('Before deleting this custom provider, consider:')}</p>
       <ul className="space-y-2 mt-2 text-sm text-foreground-light">
         <li className="list-disc ml-6">
-          Any users authenticating with this provider will lose access
+          {$t('Any users authenticating with this provider will lose access')}
         </li>
-        <li className="list-disc ml-6">This provider is no longer in use by any applications</li>
+        <li className="list-disc ml-6">
+          {$t('This provider is no longer in use by any applications')}
+        </li>
       </ul>
     </ConfirmationModal>
   )

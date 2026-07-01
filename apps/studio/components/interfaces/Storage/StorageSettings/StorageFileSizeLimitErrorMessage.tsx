@@ -9,6 +9,7 @@ import {
   isBucketLimitErrorMessage,
 } from './StorageSettings.utils'
 import { InlineLink } from '@/components/ui/InlineLink'
+import { t as $t } from '@/lib/i18n'
 
 interface StorageFileSizeLimitErrorMessageProps {
   error?: FieldError
@@ -53,9 +54,9 @@ export const StorageFileSizeLimitErrorMessage = ({
 
   return (
     <>
-      <p>Global limit must be greater than that of individual buckets.</p>
+      <p>{$t('Global limit must be greater than that of individual buckets.')}</p>
       <p>
-        Remove or decrease the limit on {primaryBucketLink} ({primaryBucketLimit})
+        {$t('Remove or decrease the limit on')} {primaryBucketLink} ({primaryBucketLimit})
         {otherBuckets.length > 0 && (
           <>
             {' '}
@@ -70,7 +71,8 @@ export const StorageFileSizeLimitErrorMessage = ({
                     'cursor-default'
                   )}
                 >
-                  {showOtherCount && `+${otherBuckets.length} `}other bucket
+                  {showOtherCount && `+${otherBuckets.length} `}
+                  {$t('other bucket')}
                   {otherBuckets.length > 1 ? 's' : ''}
                 </span>
               </TooltipTrigger>
@@ -95,7 +97,7 @@ export const StorageFileSizeLimitErrorMessage = ({
                     )
                   })}
                 </ul>
-                {hasUnfetchedBuckets && <p>...and others</p>}
+                {hasUnfetchedBuckets && <p>{$t('...and others')}</p>}
               </TooltipContent>
             </Tooltip>{' '}
             first

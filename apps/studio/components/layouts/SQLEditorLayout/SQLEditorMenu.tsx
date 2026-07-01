@@ -27,6 +27,7 @@ import { SQLEditorNav } from './SQLEditorNavV2/SQLEditorNav'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useLocalStorage } from '@/hooks/misc/useLocalStorage'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { getAppStateSnapshot } from '@/state/app-state'
 import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
@@ -69,7 +70,7 @@ export const SQLEditorMenu = () => {
     if (!project) return console.error('Project is required')
     if (!profile) return console.error('Profile is required')
     if (!canCreateSQLSnippet) {
-      return toast('Your queries will not be saved as you do not have sufficient permissions')
+      return toast($t('Your queries will not be saved as you do not have sufficient permissions'))
     }
     try {
       router.push(`/project/${ref}/sql/new?skip=true`)
@@ -91,7 +92,7 @@ export const SQLEditorMenu = () => {
           <InnerSideBarFilters className="w-full p-0 gap-0">
             <InnerSideBarFilterSearchInput
               name="search-queries"
-              placeholder="Search queries..."
+              placeholder={$t('Search queries...')}
               aria-labelledby="Search queries"
               value={search}
               onChange={(e) => {
@@ -117,7 +118,7 @@ export const SQLEditorMenu = () => {
                   >
                     <X size={18} />
                   </TooltipTrigger>
-                  <TooltipContent>Clear search</TooltipContent>
+                  <TooltipContent>{$t('Clear search')}</TooltipContent>
                 </Tooltip>
               ) : (
                 <InnerSideBarFilterSortDropdown
@@ -125,10 +126,10 @@ export const SQLEditorMenu = () => {
                   onValueChange={(value: any) => setSort(value)}
                 >
                   <InnerSideBarFilterSortDropdownItem key="name" value="name">
-                    Alphabetical
+                    {$t('Alphabetical')}
                   </InnerSideBarFilterSortDropdownItem>
                   <InnerSideBarFilterSortDropdownItem key="inserted_at" value="inserted_at">
-                    Created At
+                    {$t('Created At')}
                   </InnerSideBarFilterSortDropdownItem>
                 </InnerSideBarFilterSortDropdown>
               )}
@@ -143,20 +144,22 @@ export const SQLEditorMenu = () => {
                     variant="default"
                     icon={<Plus className="text-foreground" />}
                     className="w-[26px]"
-                    aria-label="Create a new query"
+                    aria-label={$t('Create a new query')}
                   />
                 </DropdownMenuTrigger>
               </TooltipTrigger>
-              <TooltipContent side="bottom">Create a new query</TooltipContent>
+              <TooltipContent side="bottom">{$t('Create a new query')}</TooltipContent>
             </Tooltip>
             <DropdownMenuContent align="end" side="bottom" className="w-48">
               <DropdownMenuItem className="gap-x-2" onClick={() => handleNewQuery()}>
                 <FilePlus size={14} />
-                Create a new snippet
+
+                {$t('Create a new snippet')}
               </DropdownMenuItem>
               <DropdownMenuItem className="gap-x-2" onClick={() => createNewFolder()}>
                 <FolderPlus size={14} />
-                Create a new folder
+
+                {$t('Create a new folder')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -167,7 +170,7 @@ export const SQLEditorMenu = () => {
 
       <div className="p-4 border-t sticky bottom-0 bg-studio">
         <Button block variant="default" onClick={() => appState.setOnGoingQueriesPanelOpen(true)}>
-          View running queries
+          {$t('View running queries')}
         </Button>
       </div>
     </div>

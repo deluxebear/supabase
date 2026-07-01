@@ -6,6 +6,7 @@ import * as z from 'zod'
 
 import { DashboardToggle } from './DashboardToggle'
 import { useIsInlineEditorSetting, useIsQueueOperationsSetting } from './useDashboardSettings'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const DashboardSettingsSchema = z.object({
@@ -55,15 +56,19 @@ export const DashboardSettingsToggles = () => {
         <DashboardToggle
           form={form}
           name="inlineEditorEnabled"
-          label="Edit entities in SQL"
-          description="Edit policies, triggers, and functions in the SQL editor instead of the guided UI."
+          label={$t('Edit entities in SQL')}
+          description={$t(
+            'Edit policies, triggers, and functions in the SQL editor instead of the guided UI.'
+          )}
           onToggle={handleInlineEditorToggle}
         />
         <DashboardToggle
           form={form}
           name="queueOperationsEnabled"
-          label="Queue table operations"
-          description="Review and batch table edits in Table Editor before saving them to your database."
+          label={$t('Queue table operations')}
+          description={$t(
+            'Review and batch table edits in Table Editor before saving them to your database.'
+          )}
           onToggle={handleQueueOperationsToggle}
           isLast
         />

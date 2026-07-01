@@ -14,6 +14,7 @@ import { OrganizationSettingsLayout } from '@/components/layouts/ProjectLayout/O
 import { ScaffoldDivider } from '@/components/layouts/Scaffold'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const OrgDocuments: NextPageWithLayout = () => {
@@ -30,9 +31,9 @@ const OrgDocuments: NextPageWithLayout = () => {
       <PageHeader size="default" className="pb-12">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Legal Documents</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Legal Documents')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Compliance documentation and legal agreements
+              {$t('Compliance documentation and legal agreements')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -45,7 +46,7 @@ const OrgDocuments: NextPageWithLayout = () => {
 
 OrgDocuments.getLayout = (page) => (
   <DefaultLayout>
-    <OrganizationLayout title="Legal Documents">
+    <OrganizationLayout title={$t('Legal Documents')}>
       <OrganizationSettingsLayout>{page}</OrganizationSettingsLayout>
     </OrganizationLayout>
   </DefaultLayout>

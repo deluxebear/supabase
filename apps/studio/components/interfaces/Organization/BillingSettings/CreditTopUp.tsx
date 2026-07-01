@@ -47,6 +47,7 @@ import { subscriptionKeys } from '@/data/subscriptions/keys'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { STRIPE_PUBLIC_KEY } from '@/lib/constants'
 import { formatCurrency } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 const stripePromise = loadStripe(STRIPE_PUBLIC_KEY)
 
@@ -251,7 +252,7 @@ export const CreditTopUp = ({ slug }: { slug: string | undefined }) => {
       queryClient.invalidateQueries({ queryKey: subscriptionKeys.orgBalance(slug) }),
     ])
     toast.success(
-      'Successfully topped up balance. It may take a minute to reflect in your account.'
+      $t('Successfully topped up balance. It may take a minute to reflect in your account.')
     )
   }
 
@@ -272,7 +273,7 @@ export const CreditTopUp = ({ slug }: { slug: string | undefined }) => {
             },
           }}
         >
-          Top Up
+          {$t('Top Up')}
         </ButtonTooltip>
       </DialogTrigger>
 
@@ -297,15 +298,15 @@ export const CreditTopUp = ({ slug }: { slug: string | undefined }) => {
           }}
         />
         <DialogHeader>
-          <DialogTitle>Top Up Credits</DialogTitle>
+          <DialogTitle>{$t('Top Up Credits')}</DialogTitle>
           <DialogDescription className="space-y-2">
             <p className="prose text-sm">
-              On successful payment, an invoice will be issued and you'll be granted credits equal
-              to the pre-tax amount. Credits will be applied to future invoices only and are not
-              refundable. The topped up credits do not expire.
+              {$t(
+                "On successful payment, an invoice will be issued and you'll be granted credits equal to the pre-tax amount. Credits will be applied to future invoices only and are not refundable. The topped up credits do not expire."
+              )}
             </p>
             <p className="prose text-sm">
-              For larger discounted credit packages, please reach out to us via{' '}
+              {$t('For larger discounted credit packages, please reach out to us via')}{' '}
               <SupportLink
                 queryParams={{
                   orgSlug: slug,
@@ -330,7 +331,7 @@ export const CreditTopUp = ({ slug }: { slug: string | undefined }) => {
                 control={form.control}
                 name="amount"
                 render={({ field }) => (
-                  <FormItemLayout label="Amount (USD)" className="gap-1">
+                  <FormItemLayout label={$t('Amount (USD)')} className="gap-1">
                     <Input {...field} type="number" placeholder="300" />
                   </FormItemLayout>
                 )}
@@ -356,7 +357,7 @@ export const CreditTopUp = ({ slug }: { slug: string | undefined }) => {
               {paymentIntentConfirmation && paymentIntentConfirmation.error && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error confirming payment</AlertTitle>
+                  <AlertTitle>{$t('Error confirming payment')}</AlertTitle>
                   <AlertDescription>{paymentIntentConfirmation.error.message}</AlertDescription>
                 </Alert>
               )}
@@ -365,11 +366,11 @@ export const CreditTopUp = ({ slug }: { slug: string | undefined }) => {
                 paymentIntentConfirmation.paymentIntent.status === 'processing' && (
                   <Alert variant="default">
                     <Info className="h-4 w-4" />
-                    <AlertTitle>Payment processing</AlertTitle>
+                    <AlertTitle>{$t('Payment processing')}</AlertTitle>
                     <AlertDescription>
-                      Your payment is processing and we are waiting for a confirmation from your
-                      card issuer. If the payment goes through you'll automatically be credited.
-                      Please check back later.
+                      {$t(
+                        "Your payment is processing and we are waiting for a confirmation from your card issuer. If the payment goes through you'll automatically be credited. Please check back later."
+                      )}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -377,7 +378,7 @@ export const CreditTopUp = ({ slug }: { slug: string | undefined }) => {
               {errorInitiatingTopUp && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error topping up balance</AlertTitle>
+                  <AlertTitle>{$t('Error topping up balance')}</AlertTitle>
                   <AlertDescription>{errorInitiatingTopUp.message}</AlertDescription>
                 </Alert>
               )}
@@ -410,7 +411,8 @@ export const CreditTopUp = ({ slug }: { slug: string | undefined }) => {
                     creditPreview.tax &&
                     creditPreview.tax.tax_amount > 0 && (
                       <p className="mt-2 text-xs text-foreground-light">
-                        You'll receive {formatCurrency(creditPreview.amount)} in credits.
+                        {$t("You'll receive")} {formatCurrency(creditPreview.amount)}{' '}
+                        {$t('in credits.')}
                       </p>
                     )}
                 </div>
@@ -427,7 +429,7 @@ export const CreditTopUp = ({ slug }: { slug: string | undefined }) => {
                   }
                   disabled={isPreviewStale || creditPreviewIsFetching}
                 >
-                  Top Up
+                  {$t('Top Up')}
                 </Button>
               </DialogFooter>
             )}

@@ -22,6 +22,7 @@ import { QueueTab } from './QueueTab'
 import { useQueuesQuery } from '@/data/database-queues/database-queues-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DATETIME_FORMAT } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const QueuePage = () => {
   const router = useRouter()
@@ -57,7 +58,7 @@ export const QueuePage = () => {
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link href={`/project/${ref}/integrations`}>Integrations</Link>
+                <Link href={`/project/${ref}/integrations`}>{$t('Integrations')}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
@@ -70,7 +71,7 @@ export const QueuePage = () => {
                       : `/project/${ref}/integrations/${id}`
                   }
                 >
-                  Queues
+                  {$t('Queues')}
                 </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>

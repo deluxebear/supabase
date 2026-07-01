@@ -39,6 +39,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL, INSTANCE_MICRO_SPECS, INSTANCE_NANO_SPECS, InstanceSpecs } from '@/lib/constants'
 import { TIME_PERIODS_BILLING, TIME_PERIODS_REPORTS } from '@/lib/constants/metrics'
+import { t as $t } from '@/lib/i18n'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 
 const NON_DEDICATED_IO_RESOURCES = [
@@ -204,9 +205,9 @@ export const InfrastructureActivity = () => {
       <ScaffoldContainer id="infrastructure-activity">
         <div className="mx-auto flex flex-col gap-10 pt-6">
           <div>
-            <p className="text-xl">Infrastructure Activity</p>
+            <p className="text-xl">{$t('Infrastructure Activity')}</p>
             <p className="text-sm text-foreground-light">
-              Activity statistics related to your server instance
+              {$t('Activity statistics related to your server instance')}
             </p>
           </div>
         </div>
@@ -254,7 +255,7 @@ export const InfrastructureActivity = () => {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <p className="text-sm text-foreground mb-2">More information</p>
+                      <p className="text-sm text-foreground mb-2">{$t('More information')}</p>
                       {attribute.links.map((link) => (
                         <div key={link.url}>
                           <Link href={link.url} target="_blank" rel="noreferrer">
@@ -280,26 +281,33 @@ export const InfrastructureActivity = () => {
                         highestIoBudgetConsumption={highestIoBudgetConsumption}
                       />
                       <div className="space-y-1">
-                        <p>Disk IO Bandwidth</p>
+                        <p>{$t('Disk IO Bandwidth')}</p>
 
                         {currentComputeInstanceSpecs.baseline_disk_io_mbs ===
                         currentComputeInstanceSpecs.max_disk_io_mbs ? (
                           <p className="text-sm text-foreground-light">
-                            Your current compute has a baseline and maximum disk throughput of{' '}
-                            {currentComputeInstanceSpecs.max_disk_io_mbs?.toLocaleString()} Mbps.
+                            {$t(
+                              'Your current compute has a baseline and maximum disk throughput of'
+                            )}{' '}
+                            {currentComputeInstanceSpecs.max_disk_io_mbs?.toLocaleString()}{' '}
+                            {$t('Mbps.')}
                           </p>
                         ) : (
                           <p className="text-sm text-foreground-light">
-                            Your current compute can burst above the baseline disk throughput of{' '}
+                            {$t(
+                              'Your current compute can burst above the baseline disk throughput of'
+                            )}{' '}
                             {currentComputeInstanceSpecs.baseline_disk_io_mbs?.toLocaleString()}{' '}
-                            Mbps for short periods of time.
+                            {$t('Mbps for short periods of time.')}
                           </p>
                         )}
                       </div>
                       <div>
-                        <p className="text-sm mb-2">Overview</p>
+                        <p className="text-sm mb-2">{$t('Overview')}</p>
                         <div className="flex items-center justify-between border-b py-1">
-                          <p className="text-xs text-foreground-light">Current compute instance</p>
+                          <p className="text-xs text-foreground-light">
+                            {$t('Current compute instance')}
+                          </p>
                           <p className="text-xs">
                             {computeInstance?.variant?.name ??
                               capitalize(project?.infra_compute_size) ??
@@ -307,25 +315,30 @@ export const InfrastructureActivity = () => {
                           </p>
                         </div>
                         <div className="flex items-center justify-between border-b py-1">
-                          <p className="text-xs text-foreground-light">Baseline IO Bandwidth</p>
+                          <p className="text-xs text-foreground-light">
+                            {$t('Baseline IO Bandwidth')}
+                          </p>
                           <p className="text-xs">
                             {currentComputeInstanceSpecs.baseline_disk_io_mbs?.toLocaleString()}{' '}
-                            Mbps
+                            {$t('Mbps')}
                           </p>
                         </div>
                         <div className="flex items-center justify-between border-b py-1">
                           <p className="text-xs text-foreground-light">
-                            Maximum IO Bandwidth (burst limit)
+                            {$t('Maximum IO Bandwidth (burst limit)')}
                           </p>
                           <p className="text-xs">
-                            {currentComputeInstanceSpecs.max_disk_io_mbs?.toLocaleString()} Mbps
+                            {currentComputeInstanceSpecs.max_disk_io_mbs?.toLocaleString()}{' '}
+                            {$t('Mbps')}
                           </p>
                         </div>
                         {currentComputeInstanceSpecs.max_disk_io_mbs !==
                           currentComputeInstanceSpecs?.baseline_disk_io_mbs && (
                           <div className="flex items-center justify-between py-1">
-                            <p className="text-xs text-foreground-light">Daily burst time limit</p>
-                            <p className="text-xs">30 mins</p>
+                            <p className="text-xs text-foreground-light">
+                              {$t('Daily burst time limit')}
+                            </p>
+                            <p className="text-xs">{$t('30 mins')}</p>
                           </div>
                         )}
                       </div>
@@ -349,14 +362,16 @@ export const InfrastructureActivity = () => {
                   <div className="space-y-1">
                     <div className="flex flex-row justify-between">
                       {attribute.key === 'disk_io_consumption' ? (
-                        <p>Disk IO consumed per {interval === '1d' ? 'day' : 'hour'}</p>
+                        <p>
+                          {$t('Disk IO consumed per')} {interval === '1d' ? 'day' : 'hour'}
+                        </p>
                       ) : (
                         <p>
-                          Max{' '}
+                          {$t('Max')}{' '}
                           <span className={attribute.key === 'ram_usage' ? 'lowercase' : ''}>
                             {attribute.name}
                           </span>{' '}
-                          utilization per {interval === '1d' ? 'day' : 'hour'}
+                          {$t('utilization per')} {interval === '1d' ? 'day' : 'hour'}
                         </p>
                       )}
                     </div>
@@ -364,13 +379,14 @@ export const InfrastructureActivity = () => {
                     {attribute.key === 'ram_usage' && (
                       <div className="text-sm text-foreground-light">
                         <p>
-                          Your compute instance has {currentComputeInstanceSpecs.memory_gb} GB of
-                          memory.
+                          {$t('Your compute instance has')} {currentComputeInstanceSpecs.memory_gb}{' '}
+                          {$t('GB of memory.')}
                         </p>
                         {currentComputeInstanceSpecs.memory_gb === 1 && (
                           <p>
-                            As your project is running on the smallest compute instance, it is not
-                            unusual for your project to have a base memory usage of ~50%.
+                            {$t(
+                              'As your project is running on the smallest compute instance, it is not unusual for your project to have a base memory usage of ~50%.'
+                            )}
                           </p>
                         )}
                       </div>
@@ -378,7 +394,8 @@ export const InfrastructureActivity = () => {
 
                     {attribute.key === 'max_cpu_usage' && (
                       <p className="text-sm text-foreground-light">
-                        Your compute instance has {currentComputeInstanceSpecs.cpu_cores} CPU cores.
+                        {$t('Your compute instance has')} {currentComputeInstanceSpecs.cpu_cores}{' '}
+                        {$t('CPU cores.')}
                       </p>
                     )}
 
@@ -393,9 +410,9 @@ export const InfrastructureActivity = () => {
                       <Admonition
                         type="note"
                         title={`Your compute instance of ${computeInstance.variant.name} comes with dedicated I/O resources`}
-                        description="Your project thus does not rely on I/O balance or burst capacity as larger
-                      add-ons are designed for sustained, high performance with specific IOPS and
-                      throughput limits without needing to burst."
+                        description={$t(
+                          'Your project thus does not rely on I/O balance or burst capacity as larger\n                      add-ons are designed for sustained, high performance with specific IOPS and\n                      throughput limits without needing to burst.'
+                        )}
                       >
                         <DocsButton
                           abbrev={false}
@@ -424,9 +441,9 @@ export const InfrastructureActivity = () => {
                       <Panel.Content>
                         <div className="flex flex-col items-center justify-center space-y-2">
                           <BarChart2 size={18} className="text-foreground-light mb-2" />
-                          <p className="text-sm">No data in period</p>
+                          <p className="text-sm">{$t('No data in period')}</p>
                           <p className="text-sm text-foreground-light">
-                            May take a few minutes to show
+                            {$t('May take a few minutes to show')}
                           </p>
                         </div>
                       </Panel.Content>
@@ -435,12 +452,14 @@ export const InfrastructureActivity = () => {
                   {attribute.key === 'disk_io_consumption' && !hasDedicatedIOResources && (
                     <Admonition
                       type="default"
-                      title="Looking for actual disk activity?"
-                      description="The chart above shows your remaining burst budget, not real disk throughput. For detailed read/write IOPS and throughput charts, head to the Database Observability page."
+                      title={$t('Looking for actual disk activity?')}
+                      description={$t(
+                        'The chart above shows your remaining burst budget, not real disk throughput. For detailed read/write IOPS and throughput charts, head to the Database Observability page.'
+                      )}
                     >
                       <Button asChild variant="default" icon={<ChartLine size={14} />}>
                         <Link href={`/project/${projectRef}/observability/database`}>
-                          View detailed IOPS and throughput
+                          {$t('View detailed IOPS and throughput')}
                         </Link>
                       </Button>
                     </Admonition>

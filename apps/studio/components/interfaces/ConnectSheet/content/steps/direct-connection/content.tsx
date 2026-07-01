@@ -34,6 +34,7 @@ import { useProjectAddonsQuery } from '@/data/subscriptions/project-addons-query
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useIsHighAvailability } from '@/hooks/misc/useSelectedProject'
 import { pluckObjectFields } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const buildPsqlCommand = (params: { host: string; port: string; database: string; user: string }) =>
@@ -256,7 +257,7 @@ function DirectConnectionContent({ state, deploymentMode }: StepContentProps) {
               {temporaryDatabasePassword ? (
                 <span className="flex items-center gap-2">
                   <Check size={16} className="text-brand shrink-0" />
-                  <span>New password shown until refresh.</span>
+                  <span>{$t('New password shown until refresh.')}</span>
                 </span>
               ) : (
                 'Forgot your database password?'
@@ -272,7 +273,7 @@ function DirectConnectionContent({ state, deploymentMode }: StepContentProps) {
       </div>
       {showSelfHostedDirectNotice && (
         <p className="text-sm text-foreground-light">
-          Manually{' '}
+          {$t('Manually')}{' '}
           <a
             href="https://supabase.com/docs/guides/self-hosting/docker#exposing-your-postgres-database"
             target="_blank"
@@ -281,7 +282,7 @@ function DirectConnectionContent({ state, deploymentMode }: StepContentProps) {
           >
             configurable
           </a>{' '}
-          for self-hosted Supabase.
+          {$t('for self-hosted Supabase.')}
         </p>
       )}
       <ConnectionParameters

@@ -47,6 +47,7 @@ import { useDatabaseRolesQuery } from '@/data/database-roles/database-roles-quer
 import { useTablesQuery } from '@/data/tables/tables-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface PolicyDetailsV2Props {
   schema: string
@@ -129,13 +130,13 @@ export const PolicyDetailsV2 = ({
             name="name"
             render={({ field }) => (
               <FormItem className="col-span-6 flex flex-col gap-y-1">
-                <FormLabel>Policy Name</FormLabel>
+                <FormLabel>{$t('Policy Name')}</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     disabled={!canUpdatePolicies}
                     className="bg-control border-control"
-                    placeholder="Provide a name for your policy"
+                    placeholder={$t('Provide a name for your policy')}
                   />
                 </FormControl>
                 <FormMessage />
@@ -149,7 +150,7 @@ export const PolicyDetailsV2 = ({
             render={({ field }) => (
               <FormItem className="col-span-6 flex flex-col gap-y-1">
                 <FormLabel>
-                  Table
+                  {$t('Table')}
                   <code className="text-code-inline">on</code> clause
                 </FormLabel>
                 {authContext === 'database' && (
@@ -183,9 +184,9 @@ export const PolicyDetailsV2 = ({
                         sameWidthAsTrigger
                       >
                         <Command>
-                          <CommandInput placeholder="Find a table..." />
+                          <CommandInput placeholder={$t('Find a table...')} />
                           <CommandList onWheel={(event) => event.stopPropagation()}>
-                            <CommandEmpty>No tables found</CommandEmpty>
+                            <CommandEmpty>{$t('No tables found')}</CommandEmpty>
                             <CommandGroup>
                               <ScrollArea className={(tables ?? []).length > 7 ? 'h-[200px]' : ''}>
                                 {(tables ?? []).map((table) => (
@@ -236,7 +237,7 @@ export const PolicyDetailsV2 = ({
             render={({ field }) => (
               <FormItem className="col-span-6 flex flex-col gap-y-1">
                 <FormLabel>
-                  Policy Behavior <code className="text-code-inline">as</code> clause
+                  {$t('Policy Behavior')} <code className="text-code-inline">as</code> clause
                 </FormLabel>
                 <FormControl>
                   <Select
@@ -248,15 +249,15 @@ export const PolicyDetailsV2 = ({
                     <SelectContent>
                       <SelectGroup>
                         <SelectItem value="permissive" className="text-sm">
-                          <p>Permissive</p>
+                          <p>{$t('Permissive')}</p>
                           <p className="text-foreground-light text-xs">
-                            Policies are combined using the "OR" Boolean operator
+                            {$t('Policies are combined using the "OR" Boolean operator')}
                           </p>
                         </SelectItem>
                         <SelectItem value="restrictive" className="text-sm">
-                          <p>Restrictive</p>
+                          <p>{$t('Restrictive')}</p>
                           <p className="text-foreground-light text-xs">
-                            Policies are combined using the "AND" Boolean operator
+                            {$t('Policies are combined using the "AND" Boolean operator')}
                           </p>
                         </SelectItem>
                       </SelectGroup>
@@ -273,7 +274,7 @@ export const PolicyDetailsV2 = ({
             render={({ field }) => (
               <FormItem className="col-span-12 flex flex-col gap-y-1">
                 <FormLabel>
-                  Policy Command <code className="text-code-inline">for</code> clause
+                  {$t('Policy Command')} <code className="text-code-inline">for</code> clause
                 </FormLabel>
                 <FormControl>
                   <RadioGroup
@@ -311,7 +312,7 @@ export const PolicyDetailsV2 = ({
             render={({ field }) => (
               <FormItem className="col-span-12 flex flex-col gap-y-1">
                 <FormLabel htmlFor="roles">
-                  Target Roles <code className="text-code-inline">to</code> clause
+                  {$t('Target Roles')} <code className="text-code-inline">to</code> clause
                 </FormLabel>
                 <FormControl>
                   <MultiSelector

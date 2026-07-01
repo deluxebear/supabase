@@ -31,6 +31,7 @@ import { vaultSecretsKeys } from '@/data/vault/keys'
 import { useVaultSecretUpdateMutation } from '@/data/vault/vault-secret-update-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const UpdateCatalogTokenDialog = ({ vaultTokenId }: { vaultTokenId?: string }) => {
   const { ref } = useParams()
@@ -56,14 +57,14 @@ export const UpdateCatalogTokenDialog = ({ vaultTokenId }: { vaultTokenId?: stri
         }),
       ])
 
-      toast.success('Successfully updated catalog token!')
+      toast.success($t('Successfully updated catalog token!'))
       setOpen(false)
     },
   })
 
   const onSubmit = () => {
     if (!project) return console.error('Project is required')
-    if (!vaultTokenId) return toast.error('ID of catalog token is missing')
+    if (!vaultTokenId) return toast.error($t('ID of catalog token is missing'))
 
     updateVaultSecret({
       projectRef: project?.ref,
@@ -82,24 +83,26 @@ export const UpdateCatalogTokenDialog = ({ vaultTokenId }: { vaultTokenId?: stri
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="default" className="mt-1">
-          Update catalog token
+          {$t('Update catalog token')}
         </Button>
       </DialogTrigger>
       <DialogContent aria-describedby={undefined}>
         <DialogHeader>
-          <DialogTitle>Update Iceberg wrapper catalog token</DialogTitle>
+          <DialogTitle>{$t('Update Iceberg wrapper catalog token')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
 
         {allSecretKeys?.length === 0 && (
           <Admonition
             type="default"
-            title="Project has no API secret keys"
+            title={$t('Project has no API secret keys')}
             className="rounded-none border-x-0 border-t-0"
           >
             <p>
-              Create an API secret key from your{' '}
-              <InlineLink href={`/project/${ref}/settings/api-keys`}>project's settings</InlineLink>{' '}
+              {$t('Create an API secret key from your')}{' '}
+              <InlineLink href={`/project/${ref}/settings/api-keys`}>
+                {$t("project's settings")}
+              </InlineLink>{' '}
               first
             </p>
           </Admonition>
@@ -107,7 +110,7 @@ export const UpdateCatalogTokenDialog = ({ vaultTokenId }: { vaultTokenId?: stri
         <DialogSection>
           <FormItemLayout
             isReactForm={false}
-            label="Select a secret key to use as your catalog token"
+            label={$t('Select a secret key to use as your catalog token')}
           >
             {isPending ? (
               <ShimmeringLoader className="py-4" />
@@ -131,7 +134,7 @@ export const UpdateCatalogTokenDialog = ({ vaultTokenId }: { vaultTokenId?: stri
         </DialogSection>
         <DialogFooter>
           <Button variant="default" disabled={isUpdating} onClick={() => setOpen(false)}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button
             variant="primary"
@@ -139,7 +142,7 @@ export const UpdateCatalogTokenDialog = ({ vaultTokenId }: { vaultTokenId?: stri
             loading={isUpdating}
             onClick={() => onSubmit()}
           >
-            Update token
+            {$t('Update token')}
           </Button>
         </DialogFooter>
       </DialogContent>

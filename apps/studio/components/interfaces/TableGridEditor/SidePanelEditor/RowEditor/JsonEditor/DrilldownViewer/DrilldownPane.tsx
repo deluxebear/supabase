@@ -1,6 +1,7 @@
 import { isNull, noop } from 'lodash'
 import { ChevronRight } from 'lucide-react'
 
+import { t as $t } from '@/lib/i18n'
 import type { Dictionary } from '@/types'
 
 interface DrilldownPaneProps {
@@ -15,7 +16,7 @@ const DrilldownPane = ({ pane, jsonData, activeKey, onSelectKey = noop }: Drilld
     return (
       <div className={`flex-1 ${pane === 2 ? 'border-l border-default' : ''}`}>
         <div className="flex space-x-2 py-2 px-5">
-          <p className="text-sm">Invalid JSON</p>
+          <p className="text-sm">{$t('Invalid JSON')}</p>
         </div>
       </div>
     )
@@ -25,7 +26,7 @@ const DrilldownPane = ({ pane, jsonData, activeKey, onSelectKey = noop }: Drilld
     return (
       <div className={`max-w-[50%] flex-1 ${pane === 2 ? 'border-l border-default' : ''}`}>
         <div className="flex space-x-2 py-2 px-5">
-          <p className="text-sm opacity-50">No data available</p>
+          <p className="text-sm opacity-50">{$t('No data available')}</p>
         </div>
       </div>
     )

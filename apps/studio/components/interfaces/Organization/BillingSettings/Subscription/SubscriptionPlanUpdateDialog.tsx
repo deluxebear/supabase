@@ -36,6 +36,7 @@ import {
   STRIPE_PUBLIC_KEY,
 } from '@/lib/constants'
 import { formatCurrency } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 const stripePromise = loadStripe(STRIPE_PUBLIC_KEY)
 
@@ -368,21 +369,24 @@ export const SubscriptionPlanUpdateDialog = ({
                 {billingViaPartner && (
                   <div className="mb-4">
                     <p className="text-sm">
-                      This organization is billed through our partner{' '}
+                      {$t('This organization is billed through our partner')}{' '}
                       {billingPartnerLabel(billingPartner)}.{' '}
                       {/* @ts-ignore [Joshen] Might be API types issue */}
                       {billingPartner === 'aws' ? (
-                        <>The organization's credit balance will be decreased accordingly.</>
+                        <>
+                          {$t("The organization's credit balance will be decreased accordingly.")}
+                        </>
                       ) : (
-                        <>You will be charged by them directly.</>
+                        <>{$t('You will be charged by them directly.')}</>
                       )}
                     </p>
                     {billingViaPartner &&
                       billingPartner === 'fly' &&
                       subscriptionPreview?.plan_change_type === 'downgrade' && (
                         <p className="text-sm">
-                          Your organization will be downgraded at the end of your current billing
-                          cycle.
+                          {$t(
+                            'Your organization will be downgraded at the end of your current billing cycle.'
+                          )}
                         </p>
                       )}
                   </div>
@@ -431,7 +435,7 @@ export const SubscriptionPlanUpdateDialog = ({
                     )}
 
                     <div className="flex items-center justify-between gap-2 border-b border-muted text-foreground">
-                      <div className="py-2 pl-0">Charge today</div>
+                      <div className="py-2 pl-0">{$t('Charge today')}</div>
                       <div className="py-2 pr-0 text-right tabular-nums" translate="no">
                         {formatCurrency(totalCharge)}
                         {currentPlanId !== 'free' && (
@@ -442,7 +446,7 @@ export const SubscriptionPlanUpdateDialog = ({
                               className="text-sm text-brand hover:text-brand-600 transition"
                               target="_blank"
                             >
-                              + current spend
+                              {$t('+ current spend')}
                             </Link>
                           </>
                         )}
@@ -451,7 +455,7 @@ export const SubscriptionPlanUpdateDialog = ({
 
                     <div className="flex items-center justify-between gap-2 text-foreground-lighter text-xs mt-4">
                       <div className="py-2 pl-0 flex items-center gap-1">
-                        <span>Monthly invoice estimate</span>
+                        <span>{$t('Monthly invoice estimate')}</span>
                         <InvoiceEstimateTooltip
                           subscriptionPreviewQueryResult={subscriptionPreviewQueryResult}
                         />
@@ -478,9 +482,10 @@ export const SubscriptionPlanUpdateDialog = ({
               ).length === 0 &&
                 subscriptionPreview?.plan_change_type !== 'downgrade' && (
                   <div className="pb-2">
-                    <Admonition title="Empty organization" type="warning">
-                      This organization has no active projects. Did you select the correct
-                      organization?
+                    <Admonition title={$t('Empty organization')} type="warning">
+                      {$t(
+                        'This organization has no active projects. Did you select the correct organization?'
+                      )}
                     </Admonition>
                   </div>
                 )}
@@ -495,14 +500,15 @@ export const SubscriptionPlanUpdateDialog = ({
                   <div className="pb-2">
                     <Admonition type="note">
                       <div className="text-sm prose">
-                        First project included. Additional projects cost{' '}
-                        <span translate="no">$10</span>+/month regardless of activity.{' '}
+                        {$t('First project included. Additional projects cost')}{' '}
+                        <span translate="no">$10</span>
+                        {$t('+/month regardless of activity.')}{' '}
                         <Link
                           href={`${DOCS_URL}/guides/platform/manage-your-usage/compute`}
                           target="_blank"
                           className="underline"
                         >
-                          Learn more
+                          {$t('Learn more')}
                         </Link>
                       </div>
                     </Admonition>
@@ -518,7 +524,7 @@ export const SubscriptionPlanUpdateDialog = ({
                   className="flex-1"
                   size="small"
                 >
-                  Confirm {changeType === 'downgrade' ? 'downgrade' : 'upgrade'}
+                  {$t('Confirm')} {changeType === 'downgrade' ? 'downgrade' : 'upgrade'}
                 </Button>
               </div>
             </div>
@@ -536,9 +542,9 @@ export const SubscriptionPlanUpdateDialog = ({
             {changeType === 'downgrade'
               ? featuresToLose.length > 0 && (
                   <div className="mb-4">
-                    <h3 className="text-sm mb-1">Features you'll lose</h3>
+                    <h3 className="text-sm mb-1">{$t("Features you'll lose")}</h3>
                     <p className="text-xs text-foreground-light mb-4">
-                      Please review carefully before downgrading.
+                      {$t('Please review carefully before downgrading.')}
                     </p>
                     <div className="space-y-2 mb-4 text-foreground-light">
                       {featuresToLose.map((feature) => (
@@ -559,7 +565,7 @@ export const SubscriptionPlanUpdateDialog = ({
                 )
               : topFeatures.length > 0 && (
                   <div className="mb-4">
-                    <h3 className="text-sm mb-4">Upgrade features</h3>
+                    <h3 className="text-sm mb-4">{$t('Upgrade features')}</h3>
 
                     <div className="space-y-2 mb-4 text-foreground-light">
                       {topFeatures.map((feature: string | string[]) => (

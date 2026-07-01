@@ -10,6 +10,7 @@ import {
 
 import { TransferProjectButton } from './TransferProjectButton'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const TransferProjectPanel = () => {
   const { data: project } = useSelectedProjectQuery()
@@ -20,7 +21,7 @@ export const TransferProjectPanel = () => {
     <PageSection id="transfer-project">
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Transfer project</PageSectionTitle>
+          <PageSectionTitle>{$t('Transfer project')}</PageSectionTitle>
         </PageSectionSummary>
       </PageSectionMeta>
       <PageSectionContent>
@@ -30,10 +31,11 @@ export const TransferProjectPanel = () => {
               <div className="flex space-x-4">
                 <Truck className="mt-1" />
                 <div className="space-y-1 xl:max-w-lg">
-                  <p className="text-sm">Transfer project to another organization</p>
+                  <p className="text-sm">{$t('Transfer project to another organization')}</p>
                   <p className="text-sm text-foreground-light">
-                    To transfer projects, the owner must be a member of both the source and target
-                    organizations.
+                    {$t(
+                      'To transfer projects, the owner must be a member of both the source and target organizations.'
+                    )}
                   </p>
                 </div>
               </div>

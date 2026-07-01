@@ -23,6 +23,7 @@ import {
 import type { SupportFormValues } from './SupportForm.schema'
 import { NO_PROJECT_MARKER } from './SupportForm.utils'
 import { InlineLink } from '@/components/ui/InlineLink'
+import { t as $t } from '@/lib/i18n'
 
 interface CategoryAndSeverityInfoProps {
   form: UseFormReturn<SupportFormValues>
@@ -55,8 +56,10 @@ export function CategoryAndSeverityInfo({
         <Admonition
           type="default"
           className="sm:col-span-2"
-          title="We do our best to respond to everyone as quickly as possible"
-          description="Prioritization will be based on production status. We ask that you reserve High and Urgent severity for production-impacting issues only."
+          title={$t('We do our best to respond to everyone as quickly as possible')}
+          description={$t(
+            'Prioritization will be based on production status. We ask that you reserve High and Urgent severity for production-impacting issues only.'
+          )}
         />
       )}
     </div>
@@ -88,11 +91,11 @@ function CategorySelector({ form }: CategorySelectorProps) {
           field.onChange(v)
         }
         return (
-          <FormItemLayout hideMessage layout="vertical" label="What issue are you having?">
+          <FormItemLayout hideMessage layout="vertical" label={$t('What issue are you having?')}>
             <FormControl>
               <Select {...fieldWithoutRef} defaultValue={field.value} onValueChange={onValueChange}>
-                <SelectTrigger aria-label="Select an issue" className="w-full">
-                  <SelectValue placeholder="Select an issue">
+                <SelectTrigger aria-label={$t('Select an issue')} className="w-full">
+                  <SelectValue placeholder={$t('Select an issue')}>
                     {field.value
                       ? CATEGORY_OPTIONS.find((o) => o.value === field.value)?.label
                       : null}
@@ -131,15 +134,15 @@ function SeveritySelector({ form }: SeveritySelectorProps) {
       render={({ field }) => {
         const { ref, ...fieldWithoutRef } = field
         return (
-          <FormItemLayout hideMessage layout="vertical" label="Severity">
+          <FormItemLayout hideMessage layout="vertical" label={$t('Severity')}>
             <FormControl>
               <Select
                 {...fieldWithoutRef}
                 defaultValue={field.value}
                 onValueChange={field.onChange}
               >
-                <SelectTrigger aria-label="Select a severity" className="w-full">
-                  <SelectValue placeholder="Select a severity">{field.value}</SelectValue>
+                <SelectTrigger aria-label={$t('Select a severity')} className="w-full">
+                  <SelectValue placeholder={$t('Select a severity')}>{field.value}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -172,10 +175,11 @@ const IssueSuggestion = ({ category, projectRef }: { category: string; projectRe
       <Admonition
         type="default"
         className={className}
-        title="Have you checked your project's logs?"
+        title={$t("Have you checked your project's logs?")}
       >
-        Logs can help you identify errors that you might be running into when using your project's
-        API or client libraries. View logs for each product{' '}
+        {$t(
+          "Logs can help you identify errors that you might be running into when using your project's API or client libraries. View logs for each product"
+        )}{' '}
         <InlineLink href={`${baseUrl}/logs/edge-logs`}>here</InlineLink>.
       </Admonition>
     )
@@ -186,10 +190,11 @@ const IssueSuggestion = ({ category, projectRef }: { category: string; projectRe
       <Admonition
         type="default"
         className={className}
-        title="Have you checked your project's infrastructure activity?"
+        title={$t("Have you checked your project's infrastructure activity?")}
       >
-        High memory or low disk IO bandwidth may be slowing down your database. Verify by checking
-        the infrastructure activity of your project{' '}
+        {$t(
+          'High memory or low disk IO bandwidth may be slowing down your database. Verify by checking the infrastructure activity of your project'
+        )}{' '}
         <InlineLink href={`${baseUrl}/settings/infrastructure#infrastructure-activity`}>
           here
         </InlineLink>
@@ -203,10 +208,11 @@ const IssueSuggestion = ({ category, projectRef }: { category: string; projectRe
       <Admonition
         type="default"
         className={className}
-        title="Have you checked the Query Performance Advisor?"
+        title={$t('Have you checked the Query Performance Advisor?')}
       >
-        Identify slow running queries and get actionable insights on how to optimize them with the
-        Query Performance Advisor{' '}
+        {$t(
+          'Identify slow running queries and get actionable insights on how to optimize them with the Query Performance Advisor'
+        )}{' '}
         <InlineLink href={`${baseUrl}/settings/infrastructure#infrastructure-activity`}>
           here
         </InlineLink>

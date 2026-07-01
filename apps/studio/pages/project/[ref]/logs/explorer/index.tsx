@@ -56,6 +56,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useUpgradePrompt } from '@/hooks/misc/useUpgradePrompt'
 import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { useTrack } from '@/lib/telemetry/track'
 import type { LogSqlSnippets, NextPageWithLayout } from '@/types'
@@ -234,7 +235,7 @@ export const LogsExplorerPage: NextPageWithLayout = () => {
   const handleRewrite = async () => {
     const currentSql = editorRef.current?.getValue() ?? editorValue
     if (!currentSql.trim()) {
-      toast.info('Write a query to rewrite first')
+      toast.info($t('Write a query to rewrite first'))
       return
     }
     setIsRewriting(true)
@@ -256,7 +257,7 @@ export const LogsExplorerPage: NextPageWithLayout = () => {
       // don't offer a proposal that would clobber intervening edits.
       const latestSql = editorRef.current?.getValue() ?? editorValue
       if (latestSql !== currentSql) {
-        toast.info('The query changed while rewriting. Please try again.')
+        toast.info($t('The query changed while rewriting. Please try again.'))
         return
       }
       setRewriteProposal({ original: currentSql, modified: rewritten })
@@ -272,7 +273,7 @@ export const LogsExplorerPage: NextPageWithLayout = () => {
     editorRef.current?.setValue(rewriteProposal.modified)
     setEditorValue(rewriteProposal.modified)
     setRewriteProposal(null)
-    toast.success('Applied the ClickHouse rewrite')
+    toast.success($t('Applied the ClickHouse rewrite'))
   }
 
   const discardRewrite = () => setRewriteProposal(null)
@@ -505,14 +506,14 @@ export const LogsExplorerPage: NextPageWithLayout = () => {
               <div className="absolute inset-0 z-10 flex flex-col bg-studio">
                 <div className="flex items-center justify-between gap-2 border-b bg-surface-100 px-4 py-2">
                   <span className="text-xs text-foreground-light">
-                    Review the ClickHouse SQL rewrite before accepting it
+                    {$t('Review the ClickHouse SQL rewrite before accepting it')}
                   </span>
                   <div className="flex items-center gap-2">
                     <Button variant="default" size="tiny" onClick={discardRewrite}>
-                      Discard
+                      {$t('Discard')}
                     </Button>
                     <Button variant="primary" size="tiny" onClick={acceptRewrite}>
-                      Accept
+                      {$t('Accept')}
                     </Button>
                   </div>
                 </div>
@@ -567,7 +568,7 @@ export const LogsExplorerPage: NextPageWithLayout = () => {
 
 LogsExplorerPage.getLayout = (page) => (
   <DefaultLayout>
-    <LogsLayout title="Explorer">{page}</LogsLayout>
+    <LogsLayout title={$t('Explorer')}>{page}</LogsLayout>
   </DefaultLayout>
 )
 

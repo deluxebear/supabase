@@ -7,6 +7,7 @@ import Snippets from '@/components/interfaces/Docs/Snippets'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { useProjectPostgrestConfigQuery } from '@/data/config/project-postgrest-config-query'
 import { useProjectSettingsV2Query } from '@/data/config/project-settings-v2-query'
+import { t as $t } from '@/lib/i18n'
 
 interface Props {
   selectedLang: 'bash' | 'js'
@@ -29,18 +30,23 @@ export default function Introduction({ selectedLang }: Props) {
 
   return (
     <DocSection
-      title="Connect to your project"
+      title={$t('Connect to your project')}
       content={
         <>
           <p>
-            All projects have a RESTful endpoint that you can use with your project's API key to
-            query and manage your database. These can be obtained from the{' '}
-            <InlineLink href={`/project/${projectRef}/settings/api-keys`}>API settings</InlineLink>.
+            {$t(
+              "All projects have a RESTful endpoint that you can use with your project's API key to query and manage your database. These can be obtained from the"
+            )}{' '}
+            <InlineLink href={`/project/${projectRef}/settings/api-keys`}>
+              {$t('API settings')}
+            </InlineLink>
+            .
           </p>
           <p>
-            You can initialize a new Supabase client using the <code>createClient()</code> method.
-            The Supabase client is your entrypoint to the rest of the Supabase functionality and is
-            the easiest way to interact with everything we offer within the Supabase ecosystem.
+            {$t('You can initialize a new Supabase client using the')} <code>createClient()</code>{' '}
+            {$t(
+              'method. The Supabase client is your entrypoint to the rest of the Supabase functionality and is the easiest way to interact with everything we offer within the Supabase ecosystem.'
+            )}
           </p>
         </>
       }

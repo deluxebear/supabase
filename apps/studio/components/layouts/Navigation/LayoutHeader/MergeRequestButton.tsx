@@ -7,6 +7,7 @@ import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { useBranchUpdateMutation } from '@/data/branches/branch-update-mutation'
 import { useBranchesQuery } from '@/data/branches/branches-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export const MergeRequestButton = () => {
@@ -46,7 +47,7 @@ export const MergeRequestButton = () => {
         },
         {
           onSuccess: () => {
-            toast.success('Merge request created')
+            toast.success($t('Merge request created'))
             router.push(`/project/${selectedBranch.project_ref}/merge`)
             track('branch_create_merge_request_button_clicked', {
               branchType: selectedBranch.persistent ? 'persistent' : 'preview',

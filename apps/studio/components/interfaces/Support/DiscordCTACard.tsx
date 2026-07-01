@@ -7,6 +7,7 @@ import { Button } from 'ui'
 
 import { NO_ORG_MARKER } from './SupportForm.utils'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
+import { t as $t } from '@/lib/i18n'
 
 interface DiscordCTACardProps {
   organizationSlug?: string | null
@@ -54,9 +55,11 @@ export const DiscordCTACard = ({ organizationSlug }: DiscordCTACardProps) => {
             <div className="relative z-10">
               <div className="flex flex-col gap-3">
                 <div>
-                  <h5 className="text-sm font-medium text-white">Ask the Discord community</h5>
+                  <h5 className="text-sm font-medium text-white">
+                    {$t('Ask the Discord community')}
+                  </h5>
                   <p className="text-sm text-white/75">
-                    Many code-related questions are answered within minutes.
+                    {$t('Many code-related questions are answered within minutes.')}
                   </p>
                 </div>
 
@@ -69,7 +72,7 @@ export const DiscordCTACard = ({ organizationSlug }: DiscordCTACardProps) => {
                     }
                     className="bg-white hover:bg-white/90" // Force white button on all color schemes
                   >
-                    <span style={{ color: '#404EED' }}>Ask on Discord</span>
+                    <span style={{ color: '#404EED' }}>{$t('Ask on Discord')}</span>
                   </Button>
                 </Link>
               </div>

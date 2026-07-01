@@ -10,6 +10,7 @@ import {
 import MobileSheetNav from 'ui-patterns/MobileSheetNav/MobileSheetNav'
 
 import { OrganizationDropdown } from '@/components/layouts/AppLayout/OrganizationDropdown'
+import { t as $t } from '@/lib/i18n'
 import type { Organization } from '@/types'
 
 const embeddedClassName =
@@ -43,7 +44,7 @@ export function OrgSelectorSheet({
         className="flex flex-col flex-1 min-h-0 overflow-hidden p-0"
       >
         <SheetHeader className="border-0 border-default p-0 shrink-0">
-          <SheetTitle className="sr-only">Switch organization</SheetTitle>
+          <SheetTitle className="sr-only">{$t('Switch organization')}</SheetTitle>
           <TabsList_Shadcn_ className="w-full grid grid-cols-1 shrink-0">
             <TabsTrigger_Shadcn_
               value="organization"

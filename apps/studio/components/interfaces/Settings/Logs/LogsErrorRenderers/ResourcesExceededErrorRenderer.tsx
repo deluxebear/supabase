@@ -12,6 +12,7 @@ import {
 } from 'ui'
 
 import { ErrorRendererProps } from './DefaultErrorRenderer'
+import { t as $t } from '@/lib/i18n'
 
 const ResourcesExceededErrorRenderer: React.FC<ErrorRendererProps> = ({ error, isCustomQuery }) => {
   const errorAsJson = JSON.stringify(error, null, 2)
@@ -19,17 +20,17 @@ const ResourcesExceededErrorRenderer: React.FC<ErrorRendererProps> = ({ error, i
   return (
     <div className="flex flex-col gap-2 text-foreground-light">
       <div className="flex flex-col gap-1 text-sm">
-        <p>This query requires too much memory to be executed.</p>
+        <p>{$t('This query requires too much memory to be executed.')}</p>
         <p>
           {isCustomQuery
             ? 'Avoid selecting entire objects and instead select specific keys using dot notation.'
             : 'Avoid querying across a large datetime range.'}
         </p>
-        {!isCustomQuery && <p>Please contact support if this error persists.</p>}
+        {!isCustomQuery && <p>{$t('Please contact support if this error persists.')}</p>}
       </div>
       <Accordion className="text-sm" type="single">
         <AccordionItem value="1">
-          <AccordionTrigger>Full error message</AccordionTrigger>
+          <AccordionTrigger>{$t('Full error message')}</AccordionTrigger>
           <AccordionContent>
             <InputGroup>
               <InputGroupTextarea value={errorAsJson} className="font-mono" rows={5} />

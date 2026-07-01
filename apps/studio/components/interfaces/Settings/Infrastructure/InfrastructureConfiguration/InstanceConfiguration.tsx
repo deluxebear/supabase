@@ -14,6 +14,8 @@ import { useTheme } from 'next-themes'
 import Link from 'next/link'
 import { useEffect, useEffectEvent, useMemo, useState } from 'react'
 
+import { t as $t } from '@/lib/i18n'
+
 import '@xyflow/react/dist/style.css'
 
 import { useParams } from 'common'
@@ -288,7 +290,7 @@ const InstanceConfigurationUI = ({ diagramOnly = false }: InstanceConfigurationU
                       },
                     }}
                   >
-                    <Link href={newReplicaURL}>Deploy a new replica</Link>
+                    <Link href={newReplicaURL}>{$t('Deploy a new replica')}</Link>
                   </ButtonTooltip>
                   {replicas.length > 0 && (
                     <DropdownMenu>
@@ -302,12 +304,12 @@ const InstanceConfigurationUI = ({ diagramOnly = false }: InstanceConfigurationU
                       <DropdownMenuContent align="end" className="w-52 *:space-x-2">
                         <DropdownMenuItem asChild>
                           <Link href={`/project/${projectRef}/settings/compute-and-disk`}>
-                            Resize databases
+                            {$t('Resize databases')}
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => setShowDeleteAllModal(true)}>
-                          <div>Remove all replicas</div>
+                          <div>{$t('Remove all replicas')}</div>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

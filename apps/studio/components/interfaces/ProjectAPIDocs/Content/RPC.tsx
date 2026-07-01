@@ -8,6 +8,7 @@ import type { ContentProps } from './Content.types'
 import Table from '@/components/to-be-cleaned/Table'
 import { useProjectJsonSchemaQuery } from '@/data/docs/project-json-schema-query'
 import { useOpenAPISpecQuery } from '@/data/open-api/api-spec-query'
+import { t as $t } from '@/lib/i18n'
 import { useAppStateSnapshot } from '@/state/app-state'
 
 export const RPC = ({ language }: ContentProps) => {
@@ -61,12 +62,12 @@ export const RPC = ({ language }: ContentProps) => {
         <p className="text-sm text-foreground-light">{summary ?? 'No description available'}</p>
       </div>
       <div className="space-y-2 px-4 py-4">
-        <p className="text-sm text-foreground-light">Function arguments</p>
+        <p className="text-sm text-foreground-light">{$t('Function arguments')}</p>
         <Table
           head={[
-            <Table.th key="name">Name</Table.th>,
-            <Table.th key="format">Format</Table.th>,
-            <Table.th key="type">Type</Table.th>,
+            <Table.th key="name">{$t('Name')}</Table.th>,
+            <Table.th key="format">{$t('Format')}</Table.th>,
+            <Table.th key="type">{$t('Type')}</Table.th>,
             <Table.th key="required"></Table.th>,
           ]}
           body={parameters.map((parameter) => (
@@ -78,9 +79,9 @@ export const RPC = ({ language }: ContentProps) => {
               <Table.td title={parameter.type}>{parameter.type}</Table.td>
               <Table.td>
                 {parameter.required ? (
-                  <Badge variant="warning">Required</Badge>
+                  <Badge variant="warning">{$t('Required')}</Badge>
                 ) : (
-                  <Badge variant="default">Optional</Badge>
+                  <Badge variant="default">{$t('Optional')}</Badge>
                 )}
               </Table.td>
             </Table.tr>

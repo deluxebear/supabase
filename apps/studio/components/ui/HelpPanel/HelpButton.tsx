@@ -3,6 +3,7 @@ import { cn } from 'ui'
 
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -34,7 +35,7 @@ export const HelpButton = () => {
           isOpen && 'text-background group-hover:text-background'
         )}
       />
-      <span className="sr-only">Help</span>
+      <span className="sr-only">{$t('Help')}</span>
     </ButtonTooltip>
   )
 }

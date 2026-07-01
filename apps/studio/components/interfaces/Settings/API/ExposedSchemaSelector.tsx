@@ -20,6 +20,7 @@ import { useSchemasQuery } from '@/data/database/schemas-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { INTERNAL_SCHEMAS } from '@/hooks/useProtectedSchemas'
 import { pluralize } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 /**
  * [Joshen] This would only affect graphql_public and pgmq_public, given that they're intended
@@ -96,7 +97,7 @@ export const ExposedSchemaSelector = ({
         sameWidthAsTrigger
       >
         <Command>
-          <CommandInput className="text-xs" placeholder="Find schema..." />
+          <CommandInput className="text-xs" placeholder={$t('Find schema...')} />
           <CommandList>
             <CommandGroup>
               {isPending ? (
@@ -110,13 +111,15 @@ export const ExposedSchemaSelector = ({
                 </>
               ) : isError ? (
                 <div className="flex items-center py-3 justify-center">
-                  <p className="text-xs text-foreground-lighter">Failed to retrieve schemas</p>
+                  <p className="text-xs text-foreground-lighter">
+                    {$t('Failed to retrieve schemas')}
+                  </p>
                 </div>
               ) : (
                 <>
                   <CommandEmpty>
                     <p className="text-xs text-center text-foreground-lighter py-3">
-                      No schemas found
+                      {$t('No schemas found')}
                     </p>
                   </CommandEmpty>
                   <ScrollArea className={schemas.length > 7 ? 'h-[210px]' : ''}>
@@ -136,11 +139,11 @@ export const ExposedSchemaSelector = ({
                           </div>
                           {internalSchemasCannotExpose.has(schema) ? (
                             <span className="pl-6 text-warning text-xs tracking-tight">
-                              This schema is protected and should not be exposed
+                              {$t('This schema is protected and should not be exposed')}
                             </span>
                           ) : (
                             <span className="pl-6 text-foreground-lighter text-xs tracking-tight">
-                              This schema does not exist and can be safely removed
+                              {$t('This schema does not exist and can be safely removed')}
                             </span>
                           )}
                         </div>

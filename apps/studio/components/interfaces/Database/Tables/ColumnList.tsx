@@ -57,6 +57,7 @@ import { isTableLike } from '@/data/table-editor/table-editor-types'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useIsProtectedSchema } from '@/hooks/useProtectedSchemas'
+import { t as $t } from '@/lib/i18n'
 import type { SafePostgresColumn } from '@/lib/postgres-types'
 
 const getColumnTypeAffordancePresentation = (column: SafePostgresColumn) => {
@@ -153,7 +154,7 @@ export const ColumnList = ({
         <div className="w-full lg:w-52">
           <Input
             size="tiny"
-            placeholder="Filter columns"
+            placeholder={$t('Filter columns')}
             value={filterString}
             onChange={(e) => setFilterString(e.target.value)}
             icon={<Search />}
@@ -174,7 +175,7 @@ export const ColumnList = ({
               },
             }}
           >
-            New column
+            {$t('New column')}
           </ButtonTooltip>
         )}
       </div>
@@ -197,13 +198,13 @@ export const ColumnList = ({
                 <TableHead
                   className={cn(columns.length === 0 ? 'text-foreground-muted' : undefined)}
                 >
-                  Name
+                  {$t('Name')}
                 </TableHead>
                 <TableHead className={columns.length === 0 ? 'text-foreground-muted' : undefined}>
-                  Type
+                  {$t('Type')}
                 </TableHead>
                 <TableHead className={columns.length === 0 ? 'text-foreground-muted' : undefined}>
-                  Constraints
+                  {$t('Constraints')}
                 </TableHead>
                 <TableHead />
               </TableRow>
@@ -236,9 +237,10 @@ export const ColumnList = ({
               {isSuccess && columns.length === 0 && filterString.length === 0 && (
                 <TableRow className="[&>td]:hover:bg-inherit">
                   <TableCell colSpan={5}>
-                    <p className="text-sm text-foreground">No columns created yet</p>
+                    <p className="text-sm text-foreground">{$t('No columns created yet')}</p>
                     <p className="text-sm text-foreground-light">
-                      There are no columns in "{selectedTable?.schema}.{selectedTable?.name}"
+                      {$t('There are no columns in "')}
+                      {selectedTable?.schema}.{selectedTable?.name}"
                     </p>
                   </TableCell>
                 </TableRow>
@@ -254,7 +256,7 @@ export const ColumnList = ({
                       <ConstraintToken
                         key="primary"
                         icon={<Key size={12} strokeWidth={1.7} className="shrink-0" />}
-                        label="Primary"
+                        label={$t('Primary')}
                         variant="primary"
                       />
                     ) : null,
@@ -268,7 +270,7 @@ export const ColumnList = ({
                             className="shrink-0 text-foreground-muted"
                           />
                         }
-                        label="Foreign key"
+                        label={$t('Foreign key')}
                       />
                     ) : null,
                     column.is_unique || uniqueIndexColumns.has(column.name) ? (
@@ -281,7 +283,7 @@ export const ColumnList = ({
                             className="shrink-0 text-foreground-light"
                           />
                         }
-                        label="Unique"
+                        label={$t('Unique')}
                       />
                     ) : null,
                     column.is_identity ? (
@@ -294,7 +296,7 @@ export const ColumnList = ({
                             className="shrink-0 text-foreground-lighter"
                           />
                         }
-                        label="Identity"
+                        label={$t('Identity')}
                       />
                     ) : null,
                     <ConstraintToken
@@ -376,7 +378,7 @@ export const ColumnList = ({
                                 },
                               }}
                             >
-                              Edit
+                              {$t('Edit')}
                             </ButtonTooltip>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -399,7 +401,7 @@ export const ColumnList = ({
                                   }}
                                 >
                                   <Trash size={12} />
-                                  <p>Delete column</p>
+                                  <p>{$t('Delete column')}</p>
                                 </DropdownMenuItemTooltip>
                               </DropdownMenuContent>
                             </DropdownMenu>

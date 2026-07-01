@@ -48,6 +48,7 @@ import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const formId = 'pooling-configuration-form'
 
@@ -156,7 +157,7 @@ export const ConnectionPooling = () => {
     <PageSection id="connection-pooler">
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Connection pooling</PageSectionTitle>
+          <PageSectionTitle>{$t('Connection pooling')}</PageSectionTitle>
         </PageSectionSummary>
         <PageSectionAside>
           <DocsButton
@@ -169,12 +170,14 @@ export const ConnectionPooling = () => {
           <Admonition
             type="default"
             layout="responsive"
-            title="Dedicated pooler uses IPv6 by default"
-            description="Connections from IPv4-only networks require enabling the IPv4 add-on on your project instance."
+            title={$t('Dedicated pooler uses IPv6 by default')}
+            description={$t(
+              'Connections from IPv4-only networks require enabling the IPv4 add-on on your project instance.'
+            )}
             actions={
               <Button variant="default" asChild>
                 <Link href={`/project/${projectRef}/settings/addons?panel=ipv4`}>
-                  Enable IPv4 add-on
+                  {$t('Enable IPv4 add-on')}
                 </Link>
               </Button>
             }
@@ -222,22 +225,22 @@ export const ConnectionPooling = () => {
             {connectionPoolingUnavailable && (
               <Admonition
                 type="default"
-                title="Unable to retrieve pooling configuration"
-                description="Please start a new project to enable this feature"
+                title={$t('Unable to retrieve pooling configuration')}
+                description={$t('Please start a new project to enable this feature')}
               />
             )}
             {isSuccessPgbouncerConfig && !connectionPoolingUnavailable && (
               <>
                 <div className="flex flex-row gap-2 justify-between w-full">
                   <div className="flex flex-col text-sm">
-                    <h5 className="text-foreground font-normal">Connection poolers</h5>
+                    <h5 className="text-foreground font-normal">{$t('Connection poolers')}</h5>
                     <p className="text-foreground-lighter">
-                      Configuration is shared across all connection poolers.
+                      {$t('Configuration is shared across all connection poolers.')}
                     </p>
                   </div>
                   <div className="flex flex-row gap-1 items-center">
-                    <Badge>Shared</Badge>
-                    {!disablePoolModeSelection && <Badge>Dedicated</Badge>}
+                    <Badge>{$t('Shared')}</Badge>
+                    {!disablePoolModeSelection && <Badge>{$t('Dedicated')}</Badge>}
                   </div>
                 </div>
                 <Separator className="bg-border -mx-6 w-[calc(100%+3rem)] my-4" />
@@ -253,12 +256,13 @@ export const ConnectionPooling = () => {
                       render={({ field }) => (
                         <FormItemLayout
                           layout="flex-row-reverse"
-                          label="Connection pool size"
+                          label={$t('Connection pool size')}
                           description={
                             <p>
-                              The maximum number of connections made to the underlying Postgres
-                              cluster, per user+db combination. Pool size has a default of{' '}
-                              {defaultPoolSize} based on your compute size of {computeSize}.
+                              {$t(
+                                'The maximum number of connections made to the underlying Postgres cluster, per user+db combination. Pool size has a default of'
+                              )}{' '}
+                              {defaultPoolSize} {$t('based on your compute size of')} {computeSize}.
                             </p>
                           }
                           className="[&>div]:md:w-1/2 [&>div]:xl:w-2/5 [&>div>div]:w-full"
@@ -288,12 +292,14 @@ export const ConnectionPooling = () => {
                             (default_pool_size ?? 15) > maxConnData.maxConnections * 0.8 && (
                               <Alert variant="warning" className="mt-2">
                                 <AlertTitle className="text-foreground">
-                                  Pool size is greater than 80% of the max connections (
-                                  {maxConnData.maxConnections}) on your database
+                                  {$t('Pool size is greater than 80% of the max connections (')}
+                                  {maxConnData.maxConnections}
+                                  {$t(') on your database')}
                                 </AlertTitle>
                                 <AlertDescription>
-                                  This may result in instability and unreliability with your
-                                  database connections.
+                                  {$t(
+                                    'This may result in instability and unreliability with your database connections.'
+                                  )}
                                 </AlertDescription>
                               </Alert>
                             )}
@@ -310,18 +316,20 @@ export const ConnectionPooling = () => {
                       render={({ field }) => (
                         <FormItemLayout
                           layout="flex-row-reverse"
-                          label="Max client connections"
+                          label={$t('Max client connections')}
                           className="[&>div]:md:w-1/2 [&>div]:xl:w-2/5 [&>div>div]:w-full"
                           description={
                             <>
                               <p>
-                                The maximum number of concurrent client connections allowed. This
-                                value is fixed at {defaultMaxClientConn} based on your compute size
-                                of {computeSize} and cannot be changed.{' '}
+                                {$t(
+                                  'The maximum number of concurrent client connections allowed. This value is fixed at'
+                                )}{' '}
+                                {defaultMaxClientConn} {$t('based on your compute size of')}{' '}
+                                {computeSize} {$t('and cannot be changed.')}{' '}
                                 <InlineLink
                                   href={`${DOCS_URL}/guides/database/connection-management#configuring-supavisors-pool-size`}
                                 >
-                                  Learn more
+                                  {$t('Learn more')}
                                 </InlineLink>
                               </p>
                             </>

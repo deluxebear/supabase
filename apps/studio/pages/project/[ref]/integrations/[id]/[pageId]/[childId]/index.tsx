@@ -17,6 +17,7 @@ import { useAvailableIntegrations } from '@/components/interfaces/Integrations/L
 import { useInstalledIntegrations } from '@/components/interfaces/Integrations/Landing/useInstalledIntegrations'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { ProjectIntegrationsLayoutDispatch } from '@/components/layouts/ProjectIntegrationsLayoutDispatch'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const IntegrationPage: NextPageWithLayout = () => {
@@ -72,17 +73,17 @@ const IntegrationPage: NextPageWithLayout = () => {
           <PageHeader size="full">
             <PageHeaderMeta>
               <PageHeaderSummary>
-                <PageHeaderTitle>Integration not found</PageHeaderTitle>
+                <PageHeaderTitle>{$t('Integration not found')}</PageHeaderTitle>
                 <PageHeaderDescription>
-                  If you think this is an error, please contact support.
+                  {$t('If you think this is an error, please contact support.')}
                 </PageHeaderDescription>
               </PageHeaderSummary>
             </PageHeaderMeta>
           </PageHeader>
           <PageSection>
             <PageSectionContent>
-              <Admonition type="warning" title="This integration is not currently available">
-                Please try again later or contact support if the problem persists.
+              <Admonition type="warning" title={$t('This integration is not currently available')}>
+                {$t('Please try again later or contact support if the problem persists.')}
               </Admonition>
             </PageSectionContent>
           </PageSection>

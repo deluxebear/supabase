@@ -13,6 +13,7 @@ import { useMarketplaceCategoriesQuery } from '@/data/marketplace/integration-ca
 import { useMarketplaceIntegrationsQuery } from '@/data/marketplace/integrations-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { withAuth } from '@/hooks/misc/withAuth'
+import { t as $t } from '@/lib/i18n'
 
 /**
  * Layout component for the Integrations section
@@ -108,7 +109,7 @@ const IntegrationCategoriesMenu = ({ page }: { page: string }) => {
       {isLoading ? (
         <div className="px-4 py-6 md:px-6">
           <Menu type="pills">
-            <Menu.Group title={<span className="uppercase font-mono">Explore</span>} />
+            <Menu.Group title={<span className="uppercase font-mono">{$t('Explore')}</span>} />
           </Menu>
           <GenericSkeletonLoader />
         </div>
@@ -151,7 +152,7 @@ const InstalledIntegrationsMenu = ({ page }: { page: string }) => {
       {(isLoading || isError) && (
         <div className="px-4 py-6 md:px-6">
           <Menu type="pills">
-            <Menu.Group title={<span className="uppercase font-mono">Installed</span>} />
+            <Menu.Group title={<span className="uppercase font-mono">{$t('Installed')}</span>} />
           </Menu>
           {isLoading && <GenericSkeletonLoader />}
           {isError && (

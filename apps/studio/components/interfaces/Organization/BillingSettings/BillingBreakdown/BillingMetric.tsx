@@ -10,6 +10,7 @@ import { PricingMetric } from '@/data/analytics/org-daily-stats-query'
 import type { OrgSubscription } from '@/data/subscriptions/types'
 import type { OrgUsageResponse } from '@/data/usage/org-usage-query'
 import { formatCurrency } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export interface BillingMetricProps {
   idx: number
@@ -169,7 +170,7 @@ export const BillingMetric = ({
                 source={`billingBreakdownUsage${metric.anchor}`}
                 featureProposition={`to use ${metric.name}`}
               >
-                Upgrade
+                {$t('Upgrade')}
               </UpgradePlanButton>
             </div>
           )}
@@ -204,8 +205,9 @@ export const BillingMetric = ({
               (isApproachingLimit || isExceededLimit) && (
                 <div className="my-2">
                   <p className="text-sm">
-                    Exceeding your plans included usage will lead to restrictions to your project.
-                    Upgrade to a usage-based plan or disable the spend cap to avoid restrictions.
+                    {$t(
+                      'Exceeding your plans included usage will lead to restrictions to your project. Upgrade to a usage-based plan or disable the spend cap to avoid restrictions.'
+                    )}
                   </p>
                 </div>
               )}
@@ -214,8 +216,8 @@ export const BillingMetric = ({
               <table className="list-disc w-full">
                 <thead>
                   <tr>
-                    <th className="text-left">Project</th>
-                    <th className="text-right">Usage</th>
+                    <th className="text-left">{$t('Project')}</th>
+                    <th className="text-right">{$t('Usage')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -232,7 +234,8 @@ export const BillingMetric = ({
                 <tfoot>
                   <tr>
                     <td className="py-2 border-t text-left">
-                      Total{unit && <span> ({unit})</span>}
+                      {$t('Total')}
+                      {unit && <span> ({unit})</span>}
                     </td>
                     <td className="py-2 border-t text-right">
                       {formatUsage(usageMeta.metric as PricingMetric, {

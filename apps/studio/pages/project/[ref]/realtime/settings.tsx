@@ -14,6 +14,7 @@ import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import RealtimeLayout from '@/components/layouts/RealtimeLayout/RealtimeLayout'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const RealtimeSettingsPage: NextPageWithLayout = () => {
@@ -22,9 +23,9 @@ const RealtimeSettingsPage: NextPageWithLayout = () => {
       <PageHeader>
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Realtime Settings</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Realtime Settings')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Configure your project's Realtime settings
+              {$t("Configure your project's Realtime settings")}
             </PageHeaderDescription>
           </PageHeaderSummary>
           <PageHeaderAside>
@@ -45,7 +46,7 @@ const RealtimeSettingsPage: NextPageWithLayout = () => {
 
 RealtimeSettingsPage.getLayout = (page) => (
   <DefaultLayout>
-    <RealtimeLayout title="Realtime Settings">{page}</RealtimeLayout>
+    <RealtimeLayout title={$t('Realtime Settings')}>{page}</RealtimeLayout>
   </DefaultLayout>
 )
 

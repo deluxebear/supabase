@@ -1,6 +1,7 @@
 import * as z from 'zod'
 
 import type { AuthTemplate, TemplateVariable, TemplateVariableName } from './EmailTemplates.types'
+import { t as $t } from '@/lib/i18n'
 
 const TemplateVariables: Record<TemplateVariableName, TemplateVariable> = {
   ConfirmationURL: {
@@ -63,8 +64,8 @@ const TemplateVariables: Record<TemplateVariableName, TemplateVariable> = {
     value: '{{ .Data }}',
     description: (
       <>
-        User's <code className="text-code-inline">user_metadata</code>, use this to personalize the
-        message
+        {$t("User's")} <code className="text-code-inline">user_metadata</code>
+        {$t(', use this to personalize the message')}
       </>
     ),
   },
@@ -73,8 +74,8 @@ const TemplateVariables: Record<TemplateVariableName, TemplateVariable> = {
     value: '{{ .RedirectTo }}',
     description: (
       <>
-        Redirect URL passed as the <code className="text-code-inline">redirectTo</code> option in
-        the auth method call
+        {$t('Redirect URL passed as the')} <code className="text-code-inline">redirectTo</code>{' '}
+        {$t('option in the auth method call')}
       </>
     ),
   },

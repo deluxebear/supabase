@@ -16,6 +16,7 @@ import { useMfaChallengeAndVerifyMutation } from '@/data/profile/mfa-challenge-a
 import { useMfaEnrollMutation } from '@/data/profile/mfa-enroll-mutation'
 import { useMfaUnenrollMutation } from '@/data/profile/mfa-unenroll-mutation'
 import { useLastVisitedOrganization } from '@/hooks/misc/useLastVisitedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 type TOTP = { qr_code: string; secret: string; uri: string }
 
@@ -84,7 +85,7 @@ const FirstStep = ({ visible, isEnrolling, enroll, onClose }: FirstStepProps) =>
     <ConfirmationModal
       size="medium"
       visible={visible}
-      title="Add a new authenticator app as a factor"
+      title={$t('Add a new authenticator app as a factor')}
       confirmLabel="Generate QR"
       confirmLabelLoading="Generating QR"
       loading={isEnrolling}
@@ -104,8 +105,8 @@ const FirstStep = ({ visible, isEnrolling, enroll, onClose }: FirstStepProps) =>
             render={({ field }) => (
               <FormItemLayout
                 name="name"
-                label="Provide a name to identify this app"
-                description="A string will be randomly generated if a name is not provided"
+                label={$t('Provide a name to identify this app')}
+                description={$t('A string will be randomly generated if a name is not provided')}
               >
                 <FormControl>
                   <Input id="name" {...field} />
@@ -169,7 +170,7 @@ const SecondStep = ({
   })
 
   const onSubmit: SubmitHandler<z.infer<typeof FormSchema>> = async (values) => {
-    if (!factor) return toast.error('Factor required')
+    if (!factor) return toast.error($t('Factor required'))
     challengeAndVerify({ factorId: factor.id, code: values.code })
   }
 
@@ -201,8 +202,9 @@ const SecondStep = ({
       onConfirm={form.handleSubmit(onSubmit)}
     >
       <p className="text-sm">
-        Use an authenticator app to scan the following QR code, and provide the code from the app to
-        complete the enrolment.
+        {$t(
+          'Use an authenticator app to scan the following QR code, and provide the code from the app to complete the enrolment.'
+        )}
       </p>
 
       {isLoading && (
@@ -220,11 +222,11 @@ const SecondStep = ({
           </div>
 
           <InformationBox
-            title="Unable to scan?"
+            title={$t('Unable to scan?')}
             description={
               <FormItemLayout
                 isReactForm={false}
-                label="You can also enter this secret key into your authenticator app"
+                label={$t('You can also enter this secret key into your authenticator app')}
               >
                 <PasswordInput copy disabled id="ref" size="small" value={factor.totp.secret} />
               </FormItemLayout>
@@ -242,7 +244,7 @@ const SecondStep = ({
                 name="code"
                 control={form.control}
                 render={({ field }) => (
-                  <FormItemLayout name="code" label="Authentication code">
+                  <FormItemLayout name="code" label={$t('Authentication code')}>
                     <FormControl>
                       <Input
                         id="code"

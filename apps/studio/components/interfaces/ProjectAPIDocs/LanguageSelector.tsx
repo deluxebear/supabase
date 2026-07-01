@@ -12,6 +12,7 @@ import {
 } from 'ui'
 
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useAppStateSnapshot } from '@/state/app-state'
 
 interface LanguageSelectorProps {
@@ -66,14 +67,14 @@ const LanguageSelector = ({ simplifiedVersion = false }: LanguageSelectorProps) 
                   onSelect={() => updateLanguage('js')}
                   onClick={() => updateLanguage('js')}
                 >
-                  <p>Javascript</p>
+                  <p>{$t('Javascript')}</p>
                 </CommandItem>
                 <CommandItem
                   className="cursor-pointer"
                   onSelect={() => updateLanguage('bash')}
                   onClick={() => updateLanguage('bash')}
                 >
-                  <p>Bash</p>
+                  <p>{$t('Bash')}</p>
                 </CommandItem>
               </CommandGroup>
             </CommandList>

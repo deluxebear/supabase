@@ -24,6 +24,7 @@ import * as z from 'zod'
 
 import { Shortcut } from '@/components/ui/Shortcut'
 import { useAPIKeyCreateMutation } from '@/data/api-keys/api-key-create-mutation'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 const FORM_ID = 'create-publishable-api-key'
@@ -87,16 +88,16 @@ export const CreatePublishableAPIKeyDialog = () => {
         tooltipOpen={visible === 'publishable' ? false : undefined}
       >
         <Button variant="default" icon={<Plus />} onClick={openDialog}>
-          New publishable key
+          {$t('New publishable key')}
         </Button>
       </Shortcut>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create new publishable API key</DialogTitle>
+          <DialogTitle>{$t('Create new publishable API key')}</DialogTitle>
           <DialogDescription>
-            Publishable API keys are used to authorize requests to your project from the web, mobile
-            or desktop apps, CLIs or other public components of your application. They are safe to
-            be published online and embedded in code.
+            {$t(
+              'Publishable API keys are used to authorize requests to your project from the web, mobile or desktop apps, CLIs or other public components of your application. They are safe to be published online and embedded in code.'
+            )}
           </DialogDescription>
         </DialogHeader>
         <DialogSectionSeparator />
@@ -114,8 +115,10 @@ export const CreatePublishableAPIKeyDialog = () => {
                 control={form.control}
                 render={({ field }) => (
                   <FormItemLayout
-                    label="Name"
-                    description="A short name of lowercase alphanumeric characters and underscore, must start with letter or underscore."
+                    label={$t('Name')}
+                    description={$t(
+                      'A short name of lowercase alphanumeric characters and underscore, must start with letter or underscore.'
+                    )}
                   >
                     <FormControl>
                       <Input {...field} />
@@ -129,8 +132,8 @@ export const CreatePublishableAPIKeyDialog = () => {
                 control={form.control}
                 render={({ field }) => (
                   <FormItemLayout
-                    label="Description"
-                    description="Provide a description about what this key is used for."
+                    label={$t('Description')}
+                    description={$t('Provide a description about what this key is used for.')}
                   >
                     <FormControl>
                       <Input {...field} placeholder="(Optional)" />
@@ -149,7 +152,7 @@ export const CreatePublishableAPIKeyDialog = () => {
             side="top"
           >
             <Button form={FORM_ID} type="submit" loading={isCreatingAPIKey}>
-              Create Publishable API key
+              {$t('Create Publishable API key')}
             </Button>
           </Shortcut>
         </DialogFooter>

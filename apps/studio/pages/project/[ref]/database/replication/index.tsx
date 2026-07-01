@@ -10,6 +10,7 @@ import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useHighAvailability } from '@/hooks/misc/useHighAvailability'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { PipelineRequestStatusProvider } from '@/state/replication-pipeline-request-status'
 import type { NextPageWithLayout } from '@/types'
 
@@ -26,8 +27,10 @@ const DatabaseReplicationPage: NextPageWithLayout = () => {
     return (
       <div className="flex h-full w-full items-center justify-center p-6">
         <HighAvailabilityDisabledEmptyState
-          title="Replication unavailable on High Availability projects"
-          description="We're working to bring replication to High Availability projects. Contact support if this is blocking your work."
+          title={$t('Replication unavailable on High Availability projects')}
+          description={$t(
+            "We're working to bring replication to High Availability projects. Contact support if this is blocking your work."
+          )}
         />
       </div>
     )
@@ -39,11 +42,12 @@ const DatabaseReplicationPage: NextPageWithLayout = () => {
         <ScaffoldSection isFullWidth>
           <div className="w-full mb-6">
             <div className="flex items-center gap-x-2 mb-1">
-              <h3 className="text-foreground text-xl prose">Replication</h3>
+              <h3 className="text-foreground text-xl prose">{$t('Replication')}</h3>
             </div>
             <p className="prose text-sm max-w-full">
-              Deploy Read Replicas across multiple regions, or use Pipelines to replicate database
-              changes to analytics destinations.
+              {$t(
+                'Deploy Read Replicas across multiple regions, or use Pipelines to replicate database changes to analytics destinations.'
+              )}
             </p>
           </div>
         </ScaffoldSection>
@@ -69,7 +73,7 @@ const DatabaseReplicationPage: NextPageWithLayout = () => {
 
 DatabaseReplicationPage.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Replication">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Replication')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

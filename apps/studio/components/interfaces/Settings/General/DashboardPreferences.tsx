@@ -37,6 +37,7 @@ import { DatabaseSelector } from '@/components/ui/DatabaseSelector'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
+import { t as $t } from '@/lib/i18n'
 
 const formSchema = z.object({
   defaultDatabase: z.string().optional(),
@@ -81,14 +82,14 @@ export const DashboardPreferences = () => {
     if (!projectRef) return console.error('Ref is required')
     setDashboardPreferences(values)
     form.reset(values)
-    toast.success('Successfully saved dashboard preferences!')
+    toast.success($t('Successfully saved dashboard preferences!'))
   }
 
   return (
     <PageSection>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle id="queries">Queries</PageSectionTitle>
+          <PageSectionTitle id="queries">{$t('Queries')}</PageSectionTitle>
         </PageSectionSummary>
       </PageSectionMeta>
 
@@ -96,7 +97,9 @@ export const DashboardPreferences = () => {
         {/* [Joshen] Ideally we're able to persist this for all users in the project, but will need support in our middleware */}
         <Admonition
           type="note"
-          description="These preferences control only your experience in the dashboard. Other members of this project will not be affected."
+          description={$t(
+            'These preferences control only your experience in the dashboard. Other members of this project will not be affected.'
+          )}
         />
 
         {isLoading ? (
@@ -116,11 +119,12 @@ export const DashboardPreferences = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Preferred database for dashboard queries"
+                        label={$t('Preferred database for dashboard queries')}
                         description={
                           <p>
-                            All read queries from the dashboard will run against the selected
-                            database by default
+                            {$t(
+                              'All read queries from the dashboard will run against the selected database by default'
+                            )}
                             <DashboardQueriesDialog />
                           </p>
                         }
@@ -152,11 +156,11 @@ export const DashboardPreferences = () => {
                       type="button"
                       onClick={() => form.reset(dashboardPreferences)}
                     >
-                      Cancel
+                      {$t('Cancel')}
                     </Button>
                   )}
                   <Button variant="primary" type="submit" disabled={!form.formState.isDirty}>
-                    Save changes
+                    {$t('Save changes')}
                   </Button>
                 </CardFooter>
               </Card>
@@ -177,27 +181,34 @@ const DashboardQueriesDialog = () => {
       </DialogTrigger>
       <DialogContent aria-describedby={undefined}>
         <DialogHeader>
-          <DialogTitle>How does the dashboard interact with your project's database?</DialogTitle>
+          <DialogTitle>
+            {$t("How does the dashboard interact with your project's database?")}
+          </DialogTitle>
         </DialogHeader>
 
         <DialogSectionSeparator />
 
         <DialogSection className="flex flex-col gap-y-2">
           <p className="text-sm">
-            The dashboard queries your project's database to display data across various interfaces,
-            such as the <InlineLink href={`/project/${ref}/editor`}>Table Editor</InlineLink>, the{' '}
-            <InlineLink href={`/project/${ref}/auth/users`}>Auth Users</InlineLink> page, and more.
+            {$t(
+              "The dashboard queries your project's database to display data across various interfaces, such as the"
+            )}{' '}
+            <InlineLink href={`/project/${ref}/editor`}>{$t('Table Editor')}</InlineLink>
+            {$t(', the')}{' '}
+            <InlineLink href={`/project/${ref}/auth/users`}>{$t('Auth Users')}</InlineLink>{' '}
+            {$t('page, and more.')}
           </p>
 
           <p className="text-sm">
-            You can route these queries to a read replica instead, which will help reduce load on
-            your primary database.
+            {$t(
+              'You can route these queries to a read replica instead, which will help reduce load on your primary database.'
+            )}
           </p>
         </DialogSection>
 
         <DialogFooter>
           <DialogClose asChild className="opacity-100">
-            <Button variant="default">Understood</Button>
+            <Button variant="default">{$t('Understood')}</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

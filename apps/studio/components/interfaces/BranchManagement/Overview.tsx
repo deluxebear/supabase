@@ -42,6 +42,7 @@ import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface OverviewProps {
   isGithubConnected: boolean
@@ -120,15 +121,16 @@ export const Overview = ({
           persistentBranches.length === 0 && (
             <div className="px-6 py-10 flex items-center justify-between">
               <div className="flex flex-col gap-0.5">
-                <p className="text-sm">Upgrade to unlock persistent branches</p>
+                <p className="text-sm">{$t('Upgrade to unlock persistent branches')}</p>
                 <p className="text-sm text-foreground-lighter text-balance">
-                  Persistent branches are long-lived, cannot be reset, and are ideal for staging
-                  environments.
+                  {$t(
+                    'Persistent branches are long-lived, cannot be reset, and are ideal for staging environments.'
+                  )}
                 </p>
               </div>
               <Button variant="primary" asChild>
                 <Link href={`/org/${selectedOrg?.slug}/billing?panel=subscriptionPlan`}>
-                  Upgrade
+                  {$t('Upgrade')}
                 </Link>
               </Button>
             </div>
@@ -138,10 +140,11 @@ export const Overview = ({
           hasAccessToPersistentBranching &&
           persistentBranches.length === 0 && (
             <div className="flex items-center flex-col gap-0.5 justify-center w-full py-10">
-              <p>No persistent branches</p>
+              <p>{$t('No persistent branches')}</p>
               <p className="text-foreground-lighter text-center text-balance">
-                Persistent branches are long-lived, cannot be reset, and are ideal for staging
-                environments.
+                {$t(
+                  'Persistent branches are long-lived, cannot be reset, and are ideal for staging environments.'
+                )}
               </p>
             </div>
           )}
@@ -198,7 +201,7 @@ export const Overview = ({
         {isLoading && <BranchLoader />}
         {isSuccess && scheduledForDeletionBranches.length === 0 && (
           <div className="flex items-center flex-col gap-0.5 justify-center w-full py-10">
-            <p className="text-foreground-lighter">No branches scheduled for deletion</p>
+            <p className="text-foreground-lighter">{$t('No branches scheduled for deletion')}</p>
           </div>
         )}
         {isSuccess &&
@@ -268,14 +271,14 @@ const PreviewBranchActions = ({
 
   const { mutate: resetBranch, isPending: isResetting } = useBranchResetMutation({
     onSuccess() {
-      toast.success('Success! Please allow a few seconds for the branch to reset.')
+      toast.success($t('Success! Please allow a few seconds for the branch to reset.'))
       setShowConfirmResetModal(false)
     },
   })
 
   const { mutate: updateBranch, isPending: isUpdatingBranch } = useBranchUpdateMutation({
     onSuccess() {
-      toast.success('Successfully updated branch')
+      toast.success($t('Successfully updated branch'))
       setShowBranchModeSwitch(false)
       if (projectRef) {
         queryClient.invalidateQueries({ queryKey: branchKeys.list(projectRef) })
@@ -284,14 +287,14 @@ const PreviewBranchActions = ({
   })
   const { mutate: restoreBranch } = useBranchRestoreMutation({
     onSuccess() {
-      toast.success('Success! Please allow a few minutes for the branch to restore.')
+      toast.success($t('Success! Please allow a few minutes for the branch to restore.'))
       setShowBranchModeSwitch(false)
     },
   })
 
   const { mutate: branchPushMutate, isPending: isRetriggering } = useBranchPushMutation({
     onSuccess() {
-      toast.success('Success! Please allow a few minutes for the branch to update.')
+      toast.success($t('Success! Please allow a few minutes for the branch to update.'))
       setShowConfirmRetriggersModal(false)
     },
     onError: (data) => {
@@ -358,7 +361,7 @@ const PreviewBranchActions = ({
               },
             }}
           >
-            <Pencil size={14} /> Edit branch
+            <Pencil size={14} /> {$t('Edit branch')}
           </DropdownMenuItemTooltip>
 
           {!branch.deletion_scheduled_at && (
@@ -405,7 +408,7 @@ const PreviewBranchActions = ({
                   },
                 }}
               >
-                <RefreshCw size={14} /> Reset branch
+                <RefreshCw size={14} /> {$t('Reset branch')}
               </DropdownMenuItemTooltip>
               <DropdownMenuItemTooltip
                 className="gap-x-2"
@@ -433,11 +436,11 @@ const PreviewBranchActions = ({
               >
                 {branch.persistent ? (
                   <>
-                    <Clock size={14} /> Switch to preview
+                    <Clock size={14} /> {$t('Switch to preview')}
                   </>
                 ) : (
                   <>
-                    <Infinity size={14} className="scale-110" /> Switch to persistent
+                    <Infinity size={14} className="scale-110" /> {$t('Switch to persistent')}
                   </>
                 )}
               </DropdownMenuItemTooltip>
@@ -453,7 +456,7 @@ const PreviewBranchActions = ({
                 href={generateCreatePullRequestURL(branch.git_branch)}
                 onClick={(e) => e.stopPropagation()}
               >
-                <ExternalLink size={14} /> Create pull request
+                <ExternalLink size={14} /> {$t('Create pull request')}
               </a>
             </DropdownMenuItem>
           )}
@@ -480,7 +483,7 @@ const PreviewBranchActions = ({
                 },
               }}
             >
-              <Clock size={14} /> Restore branch
+              <Clock size={14} /> {$t('Restore branch')}
             </DropdownMenuItemTooltip>
           )}
 
@@ -500,7 +503,7 @@ const PreviewBranchActions = ({
               },
             }}
           >
-            <Trash2 size={14} /> Delete branch
+            <Trash2 size={14} /> {$t('Delete branch')}
           </DropdownMenuItemTooltip>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -511,7 +514,7 @@ const PreviewBranchActions = ({
         onCancel={() => setShowConfirmResetModal(false)}
         onConfirm={onConfirmReset}
         loading={isResetting}
-        title="Reset branch"
+        title={$t('Reset branch')}
         confirmLabel="Reset branch"
         confirmPlaceholder="Type in name of branch"
         confirmString={branch?.name ?? ''}
@@ -524,14 +527,15 @@ const PreviewBranchActions = ({
         variant="default"
         visible={showBranchModeSwitch}
         confirmLabel={branch.persistent ? 'Switch to preview' : 'Switch to persistent'}
-        title="Confirm branch mode switch"
+        title={$t('Confirm branch mode switch')}
         loading={isUpdatingBranch}
         onCancel={() => setShowBranchModeSwitch(false)}
         onConfirm={onTogglePersistent}
       >
         <p className="text-sm text-foreground-light">
-          Are you sure you want to switch the branch "{branch.name}" to{' '}
-          {branch.persistent ? 'preview' : 'persistent'}?
+          {$t('Are you sure you want to switch the branch "')}
+          {branch.name}
+          {$t('" to')} {branch.persistent ? 'preview' : 'persistent'}?
         </p>
       </ConfirmationModal>
 
@@ -555,13 +559,15 @@ const PreviewBranchActions = ({
         variant="warning"
         visible={showPersistentBranchDeleteConfirmationModal}
         confirmLabel="Switch to preview"
-        title="Branch must be switched to preview before deletion"
+        title={$t('Branch must be switched to preview before deletion')}
         loading={isUpdatingBranch}
         onCancel={() => setShowPersistentBranchDeleteConfirmationModal(false)}
         onConfirm={onTogglePersistent}
       >
         <p className="text-sm text-foreground-light">
-          You must switch the branch "{branch.name}" to preview before deleting it.
+          {$t('You must switch the branch "')}
+          {branch.name}
+          {$t('" to preview before deleting it.')}
         </p>
       </ConfirmationModal>
 
@@ -584,7 +590,7 @@ const MainBranchActions = ({ branch, repo }: { branch: Branch; repo: string }) =
   )
   const { mutate: branchPushMutate, isPending: isRetriggering } = useBranchPushMutation({
     onSuccess() {
-      toast.success('Success! Please allow a few minutes for the branch to update.')
+      toast.success($t('Success! Please allow a few minutes for the branch to update.'))
       setShowConfirmRetriggersModal(false)
     },
     onError: (data) => {
@@ -608,7 +614,7 @@ const MainBranchActions = ({ branch, repo }: { branch: Branch; repo: string }) =
           {repo ? (
             <Link passHref href={`/project/${projectRef}/settings/integrations`}>
               <DropdownMenuItem asChild className="gap-x-2">
-                <a>Change production branch</a>
+                <a>{$t('Change production branch')}</a>
               </DropdownMenuItem>
             </Link>
           ) : (
@@ -618,7 +624,7 @@ const MainBranchActions = ({ branch, repo }: { branch: Branch; repo: string }) =
               onSelect={() => setShowEditBranchModal(true)}
               onClick={() => setShowEditBranchModal(true)}
             >
-              <Pencil size={14} /> Edit Branch
+              <Pencil size={14} /> {$t('Edit Branch')}
             </DropdownMenuItem>
           )}
           {branch.git_branch ? (
@@ -642,7 +648,7 @@ const MainBranchActions = ({ branch, repo }: { branch: Branch; repo: string }) =
                 },
               }}
             >
-              <Redo size={14} /> Resync branch
+              <Redo size={14} /> {$t('Resync branch')}
             </DropdownMenuItemTooltip>
           ) : null}
         </DropdownMenuContent>
@@ -657,13 +663,13 @@ const MainBranchActions = ({ branch, repo }: { branch: Branch; repo: string }) =
         variant="default"
         visible={showConfirmRetriggersModal}
         confirmLabel="Resync"
-        title="Confirm branch resync"
+        title={$t('Confirm branch resync')}
         loading={isRetriggering}
         onCancel={() => setShowConfirmRetriggersModal(false)}
         onConfirm={onRetriggerBranch}
       >
         <p className="text-sm text-foreground-light">
-          This will re-run all steps of the workflow based on the latest git branch state.
+          {$t('This will re-run all steps of the workflow based on the latest git branch state.')}
         </p>
       </ConfirmationModal>
     </>

@@ -13,6 +13,7 @@ import { getEditorSelectionParts } from '@/components/ui/AIEditor/utils'
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
@@ -261,8 +262,10 @@ export const MonacoEditor = ({
         <Admonition
           type="default"
           className="rounded-none border-0 border-b"
-          title="Read-only snippet"
-          description="This snippet has been shared to the project and is only editable by the owner who created this snippet. You may duplicate this snippet into a personal copy by right clicking on the snippet and selecting “Duplicate query”."
+          title={$t('Read-only snippet')}
+          description={$t(
+            'This snippet has been shared to the project and is only editable by the owner who created this snippet. You may duplicate this snippet into a personal copy by right clicking on the snippet and selecting “Duplicate query”.'
+          )}
         />
       )}
       <CodeEditor

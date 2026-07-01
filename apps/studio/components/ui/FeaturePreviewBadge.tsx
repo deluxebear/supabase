@@ -2,6 +2,7 @@ import { FlaskConical } from 'lucide-react'
 import { Badge, cn } from 'ui'
 
 import { useFeaturePreviewModal } from '@/components/interfaces/App/FeaturePreview/FeaturePreviewContext'
+import { t as $t } from '@/lib/i18n'
 
 interface FeaturePreviewBadgeProps {
   featureKey: string
@@ -16,7 +17,7 @@ export const FeaturePreviewBadge = ({ featureKey, className }: FeaturePreviewBad
       type="button"
       onClick={() => selectFeaturePreview(featureKey)}
       className="group flex items-center"
-      title="Feature preview — click to manage"
+      title={$t('Feature preview — click to manage')}
     >
       <Badge
         variant="default"
@@ -26,7 +27,8 @@ export const FeaturePreviewBadge = ({ featureKey, className }: FeaturePreviewBad
         )}
       >
         <FlaskConical size={8} strokeWidth={1.5} />
-        Preview
+
+        {$t('Preview')}
       </Badge>
     </button>
   )

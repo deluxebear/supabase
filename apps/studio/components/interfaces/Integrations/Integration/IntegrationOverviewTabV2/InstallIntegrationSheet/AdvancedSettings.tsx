@@ -23,6 +23,7 @@ import { useDatabaseExtensionsQuery } from '@/data/database-extensions/database-
 import { useSchemasQuery } from '@/data/database/schemas-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useProtectedSchemas } from '@/hooks/useProtectedSchemas'
+import { t as $t } from '@/lib/i18n'
 
 type AdvancedSettingsProps = InstallIntegrationSheetProps & {
   extensionsSchema: ExtensionsSchema
@@ -57,11 +58,11 @@ export const AdvancedSettings = ({
       <Accordion type="single" collapsible>
         <AccordionItem value="advanced-settings" className="border-none">
           <AccordionTrigger className="font-normal gap-2 py-0 justify-between text-sm hover:no-underline">
-            Advanced settings
+            {$t('Advanced settings')}
           </AccordionTrigger>
           <AccordionContent className="pb-0! pt-3 [&>div]:flex [&>div]:flex-col [&>div]:gap-y-4">
             <p className="text-foreground-light">
-              Select which schemas to install the database extensions under
+              {$t('Select which schemas to install the database extensions under')}
             </p>
             {requiredExtensionNames.map((extName) => {
               const ext = extensions.find((x) => x.name === extName)
@@ -79,17 +80,19 @@ export const AdvancedSettings = ({
                   description={
                     ext?.installed_version ? (
                       <>
-                        Installed in <code className="text-code-inline">{ext.schema}</code> schema
+                        {$t('Installed in')} <code className="text-code-inline">{ext.schema}</code>{' '}
+                        schema
                       </>
                     ) : defaultSchema ? (
                       <>
-                        Must be installed in the{' '}
+                        {$t('Must be installed in the')}{' '}
                         <code className="text-code-inline">{defaultSchema}</code> schema
                       </>
                     ) : recommendedSchema ? (
                       <>
-                        Use the <code className="text-code-inline">{recommendedSchema}</code> schema
-                        for full compatibility with related features
+                        {$t('Use the')}{' '}
+                        <code className="text-code-inline">{recommendedSchema}</code>{' '}
+                        {$t('schema for full compatibility with related features')}
                       </>
                     ) : undefined
                   }
@@ -108,10 +111,10 @@ export const AdvancedSettings = ({
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a schema" />
+                      <SelectValue placeholder={$t('Select a schema')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="custom">Create a new schema</SelectItem>
+                      <SelectItem value="custom">{$t('Create a new schema')}</SelectItem>
                       <SelectSeparator />
                       {availableSchemas.map((schema) => {
                         return (
@@ -119,10 +122,10 @@ export const AdvancedSettings = ({
                             {schema.name}
                             {schema.name === recommendedSchema ? (
                               <Badge className="ml-2" variant="success">
-                                Recommended
+                                {$t('Recommended')}
                               </Badge>
                             ) : schema.name === 'extensions' ? (
-                              <Badge className="ml-2">Default</Badge>
+                              <Badge className="ml-2">{$t('Default')}</Badge>
                             ) : null}
                           </SelectItem>
                         )
@@ -131,7 +134,7 @@ export const AdvancedSettings = ({
                       !availableSchemas.some((schema) => schema.name === defaultSchema) ? (
                         <SelectItem key={defaultSchema} value={defaultSchema}>
                           {defaultSchema}
-                          <Badge className="ml-2">Default</Badge>
+                          <Badge className="ml-2">{$t('Default')}</Badge>
                         </SelectItem>
                       ) : null}
                     </SelectContent>
@@ -141,7 +144,7 @@ export const AdvancedSettings = ({
                     <FormItemLayout
                       isReactForm={false}
                       className="mt-2"
-                      label="Provide a name for your new schema"
+                      label={$t('Provide a name for your new schema')}
                     >
                       <Input
                         value={value}
@@ -154,7 +157,7 @@ export const AdvancedSettings = ({
                             },
                           }))
                         }
-                        placeholder="Provide a name for your schema"
+                        placeholder={$t('Provide a name for your schema')}
                       />
                     </FormItemLayout>
                   )}

@@ -15,6 +15,7 @@ import {
 } from 'ui'
 
 import { FileData } from './FileExplorerAndEditor.types'
+import { t as $t } from '@/lib/i18n'
 
 type FileExplorerAndEditorRowProps = INodeRendererProps & {
   files: FileData[]
@@ -109,7 +110,8 @@ export const FileExplorerAndEditorRow = ({
             onFocusCapture={(e) => e.stopPropagation()}
           >
             <Edit size={14} />
-            Rename file
+
+            {$t('Rename file')}
           </ContextMenuItem>
 
           {files.length > 1 && (
@@ -125,7 +127,8 @@ export const FileExplorerAndEditorRow = ({
                 onFocusCapture={(e) => e.stopPropagation()}
               >
                 <Trash size={14} />
-                Delete file
+
+                {$t('Delete file')}
               </ContextMenuItem>
             </>
           )}

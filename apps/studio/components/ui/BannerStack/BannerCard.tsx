@@ -2,6 +2,7 @@ import { X } from 'lucide-react'
 import { Button, Card, CardContent, cn } from 'ui'
 
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface BannerCardProps {
   onDismiss?: () => void
@@ -15,12 +16,12 @@ export const BannerCard = ({ onDismiss, children, className }: BannerCardProps) 
       <div className="absolute -inset-16 z-0 opacity-100 pointer-events-none">
         <img
           src={`${BASE_PATH}/img/reports/bg-grafana-dark.svg`}
-          alt="Background pattern"
+          alt={$t('Background pattern')}
           className="w-full h-full object-cover object-right hidden dark:block"
         />
         <img
           src={`${BASE_PATH}/img/reports/bg-grafana-light.svg`}
-          alt="Background pattern"
+          alt={$t('Background pattern')}
           className="w-full h-full object-cover object-right dark:hidden"
         />
         <div className="absolute inset-0 bg-linear-to-r from-background-alternative to-transparent" />
@@ -39,7 +40,7 @@ export const BannerCard = ({ onDismiss, children, className }: BannerCardProps) 
                 onDismiss()
               }}
               className="opacity-75 hover:opacity-100 px-1"
-              aria-label="Close banner"
+              aria-label={$t('Close banner')}
             />
           </div>
         )}

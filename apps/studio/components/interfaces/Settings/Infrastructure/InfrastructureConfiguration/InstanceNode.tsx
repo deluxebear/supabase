@@ -44,6 +44,7 @@ import { formatDatabaseID } from '@/data/read-replicas/replicas.utils'
 import { useComputeMetrics } from '@/hooks/analytics/useComputeMetrics'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 
 export const LoadBalancerNode = ({ data }: NodeProps<Node<LoadBalancerData>>) => {
@@ -62,9 +63,9 @@ export const LoadBalancerNode = ({ data }: NodeProps<Node<LoadBalancerData>>) =>
               <Database size={16} />
             </div>
             <div className="flex flex-col gap-y-0.5">
-              <p className="text-sm">API Load Balancer</p>
+              <p className="text-sm">{$t('API Load Balancer')}</p>
               <p className="text-sm text-foreground-light">
-                Distributes incoming API requests across{' '}
+                {$t('Distributes incoming API requests across')}{' '}
                 <span className="text-foreground">{numDatabases} databases</span>
               </p>
             </div>
@@ -76,7 +77,7 @@ export const LoadBalancerNode = ({ data }: NodeProps<Node<LoadBalancerData>>) =>
             <DropdownMenuContent className="w-40" side="bottom" align="end">
               <DropdownMenuItem asChild className="gap-x-2">
                 <Link href={`/project/${ref}/integrations/data_api/overview?source=load-balancer`}>
-                  View API URL
+                  {$t('View API URL')}
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -128,7 +129,7 @@ export const PrimaryNode = ({ data }: NodeProps<Node<PrimaryNodeData>>) => {
               <Database size={16} />
             </div>
             <div className="flex flex-col gap-y-0.5">
-              <p className="text-sm">Primary Database</p>
+              <p className="text-sm">{$t('Primary Database')}</p>
               <p className="flex items-center gap-x-1">
                 <span className="text-sm text-foreground-light">{region.name}</span>
               </p>
@@ -138,13 +139,15 @@ export const PrimaryNode = ({ data }: NodeProps<Node<PrimaryNodeData>>) => {
                     <span
                       className="text-sm transition text-foreground-light hover:text-foreground"
                       onClick={async () =>
-                        await copyToClipboard(region.region, () => toast('Copied project region'))
+                        await copyToClipboard(region.region, () =>
+                          toast($t('Copied project region'))
+                        )
                       }
                     >
                       {region.region}
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom">Click to copy</TooltipContent>
+                  <TooltipContent side="bottom">{$t('Click to copy')}</TooltipContent>
                 </Tooltip>
                 {projectHomepageShowInstanceSize && (
                   <>
@@ -156,7 +159,7 @@ export const PrimaryNode = ({ data }: NodeProps<Node<PrimaryNodeData>>) => {
             </div>
           </div>
           <img
-            alt="region icon"
+            alt={$t('region icon')}
             className="w-8 rounded-xs mt-0.5"
             src={`${BASE_PATH}/img/regions/${region.region}.svg`}
           />
@@ -167,7 +170,7 @@ export const PrimaryNode = ({ data }: NodeProps<Node<PrimaryNodeData>>) => {
               <span className="text-foreground">
                 {numReplicas} replica{numReplicas > 1 ? 's' : ''}
               </span>{' '}
-              deployed across{' '}
+              {$t('deployed across')}{' '}
               <span className="text-foreground">
                 {numRegions} region{numRegions > 1 ? 's' : ''}
               </span>
@@ -183,7 +186,7 @@ export const PrimaryNode = ({ data }: NodeProps<Node<PrimaryNodeData>>) => {
               {metricsLoading ? (
                 <div className="h-3 w-44 rounded-sm bg-surface-300 animate-pulse" />
               ) : metricsError ? (
-                <span className="text-foreground-lighter">Metrics unavailable</span>
+                <span className="text-foreground-lighter">{$t('Metrics unavailable')}</span>
               ) : (
                 <>
                   <span>
@@ -191,7 +194,7 @@ export const PrimaryNode = ({ data }: NodeProps<Node<PrimaryNodeData>>) => {
                   </span>
                   <span className="text-foreground-lighter">·</span>
                   <span>
-                    Disk <span className={metricColor(disk)}>{disk.toFixed(0)}%</span>
+                    {$t('Disk')} <span className={metricColor(disk)}>{disk.toFixed(0)}%</span>
                   </span>
                   <span className="text-foreground-lighter">·</span>
                   <span>
@@ -209,7 +212,7 @@ export const PrimaryNode = ({ data }: NodeProps<Node<PrimaryNodeData>>) => {
               )}
             </Link>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Go to Database Report</TooltipContent>
+          <TooltipContent side="bottom">{$t('Go to Database Report')}</TooltipContent>
         </Tooltip>
       </div>
       <Handle
@@ -294,17 +297,17 @@ export const ReplicaNode = ({ data }: NodeProps<Node<ReplicaNodeData>>) => {
           <div className="flex flex-col gap-y-0.5">
             <div className="flex items-center gap-x-2">
               <p className="text-sm truncate">
-                Replica {id.length > 0 && `(ID: ${formatDatabaseID(id)})`}
+                {$t('Replica')} {id.length > 0 && `(ID: ${formatDatabaseID(id)})`}
               </p>
               {initStatus === ReplicaInitializationStatus.InProgress ||
               status === REPLICA_STATUS.COMING_UP ||
               status === REPLICA_STATUS.UNKNOWN ||
               status === REPLICA_STATUS.INIT_READ_REPLICA ? (
-                <Badge>Coming up</Badge>
+                <Badge>{$t('Coming up')}</Badge>
               ) : initStatus === ReplicaInitializationStatus.Failed ||
                 status === REPLICA_STATUS.INIT_READ_REPLICA_FAILED ? (
                 <>
-                  <Badge variant="destructive">Init failed</Badge>
+                  <Badge variant="destructive">{$t('Init failed')}</Badge>
                   <Tooltip>
                     <TooltipTrigger>
                       <HelpCircle size={16} />
@@ -315,20 +318,22 @@ export const ReplicaNode = ({ data }: NodeProps<Node<ReplicaNodeData>>) => {
                       alignOffset={-70}
                       className="w-60 text-center"
                     >
-                      Replica failed to initialize. Please drop this replica and spin up a new one.
+                      {$t(
+                        'Replica failed to initialize. Please drop this replica and spin up a new one.'
+                      )}
                     </TooltipContent>
                   </Tooltip>
                 </>
               ) : status === REPLICA_STATUS.GOING_DOWN ? (
-                <Badge>Going down</Badge>
+                <Badge>{$t('Going down')}</Badge>
               ) : status === REPLICA_STATUS.RESTARTING ? (
-                <Badge>Restarting</Badge>
+                <Badge>{$t('Restarting')}</Badge>
               ) : status === REPLICA_STATUS.RESIZING ? (
-                <Badge>Resizing</Badge>
+                <Badge>{$t('Resizing')}</Badge>
               ) : status === REPLICA_STATUS.ACTIVE_HEALTHY ? (
-                <Badge variant="success">Healthy</Badge>
+                <Badge variant="success">{$t('Healthy')}</Badge>
               ) : (
-                <Badge variant="warning">Unhealthy</Badge>
+                <Badge variant="warning">{$t('Unhealthy')}</Badge>
               )}
             </div>
             <div className="my-0.5">
@@ -339,13 +344,15 @@ export const ReplicaNode = ({ data }: NodeProps<Node<ReplicaNodeData>>) => {
                     <span
                       className="text-sm transition text-foreground-light hover:text-foreground"
                       onClick={async () =>
-                        await copyToClipboard(region.region, () => toast('Copied replica region'))
+                        await copyToClipboard(region.region, () =>
+                          toast($t('Copied replica region'))
+                        )
                       }
                     >
                       {region.region}
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom">Click to copy</TooltipContent>
+                  <TooltipContent side="bottom">{$t('Click to copy')}</TooltipContent>
                 </Tooltip>
                 {projectHomepageShowInstanceSize && !!computeSize && (
                   <>
@@ -372,16 +379,16 @@ export const ReplicaNode = ({ data }: NodeProps<Node<ReplicaNodeData>>) => {
                 {estimations !== undefined && (
                   <TooltipContent asChild side="bottom">
                     <div className="w-56">
-                      <p className="text-foreground-light mb-0.5">Duration estimates:</p>
+                      <p className="text-foreground-light mb-0.5">{$t('Duration estimates:')}</p>
                       {estimations.baseBackupDownloadEstimateSeconds !== undefined && (
                         <p>
-                          Base backup download:{' '}
+                          {$t('Base backup download:')}{' '}
                           {formatSeconds(estimations.baseBackupDownloadEstimateSeconds)}
                         </p>
                       )}
                       {estimations.walArchiveReplayEstimateSeconds !== undefined && (
                         <p>
-                          WAL archive replay:{' '}
+                          {$t('WAL archive replay:')}{' '}
                           {formatSeconds(estimations.walArchiveReplayEstimateSeconds)}
                         </p>
                       )}
@@ -391,11 +398,11 @@ export const ReplicaNode = ({ data }: NodeProps<Node<ReplicaNodeData>>) => {
               </Tooltip>
             ) : error !== undefined ? (
               <p className="text-sm text-foreground-light">
-                Error: {ERROR_STATES[error as keyof typeof ERROR_STATES]}
+                {$t('Error:')} {ERROR_STATES[error as keyof typeof ERROR_STATES]}
               </p>
             ) : (
               <p className="text-sm text-foreground-light">
-                Created:{' '}
+                {$t('Created:')}{' '}
                 <TimestampInfo className="text-sm" utcTimestamp={inserted_at} label={created} />
               </p>
             )}
@@ -413,12 +420,12 @@ export const ReplicaNode = ({ data }: NodeProps<Node<ReplicaNodeData>>) => {
                 state.setSelectedDatabaseId(id)
               }}
             >
-              View connection string
+              {$t('View connection string')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="gap-x-2">
               <Link href={`/project/${ref}/database/replication/replica/${id}`}>
-                Manage replica
+                {$t('Manage replica')}
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -440,7 +447,7 @@ export const RegionNode = ({ data }: any) => {
     >
       <div className="absolute bottom-2 flex items-center justify-between gap-x-2">
         <img
-          alt="region icon"
+          alt={$t('region icon')}
           className="w-5 rounded-xs"
           src={`${BASE_PATH}/img/regions/${region.region}.svg`}
         />

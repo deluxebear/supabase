@@ -9,6 +9,7 @@ import { UtilityTabResults } from './UtilityTabResults'
 import { DownloadResultsButton } from '@/components/ui/DownloadResultsButton'
 import { useContentUpsertMutation } from '@/data/content/content-upsert-mutation'
 import { Snippet } from '@/data/content/sql-folders-query'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
 import { useSqlEditorSessionSnapshot } from '@/state/sql-editor/sql-editor-session-state'
@@ -138,15 +139,15 @@ export const UtilityPanel = ({
       <TabsList_Shadcn_ className="flex justify-between gap-2 px-4 overflow-x-auto min-h-[42px]">
         <div className="flex items-center gap-4">
           <TabsTrigger_Shadcn_ className="py-3 text-xs" value="results">
-            <span className="translate-y-px">Results</span>
+            <span className="translate-y-px">{$t('Results')}</span>
           </TabsTrigger_Shadcn_>
           {showExplainTab && (
             <TabsTrigger_Shadcn_ className="py-3 text-xs" value="explain">
-              <span className="translate-y-px">Explain</span>
+              <span className="translate-y-px">{$t('Explain')}</span>
             </TabsTrigger_Shadcn_>
           )}
           <TabsTrigger_Shadcn_ className="py-3 text-xs" value="chart">
-            <span className="translate-y-px">Chart</span>
+            <span className="translate-y-px">{$t('Chart')}</span>
           </TabsTrigger_Shadcn_>
 
           {result?.rows && (

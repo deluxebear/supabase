@@ -9,6 +9,7 @@ import { InlineLink } from '@/components/ui/InlineLink'
 import { DatabaseExtension } from '@/data/database-extensions/database-extensions-query'
 import { useS3VectorsWrapperCreateMutation } from '@/data/storage/s3-vectors-wrapper-create-mutation'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const ExtensionNotInstalled = ({
   projectRef,
@@ -24,16 +25,16 @@ export const ExtensionNotInstalled = ({
 
   return (
     <ScaffoldSection isFullWidth>
-      <Admonition type="warning" title="Missing required extension">
+      <Admonition type="warning" title={$t('Missing required extension')}>
         <p>
-          The Wrappers extension is required in order to query vector tables.{' '}
+          {$t('The Wrappers extension is required in order to query vector tables.')}{' '}
           {databaseNeedsUpgrading &&
             'Please first upgrade your database and then install the extension.'}{' '}
           <InlineLink
             href={`${DOCS_URL}/guides/database/extensions/wrappers/s3_vectors`}
             target="_blank"
           >
-            Learn more
+            {$t('Learn more')}
           </InlineLink>
         </p>
         <Button variant="default" asChild className="mt-2">
@@ -68,17 +69,19 @@ export const ExtensionNeedsUpgrade = ({
 
   return (
     <ScaffoldSection isFullWidth>
-      <Admonition type="warning" title="Outdated extension version">
+      <Admonition type="warning" title={$t('Outdated extension version')}>
         <p>
-          The {wrapperMeta.label} wrapper requires a minimum extension version of{' '}
-          {wrapperMeta.minimumExtensionVersion}. You have version{' '}
-          {wrappersExtension?.installed_version} installed. Please{' '}
-          {databaseNeedsUpgrading && 'first upgrade your database, and then '}update the extension
-          by disabling and enabling the Wrappers extension.
+          {$t('The')} {wrapperMeta.label} {$t('wrapper requires a minimum extension version of')}{' '}
+          {wrapperMeta.minimumExtensionVersion}
+          {$t('. You have version')} {wrappersExtension?.installed_version}{' '}
+          {$t('installed. Please')}{' '}
+          {databaseNeedsUpgrading && 'first upgrade your database, and then '}
+          {$t('update the extension by disabling and enabling the Wrappers extension.')}
         </p>
         <p>
-          Before reinstalling the wrapper extension, you must first remove all existing wrappers.
-          Afterward, you can recreate the wrappers.
+          {$t(
+            'Before reinstalling the wrapper extension, you must first remove all existing wrappers. Afterward, you can recreate the wrappers.'
+          )}
         </p>
         <Button asChild variant="default">
           <Link
@@ -113,10 +116,12 @@ export const WrapperMissing = ({ bucketName }: { bucketName?: string }) => {
 
   return (
     <ScaffoldSection isFullWidth>
-      <Admonition type="warning" title="Missing integration">
-        <p>The S3 Vectors Wrapper integration is required in order to query vector tables.</p>
+      <Admonition type="warning" title={$t('Missing integration')}>
+        <p>
+          {$t('The S3 Vectors Wrapper integration is required in order to query vector tables.')}
+        </p>
         <Button variant="default" loading={isCreatingS3VectorsWrapper} onClick={onSetupWrapper}>
-          Install wrapper
+          {$t('Install wrapper')}
         </Button>
       </Admonition>
     </ScaffoldSection>

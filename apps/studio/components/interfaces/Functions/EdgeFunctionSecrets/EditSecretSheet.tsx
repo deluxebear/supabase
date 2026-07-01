@@ -26,6 +26,7 @@ import { DiscardChangesConfirmationDialog } from '@/components/ui-patterns/Dialo
 import { useSecretsCreateMutation } from '@/data/secrets/secrets-create-mutation'
 import { ProjectSecret } from '@/data/secrets/secrets-query'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
+import { t as $t } from '@/lib/i18n'
 
 const FORM_ID = 'edit-secret-sidepanel'
 
@@ -82,7 +83,7 @@ export function EditSecretSheet({ secret, visible, onClose }: EditSecretSheetPro
     <Sheet open={visible} onOpenChange={handleOpenChange}>
       <SheetContent size="default" className={'min-w-screen! lg:min-w-[600px]! flex flex-col'}>
         <SheetHeader className="py-3 flex flex-row gap-3 items-center">
-          <SheetTitle>Edit secret</SheetTitle>
+          <SheetTitle>{$t('Edit secret')}</SheetTitle>
         </SheetHeader>
 
         <SheetSection className="h-full">
@@ -96,7 +97,7 @@ export function EditSecretSheet({ secret, visible, onClose }: EditSecretSheetPro
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItemLayout label="Name" layout="horizontal">
+                  <FormItemLayout label={$t('Name')} layout="horizontal">
                     <FormControl>
                       <Input
                         {...field}
@@ -112,9 +113,11 @@ export function EditSecretSheet({ secret, visible, onClose }: EditSecretSheetPro
                 name="value"
                 render={({ field }) => (
                   <FormItemLayout
-                    label="Value"
+                    label={$t('Value')}
                     layout="horizontal"
-                    description="Secrets can’t be retrieved once saved. Enter a new value to overwrite the existing value."
+                    description={$t(
+                      'Secrets can’t be retrieved once saved. Enter a new value to overwrite the existing value.'
+                    )}
                   >
                     <FormControl>
                       <div className="relative">
@@ -163,10 +166,10 @@ export function EditSecretSheet({ secret, visible, onClose }: EditSecretSheetPro
 
         <SheetFooter>
           <Button disabled={isUpdating} variant="default" onClick={confirmOnClose}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button form={FORM_ID} type="submit" disabled={!isValid} loading={isUpdating}>
-            Save
+            {$t('Save')}
           </Button>
         </SheetFooter>
       </SheetContent>

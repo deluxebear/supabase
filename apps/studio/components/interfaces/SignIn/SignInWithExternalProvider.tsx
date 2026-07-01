@@ -14,6 +14,7 @@ import {
 } from '@/lib/external-identity-providers'
 import { getErrorMessage } from '@/lib/get-error-message'
 import { auth, buildPathWithParams } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 
 interface SignInWithExternalProviderProps {
   provider: ExternalIdentityProviderConfig
@@ -59,7 +60,7 @@ export const SignInWithExternalProvider = ({ provider }: SignInWithExternalProvi
         variant="outline"
         loading={loading}
       >
-        Continue with {provider.displayName}
+        {$t('Continue with')} {provider.displayName}
       </Button>
     </LastSignInWrapper>
   )

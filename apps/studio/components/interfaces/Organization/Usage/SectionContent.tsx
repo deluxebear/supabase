@@ -5,6 +5,7 @@ import { Badge } from 'ui'
 
 import { CategoryAttribute } from './Usage.constants'
 import { ScaffoldContainer, ScaffoldDivider } from '@/components/layouts/Scaffold'
+import { t as $t } from '@/lib/i18n'
 
 export interface SectionContent {
   section: Pick<CategoryAttribute, 'name' | 'description' | 'links'>
@@ -28,7 +29,7 @@ export const SectionContent = ({
                 <div className="space-y-1">
                   <div className="flex items-center space-x-2">
                     <p className="text-base capitalize">{name}</p>
-                    {includedInPlan === false && <Badge>Not included</Badge>}
+                    {includedInPlan === false && <Badge>{$t('Not included')}</Badge>}
                   </div>
                   <div className="grid gap-4">
                     {description.split('\n').map((value, idx) => (
@@ -41,7 +42,7 @@ export const SectionContent = ({
                 {links && links.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-xs font-mono uppercase text-foreground-lighter mb-2">
-                      More information
+                      {$t('More information')}
                     </p>
                     {links.map((link) => (
                       <div key={link.url}>

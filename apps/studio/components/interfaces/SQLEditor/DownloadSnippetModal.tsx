@@ -27,6 +27,7 @@ import {
 } from './SQLEditor.utils'
 import { TwoOptionToggle } from '@/components/ui/TwoOptionToggle'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
 
 const CLI_DOCS_URL = `${DOCS_URL}/guides/cli/local-development`
@@ -52,8 +53,10 @@ export const DownloadSnippetModal = ({ id, ...props }: DownloadSnippetModalProps
       label: 'Migration',
       caption: (
         <>
-          Run this command from your project directory to download the snippet in a new migration
-          named <code className="text-code-inline break-normal">{migrationName}</code>.
+          {$t(
+            'Run this command from your project directory to download the snippet in a new migration named'
+          )}{' '}
+          <code className="text-code-inline break-normal">{migrationName}</code>.
         </>
       ),
       docLink: {
@@ -68,8 +71,9 @@ export const DownloadSnippetModal = ({ id, ...props }: DownloadSnippetModalProps
       label: 'Seed file',
       caption: (
         <>
-          Run this command from your project directory to download the snippet. If your query
-          consists of sample data, append it to the end of{' '}
+          {$t(
+            'Run this command from your project directory to download the snippet. If your query consists of sample data, append it to the end of'
+          )}{' '}
           <code className="text-code-inline break-normal">supabase/seed.sql</code>.
         </>
       ),
@@ -85,8 +89,10 @@ export const DownloadSnippetModal = ({ id, ...props }: DownloadSnippetModalProps
       label: 'SQL file',
       caption: (
         <>
-          Run this command from your project directory to download the snippet into a new SQL file
-          named <code className="text-code-inline break-normal">{migrationName}.sql</code>.
+          {$t(
+            'Run this command from your project directory to download the snippet into a new SQL file named'
+          )}{' '}
+          <code className="text-code-inline break-normal">{migrationName}.sql</code>.
         </>
       ),
       cli: generateFileCliCommand(id, migrationName),
@@ -101,12 +107,12 @@ export const DownloadSnippetModal = ({ id, ...props }: DownloadSnippetModalProps
     <Dialog {...props}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Export query</DialogTitle>
+          <DialogTitle>{$t('Export query')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection className="flex flex-col gap-y-4">
           <div className="flex items-center justify-between gap-x-2">
-            <p className="text-sm">Export as</p>
+            <p className="text-sm">{$t('Export as')}</p>
             <Select
               value={downloadFormat}
               onValueChange={(value) => setDownloadFormat(value as DownloadFormat)}
@@ -125,7 +131,7 @@ export const DownloadSnippetModal = ({ id, ...props }: DownloadSnippetModalProps
           </div>
           <div className="flex flex-col gap-y-2">
             <div className="flex items-center justify-between gap-x-2">
-              <p className="text-sm">Run with</p>
+              <p className="text-sm">{$t('Run with')}</p>
               <TwoOptionToggle
                 width={50}
                 options={['CLI', 'NPX']}
@@ -162,7 +168,7 @@ export const DownloadSnippetModal = ({ id, ...props }: DownloadSnippetModalProps
 
             <Button asChild variant="default" icon={<ExternalLink />}>
               <Link href={CLI_DOCS_URL} target="_blank" rel="noreferrer">
-                About CLI
+                {$t('About CLI')}
               </Link>
             </Button>
           </div>

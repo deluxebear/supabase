@@ -2,6 +2,7 @@ import type { Payload, ValueType } from 'recharts/types/component/DefaultTooltip
 import { cn } from 'ui'
 
 import { Attribute, COLOR_MAP } from './Usage.constants'
+import { t as $t } from '@/lib/i18n'
 
 export interface SingleAttributeTooltipContentProps {
   name: string
@@ -23,7 +24,7 @@ export const SingleAttributeTooltipContent = ({
     <>
       <p className="text-xs text-foreground-light">{name}</p>
       {isAfterToday ? (
-        <p className="text-foreground-light text-lg">No data yet</p>
+        <p className="text-foreground-light text-lg">{$t('No data yet')}</p>
       ) : (
         <p className="text-xl">
           {tooltipFormatter !== undefined ? tooltipFormatter(formattedValue) : formattedValue}
@@ -85,7 +86,7 @@ export const MultiAttributeTooltipContent = ({
   return (
     <>
       {isAfterToday ? (
-        <p className="text-foreground-light text-lg">No data yet</p>
+        <p className="text-foreground-light text-lg">{$t('No data yet')}</p>
       ) : (
         <div className="space-y-1 pb-1">
           {attributes.flatMap((attr) => {

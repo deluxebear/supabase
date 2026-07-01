@@ -9,6 +9,7 @@ import {
 import { Addons } from '@/components/interfaces/Settings/Addons/Addons'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import SettingsLayout from '@/components/layouts/ProjectSettingsLayout/SettingsLayout'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const ProjectAddons: NextPageWithLayout = () => {
@@ -17,8 +18,10 @@ const ProjectAddons: NextPageWithLayout = () => {
       <PageHeader size="default">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Add-ons</PageHeaderTitle>
-            <PageHeaderDescription>Level up your project with add-ons</PageHeaderDescription>
+            <PageHeaderTitle>{$t('Add-ons')}</PageHeaderTitle>
+            <PageHeaderDescription>
+              {$t('Level up your project with add-ons')}
+            </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
       </PageHeader>
@@ -29,7 +32,7 @@ const ProjectAddons: NextPageWithLayout = () => {
 
 ProjectAddons.getLayout = (page) => (
   <DefaultLayout>
-    <SettingsLayout title="Add-ons">{page}</SettingsLayout>
+    <SettingsLayout title={$t('Add-ons')}>{page}</SettingsLayout>
   </DefaultLayout>
 )
 export default ProjectAddons

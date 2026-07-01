@@ -16,6 +16,7 @@ import { fillTimeseriesSorted } from '@/hooks/analytics/useFillTimeseriesSorted'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 type LogsBarChartDatum = {
@@ -208,7 +209,7 @@ export const ProjectUsageSection = () => {
       <div className="flex flex-row justify-between items-center gap-x-2">
         <div className="flex items-start gap-2 heading-section text-foreground-light">
           <span className="text-foreground">{totalRequests.toLocaleString()}</span>
-          <span>Total Requests</span>
+          <span>{$t('Total Requests')}</span>
         </div>
         <ChartIntervalDropdown
           value={interval}
@@ -268,8 +269,8 @@ export const ProjectUsageSection = () => {
                   ErrorState={
                     <ChartEmptyState
                       icon={<WarningIcon />}
-                      title="Failed to load project usage"
-                      description="Check our Status Page or try again later."
+                      title={$t('Failed to load project usage')}
+                      description={$t('Check our Status Page or try again later.')}
                     />
                   }
                   EmptyState={

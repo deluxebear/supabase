@@ -4,6 +4,8 @@ import { GripVertical, Trash } from 'lucide-react'
 import type { Control, FieldPath, FieldValues } from 'react-hook-form'
 import { Button, FormControl, FormField, FormItem, FormLabel, FormMessage, Input } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface EnumeratedTypeValueRowProps<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
@@ -41,7 +43,9 @@ const EnumeratedTypeValueRow = <TFieldValues extends FieldValues>({
       name={name}
       render={({ field: inputField }) => (
         <FormItem ref={setNodeRef} style={style}>
-          <FormLabel className="sr-only">Value {index}</FormLabel>
+          <FormLabel className="sr-only">
+            {$t('Value')} {index}
+          </FormLabel>
           <FormControl>
             <div className="flex items-center space-x-2 space-y-2">
               <button

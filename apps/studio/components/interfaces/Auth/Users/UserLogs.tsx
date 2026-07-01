@@ -15,6 +15,7 @@ import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { User } from '@/data/auth/users-infinite-query'
 import useLogsPreview from '@/hooks/analytics/useLogsPreview'
 import { useLogsUrlState } from '@/hooks/analytics/useLogsUrlState'
+import { t as $t } from '@/lib/i18n'
 
 interface UserLogsProps {
   user: User
@@ -57,9 +58,9 @@ export const UserLogs = ({ user }: UserLogsProps) => {
 
       <div className={cn('flex flex-col gap-y-3', PANEL_PADDING)}>
         <div>
-          <p>API logs</p>
+          <p>{$t('API logs')}</p>
           <p className="text-sm text-foreground-light">
-            View edge logs for requests made by this user
+            {$t('View edge logs for requests made by this user')}
           </p>
         </div>
 
@@ -67,7 +68,7 @@ export const UserLogs = ({ user }: UserLogsProps) => {
           <Link
             href={`/project/${ref}/logs/explorer?q=${encodeURIComponent(API_LOGS_QUERY(user.id ?? ''))}`}
           >
-            Open in Log Explorer
+            {$t('Open in Log Explorer')}
           </Link>
         </Button>
       </div>
@@ -76,9 +77,9 @@ export const UserLogs = ({ user }: UserLogsProps) => {
 
       <div className={cn('flex flex-col gap-y-3', PANEL_PADDING)}>
         <div>
-          <p>Authentication logs</p>
+          <p>{$t('Authentication logs')}</p>
           <p className="text-sm text-foreground-light">
-            Latest logs from authentication for this user in the past hour
+            {$t('Latest logs from authentication for this user in the past hour')}
           </p>
         </div>
 
@@ -91,7 +92,7 @@ export const UserLogs = ({ user }: UserLogsProps) => {
               disabled={isLoadingAuthLogs}
               onClick={() => setFilters({ search_query: user.id })}
             >
-              Show all
+              {$t('Show all')}
             </Button>
             <div className="border-button border border-l-0 py-3" />
             <Button
@@ -105,7 +106,7 @@ export const UserLogs = ({ user }: UserLogsProps) => {
                 })
               }
             >
-              Error only
+              {$t('Error only')}
             </Button>
           </div>
           <Button
@@ -115,7 +116,7 @@ export const UserLogs = ({ user }: UserLogsProps) => {
             icon={<RefreshCw />}
             onClick={() => refresh()}
           >
-            Refresh
+            {$t('Refresh')}
           </Button>
         </div>
 
@@ -124,8 +125,8 @@ export const UserLogs = ({ user }: UserLogsProps) => {
         ) : authLogs.length === 0 ? (
           <Admonition
             type="note"
-            title="No authentication logs available for this user"
-            description="Auth events such as logging in will be shown here"
+            title={$t('No authentication logs available for this user')}
+            description={$t('Auth events such as logging in will be shown here')}
           />
         ) : (
           <div>
@@ -185,7 +186,9 @@ export const UserLogs = ({ user }: UserLogsProps) => {
               variant="outline"
               className="transition rounded-t-none text-foreground-light hover:text-foreground"
             >
-              <Link href={`/project/${ref}/logs/auth-logs?s=${user.id}`}>See more logs</Link>
+              <Link href={`/project/${ref}/logs/auth-logs?s=${user.id}`}>
+                {$t('See more logs')}
+              </Link>
             </Button>
           </div>
         )}

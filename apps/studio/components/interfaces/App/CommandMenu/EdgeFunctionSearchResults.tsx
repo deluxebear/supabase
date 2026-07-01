@@ -12,6 +12,7 @@ import {
   type SearchResult,
 } from './ContextSearchResults.shared'
 import { useEdgeFunctionsQuery } from '@/data/edge-functions/edge-functions-query'
+import { t as $t } from '@/lib/i18n'
 
 interface EdgeFunctionSearchResultsProps {
   query: string
@@ -68,11 +69,12 @@ export function EdgeFunctionSearchResults({ query }: EdgeFunctionSearchResultsPr
       <div className="flex items-center gap-x-2">
         {isLoadingFunctions ? (
           <span className="flex items-center gap-2">
-            <Loader2 size={14} className="animate-spin" /> Loading...
+            <Loader2 size={14} className="animate-spin" /> {$t('Loading...')}
           </span>
         ) : (
           <span>
-            Total: {totalFunctions.toLocaleString()} function{totalFunctions !== 1 ? 's' : ''}
+            {$t('Total:')} {totalFunctions.toLocaleString()} function
+            {totalFunctions !== 1 ? 's' : ''}
           </span>
         )}
       </div>
@@ -96,7 +98,7 @@ export function EdgeFunctionSearchResults({ query }: EdgeFunctionSearchResultsPr
         <div className="flex-1 min-h-0 overflow-hidden">
           <div className="h-full flex flex-col items-center justify-center py-12 px-4 gap-4 text-center text-foreground-lighter">
             <EdgeFunctions className="h-6 w-6" strokeWidth={1.5} />
-            <p className="text-sm">Failed to load edge functions</p>
+            <p className="text-sm">{$t('Failed to load edge functions')}</p>
           </div>
         </div>
         {renderFooter()}
@@ -108,7 +110,7 @@ export function EdgeFunctionSearchResults({ query }: EdgeFunctionSearchResultsPr
     return (
       <div className="relative h-full flex flex-col">
         <div className="flex-1 min-h-0 overflow-hidden">
-          <EmptyState icon={EdgeFunctions} label="Edge Functions" query={query} />
+          <EmptyState icon={EdgeFunctions} label={$t('Edge Functions')} query={query} />
         </div>
         {renderFooter()}
       </div>

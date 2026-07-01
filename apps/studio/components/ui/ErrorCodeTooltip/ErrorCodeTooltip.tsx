@@ -11,6 +11,7 @@ import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
 import { useErrorCodesQuery } from '@/data/content-api/docs-error-codes-query'
 import { Service } from '@/data/graphql/graphql'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -77,7 +78,7 @@ export const ErrorCodeTooltip = ({ errorCode, service, children }: ErrorCodeTool
               </div>
             ) : !description ? (
               <p className="text-sm text-foreground-lighter">
-                No description available for this error code.
+                {$t('No description available for this error code.')}
               </p>
             ) : (
               <p className="text-sm text-foreground leading-relaxed">{description}</p>
@@ -98,7 +99,7 @@ export const ErrorCodeTooltip = ({ errorCode, service, children }: ErrorCodeTool
                       ? `${BASE_PATH}/img/supabase-dark.svg`
                       : `${BASE_PATH}/img/supabase-light.svg`
                   }
-                  alt="Supabase"
+                  alt={$t('Supabase')}
                   height={14}
                   width={72}
                 />
@@ -109,7 +110,7 @@ export const ErrorCodeTooltip = ({ errorCode, service, children }: ErrorCodeTool
             )}
             <AiAssistantDropdown
               showExternalAI
-              label="Fix with AI"
+              label={$t('Fix with AI')}
               buildPrompt={buildPrompt}
               onOpenAssistant={handleOpenAssistant}
               telemetrySource="error_code"

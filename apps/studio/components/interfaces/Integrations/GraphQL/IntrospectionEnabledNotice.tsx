@@ -3,6 +3,7 @@ import { Button } from 'ui'
 
 import { IntrospectionConfirmModal } from './IntrospectionConfirmModal'
 import { useSetIntrospection } from './useSetIntrospection'
+import { t as $t } from '@/lib/i18n'
 
 interface IntrospectionEnabledNoticeProps {
   schema: string
@@ -30,11 +31,12 @@ export const IntrospectionEnabledNotice = ({
     <>
       <div className="flex items-center justify-between gap-3 border-b bg-surface-100 px-4 py-2 text-xs text-foreground-light">
         <span>
-          GraphQL introspection is enabled for this project, so schemas are discoverable through the
-          API.
+          {$t(
+            'GraphQL introspection is enabled for this project, so schemas are discoverable through the API.'
+          )}
         </span>
         <Button variant="default" size="tiny" onClick={() => setShowConfirm(true)}>
-          Disable introspection
+          {$t('Disable introspection')}
         </Button>
       </div>
 

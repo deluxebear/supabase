@@ -36,6 +36,7 @@ import { useGitHubConnectionsQuery } from '@/data/integrations/github-connection
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface EditBranchModalProps {
   branch?: Branch
@@ -212,7 +213,10 @@ export const EditBranchModal = ({ branch, visible, onClose }: EditBranchModalPro
     <Dialog open={visible} onOpenChange={(open) => !open && onClose()}>
       <DialogContent size="large" hideClose>
         <DialogHeader padding="small">
-          <DialogTitle>Edit branch "{branch?.name}"</DialogTitle>
+          <DialogTitle>
+            {$t('Edit branch "')}
+            {branch?.name}"
+          </DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <Form {...form}>
@@ -222,11 +226,11 @@ export const EditBranchModal = ({ branch, visible, onClose }: EditBranchModalPro
                 control={form.control}
                 name="branchName"
                 render={({ field }) => (
-                  <FormItemLayout label="Preview branch name">
+                  <FormItemLayout label={$t('Preview branch name')}>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="e.g. staging, dev-feature-x"
+                        placeholder={$t('e.g. staging, dev-feature-x')}
                         autoComplete="off"
                       />
                     </FormControl>
@@ -257,7 +261,7 @@ export const EditBranchModal = ({ branch, visible, onClose }: EditBranchModalPro
                       <FormItemLayout
                         label={
                           <div className="flex items-center justify-between w-full gap-4">
-                            <span className="flex-1">Sync with Git branch</span>
+                            <span className="flex-1">{$t('Sync with Git branch')}</span>
                             <div className="flex items-center gap-2 text-sm">
                               <Image
                                 className={cn('dark:invert')}
@@ -273,13 +277,13 @@ export const EditBranchModal = ({ branch, visible, onClose }: EditBranchModalPro
                           </div>
                         }
                         labelOptional="Optional"
-                        description="Automatically deploy changes on every commit"
+                        description={$t('Automatically deploy changes on every commit')}
                       >
                         <div className="relative">
                           <FormControl>
                             <Input
                               {...field}
-                              placeholder="e.g. main, feat/some-feature"
+                              placeholder={$t('e.g. main, feat/some-feature')}
                               autoComplete="off"
                               onChange={(e) => {
                                 field.onChange(e)
@@ -304,15 +308,16 @@ export const EditBranchModal = ({ branch, visible, onClose }: EditBranchModalPro
                   <div className="flex items-center gap-2 justify-between">
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
-                        <Label>Sync with a GitHub branch</Label>
+                        <Label>{$t('Sync with a GitHub branch')}</Label>
                       </div>
                       <p className="text-sm text-foreground-light">
-                        Optionally connect to a GitHub repository to manage migrations automatically
-                        for this branch.
+                        {$t(
+                          'Optionally connect to a GitHub repository to manage migrations automatically for this branch.'
+                        )}
                       </p>
                     </div>
                     <Button variant="default" icon={<Github />} onClick={openLinkerPanel}>
-                      Connect to GitHub
+                      {$t('Connect to GitHub')}
                     </Button>
                   </div>
                 ))}
@@ -320,7 +325,7 @@ export const EditBranchModal = ({ branch, visible, onClose }: EditBranchModalPro
 
             <DialogFooter padding="medium">
               <Button disabled={isUpdating} variant="default" onClick={onClose}>
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button
                 form={formId}
@@ -334,7 +339,7 @@ export const EditBranchModal = ({ branch, visible, onClose }: EditBranchModalPro
                 variant="primary"
                 type="submit"
               >
-                Update branch
+                {$t('Update branch')}
               </Button>
             </DialogFooter>
           </form>

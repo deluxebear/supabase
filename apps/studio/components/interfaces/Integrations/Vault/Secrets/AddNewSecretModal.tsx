@@ -27,6 +27,7 @@ import * as z from 'zod'
 
 import { useVaultSecretCreateMutation } from '@/data/vault/vault-secret-create-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 const formSchema = z.object({
   name: z.string().min(1, 'Please provide a name for your secret'),
@@ -85,7 +86,7 @@ export const AddNewSecretModal = () => {
     <Dialog open={showAddSecretModal} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add new secret</DialogTitle>
+          <DialogTitle>{$t('Add new secret')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection className="space-y-4">
@@ -100,7 +101,7 @@ export const AddNewSecretModal = () => {
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItemLayout layout="vertical" label="Name">
+                  <FormItemLayout layout="vertical" label={$t('Name')}>
                     <FormControl className="col-span-6">
                       <Input {...field} />
                     </FormControl>
@@ -111,7 +112,11 @@ export const AddNewSecretModal = () => {
                 control={form.control}
                 name="description"
                 render={({ field }) => (
-                  <FormItemLayout layout="vertical" label="Description" labelOptional="Optional">
+                  <FormItemLayout
+                    layout="vertical"
+                    label={$t('Description')}
+                    labelOptional="Optional"
+                  >
                     <FormControl className="col-span-6">
                       <Input {...field} />
                     </FormControl>
@@ -122,7 +127,7 @@ export const AddNewSecretModal = () => {
                 control={form.control}
                 name="secret"
                 render={({ field }) => (
-                  <FormItemLayout layout="vertical" label="Secret value">
+                  <FormItemLayout layout="vertical" label={$t('Secret value')}>
                     <FormControl className="col-span-6">
                       <div className="relative">
                         <Textarea
@@ -174,7 +179,7 @@ export const AddNewSecretModal = () => {
         </DialogSection>
         <DialogFooter>
           <Button variant="default" disabled={isSubmitting} onClick={handleClose}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button
             form={formId}
@@ -182,7 +187,7 @@ export const AddNewSecretModal = () => {
             disabled={!isDirty || isSubmitting}
             loading={isSubmitting}
           >
-            Add secret
+            {$t('Add secret')}
           </Button>
         </DialogFooter>
       </DialogContent>

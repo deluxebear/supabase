@@ -43,6 +43,7 @@ import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
 import { useProtectedSchemas } from '@/hooks/useProtectedSchemas'
+import { t as $t } from '@/lib/i18n'
 
 const formId = 'create-trigger'
 
@@ -217,11 +218,11 @@ export const TriggerSheet = ({
                   <FormItemLayout
                     className="px-5"
                     layout="horizontal"
-                    label="Name of trigger"
-                    description="Do not use spaces/whitespace."
+                    label={$t('Name of trigger')}
+                    description={$t('Do not use spaces/whitespace.')}
                   >
                     <FormControl>
-                      <Input {...field} placeholder="Name of trigger" />
+                      <Input {...field} placeholder={$t('Name of trigger')} />
                     </FormControl>
                   </FormItemLayout>
                 )}
@@ -235,8 +236,10 @@ export const TriggerSheet = ({
                     <FormItemLayout
                       className="px-5"
                       layout="horizontal"
-                      label="Enabled mode"
-                      description="Determines if a trigger should or should not fire. Can also be used to disable a trigger, but not delete it."
+                      label={$t('Enabled mode')}
+                      description={$t(
+                        'Determines if a trigger should or should not fire. Can also be used to disable a trigger, but not delete it.'
+                      )}
                     >
                       <FormControl>
                         <Select defaultValue={field.value} onValueChange={field.onChange}>
@@ -270,8 +273,8 @@ export const TriggerSheet = ({
                       <FormItemLayout
                         className="px-5"
                         layout="horizontal"
-                        label="Table"
-                        description="Trigger will watch for changes on this table"
+                        label={$t('Table')}
+                        description={$t('Trigger will watch for changes on this table')}
                       >
                         <FormControl>
                           <Select
@@ -310,8 +313,10 @@ export const TriggerSheet = ({
                       <FormItemLayout
                         className="px-5"
                         layout="horizontal"
-                        label="Events"
-                        description="These are the events that are watched by the trigger, only the events selected above will fire the trigger on the table you've selected."
+                        label={$t('Events')}
+                        description={$t(
+                          "These are the events that are watched by the trigger, only the events selected above will fire the trigger on the table you've selected."
+                        )}
                       >
                         {TRIGGER_EVENTS.map((event) => (
                           <FormField
@@ -353,8 +358,8 @@ export const TriggerSheet = ({
                       <FormItemLayout
                         className="px-5"
                         layout="horizontal"
-                        label="Trigger type"
-                        description="Determines when your trigger fires"
+                        label={$t('Trigger type')}
+                        description={$t('Determines when your trigger fires')}
                       >
                         <FormControl>
                           <Select defaultValue={field.value} onValueChange={field.onChange}>
@@ -382,8 +387,10 @@ export const TriggerSheet = ({
                       <FormItemLayout
                         className="px-5"
                         layout="horizontal"
-                        label="Orientation"
-                        description="Identifies whether the trigger fires once for each processed row or once for each statement"
+                        label={$t('Orientation')}
+                        description={$t(
+                          'Identifies whether the trigger fires once for each processed row or once for each statement'
+                        )}
                       >
                         <FormControl>
                           <Select defaultValue={field.value} onValueChange={field.onChange}>
@@ -416,7 +423,7 @@ export const TriggerSheet = ({
                       <FormItemLayout layout="vertical" className="px-5">
                         <FormControl>
                           <div className="flex flex-col gap-y-2">
-                            <p className="text-sm">Function to trigger</p>
+                            <p className="text-sm">{$t('Function to trigger')}</p>
                             {function_name.length === 0 ? (
                               <button
                                 type="button"
@@ -456,7 +463,7 @@ export const TriggerSheet = ({
                                   variant="default"
                                   onClick={() => setShowFunctionSelector(true)}
                                 >
-                                  Change function
+                                  {$t('Change function')}
                                 </Button>
                               </div>
                             )}
@@ -477,7 +484,7 @@ export const TriggerSheet = ({
               disabled={isCreating || isUpdating}
               onClick={confirmOnClose}
             >
-              Cancel
+              {$t('Cancel')}
             </Button>
             <Button form={formId} type="submit" loading={isCreating || isUpdating}>
               {isEditing ? 'Save' : 'Create'} trigger

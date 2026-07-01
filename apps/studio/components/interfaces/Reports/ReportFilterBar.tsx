@@ -29,6 +29,7 @@ import { DatabaseSelector } from '@/components/ui/DatabaseSelector'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useLoadBalancersQuery } from '@/data/read-replicas/load-balancers-query'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -232,7 +233,7 @@ const ReportFilterBar = ({
         {onRefresh && (
           <ShortcutTooltip
             shortcutId={SHORTCUT_IDS.OBSERVABILITY_REFRESH}
-            label="Refresh report"
+            label={$t('Refresh report')}
             side="bottom"
           >
             <Button
@@ -276,7 +277,8 @@ const ReportFilterBar = ({
             <DropdownMenuContent side="bottom" align="start">
               <DropdownMenuItem onClick={() => handleProductFilterChange(null)}>
                 <Network size={14} strokeWidth={1.5} className="mr-2" />
-                All Requests
+
+                {$t('All Requests')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {PRODUCT_FILTERS.map((productFilter) => {
@@ -331,7 +333,7 @@ const ReportFilterBar = ({
               onClick={() => onRemoveFilters([filter])}
               icon={<X className="text-foreground-light" />}
             >
-              <span className="sr-only">Remove</span>
+              <span className="sr-only">{$t('Remove')}</span>
             </Button>
           </div>
         ))}
@@ -347,7 +349,7 @@ const ReportFilterBar = ({
                 size="tiny"
                 icon={<Plus className={`text-foreground-light `} />}
               >
-                Add filter
+                {$t('Add filter')}
               </Button>
             </PopoverTrigger>
           </ShortcutTooltip>
@@ -356,7 +358,7 @@ const ReportFilterBar = ({
               <FormItemLayout
                 isReactForm={false}
                 layout="vertical"
-                label="Attribute Filter"
+                label={$t('Attribute Filter')}
                 className="gap-[2px]"
                 size="tiny"
               >
@@ -383,7 +385,7 @@ const ReportFilterBar = ({
               <FormItemLayout
                 isReactForm={false}
                 layout="vertical"
-                label="Comparison"
+                label={$t('Comparison')}
                 className="gap-[2px]"
                 size="tiny"
               >
@@ -413,7 +415,7 @@ const ReportFilterBar = ({
               <FormItemLayout
                 isReactForm={false}
                 layout="vertical"
-                label="Value"
+                label={$t('Value')}
                 className="gap-[2px]"
                 size="tiny"
               >
@@ -441,7 +443,7 @@ const ReportFilterBar = ({
                   resetFilterValues()
                 }}
               >
-                Add filter
+                {$t('Add filter')}
               </Button>
             </div>
           </PopoverContent>

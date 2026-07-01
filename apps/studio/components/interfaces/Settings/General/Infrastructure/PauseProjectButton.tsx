@@ -22,6 +22,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useIsProjectActive, useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const PauseProjectButton = () => {
   const router = useRouter()
@@ -50,14 +51,14 @@ const PauseProjectButton = () => {
   const { mutate: pauseProject, isPending: isPausing } = useProjectPauseMutation({
     onSuccess: (_, variables) => {
       setProjectStatus({ ref: variables.ref, status: PROJECT_STATUS.PAUSING })
-      toast.success('Pausing project...')
+      toast.success($t('Pausing project...'))
       router.push(`/project/${projectRef}`)
     },
   })
 
   const requestPauseProject = () => {
     if (!canPauseProject) {
-      return toast.error('You do not have the required permissions to pause this project')
+      return toast.error($t('You do not have the required permissions to pause this project'))
     }
     pauseProject({ ref: projectRef })
   }
@@ -97,20 +98,21 @@ const PauseProjectButton = () => {
           },
         }}
       >
-        Pause project
+        {$t('Pause project')}
       </ButtonTooltip>
 
       <AlertDialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Pause project?</AlertDialogTitle>
+            <AlertDialogTitle>{$t('Pause project?')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This project will be unavailable while paused. Paused projects can be resumed for 90
-              days. After that, backups remain available to download.
+              {$t(
+                'This project will be unavailable while paused. Paused projects can be resumed for 90 days. After that, backups remain available to download.'
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isPausing}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isPausing}>{$t('Cancel')}</AlertDialogCancel>
             <AlertDialogAction disabled={isPausing} onClick={requestPauseProject} variant="danger">
               {isPausing ? 'Pausing project...' : 'Pause project'}
             </AlertDialogAction>

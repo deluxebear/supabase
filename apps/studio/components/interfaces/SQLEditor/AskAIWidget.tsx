@@ -1,6 +1,8 @@
 import { ChangeEvent, KeyboardEvent, useCallback, useEffect, useRef } from 'react'
 import { Button, ExpandingTextArea } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface AskAIWidgetProps {
   value: string
   onChange: (value: string) => void
@@ -73,7 +75,7 @@ export const AskAIWidget = ({
             className="text-xs h-auto py-1 rounded-none px-3 border-r-border"
             disabled={isLoading}
           >
-            Accept <span className="text-xs text-foreground-light">⌘ + Enter</span>
+            {$t('Accept')} <span className="text-xs text-foreground-light">{$t('⌘ + Enter')}</span>
           </Button>
           <Button
             onClick={onReject}
@@ -81,7 +83,7 @@ export const AskAIWidget = ({
             className="text-xs h-auto py-1 rounded-none px-3 border-r-border"
             disabled={isLoading}
           >
-            Reject <span className="text-xs text-foreground-light">Esc</span>
+            {$t('Reject')} <span className="text-xs text-foreground-light">{$t('Esc')}</span>
           </Button>
         </div>
       ) : (
@@ -94,7 +96,7 @@ export const AskAIWidget = ({
             disabled={isLoading}
           >
             {isLoading ? 'Generating...' : 'Generate'}{' '}
-            {!isLoading && <span className="text-xs text-foreground-light">Enter</span>}
+            {!isLoading && <span className="text-xs text-foreground-light">{$t('Enter')}</span>}
           </Button>
           <Button
             onClick={onCancel}
@@ -102,7 +104,7 @@ export const AskAIWidget = ({
             className="text-xs h-auto py-1 rounded-none px-3 border-r-border"
             disabled={isLoading}
           >
-            Cancel <span className="text-xs text-foreground-light">Esc</span>
+            {$t('Cancel')} <span className="text-xs text-foreground-light">{$t('Esc')}</span>
           </Button>
         </div>
       )}

@@ -11,6 +11,7 @@ import {
   QueueWithMetrics,
 } from './QueueCells'
 import { PostgresQueue } from '@/data/database-queues/database-queues-query'
+import { t as $t } from '@/lib/i18n'
 
 export const formatQueueColumns = (): Column<QueueWithMetrics>[] => {
   return [
@@ -23,7 +24,7 @@ export const formatQueueColumns = (): Column<QueueWithMetrics>[] => {
       renderHeaderCell: () => {
         return (
           <div className={cn('flex items-center justify-between font-normal text-xs w-full ml-8')}>
-            <p className="text-foreground!">Name</p>
+            <p className="text-foreground!">{$t('Name')}</p>
           </div>
         )
       },
@@ -40,7 +41,7 @@ export const formatQueueColumns = (): Column<QueueWithMetrics>[] => {
       renderHeaderCell: () => {
         return (
           <div className={cn('flex items-center justify-between font-normal text-xs w-full')}>
-            <p className="text-foreground!">Type</p>
+            <p className="text-foreground!">{$t('Type')}</p>
           </div>
         )
       },
@@ -57,7 +58,7 @@ export const formatQueueColumns = (): Column<QueueWithMetrics>[] => {
       renderHeaderCell: () => {
         return (
           <div className={cn('flex items-center justify-between font-normal text-xs w-full')}>
-            <p className="text-foreground!">RLS enabled</p>
+            <p className="text-foreground!">{$t('RLS enabled')}</p>
           </div>
         )
       },
@@ -74,7 +75,7 @@ export const formatQueueColumns = (): Column<QueueWithMetrics>[] => {
       renderHeaderCell: () => {
         return (
           <div className={cn('flex items-center justify-between font-normal text-xs w-full')}>
-            <p className="text-foreground!">Created at</p>
+            <p className="text-foreground!">{$t('Created at')}</p>
           </div>
         )
       },
@@ -91,7 +92,7 @@ export const formatQueueColumns = (): Column<QueueWithMetrics>[] => {
       renderHeaderCell: () => {
         return (
           <div className={cn('flex items-center justify-between font-normal text-xs w-full')}>
-            <p className="text-foreground!">Size</p>
+            <p className="text-foreground!">{$t('Size')}</p>
           </div>
         )
       },

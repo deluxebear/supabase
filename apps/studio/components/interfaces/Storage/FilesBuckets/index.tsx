@@ -32,6 +32,7 @@ import { useProjectStorageConfigQuery } from '@/data/config/project-storage-conf
 import { usePaginatedBucketsQuery } from '@/data/storage/buckets-query'
 import { IS_PLATFORM } from '@/lib/constants'
 import { formatBytes } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useStorageExplorerStateSnapshot } from '@/state/storage-explorer'
 
@@ -107,10 +108,11 @@ export const FilesBuckets = () => {
             {isErrorBuckets && (
               <>
                 {hasNoApiKeys ? (
-                  <Admonition type="warning" title="Project has no active API keys enabled">
+                  <Admonition type="warning" title={$t('Project has no active API keys enabled')}>
                     <p className="leading-normal! text-sm">
-                      The Dashboard relies on having active API keys on the project to function. If
-                      you'd like to use Storage through the Dashboard, create a set of API keys{' '}
+                      {$t(
+                        "The Dashboard relies on having active API keys on the project to function. If you'd like to use Storage through the Dashboard, create a set of API keys"
+                      )}{' '}
                       <InlineLink href={`/project/${ref}/settings/api-keys/new`}>here</InlineLink>.
                     </p>
                   </Admonition>
@@ -129,14 +131,14 @@ export const FilesBuckets = () => {
                       <div className="flex items-center gap-x-2">
                         <ShortcutTooltip
                           shortcutId={SHORTCUT_IDS.LIST_PAGE_FOCUS_SEARCH}
-                          label="Search buckets"
+                          label={$t('Search buckets')}
                           side="bottom"
                         >
                           <Input
                             ref={searchInputRef}
                             size="tiny"
                             className="grow lg:grow-0 w-52"
-                            placeholder="Search for a bucket"
+                            placeholder={$t('Search for a bucket')}
                             value={filterString}
                             onChange={(e) => setFilterString(e.target.value)}
                             icon={<Search />}
@@ -145,7 +147,8 @@ export const FilesBuckets = () => {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="default" icon={<ArrowDownNarrowWide />}>
-                              Sorted by {sortBucket === 'alphabetical' ? 'name' : 'created at'}
+                              {$t('Sorted by')}{' '}
+                              {sortBucket === 'alphabetical' ? 'name' : 'created at'}
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="start" className="w-40">
@@ -154,10 +157,10 @@ export const FilesBuckets = () => {
                               onValueChange={(value) => setSortBucket(value as STORAGE_BUCKET_SORT)}
                             >
                               <DropdownMenuRadioItem value="alphabetical">
-                                Sort by name
+                                {$t('Sort by name')}
                               </DropdownMenuRadioItem>
                               <DropdownMenuRadioItem value="created_at">
-                                Sort by created at
+                                {$t('Sort by created at')}
                               </DropdownMenuRadioItem>
                             </DropdownMenuRadioGroup>
                           </DropdownMenuContent>
@@ -172,13 +175,13 @@ export const FilesBuckets = () => {
                             loading={isFetchingBuckets}
                             onClick={handleRefresh}
                           >
-                            Refresh
+                            {$t('Refresh')}
                           </Button>
                         </ShortcutTooltip>
                       </div>
                       <ShortcutTooltip
                         shortcutId={SHORTCUT_IDS.LIST_PAGE_NEW_ITEM}
-                        label="Create new bucket"
+                        label={$t('Create new bucket')}
                         side="bottom"
                       >
                         <CreateBucketButton onClick={() => setVisible(true)} />

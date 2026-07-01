@@ -1,6 +1,8 @@
 import { noop } from 'lodash'
 import { Button, DialogFooter } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface PolicyEditorFooterProps {
   showTemplates: boolean
   onViewTemplates: () => void
@@ -15,11 +17,11 @@ const PolicyEditorFooter = ({
   <DialogFooter>
     {showTemplates && (
       <Button variant="default" onClick={onViewTemplates}>
-        View templates
+        {$t('View templates')}
       </Button>
     )}
     <Button variant="primary" onClick={onReviewPolicy}>
-      Review
+      {$t('Review')}
     </Button>
   </DialogFooter>
 )

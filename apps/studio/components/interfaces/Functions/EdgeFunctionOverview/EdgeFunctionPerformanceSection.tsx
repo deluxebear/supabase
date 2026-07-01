@@ -17,6 +17,7 @@ import {
 } from './EdgeFunctionOverview.utils'
 import type { EdgeFunctionChartDatum } from './EdgeFunctionOverview.utils'
 import { EdgeFunctionTimeSeriesChartCard } from './EdgeFunctionTimeSeriesChartCard'
+import { t as $t } from '@/lib/i18n'
 
 interface EdgeFunctionPerformanceSectionProps {
   data: EdgeFunctionChartDatum[]
@@ -45,14 +46,14 @@ export const EdgeFunctionPerformanceSection = ({
   const metrics = (
     <div className="flex flex-wrap gap-x-8 gap-y-4">
       <ChartMetric
-        label="Average Execution Time"
+        label={$t('Average Execution Time')}
         value={formatMetric(averageExecutionTime, 'ms')}
-        tooltip="Average execution time of function invocations"
+        tooltip={$t('Average execution time of function invocations')}
       />
       <ChartMetric
-        label="Max Execution Time"
+        label={$t('Max Execution Time')}
         value={formatMetric(maxExecutionTime, 'ms')}
-        tooltip="Maximum execution time of function invocations"
+        tooltip={$t('Maximum execution time of function invocations')}
       />
     </div>
   )
@@ -64,7 +65,7 @@ export const EdgeFunctionPerformanceSection = ({
           <div className="flex flex-col gap-6">
             <PageSectionMeta>
               <PageSectionSummary>
-                <PageSectionTitle>Performance</PageSectionTitle>
+                <PageSectionTitle>{$t('Performance')}</PageSectionTitle>
               </PageSectionSummary>
             </PageSectionMeta>
 

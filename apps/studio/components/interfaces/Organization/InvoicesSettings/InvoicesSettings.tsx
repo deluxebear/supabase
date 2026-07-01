@@ -30,6 +30,7 @@ import { isPartnerBillingOrganization } from '@/data/organizations/managed-by-ut
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
 import { formatCurrency } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { Organization } from '@/types/base'
 
 const PAGE_LIMIT = 5
@@ -124,15 +125,15 @@ export const InvoicesSettings = () => {
           <TableRow>
             {invoices.length > 0 && (
               <TableHead className="w-2">
-                <span className="sr-only">Icon</span>
+                <span className="sr-only">{$t('Icon')}</span>
               </TableHead>
             )}
-            <TableHead className={cn(tableHeadClassName)}>Date</TableHead>
-            <TableHead className={cn(tableHeadClassName)}>Amount</TableHead>
-            <TableHead className={cn(tableHeadClassName)}>Invoice number</TableHead>
-            <TableHead className={cn(tableHeadClassName)}>Status</TableHead>
+            <TableHead className={cn(tableHeadClassName)}>{$t('Date')}</TableHead>
+            <TableHead className={cn(tableHeadClassName)}>{$t('Amount')}</TableHead>
+            <TableHead className={cn(tableHeadClassName)}>{$t('Invoice number')}</TableHead>
+            <TableHead className={cn(tableHeadClassName)}>{$t('Status')}</TableHead>
             <TableHead>
-              <span className="sr-only">Actions</span>
+              <span className="sr-only">{$t('Actions')}</span>
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -161,7 +162,9 @@ export const InvoicesSettings = () => {
           ) : invoices.length === 0 ? (
             <TableRow className="[&>td]:hover:bg-inherit">
               <TableCell colSpan={5} className="py-6">
-                <p className="text-foreground-lighter">No invoices for this organization yet</p>
+                <p className="text-foreground-lighter">
+                  {$t('No invoices for this organization yet')}
+                </p>
               </TableCell>
             </TableRow>
           ) : (
@@ -235,10 +238,10 @@ export const InvoicesSettings = () => {
                 ? `Showing ${offset + 1} to ${offset + invoices.length} out of ${count} invoices`
                 : `Showing ${offset + 1} to ${offset + invoices.length} invoices`}
           </p>
-          <div className="flex items-center gap-x-2" aria-label="Pagination">
+          <div className="flex items-center gap-x-2" aria-label={$t('Pagination')}>
             <Button
               icon={<ChevronLeft />}
-              aria-label="Previous page"
+              aria-label={$t('Previous page')}
               variant="default"
               size="tiny"
               disabled={page === 1}
@@ -246,7 +249,7 @@ export const InvoicesSettings = () => {
             />
             <Button
               icon={<ChevronRight />}
-              aria-label="Next page"
+              aria-label={$t('Next page')}
               variant="default"
               size="tiny"
               disabled={page * PAGE_LIMIT >= (count ?? 0)}

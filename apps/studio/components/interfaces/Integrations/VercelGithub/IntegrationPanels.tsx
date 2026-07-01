@@ -13,6 +13,7 @@ import type {
 } from '@/data/integrations/integrations.types'
 import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { getIntegrationConfigurationUrl } from '@/lib/integration-utils'
 
 const ICON_STROKE_WIDTH = 2
@@ -48,7 +49,13 @@ const HandleIcon = ({ type, className }: { type: HandleIconType; className?: str
 
       break
     case 'Supabase':
-      return <img src={`${BASE_PATH}/img/supabase-logo.svg`} alt="Supabase" className="w-3.5"></img>
+      return (
+        <img
+          src={`${BASE_PATH}/img/supabase-logo.svg`}
+          alt={$t('Supabase')}
+          className="w-3.5"
+        ></img>
+      )
       break
 
     default:
@@ -109,10 +116,10 @@ export const IntegrationInstallation = forwardRef<HTMLLIElement, IntegrationInst
             </div>
             <div className="flex flex-col gap-0">
               <span className="text-foreground-lighter text-xs">
-                Created {dayjs(integration.inserted_at).fromNow()}
+                {$t('Created')} {dayjs(integration.inserted_at).fromNow()}
               </span>
               <span className="text-foreground-lighter text-xs">
-                Added by {integration?.added_by?.primary_email}
+                {$t('Added by')} {integration?.added_by?.primary_email}
               </span>
             </div>
           </div>
@@ -120,14 +127,14 @@ export const IntegrationInstallation = forwardRef<HTMLLIElement, IntegrationInst
 
         <Button asChild disabled={disabled} variant="default" iconRight={<ExternalLink />}>
           {disabled ? (
-            <p>Manage</p>
+            <p>{$t('Manage')}</p>
           ) : (
             <Link
               href={getIntegrationConfigurationUrl(integration)}
               target="_blank"
               rel="noopener noreferrer"
             >
-              Manage
+              {$t('Manage')}
             </Link>
           )}
         </Button>
@@ -218,10 +225,10 @@ export const IntegrationConnection = forwardRef<HTMLLIElement, IntegrationConnec
 
             <div className="flex flex-col gap-0">
               <span className="text-foreground-lighter text-xs">
-                Connected {dayjs(connection?.inserted_at).fromNow()}
+                {$t('Connected')} {dayjs(connection?.inserted_at).fromNow()}
               </span>
               <span className="text-foreground-lighter text-xs">
-                Added by {connection?.added_by?.primary_email}
+                {$t('Added by')} {connection?.added_by?.primary_email}
               </span>
             </div>
           </div>
@@ -256,11 +263,11 @@ export const IntegrationConnectionOption = forwardRef<HTMLLIElement, Integration
           </div>
 
           <span className="text-foreground-lighter text-xs">
-            Connected {dayjs(connection.inserted_at).fromNow()}
+            {$t('Connected')} {dayjs(connection.inserted_at).fromNow()}
           </span>
         </div>
 
-        <Button variant="default">Connect</Button>
+        <Button variant="default">{$t('Connect')}</Button>
       </li>
     )
   }

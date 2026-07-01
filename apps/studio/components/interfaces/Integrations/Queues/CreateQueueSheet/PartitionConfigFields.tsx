@@ -11,6 +11,7 @@ import {
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { CreateQueueForm } from './CreateQueueSheet.schema'
+import { t as $t } from '@/lib/i18n'
 
 export function PartitionConfigFields({ form }: { form: UseFormReturn<CreateQueueForm> }) {
   const queueType = form.watch('values.type')
@@ -25,8 +26,8 @@ export function PartitionConfigFields({ form }: { form: UseFormReturn<CreateQueu
           name="values.partitionInterval"
           render={({ field: { ref, ...rest } }) => (
             <FormItemLayout
-              label="Partition interval"
-              description="Number of messages per partition"
+              label={$t('Partition interval')}
+              description={$t('Number of messages per partition')}
               className="gap-1"
             >
               <InputGroup>
@@ -43,8 +44,10 @@ export function PartitionConfigFields({ form }: { form: UseFormReturn<CreateQueu
           name="values.retentionInterval"
           render={({ field: { ref, ...rest } }) => (
             <FormItemLayout
-              label="Retention interval"
-              description="Partitions older than this many messages behind the latest will be dropped"
+              label={$t('Retention interval')}
+              description={$t(
+                'Partitions older than this many messages behind the latest will be dropped'
+              )}
               className="gap-1"
             >
               <InputGroup>

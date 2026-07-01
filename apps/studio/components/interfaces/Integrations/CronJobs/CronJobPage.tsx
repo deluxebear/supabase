@@ -34,6 +34,7 @@ import { PreviousRunsTab } from './PreviousRunsTab'
 import { useCronJobQuery } from '@/data/database-cron-jobs/database-cron-job-query'
 import { useEdgeFunctionsQuery } from '@/data/edge-functions/edge-functions-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const CronJobPage = () => {
   const router = useRouter()
@@ -64,7 +65,7 @@ export const CronJobPage = () => {
 
   const pageSubtitle = job ? (
     <div className="text-sm text-foreground-light">
-      Running{' '}
+      {$t('Running')}{' '}
       <Tooltip>
         <TooltipTrigger asChild>
           <span className="cursor-pointer underline decoration-dotted lowercase">
@@ -82,7 +83,7 @@ export const CronJobPage = () => {
           </div>
         </TooltipContent>
       </Tooltip>{' '}
-      with command{' '}
+      {$t('with command')}{' '}
       <Tooltip>
         <TooltipTrigger asChild>
           <code className="text-code-inline max-w-[200px] inline-block truncate align-bottom cursor-pointer">
@@ -94,7 +95,7 @@ export const CronJobPage = () => {
           align="center"
           className="min-w-[200px] max-w-[400px] text-wrap p-0"
         >
-          <p className="text-xs font-mono px-2 py-1 border-b bg-surface-100">Command</p>
+          <p className="text-xs font-mono px-2 py-1 border-b bg-surface-100">{$t('Command')}</p>
           <CodeBlock
             hideLineNumbers
             language="sql"
@@ -118,7 +119,7 @@ export const CronJobPage = () => {
       icon={<Edit3 strokeWidth={1.5} size="14" />}
       onClick={() => setIsEditSheetOpen(true)}
     >
-      Edit
+      {$t('Edit')}
     </Button>,
     <Button key="view-logs" asChild variant="outline" icon={<List strokeWidth={1.5} size="14" />}>
       <Link
@@ -126,7 +127,7 @@ export const CronJobPage = () => {
         rel="noopener noreferrer"
         href={`/project/${project?.ref}/logs/pgcron-logs/`}
       >
-        View Cron logs
+        {$t('View Cron logs')}
       </Link>
     </Button>,
     ...(isValidEdgeFunction
@@ -137,7 +138,7 @@ export const CronJobPage = () => {
               rel="noopener noreferrer"
               href={`/project/${project?.ref}/functions/${edgeFunctionSlug}/logs`}
             >
-              View Edge Function logs
+              {$t('View Edge Function logs')}
             </Link>
           </Button>,
         ]
@@ -151,13 +152,13 @@ export const CronJobPage = () => {
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link href={`/project/${ref}/integrations`}>Integrations</Link>
+                <Link href={`/project/${ref}/integrations`}>{$t('Integrations')}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link href={`/project/${ref}/integrations/${id}/${pageId}`}>Cron</Link>
+                <Link href={`/project/${ref}/integrations/${id}/${pageId}`}>{$t('Cron')}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />

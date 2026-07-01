@@ -24,6 +24,7 @@ import { useAuthConfigUpdateMutation } from '@/data/auth/auth-config-update-muta
 import { useTablesQuery } from '@/data/tables/tables-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 const schema = z.object({
   AUDIT_LOG_DISABLE_POSTGRES: z.boolean(),
@@ -60,7 +61,7 @@ export const AuditLogsForm = () => {
       toast.error(`Failed to update audit logs: ${error?.message}`)
     },
     onSuccess: () => {
-      toast.success('Successfully updated audit logs settings')
+      toast.success($t('Successfully updated audit logs settings'))
     },
   })
 
@@ -111,7 +112,7 @@ export const AuditLogsForm = () => {
     <PageSection>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Settings</PageSectionTitle>
+          <PageSectionTitle>{$t('Settings')}</PageSectionTitle>
         </PageSectionSummary>
       </PageSectionMeta>
       <PageSectionContent>
@@ -125,10 +126,10 @@ export const AuditLogsForm = () => {
                   render={({ field }) => (
                     <FormItemLayout
                       layout="flex-row-reverse"
-                      label="Write audit logs to the database"
+                      label={$t('Write audit logs to the database')}
                       description={
                         <p className="text-sm prose text-foreground-lighter max-w-full">
-                          When enabled, audit logs are written to the{' '}
+                          {$t('When enabled, audit logs are written to the')}{' '}
                           <InlineLink
                             target="_blank"
                             rel="noopener noreferrer"
@@ -138,12 +139,13 @@ export const AuditLogsForm = () => {
                           </InlineLink>{' '}
                           table.
                           <br />
-                          You can disable this to reduce disk usage while still accessing logs
-                          through the{' '}
+                          {$t(
+                            'You can disable this to reduce disk usage while still accessing logs through the'
+                          )}{' '}
                           <InlineLink
                             href={`/project/${projectRef}/logs/explorer?q=select%0A++cast(timestamp+as+datetime)+as+timestamp%2C%0A++event_message%2C+metadata+%0Afrom+auth_audit_logs+%0Alimit+10%0A`}
                           >
-                            Auth logs
+                            {$t('Auth logs')}
                           </InlineLink>
                           .
                         </p>
@@ -163,21 +165,24 @@ export const AuditLogsForm = () => {
                   <Admonition
                     type="warning"
                     className="mt-4"
-                    title="Disabling PostgreSQL storage will not automatically migrate or transfer existing audit log data"
+                    title={$t(
+                      'Disabling PostgreSQL storage will not automatically migrate or transfer existing audit log data'
+                    )}
                     description={
                       <p>
-                        Future audit logs will only appear in the project’s{' '}
+                        {$t('Future audit logs will only appear in the project’s')}{' '}
                         <InlineLink
                           href={`/project/${projectRef}/logs/explorer?q=select%0A++cast(timestamp+as+datetime)+as+timestamp%2C%0A++event_message%2C+metadata+%0Afrom+auth_audit_logs+%0Alimit+10%0A`}
                         >
-                          auth logs
+                          {$t('auth logs')}
                         </InlineLink>
-                        . You are responsible for backing up, copying, or migrating existing data
-                        from the{' '}
+                        {$t(
+                          '. You are responsible for backing up, copying, or migrating existing data from the'
+                        )}{' '}
                         <code className="text-code-inline break-keep!">
                           {AUDIT_LOG_ENTRIES_TABLE}
                         </code>{' '}
-                        table if needed.
+                        {$t('table if needed.')}
                       </p>
                     }
                   />
@@ -187,7 +192,7 @@ export const AuditLogsForm = () => {
               <CardFooter className="justify-end space-x-2">
                 {isDirty && (
                   <Button variant="default" onClick={() => form.reset()}>
-                    Cancel
+                    {$t('Cancel')}
                   </Button>
                 )}
                 <Button
@@ -196,7 +201,7 @@ export const AuditLogsForm = () => {
                   disabled={!canUpdateConfig || isUpdatingConfig || !isDirty}
                   loading={isUpdatingConfig}
                 >
-                  Save changes
+                  {$t('Save changes')}
                 </Button>
               </CardFooter>
             </Card>

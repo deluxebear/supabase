@@ -17,12 +17,13 @@ import { useIntegrationVercelConnectionsCreateMutation } from '@/data/integratio
 import { useVercelProjectsQuery } from '@/data/integrations/integrations-vercel-projects-query'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { EMPTY_ARR } from '@/lib/void'
 import { useIntegrationInstallationSnapshot } from '@/state/integration-installation'
 import type { NextPageWithLayout, Organization } from '@/types'
 
 const VERCEL_ICON = (
-  <img src={`${BASE_PATH}/img/icons/vercel-icon.svg`} alt="Vercel Icon" className="w-4" />
+  <img src={`${BASE_PATH}/img/icons/vercel-icon.svg`} alt={$t('Vercel Icon')} className="w-4" />
 )
 
 const VercelIntegration: NextPageWithLayout = () => {
@@ -119,7 +120,7 @@ const VercelIntegration: NextPageWithLayout = () => {
       <ScaffoldContainer className="flex flex-col gap-6 grow py-8">
         <ScaffoldColumn className="max-w-[900px]! mx-auto w-full">
           <header>
-            <h2>Create your first Project Connection</h2>
+            <h2>{$t('Create your first Project Connection')}</h2>
             <Markdown
               className="text-foreground-lighter"
               content={`

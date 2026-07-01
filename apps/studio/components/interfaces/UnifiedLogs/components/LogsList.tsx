@@ -1,6 +1,7 @@
 import { HoverCardTimestamp } from './HoverCardTimestamp'
 import CopyButton from '@/components/ui/CopyButton'
 import { DataTableColumnStatusCode } from '@/components/ui/DataTable/DataTableColumn/DataTableColumnStatusCode'
+import { t as $t } from '@/lib/i18n'
 
 interface LogEntry {
   id: string
@@ -18,7 +19,7 @@ export const LogsList = ({ logs = [] }: LogsListProps) => {
   if (!logs || logs.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-6">
-        <p className="text-sm text-muted-foreground">No function logs found</p>
+        <p className="text-sm text-muted-foreground">{$t('No function logs found')}</p>
       </div>
     )
   }

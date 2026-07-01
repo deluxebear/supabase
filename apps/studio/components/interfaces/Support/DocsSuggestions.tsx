@@ -4,6 +4,7 @@ import { cn } from 'ui'
 
 import { useChangedSync } from '@/hooks/misc/useChanged'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 function useDocsSuggestions(subject: string) {
   const { handleDocsSearchDebounced, resetSearch, searchState } = useDocsSearch()
@@ -46,7 +47,7 @@ function DocsSuggestions_Loading() {
   return (
     <div className="flex items-center gap-2 text-sm text-foreground-light">
       <Loader2 className="animate-spin" size={14} />
-      <span>Searching for relevant resources...</span>
+      <span>{$t('Searching for relevant resources...')}</span>
     </div>
   )
 }
@@ -60,7 +61,7 @@ function DocsSuggestions_Results({ results, isStale }: DocsSuggestions_ResultsPr
   return (
     <div>
       <p className="text-sm text-foreground-light">
-        Below are some articles that might help with your issue
+        {$t('Below are some articles that might help with your issue')}
       </p>
       <ul
         className={cn(

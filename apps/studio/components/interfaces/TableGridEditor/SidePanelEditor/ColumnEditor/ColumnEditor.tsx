@@ -65,6 +65,7 @@ import type { RetrieveTableResult } from '@/data/tables/table-retrieve-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useProtectedSchemas } from '@/hooks/useProtectedSchemas'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { SafePostgresColumn } from '@/lib/postgres-types'
 import type { DeepReadonly } from '@/lib/type-helpers'
 
@@ -252,17 +253,19 @@ export const ColumnEditor = ({
 
         <SheetSection className="overflow-auto grow p-0">
           <FormSection
-            header={<FormSectionLabel className="lg:col-span-4!">General</FormSectionLabel>}
+            header={<FormSectionLabel className="lg:col-span-4!">{$t('General')}</FormSectionLabel>}
           >
             <FormSectionContent loading={false} className="lg:col-span-8!">
               <FormItemLayout
                 isReactForm={false}
                 id="name"
                 className={cn(errors.name && '[&>*>label]:text-destructive')}
-                label="Name"
+                label={$t('Name')}
                 description={
                   <>
-                    Recommended to use lowercase and use an underscore to separate words e.g.{' '}
+                    {$t(
+                      'Recommended to use lowercase and use an underscore to separate words e.g.'
+                    )}{' '}
                     <code className="text-code-inline">column_name</code>
                   </>
                 }
@@ -279,7 +282,7 @@ export const ColumnEditor = ({
               <FormItemLayout
                 isReactForm={false}
                 id="description"
-                label="Description"
+                label={$t('Description')}
                 labelOptional="Optional"
               >
                 <Input
@@ -306,7 +309,7 @@ export const ColumnEditor = ({
                         rel="noreferrer"
                         href={`/project/${ref}/database/types`}
                       >
-                        Create enum types
+                        {$t('Create enum types')}
                       </Link>
                     </Button>
                     <Button asChild variant="default" icon={<ExternalLink />}>
@@ -315,13 +318,13 @@ export const ColumnEditor = ({
                         rel="noreferrer"
                         href={`${DOCS_URL}/guides/database/tables#data-types`}
                       >
-                        About data types
+                        {$t('About data types')}
                       </Link>
                     </Button>
                   </div>
                 }
               >
-                Data Type
+                {$t('Data Type')}
               </FormSectionLabel>
             }
           >
@@ -351,9 +354,11 @@ export const ColumnEditor = ({
                     <FormItemLayout
                       isReactForm={false}
                       layout="flex"
-                      label="Is Identity"
+                      label={$t('Is Identity')}
                       id="isIdentity"
-                      description="Automatically assign a sequential unique number to the column"
+                      description={$t(
+                        'Automatically assign a sequential unique number to the column'
+                      )}
                     >
                       <Checkbox
                         id="isIdentity"
@@ -371,8 +376,10 @@ export const ColumnEditor = ({
                       isReactForm={false}
                       layout="flex"
                       id="isArray"
-                      label="Define as Array"
-                      description="Allow column to be defined as variable-length multidimensional arrays"
+                      label={$t('Define as Array')}
+                      description={$t(
+                        'Allow column to be defined as variable-length multidimensional arrays'
+                      )}
                     >
                       <Checkbox
                         id="isArray"
@@ -398,7 +405,9 @@ export const ColumnEditor = ({
           <SidePanel.Separator />
 
           <FormSection
-            header={<FormSectionLabel className="lg:col-span-4!">Foreign Keys</FormSectionLabel>}
+            header={
+              <FormSectionLabel className="lg:col-span-4!">{$t('Foreign Keys')}</FormSectionLabel>
+            }
           >
             <FormSectionContent loading={false} className="lg:col-span-8!">
               <ColumnForeignKey
@@ -422,15 +431,19 @@ export const ColumnEditor = ({
           </FormSection>
           <SidePanel.Separator />
           <FormSection
-            header={<FormSectionLabel className="lg:col-span-4!">Constraints</FormSectionLabel>}
+            header={
+              <FormSectionLabel className="lg:col-span-4!">{$t('Constraints')}</FormSectionLabel>
+            }
           >
             <FormSectionContent loading={false} className="lg:col-span-8!">
               <FormItemLayout
                 isReactForm={false}
                 layout="flex"
                 id="isPrimaryKey"
-                label="Is Primary Key"
-                description="A primary key indicates that a column or group of columns can be used as a unique identifier for rows in the table"
+                label={$t('Is Primary Key')}
+                description={$t(
+                  'A primary key indicates that a column or group of columns can be used as a unique identifier for rows in the table'
+                )}
               >
                 <Switch
                   id="isPrimaryKey"
@@ -451,8 +464,10 @@ export const ColumnEditor = ({
                     isReactForm={false}
                     layout="flex"
                     id="isNullable"
-                    label="Allow Nullable"
-                    description="Allow the column to assume a NULL value if no value is provided"
+                    label={$t('Allow Nullable')}
+                    description={$t(
+                      'Allow the column to assume a NULL value if no value is provided'
+                    )}
                   >
                     <Switch
                       id="isNullable"
@@ -466,7 +481,7 @@ export const ColumnEditor = ({
                 </TooltipTrigger>
                 {columnFields.isPrimaryKey && (
                   <TooltipContent side="left" align="start">
-                    Column is a primary key and hence cannot be NULL
+                    {$t('Column is a primary key and hence cannot be NULL')}
                   </TooltipContent>
                 )}
               </Tooltip>
@@ -477,8 +492,8 @@ export const ColumnEditor = ({
                     isReactForm={false}
                     layout="flex"
                     id="isUnique"
-                    label="Is Unique"
-                    description="Enforce values in the column to be unique across rows"
+                    label={$t('Is Unique')}
+                    description={$t('Enforce values in the column to be unique across rows')}
                   >
                     <Switch
                       id="isUnique"
@@ -490,12 +505,16 @@ export const ColumnEditor = ({
                 </TooltipTrigger>
                 {columnFields.isPrimaryKey && (
                   <TooltipContent side="left" align="start">
-                    Column is a primary key and hence already unique
+                    {$t('Column is a primary key and hence already unique')}
                   </TooltipContent>
                 )}
               </Tooltip>
 
-              <FormItemLayout isReactForm={false} label="CHECK constraint" labelOptional="Optional">
+              <FormItemLayout
+                isReactForm={false}
+                label={$t('CHECK constraint')}
+                labelOptional="Optional"
+              >
                 <SafeSqlInput
                   type="text"
                   placeholder={placeholder}
@@ -523,7 +542,7 @@ export const ColumnEditor = ({
                   className="text-foreground-light text-sm cursor-pointer select-none"
                   onClick={() => setCreateMore(!createMore)}
                 >
-                  Create more
+                  {$t('Create more')}
                 </label>
               </div>
             )}

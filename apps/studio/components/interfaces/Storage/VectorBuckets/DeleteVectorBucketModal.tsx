@@ -8,6 +8,7 @@ import { useVectorBucketDeleteMutation } from '@/data/storage/vector-bucket-dele
 import { deleteVectorBucketIndex } from '@/data/storage/vector-bucket-index-delete-mutation'
 import { useVectorBucketsIndexesQuery } from '@/data/storage/vector-buckets-indexes-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export interface DeleteVectorBucketModalProps {
   visible: boolean
@@ -98,8 +99,8 @@ export const DeleteVectorBucketModal = ({
       }}
     >
       <p className="text-sm">
-        Your bucket <span className="font-bold text-foreground">{bucketName}</span> and all of its
-        contents will be permanently deleted.
+        {$t('Your bucket')} <span className="font-bold text-foreground">{bucketName}</span>{' '}
+        {$t('and all of its contents will be permanently deleted.')}
       </p>
     </TextConfirmModal>
   )

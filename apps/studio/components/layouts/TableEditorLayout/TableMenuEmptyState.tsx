@@ -3,12 +3,13 @@ import { cn, TreeViewItemVariant } from 'ui'
 import { InnerSideBarEmptyPanel } from 'ui-patterns/InnerSideMenu'
 
 import { EntityTypeIcon } from '@/components/ui/EntityTypeIcon'
+import { t as $t } from '@/lib/i18n'
 
 export const TableMenuEmptyState = () => {
   return (
     <InnerSideBarEmptyPanel
-      title="No tables or views"
-      description="Any tables or views you create will be listed here."
+      title={$t('No tables or views')}
+      description={$t('Any tables or views you create will be listed here.')}
       className="mx-4"
     >
       <div className="top-0 left-6 flex flex-col opacity-50 cursor-not-allowed bg-dash-sidebar -mb-7 pointer-events-none scale-75">

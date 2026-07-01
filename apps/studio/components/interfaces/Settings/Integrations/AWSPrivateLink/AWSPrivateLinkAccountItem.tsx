@@ -10,6 +10,8 @@ import {
   DropdownMenuTrigger,
 } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface AWSPrivateLinkAccountItemProps {
   aws_account_id: string
   account_name?: string
@@ -35,19 +37,19 @@ export const AWSPrivateLinkAccountItem = ({
   const getStatusBadge = () => {
     switch (status) {
       case 'ASSOCIATION_ACCEPTED':
-        return <Badge variant="success">Connected</Badge>
+        return <Badge variant="success">{$t('Connected')}</Badge>
       case 'READY':
-        return <Badge variant="success">Ready</Badge>
+        return <Badge variant="success">{$t('Ready')}</Badge>
       case 'CREATING':
-        return <Badge variant="warning">Creating</Badge>
+        return <Badge variant="warning">{$t('Creating')}</Badge>
       case 'DELETING':
-        return <Badge variant="destructive">Deleting</Badge>
+        return <Badge variant="destructive">{$t('Deleting')}</Badge>
       case 'ASSOCIATION_REQUEST_EXPIRED':
-        return <Badge variant="destructive">Expired</Badge>
+        return <Badge variant="destructive">{$t('Expired')}</Badge>
       case 'CREATION_FAILED':
-        return <Badge variant="destructive">Failed</Badge>
+        return <Badge variant="destructive">{$t('Failed')}</Badge>
       default:
-        return <Badge>Unknown</Badge>
+        return <Badge>{$t('Unknown')}</Badge>
     }
   }
 
@@ -67,12 +69,12 @@ export const AWSPrivateLinkAccountItem = ({
         <DropdownMenuContent align="end" className="w-40">
           <DropdownMenuItem onClick={onEdit} className="gap-x-2">
             <Edit size={14} />
-            <span>View account</span>
+            <span>{$t('View account')}</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onDelete} className="gap-x-2">
             <Trash size={14} />
-            <span>Delete account</span>
+            <span>{$t('Delete account')}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

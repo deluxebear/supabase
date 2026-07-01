@@ -7,6 +7,7 @@ import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { EmptyListState } from '@/components/ui/EmptyListState'
 import { Shortcut } from '@/components/ui/Shortcut'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 interface RedirectUrlListProps {
@@ -69,7 +70,7 @@ export const RedirectUrlList = ({
         {selectedUrls.length > 0 ? (
           <div className="flex items-center gap-x-2">
             <Button variant="default" onClick={() => onSelectClearSelection()}>
-              Clear selection
+              {$t('Clear selection')}
             </Button>
             <ButtonTooltip
               variant="default"
@@ -85,13 +86,14 @@ export const RedirectUrlList = ({
               icon={<Trash />}
               onClick={() => (selectedUrls.length > 0 ? onSelectRemoveURLs() : null)}
             >
-              Remove ({selectedUrls.length})
+              {$t('Remove (')}
+              {selectedUrls.length})
             </ButtonTooltip>
           </div>
         ) : (
           <Shortcut
             id={SHORTCUT_IDS.LIST_PAGE_NEW_ITEM}
-            label="Add redirect URL"
+            label={$t('Add redirect URL')}
             onTrigger={() => onSelectAddURL()}
             options={{ enabled: canUpdateConfig }}
             side="bottom"
@@ -108,7 +110,7 @@ export const RedirectUrlList = ({
                 },
               }}
             >
-              Add URL
+              {$t('Add URL')}
             </ButtonTooltip>
           </Shortcut>
         )}
@@ -138,14 +140,16 @@ export const RedirectUrlList = ({
           ].join(' ')}
         >
           <EmptyListState
-            title="No Redirect URLs"
-            description="Auth providers may need a URL to redirect back to"
+            title={$t('No Redirect URLs')}
+            description={$t('Auth providers may need a URL to redirect back to')}
           />
         </div>
       )}
       {allowList.length > 0 && (
         <ValueContainer className="py-3 flex items-center justify-between">
-          <p className="pl-9 text-foreground-muted text-sm">Total URLs: {allowList.length}</p>
+          <p className="pl-9 text-foreground-muted text-sm">
+            {$t('Total URLs:')} {allowList.length}
+          </p>
         </ValueContainer>
       )}
     </div>

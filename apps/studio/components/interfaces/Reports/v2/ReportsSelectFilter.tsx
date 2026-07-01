@@ -7,6 +7,8 @@ import { useEffect, useState } from 'react'
 import { Button, cn, Command, CommandEmpty, CommandInput, CommandItem, CommandList } from 'ui'
 import { z } from 'zod'
 
+import { t as $t } from '@/lib/i18n'
+
 export interface ReportSelectOption {
   label: React.ReactNode
   value: string
@@ -82,9 +84,9 @@ export const ReportsSelectFilter = ({
       </PopoverTrigger>
       <PopoverContent align="start" className="p-0 w-72">
         <Command>
-          {showSearch && <CommandInput placeholder="Search..." />}
+          {showSearch && <CommandInput placeholder={$t('Search...')} />}
           <CommandList>
-            <CommandEmpty>No options found.</CommandEmpty>
+            <CommandEmpty>{$t('No options found.')}</CommandEmpty>
             <CommandGroup>
               {options.map((option) => (
                 <CommandItem key={option.value}>
@@ -121,7 +123,7 @@ export const ReportsSelectFilter = ({
 
         <div className="flex items-center justify-end gap-2 border-t border-default p-2">
           <Button size="tiny" variant="outline" onClick={handleClearAll} disabled={isLoading}>
-            Clear
+            {$t('Clear')}
           </Button>
           <Button
             loading={isLoading}
@@ -130,7 +132,7 @@ export const ReportsSelectFilter = ({
             onClick={handleApply}
             type="button"
           >
-            Apply
+            {$t('Apply')}
           </Button>
         </div>
       </PopoverContent>

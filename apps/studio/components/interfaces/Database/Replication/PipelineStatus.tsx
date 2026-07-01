@@ -7,6 +7,7 @@ import { getPipelineDisplayState, getStatusName } from './Pipeline.utils'
 import { PipelineStatusName } from './Replication.constants'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { ReplicationPipelineStatusData } from '@/data/replication/pipeline-status-query'
+import { t as $t } from '@/lib/i18n'
 import { PipelineStatusRequestStatus } from '@/state/replication-pipeline-request-status'
 import type { ResponseError } from '@/types'
 
@@ -52,10 +53,10 @@ export const PipelineStatus = ({
       {isError && (
         <Tooltip>
           <TooltipTrigger>
-            <Badge variant="default">Unknown</Badge>
+            <Badge variant="default">{$t('Unknown')}</Badge>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="w-64 text-center">
-            Unable to retrieve status: {error?.message}
+            {$t('Unable to retrieve status:')} {error?.message}
           </TooltipContent>
         </Tooltip>
       )}
@@ -78,7 +79,8 @@ export const PipelineStatus = ({
             {message}{' '}
             {showLogsCTA && (
               <>
-                Check the <InlineLink href={pipelineLogsUrl}>logs</InlineLink> for more information.
+                {$t('Check the')} <InlineLink href={pipelineLogsUrl}>logs</InlineLink>{' '}
+                {$t('for more information.')}
               </>
             )}
           </TooltipContent>

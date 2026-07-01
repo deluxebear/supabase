@@ -12,6 +12,7 @@ import { useOrgProjectsInfiniteQuery } from '@/data/projects/org-projects-infini
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useLastVisitedOrganization } from '@/hooks/misc/useLastVisitedOrganization'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 const MAX_PROJECT_ACKNOWLEDGEMENTS = 10
 
@@ -106,7 +107,7 @@ export const DeleteOrganizationButton = () => {
 
   const onConfirmDelete = () => {
     if (!canDeleteOrganization) {
-      toast.error('You do not have permission to delete this organization')
+      toast.error($t('You do not have permission to delete this organization'))
       return
     }
 
@@ -116,17 +117,17 @@ export const DeleteOrganizationButton = () => {
     }
 
     if (isLoading || isFetching || isProjectsDataPending) {
-      toast.error('Projects are still loading, please wait')
+      toast.error($t('Projects are still loading, please wait'))
       return
     }
 
     if (isError) {
-      toast.error('Failed to load projects')
+      toast.error($t('Failed to load projects'))
       return
     }
 
     if (!allChecked) {
-      toast.error('Please acknowledge all projects before deleting the organization')
+      toast.error($t('Please acknowledge all projects before deleting the organization'))
       return
     }
 
@@ -154,7 +155,7 @@ export const DeleteOrganizationButton = () => {
             },
           }}
         >
-          Delete organization
+          {$t('Delete organization')}
         </ButtonTooltip>
       </div>
 
@@ -162,7 +163,7 @@ export const DeleteOrganizationButton = () => {
         visible={isOpen}
         size="small"
         variant="destructive"
-        title="Delete organization"
+        title={$t('Delete organization')}
         loading={isDeleting}
         confirmString={orgSlug ?? ''}
         confirmPlaceholder="Enter the string above"
@@ -192,9 +193,10 @@ export const DeleteOrganizationButton = () => {
         <p
           className={`text-sm text-foreground-lighter ${(projects?.length ?? 0) > 0 ? 'mt-4' : ''}`}
         >
-          This action <span className="text-foreground">cannot</span> be undone. This will
-          permanently delete the <span className="text-foreground">{orgName}</span> organization and
-          remove all of its projects.
+          {$t('This action')} <span className="text-foreground">cannot</span>{' '}
+          {$t('be undone. This will permanently delete the')}{' '}
+          <span className="text-foreground">{orgName}</span>{' '}
+          {$t('organization and remove all of its projects.')}
         </p>
       </TextConfirmModal>
     </>

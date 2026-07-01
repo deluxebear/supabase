@@ -6,6 +6,7 @@ import { formatOperationItemValue } from './OperationQueueSidePanel.utils'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { tableRowKeys } from '@/data/table-rows/keys'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
 import { AddRowPayload } from '@/state/table-editor-operation-queue.types'
 
@@ -56,13 +57,13 @@ export const AddRowOperationItem = ({
               {fullTableName}
             </code>
             <div className="text-xs text-foreground mt-1 ml-0.5">
-              <span>New row</span>
+              <span>{$t('New row')}</span>
             </div>
           </div>
         </div>
         <ButtonTooltip
           variant="text"
-          aria-label="Discard change"
+          aria-label={$t('Discard change')}
           className="w-7"
           icon={<Undo2 />}
           onClick={handleDelete}
@@ -79,7 +80,7 @@ export const AddRowOperationItem = ({
       <CardContent className="py-2 px-3 font-mono text-xs text-brand-link">
         {previewColumns.length === 0 && (
           <span className="text-foreground-light">
-            No data provided, default values will be used
+            {$t('No data provided, default values will be used')}
           </span>
         )}
         {previewColumns.map(([key, value]) => (
@@ -94,7 +95,9 @@ export const AddRowOperationItem = ({
         {remainingCount > 0 && (
           <div className="flex gap-2 py-0.5">
             <span className="text-brand-link select-none font-medium">+</span>
-            <span>+{remainingCount} more column(s)</span>
+            <span>
+              +{remainingCount} {$t('more column(s)')}
+            </span>
           </div>
         )}
       </CardContent>

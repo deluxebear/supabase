@@ -16,6 +16,7 @@ import { useCustomContent } from '@/hooks/custom-content/useCustomContent'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL, PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const BuildingState = () => {
   const { ref } = useParams()
@@ -79,21 +80,21 @@ const BuildingState = () => {
           <div>
             <p className="text-sm text-foreground-light">
               {' '}
-              We are provisioning your database and API endpoints
+              {$t('We are provisioning your database and API endpoints')}
             </p>
-            <p className="text-sm text-foreground-light"> This may take a few minutes</p>
+            <p className="text-sm text-foreground-light"> {$t('This may take a few minutes')}</p>
           </div>
         </div>
         <div>
           <div className="w-full grid grid-cols-12 gap-12">
             <div className="w-full col-span-12 space-y-12 lg:col-span-4">
               <div>
-                <h4 className="text-base text-foreground">While you wait</h4>
+                <h4 className="text-base text-foreground">{$t('While you wait')}</h4>
 
                 <ChecklistItem
                   description={
                     <p className="text-sm text-foreground-light">
-                      Browse the Supabase{' '}
+                      {$t('Browse the Supabase')}{' '}
                       <Link
                         href={`${DOCS_URL}`}
                         className="mb-0 text-brand transition-colors hover:text-brand-600"
@@ -108,11 +109,11 @@ const BuildingState = () => {
                 />
               </div>
               <div>
-                <h4 className="text-base text-foreground">Not working?</h4>
+                <h4 className="text-base text-foreground">{$t('Not working?')}</h4>
                 <ChecklistItem
                   description={
                     <p className="text-sm text-foreground-light">
-                      Try refreshing after a couple of minutes.
+                      {$t('Try refreshing after a couple of minutes.')}
                     </p>
                   }
                 />
@@ -121,11 +122,12 @@ const BuildingState = () => {
                     description={
                       <>
                         <p className="mb-4 text-sm text-foreground-light">
-                          If your dashboard hasn't connected within 2 minutes, you can open a
-                          support ticket.
+                          {$t(
+                            "If your dashboard hasn't connected within 2 minutes, you can open a support ticket."
+                          )}
                         </p>
                         <Button asChild variant="default">
-                          <SupportLink>Contact support team</SupportLink>
+                          <SupportLink>{$t('Contact support team')}</SupportLink>
                         </Button>
                       </>
                     }
@@ -143,7 +145,7 @@ const BuildingState = () => {
         <div className="mx-auto my-16 w-full max-w-7xl space-y-16">
           <div className="space-y-8">
             <div className="mx-6">
-              <h4 className="text-lg">Client libraries</h4>
+              <h4 className="text-lg">{$t('Client libraries')}</h4>
             </div>
             <div className="grid grid-cols-2 gap-x-8 gap-y-8 md:gap-12 mx-6 mb-12 md:grid-cols-3">
               {clientLibraries!.map((library) => (
@@ -154,7 +156,7 @@ const BuildingState = () => {
           {showExamples && (
             <div className="space-y-8">
               <div className="mx-6">
-                <h5>Example projects</h5>
+                <h5>{$t('Example projects')}</h5>
               </div>
               <div className="mx-6 grid gap-2 md:gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {EXAMPLE_PROJECTS.map((project) => (

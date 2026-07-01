@@ -17,6 +17,7 @@ import { useSqlSnippetByIdQuery } from '@/data/content/content-id-query'
 import { useDashboardHistory } from '@/hooks/misc/useDashboardHistory'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useSnippets, useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
 import { wasNeverPersisted } from '@/state/sql-editor/sql-editor-lifecycle'
 import { createTabId, useTabsStateSnapshot } from '@/state/tabs'
@@ -116,7 +117,7 @@ const SqlEditor: NextPageWithLayout = () => {
           <Admonition
             type="default"
             title={`Unable to find snippet with ID ${id}`}
-            description="This snippet doesn't exist in your project"
+            description={$t("This snippet doesn't exist in your project")}
           >
             {!!tabId ? (
               <Button
@@ -131,7 +132,7 @@ const SqlEditor: NextPageWithLayout = () => {
                   })
                 }}
               >
-                Close tab
+                {$t('Close tab')}
               </Button>
             ) : (
               <Button
@@ -140,7 +141,7 @@ const SqlEditor: NextPageWithLayout = () => {
                 className="mt-2"
                 onClick={() => setLastVisitedSnippet(undefined)}
               >
-                <Link href={`/project/${ref}/sql`}>Head back</Link>
+                <Link href={`/project/${ref}/sql`}>{$t('Head back')}</Link>
               </Button>
             )}
           </Admonition>

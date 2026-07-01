@@ -25,6 +25,7 @@ import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { permissionKeys } from '@/data/permissions/keys'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 interface OrganizationSelectorProps {
   form: UseFormReturn<CreateProjectForm>
@@ -54,7 +55,7 @@ export const OrganizationSelector = ({ form }: OrganizationSelectorProps) => {
         control={form.control}
         name="organization"
         render={({ field }) => (
-          <FormItemLayout label="Organization" layout="horizontal">
+          <FormItemLayout label={$t('Organization')} layout="horizontal">
             {(organizations?.length ?? 0) > 0 && (
               <Select
                 onValueChange={(slug) => {
@@ -66,7 +67,7 @@ export const OrganizationSelector = ({ form }: OrganizationSelectorProps) => {
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select an organization" />
+                    <SelectValue placeholder={$t('Select an organization')} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>

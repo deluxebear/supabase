@@ -4,6 +4,7 @@ import { Button } from 'ui'
 import { Admonition } from 'ui-patterns/admonition'
 
 import { SupportLink } from '@/components/interfaces/Support/SupportLink'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export interface AlertErrorProps {
@@ -39,7 +40,7 @@ export const ContactSupportButton = ({
           error: error?.message,
         }}
       >
-        Contact support
+        {$t('Contact support')}
       </SupportLink>
     </Button>
   )

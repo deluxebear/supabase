@@ -3,6 +3,7 @@
 import type { SidebarSection } from './AccountLayout.types'
 import { getActiveKey, toSubMenuSections } from './AccountLayout.utils'
 import { SubMenu } from '@/components/ui/ProductMenu/SubMenu'
+import { t as $t } from '@/lib/i18n'
 
 export interface AccountMenuContentProps {
   sections: SidebarSection[]
@@ -15,7 +16,7 @@ export function AccountMenuContent({ sections, onCloseSheet }: AccountMenuConten
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
-      <nav className="px-2 py-2" aria-label="Account menu">
+      <nav className="px-2 py-2" aria-label={$t('Account menu')}>
         <SubMenu sections={subMenuSections} page={page} onItemClick={onCloseSheet} />
       </nav>
     </div>

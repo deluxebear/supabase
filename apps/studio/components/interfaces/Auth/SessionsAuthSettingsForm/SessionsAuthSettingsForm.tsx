@@ -37,6 +37,7 @@ import { useAuthConfigUpdateMutation } from '@/data/auth/auth-config-update-muta
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 function HoursOrNeverText({ value }: { value: number }) {
   if (value === 0) {
@@ -138,7 +139,7 @@ export const SessionsAuthSettingsForm = () => {
           setIsUpdatingRefreshTokens(false)
         },
         onSuccess: () => {
-          toast.success('Successfully updated refresh token settings')
+          toast.success($t('Successfully updated refresh token settings'))
           setIsUpdatingRefreshTokens(false)
         },
       }
@@ -157,7 +158,7 @@ export const SessionsAuthSettingsForm = () => {
           setIsUpdatingUserSessions(false)
         },
         onSuccess: () => {
-          toast.success('Successfully updated user session settings')
+          toast.success($t('Successfully updated user session settings'))
           setIsUpdatingUserSessions(false)
         },
       }
@@ -199,7 +200,7 @@ export const SessionsAuthSettingsForm = () => {
       <PageSection>
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>Refresh Tokens</PageSectionTitle>
+            <PageSectionTitle>{$t('Refresh Tokens')}</PageSectionTitle>
           </PageSectionSummary>
         </PageSectionMeta>
         <PageSectionContent>
@@ -216,8 +217,10 @@ export const SessionsAuthSettingsForm = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Detect and revoke potentially compromised refresh tokens"
-                        description="Prevent replay attacks from potentially compromised refresh tokens."
+                        label={$t('Detect and revoke potentially compromised refresh tokens')}
+                        description={$t(
+                          'Prevent replay attacks from potentially compromised refresh tokens.'
+                        )}
                       >
                         <FormControl>
                           <Switch
@@ -237,8 +240,10 @@ export const SessionsAuthSettingsForm = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Refresh token reuse interval"
-                        description="Time interval where the same refresh token can be used multiple times to request for an access token. Recommendation: 10 seconds."
+                        label={$t('Refresh token reuse interval')}
+                        description={$t(
+                          'Time interval where the same refresh token can be used multiple times to request for an access token. Recommendation: 10 seconds.'
+                        )}
                       >
                         <FormControl className="w-full">
                           <InputGroup>
@@ -260,7 +265,7 @@ export const SessionsAuthSettingsForm = () => {
                 <CardFooter className="justify-end space-x-2">
                   {refreshTokenForm.formState.isDirty && (
                     <Button variant="default" onClick={() => refreshTokenForm.reset()}>
-                      Cancel
+                      {$t('Cancel')}
                     </Button>
                   )}
                   <Button
@@ -273,7 +278,7 @@ export const SessionsAuthSettingsForm = () => {
                     }
                     loading={isUpdatingRefreshTokens}
                   >
-                    Save changes
+                    {$t('Save changes')}
                   </Button>
                 </CardFooter>
               </Card>
@@ -285,7 +290,7 @@ export const SessionsAuthSettingsForm = () => {
       <PageSection>
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>User Sessions</PageSectionTitle>
+            <PageSectionTitle>{$t('User Sessions')}</PageSectionTitle>
           </PageSectionSummary>
         </PageSectionMeta>
         <PageSectionContent>
@@ -302,8 +307,10 @@ export const SessionsAuthSettingsForm = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Enforce single session per user"
-                        description="If enabled, all but a user's most recently active session will be terminated."
+                        label={$t('Enforce single session per user')}
+                        description={$t(
+                          "If enabled, all but a user's most recently active session will be terminated."
+                        )}
                       >
                         <FormControl>
                           <Switch
@@ -324,8 +331,10 @@ export const SessionsAuthSettingsForm = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Time-box user sessions"
-                        description="The amount of time before a user is forced to sign in again. Use 0 for never."
+                        label={$t('Time-box user sessions')}
+                        description={$t(
+                          'The amount of time before a user is forced to sign in again. Use 0 for never.'
+                        )}
                       >
                         <FormControl className="w-full">
                           <InputGroup>
@@ -354,8 +363,10 @@ export const SessionsAuthSettingsForm = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Inactivity timeout"
-                        description="The amount of time a user needs to be inactive to be forced to sign in again. Use 0 for never."
+                        label={$t('Inactivity timeout')}
+                        description={$t(
+                          'The amount of time a user needs to be inactive to be forced to sign in again. Use 0 for never.'
+                        )}
                       >
                         <FormControl className="w-full">
                           <InputGroup>
@@ -390,7 +401,7 @@ export const SessionsAuthSettingsForm = () => {
                 <CardFooter className="justify-end space-x-2">
                   {userSessionsForm.formState.isDirty && (
                     <Button variant="default" onClick={() => userSessionsForm.reset()}>
-                      Cancel
+                      {$t('Cancel')}
                     </Button>
                   )}
                   <Button
@@ -403,7 +414,7 @@ export const SessionsAuthSettingsForm = () => {
                     }
                     loading={isUpdatingUserSessions}
                   >
-                    Save changes
+                    {$t('Save changes')}
                   </Button>
                 </CardFooter>
               </Card>

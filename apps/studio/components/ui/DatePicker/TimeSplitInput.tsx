@@ -8,6 +8,7 @@ import {
   isUnixMicro,
   unixMicroToIsoTimestamp,
 } from '@/components/interfaces/Settings/Logs/Logs.utils'
+import { t as $t } from '@/lib/i18n'
 
 const inputStyle = cn(
   'w-6 p-0 text-center text-xs text-foreground outline-hidden cursor-text',
@@ -249,7 +250,7 @@ export const TimeSplitInput = ({
         pattern="[0-23]*"
         placeholder="00"
         onChange={(e) => handleOnChange(e.target.value, 'HH')}
-        aria-label="Hours"
+        aria-label={$t('Hours')}
         className={inputStyle}
         value={time.HH}
       />
@@ -264,7 +265,7 @@ export const TimeSplitInput = ({
         pattern="[0-59]*"
         placeholder="00"
         onChange={(e) => handleOnChange(e.target.value, 'mm')}
-        aria-label="Minutes"
+        aria-label={$t('Minutes')}
         className={inputStyle}
         value={time.mm}
       />
@@ -279,7 +280,7 @@ export const TimeSplitInput = ({
         pattern="[0-59]*"
         placeholder="00"
         onChange={(e) => handleOnChange(e.target.value, 'ss')}
-        aria-label="Seconds"
+        aria-label={$t('Seconds')}
         className={inputStyle}
         value={time.ss}
       />

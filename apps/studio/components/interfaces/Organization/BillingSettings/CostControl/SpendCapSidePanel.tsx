@@ -15,6 +15,7 @@ import { useOrgSubscriptionQuery } from '@/data/subscriptions/org-subscription-q
 import { useOrgSubscriptionUpdateMutation } from '@/data/subscriptions/org-subscription-update-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { BASE_PATH, DOCS_URL, PRICING_TIER_PRODUCT_IDS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useOrgSettingsPageStateSnapshot } from '@/state/organization-settings'
 
 const SPEND_CAP_OPTIONS: {
@@ -105,14 +106,14 @@ const SpendCapSidePanel = () => {
       onConfirm={onConfirm}
       header={
         <div className="flex items-center justify-between w-full">
-          <h4>Spend cap</h4>
+          <h4>{$t('Spend cap')}</h4>
           <Button asChild variant="default" icon={<ExternalLink strokeWidth={1.5} />}>
             <Link
               href={`${DOCS_URL}/guides/platform/cost-control#spend-cap`}
               target="_blank"
               rel="noreferrer"
             >
-              About spend cap
+              {$t('About spend cap')}
             </Link>
           </Button>
         </div>
@@ -122,8 +123,9 @@ const SpendCapSidePanel = () => {
       <SidePanel.Content>
         <div className="py-6 space-y-4">
           <p className="text-sm">
-            Use the spend cap to manage project usage and costs, and control whether the project can
-            exceed the included quota allowance of any billed line item in a billing cycle
+            {$t(
+              'Use the spend cap to manage project usage and costs, and control whether the project can exceed the included quota allowance of any billed line item in a billing cycle'
+            )}
           </p>
 
           <Collapsible open={showUsageCosts} onOpenChange={setShowUsageCosts}>
@@ -135,7 +137,7 @@ const SpendCapSidePanel = () => {
                   className={showUsageCosts ? 'rotate-90' : ''}
                 />
                 <p className="text-sm text-foreground-light">
-                  How are each resource charged after exceeding the included quota?
+                  {$t('How are each resource charged after exceeding the included quota?')}
                 </p>
               </div>
             </CollapsibleTrigger>
@@ -145,10 +147,10 @@ const SpendCapSidePanel = () => {
                 head={
                   <>
                     <Table.th>
-                      <p className="text-xs">Item</p>
+                      <p className="text-xs">{$t('Item')}</p>
                     </Table.th>
                     <Table.th>
-                      <p className="text-xs">Rate</p>
+                      <p className="text-xs">{$t('Rate')}</p>
                     </Table.th>
                   </>
                 }
@@ -191,11 +193,11 @@ const SpendCapSidePanel = () => {
             <Admonition
               type="note"
               layout="horizontal"
-              title="Toggling of the spend cap is only available on the Pro Plan"
-              description="Upgrade your plan to disable the spend cap"
+              title={$t('Toggling of the spend cap is only available on the Pro Plan')}
+              description={$t('Upgrade your plan to disable the spend cap')}
               actions={
                 <Button variant="default" onClick={() => snap.setPanelKey('subscriptionPlan')}>
-                  View available plans
+                  {$t('View available plans')}
                 </Button>
               }
             />
@@ -213,7 +215,7 @@ const SpendCapSidePanel = () => {
                     onClick={() => !isFreePlan && setSelectedOption(option.value)}
                   >
                     <Image
-                      alt="Spend Cap"
+                      alt={$t('Spend Cap')}
                       className={cn(
                         'relative rounded-xl transition border bg-no-repeat bg-center bg-cover w-[160px] h-[96px]',
                         isSelected
@@ -245,16 +247,18 @@ const SpendCapSidePanel = () => {
           {selectedOption === 'on' ? (
             <Admonition
               type="warning"
-              title="Your projects could become unresponsive or enter read only mode"
-              description="Exceeding the included quota allowance with spend cap enabled can cause your projects
-              to become unresponsive or enter read only mode."
+              title={$t('Your projects could become unresponsive or enter read only mode')}
+              description={$t(
+                'Exceeding the included quota allowance with spend cap enabled can cause your projects\n              to become unresponsive or enter read only mode.'
+              )}
             />
           ) : (
             <Admonition
               type="note"
-              title="Charges apply for usage beyond included quota allowance"
-              description="Your projects will always remain responsive and active, and charges only apply when
-              exceeding the included quota limit."
+              title={$t('Charges apply for usage beyond included quota allowance')}
+              description={$t(
+                'Your projects will always remain responsive and active, and charges only apply when\n              exceeding the included quota limit.'
+              )}
             />
           )}
 
@@ -266,8 +270,9 @@ const SpendCapSidePanel = () => {
                   : 'Upon clicking confirm, spend cap will be disabled for your organization and you will be charged for any usage beyond the included quota.'}
               </p>
               <p className="text-sm">
-                Toggling spend cap triggers an invoice and there might be prorated charges for any
-                usage beyond the Pro Plans quota during this billing cycle.
+                {$t(
+                  'Toggling spend cap triggers an invoice and there might be prorated charges for any usage beyond the Pro Plans quota during this billing cycle.'
+                )}
               </p>
             </>
           )}

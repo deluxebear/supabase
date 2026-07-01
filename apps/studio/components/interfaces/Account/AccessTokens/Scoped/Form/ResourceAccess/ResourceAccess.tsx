@@ -5,6 +5,7 @@ import { ResourceAccessProps } from './ResourceAccess.types'
 import { ResourceMultiSelector } from './ResourceMultiSelector'
 import { ResourceOption } from './ResourceOption'
 import { useOrgAndProjectData } from '@/components/interfaces/Account/AccessTokens/hooks/useOrgAndProjectData'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 
 const RESOURCE_OPTIONS = [
@@ -46,11 +47,11 @@ export const ResourceAccess = ({ control, resourceAccess, setValue }: ResourceAc
         name="resourceAccess"
         control={control}
         render={({ field }) => (
-          <FormItemLayout name="resourceAccess" label="Resource access">
+          <FormItemLayout name="resourceAccess" label={$t('Resource access')}>
             <FormControl>
               <div className="space-y-3">
                 <fieldset className="flex gap-3">
-                  <legend className="sr-only">Resource access level</legend>
+                  <legend className="sr-only">{$t('Resource access level')}</legend>
                   {RESOURCE_OPTIONS.map((option) => (
                     <ResourceOption
                       key={option.value}
@@ -85,7 +86,7 @@ export const ResourceAccess = ({ control, resourceAccess, setValue }: ResourceAc
               items={organizations.map((org) => ({ id: org.slug, name: org.name }))}
               isLoading={isLoadingOrgs}
               fieldName="selectedOrganizations"
-              label="Select organizations"
+              label={$t('Select organizations')}
               loadingMessage="Loading organizations..."
               emptyMessage="No organizations available"
             />
@@ -104,7 +105,7 @@ export const ResourceAccess = ({ control, resourceAccess, setValue }: ResourceAc
               items={projects.map((project) => ({ id: project.ref, name: project.name }))}
               isLoading={isLoadingProjects}
               fieldName="selectedProjects"
-              label="Select projects"
+              label={$t('Select projects')}
               loadingMessage="Loading projects..."
               emptyMessage="No projects available"
             />

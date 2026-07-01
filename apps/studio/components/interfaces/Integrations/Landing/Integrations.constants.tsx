@@ -18,6 +18,7 @@ import { databaseKeys } from '@/data/database/keys'
 import { getSchemas, invalidateSchemasQuery } from '@/data/database/schemas-query'
 import { getQueryClient } from '@/data/query-client'
 import { BASE_PATH, DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export type NavigationContentLayout = 'constrained' | 'full'
@@ -423,7 +424,7 @@ const SUPABASE_INTEGRATIONS: Array<IntegrationDefinition> = [
       <Image
         fill
         src={`${BASE_PATH}/img/graphql.svg`}
-        alt="GraphiQL"
+        alt={$t('GraphiQL')}
         className={cn('p-2', className)}
         {...props}
       />

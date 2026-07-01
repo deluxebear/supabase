@@ -50,6 +50,7 @@ import {
 } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH, DOCS_URL } from '@/lib/constants'
 import { getDatabaseMajorVersion, getSemanticVersion } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useAddonsPagePanel } from '@/state/addons-page'
 
 export const Addons = () => {
@@ -144,14 +145,15 @@ export const Addons = () => {
   if (pitrAlertState === 'hipaa') {
     pitrAlert = (
       <Alert className="rounded-none border-0 border-b px-6">
-        <AlertTitle>PITR cannot be changed with HIPAA</AlertTitle>
+        <AlertTitle>{$t('PITR cannot be changed with HIPAA')}</AlertTitle>
         <AlertDescription>
-          All projects should have PITR enabled by default and cannot be changed with HIPAA enabled.
-          Contact support for further assistance.
+          {$t(
+            'All projects should have PITR enabled by default and cannot be changed with HIPAA enabled. Contact support for further assistance.'
+          )}
         </AlertDescription>
         <div className="mt-4">
           <Button variant="default" asChild>
-            <SupportLink>Contact support</SupportLink>
+            <SupportLink>{$t('Contact support')}</SupportLink>
           </Button>
         </div>
       </Alert>
@@ -159,10 +161,10 @@ export const Addons = () => {
   } else if (pitrAlertState === 'legacy-project') {
     pitrAlert = (
       <Alert className="rounded-none border-0 border-b px-6">
-        <AlertTitle>Your project is too old to enable PITR</AlertTitle>
+        <AlertTitle>{$t('Your project is too old to enable PITR')}</AlertTitle>
         <AlertDescription>
           <p className="text-sm leading-normal mb-2">
-            Reach out to us via support if you're interested
+            {$t("Reach out to us via support if you're interested")}
           </p>
           <Button asChild variant="default">
             <SupportLink
@@ -172,7 +174,7 @@ export const Addons = () => {
                 subject: 'Project too old old for PITR',
               }}
             >
-              Contact support
+              {$t('Contact support')}
             </SupportLink>
           </Button>
         </AlertDescription>
@@ -181,8 +183,10 @@ export const Addons = () => {
   } else if (pitrAlertState === 'orioledb') {
     pitrAlert = (
       <Alert className="rounded-none border-0 border-b px-6">
-        <AlertTitle>PITR not supported</AlertTitle>
-        <AlertDescription>Point in time recovery is not supported with OrioleDB</AlertDescription>
+        <AlertTitle>{$t('PITR not supported')}</AlertTitle>
+        <AlertDescription>
+          {$t('Point in time recovery is not supported with OrioleDB')}
+        </AlertDescription>
       </Alert>
     )
   }
@@ -194,12 +198,13 @@ export const Addons = () => {
           <Admonition
             type="default"
             className="mb-4"
-            title="You are currently on a preview branch of your project"
+            title={$t('You are currently on a preview branch of your project')}
           >
-            Updating add-ons here will only apply to this preview branch. To manage add-ons for your
-            main branch, please visit the{' '}
+            {$t(
+              'Updating add-ons here will only apply to this preview branch. To manage add-ons for your main branch, please visit the'
+            )}{' '}
             <InlineLink href={`/project/${selectedProject.parent_project_ref}/settings/addons`}>
-              main branch
+              {$t('main branch')}
             </InlineLink>
             .
           </Admonition>
@@ -234,7 +239,7 @@ export const Addons = () => {
                 media={
                   <Image
                     className="bg rounded-lg border"
-                    alt="IPv4"
+                    alt={$t('IPv4')}
                     width={160}
                     height={96}
                     src={
@@ -252,25 +257,25 @@ export const Addons = () => {
                       tooltip={ipv4DisabledReason}
                     >
                       {ipv4Enabled ? (
-                        <Badge variant="success">Enabled</Badge>
+                        <Badge variant="success">{$t('Enabled')}</Badge>
                       ) : (
-                        <Badge variant="default">Disabled</Badge>
+                        <Badge variant="default">{$t('Disabled')}</Badge>
                       )}
                     </ProjectUpdateDisabledTooltip>
                   </div>
                 }
               >
                 <div className="space-y-1">
-                  <div>Dedicated IPv4 address</div>
+                  <div>{$t('Dedicated IPv4 address')}</div>
                   <p className="m-0 text-foreground-light text-sm">
-                    Reserve a dedicated IPv4 address for your project.
+                    {$t('Reserve a dedicated IPv4 address for your project.')}
                   </p>
                   <InlineLink
                     className="text-foreground-light"
                     href={`${DOCS_URL}/guides/platform/ipv4-address`}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    About IPv4 deprecation
+                    {$t('About IPv4 deprecation')}
                   </InlineLink>
                 </div>
               </ResourceItem>
@@ -295,9 +300,9 @@ export const Addons = () => {
               meta={
                 <div className="flex items-center gap-4">
                   {pitrEnabled ? (
-                    <Badge variant="success">Enabled</Badge>
+                    <Badge variant="success">{$t('Enabled')}</Badge>
                   ) : (
-                    <Badge variant="default">Disabled</Badge>
+                    <Badge variant="default">{$t('Disabled')}</Badge>
                   )}
                   {!canOpenPITR && pitrDisabledReason && (
                     <Tooltip>
@@ -311,16 +316,16 @@ export const Addons = () => {
               }
             >
               <div className="space-y-1">
-                <div>Point in time recovery</div>
+                <div>{$t('Point in time recovery')}</div>
                 <p className="m-0 text-foreground-light text-sm">
-                  Restore your database to a specific moment in the past.
+                  {$t('Restore your database to a specific moment in the past.')}
                 </p>
                 <InlineLink
                   href={`${DOCS_URL}/guides/platform/backups#point-in-time-recovery`}
                   className="text-foreground-light"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  About PITR backups
+                  {$t('About PITR backups')}
                 </InlineLink>
               </div>
             </ResourceItem>
@@ -334,7 +339,7 @@ export const Addons = () => {
                 media={
                   <Image
                     className="bg rounded-lg border"
-                    alt="Custom Domain"
+                    alt={$t('Custom Domain')}
                     width={160}
                     height={96}
                     src={
@@ -351,9 +356,9 @@ export const Addons = () => {
                 meta={
                   <div className="flex items-center gap-4">
                     {customDomainEnabled ? (
-                      <Badge variant="success">Enabled</Badge>
+                      <Badge variant="success">{$t('Enabled')}</Badge>
                     ) : (
-                      <Badge variant="default">Disabled</Badge>
+                      <Badge variant="default">{$t('Disabled')}</Badge>
                     )}
                     {!canOpenCustomDomain && customDomainDisabledReason && (
                       <Tooltip>
@@ -367,16 +372,16 @@ export const Addons = () => {
                 }
               >
                 <div className="space-y-1">
-                  <div>Custom domain</div>
+                  <div>{$t('Custom domain')}</div>
                   <p className="m-0 text-foreground-light text-sm">
-                    Serve your project on your own domain name.
+                    {$t('Serve your project on your own domain name.')}
                   </p>
                   <InlineLink
                     href={`${DOCS_URL}/guides/platform/custom-domains`}
                     className="text-foreground-light"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    About custom domains
+                    {$t('About custom domains')}
                   </InlineLink>
                 </div>
               </ResourceItem>

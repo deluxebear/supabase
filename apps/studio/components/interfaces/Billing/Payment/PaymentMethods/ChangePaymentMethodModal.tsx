@@ -13,6 +13,7 @@ import {
 
 import { useOrganizationPaymentMethodMarkAsDefaultMutation } from '@/data/organizations/organization-payment-method-default-mutation'
 import type { OrganizationPaymentMethod } from '@/data/organizations/organization-payment-methods-query'
+import { t as $t } from '@/lib/i18n'
 
 export interface ChangePaymentMethodModalProps {
   selectedPaymentMethod?: OrganizationPaymentMethod
@@ -54,13 +55,16 @@ const ChangePaymentMethodModal = ({
         <AlertDialogHeader>
           <AlertDialogTitle>{`Confirm to use payment method ending with ${selectedPaymentMethod?.card?.last4}`}</AlertDialogTitle>
           <AlertDialogDescription>
-            Upon clicking confirm, all future charges will be deducted from the card ending with{' '}
-            {selectedPaymentMethod?.card?.last4}. There are no immediate charges.
+            {$t(
+              'Upon clicking confirm, all future charges will be deducted from the card ending with'
+            )}{' '}
+            {selectedPaymentMethod?.card?.last4}
+            {$t('. There are no immediate charges.')}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirmUpdate}>Confirm</AlertDialogAction>
+          <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirmUpdate}>{$t('Confirm')}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

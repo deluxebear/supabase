@@ -18,6 +18,7 @@ import { AlertError } from '@/components/ui/AlertError'
 import { NoPermission } from '@/components/ui/NoPermission'
 import { useOrgSubscriptionQuery } from '@/data/subscriptions/org-subscription-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { useOrgSettingsPageStateSnapshot } from '@/state/organization-settings'
 
 const Subscription = () => {
@@ -53,10 +54,11 @@ const Subscription = () => {
         <ScaffoldSectionDetail>
           <div className="sticky space-y-6 top-12">
             <div className="space-y-2 mb-4">
-              <p className="text-foreground text-base m-0">Subscription Plan</p>
+              <p className="text-foreground text-base m-0">{$t('Subscription Plan')}</p>
               <p className="text-sm text-foreground-light m-0">
-                Each organization has it's own subscription plan, billing cycle, payment methods and
-                usage quotas.
+                {$t(
+                  "Each organization has it's own subscription plan, billing cycle, payment methods and usage quotas."
+                )}
               </p>
             </div>
           </div>
@@ -80,7 +82,7 @@ const Subscription = () => {
                 <div className="space-y-6 w-full">
                   <div className="flex justify-between items-center">
                     <p className="text-2xl text-brand leading-none">
-                      {currentPlan?.name ?? 'Unknown'} Plan
+                      {currentPlan?.name ?? 'Unknown'} {$t('Plan')}
                     </p>
 
                     {canChangeTier && (
@@ -90,11 +92,11 @@ const Subscription = () => {
                           className="pointer-events-auto"
                           onClick={() => snap.setPanelKey('subscriptionPlan')}
                         >
-                          Change subscription plan
+                          {$t('Change subscription plan')}
                         </Button>
                         {currentPlan && currentPlan.id !== 'free' && (
                           <InitiateCancellationFlowButton variant="danger">
-                            Cancel Subscription
+                            {$t('Cancel Subscription')}
                           </InitiateCancellationFlowButton>
                         )}
                       </div>
@@ -108,15 +110,16 @@ const Subscription = () => {
                           type="default"
                           layout="horizontal"
                           title={`Unable to update plan from ${planName}`}
-                          description="We have temporarily disabled project and subscription changes - our
-                          engineers are working on a fix."
+                          description={$t(
+                            'We have temporarily disabled project and subscription changes - our\n                          engineers are working on a fix.'
+                          )}
                         />
                       ) : (
                         <Admonition
                           type="default"
                           layout="horizontal"
                           title={`Unable to update plan from ${planName}`}
-                          description="Please contact us if you'd like to change your plan."
+                          description={$t("Please contact us if you'd like to change your plan.")}
                           actions={
                             <Button asChild key="contact-support" variant="default">
                               <SupportLink
@@ -125,7 +128,7 @@ const Subscription = () => {
                                   subject: `Change plan away from ${planName}`,
                                 }}
                               >
-                                Contact support
+                                {$t('Contact support')}
                               </SupportLink>
                             </Button>
                           }
@@ -137,12 +140,12 @@ const Subscription = () => {
                   {!subscription?.usage_billing_enabled && (
                     <Admonition
                       type="default"
-                      title="This organization is limited by the included usage"
+                      title={$t('This organization is limited by the included usage')}
                     >
                       <div className="[&>p]:leading-normal! prose text-sm">
-                        Projects may become unresponsive when this organization exceeds its{' '}
-                        <Link href={`/org/${slug}/usage`}>included usage quota</Link>. To scale
-                        seamlessly,{' '}
+                        {$t('Projects may become unresponsive when this organization exceeds its')}{' '}
+                        <Link href={`/org/${slug}/usage`}>{$t('included usage quota')}</Link>
+                        {$t('. To scale seamlessly,')}{' '}
                         {currentPlan?.id === 'free'
                           ? 'upgrade to a paid plan.'
                           : 'you can disable Spend Cap under the Cost Control settings.'}

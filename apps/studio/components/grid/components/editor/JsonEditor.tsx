@@ -23,6 +23,7 @@ import { isTableLike } from '@/data/table-editor/table-editor-types'
 import { useGetCellValueMutation } from '@/data/table-rows/get-cell-value-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { prettifyJSON, removeJSONTrailingComma, tryParseJson } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 const verifyJSON = (value: string) => {
   try {
@@ -90,7 +91,7 @@ export const JsonEditor = <TRow, TSummaryRow = unknown>({
   const loadFullValue = () => {
     if (selectedTable === undefined || project === undefined || !isTableLike(selectedTable)) return
     if (selectedTable.primary_keys.length === 0) {
-      return toast('Unable to load value as table has no primary keys')
+      return toast($t('Unable to load value as table has no primary keys'))
     }
 
     const pkMatch = selectedTable.primary_keys.reduce((a, b) => {
@@ -155,7 +156,7 @@ export const JsonEditor = <TRow, TSummaryRow = unknown>({
       onRowChange({ ...row, [column.key]: jsonValue }, true)
       setIsPopoverOpen(false)
     } else {
-      toast.error('Please enter a valid JSON')
+      toast.error($t('Please enter a valid JSON'))
     }
   }
 
@@ -204,9 +205,9 @@ export const JsonEditor = <TRow, TSummaryRow = unknown>({
                   </div>
                   <div className="flex items-center space-x-2">
                     <div className="px-1 py-[2.5px] rounded-sm bg-selection border border-strong flex items-center justify-center">
-                      <span className="text-[10px]">Esc</span>
+                      <span className="text-[10px]">{$t('Esc')}</span>
                     </div>
-                    <p className="text-xs text-foreground-light">Cancel changes</p>
+                    <p className="text-xs text-foreground-light">{$t('Cancel changes')}</p>
                   </div>
                 </div>
               )}
@@ -223,7 +224,7 @@ export const JsonEditor = <TRow, TSummaryRow = unknown>({
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" align="center">
-                  <span>Expand editor</span>
+                  <span>{$t('Expand editor')}</span>
                 </TooltipContent>
               </Tooltip>
             </div>

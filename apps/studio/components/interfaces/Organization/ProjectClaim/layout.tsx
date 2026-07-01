@@ -5,6 +5,7 @@ import { cn, Separator } from 'ui'
 import { UserDropdown } from '@/components/interfaces/UserDropdown'
 import { FeedbackDropdown } from '@/components/layouts/Navigation/LayoutHeader/FeedbackDropdown/FeedbackDropdown'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const ProjectClaimLayout = ({
   children,
@@ -18,10 +19,10 @@ export const ProjectClaimLayout = ({
     <>
       <div className="flex flex-row justify-between mx-auto w-full h-[52px] items-center px-4">
         <div className="flex items-center gap-2">
-          <span className="sr-only">Supabase</span>
+          <span className="sr-only">{$t('Supabase')}</span>
           <Image
             src={`${BASE_PATH}/img/supabase-logo.svg`}
-            alt="Supabase Logo"
+            alt={$t('Supabase Logo')}
             height={20}
             width={20}
           />

@@ -15,6 +15,7 @@ import { useOrganizationUpdateMutation } from '@/data/organizations/organization
 import { invalidateOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 const OrgDetailsSchema = z.object({
@@ -41,7 +42,7 @@ export const OrganizationDetailsForm = () => {
 
   const onUpdateOrganizationDetails = async (values: z.infer<typeof OrgDetailsSchema>) => {
     if (!canUpdateOrganization) {
-      return toast.error('You do not have the required permissions to update this organization')
+      return toast.error($t('You do not have the required permissions to update this organization'))
     }
     if (!slug) return console.error('Slug is required')
 
@@ -50,7 +51,7 @@ export const OrganizationDetailsForm = () => {
       {
         onSuccess: () => {
           invalidateOrganizationsQuery(queryClient)
-          toast.success('Successfully updated organization name')
+          toast.success($t('Successfully updated organization name'))
         },
         onError: (error: ResponseError) => {
           toast.error(`Failed to update organization name: ${error.message}`)
@@ -81,7 +82,7 @@ export const OrganizationDetailsForm = () => {
               control={orgDetailsForm.control}
               name="name"
               render={({ field }) => (
-                <FormItemLayout label="Organization name" layout="flex-row-reverse">
+                <FormItemLayout label={$t('Organization name')} layout="flex-row-reverse">
                   <FormControl>
                     <Input {...field} disabled={!canUpdateOrganization || isUpdatingDetails} />
                   </FormControl>
@@ -90,7 +91,7 @@ export const OrganizationDetailsForm = () => {
             />
           </CardContent>
           <CardContent>
-            <FormItemLayout label="Organization slug" layout="flex-row-reverse">
+            <FormItemLayout label={$t('Organization slug')} layout="flex-row-reverse">
               <PasswordInput copy disabled id="slug" value={selectedOrganization?.slug ?? ''} />
             </FormItemLayout>
           </CardContent>

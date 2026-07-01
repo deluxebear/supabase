@@ -28,6 +28,7 @@ import { useAuthConfigUpdateMutation } from '@/data/auth/auth-config-update-muta
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 type GoTrueConfig = components['schemas']['GoTrueConfigResponse']
 
@@ -153,7 +154,7 @@ export const PasskeysSettingsForm = () => {
 
   const { mutate: updateAuthConfig, isPending } = useAuthConfigUpdateMutation({
     onSuccess: () => {
-      toast.success('Passkey settings updated successfully')
+      toast.success($t('Passkey settings updated successfully'))
     },
     onError: (error) => {
       toast.error(`Failed to update passkey settings: ${error?.message}`)
@@ -219,12 +220,15 @@ export const PasskeysSettingsForm = () => {
               render={({ field }) => (
                 <FormItemLayout
                   layout="flex-row-reverse"
-                  label="Enable Passkey authentication"
+                  label={$t('Enable Passkey authentication')}
                   description={
                     <>
-                      Allow users to sign in using passkeys (WebAuthn) with biometrics, security
-                      keys, or platform authenticators.{' '}
-                      <InlineLink href={`${DOCS_URL}/guides/auth/passkeys`}>Learn more</InlineLink>
+                      {$t(
+                        'Allow users to sign in using passkeys (WebAuthn) with biometrics, security keys, or platform authenticators.'
+                      )}{' '}
+                      <InlineLink href={`${DOCS_URL}/guides/auth/passkeys`}>
+                        {$t('Learn more')}
+                      </InlineLink>
                     </>
                   }
                 >
@@ -249,11 +253,13 @@ export const PasskeysSettingsForm = () => {
                   render={({ field }) => (
                     <FormItemLayout
                       layout="flex-row-reverse"
-                      label="Relying Party Display Name"
-                      description="A human-readable name for your application shown during passkey registration."
+                      label={$t('Relying Party Display Name')}
+                      description={$t(
+                        'A human-readable name for your application shown during passkey registration.'
+                      )}
                     >
                       <FormControl>
-                        <Input {...field} placeholder="My project" />
+                        <Input {...field} placeholder={$t('My project')} />
                       </FormControl>
                     </FormItemLayout>
                   )}
@@ -266,8 +272,10 @@ export const PasskeysSettingsForm = () => {
                   render={({ field }) => (
                     <FormItemLayout
                       layout="flex-row-reverse"
-                      label="Relying Party ID"
-                      description='The domain name for your application (e.g. "example.com"). This determines which passkeys can be used.'
+                      label={$t('Relying Party ID')}
+                      description={$t(
+                        'The domain name for your application (e.g. "example.com"). This determines which passkeys can be used.'
+                      )}
                     >
                       <FormControl>
                         <Input {...field} placeholder="example.com" />
@@ -283,8 +291,10 @@ export const PasskeysSettingsForm = () => {
                   render={({ field }) => (
                     <FormItemLayout
                       layout="flex-row-reverse"
-                      label="Relying Party Origins"
-                      description='Comma-separated list of allowed origins (e.g. "https://example.com"). HTTPS is required except for localhost. Android app origins are also accepted.'
+                      label={$t('Relying Party Origins')}
+                      description={$t(
+                        'Comma-separated list of allowed origins (e.g. "https://example.com"). HTTPS is required except for localhost. Android app origins are also accepted.'
+                      )}
                     >
                       <FormControl>
                         <Input {...field} placeholder="https://example.com" />
@@ -302,7 +312,7 @@ export const PasskeysSettingsForm = () => {
               onClick={() => form.reset(buildPasskeysFormValues(authConfig, project))}
               disabled={isPending}
             >
-              Cancel
+              {$t('Cancel')}
             </Button>
             <Button
               variant="primary"
@@ -310,7 +320,7 @@ export const PasskeysSettingsForm = () => {
               disabled={!canUpdateConfig || !form.formState.isDirty}
               loading={isPending}
             >
-              Save changes
+              {$t('Save changes')}
             </Button>
           </CardFooter>
         </Card>

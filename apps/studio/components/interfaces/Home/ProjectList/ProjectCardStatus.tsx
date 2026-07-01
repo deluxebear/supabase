@@ -5,6 +5,7 @@ import { InferredProjectStatus } from './ProjectCard.utils'
 import { RESOURCE_WARNING_MESSAGES } from '@/components/ui/ResourceExhaustionWarningBanner/ResourceExhaustionWarningBanner.constants'
 import { getWarningContent } from '@/components/ui/ResourceExhaustionWarningBanner/ResourceExhaustionWarningBanner.utils'
 import type { ResourceWarning } from '@/data/usage/resource-warnings-query'
+import { t as $t } from '@/lib/i18n'
 
 export interface ProjectCardWarningsProps {
   resourceWarnings?: ResourceWarning
@@ -121,7 +122,7 @@ export const ProjectCardStatus = ({
       return (
         // Badge must be wrapped in a div in order to be centered in table cell
         <div className="flex items-center">
-          <Badge variant="success">Active</Badge>
+          <Badge variant="success">{$t('Active')}</Badge>
         </div>
       )
     }

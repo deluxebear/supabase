@@ -4,6 +4,7 @@ import { Button } from 'ui'
 import { Admonition } from 'ui-patterns/admonition'
 
 import { SupportLink } from '../Support/SupportLink'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 export interface StorageBucketsErrorProps {
@@ -19,13 +20,15 @@ const StorageBucketsError = ({ error }: StorageBucketsErrorProps) => {
         <Admonition
           type="warning"
           layout="horizontal"
-          title="Failed to fetch buckets"
+          title={$t('Failed to fetch buckets')}
           description={
             <>
               <p className="mb-1">
-                Please try refreshing your browser, or contact support if the issue persists
+                {$t('Please try refreshing your browser, or contact support if the issue persists')}
               </p>
-              <p>Error: {(error as any)?.message ?? 'Unknown'}</p>
+              <p>
+                {$t('Error:')} {(error as any)?.message ?? 'Unknown'}
+              </p>
             </>
           }
           actions={
@@ -37,7 +40,7 @@ const StorageBucketsError = ({ error }: StorageBucketsErrorProps) => {
                   subject: 'Unable to fetch storage buckets',
                 }}
               >
-                Contact support
+                {$t('Contact support')}
               </SupportLink>
             </Button>
           }

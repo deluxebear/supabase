@@ -26,6 +26,7 @@ import {
   type Bucket,
 } from '@/data/storage/buckets-query'
 import { useVectorBucketsQuery } from '@/data/storage/vector-buckets-query'
+import { t as $t } from '@/lib/i18n'
 
 interface StorageSearchResultsProps {
   query: string
@@ -260,11 +261,11 @@ export function StorageSearchResults({ query }: StorageSearchResultsProps) {
       <div className="flex items-center gap-x-2">
         {isLoading ? (
           <span className="flex items-center gap-2">
-            <Loader2 size={14} className="animate-spin" /> Loading...
+            <Loader2 size={14} className="animate-spin" /> {$t('Loading...')}
           </span>
         ) : (
           <span>
-            Total: {totalBucketsEstimate.toLocaleString()} bucket
+            {$t('Total:')} {totalBucketsEstimate.toLocaleString()} bucket
             {totalBucketsEstimate !== 1 ? 's' : ''} (estimate)
           </span>
         )}
@@ -289,7 +290,7 @@ export function StorageSearchResults({ query }: StorageSearchResultsProps) {
         <div className="flex-1 min-h-0 overflow-hidden">
           <div className="h-full flex flex-col items-center justify-center py-12 px-4 gap-4 text-center text-foreground-lighter">
             <Storage className="h-6 w-6" strokeWidth={1.5} />
-            <p className="text-sm">Failed to load storage buckets</p>
+            <p className="text-sm">{$t('Failed to load storage buckets')}</p>
           </div>
         </div>
         {renderFooter()}
@@ -301,7 +302,7 @@ export function StorageSearchResults({ query }: StorageSearchResultsProps) {
     return (
       <div className="relative h-full flex flex-col">
         <div className="flex-1 min-h-0 overflow-hidden">
-          <EmptyState icon={Storage} label="Storage" query={debouncedQuery} />
+          <EmptyState icon={Storage} label={$t('Storage')} query={debouncedQuery} />
         </div>
         {renderFooter()}
       </div>

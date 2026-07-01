@@ -4,6 +4,7 @@ import { Button } from 'ui'
 
 import { ADD_COLUMN_KEY } from '../../constants'
 import { DefaultFormatter } from '../formatter/DefaultFormatter'
+import { t as $t } from '@/lib/i18n'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
 
 export const AddColumn: CalculatedColumn<any, any> = {
@@ -16,7 +17,7 @@ export const AddColumn: CalculatedColumn<any, any> = {
   sortable: false,
   frozen: false,
   renderHeaderCell() {
-    return <AddColumnHeader aria-label="Add New Row" />
+    return <AddColumnHeader aria-label={$t('Add New Row')} />
   },
   renderCell: DefaultFormatter,
 

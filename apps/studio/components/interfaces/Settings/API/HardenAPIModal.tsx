@@ -27,6 +27,7 @@ import { useProjectPostgrestConfigUpdateMutation } from '@/data/config/project-p
 import { useSchemasQuery } from '@/data/database/schemas-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface HardenAPIModalProps {
   visible: boolean
@@ -57,7 +58,7 @@ export const HardenAPIModal = ({ visible, onClose }: HardenAPIModalProps) => {
   const { mutate: updatePostgrestConfig, isPending: isUpdatingConfig } =
     useProjectPostgrestConfigUpdateMutation({
       onSuccess: () => {
-        toast.success('Success removed public schema from exposed schemas')
+        toast.success($t('Success removed public schema from exposed schemas'))
       },
     })
 
@@ -103,10 +104,10 @@ export const HardenAPIModal = ({ visible, onClose }: HardenAPIModalProps) => {
     <Dialog open={visible} onOpenChange={onClose}>
       <DialogContent size="large">
         <DialogHeader>
-          <DialogTitle>Switch the default API schema</DialogTitle>
+          <DialogTitle>{$t('Switch the default API schema')}</DialogTitle>
           <DialogDescription>
-            Expose a custom schema instead of the <code className="text-code-inline">public</code>{' '}
-            schema
+            {$t('Expose a custom schema instead of the')}{' '}
+            <code className="text-code-inline">public</code> schema
           </DialogDescription>
         </DialogHeader>
 
@@ -114,11 +115,12 @@ export const HardenAPIModal = ({ visible, onClose }: HardenAPIModalProps) => {
 
         <DialogSection className="text-sm text-foreground-light">
           <p>
-            By default, the <code className="text-code-inline">public</code> schema is used to
-            generate API routes. In some cases, it's better to use a custom schema. This is
-            important if you use tools that generate tables in the{' '}
-            <code className="text-code-inline">public</code> schema to{' '}
-            <span className="text-brand">prevent accidental exposure of data</span>.
+            {$t('By default, the')} <code className="text-code-inline">public</code>{' '}
+            {$t(
+              "schema is used to generate API routes. In some cases, it's better to use a custom schema. This is important if you use tools that generate tables in the"
+            )}{' '}
+            <code className="text-code-inline">public</code> {$t('schema to')}{' '}
+            <span className="text-brand">{$t('prevent accidental exposure of data')}</span>.
           </p>
           <DocsButton
             abbrev={false}
@@ -132,7 +134,8 @@ export const HardenAPIModal = ({ visible, onClose }: HardenAPIModalProps) => {
         <Collapsible>
           <CollapsibleTrigger className="py-4 px-5 w-full flex items-center justify-between text-sm">
             <p>
-              1. Create a custom <code className="text-code-inline">api</code> schema and expose it
+              {$t('1. Create a custom')} <code className="text-code-inline">api</code>{' '}
+              {$t('schema and expose it')}
             </p>
             {hasAPISchema && isAPISchemaExposed ? (
               <Check size={16} className="text-brand" />
@@ -145,22 +148,26 @@ export const HardenAPIModal = ({ visible, onClose }: HardenAPIModalProps) => {
           </CollapsibleTrigger>
           <CollapsibleContent className="text-sm text-foreground-light flex flex-col gap-y-4">
             <p className="mx-5">
-              Click the button below to create a new schema named{' '}
-              <code className="text-code-inline">api</code> and grant the{' '}
+              {$t('Click the button below to create a new schema named')}{' '}
+              <code className="text-code-inline">api</code> {$t('and grant the')}{' '}
               <code className="text-code-inline">anon</code> and{' '}
-              <code className="text-code-inline">authenticated</code> roles usage privileges on this
-              schema. This schema will thereafter also be exposed to the Data API.
+              <code className="text-code-inline">authenticated</code>{' '}
+              {$t(
+                'roles usage privileges on this schema. This schema will thereafter also be exposed to the Data API.'
+              )}
             </p>
 
             <div className="px-5">
               <InformationBox
-                title="How is the schema created?"
+                title={$t('How is the schema created?')}
                 description={
                   <div className="flex flex-col gap-y-2">
                     <p>
-                      The following query will be run to create the{' '}
-                      <code className="text-code-inline">api</code> schema , as well as to grant the
-                      necessary privileges to the respective roles
+                      {$t('The following query will be run to create the')}{' '}
+                      <code className="text-code-inline">api</code>{' '}
+                      {$t(
+                        'schema , as well as to grant the necessary privileges to the respective roles'
+                      )}
                     </p>
                     <CodeBlock
                       language="sql"
@@ -189,16 +196,18 @@ export const HardenAPIModal = ({ visible, onClose }: HardenAPIModalProps) => {
                 },
               }}
             >
-              Create and expose schema to Data API
+              {$t('Create and expose schema to Data API')}
             </ButtonTooltip>
 
             <div className="flex flex-col gap-y-4 px-5 pb-4">
               <p>
-                Under these new settings, the <code className="text-code-inline">anon</code> and{' '}
-                <code className="text-code-inline">authenticated</code> roles can execute functions
-                defined in the <code className="text-code-inline">api</code> schema, but they have
-                no automatic permissions on any tables. On a table-by-table basis, you can grant
-                them permissions by running the following command:
+                {$t('Under these new settings, the')} <code className="text-code-inline">anon</code>{' '}
+                and <code className="text-code-inline">authenticated</code>{' '}
+                {$t('roles can execute functions defined in the')}{' '}
+                <code className="text-code-inline">api</code>{' '}
+                {$t(
+                  'schema, but they have no automatic permissions on any tables. On a table-by-table basis, you can grant them permissions by running the following command:'
+                )}
               </p>
               <CodeBlock
                 language="sql"
@@ -215,8 +224,8 @@ export const HardenAPIModal = ({ visible, onClose }: HardenAPIModalProps) => {
         <Collapsible>
           <CollapsibleTrigger className="py-4 px-5 w-full flex items-center justify-between text-sm">
             <p>
-              2. Remove the <code className="text-code-inline">public</code> schema from the exposed
-              schemas
+              {$t('2. Remove the')} <code className="text-code-inline">public</code>{' '}
+              {$t('schema from the exposed schemas')}
             </p>
             {!isPublicSchemaExposed ? (
               <Check size={16} className="text-brand" />
@@ -232,19 +241,23 @@ export const HardenAPIModal = ({ visible, onClose }: HardenAPIModalProps) => {
               <Alert variant="warning">
                 <WarningIcon />
                 <AlertTitle className="text-foreground">
-                  Ensure that your app is no longer using the{' '}
+                  {$t('Ensure that your app is no longer using the')}{' '}
                   <code className="text-code-inline">public</code> schema
                 </AlertTitle>
                 <AlertDescription>
-                  The <code className="text-code-inline">public</code> schema will not be accessible
-                  via the API once its not exposed. You should be using the{' '}
-                  <code className="text-code-inline">api</code> schema instead.
+                  {$t('The')} <code className="text-code-inline">public</code>{' '}
+                  {$t(
+                    'schema will not be accessible via the API once its not exposed. You should be using the'
+                  )}{' '}
+                  <code className="text-code-inline">api</code> {$t('schema instead.')}
                 </AlertDescription>
               </Alert>
               <p>
-                Click the button below to remove the{' '}
-                <code className="text-code-inline">public</code> schema from both Exposed schemas
-                and Extra search path in your API configuration.
+                {$t('Click the button below to remove the')}{' '}
+                <code className="text-code-inline">public</code>{' '}
+                {$t(
+                  'schema from both Exposed schemas and Extra search path in your API configuration.'
+                )}
               </p>
               <ButtonTooltip
                 variant="primary"
@@ -259,7 +272,7 @@ export const HardenAPIModal = ({ visible, onClose }: HardenAPIModalProps) => {
                 }}
                 onClick={onSelectRemovePublicSchema}
               >
-                Remove public schema from exposed schemas
+                {$t('Remove public schema from exposed schemas')}
               </ButtonTooltip>
             </div>
           </CollapsibleContent>

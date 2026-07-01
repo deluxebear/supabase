@@ -13,6 +13,7 @@ import { z } from 'zod'
 import PasswordConditionsHelper from './PasswordConditionsHelper'
 import { captureCriticalError } from '@/lib/error-reporting'
 import { auth, getReturnToPath } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 
 const passwordValidation = z
   .string()
@@ -56,14 +57,14 @@ export const ResetPasswordForm = () => {
   })
 
   const onResetPassword = async (data: FormData) => {
-    const toastId = toast.loading('Saving password...')
+    const toastId = toast.loading($t('Saving password...'))
     const { error } = await auth.updateUser({
       password: data.password,
       ...(requireCurrentPassword ? { current_password: data.currentPassword } : {}),
     })
 
     if (!error) {
-      toast.success('Password saved successfully!', { id: toastId })
+      toast.success($t('Password saved successfully!'), { id: toastId })
 
       // logout all other sessions after changing password
       await auth.signOut({ scope: 'others' })
@@ -82,7 +83,7 @@ export const ResetPasswordForm = () => {
             control={form.control}
             name="currentPassword"
             render={({ field }) => (
-              <FormItemLayout label="Current password">
+              <FormItemLayout label={$t('Current password')}>
                 <FormControl>
                   <Input
                     id="currentPassword"
@@ -112,7 +113,7 @@ export const ResetPasswordForm = () => {
           control={form.control}
           name="password"
           render={({ field }) => (
-            <FormItemLayout label="Password">
+            <FormItemLayout label={$t('Password')}>
               <FormControl>
                 <Input
                   id="password"
@@ -158,7 +159,7 @@ export const ResetPasswordForm = () => {
           disabled={form.formState.isSubmitting}
           loading={form.formState.isSubmitting}
         >
-          Save new password
+          {$t('Save new password')}
         </Button>
       </form>
     </Form>

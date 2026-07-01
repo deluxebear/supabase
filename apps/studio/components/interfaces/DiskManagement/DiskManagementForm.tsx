@@ -74,6 +74,7 @@ import {
   useSelectedProjectQuery,
 } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL, GB, PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export function DiskManagementForm() {
   const { ref: projectRef } = useParams()
@@ -328,7 +329,7 @@ export function DiskManagementForm() {
       if (refetchInterval !== false) {
         form.reset(formValues)
         setRefetchInterval(false)
-        toast.success('Disk configuration changes have been successfully applied!')
+        toast.success($t('Disk configuration changes have been successfully applied!'))
       }
     } else {
       setRefetchInterval(2000)
@@ -392,23 +393,25 @@ export function DiskManagementForm() {
           <div className="relative flex flex-col gap-10">
             <DiskMangementRestartRequiredSection
               visible={isProjectResizing}
-              title="Your project will now automatically restart."
-              description="Your project will be unavailable for up to 2 mins."
+              title={$t('Your project will now automatically restart.')}
+              description={$t('Your project will be unavailable for up to 2 mins.')}
             />
             {isProjectRequestingDiskChanges && (
               <Admonition
                 type="default"
                 layout="horizontal"
-                title="Disk configuration changes have been requested"
-                description="The requested changes will be applied to your disk shortly"
+                title={$t('Disk configuration changes have been requested')}
+                description={$t('The requested changes will be applied to your disk shortly')}
               />
             )}
             {isEntitlementsLoaded && !isPlanUpgradeRequired && noPermissions && (
               <Admonition
                 type="default"
                 layout="horizontal"
-                title="You do not have permission to update disk configuration"
-                description="Please contact your organization administrator to update your disk configuration"
+                title={$t('You do not have permission to update disk configuration')}
+                description={$t(
+                  'Please contact your organization administrator to update your disk configuration'
+                )}
               />
             )}
           </div>
@@ -435,7 +438,9 @@ export function DiskManagementForm() {
                 <Admonition
                   type="default"
                   layout="horizontal"
-                  title="Disk configuration is only available for projects in the AWS cloud provider"
+                  title={$t(
+                    'Disk configuration is only available for projects in the AWS cloud provider'
+                  )}
                   description={
                     isAwsK8s
                       ? 'Configuring your disk for AWS (Revamped) projects is unavailable for now.'
@@ -452,8 +457,10 @@ export function DiskManagementForm() {
                     {!isReadOnlyMode && usedPercentage >= 90 && isWithinCooldownWindow && (
                       <Admonition
                         type="destructive"
-                        title="Database size is currently over 90% of disk size"
-                        description="Your project will enter read-only mode once you reach 95% of the disk space to prevent your database from exceeding the disk limitations"
+                        title={$t('Database size is currently over 90% of disk size')}
+                        description={$t(
+                          'Your project will enter read-only mode once you reach 95% of the disk space to prevent your database from exceeding the disk limitations'
+                        )}
                       >
                         <DocsButton
                           abbrev={false}
@@ -465,8 +472,10 @@ export function DiskManagementForm() {
                     {isReadOnlyMode && (
                       <Admonition
                         type="destructive"
-                        title="Project is currently in read-only mode"
-                        description="You will need to manually override read-only mode and reduce the database size to below 95% of the disk size"
+                        title={$t('Project is currently in read-only mode')}
+                        description={$t(
+                          'You will need to manually override read-only mode and reduce the database size to below 95% of the disk size'
+                        )}
                       >
                         <DocsButton
                           abbrev={false}
@@ -496,10 +505,13 @@ export function DiskManagementForm() {
                 >
                   <CollapsibleTrigger className="px-card py-3 w-full border flex items-center gap-6 rounded-t data-closed:rounded-b group justify-between">
                     <div className="flex flex-col items-start">
-                      <span className="text-sm text-foreground">Advanced disk settings</span>
+                      <span className="text-sm text-foreground">
+                        {$t('Advanced disk settings')}
+                      </span>
                       <span className="text-sm text-foreground-light text-left">
-                        Specify additional settings for your disk, including autoscaling
-                        configuration, IOPS, throughput, and disk type.
+                        {$t(
+                          'Specify additional settings for your disk, including autoscaling configuration, IOPS, throughput, and disk type.'
+                        )}
                       </span>
                     </div>
                     <ChevronRight
@@ -524,7 +536,9 @@ export function DiskManagementForm() {
                         {!!disableIopsThroughputConfig && (
                           <Admonition
                             type="default"
-                            title="Adjusting disk configuration requires LARGE Compute size or above"
+                            title={$t(
+                              'Adjusting disk configuration requires LARGE Compute size or above'
+                            )}
                             description={`Increase your compute size to adjust your disk's storage type, ${form.getValues('storageType') === 'gp3' ? 'IOPS, ' : ''} and throughput`}
                             actions={
                               canUpdateDiskConfiguration ? (
@@ -534,7 +548,7 @@ export function DiskManagementForm() {
                                     form.setValue('computeSize', 'ci_large')
                                   }}
                                 >
-                                  Change to LARGE Compute
+                                  {$t('Change to LARGE Compute')}
                                 </Button>
                               ) : (
                                 <RequestUpgradeToBillingOwners
@@ -550,7 +564,7 @@ export function DiskManagementForm() {
                           !disableDiskInputs && (
                             <Admonition
                               type="default"
-                              title="Increase disk size to adjust IOPS or throughput"
+                              title={$t('Increase disk size to adjust IOPS or throughput')}
                               description={`This disk is too small to update IOPS or throughput, since gp3 volumes are capped at 500 IOPS per GB with a 3,000 IOPS minimum. Resizing to ${suggestedDiskSizeForCustomIops} GB unlocks custom IOPS and throughput, and leaves headroom for further adjustments (disk config changes are locked for 4 hours after each resize).`}
                               actions={
                                 !disableDiskSizeInput ? (
@@ -563,7 +577,7 @@ export function DiskManagementForm() {
                                       })
                                     }}
                                   >
-                                    Increase to {suggestedDiskSizeForCustomIops} GB
+                                    {$t('Increase to')} {suggestedDiskSizeForCustomIops} GB
                                   </Button>
                                 ) : undefined
                               }
@@ -620,7 +634,7 @@ export function DiskManagementForm() {
                     disabled={!isDirty}
                     size="medium"
                   >
-                    Cancel
+                    {$t('Cancel')}
                   </Button>
                   <DiskManagementReviewAndSubmitDialog
                     loading={isUpdatingConfig}

@@ -1,4 +1,5 @@
 import Table from '@/components/to-be-cleaned/Table'
+import { t as $t } from '@/lib/i18n'
 
 export const HooksListEmpty = () => {
   return (
@@ -7,16 +8,16 @@ export const HooksListEmpty = () => {
       head={
         <>
           <Table.th key="name" className="w-[20%]">
-            <p className="translate-x-[36px]">Name</p>
+            <p className="translate-x-[36px]">{$t('Name')}</p>
           </Table.th>
           <Table.th key="table" className="w-[15%] hidden lg:table-cell">
-            Table
+            {$t('Table')}
           </Table.th>
           <Table.th key="events" className="w-[24%] hidden xl:table-cell">
-            Events
+            {$t('Events')}
           </Table.th>
           <Table.th key="webhook" className="hidden xl:table-cell">
-            Webhook
+            {$t('Webhook')}
           </Table.th>
           <Table.th key="buttons" className="w-[5%]"></Table.th>
         </>
@@ -24,9 +25,9 @@ export const HooksListEmpty = () => {
       body={
         <Table.tr>
           <Table.td colSpan={5}>
-            <p className="text-sm text-foreground">No hooks created yet</p>
+            <p className="text-sm text-foreground">{$t('No hooks created yet')}</p>
             <p className="text-sm text-foreground-light">
-              Create a new hook by clicking "Create a new hook"
+              {$t('Create a new hook by clicking "Create a new hook"')}
             </p>
           </Table.td>
         </Table.tr>

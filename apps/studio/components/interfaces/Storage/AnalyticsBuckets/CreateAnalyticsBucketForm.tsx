@@ -31,6 +31,7 @@ import { useAnalyticsBucketsQuery } from '@/data/storage/analytics-buckets-query
 import { useIcebergWrapperCreateMutation } from '@/data/storage/iceberg-wrapper-create-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const FormSchema = z
@@ -152,7 +153,7 @@ export const CreateAnalyticsBucketForm = ({
     if (!wrappersExtension) return console.error('Unable to find wrappers extension')
 
     const hasExistingBucket = buckets.some((x) => x.name === values.name)
-    if (hasExistingBucket) return toast.error('Bucket name already exists')
+    if (hasExistingBucket) return toast.error($t('Bucket name already exists'))
 
     try {
       await createAnalyticsBucket({
@@ -198,9 +199,11 @@ export const CreateAnalyticsBucketForm = ({
                 <FormItemLayout
                   name="name"
                   className="p-5"
-                  label="Bucket name"
+                  label={$t('Bucket name')}
                   labelOptional="Cannot be changed after creation"
-                  description="Must be between 3 – 63 characters. Only lowercase letters, numbers, and hyphens are allowed."
+                  description={$t(
+                    'Must be between 3 – 63 characters. Only lowercase letters, numbers, and hyphens are allowed.'
+                  )}
                 >
                   <FormControl>
                     <Input
@@ -210,7 +213,7 @@ export const CreateAnalyticsBucketForm = ({
                       data-form-type="other"
                       data-bwignore
                       {...field}
-                      placeholder="Enter bucket name"
+                      placeholder={$t('Enter bucket name')}
                     />
                   </FormControl>
                 </FormItemLayout>
@@ -221,17 +224,17 @@ export const CreateAnalyticsBucketForm = ({
               <Admonition
                 type="warning"
                 className={cn('border-x-0 rounded-none', type === 'dialog' && 'border-b-0')}
-                title="Wrappers extension must be updated for Iceberg Wrapper support"
+                title={$t('Wrappers extension must be updated for Iceberg Wrapper support')}
               >
                 <p className="prose max-w-full text-sm leading-normal!">
-                  Update the <code className="text-code-inline">wrappers</code> extension by
-                  upgrading your project from your{' '}
+                  {$t('Update the')} <code className="text-code-inline">wrappers</code>{' '}
+                  {$t('extension by upgrading your project from your')}{' '}
                   <InlineLink href={`/project/${ref}/settings/infrastructure`}>
-                    project settings
+                    {$t('project settings')}
                   </InlineLink>{' '}
-                  before creating an Analytics bucket.{' '}
+                  {$t('before creating an Analytics bucket.')}{' '}
                   <InlineLink href={`${DOCS_URL}/guides/database/extensions/wrappers/iceberg`}>
-                    Learn more
+                    {$t('Learn more')}
                   </InlineLink>
                   .
                 </p>
@@ -242,11 +245,11 @@ export const CreateAnalyticsBucketForm = ({
                 className={cn('border-x-0 rounded-none', type === 'dialog' && 'border-b-0')}
               >
                 <p className="leading-normal!">
-                  Supabase will install the{' '}
+                  {$t('Supabase will install the')}{' '}
                   {wrappersExtensionState !== 'installed' ? 'Wrappers extension and ' : ''}
-                  Iceberg Wrapper integration on your behalf.{' '}
+                  {$t('Iceberg Wrapper integration on your behalf.')}{' '}
                   <InlineLink href={`${DOCS_URL}/guides/database/extensions/wrappers/iceberg`}>
-                    Learn more
+                    {$t('Learn more')}
                   </InlineLink>
                   .
                 </p>
@@ -258,7 +261,7 @@ export const CreateAnalyticsBucketForm = ({
 
       <Footer>
         <Button variant="default" disabled={isCreating} onClick={() => onOpenChange(false)}>
-          Cancel
+          {$t('Cancel')}
         </Button>
         <Button
           form={formId}
@@ -266,7 +269,7 @@ export const CreateAnalyticsBucketForm = ({
           loading={isCreating}
           disabled={wrappersExtensionNeedsUpgrading || isCreating}
         >
-          Create bucket
+          {$t('Create bucket')}
         </Button>
       </Footer>
     </>

@@ -17,6 +17,7 @@ import EdgeFunctionsLayout from '@/components/layouts/EdgeFunctionsLayout/EdgeFu
 import { DocsButton } from '@/components/ui/DocsButton'
 import { useDeploymentMode } from '@/hooks/misc/useDeploymentMode'
 import { DOCS_URL, IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const SecretsPage: NextPageWithLayout = () => {
@@ -30,13 +31,13 @@ const SecretsPage: NextPageWithLayout = () => {
             {isCli && (
               <Admonition
                 type="default"
-                title="Local development with the Supabase CLI"
+                title={$t('Local development with the Supabase CLI')}
                 description={
                   <p>
-                    Add custom secrets to{' '}
-                    <code className="text-code-inline">supabase/functions/.env</code>, or pass{' '}
-                    <code className="text-code-inline">--env-file</code> to{' '}
-                    <code className="text-code-inline">supabase functions serve</code>.
+                    {$t('Add custom secrets to')}{' '}
+                    <code className="text-code-inline">supabase/functions/.env</code>
+                    {$t(', or pass')} <code className="text-code-inline">--env-file</code> to{' '}
+                    <code className="text-code-inline">{$t('supabase functions serve')}</code>.
                   </p>
                 }
                 actions={<DocsButton href={`${DOCS_URL}/guides/functions/secrets#using-the-cli`} />}
@@ -45,8 +46,8 @@ const SecretsPage: NextPageWithLayout = () => {
             {isSelfHosted && (
               <Admonition
                 type="default"
-                title="Self-hosted Supabase"
-                description={<p>Set custom secrets via environment variables.</p>}
+                title={$t('Self-hosted Supabase')}
+                description={<p>{$t('Set custom secrets via environment variables.')}</p>}
                 actions={
                   <DocsButton
                     href={`${DOCS_URL}/guides/self-hosting/self-hosted-functions#custom-environment-variables`}
@@ -57,9 +58,9 @@ const SecretsPage: NextPageWithLayout = () => {
             <section className="space-y-4">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                 <div className="space-y-1">
-                  <h3 className="text-foreground text-base">Default secrets</h3>
+                  <h3 className="text-foreground text-base">{$t('Default secrets')}</h3>
                   <p className="text-sm text-foreground-light">
-                    Reserved secrets available in every project
+                    {$t('Reserved secrets available in every project')}
                   </p>
                 </div>
                 <DocsButton
@@ -94,14 +95,14 @@ const SecretsPage: NextPageWithLayout = () => {
 SecretsPage.getLayout = (page) => {
   return (
     <DefaultLayout>
-      <EdgeFunctionsLayout title="Secrets">
+      <EdgeFunctionsLayout title={$t('Secrets')}>
         <div className="w-full min-h-full flex flex-col items-stretch">
           <PageHeader size="large">
             <PageHeaderMeta>
               <PageHeaderSummary>
-                <PageHeaderTitle>Edge Function Secrets</PageHeaderTitle>
+                <PageHeaderTitle>{$t('Edge Function Secrets')}</PageHeaderTitle>
                 <PageHeaderDescription>
-                  Manage encrypted values for your functions
+                  {$t('Manage encrypted values for your functions')}
                 </PageHeaderDescription>
               </PageHeaderSummary>
             </PageHeaderMeta>

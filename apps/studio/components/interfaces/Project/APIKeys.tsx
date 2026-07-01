@@ -17,6 +17,7 @@ import { useLegacyAPIKeysStatusQuery } from '@/data/api-keys/legacy-api-keys-sta
 import { useJwtSecretUpdatingStatusQuery } from '@/data/config/jwt-secret-updating-status-query'
 import { useProjectSettingsV2Query } from '@/data/config/project-settings-v2-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 export const APIKeys = () => {
   const { ref: projectRef } = useParams()
@@ -73,11 +74,14 @@ export const APIKeys = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-medium">Project API</CardTitle>
+        <CardTitle className="text-sm font-medium">{$t('Project API')}</CardTitle>
         <CardDescription>
-          Your API is secured behind an API gateway which requires an API Key for every request.
+          {$t(
+            'Your API is secured behind an API gateway which requires an API Key for every request.'
+          )}
           <br />
-          You can use the parameters below to use Supabase client libraries.
+
+          {$t('You can use the parameters below to use Supabase client libraries.')}
         </CardDescription>
       </CardHeader>
 
@@ -103,21 +107,21 @@ export const APIKeys = () => {
         <CardContent>
           <div className="flex items-center justify-center py-4 space-x-2">
             <Loader className="animate-spin" size={16} strokeWidth={1.5} />
-            <p className="text-sm text-foreground-light">JWT secret is being updated</p>
+            <p className="text-sm text-foreground-light">{$t('JWT secret is being updated')}</p>
           </div>
         </CardContent>
       ) : !isLegacyKeysEnabled && !hasNewAPIKeys ? (
         <Admonition
           type="default"
           className="border-0 rounded-none"
-          title="Project has no API keys created yet"
+          title={$t('Project has no API keys created yet')}
           description={
             <>
-              Create a set of API keys from your{' '}
+              {$t('Create a set of API keys from your')}{' '}
               <InlineLink href={`/project/${projectRef}/settings/api-keys`}>
-                project settings
+                {$t('project settings')}
               </InlineLink>{' '}
-              to connect to your project
+              {$t('to connect to your project')}
             </>
           }
         />
@@ -127,8 +131,8 @@ export const APIKeys = () => {
             <FormItemLayout
               isReactForm={false}
               layout="horizontal"
-              label="Project URL"
-              description="A RESTful endpoint for querying and managing your database."
+              label={$t('Project URL')}
+              description={$t('A RESTful endpoint for querying and managing your database.')}
             >
               <Input readOnly copy className="input-mono" value={apiUrl} />
             </FormItemLayout>
@@ -143,7 +147,7 @@ export const APIKeys = () => {
                   'Publishable API Key'
                 ) : (
                   <div className="space-y-2">
-                    <p className="text-sm">API Key</p>
+                    <p className="text-sm">{$t('API Key')}</p>
                     <div className="flex items-center space-x-1 -ml-1">
                       <code className="text-code-inline">{anonKey?.name}</code>
                       <code className="text-code-inline">public</code>
@@ -153,15 +157,16 @@ export const APIKeys = () => {
               }
               description={
                 <p>
-                  This key is safe to use in a browser if you have enabled Row Level Security (RLS)
-                  for your tables and configured policies. You may also use the{' '}
-                  {hasNewAPIKeys ? 'secret' : 'service'} key which can be found{' '}
+                  {$t(
+                    'This key is safe to use in a browser if you have enabled Row Level Security (RLS) for your tables and configured policies. You may also use the'
+                  )}{' '}
+                  {hasNewAPIKeys ? 'secret' : 'service'} {$t('key which can be found')}{' '}
                   <InlineLink
                     href={`/project/${projectRef}/settings/api-keys${!hasNewAPIKeys ? '/legacy' : ''}`}
                   >
                     here
                   </InlineLink>{' '}
-                  to bypass RLS.
+                  {$t('to bypass RLS.')}
                 </p>
               }
             >
@@ -204,10 +209,11 @@ export const APIKeys = () => {
                 <ConnectionIcon icon="flutter" size={23} />
                 <ConnectionIcon icon="prisma" size={22} />
               </div>
-              <p className="mb-1">Choose your preferred framework</p>
+              <p className="mb-1">{$t('Choose your preferred framework')}</p>
               <p className="text-sm text-foreground-light mb-4 md:mr-20 text-balance">
-                Connect to your project from a variety of frameworks, ORMs, an MCP server, or even
-                directly via connection string.
+                {$t(
+                  'Connect to your project from a variety of frameworks, ORMs, an MCP server, or even directly via connection string.'
+                )}
               </p>
               <ConnectButton />
             </div>

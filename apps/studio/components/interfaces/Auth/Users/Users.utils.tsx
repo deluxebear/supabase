@@ -18,6 +18,7 @@ import { ColumnConfiguration, UsersTableColumn } from './Users.constants'
 import { HeaderCell } from './UsersGridComponents'
 import { User } from '@/data/auth/users-infinite-query'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const GITHUB_AVATAR_URL = 'https://avatars.githubusercontent.com'
 const SUPPORTED_CSP_AVATAR_URLS = [GITHUB_AVATAR_URL, 'https://lh3.googleusercontent.com']
@@ -385,7 +386,7 @@ export const formatUserColumns = ({
                     )
                   })}
                 {col.id === 'last_sign_in_at' && !isConfirmed ? (
-                  <p className="text-foreground-lighter">Waiting for verification</p>
+                  <p className="text-foreground-lighter">{$t('Waiting for verification')}</p>
                 ) : (
                   <p className={cn(col.id === 'providers' && 'ml-1')}>
                     {formattedValue === null ? '-' : formattedValue}
@@ -403,7 +404,9 @@ export const formatUserColumns = ({
                 }}
               >
                 <Copy size={12} />
-                <span>Copy {col.id === 'id' ? col.name : col.name.toLowerCase()}</span>
+                <span>
+                  {$t('Copy')} {col.id === 'id' ? col.name : col.name.toLowerCase()}
+                </span>
               </ContextMenuItem>
 
               <ContextMenuSeparator />
@@ -416,7 +419,7 @@ export const formatUserColumns = ({
                 }}
               >
                 <TableEditor size={12} />
-                <span>View data as user</span>
+                <span>{$t('View data as user')}</span>
               </ContextMenuItem>
 
               <ContextMenuItem
@@ -427,7 +430,7 @@ export const formatUserColumns = ({
                 }}
               >
                 <SqlEditor size={12} />
-                <span>Run SQL as user</span>
+                <span>{$t('Run SQL as user')}</span>
               </ContextMenuItem>
 
               <ContextMenuSeparator />
@@ -440,7 +443,7 @@ export const formatUserColumns = ({
                 }}
               >
                 <Trash size={12} />
-                <span>Delete user</span>
+                <span>{$t('Delete user')}</span>
               </ContextMenuItem>
             </ContextMenuContent>
           </ContextMenu>

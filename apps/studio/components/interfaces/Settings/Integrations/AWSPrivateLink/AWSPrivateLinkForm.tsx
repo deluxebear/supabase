@@ -25,6 +25,7 @@ import { useAWSAccountCreateMutation } from '@/data/aws-accounts/aws-account-cre
 import type { AWSAccount } from '@/data/aws-accounts/aws-accounts-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface AWSPrivateLinkFormProps {
   account?: AWSAccount
@@ -86,7 +87,7 @@ export const AWSPrivateLinkForm = ({ account, open, onOpenChange }: AWSPrivateLi
         },
         {
           onSuccess: () => {
-            toast.success('Successfully added AWS account')
+            toast.success($t('Successfully added AWS account'))
             onOpenChange(false)
           },
         }
@@ -108,8 +109,10 @@ export const AWSPrivateLinkForm = ({ account, open, onOpenChange }: AWSPrivateLi
         <SheetHeader>
           <SheetTitle>{isNew ? 'Add AWS Account' : 'AWS Account Details'}</SheetTitle>
           <SheetDescription>
-            Connect to your Supabase project from your AWS VPC using AWS PrivateLink.{' '}
-            <InlineLink href={`${DOCS_URL}/guides/platform/privatelink`}>Learn more</InlineLink>
+            {$t('Connect to your Supabase project from your AWS VPC using AWS PrivateLink.')}{' '}
+            <InlineLink href={`${DOCS_URL}/guides/platform/privatelink`}>
+              {$t('Learn more')}
+            </InlineLink>
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
@@ -164,7 +167,7 @@ export const AWSPrivateLinkForm = ({ account, open, onOpenChange }: AWSPrivateLi
                             rel="noopener noreferrer"
                             href={`${DOCS_URL}/guides/platform/privatelink#step-2-accept-resource-share`}
                           >
-                            How to accept?
+                            {$t('How to accept?')}
                           </Link>
                         </Button>
                       )
@@ -177,8 +180,8 @@ export const AWSPrivateLinkForm = ({ account, open, onOpenChange }: AWSPrivateLi
                 name="awsAccountId"
                 render={({ field }) => (
                   <FormItemLayout
-                    label="AWS Account ID"
-                    description="The ID of the AWS account you want to connect to."
+                    label={$t('AWS Account ID')}
+                    description={$t('The ID of the AWS account you want to connect to.')}
                   >
                     <FormControl>
                       <Input
@@ -200,8 +203,8 @@ export const AWSPrivateLinkForm = ({ account, open, onOpenChange }: AWSPrivateLi
                 name="accountName"
                 render={({ field }) => (
                   <FormItemLayout
-                    label="Account Name"
-                    description="A name for this account connection."
+                    label={$t('Account Name')}
+                    description={$t('A name for this account connection.')}
                   >
                     <FormControl>
                       <Input
@@ -221,11 +224,11 @@ export const AWSPrivateLinkForm = ({ account, open, onOpenChange }: AWSPrivateLi
 
             <SheetFooter>
               <Button variant="default" disabled={isPending} onClick={() => onOpenChange(false)}>
-                Cancel
+                {$t('Cancel')}
               </Button>
               {isNew && (
                 <Button type="submit" loading={isPending}>
-                  Add Account
+                  {$t('Add Account')}
                 </Button>
               )}
             </SheetFooter>

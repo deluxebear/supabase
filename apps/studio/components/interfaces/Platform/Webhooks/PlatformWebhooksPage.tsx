@@ -53,6 +53,7 @@ import { useIsPlatformWebhooksEnabled } from '@/components/interfaces/App/Featur
 import { InlineLink } from '@/components/ui/InlineLink'
 import { Shortcut } from '@/components/ui/Shortcut'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -158,7 +159,7 @@ export const PlatformWebhooksPage = ({ scope, endpointId }: PlatformWebhooksPage
         pendingCreatedEndpointId,
       })
     ) {
-      toast('Endpoint not found')
+      toast($t('Endpoint not found'))
       router.replace(webhooksHref)
     }
   }, [endpointId, pendingCreatedEndpointId, selectedEndpoint, router, webhooksHref])
@@ -245,7 +246,7 @@ export const PlatformWebhooksPage = ({ scope, endpointId }: PlatformWebhooksPage
       setDeliverySearch('')
     }
     setEndpointIdPendingDelete(null)
-    toast.success('Endpoint deleted')
+    toast.success($t('Endpoint deleted'))
   }
 
   const handleUpsertEndpoint = (values: EndpointFormValues) => {
@@ -262,7 +263,7 @@ export const PlatformWebhooksPage = ({ scope, endpointId }: PlatformWebhooksPage
       setSigningSecretReveal({ signingSecret })
       setPanel(null)
       setEditEnabledOverride(null)
-      toast.success('Endpoint created')
+      toast.success($t('Endpoint created'))
       return
     }
 
@@ -270,7 +271,7 @@ export const PlatformWebhooksPage = ({ scope, endpointId }: PlatformWebhooksPage
       updateEndpoint(selectedEndpoint.id, toEndpointPayload(values))
       setPanel(null)
       setEditEnabledOverride(null)
-      toast.success('Endpoint updated')
+      toast.success($t('Endpoint updated'))
     }
   }
 
@@ -280,7 +281,7 @@ export const PlatformWebhooksPage = ({ scope, endpointId }: PlatformWebhooksPage
     if (!nextSecret) return
     setSigningSecretReveal({ signingSecret: nextSecret })
     setShowRegenerateSecretConfirm(false)
-    toast.success('Signing secret regenerated')
+    toast.success($t('Signing secret regenerated'))
   }
 
   const handleRetryDelivery = (deliveryId: string) => {
@@ -288,7 +289,7 @@ export const PlatformWebhooksPage = ({ scope, endpointId }: PlatformWebhooksPage
     if (!delivery || delivery.status === 'success') return
 
     retryDelivery(deliveryId)
-    toast.success('Delivery queued for retry')
+    toast.success($t('Delivery queued for retry'))
   }
 
   const handleCopy = (value: string, label: string) => {
@@ -349,7 +350,7 @@ export const PlatformWebhooksPage = ({ scope, endpointId }: PlatformWebhooksPage
                     setPanel('edit')
                   }}
                 >
-                  Edit
+                  {$t('Edit')}
                 </Button>
               </Shortcut>
               <DropdownMenu>
@@ -362,14 +363,14 @@ export const PlatformWebhooksPage = ({ scope, endpointId }: PlatformWebhooksPage
                     onClick={() => setShowRegenerateSecretConfirm(true)}
                   >
                     <RotateCw size={14} className="text-foreground-lighter" />
-                    <span>Regenerate secret</span>
+                    <span>{$t('Regenerate secret')}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="gap-x-2"
                     onClick={() => setEndpointIdPendingDelete(selectedEndpoint.id)}
                   >
                     <Trash2 size={14} className="text-foreground-lighter" />
-                    <span>Delete endpoint</span>
+                    <span>{$t('Delete endpoint')}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -448,7 +449,7 @@ export const PlatformWebhooksPage = ({ scope, endpointId }: PlatformWebhooksPage
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete endpoint</AlertDialogTitle>
+            <AlertDialogTitle>{$t('Delete endpoint')}</AlertDialogTitle>
             <AlertDialogDescription>{deleteEndpointDescription}</AlertDialogDescription>
           </AlertDialogHeader>
           {endpointPendingDelete && (
@@ -457,9 +458,9 @@ export const PlatformWebhooksPage = ({ scope, endpointId }: PlatformWebhooksPage
             </pre>
           )}
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
             <AlertDialogAction variant="danger" onClick={handleDeleteEndpoint}>
-              Delete endpoint
+              {$t('Delete endpoint')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -468,15 +469,17 @@ export const PlatformWebhooksPage = ({ scope, endpointId }: PlatformWebhooksPage
       <AlertDialog open={showRegenerateSecretConfirm} onOpenChange={setShowRegenerateSecretConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Regenerate secret</AlertDialogTitle>
+            <AlertDialogTitle>{$t('Regenerate secret')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will rotate the current signing secret used for webhook signature verification.
+              {$t(
+                'This will rotate the current signing secret used for webhook signature verification.'
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
             <AlertDialogAction variant="warning" onClick={handleRegenerateSecret}>
-              Regenerate
+              {$t('Regenerate')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -492,30 +495,34 @@ export const PlatformWebhooksPage = ({ scope, endpointId }: PlatformWebhooksPage
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Signing secret</AlertDialogTitle>
+            <AlertDialogTitle>{$t('Signing secret')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Use this secret to verify webhook signatures using the{' '}
-              <InlineLink href="https://www.standardwebhooks.com/">Standard Webhooks</InlineLink>{' '}
+              {$t('Use this secret to verify webhook signatures using the')}{' '}
+              <InlineLink href="https://www.standardwebhooks.com/">
+                {$t('Standard Webhooks')}
+              </InlineLink>{' '}
               specification.
             </AlertDialogDescription>
           </AlertDialogHeader>
           {/* Content */}
           <div className="space-y-4 mx-5 pb-5">
             <div className="space-y-1">
-              <Label>Signing secret</Label>
+              <Label>{$t('Signing secret')}</Label>
               <Input
                 copy
                 readOnly
                 value={signingSecretReveal?.signingSecret ?? ''}
                 onChange={() => {}}
-                onCopy={() => toast.success('Copied signing secret')}
+                onCopy={() => toast.success($t('Copied signing secret'))}
               />
             </div>
             <div>
               <Admonition
                 type="warning"
-                title="This secret won’t be shown again"
-                description="Copy and store it securely now. You will not be able to view or copy it again after closing this dialog."
+                title={$t('This secret won’t be shown again')}
+                description={$t(
+                  'Copy and store it securely now. You will not be able to view or copy it again after closing this dialog.'
+                )}
               />
             </div>
           </div>
@@ -526,7 +533,7 @@ export const PlatformWebhooksPage = ({ scope, endpointId }: PlatformWebhooksPage
                 clearPendingSigningSecretReveal(scope)
               }}
             >
-              I’ve stored the secret
+              {$t('I’ve stored the secret')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

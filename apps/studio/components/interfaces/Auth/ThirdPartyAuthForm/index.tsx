@@ -39,6 +39,7 @@ import {
 } from '@/data/third-party-auth/integrations-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -81,14 +82,15 @@ export const ThirdPartyAuthForm = () => {
     <PageSection>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Third-Party Auth</PageSectionTitle>
+          <PageSectionTitle>{$t('Third-Party Auth')}</PageSectionTitle>
           <PageSectionDescription>
-            Billing is based on the number of monthly active users (MAUs) requesting your API
-            throughout the billing period.{' '}
+            {$t(
+              'Billing is based on the number of monthly active users (MAUs) requesting your API throughout the billing period.'
+            )}{' '}
             <InlineLink
               href={`${DOCS_URL}/guides/platform/manage-your-usage/monthly-active-users-third-party`}
             >
-              Learn more
+              {$t('Learn more')}
             </InlineLink>
           </PageSectionDescription>
         </PageSectionSummary>
@@ -115,8 +117,10 @@ export const ThirdPartyAuthForm = () => {
         {isSuccess ? (
           integrations.length === 0 ? (
             <EmptyStatePresentational
-              title="Add an authentication provider"
-              description="Use third-party authentication systems based on JWTs to access your project."
+              title={$t('Add an authentication provider')}
+              description={$t(
+                'Use third-party authentication systems based on JWTs to access your project.'
+              )}
             >
               <AddIntegrationDropdown
                 align="center"
@@ -176,7 +180,7 @@ export const ThirdPartyAuthForm = () => {
           size="medium"
           visible={!!selectedIntegrationForDeletion}
           variant="destructive"
-          title="Confirm to delete integration"
+          title={$t('Confirm to delete integration')}
           confirmLabel="Delete"
           confirmLabelLoading="Deleting"
           onCancel={() => setSelectedIntegrationForDeletion(undefined)}
@@ -200,7 +204,7 @@ export const ThirdPartyAuthForm = () => {
           }}
         >
           <p className="text-sm text-foreground-light">
-            Are you sure you want to delete the{' '}
+            {$t('Are you sure you want to delete the')}{' '}
             {getIntegrationTypeLabel(getIntegrationType(selectedIntegrationForDeletion))}{' '}
             integration?
           </p>

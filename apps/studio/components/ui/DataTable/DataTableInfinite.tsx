@@ -10,6 +10,7 @@ import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 import { AlertError } from '../AlertError'
 import { formatCompactNumber } from './DataTable.utils'
 import { useDataTable } from './providers/DataTableProvider'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -194,7 +195,7 @@ export function DataTableInfinite<TData, TValue, TMeta>({
                   className={cn(TableCellClassName, 'text-center')}
                 >
                   <div className="flex flex-col items-center justify-center h-full gap-3">
-                    <p className="text-foreground-light text-sm">No results found</p>
+                    <p className="text-foreground-light text-sm">{$t('No results found')}</p>
                   </div>
                 </TableCell>
               </TableRow>
@@ -222,10 +223,10 @@ export function DataTableInfinite<TData, TValue, TMeta>({
                           isFetching ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null
                         }
                       >
-                        Load more
+                        {$t('Load more')}
                       </Button>
                       <p className="text-xs text-foreground-lighter">
-                        Showing{' '}
+                        {$t('Showing')}{' '}
                         <span className="font-mono font-medium">
                           {formatCompactNumber(totalRowsFetched)}
                         </span>{' '}
@@ -239,7 +240,7 @@ export function DataTableInfinite<TData, TValue, TMeta>({
                   ) : (
                     rows.length > 0 && (
                       <p className="text-xs text-foreground-lighter">
-                        No more data to load (
+                        {$t('No more data to load (')}
                         <span className="font-mono font-medium">
                           {formatCompactNumber(filterRows)}
                         </span>{' '}

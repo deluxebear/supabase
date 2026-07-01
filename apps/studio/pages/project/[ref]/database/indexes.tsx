@@ -16,6 +16,7 @@ import DatabaseLayout from '@/components/layouts/DatabaseLayout/DatabaseLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const IndexesPage: NextPageWithLayout = () => {
@@ -24,9 +25,9 @@ const IndexesPage: NextPageWithLayout = () => {
       <PageHeader size="large">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Database Indexes</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Database Indexes')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Improve query performance against your database
+              {$t('Improve query performance against your database')}
             </PageHeaderDescription>
           </PageHeaderSummary>
           <PageHeaderAside>
@@ -41,7 +42,7 @@ const IndexesPage: NextPageWithLayout = () => {
                 className="no-underline"
                 href={`${DOCS_URL}/guides/database/extensions/index_advisor`}
               >
-                Index Advisor
+                {$t('Index Advisor')}
               </a>
             </Button>
           </PageHeaderAside>
@@ -60,7 +61,7 @@ const IndexesPage: NextPageWithLayout = () => {
 
 IndexesPage.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Indexes">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Indexes')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

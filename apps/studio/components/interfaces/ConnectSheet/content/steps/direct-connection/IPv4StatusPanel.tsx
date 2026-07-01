@@ -4,6 +4,7 @@ import { ReactNode } from 'react'
 import { Button, cn, Collapsible, CollapsibleContent, CollapsibleTrigger, WarningIcon } from 'ui'
 
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const IPv4StatusIcon = ({ className, active }: { className?: string; active: boolean }) => {
   return (
@@ -76,10 +77,10 @@ export function IPv4StatusPanel({ method, ipv4Status, projectRef }: IPv4StatusPa
             <WarningIcon />
           </div>
           <div className="flex flex-col">
-            <span className="text-xs text-foreground">Only use on a IPv4 network</span>
+            <span className="text-xs text-foreground">{$t('Only use on a IPv4 network')}</span>
             <div className="flex flex-col text-xs text-foreground-lighter">
-              <p>Session pooler connections are IPv4 proxied for free.</p>
-              <p>Use Direct Connection if connecting via an IPv6 network.</p>
+              <p>{$t('Session pooler connections are IPv4 proxied for free.')}</p>
+              <p>{$t('Use Direct Connection if connecting via an IPv6 network.')}</p>
             </div>
           </div>
         </div>
@@ -134,35 +135,37 @@ export function IPv4StatusPanel({ method, ipv4Status, projectRef }: IPv4StatusPa
                     />
                   }
                 >
-                  Some platforms are IPv4-only:
+                  {$t('Some platforms are IPv4-only:')}
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="bg-dash-sidebar rounded-b border px-3 py-2">
                 <div className="flex flex-col gap-2">
                   <p className="text-xs text-foreground-light max-w-xs">
-                    A few major platforms are IPv4-only and may not work with a Direct Connection:
+                    {$t(
+                      'A few major platforms are IPv4-only and may not work with a Direct Connection:'
+                    )}
                   </p>
                   <div className="flex gap-4">
-                    <div className="text-foreground text-xs">Vercel</div>
-                    <div className="text-foreground text-xs">GitHub Actions</div>
-                    <div className="text-foreground text-xs">Render</div>
-                    <div className="text-foreground text-xs">Retool</div>
+                    <div className="text-foreground text-xs">{$t('Vercel')}</div>
+                    <div className="text-foreground text-xs">{$t('GitHub Actions')}</div>
+                    <div className="text-foreground text-xs">{$t('Render')}</div>
+                    <div className="text-foreground text-xs">{$t('Retool')}</div>
                   </div>
                   <p className="text-xs text-foreground-lighter max-w-xs">
-                    If you wish to use a Direct Connection with these, please purchase{' '}
+                    {$t('If you wish to use a Direct Connection with these, please purchase')}{' '}
                     <Link
                       href={`/project/${projectRef}/settings/addons?panel=ipv4`}
                       className="text-xs text-light hover:text-foreground"
                     >
-                      IPv4 support
+                      {$t('IPv4 support')}
                     </Link>
                     .
                   </p>
                   <p className="text-xs text-foreground-lighter max-w-xs">
-                    You may also use the{' '}
-                    <span className="text-foreground-light">Session Pooler</span> or{' '}
-                    <span className="text-foreground-light">Transaction Pooler</span> if you are on
-                    a IPv4 network.
+                    {$t('You may also use the')}{' '}
+                    <span className="text-foreground-light">{$t('Session Pooler')}</span> or{' '}
+                    <span className="text-foreground-light">{$t('Transaction Pooler')}</span>{' '}
+                    {$t('if you are on a IPv4 network.')}
                   </p>
                 </div>
               </CollapsibleContent>

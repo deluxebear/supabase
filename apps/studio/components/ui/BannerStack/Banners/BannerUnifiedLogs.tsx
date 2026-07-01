@@ -11,6 +11,7 @@ import {
   useUnifiedLogsPreview,
 } from '@/components/interfaces/App/FeaturePreview/FeaturePreviewContext'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export const BannerUnifiedLogs = () => {
@@ -35,16 +36,16 @@ export const BannerUnifiedLogs = () => {
       <div className="flex flex-col gap-y-4">
         <div className="flex flex-col gap-y-2 items-start">
           <Badge variant="success" className="-ml-0.5 uppercase inline-flex items-center">
-            Beta
+            {$t('Beta')}
           </Badge>
           <div className="-mx-6 w-[calc(100%+3rem)] bg-linear-to-t from-background to-transparent px-6 py-2 border-b">
             <UnifiedLogsCarousel />
           </div>
         </div>
         <div className="flex flex-col gap-y-1 mb-2">
-          <p className="text-sm font-medium">Unified Logs is here</p>
+          <p className="text-sm font-medium">{$t('Unified Logs is here')}</p>
           <p className="text-xs text-foreground-lighter text-balance">
-            Search and correlate logs across all of your services from a single place.
+            {$t('Search and correlate logs across all of your services from a single place.')}
           </p>
         </div>
         <div className="flex gap-2">
@@ -58,7 +59,7 @@ export const BannerUnifiedLogs = () => {
                   dismissBanner('unified-logs-banner')
                 }}
               >
-                Explore Unified Logs
+                {$t('Explore Unified Logs')}
               </Link>
             </Button>
           ) : (
@@ -70,7 +71,7 @@ export const BannerUnifiedLogs = () => {
                 selectFeaturePreview(LOCAL_STORAGE_KEYS.UI_PREVIEW_UNIFIED_LOGS)
               }}
             >
-              Enable Unified Logs
+              {$t('Enable Unified Logs')}
             </Button>
           )}
         </div>

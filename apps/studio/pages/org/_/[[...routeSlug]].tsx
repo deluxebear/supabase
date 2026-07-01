@@ -15,6 +15,7 @@ import { ScaffoldContainer, ScaffoldSection } from '@/components/layouts/Scaffol
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { useCustomContent } from '@/hooks/custom-content/useCustomContent'
 import { withAuth } from '@/hooks/misc/withAuth'
+import { t as $t } from '@/lib/i18n'
 import { buildStudioPageTitle } from '@/lib/page-title'
 
 const GenericOrganizationPage: NextPage = () => {
@@ -40,7 +41,7 @@ const GenericOrganizationPage: NextPage = () => {
         <meta name="description" content="Supabase Studio" />
       </Head>
       <Header />
-      <PageLayout className="grow min-h-0" title="Select an organization to continue">
+      <PageLayout className="grow min-h-0" title={$t('Select an organization to continue')}>
         <ScaffoldContainer>
           <ScaffoldSection isFullWidth>
             <div

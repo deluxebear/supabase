@@ -6,6 +6,7 @@ import type { ShowApiKey } from '../../Docs/Docs.types'
 import { LangSelector } from '../../Docs/LangSelector'
 import { DocsMenu } from '@/components/interfaces/Integrations/DataApi/DocsMenu'
 import { ProductMenuGroup } from '@/components/ui/ProductMenu/ProductMenu.types'
+import { t as $t } from '@/lib/i18n'
 
 interface DocsMobileNavProps {
   activePage: string
@@ -35,14 +36,14 @@ export const DocsMobileNav = ({
     <>
       <div className="sticky top-0 z-10 flex lg:hidden items-center border-b bg-surface-100 px-4 py-3">
         <Button variant="default" icon={<Menu size={16} />} onClick={() => setOpen(true)}>
-          Menu
+          {$t('Menu')}
         </Button>
       </div>
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="left" size="content" className="w-72 overflow-y-auto">
           <SheetHeader className="border-b-0">
-            <SheetTitle>Data API Docs</SheetTitle>
+            <SheetTitle>{$t('Data API Docs')}</SheetTitle>
           </SheetHeader>
           <div className="flex flex-col gap-y-6 px-5 pb-6">
             <LangSelector

@@ -23,6 +23,7 @@ import { Shortcut } from '@/components/ui/Shortcut'
 import { useJWTSigningKeyCreateMutation } from '@/data/jwt-signing-keys/jwt-signing-key-create-mutation'
 import { JWTAlgorithm } from '@/data/jwt-signing-keys/jwt-signing-keys-query'
 import { stringToBase64URL } from '@/lib/base64url'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 const RSA_JWK_REQUIRED_PROPERTIES = ['kty', 'n', 'e', 'p', 'q', 'd', 'dq', 'dp', 'qi']
@@ -105,7 +106,7 @@ export const CreateKeyDialog = ({
 
   const { mutate, isPending: isPendingMutation } = useJWTSigningKeyCreateMutation({
     onSuccess: () => {
-      toast.success('Standby key created successfully')
+      toast.success($t('Standby key created successfully'))
       onClose()
     },
     onError: (error) => {
@@ -151,39 +152,41 @@ export const CreateKeyDialog = ({
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Create a new Standby Key</DialogTitle>
+        <DialogTitle>{$t('Create a new Standby Key')}</DialogTitle>
       </DialogHeader>
       <DialogSectionSeparator />
       <DialogSection className="space-y-4">
         <p className="text-sm text-foreground-light">
-          Adds a new JSON Web Token signing key. Once all of your application's components have
-          picked it up you can rotate the current key with it.
+          {$t(
+            "Adds a new JSON Web Token signing key. Once all of your application's components have picked it up you can rotate the current key with it."
+          )}
           <br />
           <br />
-          This action does not invalidate existing tokens, so your users remain signed in.
+
+          {$t('This action does not invalidate existing tokens, so your users remain signed in.')}
         </p>
       </DialogSection>
       <DialogSectionSeparator />
       <DialogSection className="flex flex-col gap-4">
         <div className="flex flex-col gap-4">
-          <Label htmlFor="algorithm">Choose signing algorithm:</Label>
+          <Label htmlFor="algorithm">{$t('Choose signing algorithm:')}</Label>
           <Select
             name="algorithm"
             value={newKeyAlgorithm}
             onValueChange={(value: JWTAlgorithm) => setNewKeyAlgorithm(value)}
           >
             <SelectTrigger id="algorithm">
-              <SelectValue placeholder="Select algorithm" />
+              <SelectValue placeholder={$t('Select algorithm')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ES256">
-                <span>ES256 (ECC)</span>
+                <span>{$t('ES256 (ECC)')}</span>
                 <Badge variant="success" className="ml-2">
-                  Recommended
+                  {$t('Recommended')}
                 </Badge>
               </SelectItem>
-              <SelectItem value="RS256">RS256 (RSA)</SelectItem>
-              <SelectItem value="HS256">HS256 (Shared Secret)</SelectItem>
+              <SelectItem value="RS256">{$t('RS256 (RSA)')}</SelectItem>
+              <SelectItem value="HS256">{$t('HS256 (Shared Secret)')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -223,7 +226,8 @@ export const CreateKeyDialog = ({
                   checked={isBase64}
                   onCheckedChange={(value) => setBase64(!!value)}
                 />
-                Secret is already Base64 encoded
+
+                {$t('Secret is already Base64 encoded')}
               </Label>
             </>
           )}
@@ -246,7 +250,7 @@ export const CreateKeyDialog = ({
             }
             loading={isPendingMutation}
           >
-            Create standby key
+            {$t('Create standby key')}
           </Button>
         </Shortcut>
       </DialogFooter>

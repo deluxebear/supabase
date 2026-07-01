@@ -17,6 +17,7 @@ import {
   ScrollArea,
 } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 
 interface AIAssistantChatSelectorProps {
@@ -98,9 +99,9 @@ export const AIAssistantChatSelector = ({ disabled = false }: AIAssistantChatSel
       </PopoverTrigger>
       <PopoverContent className="w-[250px] p-0" align="start">
         <Command>
-          <CommandInput className="text-xs" placeholder="Search chats..." />
+          <CommandInput className="text-xs" placeholder={$t('Search chats...')} />
           <CommandList>
-            <CommandEmpty>No chats found.</CommandEmpty>
+            <CommandEmpty>{$t('No chats found.')}</CommandEmpty>
             <CommandGroup>
               <ScrollArea className={chats.length > 4 ? 'h-40' : ''}>
                 {/* @ts-ignore */}
@@ -204,7 +205,7 @@ export const AIAssistantChatSelector = ({ disabled = false }: AIAssistantChatSel
                 disabled={disabled}
               >
                 <Plus size={14} strokeWidth={1.5} />
-                <span>Start a new chat</span>
+                <span>{$t('Start a new chat')}</span>
               </CommandItem>
             </CommandGroup>
           </CommandList>

@@ -12,6 +12,7 @@ import { PageLayout } from '@/components/layouts/PageLayout/PageLayout'
 import { ScaffoldContainer, ScaffoldSection } from '@/components/layouts/Scaffold'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useUpgradeCtaExperiment } from '@/hooks/misc/useUpgradeCtaExperiment'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const ProjectsPage: NextPageWithLayout = () => {
@@ -32,13 +33,14 @@ const ProjectsPage: NextPageWithLayout = () => {
             title={`${org?.name} requires MFA`}
             description={
               <>
-                Set up multi-factor authentication (MFA) on your account to access this
-                organization’s projects.
+                {$t(
+                  'Set up multi-factor authentication (MFA) on your account to access this organization’s projects.'
+                )}
               </>
             }
             actions={
               <Button asChild variant="default">
-                <Link href="/account/security">Set up MFA</Link>
+                <Link href="/account/security">{$t('Set up MFA')}</Link>
               </Button>
             }
           />
@@ -64,8 +66,8 @@ const ProjectsPage: NextPageWithLayout = () => {
 
 ProjectsPage.getLayout = (page) => (
   <DefaultLayout>
-    <OrganizationLayout title="Projects">
-      <PageLayout title="Projects">{page}</PageLayout>
+    <OrganizationLayout title={$t('Projects')}>
+      <PageLayout title={$t('Projects')}>{page}</PageLayout>
     </OrganizationLayout>
   </DefaultLayout>
 )

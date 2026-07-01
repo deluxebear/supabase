@@ -16,6 +16,7 @@ import { READ_REPLICAS_MAX_COUNT } from '@/data/read-replicas/replicas-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const ReadReplicaEligibilityWarnings = () => {
   const { ref: projectRef } = useParams()
@@ -48,7 +49,7 @@ export const ReadReplicaEligibilityWarnings = () => {
     {
       onSuccess: () => {
         toast.success(
-          'Physical backups are currently being enabled, please check back in a few minutes!'
+          $t('Physical backups are currently being enabled, please check back in a few minutes!')
         )
         setRefetchInterval(5000)
       },
@@ -64,10 +65,12 @@ export const ReadReplicaEligibilityWarnings = () => {
 
   if (hasOverdueInvoices) {
     return (
-      <Admonition type="warning" title="Your organization has overdue invoices">
-        <p>Please resolve all outstanding invoices first before deploying a new read replica.</p>
+      <Admonition type="warning" title={$t('Your organization has overdue invoices')}>
+        <p>
+          {$t('Please resolve all outstanding invoices first before deploying a new read replica.')}
+        </p>
         <Button asChild variant="default" className="mt-2">
-          <Link href={`/org/${org?.slug}/billing#invoices`}>View invoices</Link>
+          <Link href={`/org/${org?.slug}/billing#invoices`}>{$t('View invoices')}</Link>
         </Button>
       </Admonition>
     )
@@ -77,11 +80,12 @@ export const ReadReplicaEligibilityWarnings = () => {
     return (
       <Admonition
         type="warning"
-        title="Read replicas are only supported for projects provisioned via AWS"
+        title={$t('Read replicas are only supported for projects provisioned via AWS')}
       >
         <p>
-          Projects provisioned by other cloud providers currently will not be able to use read
-          replicas.
+          {$t(
+            'Projects provisioned by other cloud providers currently will not be able to use read replicas.'
+          )}
         </p>
         <DocsButton
           abbrev={false}
@@ -96,8 +100,10 @@ export const ReadReplicaEligibilityWarnings = () => {
     return (
       <Admonition
         type="warning"
-        title="Read replicas are not supported for AWS (Revamped) projects"
-        description="Projects provisioned by other cloud providers currently will not be able to use read replicas."
+        title={$t('Read replicas are not supported for AWS (Revamped) projects')}
+        description={$t(
+          'Projects provisioned by other cloud providers currently will not be able to use read replicas.'
+        )}
       />
     )
   }
@@ -106,9 +112,11 @@ export const ReadReplicaEligibilityWarnings = () => {
     return (
       <Admonition
         type="warning"
-        title="Read replicas can only be deployed with projects on Postgres version 15 and above"
+        title={$t(
+          'Read replicas can only be deployed with projects on Postgres version 15 and above'
+        )}
       >
-        <p>If you'd like to use read replicas, please contact us via support.</p>
+        <p>{$t("If you'd like to use read replicas, please contact us via support.")}</p>
         <Button asChild variant="default" className="mt-2">
           <SupportLink
             queryParams={{
@@ -118,7 +126,7 @@ export const ReadReplicaEligibilityWarnings = () => {
               message: `Project DB version: ${project?.dbVersion}`,
             }}
           >
-            Contact support
+            {$t('Contact support')}
           </SupportLink>
         </Button>
       </Admonition>
@@ -127,9 +135,11 @@ export const ReadReplicaEligibilityWarnings = () => {
 
   if (isBelowSmallCompute) {
     return (
-      <Admonition type="warning" title="Project required to at least be on a Small compute">
+      <Admonition type="warning" title={$t('Project required to at least be on a Small compute')}>
         <p>
-          This is to ensure that read replicas can keep up with the primary databases' activities.
+          {$t(
+            "This is to ensure that read replicas can keep up with the primary databases' activities."
+          )}
         </p>
         <div className="flex items-center gap-x-2 mt-2">
           <UpgradePlanButton
@@ -158,20 +168,24 @@ export const ReadReplicaEligibilityWarnings = () => {
         {refetchInterval === false ? (
           <>
             <p>
-              Physical backups are used under the hood to spin up read replicas for your project.
+              {$t(
+                'Physical backups are used under the hood to spin up read replicas for your project.'
+              )}
             </p>
             <p>
-              Enabling physical backups will take a few minutes, after which you will be able to
-              deploy read replicas.
+              {$t(
+                'Enabling physical backups will take a few minutes, after which you will be able to deploy read replicas.'
+              )}
             </p>
           </>
         ) : (
           <>
             <p>
-              This warning will go away once physical backups have been enabled - check back in a
-              few minutes!
+              {$t(
+                'This warning will go away once physical backups have been enabled - check back in a few minutes!'
+              )}
             </p>
-            <p>You may start deploying read replicas thereafter once this is completed.</p>
+            <p>{$t('You may start deploying read replicas thereafter once this is completed.')}</p>
           </>
         )}
         {refetchInterval === false && (
@@ -184,7 +198,7 @@ export const ReadReplicaEligibilityWarnings = () => {
                 if (projectRef) enablePhysicalBackups({ ref: projectRef })
               }}
             >
-              Enable physical backups
+              {$t('Enable physical backups')}
             </Button>
             <DocsButton
               abbrev={false}
@@ -198,10 +212,11 @@ export const ReadReplicaEligibilityWarnings = () => {
 
   if (isProWithSpendCapEnabled) {
     return (
-      <Admonition type="warning" title="Spend cap needs to be disabled to deploy replicas">
+      <Admonition type="warning" title={$t('Spend cap needs to be disabled to deploy replicas')}>
         <p>
-          Launching a replica incurs additional disk size that will exceed the plan's quota. Disable
-          the spend cap first to allow overages before launching a replica.
+          {$t(
+            "Launching a replica incurs additional disk size that will exceed the plan's quota. Disable the spend cap first to allow overages before launching a replica."
+          )}
         </p>
         <UpgradePlanButton
           variant="default"
@@ -209,7 +224,7 @@ export const ReadReplicaEligibilityWarnings = () => {
           addon="spendCap"
           className="mt-2"
         >
-          Disable spend cap
+          {$t('Disable spend cap')}
         </UpgradePlanButton>
       </Admonition>
     )
@@ -221,13 +236,17 @@ export const ReadReplicaEligibilityWarnings = () => {
         type="warning"
         title={`You can only deploy up to ${maxNumberOfReplicas} read replicas at once`}
       >
-        <p>If you'd like to spin up another read replica, please drop an existing replica first.</p>
+        <p>
+          {$t(
+            "If you'd like to spin up another read replica, please drop an existing replica first."
+          )}
+        </p>
         {maxNumberOfReplicas < READ_REPLICAS_MAX_COUNT && (
           <>
             <p>
-              Alternatively, you may deploy up to{' '}
-              <span className="text-foreground">{READ_REPLICAS_MAX_COUNT}</span> replicas if your
-              project is on an XL compute or higher.
+              {$t('Alternatively, you may deploy up to')}{' '}
+              <span className="text-foreground">{READ_REPLICAS_MAX_COUNT}</span>{' '}
+              {$t('replicas if your project is on an XL compute or higher.')}
             </p>
             <UpgradePlanButton
               variant="default"
@@ -237,7 +256,7 @@ export const ReadReplicaEligibilityWarnings = () => {
               featureProposition="deploy Read Replicas"
               className="mt-2"
             >
-              Change compute size
+              {$t('Change compute size')}
             </UpgradePlanButton>
           </>
         )}

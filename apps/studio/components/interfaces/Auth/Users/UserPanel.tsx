@@ -21,6 +21,7 @@ import { PANEL_PADDING } from './Users.constants'
 import { useUserQuery } from '@/data/auth/user-query'
 import { User } from '@/data/auth/users-infinite-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const UserPanel = () => {
   const { data: project } = useSelectedProjectQuery()
@@ -83,19 +84,19 @@ export const UserPanel = () => {
                   value="overview"
                   className="px-0 pb-0 h-full text-xs  data-[state=active]:bg-transparent shadow-none!"
                 >
-                  Overview
+                  {$t('Overview')}
                 </TabsTrigger_Shadcn_>
                 <TabsTrigger_Shadcn_
                   value="logs"
                   className="px-0 pb-0 h-full text-xs data-[state=active]:bg-transparent shadow-none!"
                 >
-                  Logs
+                  {$t('Logs')}
                 </TabsTrigger_Shadcn_>
                 <TabsTrigger_Shadcn_
                   value="raw"
                   className="px-0 pb-0 h-full text-xs data-[state=active]:bg-transparent shadow-none!"
                 >
-                  Raw JSON
+                  {$t('Raw JSON')}
                 </TabsTrigger_Shadcn_>
               </TabsList_Shadcn_>
 
@@ -118,7 +119,7 @@ export const UserPanel = () => {
                   <Input
                     autoFocus
                     type="text"
-                    placeholder="Filter..."
+                    placeholder={$t('Filter...')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="mr-2"
@@ -129,7 +130,7 @@ export const UserPanel = () => {
                     onClick={() => setSearchQuery('')}
                     className="text-xs"
                   >
-                    Clear
+                    {$t('Clear')}
                   </Button>
                 </div>
                 <SimpleCodeBlock className="javascript" parentClassName="[&>*>span]:text-xs">
@@ -140,9 +141,11 @@ export const UserPanel = () => {
           ) : (
             <div className="flex items-center justify-center w-full h-full flex-col gap-y-2">
               <p className="text-foreground-light text-sm">
-                Unable to find user with the following ID in project
+                {$t('Unable to find user with the following ID in project')}
               </p>
-              <p className="text-foreground-lighter text-xs">ID: {selectedId}</p>
+              <p className="text-foreground-lighter text-xs">
+                {$t('ID:')} {selectedId}
+              </p>
             </div>
           )}
         </Tabs_Shadcn_>

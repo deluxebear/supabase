@@ -5,6 +5,7 @@ import AuthLayout from './AuthLayout'
 import { PageLayout } from '@/components/layouts/PageLayout/PageLayout'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 
 export const AuthEmailsLayout = ({ children }: PropsWithChildren<{}>) => {
   const { ref } = useParams()
@@ -23,10 +24,10 @@ export const AuthEmailsLayout = ({ children }: PropsWithChildren<{}>) => {
   ]
 
   return (
-    <AuthLayout title="Emails">
+    <AuthLayout title={$t('Emails')}>
       {showEmails ? (
         <PageLayout
-          title="Emails"
+          title={$t('Emails')}
           subtitle="Configure what emails your users receive and how they are sent"
           navigationItems={navItems}
         >

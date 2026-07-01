@@ -14,6 +14,7 @@ import { ParseQueryResults } from './RLSTester.types'
 import { deriveRLSTestState } from './RLSTesterResults.utils'
 import { useTestQueryRLS } from './useTestQueryRLS'
 import type { Policy } from '@/components/interfaces/Database/Policies/PolicyTableRow/PolicyTableRow.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface RLSTesterResultsProps {
   results: Object[]
@@ -40,9 +41,9 @@ export const RLSTesterResults = ({
   return (
     <div className="p-5 pt-4">
       <div className="flex items-center gap-x-2 mb-2">
-        <p className="text-sm">Summary</p>
+        <p className="text-sm">{$t('Summary')}</p>
         {noAccessToData ? (
-          <Badge variant="destructive">No access</Badge>
+          <Badge variant="destructive">{$t('No access')}</Badge>
         ) : (
           <Badge variant="success">{results.length > 0 ? 'Can access' : 'Has access'}</Badge>
         )}
@@ -51,31 +52,33 @@ export const RLSTesterResults = ({
       <Tabs_Shadcn_ defaultValue="policies">
         <TabsList_Shadcn_ className="gap-x-3">
           <TabsTrigger_Shadcn_ value="policies" className="px-2">
-            Policies applied
+            {$t('Policies applied')}
           </TabsTrigger_Shadcn_>
           <TabsTrigger_Shadcn_ value="data" className="px-2">
-            Data preview
+            {$t('Data preview')}
           </TabsTrigger_Shadcn_>
         </TabsList_Shadcn_>
 
         {!!parseQueryResults && (
           <div className="border rounded-sm flex items-center justify-between px-3 py-1.5 mt-3">
             <div className="flex items-center gap-x-2">
-              <p className="text-xs text-foreground-light">Ran as</p>
+              <p className="text-xs text-foreground-light">{$t('Ran as')}</p>
               {!parseQueryResults.role ? (
                 <code className="text-code-inline">postgres</code>
               ) : parseQueryResults.user ? (
                 <p className="text-sm truncate max-w-52">{parseQueryResults.user.email}</p>
               ) : parseQueryResults.role === 'anon' ? (
-                <p className="text-xs">an Anonymous user</p>
+                <p className="text-xs">{$t('an Anonymous user')}</p>
               ) : null}
             </div>
 
             {parseQueryResults.role === 'anon' && (
-              <p className="text-foreground-light text-xs">Not logged in user</p>
+              <p className="text-foreground-light text-xs">{$t('Not logged in user')}</p>
             )}
             {!!parseQueryResults.user && (
-              <code className="text-code-inline">ID: {parseQueryResults.user.id}</code>
+              <code className="text-code-inline">
+                {$t('ID:')} {parseQueryResults.user.id}
+              </code>
             )}
           </div>
         )}
@@ -84,29 +87,33 @@ export const RLSTesterResults = ({
           {!isServiceRole &&
             (!!tableWithRLSEnabledButNoPolicies ? (
               <Admonition showIcon={false} type="default" className="rounded-sm mt-2">
-                <p className="mb-0.5!">This user has no access to any rows from this query</p>
+                <p className="mb-0.5!">
+                  {$t('This user has no access to any rows from this query')}
+                </p>
                 <p className="text-foreground-light">
-                  The table{' '}
+                  {$t('The table')}{' '}
                   <code className="text-code-inline">
                     {tableWithRLSEnabledButNoPolicies.schema}.
                     {tableWithRLSEnabledButNoPolicies.table}
                   </code>{' '}
-                  has RLS enabled but no policies set up for the{' '}
+                  {$t('has RLS enabled but no policies set up for the')}{' '}
                   <code className="text-code-inline break-keep!">{parseQueryResults.role}</code>{' '}
                   role.
                 </p>
               </Admonition>
             ) : tableWithRLSEnabledWithPolicyFalse ? (
               <Admonition showIcon={false} type="default" className="rounded-sm mt-2">
-                <p className="mb-0.5!">This user has no access to any rows from this query</p>
+                <p className="mb-0.5!">
+                  {$t('This user has no access to any rows from this query')}
+                </p>
                 <p className="text-foreground-light">
-                  The table{' '}
+                  {$t('The table')}{' '}
                   <code className="text-code-inline">
                     {tableWithRLSEnabledWithPolicyFalse.schema}.
                     {tableWithRLSEnabledWithPolicyFalse.table}
                   </code>{' '}
-                  has a policy that evaluates to
-                  <code className="text-code-inline break-keep!">false</code> for the{' '}
+                  {$t('has a policy that evaluates to')}
+                  <code className="text-code-inline break-keep!">false</code> {$t('for the')}{' '}
                   <code className="text-code-inline break-keep!">{parseQueryResults.role}</code>{' '}
                   role.
                 </p>
@@ -116,18 +123,18 @@ export const RLSTesterResults = ({
           {isServiceRole && (
             <Admonition showIcon={false} type="default" className="rounded-sm mt-2">
               <p className="mb-0.5!">
-                The <code className="text-code-inline">postgres</code> role has access to all rows
-                for this query
+                {$t('The')} <code className="text-code-inline">postgres</code>{' '}
+                {$t('role has access to all rows for this query')}
               </p>
               <p className="text-foreground-light">
-                The <code className="text-code-inline">postgres</code> role has admin privileges and
-                bypasses all RLS policies.
+                {$t('The')} <code className="text-code-inline">postgres</code>{' '}
+                {$t('role has admin privileges and bypasses all RLS policies.')}
               </p>
             </Admonition>
           )}
 
           <div className="flex flex-col gap-y-2 mt-4">
-            <p className="text-sm">Table access</p>
+            <p className="text-sm">{$t('Table access')}</p>
             {!isServiceRole && (
               <div className="flex flex-col gap-y-2">
                 {parseQueryResults?.tables.map((x) => {

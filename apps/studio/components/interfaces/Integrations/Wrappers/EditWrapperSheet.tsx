@@ -43,6 +43,7 @@ import { getDecryptedValues } from '@/data/vault/vault-secret-decrypted-value-qu
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
 import { UUID_REGEX } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export interface EditWrapperSheetProps {
   wrapper: FDW
@@ -175,7 +176,7 @@ export const EditWrapperSheet = ({
           resetField(option.name, { defaultValue: decryptedValues[encryptedId] })
         })
       } catch (error) {
-        toast.error('Failed to fetch encrypted values')
+        toast.error($t('Failed to fetch encrypted values'))
       } finally {
         setIsLoadingSecrets(false)
       }
@@ -197,11 +198,13 @@ export const EditWrapperSheet = ({
           >
             <SheetHeader>
               <SheetTitle>
-                Edit {wrapperMeta.label} wrapper: {wrapper.name}
+                {$t('Edit')} {wrapperMeta.label} wrapper: {wrapper.name}
               </SheetTitle>
             </SheetHeader>
             <div className="grow overflow-y-auto">
-              <FormSection header={<FormSectionLabel>Wrapper Configuration</FormSectionLabel>}>
+              <FormSection
+                header={<FormSectionLabel>{$t('Wrapper Configuration')}</FormSectionLabel>}
+              >
                 <FormSectionContent className="flex flex-col space-y-2" loading={false}>
                   <FormField
                     control={form.control}
@@ -209,16 +212,16 @@ export const EditWrapperSheet = ({
                     render={({ field }) => (
                       <FormItemLayout
                         layout="vertical"
-                        label="Wrapper Name"
+                        label={$t('Wrapper Name')}
                         description={
                           wrapper_name !== initialValues.wrapper_name ? (
                             <>
-                              Your wrapper's server name will be updated to{' '}
+                              {$t("Your wrapper's server name will be updated to")}{' '}
                               <code className="text-code-inline">{wrapper_name}_server</code>
                             </>
                           ) : (
                             <>
-                              Your wrapper's server name is{' '}
+                              {$t("Your wrapper's server name is")}{' '}
                               <code className="text-code-inline">{wrapper_name}_server</code>
                             </>
                           )
@@ -235,7 +238,11 @@ export const EditWrapperSheet = ({
               <Separator />
 
               <FormSection
-                header={<FormSectionLabel>{wrapperMeta.label} Configuration</FormSectionLabel>}
+                header={
+                  <FormSectionLabel>
+                    {wrapperMeta.label} {$t('Configuration')}
+                  </FormSectionLabel>
+                }
               >
                 <FormSectionContent className="flex flex-col space-y-2" loading={false}>
                   {wrapperMeta.server.options
@@ -254,9 +261,11 @@ export const EditWrapperSheet = ({
               <FormSection
                 header={
                   <FormSectionLabel>
-                    <p>Foreign Tables</p>
+                    <p>{$t('Foreign Tables')}</p>
                     <p className="text-foreground-light mt-2 w-[90%]">
-                      You can query your data from these foreign tables after the wrapper is created
+                      {$t(
+                        'You can query your data from these foreign tables after the wrapper is created'
+                      )}
                     </p>
                   </FormSectionLabel>
                 }
@@ -275,7 +284,7 @@ export const EditWrapperSheet = ({
                             {table.schema_name}.{table.table_name}
                           </p>
                           <p className="text-sm text-foreground-light">
-                            Columns:{' '}
+                            {$t('Columns:')}{' '}
                             {(table.columns ?? []).map((column: any) => column.name).join(', ')}
                           </p>
                         </div>
@@ -303,7 +312,7 @@ export const EditWrapperSheet = ({
 
                   <div className="flex justify-end">
                     <Button variant="default" onClick={() => setSelectedTableToEdit(NewTable)}>
-                      Add foreign table
+                      {$t('Add foreign table')}
                     </Button>
                   </div>
                   {tablesField.length === 0 && errors.tables && (
@@ -322,7 +331,7 @@ export const EditWrapperSheet = ({
                 onClick={confirmOnClose}
                 disabled={isSubmitting}
               >
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button
                 size="tiny"
@@ -332,7 +341,7 @@ export const EditWrapperSheet = ({
                 disabled={isSubmitting || !isDirty}
                 loading={isSubmitting}
               >
-                Save wrapper
+                {$t('Save wrapper')}
               </Button>
             </SheetFooter>
           </form>
@@ -341,7 +350,7 @@ export const EditWrapperSheet = ({
 
       <ConfirmationModal
         visible={isUpdateConfirmationOpen}
-        title="Recreate wrapper?"
+        title={$t('Recreate wrapper?')}
         size="medium"
         variant="warning"
         confirmLabel="Recreate wrapper"
@@ -365,11 +374,13 @@ export const EditWrapperSheet = ({
         }}
       >
         <p className="text-sm text-foreground-light">
-          Saving changes will drop the existing wrapper and recreate it. Foreign servers and tables
-          will be recreated, and dependent objects like functions or views that reference those
-          tables may need to be updated manually afterwards.
+          {$t(
+            'Saving changes will drop the existing wrapper and recreate it. Foreign servers and tables will be recreated, and dependent objects like functions or views that reference those tables may need to be updated manually afterwards.'
+          )}
         </p>
-        <p className="text-sm text-foreground-light mt-2">Are you sure you want to continue?</p>
+        <p className="text-sm text-foreground-light mt-2">
+          {$t('Are you sure you want to continue?')}
+        </p>
       </ConfirmationModal>
 
       <DiscardChangesConfirmationDialog {...modalProps} />

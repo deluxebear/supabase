@@ -15,6 +15,7 @@ import { StoragePolicyEditorModalTitle } from './StoragePolicyEditorModalTitle'
 import { POLICY_MODAL_VIEWS } from '@/components/interfaces/Database/Policies/Policies.constants'
 import PolicySelection from '@/components/interfaces/Database/Policies/PolicySelection'
 import PolicyTemplates from '@/components/interfaces/Database/Policies/PolicyTemplates'
+import { t as $t } from '@/lib/i18n'
 
 const newPolicyTemplate: any = {
   name: '',
@@ -135,14 +136,14 @@ export const StoragePoliciesEditPolicyModal = ({
   const validatePolicyEditorFormFields = () => {
     const { name, definition, allowedOperations } = policyFormFields
     if (name.length === 0) {
-      return toast.error('Please provide a name for your policy')
+      return toast.error($t('Please provide a name for your policy'))
     }
     if (definition.length === 0) {
       // Will need to figure out how to strip away comments or something
-      return toast.error('Please provide a definition for your policy')
+      return toast.error($t('Please provide a definition for your policy'))
     }
     if (allowedOperations.length === 0) {
-      return toast.error('Please allow at least one operation in your policy')
+      return toast.error($t('Please allow at least one operation in your policy'))
     }
 
     const policySQLStatements = createSQLPolicies(bucketName, policyFormFields)
@@ -184,7 +185,7 @@ export const StoragePoliciesEditPolicyModal = ({
         <DialogSectionSeparator />
         {view === POLICY_MODAL_VIEWS.SELECTION ? (
           <PolicySelection
-            description="PostgreSQL policies control access to your files and folders"
+            description={$t('PostgreSQL policies control access to your files and folders')}
             onViewTemplates={onViewTemplates}
             onViewEditor={() => onViewEditor('new')}
             showAssistantPreview={false}

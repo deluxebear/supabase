@@ -44,6 +44,7 @@ import { useLocalStorage } from '@/hooks/misc/useLocalStorage'
 import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useIsProtectedSchema } from '@/hooks/useProtectedSchemas'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
@@ -171,7 +172,7 @@ export const TableEditorMenu = () => {
         <div className="flex flex-col gap-y-1.5">
           <ShortcutTooltip
             shortcutId={SHORTCUT_IDS.TABLE_EDITOR_FOCUS_SCHEMA}
-            label="Switch schema"
+            label={$t('Switch schema')}
             side="bottom"
             open={isSchemaDropdownOpen ? false : undefined}
           >
@@ -196,7 +197,7 @@ export const TableEditorMenu = () => {
             {!isSchemaLocked ? (
               <ButtonTooltip
                 block
-                title="Create a new table"
+                title={$t('Create a new table')}
                 name="New table"
                 disabled={!canCreateTables}
                 size="tiny"
@@ -213,7 +214,7 @@ export const TableEditorMenu = () => {
                   },
                 }}
               >
-                New table
+                {$t('New table')}
               </ButtonTooltip>
             ) : (
               <ProtectedSchemaWarning size="sm" schema={selectedSchema} entity="table" />
@@ -225,7 +226,7 @@ export const TableEditorMenu = () => {
             <InnerSideBarFilterSearchInput
               name="search-tables"
               value={searchText}
-              placeholder="Search tables..."
+              placeholder={$t('Search tables...')}
               aria-labelledby="Search tables"
               onChange={(e) => setSearchText(e.target.value)}
             >
@@ -238,13 +239,13 @@ export const TableEditorMenu = () => {
                   value="alphabetical"
                   className="flex gap-2"
                 >
-                  Alphabetical
+                  {$t('Alphabetical')}
                 </InnerSideBarFilterSortDropdownItem>
                 <InnerSideBarFilterSortDropdownItem
                   key="grouped-alphabetical"
                   value="grouped-alphabetical"
                 >
-                  Entity Type
+                  {$t('Entity Type')}
                 </InnerSideBarFilterSortDropdownItem>
               </InnerSideBarFilterSortDropdown>
             </InnerSideBarFilterSearchInput>
@@ -256,15 +257,15 @@ export const TableEditorMenu = () => {
                       variant={visibleTypes.length !== 5 ? 'default' : 'dashed'}
                       className="h-[32px] md:h-[28px] px-1.5"
                       icon={<Filter />}
-                      aria-label="Filter"
+                      aria-label={$t('Filter')}
                     />
                   </TooltipTrigger>
-                  <TooltipContent side="bottom">Filter</TooltipContent>
+                  <TooltipContent side="bottom">{$t('Filter')}</TooltipContent>
                 </Tooltip>
               </PopoverTrigger>
               <PopoverContent className="p-0 w-56" side="bottom" align="center">
                 <div className="px-3 pt-3 pb-2 flex flex-col gap-y-2">
-                  <p className="text-xs">Show entity types</p>
+                  <p className="text-xs">{$t('Show entity types')}</p>
                   <div className="flex flex-col">
                     {Object.entries(ENTITY_TYPE).map(([key, value]) => (
                       <div key={key} className="group flex items-center justify-between py-0.5">
@@ -291,7 +292,7 @@ export const TableEditorMenu = () => {
                           onClick={() => setVisibleTypes([value])}
                           className="transition opacity-0 group-hover:opacity-100 h-auto px-1 py-0.5"
                         >
-                          Select only
+                          {$t('Select only')}
                         </Button>
                       </div>
                     ))}
@@ -305,7 +306,7 @@ export const TableEditorMenu = () => {
 
           {isError && (
             <ErrorMatcher
-              title="Failed to load tables"
+              title={$t('Failed to load tables')}
               error={error ?? 'Failed to load tables'}
               supportFormParams={{ projectRef: project?.ref }}
               className="mx-4 mt-3"
@@ -320,7 +321,7 @@ export const TableEditorMenu = () => {
               {searchText.length > 0 && (entityTypes?.length ?? 0) <= 0 && (
                 <InnerSideBarEmptyPanel
                   className="mx-2"
-                  title="No results found"
+                  title={$t('No results found')}
                   description={`Your search for "${searchText}" did not return any results`}
                 />
               )}

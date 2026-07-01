@@ -10,6 +10,7 @@ import {
 
 import { NewTokenDialog } from './NewTokenDialog'
 import { type NewAccessToken } from '@/data/access-tokens/access-tokens-create-mutation'
+import { t as $t } from '@/lib/i18n'
 
 export interface NewAccessTokenButtonProps {
   onCreateToken: (token: NewAccessToken) => void
@@ -29,13 +30,13 @@ export const NewTokenButton = ({ onCreateToken }: NewAccessTokenButtonProps) => 
             setVisible(true)
           }}
         >
-          Generate new token
+          {$t('Generate new token')}
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="primary"
-              title="Choose token scope"
+              title={$t('Choose token scope')}
               className="rounded-l-none px-[4px] py-[5px]"
               icon={<ChevronDown />}
             />
@@ -49,7 +50,7 @@ export const NewTokenButton = ({ onCreateToken }: NewAccessTokenButtonProps) => 
               }}
             >
               <div className="space-y-1">
-                <p className="block text-foreground">Generate token for experimental API</p>
+                <p className="block text-foreground">{$t('Generate token for experimental API')}</p>
               </div>
             </DropdownMenuItem>
           </DropdownMenuContent>

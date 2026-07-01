@@ -6,6 +6,7 @@ import { Button, cn } from 'ui'
 
 import { useDataTable } from './providers/DataTableProvider'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -72,7 +73,7 @@ export function LiveButton({ fetchPreviousPage, searchParamsParser }: LiveButton
         size="tiny"
         icon={live ? <CirclePause className="h-4 w-4" /> : <CirclePlay className="h-4 w-4" />}
       >
-        Live
+        {$t('Live')}
       </Button>
     </ShortcutTooltip>
   )

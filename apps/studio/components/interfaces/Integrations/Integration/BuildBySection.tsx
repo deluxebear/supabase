@@ -4,6 +4,7 @@ import { ComponentPropsWithoutRef, ElementRef, forwardRef, ReactNode } from 'rea
 import { cn } from 'ui'
 
 import { IntegrationDefinition } from '../Landing/Integrations.constants'
+import { t as $t } from '@/lib/i18n'
 
 interface BuiltBySectionProps extends ComponentPropsWithoutRef<'div'> {
   integration: IntegrationDefinition
@@ -31,7 +32,7 @@ export const BuiltBySection = forwardRef<ElementRef<'div'>, BuiltBySectionProps>
         )}
         {name && (
           <div>
-            <div className="text-foreground-lighter font-mono text-xs mb-1">BUILT BY</div>
+            <div className="text-foreground-lighter font-mono text-xs mb-1">{$t('BUILT BY')}</div>
             <div className="text-foreground-light text-sm">{name}</div>
           </div>
         )}

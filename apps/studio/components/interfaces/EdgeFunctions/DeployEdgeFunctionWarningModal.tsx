@@ -1,5 +1,7 @@
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 
+import { t as $t } from '@/lib/i18n'
+
 interface DeployEdgeFunctionWarningModalProps {
   visible: boolean
   onCancel: () => void
@@ -17,7 +19,7 @@ export const DeployEdgeFunctionWarningModal = ({
     <ConfirmationModal
       visible={visible}
       size="medium"
-      title="Confirm to deploy updates"
+      title={$t('Confirm to deploy updates')}
       confirmLabel="Deploy updates"
       confirmLabelLoading="Deploying updates"
       variant="warning"
@@ -26,8 +28,9 @@ export const DeployEdgeFunctionWarningModal = ({
       onConfirm={onConfirm}
     >
       <p className="text-sm text-foreground-light">
-        Deploying will immediately update your live Edge Function for this project and cannot be
-        rolled back automatically. Are you sure you want to deploy the changes?
+        {$t(
+          'Deploying will immediately update your live Edge Function for this project and cannot be rolled back automatically. Are you sure you want to deploy the changes?'
+        )}
       </p>
     </ConfirmationModal>
   )

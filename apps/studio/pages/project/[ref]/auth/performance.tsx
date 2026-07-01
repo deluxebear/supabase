@@ -18,6 +18,7 @@ import { NoPermission } from '@/components/ui/NoPermission'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const PerformancePage: NextPageWithLayout = () => {
@@ -42,9 +43,9 @@ const PerformancePage: NextPageWithLayout = () => {
       <PageHeader size="default">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Performance</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Performance')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Configure settings to optimize your Auth server's performance
+              {$t("Configure settings to optimize your Auth server's performance")}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -66,7 +67,7 @@ const PerformancePage: NextPageWithLayout = () => {
 
 PerformancePage.getLayout = (page) => (
   <DefaultLayout>
-    <AuthLayout title="Performance">{page}</AuthLayout>
+    <AuthLayout title={$t('Performance')}>{page}</AuthLayout>
   </DefaultLayout>
 )
 

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from 'ui'
 import { EmptyStatePresentational } from 'ui-patterns/EmptyStatePresentational'
 
 import CommandRender from '@/components/interfaces/Functions/CommandRender'
+import { t as $t } from '@/lib/i18n'
 
 export const MigrationsEmptyState = () => {
   const { ref } = useParams()
@@ -15,7 +16,7 @@ export const MigrationsEmptyState = () => {
       jsx: () => {
         return (
           <>
-            <span className="text-brand-600">supabase</span> link --project-ref {ref}
+            <span className="text-brand-600">supabase</span> {$t('link --project-ref')} {ref}
           </>
         )
       },
@@ -26,7 +27,7 @@ export const MigrationsEmptyState = () => {
       jsx: () => {
         return (
           <>
-            <span className="text-brand-600">supabase</span> migration new new-migration
+            <span className="text-brand-600">supabase</span> {$t('migration new new-migration')}
           </>
         )
       },
@@ -37,7 +38,7 @@ export const MigrationsEmptyState = () => {
       jsx: () => {
         return (
           <>
-            <span className="text-brand-600">supabase</span> db push
+            <span className="text-brand-600">supabase</span> {$t('db push')}
           </>
         )
       },
@@ -47,13 +48,13 @@ export const MigrationsEmptyState = () => {
   return (
     <EmptyStatePresentational
       icon={Terminal}
-      title="Run your first migration"
-      description="Create and run your first migration using the Supabase CLI."
+      title={$t('Run your first migration')}
+      description={$t('Create and run your first migration using the Supabase CLI.')}
       className="gap-y-6"
     >
       <Card>
         <CardHeader>
-          <CardTitle>Terminal instructions</CardTitle>
+          <CardTitle>{$t('Terminal instructions')}</CardTitle>
         </CardHeader>
         <CardContent>
           <CommandRender commands={commands} />

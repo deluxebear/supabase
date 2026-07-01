@@ -15,6 +15,7 @@ import { FormHeader } from '@/components/ui/Forms/FormHeader'
 import { Lint, useProjectLintsQuery } from '@/data/lint/lint-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const ProjectLints: NextPageWithLayout = () => {
@@ -72,7 +73,7 @@ const ProjectLints: NextPageWithLayout = () => {
     <div className="h-full flex flex-col">
       <FormHeader
         className="py-4 px-6 mb-0!"
-        title="Performance Advisor"
+        title={$t('Performance Advisor')}
         docsUrl={`${DOCS_URL}/guides/database/database-linter`}
       />
       <LintPageTabs
@@ -105,7 +106,7 @@ const ProjectLints: NextPageWithLayout = () => {
 
 ProjectLints.getLayout = (page) => (
   <DefaultLayout>
-    <AdvisorsLayout title="Linter">{page}</AdvisorsLayout>
+    <AdvisorsLayout title={$t('Linter')}>{page}</AdvisorsLayout>
   </DefaultLayout>
 )
 

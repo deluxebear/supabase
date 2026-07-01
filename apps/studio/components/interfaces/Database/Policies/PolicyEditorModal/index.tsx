@@ -29,6 +29,7 @@ import { useFeaturePreviewModal } from '@/components/interfaces/App/FeaturePrevi
 import { DiscardChangesConfirmationDialog } from '@/components/ui-patterns/Dialogs/DiscardChangesConfirmationDialog'
 import { useLatest } from '@/hooks/misc/useLatest'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
+import { t as $t } from '@/lib/i18n'
 
 // Call only from a user-gesture handler (the Save click). Promotes the draft payload's
 // `definition`/`check` from `DisplayableSqlFragment` to executable `SafeSqlFragment`.
@@ -162,20 +163,20 @@ export const PolicyEditorModal = ({
     const { name, definition, check, command } = policyFormFields
 
     if (name.length === 0) {
-      return toast.error('Please provide a name for your policy')
+      return toast.error($t('Please provide a name for your policy'))
     }
     if (!command) {
-      return toast.error('Please select an operation for your policy')
+      return toast.error($t('Please select an operation for your policy'))
     }
     if (['SELECT', 'DELETE'].includes(command) && !definition) {
-      return toast.error('Please provide a USING expression for your policy')
+      return toast.error($t('Please provide a USING expression for your policy'))
     }
     if (command === 'INSERT' && !check) {
-      return toast.error('Please provide a WITH CHECK expression for your policy')
+      return toast.error($t('Please provide a WITH CHECK expression for your policy'))
     }
     if (command === 'UPDATE' && !definition && !check) {
       return toast.error(
-        'Please provide either a USING, or WITH CHECK expression, or both for your policy'
+        $t('Please provide either a USING, or WITH CHECK expression, or both for your policy')
       )
     }
     const policySQLStatement = createSQLPolicy(policyFormFields, selectedPolicyToEdit)
@@ -220,7 +221,9 @@ export const PolicyEditorModal = ({
           <DiscardChangesConfirmationDialog {...modalProps} />
           {view === POLICY_MODAL_VIEWS.SELECTION ? (
             <PolicySelection
-              description="Write rules with PostgreSQL's policies to fit your unique business needs."
+              description={$t(
+                "Write rules with PostgreSQL's policies to fit your unique business needs."
+              )}
               onViewTemplates={onViewTemplates}
               onViewEditor={onViewEditor}
               showAssistantPreview={showAssistantPreview}

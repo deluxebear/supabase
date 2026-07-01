@@ -10,6 +10,7 @@ import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/L
 import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
 import { Lint } from '@/data/lint/lint-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -54,17 +55,17 @@ export const LintDetail = ({
 
   return (
     <div>
-      <h3 className="text-sm mb-2">Entity</h3>
+      <h3 className="text-sm mb-2">{$t('Entity')}</h3>
       <div className="flex items-center gap-1 px-2 py-0.5 bg-surface-200 border rounded-lg text-sm mb-6 w-fit">
         <EntityTypeIcon type={lint.metadata?.type} />
         <LintEntity metadata={lint.metadata} />
       </div>
 
-      <h3 className="text-sm mb-2">Issue</h3>
+      <h3 className="text-sm mb-2">{$t('Issue')}</h3>
       <Markdown className="leading-6 text-sm text-foreground-light mb-6">
         {lint.detail.replace(/\\`/g, '`')}
       </Markdown>
-      <h3 className="text-sm mb-2">Description</h3>
+      <h3 className="text-sm mb-2">{$t('Description')}</h3>
       <Markdown className="text-sm text-foreground-light mb-6">
         {lint.description.replace(/\\`/g, '`')}
       </Markdown>
@@ -75,10 +76,10 @@ export const LintDetail = ({
         </div>
       )}
 
-      <h3 className="text-sm mb-2">Resolve</h3>
+      <h3 className="text-sm mb-2">{$t('Resolve')}</h3>
       <div className="flex flex-wrap items-center gap-2">
         <AiAssistantDropdown
-          label="Ask Assistant"
+          label={$t('Ask Assistant')}
           buildPrompt={buildPromptForCopy}
           onOpenAssistant={handleAskAssistant}
           telemetrySource="lint_detail"
@@ -102,7 +103,7 @@ export const LintDetail = ({
             className="no-underline"
           >
             <span className="flex items-center gap-2">
-              Learn more <ExternalLink size={14} />
+              {$t('Learn more')} <ExternalLink size={14} />
             </span>
           </Link>
         </Button>

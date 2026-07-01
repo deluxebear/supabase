@@ -14,6 +14,8 @@ import {
   TooltipTrigger,
 } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 export const PolicyEditorPanelHeader = ({
   selectedPolicy,
   showTools,
@@ -37,7 +39,7 @@ export const PolicyEditorPanelHeader = ({
           )}
         >
           <X className="h-3 w-3" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">{$t('Close')}</span>
         </SheetClose>
         <div className="h-[24px] w-px bg-border-overlay" />
         <div>
@@ -55,7 +57,7 @@ export const PolicyEditorPanelHeader = ({
               <CollapsibleTrigger className="group  font-normal p-0 [&[data-state=open]>div>svg]:-rotate-180!">
                 <div className="flex items-center gap-x-2 w-full">
                   <p className="text-xs text-foreground-light group-hover:text-foreground transition">
-                    View policy details
+                    {$t('View policy details')}
                   </p>
                   <ChevronDown
                     className="transition-transform duration-200"
@@ -68,27 +70,27 @@ export const PolicyEditorPanelHeader = ({
                 <div className="flex my-2">
                   <div>
                     <div className="text-xs flex items-start space-x-2 border-b py-1.5">
-                      <p className="w-[110px] text-foreground-light">Name:</p>
+                      <p className="w-[110px] text-foreground-light">{$t('Name:')}</p>
                       <p className="pr-4">{selectedPolicy?.name}</p>
                     </div>
                     <div className="text-xs flex items-start space-x-2 border-b py-1.5">
-                      <p className="w-[110px] text-foreground-light">Action:</p>
+                      <p className="w-[110px] text-foreground-light">{$t('Action:')}</p>
                       <p className="font-mono pr-4">{selectedPolicy?.action}</p>
                     </div>
                     <div className="text-xs flex items-start space-x-2 border-b py-1.5">
-                      <p className="w-[110px] text-foreground-light">Command:</p>
+                      <p className="w-[110px] text-foreground-light">{$t('Command:')}</p>
                       <p className="font-mono pr-4">{selectedPolicy?.command}</p>
                     </div>
                     <div className="text-xs flex items-start space-x-2 border-b py-1.5">
-                      <p className="w-[110px] text-foreground-light">Target roles:</p>
+                      <p className="w-[110px] text-foreground-light">{$t('Target roles:')}</p>
                       <p className="font-mono pr-4">{selectedPolicy?.roles.join(', ')}</p>
                     </div>
                     <div className="text-xs flex items-start space-x-2 border-b py-1.5">
-                      <p className="w-[110px] text-foreground-light">USING expression:</p>
+                      <p className="w-[110px] text-foreground-light">{$t('USING expression:')}</p>
                       <p className="font-mono pr-4">{selectedPolicy?.definition}</p>
                     </div>
                     <div className="text-xs flex items-start space-x-2 pt-1.5">
-                      <p className="w-[110px] text-foreground-light">CHECK expression:</p>
+                      <p className="w-[110px] text-foreground-light">{$t('CHECK expression:')}</p>
                       <p
                         className={`${selectedPolicy?.check ? '' : 'text-foreground-light'} font-mono pr-4`}
                       >

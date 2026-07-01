@@ -13,6 +13,7 @@ import {
 import { Input } from 'ui-patterns/DataInputs/Input'
 
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 export const StorageCredItem = ({
   description,
@@ -76,7 +77,8 @@ export const StorageCredItem = ({
                 }}
               >
                 <TrashIcon size="14" />
-                Revoke key
+
+                {$t('Revoke key')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

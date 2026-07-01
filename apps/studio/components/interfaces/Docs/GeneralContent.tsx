@@ -4,6 +4,7 @@ import Introduction from '@/components/interfaces/Docs/Introduction'
 import RpcIntroduction from '@/components/interfaces/Docs/Pages/Rpc/Introduction'
 import TablesIntroduction from '@/components/interfaces/Docs/Pages/Tables/Introduction'
 import { UserManagement } from '@/components/interfaces/Docs/Pages/UserManagement'
+import { t as $t } from '@/lib/i18n'
 
 interface GeneralContentProps {
   page?: string
@@ -23,8 +24,8 @@ export const GeneralContent = ({ selectedLang, page, showApiKey }: GeneralConten
   else
     return (
       <DocSection
-        title="Not found"
-        content={<p>Looks like you went somewhere that nobody knows.</p>}
+        title={$t('Not found')}
+        content={<p>{$t('Looks like you went somewhere that nobody knows.')}</p>}
       />
     )
 }

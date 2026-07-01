@@ -11,6 +11,7 @@ import { COMMAND_MENU_SECTIONS } from './CommandMenu.utils'
 import { orderCommandSectionsByPriority } from './ordering'
 import { useProjectSettingsV2Query } from '@/data/config/project-settings-v2-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export function useApiUrlCommand() {
   const setIsOpen = useSetCommandMenuOpen()
@@ -34,13 +35,17 @@ export function useApiUrlCommand() {
         name: 'Copy API URL',
         action: () => {
           copyToClipboard(apiUrl ?? '', () => {
-            toast.success('API URL copied to clipboard')
+            toast.success($t('API URL copied to clipboard'))
           })
           setIsOpen(false)
           resetCommandMenu()
         },
         icon: () => <Link />,
-        badge: () => <Badge>Project: {project?.name}</Badge>,
+        badge: () => (
+          <Badge>
+            {$t('Project:')} {project?.name}
+          </Badge>
+        ),
       },
     ],
     {

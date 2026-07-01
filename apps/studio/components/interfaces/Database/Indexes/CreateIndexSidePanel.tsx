@@ -54,6 +54,7 @@ import { useTableColumnsQuery } from '@/data/database/table-columns-query'
 import { useEntityTypesQuery } from '@/data/entity-types/entity-types-infinite-query'
 import { useIsOrioleDb, useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface CreateIndexSidePanelProps {
   visible: boolean
@@ -186,7 +187,7 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
     <Sheet open={visible} onOpenChange={() => onClose()}>
       <SheetContent size="lg" className="flex flex-col gap-0">
         <SheetHeader>
-          <SheetTitle>Create new index</SheetTitle>
+          <SheetTitle>{$t('Create new index')}</SheetTitle>
         </SheetHeader>
         <Form {...form}>
           <form
@@ -199,7 +200,7 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
                 control={form.control}
                 name="schema"
                 render={({ field }) => (
-                  <FormItemLayout layout="horizontal" label="Select a schema" id="schema">
+                  <FormItemLayout layout="horizontal" label={$t('Select a schema')} id="schema">
                     <FormControl className="col-span-6">
                       <Popover
                         modal={false}
@@ -231,7 +232,7 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
                         >
                           <Command>
                             <CommandInput
-                              placeholder="Find schema..."
+                              placeholder={$t('Find schema...')}
                               value={schemaSearchTerm}
                               onValueChange={setSchemaSearchTerm}
                             />
@@ -241,7 +242,7 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
                               )}
                               onWheel={(event) => event.stopPropagation()}
                             >
-                              <CommandEmpty>No schemas found</CommandEmpty>
+                              <CommandEmpty>{$t('No schemas found')}</CommandEmpty>
                               <CommandGroup>
                                 {(schemas ?? []).map((schema) => (
                                   <CommandItem
@@ -287,7 +288,7 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
                 render={({ field }) => (
                   <FormItemLayout
                     layout="horizontal"
-                    label="Select a table"
+                    label={$t('Select a table')}
                     id="table"
                     description={
                       isSelectEntityDisabled &&
@@ -338,7 +339,7 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
                           https://github.com/pacocoursey/cmdk/issues/267#issuecomment-2252717107 */}
                           <Command shouldFilter={false}>
                             <CommandInput
-                              placeholder="Find table..."
+                              placeholder={$t('Find table...')}
                               value={searchTerm}
                               onValueChange={handleSearchChange}
                             />
@@ -352,7 +353,8 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
                                 {isLoadingEntities ? (
                                   <div className="flex items-center gap-2 text-center justify-center">
                                     <Loader2 size={12} className="animate-spin" />
-                                    Loading...
+
+                                    {$t('Loading...')}
                                   </div>
                                 ) : (
                                   'No tables found'
@@ -402,7 +404,7 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
                   render={({ field }) => (
                     <FormItemLayout
                       layout="horizontal"
-                      label="Select up to 32 columns"
+                      label={$t('Select up to 32 columns')}
                       id="columns"
                     >
                       {isLoadingTableColumns && <ShimmeringLoader className="py-4" />}
@@ -459,7 +461,7 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
                     name="type"
                     render={({ field }) => (
                       <>
-                        <FormItemLayout layout="horizontal" label="Select an index type">
+                        <FormItemLayout layout="horizontal" label={$t('Select an index type')}>
                           <FormControl className="col-span-6">
                             <Select
                               disabled={isOrioleDb}
@@ -497,8 +499,10 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
                           <Admonition
                             type="default"
                             className="mt-2!"
-                            title="OrioleDB currently only supports the B-tree index type"
-                            description="More index types may be supported when OrioleDB is no longer in preview"
+                            title={$t('OrioleDB currently only supports the B-tree index type')}
+                            description={$t(
+                              'More index types may be supported when OrioleDB is no longer in preview'
+                            )}
                           >
                             {/* [Joshen Oriole] Hook up proper docs URL */}
                             <DocsButton className="mt-2" abbrev={false} href={`${DOCS_URL}`} />
@@ -512,7 +516,7 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
                 <Separator className="w-full" />
                 <SheetSection>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm">Preview of SQL statement</p>
+                    <p className="text-sm">{$t('Preview of SQL statement')}</p>
                     <Button asChild variant="default">
                       <Link
                         href={
@@ -521,7 +525,7 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
                             : '/'
                         }
                       >
-                        Open in SQL Editor
+                        {$t('Open in SQL Editor')}
                       </Link>
                     </Button>
                   </div>
@@ -552,7 +556,7 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
               onClose()
             }}
           >
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button
             variant="primary"
@@ -561,7 +565,7 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
             disabled={isExecuting}
             loading={isExecuting}
           >
-            Create index
+            {$t('Create index')}
           </Button>
         </SheetFooter>
       </SheetContent>

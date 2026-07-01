@@ -14,6 +14,7 @@ import {
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { getColumnType } from './DateTimeInput.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface DateTimeInputProps {
   name: string
@@ -50,7 +51,10 @@ export const DateTimeInput = ({
         <div className="space-y-1">
           {description}
           {format.includes('tz') && (
-            <p>Your local timezone will be automatically applied ({dayjs().format('ZZ')})</p>
+            <p>
+              {$t('Your local timezone will be automatically applied (')}
+              {dayjs().format('ZZ')})
+            </p>
           )}
         </div>
       }
@@ -73,7 +77,9 @@ export const DateTimeInput = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-28 pointer-events-auto">
                 {isNullable && (
-                  <DropdownMenuItem onClick={() => onChange(null)}>Set to NULL</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onChange(null)}>
+                    {$t('Set to NULL')}
+                  </DropdownMenuItem>
                 )}
                 <DropdownMenuItem
                   onClick={() =>
@@ -88,7 +94,7 @@ export const DateTimeInput = ({
                     )
                   }
                 >
-                  Set to now
+                  {$t('Set to now')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

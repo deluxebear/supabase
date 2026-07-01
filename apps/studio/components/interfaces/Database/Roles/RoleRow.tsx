@@ -25,6 +25,7 @@ import { ROLE_PERMISSIONS } from './Roles.constants'
 import { useDatabaseRoleUpdateMutation } from '@/data/database-roles/database-role-update-mutation'
 import type { PgRole } from '@/data/database-roles/database-roles-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface RoleRowProps {
   role: PgRole
@@ -171,7 +172,7 @@ export const RoleRow = ({ role, disabled = false, onSelectDelete }: RoleRowProps
                 }}
               >
                 <Trash className="text-red-800" size="14" strokeWidth={2} />
-                <p>Delete</p>
+                <p>{$t('Delete')}</p>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -215,7 +216,7 @@ export const RoleRow = ({ role, disabled = false, onSelectDelete }: RoleRowProps
             {!disabled && (
               <div className="py-4 flex items-center space-x-2 justify-end">
                 <Button variant="default" disabled={!isDirty || isUpdating} onClick={() => reset()}>
-                  Cancel
+                  {$t('Cancel')}
                 </Button>
                 <Button
                   variant="primary"
@@ -223,7 +224,7 @@ export const RoleRow = ({ role, disabled = false, onSelectDelete }: RoleRowProps
                   disabled={!isDirty || isUpdating}
                   loading={isUpdating}
                 >
-                  Save
+                  {$t('Save')}
                 </Button>
               </div>
             )}

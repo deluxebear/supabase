@@ -34,6 +34,7 @@ import { useCustomAccessTokenHookDetails } from '@/hooks/misc/useCustomAccessTok
 import { useLocalStorage } from '@/hooks/misc/useLocalStorage'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useRoleImpersonationStateSnapshot } from '@/state/role-impersonation-state'
 import type { ResponseError } from '@/types'
 
@@ -109,7 +110,9 @@ export const UserImpersonationSelector = () => {
 
     if (customAccessTokenHookDetails?.type === 'https') {
       toast.info(
-        'Please note that HTTPS custom access token hooks are not yet supported in the dashboard.'
+        $t(
+          'Please note that HTTPS custom access token hooks are not yet supported in the dashboard.'
+        )
       )
     }
 
@@ -140,7 +143,7 @@ export const UserImpersonationSelector = () => {
     try {
       parsedClaims = additionalClaims ? JSON.parse(additionalClaims) : {}
     } catch (e) {
-      toast.error('Invalid JSON in additional claims')
+      toast.error($t('Invalid JSON in additional claims'))
       setIsImpersonateLoading(false)
       return
     }
@@ -220,12 +223,13 @@ export const UserImpersonationSelector = () => {
         {!impersonatingUser && !isExternalAuthImpersonating && (
           <Tabs_Shadcn_ value={selectedTab} onValueChange={(value: any) => setSelectedTab(value)}>
             <TabsList_Shadcn_ className="gap-x-3">
-              <TabsTrigger_Shadcn_ value="user">Project user</TabsTrigger_Shadcn_>
+              <TabsTrigger_Shadcn_ value="user">{$t('Project user')}</TabsTrigger_Shadcn_>
               <TabsTrigger_Shadcn_ value="external" className="gap-x-1.5">
-                External user
+                {$t('External user')}
                 <InfoTooltip side="bottom" className="flex flex-col gap-1 max-w-96">
-                  Test RLS policies with external auth providers like Clerk or Auth0 by providing a
-                  user ID and optional claims.
+                  {$t(
+                    'Test RLS policies with external auth providers like Clerk or Auth0 by providing a user ID and optional claims.'
+                  )}
                 </InfoTooltip>
               </TabsTrigger_Shadcn_>
             </TabsList_Shadcn_>
@@ -236,7 +240,7 @@ export const UserImpersonationSelector = () => {
                   <InputGroupInput
                     size="tiny"
                     className="pr-10 border-none"
-                    placeholder="Search by id, email, phone, or name..."
+                    placeholder={$t('Search by id, email, phone, or name...')}
                     onChange={(e) => setSearchText(e.target.value)}
                     value={searchText}
                   />
@@ -258,7 +262,7 @@ export const UserImpersonationSelector = () => {
                         variant="text"
                         onClick={() => setSearchText('')}
                       >
-                        <span className="sr-only">Clear search</span>
+                        <span className="sr-only">{$t('Clear search')}</span>
                         <X size={12} />
                       </InputGroupButton>
                     )}
@@ -267,7 +271,7 @@ export const UserImpersonationSelector = () => {
                 {isLoading && (
                   <div className="flex flex-col gap-2 items-center justify-center h-24">
                     <Loader2 className="animate-spin" size={24} />
-                    <span className="text-foreground-light">Loading users...</span>
+                    <span className="text-foreground-light">{$t('Loading users...')}</span>
                   </div>
                 )}
 
@@ -291,7 +295,7 @@ export const UserImpersonationSelector = () => {
                   ) : (
                     <div className="flex flex-col gap-2 items-center justify-center h-24">
                       <p className="text-foreground-light text-xs" role="status">
-                        No users found
+                        {$t('No users found')}
                       </p>
                     </div>
                   ))}
@@ -305,7 +309,7 @@ export const UserImpersonationSelector = () => {
                             <CollapsibleTrigger className="group font-normal p-0 [&[data-state=open]>div>svg]:-rotate-180!">
                               <div className="flex items-center gap-x-1 w-full">
                                 <p className="text-xs text-foreground-light group-hover:text-foreground transition">
-                                  Recents
+                                  {$t('Recents')}
                                 </p>
                                 <ChevronDown
                                   className="transition-transform duration-200"
@@ -322,7 +326,7 @@ export const UserImpersonationSelector = () => {
                                 className="absolute right-0 top-0 py-2 hover:bg-muted flex items-center text"
                                 onClick={clearSearchHistory}
                               >
-                                <span className="flex items-center">Clear</span>
+                                <span className="flex items-center">{$t('Clear')}</span>
                               </Button>
                               <ScrollArea
                                 className={cn(previousSearches.length > 3 ? 'h-36' : 'h-auto')}
@@ -340,7 +344,7 @@ export const UserImpersonationSelector = () => {
                         </>
                       ) : (
                         <div className="p-4 text-center text-muted-foreground">
-                          No recent searches
+                          {$t('No recent searches')}
                         </div>
                       )}
                     </div>
@@ -353,26 +357,26 @@ export const UserImpersonationSelector = () => {
               <div className="flex flex-col gap-y-4">
                 <FormItemLayout
                   layout="horizontal"
-                  label="External User ID"
-                  description="The user ID from your external auth provider"
+                  label={$t('External User ID')}
+                  description={$t('The user ID from your external auth provider')}
                   isReactForm={false}
                 >
                   <Input
                     size="small"
-                    placeholder="e.g. user_abc123"
+                    placeholder={$t('e.g. user_abc123')}
                     value={externalUserId}
                     onChange={(e) => setExternalUserId(e.target.value)}
                   />
                 </FormItemLayout>
                 <FormItemLayout
                   layout="horizontal"
-                  label="Additional Claims (JSON)"
-                  description="Optional: Add custom claims like org_id or roles"
+                  label={$t('Additional Claims (JSON)')}
+                  description={$t('Optional: Add custom claims like org_id or roles')}
                   isReactForm={false}
                 >
                   <Input
                     size="small"
-                    placeholder='e.g. {"app_metadata": {"org_id": "org_456"}}'
+                    placeholder={$t('e.g. {"app_metadata": {"org_id": "org_456"}}')}
                     value={additionalClaims}
                     onChange={(e) => setAdditionalClaims(e.target.value)}
                   />
@@ -383,7 +387,7 @@ export const UserImpersonationSelector = () => {
                     disabled={!externalUserId}
                     onClick={impersonateExternalUser}
                   >
-                    Impersonate
+                    {$t('Impersonate')}
                   </Button>
                 </div>
               </div>
@@ -401,7 +405,7 @@ export const UserImpersonationSelector = () => {
               <CollapsibleTrigger className="group font-normal p-0 [&[data-state=open]>div>svg]:-rotate-180!">
                 <div className="flex items-center gap-x-1 w-full">
                   <p className="text-xs text-foreground-light group-hover:text-foreground transition">
-                    Advanced options
+                    {$t('Advanced options')}
                   </p>
                   <ChevronDown
                     className="transition-transform duration-200"
@@ -413,11 +417,11 @@ export const UserImpersonationSelector = () => {
               <CollapsibleContent className="mt-1 flex flex-col gap-y-4">
                 <div className="flex flex-row items-center gap-x-4 text-sm text-foreground-light">
                   <div className="flex items-center gap-x-1">
-                    <h3>MFA assurance level</h3>
+                    <h3>{$t('MFA assurance level')}</h3>
                     <InfoTooltip side="top" className="max-w-96">
-                      AAL1 verifies users via standard login methods, while AAL2 adds a second
-                      authentication factor. If you're not using MFA, you can leave this on AAL1.
-                      Learn more about MFA{' '}
+                      {$t(
+                        "AAL1 verifies users via standard login methods, while AAL2 adds a second authentication factor. If you're not using MFA, you can leave this on AAL1. Learn more about MFA"
+                      )}{' '}
                       <InlineLink href={`${DOCS_URL}/guides/auth/auth-mfa`}>here</InlineLink>.
                     </InfoTooltip>
                   </div>

@@ -22,6 +22,7 @@ import { RoleImpersonationPopover } from '@/components/interfaces/RoleImpersonat
 import { DatabaseSelector } from '@/components/ui/DatabaseSelector'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { hotkeyToKeys } from '@/state/shortcuts/formatShortcut'
 import { SHORTCUT_DEFINITIONS, SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
@@ -98,7 +99,8 @@ export const UtilityActions = ({
           <DropdownMenuItem className="justify-between" onClick={toggleIntellisense}>
             <span className="flex items-center gap-x-2">
               <Keyboard size={14} className="text-foreground-light" />
-              Intellisense enabled
+
+              {$t('Intellisense enabled')}
             </span>
             {intellisenseEnabled && <Check className="text-brand" size={16} />}
           </DropdownMenuItem>
@@ -126,7 +128,8 @@ export const UtilityActions = ({
           <DropdownMenuItem className="justify-between" onClick={prettifyQuery}>
             <span className="flex items-center gap-x-2">
               <AlignLeft size={14} strokeWidth={2} className="text-foreground-light" />
-              Prettify SQL
+
+              {$t('Prettify SQL')}
             </span>
             {formatKeys && <KeyboardShortcut keys={formatKeys} />}
           </DropdownMenuItem>
@@ -142,15 +145,15 @@ export const UtilityActions = ({
                   variant="text"
                   className="px-1"
                   icon={<Keyboard className="text-foreground-light" />}
-                  aria-label="Enable Intellisense"
+                  aria-label={$t('Enable Intellisense')}
                 />
               </DropdownMenuTrigger>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Enable Intellisense</TooltipContent>
+            <TooltipContent side="bottom">{$t('Enable Intellisense')}</TooltipContent>
           </Tooltip>
           <DropdownMenuContent className="w-48">
             <DropdownMenuItem className="justify-between" onClick={toggleIntellisense}>
-              Intellisense enabled
+              {$t('Intellisense enabled')}
               {intellisenseEnabled && <Check className="text-brand" size={16} />}
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -166,7 +169,7 @@ export const UtilityActions = ({
                   onClick={removeFavorite}
                   className="px-1"
                   icon={<Heart className="fill-brand stroke-none" />}
-                  aria-label="Remove from favorites"
+                  aria-label={$t('Remove from favorites')}
                 />
               ) : (
                 <Button
@@ -175,7 +178,7 @@ export const UtilityActions = ({
                   onClick={addFavorite}
                   className="px-1"
                   icon={<Heart className="fill-none stroke-foreground-light" />}
-                  aria-label="Add to favorites"
+                  aria-label={$t('Add to favorites')}
                 />
               )}
             </TooltipTrigger>
@@ -192,12 +195,12 @@ export const UtilityActions = ({
               onClick={prettifyQuery}
               className="px-1"
               icon={<AlignLeft strokeWidth={2} className="text-foreground-light" />}
-              aria-label="Prettify SQL"
+              aria-label={$t('Prettify SQL')}
             />
           </TooltipTrigger>
           <TooltipContent side="bottom" className="p-1 pl-2.5">
             <div className="flex items-center gap-2.5">
-              <span>Prettify SQL</span>
+              <span>{$t('Prettify SQL')}</span>
               {formatKeys && <KeyboardShortcut keys={formatKeys} />}
             </div>
           </TooltipContent>

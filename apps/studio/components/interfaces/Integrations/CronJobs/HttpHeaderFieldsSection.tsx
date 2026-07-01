@@ -8,6 +8,7 @@ import { CreateCronJobForm } from './CreateCronJobSheet/CreateCronJobSheet.const
 import { buildEdgeFunctionHeaderAddActions } from '@/components/interfaces/Functions/httpHeaderAddActions'
 import { useAPIKeys } from '@/data/api-keys/api-keys-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 interface HTTPHeaderFieldsSectionProps {
   variant: 'edge_function' | 'http_request'
@@ -36,7 +37,7 @@ export const HTTPHeaderFieldsSection = ({ variant }: HTTPHeaderFieldsSectionProp
 
   return (
     <SheetSection>
-      <FormLabel>HTTP Headers</FormLabel>
+      <FormLabel>{$t('HTTP Headers')}</FormLabel>
       <KeyValueFieldArray
         control={form.control}
         name="values.httpHeaders"

@@ -15,6 +15,7 @@ import { useTableRowTruncateMutation } from '@/data/table-rows/table-row-truncat
 import { useTableDeleteMutation } from '@/data/tables/table-delete-mutation'
 import { useViewDeleteMutation } from '@/data/views/view-delete-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useGetImpersonatedRoleState } from '@/state/role-impersonation-state'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
 
@@ -227,7 +228,7 @@ const DeleteConfirmationDialogs = ({
       if (filters.length === 0) {
         if (getImpersonatedRoleState().role !== undefined) {
           snap.closeConfirmationDialog()
-          return toast.error('Table truncation is not supported when impersonating a role')
+          return toast.error($t('Table truncation is not supported when impersonating a role'))
         }
 
         truncateRows({
@@ -273,7 +274,9 @@ const DeleteConfirmationDialogs = ({
       >
         <div className="space-y-4">
           <p className="text-sm text-foreground-light">
-            Are you sure you want to delete the selected column? This action cannot be undone.
+            {$t(
+              'Are you sure you want to delete the selected column? This action cannot be undone.'
+            )}
           </p>
           <div className="items-top flex space-x-2">
             <Checkbox
@@ -286,21 +289,22 @@ const DeleteConfirmationDialogs = ({
                 htmlFor="checkbox-cascade"
                 className="text-sm text-foreground-light leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                Drop column with cascade?
+                {$t('Drop column with cascade?')}
               </label>
               <p className="text-sm text-foreground-muted">
-                Deletes the column and its dependent objects
+                {$t('Deletes the column and its dependent objects')}
               </p>
             </div>
           </div>
           {isDeleteWithCascade && (
             <Alert
               variant="warning"
-              title="Warning: Dropping with cascade may result in unintended consequences"
+              title={$t('Warning: Dropping with cascade may result in unintended consequences')}
             >
               <AlertTitle>
-                All dependent objects will be removed, as will any objects that depend on them,
-                recursively.
+                {$t(
+                  'All dependent objects will be removed, as will any objects that depend on them, recursively.'
+                )}
               </AlertTitle>
               <AlertDescription>
                 <Button asChild size="tiny" variant="default" icon={<ExternalLink />}>
@@ -309,7 +313,7 @@ const DeleteConfirmationDialogs = ({
                     target="_blank"
                     rel="noreferrer"
                   >
-                    About dependency tracking
+                    {$t('About dependency tracking')}
                   </Link>
                 </Button>
               </AlertDescription>
@@ -334,7 +338,9 @@ const DeleteConfirmationDialogs = ({
       >
         <div data-testid="confirm-delete-table-modal" className="space-y-4">
           <p className="text-sm text-foreground-light">
-            Are you sure you want to delete the selected table? This action cannot be undone.
+            {$t(
+              'Are you sure you want to delete the selected table? This action cannot be undone.'
+            )}
           </p>
           <div className="items-top flex space-x-2">
             <Checkbox
@@ -347,21 +353,22 @@ const DeleteConfirmationDialogs = ({
                 htmlFor="checkbox-cascade"
                 className="text-sm text-foreground-light leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                Drop table with cascade?
+                {$t('Drop table with cascade?')}
               </label>
               <p className="text-sm text-foreground-muted">
-                Deletes the table and its dependent objects
+                {$t('Deletes the table and its dependent objects')}
               </p>
             </div>
           </div>
           {isDeleteWithCascade && (
             <Alert variant="warning">
               <AlertTitle>
-                Warning: Dropping with cascade may result in unintended consequences
+                {$t('Warning: Dropping with cascade may result in unintended consequences')}
               </AlertTitle>
               <AlertDescription>
-                All dependent objects will be removed, as will any objects that depend on them,
-                recursively.
+                {$t(
+                  'All dependent objects will be removed, as will any objects that depend on them, recursively.'
+                )}
               </AlertDescription>
               <AlertDescription className="mt-4">
                 <Button asChild size="tiny" variant="default" icon={<ExternalLink />}>
@@ -370,7 +377,7 @@ const DeleteConfirmationDialogs = ({
                     target="_blank"
                     rel="noreferrer"
                   >
-                    About dependency tracking
+                    {$t('About dependency tracking')}
                   </Link>
                 </Button>
               </AlertDescription>
@@ -405,7 +412,7 @@ const DeleteConfirmationDialogs = ({
         visible={snap.confirmationDialog?.type === 'row'}
         title={
           <p className="wrap-break-word">
-            <span>Confirm to delete the selected row</span>
+            <span>{$t('Confirm to delete the selected row')}</span>
             <span>{numRows > 1 && 's'}</span>
           </p>
         }
@@ -417,12 +424,12 @@ const DeleteConfirmationDialogs = ({
       >
         <div className="space-y-4">
           <p className="text-sm text-foreground-light">
-            <span>Are you sure you want to delete </span>
+            <span>{$t('Are you sure you want to delete')} </span>
             <span>{isAllRowsSelected ? 'all' : 'the selected'} </span>
             <span>{numRows > 1 && `${numRows} `}</span>
             <span>row</span>
             <span>{numRows > 1 && 's'}</span>
-            <span>? This action cannot be undone.</span>
+            <span>{$t('? This action cannot be undone.')}</span>
           </p>
         </div>
       </ConfirmationModal>
@@ -467,7 +474,8 @@ const DropEntityConfirmationModal = ({
     >
       <div className="space-y-4">
         <p className="text-sm text-foreground-light">
-          Are you sure you want to delete this {entityLabel}? This action cannot be undone.
+          {$t('Are you sure you want to delete this')} {entityLabel}
+          {$t('? This action cannot be undone.')}
         </p>
         <div className="items-top flex space-x-2">
           <Checkbox
@@ -480,21 +488,22 @@ const DropEntityConfirmationModal = ({
               htmlFor={checkboxId}
               className="text-sm text-foreground-light leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              Drop {entityLabel} with cascade?
+              {$t('Drop')} {entityLabel} {$t('with cascade?')}
             </label>
             <p className="text-sm text-foreground-muted">
-              Deletes the {entityLabel} and its dependent objects
+              {$t('Deletes the')} {entityLabel} {$t('and its dependent objects')}
             </p>
           </div>
         </div>
         {isDeleteWithCascade && (
           <Alert variant="warning">
             <AlertTitle>
-              Warning: Dropping with cascade may result in unintended consequences
+              {$t('Warning: Dropping with cascade may result in unintended consequences')}
             </AlertTitle>
             <AlertDescription>
-              All dependent objects will be removed, as will any objects that depend on them,
-              recursively.
+              {$t(
+                'All dependent objects will be removed, as will any objects that depend on them, recursively.'
+              )}
             </AlertDescription>
             <AlertDescription className="mt-4">
               <Button asChild size="tiny" variant="default" icon={<ExternalLink />}>
@@ -503,7 +512,7 @@ const DropEntityConfirmationModal = ({
                   target="_blank"
                   rel="noreferrer"
                 >
-                  About dependency tracking
+                  {$t('About dependency tracking')}
                 </Link>
               </Button>
             </AlertDescription>

@@ -9,6 +9,7 @@ import { CloudProviderSelector } from './CloudProviderSelector'
 import { HighAvailabilityInput } from './HighAvailabilityInput'
 import { PostgresVersionSelector } from './PostgresVersionSelector'
 import { CreateProjectForm } from './ProjectCreation.schema'
+import { t as $t } from '@/lib/i18n'
 
 interface InternalOnlyConfigurationProps {
   form: UseFormReturn<CreateProjectForm>
@@ -22,8 +23,8 @@ export const InternalOnlyConfiguration = ({ form }: InternalOnlyConfigurationPro
     <Card className="border-0 border-b rounded-none">
       <CardContent>
         <CollapsibleCardSection
-          title="Internal-only Configuration"
-          description="These settings are only visible to internal staff"
+          title={$t('Internal-only Configuration')}
+          description={$t('These settings are only visible to internal staff')}
         >
           <div className="flex flex-col gap-y-6">
             <div className="flex flex-col gap-y-4">
@@ -47,7 +48,7 @@ export const InternalOnlyConfiguration = ({ form }: InternalOnlyConfigurationPro
             {showNonProdFields && (
               <div>
                 <p className="text-xs text-foreground-lighter mb-6">
-                  The settings below are only applicable for local/staging projects
+                  {$t('The settings below are only applicable for local/staging projects')}
                 </p>
                 <div className="flex flex-col gap-y-4">
                   <CloudProviderSelector form={form} />
@@ -57,12 +58,14 @@ export const InternalOnlyConfiguration = ({ form }: InternalOnlyConfigurationPro
                     name="postgresVersion"
                     render={({ field }) => (
                       <FormItemLayout
-                        label="Custom Postgres version"
+                        label={$t('Custom Postgres version')}
                         layout="horizontal"
-                        description="Specify a custom version of Postgres (defaults to the latest)."
+                        description={$t(
+                          'Specify a custom version of Postgres (defaults to the latest).'
+                        )}
                       >
                         <FormControl>
-                          <Input placeholder="e.g 17.6.1.104" {...field} autoComplete="off" />
+                          <Input placeholder={$t('e.g 17.6.1.104')} {...field} autoComplete="off" />
                         </FormControl>
                       </FormItemLayout>
                     )}
@@ -73,12 +76,12 @@ export const InternalOnlyConfiguration = ({ form }: InternalOnlyConfigurationPro
                     name="instanceType"
                     render={({ field }) => (
                       <FormItemLayout
-                        label="Custom instance type"
+                        label={$t('Custom instance type')}
                         layout="horizontal"
-                        description="Specify a custom instance type."
+                        description={$t('Specify a custom instance type.')}
                       >
                         <FormControl>
-                          <Input placeholder="e.g t3.nano" {...field} autoComplete="off" />
+                          <Input placeholder={$t('e.g t3.nano')} {...field} autoComplete="off" />
                         </FormControl>
                       </FormItemLayout>
                     )}

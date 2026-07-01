@@ -13,6 +13,7 @@ import OrganizationLayout from '@/components/layouts/OrganizationLayout'
 import { OrganizationSettingsLayout } from '@/components/layouts/ProjectLayout/OrganizationSettingsLayout'
 import { usePermissionsQuery } from '@/data/permissions/permissions-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const OrgAuditLogs: NextPageWithLayout = () => {
@@ -24,9 +25,9 @@ const OrgAuditLogs: NextPageWithLayout = () => {
       <PageHeader size="default">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Audit Logs</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Audit Logs')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Organization-level activity history and security event records
+              {$t('Organization-level activity history and security event records')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -38,7 +39,7 @@ const OrgAuditLogs: NextPageWithLayout = () => {
 
 OrgAuditLogs.getLayout = (page) => (
   <DefaultLayout>
-    <OrganizationLayout title="Audit Logs">
+    <OrganizationLayout title={$t('Audit Logs')}>
       <OrganizationSettingsLayout>{page}</OrganizationSettingsLayout>
     </OrganizationLayout>
   </DefaultLayout>

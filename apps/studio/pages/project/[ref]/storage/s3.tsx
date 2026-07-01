@@ -2,6 +2,7 @@ import { S3Connection } from '@/components/interfaces/Storage/StorageSettings/S3
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { StorageBucketsLayout } from '@/components/layouts/StorageLayout/StorageBucketsLayout'
 import StorageLayout from '@/components/layouts/StorageLayout/StorageLayout'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const S3SettingsPage: NextPageWithLayout = () => {
@@ -10,8 +11,8 @@ const S3SettingsPage: NextPageWithLayout = () => {
 
 S3SettingsPage.getLayout = (page) => (
   <DefaultLayout>
-    <StorageLayout title="S3 Configuration">
-      <StorageBucketsLayout hideSubtitle title="S3 Configuration">
+    <StorageLayout title={$t('S3 Configuration')}>
+      <StorageBucketsLayout hideSubtitle title={$t('S3 Configuration')}>
         {page}
       </StorageBucketsLayout>
     </StorageLayout>

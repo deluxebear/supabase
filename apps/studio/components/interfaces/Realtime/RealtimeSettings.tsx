@@ -38,6 +38,7 @@ import {
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 const formId = 'realtime-configuration-form'
 
@@ -80,7 +81,7 @@ export const RealtimeSettings = () => {
     useRealtimeConfigurationUpdateMutation({
       onSuccess: () => {
         form.reset(form.getValues())
-        toast.success('Successfully updated realtime settings')
+        toast.success($t('Successfully updated realtime settings'))
         setIsConfirmNextModalOpen(false)
       },
     })
@@ -198,8 +199,10 @@ export const RealtimeSettings = () => {
                       <FormItemLayout
                         id="suspend"
                         layout="flex-row-reverse"
-                        label="Enable Realtime service"
-                        description="If disabled, no clients will be able to connect and new connections will be rejected"
+                        label={$t('Enable Realtime service')}
+                        description={$t(
+                          'If disabled, no clients will be able to connect and new connections will be rejected'
+                        )}
                       >
                         <FormControl>
                           <Switch
@@ -256,8 +259,8 @@ export const RealtimeSettings = () => {
                           <FormItemLayout
                             id="allow_public"
                             layout="flex-row-reverse"
-                            label="Allow public access to channels"
-                            description="If disabled, only private channels will be allowed"
+                            label={$t('Allow public access to channels')}
+                            description={$t('If disabled, only private channels will be allowed')}
                           >
                             <FormControl>
                               <Switch
@@ -276,21 +279,19 @@ export const RealtimeSettings = () => {
                               <Admonition
                                 showIcon={false}
                                 type="warning"
-                                title="No Realtime RLS policies found"
+                                title={$t('No Realtime RLS policies found')}
                                 description={
                                   <>
                                     <p className="prose max-w-full text-sm">
-                                      Private mode is {isSettingToPrivate ? 'being ' : ''}
-                                      enabled, but no RLS policies exists on the{' '}
-                                      <code className="text-code-inline">
-                                        realtime.messages
-                                      </code>{' '}
-                                      table. No messages will be received by users.
+                                      {$t('Private mode is')} {isSettingToPrivate ? 'being ' : ''}
+                                      {$t('enabled, but no RLS policies exists on the')}{' '}
+                                      <code className="text-code-inline">realtime.messages</code>{' '}
+                                      {$t('table. No messages will be received by users.')}
                                     </p>
 
                                     <Button asChild variant="default" className="mt-2">
                                       <Link href={`/project/${projectRef}/realtime/policies`}>
-                                        Create policy
+                                        {$t('Create policy')}
                                       </Link>
                                     </Button>
                                   </>
@@ -310,8 +311,10 @@ export const RealtimeSettings = () => {
                           <FormItemLayout
                             id="connection_pool"
                             layout="flex-row-reverse"
-                            label="Database connection pool size"
-                            description="Realtime Authorization uses this database pool to check client access"
+                            label={$t('Database connection pool size')}
+                            description={$t(
+                              'Realtime Authorization uses this database pool to check client access'
+                            )}
                           >
                             <FormControl>
                               <InputGroup>
@@ -335,7 +338,9 @@ export const RealtimeSettings = () => {
                                 showIcon={false}
                                 type="warning"
                                 title={`Pool size is greater than 50% of the max connections (${maxConn.maxConnections}) on your database`}
-                                description="This may result in instability and unreliability with your database connections."
+                                description={$t(
+                                  'This may result in instability and unreliability with your database connections.'
+                                )}
                               />
                             )}
                         </>
@@ -350,8 +355,10 @@ export const RealtimeSettings = () => {
                         <FormItemLayout
                           id="max_concurrent_users"
                           layout="flex-row-reverse"
-                          label="Max concurrent clients"
-                          description="Sets maximum number of concurrent clients that can connect to your Realtime service"
+                          label={$t('Max concurrent clients')}
+                          description={$t(
+                            'Sets maximum number of concurrent clients that can connect to your Realtime service'
+                          )}
                         >
                           <FormControl>
                             <InputGroup>
@@ -379,8 +386,10 @@ export const RealtimeSettings = () => {
                         <FormItemLayout
                           id="max_events_per_second"
                           layout="flex-row-reverse"
-                          label="Max events per second"
-                          description="Sets maximum number of events per second that can be sent to your Realtime service"
+                          label={$t('Max events per second')}
+                          description={$t(
+                            'Sets maximum number of events per second that can be sent to your Realtime service'
+                          )}
                         >
                           <FormControl>
                             <InputGroup>
@@ -404,7 +413,7 @@ export const RealtimeSettings = () => {
                         <div className="flex items-center gap-x-2">
                           <div>
                             <h5 className="text-foreground mb-1">
-                              Spend cap needs to be disabled to configure this value
+                              {$t('Spend cap needs to be disabled to configure this value')}
                             </h5>
                             <p className="text-foreground-light">
                               {isFreePlan
@@ -435,8 +444,10 @@ export const RealtimeSettings = () => {
                         <FormItemLayout
                           id="max_presence_events_per_second"
                           layout="flex-row-reverse"
-                          label="Max presence events per second"
-                          description="Sets maximum number of presence events per second that can be sent to your Realtime service"
+                          label={$t('Max presence events per second')}
+                          description={$t(
+                            'Sets maximum number of presence events per second that can be sent to your Realtime service'
+                          )}
                         >
                           <FormControl>
                             <InputGroup>
@@ -460,7 +471,7 @@ export const RealtimeSettings = () => {
                         <div className="flex items-center gap-x-2">
                           <div>
                             <h5 className="text-foreground mb-1">
-                              Spend cap needs to be disabled to configure this value
+                              {$t('Spend cap needs to be disabled to configure this value')}
                             </h5>
                             <p className="text-foreground-light">
                               {isFreePlan
@@ -491,8 +502,10 @@ export const RealtimeSettings = () => {
                         <FormItemLayout
                           id="max_payload_size_in_kb"
                           layout="flex-row-reverse"
-                          label="Max payload size in KB"
-                          description="Sets maximum number of payload size in KB that can be sent to your Realtime service"
+                          label={$t('Max payload size in KB')}
+                          description={$t(
+                            'Sets maximum number of payload size in KB that can be sent to your Realtime service'
+                          )}
                         >
                           <FormControl>
                             <InputGroup>
@@ -516,7 +529,7 @@ export const RealtimeSettings = () => {
                         <div className="flex items-center gap-x-2">
                           <div>
                             <h5 className="text-foreground mb-1">
-                              Spend cap needs to be disabled to configure this value
+                              {$t('Spend cap needs to be disabled to configure this value')}
                             </h5>
                             <p className="text-foreground-light">
                               {isFreePlan
@@ -546,14 +559,14 @@ export const RealtimeSettings = () => {
                 <div>
                   {isPermissionsLoaded && !canUpdateConfig && (
                     <p className="text-sm text-foreground-light">
-                      You need additional permissions to update realtime settings
+                      {$t('You need additional permissions to update realtime settings')}
                     </p>
                   )}
                 </div>
                 <div className="flex items-center gap-x-2">
                   {form.formState.isDirty && (
                     <Button variant="default" onClick={() => form.reset(data as any)}>
-                      Cancel
+                      {$t('Cancel')}
                     </Button>
                   )}
                   <Button
@@ -563,7 +576,7 @@ export const RealtimeSettings = () => {
                     disabled={!canUpdateConfig || isUpdatingConfig || !form.formState.isDirty}
                     loading={isUpdatingConfig}
                   >
-                    Save changes
+                    {$t('Save changes')}
                   </Button>
                 </div>
               </CardFooter>
@@ -574,15 +587,16 @@ export const RealtimeSettings = () => {
 
       <ConfirmationModal
         visible={isConfirmNextModalOpen}
-        title="Confirm saving changes"
+        title={$t('Confirm saving changes')}
         confirmLabel="Save changes"
         loading={isUpdatingConfig}
         onCancel={() => setIsConfirmNextModalOpen(false)}
         onConfirm={() => onConfirmSave()}
       >
         <p className="text-sm text-foreground-light">
-          Saving the changes will disconnect all the clients connected to your project. Are you sure
-          you want to continue?
+          {$t(
+            'Saving the changes will disconnect all the clients connected to your project. Are you sure you want to continue?'
+          )}
         </p>
       </ConfirmationModal>
     </>

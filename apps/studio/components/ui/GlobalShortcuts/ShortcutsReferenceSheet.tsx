@@ -13,6 +13,7 @@ import {
 } from 'ui'
 import { Input } from 'ui-patterns/DataInputs/Input'
 
+import { t as $t } from '@/lib/i18n'
 import { hotkeyToKeys } from '@/state/shortcuts/formatShortcut'
 import {
   SHORTCUT_REFERENCE_GROUP_LABELS,
@@ -186,23 +187,23 @@ function ShortcutsReferenceSheetContent() {
   return (
     <>
       <SheetHeader className="shrink-0 py-3">
-        <SheetTitle>Keyboard shortcuts</SheetTitle>
+        <SheetTitle>{$t('Keyboard shortcuts')}</SheetTitle>
         <SheetDescription className="sr-only">
-          Browse and search available keyboard shortcuts.
+          {$t('Browse and search available keyboard shortcuts.')}
         </SheetDescription>
       </SheetHeader>
       <div className="shrink-0 bg-studio px-5 pt-4 pb-4">
         <Input
-          aria-label="Search shortcuts"
+          aria-label={$t('Search shortcuts')}
           autoFocus
           className="w-full"
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search shortcuts..."
+          placeholder={$t('Search shortcuts...')}
           value={search}
           actions={
             search ? (
               <Button
-                aria-label="Clear search"
+                aria-label={$t('Clear search')}
                 size="tiny"
                 variant="text"
                 icon={<CircleX size={14} />}
@@ -215,7 +216,7 @@ function ShortcutsReferenceSheetContent() {
       </div>
       <SheetSection className="flex flex-1 flex-col gap-6 overflow-y-auto px-5 py-4">
         {groups.length === 0 ? (
-          <p className="text-sm text-foreground-muted">No matching shortcuts found</p>
+          <p className="text-sm text-foreground-muted">{$t('No matching shortcuts found')}</p>
         ) : (
           groups.map(({ group, label, definitions }) => (
             <section key={group} className="flex flex-col gap-2">

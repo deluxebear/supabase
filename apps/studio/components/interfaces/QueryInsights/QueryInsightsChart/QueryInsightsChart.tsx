@@ -16,6 +16,7 @@ import type { ChartDataPoint } from '../QueryInsights.types'
 import { CHART_TABS, CHART_TYPE, LEGEND_ITEMS, SEL_COLOR } from './QueryInsightsChart.constants'
 import { formatTime } from './QueryInsightsChart.utils'
 import { QueryInsightsChartTooltip } from './QueryInsightsChartTooltip'
+import { t as $t } from '@/lib/i18n'
 
 interface QueryInsightsChartProps {
   chartData: ChartDataPoint[]
@@ -139,7 +140,8 @@ export const QueryInsightsChart = ({
                   )}
                   style={{ backgroundColor: SEL_COLOR }}
                 />
-                Selected query
+
+                {$t('Selected query')}
               </button>
             )}
           </div>
@@ -151,7 +153,7 @@ export const QueryInsightsChart = ({
                 </div>
               ) : data.length === 0 ? (
                 <div className="flex items-center justify-center h-full">
-                  <p className="text-sm text-foreground-lighter">No data available</p>
+                  <p className="text-sm text-foreground-lighter">{$t('No data available')}</p>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">

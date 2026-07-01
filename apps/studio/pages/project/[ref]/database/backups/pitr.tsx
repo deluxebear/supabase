@@ -30,6 +30,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useHighAvailability } from '@/hooks/misc/useHighAvailability'
 import { useIsOrioleDbInAws, useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL, PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const DatabasePhysicalBackups: NextPageWithLayout = () => {
@@ -38,7 +39,7 @@ const DatabasePhysicalBackups: NextPageWithLayout = () => {
       <PageHeader>
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Database Backups</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Database Backups')}</PageHeaderTitle>
           </PageHeaderSummary>
         </PageHeaderMeta>
         <PageHeaderNavigationTabs>
@@ -60,7 +61,7 @@ const DatabasePhysicalBackups: NextPageWithLayout = () => {
 
 DatabasePhysicalBackups.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Backups">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Backups')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 
@@ -96,8 +97,10 @@ const PITR = () => {
     return (
       <Admonition
         type="default"
-        title="Database backups are not available for OrioleDB"
-        description="OrioleDB is currently in public alpha and projects created are strictly ephemeral with no database backups"
+        title={$t('Database backups are not available for OrioleDB')}
+        description={$t(
+          'OrioleDB is currently in public alpha and projects created are strictly ephemeral with no database backups'
+        )}
       >
         <DocsButton abbrev={false} className="mt-2" href={DOCS_URL} />
       </Admonition>
@@ -112,8 +115,10 @@ const PITR = () => {
     return (
       <HighAvailabilityDisabledEmptyState
         icon={DatabaseBackup}
-        title="Point-in-Time Recovery unavailable on High Availability projects"
-        description="We're working to bring point-in-time recovery to High Availability projects. Contact support if this is blocking your work."
+        title={$t('Point-in-Time Recovery unavailable on High Availability projects')}
+        description={$t(
+          "We're working to bring point-in-time recovery to High Availability projects. Contact support if this is blocking your work."
+        )}
         className="max-w-none mx-0"
       />
     )
@@ -144,10 +149,12 @@ const PITR = () => {
             <Alert>
               <AlertCircle />
               <AlertTitle>
-                Point in Time Recovery is not available while project is offline
+                {$t('Point in Time Recovery is not available while project is offline')}
               </AlertTitle>
               <AlertDescription>
-                Your project needs to be online to restore your database with Point in Time Recovery
+                {$t(
+                  'Your project needs to be online to restore your database with Point in Time Recovery'
+                )}
               </AlertDescription>
             </Alert>
           ) : (

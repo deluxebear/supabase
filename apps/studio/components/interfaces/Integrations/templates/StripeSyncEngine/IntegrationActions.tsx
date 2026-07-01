@@ -5,6 +5,7 @@ import { hasInstallError, hasUninstallError } from './stripe-sync-status'
 import { useStripeSyncStatus } from '@/components/interfaces/Integrations/templates/StripeSyncEngine/useStripeSyncStatus'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 export const IntegrationInstalledActions = ({
   className,
@@ -51,7 +52,7 @@ export const IntegrationInstalledActions = ({
               },
             }}
           >
-            Upgrade integration
+            {$t('Upgrade integration')}
           </ButtonTooltip>
         )}
         <ButtonTooltip
@@ -124,7 +125,7 @@ export const IntegrationNotInstalledActions = ({
       )}
       {installError && (
         <Button variant="default" loading={isUninstallRequested} onClick={handleUninstall}>
-          Uninstall
+          {$t('Uninstall')}
         </Button>
       )}
     </div>

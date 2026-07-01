@@ -11,6 +11,7 @@ import {
 } from 'ui'
 
 import { type PotentialIssues } from './SQLEditor.types'
+import { t as $t } from '@/lib/i18n'
 
 interface RunQueryWarningModalProps {
   visible: boolean
@@ -96,8 +97,8 @@ export const RunQueryWarningModal = ({
       id: 'update-without-where',
       summary: (
         <>
-          This query runs an <code className="text-code-inline">UPDATE</code> without a{' '}
-          <code className="text-code-inline">WHERE</code> clause
+          {$t('This query runs an')} <code className="text-code-inline">UPDATE</code>{' '}
+          {$t('without a')} <code className="text-code-inline">WHERE</code> clause
         </>
       ),
       description: 'It may update every row in the target table.',
@@ -125,7 +126,7 @@ export const RunQueryWarningModal = ({
           : 'This query creates tables without enabling Row Level Security',
       description: (
         <>
-          Clients using anon or authenticated keys may be able to access{' '}
+          {$t('Clients using anon or authenticated keys may be able to access')}{' '}
           {tableName ? <code className="text-code-inline">{tableName}</code> : 'these tables'}.
         </>
       ),
@@ -148,7 +149,7 @@ export const RunQueryWarningModal = ({
           <AlertDialogDescription asChild>
             {warnings.length === 0 ? (
               <div>
-                <p>Are you sure you want to run this query?</p>
+                <p>{$t('Are you sure you want to run this query?')}</p>
               </div>
             ) : warnings.length === 1 ? (
               <div>
@@ -159,7 +160,7 @@ export const RunQueryWarningModal = ({
               </div>
             ) : (
               <div>
-                <p>This query has multiple potential issues:</p>
+                <p>{$t('This query has multiple potential issues:')}</p>
                 <ul>
                   {warnings.map((warning) => (
                     <li key={warning.id} className="mt-3">
@@ -174,12 +175,14 @@ export const RunQueryWarningModal = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction variant="warning" onClick={handleConfirm}>
             {canEnableRLS ? 'Run without RLS' : 'Run query'}
           </AlertDialogAction>
           {canEnableRLS && (
-            <AlertDialogAction onClick={handleConfirmWithRLS}>Run and enable RLS</AlertDialogAction>
+            <AlertDialogAction onClick={handleConfirmWithRLS}>
+              {$t('Run and enable RLS')}
+            </AlertDialogAction>
           )}
         </AlertDialogFooter>
       </AlertDialogContent>

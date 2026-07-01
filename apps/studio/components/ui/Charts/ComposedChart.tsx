@@ -45,6 +45,7 @@ import { ChartHighlight } from './useChartHighlight'
 import { useChartHoverState } from './useChartHoverState'
 import { formatDateTime, useFormatDateTime } from '@/lib/datetime'
 import { formatBytes, formatBytesMinMB } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export interface ComposedChartProps<D = Datum> extends CommonChartProps<D> {
   chartId?: string
@@ -419,7 +420,7 @@ export function ComposedChart({
       <NoDataPlaceholder
         hideTotalPlaceholder={highlightedValue === undefined}
         message={emptyStateMessage}
-        description="It may take up to 24 hours for data to refresh"
+        description={$t('It may take up to 24 hours for data to refresh')}
         size={size}
         className={className}
         attribute={title}

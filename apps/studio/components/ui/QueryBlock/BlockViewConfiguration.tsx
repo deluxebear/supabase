@@ -16,6 +16,7 @@ import {
 
 import { ButtonTooltip } from '../ButtonTooltip'
 import { ChartConfig } from '@/components/interfaces/SQLEditor/UtilityPanel/ChartConfig'
+import { t as $t } from '@/lib/i18n'
 
 interface BlockViewConfigurationProps {
   columns: string[]
@@ -57,13 +58,13 @@ export const BlockViewConfiguration = ({
               if (view) changeView(view)
             }}
           >
-            <ToggleGroupItem className="w-full" value="table" aria-label="Show as table">
+            <ToggleGroupItem className="w-full" value="table" aria-label={$t('Show as table')}>
               <Table className="h-4 w-4" />
-              <p className="text-xs ml-2">As table</p>
+              <p className="text-xs ml-2">{$t('As table')}</p>
             </ToggleGroupItem>
-            <ToggleGroupItem className="w-full" value="chart" aria-label="Show as chart">
+            <ToggleGroupItem className="w-full" value="chart" aria-label={$t('Show as chart')}>
               <BarChart2 className="h-4 w-4" />
-              <p className="text-xs ml-2">As chart</p>
+              <p className="text-xs ml-2">{$t('As chart')}</p>
             </ToggleGroupItem>
           </ToggleGroup>
 
@@ -75,7 +76,7 @@ export const BlockViewConfiguration = ({
                 onValueChange={(value) => updateChartConfig({ ...chartConfig, xKey: value })}
               >
                 <SelectTrigger className="text-left">
-                  X Axis {chartConfig?.xKey && `- ${chartConfig.xKey}`}
+                  {$t('X Axis')} {chartConfig?.xKey && `- ${chartConfig.xKey}`}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -94,7 +95,7 @@ export const BlockViewConfiguration = ({
                 onValueChange={(value) => updateChartConfig({ ...chartConfig, yKey: value })}
               >
                 <SelectTrigger className="text-left">
-                  Y Axis {chartConfig?.yKey && `- ${chartConfig.yKey}`}
+                  {$t('Y Axis')} {chartConfig?.yKey && `- ${chartConfig.yKey}`}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -119,7 +120,8 @@ export const BlockViewConfiguration = ({
                       })
                     }
                   />
-                  Cumulative
+
+                  {$t('Cumulative')}
                 </Label>
                 <Label htmlFor="logScale">
                   <Checkbox
@@ -132,7 +134,8 @@ export const BlockViewConfiguration = ({
                       })
                     }
                   />
-                  Log scale
+
+                  {$t('Log scale')}
                 </Label>
               </div>
             </>

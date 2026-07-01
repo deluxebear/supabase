@@ -31,6 +31,7 @@ import {
 import { useUrlState } from '@/hooks/ui/useUrlState'
 import { DOCS_URL } from '@/lib/constants'
 import { formatBytes } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export interface DiskSizeConfigurationProps {
   disabled?: boolean
@@ -85,7 +86,7 @@ export const DiskSizeConfiguration = ({ disabled = false }: DiskSizeConfiguratio
       <PageSection id="disk-management">
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>Disk Management</PageSectionTitle>
+            <PageSectionTitle>{$t('Disk Management')}</PageSectionTitle>
           </PageSectionSummary>
           <DocsButton href={`${DOCS_URL}/guides/platform/database-size#disk-management`} />
         </PageSectionMeta>
@@ -98,13 +99,14 @@ export const DiskSizeConfiguration = ({ disabled = false }: DiskSizeConfiguratio
                     <div>
                       {currentDiskSize && (
                         <span className="text-foreground-light flex gap-2 items-baseline">
-                          <h4 className="text-foreground">Current Disk Storage</h4>
+                          <h4 className="text-foreground">{$t('Current Disk Storage')}</h4>
                         </span>
                       )}
                       <div className="grid grid-cols-2 items-center">
                         <p className="text-sm text-lighter max-w-lg">
-                          Supabase employs auto-scaling storage and allows for manual disk size
-                          adjustments when necessary
+                          {$t(
+                            'Supabase employs auto-scaling storage and allows for manual disk size adjustments when necessary'
+                          )}
                         </p>
                         {!isAwsNimbus && (
                           <ButtonTooltip
@@ -121,7 +123,7 @@ export const DiskSizeConfiguration = ({ disabled = false }: DiskSizeConfiguratio
                               },
                             }}
                           >
-                            Increase disk size
+                            {$t('Increase disk size')}
                           </ButtonTooltip>
                         )}
                       </div>
@@ -129,13 +131,13 @@ export const DiskSizeConfiguration = ({ disabled = false }: DiskSizeConfiguratio
                       <div className="grid grid-cols-12 gap-2 mt-12 items-start">
                         <div className="col-span-4 grid grid-cols-2 gap-x-12 gap-y-4 items-start">
                           <div className="grid gap-2 col-span-1">
-                            <h5>Space used</h5>
+                            <h5>{$t('Space used')}</h5>
                             <span className="text-lg">
                               {formatBytes(databaseSizeBytesUsed, 2, 'GB')}
                             </span>
                           </div>
                           <div className="grid gap-2 col-span-1">
-                            <h5>Total size</h5>
+                            <h5>{$t('Total size')}</h5>
                             <span className="text-lg">{currentDiskSize} GB</span>
                           </div>
 
@@ -149,7 +151,7 @@ export const DiskSizeConfiguration = ({ disabled = false }: DiskSizeConfiguratio
                                 <Link
                                   href={`/project/${projectRef}/reports/database#database-size-report`}
                                 >
-                                  View detailed summary
+                                  {$t('View detailed summary')}
                                 </Link>
                               </Button>
                             </div>
@@ -159,7 +161,7 @@ export const DiskSizeConfiguration = ({ disabled = false }: DiskSizeConfiguratio
                         <div className="col-span-8">
                           <Alert>
                             <Info size={16} />
-                            <AlertTitle>Importing a lot of data?</AlertTitle>
+                            <AlertTitle>{$t('Importing a lot of data?')}</AlertTitle>
                             <AlertDescription>
                               <Markdown
                                 className="max-w-full"
@@ -192,13 +194,15 @@ Read more about [disk management](${DOCS_URL}/guides/platform/database-size#disk
               <AlertDescription>
                 {hasAccessToDiskSizeConfig === false ? (
                   <p>
-                    If you are intending to use more than 500MB of disk space, then you will need to
-                    upgrade to at least the Pro Plan.
+                    {$t(
+                      'If you are intending to use more than 500MB of disk space, then you will need to upgrade to at least the Pro Plan.'
+                    )}
                   </p>
                 ) : (
                   <p>
-                    If you are intending to use more than 8GB of disk space, then you will need to
-                    disable your spend cap.
+                    {$t(
+                      'If you are intending to use more than 8GB of disk space, then you will need to disable your spend cap.'
+                    )}
                   </p>
                 )}
                 <Button asChild variant="default" className="mt-3">

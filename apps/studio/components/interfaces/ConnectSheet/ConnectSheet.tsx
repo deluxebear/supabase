@@ -15,6 +15,7 @@ import { useConnectState } from './useConnectState'
 import { useAPIKeys } from '@/data/api-keys/api-keys-query'
 import { useProjectApiUrl } from '@/data/config/project-endpoint-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAppStateSnapshot } from '@/state/app-state'
 
@@ -209,8 +210,8 @@ export const ConnectSheet = () => {
     <Sheet open={showConnect} onOpenChange={handleOpenChange}>
       <SheetContent size="lg" className="flex flex-col gap-0 p-0 space-y-0" tabIndex={undefined}>
         <SheetHeader className={cn('text-left border-b shrink-0 py-6 px-8')}>
-          <SheetTitle>Connect to your project</SheetTitle>
-          <SheetDescription>Choose how you want to use Supabase</SheetDescription>
+          <SheetTitle>{$t('Connect to your project')}</SheetTitle>
+          <SheetDescription>{$t('Choose how you want to use Supabase')}</SheetDescription>
         </SheetHeader>
 
         <div className="flex flex-1 flex-col overflow-y-auto divide-y">

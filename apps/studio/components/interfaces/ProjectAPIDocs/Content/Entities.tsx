@@ -11,6 +11,7 @@ import { DocsButton } from '@/components/ui/DocsButton'
 import { useProjectPostgrestConfigQuery } from '@/data/config/project-postgrest-config-query'
 import { generateTypes } from '@/data/projects/project-type-generation-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const Entities = ({ language }: ContentProps) => {
   const { ref } = useParams()
@@ -51,11 +52,11 @@ export const Entities = ({ language }: ContentProps) => {
             icon={<Download strokeWidth={1.5} />}
             onClick={onClickGenerateTypes}
           >
-            Generate and download types
+            {$t('Generate and download types')}
           </Button>
         </div>
         <p className="text-xs text-foreground-light px-4 mt-2">
-          Remember to re-generate and download this file as you make changes to your tables.
+          {$t('Remember to re-generate and download this file as you make changes to your tables.')}
         </p>
       </div>
       <ContentSnippet selectedLanguage={language} snippet={DOCS_CONTENT.graphql} />

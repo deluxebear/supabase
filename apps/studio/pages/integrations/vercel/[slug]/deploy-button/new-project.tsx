@@ -35,6 +35,7 @@ import {
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { usePHFlag } from '@/hooks/ui/useFlag'
 import { BASE_PATH, PROVIDERS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { getInitialMigrationSQLFromGitHubRepo } from '@/lib/integration-utils'
 import { passwordStrength, PasswordStrengthScore } from '@/lib/password-strength'
 import { generateStrongPassword } from '@/lib/project'
@@ -48,7 +49,7 @@ const VercelIntegration: NextPageWithLayout = () => {
       <ScaffoldContainer className="flex flex-col gap-6 grow py-8">
         <ScaffoldColumn className="mx-auto w-full max-w-md">
           <header>
-            <h2>New project</h2>
+            <h2>{$t('New project')}</h2>
             <Markdown
               className="text-foreground-light"
               content={`Choose the Supabase organization you wish to install in`}
@@ -58,8 +59,10 @@ const VercelIntegration: NextPageWithLayout = () => {
           <Admonition
             type="default"
             layout="horizontal"
-            title="You can uninstall this Integration at any time."
-            description="You can remove this integration at any time via Vercel or the Supabase dashboard"
+            title={$t('You can uninstall this Integration at any time.')}
+            description={$t(
+              'You can remove this integration at any time via Vercel or the Supabase dashboard'
+            )}
           />
         </ScaffoldColumn>
       </ScaffoldContainer>
@@ -275,13 +278,13 @@ const CreateProject = () => {
 
   return (
     <div>
-      <p className="mb-2">Supabase project details</p>
+      <p className="mb-2">{$t('Supabase project details')}</p>
       <div className="py-2">
         <FormItemLayout
           id="projectName"
           isReactForm={false}
           layout="vertical"
-          label="Project name"
+          label={$t('Project name')}
           size="tiny"
         >
           <Input
@@ -299,7 +302,7 @@ const CreateProject = () => {
           id="dbPass"
           isReactForm={false}
           layout="vertical"
-          label="Database password"
+          label={$t('Database password')}
           size="tiny"
           description={
             <PasswordStrengthBar
@@ -313,7 +316,7 @@ const CreateProject = () => {
           <PasswordInput
             id="dbPass"
             type="password"
-            placeholder="Type in a strong password"
+            placeholder={$t('Type in a strong password')}
             value={dbPass}
             reveal
             copy={dbPass.length > 0}
@@ -327,8 +330,8 @@ const CreateProject = () => {
             id="region"
             isReactForm={false}
             layout="vertical"
-            label="Region"
-            description="Select a region close to your users for the best performance."
+            label={$t('Region')}
+            description={$t('Select a region close to your users for the best performance.')}
             className="gap-[2px]"
             size="tiny"
           >
@@ -343,7 +346,7 @@ const CreateProject = () => {
                     <SelectItem key={option} value={label}>
                       <div className="flex gap-2">
                         <img
-                          alt="region icon"
+                          alt={$t('region icon')}
                           className="w-5 rounded-xs"
                           src={`${BASE_PATH}/img/regions/${Object.values(AWS_REGIONS)[i].code}.svg`}
                         />
@@ -370,11 +373,12 @@ const CreateProject = () => {
               htmlFor="enable-realtime"
               className="text-sm text-foreground-light flex items-center space-x-2 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              Create sample tables with seed data
+              {$t('Create sample tables with seed data')}
             </label>
             <p className="text-sm text-foreground-muted">
-              To get you started quickly, we can create new tables for you with seed (sample) data.
-              You can delete these tables later.
+              {$t(
+                'To get you started quickly, we can create new tables for you with seed (sample) data. You can delete these tables later.'
+              )}
             </p>
           </div>
         </div>
@@ -395,11 +399,12 @@ const CreateProject = () => {
               htmlFor="dataApiDefaultPrivileges"
               className="text-sm text-foreground-light flex items-center space-x-2 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              Automatically expose new tables
+              {$t('Automatically expose new tables')}
             </label>
             <p className="text-sm text-foreground-muted">
-              Grants privileges to Data API roles by default, exposing new tables. We recommend
-              disabling this to control access manually.
+              {$t(
+                'Grants privileges to Data API roles by default, exposing new tables. We recommend disabling this to control access manually.'
+              )}
             </p>
           </div>
         </div>
@@ -412,7 +417,7 @@ const CreateProject = () => {
           loading={snapshot.loading}
           onClick={onCreateProject}
         >
-          Create Project
+          {$t('Create Project')}
         </Button>
       </div>
     </div>

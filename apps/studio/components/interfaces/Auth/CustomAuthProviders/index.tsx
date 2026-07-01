@@ -12,6 +12,7 @@ import {
 import { CustomAuthProvidersList } from './CustomAuthProvidersList'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const CustomAuthProviders = () => {
   return (
@@ -19,11 +20,13 @@ export const CustomAuthProviders = () => {
       <PageSectionMeta>
         <PageSectionSummary>
           <div className="flex items-center gap-x-2">
-            <PageSectionTitle>Custom Providers</PageSectionTitle>
-            <Badge variant="success">New</Badge>
+            <PageSectionTitle>{$t('Custom Providers')}</PageSectionTitle>
+            <Badge variant="success">{$t('New')}</Badge>
           </div>
           <PageSectionDescription>
-            Configure OAuth/OIDC providers for this project using your own issuer or endpoints.
+            {$t(
+              'Configure OAuth/OIDC providers for this project using your own issuer or endpoints.'
+            )}
           </PageSectionDescription>
         </PageSectionSummary>
         <PageSectionAside>

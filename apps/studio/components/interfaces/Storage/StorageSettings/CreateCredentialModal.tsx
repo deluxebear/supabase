@@ -29,6 +29,7 @@ import { useProjectStorageConfigQuery } from '@/data/config/project-storage-conf
 import { useS3AccessKeyCreateMutation } from '@/data/storage/s3-access-key-create-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsProjectActive } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface CreateCredentialModalProps {
   visible: boolean
@@ -93,7 +94,7 @@ export const CreateCredentialModal = ({ visible, onOpenChange }: CreateCredentia
               disabled={disableCreation}
               className="pointer-events-auto"
             >
-              New access key
+              {$t('New access key')}
             </Button>
           </DialogTrigger>
         </TooltipTrigger>
@@ -118,15 +119,16 @@ export const CreateCredentialModal = ({ visible, onOpenChange }: CreateCredentia
         {showSuccess ? (
           <>
             <DialogHeader>
-              <DialogTitle>Save your new S3 access keys</DialogTitle>
+              <DialogTitle>{$t('Save your new S3 access keys')}</DialogTitle>
               <DialogDescription>
-                You won't be able to see them again. If you lose these access keys, you'll need to
-                create a new ones.
+                {$t(
+                  "You won't be able to see them again. If you lose these access keys, you'll need to create a new ones."
+                )}
               </DialogDescription>
             </DialogHeader>
             <DialogSectionSeparator />
             <DialogSection className="flex flex-col gap-4">
-              <FormItemLayout label="Access key ID" isReactForm={false}>
+              <FormItemLayout label={$t('Access key ID')} isReactForm={false}>
                 <Input className="input-mono" readOnly copy value={createS3KeyData?.access_key} />
               </FormItemLayout>
               <FormItemLayout label={'Secret access key'} isReactForm={false}>
@@ -140,17 +142,18 @@ export const CreateCredentialModal = ({ visible, onOpenChange }: CreateCredentia
                   setShowSuccess(false)
                 }}
               >
-                Done
+                {$t('Done')}
               </Button>
             </DialogFooter>
           </>
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>Create new S3 access keys</DialogTitle>
+              <DialogTitle>{$t('Create new S3 access keys')}</DialogTitle>
               <DialogDescription>
-                S3 access keys provide full access to all S3 operations across all buckets and
-                bypass any existing RLS policies.
+                {$t(
+                  'S3 access keys provide full access to all S3 operations across all buckets and bypass any existing RLS policies.'
+                )}
               </DialogDescription>
             </DialogHeader>
             <DialogSectionSeparator />
@@ -160,10 +163,10 @@ export const CreateCredentialModal = ({ visible, onOpenChange }: CreateCredentia
                   <FormField
                     name="description"
                     render={({ field }) => (
-                      <FormItemLayout label="Description">
+                      <FormItemLayout label={$t('Description')}>
                         <Input
                           autoComplete="off"
-                          placeholder="My test key"
+                          placeholder={$t('My test key')}
                           type="text"
                           {...field}
                         />
@@ -173,7 +176,7 @@ export const CreateCredentialModal = ({ visible, onOpenChange }: CreateCredentia
                 </DialogSection>
                 <DialogFooter>
                   <Button type="submit" loading={isCreating}>
-                    Create access key
+                    {$t('Create access key')}
                   </Button>
                 </DialogFooter>
               </form>

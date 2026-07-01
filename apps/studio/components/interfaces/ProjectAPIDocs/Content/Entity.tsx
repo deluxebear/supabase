@@ -8,6 +8,7 @@ import type { ContentProps } from './Content.types'
 import { tempRemovePostgrestText } from './Content.utils'
 import Table from '@/components/to-be-cleaned/Table'
 import { useProjectJsonSchemaQuery } from '@/data/docs/project-json-schema-query'
+import { t as $t } from '@/lib/i18n'
 import { useAppStateSnapshot } from '@/state/app-state'
 
 function getColumnType(type: string, format: string) {
@@ -65,13 +66,13 @@ export const Entity = ({ language, apikey = '', endpoint = '' }: ContentProps) =
         <LanguageSelector />
       </div>
       <div className="space-y-2 px-4 py-4 border-t-0!">
-        <p className="text-sm text-foreground-light">Columns</p>
+        <p className="text-sm text-foreground-light">{$t('Columns')}</p>
         <Table
           head={[
-            <Table.th key="name">Name</Table.th>,
-            <Table.th key="format">Format</Table.th>,
-            <Table.th key="type">Type</Table.th>,
-            <Table.th key="description">Description</Table.th>,
+            <Table.th key="name">{$t('Name')}</Table.th>,
+            <Table.th key="format">{$t('Format')}</Table.th>,
+            <Table.th key="type">{$t('Type')}</Table.th>,
+            <Table.th key="description">{$t('Description')}</Table.th>,
           ]}
           body={columns.map((column) => {
             const formattedColumnType = getColumnType(column.type, column.format)

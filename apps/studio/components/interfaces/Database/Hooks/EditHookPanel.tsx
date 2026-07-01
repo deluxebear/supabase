@@ -19,6 +19,7 @@ import { tableEditorQueryOptions } from '@/data/table-editor/table-editor-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
 import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export type HTTPArgument = { id: string; name: string; value: string }
 
@@ -164,7 +165,7 @@ export const EditHookPanel = () => {
 
   useEffect(() => {
     if (isSuccess && !!selectedHookIdToEdit && !selectedHook && !isClosingRef.current) {
-      toast('Webhook not found')
+      toast($t('Webhook not found'))
       setSelectedHookIdToEdit(null)
     }
   }, [isSuccess, selectedHook, selectedHookIdToEdit, setSelectedHookIdToEdit])
@@ -215,7 +216,7 @@ export const EditHookPanel = () => {
         })
       )
       if (!selectedTable) {
-        return toast.error('Unable to find selected table')
+        return toast.error($t('Unable to find selected table'))
       }
 
       const headers = values.httpHeaders
@@ -284,7 +285,7 @@ export const EditHookPanel = () => {
       }
     } catch (error) {
       console.error('Failed to get table editor:', error)
-      toast.error('Failed to get table editor')
+      toast.error($t('Failed to get table editor'))
     } finally {
       setIsLoadingTable(false)
     }
@@ -307,7 +308,7 @@ export const EditHookPanel = () => {
             'Create a new database webhook'
           ) : (
             <>
-              Update webhook <code className="text-sm">{selectedHook.name}</code>
+              {$t('Update webhook')} <code className="text-sm">{selectedHook.name}</code>
             </>
           )
         }
@@ -323,7 +324,7 @@ export const EditHookPanel = () => {
               onClick={confirmOnClose}
               disabled={isSubmitting}
             >
-              Cancel
+              {$t('Cancel')}
             </Button>
             <Button
               size="tiny"

@@ -8,6 +8,7 @@ import { HoverCardTimestamp } from './HoverCardTimestamp'
 import { LogTypeIcon } from './LogTypeIcon'
 import { DataTableColumnLevelIndicator } from '@/components/ui/DataTable/DataTableColumn/DataTableColumnLevelIndicator'
 import { DataTableColumnStatusCode } from '@/components/ui/DataTable/DataTableColumn/DataTableColumnStatusCode'
+import { t as $t } from '@/lib/i18n'
 
 /**
  * Determines if a column should be hidden based on its values in the data.
@@ -246,7 +247,7 @@ export function generateDynamicColumns({ data }: { data: ColumnSchema[] }): {
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {logCount} {logCount === 1 ? 'log' : 'logs'} for this execution
+                  {logCount} {logCount === 1 ? 'log' : 'logs'} {$t('for this execution')}
                 </TooltipContent>
               </Tooltip>
             )}

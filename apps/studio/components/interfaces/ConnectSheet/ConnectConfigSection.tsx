@@ -21,6 +21,7 @@ import {
 
 import type { ConnectMode, FieldOption, ResolvedField } from './Connect.types'
 import { ConnectionIcon } from './ConnectionIcon'
+import { t as $t } from '@/lib/i18n'
 
 const MODE_ICONS: Record<string, React.ReactNode> = {
   framework: <Box size={16} strokeWidth={1.5} />,
@@ -201,7 +202,7 @@ export function ConnectConfigSection({
                 >
                   <MultiSelectorTrigger
                     className="w-full"
-                    label="All features except Storage enabled by default"
+                    label={$t('All features except Storage enabled by default')}
                     badgeLimit="wrap"
                     showIcon={true}
                   />

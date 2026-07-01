@@ -10,6 +10,7 @@ import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 import { parseEdgeFunctionEventMessage } from './EdgeFunctionRecentInvocations.utils'
 import { LOGS_TABLES } from '@/components/interfaces/Settings/Logs/Logs.constants'
 import useLogsPreview from '@/hooks/analytics/useLogsPreview'
+import { t as $t } from '@/lib/i18n'
 
 interface EdgeFunctionRecentInvocationsProps {
   functionId: string
@@ -34,9 +35,9 @@ export const EdgeFunctionRecentInvocations = ({
     <div className="flex flex-col gap-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm">Recent Invocations</p>
+          <p className="text-sm">{$t('Recent Invocations')}</p>
           <p className="text-xs text-foreground-light">
-            Latest invocation requests for this function
+            {$t('Latest invocation requests for this function')}
           </p>
         </div>
         <Button
@@ -46,7 +47,7 @@ export const EdgeFunctionRecentInvocations = ({
           icon={<RefreshCw size={14} />}
           onClick={() => refresh()}
         >
-          Refresh
+          {$t('Refresh')}
         </Button>
       </div>
 
@@ -55,8 +56,10 @@ export const EdgeFunctionRecentInvocations = ({
       ) : logData.length === 0 ? (
         <Admonition
           type="note"
-          title="No recent invocations"
-          description="Invocation logs will appear here when requests are made to this function"
+          title={$t('No recent invocations')}
+          description={$t(
+            'Invocation logs will appear here when requests are made to this function'
+          )}
         />
       ) : (
         <div className="border rounded-md divide-y overflow-hidden">
@@ -131,7 +134,7 @@ export const EdgeFunctionRecentInvocations = ({
             href={`/project/${ref}/functions/${functionSlug}/invocations`}
             className="flex items-center justify-center py-2 text-xs text-foreground-light hover:text-foreground transition-colors"
           >
-            View all invocations
+            {$t('View all invocations')}
           </Link>
         </div>
       )}

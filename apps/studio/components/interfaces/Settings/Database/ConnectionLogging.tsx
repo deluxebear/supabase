@@ -25,6 +25,7 @@ import { postgresConfigurationQueryOptions } from '@/data/config/postgres-config
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const FormSchema = z.object({
   log_connections: z.boolean(),
@@ -49,7 +50,7 @@ export const ConnectionLogging = () => {
 
   const { mutate: updatePostgresConfig, isPending: isSaving } =
     usePostgresConfigurationUpdateMutation({
-      onSuccess: () => toast('Successfully updated logging settings'),
+      onSuccess: () => toast($t('Successfully updated logging settings')),
     })
 
   const defaultValues = useMemo(
@@ -79,7 +80,7 @@ export const ConnectionLogging = () => {
     <PageSection id="log-connections">
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Connection logging</PageSectionTitle>
+          <PageSectionTitle>{$t('Connection logging')}</PageSectionTitle>
         </PageSectionSummary>
         <PageSectionAside className="flex items-center gap-x-2">
           <DocsButton href={`${DOCS_URL}/guides/platform/postgres-connection-logging`} />
@@ -99,8 +100,10 @@ export const ConnectionLogging = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Log connections"
-                        description="Enables logging for each successful connection to the database"
+                        label={$t('Log connections')}
+                        description={$t(
+                          'Enables logging for each successful connection to the database'
+                        )}
                         className="[&>div:first-child]:xl:w-1/5"
                       >
                         <FormControl>
@@ -117,8 +120,10 @@ export const ConnectionLogging = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Log disconnections"
-                        description="Enables logging for the end of each session, including its duration"
+                        label={$t('Log disconnections')}
+                        description={$t(
+                          'Enables logging for the end of each session, including its duration'
+                        )}
                         className="[&>div:first-child]:xl:w-1/5"
                       >
                         <FormControl>
@@ -135,7 +140,7 @@ export const ConnectionLogging = () => {
                     disabled={!hasChanges || isSaving}
                     onClick={() => form.reset(defaultValues)}
                   >
-                    Cancel
+                    {$t('Cancel')}
                   </Button>
                   <ButtonTooltip
                     type="submit"
@@ -151,7 +156,7 @@ export const ConnectionLogging = () => {
                       },
                     }}
                   >
-                    Save
+                    {$t('Save')}
                   </ButtonTooltip>
                 </CardFooter>
               </Card>

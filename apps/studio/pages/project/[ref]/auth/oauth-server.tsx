@@ -13,6 +13,7 @@ import AuthLayout from '@/components/layouts/AuthLayout/AuthLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const ProvidersPage: NextPageWithLayout = () => {
@@ -21,9 +22,11 @@ const ProvidersPage: NextPageWithLayout = () => {
       <PageHeader size="default">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>OAuth Server</PageHeaderTitle>
+            <PageHeaderTitle>{$t('OAuth Server')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Configure your project to act as an identity provider for third-party applications
+              {$t(
+                'Configure your project to act as an identity provider for third-party applications'
+              )}
             </PageHeaderDescription>
           </PageHeaderSummary>
           <PageHeaderAside>
@@ -40,7 +43,7 @@ const ProvidersPage: NextPageWithLayout = () => {
 
 ProvidersPage.getLayout = (page) => (
   <DefaultLayout>
-    <AuthLayout title="OAuth Server">{page}</AuthLayout>
+    <AuthLayout title={$t('OAuth Server')}>{page}</AuthLayout>
   </DefaultLayout>
 )
 

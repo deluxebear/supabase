@@ -32,6 +32,7 @@ import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
 import { useOrgSubscriptionQuery } from '@/data/subscriptions/org-subscription-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { TIME_PERIODS_BILLING, TIME_PERIODS_REPORTS } from '@/lib/constants/metrics'
+import { t as $t } from '@/lib/i18n'
 
 export const Usage = () => {
   const { slug } = useParams()
@@ -117,7 +118,7 @@ export const Usage = () => {
     <>
       <ScaffoldContainer>
         <ScaffoldHeader className="pt-8">
-          <ScaffoldTitle>Usage</ScaffoldTitle>
+          <ScaffoldTitle>{$t('Usage')}</ScaffoldTitle>
         </ScaffoldHeader>
       </ScaffoldContainer>
       <div className="sticky top-0 border-b bg-sidebar z-1">
@@ -203,7 +204,7 @@ export const Usage = () => {
                             setSelectedProjectRef(null)
                           }}
                         >
-                          All projects
+                          {$t('All projects')}
                           {!selectedProjectRef && <Check size={16} />}
                         </CommandItem>
                       </CommandGroup>
@@ -213,8 +214,10 @@ export const Usage = () => {
 
                 <div className="flex items-center gap-2">
                   <p className={cn('text-sm transition', isLoadingSubscription && 'opacity-50')}>
-                    Organization is on the{' '}
-                    <span className="font-medium text-brand">{subscription.plan.name} Plan</span>
+                    {$t('Organization is on the')}{' '}
+                    <span className="font-medium text-brand">
+                      {subscription.plan.name} {$t('Plan')}
+                    </span>
                   </p>
                   <span className="text-border-stronger">
                     <svg
@@ -257,22 +260,23 @@ export const Usage = () => {
         <ScaffoldContainer className="mt-5">
           <Admonition
             type="default"
-            title="Usage filtered by project"
+            title={$t('Usage filtered by project')}
             description={
               <div>
-                You are currently viewing usage for the{' '}
+                {$t('You are currently viewing usage for the')}{' '}
                 <span className="font-medium text-foreground">
                   {selectedProject?.name || selectedProjectRef}
                 </span>{' '}
-                project. Supabase uses{' '}
+                {$t('project. Supabase uses')}{' '}
                 <Link
                   href="/docs/guides/platform/billing-on-supabase#organization-based-billing"
                   target="_blank"
                 >
-                  organization-level billing
+                  {$t('organization-level billing')}
                 </Link>{' '}
-                and quotas. For billing purposes, we sum up usage from all your projects. To view
-                your usage quota, set the project filter above back to "All Projects".
+                {$t(
+                  'and quotas. For billing purposes, we sum up usage from all your projects. To view your usage quota, set the project filter above back to "All Projects".'
+                )}
               </div>
             }
           />

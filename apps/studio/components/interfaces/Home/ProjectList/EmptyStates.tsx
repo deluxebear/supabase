@@ -18,6 +18,7 @@ import { EmptyStatePresentational } from 'ui-patterns/EmptyStatePresentational'
 import { ShimmeringCard } from './ShimmeringCard'
 import { HomeIcon } from '@/components/layouts/Navigation/LayoutHeader/HomeIcon'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 
 export const Header = () => {
   return (
@@ -33,11 +34,11 @@ export const LoadingTableView = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Project</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Compute</TableHead>
-            <TableHead>Region</TableHead>
-            <TableHead>Created</TableHead>
+            <TableHead>{$t('Project')}</TableHead>
+            <TableHead>{$t('Status')}</TableHead>
+            <TableHead>{$t('Compute')}</TableHead>
+            <TableHead>{$t('Region')}</TableHead>
+            <TableHead>{$t('Created')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -82,12 +83,12 @@ export const NoProjectsState = ({ slug }: { slug: string }) => {
   return (
     <EmptyStatePresentational
       icon={BoxPlus}
-      title="Create a project"
-      description="Launch a complete backend built on Postgres."
+      title={$t('Create a project')}
+      description={$t('Launch a complete backend built on Postgres.')}
     >
       {projectCreationEnabled && (
         <Button size="tiny" variant="default" asChild icon={<Plus />}>
-          <Link href={`/new/${slug}`}>New project</Link>
+          <Link href={`/new/${slug}`}>{$t('New project')}</Link>
         </Button>
       )}
     </EmptyStatePresentational>
@@ -97,11 +98,11 @@ export const NoProjectsState = ({ slug }: { slug: string }) => {
 export const NoOrganizationsState = () => {
   return (
     <EmptyStatePresentational
-      title="Create an organization"
-      description="Manage your team and projects in one place."
+      title={$t('Create an organization')}
+      description={$t('Manage your team and projects in one place.')}
     >
       <Button size="tiny" variant="primary" asChild icon={<Plus />}>
-        <Link href="/new">New organization</Link>
+        <Link href="/new">{$t('New organization')}</Link>
       </Button>
     </EmptyStatePresentational>
   )

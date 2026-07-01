@@ -27,6 +27,7 @@ import {
 } from '@/data/vault/vault-secret-decrypted-value-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const CreateTableInstructions = ({
   hideHeader = false,
@@ -107,7 +108,7 @@ export const CreateTableInstructions = ({
     <Card className={className}>
       {!hideHeader && (
         <CardHeader>
-          <CardTitle>Create your first table via Pyiceberg</CardTitle>
+          <CardTitle>{$t('Create your first table via Pyiceberg')}</CardTitle>
         </CardHeader>
       )}
 
@@ -119,7 +120,7 @@ export const CreateTableInstructions = ({
                 1
               </div>
               <p className="prose text-sm font-normal">
-                Set up Python project with <code>uv</code>
+                {$t('Set up Python project with')} <code>uv</code>
               </p>
             </div>
           </AccordionTrigger>
@@ -153,15 +154,15 @@ export const CreateTableInstructions = ({
                 2
               </div>
               <p className="prose text-sm font-normal">
-                Replace <code>main.py</code> with the following snippet
+                {$t('Replace')} <code>main.py</code> {$t('with the following snippet')}
               </p>
             </div>
           </AccordionTrigger>
           <AccordionContent className="border-0 px-6 pt-2">
             <p className="text-foreground mb-3 prose max-w-full text-sm">
-              The following snippet creates a namespace <code>default</code>, then creates a sample
-              table
-              <code>events</code> into that namespace.
+              {$t('The following snippet creates a namespace')} <code>default</code>
+              {$t(', then creates a sample table')}
+              <code>events</code> {$t('into that namespace.')}
             </p>
             <div className="relative group">
               <CodeBlock
@@ -235,7 +236,7 @@ export const CreateTableInstructions = ({
               <div className="w-6 h-6 rounded-full border flex items-center justify-center text-xs font-mono">
                 3
               </div>
-              <p className="prose text-sm font-normal">Run the Python script</p>
+              <p className="prose text-sm font-normal">{$t('Run the Python script')}</p>
             </div>
           </AccordionTrigger>
           <AccordionContent className="border-0 px-6 pt-2">
@@ -254,7 +255,7 @@ export const CreateTableInstructions = ({
 
       <CardFooter className="bg">
         <p className="text-xs text-foreground-light">
-          Connecting to bucket with other Iceberg clients? Read more in our{' '}
+          {$t('Connecting to bucket with other Iceberg clients? Read more in our')}{' '}
           <InlineLink href={`${DOCS_URL}/guides/storage/analytics/examples/pyiceberg`}>
             documentation
           </InlineLink>

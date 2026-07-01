@@ -80,6 +80,7 @@ import { generateUuid } from '@/lib/api/snippets.browser'
 import { BASE_PATH } from '@/lib/constants'
 import { formatSql } from '@/lib/formatSql'
 import { detectOS } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { wrapWithRoleImpersonation } from '@/lib/role-impersonation'
 import { useTrack } from '@/lib/telemetry/track'
@@ -425,7 +426,7 @@ export const SQLEditor = () => {
       )?.connectionString
       if (!isValidConnString(connectionString)) {
         clearPendingRunRefocus()
-        return toast.error('Unable to run query: Connection string is missing')
+        return toast.error($t('Unable to run query: Connection string is missing'))
       }
 
       const userSql = rawSql(sql)
@@ -510,7 +511,7 @@ export const SQLEditor = () => {
         (db) => db.identifier === databaseSelectorState.selectedDatabaseId
       )?.connectionString
       if (!isValidConnString(connectionString)) {
-        return toast.error('Unable to run query: Connection string is missing')
+        return toast.error($t('Unable to run query: Connection string is missing'))
       }
 
       // Wrap the query with EXPLAIN ANALYZE only if it's not already an EXPLAIN query
@@ -1075,12 +1076,13 @@ export const SQLEditor = () => {
                   <TooltipContent className="max-w-xs">
                     <p className="flex flex-col gap-y-1">
                       <span>
-                        Results are automatically limited to preserve browser performance, in
-                        particular if your query returns an exceptionally large number of rows.
+                        {$t(
+                          'Results are automatically limited to preserve browser performance, in particular if your query returns an exceptionally large number of rows.'
+                        )}
                       </span>
 
                       <span className="text-foreground-light">
-                        You may change or remove this limit from the dropdown on the right
+                        {$t('You may change or remove this limit from the dropdown on the right')}
                       </span>
                     </p>
                   </TooltipContent>
@@ -1089,7 +1091,7 @@ export const SQLEditor = () => {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="default" iconRight={<ChevronUp size={14} />}>
-                        Limit results to:{' '}
+                        {$t('Limit results to:')}{' '}
                         {
                           ROWS_PER_PAGE_OPTIONS.find((opt) => opt.value === sessionSnap.limit)
                             ?.label

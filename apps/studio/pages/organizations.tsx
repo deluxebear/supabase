@@ -18,6 +18,7 @@ import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { useCustomContent } from '@/hooks/custom-content/useCustomContent'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { withAuth } from '@/hooks/misc/withAuth'
+import { t as $t } from '@/lib/i18n'
 import { buildStudioPageTitle } from '@/lib/page-title'
 import type { NextPageWithLayout } from '@/types'
 
@@ -65,7 +66,7 @@ const OrganizationsPage: NextPageWithLayout = () => {
             <div className="flex items-center justify-between gap-x-2 md:gap-x-3">
               <Input
                 size="tiny"
-                placeholder="Search for an organization"
+                placeholder={$t('Search for an organization')}
                 icon={<Search />}
                 className="w-full flex-1 md:w-64"
                 value={search}
@@ -74,7 +75,7 @@ const OrganizationsPage: NextPageWithLayout = () => {
 
               {organizationCreationEnabled && (
                 <Button asChild icon={<Plus />} variant="primary" className="w-min">
-                  <Link href={`/new`}>New organization</Link>
+                  <Link href={`/new`}>{$t('New organization')}</Link>
                 </Button>
               )}
             </div>
@@ -109,7 +110,7 @@ const OrganizationsPage: NextPageWithLayout = () => {
 OrganizationsPage.getLayout = (page) => (
   <AppLayout>
     <DefaultLayout hideMobileMenu headerTitle="Organizations">
-      <PageLayout title="Your Organizations" className="max-w-[1200px] lg:px-6 mx-auto">
+      <PageLayout title={$t('Your Organizations')} className="max-w-[1200px] lg:px-6 mx-auto">
         {page}
       </PageLayout>
     </DefaultLayout>

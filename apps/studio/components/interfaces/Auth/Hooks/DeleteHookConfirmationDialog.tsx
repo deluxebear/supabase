@@ -24,6 +24,7 @@ import { useAuthHooksUpdateMutation } from '@/data/auth/auth-hooks-update-mutati
 import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface DeleteHookConfirmationDialogProps {
   hook?: Hook
@@ -96,21 +97,23 @@ export const DeleteHookConfirmationDialog = ({
       <AlertDialog open={open} onOpenChange={onOpenChange}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm to delete Send Email hook</AlertDialogTitle>
+            <AlertDialogTitle>{$t('Confirm to delete Send Email hook')}</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-2">
                 <p>
-                  The {willLockTemplates ? 'default' : 'built-in'} email templates will be used when
-                  sending authentication-related emails.
+                  {$t('The')} {willLockTemplates ? 'default' : 'built-in'}{' '}
+                  {$t('email templates will be used when sending authentication-related emails.')}
                 </p>
                 {willLockTemplates && (
-                  <p>Email templates cannot be edited on the Free plan without custom SMTP.</p>
+                  <p>
+                    {$t('Email templates cannot be edited on the Free plan without custom SMTP.')}
+                  </p>
                 )}
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
             <AlertDialogAction
               variant="danger"
               loading={isDeletingAuthHook}
@@ -119,7 +122,7 @@ export const DeleteHookConfirmationDialog = ({
                 handleDeleteSendEmailHook()
               }}
             >
-              Delete hook
+              {$t('Delete hook')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -142,12 +145,12 @@ export const DeleteHookConfirmationDialog = ({
     >
       <div>
         <p className="md:px-5 text-sm text-foreground-light">
-          Are you sure you want to delete the {hook?.title}?
+          {$t('Are you sure you want to delete the')} {hook?.title}?
         </p>
         {hook?.method.type === 'postgres' && (
           <>
             <p className="md:px-5 text-sm text-foreground-light">
-              The following statements will be executed on the {hook?.method.schema}.
+              {$t('The following statements will be executed on the')} {hook?.method.schema}.
               {hook?.method.functionName} function:
             </p>
             <div className="mt-4 h-72">

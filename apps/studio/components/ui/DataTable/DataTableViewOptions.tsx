@@ -16,6 +16,7 @@ import {
 import { ButtonTooltip } from '../ButtonTooltip'
 import { Sortable, SortableDragHandle, SortableItem } from './primitives/Sortable'
 import { useDataTable } from './providers/DataTableProvider'
+import { t as $t } from '@/lib/i18n'
 
 export function DataTableViewOptions() {
   const { table, enableColumnOrdering } = useDataTable()
@@ -53,11 +54,11 @@ export function DataTableViewOptions() {
           <CommandInput
             value={search}
             onValueChange={setSearch}
-            placeholder="Search columns..."
+            placeholder={$t('Search columns...')}
             className="text-xs"
           />
           <CommandList>
-            <CommandEmpty>No option found.</CommandEmpty>
+            <CommandEmpty>{$t('No option found.')}</CommandEmpty>
             <CommandGroup>
               <Sortable
                 value={sortedColumns.map((c) => ({ id: c.id }))}

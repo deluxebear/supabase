@@ -5,6 +5,7 @@ import { DeleteProjectModal } from './DeleteProjectModal'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export interface DeleteProjectButtonProps {
   variant?: 'danger' | 'default'
@@ -33,7 +34,7 @@ export const DeleteProjectButton = ({ variant = 'danger' }: DeleteProjectButtonP
           },
         }}
       >
-        Delete project
+        {$t('Delete project')}
       </ButtonTooltip>
       <DeleteProjectModal visible={isOpen} onClose={() => setIsOpen(false)} />
     </>

@@ -33,6 +33,7 @@ import { InfiniteListDefault, LoaderForIconMenuItems } from '@/components/ui/Inf
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { BASE_PATH } from '@/lib/constants'
 import { formatBytes } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useStorageExplorerStateSnapshot } from '@/state/storage-explorer'
 
 const DragOverOverlay = ({ isOpen, onDragLeave, onDrop, folderIsEmpty }: any) => {
@@ -59,7 +60,7 @@ const DragOverOverlay = ({ isOpen, onDragLeave, onDrop, folderIsEmpty }: any) =>
               >
                 <Upload className="text-white pointer-events-none" size={20} />
                 <p className="text-center text-sm  text-white mt-2 pointer-events-none">
-                  Drop your files to upload to this folder
+                  {$t('Drop your files to upload to this folder')}
                 </p>
               </div>
             )}
@@ -137,7 +138,7 @@ export const FileExplorerColumn = ({
     onDragOver(event)
 
     if (!canUpdateStorage) {
-      toast('You need additional permissions to upload files to this project')
+      toast($t('You need additional permissions to upload files to this project'))
     } else {
       onFilesUpload(event, index)
     }
@@ -223,12 +224,14 @@ export const FileExplorerColumn = ({
                       htmlFor="checkbox-select-all"
                       className="text-sm text-foreground-light leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
-                      Select all {columnFiles.length} files
+                      {$t('Select all')} {columnFiles.length} files
                     </label>
                   </div>
                 </>
               ) : (
-                <p className="text-sm text-foreground-light">No files available for selection</p>
+                <p className="text-sm text-foreground-light">
+                  {$t('No files available for selection')}
+                </p>
               )}
             </div>
           )}
@@ -252,15 +255,15 @@ export const FileExplorerColumn = ({
                     htmlFor="checkbox-select-all"
                     className="sr-only text-sm text-foreground-light leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    Select all {columnFiles.length} files
+                    {$t('Select all')} {columnFiles.length} files
                   </label>
                 </div>
-                <p className="text-sm">Name</p>
+                <p className="text-sm">{$t('Name')}</p>
               </div>
-              <p className="w-[11%] min-w-[100px] text-sm">Size</p>
-              <p className="w-[14%] min-w-[100px] text-sm">Type</p>
-              <p className="w-[15%] min-w-[160px] text-sm">Created at</p>
-              <p className="w-[15%] min-w-[160px] text-sm">Last modified at</p>
+              <p className="w-[11%] min-w-[100px] text-sm">{$t('Size')}</p>
+              <p className="w-[14%] min-w-[100px] text-sm">{$t('Type')}</p>
+              <p className="w-[15%] min-w-[160px] text-sm">{$t('Created at')}</p>
+              <p className="w-[15%] min-w-[160px] text-sm">{$t('Last modified at')}</p>
             </div>
           )}
 
@@ -306,9 +309,9 @@ export const FileExplorerColumn = ({
                   src={`${BASE_PATH}/img/storage-placeholder.svg`}
                   className="opacity-75 pointer-events-none"
                 />
-                <p className="text-sm my-3 opacity-75">Drop your files here</p>
+                <p className="text-sm my-3 opacity-75">{$t('Drop your files here')}</p>
                 <p className="w-40 text-center text-xs text-foreground-light">
-                  Or upload them via the "Upload file" button above
+                  {$t('Or upload them via the "Upload file" button above')}
                 </p>
               </div>
             )}
@@ -318,9 +321,13 @@ export const FileExplorerColumn = ({
             isEmpty &&
             column.status !== STORAGE_ROW_STATUS.LOADING && (
               <div className="h-full w-full flex flex-col items-center justify-center">
-                <p className="text-sm my-3 text-foreground">No results found in this folder</p>
+                <p className="text-sm my-3 text-foreground">
+                  {$t('No results found in this folder')}
+                </p>
                 <p className="w-40 text-center text-sm text-foreground-light">
-                  Your search for "{itemSearchString}" did not return any results
+                  {$t('Your search for "')}
+                  {itemSearchString}
+                  {$t('" did not return any results')}
                 </p>
               </div>
             )}
@@ -348,60 +355,60 @@ export const FileExplorerColumn = ({
           <>
             <ContextMenuItem className="gap-x-2" onSelect={onSelectCreateFolder}>
               <FolderPlus size={14} />
-              <span className="text-xs">New folder</span>
+              <span className="text-xs">{$t('New folder')}</span>
             </ContextMenuItem>
             <ContextMenuSeparator />
           </>
         )}
         <ContextMenuItem className="gap-x-2" onSelect={onSelectAllItems}>
           <Copy size={14} />
-          <span className="text-xs">Select all items</span>
+          <span className="text-xs">{$t('Select all items')}</span>
         </ContextMenuItem>
         <ContextMenuSub>
           <ContextMenuSubTrigger className="gap-x-2">
             <Eye size={14} />
-            <span className="text-xs">View</span>
+            <span className="text-xs">{$t('View')}</span>
           </ContextMenuSubTrigger>
           <ContextMenuSubContent>
             <ContextMenuItem onSelect={() => setView(STORAGE_VIEWS.COLUMNS)}>
-              <span className="text-xs">As columns</span>
+              <span className="text-xs">{$t('As columns')}</span>
             </ContextMenuItem>
             <ContextMenuItem onSelect={() => setView(STORAGE_VIEWS.LIST)}>
-              <span className="text-xs">As list</span>
+              <span className="text-xs">{$t('As list')}</span>
             </ContextMenuItem>
           </ContextMenuSubContent>
         </ContextMenuSub>
         <ContextMenuSub>
           <ContextMenuSubTrigger className="gap-x-2">
             <ChevronsDown size={14} />
-            <span className="text-xs">Sort by</span>
+            <span className="text-xs">{$t('Sort by')}</span>
           </ContextMenuSubTrigger>
           <ContextMenuSubContent>
             <ContextMenuItem onSelect={() => setSortBy(STORAGE_SORT_BY.NAME)}>
-              <span className="text-xs">Name</span>
+              <span className="text-xs">{$t('Name')}</span>
             </ContextMenuItem>
             <ContextMenuItem onSelect={() => setSortBy(STORAGE_SORT_BY.CREATED_AT)}>
-              <span className="text-xs">Last created</span>
+              <span className="text-xs">{$t('Last created')}</span>
             </ContextMenuItem>
             <ContextMenuItem onSelect={() => setSortBy(STORAGE_SORT_BY.UPDATED_AT)}>
-              <span className="text-xs">Last modified</span>
+              <span className="text-xs">{$t('Last modified')}</span>
             </ContextMenuItem>
             <ContextMenuItem onSelect={() => setSortBy(STORAGE_SORT_BY.LAST_ACCESSED_AT)}>
-              <span className="text-xs">Last accessed</span>
+              <span className="text-xs">{$t('Last accessed')}</span>
             </ContextMenuItem>
           </ContextMenuSubContent>
         </ContextMenuSub>
         <ContextMenuSub>
           <ContextMenuSubTrigger className="gap-x-2">
             <ChevronsUp size={14} />
-            <span className="text-xs">Sort by order</span>
+            <span className="text-xs">{$t('Sort by order')}</span>
           </ContextMenuSubTrigger>
           <ContextMenuSubContent>
             <ContextMenuItem onSelect={() => setSortByOrder(STORAGE_SORT_BY_ORDER.ASC)}>
-              <span className="text-xs">Ascending</span>
+              <span className="text-xs">{$t('Ascending')}</span>
             </ContextMenuItem>
             <ContextMenuItem onSelect={() => setSortByOrder(STORAGE_SORT_BY_ORDER.DESC)}>
-              <span className="text-xs">Descending</span>
+              <span className="text-xs">{$t('Descending')}</span>
             </ContextMenuItem>
           </ContextMenuSubContent>
         </ContextMenuSub>

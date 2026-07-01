@@ -39,6 +39,7 @@ import {
   useAccessTokenCreateMutation,
   type NewAccessToken,
 } from '@/data/access-tokens/access-tokens-create-mutation'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const formId = 'new-access-token-form'
@@ -92,7 +93,7 @@ export const NewTokenDialog = ({
             tokenType: 'classic',
             expiryPreset: values.expiresAt || 'never',
           })
-          toast.success('Access token created successfully')
+          toast.success($t('Access token created successfully'))
           onCreateToken(data)
           handleClose()
         },
@@ -150,17 +151,20 @@ export const NewTokenDialog = ({
           <Admonition
             type="warning"
             className="rounded-none border-t-0 border-x-0"
-            title="The experimental API provides additional endpoints which allows you to manage your organizations and projects."
+            title={$t(
+              'The experimental API provides additional endpoints which allows you to manage your organizations and projects.'
+            )}
             description={
               <>
                 <p>
-                  These include deleting organizations and projects which cannot be undone. As such,
-                  be very careful when using this API.
+                  {$t(
+                    'These include deleting organizations and projects which cannot be undone. As such, be very careful when using this API.'
+                  )}
                 </p>
                 <div className="mt-4">
                   <Button asChild variant="default" icon={<ExternalLink />}>
                     <a href="https://api.supabase.com/api/v0" target="_blank" rel="noreferrer">
-                      Experimental API documentation
+                      {$t('Experimental API documentation')}
                     </a>
                   </Button>
                 </div>
@@ -171,8 +175,8 @@ export const NewTokenDialog = ({
           <Admonition
             type="warning"
             className="rounded-none border-t-0 border-x-0"
-            title="Access tokens can be used to control your whole account"
-            description="Be careful when sharing your tokens"
+            title={$t('Access tokens can be used to control your whole account')}
+            description={$t('Be careful when sharing your tokens')}
           />
         )}
         <DialogSection className="flex flex-col gap-4">
@@ -187,12 +191,12 @@ export const NewTokenDialog = ({
                 name="tokenName"
                 control={form.control}
                 render={({ field }) => (
-                  <FormItemLayout name="tokenName" label="Name">
+                  <FormItemLayout name="tokenName" label={$t('Name')}>
                     <FormControl>
                       <Input
                         id="tokenName"
                         {...field}
-                        placeholder="Provide a name for your token"
+                        placeholder={$t('Provide a name for your token')}
                       />
                     </FormControl>
                   </FormItemLayout>
@@ -203,12 +207,12 @@ export const NewTokenDialog = ({
                 name="expiresAt"
                 control={form.control}
                 render={({ field }) => (
-                  <FormItemLayout name="expiresAt" label="Expires in">
+                  <FormItemLayout name="expiresAt" label={$t('Expires in')}>
                     <div className="flex gap-2">
                       <FormControl className="grow">
                         <Select value={field.value} onValueChange={handleExpiryChange}>
                           <SelectTrigger>
-                            <SelectValue placeholder="Expires at" />
+                            <SelectValue placeholder={$t('Expires at')} />
                           </SelectTrigger>
                           <SelectContent>
                             {Object.values(EXPIRES_AT_OPTIONS).map(
@@ -239,7 +243,7 @@ export const NewTokenDialog = ({
                       <div className="w-full flex gap-x-2 items-center mt-3 mx-0.5">
                         <WarningIcon />
                         <span className="text-xs text-left text-foreground-lighter">
-                          Make sure to keep your non-expiring token safe and secure.
+                          {$t('Make sure to keep your non-expiring token safe and secure.')}
                         </span>
                       </div>
                     )}
@@ -260,10 +264,10 @@ export const NewTokenDialog = ({
               onOpenChange(false)
             }}
           >
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button form={formId} type="submit" loading={isPending}>
-            Generate token
+            {$t('Generate token')}
           </Button>
         </DialogFooter>
       </DialogContent>

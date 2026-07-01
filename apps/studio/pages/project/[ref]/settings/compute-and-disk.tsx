@@ -7,6 +7,7 @@ import {
   ScaffoldHeader,
   ScaffoldTitle,
 } from '@/components/layouts/Scaffold'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const AuthSettings: NextPageWithLayout = () => {
@@ -14,9 +15,9 @@ const AuthSettings: NextPageWithLayout = () => {
     <>
       <ScaffoldContainer>
         <ScaffoldHeader>
-          <ScaffoldTitle>Compute and Disk</ScaffoldTitle>
+          <ScaffoldTitle>{$t('Compute and Disk')}</ScaffoldTitle>
           <ScaffoldDescription>
-            Configure the compute and disk settings for your project.
+            {$t('Configure the compute and disk settings for your project.')}
           </ScaffoldDescription>
         </ScaffoldHeader>
       </ScaffoldContainer>
@@ -27,7 +28,7 @@ const AuthSettings: NextPageWithLayout = () => {
 
 AuthSettings.getLayout = (page) => (
   <DefaultLayout>
-    <SettingsLayout title="Compute and Disk">{page}</SettingsLayout>
+    <SettingsLayout title={$t('Compute and Disk')}>{page}</SettingsLayout>
   </DefaultLayout>
 )
 export default AuthSettings

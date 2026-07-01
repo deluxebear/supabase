@@ -53,6 +53,7 @@ import { useOtelLogKeysQuery } from '@/data/logs/otel-log-keys-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useShowMultigresLogs } from '@/hooks/misc/useShowMultigresLogs'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface LogsQueryPanelProps {
   templates?: LogTemplate[]
@@ -137,7 +138,7 @@ export const LogsQueryPanel = ({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="default" iconRight={<ChevronDown />}>
-                  Insert source
+                  {$t('Insert source')}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -162,7 +163,7 @@ export const LogsQueryPanel = ({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="default" iconRight={<ChevronDown />}>
-                    Templates
+                    {$t('Templates')}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="bottom" align="start">
@@ -228,12 +229,13 @@ export const LogsQueryPanel = ({
                     onClick={onRewrite}
                     className="px-2"
                   >
-                    Rewrite query to ClickHouse SQL
+                    {$t('Rewrite query to ClickHouse SQL')}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="w-72 text-center">
-                  Logs now run on a ClickHouse-backed engine. Click to rewrite this query with the
-                  Assistant.
+                  {$t(
+                    'Logs now run on a ClickHouse-backed engine. Click to rewrite this query with the Assistant.'
+                  )}
                 </TooltipContent>
               </Tooltip>
             )}
@@ -241,35 +243,36 @@ export const LogsQueryPanel = ({
             <Sheet open={showReference} onOpenChange={setShowReference}>
               <SheetTrigger asChild>
                 <Button variant="text" icon={<BookOpen />} className="px-2">
-                  <span>Field Reference</span>
+                  <span>{$t('Field Reference')}</span>
                 </Button>
               </SheetTrigger>
               <SheetContent size="lg" className="flex w-full flex-col gap-0 p-0">
                 <SheetHeader>
-                  <SheetTitle>Field Reference</SheetTitle>
+                  <SheetTitle>{$t('Field Reference')}</SheetTitle>
                   {useOtel ? (
                     <SheetDescription>
-                      The following table shows the fields available on each source. Nested fields
-                      live in the{' '}
+                      {$t(
+                        'The following table shows the fields available on each source. Nested fields live in the'
+                      )}{' '}
                       <code className="text-code-inline text-xs !break-keep">log_attributes</code>{' '}
-                      map and are read with{' '}
+                      {$t('map and are read with')}{' '}
                       <code className="text-code-inline text-xs !break-keep">
                         log_attributes['key']
                       </code>{' '}
-                      — no unnesting joins needed.
+                      {$t('— no unnesting joins needed.')}
                     </SheetDescription>
                   ) : (
                     <SheetDescription>
-                      The following table shows all the available paths that can be queried from
-                      each respective source. Do note that to access nested keys, you would need to
-                      perform the necessary{' '}
+                      {$t(
+                        'The following table shows all the available paths that can be queried from each respective source. Do note that to access nested keys, you would need to perform the necessary'
+                      )}{' '}
                       <Link
                         href={`${DOCS_URL}/guides/platform/logs#unnesting-arrays`}
                         target="_blank"
                         rel="noreferrer"
                         className="text-brand"
                       >
-                        unnesting joins
+                        {$t('unnesting joins')}
                         <ExternalLink
                           size="14"
                           className="ml-1 inline translate-y-[-2px]"
@@ -296,9 +299,9 @@ export const LogsQueryPanel = ({
                     </PopoverTrigger>
                     <PopoverContent className="p-0" sameWidthAsTrigger>
                       <Command>
-                        <CommandInput placeholder="Search source..." />
+                        <CommandInput placeholder={$t('Search source...')} />
                         <CommandList>
-                          <CommandEmpty>No source found.</CommandEmpty>
+                          <CommandEmpty>{$t('No source found.')}</CommandEmpty>
                           <CommandGroup>
                             {schemas.map((schema) => (
                               <CommandItem
@@ -330,8 +333,8 @@ export const LogsQueryPanel = ({
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="text-xs p-2!">Path</TableHead>
-                          <TableHead className="text-xs p-2!">Type</TableHead>
+                          <TableHead className="text-xs p-2!">{$t('Path')}</TableHead>
+                          <TableHead className="text-xs p-2!">{$t('Type')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -387,14 +390,14 @@ const Field = ({
             <TooltipTrigger>
               <Check size={14} strokeWidth={3} className="text-brand" />
             </TooltipTrigger>
-            <TooltipContent side="bottom">Copied</TooltipContent>
+            <TooltipContent side="bottom">{$t('Copied')}</TooltipContent>
           </Tooltip>
         ) : (
           <Tooltip>
             <TooltipTrigger>
               <Copy size={14} strokeWidth={1.5} />
             </TooltipTrigger>
-            <TooltipContent side="bottom">Copy value</TooltipContent>
+            <TooltipContent side="bottom">{$t('Copy value')}</TooltipContent>
           </Tooltip>
         )}
       </TableCell>

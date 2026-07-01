@@ -28,6 +28,7 @@ import * as z from 'zod'
 
 import { Shortcut } from '@/components/ui/Shortcut'
 import { useAPIKeyCreateMutation } from '@/data/api-keys/api-key-create-mutation'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 const NAME_SCHEMA = z
@@ -93,16 +94,17 @@ export const CreateSecretAPIKeyDialog = () => {
         tooltipOpen={visible === 'secret' ? false : undefined}
       >
         <Button variant="default" className="mt-2" icon={<Plus />} onClick={openDialog}>
-          New secret key
+          {$t('New secret key')}
         </Button>
       </Shortcut>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create new secret API key</DialogTitle>
+          <DialogTitle>{$t('Create new secret API key')}</DialogTitle>
           <DialogDescription className="grid gap-y-2">
             <p>
-              Secret API keys allow elevated access to your project's data, bypassing Row-Level
-              security.
+              {$t(
+                "Secret API keys allow elevated access to your project's data, bypassing Row-Level security."
+              )}
             </p>
           </DialogDescription>
         </DialogHeader>
@@ -121,11 +123,13 @@ export const CreateSecretAPIKeyDialog = () => {
                 control={form.control}
                 render={({ field }) => (
                   <FormItemLayout
-                    label="Name"
-                    description="A short, unique name of lowercased letters, digits and underscore"
+                    label={$t('Name')}
+                    description={$t(
+                      'A short, unique name of lowercased letters, digits and underscore'
+                    )}
                   >
                     <FormControl>
-                      <Input {...field} placeholder="Example: my_super_secret_key_123" />
+                      <Input {...field} placeholder={$t('Example: my_super_secret_key_123')} />
                     </FormControl>
                   </FormItemLayout>
                 )}
@@ -135,11 +139,11 @@ export const CreateSecretAPIKeyDialog = () => {
                 name="description"
                 control={form.control}
                 render={({ field }) => (
-                  <FormItemLayout label="Description" labelOptional="Optional">
+                  <FormItemLayout label={$t('Description')} labelOptional="Optional">
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="Short notes on how or where this key will be used"
+                        placeholder={$t('Short notes on how or where this key will be used')}
                       />
                     </FormControl>
                   </FormItemLayout>
@@ -149,21 +153,26 @@ export const CreateSecretAPIKeyDialog = () => {
           </Form>
           <Alert variant="warning">
             <ShieldCheck />
-            <AlertTitle>Securing your API key</AlertTitle>
+            <AlertTitle>{$t('Securing your API key')}</AlertTitle>
             <AlertDescription className="">
               <ul className="list-disc">
-                <li>Keep this key secret.</li>
-                <li>Do not use on the web, in mobile or desktop apps.</li>
-                <li>Don't post it publicly or commit in source control.</li>
+                <li>{$t('Keep this key secret.')}</li>
+                <li>{$t('Do not use on the web, in mobile or desktop apps.')}</li>
+                <li>{$t("Don't post it publicly or commit in source control.")}</li>
                 <li>
-                  This key provides elevated access to your data, bypassing Row-Level Security.
+                  {$t(
+                    'This key provides elevated access to your data, bypassing Row-Level Security.'
+                  )}
                 </li>
                 <li>
-                  If it leaks or is revealed, swap it with a new secret API key and then delete it.
+                  {$t(
+                    'If it leaks or is revealed, swap it with a new secret API key and then delete it.'
+                  )}
                 </li>
                 <li>
-                  If used in a browser, it will always return HTTP 401 Unauthorized. Delete
-                  immediately.
+                  {$t(
+                    'If used in a browser, it will always return HTTP 401 Unauthorized. Delete immediately.'
+                  )}
                 </li>
               </ul>
             </AlertDescription>
@@ -177,7 +186,7 @@ export const CreateSecretAPIKeyDialog = () => {
             side="top"
           >
             <Button form={FORM_ID} type="submit" loading={isCreatingAPIKey}>
-              Create API key
+              {$t('Create API key')}
             </Button>
           </Shortcut>
         </DialogFooter>

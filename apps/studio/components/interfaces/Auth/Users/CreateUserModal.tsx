@@ -24,6 +24,7 @@ import * as z from 'zod'
 
 import { useUserCreateMutation } from '@/data/auth/user-create-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 export type CreateUserModalProps = {
   visible: boolean
@@ -65,7 +66,7 @@ const CreateUserModal = ({ visible, setVisible }: CreateUserModalProps) => {
     <Dialog open={visible} onOpenChange={setVisible}>
       <DialogContent size="small">
         <DialogHeader>
-          <DialogTitle>Create a new user</DialogTitle>
+          <DialogTitle>{$t('Create a new user')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <Form {...form}>
@@ -79,7 +80,7 @@ const CreateUserModal = ({ visible, setVisible }: CreateUserModalProps) => {
               control={form.control}
               render={({ field }) => (
                 <FormItem className="flex flex-col gap-1">
-                  <FormLabel>Email address</FormLabel>
+                  <FormLabel>{$t('Email address')}</FormLabel>
                   <FormControl>
                     <div className="items-center relative">
                       <Mail
@@ -109,7 +110,7 @@ const CreateUserModal = ({ visible, setVisible }: CreateUserModalProps) => {
               control={form.control}
               render={({ field }) => (
                 <FormItem className="flex flex-col gap-1">
-                  <FormLabel>User Password</FormLabel>
+                  <FormLabel>{$t('User Password')}</FormLabel>
                   <FormControl>
                     <div className="items-center relative">
                       <Lock
@@ -144,14 +145,14 @@ const CreateUserModal = ({ visible, setVisible }: CreateUserModalProps) => {
                       onCheckedChange={(value) => field.onChange(value)}
                     />
                   </FormControl>
-                  <FormLabel>Auto confirm user?</FormLabel>
+                  <FormLabel>{$t('Auto confirm user?')}</FormLabel>
                 </FormItem>
               )}
             />
 
             <FormLabel>
               <p className="text-sm text-foreground-lighter">
-                A confirmation email will not be sent when creating a user via this form.
+                {$t('A confirmation email will not be sent when creating a user via this form.')}
               </p>
             </FormLabel>
 
@@ -162,7 +163,7 @@ const CreateUserModal = ({ visible, setVisible }: CreateUserModalProps) => {
               loading={isCreatingUser}
               disabled={!canCreateUsers || isCreatingUser}
             >
-              Create user
+              {$t('Create user')}
             </Button>
           </form>
         </Form>

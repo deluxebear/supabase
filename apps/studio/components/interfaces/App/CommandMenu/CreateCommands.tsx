@@ -39,6 +39,7 @@ import {
   useCreateCommandsConfig,
 } from './CreateCommands.utils'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
+import { t as $t } from '@/lib/i18n'
 
 const AiIconAnimation = dynamic(() => import('ui').then((mod) => mod.AiIconAnimation))
 const Badge = dynamic(() => import('ui').then((mod) => mod.Badge))
@@ -158,7 +159,7 @@ export function useCreateCommands(options?: CommandOptions) {
                     name: 'Create Auth Hook (MFA Verification Attempt)',
                     route: `/project/${ref}/auth/hooks?hook=${mfaVerificationHook?.id}`,
                     icon: () => <ShieldPlus />,
-                    badge: () => (mfaVerificationHookEnabled ? <Badge>Team</Badge> : null),
+                    badge: () => (mfaVerificationHookEnabled ? <Badge>{$t('Team')}</Badge> : null),
                     className: mfaVerificationHookEnabled
                       ? 'opacity-50 cursor-not-allowed pointer-events-none'
                       : '',
@@ -168,7 +169,8 @@ export function useCreateCommands(options?: CommandOptions) {
                     name: 'Create Auth Hook (Password Verification Attempt)',
                     route: `/project/${ref}/auth/hooks?hook=${passwordVerificationHook?.id}`,
                     icon: () => <Lock />,
-                    badge: () => (passwordVerificationHookEnabled ? <Badge>Team</Badge> : null),
+                    badge: () =>
+                      passwordVerificationHookEnabled ? <Badge>{$t('Team')}</Badge> : null,
                     className: passwordVerificationHookEnabled
                       ? 'opacity-50 cursor-not-allowed pointer-events-none'
                       : '',
@@ -288,7 +290,7 @@ export function useCreateCommands(options?: CommandOptions) {
               name: 'Create Storage Bucket (Analytics)',
               route: `/project/${ref}/storage/analytics?new=true`,
               icon: () => <AnalyticsBucket />,
-              badge: () => <Badge variant="success">New</Badge>,
+              badge: () => <Badge variant="success">{$t('New')}</Badge>,
               className: !isAnalyticsBucketsEnabled
                 ? 'opacity-50 cursor-not-allowed pointer-events-none'
                 : '',
@@ -299,7 +301,7 @@ export function useCreateCommands(options?: CommandOptions) {
               name: 'Create Storage Bucket (Vectors)',
               route: `/project/${ref}/storage/vectors?new=true`,
               icon: () => <VectorBucket />,
-              badge: () => <Badge variant="success">New</Badge>,
+              badge: () => <Badge variant="success">{$t('New')}</Badge>,
               className: !isVectorBucketsEnabled
                 ? 'opacity-50 cursor-not-allowed pointer-events-none'
                 : '',

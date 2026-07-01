@@ -18,6 +18,7 @@ import { useOrgUsageQuery } from '@/data/usage/org-usage-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export interface ComputeProps {
   orgSlug: string
@@ -161,37 +162,39 @@ export const TotalUsage = ({
               <p className="text-sm">
                 {!hasExceededAnyLimits ? (
                   <span>
-                    You have not exceeded your{' '}
-                    <span className="font-medium">{subscription?.plan.name}</span> Plan quota in
-                    this billing cycle.
+                    {$t('You have not exceeded your')}{' '}
+                    <span className="font-medium">{subscription?.plan.name}</span>{' '}
+                    {$t('Plan quota in this billing cycle.')}
                   </span>
                 ) : hasExceededAnyLimits && subscription?.plan?.id === 'free' ? (
                   <span>
-                    You have exceeded your{' '}
-                    <span className="font-medium">{subscription?.plan.name}</span> Plan quota in
-                    this billing cycle. Upgrade your plan to continue using Supabase without
-                    restrictions.
+                    {$t('You have exceeded your')}{' '}
+                    <span className="font-medium">{subscription?.plan.name}</span>{' '}
+                    {$t(
+                      'Plan quota in this billing cycle. Upgrade your plan to continue using Supabase without restrictions.'
+                    )}
                   </span>
                 ) : hasExceededAnyLimits &&
                   subscription?.usage_billing_enabled === false &&
                   subscription?.plan?.id === 'pro' ? (
                   <span>
-                    You have exceeded your{' '}
-                    <span className="font-medium">{subscription?.plan.name}</span> Plan quota in
-                    this billing cycle. Disable your spend cap to continue using Supabase without
-                    restrictions.
+                    {$t('You have exceeded your')}{' '}
+                    <span className="font-medium">{subscription?.plan.name}</span>{' '}
+                    {$t(
+                      'Plan quota in this billing cycle. Disable your spend cap to continue using Supabase without restrictions.'
+                    )}
                   </span>
                 ) : hasExceededAnyLimits && subscription?.usage_billing_enabled === true ? (
                   <span>
-                    You have exceeded your{' '}
-                    <span className="font-medium">{subscription?.plan.name}</span> Plan quota in
-                    this billing cycle and will be charged for over-usage.
+                    {$t('You have exceeded your')}{' '}
+                    <span className="font-medium">{subscription?.plan.name}</span>{' '}
+                    {$t('Plan quota in this billing cycle and will be charged for over-usage.')}
                   </span>
                 ) : (
                   <span>
-                    You have not exceeded your{' '}
-                    <span className="font-medium">{subscription?.plan.name}</span> Plan quota in
-                    this billing cycle.
+                    {$t('You have not exceeded your')}{' '}
+                    <span className="font-medium">{subscription?.plan.name}</span>{' '}
+                    {$t('Plan quota in this billing cycle.')}
                   </span>
                 )}
               </p>

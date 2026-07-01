@@ -8,6 +8,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import type { DestinationPanelSchemaType } from './DestinationForm.schema'
 import { PublicationsComboBox } from './PublicationsComboBox'
 import { useReplicationPublicationsQuery } from '@/data/replication/publications-query'
+import { t as $t } from '@/lib/i18n'
 
 type PublicationSelectionProps = {
   form: UseFormReturn<DestinationPanelSchemaType>
@@ -40,8 +41,10 @@ export const PublicationSelection = ({
       render={({ field }) => (
         <FormItemLayout
           layout="horizontal"
-          label="Publication"
-          description="Tables in the selected publication will be replicated to this destination."
+          label={$t('Publication')}
+          description={$t(
+            'Tables in the selected publication will be replicated to this destination.'
+          )}
         >
           <FormControl>
             <PublicationsComboBox
@@ -53,8 +56,11 @@ export const PublicationSelection = ({
           {isSelectedPublicationMissing && (
             <Admonition type="warning" className="mt-2">
               <p className="leading-normal!">
-                The publication <strong className="text-foreground">{publicationName}</strong> was
-                not found, it may have been renamed or deleted, please select another one.
+                {$t('The publication')}{' '}
+                <strong className="text-foreground">{publicationName}</strong>{' '}
+                {$t(
+                  'was not found, it may have been renamed or deleted, please select another one.'
+                )}
               </p>
             </Admonition>
           )}

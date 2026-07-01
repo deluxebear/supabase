@@ -24,6 +24,7 @@ import * as z from 'zod'
 
 import { urlRegex } from '../Auth.constants'
 import { useAuthConfigUpdateMutation } from '@/data/auth/auth-config-update-mutation'
+import { t as $t } from '@/lib/i18n'
 
 const MAX_URLS_LENGTH = 2 * 1024
 
@@ -72,7 +73,7 @@ export const AddNewURLModal = ({ visible, allowList, onClose }: AddNewURLModalPr
     const payload = payloadUrls.toString()
 
     if (payload.length > MAX_URLS_LENGTH) {
-      return toast.error('Too many redirect URLs, please remove some or try to use wildcards')
+      return toast.error($t('Too many redirect URLs, please remove some or try to use wildcards'))
     } else {
       updateAuthConfig(
         { projectRef: ref!, config: { URI_ALLOW_LIST: payload } },
@@ -104,10 +105,11 @@ export const AddNewURLModal = ({ visible, allowList, onClose }: AddNewURLModalPr
     >
       <DialogContent size="medium" className="max-w-[440px]!">
         <DialogHeader>
-          <DialogTitle>Add new redirect URLs</DialogTitle>
+          <DialogTitle>{$t('Add new redirect URLs')}</DialogTitle>
           <DialogDescription>
-            This will add a URL to a list of allowed URLs that can interact with your Authentication
-            services for this project.
+            {$t(
+              'This will add a URL to a list of allowed URLs that can interact with your Authentication services for this project.'
+            )}
           </DialogDescription>
         </DialogHeader>
         <DialogSectionSeparator />
@@ -142,7 +144,7 @@ export const AddNewURLModal = ({ visible, allowList, onClose }: AddNewURLModalPr
                 disabled={isUpdatingConfig}
                 loading={isUpdatingConfig}
               >
-                Save URLs
+                {$t('Save URLs')}
               </Button>
             </DialogFooter>
           </form>

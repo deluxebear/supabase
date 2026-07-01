@@ -6,6 +6,7 @@ import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import { replicaKeys } from '@/data/read-replicas/keys'
 import { useReadReplicaRemoveMutation } from '@/data/read-replicas/replica-remove-mutation'
 import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
+import { t as $t } from '@/lib/i18n'
 
 interface DropAllReplicasConfirmationModalProps {
   visible: boolean
@@ -26,7 +27,7 @@ const DropAllReplicasConfirmationModal = ({
   const onConfirmRemove = async () => {
     if (!projectRef) return console.error('Project is required')
     if (databases === undefined) return console.error('Unable to retrieve replicas')
-    if (databases.length === 1) toast('Your project has no read replicas')
+    if (databases.length === 1) toast($t('Your project has no read replicas'))
 
     const replicas = databases.filter((db) => db.identifier !== projectRef)
     try {
@@ -49,7 +50,7 @@ const DropAllReplicasConfirmationModal = ({
       onSuccess()
       onCancel()
     } catch (error) {
-      toast.error('Failed to drop all replicas')
+      toast.error($t('Failed to drop all replicas'))
     }
   }
 
@@ -59,7 +60,7 @@ const DropAllReplicasConfirmationModal = ({
       size="medium"
       loading={isRemoving}
       visible={visible}
-      title="Confirm to drop all read replicas?"
+      title={$t('Confirm to drop all read replicas?')}
       confirmLabel="Drop all replicas"
       confirmLabelLoading="Dropping all replicas"
       onCancel={() => onCancel()}
@@ -69,9 +70,9 @@ const DropAllReplicasConfirmationModal = ({
         description: 'You may still deploy new replicas in this region thereafter',
       }}
     >
-      <p className="text-sm">Before deleting all replicas, consider:</p>
+      <p className="text-sm">{$t('Before deleting all replicas, consider:')}</p>
       <ul className="text-sm text-foreground-light list-disc pl-6">
-        <li>Network traffic from this region may slow down</li>
+        <li>{$t('Network traffic from this region may slow down')}</li>
       </ul>
     </ConfirmationModal>
   )

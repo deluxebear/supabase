@@ -47,6 +47,7 @@ import { copyPathToFolder } from './StorageExplorer.utils'
 import { useCopyUrl } from './useCopyUrl'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { formatBytes } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useStorageExplorerStateSnapshot } from '@/state/storage-explorer'
 
 export const RowIcon = ({
@@ -339,7 +340,7 @@ export const FileExplorerRow = ({
               onClick={(event) => {
                 onCheckItem(event.nativeEvent.shiftKey)
               }}
-              aria-label="Check to select this item"
+              aria-label={$t('Check to select this item')}
             />
           </div>
           <p title={item.name} className="truncate text-sm" style={{ width: nameWidth }}>
@@ -351,7 +352,7 @@ export const FileExplorerRow = ({
                 <AlertCircle size={18} className="text-foreground-light" />
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                File is corrupted, please delete and reupload again.
+                {$t('File is corrupted, please delete and reupload again.')}
               </TooltipContent>
             </Tooltip>
           )}

@@ -13,6 +13,7 @@ import { formatQueueColumns, prepareQueuesForDataGrid } from './Queues.utils'
 import { AlertError } from '@/components/ui/AlertError'
 import { useQueuesQuery } from '@/data/database-queues/database-queues-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -86,7 +87,7 @@ export const QueuesTab = () => {
               ref={searchInputRef}
               size="tiny"
               className="w-52"
-              placeholder="Search for a queue"
+              placeholder={$t('Search for a queue')}
               icon={<Search />}
               value={search ?? ''}
               onChange={(e) => setSearch(e.target.value)}
@@ -115,9 +116,9 @@ export const QueuesTab = () => {
                 loading={isRefetching}
                 onClick={() => refetch()}
               >
-                Refresh
+                {$t('Refresh')}
               </Button>
-              <Button onClick={() => setCreateQueueSheetShown(true)}>Create queue</Button>
+              <Button onClick={() => setCreateQueueSheetShown(true)}>{$t('Create queue')}</Button>
             </div>
           </div>
 

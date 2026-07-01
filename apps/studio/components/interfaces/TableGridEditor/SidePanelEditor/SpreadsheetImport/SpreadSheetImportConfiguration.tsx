@@ -4,6 +4,7 @@ import { Button, cn, Collapsible, CollapsibleContent, CollapsibleTrigger, SidePa
 import { MultiSelector } from 'ui-patterns/multi-select'
 
 import type { SpreadsheetData } from './SpreadsheetImport.types'
+import { t as $t } from '@/lib/i18n'
 
 interface SpreadSheetImportConfigurationProps {
   spreadsheetData: SpreadsheetData
@@ -30,10 +31,10 @@ const SpreadsheetImportConfiguration = ({
       <CollapsibleTrigger asChild>
         <SidePanel.Content>
           <div className="py-1 flex items-center justify-between">
-            <p className="text-sm">Configure import data</p>
+            <p className="text-sm">{$t('Configure import data')}</p>
             <Button
               variant="text"
-              aria-label="Toggle import configuration"
+              aria-label={$t('Toggle import configuration')}
               icon={
                 <ChevronDown
                   size={18}
@@ -51,9 +52,11 @@ const SpreadsheetImportConfiguration = ({
         <SidePanel.Content>
           <div className="py-2 space-y-3">
             <div>
-              <p className="text-sm text-foreground-light">Select which columns to import</p>
               <p className="text-sm text-foreground-light">
-                By default, all columns are selected to be imported from your CSV
+                {$t('Select which columns to import')}
+              </p>
+              <p className="text-sm text-foreground-light">
+                {$t('By default, all columns are selected to be imported from your CSV')}
               </p>
             </div>
             <div className="flex items-center flex-wrap gap-2 pl-0.5 pb-0.5">
@@ -75,9 +78,11 @@ const SpreadsheetImportConfiguration = ({
             </div>
             <div className="space-y-2">
               <div>
-                <p className="text-sm text-foreground-light">Set empty cells as NULL</p>
+                <p className="text-sm text-foreground-light">{$t('Set empty cells as NULL')}</p>
                 <p className="text-sm text-foreground-light">
-                  Empty cells will only be converted to NULL for the selected imported columns
+                  {$t(
+                    'Empty cells will only be converted to NULL for the selected imported columns'
+                  )}
                 </p>
               </div>
               <MultiSelector

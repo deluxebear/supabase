@@ -23,6 +23,7 @@ import {
 import type { Route } from '@/components/ui/ui.types'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { getPathnameWithoutQuery, getPathSegment } from '@/lib/pathname.utils'
 
 export interface MobileMenuContentProps {
@@ -146,7 +147,7 @@ export function MobileMenuContent({
             className="p-1! justify-start"
             icon={<ChevronLeft size={20} />}
             onClick={handleBackToTop}
-            aria-label="Back to menu"
+            aria-label={$t('Back to menu')}
             block
           >
             <span className="font-medium truncate text-sm">{sectionLabel}</span>
@@ -155,7 +156,7 @@ export function MobileMenuContent({
       )}
       <div className="flex-1 overflow-y-auto pb-8 text-sidebar-foreground">
         {viewLevel === 'top' && (
-          <nav className="flex flex-col gap-2 p-1" aria-label="Project menu">
+          <nav className="flex flex-col gap-2 p-1" aria-label={$t('Project menu')}>
             <SidebarMenu>
               <SidebarGroup className="gap-0.5">
                 {[homeRoute, ...toolRoutes].map((route) =>

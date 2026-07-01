@@ -21,6 +21,7 @@ import * as z from 'zod'
 
 import { useSchemaCreateMutation } from '@/data/database/schema-create-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface SchemaEditorProps {
   visible: boolean
@@ -75,7 +76,7 @@ export const SchemaEditor = ({ visible, onSuccess, closePanel }: SchemaEditorPro
     <Dialog open={visible} onOpenChange={closePanel}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create a new schema</DialogTitle>
+          <DialogTitle>{$t('Create a new schema')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection>
@@ -85,7 +86,7 @@ export const SchemaEditor = ({ visible, onSuccess, closePanel }: SchemaEditorPro
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItemLayout layout="vertical" label="Schema name">
+                  <FormItemLayout layout="vertical" label={$t('Schema name')}>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -104,7 +105,7 @@ export const SchemaEditor = ({ visible, onSuccess, closePanel }: SchemaEditorPro
             }}
             disabled={isPending}
           >
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button
             variant="primary"
@@ -113,7 +114,7 @@ export const SchemaEditor = ({ visible, onSuccess, closePanel }: SchemaEditorPro
             loading={isPending}
             disabled={isPending}
           >
-            Save
+            {$t('Save')}
           </Button>
         </DialogFooter>
       </DialogContent>

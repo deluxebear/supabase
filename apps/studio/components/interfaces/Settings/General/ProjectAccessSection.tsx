@@ -26,6 +26,7 @@ import { useOrganizationRolesV2Query } from '@/data/organization-members/organiz
 import { useOrganizationMembersQuery } from '@/data/organizations/organization-members-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 
 export const ProjectAccessSection = () => {
@@ -110,7 +111,7 @@ export const ProjectAccessSection = () => {
     <PageSection>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Project access</PageSectionTitle>
+          <PageSectionTitle>{$t('Project access')}</PageSectionTitle>
         </PageSectionSummary>
       </PageSectionMeta>
       <PageSectionContent>
@@ -145,8 +146,8 @@ export const ProjectAccessSection = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Member</TableHead>
-                          <TableHead className="w-[180px]">Role</TableHead>
+                          <TableHead>{$t('Member')}</TableHead>
+                          <TableHead className="w-[180px]">{$t('Role')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -156,7 +157,7 @@ export const ProjectAccessSection = () => {
                               <div className="flex items-center gap-2">
                                 <p className="text-sm text-foreground break-all">{member.email}</p>
                                 {member.id === profile?.gotrue_id && (
-                                  <Badge variant="default">You</Badge>
+                                  <Badge variant="default">{$t('You')}</Badge>
                                 )}
                               </div>
                             </TableCell>
@@ -169,7 +170,7 @@ export const ProjectAccessSection = () => {
                           <TableRow className="[&>td]:hover:bg-inherit">
                             <TableCell colSpan={2}>
                               <p className="text-sm text-foreground-lighter">
-                                +{hiddenMembersCount} more project member
+                                +{hiddenMembersCount} {$t('more project member')}
                                 {hiddenMembersCount === 1 ? '' : 's'}
                               </p>
                             </TableCell>
@@ -181,7 +182,7 @@ export const ProjectAccessSection = () => {
                 ) : (
                   <CardContent className="pt-0">
                     <p className="text-sm text-foreground-lighter">
-                      No visible project members in your current access scope.
+                      {$t('No visible project members in your current access scope.')}
                     </p>
                   </CardContent>
                 )}

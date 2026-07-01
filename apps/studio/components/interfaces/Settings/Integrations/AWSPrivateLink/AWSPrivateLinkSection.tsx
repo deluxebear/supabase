@@ -22,6 +22,7 @@ import { useAWSAccountsQuery } from '@/data/aws-accounts/aws-accounts-query'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const AWSPrivateLinkSection = () => {
   const { data: project } = useSelectedProjectQuery()
@@ -33,7 +34,7 @@ export const AWSPrivateLinkSection = () => {
 
   const { mutate: deleteAccount, isPending: isDeleting } = useAWSAccountDeleteMutation({
     onSuccess: () => {
-      toast.success('Account will be deleted shortly')
+      toast.success($t('Account will be deleted shortly'))
       setShowDeleteModal(false)
       setSelectedAccount(undefined)
     },
@@ -70,11 +71,11 @@ export const AWSPrivateLinkSection = () => {
           <div className="flex flex-1 items-start gap-6">
             <IntegrationSectionIcon title="aws" />
             <PageSectionSummary>
-              <PageSectionTitle>AWS PrivateLink</PageSectionTitle>
+              <PageSectionTitle>{$t('AWS PrivateLink')}</PageSectionTitle>
               <PageSectionDescription>
-                Connect to your Supabase project from your AWS VPC using AWS PrivateLink. Create a
-                private connection between your AWS VPC and your Supabase project without traffic
-                traversing the public internet.
+                {$t(
+                  'Connect to your Supabase project from your AWS VPC using AWS PrivateLink. Create a private connection between your AWS VPC and your Supabase project without traffic traversing the public internet.'
+                )}
               </PageSectionDescription>
             </PageSectionSummary>
           </div>
@@ -92,9 +93,9 @@ export const AWSPrivateLinkSection = () => {
             )}
             <div className={cn(promptPlanUpgrade && 'opacity-25 pointer-events-none')}>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-foreground">AWS Accounts</h3>
+                <h3 className="text-sm font-medium text-foreground">{$t('AWS Accounts')}</h3>
                 <Button variant="default" onClick={onAddAccount}>
-                  Add account
+                  {$t('Add account')}
                 </Button>
               </div>
               {(accounts?.length ?? 0) > 0 ? (
@@ -111,7 +112,7 @@ export const AWSPrivateLinkSection = () => {
               ) : (
                 <Card>
                   <CardContent>
-                    <p className="text-foreground-lighter text-sm">No accounts connected</p>
+                    <p className="text-foreground-lighter text-sm">{$t('No accounts connected')}</p>
                   </CardContent>
                 </Card>
               )}
@@ -125,14 +126,14 @@ export const AWSPrivateLinkSection = () => {
       <ConfirmationModal
         variant="destructive"
         visible={showDeleteModal}
-        title="Confirm to delete AWS Account"
+        title={$t('Confirm to delete AWS Account')}
         confirmLabel="Delete"
         loading={isDeleting}
         onCancel={() => setShowDeleteModal(false)}
         onConfirm={onConfirmDelete}
       >
         <p className="text-sm text-foreground-light">
-          Are you sure you want to delete the AWS account connection for{' '}
+          {$t('Are you sure you want to delete the AWS account connection for')}{' '}
           {selectedAccount?.aws_account_id}?
         </p>
       </ConfirmationModal>

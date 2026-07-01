@@ -40,6 +40,7 @@ import { QueryPerformanceRow } from './QueryPerformance.types'
 import { formatDuration } from './QueryPerformance.utils'
 import { NumericFilter } from '@/components/interfaces/Reports/v2/ReportsNumericFilter'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 
 interface QueryPerformanceGridProps {
   aggregatedData: QueryPerformanceRow[]
@@ -148,7 +149,8 @@ export const QueryPerformanceGrid = ({
                     )}
                   >
                     <ArrowUp size={14} />
-                    Sort Ascending
+
+                    {$t('Sort Ascending')}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => {
@@ -160,7 +162,8 @@ export const QueryPerformanceGrid = ({
                     )}
                   >
                     <ArrowDown size={14} />
-                    Sort Descending
+
+                    {$t('Sort Descending')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -483,13 +486,13 @@ export const QueryPerformanceGrid = ({
         <div className="flex-1 min-w-0 p-6">
           <Admonition
             type="destructive"
-            title="Failed to load query performance data"
+            title={$t('Failed to load query performance data')}
             description={error}
           >
             {onRetry && (
               <div className="mt-4">
                 <Button variant="default" onClick={onRetry}>
-                  Try again
+                  {$t('Try again')}
                 </Button>
               </div>
             )}
@@ -570,9 +573,9 @@ export const QueryPerformanceGrid = ({
               <div className="absolute top-20 px-6 flex flex-col items-center justify-center w-full gap-y-2">
                 <TextSearch className="text-foreground-muted" strokeWidth={1} />
                 <div className="text-center">
-                  <p className="text-foreground">No queries detected</p>
+                  <p className="text-foreground">{$t('No queries detected')}</p>
                   <p className="text-foreground-light">
-                    There are no actively running queries that match the criteria
+                    {$t('There are no actively running queries that match the criteria')}
                   </p>
                 </div>
               </div>
@@ -590,9 +593,9 @@ export const QueryPerformanceGrid = ({
         }}
         modal={false}
       >
-        <SheetTitle className="sr-only">Query details</SheetTitle>
+        <SheetTitle className="sr-only">{$t('Query details')}</SheetTitle>
         <SheetDescription className="sr-only">
-          Query Performance Details &amp; Indexes
+          {$t('Query Performance Details &amp; Indexes')}
         </SheetDescription>
         <SheetContent
           side="right"
@@ -615,14 +618,14 @@ export const QueryPerformanceGrid = ({
                   value="details"
                   className="px-0 pb-0 data-[state=active]:bg-transparent shadow-none!"
                 >
-                  Query details
+                  {$t('Query details')}
                 </TabsTrigger_Shadcn_>
                 {selectedRow !== undefined && canShowIndexesTab && (
                   <TabsTrigger_Shadcn_
                     value="suggestion"
                     className="px-0 pb-0 data-[state=active]:bg-transparent shadow-none!"
                   >
-                    Indexes
+                    {$t('Indexes')}
                   </TabsTrigger_Shadcn_>
                 )}
               </TabsList_Shadcn_>

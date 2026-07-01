@@ -13,6 +13,7 @@ import {
 
 import { PipelineStatusName } from './Replication.constants'
 import { useRollbackTablesMutation } from '@/data/replication/rollback-tables-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface RestartTableDialogProps {
   open: boolean
@@ -52,8 +53,8 @@ export const RestartTableDialog = ({
   })
 
   const handleReset = () => {
-    if (!projectRef) return toast.error('Project ref is required')
-    if (!pipelineId) return toast.error('Pipeline ID is required')
+    if (!projectRef) return toast.error($t('Project ref is required'))
+    if (!pipelineId) return toast.error($t('Pipeline ID is required'))
 
     onRestartStart?.()
     rollbackTables({
@@ -70,36 +71,37 @@ export const RestartTableDialog = ({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            Restart replication for <code className="text-code-inline">{tableName}</code>
+            {$t('Restart replication for')} <code className="text-code-inline">{tableName}</code>
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-3 text-sm">
               <p>
-                This will restart replication for{' '}
-                <code className="text-code-inline">{tableName}</code> from scratch:
+                {$t('This will restart replication for')}{' '}
+                <code className="text-code-inline">{tableName}</code> {$t('from scratch:')}
               </p>
               <ul className="list-disc list-inside space-y-1.5 pl-2">
                 <li>
-                  <strong>The table copy will be re-initialized.</strong> All data will be copied
-                  again from the source.
+                  <strong>{$t('The table copy will be re-initialized.')}</strong>{' '}
+                  {$t('All data will be copied again from the source.')}
                 </li>
                 <li>
-                  <strong>Existing downstream data will be deleted.</strong> Any replicated data for
-                  this table will be removed.
+                  <strong>{$t('Existing downstream data will be deleted.')}</strong>{' '}
+                  {$t('Any replicated data for this table will be removed.')}
                 </li>
                 <li>
-                  <strong>All other tables remain untouched.</strong> Only this table is affected.
+                  <strong>{$t('All other tables remain untouched.')}</strong>{' '}
+                  {$t('Only this table is affected.')}
                 </li>
                 <li>
-                  <strong>The pipeline will restart automatically.</strong> This is required to
-                  apply this change.
+                  <strong>{$t('The pipeline will restart automatically.')}</strong>{' '}
+                  {$t('This is required to apply this change.')}
                 </li>
               </ul>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isResetting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isResetting}>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction disabled={isResetting} onClick={handleReset} variant="warning">
             {isResetting ? 'Restarting replication...' : 'Restart replication'}
           </AlertDialogAction>

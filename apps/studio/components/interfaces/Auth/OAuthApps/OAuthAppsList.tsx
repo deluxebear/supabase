@@ -46,6 +46,7 @@ import { useProjectApiUrl } from '@/data/config/project-endpoint-query'
 import { useOAuthServerAppDeleteMutation } from '@/data/oauth-server-apps/oauth-server-app-delete-mutation'
 import { useOAuthServerAppRegenerateSecretMutation } from '@/data/oauth-server-apps/oauth-server-app-regenerate-secret-mutation'
 import { useOAuthServerAppsQuery } from '@/data/oauth-server-apps/oauth-server-apps-query'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -207,14 +208,14 @@ export const OAuthAppsList = () => {
 
   useEffect(() => {
     if (isSuccess && !!selectedAppToEdit && !appToEdit) {
-      toast('App not found')
+      toast($t('App not found'))
       setSelectedAppToEdit(null)
     }
   }, [appToEdit, isSuccess, selectedAppToEdit, setSelectedAppToEdit])
 
   useEffect(() => {
     if (isSuccess && !!selectedAppToDelete && !appToDelete && !isSuccessDelete) {
-      toast('App not found')
+      toast($t('App not found'))
       setSelectedAppToDelete(null)
     }
   }, [appToDelete, isSuccess, isSuccessDelete, selectedAppToDelete, setSelectedAppToDelete])
@@ -238,11 +239,15 @@ export const OAuthAppsList = () => {
             type="default"
             layout="horizontal"
             className="mb-8"
-            title="OAuth Server is disabled"
-            description="Enable OAuth Server to make your project act as an identity provider for third-party applications."
+            title={$t('OAuth Server is disabled')}
+            description={$t(
+              'Enable OAuth Server to make your project act as an identity provider for third-party applications.'
+            )}
             actions={
               <Button asChild variant="default">
-                <Link href={`/project/${projectRef}/auth/oauth-server`}>OAuth Server Settings</Link>
+                <Link href={`/project/${projectRef}/auth/oauth-server`}>
+                  {$t('OAuth Server Settings')}
+                </Link>
               </Button>
             }
           />
@@ -253,7 +258,7 @@ export const OAuthAppsList = () => {
               <InputGroupInput
                 ref={searchInputRef}
                 size="tiny"
-                placeholder="Search OAuth apps"
+                placeholder={$t('Search OAuth apps')}
                 value={filterString}
                 onChange={(e) => setFilterString(e.target.value)}
                 onKeyDown={onSearchInputEscape(filterString, setFilterString)}
@@ -300,7 +305,7 @@ export const OAuthAppsList = () => {
             {isOAuthServerEnabled ? (
               <Shortcut
                 id={SHORTCUT_IDS.LIST_PAGE_NEW_ITEM}
-                label="Create new OAuth app"
+                label={$t('Create new OAuth app')}
                 onTrigger={() => setShowCreateSheet(true)}
                 side="bottom"
               >
@@ -310,7 +315,7 @@ export const OAuthAppsList = () => {
                   onClick={() => setShowCreateSheet(true)}
                   className="grow"
                 >
-                  New OAuth App
+                  {$t('New OAuth App')}
                 </Button>
               </Shortcut>
             ) : (
@@ -326,7 +331,7 @@ export const OAuthAppsList = () => {
                   },
                 }}
               >
-                New OAuth App
+                {$t('New OAuth App')}
               </ButtonTooltip>
             )}
           </div>
@@ -339,17 +344,17 @@ export const OAuthAppsList = () => {
                 <TableRow>
                   <TableHead className="w-48 max-w-48 flex">
                     <TableHeadSort column="name" currentSort={sort} onSortChange={handleSortChange}>
-                      Name
+                      {$t('Name')}
                     </TableHeadSort>
                   </TableHead>
-                  <TableHead>Client ID</TableHead>
+                  <TableHead>{$t('Client ID')}</TableHead>
                   <TableHead>
                     <TableHeadSort
                       column="client_type"
                       currentSort={sort}
                       onSortChange={handleSortChange}
                     >
-                      Client Type
+                      {$t('Client Type')}
                     </TableHeadSort>
                   </TableHead>
                   <TableHead>
@@ -358,7 +363,7 @@ export const OAuthAppsList = () => {
                       currentSort={sort}
                       onSortChange={handleSortChange}
                     >
-                      Registration Type
+                      {$t('Registration Type')}
                     </TableHeadSort>
                   </TableHead>
                   <TableHead>
@@ -367,7 +372,7 @@ export const OAuthAppsList = () => {
                       currentSort={sort}
                       onSortChange={handleSortChange}
                     >
-                      Created
+                      {$t('Created')}
                     </TableHeadSort>
                   </TableHead>
                   <TableHead className="w-8 px-0">
@@ -379,7 +384,7 @@ export const OAuthAppsList = () => {
                 {filteredAndSortedOAuthApps.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={6}>
-                      <p className="text-foreground-lighter">No OAuth apps found</p>
+                      <p className="text-foreground-lighter">{$t('No OAuth apps found')}</p>
                     </TableCell>
                   </TableRow>
                 )}
@@ -422,7 +427,7 @@ export const OAuthAppsList = () => {
                                 }}
                               >
                                 <Edit size={12} />
-                                <p>Edit OAuth app</p>
+                                <p>{$t('Edit OAuth app')}</p>
                               </DropdownMenuItem>
                               {app.client_type === 'confidential' && (
                                 <DropdownMenuItem
@@ -433,7 +438,7 @@ export const OAuthAppsList = () => {
                                   }}
                                 >
                                   <RotateCw size={12} />
-                                  <p>Regenerate client secret</p>
+                                  <p>{$t('Regenerate client secret')}</p>
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuSeparator />
@@ -442,7 +447,7 @@ export const OAuthAppsList = () => {
                                 onClick={() => setSelectedAppToDelete(app.client_id)}
                               >
                                 <Trash size={12} />
-                                <p>Delete OAuth app</p>
+                                <p>{$t('Delete OAuth app')}</p>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -490,7 +495,7 @@ export const OAuthAppsList = () => {
         variant="warning"
         visible={showRegenerateDialog}
         loading={isRegenerating}
-        title="Confirm regenerating client secret"
+        title={$t('Confirm regenerating client secret')}
         confirmLabel="Confirm"
         onCancel={() => setShowRegenerateDialog(false)}
         onConfirm={() => {
@@ -503,8 +508,11 @@ export const OAuthAppsList = () => {
         }}
       >
         <p className="text-sm text-foreground-light">
-          Are you sure you wish to regenerate the client secret for "{selectedApp?.client_name}"?
-          You'll need to update it in all applications that use it. This action cannot be undone.
+          {$t('Are you sure you wish to regenerate the client secret for "')}
+          {selectedApp?.client_name}
+          {$t(
+            '"? You\'ll need to update it in all applications that use it. This action cannot be undone.'
+          )}
         </p>
       </ConfirmationModal>
     </>

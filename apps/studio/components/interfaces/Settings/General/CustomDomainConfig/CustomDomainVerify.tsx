@@ -15,6 +15,7 @@ import { useCustomDomainDeleteMutation } from '@/data/custom-domains/custom-doma
 import { useCustomDomainsQuery } from '@/data/custom-domains/custom-domains-query'
 import { useCustomDomainReverifyQuery } from '@/data/custom-domains/custom-domains-reverify-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const CustomDomainVerify = () => {
   const { ref: projectRef } = useParams()
@@ -29,7 +30,9 @@ export const CustomDomainVerify = () => {
   const { mutate: deleteCustomDomain, isPending: isDeleting } = useCustomDomainDeleteMutation({
     onSuccess: () => {
       toast.success(
-        'Custom domain setup cancelled successfully. It may take a few seconds before your custom domain is fully removed, so you may need to refresh your browser.'
+        $t(
+          'Custom domain setup cancelled successfully. It may take a few seconds before your custom domain is fully removed, so you may need to refresh your browser.'
+        )
       )
     },
   })
@@ -77,13 +80,13 @@ export const CustomDomainVerify = () => {
       <Panel.Content className="space-y-6">
         <div>
           <h4 className="text-foreground mb-2">
-            Configure TXT verification for your custom domain{' '}
+            {$t('Configure TXT verification for your custom domain')}{' '}
             <code className="text-code-inline">{customDomain?.hostname}</code>
           </h4>
           <p className="text-sm text-foreground-light">
-            Set the following TXT record(s) in your DNS provider, then click verify to confirm your
-            control over the domain. Records which have been successfully verified will be removed
-            from this list below.
+            {$t(
+              'Set the following TXT record(s) in your DNS provider, then click verify to confirm your control over the domain. Records which have been successfully verified will be removed from this list below.'
+            )}
           </p>
           {!isValidating && (
             <div className="mt-4 mb-2">
@@ -96,18 +99,22 @@ export const CustomDomainVerify = () => {
                 }
               >
                 <p>
-                  You may also visit{' '}
+                  {$t('You may also visit')}{' '}
                   <InlineLink href={`https://whatsmydns.net/#TXT/${customDomain?.ssl.txt_name}`}>
                     here
                   </InlineLink>{' '}
-                  to check if your DNS has been propagated successfully before clicking verify.
+                  {$t(
+                    'to check if your DNS has been propagated successfully before clicking verify.'
+                  )}
                 </p>
                 {isNotVerifiedYet && (
                   <p className="mt-1">
-                    Some registrars will require you to remove the domain name when creating DNS
-                    records. As an example, to create a record for{' '}
-                    <code className="text-code-inline">foo.app.example.com</code>, you would need to
-                    create an entry for <code className="text-code-inline">foo.app</code>.
+                    {$t(
+                      'Some registrars will require you to remove the domain name when creating DNS records. As an example, to create a record for'
+                    )}{' '}
+                    <code className="text-code-inline">foo.app.example.com</code>
+                    {$t(', you would need to create an entry for')}{' '}
+                    <code className="text-code-inline">foo.app</code>.
                   </p>
                 )}
               </Admonition>
@@ -118,11 +125,12 @@ export const CustomDomainVerify = () => {
         {hasCAAErrors && (
           <Alert>
             <WarningIcon />
-            <AlertTitle>Certificate Authority Authentication (CAA) error</AlertTitle>
+            <AlertTitle>{$t('Certificate Authority Authentication (CAA) error')}</AlertTitle>
             <AlertDescription>
-              Please add a CAA record allowing "digicert.com" to issue certificates for{' '}
-              <code className="text-code-inline">{customDomain?.hostname}</code>. For example:{' '}
-              <code className="text-code-inline">0 issue "digicert.com"</code>
+              {$t('Please add a CAA record allowing "digicert.com" to issue certificates for')}{' '}
+              <code className="text-code-inline">{customDomain?.hostname}</code>
+              {$t('. For example:')}{' '}
+              <code className="text-code-inline">{$t('0 issue "digicert.com"')}</code>
             </AlertDescription>
           </Alert>
         )}
@@ -130,9 +138,9 @@ export const CustomDomainVerify = () => {
         {customDomain?.ssl.status === 'validation_timed_out' ? (
           <Alert>
             <WarningIcon />
-            <AlertTitle>Validation timed out</AlertTitle>
+            <AlertTitle>{$t('Validation timed out')}</AlertTitle>
             <AlertDescription>
-              Please click "Verify" again to retry the validation of the records
+              {$t('Please click "Verify" again to retry the validation of the records')}
             </AlertDescription>
           </Alert>
         ) : (
@@ -161,7 +169,9 @@ export const CustomDomainVerify = () => {
               <div className="flex items-center justify-center space-x-2 py-8">
                 <AlertCircle size={16} strokeWidth={1.5} />
                 <p className="text-sm text-foreground-light">
-                  SSL certificate is being deployed. Please wait a few minutes and try again.
+                  {$t(
+                    'SSL certificate is being deployed. Please wait a few minutes and try again.'
+                  )}
                 </p>
               </div>
             )}
@@ -181,7 +191,7 @@ export const CustomDomainVerify = () => {
               loading={isDeleting}
               className="self-end"
             >
-              Cancel
+              {$t('Cancel')}
             </Button>
             <Button
               icon={<RefreshCw />}
@@ -190,7 +200,7 @@ export const CustomDomainVerify = () => {
               disabled={isDeleting || isReverifyLoading || isValidating}
               className="self-end"
             >
-              Verify
+              {$t('Verify')}
             </Button>
           </div>
         </div>

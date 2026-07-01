@@ -30,6 +30,7 @@ import { useVectorBucketCreateMutation } from '@/data/storage/vector-bucket-crea
 import { useVectorBucketsQuery } from '@/data/storage/vector-buckets-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const FormSchema = z.object({
@@ -116,7 +117,7 @@ export const CreateVectorBucketDialog = ({
     const hasExistingBucket = (data?.vectorBuckets ?? []).some(
       (x) => x.vectorBucketName === values.name
     )
-    if (hasExistingBucket) return toast.error('Bucket name already exists')
+    if (hasExistingBucket) return toast.error($t('Bucket name already exists'))
 
     setIsLoading(true)
     try {
@@ -145,9 +146,13 @@ export const CreateVectorBucketDialog = ({
     } catch (error: any) {
       toast.success(
         <div>
-          <p>Successfully created vector bucket {values.name}</p>
+          <p>
+            {$t('Successfully created vector bucket')} {values.name}
+          </p>
           <p className="text-foreground-light text-xs">
-            However, bucket integration will need to be manually installed as we ran into an error:
+            {$t(
+              'However, bucket integration will need to be manually installed as we ran into an error:'
+            )}
           </p>
           <p className="text-foreground-light text-xs">{error.message}</p>
         </div>,
@@ -169,7 +174,7 @@ export const CreateVectorBucketDialog = ({
     <Dialog open={visible} onOpenChange={setVisible}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create vector bucket</DialogTitle>
+          <DialogTitle>{$t('Create vector bucket')}</DialogTitle>
         </DialogHeader>
 
         <DialogSectionSeparator />
@@ -184,10 +189,12 @@ export const CreateVectorBucketDialog = ({
                 render={({ field }) => (
                   <FormItemLayout
                     name="name"
-                    label="Bucket name"
+                    label={$t('Bucket name')}
                     className="px-5 py-5"
                     labelOptional="Cannot be changed after creation"
-                    description="Must be between 3–63 characters. Only lowercase letters, numbers, and hyphens are allowed"
+                    description={$t(
+                      'Must be between 3–63 characters. Only lowercase letters, numbers, and hyphens are allowed'
+                    )}
                   >
                     <FormControl>
                       <Input
@@ -197,7 +204,7 @@ export const CreateVectorBucketDialog = ({
                         data-form-type="other"
                         data-bwignore
                         {...field}
-                        placeholder="Enter bucket name"
+                        placeholder={$t('Enter bucket name')}
                       />
                     </FormControl>
                   </FormItemLayout>
@@ -206,11 +213,11 @@ export const CreateVectorBucketDialog = ({
 
               <Admonition type="default" className="border-x-0 border-b-0 rounded-none">
                 <p>
-                  Supabase will install the{' '}
+                  {$t('Supabase will install the')}{' '}
                   {wrappersExtensionState !== 'installed' ? 'Wrappers extension and ' : ''}
-                  S3 Vectors Wrapper integration on your behalf.{' '}
+                  {$t('S3 Vectors Wrapper integration on your behalf.')}{' '}
                   <InlineLink href={`${DOCS_URL}/guides/database/extensions/wrappers/s3_vectors`}>
-                    Learn more
+                    {$t('Learn more')}
                   </InlineLink>
                   .
                 </p>
@@ -221,10 +228,10 @@ export const CreateVectorBucketDialog = ({
 
         <DialogFooter>
           <Button variant="default" disabled={isLoading} onClick={() => setVisible(false)}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button form={formId} type="submit" loading={isLoading}>
-            Create
+            {$t('Create')}
           </Button>
         </DialogFooter>
       </DialogContent>

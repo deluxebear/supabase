@@ -24,6 +24,7 @@ import {
 } from '@/components/interfaces/Organization/OAuthApps/AuthorizeRequesterDetails'
 import { InterstitialLayout, LogoPair, SupabaseLogo } from '@/components/layouts/InterstitialLayout'
 import type { ApiAuthorizationResponse } from '@/data/api-authorization/api-authorization-query'
+import { t as $t } from '@/lib/i18n'
 import type { Organization, ResponseError } from '@/types'
 
 type OrganizationsState_Loading = {
@@ -97,10 +98,12 @@ export function ApiAuthorizationMainView({
         />
       }
       title={`Authorize ${requester.name}`}
-      description="This application wants to access your Supabase account"
+      description={$t('This application wants to access your Supabase account')}
     >
       <div className="px-6 pb-6">
-        <span className="sr-only">Authorize API access for {requester.name}</span>
+        <span className="sr-only">
+          {$t('Authorize API access for')} {requester.name}
+        </span>
         <div className="flex flex-col gap-5">
           {isExpired ? (
             <ExpiredNotice />
@@ -150,17 +153,17 @@ function ExpiredNotice(): ReactNode {
   return (
     <Admonition
       type="warning"
-      title="Authorization request expired"
-      description="Retry the authorization request from the requesting app."
+      title={$t('Authorization request expired')}
+      description={$t('Retry the authorization request from the requesting app.')}
     />
   )
 }
 
 function OrganizationsLoader(): ReactNode {
   return (
-    <section className="space-y-2" aria-label="Organizations">
+    <section className="space-y-2" aria-label={$t('Organizations')}>
       <p className="text-xs font-medium uppercase tracking-wider text-foreground-light">
-        Organization
+        {$t('Organization')}
       </p>
       <ShimmeringLoader className="h-[34px] w-full rounded-md py-0" />
     </section>
@@ -175,12 +178,14 @@ function OrganizationsErrorNotice({ error }: OrganizationsErrorNoticeProps): Rea
   return (
     <Admonition
       type="warning"
-      title="Unable to load organizations"
+      title={$t('Unable to load organizations')}
       description={
         <>
-          Please try again. If the problem persists, contact support.
+          {$t('Please try again. If the problem persists, contact support.')}
           {error && (
-            <span className="mt-1 block text-foreground-lighter">Error: {error.message}</span>
+            <span className="mt-1 block text-foreground-lighter">
+              {$t('Error:')} {error.message}
+            </span>
           )}
         </>
       }
@@ -192,8 +197,8 @@ function OrganizationsEmptyState(): ReactNode {
   return (
     <Admonition
       type="warning"
-      title="No organizations found"
-      description="Create an organization before authorizing this request."
+      title={$t('No organizations found')}
+      description={$t('Create an organization before authorizing this request.')}
     />
   )
 }
@@ -202,8 +207,8 @@ function NotMemberOfOrganizationNotice(): ReactNode {
   return (
     <Admonition
       type="warning"
-      title="Organization unavailable"
-      description="Your account is not a member of the pre-selected organization."
+      title={$t('Organization unavailable')}
+      description={$t('Your account is not a member of the pre-selected organization.')}
     />
   )
 }
@@ -232,10 +237,12 @@ function OrganizationSelector({
           <FormItem className="space-y-2">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-medium uppercase tracking-wider text-foreground-light">
-                Organization
+                {$t('Organization')}
               </p>
               {requestedOrganizationSlug && (
-                <p className="text-xs text-foreground-lighter">Pre-selected by {requester.name}</p>
+                <p className="text-xs text-foreground-lighter">
+                  {$t('Pre-selected by')} {requester.name}
+                </p>
               )}
             </div>
             <FormControl>
@@ -249,11 +256,11 @@ function OrganizationSelector({
               >
                 <SelectTrigger
                   size="small"
-                  aria-label="Organization to grant API access to"
+                  aria-label={$t('Organization to grant API access to')}
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? 'organization-selection-error' : undefined}
                 >
-                  <SelectValue placeholder="Select an organization" />
+                  <SelectValue placeholder={$t('Select an organization')} />
                 </SelectTrigger>
                 <SelectContent>
                   {organizations.map((organization) => (
@@ -306,12 +313,13 @@ function FormFooter({
         disabled={approvalState !== 'indeterminate'}
         onClick={onDecline}
       >
-        Cancel
+        {$t('Cancel')}
       </Button>
       {redirectUrl && (
         <div className="mt-3 border-t border-muted pt-5">
           <p className="text-center text-xs text-foreground-lighter text-balance">
-            Authorizing will redirect you to <span className="text-foreground">{redirectUrl}</span>
+            {$t('Authorizing will redirect you to')}{' '}
+            <span className="text-foreground">{redirectUrl}</span>
           </p>
         </div>
       )}
@@ -341,7 +349,7 @@ function ApprovalButton({
       aria-label={`Authorize ${requester.name}`}
       onClick={onApprove}
     >
-      Authorize {requester.name}
+      {$t('Authorize')} {requester.name}
     </Button>
   )
 }

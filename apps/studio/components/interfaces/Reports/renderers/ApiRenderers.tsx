@@ -40,6 +40,7 @@ import BarChart from '@/components/ui/Charts/BarChart'
 import { DataTableColumnStatusCode } from '@/components/ui/DataTable/DataTableColumn/DataTableColumnStatusCode'
 import { useFillTimeseriesSorted } from '@/hooks/analytics/useFillTimeseriesSorted'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 export const NetworkTrafficRenderer = (
@@ -74,7 +75,7 @@ export const NetworkTrafficRenderer = (
     return (
       <Alert variant="warning">
         <WarningIcon />
-        <AlertTitle>Failed to retrieve network traffic</AlertTitle>
+        <AlertTitle>{$t('Failed to retrieve network traffic')}</AlertTitle>
         <AlertDescription>{error?.message ?? 'Unknown error'}</AlertDescription>
       </Alert>
     )
@@ -84,7 +85,7 @@ export const NetworkTrafficRenderer = (
     <div className="flex flex-col gap-12 w-full">
       <BarChart
         size="small"
-        title="Ingress"
+        title={$t('Ingress')}
         highlightedValue={sumBy(props.data, 'ingress_mb')}
         format="MB"
         className="w-full"
@@ -97,7 +98,7 @@ export const NetworkTrafficRenderer = (
 
       <BarChart
         size="small"
-        title="Egress"
+        title={$t('Egress')}
         highlightedValue={totalEgress}
         format="MB"
         valuePrecision={determinePrecision(totalEgress)}
@@ -138,7 +139,7 @@ export const TotalRequestsChartRenderer = (
     return (
       <Alert variant="warning">
         <WarningIcon />
-        <AlertTitle>Failed to retrieve total requests</AlertTitle>
+        <AlertTitle>{$t('Failed to retrieve total requests')}</AlertTitle>
         <AlertDescription>{error?.message ?? 'Unknown error'}</AlertDescription>
       </Alert>
     )
@@ -184,10 +185,10 @@ export const TopApiRoutesRenderer = (
         containerClassName="overflow-x-auto"
         head={
           <>
-            <Table.th className={headerClasses}>Request</Table.th>
-            <Table.th className={headerClasses + ' text-right'}>Count</Table.th>
+            <Table.th className={headerClasses}>{$t('Request')}</Table.th>
+            <Table.th className={headerClasses + ' text-right'}>{$t('Count')}</Table.th>
             {props.data[0].avg !== undefined && (
-              <Table.th className={headerClasses + ' text-right'}>Avg</Table.th>
+              <Table.th className={headerClasses + ' text-right'}>{$t('Avg')}</Table.th>
             )}
           </>
         }
@@ -268,7 +269,7 @@ export const ErrorCountsChartRenderer = (
     return (
       <Alert variant="warning">
         <WarningIcon />
-        <AlertTitle>Failed to retrieve request errors</AlertTitle>
+        <AlertTitle>{$t('Failed to retrieve request errors')}</AlertTitle>
         <AlertDescription>{error?.message ?? 'Unknown error'}</AlertDescription>
       </Alert>
     )
@@ -319,7 +320,7 @@ export const ResponseSpeedChartRenderer = (
     return (
       <Alert variant="warning">
         <WarningIcon />
-        <AlertTitle>Failed to retrieve response speeds</AlertTitle>
+        <AlertTitle>{$t('Failed to retrieve response speeds')}</AlertTitle>
         <AlertDescription>{error?.message ?? 'Unknown error'}</AlertDescription>
       </Alert>
     )
@@ -350,7 +351,12 @@ const RouteTdContent = (datum: RouteTdContentProps) => (
   <Collapsible>
     <CollapsibleTrigger asChild>
       <div className="flex gap-2 items-center">
-        <Button asChild variant="text" className=" py-0! p-1!" title="Show more route details">
+        <Button
+          asChild
+          variant="text"
+          className=" py-0! p-1!"
+          title={$t('Show more route details')}
+        >
           <span>
             <ChevronRight
               size={14}
@@ -388,7 +394,9 @@ const RouteTdContent = (datum: RouteTdContentProps) => (
           />
         </pre>
       ) : (
-        <p className="text-xs text-foreground-lighter">No query parameters in this request</p>
+        <p className="text-xs text-foreground-lighter">
+          {$t('No query parameters in this request')}
+        </p>
       )}
     </CollapsibleContent>
   </Collapsible>

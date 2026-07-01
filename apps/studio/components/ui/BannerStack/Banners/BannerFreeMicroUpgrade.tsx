@@ -8,6 +8,7 @@ import { BannerCard } from '../BannerCard'
 import { BANNER_ID, useBannerStack } from '../BannerStackProvider'
 import { ChevronsUpAnimated } from '@/components/ui/ComputeBadgeWrapper'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export const BannerFreeMicroUpgrade = () => {
@@ -41,10 +42,11 @@ export const BannerFreeMicroUpgrade = () => {
           </div>
         </div>
         <div className="flex flex-col gap-y-1 mb-2">
-          <p className="text-sm font-medium">Project low on resources</p>
+          <p className="text-sm font-medium">{$t('Project low on resources')}</p>
           <p className="text-xs text-foreground-lighter text-balance">
-            Your Nano compute is approaching its limits. Your Pro plan includes a free upgrade to
-            Micro — double the memory at no extra cost.
+            {$t(
+              'Your Nano compute is approaching its limits. Your Pro plan includes a free upgrade to Micro — double the memory at no extra cost.'
+            )}
           </p>
         </div>
         <div className="flex gap-2">
@@ -59,7 +61,7 @@ export const BannerFreeMicroUpgrade = () => {
             }}
           >
             <Link href={`/project/${ref}/settings/compute-and-disk?upgrade=micro`}>
-              Upgrade for free
+              {$t('Upgrade for free')}
             </Link>
           </Button>
         </div>

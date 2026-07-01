@@ -5,6 +5,7 @@ import {
   VirtualizedTableHeader,
   VirtualizedTableRow,
 } from '@/components/ui/VirtualizedTable'
+import { t as $t } from '@/lib/i18n'
 
 type BucketTableMode = 'standard' | 'virtualized'
 
@@ -25,15 +26,15 @@ export const BucketTableHeader = ({ mode, hasBuckets = true }: BucketTableHeader
       <BucketTableRow>
         {hasBuckets && (
           <BucketTableHead className={`${stickyClasses} w-2 pr-1`}>
-            <span className="sr-only">Icon</span>
+            <span className="sr-only">{$t('Icon')}</span>
           </BucketTableHead>
         )}
-        <BucketTableHead className={stickyClasses}>Name</BucketTableHead>
-        <BucketTableHead className={stickyClasses}>Policies</BucketTableHead>
-        <BucketTableHead className={stickyClasses}>File size limit</BucketTableHead>
-        <BucketTableHead className={stickyClasses}>Allowed MIME types</BucketTableHead>
+        <BucketTableHead className={stickyClasses}>{$t('Name')}</BucketTableHead>
+        <BucketTableHead className={stickyClasses}>{$t('Policies')}</BucketTableHead>
+        <BucketTableHead className={stickyClasses}>{$t('File size limit')}</BucketTableHead>
+        <BucketTableHead className={stickyClasses}>{$t('Allowed MIME types')}</BucketTableHead>
         <BucketTableHead className={stickyClasses}>
-          <span className="sr-only">Actions</span>
+          <span className="sr-only">{$t('Actions')}</span>
         </BucketTableHead>
       </BucketTableRow>
     </BucketTableHeader>

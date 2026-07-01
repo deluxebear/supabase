@@ -11,6 +11,7 @@ import {
 } from 'ui'
 
 import { useNetworkRestrictionsApplyMutation } from '@/data/network-restrictions/network-retrictions-apply-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface AllowAllModalProps {
   visible: boolean
@@ -37,15 +38,15 @@ const AllowAllModal = ({ visible, onClose }: AllowAllModalProps) => {
     <AlertDialog open={visible} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Allow access from all IP addresses</AlertDialogTitle>
+          <AlertDialogTitle>{$t('Allow access from all IP addresses')}</AlertDialogTitle>
           <AlertDialogDescription>
-            This will allow any IP address to access your project's database. Are you sure?
+            {$t("This will allow any IP address to access your project's database. Are you sure?")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isApplying}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isApplying}>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction onClick={onSubmit} disabled={isApplying} loading={isApplying}>
-            Confirm
+            {$t('Confirm')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

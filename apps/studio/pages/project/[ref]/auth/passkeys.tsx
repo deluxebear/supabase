@@ -13,6 +13,7 @@ import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 import { PasskeysSettingsForm } from '@/components/interfaces/Auth/Passkeys/PasskeysSettingsForm'
 import AuthLayout from '@/components/layouts/AuthLayout/AuthLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const PasskeysPage: NextPageWithLayout = () => {
@@ -46,7 +47,7 @@ const PasskeysPage: NextPageWithLayout = () => {
         <PageSection>
           <PageSectionContent>
             <p className="text-sm text-foreground-light">
-              Passkey authentication is not available for this project.
+              {$t('Passkey authentication is not available for this project.')}
             </p>
           </PageSectionContent>
         </PageSection>
@@ -75,10 +76,11 @@ const PasskeysPage: NextPageWithLayout = () => {
 const HeaderSummary = () => {
   return (
     <PageHeaderSummary>
-      <PageHeaderTitle>Passkeys</PageHeaderTitle>
+      <PageHeaderTitle>{$t('Passkeys')}</PageHeaderTitle>
       <PageHeaderDescription>
-        Configure WebAuthn passkeys so users can sign in with biometrics, security keys, or platform
-        authenticators
+        {$t(
+          'Configure WebAuthn passkeys so users can sign in with biometrics, security keys, or platform authenticators'
+        )}
       </PageHeaderDescription>
     </PageHeaderSummary>
   )
@@ -86,7 +88,7 @@ const HeaderSummary = () => {
 
 PasskeysPage.getLayout = (page) => (
   <DefaultLayout>
-    <AuthLayout title="Passkeys">{page}</AuthLayout>
+    <AuthLayout title={$t('Passkeys')}>{page}</AuthLayout>
   </DefaultLayout>
 )
 

@@ -30,6 +30,7 @@ import {
 import { DEFAULT_SIDEBAR_BEHAVIOR } from '@/components/interfaces/Sidebar'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const ThemeSettings = () => {
   const [mounted, setMounted] = useState(false)
@@ -53,7 +54,7 @@ export const ThemeSettings = () => {
       <RadioGroup
         name="theme"
         onValueChange={setTheme}
-        aria-label="Choose a theme"
+        aria-label={$t('Choose a theme')}
         defaultValue={theme}
         value={theme}
         className="grid grid-cols-2 gap-4"
@@ -76,9 +77,9 @@ export const ThemeSettings = () => {
     <PageSection>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Appearance</PageSectionTitle>
+          <PageSectionTitle>{$t('Appearance')}</PageSectionTitle>
           <PageSectionDescription>
-            Choose how Supabase looks and behaves in the dashboard.
+            {$t('Choose how Supabase looks and behaves in the dashboard.')}
           </PageSectionDescription>
         </PageSectionSummary>
       </PageSectionMeta>
@@ -87,10 +88,12 @@ export const ThemeSettings = () => {
           <CardContent className="grid grid-cols-12 gap-6">
             <div className="col-span-full md:col-span-4 flex flex-col gap-2">
               <Label htmlFor="theme" className="text-foreground">
-                Theme mode
+                {$t('Theme mode')}
               </Label>
               <p className="text-sm text-foreground-light">
-                Choose how Supabase looks to you. Select a single theme, or sync with your system.
+                {$t(
+                  'Choose how Supabase looks to you. Select a single theme, or sync with your system.'
+                )}
               </p>
             </div>
 
@@ -102,22 +105,24 @@ export const ThemeSettings = () => {
           <CardContent>
             <FormItemLayout
               isReactForm={false}
-              label="Sidebar behavior"
+              label={$t('Sidebar behavior')}
               layout="flex-row-reverse"
-              description="Choose your preferred sidebar behavior: open, closed, or expand on hover."
+              description={$t(
+                'Choose your preferred sidebar behavior: open, closed, or expand on hover.'
+              )}
             >
               <Select
                 value={sidebarBehaviour}
                 onValueChange={setSidebarBehaviour}
-                aria-label="Select an option"
+                aria-label={$t('Select an option')}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose an option" />
+                  <SelectValue placeholder={$t('Choose an option')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="open">Expanded</SelectItem>
-                  <SelectItem value="closed">Collapsed</SelectItem>
-                  <SelectItem value="expandable">Expand on hover</SelectItem>
+                  <SelectItem value="open">{$t('Expanded')}</SelectItem>
+                  <SelectItem value="closed">{$t('Collapsed')}</SelectItem>
+                  <SelectItem value="expandable">{$t('Expand on hover')}</SelectItem>
                 </SelectContent>
               </Select>
             </FormItemLayout>

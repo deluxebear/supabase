@@ -26,6 +26,7 @@ import { PasswordStrengthBar } from '@/components/ui/PasswordStrengthBar'
 import { useProjectCloneMutation } from '@/data/projects/clone-mutation'
 import { useCloneBackupsQuery } from '@/data/projects/clone-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { passwordStrength, PasswordStrengthScore } from '@/lib/password-strength'
 import { generateStrongPassword } from '@/lib/project'
 
@@ -76,7 +77,7 @@ export const CreateNewProjectDialog = ({
       toast.error(`Failed to restore to new project: ${error.message}`)
     },
     onSuccess: () => {
-      toast.success('Restoration process started')
+      toast.success($t('Restoration process started'))
       onCloneSuccess()
     },
   })
@@ -97,9 +98,9 @@ export const CreateNewProjectDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader className="border-b">
-          <DialogTitle>Create new project</DialogTitle>
+          <DialogTitle>{$t('Create new project')}</DialogTitle>
           <DialogDescription>
-            This process will create a new project and restore your database to it.
+            {$t('This process will create a new project and restore your database to it.')}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -107,7 +108,7 @@ export const CreateNewProjectDialog = ({
             id={'create-new-project-form'}
             onSubmit={form.handleSubmit((data) => {
               if (!project?.ref) {
-                toast.error('Project ref is required')
+                toast.error($t('Project ref is required'))
                 return
               }
 
@@ -128,7 +129,7 @@ export const CreateNewProjectDialog = ({
                   recoveryTimeTarget: undefined,
                 })
               } else {
-                toast.error('No backup or point in time selected')
+                toast.error($t('No backup or point in time selected'))
                 return
               }
             })}
@@ -138,9 +139,9 @@ export const CreateNewProjectDialog = ({
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItemLayout label="New Project Name">
+                  <FormItemLayout label={$t('New Project Name')}>
                     <FormControl>
-                      <Input placeholder="Enter a name" type="text" {...field} />
+                      <Input placeholder={$t('Enter a name')} type="text" {...field} />
                     </FormControl>
                   </FormItemLayout>
                 )}
@@ -150,7 +151,7 @@ export const CreateNewProjectDialog = ({
                 name="password"
                 render={({ field }) => (
                   <FormItemLayout
-                    label="Database password"
+                    label={$t('Database password')}
                     description={
                       <PasswordStrengthBar
                         passwordStrengthScore={passwordStrengthScore as PasswordStrengthScore}
@@ -164,7 +165,7 @@ export const CreateNewProjectDialog = ({
                       <PasswordInput
                         id="db-password"
                         type="password"
-                        placeholder="Type in a strong password"
+                        placeholder={$t('Type in a strong password')}
                         value={field.value}
                         copy={field.value?.length > 0}
                         reveal
@@ -185,10 +186,10 @@ export const CreateNewProjectDialog = ({
             <AdditionalMonthlySpend additionalMonthlySpend={additionalMonthlySpend} />
             <DialogFooter>
               <Button type="reset" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button type="submit" loading={cloneMutationLoading}>
-                Restore to new project
+                {$t('Restore to new project')}
               </Button>
             </DialogFooter>
           </form>

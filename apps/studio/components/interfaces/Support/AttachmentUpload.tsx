@@ -18,6 +18,7 @@ import { createSupportStorageClient } from './support-storage-client'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { useGenerateAttachmentURLsMutation } from '@/data/support/generate-attachment-urls-mutation'
 import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 
 const MAX_ATTACHMENTS = 5
@@ -106,7 +107,7 @@ export function useAttachmentUpload() {
   const createAttachments = useCallback(async () => {
     if (!profile?.id) {
       console.error('[Support Form > uploadAttachments] Unable to upload files, missing user ID')
-      toast.error('Unable to upload attachments')
+      toast.error($t('Unable to upload attachments'))
       return []
     }
 
@@ -159,10 +160,11 @@ export function AttachmentUploadDisplay({
   if (!profile) {
     return (
       <div>
-        <h3 className="text-sm text-foreground">Attachments</h3>
+        <h3 className="text-sm text-foreground">{$t('Attachments')}</h3>
         <p className="text-sm text-foreground-lighter mt-2">
-          Uploads are only supported when logged in. Please reply to the acknowledgement email you
-          will receive with any screenshots you'd like to upload.
+          {$t(
+            "Uploads are only supported when logged in. Please reply to the acknowledgement email you will receive with any screenshots you'd like to upload."
+          )}
         </p>
       </div>
     )
@@ -171,11 +173,11 @@ export function AttachmentUploadDisplay({
   return (
     <div className="flex flex-col gap-y-4">
       <div className="flex flex-col gap-y-1">
-        <p className="text-sm text-foreground">Attachments</p>
+        <p className="text-sm text-foreground">{$t('Attachments')}</p>
         <p className="text-sm text-foreground-lighter">
-          Optionally upload up to {MAX_ATTACHMENTS} relevant images or{' '}
+          {$t('Optionally upload up to')} {MAX_ATTACHMENTS} {$t('relevant images or')}{' '}
           <InlineLink href="https://github.com/orgs/supabase/discussions/36540">
-            HAR files
+            {$t('HAR files')}
           </InlineLink>
         </p>
       </div>
@@ -209,7 +211,7 @@ export function AttachmentUploadDisplay({
 
                 <button
                   type="button"
-                  aria-label="Remove attachment"
+                  aria-label={$t('Remove attachment')}
                   className={cn(
                     'flex h-4 w-4 items-center justify-center rounded-full bg-red-900',
                     'absolute -top-1 -right-1 cursor-pointer'
@@ -229,7 +231,7 @@ export function AttachmentUploadDisplay({
               >
                 <button
                   type="button"
-                  aria-label="Remove attachment"
+                  aria-label={$t('Remove attachment')}
                   className={cn(
                     'flex h-4 w-4 items-center justify-center rounded-full bg-red-900',
                     'absolute -top-1 -right-1 cursor-pointer'

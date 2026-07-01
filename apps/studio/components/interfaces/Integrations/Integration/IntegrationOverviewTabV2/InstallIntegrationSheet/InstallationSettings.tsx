@@ -6,6 +6,7 @@ import { Input } from 'ui-patterns/DataInputs/Input'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { type InstallIntegrationSheetProps } from './InstallIntegrationSheet'
+import { t as $t } from '@/lib/i18n'
 
 export const InstallationSettings = <
   TFieldValues extends FieldValues = FieldValues,
@@ -21,8 +22,8 @@ export const InstallationSettings = <
   return (
     <SheetSection className="flex flex-col gap-y-4 py-0">
       <div>
-        <h4>Settings</h4>
-        <p className="text-sm text-foreground-light">Configure the integration</p>
+        <h4>{$t('Settings')}</h4>
+        <p className="text-sm text-foreground-light">{$t('Configure the integration')}</p>
       </div>
 
       <Card>

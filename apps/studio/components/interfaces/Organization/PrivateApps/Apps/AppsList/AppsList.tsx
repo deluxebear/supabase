@@ -15,6 +15,7 @@ import { AppsListTable } from './AppsListTable'
 import { Shortcut } from '@/components/ui/Shortcut'
 import { usePlatformAppDeleteMutation } from '@/data/platform-apps/platform-app-delete-mutation'
 import { usePlatformAppInstallationDeleteMutation } from '@/data/platform-apps/platform-app-installation-delete-mutation'
+import { t as $t } from '@/lib/i18n'
 import type { ShortcutId } from '@/state/shortcuts/registry'
 
 interface AppsListProps {
@@ -72,18 +73,20 @@ export function AppsList({ onCreateApp, createShortcutId }: AppsListProps) {
       ) : apps.length === 0 ? (
         <EmptyStatePresentational
           icon={AppWindow}
-          title="No private apps yet"
-          description="Create a private app to generate scoped access tokens for your organization."
+          title={$t('No private apps yet')}
+          description={$t(
+            'Create a private app to generate scoped access tokens for your organization.'
+          )}
         >
           {createShortcutId ? (
             <Shortcut id={createShortcutId} onTrigger={onCreateApp} side="bottom">
               <Button variant="primary" icon={<Plus size={14} />} onClick={onCreateApp}>
-                Create app
+                {$t('Create app')}
               </Button>
             </Shortcut>
           ) : (
             <Button variant="primary" icon={<Plus size={14} />} onClick={onCreateApp}>
-              Create app
+              {$t('Create app')}
             </Button>
           )}
         </EmptyStatePresentational>

@@ -30,6 +30,7 @@ import {
 import { findTimezoneByIana, TIMEZONES_BY_IANA } from '@/lib/constants/timezones'
 import { useTimezone } from '@/lib/datetime'
 import { guessLocalTimezone } from '@/lib/dayjs'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const AUTO_OPTION_VALUE = '__auto__'
@@ -66,9 +67,9 @@ export const TimezoneSettings = () => {
     <PageSection>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Timezone</PageSectionTitle>
+          <PageSectionTitle>{$t('Timezone')}</PageSectionTitle>
           <PageSectionDescription>
-            Choose how dates and times in logs and other dashboard surfaces are displayed.
+            {$t('Choose how dates and times in logs and other dashboard surfaces are displayed.')}
           </PageSectionDescription>
         </PageSectionSummary>
       </PageSectionMeta>
@@ -77,7 +78,7 @@ export const TimezoneSettings = () => {
           <CardContent>
             <FormItemLayout
               isReactForm={false}
-              label="Display timezone"
+              label={$t('Display timezone')}
               layout="flex-row-reverse"
               description={
                 isAutoDetected
@@ -104,9 +105,9 @@ export const TimezoneSettings = () => {
                 </PopoverTrigger>
                 <PopoverContent id={listboxId} className="w-[--radix-popover-trigger-width] p-0">
                   <Command>
-                    <CommandInput placeholder="Search timezone..." className="h-9" />
+                    <CommandInput placeholder={$t('Search timezone...')} className="h-9" />
                     <CommandList>
-                      <CommandEmpty>No timezones found</CommandEmpty>
+                      <CommandEmpty>{$t('No timezones found')}</CommandEmpty>
                       <CommandGroup>
                         <ScrollArea className="h-72">
                           <CommandItem
@@ -115,7 +116,7 @@ export const TimezoneSettings = () => {
                             onSelect={() => handleSelect('')}
                           >
                             <div className="flex flex-col">
-                              <span>Auto detect</span>
+                              <span>{$t('Auto detect')}</span>
                               <span className="text-xs text-foreground-lighter">
                                 {browserTimezone}
                               </span>

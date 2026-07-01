@@ -14,6 +14,7 @@ import {
 import { useOrganizationQuery } from '@/data/organizations/organization-query'
 import { DOCS_URL } from '@/lib/constants'
 import { formatCurrency } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export interface UpcomingInvoiceProps {
   slug?: string
@@ -142,13 +143,14 @@ export const UpcomingInvoice = ({ slug }: UpcomingInvoiceProps) => {
                 {/* Compute section */}
                 <ComputeLineItem
                   computeItems={regularComputeItems}
-                  title="Compute"
+                  title={$t('Compute')}
                   computeCredits={computeCreditsItem}
                   tooltip={
                     <p className="prose text-xs">
-                      The first project is covered by Compute Credits. Additional projects incur
-                      compute costs starting at <span translate="no">$10</span>/month, independent
-                      of activity. See{' '}
+                      {$t(
+                        'The first project is covered by Compute Credits. Additional projects incur compute costs starting at'
+                      )}{' '}
+                      <span translate="no">$10</span>/month, independent of activity. See{' '}
                       <InlineLink href={`${DOCS_URL}/guides/platform/manage-your-usage/compute`}>
                         docs
                       </InlineLink>
@@ -159,13 +161,13 @@ export const UpcomingInvoice = ({ slug }: UpcomingInvoiceProps) => {
 
                 {/* Read Replica compute */}
                 <ComputeLineItem
-                  title="Replica Compute"
+                  title={$t('Replica Compute')}
                   computeItems={replicaComputeItems}
                   tooltip={
                     <p className="prose text-xs">
-                      Each Read Replica is a dedicated database. You are charged for its resources:
-                      Compute, Disk Size, provisioned Disk IOPS, provisioned Disk Throughput, and
-                      IPv4. See{' '}
+                      {$t(
+                        'Each Read Replica is a dedicated database. You are charged for its resources: Compute, Disk Size, provisioned Disk IOPS, provisioned Disk Throughput, and IPv4. See'
+                      )}{' '}
                       <InlineLink
                         href={`${DOCS_URL}/guides/platform/manage-your-usage/read-replicas`}
                       >
@@ -181,24 +183,24 @@ export const UpcomingInvoice = ({ slug }: UpcomingInvoiceProps) => {
                   <TableRow>
                     <TableCell className="py-2 px-0">
                       <div className="flex items-center gap-1">
-                        <span>Branching</span>
+                        <span>{$t('Branching')}</span>
                         <InfoTooltip className="max-w-sm">
                           <ul className="ml-6 list-disc">
                             {branchingComputeItemsDisplay.map((breakdown) => (
                               <li key={`branching-breakdown-${breakdown!.project_ref}`}>
-                                {breakdown!.project_name} ({breakdown!.usage} Hours)
+                                {breakdown!.project_name} ({breakdown!.usage} {$t('Hours)')}
                               </li>
                             ))}
                           </ul>
 
                           <p className="mt-2">
-                            See{' '}
+                            {$t('See')}{' '}
                             <InlineLink
                               href={`${DOCS_URL}/guides/platform/manage-your-usage/branching`}
                             >
                               docs
                             </InlineLink>{' '}
-                            on how billing for Branching works.
+                            {$t('on how billing for Branching works.')}
                           </p>
                         </InfoTooltip>
                       </div>
@@ -231,20 +233,23 @@ export const UpcomingInvoice = ({ slug }: UpcomingInvoiceProps) => {
                             <InfoTooltip className="max-w-sm">
                               {item.item_name === 'minimum_amount' && (
                                 <p className="mb-2" translate="no">
-                                  Minimum Fee - If your cost is below the minimum fee, you will be
-                                  charged the difference as a floor fee
+                                  {$t(
+                                    'Minimum Fee - If your cost is below the minimum fee, you will be charged the difference as a floor fee'
+                                  )}
                                 </p>
                               )}
 
                               {item.unit_price_desc && (
                                 <p className="mb-2" translate="no">
-                                  Pricing: {item.unit_price_desc}
+                                  {$t('Pricing:')} {item.unit_price_desc}
                                 </p>
                               )}
 
                               {sortedBreakdown.length > 0 && (
                                 <>
-                                  <p>Projects using {item.description}:</p>
+                                  <p>
+                                    {$t('Projects using')} {item.description}:
+                                  </p>
                                   <ul className="ml-6 list-disc">
                                     {sortedBreakdown.map((breakdown) => {
                                       const unit = billingMetricUnit(usageMetric)
@@ -273,13 +278,15 @@ export const UpcomingInvoice = ({ slug }: UpcomingInvoiceProps) => {
 
                               {usageMetric && usageBillingDocsLink[usageMetric] != null && (
                                 <p className="mt-2">
-                                  See{' '}
+                                  {$t('See')}{' '}
                                   <InlineLink href={usageBillingDocsLink[usageMetric]!}>
                                     docs
                                   </InlineLink>{' '}
-                                  on how billing for {item.description} works and{' '}
-                                  <InlineLink href={`/org/${slug}/usage`}>usage page</InlineLink>{' '}
-                                  for a detailed breakdown.
+                                  {$t('on how billing for')} {item.description} {$t('works and')}{' '}
+                                  <InlineLink href={`/org/${slug}/usage`}>
+                                    {$t('usage page')}
+                                  </InlineLink>{' '}
+                                  {$t('for a detailed breakdown.')}
                                 </p>
                               )}
                             </InfoTooltip>
@@ -303,8 +310,9 @@ export const UpcomingInvoice = ({ slug }: UpcomingInvoiceProps) => {
                     <TableCell className="py-2 px-0 flex items-center">
                       <span className="mr-2">{prepaidCreditsItem.item_name}</span>
                       <InfoTooltip className="max-w-xs">
-                        Prepaid credits purchased upfront, applied automatically against your
-                        invoice. Any remaining balance rolls over to the next billing cycle.
+                        {$t(
+                          'Prepaid credits purchased upfront, applied automatically against your invoice. Any remaining balance rolls over to the next billing cycle.'
+                        )}
                       </InfoTooltip>
                     </TableCell>
                     <TableCell className="text-right py-2 px-0" translate="no">
@@ -314,9 +322,9 @@ export const UpcomingInvoice = ({ slug }: UpcomingInvoiceProps) => {
                 )}
                 <TableRow>
                   <TableCell className="font-medium py-2 px-0 flex items-center">
-                    <span className="mr-2">Current Costs</span>
+                    <span className="mr-2">{$t('Current Costs')}</span>
                     <InfoTooltip>
-                      Costs accumulated from the beginning of the billing cycle up to now.
+                      {$t('Costs accumulated from the beginning of the billing cycle up to now.')}
                     </InfoTooltip>
                   </TableCell>
                   <TableCell className="text-right font-medium py-2 px-0" translate="no">
@@ -327,26 +335,25 @@ export const UpcomingInvoice = ({ slug }: UpcomingInvoiceProps) => {
                 {(!!upcomingInvoice.amount_projected || hasTax || taxFailed) && (
                   <TableRow>
                     <TableCell className="font-medium py-2 px-0 flex items-center">
-                      <span className="mr-2">Projected Costs</span>
+                      <span className="mr-2">{$t('Projected Costs')}</span>
                       <InfoTooltip className="max-w-sm">
                         <p className="mb-2">
-                          Projected costs at the end of the billing cycle. Includes predictable
-                          costs for Compute Hours, IPv4, Custom Domain and Point-In-Time-Recovery,
-                          but no costs for metrics like MAU, storage or function invocations. Final
-                          amounts may vary depending on your usage.
+                          {$t(
+                            'Projected costs at the end of the billing cycle. Includes predictable costs for Compute Hours, IPv4, Custom Domain and Point-In-Time-Recovery, but no costs for metrics like MAU, storage or function invocations. Final amounts may vary depending on your usage.'
+                          )}
                         </p>
 
                         {hasTax && (
                           <div className="mt-3 border-t border-muted pt-2 space-y-1">
                             <div className="flex items-center justify-between gap-4 text-xs">
-                              <span>Subtotal</span>
+                              <span>{$t('Subtotal')}</span>
                               <span translate="no">
                                 {formatCurrency(upcomingInvoice.tax!.total_amount_excluding_tax)}
                               </span>
                             </div>
                             <div className="flex items-center justify-between gap-4 text-xs">
                               <span>
-                                Tax
+                                {$t('Tax')}
                                 {upcomingInvoice.tax?.tax_rate_percentage != null &&
                                   ` (${upcomingInvoice.tax.tax_rate_percentage}%)`}
                               </span>
@@ -355,16 +362,18 @@ export const UpcomingInvoice = ({ slug }: UpcomingInvoiceProps) => {
                               </span>
                             </div>
                             <p className="text-foreground-lighter pt-1 text-xs">
-                              Estimated based on your organization's billing address. The final
-                              amount may be adjusted at the end of the billing cycle.
+                              {$t(
+                                "Estimated based on your organization's billing address. The final amount may be adjusted at the end of the billing cycle."
+                              )}
                             </p>
                           </div>
                         )}
 
                         {taxFailed && (
                           <p className="mt-3 border-t border-muted pt-2 text-warning">
-                            We were unable to estimate tax for your organization. Please verify your
-                            billing address in your organization settings.
+                            {$t(
+                              'We were unable to estimate tax for your organization. Please verify your billing address in your organization settings.'
+                            )}
                           </p>
                         )}
                       </InfoTooltip>
@@ -385,9 +394,10 @@ export const UpcomingInvoice = ({ slug }: UpcomingInvoiceProps) => {
                       className="pt-2! pb-0! px-0 text-foreground-light text-xs text-right"
                       colSpan={2}
                     >
-                      Your {organization?.plan?.name && `${organization.plan.name} `}Plan fee for
-                      this period has already been paid. This invoice will only reflect usage
-                      charges.
+                      {$t('Your')} {organization?.plan?.name && `${organization.plan.name} `}
+                      {$t(
+                        'Plan fee for this period has already been paid. This invoice will only reflect usage charges.'
+                      )}
                     </TableCell>
                   </TableRow>
                 )}
@@ -476,7 +486,7 @@ function ComputeLineItem({
       {computeProjects.map((project) => (
         <TableRow key={project.project_ref} className="text-foreground-light text-xs">
           <TableCell className="py-2! px-0 pl-6">
-            {project.project_name} ({project.computeType} - {project.usage} Hours)
+            {project.project_name} ({project.computeType} - {project.usage} {$t('Hours)')}
           </TableCell>
 
           <TableCell className="py-2! px-0 text-right" translate="no">
@@ -493,7 +503,7 @@ function ComputeLineItem({
             className="text-foreground-light text-xs"
           >
             <TableCell className="py-2! px-0 pl-6">
-              {computeItem.description} - {computeItem.usage_original} Hours
+              {computeItem.description} - {computeItem.usage_original} {$t('Hours')}
             </TableCell>
 
             <TableCell className="py-2! px-0 text-right" translate="no">
@@ -504,7 +514,7 @@ function ComputeLineItem({
 
       {computeCredits && (
         <TableRow className="text-foreground-light text-xs">
-          <TableCell className="py-2! px-0 pl-6">Compute Credits</TableCell>
+          <TableCell className="py-2! px-0 pl-6">{$t('Compute Credits')}</TableCell>
           <TableCell className="py-2! px-0 text-right" translate="no">
             {formatCurrency(computeCredits.amount)}
           </TableCell>

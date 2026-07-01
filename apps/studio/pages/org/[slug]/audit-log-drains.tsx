@@ -13,6 +13,7 @@ import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import OrganizationLayout from '@/components/layouts/OrganizationLayout'
 import { OrganizationSettingsLayout } from '@/components/layouts/ProjectLayout/OrganizationSettingsLayout'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const OrgAuditLogDrainsPage: NextPageWithLayout = () => {
@@ -28,9 +29,9 @@ const OrgAuditLogDrainsPage: NextPageWithLayout = () => {
       <PageHeader size="default">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Audit Log Drains</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Audit Log Drains')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Export your organization audit logs to third party destinations
+              {$t('Export your organization audit logs to third party destinations')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -44,7 +45,7 @@ const OrgAuditLogDrainsPage: NextPageWithLayout = () => {
 
 OrgAuditLogDrainsPage.getLayout = (page) => (
   <DefaultLayout>
-    <OrganizationLayout title="Audit Log Drains">
+    <OrganizationLayout title={$t('Audit Log Drains')}>
       <OrganizationSettingsLayout>{page}</OrganizationSettingsLayout>
     </OrganizationLayout>
   </DefaultLayout>

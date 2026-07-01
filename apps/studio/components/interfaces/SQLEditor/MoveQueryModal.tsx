@@ -42,6 +42,7 @@ import { useContentUpsertMutation } from '@/data/content/content-upsert-mutation
 import { useSQLSnippetFolderCreateMutation } from '@/data/content/sql-folder-create-mutation'
 import { Snippet } from '@/data/content/sql-folders-query'
 import type { SnippetWithContent } from '@/data/content/sql-folders-query'
+import { t as $t } from '@/lib/i18n'
 import { useSnippetFolders, useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
 import { createTabId, useTabsStateSnapshot } from '@/state/tabs'
 
@@ -143,7 +144,7 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
           }
 
           if (snippetContent === undefined) {
-            return toast.error('Failed to save snippet: Unable to retrieve snippet contents')
+            return toast.error($t('Failed to save snippet: Unable to retrieve snippet contents'))
           } else {
             const movedSnippet = await moveSnippetAsync({
               projectRef: ref,
@@ -214,11 +215,13 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
           <form id="move-snippet" onSubmit={form.handleSubmit(onConfirmMove)}>
             <DialogHeader>
               <DialogTitle>
-                Move {snippets.length === 1 ? `"${snippets[0].name}"` : `${snippets.length}`}{' '}
-                snippet{snippets.length > 1 ? 's' : ''} to a folder
+                {$t('Move')}{' '}
+                {snippets.length === 1 ? `"${snippets[0].name}"` : `${snippets.length}`} snippet
+                {snippets.length > 1 ? 's' : ''} {$t('to a folder')}
               </DialogTitle>
               <DialogDescription>
-                Select which folder to move your quer{snippets.length > 1 ? 'ies' : 'y'} to
+                {$t('Select which folder to move your quer')}
+                {snippets.length > 1 ? 'ies' : 'y'} to
               </DialogDescription>
             </DialogHeader>
 
@@ -226,7 +229,7 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
 
             <DialogSection className="py-5 flex flex-col gap-y-4">
               <div className="flex flex-col gap-y-2">
-                <Label className="text-foreground-light">Select a folder</Label>
+                <Label className="text-foreground-light">{$t('Select a folder')}</Label>
                 <Popover open={open} onOpenChange={setOpen} modal={false}>
                   <PopoverTrigger asChild>
                     <Button
@@ -250,9 +253,9 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
                   </PopoverTrigger>
                   <PopoverContent className="p-0" side="bottom" align="start" sameWidthAsTrigger>
                     <Command>
-                      <CommandInput placeholder="Find folder..." />
+                      <CommandInput placeholder={$t('Find folder...')} />
                       <CommandList>
-                        <CommandEmpty>No folders found</CommandEmpty>
+                        <CommandEmpty>{$t('No folders found')}</CommandEmpty>
                         <CommandGroup>
                           <ScrollArea className={(folders || []).length > 6 ? 'h-[210px]' : ''}>
                             <CommandItem
@@ -269,7 +272,7 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
                               }}
                             >
                               <span>
-                                Root of the editor
+                                {$t('Root of the editor')}
                                 {snippets.length === 1 &&
                                   snippets[0].folder_id === null &&
                                   ` (Current)`}
@@ -315,7 +318,7 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
                             }}
                           >
                             <Plus size={14} strokeWidth={1.5} />
-                            <p>New folder</p>
+                            <p>{$t('New folder')}</p>
                           </CommandItem>
                         </CommandGroup>
                       </CommandList>
@@ -331,7 +334,7 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
                     control={form.control}
                     render={({ field }) => (
                       <FormItem className="flex flex-col gap-y-2">
-                        <FormLabel>Provide a name for your new folder</FormLabel>
+                        <FormLabel>{$t('Provide a name for your new folder')}</FormLabel>
                         <FormControl>
                           <Input
                             autoFocus
@@ -354,7 +357,7 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
                 disabled={isMovingSnippet || isCreatingFolder}
                 onClick={() => onClose()}
               >
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button
                 variant="primary"
@@ -362,7 +365,7 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
                 disabled={isMovingToSameFolder}
                 loading={isMovingSnippet || isCreatingFolder}
               >
-                Move file
+                {$t('Move file')}
               </Button>
             </DialogFooter>
           </form>

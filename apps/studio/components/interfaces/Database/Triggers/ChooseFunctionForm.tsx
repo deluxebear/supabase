@@ -13,6 +13,7 @@ import {
   type DatabaseFunction,
 } from '@/data/database-functions/database-functions-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export interface ChooseFunctionFormProps {
   visible: boolean
@@ -75,11 +76,11 @@ const NoticeBox = () => {
     <div className="px-6">
       <InformationBox
         icon={<HelpCircle size="20" strokeWidth={1.5} />}
-        title="Only functions that return a trigger will be displayed below"
+        title={$t('Only functions that return a trigger will be displayed below')}
         description={`You can make functions by using the Database Functions`}
         button={
           <Button asChild variant="default">
-            <Link href={`/project/${ref}/database/functions`}>Go to Functions</Link>
+            <Link href={`/project/${ref}/database/functions`}>{$t('Go to Functions')}</Link>
           </Button>
         }
       />
@@ -94,14 +95,16 @@ const NoFunctionsState = () => {
 
   return (
     <ProductEmptyState
-      title="No Trigger Functions found in database"
+      title={$t('No Trigger Functions found in database')}
       ctaButtonLabel="Create a trigger function"
       onClickCta={() => {
         router.push(`/project/${ref}/database/functions`)
       }}
     >
       <p className="text-sm text-foreground-light">
-        You will need to create a trigger based function before you can add it to your trigger.
+        {$t(
+          'You will need to create a trigger based function before you can add it to your trigger.'
+        )}
       </p>
     </ProductEmptyState>
   )
@@ -158,7 +161,7 @@ const Function = ({ id, completeStatement, name, onClick }: FunctionProps) => {
               onClick={(e) => e.stopPropagation()}
               className="py-0 text-xs font-normal text-foreground-light hover:no-underline"
             >
-              View definition
+              {$t('View definition')}
             </AccordionTrigger>
           </div>
           <AccordionContent className="[&>div]:pb-0" onClick={(e) => e.stopPropagation()}>

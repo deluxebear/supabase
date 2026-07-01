@@ -18,6 +18,7 @@ import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { BASE_PATH } from '@/lib/constants'
 import { formatBytes } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useStorageExplorerStateSnapshot } from '@/state/storage-explorer'
 
 const PREVIEW_SIZE_LIMIT = 10 * 1024 * 1024 // 10MB
@@ -56,7 +57,7 @@ const PreviewFile = ({ item }: { item: StorageItem }) => {
           }
         />
         <p className="mt-2 w-2/5 text-center text-sm">
-          File size is too large to preview in the explorer
+          {$t('File size is too large to preview in the explorer')}
         </p>
       </div>
     )
@@ -86,7 +87,7 @@ const PreviewFile = ({ item }: { item: StorageItem }) => {
         <audio key={previewUrl} controls style={{ width: 'inherit' }}>
           <source src={previewUrl} type="audio/mpeg" />
           <p className="text-sm text-foreground-light">
-            Your browser does not support the audio element.
+            {$t('Your browser does not support the audio element.')}
           </p>
         </audio>
       </div>
@@ -98,7 +99,7 @@ const PreviewFile = ({ item }: { item: StorageItem }) => {
         <video key={previewUrl} controls style={{ maxHeight: '100%' }}>
           <source src={previewUrl} type="video/mp4" />
           <p className="text-sm text-foreground-light">
-            Your browser does not support the video tag.
+            {$t('Your browser does not support the video tag.')}
           </p>
         </video>
       </div>
@@ -160,7 +161,7 @@ export const PreviewPane = () => {
             <div className="flex items-center space-x-2">
               <AlertCircle size={14} className="text-foreground-light" />
               <p className="text-sm text-foreground-light">
-                File is corrupted, please delete and reupload this file again
+                {$t('File is corrupted, please delete and reupload this file again')}
               </p>
             </div>
           )}
@@ -175,11 +176,11 @@ export const PreviewPane = () => {
         {/* Preview Metadata */}
         <div className="space-y-2">
           <div>
-            <label className="mb-1 text-xs text-foreground-lighter">Added on</label>
+            <label className="mb-1 text-xs text-foreground-lighter">{$t('Added on')}</label>
             <p className="text-sm text-foreground-light">{createdAt}</p>
           </div>
           <div>
-            <label className="mb-1 text-xs text-foreground-lighter">Last modified</label>
+            <label className="mb-1 text-xs text-foreground-lighter">{$t('Last modified')}</label>
             <p className="text-sm text-foreground-light">{updatedAt}</p>
           </div>
         </div>
@@ -192,7 +193,7 @@ export const PreviewPane = () => {
             disabled={file.isCorrupted}
             onClick={() => downloadFile(file)}
           >
-            Download
+            {$t('Download')}
           </Button>
           {selectedBucket.public ? (
             <Button
@@ -201,7 +202,7 @@ export const PreviewPane = () => {
               onClick={() => onCopyUrl(file.path!)}
               disabled={file.isCorrupted}
             >
-              Get URL
+              {$t('Get URL')}
             </Button>
           ) : (
             <DropdownMenu>
@@ -212,7 +213,7 @@ export const PreviewPane = () => {
                   iconRight={<ChevronDown />}
                   disabled={file.isCorrupted}
                 >
-                  Get URL
+                  {$t('Get URL')}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="bottom" align="center">
@@ -220,25 +221,25 @@ export const PreviewPane = () => {
                   key="expires-one-week"
                   onClick={() => onCopyUrl(file.path!, URL_EXPIRY_DURATION.WEEK)}
                 >
-                  Expire in 1 week
+                  {$t('Expire in 1 week')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   key="expires-one-month"
                   onClick={() => onCopyUrl(file.path!, URL_EXPIRY_DURATION.MONTH)}
                 >
-                  Expire in 1 month
+                  {$t('Expire in 1 month')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   key="expires-one-year"
                   onClick={() => onCopyUrl(file.path!, URL_EXPIRY_DURATION.YEAR)}
                 >
-                  Expire in 1 year
+                  {$t('Expire in 1 year')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   key="custom-expiry"
                   onClick={() => setSelectedFileCustomExpiry(file)}
                 >
-                  Custom expiry
+                  {$t('Custom expiry')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -259,7 +260,7 @@ export const PreviewPane = () => {
             },
           }}
         >
-          Delete file
+          {$t('Delete file')}
         </ButtonTooltip>
       </div>
     </div>

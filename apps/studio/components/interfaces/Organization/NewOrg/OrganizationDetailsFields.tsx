@@ -13,6 +13,8 @@ import {
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { z } from 'zod'
 
+import { t as $t } from '@/lib/i18n'
+
 export const ORG_KIND_TYPES = {
   PERSONAL: 'Personal',
   EDUCATIONAL: 'Educational',
@@ -83,15 +85,15 @@ export const OrganizationDetailsFields = <TFieldValues extends FieldValues>({
         name={nameField}
         render={({ field }) => (
           <FormItemLayout
-            label="Name"
+            label={$t('Name')}
             layout="horizontal"
-            description="What's the name of your company or team? You can change this later."
+            description={$t("What's the name of your company or team? You can change this later.")}
           >
             <FormControl>
               <Input
                 autoFocus
                 type="text"
-                placeholder="Organization name"
+                placeholder={$t('Organization name')}
                 data-1p-ignore
                 data-lpignore="true"
                 data-form-type="other"
@@ -110,9 +112,9 @@ export const OrganizationDetailsFields = <TFieldValues extends FieldValues>({
         name={kindField}
         render={({ field }) => (
           <FormItemLayout
-            label="Type"
+            label={$t('Type')}
             layout="horizontal"
-            description="What best describes your organization?"
+            description={$t('What best describes your organization?')}
           >
             <FormControl>
               <Select value={field.value} onValueChange={field.onChange}>
@@ -142,9 +144,9 @@ export const OrganizationDetailsFields = <TFieldValues extends FieldValues>({
           name={sizeField}
           render={({ field }) => (
             <FormItemLayout
-              label="Company size"
+              label={$t('Company size')}
               layout="horizontal"
-              description="How many people are in your company?"
+              description={$t('How many people are in your company?')}
             >
               <FormControl>
                 <Select value={field.value} onValueChange={field.onChange}>

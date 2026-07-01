@@ -3,6 +3,7 @@ import { Button } from 'ui'
 
 import { useDataTable } from './providers/DataTableProvider'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -15,11 +16,11 @@ export function DataTableResetButton() {
   return (
     <ShortcutTooltip
       shortcutId={SHORTCUT_IDS.DATA_TABLE_RESET_FILTERS}
-      label="Reset filters"
+      label={$t('Reset filters')}
       side="left"
     >
       <Button variant="default" size="tiny" onClick={() => table.resetColumnFilters()} icon={<X />}>
-        Reset
+        {$t('Reset')}
       </Button>
     </ShortcutTooltip>
   )

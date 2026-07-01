@@ -16,6 +16,7 @@ import {
 
 import type { SpreadsheetData } from './SpreadsheetImport.types'
 import SpreadsheetPreviewGrid from './SpreadsheetPreviewGrid'
+import { t as $t } from '@/lib/i18n'
 
 const MAX_ROWS = 20
 const MAX_HEADERS = 20
@@ -75,8 +76,8 @@ export const SpreadsheetImportPreview = ({
         <SidePanel.Content>
           <div className="py-1 flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <p className="text-sm">Preview data to be imported</p>
-              {!isCompatible && <Badge variant="destructive">Data incompatible</Badge>}
+              <p className="text-sm">{$t('Preview data to be imported')}</p>
+              {!isCompatible && <Badge variant="destructive">{$t('Data incompatible')}</Badge>}
               {dedupedErrors.length > 0 && (
                 <Badge variant="warning">
                   {dedupedErrors.length} {dedupedErrors.length === 1 ? 'issue' : 'issues'} found
@@ -110,8 +111,9 @@ export const SpreadsheetImportPreview = ({
                   }"`}
             </p>
             <p className="text-sm text-foreground-light">
-              Here is a preview of the data that will be added (up to the first 20 columns and first
-              20 rows).
+              {$t(
+                'Here is a preview of the data that will be added (up to the first 20 columns and first 20 rows).'
+              )}
             </p>
           </div>
           <div className="mb-4">
@@ -138,7 +140,7 @@ export const SpreadsheetImportPreview = ({
           {(!isCompatible || dedupedErrors.length > 0) && (
             <Alert variant="warning" className="my-4">
               <WarningIcon />
-              <AlertTitle>Issues found in spreadsheet</AlertTitle>
+              <AlertTitle>{$t('Issues found in spreadsheet')}</AlertTitle>
               <AlertDescription>
                 <div className="space-y-2">
                   {isCompatible ? (
@@ -149,8 +151,8 @@ export const SpreadsheetImportPreview = ({
                     </p>
                   ) : (
                     <p className="text-sm">
-                      This CSV <span className="text-red-900">cannot</span> be imported into your
-                      table due to incompatible headers.
+                      {$t('This CSV')} <span className="text-red-900">cannot</span>{' '}
+                      {$t('be imported into your table due to incompatible headers.')}
                     </p>
                   )}
                   {!isCompatible && (
@@ -160,9 +162,11 @@ export const SpreadsheetImportPreview = ({
                           <div className="size-[6px] rounded-full bg-foreground-lighter" />
                         </div>
                         <p className="text-sm">
-                          The column{incompatibleHeaders.length > 1 ? 's' : ''}{' '}
+                          {$t('The column')}
+                          {incompatibleHeaders.length > 1 ? 's' : ''}{' '}
                           {incompatibleHeaders.map((x) => `"${x}"`).join(', ')}{' '}
-                          {incompatibleHeaders.length > 1 ? 'are' : 'is'} not present in your table
+                          {incompatibleHeaders.length > 1 ? 'are' : 'is'}{' '}
+                          {$t('not present in your table')}
                         </p>
                       </div>
                     </div>
@@ -195,12 +199,14 @@ export const SpreadsheetImportPreview = ({
                                 id={`${key}-summary`}
                                 className="sr-only"
                               >{`Toggle details for row ${error.row}`}</span>
-                              <p className="text-sm">Row {error.row}:</p>
+                              <p className="text-sm">
+                                {$t('Row')} {error.row}:
+                              </p>
                               <p className="text-sm">{error.message}</p>
                               {errorData?.__parsed_extra && (
                                 <>
                                   <ArrowRight size={14} aria-hidden="true" />
-                                  <p className="text-sm">Extra field(s):</p>
+                                  <p className="text-sm">{$t('Extra field(s):')}</p>
                                   <ul className="ml-2 list-disc">
                                     {errorData.__parsed_extra.map((value: string, i: number) => (
                                       <li key={i}>
@@ -219,7 +225,9 @@ export const SpreadsheetImportPreview = ({
                               >
                                 <div className="size-[6px] rounded-full bg-foreground-lighter" />
                               </div>
-                              <p className="text-sm">Row {error.row}:</p>
+                              <p className="text-sm">
+                                {$t('Row')} {error.row}:
+                              </p>
                               <p className="text-sm">{error.message}</p>
                             </div>
                           )}

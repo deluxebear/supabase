@@ -16,6 +16,7 @@ import { useOperationQueueShortcuts } from '@/components/grid/hooks/useOperation
 import { useIsQueueOperationsEnabled } from '@/components/interfaces/Account/Preferences/useDashboardSettings'
 import { DiscardChangesConfirmationDialog } from '@/components/ui-patterns/Dialogs/DiscardChangesConfirmationDialog'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
+import { t as $t } from '@/lib/i18n'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
 
 export const SaveQueueActionBar = () => {
@@ -55,7 +56,8 @@ export const SaveQueueActionBar = () => {
             >
               <div className="flex items-center gap-x-12 pl-4 pr-2 py-2 bg-surface-100 border rounded-lg shadow-lg">
                 <p className="text-xs text-foreground-light max-w-40 truncate">
-                  {operationCount} pending change{operationCount !== 1 ? 's' : ''}
+                  {operationCount} {$t('pending change')}
+                  {operationCount !== 1 ? 's' : ''}
                 </p>
                 <div className="flex items-center gap-x-2">
                   <Button
@@ -70,7 +72,7 @@ export const SaveQueueActionBar = () => {
                       )
                     }
                   >
-                    Save
+                    {$t('Save')}
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -78,7 +80,7 @@ export const SaveQueueActionBar = () => {
                         variant="outline"
                         className="w-7"
                         icon={<MoreVertical />}
-                        aria-label="More options"
+                        aria-label={$t('More options')}
                       />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-40">
@@ -88,7 +90,7 @@ export const SaveQueueActionBar = () => {
                       >
                         <div className="flex items-center gap-x-2">
                           <Eye size={14} />
-                          <span>Review</span>
+                          <span>{$t('Review')}</span>
                         </div>
                         <KeyboardShortcut keys={['Meta', '.']} />
                       </DropdownMenuItem>
@@ -96,7 +98,7 @@ export const SaveQueueActionBar = () => {
                       <DropdownMenuItem onClick={confirmOnClose}>
                         <div className="flex items-center gap-x-2">
                           <Trash size={14} />
-                          <span>Discard</span>
+                          <span>{$t('Discard')}</span>
                         </div>
                       </DropdownMenuItem>
                     </DropdownMenuContent>

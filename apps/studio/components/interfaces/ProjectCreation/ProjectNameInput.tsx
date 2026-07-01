@@ -4,6 +4,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { CreateProjectForm } from './ProjectCreation.schema'
 import Panel from '@/components/ui/Panel'
+import { t as $t } from '@/lib/i18n'
 
 interface ProjectNameInputProps {
   form: UseFormReturn<CreateProjectForm>
@@ -16,9 +17,9 @@ export const ProjectNameInput = ({ form }: ProjectNameInputProps) => {
         control={form.control}
         name="projectName"
         render={({ field }) => (
-          <FormItemLayout label="Project name" layout="horizontal">
+          <FormItemLayout label={$t('Project name')} layout="horizontal">
             <FormControl>
-              <Input {...field} placeholder="Project name" />
+              <Input {...field} placeholder={$t('Project name')} />
             </FormControl>
           </FormItemLayout>
         )}

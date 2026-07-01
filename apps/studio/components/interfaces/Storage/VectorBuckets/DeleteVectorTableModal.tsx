@@ -9,6 +9,7 @@ import { useFDWDropForeignTableMutation } from '@/data/fdw/fdw-drop-foreign-tabl
 import { useVectorBucketIndexDeleteMutation } from '@/data/storage/vector-bucket-index-delete-mutation'
 import { useVectorBucketsIndexesQuery } from '@/data/storage/vector-buckets-indexes-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const DeleteVectorTableModal = () => {
   const { ref: projectRef, bucketId } = useParams()
@@ -92,7 +93,7 @@ export const DeleteVectorTableModal = () => {
       onCancel={() => setSelectedTableIdToDelete(null)}
     >
       {/* [Joshen] Can probably beef up more details here - what are potential side effects of deleting a table */}
-      <p className="text-sm">This action cannot be undone.</p>
+      <p className="text-sm">{$t('This action cannot be undone.')}</p>
     </ConfirmationModal>
   )
 }

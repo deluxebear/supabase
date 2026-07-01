@@ -9,6 +9,7 @@ import { InlineLink } from '@/components/ui/InlineLink'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const IntegrationImageHandler = ({ title }: { title: 'vercel' | 'github' | 'aws' }) => {
   return (
@@ -69,11 +70,11 @@ export const IntegrationSettings = () => {
         <Admonition
           type="default"
           className="mb-6"
-          title="You are currently on a preview branch of your project"
+          title={$t('You are currently on a preview branch of your project')}
         >
-          To adjust your project's integration settings, you may return to your{' '}
+          {$t("To adjust your project's integration settings, you may return to your")}{' '}
           <InlineLink href={`/project/${project.parent_project_ref}/settings/integrations`}>
-            main branch
+            {$t('main branch')}
           </InlineLink>
           .
         </Admonition>

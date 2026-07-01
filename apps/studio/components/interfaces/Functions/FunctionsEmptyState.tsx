@@ -15,6 +15,7 @@ import { ResourceList } from '@/components/ui/Resource/ResourceList'
 import { useDeploymentMode } from '@/hooks/misc/useDeploymentMode'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { DOCS_URL, IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -56,10 +57,12 @@ export const FunctionsEmptyState = () => {
               <div className="p-8">
                 <div className="flex items-center gap-2">
                   <Code strokeWidth={1.5} size={20} />
-                  <h4 className="text-base text-foreground">Via Editor</h4>
+                  <h4 className="text-base text-foreground">{$t('Via Editor')}</h4>
                 </div>
                 <p className="text-sm text-foreground-light mb-4 mt-1">
-                  Create and edit functions directly in the browser. Download to local at any time.
+                  {$t(
+                    'Create and edit functions directly in the browser. Download to local at any time.'
+                  )}
                 </p>
                 <Button
                   variant="default"
@@ -70,7 +73,7 @@ export const FunctionsEmptyState = () => {
                     })
                   }}
                 >
-                  Open Editor
+                  {$t('Open Editor')}
                 </Button>
               </div>
 
@@ -78,11 +81,12 @@ export const FunctionsEmptyState = () => {
               <div className="p-8">
                 <div className="flex items-center gap-2">
                   <AiIconAnimation size={20} />
-                  <h4 className="text-base text-foreground">AI Assistant</h4>
+                  <h4 className="text-base text-foreground">{$t('AI Assistant')}</h4>
                 </div>
                 <p className="text-sm text-foreground-light mb-4 mt-1">
-                  Let our AI assistant help you create functions. Perfect for kickstarting a
-                  function.
+                  {$t(
+                    'Let our AI assistant help you create functions. Perfect for kickstarting a function.'
+                  )}
                 </p>
                 <Button
                   variant="default"
@@ -117,7 +121,7 @@ export const FunctionsEmptyState = () => {
                     })
                   }}
                 >
-                  Open Assistant
+                  {$t('Open Assistant')}
                 </Button>
               </div>
             </>
@@ -128,11 +132,12 @@ export const FunctionsEmptyState = () => {
             <div className="p-8">
               <div className="flex items-center gap-2">
                 <Terminal strokeWidth={1.5} size={20} />
-                <h4 className="text-base text-foreground">Via CLI</h4>
+                <h4 className="text-base text-foreground">{$t('Via CLI')}</h4>
               </div>
               <p className="text-sm text-foreground-light mb-4 mt-1">
-                Create and deploy functions using the Supabase CLI. Ideal for local development and
-                version control.
+                {$t(
+                  'Create and deploy functions using the Supabase CLI. Ideal for local development and version control.'
+                )}
               </p>
 
               <Button
@@ -142,7 +147,7 @@ export const FunctionsEmptyState = () => {
                   track('edge_function_via_cli_button_clicked', { origin: 'no_functions_block' })
                 }}
               >
-                View CLI Instructions
+                {$t('View CLI Instructions')}
               </Button>
             </div>
           )}
@@ -153,7 +158,7 @@ export const FunctionsEmptyState = () => {
       {IS_PLATFORM && (
         <>
           <ScaffoldSectionTitle className="text-xl mb-4 mt-12">
-            Start with a template
+            {$t('Start with a template')}
           </ScaffoldSectionTitle>
           <ResourceList>
             {templates.map((template) => (
@@ -184,12 +189,13 @@ const SelfHostedManualFunctionContent = () => (
   <div className="p-8">
     <div className="flex items-center gap-2">
       <Server strokeWidth={1.5} size={20} />
-      <h4 className="text-base text-foreground">Self-Hosted</h4>
+      <h4 className="text-base text-foreground">{$t('Self-Hosted')}</h4>
     </div>
     <p className="text-sm text-foreground-light mb-4 mt-1">
-      Place each function at{' '}
-      <code className="text-code-inline">volumes/functions/&lt;function-name&gt;/index.ts</code> and
-      restart the <code className="text-code-inline">functions</code> service to pick up changes.
+      {$t('Place each function at')}{' '}
+      <code className="text-code-inline">volumes/functions/&lt;function-name&gt;/index.ts</code>{' '}
+      {$t('and restart the')} <code className="text-code-inline">functions</code>{' '}
+      {$t('service to pick up changes.')}
     </p>
     <DocsButton href={`${DOCS_URL}/guides/self-hosting/self-hosted-functions`} />
   </div>

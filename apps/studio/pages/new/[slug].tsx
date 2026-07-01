@@ -69,6 +69,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { withAuth } from '@/hooks/misc/withAuth'
 import { usePHFlag } from '@/hooks/ui/useFlag'
 import { DOCS_URL, PROJECT_STATUS, PROVIDERS, useDefaultProvider } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { buildStudioPageTitle } from '@/lib/page-title'
 import { useProfile } from '@/lib/profile'
 import { classifyApiError, classifyValidationError } from '@/lib/telemetry/funnel-errors'
@@ -369,7 +370,7 @@ const Wizard: NextPageWithLayout = () => {
         { errorCategory: 'validation', errorReason: 'oriole_unavailable' },
         'toast'
       )
-      return toast.error('No available OrioleDB image found, only Postgres is available')
+      return toast.error($t('No available OrioleDB image found, only Postgres is available'))
     }
 
     const { postgresEngine, releaseChannel } =
@@ -535,10 +536,11 @@ const Wizard: NextPageWithLayout = () => {
             loading={!isOrganizationsSuccess}
             title={
               <div key="panel-title">
-                <h3>Create a new project</h3>
+                <h3>{$t('Create a new project')}</h3>
                 <p className="text-sm text-foreground-lighter text-balance">
-                  Your project will have its own dedicated instance and full Postgres database. An
-                  API will be set up so you can easily interact with your new database.
+                  {$t(
+                    'Your project will have its own dedicated instance and full Postgres database. An API will be set up so you can easily interact with your new database.'
+                  )}
                 </p>
               </div>
             }
@@ -555,7 +557,9 @@ const Wizard: NextPageWithLayout = () => {
           >
             <>
               {projectCreationDisabled ? (
-                <DisabledWarningDueToIncident title="Project creation is currently disabled" />
+                <DisabledWarningDueToIncident
+                  title={$t('Project creation is currently disabled')}
+                />
               ) : (
                 <div className="divide-y divide-border-border">
                   <OrganizationSelector form={form} />
@@ -569,18 +573,19 @@ const Wizard: NextPageWithLayout = () => {
                             name="githubRepositoryId"
                             installationIdField="githubInstallationId"
                             repositoryNameField="githubRepositoryName"
-                            label="GitHub (optional)"
+                            label={$t('GitHub (optional)')}
                             description={
                               <>
-                                Ideal for agent-first workflows: update your schema in code, push it
-                                to GitHub, and Supabase deploys the changes automatically.{' '}
+                                {$t(
+                                  'Ideal for agent-first workflows: update your schema in code, push it to GitHub, and Supabase deploys the changes automatically.'
+                                )}{' '}
                                 <a
                                   href="https://supabase.com/docs/guides/deployment/branching/github-integration"
                                   target="_blank"
                                   rel="noreferrer noopener"
                                   className="text-link"
                                 >
-                                  Learn more
+                                  {$t('Learn more')}
                                 </a>
                               </>
                             }
@@ -617,14 +622,14 @@ const Wizard: NextPageWithLayout = () => {
                         <Admonition
                           className="rounded-none border-0"
                           type="note"
-                          title="Need a free project?"
+                          title={$t('Need a free project?')}
                           description={
                             <p>
-                              You can have up to 2 free projects across all organizations.{' '}
+                              {$t('You can have up to 2 free projects across all organizations.')}{' '}
                               <Link className="underline text-foreground" href="/new">
-                                Create a free organization
+                                {$t('Create a free organization')}
                               </Link>{' '}
-                              to use them.
+                              {$t('to use them.')}
                             </p>
                           }
                         />
@@ -641,17 +646,20 @@ const Wizard: NextPageWithLayout = () => {
                     <Panel.Content>
                       <Admonition
                         type="default"
-                        title="Your organization has overdue invoices"
+                        title={$t('Your organization has overdue invoices')}
                         description={
                           <div className="space-y-3">
                             <p className="text-sm leading-normal">
-                              Please resolve all outstanding invoices first before creating a new
-                              project
+                              {$t(
+                                'Please resolve all outstanding invoices first before creating a new project'
+                              )}
                             </p>
 
                             <div>
                               <Button asChild variant="default">
-                                <Link href={`/org/${slug}/billing#invoices`}>View invoices</Link>
+                                <Link href={`/org/${slug}/billing#invoices`}>
+                                  {$t('View invoices')}
+                                </Link>
                               </Button>
                             </div>
                           </div>
@@ -668,7 +676,7 @@ const Wizard: NextPageWithLayout = () => {
             size="large"
             loading={false}
             visible={isComputeCostsConfirmationModalVisible}
-            title="Confirm compute costs"
+            title={$t('Confirm compute costs')}
             confirmLabel="I understand"
             onCancel={() => setIsComputeCostsConfirmationModalVisible(false)}
             onConfirm={async () => {
@@ -680,17 +688,21 @@ const Wizard: NextPageWithLayout = () => {
           >
             <div className="text-sm text-foreground-light space-y-1">
               <p>
-                Launching a project on compute size "{instanceLabel(instanceSize)}" increases your
-                monthly costs by ${additionalMonthlySpend}, independent of how actively you use it.
-                By clicking "I understand", you agree to the additional costs.{' '}
+                {$t('Launching a project on compute size "')}
+                {instanceLabel(instanceSize)}
+                {$t('" increases your monthly costs by $')}
+                {additionalMonthlySpend}
+                {$t(
+                  ', independent of how actively you use it. By clicking "I understand", you agree to the additional costs.'
+                )}{' '}
                 <Link
                   href={`${DOCS_URL}/guides/platform/manage-your-usage/compute`}
                   target="_blank"
                   className="underline"
                 >
-                  Compute Costs
+                  {$t('Compute Costs')}
                 </Link>{' '}
-                are non-refundable.
+                {$t('are non-refundable.')}
               </p>
             </div>
           </ConfirmationModal>

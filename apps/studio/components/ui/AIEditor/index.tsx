@@ -13,6 +13,7 @@ import { getEditorSelectionParts } from './utils'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { constructHeaders } from '@/data/fetchers'
 import { useLatest } from '@/hooks/misc/useLatest'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useIsShortcutEnabled } from '@/state/shortcuts/useIsShortcutEnabled'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -425,13 +426,13 @@ export const AIEditor = ({
                 exit={{ y: 5, opacity: 0 }}
                 className="text-foreground-lighter absolute bottom-4 left-4 z-10 font-mono text-xs flex items-center gap-1"
               >
-                Hit{' '}
+                {$t('Hit')}{' '}
                 <KeyboardShortcut
                   keys={['Meta', 'Shift', 'k']}
                   variant="inline"
                   className="text-xs text-foreground-lighter"
                 />{' '}
-                to edit with the Assistant
+                {$t('to edit with the Assistant')}
               </motion.p>
             )}
           </AnimatePresence>

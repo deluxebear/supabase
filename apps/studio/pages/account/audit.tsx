@@ -10,6 +10,7 @@ import { AuditLogs } from '@/components/interfaces/Account/AuditLogs'
 import AccountLayout from '@/components/layouts/AccountLayout/AccountLayout'
 import { AppLayout } from '@/components/layouts/AppLayout/AppLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const Audit: NextPageWithLayout = () => {
@@ -18,9 +19,9 @@ const Audit: NextPageWithLayout = () => {
       <PageHeader size="default">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Audit Logs</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Audit Logs')}</PageHeaderTitle>
             <PageHeaderDescription>
-              View a detailed history of account activities and security events.
+              {$t('View a detailed history of account activities and security events.')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -33,7 +34,7 @@ const Audit: NextPageWithLayout = () => {
 Audit.getLayout = (page) => (
   <AppLayout>
     <DefaultLayout headerTitle="Account">
-      <AccountLayout title="Audit Logs">{page}</AccountLayout>
+      <AccountLayout title={$t('Audit Logs')}>{page}</AccountLayout>
     </DefaultLayout>
   </AppLayout>
 )

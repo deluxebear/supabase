@@ -16,6 +16,7 @@ import {
   type EdgeFunctionsResponse,
 } from '@/data/edge-functions/edge-functions-query'
 import { normalizeFunctionIds } from '@/data/edge-functions/keys'
+import { t as $t } from '@/lib/i18n'
 import { createNavigationHandler } from '@/lib/navigation'
 
 interface EdgeFunctionsListItemProps {
@@ -127,7 +128,7 @@ export const EdgeFunctionsListItem = ({ function: item }: EdgeFunctionsListItemP
             {isStatsPending ? (
               <ShimmeringLoader className="w-12" />
             ) : isStatsError ? (
-              <p className="text-foreground-lighter" title="Failed to load stats">
+              <p className="text-foreground-lighter" title={$t('Failed to load stats')}>
                 -
               </p>
             ) : (
@@ -140,7 +141,7 @@ export const EdgeFunctionsListItem = ({ function: item }: EdgeFunctionsListItemP
             {isStatsPending ? (
               <ShimmeringLoader className="w-12" />
             ) : isStatsError ? (
-              <p className="text-foreground-lighter" title="Failed to load stats">
+              <p className="text-foreground-lighter" title={$t('Failed to load stats')}>
                 -
               </p>
             ) : lastHourStats !== undefined ? (
@@ -165,7 +166,7 @@ export const EdgeFunctionsListItem = ({ function: item }: EdgeFunctionsListItemP
       <TableCell className="hidden 2xl:table-cell">
         <p className="text-foreground-light">{item.version}</p>
         <button tabIndex={-1} className="sr-only">
-          Go to function details
+          {$t('Go to function details')}
         </button>
       </TableCell>
     </TableRow>

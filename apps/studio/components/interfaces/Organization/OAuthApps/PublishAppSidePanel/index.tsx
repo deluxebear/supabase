@@ -46,6 +46,7 @@ import { useOAuthAppUpdateMutation } from '@/data/oauth/oauth-app-update-mutatio
 import type { OAuthApp } from '@/data/oauth/oauth-apps-query'
 import { DOCS_URL } from '@/lib/constants'
 import { isValidHttpUrl, uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { uploadAttachment } from '@/lib/upload'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -157,7 +158,7 @@ export const PublishAppSidePanel = ({
         : iconUrl
 
     if (iconFile !== undefined && uploadedIconUrl === undefined) {
-      toast.error('Failed to upload OAuth application icon')
+      toast.error($t('Failed to upload OAuth application icon'))
       return
     }
 
@@ -238,7 +239,7 @@ export const PublishAppSidePanel = ({
                       render={({ field }) => (
                         <FormItemLayout
                           layout="vertical"
-                          label="Application name"
+                          label={$t('Application name')}
                           description={selectedApp?.id && `ID: ${selectedApp.id}`}
                         >
                           <FormControl className="col-span-6">
@@ -251,7 +252,7 @@ export const PublishAppSidePanel = ({
                       control={form.control}
                       name="website"
                       render={({ field }) => (
-                        <FormItemLayout layout="vertical" label="Website URL">
+                        <FormItemLayout layout="vertical" label={$t('Website URL')}>
                           <FormControl className="col-span-6">
                             <Input {...field} placeholder="https://my-website.com" />
                           </FormControl>
@@ -286,7 +287,7 @@ export const PublishAppSidePanel = ({
                                     (uploadButtonRef.current as any).click()
                                 }}
                               >
-                                <p>Upload image</p>
+                                <p>{$t('Upload image')}</p>
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 key="remove"
@@ -295,7 +296,7 @@ export const PublishAppSidePanel = ({
                                   setIconUrl(undefined)
                                 }}
                               >
-                                <p>Remove image</p>
+                                <p>{$t('Remove image')}</p>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -312,7 +313,7 @@ export const PublishAppSidePanel = ({
                         }}
                       >
                         <Upload size={18} strokeWidth={1.5} className="text-foreground" />
-                        <p className="text-xs text-foreground-light">Upload logo</p>
+                        <p className="text-xs text-foreground-light">{$t('Upload logo')}</p>
                       </div>
                     )}
                     <input
@@ -332,16 +333,16 @@ export const PublishAppSidePanel = ({
               <SidePanel.Content className="py-4">
                 <div className="mb-2 flex items-center justify-between">
                   <div>
-                    <p className="text-foreground text-sm">Authorization callback URLs</p>
+                    <p className="text-foreground text-sm">{$t('Authorization callback URLs')}</p>
                     <p className="text-sm text-foreground-light">
-                      All URLs must use HTTPS, except for localhost
+                      {$t('All URLs must use HTTPS, except for localhost')}
                     </p>
                   </div>
                   <Button
                     variant="default"
                     onClick={() => appendCallbackUrl({ id: uuidv4(), value: '' })}
                   >
-                    Add URL
+                    {$t('Add URL')}
                   </Button>
                 </div>
                 <div className="space-y-2 pb-2">
@@ -353,13 +354,13 @@ export const PublishAppSidePanel = ({
                       render={({ field }) => (
                         <FormItemLayout
                           layout="vertical"
-                          label={<span className="sr-only">Callback URL</span>}
+                          label={<span className="sr-only">{$t('Callback URL')}</span>}
                         >
                           <FormControl>
                             <InputGroup>
                               <InputGroupInput
                                 {...field}
-                                placeholder="e.g https://my-website.com"
+                                placeholder={$t('e.g https://my-website.com')}
                               />
                               {callbackUrlsFields.length > 1 ? (
                                 <InputGroupAddon align="inline-end">
@@ -367,7 +368,7 @@ export const PublishAppSidePanel = ({
                                     variant="default"
                                     onClick={() => removeCallbackUrl(index)}
                                   >
-                                    Remove
+                                    {$t('Remove')}
                                   </InputGroupButton>
                                 </InputGroupAddon>
                               ) : null}
@@ -396,10 +397,11 @@ export const PublishAppSidePanel = ({
               <div className="p-6 ">
                 <div className="flex items-start justify-between space-x-4 pb-4">
                   <div className="flex flex-col">
-                    <span className="text-sm text-foreground">Application permissions</span>
+                    <span className="text-sm text-foreground">{$t('Application permissions')}</span>
                     <span className="text-sm text-foreground-light">
-                      The application permissions are organized in scopes and will be presented to
-                      the user when adding an app to their organization and all of its projects.
+                      {$t(
+                        'The application permissions are organized in scopes and will be presented to the user when adding an app to their organization and all of its projects.'
+                      )}
                     </span>
                   </div>
                   <DocsButton href={`${DOCS_URL}/guides/platform/oauth-apps/oauth-scopes`} />
@@ -418,11 +420,11 @@ export const PublishAppSidePanel = ({
                   onClick={() => setShowPreview(true)}
                   disabled={name.length === 0 || website.length === 0}
                 >
-                  Preview consent for users
+                  {$t('Preview consent for users')}
                 </Button>
                 <div className="flex items-center space-x-2">
                   <Button variant="default" disabled={isSubmitting} onClick={() => onClose()}>
-                    Cancel
+                    {$t('Cancel')}
                   </Button>
                   <Shortcut
                     id={SHORTCUT_IDS.ORG_OAUTH_APPS_SUBMIT}
@@ -431,7 +433,7 @@ export const PublishAppSidePanel = ({
                     side="top"
                   >
                     <Button type="submit" loading={isSubmitting} disabled={isSubmitting}>
-                      Confirm
+                      {$t('Confirm')}
                     </Button>
                   </Shortcut>
                 </div>
@@ -444,8 +446,10 @@ export const PublishAppSidePanel = ({
               <AlertDialogHeader>
                 <AlertDialogTitle>
                   <div className="flex items-center gap-x-2 justify-between">
-                    <p className="truncate">Authorize API access for {name}</p>
-                    <Badge variant="success">Preview</Badge>
+                    <p className="truncate">
+                      {$t('Authorize API access for')} {name}
+                    </p>
+                    <Badge variant="success">{$t('Preview')}</Badge>
                   </div>
                 </AlertDialogTitle>
                 <AlertDialogDescription>
@@ -456,18 +460,20 @@ export const PublishAppSidePanel = ({
                     scopes={scopes}
                   />
                   <div className="pt-4 space-y-2">
-                    <p className="prose text-sm">Select an organization to grant API access to</p>
+                    <p className="prose text-sm">
+                      {$t('Select an organization to grant API access to')}
+                    </p>
                     <div className="border border-control text-foreground-light rounded-sm px-4 py-2 text-sm bg-surface-200">
-                      Organizations that you have access to will be listed here
+                      {$t('Organizations that you have access to will be listed here')}
                     </div>
                   </div>
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter className="items-baseline sm:justify-between">
                 <p className="prose text-xs">
-                  This is what your users will see when authorizing with your app
+                  {$t('This is what your users will see when authorizing with your app')}
                 </p>
-                <AlertDialogCancel>Close</AlertDialogCancel>
+                <AlertDialogCancel>{$t('Close')}</AlertDialogCancel>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

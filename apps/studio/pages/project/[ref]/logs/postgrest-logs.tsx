@@ -6,6 +6,7 @@ import { LogsPreviewer } from '@/components/interfaces/Settings/Logs/LogsPreview
 import { LogsTableEmptyState } from '@/components/interfaces/Settings/Logs/LogsTableEmptyState'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import LogsLayout from '@/components/layouts/LogsLayout/LogsLayout'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 export const LogPage: NextPageWithLayout = () => {
@@ -20,8 +21,10 @@ export const LogPage: NextPageWithLayout = () => {
       tableName={LogsTableName.POSTGREST}
       EmptyState={
         <LogsTableEmptyState
-          title="No results found"
-          description="Only errors are captured into PostgREST logs by default. Check the API Gateway logs for HTTP requests."
+          title={$t('No results found')}
+          description={$t(
+            'Only errors are captured into PostgREST logs by default. Check the API Gateway logs for HTTP requests.'
+          )}
         />
       }
       filterOverride={!!identifier ? { identifier } : undefined}
@@ -31,7 +34,7 @@ export const LogPage: NextPageWithLayout = () => {
 
 LogPage.getLayout = (page) => (
   <DefaultLayout>
-    <LogsLayout title="Postgrest Logs">{page}</LogsLayout>
+    <LogsLayout title={$t('Postgrest Logs')}>{page}</LogsLayout>
   </DefaultLayout>
 )
 

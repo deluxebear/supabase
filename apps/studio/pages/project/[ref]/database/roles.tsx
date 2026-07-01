@@ -14,6 +14,7 @@ import DatabaseLayout from '@/components/layouts/DatabaseLayout/DatabaseLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const DatabaseRoles: NextPageWithLayout = () => {
@@ -29,9 +30,9 @@ const DatabaseRoles: NextPageWithLayout = () => {
       <PageHeader size="large">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Database Roles</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Database Roles')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Manage access control to your database through users, groups, and permissions
+              {$t('Manage access control to your database through users, groups, and permissions')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -49,7 +50,7 @@ const DatabaseRoles: NextPageWithLayout = () => {
 
 DatabaseRoles.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Roles">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Roles')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

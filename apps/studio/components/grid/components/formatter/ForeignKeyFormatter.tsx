@@ -14,6 +14,7 @@ import { useTableEditorQuery } from '@/data/table-editor/table-editor-query'
 import { isTableLike } from '@/data/table-editor/table-editor-types'
 import { useTableQuery } from '@/data/tables/table-retrieve-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface Props extends PropsWithChildren<RenderCellProps<SupaRow, unknown>> {
   tableId?: number
@@ -78,7 +79,7 @@ export const ForeignKeyFormatter = (props: Props) => {
                 <ButtonTooltip
                   variant="default"
                   className="w-6 h-6"
-                  aria-label="View referencing record"
+                  aria-label={$t('View referencing record')}
                   icon={<ArrowRight />}
                   onClick={(e) => e.stopPropagation()}
                   tooltip={{ content: { side: 'bottom', text: 'View referencing record' } }}

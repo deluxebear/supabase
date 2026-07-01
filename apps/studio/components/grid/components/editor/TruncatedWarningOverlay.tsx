@@ -1,6 +1,8 @@
 import { MAX_CHARACTERS } from '@supabase/pg-meta/src/query/table-row-query'
 import { Button, cn } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 export const TruncatedWarningOverlay = ({
   isLoading,
   loadFullValue,
@@ -17,13 +19,17 @@ export const TruncatedWarningOverlay = ({
       )}
     >
       <div className="flex flex-col gap-y-1">
-        <p>Value is larger than {MAX_CHARACTERS.toLocaleString()} characters</p>
+        <p>
+          {$t('Value is larger than')} {MAX_CHARACTERS.toLocaleString()} characters
+        </p>
         <p className="text-foreground-light">
-          You may try to render the entire value, but your browser may run into performance issues
+          {$t(
+            'You may try to render the entire value, but your browser may run into performance issues'
+          )}
         </p>
       </div>
       <Button variant="default" loading={isLoading} onClick={loadFullValue}>
-        Load full value
+        {$t('Load full value')}
       </Button>
     </div>
   )

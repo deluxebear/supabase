@@ -14,6 +14,7 @@ import { useOrgProjectsInfiniteQuery } from '@/data/projects/org-projects-infini
 import type { OrgSubscription } from '@/data/subscriptions/types'
 import { OrgUsageResponse } from '@/data/usage/org-usage-query'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export interface DiskUsageProps {
   slug: string
@@ -96,11 +97,11 @@ export const DiskUsage = ({
               hasProjectsExceedingDiskSize && (
                 <Alert variant="warning">
                   <CriticalIcon />
-                  <AlertTitle>Projects exceeding quota</AlertTitle>
+                  <AlertTitle>{$t('Projects exceeding quota')}</AlertTitle>
                   <AlertDescription>
-                    You have projects that are exceeding 8 GB of provisioned disk size, but do not
-                    allow any overages with the Spend Cap on. Reduce the disk size or disable the
-                    spend cap.
+                    {$t(
+                      'You have projects that are exceeding 8 GB of provisioned disk size, but do not allow any overages with the Spend Cap on. Reduce the disk size or disable the spend cap.'
+                    )}
                   </AlertDescription>
                 </Alert>
               )}
@@ -114,15 +115,15 @@ export const DiskUsage = ({
 
               <div className="flex items-center justify-between border-b py-1">
                 <p className="text-xs text-foreground-light">
-                  Included in {subscription?.plan?.name} Plan
+                  {$t('Included in')} {subscription?.plan?.name} {$t('Plan')}
                 </p>
-                <p className="text-xs">8 GB GP3 disk per project</p>
+                <p className="text-xs">{$t('8 GB GP3 disk per project')}</p>
               </div>
 
               <div className="flex items-center justify-between">
-                <p className="text-xs text-foreground-light">Overages in period</p>
+                <p className="text-xs text-foreground-light">{$t('Overages in period')}</p>
                 <p className="text-xs">
-                  {(gp3UsageInPeriod?.usage ?? 0).toLocaleString()} GP3 GB-Hrs
+                  {(gp3UsageInPeriod?.usage ?? 0).toLocaleString()} {$t('GP3 GB-Hrs')}
                   {io2UsageInPeriod?.usage
                     ? ` / ${io2UsageInPeriod.usage.toLocaleString()} IO2 GB-Hrs`
                     : ``}
@@ -133,10 +134,11 @@ export const DiskUsage = ({
             {currentBillingCycleSelected ? (
               <div className="space-y-4">
                 <div className="space-y-1">
-                  <p className="text-sm">Current disk size per project</p>
+                  <p className="text-sm">{$t('Current disk size per project')}</p>
                   <p className="text-sm text-foreground-light">
-                    Breakdown of disk per project. Head to your project's disk management section to
-                    see database size used.
+                    {$t(
+                      "Breakdown of disk per project. Head to your project's disk management section to see database size used."
+                    )}
                   </p>
                 </div>
 
@@ -144,9 +146,9 @@ export const DiskUsage = ({
                   <Panel>
                     <Panel.Content>
                       <div className="flex flex-col items-center justify-center">
-                        <p className="text-sm">No active projects</p>
+                        <p className="text-sm">{$t('No active projects')}</p>
                         <p className="text-sm text-foreground-light">
-                          You don't have any active projects in this organization.
+                          {$t("You don't have any active projects in this organization.")}
                         </p>
                       </div>
                     </Panel.Content>
@@ -176,7 +178,7 @@ export const DiskUsage = ({
                         </span>
                         <Button asChild variant="default" size={'tiny'}>
                           <Link href={`/project/${project.ref}/settings/compute-and-disk`}>
-                            Manage Disk
+                            {$t('Manage Disk')}
                           </Link>
                         </Button>
                       </div>
@@ -190,19 +192,22 @@ export const DiskUsage = ({
                                 className="font-mono"
                               />
                             </span>{' '}
-                            GB Disk provisioned
+                            {$t('GB Disk provisioned')}
                           </span>
                           <InfoTooltip side="top">
-                            <p>{primaryDiskUsage} GB for Primary Database</p>
+                            <p>
+                              {primaryDiskUsage} {$t('GB for Primary Database')}
+                            </p>
                             {replicaDbs.length > 0 && (
                               <>
                                 <p>
-                                  {replicaDiskUsage} GB for {replicaDbs.length} Read{' '}
+                                  {replicaDiskUsage} {$t('GB for')} {replicaDbs.length} {$t('Read')}{' '}
                                   {replicaDbs.length === 1 ? 'Replica' : 'Replicas'}
                                 </p>
                                 <p className="mt-1">
-                                  Read replicas have their own disk and use 25% more disk to account
-                                  for WAL files.
+                                  {$t(
+                                    'Read replicas have their own disk and use 25% more disk to account for WAL files.'
+                                  )}
                                 </p>
                               </>
                             )}
@@ -217,9 +222,9 @@ export const DiskUsage = ({
               <Panel>
                 <Panel.Content>
                   <div className="flex flex-col items-center justify-center">
-                    <p className="text-sm">Data not available</p>
+                    <p className="text-sm">{$t('Data not available')}</p>
                     <p className="text-sm text-foreground-light">
-                      Switch to current billing cycle to see current disk size per project.
+                      {$t('Switch to current billing cycle to see current disk size per project.')}
                     </p>
                   </div>
                 </Panel.Content>

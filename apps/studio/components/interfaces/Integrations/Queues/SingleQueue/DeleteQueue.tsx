@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { TextConfirmModal } from '@/components/ui/TextConfirmModalWrapper'
 import { useDatabaseQueueDeleteMutation } from '@/data/database-queues/database-queues-delete-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface DeleteQueueProps {
   queueName: string
@@ -43,14 +44,14 @@ export const DeleteQueue = ({ queueName, visible, onClose }: DeleteQueueProps) =
       visible={visible}
       onCancel={() => onClose()}
       onConfirm={handleDelete}
-      title="Delete this queue"
+      title={$t('Delete this queue')}
       loading={isPending}
       confirmLabel={`Delete queue ${queueName}`}
       confirmPlaceholder="Type in name of queue"
       confirmString={queueName ?? 'Unknown'}
       text={
         <>
-          <span>This will delete the queue</span>{' '}
+          <span>{$t('This will delete the queue')}</span>{' '}
           <span className="text-bold text-foreground">{queueName}</span>
         </>
       }

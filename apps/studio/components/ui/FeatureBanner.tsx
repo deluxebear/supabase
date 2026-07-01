@@ -5,6 +5,7 @@ import { ReactNode } from 'react'
 import { Button, cn } from 'ui'
 
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
+import { t as $t } from '@/lib/i18n'
 
 // Base props common to all feature banners
 interface BaseFeatureBannerProps extends HTMLMotionProps<'div'> {
@@ -79,7 +80,7 @@ export const FeatureBanner = ({
             icon={<X size={16} strokeWidth={1.5} />}
             onClick={() => setIsDismissed(true)}
             className="opacity-75 px-1"
-            aria-label="Dismiss notification"
+            aria-label={$t('Dismiss notification')}
           />
         </div>
       )}

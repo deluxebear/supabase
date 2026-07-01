@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Button, cn } from 'ui'
 
 import type { Filters, FilterSet } from './Logs.types'
+import { t as $t } from '@/lib/i18n'
 
 interface LogsFilterPopoverProps {
   options: FilterSet
@@ -111,10 +112,10 @@ const LogsFilterPopover = ({
 
           <div className="flex items-center justify-end gap-2 border-t border-default p-2">
             <Button size="tiny" variant="default" onClick={handleReset} type="button">
-              Clear
+              {$t('Clear')}
             </Button>
             <Button loading={isLoading} variant="primary" type="submit">
-              Apply
+              {$t('Apply')}
             </Button>
           </div>
         </form>

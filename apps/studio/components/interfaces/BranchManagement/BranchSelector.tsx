@@ -15,6 +15,7 @@ import {
 
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { Branch } from '@/data/branches/branches-query'
+import { t as $t } from '@/lib/i18n'
 
 interface BranchSelectorProps {
   branches: Branch[]
@@ -69,9 +70,9 @@ export const BranchSelector = ({
       </PopoverTrigger>
       <PopoverContent className="p-0 w-80" side="bottom" align="end">
         <Command>
-          <CommandInput placeholder="Find branch to review..." />
+          <CommandInput placeholder={$t('Find branch to review...')} />
           <CommandList>
-            <CommandEmpty>No available branches found</CommandEmpty>
+            <CommandEmpty>{$t('No available branches found')}</CommandEmpty>
             <CommandGroup>
               <ScrollArea className="max-h-[210px] overflow-y-auto">
                 {availableBranches.map((branch) => (
@@ -91,8 +92,8 @@ export const BranchSelector = ({
                     {selectedBranch?.id === branch.id && (
                       <Check size={14} strokeWidth={1.5} className="text-brand" />
                     )}
-                    {branch.git_branch && <span>Synced to a Git branch</span>}
-                    {branch.review_requested_at && <span>Merge request opened</span>}
+                    {branch.git_branch && <span>{$t('Synced to a Git branch')}</span>}
+                    {branch.review_requested_at && <span>{$t('Merge request opened')}</span>}
                   </CommandItem>
                 ))}
               </ScrollArea>

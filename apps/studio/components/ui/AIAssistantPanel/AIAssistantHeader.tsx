@@ -14,6 +14,7 @@ import { Admonition } from 'ui-patterns/admonition'
 import { ButtonTooltip } from '../ButtonTooltip'
 import { AIAssistantChatSelector } from './AIAssistantChatSelector'
 import { AIOptInModal } from './AIOptInModal'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 
 interface AIAssistantHeaderProps {
@@ -96,7 +97,7 @@ export const AIAssistantHeader = ({
                   onClick={() => copyToClipboard(snap.activeChatId ?? '')}
                 >
                   <Clipboard size={14} strokeWidth={1.5} />
-                  <span>Copy chat ID</span>
+                  <span>{$t('Copy chat ID')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -141,7 +142,7 @@ export const AIAssistantHeader = ({
               className="w-fit mt-4"
               onClick={() => setIsOptInModalOpen(true)}
             >
-              Permission settings
+              {$t('Permission settings')}
             </Button>
           )}
         </Admonition>

@@ -58,6 +58,7 @@ import { useReplicationPipelineVersionQuery } from '@/data/replication/pipeline-
 import { useRestartPipelineHelper } from '@/data/replication/restart-pipeline-helper'
 import { useStartPipelineMutation } from '@/data/replication/start-pipeline-mutation'
 import { useStopPipelineMutation } from '@/data/replication/stop-pipeline-mutation'
+import { t as $t } from '@/lib/i18n'
 import {
   PipelineStatusRequestStatus,
   usePipelineRequestStatus,
@@ -233,7 +234,7 @@ export const ReplicationPipelineStatus = () => {
 
   const onPrimaryAction = async () => {
     if (!projectRef) return console.error('Project ref is required')
-    if (!pipeline) return toast.error('No pipeline found')
+    if (!pipeline) return toast.error($t('No pipeline found'))
 
     const action =
       statusName === PipelineStatusName.STOPPED
@@ -291,12 +292,12 @@ export const ReplicationPipelineStatus = () => {
                 icon={<ArrowUpCircle />}
                 onClick={() => setShowUpdateVersionModal(true)}
               >
-                Update available
+                {$t('Update available')}
               </Button>
             )}
 
             <Button asChild variant="default">
-              <Link href={logsUrl}>View logs</Link>
+              <Link href={logsUrl}>{$t('View logs')}</Link>
             </Button>
 
             <Button
@@ -328,8 +329,8 @@ export const ReplicationPipelineStatus = () => {
         {isStatusError && (
           <div className="flex items-center gap-2 rounded-lg border border-warning-400 bg-warning-50 px-3 py-2 text-xs text-warning-800">
             <WifiOff size={14} />
-            <span className="font-medium">Live updates paused</span>
-            <span className="text-warning-700">Retrying automatically</span>
+            <span className="font-medium">{$t('Live updates paused')}</span>
+            <span className="text-warning-700">{$t('Retrying automatically')}</span>
           </div>
         )}
 
@@ -347,9 +348,9 @@ export const ReplicationPipelineStatus = () => {
           <div className="border border-default rounded-lg bg-surface-100 px-4 py-4 space-y-3">
             <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
               <div>
-                <h4 className="text-sm font-semibold text-foreground">Pipeline metrics</h4>
+                <h4 className="text-sm font-semibold text-foreground">{$t('Pipeline metrics')}</h4>
                 <p className="text-xs text-foreground-light">
-                  Live metrics on how this pipeline is doing right now.
+                  {$t('Live metrics on how this pipeline is doing right now.')}
                 </p>
               </div>
               <div className="flex items-center gap-x-2.5">
@@ -362,7 +363,7 @@ export const ReplicationPipelineStatus = () => {
 
             {isStatusError && (
               <p className="text-xs text-warning-700">
-                Unable to refresh data. Showing the last values we received.
+                {$t('Unable to refresh data. Showing the last values we received.')}
               </p>
             )}
 
@@ -375,8 +376,9 @@ export const ReplicationPipelineStatus = () => {
                   <div className="flex items-start gap-2 rounded-md border border-default/50 bg-surface-200/60 px-3 py-2 text-foreground-light">
                     <Info size={14} className="mt-0.5" />
                     <span>
-                      During initial sync, tables can copy and stream independently before
-                      reconciling with the overall pipeline.
+                      {$t(
+                        'During initial sync, tables can copy and stream independently before reconciling with the overall pipeline.'
+                      )}
                     </span>
                   </div>
                   <div className="rounded-sm border border-default/50 bg-surface-200/40">
@@ -404,7 +406,7 @@ export const ReplicationPipelineStatus = () => {
                 icon={<Search />}
                 size="tiny"
                 className="text-xs w-52"
-                placeholder="Search for tables"
+                placeholder={$t('Search for tables')}
                 value={searchString}
                 disabled={isPipelineError}
                 onChange={(e) => setSearchString(e.target.value)}
@@ -433,7 +435,7 @@ export const ReplicationPipelineStatus = () => {
                     setShowBatchRestartDialog(true)
                   }}
                 >
-                  Restart all tables
+                  {$t('Restart all tables')}
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -458,7 +460,7 @@ export const ReplicationPipelineStatus = () => {
                         },
                       }}
                     >
-                      Restart failed tables only
+                      {$t('Restart failed tables only')}
                     </DropdownMenuItemTooltip>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -477,9 +479,9 @@ export const ReplicationPipelineStatus = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead key="table">Table</TableHead>
-                      <TableHead key="status">Status</TableHead>
-                      <TableHead key="details">Details</TableHead>
+                      <TableHead key="table">{$t('Table')}</TableHead>
+                      <TableHead key="status">{$t('Status')}</TableHead>
+                      <TableHead key="details">{$t('Details')}</TableHead>
                       <TableHead key="actions" />
                     </TableRow>
                   </TableHeader>
@@ -557,7 +559,7 @@ export const ReplicationPipelineStatus = () => {
               </div>
               {statusName !== PipelineStatusName.STOPPED && (
                 <p className="text-xs text-foreground-lighter">
-                  Data refreshes every {refreshIntervalLabel}
+                  {$t('Data refreshes every')} {refreshIntervalLabel}
                 </p>
               )}
             </div>

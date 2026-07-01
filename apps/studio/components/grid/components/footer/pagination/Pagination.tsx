@@ -16,6 +16,7 @@ import { isForeignTable, isTable } from '@/data/table-editor/table-editor-types'
 import { useTableRowsCountQuery } from '@/data/table-rows/table-rows-count-query'
 import { useTableRowsQuery } from '@/data/table-rows/table-rows-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { RoleImpersonationState } from '@/lib/role-impersonation'
 import { useRoleImpersonationStateSnapshot } from '@/state/role-impersonation-state'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
@@ -206,14 +207,14 @@ export const Pagination = ({ enableForeignRowsQuery = true }: PaginationProps) =
     return (
       <div className="flex items-center gap-x-2">
         <Button
-          aria-label="Previous page"
+          aria-label={$t('Previous page')}
           icon={<ArrowLeft />}
           variant="outline"
           className="px-1.5"
           disabled={page <= 1}
           onClick={onPreviousPage}
         />
-        <p className="text-xs text-foreground-light">Page</p>
+        <p className="text-xs text-foreground-light">{$t('Page')}</p>
         <Input
           size="tiny"
           className="w-10"
@@ -232,7 +233,7 @@ export const Pagination = ({ enableForeignRowsQuery = true }: PaginationProps) =
           }}
         />
         <Button
-          aria-label="Next page"
+          aria-label={$t('Next page')}
           icon={<ArrowRight />}
           variant="outline"
           className="px-1.5"
@@ -249,7 +250,7 @@ export const Pagination = ({ enableForeignRowsQuery = true }: PaginationProps) =
     <div className="flex items-center gap-x-4 min-w-fit">
       <div className="flex items-center gap-x-2">
         <Button
-          aria-label="Previous page"
+          aria-label={$t('Previous page')}
           icon={<ArrowLeft />}
           variant="outline"
           className="px-1.5"
@@ -257,7 +258,7 @@ export const Pagination = ({ enableForeignRowsQuery = true }: PaginationProps) =
           onClick={onPreviousPage}
         />
 
-        <p className="text-xs text-foreground-light">Page</p>
+        <p className="text-xs text-foreground-light">{$t('Page')}</p>
 
         <Input
           className="w-12"
@@ -283,7 +284,7 @@ export const Pagination = ({ enableForeignRowsQuery = true }: PaginationProps) =
         )}
 
         <Button
-          aria-label="Next page"
+          aria-label={$t('Next page')}
           icon={<ArrowRight />}
           variant="outline"
           className="px-1.5"
@@ -311,7 +312,9 @@ export const Pagination = ({ enableForeignRowsQuery = true }: PaginationProps) =
               icon={<AlertCircle />}
             />
           </TooltipTrigger>
-          <TooltipContent side="top">Failed to retrieve count: {error?.message}</TooltipContent>
+          <TooltipContent side="top">
+            {$t('Failed to retrieve count:')} {error?.message}
+          </TooltipContent>
         </Tooltip>
       ) : !isForeignTableSelected ? (
         <div className="flex items-center gap-x-2">
@@ -346,7 +349,9 @@ export const Pagination = ({ enableForeignRowsQuery = true }: PaginationProps) =
                   ? `This is an estimated value as your table has more than ${THRESHOLD_COUNT.toLocaleString()} rows.`
                   : `Count not automatically loaded as your table has more than ${THRESHOLD_COUNT.toLocaleString()} rows.`}{' '}
                 <br />
-                <span className="text-brand">Click to retrieve the exact count of the table.</span>
+                <span className="text-brand">
+                  {$t('Click to retrieve the exact count of the table.')}
+                </span>
               </TooltipContent>
             </Tooltip>
           )}
@@ -355,7 +360,7 @@ export const Pagination = ({ enableForeignRowsQuery = true }: PaginationProps) =
 
       <ConfirmationModal
         visible={isConfirmPreviousModalOpen}
-        title="Confirm moving to previous page"
+        title={$t('Confirm moving to previous page')}
         confirmLabel="Confirm"
         onCancel={() => setIsConfirmPreviousModalOpen(false)}
         onConfirm={() => {
@@ -363,13 +368,13 @@ export const Pagination = ({ enableForeignRowsQuery = true }: PaginationProps) =
         }}
       >
         <p className="text-sm text-foreground-light">
-          The currently selected lines will be deselected, do you want to proceed?
+          {$t('The currently selected lines will be deselected, do you want to proceed?')}
         </p>
       </ConfirmationModal>
 
       <ConfirmationModal
         visible={isConfirmNextModalOpen}
-        title="Confirm moving to next page"
+        title={$t('Confirm moving to next page')}
         confirmLabel="Confirm"
         onCancel={() => setIsConfirmNextModalOpen(false)}
         onConfirm={() => {
@@ -377,14 +382,14 @@ export const Pagination = ({ enableForeignRowsQuery = true }: PaginationProps) =
         }}
       >
         <p className="text-sm text-foreground-light">
-          The currently selected lines will be deselected, do you want to proceed?
+          {$t('The currently selected lines will be deselected, do you want to proceed?')}
         </p>
       </ConfirmationModal>
 
       <ConfirmationModal
         variant="warning"
         visible={isConfirmFetchExactCountModalOpen}
-        title="Confirm to fetch exact count for table"
+        title={$t('Confirm to fetch exact count for table')}
         confirmLabel="Retrieve exact count"
         onCancel={() => setIsConfirmFetchExactCountModalOpen(false)}
         onConfirm={() => {

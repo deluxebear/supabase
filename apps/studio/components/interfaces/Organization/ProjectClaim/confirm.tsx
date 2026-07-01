@@ -16,6 +16,7 @@ import { useOrganizationProjectClaimMutation } from '@/data/organizations/organi
 import { OrganizationProjectClaimResponse } from '@/data/organizations/organization-project-claim-query'
 import { useInvalidateProjectsInfiniteQuery } from '@/data/projects/org-projects-infinite-query'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { Organization } from '@/types'
 
 export const ProjectClaimConfirm = ({
@@ -47,7 +48,7 @@ export const ProjectClaimConfirm = ({
         token: claimToken!,
       })
 
-      toast.success('Project claimed successfully')
+      toast.success($t('Project claimed successfully'))
       try {
         // check if the redirect url is valid. If not, redirect the user to the org dashboard
         const url = new URL(response.url)
@@ -68,8 +69,8 @@ export const ProjectClaimConfirm = ({
     <ProjectClaimLayout
       title={
         <>
-          Claim a project <span className="text-brand">{projectClaim?.project?.name}</span> from{' '}
-          <span className="text-brand">{requester?.name}</span>
+          {$t('Claim a project')} <span className="text-brand">{projectClaim?.project?.name}</span>{' '}
+          from <span className="text-brand">{requester?.name}</span>
         </>
       }
     >
@@ -100,7 +101,7 @@ export const ProjectClaimConfirm = ({
             <div className="w-8 h-8">
               <Image
                 src={`${BASE_PATH}/img/supabase-logo.svg`}
-                alt="Supabase Logo"
+                alt={$t('Supabase Logo')}
                 className="w-full h-full"
                 width={100}
                 height={100}
@@ -110,9 +111,10 @@ export const ProjectClaimConfirm = ({
         </div>
         <div className="space-y-4 text-foreground-light">
           <p>
-            By claiming the <span className="text-foreground">{projectClaim?.project?.name}</span>{' '}
-            project from <span className="text-foreground">{requester?.name}</span>, the following
-            will happen:
+            {$t('By claiming the')}{' '}
+            <span className="text-foreground">{projectClaim?.project?.name}</span>{' '}
+            {$t('project from')} <span className="text-foreground">{requester?.name}</span>
+            {$t(', the following will happen:')}
           </p>
           <ul className="space-y-3">
             <li className="flex space-x-2">
@@ -120,14 +122,14 @@ export const ProjectClaimConfirm = ({
                 <CheckCircle2 className="text-brand h-5 w-5" />
               </span>
               <span>
-                The project will be transferred to your Supabase organization{' '}
+                {$t('The project will be transferred to your Supabase organization')}{' '}
                 <span className="text-foreground">{selectedOrganization.name}.</span>{' '}
                 <a
                   href="#"
                   onClick={() => setStep('choose-org')}
                   className="text-foreground-light underline"
                 >
-                  Choose another organization?
+                  {$t('Choose another organization?')}
                 </a>
               </span>
             </li>
@@ -136,9 +138,10 @@ export const ProjectClaimConfirm = ({
                 <CheckCircle2 className="text-brand h-5 w-5" />
               </span>
               <span>
-                <span className="text-foreground">{requester?.name}</span> will receive API access
-                (permissions listed below) to all projects within your organization to continue
-                providing its functionality to the application you've built.
+                <span className="text-foreground">{requester?.name}</span>{' '}
+                {$t(
+                  "will receive API access (permissions listed below) to all projects within your organization to continue providing its functionality to the application you've built."
+                )}
               </span>
             </li>
             <li className="flex space-x-2">
@@ -146,32 +149,37 @@ export const ProjectClaimConfirm = ({
                 <CheckCircle2 className="text-brand h-5 w-5" />
               </span>
               <span>
-                You'll be responsible for maintaining the project, which may include additional
-                costs.
+                {$t(
+                  "You'll be responsible for maintaining the project, which may include additional costs."
+                )}
               </span>
             </li>
           </ul>
           <Admonition type="caution">
             <div className="text-foreground-light">
-              Upon claiming, the project may undergo a short downtime (less than 10 minutes) for
-              resizing.
+              {$t(
+                'Upon claiming, the project may undergo a short downtime (less than 10 minutes) for resizing.'
+              )}
             </div>
           </Admonition>
         </div>
         <div className="flex space-y-4 flex-col">
           {requester.scopes.length === 0 ? (
             <span className="text-foreground-light">
-              <span className="text-foreground">{requester?.name}</span> hasn't requested any
-              permissions to operate. This is normal and no action is needed from your side.
+              <span className="text-foreground">{requester?.name}</span>{' '}
+              {$t(
+                "hasn't requested any permissions to operate. This is normal and no action is needed from your side."
+              )}
             </span>
           ) : (
             <Collapsible>
               <CollapsibleTrigger className="pb-3 w-full flex items-center justify-between group">
                 <p className="text-sm text-foreground-light text-left">
-                  <span className="font-foreground">List of permissions</span> that{' '}
-                  <span className="text-foreground">{requester.name}</span> will have for the{' '}
+                  <span className="font-foreground">{$t('List of permissions')}</span> that{' '}
+                  <span className="text-foreground">{requester.name}</span>{' '}
+                  {$t('will have for the')}{' '}
                   <span className="text-amber-900">
-                    selected organization and all of its projects.
+                    {$t('selected organization and all of its projects.')}
                   </span>
                 </p>
 
@@ -256,7 +264,7 @@ export const ProjectClaimConfirm = ({
       </div>
       <div className="flex justify-center sticky bottom-0">
         <Button size="medium" loading={isLoading} disabled={isLoading} onClick={onClaimProject}>
-          Claim project {projectClaim?.project?.name}
+          {$t('Claim project')} {projectClaim?.project?.name}
         </Button>
       </div>
     </ProjectClaimLayout>

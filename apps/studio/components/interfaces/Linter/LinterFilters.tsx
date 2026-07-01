@@ -7,6 +7,7 @@ import { DownloadResultsButton } from '@/components/ui/DownloadResultsButton'
 import { FilterPopover } from '@/components/ui/FilterPopover'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { Lint } from '@/data/lint/lint-query'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 interface LinterFiltersProps {
@@ -72,7 +73,7 @@ const LinterFilters = ({
               <RefreshCw className={`text-foreground-light ${isLoading ? 'animate-spin' : ''}`} />
             }
           >
-            Refresh
+            {$t('Refresh')}
           </Button>
         </ShortcutTooltip>
         <DownloadResultsButton

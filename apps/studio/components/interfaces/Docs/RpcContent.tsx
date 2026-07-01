@@ -7,6 +7,7 @@ import Param from '@/components/interfaces/Docs/Param'
 import Snippets from '@/components/interfaces/Docs/Snippets'
 import { useProjectSettingsV2Query } from '@/data/config/project-settings-v2-query'
 import { ProjectJsonSchemaPaths } from '@/data/docs/project-json-schema-query'
+import { t as $t } from '@/lib/i18n'
 
 /**
  * TODO: need to support rpc with the same name and different params type
@@ -58,7 +59,7 @@ export const RpcContent = ({
         content={
           <>
             <label className="font-mono text-xs uppercase text-foreground-lighter inline-block mb-2">
-              Description
+              {$t('Description')}
             </label>
             <Description content={summary ?? ''} metadata={{ rpc: rpcId }} onChange={refreshDocs} />
           </>
@@ -80,7 +81,7 @@ export const RpcContent = ({
 
       {rpcParams.length > 0 && (
         <div className="flex flex-col flex-1">
-          <DocSection title="Function Arguments" content={null} />
+          <DocSection title={$t('Function Arguments')} content={null} />
           {rpcParams.map((x, i) => {
             return (
               <DocSection

@@ -15,6 +15,7 @@ import { Hook } from './hooks.constants'
 import { DropdownMenuItemTooltip } from '@/components/ui/DropdownMenuItemTooltip'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface HookCardProps {
   hook: Hook
@@ -37,12 +38,12 @@ export const HookCard = ({ hook, onSelectEdit, onSelectDelete }: HookCardProps) 
           {hook.method.type === 'postgres' ? (
             <div className="flex flex-col w-full space-y-2 max-w-xl">
               <div className="flex flex-row items-center">
-                <span className="text-foreground-light w-20">Type</span>
-                <span className="text-foreground">Postgres function</span>
+                <span className="text-foreground-light w-20">{$t('Type')}</span>
+                <span className="text-foreground">{$t('Postgres function')}</span>
               </div>
               <div className="flex flex-row items-center">
                 <label htmlFor="schema" className="text-foreground-light w-20">
-                  Schema
+                  {$t('Schema')}
                 </label>
                 <Input
                   id="schema"
@@ -57,7 +58,7 @@ export const HookCard = ({ hook, onSelectEdit, onSelectDelete }: HookCardProps) 
               </div>
               <div className="flex flex-row items-center">
                 <label htmlFor="functionName" className="text-foreground-light w-20">
-                  Function
+                  {$t('Function')}
                 </label>
                 <Input
                   id="functionName"
@@ -74,12 +75,12 @@ export const HookCard = ({ hook, onSelectEdit, onSelectDelete }: HookCardProps) 
           ) : (
             <div className="flex flex-col w-full space-y-2 max-w-xl">
               <div className="flex flex-row items-center">
-                <span className="text-foreground-light w-20">Type</span>
-                <span className="text-foreground">HTTPS endpoint</span>
+                <span className="text-foreground-light w-20">{$t('Type')}</span>
+                <span className="text-foreground">{$t('HTTPS endpoint')}</span>
               </div>
               <div className="flex flex-row items-center">
                 <label htmlFor="url" className="text-foreground-light w-20">
-                  Endpoint
+                  {$t('Endpoint')}
                 </label>
                 <Input
                   id="url"
@@ -94,7 +95,7 @@ export const HookCard = ({ hook, onSelectEdit, onSelectDelete }: HookCardProps) 
               </div>
               <div className="flex flex-row items-center">
                 <label htmlFor="secret" className="text-foreground-light w-20">
-                  Secret
+                  {$t('Secret')}
                 </label>
                 <Input
                   id="secret"
@@ -120,11 +121,11 @@ export const HookCard = ({ hook, onSelectEdit, onSelectDelete }: HookCardProps) 
               <div className="h-3.5 w-3.5 bg-brand rounded-full flex justify-center items-center">
                 <Check className="h-2 w-2 text-background-overlay " strokeWidth={6} />
               </div>
-              <span>Enabled</span>
+              <span>{$t('Enabled')}</span>
             </Badge>
           ) : (
             <Badge variant="warning">
-              <span>Disabled</span>
+              <span>{$t('Disabled')}</span>
             </Badge>
           )}
           <DropdownMenu>
@@ -151,7 +152,7 @@ export const HookCard = ({ hook, onSelectEdit, onSelectDelete }: HookCardProps) 
                 }}
               >
                 <Edit size={12} />
-                <span>Edit hook</span>
+                <span>{$t('Edit hook')}</span>
               </DropdownMenuItemTooltip>
               <DropdownMenuItem asChild className="gap-x-2">
                 <a
@@ -160,7 +161,7 @@ export const HookCard = ({ hook, onSelectEdit, onSelectDelete }: HookCardProps) 
                   href={`${DOCS_URL}/guides/auth/auth-hooks/${hook.docSlug}`}
                 >
                   <BookOpen size={12} />
-                  <span>Documentation</span>
+                  <span>{$t('Documentation')}</span>
                 </a>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -178,7 +179,7 @@ export const HookCard = ({ hook, onSelectEdit, onSelectDelete }: HookCardProps) 
                 }}
               >
                 <Trash size={12} />
-                <span>Delete hook</span>
+                <span>{$t('Delete hook')}</span>
               </DropdownMenuItemTooltip>
             </DropdownMenuContent>
           </DropdownMenu>

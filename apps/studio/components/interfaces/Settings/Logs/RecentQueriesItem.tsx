@@ -4,6 +4,7 @@ import { Button } from 'ui'
 
 import SqlSnippetCode from './Logs.SqlSnippetCode'
 import Table from '@/components/to-be-cleaned/Table'
+import { t as $t } from '@/lib/i18n'
 import type { LogSqlSnippets } from '@/types'
 
 interface Props {
@@ -29,7 +30,7 @@ const RecentQueriesItem: React.FC<Props> = ({ item }) => {
             router.push(`/project/${ref}/logs/explorer?q=${encodeURIComponent(item.sql)}`)
           }
         >
-          Run
+          {$t('Run')}
         </Button>
       </Table.td>
     </Table.tr>

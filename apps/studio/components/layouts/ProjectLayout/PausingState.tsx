@@ -10,6 +10,7 @@ import { Project, useInvalidateProjectDetailsQuery } from '@/data/projects/proje
 import { useProjectStatusQuery } from '@/data/projects/project-status-query'
 import { useLongRunningTransitionState } from '@/hooks/misc/useLongRunningTransitionState'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import {
   clearPersistedTransitionStartTime,
   FALLBACK_LONG_RUNNING_STATE_THRESHOLD_MINUTES,
@@ -84,7 +85,7 @@ export const PausingState = ({ project }: PausingStateProps) => {
             <Badge>
               <div className="flex items-center gap-2">
                 <Loader className="animate-spin" size={12} />
-                <span>Pausing project</span>
+                <span>{$t('Pausing project')}</span>
               </div>
             </Badge>
           </div>
@@ -98,7 +99,9 @@ export const PausingState = ({ project }: PausingStateProps) => {
                 </div>
                 <Circle className="text-foreground-lighter" size={50} strokeWidth={1.5} />
               </div>
-              <p className="text-center">Pausing {project.name}</p>
+              <p className="text-center">
+                {$t('Pausing')} {project.name}
+              </p>
               <p className="text-center text-sm text-foreground-light">
                 {isTakingLongerThanExpected
                   ? `This is taking longer than usual. Contact support if your project is still pausing after ${LONG_RUNNING_STATE_THRESHOLD_MINUTES} minutes.`
@@ -115,7 +118,7 @@ export const PausingState = ({ project }: PausingStateProps) => {
                         message: `Project "${project.name}" has remained in a pausing state for over ${LONG_RUNNING_STATE_THRESHOLD_MINUTES} minutes.`,
                       }}
                     >
-                      Contact support
+                      {$t('Contact support')}
                     </SupportLink>
                   </Button>
                 </div>

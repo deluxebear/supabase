@@ -11,6 +11,7 @@ import { normalizeFormatSchema } from './ColumnEditor.utils'
 import { useForeignKeyConstraintsQuery } from '@/data/database/foreign-key-constraints-query'
 import { useTableEditorQuery } from '@/data/table-editor/table-editor-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface ColumnForeignKeyProps {
   tableId?: number
@@ -120,7 +121,7 @@ const ColumnForeignKey = ({
         )}
 
         <Button variant="default" className="w-min" onClick={() => setOpen(true)}>
-          Add foreign key
+          {$t('Add foreign key')}
         </Button>
       </div>
 

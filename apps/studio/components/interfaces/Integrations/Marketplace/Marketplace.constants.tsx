@@ -28,6 +28,7 @@ import type {
   IntegrationDefinition,
   MarketplaceSource,
 } from '@/components/interfaces/Integrations/Landing/Integrations.constants'
+import { t as $t } from '@/lib/i18n'
 
 export type { MarketplaceSource } from '@/components/interfaces/Integrations/Landing/Integrations.constants'
 
@@ -146,12 +147,12 @@ export const MarketplaceSourceBadge = ({
     case 'Partner':
       return (
         <Badge className={cn('border-foreground-lighter/50', className)}>
-          <IconPartners size={10} /> Partner
+          <IconPartners size={10} /> {$t('Partner')}
         </Badge>
       )
     case 'Community':
-      return <Badge className={className}>Community</Badge>
+      return <Badge className={className}>{$t('Community')}</Badge>
     case 'Official':
-      return <Badge className={className}>Official</Badge>
+      return <Badge className={className}>{$t('Official')}</Badge>
   }
 }

@@ -18,6 +18,7 @@ import { ROLE_PERMISSIONS } from './Roles.constants'
 import { FormActions } from '@/components/ui/Forms/FormActions'
 import { useDatabaseRoleCreateMutation } from '@/data/database-roles/database-role-create-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface CreateRolePanelProps {
   visible: boolean
@@ -105,7 +106,7 @@ export const CreateRolePanel = ({ visible, onClose }: CreateRolePanelProps) => {
             render={({ field }) => (
               <FormItem className="grid gap-2 md:grid md:grid-cols-12 space-y-0">
                 <FormLabel className="flex flex-col space-y-2 col-span-4 text-sm justify-center text-foreground-light">
-                  Name
+                  {$t('Name')}
                 </FormLabel>
                 <FormControl className="col-span-8">
                   <Input {...field} className="w-full" />
@@ -117,7 +118,7 @@ export const CreateRolePanel = ({ visible, onClose }: CreateRolePanelProps) => {
           <div className="grid gap-2 mt-4 md:grid md:grid-cols-12">
             <div className="col-span-4">
               <FormLabel className="flex flex-col space-y-2 col-span-4 text-sm justify-center text-foreground-light">
-                Role privileges
+                {$t('Role privileges')}
               </FormLabel>
             </div>
             <div className="col-span-8 grid gap-4">
@@ -149,7 +150,9 @@ export const CreateRolePanel = ({ visible, onClose }: CreateRolePanelProps) => {
               <SidePanel.Separator />
 
               <div className="grid gap-4">
-                <p className="text-sm">These privileges cannot be granted via the Dashboard:</p>
+                <p className="text-sm">
+                  {$t('These privileges cannot be granted via the Dashboard:')}
+                </p>
                 {(Object.keys(ROLE_PERMISSIONS) as (keyof typeof ROLE_PERMISSIONS)[])
                   .filter((permissionKey) => !ROLE_PERMISSIONS[permissionKey].grant_by_dashboard)
                   .map((permissionKey) => {

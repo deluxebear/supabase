@@ -30,6 +30,7 @@ import useSingleLog from '@/hooks/analytics/useSingleLog'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useUpgradePrompt } from '@/hooks/misc/useUpgradePrompt'
+import { t as $t } from '@/lib/i18n'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -340,9 +341,9 @@ export const LogsPreviewer = ({
               }}
               EmptyState={
                 <div className="flex flex-col items-center justify-center h-[67px]">
-                  <p className="text-foreground-light text-xs">No data</p>
+                  <p className="text-foreground-light text-xs">{$t('No data')}</p>
                   <p className="text-foreground-lighter text-xs">
-                    It may take up to 24 hours for data to refresh
+                    {$t('It may take up to 24 hours for data to refresh')}
                   </p>
                 </div>
               }
@@ -379,11 +380,11 @@ export const LogsPreviewer = ({
               loading={isLoadingOlder}
               disabled={isLoadingOlder}
             >
-              Load older
+              {$t('Load older')}
             </Button>
           </ShortcutTooltip>
           <div className="text-sm text-foreground-lighter">
-            Showing <span className="font-mono">{logData.length}</span> results
+            {$t('Showing')} <span className="font-mono">{logData.length}</span> results
           </div>
           <div className="flex flex-row justify-end mt-2">
             <UpgradePrompt show={showUpgradePrompt} setShowUpgradePrompt={setShowUpgradePrompt} />

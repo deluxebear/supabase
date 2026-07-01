@@ -3,6 +3,7 @@ import { Loader2 } from 'lucide-react'
 
 import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const RestartingState = () => {
   const { ref } = useParams()
@@ -28,9 +29,11 @@ const RestartingState = () => {
               <Loader2 className="animate-spin" size={18} />
             </div>
             <div className="space-y-1">
-              <p>Restarting...</p>
+              <p>{$t('Restarting...')}</p>
               <p className="text-sm text-foreground-light">
-                Restarting can take a few minutes. Your project will be offline while it restarts.
+                {$t(
+                  'Restarting can take a few minutes. Your project will be offline while it restarts.'
+                )}
               </p>
             </div>
           </div>

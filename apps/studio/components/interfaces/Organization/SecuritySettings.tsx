@@ -20,6 +20,7 @@ import { useOrganizationMfaToggleMutation } from '@/data/organizations/organizat
 import { useOrganizationMfaQuery } from '@/data/organizations/organization-mfa-query'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { useTrack } from '@/lib/telemetry/track'
 
@@ -65,7 +66,7 @@ export const SecuritySettings = () => {
       if (mfaConfig !== undefined) form.reset({ enforceMfa: mfaConfig })
     },
     onSuccess: (data) => {
-      toast.success('Successfully updated organization MFA settings')
+      toast.success($t('Successfully updated organization MFA settings'))
       track('organization_mfa_enforcement_updated', { mfaEnforced: data.enforced })
     },
   })
@@ -128,11 +129,13 @@ export const SecuritySettings = () => {
                 <Admonition
                   type="note"
                   layout="horizontal"
-                  title="Enable MFA on your account first"
-                  description="You need to set up multi-factor authentication (MFA) on your own account before you can enforce it on your organization."
+                  title={$t('Enable MFA on your account first')}
+                  description={$t(
+                    'You need to set up multi-factor authentication (MFA) on your own account before you can enforce it on your organization.'
+                  )}
                   actions={
                     <Button asChild variant="default">
-                      <Link href="/account/security">Set up MFA</Link>
+                      <Link href="/account/security">{$t('Set up MFA')}</Link>
                     </Button>
                   }
                 />
@@ -159,8 +162,10 @@ export const SecuritySettings = () => {
                           <FormItemLayout
                             layout="flex-row-reverse"
                             className="justify-between"
-                            label="Require MFA to access organization"
-                            description="Team members must have MFA enabled and a valid MFA session to access the organization and any projects."
+                            label={$t('Require MFA to access organization')}
+                            description={$t(
+                              'Team members must have MFA enabled and a valid MFA session to access the organization and any projects.'
+                            )}
                           >
                             <FormControl>
                               <Switch
@@ -182,7 +187,7 @@ export const SecuritySettings = () => {
                             form.reset({ enforceMfa: hasAccessToEnforceMfa ? mfaConfig : false })
                           }
                         >
-                          Cancel
+                          {$t('Cancel')}
                         </Button>
                       )}
                       <Button
@@ -191,7 +196,7 @@ export const SecuritySettings = () => {
                         disabled={isSaveMfaEnforcementDisabled}
                         loading={isUpdatingMfa}
                       >
-                        Save
+                        {$t('Save')}
                       </Button>
                     </CardFooter>
                   </Card>

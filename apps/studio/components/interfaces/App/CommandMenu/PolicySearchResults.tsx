@@ -13,6 +13,7 @@ import {
 } from './ContextSearchResults.shared'
 import { useDatabasePoliciesQuery } from '@/data/database-policies/database-policies-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface PolicySearchResultsProps {
   query: string
@@ -85,11 +86,11 @@ export function PolicySearchResults({ query }: PolicySearchResultsProps) {
       <div className="flex items-center gap-x-2">
         {isLoadingPolicies ? (
           <span className="flex items-center gap-2">
-            <Loader2 size={14} className="animate-spin" /> Loading...
+            <Loader2 size={14} className="animate-spin" /> {$t('Loading...')}
           </span>
         ) : (
           <span>
-            Total: {totalPolicies.toLocaleString()} polic{totalPolicies !== 1 ? 'ies' : 'y'}
+            {$t('Total:')} {totalPolicies.toLocaleString()} polic{totalPolicies !== 1 ? 'ies' : 'y'}
           </span>
         )}
       </div>
@@ -113,7 +114,7 @@ export function PolicySearchResults({ query }: PolicySearchResultsProps) {
         <div className="flex-1 min-h-0 overflow-hidden">
           <div className="h-full flex flex-col items-center justify-center py-12 px-4 gap-4 text-center text-foreground-lighter">
             <Auth className="h-6 w-6" strokeWidth={1.5} />
-            <p className="text-sm">Failed to load policies</p>
+            <p className="text-sm">{$t('Failed to load policies')}</p>
           </div>
         </div>
         {renderFooter()}
@@ -125,7 +126,7 @@ export function PolicySearchResults({ query }: PolicySearchResultsProps) {
     return (
       <div className="relative h-full flex flex-col">
         <div className="flex-1 min-h-0 overflow-hidden">
-          <EmptyState icon={Auth} label="RLS Policies" query={query} />
+          <EmptyState icon={Auth} label={$t('RLS Policies')} query={query} />
         </div>
         {renderFooter()}
       </div>

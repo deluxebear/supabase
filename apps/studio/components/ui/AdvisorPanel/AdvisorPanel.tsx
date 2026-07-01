@@ -18,6 +18,7 @@ import { useNotificationsV2UpdateMutation } from '@/data/notifications/notificat
 import { useProjectsInfiniteQuery } from '@/data/projects/projects-infinite-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { AdvisorTab, useAdvisorStateSnapshot } from '@/state/advisor-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -258,7 +259,7 @@ export const AdvisorPanel = () => {
             ) : (
               <div className="px-6 py-8">
                 <p className="text-sm text-foreground-light">
-                  Select an advisor item to view more details.
+                  {$t('Select an advisor item to view more details.')}
                 </p>
               </div>
             )}

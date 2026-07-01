@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+import { t as $t } from '@/lib/i18n'
+
 export const ObservabilityOverviewFooter = () => {
   return (
     <div className="pt-4 pb-12 flex items-center justify-center">
@@ -10,9 +12,9 @@ export const ObservabilityOverviewFooter = () => {
           rel="noopener noreferrer"
           className="text-foreground underline underline-offset-2 decoration-foreground-muted hover:decoration-foreground transition-all"
         >
-          View our troubleshooting guides
+          {$t('View our troubleshooting guides')}
         </Link>{' '}
-        for solutions to common Supabase issues.{' '}
+        {$t('for solutions to common Supabase issues.')}{' '}
       </p>
     </div>
   )

@@ -23,6 +23,7 @@ import {
 
 import type { JitUserRule } from './JitDbAccess.types'
 import { getJitStatusDisplay } from './JitDbAccess.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface JitDbAccessRulesTableProps {
   users: JitUserRule[]
@@ -74,9 +75,9 @@ export function JitDbAccessRulesTable({
       <CardContent className="space-y-4 p-0">
         <div className="flex items-center justify-between px-4 pb-2 pt-6">
           <div>
-            <h3 className="text-sm text-foreground">Temporary access rules</h3>
+            <h3 className="text-sm text-foreground">{$t('Temporary access rules')}</h3>
             <p className="text-sm text-foreground-light">
-              Manage member access, allowed roles, and expiry settings.
+              {$t('Manage member access, allowed roles, and expiry settings.')}
             </p>
           </div>
 
@@ -89,7 +90,7 @@ export function JitDbAccessRulesTable({
                   onClick={onAddRule}
                   disabled={addDisabled}
                 >
-                  Add rule
+                  {$t('Add rule')}
                 </Button>
               </span>
             </TooltipTrigger>
@@ -100,11 +101,11 @@ export function JitDbAccessRulesTable({
         <Table className="border-t">
           <TableHeader>
             <TableRow>
-              <TableHead>Member</TableHead>
-              <TableHead>Roles</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>{$t('Member')}</TableHead>
+              <TableHead>{$t('Roles')}</TableHead>
+              <TableHead>{$t('Status')}</TableHead>
               <TableHead className="w-1">
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">{$t('Actions')}</span>
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -112,9 +113,9 @@ export function JitDbAccessRulesTable({
             {users.length === 0 ? (
               <TableRow className="[&>td]:hover:bg-inherit">
                 <TableCell colSpan={4}>
-                  <p className="text-sm text-foreground">No rules yet</p>
+                  <p className="text-sm text-foreground">{$t('No rules yet')}</p>
                   <p className="text-sm text-foreground-lighter">
-                    Add your first temporary access rule above
+                    {$t('Add your first temporary access rule above')}
                   </p>
                 </TableCell>
               </TableRow>
@@ -172,7 +173,7 @@ export function JitDbAccessRulesTable({
                         <DropdownMenuTrigger asChild>
                           <Button
                             icon={<EllipsisVertical />}
-                            aria-label="More actions"
+                            aria-label={$t('More actions')}
                             variant="default"
                             size="tiny"
                             className="w-7 hit-area-2"
@@ -189,7 +190,8 @@ export function JitDbAccessRulesTable({
                             disabled={!canUpdate || disableActions}
                           >
                             <Pencil size={14} className="text-foreground-lighter" />
-                            Edit
+
+                            {$t('Edit')}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
@@ -201,7 +203,8 @@ export function JitDbAccessRulesTable({
                             disabled={!canUpdate || disableActions}
                           >
                             <Trash2 size={14} className="text-foreground-lighter" />
-                            Delete
+
+                            {$t('Delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

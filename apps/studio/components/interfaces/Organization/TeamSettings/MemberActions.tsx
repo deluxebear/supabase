@@ -29,6 +29,7 @@ import { usePermissionsQuery } from '@/data/permissions/permissions-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 
 interface MemberActionsProps {
@@ -91,7 +92,7 @@ export const MemberActions = ({ member }: MemberActionsProps) => {
   const { mutate: inviteMember, isPending: isCreatingInvite } =
     useOrganizationCreateInvitationMutation({
       onSuccess: () => {
-        toast.success('Resent the invitation.')
+        toast.success($t('Resent the invitation.'))
       },
       onError: (error) => {
         toast.error(`Failed to resend invitation: ${error.message}`)
@@ -120,7 +121,7 @@ export const MemberActions = ({ member }: MemberActionsProps) => {
       { slug, id: invitedId, skipInvalidation: true },
       {
         onSuccess: () => {
-          if (!member.primary_email) return toast.error('Email is required')
+          if (!member.primary_email) return toast.error($t('Email is required'))
 
           const projectScopedRole = projectScopedRoles.find((role) => role.id === roleId)
 
@@ -147,7 +148,7 @@ export const MemberActions = ({ member }: MemberActionsProps) => {
 
     deleteInvitation(
       { slug, id: invitedId },
-      { onSuccess: () => toast.success('Successfully canceled the invitation') }
+      { onSuccess: () => toast.success($t('Successfully canceled the invitation')) }
     )
   }
 
@@ -177,7 +178,7 @@ export const MemberActions = ({ member }: MemberActionsProps) => {
             },
           }}
         >
-          Manage access
+          {$t('Manage access')}
         </ButtonTooltip>
 
         <DropdownMenu>
@@ -206,7 +207,7 @@ export const MemberActions = ({ member }: MemberActionsProps) => {
                     }}
                   >
                     <Redo2 size={14} />
-                    <p>Resend invitation</p>
+                    <p>{$t('Resend invitation')}</p>
                   </DropdownMenuItemTooltip>
 
                   <DropdownMenuSeparator />
@@ -223,7 +224,7 @@ export const MemberActions = ({ member }: MemberActionsProps) => {
                     }}
                   >
                     <Trash size={14} />
-                    <p>Cancel invitation</p>
+                    <p>{$t('Cancel invitation')}</p>
                   </DropdownMenuItemTooltip>
                 </>
               ) : (
@@ -240,7 +241,7 @@ export const MemberActions = ({ member }: MemberActionsProps) => {
                     }}
                   >
                     <Trash size={12} />
-                    <p>Remove member</p>
+                    <p>{$t('Remove member')}</p>
                   </DropdownMenuItemTooltip>
                 )
               )}
@@ -253,29 +254,31 @@ export const MemberActions = ({ member }: MemberActionsProps) => {
         size="large"
         visible={isDeleteModalOpen}
         loading={isDeletingMember}
-        title="Confirm to remove member"
+        title={$t('Confirm to remove member')}
         confirmLabel="Remove"
         variant="warning"
         alert={{
           title: 'All user content from this member will be permanently removed.',
           description: (
             <div>
-              Removing a member will delete all of the user's saved content in all projects of this
-              organization, which includes:
+              {$t(
+                "Removing a member will delete all of the user's saved content in all projects of this organization, which includes:"
+              )}
               <ul className="list-disc pl-4 my-2">
                 <li>
-                  SQL snippets{' '}
+                  {$t('SQL snippets')}{' '}
                   <span className="text-foreground">
                     (both <span className="underline">private</span> and{' '}
                     <span className="underline">shared</span> snippets)
                   </span>
                 </li>
-                <li>Custom reports</li>
-                <li>Log Explorer queries</li>
+                <li>{$t('Custom reports')}</li>
+                <li>{$t('Log Explorer queries')}</li>
               </ul>
               <p className="mt-4 text-foreground-lighter">
-                If you'd like to retain the member's shared SQL snippets, right click on them and
-                "Duplicate query" in the SQL Editor before removing this member.
+                {$t(
+                  'If you\'d like to retain the member\'s shared SQL snippets, right click on them and "Duplicate query" in the SQL Editor before removing this member.'
+                )}
               </p>
             </div>
           ),
@@ -286,7 +289,7 @@ export const MemberActions = ({ member }: MemberActionsProps) => {
         }}
       >
         <p className="text-sm text-foreground-light">
-          Are you sure you want to remove{' '}
+          {$t('Are you sure you want to remove')}{' '}
           <span className="text-foreground">{member.primary_email}</span> from{' '}
           <span className="text-foreground">{selectedOrganization?.name}</span>?
         </p>

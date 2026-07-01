@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 
 import { InlineLink } from '@/components/ui/InlineLink'
 import { auth } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 
 export const SignInPartner = () => {
   const router = useRouter()
@@ -32,21 +33,21 @@ export const SignInPartner = () => {
   return (
     <div className="relative mx-auto w-full flex flex-col items-center justify-center gap-y-6">
       <Loader2 className="animate-spin" />
-      <h2 className="text-lg text-center">Signing in to Supabase Dashboard</h2>
+      <h2 className="text-lg text-center">{$t('Signing in to Supabase Dashboard')}</h2>
       <p className="text-xs text-foreground-lighter text-center max-w-[220px] sm:max-w-full">
-        By continuing, you agree to Supabase’s{' '}
+        {$t('By continuing, you agree to Supabase’s')}{' '}
         <InlineLink
           href="https://supabase.com/terms"
           className="text-foreground-lighter hover:text-foreground"
         >
-          Terms of Service
+          {$t('Terms of Service')}
         </InlineLink>{' '}
         and{' '}
         <InlineLink
           href="https://supabase.com/privacy"
           className="text-foreground-lighter hover:text-foreground"
         >
-          Privacy Policy
+          {$t('Privacy Policy')}
         </InlineLink>
         .
       </p>

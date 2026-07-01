@@ -13,6 +13,7 @@ import { useAPIKeys } from '@/data/api-keys/api-keys-query'
 import { useProjectApiUrl } from '@/data/config/project-endpoint-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface TerminalInstructionsProps extends ComponentPropsWithoutRef<typeof Collapsible> {
   closable?: boolean
@@ -48,7 +49,7 @@ export const TerminalInstructions = forwardRef<
       jsx: () => {
         return (
           <>
-            <span className="text-brand-600">supabase</span> functions new hello-world
+            <span className="text-brand-600">supabase</span> {$t('functions new hello-world')}
           </>
         )
       },
@@ -60,8 +61,8 @@ export const TerminalInstructions = forwardRef<
       jsx: () => {
         return (
           <>
-            <span className="text-brand-600">supabase</span> functions deploy hello-world
-            --project-ref {projectRef}
+            <span className="text-brand-600">supabase</span>{' '}
+            {$t('functions deploy hello-world --project-ref')} {projectRef}
           </>
         )
       },
@@ -73,7 +74,8 @@ export const TerminalInstructions = forwardRef<
       jsx: () => {
         return (
           <>
-            <span className="text-brand-600">curl</span> -L -X POST '{functionsEndpoint}
+            <span className="text-brand-600">curl</span> {$t("-L -X POST '")}
+            {functionsEndpoint}
             /hello-world' -H 'Authorization: Bearer [YOUR ANON KEY]'
             {anonKey?.type === 'publishable' ? " -H 'apikey: [YOUR ANON KEY]' " : ''}
             {`--data '{"name":"Functions"}'`}
@@ -97,7 +99,7 @@ export const TerminalInstructions = forwardRef<
           <div className="flex items-center justify-center w-8 h-8 p-2 border rounded-sm bg-alternative">
             <Terminal strokeWidth={2} />
           </div>
-          <h4>Create your first Edge Function via the CLI</h4>
+          <h4>{$t('Create your first Edge Function via the CLI')}</h4>
         </div>
         {closable && (
           <div className="cursor-pointer" onClick={() => setShowInstructions(!showInstructions)}>
@@ -114,21 +116,23 @@ export const TerminalInstructions = forwardRef<
         {tokens && tokens.length === 0 ? (
           <div className="py-4 space-y-3 border-t">
             <div>
-              <p className="text-sm text-foreground">You may need to create an access token</p>
+              <p className="text-sm text-foreground">
+                {$t('You may need to create an access token')}
+              </p>
               <p className="text-sm text-foreground-light">
-                You can create a secure access token in your account section
+                {$t('You can create a secure access token in your account section')}
               </p>
             </div>
             <Button variant="default" onClick={() => router.push('/account/tokens')}>
-              Access tokens
+              {$t('Access tokens')}
             </Button>
           </div>
         ) : (
           <div className="py-4 space-y-3 border-t">
             <div>
-              <h3 className="text-base text-foreground">Need help?</h3>
+              <h3 className="text-base text-foreground">{$t('Need help?')}</h3>
               <p className="text-sm text-foreground-light">
-                Read the documentation, or browse some sample code.
+                {$t('Read the documentation, or browse some sample code.')}
               </p>
             </div>
             <div className="flex gap-2">
@@ -139,7 +143,7 @@ export const TerminalInstructions = forwardRef<
                   rel="noreferrer"
                   href="https://github.com/supabase/supabase/tree/master/examples/edge-functions/supabase/functions"
                 >
-                  Examples
+                  {$t('Examples')}
                 </a>
               </Button>
             </div>

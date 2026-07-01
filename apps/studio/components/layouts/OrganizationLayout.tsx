@@ -15,6 +15,7 @@ import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { withAuth } from '@/hooks/misc/withAuth'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
+import { t as $t } from '@/lib/i18n'
 import { buildStudioPageTitle } from '@/lib/page-title'
 
 interface OrganizationLayoutProps {
@@ -153,7 +154,7 @@ const OrganizationLayoutContent = ({
             {selectedRedirectQuery?.data?.url && (
               <Button asChild variant="default" iconRight={<ExternalLink />}>
                 <a href={selectedRedirectQuery.data.url} target="_blank" rel="noopener noreferrer">
-                  Manage
+                  {$t('Manage')}
                 </a>
               </Button>
             )}
@@ -162,7 +163,7 @@ const OrganizationLayoutContent = ({
               icon={<XIcon size={14} />}
               className="h-7 w-7 p-0"
               onClick={() => setIsBannerDismissed(true)}
-              aria-label="Dismiss banner"
+              aria-label={$t('Dismiss banner')}
               tooltip={{ content: { text: 'Dismiss' } }}
             />
           </div>

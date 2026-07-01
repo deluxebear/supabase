@@ -22,6 +22,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import * as z from 'zod'
 
 import { useCreateThirdPartyAuthIntegrationMutation } from '@/data/third-party-auth/integration-create-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface CreateAuth0IntegrationProps {
   visible: boolean
@@ -121,15 +122,16 @@ export const CreateAuth0IntegrationDialog = ({
             />
             <Separator /> */}
               <p className="text-sm text-foreground-light">
-                This will enable a JWT token from your Auth0 project to access data from this
-                Supabase project.
+                {$t(
+                  'This will enable a JWT token from your Auth0 project to access data from this Supabase project.'
+                )}
               </p>
               <FormField
                 key="auth0DomainName"
                 control={form.control}
                 name="auth0DomainName"
                 render={({ field }) => (
-                  <FormItemLayout label="Auth0 domain name">
+                  <FormItemLayout label={$t('Auth0 domain name')}>
                     <div className="flex flex-row">
                       <Button
                         variant="default"
@@ -161,13 +163,13 @@ export const CreateAuth0IntegrationDialog = ({
           {!isCreating && (
             <div className="flex-1">
               <Button variant="danger" onClick={() => onDelete()} icon={<Trash />}>
-                Remove connection
+                {$t('Remove connection')}
               </Button>
             </div>
           )}
 
           <Button disabled={isPending} variant="default" onClick={() => onClose()}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button form={FORM_ID} type="submit" disabled={isPending} loading={isPending}>
             {isCreating ? 'Create connection' : 'Update connection'}

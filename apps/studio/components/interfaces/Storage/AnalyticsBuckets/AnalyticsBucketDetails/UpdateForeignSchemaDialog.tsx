@@ -34,6 +34,7 @@ import { InlineLinkClassName } from '@/components/ui/InlineLink'
 import { useFDWImportForeignSchemaMutation } from '@/data/fdw/fdw-import-foreign-schema-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const UpdateForeignSchemaDialog = ({
   namespace,
@@ -91,20 +92,20 @@ export const UpdateForeignSchemaDialog = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="default">Update schema tables</Button>
+        <Button variant="default">{$t('Update schema tables')}</Button>
       </DialogTrigger>
       <DialogContent size="medium" aria-describedby={undefined}>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <DialogHeader>
-              <DialogTitle>Update schema to expose foreign tables</DialogTitle>
+              <DialogTitle>{$t('Update schema to expose foreign tables')}</DialogTitle>
             </DialogHeader>
             <DialogSectionSeparator />
             <DialogSection className="flex flex-col gap-y-4">
               <p className="text-sm">
                 {tables.length > 1 ? (
                   <>
-                    There are{' '}
+                    {$t('There are')}{' '}
                     <Tooltip>
                       <TooltipTrigger>
                         <span className={InlineLinkClassName}>{tables.length} tables</span>
@@ -113,9 +114,9 @@ export const UpdateForeignSchemaDialog = ({
                         {tables.join(', ')}
                       </TooltipContent>
                     </Tooltip>{' '}
-                    that aren't included in the Iceberg Foreign Data Wrapper. Update the wrapper to
-                    create foreign tables for all unexposed tables. This will let you query the
-                    tables from Postgres.
+                    {$t(
+                      "that aren't included in the Iceberg Foreign Data Wrapper. Update the wrapper to create foreign tables for all unexposed tables. This will let you query the tables from Postgres."
+                    )}
                   </>
                 ) : (
                   `The table "${tables[0]}" in the "${namespace}" namespace is not yet included in the Iceberg Foreign Data Wrapper. The schema can be updated to expose this table as a foreign table.`
@@ -129,7 +130,7 @@ export const UpdateForeignSchemaDialog = ({
                   render={({ field }) => (
                     <FormItemLayout
                       layout="vertical"
-                      label="Select which Postgres schema to update"
+                      label={$t('Select which Postgres schema to update')}
                     >
                       <Select value={field.value} onValueChange={(val) => field.onChange(val)}>
                         <SelectTrigger>
@@ -148,7 +149,9 @@ export const UpdateForeignSchemaDialog = ({
                 />
               ) : (
                 <p className="text-sm">
-                  Confirm to update foreign schema on the "{namespace}" namespace?
+                  {$t('Confirm to update foreign schema on the "')}
+                  {namespace}
+                  {$t('" namespace?')}
                 </p>
               )}
             </DialogSection>
@@ -156,10 +159,10 @@ export const UpdateForeignSchemaDialog = ({
               <DocsButton href={`${DOCS_URL}/guides/storage/analytics/query-with-postgres`} />
               <div className="flex items-center gap-x-2">
                 <Button variant="default" disabled={isUpdating} onClick={() => setIsOpen(false)}>
-                  Cancel
+                  {$t('Cancel')}
                 </Button>
                 <Button type="submit" variant="primary" loading={isUpdating}>
-                  Update schema
+                  {$t('Update schema')}
                 </Button>
               </div>
             </DialogFooter>

@@ -37,6 +37,7 @@ import { Snippet, SnippetFolder, useSQLSnippetFoldersQuery } from '@/data/conten
 import { useSqlSnippetsQuery } from '@/data/content/sql-snippets-query'
 import { useLocalStorage } from '@/hooks/misc/useLocalStorage'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { useSnippetFolders, useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
 import { isNewFolder } from '@/state/sql-editor/sql-editor-lifecycle'
@@ -312,7 +313,7 @@ export const SQLEditorNav = ({ sort = 'inserted_at' }: SQLEditorNavProps) => {
 
   const { mutate: deleteFolder, isPending: isDeletingFolder } = useSQLSnippetFoldersDeleteMutation({
     onSuccess: (_, vars) => {
-      toast.success('Successfully deleted folder')
+      toast.success($t('Successfully deleted folder'))
       const { ids } = vars
       snapV2.removeFolder(ids[0])
       setSelectedFolderToDelete(undefined)
@@ -480,8 +481,8 @@ export const SQLEditorNav = ({ sort = 'inserted_at' }: SQLEditorNavProps) => {
               ) : sharedSnippets.length === 0 ? (
                 <InnerSideBarEmptyPanel
                   className="mx-2"
-                  title="No shared queries"
-                  description="Share queries with your team by right-clicking on the query."
+                  title={$t('No shared queries')}
+                  description={$t('Share queries with your team by right-clicking on the query.')}
                 />
               ) : (
                 <TreeView
@@ -555,11 +556,11 @@ export const SQLEditorNav = ({ sort = 'inserted_at' }: SQLEditorNavProps) => {
                 <SQLEditorLoadingSnippets />
               ) : favoriteSnippets.length === 0 ? (
                 <InnerSideBarEmptyPanel
-                  title="No favorite queries"
+                  title={$t('No favorite queries')}
                   className="mx-2 px-3"
                   description={
                     <>
-                      Save a query to favorites for easy accessibility by clicking the{' '}
+                      {$t('Save a query to favorites for easy accessibility by clicking the')}{' '}
                       <Heart size={12} className="inline-block relative align-center -top-px" />{' '}
                       icon.
                     </>
@@ -800,7 +801,7 @@ export const SQLEditorNav = ({ sort = 'inserted_at' }: SQLEditorNavProps) => {
 
       <ConfirmationModal
         size="small"
-        title="Confirm to delete folder"
+        title={$t('Confirm to delete folder')}
         confirmLabel="Delete folder"
         confirmLabelLoading="Deleting folder"
         loading={isDeletingFolder}
@@ -815,7 +816,8 @@ export const SQLEditorNav = ({ sort = 'inserted_at' }: SQLEditorNavProps) => {
         }}
       >
         <p className="text-sm">
-          Are you sure you want to delete the folder '{selectedFolderToDelete?.name}'?
+          {$t("Are you sure you want to delete the folder '")}
+          {selectedFolderToDelete?.name}'?
         </p>
       </ConfirmationModal>
     </>

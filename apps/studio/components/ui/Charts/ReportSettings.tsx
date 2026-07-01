@@ -4,6 +4,7 @@ import { cn, DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, Label, Swit
 
 import { useChartHoverState } from './useChartHoverState'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 
 interface ReportSettingsProps {
   chartId: string
@@ -27,17 +28,17 @@ export const ReportSettings = ({ chartId }: ReportSettingsProps) => {
         <div className="space-y-4">
           <Label htmlFor="sync-hover" className="text-sm font-normal">
             <div className="flex items-center justify-between space-x-2">
-              Sync chart headers
+              {$t('Sync chart headers')}
               <Switch id="sync-hover" checked={syncHover} onCheckedChange={setSyncHover} />
             </div>
             <p className="text-xs text-foreground-light mt-1">
-              When enabled, hovering over any chart will update headers across all charts
+              {$t('When enabled, hovering over any chart will update headers across all charts')}
             </p>
           </Label>
 
           <Label htmlFor="sync-tooltips" className="text-sm font-normal flex flex-col">
             <div className="flex items-center justify-between space-x-2">
-              Sync tooltips
+              {$t('Sync tooltips')}
               <Switch
                 id="sync-tooltips"
                 checked={syncTooltip}
@@ -46,9 +47,9 @@ export const ReportSettings = ({ chartId }: ReportSettingsProps) => {
               />
             </div>
             <p className="text-xs text-foreground-light mt-1">
-              When enabled, also shows tooltips on all charts.{' '}
+              {$t('When enabled, also shows tooltips on all charts.')}{' '}
               <span className={cn(syncHover ? 'text-foreground-light' : 'text-foreground')}>
-                Requires header sync.
+                {$t('Requires header sync.')}
               </span>
             </p>
           </Label>

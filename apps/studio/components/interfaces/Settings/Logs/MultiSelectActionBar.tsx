@@ -12,6 +12,7 @@ import { buildLogsPrompt } from './Logs.utils'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -72,24 +73,24 @@ export function MultiSelectActionBar({
           <DropdownMenuContent align="end" className="w-60">
             <DropdownMenuItem onClick={() => onCopy('json')} className="gap-x-2">
               <Copy size={13} />
-              <p>Copy as JSON</p>
+              <p>{$t('Copy as JSON')}</p>
               <ShortcutBadge shortcutId={SHORTCUT_IDS.RESULTS_COPY_JSON} className="ml-auto" />
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onCopy('markdown')} className="gap-x-2">
               <Copy size={13} />
-              <p>Copy as Markdown</p>
+              <p>{$t('Copy as Markdown')}</p>
               <ShortcutBadge shortcutId={SHORTCUT_IDS.RESULTS_COPY_MARKDOWN} className="ml-auto" />
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onCopy('csv')} className="gap-x-2">
               <Copy size={13} />
-              <p>Copy as CSV</p>
+              <p>{$t('Copy as CSV')}</p>
               <ShortcutBadge shortcutId={SHORTCUT_IDS.RESULTS_COPY_CSV} className="ml-auto" />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
         <AiAssistantDropdown
-          label="Explain with AI"
+          label={$t('Explain with AI')}
           buildPrompt={() => buildLogsPrompt(selectedRowsData, queryType, sqlQuery)}
           onOpenAssistant={handleOpenAiAssistant}
           telemetrySource="log_explorer"
@@ -100,7 +101,7 @@ export function MultiSelectActionBar({
           size="tiny"
           icon={<XIcon size={12} />}
           onClick={onClear}
-          title="Clear selection"
+          title={$t('Clear selection')}
           className="text-foreground-lighter px-1.5 hover:text-foreground"
         />
       </div>

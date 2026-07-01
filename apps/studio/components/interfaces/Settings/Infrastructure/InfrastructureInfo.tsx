@@ -32,6 +32,7 @@ import { useProjectServiceVersionsQuery } from '@/data/projects/project-service-
 import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useIsOrioleDb, useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const InfrastructureInfo = () => {
   const { ref } = useParams()
@@ -88,9 +89,9 @@ export const InfrastructureInfo = () => {
       <ScaffoldContainer>
         <ScaffoldSection>
           <ScaffoldSectionDetail>
-            <h4 className="text-base capitalize m-0">Service versions</h4>
+            <h4 className="text-base capitalize m-0">{$t('Service versions')}</h4>
             <p className="text-foreground-light text-sm pr-8 mt-1">
-              Service versions and upgrade eligibility for your provisioned instance.
+              {$t('Service versions and upgrade eligibility for your provisioned instance.')}
             </p>
           </ScaffoldSectionDetail>
           <ScaffoldSectionContent>
@@ -98,8 +99,8 @@ export const InfrastructureInfo = () => {
               <Admonition
                 type="note"
                 showIcon={false}
-                title="Service versions cannot be retrieved while project is paused"
-                description="Restoring the project will update Postgres to the newest version"
+                title={$t('Service versions cannot be retrieved while project is paused')}
+                description={$t('Restoring the project will update Postgres to the newest version')}
               />
             ) : (
               <>
@@ -121,7 +122,7 @@ export const InfrastructureInfo = () => {
                       <>
                         {authEnabled && (
                           <FormItemLayout
-                            label="Auth version"
+                            label={$t('Auth version')}
                             layout="vertical"
                             isReactForm={false}
                           >
@@ -129,14 +130,14 @@ export const InfrastructureInfo = () => {
                           </FormItemLayout>
                         )}
                         <FormItemLayout
-                          label="PostgREST version"
+                          label={$t('PostgREST version')}
                           layout="vertical"
                           isReactForm={false}
                         >
                           <Input readOnly disabled value={serviceVersions?.postgrest ?? ''} />
                         </FormItemLayout>
                         <FormItemLayout
-                          label="Postgres version"
+                          label={$t('Postgres version')}
                           layout="vertical"
                           isReactForm={false}
                         >
@@ -158,8 +159,8 @@ export const InfrastructureInfo = () => {
                                       </Badge>
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom" className="w-44 text-center">
-                                      This project uses a {isVisibleReleaseChannel} database version
-                                      release
+                                      {$t('This project uses a')} {isVisibleReleaseChannel}{' '}
+                                      {$t('database version release')}
                                     </TooltipContent>
                                   </Tooltip>
                                 ),
@@ -167,11 +168,11 @@ export const InfrastructureInfo = () => {
                                   <Tooltip key="orioledb">
                                     <TooltipTrigger>
                                       <Badge variant="default" className="mr-1">
-                                        OrioleDB
+                                        {$t('OrioleDB')}
                                       </Badge>
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom" className="w-44 text-center">
-                                      This project uses OrioleDB
+                                      {$t('This project uses OrioleDB')}
                                     </TooltipContent>
                                   </Tooltip>
                                 ),
@@ -179,12 +180,13 @@ export const InfrastructureInfo = () => {
                                   <Tooltip key="latest-version">
                                     <TooltipTrigger>
                                       <Badge variant="success" className="mr-1">
-                                        Latest
+                                        {$t('Latest')}
                                       </Badge>
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom" className="w-52 text-center">
-                                      Project is on the latest version of Postgres that Supabase
-                                      supports
+                                      {$t(
+                                        'Project is on the latest version of Postgres that Supabase supports'
+                                      )}
                                     </TooltipContent>
                                   </Tooltip>
                                 ),

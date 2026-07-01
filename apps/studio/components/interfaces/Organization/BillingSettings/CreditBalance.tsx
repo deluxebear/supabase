@@ -15,6 +15,7 @@ import { FormSection, FormSectionContent } from '@/components/ui/Forms/FormSecti
 import { NoPermission } from '@/components/ui/NoPermission'
 import { useOrgBalanceQuery } from '@/data/subscriptions/org-balance-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 const CreditBalance = () => {
   const { slug } = useParams()
@@ -45,14 +46,15 @@ const CreditBalance = () => {
       <ScaffoldSectionDetail>
         <div className="sticky space-y-2 top-12 pr-3">
           <div className="flex items-center space-x-2">
-            <p className="text-foreground text-base m-0">Credit Balance</p>
+            <p className="text-foreground text-base m-0">{$t('Credit Balance')}</p>
           </div>
           <p className="text-sm text-foreground-light m-0">
-            Credits will be applied to future invoices, before charging your payment method. This
-            balance includes purchased credits and any prorated credits from plan changes.
+            {$t(
+              'Credits will be applied to future invoices, before charging your payment method. This balance includes purchased credits and any prorated credits from plan changes.'
+            )}
           </p>
           <p className="text-sm text-foreground-light m-0">
-            If your credits run out, your default payment method will be charged.
+            {$t('If your credits run out, your default payment method will be charged.')}
           </p>
         </div>
       </ScaffoldSectionDetail>
@@ -81,7 +83,7 @@ const CreditBalance = () => {
 
                 {isBalanceSuccess && (
                   <div className="flex w-full justify-between items-center">
-                    <span>Balance</span>
+                    <span>{$t('Balance')}</span>
                     <div className="flex items-center space-x-1">
                       {hasDebt && <h4 className="opacity-50">-</h4>}
                       <h4 className="opacity-50">$</h4>

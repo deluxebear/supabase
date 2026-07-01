@@ -22,6 +22,7 @@ import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/L
 import { useResourceWarningsQuery } from '@/data/usage/resource-warnings-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -245,7 +246,7 @@ export const ResourceExhaustionWarningBanner = () => {
                 icon={<Wrench size={14} />}
                 iconRight={<ChevronDown size={14} />}
               >
-                Troubleshoot
+                {$t('Troubleshoot')}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -253,7 +254,8 @@ export const ResourceExhaustionWarningBanner = () => {
                 <DropdownMenuItem asChild>
                   <Link href={metricsHref} className="flex items-center gap-x-2 cursor-pointer">
                     <ChartLine size={14} />
-                    View metrics
+
+                    {$t('View metrics')}
                   </Link>
                 </DropdownMenuItem>
               )}
@@ -265,7 +267,8 @@ export const ResourceExhaustionWarningBanner = () => {
                   className="flex items-center gap-x-2 cursor-pointer"
                 >
                   <BookOpen size={14} />
-                  Documentation
+
+                  {$t('Documentation')}
                 </a>
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -273,19 +276,20 @@ export const ResourceExhaustionWarningBanner = () => {
                 onClick={handleAskAI}
               >
                 <Sparkles size={14} />
-                Ask AI Assistant
+
+                {$t('Ask AI Assistant')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : learnMoreUrl !== undefined ? (
           <Button asChild variant="default" icon={<BookOpen size={14} />}>
             <a href={learnMoreUrl} target="_blank" rel="noreferrer">
-              Learn more
+              {$t('Learn more')}
             </a>
           </Button>
         ) : aiPrompt !== undefined ? (
           <Button variant="default" onClick={handleAskAI}>
-            Ask AI Assistant
+            {$t('Ask AI Assistant')}
           </Button>
         ) : null}
         {correctionUrl !== undefined && (

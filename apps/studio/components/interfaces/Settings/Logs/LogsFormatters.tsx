@@ -11,6 +11,7 @@ import { cn } from 'ui'
 
 import { isUnixMicro, unixMicroToIsoTimestamp } from './Logs.utils'
 import CopyButton from '@/components/ui/CopyButton'
+import { t as $t } from '@/lib/i18n'
 
 export const RowLayout: React.FC<React.PropsWithChildren> = ({ children }) => (
   <div className="flex h-full w-full items-center gap-4">{children}</div>
@@ -18,7 +19,7 @@ export const RowLayout: React.FC<React.PropsWithChildren> = ({ children }) => (
 // renders a timestamp (either unix microsecond or iso timestamp)
 export const SelectionDetailedTimestampRow = ({ value }: { value: string | number }) => (
   <SelectionDetailedRow
-    label="Timestamp"
+    label={$t('Timestamp')}
     value={isUnixMicro(value) ? unixMicroToIsoTimestamp(value) : String(value)}
   />
 )
@@ -47,7 +48,7 @@ export const SelectionDetailedRow = ({
         text={value}
         className="group-hover:opacity-100 opacity-0 p-0 h-6 w-6"
         variant="text"
-        title="Copy to clipboard"
+        title={$t('Copy to clipboard')}
       />
     </div>
   )
@@ -67,7 +68,7 @@ export const ResponseCodeFormatter = ({ value }: { value: string }) => {
   if (!value) {
     return (
       <div>
-        <label className="text-xs text-border-stronger">No data</label>
+        <label className="text-xs text-border-stronger">{$t('No data')}</label>
       </div>
     )
   }
@@ -134,7 +135,7 @@ export const SeverityFormatter = ({
   if (!value) {
     return (
       <div>
-        <label className="text-xs text-border-stronger">No data</label>
+        <label className="text-xs text-border-stronger">{$t('No data')}</label>
       </div>
     )
   }

@@ -2,6 +2,7 @@ import { Button } from 'ui'
 
 import { useStripeSyncStatus } from './useStripeSyncStatus'
 import { AlertError } from '@/components/ui/AlertError'
+import { t as $t } from '@/lib/i18n'
 
 export const InstallationError = ({
   error,
@@ -28,7 +29,9 @@ export const InstallationError = ({
         layout="horizontal"
         subject="Failed to uninstall Stripe Sync Engine"
         error={errorMessage ? { message: errorMessage } : undefined}
-        description="There was an error during the uninstallation of the Stripe Sync Engine, please try again. If the problem persists, contact support."
+        description={$t(
+          'There was an error during the uninstallation of the Stripe Sync Engine, please try again. If the problem persists, contact support.'
+        )}
         additionalActions={
           <Button
             variant="default"
@@ -36,7 +39,7 @@ export const InstallationError = ({
             disabled={uninstalling}
             loading={uninstalling}
           >
-            Retry uninstallation
+            {$t('Retry uninstallation')}
           </Button>
         }
       />

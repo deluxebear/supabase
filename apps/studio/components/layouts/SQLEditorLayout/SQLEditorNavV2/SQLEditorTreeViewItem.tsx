@@ -35,6 +35,7 @@ import { Snippet } from '@/data/content/sql-folders-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useLatest } from '@/hooks/misc/useLatest'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
 import {
@@ -284,7 +285,8 @@ export const SQLEditorTreeViewItem = ({
                   onFocusCapture={(e) => e.stopPropagation()}
                 >
                   <Plus size={14} />
-                  Create new snippet
+
+                  {$t('Create new snippet')}
                 </ContextMenuItem>
               )}
               {onSelectRename !== undefined && isOwner && (
@@ -294,7 +296,8 @@ export const SQLEditorTreeViewItem = ({
                   onFocusCapture={(e) => e.stopPropagation()}
                 >
                   <Edit size={14} />
-                  Rename folder
+
+                  {$t('Rename folder')}
                 </ContextMenuItem>
               )}
               {onSelectDelete !== undefined && isOwner && (
@@ -306,7 +309,8 @@ export const SQLEditorTreeViewItem = ({
                     onFocusCapture={(e) => e.stopPropagation()}
                   >
                     <Trash size={14} />
-                    Delete folder
+
+                    {$t('Delete folder')}
                   </ContextMenuItem>
                 </>
               )}
@@ -320,7 +324,8 @@ export const SQLEditorTreeViewItem = ({
                   onFocusCapture={(e) => e.stopPropagation()}
                 >
                   <Move size={14} />
-                  Move selected queries
+
+                  {$t('Move selected queries')}
                 </ContextMenuItem>
               )}
               <ContextMenuSeparator />
@@ -331,7 +336,8 @@ export const SQLEditorTreeViewItem = ({
                   onFocusCapture={(e) => e.stopPropagation()}
                 >
                   <Trash size={14} />
-                  Delete selected queries
+
+                  {$t('Delete selected queries')}
                 </ContextMenuItem>
               )}
             </>
@@ -348,7 +354,8 @@ export const SQLEditorTreeViewItem = ({
                   href={`/project/${projectRef}/sql/${element.id}`}
                 >
                   <ExternalLink size={14} />
-                  Open in new tab
+
+                  {$t('Open in new tab')}
                 </Link>
               </ContextMenuItem>
               <ContextMenuSeparator />
@@ -359,7 +366,8 @@ export const SQLEditorTreeViewItem = ({
                   onFocusCapture={(e) => e.stopPropagation()}
                 >
                   <Edit size={14} />
-                  Rename query
+
+                  {$t('Rename query')}
                 </ContextMenuItem>
               )}
               {onSelectMove !== undefined && isOwner && (
@@ -369,7 +377,8 @@ export const SQLEditorTreeViewItem = ({
                   onFocusCapture={(e) => e.stopPropagation()}
                 >
                   <Move size={14} />
-                  Move query
+
+                  {$t('Move query')}
                 </ContextMenuItem>
               )}
               {onSelectShare !== undefined &&
@@ -382,7 +391,8 @@ export const SQLEditorTreeViewItem = ({
                     onFocusCapture={(e) => e.stopPropagation()}
                   >
                     <Share size={14} />
-                    Share query with team
+
+                    {$t('Share query with team')}
                   </ContextMenuItem>
                 )}
               {onSelectUnshare !== undefined && isSharedSnippet && isOwner && (
@@ -392,7 +402,8 @@ export const SQLEditorTreeViewItem = ({
                   onFocusCapture={(e) => e.stopPropagation()}
                 >
                   <Lock size={14} />
-                  Unshare query with team
+
+                  {$t('Unshare query with team')}
                 </ContextMenuItem>
               )}
               {onSelectDuplicate !== undefined && canCreateSQLSnippet && (
@@ -402,7 +413,8 @@ export const SQLEditorTreeViewItem = ({
                   onFocusCapture={(e) => e.stopPropagation()}
                 >
                   <Copy size={14} />
-                  Duplicate query
+
+                  {$t('Duplicate query')}
                 </ContextMenuItem>
               )}
               {IS_PLATFORM && (
@@ -427,7 +439,8 @@ export const SQLEditorTreeViewItem = ({
                   onFocusCapture={(e) => e.stopPropagation()}
                 >
                   <Download size={14} />
-                  Export query
+
+                  {$t('Export query')}
                 </ContextMenuItem>
               )}
               {onSelectDelete !== undefined && isOwner && (
@@ -435,7 +448,8 @@ export const SQLEditorTreeViewItem = ({
                   <ContextMenuSeparator />
                   <ContextMenuItem className="gap-x-2" onSelect={() => onSelectDelete()}>
                     <Trash size={14} />
-                    Delete query
+
+                    {$t('Delete query')}
                   </ContextMenuItem>
                 </>
               )}
@@ -460,7 +474,7 @@ export const SQLEditorTreeViewItem = ({
             disabled={isInFolder ? isFetchingNextPageInFolder : _isFetchingNextPage}
             onClick={fetchNextPage}
           >
-            Load More
+            {$t('Load More')}
           </Button>
         </div>
       )}

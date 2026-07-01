@@ -4,6 +4,7 @@ import { FeaturePreviewSidebarPanel } from '../../ui/FeaturePreviewSidebarPanel'
 import { useGenerateAdvisorsMenu } from './AdvisorsMenu.utils'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { ProductMenu } from '@/components/ui/ProductMenu'
+import { t as $t } from '@/lib/i18n'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
 interface AdvisorsSidebarMenuProps {
@@ -22,12 +23,14 @@ export function AdvisorsSidebarMenu({ page }: AdvisorsSidebarMenuProps) {
     <div className="pb-12 relative">
       <FeaturePreviewSidebarPanel
         className="mx-4 mt-4"
-        title="Moving to the toolbar"
-        description="Advisors are now available in the top toolbar for quicker access across the dashboard."
-        illustration={<Badge variant="success">New</Badge>}
+        title={$t('Moving to the toolbar')}
+        description={$t(
+          'Advisors are now available in the top toolbar for quicker access across the dashboard.'
+        )}
+        illustration={<Badge variant="success">{$t('New')}</Badge>}
         actions={
           <Button size="tiny" variant="default" onClick={handleOpenAdvisor}>
-            Try it now
+            {$t('Try it now')}
           </Button>
         }
       />

@@ -32,6 +32,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH, DOCS_URL } from '@/lib/constants'
 import { formatCurrency } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useAddonsPagePanel } from '@/state/addons-page'
 
 const PITR_CATEGORY_OPTIONS: {
@@ -167,7 +168,7 @@ const PITRSidePanel = () => {
       }
       header={
         <div className="flex w-full items-center justify-between">
-          <h4>Point in Time Recovery</h4>
+          <h4>{$t('Point in Time Recovery')}</h4>
           <DocsButton href={`${DOCS_URL}/guides/platform/backups#point-in-time-recovery`} />
         </div>
       }
@@ -175,9 +176,9 @@ const PITRSidePanel = () => {
       <SidePanel.Content>
         <div className="py-6 space-y-4">
           <p className="text-sm">
-            Point-in-Time Recovery (PITR) allows a project to be backed up at much shorter
-            intervals. This provides users an option to restore to any chosen point of up to seconds
-            in granularity.
+            {$t(
+              'Point-in-Time Recovery (PITR) allows a project to be backed up at much shorter intervals. This provides users an option to restore to any chosen point of up to seconds in granularity.'
+            )}
           </p>
 
           <div className="mt-8! pb-4">
@@ -207,7 +208,7 @@ const PITRSidePanel = () => {
                     }}
                   >
                     <img
-                      alt="Point-In-Time-Recovery"
+                      alt={$t('Point-In-Time-Recovery')}
                       className={cn(
                         'relative rounded-xl transition border bg-no-repeat bg-center bg-cover cursor-pointer w-[160px] h-[96px]',
                         isSelected
@@ -236,24 +237,28 @@ const PITRSidePanel = () => {
           {selectedCategory === 'off' && subscriptionPitr !== undefined && isBranchingEnabled && (
             <Alert variant="warning">
               <CriticalIcon />
-              <AlertTitle>Are you sure you want to disable this while using Branching?</AlertTitle>
+              <AlertTitle>
+                {$t('Are you sure you want to disable this while using Branching?')}
+              </AlertTitle>
               <AlertDescription>
-                Without PITR, you might not be able to recover lost data if you accidentally merge a
-                branch that deletes a column or user data. We don't recommend this.
+                {$t(
+                  "Without PITR, you might not be able to recover lost data if you accidentally merge a branch that deletes a column or user data. We don't recommend this."
+                )}
               </AlertDescription>
             </Alert>
           )}
 
           {blockDowngradeDueToHipaa ? (
             <Alert>
-              <AlertTitle>PITR cannot be disabled on HIPAA projects</AlertTitle>
+              <AlertTitle>{$t('PITR cannot be disabled on HIPAA projects')}</AlertTitle>
               <AlertDescription>
-                PITR is enabled by default for all HIPAA projects and cannot be turned off. Contact
-                support for further assistance.
+                {$t(
+                  'PITR is enabled by default for all HIPAA projects and cannot be turned off. Contact support for further assistance.'
+                )}
               </AlertDescription>
               <div className="mt-4">
                 <Button variant="default" asChild>
-                  <SupportLink>Contact support</SupportLink>
+                  <SupportLink>{$t('Contact support')}</SupportLink>
                 </Button>
               </div>
             </Alert>
@@ -280,7 +285,7 @@ const PITRSidePanel = () => {
               ) : null}
 
               <label className="block text-sm text-foreground-light mb-4" htmlFor="pitr">
-                Choose the duration of recovery
+                {$t('Choose the duration of recovery')}
               </label>
               <RadioGroupCard
                 id="pitr"
@@ -301,8 +306,8 @@ const PITRSidePanel = () => {
                         </div>
                         <div className="px-4 py-2">
                           <p className="text-foreground-light">
-                            Allow database restorations to any time up to{' '}
-                            {option.identifier.split('_')[1]} days ago
+                            {$t('Allow database restorations to any time up to')}{' '}
+                            {option.identifier.split('_')[1]} {$t('days ago')}
                           </p>
                           <div className="flex items-center space-x-1 mt-2">
                             <p className="text-foreground text-sm" translate="no">
@@ -323,8 +328,9 @@ const PITRSidePanel = () => {
 
           {hasChanges && selectedOption !== 'pitr_0' && (
             <p className="text-sm text-foreground-light">
-              There are no immediate charges. The add-on is billed at the end of your billing cycle
-              based on your usage and prorated to the hour.
+              {$t(
+                'There are no immediate charges. The add-on is billed at the end of your billing cycle based on your usage and prorated to the hour.'
+              )}
             </p>
           )}
         </div>

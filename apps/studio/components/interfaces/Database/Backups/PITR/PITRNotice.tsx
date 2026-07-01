@@ -8,6 +8,7 @@ import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { FormPanel } from '@/components/ui/Forms/FormPanel'
 import { useProjectAddonsQuery } from '@/data/subscriptions/project-addons-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 export const PITRNotice = () => {
   const { ref: projectRef } = useParams()
@@ -25,7 +26,7 @@ export const PITRNotice = () => {
       footer={
         <div className="flex items-center justify-between p-6">
           <span className="text-sm text-foreground-light">
-            You can also increase your recovery retention period updating your PITR add-on
+            {$t('You can also increase your recovery retention period updating your PITR add-on')}
           </span>
           <ButtonTooltip
             asChild
@@ -41,7 +42,7 @@ export const PITRNotice = () => {
             }}
           >
             <Link href={`/project/${projectRef}/settings/addons?panel=pitr`}>
-              Increase retention period
+              {$t('Increase retention period')}
             </Link>
           </ButtonTooltip>
         </div>
@@ -52,10 +53,11 @@ export const PITRNotice = () => {
           <Calendar strokeWidth={2} />
         </div>
         <div className="space-y-2">
-          <p className="text-sm">Recovery retention period</p>
+          <p className="text-sm">{$t('Recovery retention period')}</p>
           <p className="text-sm text-foreground-light">
-            Database changes are logged every <span className="text-foreground">2 minutes</span>,
-            with a total recovery period of up to{' '}
+            {$t('Database changes are logged every')}{' '}
+            <span className="text-foreground">{$t('2 minutes')}</span>
+            {$t(', with a total recovery period of up to')}{' '}
             <span className="text-brand">{retentionPeriod} days</span>.
           </p>
         </div>

@@ -10,6 +10,7 @@ import { DataPoint } from '@/data/analytics/constants'
 import { PricingMetric, type OrgDailyUsageResponse } from '@/data/analytics/org-daily-stats-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export interface ComputeProps {
   orgDailyStats: OrgDailyUsageResponse | undefined
@@ -56,14 +57,14 @@ const ActiveCompute = ({ orgDailyStats, isLoadingOrgDailyStats }: ComputeProps) 
               {chartData.length > 0 && (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <p className="text-sm">Active Compute Hours usage</p>
+                    <p className="text-sm">{$t('Active Compute Hours usage')}</p>
                   </div>
                 </div>
               )}
 
               <div className="flex items-center justify-between border-b last:border-b-0 py-1 last:py-0">
                 <p className="text-sm text-foreground-light">
-                  Active Compute Hours usage in period
+                  {$t('Active Compute Hours usage in period')}
                 </p>
                 <p className="text-sm">
                   {chartData.reduce(
@@ -88,8 +89,10 @@ const ActiveCompute = ({ orgDailyStats, isLoadingOrgDailyStats }: ComputeProps) 
                 <Panel.Content>
                   <div className="flex flex-col items-center justify-center">
                     <BarChart2 className="text-foreground-light mb-2" />
-                    <p className="text-sm">No data in period</p>
-                    <p className="text-sm text-foreground-light">May take up to one hour to show</p>
+                    <p className="text-sm">{$t('No data in period')}</p>
+                    <p className="text-sm text-foreground-light">
+                      {$t('May take up to one hour to show')}
+                    </p>
                   </div>
                 </Panel.Content>
               </Panel>

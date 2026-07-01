@@ -5,6 +5,7 @@ import { Button } from 'ui'
 import { POLICY_MODAL_VIEWS } from '../Policies.constants'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface PolicyEditorModalTitleProps {
   view: string
@@ -44,7 +45,7 @@ const PolicyEditorModalTitle = ({
           >
             <ChevronLeft strokeWidth={2} size={14} />
           </span>
-          <h4>Select a template to use for your new policy</h4>
+          <h4>{$t('Select a template to use for your new policy')}</h4>
         </div>
       </div>
     )
@@ -57,7 +58,7 @@ const PolicyEditorModalTitle = ({
       <div className="flex items-center gap-x-2 pr-6">
         {showAssistantPreview && view === POLICY_MODAL_VIEWS.EDITOR && (
           <Button variant="default" icon={<FlaskConical />} onClick={onToggleFeaturePreviewModal}>
-            Try Supabase Assistant
+            {$t('Try Supabase Assistant')}
           </Button>
         )}
         <DocsButton className="mt-[-4px]" href={`${DOCS_URL}/learn/auth-deep-dive/auth-policies`} />

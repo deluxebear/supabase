@@ -21,6 +21,7 @@ import { ComputeSizeRecommendationSection } from '../ui/ComputeSizeRecommendatio
 import { DiskType, RESTRICTED_COMPUTE_FOR_IOPS_ON_GP3 } from '../ui/DiskManagement.constants'
 import { DiskManagementIOPSReadReplicas } from '../ui/DiskManagementReadReplicas'
 import { useDiskAttributesQuery } from '@/data/config/disk-attributes-query'
+import { t as $t } from '@/lib/i18n'
 
 type IOPSFieldProps = {
   form: UseFormReturn<DiskStorageSchemaType>
@@ -60,7 +61,7 @@ export function IOPSField({ form, disableInput }: IOPSFieldProps) {
             id={field.name}
             description={
               <span className="flex flex-col gap-y-2">
-                <p>Use higher IOPS for high-throughput apps.</p>
+                <p>{$t('Use higher IOPS for high-throughput apps.')}</p>
                 <ComputeSizeRecommendationSection
                   form={form}
                   actions={
@@ -71,7 +72,7 @@ export function IOPSField({ form, disableInput }: IOPSFieldProps) {
                         trigger('provisionedIOPS')
                       }}
                     >
-                      Update to {mapAddOnVariantIdToComputeSize(reccomendedComputeSize)}
+                      {$t('Update to')} {mapAddOnVariantIdToComputeSize(reccomendedComputeSize)}
                     </Button>
                   }
                 />
@@ -100,7 +101,9 @@ export function IOPSField({ form, disableInput }: IOPSFieldProps) {
                   afterPrice={Number(iopsPrice.newPrice)}
                   className="mb-2"
                 />
-                <p className="text-foreground-lighter">Input/output operations per second.</p>
+                <p className="text-foreground-lighter">
+                  {$t('Input/output operations per second.')}
+                </p>
               </>
             }
           >

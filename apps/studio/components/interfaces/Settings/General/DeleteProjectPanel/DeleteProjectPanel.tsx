@@ -11,6 +11,7 @@ import {
 import { DeleteProjectButton } from './DeleteProjectButton'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const DeleteProjectPanel = () => {
   const { data: project } = useSelectedProjectQuery()
@@ -31,9 +32,9 @@ export const DeleteProjectPanel = () => {
     <PageSection id="delete-project">
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Delete project</PageSectionTitle>
+          <PageSectionTitle>{$t('Delete project')}</PageSectionTitle>
           <PageSectionDescription>
-            Permanently remove your project and its database
+            {$t('Permanently remove your project and its database')}
           </PageSectionDescription>
         </PageSectionSummary>
       </PageSectionMeta>

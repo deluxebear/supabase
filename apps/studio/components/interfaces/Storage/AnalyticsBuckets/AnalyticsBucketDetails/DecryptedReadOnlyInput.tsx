@@ -8,6 +8,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { useVaultSecretDecryptedValueQuery } from '@/data/vault/vault-secret-decrypted-value-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const DecryptedReadOnlyInput = ({
   value,
@@ -64,7 +65,7 @@ export const DecryptedReadOnlyInput = ({
                     />
                   </Link>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">Open in Vault</TooltipContent>
+                <TooltipContent side="bottom">{$t('Open in Vault')}</TooltipContent>
               </Tooltip>
             )}
           </div>

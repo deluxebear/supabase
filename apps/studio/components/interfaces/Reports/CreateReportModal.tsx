@@ -24,6 +24,7 @@ import * as z from 'zod'
 import { useContentUpsertMutation } from '@/data/content/content-upsert-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 
 export interface CreateReportModal {
@@ -61,7 +62,7 @@ export const CreateReportModal = ({ visible, onCancel, afterSubmit }: CreateRepo
 
   const { mutate: upsertContent, isPending: isCreating } = useContentUpsertMutation({
     onSuccess: (_, vars) => {
-      toast.success('Successfully created new report')
+      toast.success($t('Successfully created new report'))
       const newReportId = vars.payload.id
       router.push(`/project/${ref}/observability/${newReportId}${preservedQueryParams}`)
       afterSubmit()
@@ -116,7 +117,7 @@ export const CreateReportModal = ({ visible, onCancel, afterSubmit }: CreateRepo
     <Dialog open={visible} onOpenChange={handleCancel}>
       <DialogContent size="small">
         <DialogHeader>
-          <DialogTitle>Create a custom report</DialogTitle>
+          <DialogTitle>{$t('Create a custom report')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <Form {...form}>
@@ -126,7 +127,7 @@ export const CreateReportModal = ({ visible, onCancel, afterSubmit }: CreateRepo
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItemLayout name="name" layout="vertical" label="Name">
+                  <FormItemLayout name="name" layout="vertical" label={$t('Name')}>
                     <FormControl>
                       <Input {...field} id="name" />
                     </FormControl>
@@ -139,13 +140,13 @@ export const CreateReportModal = ({ visible, onCancel, afterSubmit }: CreateRepo
                 control={form.control}
                 name="description"
                 render={({ field }) => (
-                  <FormItemLayout name="description" layout="vertical" label="Description">
+                  <FormItemLayout name="description" layout="vertical" label={$t('Description')}>
                     <FormControl>
                       <Textarea
                         {...field}
                         id="description"
                         rows={4}
-                        placeholder="Describe your custom report"
+                        placeholder={$t('Describe your custom report')}
                         className="resize-none"
                       />
                     </FormControl>
@@ -155,10 +156,10 @@ export const CreateReportModal = ({ visible, onCancel, afterSubmit }: CreateRepo
             </DialogSection>
             <DialogFooter>
               <Button type="reset" variant="default" onClick={handleCancel} disabled={isCreating}>
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button type="submit" loading={isCreating} disabled={isCreating || !isDirty}>
-                Create report
+                {$t('Create report')}
               </Button>
             </DialogFooter>
           </form>

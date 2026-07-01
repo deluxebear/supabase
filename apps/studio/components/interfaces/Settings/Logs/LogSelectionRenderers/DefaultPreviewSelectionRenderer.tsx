@@ -19,6 +19,7 @@ import { ResponseCodeFormatter } from '../LogsFormatters'
 import { ErrorCodeTooltip } from '@/components/ui/ErrorCodeTooltip/ErrorCodeTooltip'
 import { Service } from '@/data/graphql/graphql'
 import { useLogsUrlState } from '@/hooks/analytics/useLogsUrlState'
+import { t as $t } from '@/lib/i18n'
 
 const LogRowCodeBlock = ({ value, className }: { value: string; className?: string }) => (
   <pre
@@ -90,7 +91,7 @@ const PropertyRow = ({
   const handleCopy = () => {
     copyToClipboard(String(value), () => {
       setIsCopied(true)
-      toast.success('Copied to clipboard')
+      toast.success($t('Copied to clipboard'))
     })
 
     setTimeout(() => {
@@ -184,10 +185,12 @@ const PropertyRow = ({
                 setShowErrorInfo(true)
               }}
             >
-              More information
+              {$t('More information')}
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem onClick={handleCopy}>Copy {keyName}</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleCopy}>
+            {$t('Copy')} {keyName}
+          </DropdownMenuItem>
           {!isObject && (
             <DropdownMenuItem
               onClick={() => {
@@ -203,7 +206,7 @@ const PropertyRow = ({
                 handleSearch('search-input-change', { query: value })
               }}
             >
-              Search by {keyName}
+              {$t('Search by')} {keyName}
             </DropdownMenuItem>
           )}
           {isSearch
@@ -214,7 +217,7 @@ const PropertyRow = ({
                     handleSearch('search-input-change', { query: pair })
                   }}
                 >
-                  Search by {pair}
+                  {$t('Search by')} {pair}
                 </DropdownMenuItem>
               ))
             : null}

@@ -8,6 +8,7 @@ import { Admonition } from 'ui-patterns/admonition'
 import CopyButton from '../CopyButton'
 import { InlineLinkClassName } from '../InlineLink'
 import { SupportLink } from '@/components/interfaces/Support/SupportLink'
+import { t as $t } from '@/lib/i18n'
 
 interface ClientSideExceptionHandlerProps {
   message: string
@@ -36,46 +37,51 @@ export const ClientSideExceptionHandler = ({
     <>
       <div className="flex flex-col gap-y-1 text-left py-2 w-full">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-lg font-bold">Sorry! An unexpected error occurred.</p>
+          <p className="text-lg font-bold">{$t('Sorry! An unexpected error occurred.')}</p>
           <CopyButton variant="outline" text={message} copyLabel="Copy error" />
         </div>
         <p className="text-sm">
-          Application error: a client-side exception has occurred (see browser console for more
-          information)
+          {$t(
+            'Application error: a client-side exception has occurred (see browser console for more information)'
+          )}
         </p>
         <p className="text-foreground-light text-sm">{message}</p>
       </div>
-      <Admonition type="note" showIcon={false} title="We recommend trying the following:">
+      <Admonition type="note" showIcon={false} title={$t('We recommend trying the following:')}>
         <ul className="list-disc mt-1.5 pl-2 list-inside text-sm space-y-1">
           <li>
             <span
               className={cn(InlineLinkClassName, 'cursor-pointer')}
               onClick={() => window.location.reload()}
             >
-              Refresh
+              {$t('Refresh')}
             </span>{' '}
-            the page
+            {$t('the page')}
           </li>
           <li>
             <span
               className={cn(InlineLinkClassName, 'cursor-pointer')}
               onClick={() => router.push('/logout')}
             >
-              Sign out
+              {$t('Sign out')}
             </span>{' '}
-            and sign back in
+            {$t('and sign back in')}
           </li>
           <li>
             <span
               className={cn(InlineLinkClassName, 'cursor-pointer')}
               onClick={handleClearStorage}
             >
-              Clear your browser storage
+              {$t('Clear your browser storage')}
             </span>{' '}
-            to clean potentially outdated data
+            {$t('to clean potentially outdated data')}
           </li>
-          <li>Disable browser extensions that might modify page content (e.g. Google Translate)</li>
-          <li>If the problem persists, please contact support for assistance</li>
+          <li>
+            {$t(
+              'Disable browser extensions that might modify page content (e.g. Google Translate)'
+            )}
+          </li>
+          <li>{$t('If the problem persists, please contact support for assistance')}</li>
         </ul>
       </Admonition>
 
@@ -89,7 +95,7 @@ export const ClientSideExceptionHandler = ({
               error: urlMessage,
             }}
           >
-            Contact support
+            {$t('Contact support')}
           </SupportLink>
         </Button>
 
@@ -97,11 +103,11 @@ export const ClientSideExceptionHandler = ({
         {/* We could actually investigate how to make this available on prod, but without being able to reliably test this, I'm not keen to do it now */}
         {isProduction ? (
           <Button variant="outline" onClick={() => router.reload()}>
-            Reload dashboard
+            {$t('Reload dashboard')}
           </Button>
         ) : (
           <Button variant="outline" onClick={() => resetErrorBoundary()}>
-            Return to dashboard
+            {$t('Return to dashboard')}
           </Button>
         )}
       </div>

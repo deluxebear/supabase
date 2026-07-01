@@ -14,6 +14,7 @@ import {
   ReportsNumericFilter,
 } from '@/components/interfaces/Reports/v2/ReportsNumericFilter'
 import { useDebouncedValue } from '@/hooks/misc/useDebouncedValue'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -143,7 +144,7 @@ export const QueryPerformanceFilterBar = ({
 
           {callsFilter ? (
             <FilterPill
-              label="Calls"
+              label={$t('Calls')}
               value={getCallsFilterDisplay() || ''}
               onClear={(e) => {
                 e.stopPropagation()
@@ -152,12 +153,12 @@ export const QueryPerformanceFilterBar = ({
             />
           ) : (
             <ReportsNumericFilter
-              label="Calls"
+              label={$t('Calls')}
               value={callsFilter}
               onChange={(value) => setSearchParams({ callsFilter: value })}
               operators={['=', '>=', '<=', '>', '<', '!=']}
               defaultOperator=">="
-              placeholder="e.g. 100"
+              placeholder={$t('e.g. 100')}
               min={0}
               className="w-auto"
             />
@@ -165,7 +166,7 @@ export const QueryPerformanceFilterBar = ({
 
           {totalTimeFilter ? (
             <FilterPill
-              label="Total Time"
+              label={$t('Total Time')}
               value={getTotalTimeFilterDisplay() || ''}
               onClear={(e) => {
                 e.stopPropagation()
@@ -174,12 +175,12 @@ export const QueryPerformanceFilterBar = ({
             />
           ) : (
             <ReportsNumericFilter
-              label="Total Time"
+              label={$t('Total Time')}
               value={totalTimeFilter}
               onChange={(value) => setSearchParams({ totalTimeFilter: value })}
               operators={['=', '>=', '<=', '>', '<', '!=']}
               defaultOperator=">"
-              placeholder="e.g. 1000"
+              placeholder={$t('e.g. 1000')}
               min={0}
               className="w-auto"
             />
@@ -188,7 +189,7 @@ export const QueryPerformanceFilterBar = ({
           {showRolesFilter &&
             (filters.roles && filters.roles.length > 0 ? (
               <FilterPill
-                label="Roles"
+                label={$t('Roles')}
                 value={filters.roles.join(', ')}
                 onClear={(e) => {
                   e.stopPropagation()

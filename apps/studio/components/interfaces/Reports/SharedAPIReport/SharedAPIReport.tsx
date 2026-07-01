@@ -7,6 +7,7 @@ import {
 } from '../renderers/ApiRenderers'
 import ReportWidget from '../ReportWidget'
 import { SharedAPIReportKey } from './SharedAPIReport.constants'
+import { t as $t } from '@/lib/i18n'
 
 type SharedAPIReportWidgetsProps = {
   data: any
@@ -30,7 +31,7 @@ export function SharedAPIReport({
       {!hiddenReports.includes('totalRequests') && (
         <ReportWidget
           isLoading={isLoading.totalRequests || isRefetching}
-          title="Total Requests"
+          title={$t('Total Requests')}
           data={data.totalRequests || []}
           error={error.totalRequests}
           renderer={TotalRequestsChartRenderer}
@@ -45,8 +46,8 @@ export function SharedAPIReport({
       {!hiddenReports.includes('errorCounts') && (
         <ReportWidget
           isLoading={isLoading.errorCounts || isRefetching}
-          title="Response Errors"
-          tooltip="Error responses with 4XX or 5XX status codes"
+          title={$t('Response Errors')}
+          tooltip={$t('Error responses with 4XX or 5XX status codes')}
           data={data.errorCounts || []}
           error={error.errorCounts}
           renderer={ErrorCountsChartRenderer}
@@ -63,8 +64,8 @@ export function SharedAPIReport({
       {!hiddenReports.includes('responseSpeed') && (
         <ReportWidget
           isLoading={isLoading.responseSpeed || isRefetching}
-          title="Response Speed"
-          tooltip="Average response speed of a request (in ms)"
+          title={$t('Response Speed')}
+          tooltip={$t('Average response speed of a request (in ms)')}
           data={data.responseSpeed || []}
           error={error.responseSpeed}
           renderer={ResponseSpeedChartRenderer}
@@ -80,8 +81,8 @@ export function SharedAPIReport({
         <ReportWidget
           isLoading={isLoading.networkTraffic || isRefetching}
           error={error.networkTraffic}
-          title="Network Traffic"
-          tooltip="Ingress and egress of requests and responses respectively"
+          title={$t('Network Traffic')}
+          tooltip={$t('Ingress and egress of requests and responses respectively')}
           data={data.networkTraffic || []}
           renderer={NetworkTrafficRenderer}
           queryType="logs"

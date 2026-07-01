@@ -8,6 +8,7 @@ import { LogsPreviewer } from '@/components/interfaces/Settings/Logs/LogsPreview
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import LogsLayout from '@/components/layouts/LogsLayout/LogsLayout'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 export const LogPage: NextPageWithLayout = () => {
@@ -40,7 +41,7 @@ export const LogPage: NextPageWithLayout = () => {
 
 LogPage.getLayout = (page) => (
   <DefaultLayout>
-    <LogsLayout title="Dedicated Pooler Logs">{page}</LogsLayout>
+    <LogsLayout title={$t('Dedicated Pooler Logs')}>{page}</LogsLayout>
   </DefaultLayout>
 )
 

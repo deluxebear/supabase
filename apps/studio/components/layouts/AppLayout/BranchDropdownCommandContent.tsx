@@ -15,6 +15,7 @@ import {
 
 import { BranchLink } from './BranchLink'
 import type { Branch } from '@/data/branches/branches-query'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const BRANCHING_GITHUB_DISCUSSION_LINK = 'https://github.com/orgs/supabase/discussions/18937'
@@ -60,7 +61,7 @@ export function BranchDropdownCommandContent({
               className="text-xs text-foreground-light hover:text-foreground"
               onClick={onClose}
             >
-              Manage branches
+              {$t('Manage branches')}
             </Link>
           </Button>
           <Button
@@ -77,7 +78,7 @@ export function BranchDropdownCommandContent({
               onClick={onClose}
               className="text-xs text-foreground-light hover:text-foreground"
             >
-              Branching feedback
+              {$t('Branching feedback')}
             </a>
           </Button>
           <Button
@@ -92,14 +93,14 @@ export function BranchDropdownCommandContent({
             }}
             icon={<Plus size={14} strokeWidth={1.5} />}
           >
-            Create branch
+            {$t('Create branch')}
           </Button>
         </div>
         {isBranchingEnabled && (
-          <CommandInput placeholder="Find branch..." wrapperClassName="shrink-0 border-b" />
+          <CommandInput placeholder={$t('Find branch...')} wrapperClassName="shrink-0 border-b" />
         )}
         <CommandList className="flex flex-col flex-1 p-1 min-h-0 overflow-y-auto max-h-none!">
-          {isBranchingEnabled && <CommandEmpty>No branches found</CommandEmpty>}
+          {isBranchingEnabled && <CommandEmpty>{$t('No branches found')}</CommandEmpty>}
           <CommandGroup className="min-h-0">
             {branchList.map((branch) => (
               <BranchLink
@@ -117,9 +118,9 @@ export function BranchDropdownCommandContent({
 
   return (
     <Command className={className}>
-      {isBranchingEnabled && <CommandInput placeholder="Find branch..." />}
+      {isBranchingEnabled && <CommandInput placeholder={$t('Find branch...')} />}
       <CommandList>
-        {isBranchingEnabled && <CommandEmpty>No branches found</CommandEmpty>}
+        {isBranchingEnabled && <CommandEmpty>{$t('No branches found')}</CommandEmpty>}
         <CommandGroup>
           <ScrollArea className="max-h-[210px] overflow-y-auto">
             {branchList.map((branch) => (
@@ -146,7 +147,7 @@ export function BranchDropdownCommandContent({
           >
             <div className="w-full flex items-center gap-2">
               <Plus size={14} strokeWidth={1.5} />
-              <p>Create branch</p>
+              <p>{$t('Create branch')}</p>
             </div>
           </CommandItem>
           <CommandItem
@@ -161,7 +162,7 @@ export function BranchDropdownCommandContent({
               className="w-full flex items-center gap-2"
             >
               <ListTree size={14} strokeWidth={1.5} />
-              <p>Manage branches</p>
+              <p>{$t('Manage branches')}</p>
             </Link>
           </CommandItem>
         </CommandGroup>
@@ -186,8 +187,8 @@ export function BranchDropdownCommandContent({
             >
               <MessageCircle size={14} strokeWidth={1} className="mt-0.5" />
               <div>
-                <p>Branching feedback</p>
-                <p className="text-lighter">Join GitHub Discussion</p>
+                <p>{$t('Branching feedback')}</p>
+                <p className="text-lighter">{$t('Join GitHub Discussion')}</p>
               </div>
             </a>
           </CommandItem>

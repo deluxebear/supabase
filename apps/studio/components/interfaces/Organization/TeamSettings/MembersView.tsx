@@ -20,6 +20,7 @@ import { MemberRow } from './MemberRow'
 import { AlertError } from '@/components/ui/AlertError'
 import { useOrganizationRolesV2Query } from '@/data/organization-members/organization-roles-query'
 import { useOrganizationMembersQuery } from '@/data/organizations/organization-members-query'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 
 export interface MembersViewProps {
@@ -99,9 +100,9 @@ const MembersView = ({ searchString }: MembersViewProps) => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead key="header-user">Member</TableHead>
+                    <TableHead key="header-user">{$t('Member')}</TableHead>
                     <TableHead key="header-mfa">MFA</TableHead>
-                    <TableHead key="header-role">Role</TableHead>
+                    <TableHead key="header-role">{$t('Role')}</TableHead>
                     <TableHead key="header-action" />
                   </TableRow>
                 </TableHeader>
@@ -114,8 +115,10 @@ const MembersView = ({ searchString }: MembersViewProps) => {
                             <TableCell colSpan={12} className="p-0!">
                               <Admonition
                                 type="note"
-                                title="You have limited visibility in this organization"
-                                description="Your access is limited to specific projects, so you can’t see all members or settings."
+                                title={$t('You have limited visibility in this organization')}
+                                description={$t(
+                                  'Your access is limited to specific projects, so you can’t see all members or settings.'
+                                )}
                                 className="border-0 rounded-none"
                               />
                             </TableCell>
@@ -133,7 +136,8 @@ const MembersView = ({ searchString }: MembersViewProps) => {
                               <div className="flex items-center space-x-3 opacity-75">
                                 <AlertCircle size={16} strokeWidth={2} />
                                 <p className="text-foreground-light">
-                                  No members matched the search query "{searchString}"
+                                  {$t('No members matched the search query "')}
+                                  {searchString}"
                                 </p>
                               </div>
                             </TableCell>

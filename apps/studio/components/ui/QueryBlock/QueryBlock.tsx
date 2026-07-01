@@ -22,6 +22,7 @@ import {
 import { ReportBlockContainer } from '@/components/interfaces/Reports/ReportBlock/ReportBlockContainer'
 import { ChartConfig } from '@/components/interfaces/SQLEditor/UtilityPanel/ChartConfig'
 import { Results } from '@/components/interfaces/SQLEditor/UtilityPanel/Results'
+import { t as $t } from '@/lib/i18n'
 
 export const DEFAULT_CHART_CONFIG: ChartConfig = {
   type: 'bar',
@@ -162,7 +163,7 @@ export const QueryBlock = ({
       onDragStart={(e: DragEvent<Element>) => onDragStart?.(e)}
       loading={isExecuting}
       label={label}
-      badge={isWriteQuery && <Badge variant="warning">Write</Badge>}
+      badge={isWriteQuery && <Badge variant="warning">{$t('Write')}</Badge>}
       actions={
         <>
           {!disabled && (
@@ -273,17 +274,23 @@ export const QueryBlock = ({
         <>
           {(results ?? []).length === 0 ? (
             <div className="flex w-full h-full items-center justify-center py-3">
-              <p className="text-foreground-light text-xs">No results returned from query</p>
+              <p className="text-foreground-light text-xs">
+                {$t('No results returned from query')}
+              </p>
             </div>
           ) : !xKey || !yKey ? (
             <div className="flex w-full h-full items-center justify-center">
-              <p className="text-foreground-light text-xs">Select columns for the X and Y axes</p>
+              <p className="text-foreground-light text-xs">
+                {$t('Select columns for the X and Y axes')}
+              </p>
             </div>
           ) : (
             <div className="flex-1 w-full">
               {hasNonPositiveValues && (
                 <p className="px-3 pt-1 text-xs text-foreground-light">
-                  Log scale is unavailable because the data contains zero or negative values.
+                  {$t(
+                    'Log scale is unavailable because the data contains zero or negative values.'
+                  )}
                 </p>
               )}
               <ChartContainer
@@ -369,20 +376,22 @@ export const QueryBlock = ({
           {isWriteQuery && blockWriteQueries ? (
             <div className="flex flex-col h-full justify-center items-center text-center">
               <p className="text-xs text-foreground-light">
-                SQL query is not read-only and cannot be rendered
+                {$t('SQL query is not read-only and cannot be rendered')}
               </p>
               <p className="text-xs text-foreground-lighter text-center">
-                Queries that involve any mutation will not be run in reports
+                {$t('Queries that involve any mutation will not be run in reports')}
               </p>
               {!!onRemoveChart && (
                 <Button variant="default" className="mt-2" onClick={() => onRemoveChart()}>
-                  Remove chart
+                  {$t('Remove chart')}
                 </Button>
               )}
             </div>
           ) : !isExecuting && !!errorText ? (
             <div className={cn('flex-1 w-full overflow-auto relative border-t px-3.5 py-2')}>
-              <span className="font-mono text-xs">ERROR: {errorText}</span>
+              <span className="font-mono text-xs">
+                {$t('ERROR:')} {errorText}
+              </span>
             </div>
           ) : (
             results && (
@@ -394,7 +403,7 @@ export const QueryBlock = ({
                 <Results rows={results} />
                 {autoLimit && (
                   <p className="text-xs font-mono px-2 py-1 border-t text-foreground-light">
-                    Limited to only 100 rows
+                    {$t('Limited to only 100 rows')}
                   </p>
                 )}
               </div>

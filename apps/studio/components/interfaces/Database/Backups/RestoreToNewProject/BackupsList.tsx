@@ -5,6 +5,7 @@ import { BackupsEmpty } from '../BackupsEmpty'
 import Panel from '@/components/ui/Panel'
 import { useCloneBackupsQuery } from '@/data/projects/clone-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface BackupsListProps {
   onSelectRestore: (id: number) => void
@@ -21,7 +22,7 @@ export const BackupsList = ({ onSelectRestore, disabled, hasAccess }: BackupsLis
 
   return (
     <div className="flex flex-col gap-2">
-      <h3 className="text-sm font-medium">Available Backups</h3>
+      <h3 className="text-sm font-medium">{$t('Available Backups')}</h3>
       <Panel>
         {cloneBackups?.backups.length === 0 ? (
           <BackupsEmpty />
@@ -50,7 +51,7 @@ export const BackupsList = ({ onSelectRestore, disabled, hasAccess }: BackupsLis
                         onClick={() => onSelectRestore(backup.id)}
                         disabled={disabled}
                       >
-                        Restore
+                        {$t('Restore')}
                       </Button>
                     )}
                   </div>

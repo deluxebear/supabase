@@ -9,6 +9,7 @@ import LogsLayout from '@/components/layouts/LogsLayout/LogsLayout'
 import Table from '@/components/to-be-cleaned/Table'
 import LogsExplorerHeader from '@/components/ui/Logs/LogsExplorerHeader'
 import { useContentQuery } from '@/data/content/content-query'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 // [Joshen] This page looks like its not longer in use from a UI POV - double checking and deprecate + add redirects
@@ -36,10 +37,10 @@ export const LogsSavedPage: NextPageWithLayout = () => {
             headTrClasses="expandable-tr"
             head={
               <>
-                <Table.th>Name</Table.th>
-                <Table.th>Description</Table.th>
-                <Table.th>Created</Table.th>
-                <Table.th>Last updated</Table.th>
+                <Table.th>{$t('Name')}</Table.th>
+                <Table.th>{$t('Description')}</Table.th>
+                <Table.th>{$t('Created')}</Table.th>
+                <Table.th>{$t('Last updated')}</Table.th>
                 <Table.th></Table.th>
               </>
             }
@@ -52,11 +53,11 @@ export const LogsSavedPage: NextPageWithLayout = () => {
       {saved.length === 0 && (
         <div className="my-auto flex h-full grow flex-col items-center justify-center gap-1">
           <Save className="animate-bounce" />
-          <h3 className="text-lg text-foreground">No Saved Queries Yet</h3>
+          <h3 className="text-lg text-foreground">{$t('No Saved Queries Yet')}</h3>
           <p className="text-sm text-foreground-lighter">
-            Saved queries will appear here. Queries can be saved from the{' '}
+            {$t('Saved queries will appear here. Queries can be saved from the')}{' '}
             <Link href={`/project/${ref}/logs/explorer`}>
-              <span className="cursor-pointer font-bold underline">Query</span>
+              <span className="cursor-pointer font-bold underline">{$t('Query')}</span>
             </Link>{' '}
             tab.
           </p>
@@ -68,7 +69,7 @@ export const LogsSavedPage: NextPageWithLayout = () => {
 
 LogsSavedPage.getLayout = (page) => (
   <DefaultLayout>
-    <LogsLayout title="Saved">{page}</LogsLayout>
+    <LogsLayout title={$t('Saved')}>{page}</LogsLayout>
   </DefaultLayout>
 )
 

@@ -32,6 +32,7 @@ import {
 } from '../QueryInsightsTable/QueryInsightsTable.utils'
 import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 
 interface UseQueryInsightsTableColumnsParams {
   sort: { column: string; order: 'asc' | 'desc' }
@@ -103,7 +104,8 @@ export function useQueryInsightsTableColumns({
                       )}
                     >
                       <ArrowUp size={14} />
-                      Sort Ascending
+
+                      {$t('Sort Ascending')}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => setSort({ column: col.id, order: 'desc' })}
@@ -113,7 +115,8 @@ export function useQueryInsightsTableColumns({
                       )}
                     >
                       <ArrowDown size={14} />
-                      Sort Descending
+
+                      {$t('Sort Descending')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -321,7 +324,7 @@ export function useQueryInsightsTableColumns({
         headerCellClass: 'first:pl-6 cursor-default',
         renderHeaderCell: () => (
           <div className="flex items-center text-xs w-full">
-            <p className="text-foreground! font-medium">Query</p>
+            <p className="text-foreground! font-medium">{$t('Query')}</p>
           </div>
         ),
         renderCell: (props) => {
@@ -393,7 +396,7 @@ export function useQueryInsightsTableColumns({
         headerCellClass: 'cursor-default',
         renderHeaderCell: () => (
           <div className="flex items-center text-xs w-full">
-            <p className="text-foreground! font-medium">Time consumed</p>
+            <p className="text-foreground! font-medium">{$t('Time consumed')}</p>
           </div>
         ),
         renderCell: (props) => {
@@ -436,7 +439,7 @@ export function useQueryInsightsTableColumns({
         headerCellClass: 'cursor-default',
         renderHeaderCell: () => (
           <div className="flex items-center text-xs w-full">
-            <p className="text-foreground! font-medium">Calls</p>
+            <p className="text-foreground! font-medium">{$t('Calls')}</p>
           </div>
         ),
         renderCell: (props) => {
@@ -462,7 +465,7 @@ export function useQueryInsightsTableColumns({
         headerCellClass: 'cursor-default',
         renderHeaderCell: () => (
           <div className="flex items-center text-xs w-full">
-            <p className="text-foreground! font-medium">Mean time</p>
+            <p className="text-foreground! font-medium">{$t('Mean time')}</p>
           </div>
         ),
         renderCell: (props) => {
@@ -488,7 +491,7 @@ export function useQueryInsightsTableColumns({
         headerCellClass: 'cursor-default',
         renderHeaderCell: () => (
           <div className="flex items-center text-xs w-full">
-            <p className="text-foreground! font-medium">Actions</p>
+            <p className="text-foreground! font-medium">{$t('Actions')}</p>
           </div>
         ),
         renderCell: (props) => {
@@ -504,7 +507,7 @@ export function useQueryInsightsTableColumns({
                     handleGoToLogs()
                   }}
                 >
-                  Go to Logs
+                  {$t('Go to Logs')}
                 </Button>
               )}
               {row.issueType === 'index' && (
@@ -518,7 +521,7 @@ export function useQueryInsightsTableColumns({
                       setSheetView('indexes')
                     }}
                   >
-                    Create Index
+                    {$t('Create Index')}
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -532,7 +535,8 @@ export function useQueryInsightsTableColumns({
                     <DropdownMenuContent align="end" className="w-40">
                       <DropdownMenuItem onClick={() => handleGoToLogs()} className="gap-2">
                         <ExternalLink size={14} />
-                        Go to Logs
+
+                        {$t('Go to Logs')}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => {
@@ -542,7 +546,8 @@ export function useQueryInsightsTableColumns({
                         className="gap-2"
                       >
                         <ScanSearch size={14} />
-                        Explain
+
+                        {$t('Explain')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -551,7 +556,7 @@ export function useQueryInsightsTableColumns({
               {(row.issueType === 'error' || row.issueType === 'slow') && (
                 <div onClick={(e) => e.stopPropagation()}>
                   <AiAssistantDropdown
-                    label="Fix with AI"
+                    label={$t('Fix with AI')}
                     buildPrompt={() => buildQueryInsightFixPrompt(row).prompt}
                     onOpenAssistant={() => handleAiSuggestedFix(row)}
                     copyLabel="Copy Markdown"

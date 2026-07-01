@@ -21,6 +21,7 @@ import { useProjectApiUrl } from '@/data/config/project-endpoint-query'
 import { useLoadBalancersQuery } from '@/data/read-replicas/load-balancers-query'
 import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 
 export const DataApiProjectUrlCard = () => {
@@ -64,7 +65,7 @@ export const DataApiProjectUrlCard = () => {
     <PageSection className="first:pt-0">
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>API URL</PageSectionTitle>
+          <PageSectionTitle>{$t('API URL')}</PageSectionTitle>
           <PageSectionDescription>
             {loadBalancerSelected
               ? 'RESTful endpoint for querying and managing your databases through your load balancer'
@@ -95,7 +96,7 @@ export const DataApiProjectUrlCard = () => {
         ) : isError ? (
           <Alert variant="destructive">
             <AlertCircle size={16} />
-            <AlertTitle>Failed to retrieve project URL</AlertTitle>
+            <AlertTitle>{$t('Failed to retrieve project URL')}</AlertTitle>
           </Alert>
         ) : (
           <Input copy readOnly className="font-mono" value={endpoint} />

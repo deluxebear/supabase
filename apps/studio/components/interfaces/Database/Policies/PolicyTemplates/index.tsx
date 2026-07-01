@@ -5,6 +5,7 @@ import { Button, DialogSectionSeparator } from 'ui'
 import { PolicyTemplate } from './PolicyTemplates.constants'
 import TemplatePreview from './TemplatePreview'
 import TemplatesList from './TemplatesList'
+import { t as $t } from '@/lib/i18n'
 
 interface PolicyTemplatesProps {
   templates?: PolicyTemplate[]
@@ -32,14 +33,14 @@ const PolicyTemplates = ({
       <DialogSectionSeparator />
       <div className="flex w-full items-center justify-end gap-3 px-6 py-4">
         <span className="text-sm text-foreground-lighter">
-          This will override any existing code you've written
+          {$t("This will override any existing code you've written")}
         </span>
         <Button
           variant="primary"
           disabled={isEmpty(selectedTemplate)}
           onClick={() => onUseTemplate(selectedTemplate)}
         >
-          Use this template
+          {$t('Use this template')}
         </Button>
       </div>
     </div>

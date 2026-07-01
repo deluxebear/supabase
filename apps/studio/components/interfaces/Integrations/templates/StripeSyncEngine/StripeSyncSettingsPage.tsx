@@ -18,6 +18,7 @@ import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 import { isInstalled, isSyncRunning, isUninstalling } from './stripe-sync-status'
 import { ConstrainedIntegrationTabScaffold } from '@/components/interfaces/Integrations/ConstrainedIntegrationTabScaffold'
 import { useStripeSyncStatus } from '@/components/interfaces/Integrations/templates/StripeSyncEngine/useStripeSyncStatus'
+import { t as $t } from '@/lib/i18n'
 
 export const StripeSyncSettingsPage = () => {
   const { ref } = useParams()
@@ -34,7 +35,7 @@ export const StripeSyncSettingsPage = () => {
     return (
       <ConstrainedIntegrationTabScaffold>
         <PageSection>
-          <Admonition type="default" description="Stripe Sync Engine is not installed." />
+          <Admonition type="default" description={$t('Stripe Sync Engine is not installed.')} />
         </PageSection>
       </ConstrainedIntegrationTabScaffold>
     )
@@ -45,9 +46,9 @@ export const StripeSyncSettingsPage = () => {
       <PageSection className="py-0!">
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>Manage Stripe data</PageSectionTitle>
+            <PageSectionTitle>{$t('Manage Stripe data')}</PageSectionTitle>
             <PageSectionDescription>
-              Access and manage the synced Stripe data in your database.
+              {$t('Access and manage the synced Stripe data in your database.')}
             </PageSectionDescription>
           </PageSectionSummary>
         </PageSectionMeta>
@@ -63,11 +64,11 @@ export const StripeSyncSettingsPage = () => {
                       <>
                         <div className="flex items-center gap-x-3 text-foreground-light">
                           <RefreshCwIcon size={14} className="animate-spin" />
-                          <p>Sync in progress</p>
+                          <p>{$t('Sync in progress')}</p>
                         </div>
                         {syncState.started_at && (
                           <p className="text-foreground-light">
-                            Started{' '}
+                            {$t('Started')}{' '}
                             <TimestampInfo
                               utcTimestamp={syncState.started_at}
                               label={
@@ -83,11 +84,11 @@ export const StripeSyncSettingsPage = () => {
                       <>
                         <div className="flex items-center gap-x-3 text-foreground-light">
                           <BadgeCheck size={14} />
-                          <p>All up to date</p>
+                          <p>{$t('All up to date')}</p>
                         </div>
                         {syncState.closed_at && (
                           <p className="text-foreground-light">
-                            Last synced{' '}
+                            {$t('Last synced')}{' '}
                             <TimestampInfo
                               utcTimestamp={syncState.closed_at}
                               label={
@@ -107,16 +108,18 @@ export const StripeSyncSettingsPage = () => {
             <CardContent className="@container">
               <div className="flex flex-col items-start justify-between gap-4 @md:flex-row @md:items-center">
                 <div className="flex flex-col gap-1">
-                  <h5 className="text-sm">View Stripe data in Table Editor</h5>
+                  <h5 className="text-sm">{$t('View Stripe data in Table Editor')}</h5>
                   <p className="text-sm text-foreground-light text-balance">
-                    The Stripe Sync Engine stores all synced data in the{' '}
-                    <code className="text-code-inline break-keep!">stripe</code> schema. You can
-                    view and query this data directly in the Table Editor.
+                    {$t('The Stripe Sync Engine stores all synced data in the')}{' '}
+                    <code className="text-code-inline break-keep!">stripe</code>{' '}
+                    {$t('schema. You can view and query this data directly in the Table Editor.')}
                   </p>
                 </div>
 
                 <Button asChild variant="default" className="ml-8 @md:ml-0">
-                  <Link href={`/project/${ref}/editor?schema=stripe`}>Open Table Editor</Link>
+                  <Link href={`/project/${ref}/editor?schema=stripe`}>
+                    {$t('Open Table Editor')}
+                  </Link>
                 </Button>
               </div>
             </CardContent>

@@ -36,6 +36,7 @@ import { useDatabaseEventTriggersQuery } from '@/data/database-event-triggers/da
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { EMPTY_ARR } from '@/lib/void'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
@@ -196,7 +197,7 @@ export const EventTriggersList = () => {
             <InputGroupInput
               ref={searchInputRef}
               size="tiny"
-              placeholder="Search for a trigger"
+              placeholder={$t('Search for a trigger')}
               value={filterString}
               onChange={(e) => setFilterString(e.target.value)}
               onKeyDown={onSearchInputEscape(filterString, setFilterString)}
@@ -206,7 +207,7 @@ export const EventTriggersList = () => {
             </InputGroupAddon>
           </InputGroup>
           <ReportsSelectFilter
-            label="Owner"
+            label={$t('Owner')}
             options={ownerOptions.map((owner) => ({
               label: owner,
               value: owner,
@@ -221,12 +222,12 @@ export const EventTriggersList = () => {
           {canUpdateEventTriggers ? (
             <Shortcut
               id={SHORTCUT_IDS.LIST_PAGE_NEW_ITEM}
-              label="Create new event trigger"
+              label={$t('Create new event trigger')}
               onTrigger={createEventTrigger}
               side="bottom"
             >
               <Button variant="primary" icon={<Plus size={12} />} onClick={createEventTrigger}>
-                New trigger
+                {$t('New trigger')}
               </Button>
             </Shortcut>
           ) : (
@@ -241,7 +242,7 @@ export const EventTriggersList = () => {
                 },
               }}
             >
-              New trigger
+              {$t('New trigger')}
             </ButtonTooltip>
           )}
         </div>
@@ -250,8 +251,8 @@ export const EventTriggersList = () => {
       {showEmptyState ? (
         <EmptyStatePresentational
           icon={DatabaseZap}
-          title="No event triggers yet"
-          description="Event triggers run on database-level events like DDL commands."
+          title={$t('No event triggers yet')}
+          description={$t('Event triggers run on database-level events like DDL commands.')}
         >
           <ButtonTooltip
             variant="default"
@@ -266,7 +267,7 @@ export const EventTriggersList = () => {
               },
             }}
           >
-            New trigger
+            {$t('New trigger')}
           </ButtonTooltip>
         </EmptyStatePresentational>
       ) : (
@@ -275,12 +276,12 @@ export const EventTriggersList = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead key="name">Name</TableHead>
-                  <TableHead key="event">Event</TableHead>
-                  <TableHead key="function">Function</TableHead>
-                  <TableHead key="tags">Tags</TableHead>
+                  <TableHead key="name">{$t('Name')}</TableHead>
+                  <TableHead key="event">{$t('Event')}</TableHead>
+                  <TableHead key="function">{$t('Function')}</TableHead>
+                  <TableHead key="tags">{$t('Tags')}</TableHead>
                   <TableHead key="enabled" className="w-20">
-                    Enabled
+                    {$t('Enabled')}
                   </TableHead>
                   <TableHead key="buttons" className="w-1/12"></TableHead>
                 </TableRow>
@@ -308,7 +309,7 @@ export const EventTriggersList = () => {
         onCancel={() => setTriggerToDelete(null)}
         onDelete={() => {
           if (!project) {
-            toast.error('Project is required to delete an event trigger')
+            toast.error($t('Project is required to delete an event trigger'))
             return
           }
           if (!triggerToDelete) return

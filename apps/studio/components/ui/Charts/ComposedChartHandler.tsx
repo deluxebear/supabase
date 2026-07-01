@@ -15,6 +15,7 @@ import { useInfraMonitoringQueries } from '@/data/analytics/infra-monitoring-que
 import { InfraMonitoringAttribute } from '@/data/analytics/infra-monitoring-query'
 import { useProjectDailyStatsQueries } from '@/data/analytics/project-daily-stats-queries'
 import { ProjectDailyStatsAttribute } from '@/data/analytics/project-daily-stats-query'
+import { t as $t } from '@/lib/i18n'
 import type { UpdateDateRange } from '@/pages/project/[ref]/observability/database'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 
@@ -266,7 +267,9 @@ const ComposedChartHandler = ({
         )}
       >
         <Loader2 size={18} className="animate-spin text-border-strong" />
-        <p className="text-xs text-foreground-lighter">Loading data for {label}</p>
+        <p className="text-xs text-foreground-lighter">
+          {$t('Loading data for')} {label}
+        </p>
       </Card>
     )
   }
@@ -275,7 +278,9 @@ const ComposedChartHandler = ({
     return (
       <div className="flex h-64 w-full flex-col items-center justify-center gap-y-2 border border-dashed rounded-md">
         <WarningIcon />
-        <p className="text-xs text-foreground-lighter">Unable to load data for {label}</p>
+        <p className="text-xs text-foreground-lighter">
+          {$t('Unable to load data for')} {label}
+        </p>
       </div>
     )
   }

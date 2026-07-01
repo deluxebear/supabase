@@ -13,6 +13,7 @@ import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useLastVisitedOrganization } from '@/hooks/misc/useLastVisitedOrganization'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 
 export const LeaveTeamButton = () => {
@@ -85,12 +86,12 @@ export const LeaveTeamButton = () => {
           },
         }}
       >
-        Leave team
+        {$t('Leave team')}
       </ButtonTooltip>
       <ConfirmationModal
         size="medium"
         visible={isLeaveTeamModalOpen}
-        title="Confirm to leave organization"
+        title={$t('Confirm to leave organization')}
         confirmLabel="Leave"
         variant="warning"
         alert={{
@@ -98,29 +99,32 @@ export const LeaveTeamButton = () => {
           description: (
             <div>
               <p>
-                Leaving the organization will delete all of your saved content in the projects of
-                the organization, which includes:
+                {$t(
+                  'Leaving the organization will delete all of your saved content in the projects of the organization, which includes:'
+                )}
               </p>
               <ul className="list-disc pl-4">
                 <li>
-                  SQL snippets <span className="text-foreground">(both private and shared)</span>
+                  {$t('SQL snippets')}{' '}
+                  <span className="text-foreground">{$t('(both private and shared)')}</span>
                 </li>
-                <li>Custom reports</li>
-                <li>Log Explorer queries</li>
+                <li>{$t('Custom reports')}</li>
+                <li>{$t('Log Explorer queries')}</li>
               </ul>
               {(isOwner || isAdmin) && (
                 <div className="mt-2">
                   <p>
                     <span className="text-foreground">
-                      Leaving won't remove your payment method or stop payments.
+                      {$t("Leaving won't remove your payment method or stop payments.")}
                     </span>
                   </p>
                   <ul className="list-disc pl-4">
                     <li>
-                      The current payment method will remain active and may still be charged after
-                      you leave.
+                      {$t(
+                        'The current payment method will remain active and may still be charged after you leave.'
+                      )}
                     </li>
-                    <li>The billing address will remain unchanged.</li>
+                    <li>{$t('The billing address will remain unchanged.')}</li>
                   </ul>
                 </div>
               )}
@@ -131,7 +135,7 @@ export const LeaveTeamButton = () => {
         onConfirm={() => leaveTeam()}
       >
         <p className="text-sm text-foreground-light">
-          Are you sure you want to leave this organization? This is permanent.
+          {$t('Are you sure you want to leave this organization? This is permanent.')}
         </p>
       </ConfirmationModal>
     </>

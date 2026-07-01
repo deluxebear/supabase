@@ -5,6 +5,7 @@ import { PostgrestConfig } from './PostgrestConfig'
 import { ScaffoldSection } from '@/components/layouts/Scaffold'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const ServiceList = () => {
   const { data: project, isPending: isLoading } = useSelectedProjectQuery()
@@ -14,7 +15,7 @@ export const ServiceList = () => {
       {!isLoading && project?.status !== PROJECT_STATUS.ACTIVE_HEALTHY ? (
         <Alert variant="destructive">
           <AlertCircle size={16} />
-          <AlertTitle>API settings are unavailable as the project is not active</AlertTitle>
+          <AlertTitle>{$t('API settings are unavailable as the project is not active')}</AlertTitle>
         </Alert>
       ) : (
         <PostgrestConfig />

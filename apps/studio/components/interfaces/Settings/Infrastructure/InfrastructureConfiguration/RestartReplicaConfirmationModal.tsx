@@ -8,6 +8,7 @@ import { useProjectRestartMutation } from '@/data/projects/project-restart-mutat
 import { replicaKeys } from '@/data/read-replicas/keys'
 import { Database } from '@/data/read-replicas/replicas-query'
 import { formatDatabaseID } from '@/data/read-replicas/replicas.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface RestartReplicaConfirmationModalProps {
   selectedReplica?: Database
@@ -61,7 +62,7 @@ export const RestartReplicaConfirmationModal = ({
 
   const onConfirmRestartReplica = () => {
     if (!ref) return console.error('Project is required')
-    if (selectedReplica === undefined) return toast.error('No replica selected')
+    if (selectedReplica === undefined) return toast.error($t('No replica selected'))
     restartProject({ ref, identifier: selectedReplica.identifier })
   }
 
@@ -78,16 +79,18 @@ export const RestartReplicaConfirmationModal = ({
       onConfirm={() => onConfirmRestartReplica()}
     >
       <p className="text-sm">
-        Your replica will be offline for a few minutes while it is being restarted. Before
-        restarting the replica, consider:
+        {$t(
+          'Your replica will be offline for a few minutes while it is being restarted. Before restarting the replica, consider:'
+        )}
       </p>
       <ul className="text-sm text-foreground-light py-1 list-disc mx-4 space-y-1">
         <li>
-          Network traffic from this region may slow down while the replica is restarting, especially
-          if you have no other replicas in this region
+          {$t(
+            'Network traffic from this region may slow down while the replica is restarting, especially if you have no other replicas in this region'
+          )}
         </li>
       </ul>
-      <p className="text-sm mt-2">Are you sure you want to restart this replica now?</p>
+      <p className="text-sm mt-2">{$t('Are you sure you want to restart this replica now?')}</p>
     </ConfirmationModal>
   )
 }

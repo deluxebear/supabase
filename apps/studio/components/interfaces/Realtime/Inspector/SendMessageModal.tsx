@@ -14,6 +14,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
 import { tryParseJson } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 interface SendMessageModalProps {
   visible: boolean
@@ -45,12 +46,12 @@ export const SendMessageModal = ({
     <Dialog open={visible} onOpenChange={onSelectCancel}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Broadcast a message to all clients</DialogTitle>
+          <DialogTitle>{$t('Broadcast a message to all clients')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection>
           <div className="flex flex-col gap-y-4">
-            <FormItemLayout label="Message name" layout="vertical" isReactForm={false}>
+            <FormItemLayout label={$t('Message name')} layout="vertical" isReactForm={false}>
               <Input
                 size="small"
                 value={values.message}
@@ -59,7 +60,7 @@ export const SendMessageModal = ({
             </FormItemLayout>
 
             <div className="flex flex-col gap-y-2">
-              <FormItemLayout label="Message payload" layout="vertical" isReactForm={false}>
+              <FormItemLayout label={$t('Message payload')} layout="vertical" isReactForm={false}>
                 <CodeEditor
                   id="message-payload"
                   language="json"
@@ -77,7 +78,7 @@ export const SendMessageModal = ({
         </DialogSection>
         <DialogFooter>
           <Button onClick={onSelectCancel} variant="default">
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button
             onClick={() => {
@@ -90,7 +91,7 @@ export const SendMessageModal = ({
             }}
             variant="primary"
           >
-            Confirm
+            {$t('Confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

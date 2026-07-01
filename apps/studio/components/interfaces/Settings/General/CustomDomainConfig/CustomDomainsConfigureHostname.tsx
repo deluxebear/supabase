@@ -25,6 +25,7 @@ import { useCustomDomainCreateMutation } from '@/data/custom-domains/custom-doma
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const schema = z.object({
   domain: z.string().trim().min(1, 'A value for your custom domain is required'),
@@ -80,7 +81,7 @@ export const CustomDomainsConfigureHostname = () => {
       <form onSubmit={form.handleSubmit(onCreateCustomDomain)}>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 gap-4">
-            <CardTitle>Add a custom domain</CardTitle>
+            <CardTitle>{$t('Add a custom domain')}</CardTitle>
             <DocsButton href={`${DOCS_URL}/guides/platform/custom-domains`} />
           </CardHeader>
           <CardContent>
@@ -91,8 +92,8 @@ export const CustomDomainsConfigureHostname = () => {
                 render={({ field }) => (
                   <FormItemLayout
                     layout="flex-row-reverse"
-                    label="Custom domain"
-                    description="Enter the subdomain you want to use."
+                    label={$t('Custom domain')}
+                    description={$t('Enter the subdomain you want to use.')}
                     className="[&>div]:md:w-1/2"
                   >
                     <FormControl>
@@ -109,11 +110,11 @@ export const CustomDomainsConfigureHostname = () => {
             </div>
           </CardContent>
           <CardContent>
-            <h4 className="text-sm mb-1">Configure a CNAME record</h4>
+            <h4 className="text-sm mb-1">{$t('Configure a CNAME record')}</h4>
             <p className="text-sm text-foreground-light">
-              Set up a CNAME record for{' '}
+              {$t('Set up a CNAME record for')}{' '}
               {domain ? <code className="text-code-inline">{domain}</code> : 'your custom domain'}{' '}
-              resolving to{' '}
+              {$t('resolving to')}{' '}
               {endpoint ? (
                 <span className="inline-flex items-center gap-x-1">
                   <code className="text-code-inline">{endpoint}</code>
@@ -127,14 +128,15 @@ export const CustomDomainsConfigureHostname = () => {
               ) : (
                 "your project's API URL"
               )}{' '}
-              with as low a TTL as possible. If you're using Cloudflare as your DNS provider,
-              disable the proxy option.
+              {$t(
+                "with as low a TTL as possible. If you're using Cloudflare as your DNS provider, disable the proxy option."
+              )}
               <br />
               {trimmedDomain.includes('.') ? (
                 <>
-                  Some DNS providers expect only the subdomain label{' '}
-                  <code className="text-code-inline">{trimmedDomain.split('.')[0]}</code>, while
-                  others accept the full hostname{' '}
+                  {$t('Some DNS providers expect only the subdomain label')}{' '}
+                  <code className="text-code-inline">{trimmedDomain.split('.')[0]}</code>
+                  {$t(', while others accept the full hostname')}{' '}
                   <code className="text-code-inline whitespace-nowrap">{trimmedDomain}</code>.
                 </>
               ) : (
@@ -150,7 +152,7 @@ export const CustomDomainsConfigureHostname = () => {
                 disabled={isSubmitting}
                 onClick={() => form.reset({ domain: '' })}
               >
-                Cancel
+                {$t('Cancel')}
               </Button>
             )}
             <Button
@@ -159,14 +161,14 @@ export const CustomDomainsConfigureHostname = () => {
               loading={isSubmitting}
               disabled={!form.formState.isDirty || isSubmitting || !canConfigureCustomDomain}
             >
-              Add
+              {$t('Add')}
             </Button>
           </CardFooter>
         </Card>
 
         {!canConfigureCustomDomain && (
           <p className="text-xs text-foreground-light">
-            You need additional permissions to update your project's custom domain settings.
+            {$t("You need additional permissions to update your project's custom domain settings.")}
           </p>
         )}
       </form>

@@ -14,6 +14,7 @@ import {
 import { useAPIKeys } from '@/data/api-keys/api-keys-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 interface HTTPHeadersProps {
   form: UseFormReturn<WebhookFormValues>
@@ -45,7 +46,7 @@ export const HTTPHeaders = ({ form }: HTTPHeadersProps) => {
 
   return (
     <FormSection
-      header={<FormSectionLabel className="lg:col-span-4!">HTTP Headers</FormSectionLabel>}
+      header={<FormSectionLabel className="lg:col-span-4!">{$t('HTTP Headers')}</FormSectionLabel>}
     >
       <FormSectionContent loading={false} className="lg:col-span-8!">
         <KeyValueFieldArray

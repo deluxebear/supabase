@@ -8,6 +8,7 @@ import { MessageActions } from './Message.Actions'
 import type { AddToolApprovalResponse, MessageInfo } from './Message.Context'
 import { MessageProvider, useMessageActionsContext, useMessageInfoContext } from './Message.Context'
 import { MessageDisplay } from './Message.Display'
+import { t as $t } from '@/lib/i18n'
 
 function AssistantMessage({ message }: { message: VercelMessage }) {
   const { id, variant, state, isLastMessage, readOnly, rating, isLoading } = useMessageInfoContext()
@@ -78,7 +79,7 @@ function UserMessage({ message }: { message: VercelMessage }) {
         onConfirm={() => {
           onDelete(id)
           setShowDeleteConfirmModal(false)
-          toast.success('Message deleted successfully')
+          toast.success($t('Message deleted successfully'))
         }}
         onCancel={() => setShowDeleteConfirmModal(false)}
       />

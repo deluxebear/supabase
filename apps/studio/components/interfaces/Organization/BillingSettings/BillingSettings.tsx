@@ -18,6 +18,7 @@ import { useOrgSubscriptionQuery } from '@/data/subscriptions/org-subscription-q
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
+import { t as $t } from '@/lib/i18n'
 
 export const BillingSettings = () => {
   const {
@@ -45,7 +46,7 @@ export const BillingSettings = () => {
   return (
     <>
       <ScaffoldContainerLegacy>
-        <ScaffoldTitle>Billing</ScaffoldTitle>
+        <ScaffoldTitle>{$t('Billing')}</ScaffoldTitle>
       </ScaffoldContainerLegacy>
 
       <ScaffoldContainer id="subscription" className={cn('[&>div]:pt-0!')}>

@@ -22,6 +22,7 @@ import * as z from 'zod'
 
 import { useUserInviteMutation } from '@/data/auth/user-invite-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 export type InviteUserModalProps = {
   visible: boolean
@@ -70,7 +71,7 @@ const InviteUserModal = ({ visible, setVisible }: InviteUserModalProps) => {
     <Dialog key="invite-user-modal" open={visible} onOpenChange={handleToggle}>
       <DialogContent size="small">
         <DialogHeader>
-          <DialogTitle>Invite a new user</DialogTitle>
+          <DialogTitle>{$t('Invite a new user')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <Form {...form}>
@@ -80,7 +81,7 @@ const InviteUserModal = ({ visible, setVisible }: InviteUserModalProps) => {
                 control={form.control}
                 name="email"
                 render={({ field }) => (
-                  <FormItemLayout layout="vertical" label="User email">
+                  <FormItemLayout layout="vertical" label={$t('User email')}>
                     <FormControl className="relative col-span-6">
                       <Input {...field} />
                     </FormControl>
@@ -92,7 +93,7 @@ const InviteUserModal = ({ visible, setVisible }: InviteUserModalProps) => {
 
           <DialogFooter>
             <Button variant="default" onClick={handleToggle}>
-              Cancel
+              {$t('Cancel')}
             </Button>
             <Button
               form={formId}
@@ -100,7 +101,7 @@ const InviteUserModal = ({ visible, setVisible }: InviteUserModalProps) => {
               loading={isInviting}
               disabled={!canInviteUsers || isInviting}
             >
-              Invite user
+              {$t('Invite user')}
             </Button>
           </DialogFooter>
         </Form>

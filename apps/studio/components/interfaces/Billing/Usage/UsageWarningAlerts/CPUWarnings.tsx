@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Alert, AlertDescription, Button } from 'ui'
 
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface CPUWarningsProps {
   hasAccessToComputeSizes: boolean
@@ -20,15 +21,17 @@ export const CPUWarnings = ({
     return (
       <Alert variant="warning">
         <AlertCircle />
-        <AlertTitle>Your max CPU usage has exceeded 80%</AlertTitle>
+        <AlertTitle>{$t('Your max CPU usage has exceeded 80%')}</AlertTitle>
         <AlertDescription>
-          High CPU usage could result in slower queries, disruption of daily back up routines, and
-          in rare cases, your instance may become unresponsive. If you need more resources, consider
-          upgrading to a larger compute add-on.
+          {$t(
+            'High CPU usage could result in slower queries, disruption of daily back up routines, and in rare cases, your instance may become unresponsive. If you need more resources, consider upgrading to a larger compute add-on.'
+          )}
         </AlertDescription>
         <div className="mt-3 flex items-center space-x-2">
           <Button asChild variant="default">
-            <Link href={`${DOCS_URL}/guides/troubleshooting/high-cpu-usage`}>Learn more</Link>
+            <Link href={`${DOCS_URL}/guides/troubleshooting/high-cpu-usage`}>
+              {$t('Learn more')}
+            </Link>
           </Button>
           <Button asChild variant="warning">
             <Link href={upgradeUrl}>
@@ -44,15 +47,17 @@ export const CPUWarnings = ({
     return (
       <Alert variant="destructive">
         <AlertCircle />
-        <AlertTitle>Your max CPU usage has reached 100%</AlertTitle>
+        <AlertTitle>{$t('Your max CPU usage has reached 100%')}</AlertTitle>
         <AlertDescription>
-          High CPU usage could result in slower queries, disruption of daily back up routines, and
-          in rare cases, your instance may become unresponsive. If you need more resources, consider
-          upgrading to a larger compute add-on.
+          {$t(
+            'High CPU usage could result in slower queries, disruption of daily back up routines, and in rare cases, your instance may become unresponsive. If you need more resources, consider upgrading to a larger compute add-on.'
+          )}
         </AlertDescription>
         <div className="mt-3 flex items-center space-x-2">
           <Button asChild variant="default">
-            <Link href={`${DOCS_URL}/guides/troubleshooting/high-cpu-usage`}>Learn more</Link>
+            <Link href={`${DOCS_URL}/guides/troubleshooting/high-cpu-usage`}>
+              {$t('Learn more')}
+            </Link>
           </Button>
           <Button asChild variant="danger">
             <Link href={upgradeUrl}>

@@ -24,6 +24,7 @@ import * as z from 'zod'
 
 import { AwsRegionSelector } from './AwsRegionSelector'
 import { useCreateThirdPartyAuthIntegrationMutation } from '@/data/third-party-auth/integration-create-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface CreateAwsCognitoAuthIntegrationProps {
   visible: boolean
@@ -102,8 +103,9 @@ export const CreateAwsCognitoAuthIntegrationDialog = ({
               : `Update existing Amazon Cognito Auth connection`}
           </DialogTitle>
           <DialogDescription>
-            By adding an Amazon Cognito Auth connection, you can authenticate users using Amazon
-            Cognito User Pools.
+            {$t(
+              'By adding an Amazon Cognito Auth connection, you can authenticate users using Amazon Cognito User Pools.'
+            )}
           </DialogDescription>
         </DialogHeader>
         <Separator />
@@ -133,15 +135,16 @@ export const CreateAwsCognitoAuthIntegrationDialog = ({
             />
             <Separator /> */}
               <p className="text-sm text-foreground-light">
-                This will enable a JWT token from Amazon Cognito project to access data from this
-                Supabase project.
+                {$t(
+                  'This will enable a JWT token from Amazon Cognito project to access data from this Supabase project.'
+                )}
               </p>
               <FormField
                 key="awsCognitoUserPoolId"
                 control={form.control}
                 name="awsCognitoUserPoolId"
                 render={({ field }) => (
-                  <FormItemLayout label="Amazon Cognito User Pool ID">
+                  <FormItemLayout label={$t('Amazon Cognito User Pool ID')}>
                     <div className="flex flex-row">
                       <Button
                         variant="default"
@@ -162,7 +165,7 @@ export const CreateAwsCognitoAuthIntegrationDialog = ({
                 control={form.control}
                 name="awsRegion"
                 render={({ field }) => (
-                  <FormItemLayout label="AWS Region">
+                  <FormItemLayout label={$t('AWS Region')}>
                     <AwsRegionSelector value={field.value} onChange={field.onChange} />
                   </FormItemLayout>
                 )}
@@ -174,13 +177,13 @@ export const CreateAwsCognitoAuthIntegrationDialog = ({
           {!isCreating && (
             <div className="flex-1">
               <Button variant="danger" onClick={() => onDelete()} icon={<Trash />}>
-                Remove connection
+                {$t('Remove connection')}
               </Button>
             </div>
           )}
 
           <Button disabled={isPending} variant="default" onClick={() => onClose()}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button form={FORM_ID} type="submit" disabled={isPending} loading={isPending}>
             {isCreating ? 'Create connection' : 'Update connection'}

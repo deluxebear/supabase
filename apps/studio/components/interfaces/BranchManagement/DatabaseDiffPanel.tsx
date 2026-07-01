@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { Button, Card, CardContent, CardHeader, CardTitle, Skeleton } from 'ui'
 
 import { DiffEditor } from '@/components/ui/DiffEditor'
+import { t as $t } from '@/lib/i18n'
 
 interface DatabaseDiffPanelProps {
   diffContent?: string
@@ -30,7 +31,7 @@ export const DatabaseDiffPanel = ({
               className="animate-spin text-foreground-muted"
               aria-hidden
             />
-            <span className="text-sm text-foreground-light">Loading database diff…</span>
+            <span className="text-sm text-foreground-light">{$t('Loading database diff…')}</span>
           </div>
           <div className="min-h-0 flex-1 p-4">
             <Skeleton className="h-full w-full rounded-sm" />
@@ -44,9 +45,9 @@ export const DatabaseDiffPanel = ({
     return (
       <div className="p-6 text-center">
         <CircleAlert size={32} strokeWidth={1.5} className="text-foreground-muted mx-auto mb-8" />
-        <h3 className="mb-1">Error loading branch diff</h3>
+        <h3 className="mb-1">{$t('Error loading branch diff')}</h3>
         <p className="text-sm text-foreground-light">
-          Please try again in a few minutes and contact support if the problem persists.
+          {$t('Please try again in a few minutes and contact support if the problem persists.')}
         </p>
       </div>
     )
@@ -55,9 +56,9 @@ export const DatabaseDiffPanel = ({
     return (
       <div className="p-6 text-center">
         <Wind size={32} strokeWidth={1.5} className="text-foreground-muted mx-auto mb-8" />
-        <h3 className="mb-1">No changes detected between branches</h3>
+        <h3 className="mb-1">{$t('No changes detected between branches')}</h3>
         <p className="text-sm text-foreground-light">
-          Any changes to your database schema will be shown here for review
+          {$t('Any changes to your database schema will be shown here for review')}
         </p>
       </div>
     )
@@ -72,7 +73,8 @@ export const DatabaseDiffPanel = ({
             className="flex items-center gap-2"
           >
             <Database strokeWidth={1.5} size={16} className="text-foreground-muted" />
-            Schema Changes
+
+            {$t('Schema Changes')}
           </Link>
         </CardTitle>
         <Button
@@ -101,10 +103,10 @@ export const DatabaseDiffPanel = ({
             a.click()
             document.body.removeChild(a)
             window.URL.revokeObjectURL(url)
-            toast.success('Migration file downloaded!')
+            toast.success($t('Migration file downloaded!'))
           }}
         >
-          Download as migration
+          {$t('Download as migration')}
         </Button>
       </CardHeader>
       <CardContent className="flex min-h-0 flex-1 flex-col p-0">

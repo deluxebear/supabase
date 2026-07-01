@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
 } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 type SortOption = {
   label: string
   value: string
@@ -33,7 +35,7 @@ export const SortDropdown = ({ options, value, setValue }: SortDropdownProps) =>
           variant="default"
           icon={sortOrder === 'desc' ? <ArrowDownWideNarrow /> : <ArrowDownNarrowWide />}
         >
-          Sorted by {columnLabel ?? sortColumn}
+          {$t('Sorted by')} {columnLabel ?? sortColumn}
         </Button>
       </DropdownMenuTrigger>
 
@@ -42,13 +44,15 @@ export const SortDropdown = ({ options, value, setValue }: SortDropdownProps) =>
           {options.map((option) => {
             return (
               <DropdownMenuSub key={option.value}>
-                <DropdownMenuSubTrigger>Sort by {option.label}</DropdownMenuSubTrigger>
+                <DropdownMenuSubTrigger>
+                  {$t('Sort by')} {option.label}
+                </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent>
                   <DropdownMenuRadioItem value={`${option.value}_asc`}>
-                    Ascending
+                    {$t('Ascending')}
                   </DropdownMenuRadioItem>
                   <DropdownMenuRadioItem value={`${option.value}_desc`}>
-                    Descending
+                    {$t('Descending')}
                   </DropdownMenuRadioItem>
                 </DropdownMenuSubContent>
               </DropdownMenuSub>

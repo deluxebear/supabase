@@ -14,6 +14,7 @@ import type { SupaRow } from '../../types'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { Shortcut } from '@/components/ui/Shortcut'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
 import { useTableEditorTableStateSnapshot } from '@/state/table-editor-table'
@@ -34,7 +35,7 @@ export const SelectColumn: CalculatedColumn<any, any> = {
 
     return (
       <SelectCellHeader
-        aria-label="Select All"
+        aria-label={$t('Select All')}
         tabIndex={props.tabIndex}
         value={isRowSelected}
         onChange={(checked) => onRowSelectionChange({ checked })}
@@ -47,7 +48,7 @@ export const SelectColumn: CalculatedColumn<any, any> = {
     const { isRowSelected, onRowSelectionChange } = useRowSelection()
     return (
       <SelectCellFormatter
-        aria-label="Select"
+        aria-label={$t('Select')}
         tabIndex={props.tabIndex}
         value={isRowSelected}
         row={props.row}
@@ -65,7 +66,7 @@ export const SelectColumn: CalculatedColumn<any, any> = {
     const { isRowSelected, onRowSelectionChange } = useRowSelection()
     return (
       <SelectCellFormatter
-        aria-label="Select Group"
+        aria-label={$t('Select Group')}
         tabIndex={props.tabIndex}
         value={isRowSelected}
         onChange={(checked) => {

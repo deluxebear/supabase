@@ -3,6 +3,7 @@ import { Admonition } from 'ui-patterns/admonition'
 
 import { Markdown } from '@/components/interfaces/Markdown'
 import type { ValidationFailure } from '@/data/replication/validate-destination-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface ValidationFailuresSectionProps {
   destinationFailures: ValidationFailure[]
@@ -31,7 +32,7 @@ export const ValidationFailuresSection = ({
     <Admonition
       type={hasCriticalFailures ? 'warning' : 'default'}
       className="px-5 rounded-none border-0"
-      title="Destination configuration issues"
+      title={$t('Destination configuration issues')}
     >
       <p className="text-sm text-foreground-light mb-2!">
         {hasCriticalFailures
@@ -46,9 +47,9 @@ export const ValidationFailuresSection = ({
                 <p className="flex items-center gap-x-2">
                   {failure.name}
                   {failure.failure_type === 'critical' ? (
-                    <Badge variant="warning">Required</Badge>
+                    <Badge variant="warning">{$t('Required')}</Badge>
                   ) : (
-                    <Badge variant="default">Warning</Badge>
+                    <Badge variant="default">{$t('Warning')}</Badge>
                   )}
                 </p>
               </AccordionTrigger>

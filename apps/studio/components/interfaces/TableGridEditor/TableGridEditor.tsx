@@ -25,6 +25,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useDashboardHistory } from '@/hooks/misc/useDashboardHistory'
 import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useIsProtectedSchema } from '@/hooks/useProtectedSchemas'
+import { t as $t } from '@/lib/i18n'
 import { TableEditorTableStateContextProvider } from '@/state/table-editor-table'
 import { createTabId, useTabsStateSnapshot } from '@/state/tabs'
 
@@ -126,7 +127,7 @@ export const TableGridEditor = ({
             <Admonition
               type="default"
               title={`Unable to find your table with ID ${id}`}
-              description="This table doesn't exist in your database"
+              description={$t("This table doesn't exist in your database")}
             >
               {!!tabId ? (
                 <Button
@@ -141,7 +142,7 @@ export const TableGridEditor = ({
                     })
                   }}
                 >
-                  Close tab
+                  {$t('Close tab')}
                 </Button>
               ) : openTabs.length > 0 ? (
                 <Button
@@ -151,7 +152,7 @@ export const TableGridEditor = ({
                   onClick={() => setLastVisitedTable(undefined)}
                 >
                   <Link href={`/project/${projectRef}/editor/${openTabs[0].split('-')[1]}`}>
-                    Close tab
+                    {$t('Close tab')}
                   </Link>
                 </Button>
               ) : (
@@ -161,7 +162,7 @@ export const TableGridEditor = ({
                   className="mt-2"
                   onClick={() => setLastVisitedTable(undefined)}
                 >
-                  <Link href={`/project/${projectRef}/editor`}>Head back</Link>
+                  <Link href={`/project/${projectRef}/editor`}>{$t('Head back')}</Link>
                 </Button>
               )}
             </Admonition>
@@ -181,9 +182,10 @@ export const TableGridEditor = ({
               (isViewSelected || isTableSelected) && selectedView === 'definition' ? (
                 <div className="px-2 flex items-center gap-x-2">
                   <p>
-                    SQL Definition of <code className="text-sm">{selectedTable.name}</code>{' '}
+                    {$t('SQL Definition of')}{' '}
+                    <code className="text-sm">{selectedTable.name}</code>{' '}
                   </p>
-                  <p className="text-foreground-light text-sm">(Read only)</p>
+                  <p className="text-foreground-light text-sm">{$t('(Read only)')}</p>
                 </div>
               ) : null
             }

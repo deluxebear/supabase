@@ -14,6 +14,7 @@ import { useProjectStatusQuery } from '@/data/projects/project-status-query'
 import { useLongRunningTransitionState } from '@/hooks/misc/useLongRunningTransitionState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import {
   clearPersistedTransitionStartTime,
   minutesToMilliseconds,
@@ -114,15 +115,15 @@ export const RestoringState = () => {
                 <CheckCircle className="text-brand" size={18} strokeWidth={2} />
               </div>
               <div className="space-y-1">
-                <p>Restoration complete!</p>
+                <p>{$t('Restoration complete!')}</p>
                 <p className="text-sm text-foreground-light">
-                  Your project has been successfully restored and is now back online.
+                  {$t('Your project has been successfully restored and is now back online.')}
                 </p>
               </div>
             </div>
             <div className="border-t border-overlay flex items-center justify-end py-4 px-8">
               <Button disabled={loading} loading={loading} onClick={onConfirm}>
-                Return to project
+                {$t('Return to project')}
               </Button>
             </div>
           </div>
@@ -134,18 +135,20 @@ export const RestoringState = () => {
                   <Loader className="animate-spin" size={18} />
                 </div>
                 <div className="space-y-1">
-                  <p>Restoration in progress</p>
+                  <p>{$t('Restoration in progress')}</p>
                   <p className="text-sm text-foreground-light">
-                    Restoration can take from a few minutes up to several hours depending on the
-                    size of your database. Your project will be offline while the restoration is
-                    running.
+                    {$t(
+                      'Restoration can take from a few minutes up to several hours depending on the size of your database. Your project will be offline while the restoration is running.'
+                    )}
                   </p>
                   {isTakingLongerThanExpected && (
                     <Admonition
                       type="warning"
-                      title="This is taking longer than usual"
+                      title={$t('This is taking longer than usual')}
                       layout="responsive"
-                      description="Contact support if this project remains in a restoring state."
+                      description={$t(
+                        'Contact support if this project remains in a restoring state.'
+                      )}
                       actions={
                         <Button asChild variant="default">
                           <SupportLink
@@ -156,7 +159,7 @@ export const RestoringState = () => {
                               message: `Project "${project?.name ?? 'Unknown project'}" (ref: ${project?.ref ?? ref ?? 'unknown'}) has remained in a restoring state for over ${longRunningThresholdMinutes} minutes.`,
                             }}
                           >
-                            Contact support
+                            {$t('Contact support')}
                           </SupportLink>
                         </Button>
                       }
@@ -181,7 +184,7 @@ export const RestoringState = () => {
                 }}
                 onClick={onClickDownloadBackup}
               >
-                Download latest backup
+                {$t('Download latest backup')}
               </ButtonTooltip>
             </div>
           </>

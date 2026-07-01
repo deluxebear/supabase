@@ -22,6 +22,7 @@ import { Markdown } from '@/components/interfaces/Markdown'
 import CardButton from '@/components/ui/CardButton'
 import CopyButton from '@/components/ui/CopyButton'
 import { NoSearchResults } from '@/components/ui/NoSearchResults'
+import { t as $t } from '@/lib/i18n'
 
 interface PolicyTemplatesProps {
   schema: string
@@ -63,12 +64,12 @@ export const PolicyTemplates = ({
   return (
     <div className="h-full px-content py-content flex flex-col gap-3">
       <label className="sr-only" htmlFor="template-search">
-        Search templates
+        {$t('Search templates')}
       </label>
       <InputGroup>
         <InputGroupInput
           id="template-search"
-          placeholder="Search templates"
+          placeholder={$t('Search templates')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />

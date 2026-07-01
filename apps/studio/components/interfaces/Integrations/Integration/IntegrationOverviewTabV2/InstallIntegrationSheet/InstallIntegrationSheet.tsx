@@ -28,6 +28,7 @@ import {
   useDatabaseExtensionsQuery,
 } from '@/data/database-extensions/database-extensions-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { ResponseError } from '@/types'
 
@@ -214,7 +215,7 @@ export const InstallIntegrationSheet = ({ integration }: InstallIntegrationSheet
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="primary">Install integration</Button>
+        <Button variant="primary">{$t('Install integration')}</Button>
       </SheetTrigger>
 
       <Form {...form}>
@@ -229,8 +230,10 @@ export const InstallIntegrationSheet = ({ integration }: InstallIntegrationSheet
                 {icon()}
               </div>
               <div className="flex flex-col">
-                <SheetTitle>Install {name}</SheetTitle>
-                <SheetDescription>Review and configure this integration</SheetDescription>
+                <SheetTitle>
+                  {$t('Install')} {name}
+                </SheetTitle>
+                <SheetDescription>{$t('Review and configure this integration')}</SheetDescription>
               </div>
             </SheetHeader>
 
@@ -262,7 +265,7 @@ export const InstallIntegrationSheet = ({ integration }: InstallIntegrationSheet
             <SheetFooter>
               <SheetClose asChild>
                 <Button variant="default" disabled={isInstalling}>
-                  Cancel
+                  {$t('Cancel')}
                 </Button>
               </SheetClose>
               <Button
@@ -272,7 +275,7 @@ export const InstallIntegrationSheet = ({ integration }: InstallIntegrationSheet
                 loading={isInstalling}
                 disabled={hasMissingExtensions}
               >
-                Install integration
+                {$t('Install integration')}
               </Button>
             </SheetFooter>
           </SheetContent>

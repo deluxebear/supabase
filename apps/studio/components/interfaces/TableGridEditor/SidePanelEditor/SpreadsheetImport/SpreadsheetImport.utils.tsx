@@ -14,6 +14,7 @@ import {
 import type { SpreadsheetData } from './SpreadsheetImport.types'
 import { DOCS_URL } from '@/lib/constants'
 import { isObject, tryParseJson } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 const CHUNK_SIZE = 1024 * 1024 * 0.25 // 0.25MB
 
@@ -265,20 +266,20 @@ export const acceptedFileExtension = (file: any) => {
 
 export function flagInvalidFileImport(file: File): boolean {
   if (!file || !UPLOAD_FILE_TYPES.includes(file.type) || !acceptedFileExtension(file)) {
-    toast.error("Couldn't import file: only CSV files are accepted")
+    toast.error($t("Couldn't import file: only CSV files are accepted"))
     return true
   } else if (file.size > MAX_TABLE_EDITOR_IMPORT_CSV_SIZE) {
     toast.error(
       <div className="space-y-1">
-        <p>The dashboard currently only supports importing of CSVs below 100MB.</p>
-        <p>For bulk data loading, we recommend doing so directly through the database.</p>
+        <p>{$t('The dashboard currently only supports importing of CSVs below 100MB.')}</p>
+        <p>{$t('For bulk data loading, we recommend doing so directly through the database.')}</p>
         <Button asChild variant="default" icon={<ExternalLink />} className="mt-2!">
           <Link
             href={`${DOCS_URL}/guides/database/tables#bulk-data-loading`}
             target="_blank"
             rel="noreferrer"
           >
-            Learn more
+            {$t('Learn more')}
           </Link>
         </Button>
       </div>,

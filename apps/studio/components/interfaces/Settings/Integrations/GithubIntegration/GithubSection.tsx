@@ -32,6 +32,7 @@ import {
   GITHUB_INTEGRATION_INSTALLATION_URL,
   GITHUB_INTEGRATION_REVOKE_AUTHORIZATION_URL,
 } from '@/lib/github'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -80,7 +81,7 @@ export const GitHubSection = ({ isProjectScoped }: { isProjectScoped: boolean })
 
   const { mutate: deleteGitHubConnection } = useGitHubConnectionDeleteMutation({
     onSuccess: () => {
-      toast.success('Successfully deleted GitHub connection')
+      toast.success($t('Successfully deleted GitHub connection'))
     },
   })
 
@@ -100,7 +101,7 @@ export const GitHubSection = ({ isProjectScoped }: { isProjectScoped: boolean })
   const onDeleteGitHubConnection = useCallback(
     async (connection: IntegrationProjectConnection) => {
       if (!org?.id) {
-        toast.error('Organization not found')
+        toast.error($t('Organization not found'))
         return
       }
 
@@ -156,19 +157,19 @@ export const GitHubSection = ({ isProjectScoped }: { isProjectScoped: boolean })
                 showNode={false}
                 disabled={!canCreateGitHubConnection}
               >
-                Add new project connection
+                {$t('Add new project connection')}
               </EmptyIntegrationConnection>
             </div>
 
             {gitHubAuthorization && (
               <p className="text-sm text-foreground-light">
-                You are authorized with the Supabase GitHub App. You can configure your{' '}
+                {$t('You are authorized with the Supabase GitHub App. You can configure your')}{' '}
                 <InlineLink href={GITHUB_INTEGRATION_INSTALLATION_URL}>
-                  GitHub App installations and repository access
+                  {$t('GitHub App installations and repository access')}
                 </InlineLink>
-                , or{' '}
+                {$t(', or')}{' '}
                 <InlineLink href={GITHUB_INTEGRATION_REVOKE_AUTHORIZATION_URL}>
-                  revoke your authorization
+                  {$t('revoke your authorization')}
                 </InlineLink>
                 .
               </p>

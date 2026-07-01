@@ -8,6 +8,7 @@ import { useBannerStack } from '../BannerStackProvider'
 import { AnimatedLogos } from '@/components/interfaces/LogDrains/AnimatedLogos'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export const BannerMetricsAPI = () => {
@@ -29,14 +30,14 @@ export const BannerMetricsAPI = () => {
       <div className="flex flex-col gap-y-4">
         <div className="flex flex-col gap-y-2 items-start">
           <Badge variant="success" className="-ml-0.5 uppercase inline-flex items-center mb-2">
-            Beta
+            {$t('Beta')}
           </Badge>
           <AnimatedLogos iconSize={20} className="h-[22px]!" />
         </div>
         <div className="flex flex-col gap-y-1 mb-2">
-          <p className="text-sm font-medium">Export Metrics to your dashboards</p>
+          <p className="text-sm font-medium">{$t('Export Metrics to your dashboards')}</p>
           <p className="text-xs text-foreground-lighter text-balance">
-            Visualize over 200 database performance and health metrics with our Metrics API.
+            {$t('Visualize over 200 database performance and health metrics with our Metrics API.')}
           </p>
         </div>
         <div className="flex gap-2">
@@ -46,7 +47,7 @@ export const BannerMetricsAPI = () => {
               target="_blank"
               onClick={() => track('metrics_api_banner_cta_button_clicked')}
             >
-              Get started for free
+              {$t('Get started for free')}
             </Link>
           </Button>
         </div>

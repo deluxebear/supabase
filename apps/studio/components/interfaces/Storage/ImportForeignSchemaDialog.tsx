@@ -32,6 +32,7 @@ import { useFDWImportForeignSchemaMutation } from '@/data/fdw/fdw-import-foreign
 import { useFDWUpdateMutation } from '@/data/fdw/fdw-update-mutation'
 import { getFDWs } from '@/data/fdw/fdws-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export interface ImportForeignSchemaDialogProps {
   namespace: string
@@ -174,14 +175,15 @@ export const ImportForeignSchemaDialog = ({
     <Dialog open={visible} onOpenChange={onClose}>
       <DialogContent size="medium">
         <DialogHeader>
-          <DialogTitle>Create target schema</DialogTitle>
+          <DialogTitle>{$t('Create target schema')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <DialogSection className="flex flex-col gap-y-4">
               <p className="text-sm">
-                Namespace “<strong>{namespace}</strong>”{' '}
+                {$t('Namespace “')}
+                <strong>{namespace}</strong>”{' '}
                 {circumstance === 'fresh'
                   ? 'must be linked to a new schema before tables can be paired.'
                   : 'clashes with an existing database schema. Create a new schema to use as the destination for this data.'}
@@ -193,20 +195,20 @@ export const ImportForeignSchemaDialog = ({
                 render={({ field }) => (
                   <FormItemLayout
                     layout="vertical"
-                    label="Target schema"
-                    description="Where your analytics tables will be stored."
+                    label={$t('Target schema')}
+                    description={$t('Where your analytics tables will be stored.')}
                   >
-                    <Input {...field} placeholder="Enter schema name" />
+                    <Input {...field} placeholder={$t('Enter schema name')} />
                   </FormItemLayout>
                 )}
               />
             </DialogSection>
             <DialogFooter className="flex items-center space-x-2 justify-end">
               <Button variant="default" type="button" disabled={loading} onClick={onClose}>
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button variant="primary" type="submit" loading={loading}>
-                Create
+                {$t('Create')}
               </Button>
             </DialogFooter>
           </form>

@@ -22,6 +22,7 @@ import { useOrganizationRolesV2Query } from '@/data/organization-members/organiz
 import { OrganizationMember } from '@/data/organizations/organization-members-query'
 import { useOrgProjectsInfiniteQuery } from '@/data/projects/org-projects-infinite-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 
 interface MemberRowProps {
@@ -73,7 +74,7 @@ export const MemberRow = ({ member }: MemberRowProps) => {
           <div className="flex item-center gap-x-3">
             <p className="text-foreground-light truncate">{member.primary_email}</p>
             <div className="flex items-center gap-x-2">
-              {member.gotrue_id === profile?.gotrue_id && <Badge>You</Badge>}
+              {member.gotrue_id === profile?.gotrue_id && <Badge>{$t('You')}</Badge>}
               {isInvitedUser && member.invited_at && (
                 <Badge variant={isInviteExpired(member.invited_at) ? 'destructive' : 'warning'}>
                   {isInviteExpired(member.invited_at) ? 'Expired' : 'Invited'}
@@ -100,12 +101,12 @@ export const MemberRow = ({ member }: MemberRowProps) => {
         <div className="flex items-center gap-x-1.5">
           {member.mfa_enabled ? (
             <>
-              <span className="text-foreground-lighter">Enabled</span>
+              <span className="text-foreground-lighter">{$t('Enabled')}</span>
               <Check className="text-brand" strokeWidth={2} size={16} />
             </>
           ) : (
             <>
-              <span className="text-foreground-lighter">Disabled</span>
+              <span className="text-foreground-lighter">{$t('Disabled')}</span>
               <X className="text-foreground-muted" strokeWidth={1.5} size={16} />
             </>
           )}
@@ -151,7 +152,7 @@ export const MemberRow = ({ member }: MemberRowProps) => {
                         </HoverCardTrigger>
                         <HoverCardContent className="p-0">
                           <p className="p-2 text-xs">
-                            {roleName} role applies to {projectsApplied.length} project
+                            {roleName} {$t('role applies to')} {projectsApplied.length} project
                             {projectsApplied.length > 1 ? 's' : ''}
                           </p>
                           <div className="border-t flex flex-col py-1">
@@ -168,7 +169,7 @@ export const MemberRow = ({ member }: MemberRowProps) => {
                                   >
                                     <span className="text-xs truncate max-w-[60%]">{name}</span>
                                     <span className="text-xs text-foreground flex items-center gap-x-1 opacity-0 group-hover:opacity-100 transition">
-                                      Go to project
+                                      {$t('Go to project')}
                                       <ArrowRight size={14} />
                                     </span>
                                   </Link>

@@ -31,6 +31,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
 import { formatCurrency } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useOrgSettingsPageStateSnapshot } from '@/state/organization-settings'
 import { Organization } from '@/types/base'
@@ -191,10 +192,12 @@ export const PlanUpdateSidePanel = () => {
         onCancel={() => onClose()}
         header={
           <div className="flex items-center justify-between w-full">
-            <h4>Change subscription plan for {selectedOrganization?.name}</h4>
+            <h4>
+              {$t('Change subscription plan for')} {selectedOrganization?.name}
+            </h4>
             <Button asChild variant="default" icon={<ExternalLink />}>
               <a href="https://supabase.com/pricing" target="_blank" rel="noreferrer">
-                Pricing
+                {$t('Pricing')}
               </a>
             </Button>
           </div>
@@ -205,11 +208,12 @@ export const PlanUpdateSidePanel = () => {
             <PartnerManagedResource
               managedBy={MANAGED_BY.STRIPE_PROJECTS}
               resource="Organization plans"
-              title="Organization plans are managed through Stripe."
+              title={$t('Organization plans are managed through Stripe.')}
               details={
                 <>
-                  Run <code className="text-code-inline">{stripeProjectsUpgradeCommand}</code> in
-                  your project directory.
+                  {$t('Run')}{' '}
+                  <code className="text-code-inline">{stripeProjectsUpgradeCommand}</code>{' '}
+                  {$t('in your project directory.')}
                 </>
               }
               cta={{
@@ -260,7 +264,7 @@ export const PlanUpdateSidePanel = () => {
                       <p className="text-brand-link text-sm uppercase">{plan.name}</p>
                       {isCurrentPlan ? (
                         <div className="text-xs bg-surface-300 text-foreground-light rounded-sm px-2 py-0.5">
-                          Current plan
+                          {$t('Current plan')}
                         </div>
                       ) : plan.nameBadge ? (
                         <div className="text-xs bg-brand-300 dark:bg-brand-400 text-brand-600 rounded-sm px-2 py-0.5">
@@ -269,7 +273,9 @@ export const PlanUpdateSidePanel = () => {
                       ) : null}
                     </div>
                     <div className="mt-4 flex items-center space-x-1 mb-4">
-                      {(price ?? 0) > 0 && <p className="text-foreground-light text-sm">From</p>}
+                      {(price ?? 0) > 0 && (
+                        <p className="text-foreground-light text-sm">{$t('From')}</p>
+                      )}
                       {isLoadingPlans ? (
                         <div className="h-[28px] flex items-center justify-center">
                           <ShimmeringLoader className="w-[30px] h-[24px]" />
@@ -283,7 +289,7 @@ export const PlanUpdateSidePanel = () => {
                     </div>
                     {isCurrentPlan ? (
                       <Button block disabled variant="default">
-                        Current plan
+                        {$t('Current plan')}
                       </Button>
                     ) : !canUpdateSubscription && !isDowngradeOption ? (
                       <RequestUpgradeToBillingOwners block plan={plan.name as 'Pro' | 'Team'} />

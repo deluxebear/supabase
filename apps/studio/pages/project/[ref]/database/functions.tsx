@@ -16,6 +16,7 @@ import { DocsButton } from '@/components/ui/DocsButton'
 import { NoPermission } from '@/components/ui/NoPermission'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const DatabaseFunctionsPage: NextPageWithLayout = () => {
@@ -33,7 +34,7 @@ const DatabaseFunctionsPage: NextPageWithLayout = () => {
       <PageHeader size="large">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Database Functions</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Database Functions')}</PageHeaderTitle>
           </PageHeaderSummary>
           <PageHeaderAside>
             <DocsButton href={`${DOCS_URL}/guides/database/functions`} />
@@ -53,7 +54,7 @@ const DatabaseFunctionsPage: NextPageWithLayout = () => {
 
 DatabaseFunctionsPage.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Functions">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Functions')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

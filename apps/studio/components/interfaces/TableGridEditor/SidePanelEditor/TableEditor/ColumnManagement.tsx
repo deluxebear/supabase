@@ -37,6 +37,7 @@ import type { ImportContent, TableField } from './TableEditor.types'
 import InformationBox from '@/components/ui/InformationBox'
 import type { EnumeratedType } from '@/data/enumerated-types/enumerated-types-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 interface ColumnManagementProps {
@@ -153,7 +154,7 @@ export const ColumnManagement = ({
     <>
       <div className="w-full space-y-4 table-editor-columns">
         <div className="flex items-center justify-between w-full">
-          <h5>Columns</h5>
+          <h5>{$t('Columns')}</h5>
           <div className="flex items-center gap-x-2">
             <Button asChild variant="default" icon={<ExternalLink size={12} strokeWidth={2} />}>
               <a
@@ -161,7 +162,7 @@ export const ColumnManagement = ({
                 target="_blank"
                 rel="noreferrer"
               >
-                About data types
+                {$t('About data types')}
               </a>
             </Button>
             {isNewRecord && (
@@ -170,10 +171,10 @@ export const ColumnManagement = ({
                 {hasImportContent ? (
                   <div className="flex items-center gap-x-2">
                     <Button variant="default" icon={<Edit />} onClick={onSelectImportData}>
-                      Edit content
+                      {$t('Edit content')}
                     </Button>
                     <Button variant="danger" icon={<Trash />} onClick={onClearImportContent}>
-                      Remove content
+                      {$t('Remove content')}
                     </Button>
                   </div>
                 ) : (
@@ -184,7 +185,7 @@ export const ColumnManagement = ({
                       track('import_data_button_clicked', { tableType: 'New Table' })
                     }}
                   >
-                    Import data from CSV
+                    {$t('Import data from CSV')}
                   </Button>
                 )}
               </>
@@ -194,18 +195,19 @@ export const ColumnManagement = ({
 
         {hasImportContent && (
           <p className="text-sm text-foreground-light my-2">
-            Your table will be created with {importContent?.rowCount?.toLocaleString()} rows and the
-            following {columns.length} columns.
+            {$t('Your table will be created with')} {importContent?.rowCount?.toLocaleString()}{' '}
+            {$t('rows and the following')} {columns.length} columns.
           </p>
         )}
 
         {primaryKeyColumns.length === 0 && (
           <Alert variant="warning">
             <WarningIcon />
-            <AlertTitle>Warning: No primary keys selected</AlertTitle>
+            <AlertTitle>{$t('Warning: No primary keys selected')}</AlertTitle>
             <AlertDescription>
-              Tables should have at least one column as the primary key to identify each row.
-              Without a primary key, you will not be able to update or delete rows from the table.
+              {$t(
+                'Tables should have at least one column as the primary key to identify each row. Without a primary key, you will not be able to update or delete rows from the table.'
+              )}
             </AlertDescription>
           </Alert>
         )}
@@ -214,8 +216,10 @@ export const ColumnManagement = ({
           <InformationBox
             block
             icon={<Key size={16} />}
-            title="Composite primary key selected"
-            description="The columns that you've selected will be grouped as a primary key, and will serve as the unique identifier for the rows in your table"
+            title={$t('Composite primary key selected')}
+            description={$t(
+              "The columns that you've selected will be grouped as a primary key, and will serve as the unique identifier for the rows in your table"
+            )}
           />
         )}
 
@@ -225,34 +229,36 @@ export const ColumnManagement = ({
             {/* Drag handle */}
             {isNewRecord && <div className="w-[5%]" />}
             <div className="w-[25%] flex items-center space-x-2">
-              <h5 className="text-xs text-foreground-lighter">Name</h5>
+              <h5 className="text-xs text-foreground-lighter">{$t('Name')}</h5>
               <Tooltip>
                 <TooltipTrigger>
                   <HelpCircle size={15} strokeWidth={1.5} className="text-foreground-lighter" />
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="w-[300px]">
-                  Recommended to use lowercase and use an underscore to separate words e.g.
-                  column_name
+                  {$t(
+                    'Recommended to use lowercase and use an underscore to separate words e.g. column_name'
+                  )}
                 </TooltipContent>
               </Tooltip>
             </div>
             <div className="w-[25%]">
-              <h5 className="text-xs text-foreground-lighter">Type</h5>
+              <h5 className="text-xs text-foreground-lighter">{$t('Type')}</h5>
             </div>
             <div className={`${isNewRecord ? 'w-[25%]' : 'w-[30%]'} flex items-center space-x-2`}>
-              <h5 className="text-xs text-foreground-lighter">Default Value</h5>
+              <h5 className="text-xs text-foreground-lighter">{$t('Default Value')}</h5>
               <Tooltip>
                 <TooltipTrigger>
                   <HelpCircle size={15} strokeWidth={1.5} className="text-foreground-lighter" />
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="w-[300px]">
-                  Can either be a literal or an expression. When using an expression wrap your
-                  expression in brackets, e.g. (gen_random_uuid())
+                  {$t(
+                    'Can either be a literal or an expression. When using an expression wrap your expression in brackets, e.g. (gen_random_uuid())'
+                  )}
                 </TooltipContent>
               </Tooltip>
             </div>
             <div className="w-[10%]">
-              <h5 className="text-xs text-foreground-lighter">Primary</h5>
+              <h5 className="text-xs text-foreground-lighter">{$t('Primary')}</h5>
             </div>
             {/* Empty space */}
             <div className={`${hasImportContent ? 'w-[10%]' : 'w-0'}`} />
@@ -333,7 +339,7 @@ export const ColumnManagement = ({
         {!hasImportContent && (
           <div className="flex items-center justify-center rounded-sm border border-strong border-dashed py-3">
             <Button variant="default" onClick={() => onAddColumn()}>
-              Add column
+              {$t('Add column')}
             </Button>
           </div>
         )}

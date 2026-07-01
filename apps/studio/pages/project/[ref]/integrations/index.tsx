@@ -34,6 +34,7 @@ import { DocsButton } from '@/components/ui/DocsButton'
 import { NoSearchResults } from '@/components/ui/NoSearchResults'
 import { useMarketplaceCategoriesQuery } from '@/data/marketplace/integration-categories-query'
 import { BASE_PATH, DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const FEATURED_INTEGRATIONS = ['cron', 'queues', 'stripe_sync_engine']
@@ -245,7 +246,7 @@ const LegacyIntegrationsPage = () => {
               value={search}
               size="tiny"
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search integrations..."
+              placeholder={$t('Search integrations...')}
               icon={<Search size={14} />}
               className="w-52"
             />

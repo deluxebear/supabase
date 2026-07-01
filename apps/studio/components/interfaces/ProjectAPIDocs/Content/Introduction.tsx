@@ -12,6 +12,7 @@ import type { ContentProps } from './Content.types'
 import { useAPIKeys } from '@/data/api-keys/api-keys-query'
 import { useProjectSettingsV2Query } from '@/data/config/project-settings-v2-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export const Introduction = ({ showKeys, language, apikey, endpoint }: ContentProps) => {
@@ -42,7 +43,7 @@ export const Introduction = ({ showKeys, language, apikey, endpoint }: ContentPr
       >
         <div className="px-4 space-y-6">
           <div className="flex flex-col space-x-4 mt-8">
-            <FormItemLayout isReactForm={false} layout="horizontal" label="Project URL">
+            <FormItemLayout isReactForm={false} layout="horizontal" label={$t('Project URL')}>
               <Input disabled readOnly copy size="small" value={endpoint} className="w-full" />
             </FormItemLayout>
           </div>
@@ -50,8 +51,10 @@ export const Introduction = ({ showKeys, language, apikey, endpoint }: ContentPr
             <FormItemLayout
               isReactForm={false}
               layout="horizontal"
-              label="Client API key"
-              description="This key is safe to use in a browser if you have enabled Row Level Security (RLS) for your tables and configured policies."
+              label={$t('Client API key')}
+              description={$t(
+                'This key is safe to use in a browser if you have enabled Row Level Security (RLS) for your tables and configured policies.'
+              )}
             >
               <Input
                 disabled
@@ -82,11 +85,11 @@ export const Introduction = ({ showKeys, language, apikey, endpoint }: ContentPr
             <FormItemLayout
               isReactForm={false}
               layout="horizontal"
-              label="Service key"
+              label={$t('Service key')}
               description={
                 <p>
-                  This key has the ability to bypass Row Level Security.{' '}
-                  <span className="text-amber-900">Never share it publicly.</span>
+                  {$t('This key has the ability to bypass Row Level Security.')}{' '}
+                  <span className="text-amber-900">{$t('Never share it publicly.')}</span>
                 </p>
               }
             >

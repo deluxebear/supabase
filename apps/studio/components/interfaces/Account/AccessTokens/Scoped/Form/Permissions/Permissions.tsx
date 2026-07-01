@@ -8,6 +8,7 @@ import { sortActions } from './Permissions.utils'
 import { ACCESS_TOKEN_RESOURCES } from '@/components/interfaces/Account/AccessTokens/AccessToken.constants'
 import { formatAccessText } from '@/components/interfaces/Account/AccessTokens/AccessToken.utils'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 
 export const Permissions = <TFormValues extends PermissionsFormValues = PermissionsFormValues>({
   setValue,
@@ -21,7 +22,7 @@ export const Permissions = <TFormValues extends PermissionsFormValues = Permissi
     <div className="space-y-4 px-5 sm:px-6 py-6">
       <div className="space-y-3">
         <div className="flex justify-between items-center">
-          <span className="text-sm">Configure permissions</span>
+          <span className="text-sm">{$t('Configure permissions')}</span>
           <div className="flex items-center gap-2">
             {permissionRows.length > 0 && (
               <ButtonTooltip
@@ -57,7 +58,7 @@ export const Permissions = <TFormValues extends PermissionsFormValues = Permissi
 
         {permissionRows.length === 0 ? (
           <div className="text-center py-8 border border-dashed border-border rounded-lg">
-            <p className="text-sm text-foreground-light">No permissions configured yet.</p>
+            <p className="text-sm text-foreground-light">{$t('No permissions configured yet.')}</p>
           </div>
         ) : (
           <div className="border border-border rounded-lg">
@@ -90,7 +91,9 @@ export const Permissions = <TFormValues extends PermissionsFormValues = Permissi
                               }
                             >
                               {row.actions.length === 0 ? (
-                                <span className="text-foreground-lighter">Select access</span>
+                                <span className="text-foreground-lighter">
+                                  {$t('Select access')}
+                                </span>
                               ) : row.actions.length === 1 ? (
                                 formatAccessText(row.actions[0])
                               ) : (
@@ -157,7 +160,7 @@ export const Permissions = <TFormValues extends PermissionsFormValues = Permissi
       <div className="w-full flex gap-x-2 items-center">
         <WarningIcon />
         <span className="text-xs text-left text-foreground-lighter">
-          Once you've set these permissions, you cannot edit them.
+          {$t("Once you've set these permissions, you cannot edit them.")}
         </span>
       </div>
     </div>

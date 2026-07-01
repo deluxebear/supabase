@@ -16,6 +16,7 @@ import { LogsBarChart } from 'ui-patterns/LogsBarChart'
 
 import type { LogsBarChartDatum } from '../ProjectHome/ProjectUsage.metrics'
 import { getHealthStatus, type ServiceKey } from './ObservabilityOverview.utils'
+import { t as $t } from '@/lib/i18n'
 
 type ServiceConfig = {
   key: ServiceKey
@@ -164,7 +165,9 @@ const ServiceCell = ({
                 </Link>
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="top">Go to {service.name} report</TooltipContent>
+            <TooltipContent side="top">
+              {$t('Go to')} {service.name} report
+            </TooltipContent>
           </Tooltip>
         </div>
       </div>
@@ -181,7 +184,7 @@ const ServiceCell = ({
             chartConfig={LEVEL_CHART_CONFIG}
             DateTimeFormat={datetimeFormat}
             onBarClick={onBarClick}
-            EmptyState={<ChartEmptyState className="h-full" description="No traffic" />}
+            EmptyState={<ChartEmptyState className="h-full" description={$t('No traffic')} />}
           />
         )}
       </div>
@@ -197,7 +200,7 @@ export const ServiceHealthTable = ({
 }: ServiceHealthTableProps) => {
   return (
     <div>
-      <h2 className="heading-section mb-4">Service Health</h2>
+      <h2 className="heading-section mb-4">{$t('Service Health')}</h2>
       <Card className="overflow-auto">
         <CardContent className="p-0">
           <div className="grid grid-cols-1 md:grid-cols-2">

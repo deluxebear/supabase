@@ -20,6 +20,7 @@ import { useDatabaseHooksQuery } from '@/data/database-triggers/database-trigger
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export interface HookListProps {
   schema: string
@@ -110,7 +111,7 @@ export const HookList = ({ schema, filterString }: HookListProps) => {
                           onClick={() => setSelectedHookIdToEdit(x.id.toString())}
                         >
                           <Edit3 size="14" />
-                          <p>Edit hook</p>
+                          <p>{$t('Edit hook')}</p>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -118,7 +119,7 @@ export const HookList = ({ schema, filterString }: HookListProps) => {
                           onClick={() => setSelectedHookIdToDelete(x.id.toString())}
                         >
                           <Trash stroke="red" size="14" />
-                          <p>Delete hook</p>
+                          <p>{$t('Delete hook')}</p>
                         </DropdownMenuItem>
                       </>
                     </DropdownMenuContent>

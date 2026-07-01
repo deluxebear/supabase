@@ -47,6 +47,7 @@ import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/L
 import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
 import { AlertError } from '@/components/ui/AlertError'
 import { useLogsQuery } from '@/hooks/analytics/useLogsQuery'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -157,8 +158,8 @@ export const EdgeFunctionRecentErrors = ({
 
     return (
       <>
-        There {verb} been <span className="text-foreground">{invocationPhrase}</span> since last
-        deploy and no errors.
+        {$t('There')} {verb} been <span className="text-foreground">{invocationPhrase}</span>{' '}
+        {$t('since last deploy and no errors.')}
       </>
     )
   }, [
@@ -201,7 +202,7 @@ export const EdgeFunctionRecentErrors = ({
           <div className="flex flex-col gap-6">
             <PageSectionMeta>
               <PageSectionSummary>
-                <PageSectionTitle>Errors since last deploy</PageSectionTitle>
+                <PageSectionTitle>{$t('Errors since last deploy')}</PageSectionTitle>
               </PageSectionSummary>
               <PageSectionAside>
                 <Button
@@ -212,7 +213,7 @@ export const EdgeFunctionRecentErrors = ({
                     router.push(`/project/${projectRef}/functions/${functionSlug}/logs`)
                   }
                 >
-                  View logs
+                  {$t('View logs')}
                 </Button>
               </PageSectionAside>
             </PageSectionMeta>
@@ -238,13 +239,13 @@ export const EdgeFunctionRecentErrors = ({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Error</TableHead>
-                      <TableHead>Count</TableHead>
-                      <TableHead>Last Seen</TableHead>
-                      <TableHead>Method</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Duration</TableHead>
-                      <TableHead className="text-right">Troubleshoot</TableHead>
+                      <TableHead>{$t('Error')}</TableHead>
+                      <TableHead>{$t('Count')}</TableHead>
+                      <TableHead>{$t('Last Seen')}</TableHead>
+                      <TableHead>{$t('Method')}</TableHead>
+                      <TableHead>{$t('Status')}</TableHead>
+                      <TableHead>{$t('Duration')}</TableHead>
+                      <TableHead className="text-right">{$t('Troubleshoot')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -282,7 +283,7 @@ export const EdgeFunctionRecentErrors = ({
                                 </Badge>
                               ) : (
                                 <Badge variant="destructive" className="font-mono">
-                                  Error
+                                  {$t('Error')}
                                 </Badge>
                               )}
                             </TableCell>
@@ -292,7 +293,7 @@ export const EdgeFunctionRecentErrors = ({
                             <TableCell className="text-right">
                               <div className="flex justify-end">
                                 <AiAssistantDropdown
-                                  label="Ask Assistant"
+                                  label={$t('Ask Assistant')}
                                   size="tiny"
                                   buildPrompt={() => buildGroupAssistantPrompt(group, functionSlug)}
                                   onOpenAssistant={() => handleOpenAssistant(group)}
@@ -313,7 +314,7 @@ export const EdgeFunctionRecentErrors = ({
                               <div className="max-h-64 overflow-auto bg-surface-75 font-mono text-xs">
                                 {group.logs.length === 0 ? (
                                   <div className="px-4 py-3 text-foreground-lighter">
-                                    No related runtime logs found for this error group.
+                                    {$t('No related runtime logs found for this error group.')}
                                   </div>
                                 ) : (
                                   group.logs.map((log, index) => {

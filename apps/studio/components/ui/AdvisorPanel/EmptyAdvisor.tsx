@@ -1,6 +1,7 @@
 import { TextSearch } from 'lucide-react'
 import { Button } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
 import type { AdvisorTab } from '@/state/advisor-state'
 
 interface EmptyAdvisorProps {
@@ -49,7 +50,7 @@ export const EmptyAdvisor = ({ activeTab, hasFilters, onClearFilters }: EmptyAdv
       </div>
       {hasFilters && (
         <Button variant="outline" onClick={onClearFilters}>
-          Clear filters
+          {$t('Clear filters')}
         </Button>
       )}
     </div>

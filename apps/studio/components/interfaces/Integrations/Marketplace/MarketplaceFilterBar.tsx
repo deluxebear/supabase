@@ -20,6 +20,7 @@ import {
   type MarketplaceIntegrationType,
   type MarketplaceSource,
 } from './Marketplace.constants'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 
 export type ViewMode = 'list' | 'grid'
@@ -98,7 +99,9 @@ export const MarketplaceFilterBar = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="default" iconRight={<ChevronDown />} className={triggerCls}>
-            <span className="truncate">Category: {categoryLabel}</span>
+            <span className="truncate">
+              {$t('Category:')} {categoryLabel}
+            </span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
@@ -107,7 +110,7 @@ export const MarketplaceFilterBar = ({
             onValueChange={(v) => onCategoryChange(v === ALL ? null : v)}
           >
             <DropdownMenuItem onClick={() => onCategoryChange(null)}>
-              All categories
+              {$t('All categories')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             {categoryOptions
@@ -137,7 +140,9 @@ export const MarketplaceFilterBar = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="default" iconRight={<ChevronDown />} className={triggerCls}>
-            <span className="truncate">Type: {typeLabel}</span>
+            <span className="truncate">
+              {$t('Type:')} {typeLabel}
+            </span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
@@ -147,7 +152,9 @@ export const MarketplaceFilterBar = ({
               onTypeChange(v === ALL ? null : (v as MarketplaceIntegrationType))
             }
           >
-            <DropdownMenuItem onClick={() => onTypeChange(null)}>All Types</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onTypeChange(null)}>
+              {$t('All Types')}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             {INTEGRATION_TYPES.map(({ key, label, icon: Icon }) => (
               <DropdownMenuItem
@@ -171,7 +178,9 @@ export const MarketplaceFilterBar = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="default" iconRight={<ChevronDown />} className={triggerCls}>
-            <span className="truncate">Source: {sourceLabel}</span>
+            <span className="truncate">
+              {$t('Source:')} {sourceLabel}
+            </span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
@@ -179,7 +188,9 @@ export const MarketplaceFilterBar = ({
             value={source ?? ALL}
             onValueChange={(v) => onSourceChange(v === ALL ? null : (v as MarketplaceSource))}
           >
-            <DropdownMenuItem onClick={() => onSourceChange(null)}>All sources</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onSourceChange(null)}>
+              {$t('All sources')}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             {MARKETPLACE_SOURCES.map(({ key, label, icon: Icon }) => (
               <DropdownMenuItem
@@ -206,14 +217,14 @@ export const MarketplaceFilterBar = ({
           onClick={onClearFilters}
           className="px-1 text-xs text-foreground-light underline-offset-2 hover:underline"
         >
-          Clear all
+          {$t('Clear all')}
         </button>
       )}
 
       <div className="ml-auto flex rounded-md border">
         <button
           type="button"
-          aria-label="Grid view"
+          aria-label={$t('Grid view')}
           onClick={() => onViewModeChange('grid')}
           className={cn(
             'border-r px-2 py-1.5 rounded-l-md cursor-pointer',
@@ -227,7 +238,7 @@ export const MarketplaceFilterBar = ({
         </button>
         <button
           type="button"
-          aria-label="List view"
+          aria-label={$t('List view')}
           onClick={() => onViewModeChange('list')}
           className={cn(
             'px-2 py-1.5 rounded-r-md cursor-pointer',

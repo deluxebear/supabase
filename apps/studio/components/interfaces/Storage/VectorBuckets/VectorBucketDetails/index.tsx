@@ -47,6 +47,7 @@ import {
 import { AlertError } from '@/components/ui/AlertError'
 import { useVectorBucketQuery } from '@/data/storage/vector-bucket-query'
 import { useVectorBucketsIndexesQuery } from '@/data/storage/vector-buckets-indexes-query'
+import { t as $t } from '@/lib/i18n'
 
 export const VectorBucketDetails = () => {
   const router = useRouter()
@@ -119,15 +120,15 @@ export const VectorBucketDetails = () => {
         <ScaffoldContainer bottomPadding>
           <ScaffoldSection isFullWidth className="gap-y-4">
             <ScaffoldHeader className="pt-0 pb-3">
-              <ScaffoldSectionTitle>Tables</ScaffoldSectionTitle>
+              <ScaffoldSectionTitle>{$t('Tables')}</ScaffoldSectionTitle>
               <ScaffoldSectionDescription>
-                Vector tables stored in this bucket.
+                {$t('Vector tables stored in this bucket.')}
               </ScaffoldSectionDescription>
             </ScaffoldHeader>
             <div className="flex flex-row justify-between">
               <Input
                 size="tiny"
-                placeholder="Search for a table"
+                placeholder={$t('Search for a table')}
                 value={filterString}
                 onChange={(e) => setFilterString(e.target.value)}
                 icon={<Search />}
@@ -165,17 +166,17 @@ export const VectorBucketDetails = () => {
                       <TableHead
                         className={filteredList.length === 0 ? 'text-foreground-muted' : undefined}
                       >
-                        Name
+                        {$t('Name')}
                       </TableHead>
                       <TableHead
                         className={filteredList.length === 0 ? 'text-foreground-muted' : undefined}
                       >
-                        Dimension
+                        {$t('Dimension')}
                       </TableHead>
                       <TableHead
                         className={filteredList.length === 0 ? 'text-foreground-muted' : undefined}
                       >
-                        Distance metric
+                        {$t('Distance metric')}
                       </TableHead>
                       <TableHead />
                     </TableRow>
@@ -186,16 +187,18 @@ export const VectorBucketDetails = () => {
                         <TableCell colSpan={3}>
                           {filterString.length > 0 ? (
                             <>
-                              <p className="text-sm text-foreground">No results found</p>
+                              <p className="text-sm text-foreground">{$t('No results found')}</p>
                               <p className="text-sm text-foreground-lighter">
-                                Your search for "{filterString}" did not return any results
+                                {$t('Your search for "')}
+                                {filterString}
+                                {$t('" did not return any results')}
                               </p>
                             </>
                           ) : (
                             <>
-                              <p className="text-sm text-foreground">No tables yet</p>
+                              <p className="text-sm text-foreground">{$t('No tables yet')}</p>
                               <p className="text-sm text-foreground-lighter">
-                                Create your first table to get started
+                                {$t('Create your first table to get started')}
                               </p>
                             </>
                           )}
@@ -246,7 +249,7 @@ export const VectorBucketDetails = () => {
                                               size={12}
                                               className="text-foreground-lighter"
                                             />
-                                            <p>Query in SQL Editor</p>
+                                            <p>{$t('Query in SQL Editor')}</p>
                                           </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
@@ -261,7 +264,7 @@ export const VectorBucketDetails = () => {
                                               size={12}
                                               className="text-foreground-lighter"
                                             />
-                                            <p>View in Table Editor</p>
+                                            <p>{$t('View in Table Editor')}</p>
                                           </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
@@ -275,7 +278,7 @@ export const VectorBucketDetails = () => {
                                       }}
                                     >
                                       <Trash2 size={12} className="text-foreground-lighter" />
-                                      <p>Delete table</p>
+                                      <p>{$t('Delete table')}</p>
                                     </DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
@@ -293,15 +296,16 @@ export const VectorBucketDetails = () => {
 
           <ScaffoldSection isFullWidth className="flex flex-col gap-y-4">
             <header>
-              <ScaffoldSectionTitle>Manage</ScaffoldSectionTitle>
+              <ScaffoldSectionTitle>{$t('Manage')}</ScaffoldSectionTitle>
             </header>
             <Card>
               <CardContent className="flex flex-col md:flex-row md:justify-between gap-y-4 gap-x-8 md:items-center">
                 <div className="flex flex-col">
-                  <h3>Delete bucket</h3>
+                  <h3>{$t('Delete bucket')}</h3>
                   <p className="text-sm text-foreground-lighter">
-                    This will also delete any data in your bucket. Make sure you have a backup if
-                    you want to keep your data.
+                    {$t(
+                      'This will also delete any data in your bucket. Make sure you have a backup if you want to keep your data.'
+                    )}
                   </p>
                 </div>
                 <Button
@@ -309,7 +313,7 @@ export const VectorBucketDetails = () => {
                   disabled={!isSuccessBucket}
                   onClick={() => setShowDeleteModal(true)}
                 >
-                  Delete bucket
+                  {$t('Delete bucket')}
                 </Button>
               </CardContent>
             </Card>

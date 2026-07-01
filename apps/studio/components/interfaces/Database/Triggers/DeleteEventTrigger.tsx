@@ -1,5 +1,6 @@
 import { TextConfirmModal } from '@/components/ui/TextConfirmModalWrapper'
 import type { DatabaseEventTrigger } from '@/data/database-event-triggers/database-event-triggers-query'
+import { t as $t } from '@/lib/i18n'
 
 interface DeleteEventTriggerProps {
   trigger?: DatabaseEventTrigger
@@ -24,14 +25,14 @@ export const DeleteEventTrigger = ({
       visible={visible}
       onCancel={onCancel}
       onConfirm={onDelete}
-      title="Delete this event trigger"
+      title={$t('Delete this event trigger')}
       loading={isLoading}
       confirmLabel={`Delete trigger ${name}`}
       confirmPlaceholder="Type in name of trigger"
       confirmString={name}
       text={
         <>
-          This will delete your event trigger called{' '}
+          {$t('This will delete your event trigger called')}{' '}
           <span className="text-bold text-foreground">{name}</span>.
         </>
       }

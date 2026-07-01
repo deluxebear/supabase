@@ -3,6 +3,7 @@ import { AiIconAnimation } from 'ui'
 
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -45,7 +46,7 @@ export const CreateTriggerButtons = ({
           },
         }}
       >
-        New trigger
+        {$t('New trigger')}
       </ButtonTooltip>
 
       {hasTables && (

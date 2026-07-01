@@ -8,6 +8,7 @@ import {
 } from '@/components/layouts/Scaffold'
 import { NoPermission } from '@/components/ui/NoPermission'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 export const InvoicesSection = () => {
   const { isSuccess: isPermissionsLoaded, can: canReadInvoices } = useAsyncCheckPermissions(
@@ -19,11 +20,12 @@ export const InvoicesSection = () => {
     <ScaffoldSection>
       <ScaffoldSectionDetail>
         <div className="sticky space-y-2 top-12 pr-6">
-          <p className="text-foreground text-base m-0">Past Invoices</p>
+          <p className="text-foreground text-base m-0">{$t('Past Invoices')}</p>
 
           <p className="prose text-sm">
-            You get an invoice every time you change your plan or when your monthly billing cycle
-            resets.
+            {$t(
+              'You get an invoice every time you change your plan or when your monthly billing cycle resets.'
+            )}
           </p>
         </div>
       </ScaffoldSectionDetail>

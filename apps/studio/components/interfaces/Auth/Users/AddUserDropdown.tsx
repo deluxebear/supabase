@@ -9,6 +9,7 @@ import { DropdownMenuItemTooltip } from '@/components/ui/DropdownMenuItemTooltip
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 export const AddUserDropdown = () => {
@@ -37,7 +38,7 @@ export const AddUserDropdown = () => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="primary" iconRight={<ChevronDown size={14} strokeWidth={1.5} />}>
-            Add user
+            {$t('Add user')}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="bottom" align="end" className="w-52">
@@ -53,7 +54,7 @@ export const AddUserDropdown = () => {
               }}
             >
               <Mail size={14} className="shrink-0" />
-              <p className="flex-1 min-w-0">Send invitation</p>
+              <p className="flex-1 min-w-0">{$t('Send invitation')}</p>
               {canInviteUsers && (
                 <ShortcutBadge
                   shortcutId={SHORTCUT_IDS.AUTH_USERS_INVITE_USER}
@@ -74,7 +75,7 @@ export const AddUserDropdown = () => {
             }}
           >
             <UserPlus size={14} className="shrink-0" />
-            <p className="flex-1 min-w-0">Create new user</p>
+            <p className="flex-1 min-w-0">{$t('Create new user')}</p>
             {canCreateUsers && (
               <ShortcutBadge
                 shortcutId={SHORTCUT_IDS.AUTH_USERS_CREATE_USER}

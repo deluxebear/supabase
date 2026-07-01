@@ -2,6 +2,7 @@ import type { PropsWithChildren } from 'react'
 import { Badge, StatusIcon, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
 import { ActionName, ActionStatus, type ActionRunStep } from '@/data/actions/action-runs-query'
+import { t as $t } from '@/lib/i18n'
 
 export interface ActionStatusBadgeProps {
   name: ActionName
@@ -54,7 +55,7 @@ export const ActionStatusBadgeCondensed = ({
         </Badge>
       </TooltipTrigger>
       <TooltipContent>
-        Additional {STATUS_TO_LABEL[status]} steps:
+        {$t('Additional')} {STATUS_TO_LABEL[status]} steps:
         <ul>
           {details.map((step) => (
             <li key={step.name} className="before:content-['-'] before:mr-0.5">

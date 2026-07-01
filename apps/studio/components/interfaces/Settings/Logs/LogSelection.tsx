@@ -16,6 +16,7 @@ import type { LogData, PreviewLogData, QueryType } from './Logs.types'
 import { apiKey, role as extractRole, jwtAPIKey, parseMultigresEventMessage } from './Logs.utils'
 import DefaultPreviewSelectionRenderer from './LogSelectionRenderers/DefaultPreviewSelectionRenderer'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 
 export interface LogSelectionProps {
   log?: LogData
@@ -102,10 +103,10 @@ const LogSelection = ({ log, onClose, queryType, isLoading, error }: LogSelectio
         <Tabs_Shadcn_ defaultValue="details" className="flex flex-col h-full">
           <TabsList_Shadcn_ className="px-2 pt-2 relative">
             <TabsTrigger_Shadcn_ className="px-3" value="details">
-              Details
+              {$t('Details')}
             </TabsTrigger_Shadcn_>
             <TabsTrigger_Shadcn_ disabled={!log} className="px-3" value="raw">
-              Raw
+              {$t('Raw')}
             </TabsTrigger_Shadcn_>
 
             <div className="*:px-1.5 *:text-foreground-lighter ml-auto flex gap-1 absolute right-2 top-2">

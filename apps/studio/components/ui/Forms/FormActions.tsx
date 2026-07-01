@@ -1,5 +1,7 @@
 import { Button } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface Props {
   form: React.HTMLProps<HTMLButtonElement>['form']
   hasChanges: boolean | undefined // Disables submit button if false
@@ -32,7 +34,7 @@ export const FormActions = ({
       {helper && <span className="text-sm text-foreground-lighter">{helper}</span>}
       <div className="flex items-center gap-2">
         <Button disabled={isDisabled} variant="default" type="reset" onClick={() => handleReset()}>
-          Cancel
+          {$t('Cancel')}
         </Button>
         <Button
           form={form}

@@ -15,6 +15,7 @@ import { InlineEditorButton } from '@/components/layouts/AppLayout/InlineEditorB
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { HelpButton } from '@/components/ui/HelpPanel/HelpButton'
+import { t as $t } from '@/lib/i18n'
 
 export const FloatingMobileToolbar = ({ hideMobileMenu }: { hideMobileMenu?: boolean }) => {
   const navRef = useRef<HTMLElement | null>(null)
@@ -38,7 +39,7 @@ export const FloatingMobileToolbar = ({ hideMobileMenu }: { hideMobileMenu?: boo
   return (
     <nav
       ref={navRef}
-      aria-label="Floating toolbar"
+      aria-label={$t('Floating toolbar')}
       className={cn(
         'flex pointer-events-auto cursor-grab active:cursor-grabbing flex-row items-centerw-auto',
         'gap-2',
@@ -71,7 +72,7 @@ export const FloatingMobileToolbar = ({ hideMobileMenu }: { hideMobileMenu?: boo
                 className: 'p-1 pl-2.5',
                 text: (
                   <div className="flex items-center gap-2.5">
-                    <span>Search</span>
+                    <span>{$t('Search')}</span>
                     <KeyboardShortcut keys={['Meta', 'K']} />
                   </div>
                 ),
@@ -100,7 +101,7 @@ export const FloatingMobileToolbar = ({ hideMobileMenu }: { hideMobileMenu?: boo
           {sheet.showMenuButton && sheet.isSheetOpen && (
             <Button
               key="menu"
-              title="Menu dropdown button"
+              title={$t('Menu dropdown button')}
               variant={sheet.isMenuOpen ? 'secondary' : 'default'}
               className={cn(
                 'flex lg:hidden mr-1 rounded-md min-w-[30px] w-[30px] h-[30px] data-open:bg-overlay-hover/30',

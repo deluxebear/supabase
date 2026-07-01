@@ -5,6 +5,7 @@ import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import OrganizationLayout from '@/components/layouts/OrganizationLayout'
 import { usePermissionsQuery } from '@/data/permissions/permissions-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const OrgTeamSettings: NextPageWithLayout = () => {
@@ -20,7 +21,7 @@ const OrgTeamSettings: NextPageWithLayout = () => {
 
 OrgTeamSettings.getLayout = (page) => (
   <DefaultLayout>
-    <OrganizationLayout title="Team">{page}</OrganizationLayout>
+    <OrganizationLayout title={$t('Team')}>{page}</OrganizationLayout>
   </DefaultLayout>
 )
 

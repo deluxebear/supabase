@@ -8,6 +8,7 @@ import { useFetchFileUrlQuery } from '../StorageExplorer/useFetchFileUrlQuery'
 import { useBucketFilePickerStateSnapshot } from './BucketFilePickerState'
 import { BASE_PATH } from '@/lib/constants'
 import { formatBytes } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 const PREVIEW_SIZE_LIMIT = 10 * 1024 * 1024 // 10MB
 
@@ -45,7 +46,7 @@ const PreviewFile = ({ item }: { item: StorageItemWithColumn }) => {
           }
         />
         <p className="mt-2 w-2/5 text-center text-sm">
-          File size is too large to preview in the explorer
+          {$t('File size is too large to preview in the explorer')}
         </p>
       </div>
     )
@@ -75,7 +76,7 @@ const PreviewFile = ({ item }: { item: StorageItemWithColumn }) => {
         <audio key={previewUrl} controls style={{ width: 'inherit' }}>
           <source src={previewUrl} type="audio/mpeg" />
           <p className="text-sm text-foreground-light">
-            Your browser does not support the audio element.
+            {$t('Your browser does not support the audio element.')}
           </p>
         </audio>
       </div>
@@ -87,7 +88,7 @@ const PreviewFile = ({ item }: { item: StorageItemWithColumn }) => {
         <video key={previewUrl} controls style={{ maxHeight: '100%' }}>
           <source src={previewUrl} type="video/mp4" />
           <p className="text-sm text-foreground-light">
-            Your browser does not support the video tag.
+            {$t('Your browser does not support the video tag.')}
           </p>
         </video>
       </div>
@@ -135,7 +136,7 @@ export const PreviewPane = ({ onSelect }: { onSelect: (url: string) => void }) =
           disabled={!previewUrl}
           loading={isLoading}
         >
-          Select
+          {$t('Select')}
         </Button>
         <div className="text-foreground-lighter transition-colors hover:text-foreground">
           <X
@@ -162,7 +163,7 @@ export const PreviewPane = ({ onSelect }: { onSelect: (url: string) => void }) =
             <div className="flex items-center space-x-2">
               <AlertCircle size={14} strokeWidth={2} className="text-foreground-light" />
               <p className="text-sm text-foreground-light">
-                File is corrupted, please delete and reupload this file again
+                {$t('File is corrupted, please delete and reupload this file again')}
               </p>
             </div>
           )}
@@ -177,11 +178,11 @@ export const PreviewPane = ({ onSelect }: { onSelect: (url: string) => void }) =
         {/* Preview Metadata */}
         <div className="space-y-2">
           <div>
-            <label className="mb-1 text-xs text-foreground-lighter">Added on</label>
+            <label className="mb-1 text-xs text-foreground-lighter">{$t('Added on')}</label>
             <p className="text-sm text-foreground-light">{createdAt}</p>
           </div>
           <div>
-            <label className="mb-1 text-xs text-foreground-lighter">Last modified</label>
+            <label className="mb-1 text-xs text-foreground-lighter">{$t('Last modified')}</label>
             <p className="text-sm text-foreground-light">{updatedAt}</p>
           </div>
         </div>

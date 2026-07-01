@@ -17,6 +17,7 @@ import { getDocument } from '@/data/documents/document-query'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export const ISO27001 = () => {
@@ -55,11 +56,12 @@ export const ISO27001 = () => {
   return (
     <ScaffoldSection className="py-12">
       <ScaffoldSectionDetail>
-        <h4 className="mb-5">ISO 27001</h4>
+        <h4 className="mb-5">{$t('ISO 27001')}</h4>
         <div className="space-y-2 text-sm text-foreground-light [&_p]:m-0">
           <p>
-            Organizations on Team Plan or above have access to our most recent ISO 27001
-            certificate.
+            {$t(
+              'Organizations on Team Plan or above have access to our most recent ISO 27001 certificate.'
+            )}
           </p>
         </div>
       </ScaffoldSectionDetail>
@@ -87,14 +89,14 @@ export const ISO27001 = () => {
               onClick={handleDownloadClick}
               disabled={!slug}
             >
-              Download ISO 27001 Certificate
+              {$t('Download ISO 27001 Certificate')}
             </Button>
           </div>
         )}
         <ConfirmationModal
           visible={isOpen}
           size="large"
-          title="Non-Disclosure Agreement to access Supabase's ISO 27001 Certificate"
+          title={$t("Non-Disclosure Agreement to access Supabase's ISO 27001 Certificate")}
           confirmLabel="I agree"
           confirmLabelLoading="Downloading"
           onCancel={() => setIsOpen(false)}
@@ -103,35 +105,36 @@ export const ISO27001 = () => {
           }}
         >
           <ol className="list-decimal list-inside text-sm text-foreground-light pl-30">
-            <li>The information that you are about to access is confidential.</li>
+            <li>{$t('The information that you are about to access is confidential.')}</li>
             <li>
-              Your access to our ISO 27001 materials is governed by confidentiality obligations
-              contained in the agreement between Supabase, Inc ("Supabase", "we", "our" or "us") and
-              the Supabase customer that has authorized you to access our platform to obtain this
-              information (our "Customer").
+              {$t(
+                'Your access to our ISO 27001 materials is governed by confidentiality obligations contained in the agreement between Supabase, Inc ("Supabase", "we", "our" or "us") and the Supabase customer that has authorized you to access our platform to obtain this information (our "Customer").'
+              )}
             </li>
             <li>
-              You must ensure that you treat the information in our ISO 27001 materials in
-              accordance with those confidentiality obligations, as communicated to you by the
-              Customer.
+              {$t(
+                'You must ensure that you treat the information in our ISO 27001 materials in accordance with those confidentiality obligations, as communicated to you by the Customer.'
+              )}
             </li>
             <li>
-              By clicking "I agree" below or otherwise accessing our ISO 27001 materials, you:
+              {$t(
+                'By clicking "I agree" below or otherwise accessing our ISO 27001 materials, you:'
+              )}
               <ol className="list-[lower-roman] list-inside pl-4">
-                <li>acknowledge that you have read and understood this Confidentiality Notice;</li>
                 <li>
-                  confirm that you have been authorized by the Customer to access this information,
-                  and your use of our ISO 27001 materials is subject to the confidentiality
-                  obligations owed by the Customer to us.
+                  {$t('acknowledge that you have read and understood this Confidentiality Notice;')}
+                </li>
+                <li>
+                  {$t(
+                    'confirm that you have been authorized by the Customer to access this information, and your use of our ISO 27001 materials is subject to the confidentiality obligations owed by the Customer to us.'
+                  )}
                 </li>
               </ol>
             </li>
             <li>
-              This Confidentiality Notice does not substitute or supersede any agreement between us
-              and the Customer, or any internal rules or policies that the Customer requires you to
-              comply with in your access to and use of confidential information. However, your
-              failure to comply with this Confidentiality Notice may be used to determine whether
-              the Customer has complied with its confidentiality obligations to us.
+              {$t(
+                'This Confidentiality Notice does not substitute or supersede any agreement between us and the Customer, or any internal rules or policies that the Customer requires you to comply with in your access to and use of confidential information. However, your failure to comply with this Confidentiality Notice may be used to determine whether the Customer has complied with its confidentiality obligations to us.'
+              )}
             </li>
           </ol>
         </ConfirmationModal>

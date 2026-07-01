@@ -43,6 +43,7 @@ import { useValidateSpamMutation, ValidateSpamResponse } from '@/data/auth/valid
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { usePreventNavigationOnUnsavedChanges } from '@/hooks/ui/usePreventNavigationOnUnsavedChanges'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface TemplateEditorProps {
   template: AuthTemplate
@@ -178,7 +179,9 @@ export const TemplateEditor = ({ template, isReadOnly = false }: TemplateEditorP
           if (preventSaveFromSpamCheck) {
             setIsSavingTemplate(false)
             toast.error(
-              'Please rectify all spam warnings before saving while using the built-in email service'
+              $t(
+                'Please rectify all spam warnings before saving while using the built-in email service'
+              )
             )
           } else {
             updateAuthConfig(
@@ -187,7 +190,7 @@ export const TemplateEditor = ({ template, isReadOnly = false }: TemplateEditorP
                 onSuccess: () => {
                   setIsSavingTemplate(false)
                   setHasUnsavedChanges(false) // Reset the unsaved changes state
-                  toast.success('Successfully updated email template')
+                  toast.success($t('Successfully updated email template'))
                 },
               }
             )
@@ -328,7 +331,7 @@ export const TemplateEditor = ({ template, isReadOnly = false }: TemplateEditorP
           <>
             <CardContent className="flex flex-col gap-4">
               <div className="flex items-center justify-between gap-2">
-                <Label>Body</Label>
+                <Label>{$t('Body')}</Label>
                 <TwoOptionToggle
                   width={60}
                   options={['preview', 'source']}
@@ -366,13 +369,13 @@ export const TemplateEditor = ({ template, isReadOnly = false }: TemplateEditorP
 
                   <div className="flex flex-col gap-y-2">
                     <div className="flex flex-col">
-                      <p className="text-sm">Template variables</p>
+                      <p className="text-sm">{$t('Template variables')}</p>
                       <p className="text-sm text-foreground-lighter">
-                        Data placeholders that can be inserted into the subject or body.{' '}
+                        {$t('Data placeholders that can be inserted into the subject or body.')}{' '}
                         <InlineLink
                           href={`${DOCS_URL}${AUTH_EMAIL_TEMPLATES_DOCS_PATH}#${AUTH_EMAIL_TEMPLATES_TERMINOLOGY_ANCHOR}`}
                         >
-                          Learn more
+                          {$t('Learn more')}
                         </InlineLink>
                       </p>
                     </div>
@@ -396,17 +399,17 @@ export const TemplateEditor = ({ template, isReadOnly = false }: TemplateEditorP
                             {variable.name === 'Token' &&
                               template.variables.some((x) => x.name === 'ConfirmationURL') && (
                                 <>
-                                  , which can be used instead of{' '}
-                                  <code className="text-code-inline">ConfirmationURL</code>
+                                  {$t(', which can be used instead of')}{' '}
+                                  <code className="text-code-inline">{$t('ConfirmationURL')}</code>
                                 </>
                               )}
 
                             {variable.name === 'SiteURL' && (
                               <>
                                 {' '}
-                                as defined in{' '}
+                                {$t('as defined in')}{' '}
                                 <InlineLink href={`/project/${projectRef}/auth/url-configuration`}>
-                                  URL Configuration
+                                  {$t('URL Configuration')}
                                 </InlineLink>
                               </>
                             )}
@@ -426,8 +429,10 @@ export const TemplateEditor = ({ template, isReadOnly = false }: TemplateEditorP
                   />
                   <Admonition
                     type="default"
-                    title="Email rendering may differ"
-                    description="The preview shown here may differ slightly from how your email appears in the recipient’s email client."
+                    title={$t('Email rendering may differ')}
+                    description={$t(
+                      'The preview shown here may differ slightly from how your email appears in the recipient’s email client.'
+                    )}
                   />
                 </>
               )}
@@ -459,7 +464,7 @@ export const TemplateEditor = ({ template, isReadOnly = false }: TemplateEditorP
                       setHasUnsavedChanges(false)
                     }}
                   >
-                    Cancel
+                    {$t('Cancel')}
                   </Button>
                 )}
                 <ButtonTooltip
@@ -469,7 +474,7 @@ export const TemplateEditor = ({ template, isReadOnly = false }: TemplateEditorP
                   loading={isSavingTemplate}
                   tooltip={{ content: { side: 'bottom', text: saveChangesTooltip } }}
                 >
-                  Save changes
+                  {$t('Save changes')}
                 </ButtonTooltip>
               </div>
             </CardFooter>

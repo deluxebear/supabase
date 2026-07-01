@@ -16,6 +16,7 @@ import {
 import { AIOptInLevelSelector } from '@/components/interfaces/Organization/GeneralSettings/AIOptInLevelSelector'
 import { useAIOptInForm } from '@/hooks/forms/useAIOptInForm'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 interface AIOptInModalProps {
   visible: boolean
@@ -47,7 +48,7 @@ export const AIOptInModal = ({ visible, onCancel }: AIOptInModalProps) => {
         <Form {...form}>
           <form id="ai-opt-in-form" onSubmit={form.handleSubmit(onSubmit)}>
             <DialogHeader padding="small">
-              <DialogTitle>Update Supabase Assistant Opt-in Level</DialogTitle>
+              <DialogTitle>{$t('Update Supabase Assistant Opt-in Level')}</DialogTitle>
             </DialogHeader>
 
             <DialogSectionSeparator />
@@ -65,12 +66,12 @@ export const AIOptInModal = ({ visible, onCancel }: AIOptInModalProps) => {
             >
               {!canUpdateOrganization && (
                 <p className="text-sm text-foreground-lighter">
-                  You need additional permissions to update the opt-in level
+                  {$t('You need additional permissions to update the opt-in level')}
                 </p>
               )}
               <div className="flex items-center gap-x-2">
                 <Button variant="default" disabled={isUpdating} onClick={onCancel}>
-                  Cancel
+                  {$t('Cancel')}
                 </Button>
                 <Button
                   variant="primary"
@@ -79,7 +80,7 @@ export const AIOptInModal = ({ visible, onCancel }: AIOptInModalProps) => {
                   loading={isUpdating}
                   disabled={isUpdating || !canUpdateOrganization || !form.formState.isDirty}
                 >
-                  Confirm
+                  {$t('Confirm')}
                 </Button>
               </div>
             </DialogFooter>

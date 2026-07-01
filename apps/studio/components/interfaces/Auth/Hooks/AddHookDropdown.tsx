@@ -20,6 +20,7 @@ import { useAuthConfigQuery } from '@/data/auth/auth-config-query'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 interface AddHookDropdownProps {
   buttonText?: string
@@ -92,7 +93,7 @@ export const AddHookDropdown = ({
         <div>
           {availableHooks.length === 0 && (
             <DropdownMenuLabel className="text-foreground-light">
-              All available hooks have been added
+              {$t('All available hooks have been added')}
             </DropdownMenuLabel>
           )}
           {availableHooks.map((h) => (
@@ -106,11 +107,11 @@ export const AddHookDropdown = ({
             {availableHooks.length > 0 && <DropdownMenuSeparator />}
 
             <DropdownMenuLabel className="grid gap-1 bg-surface-200">
-              <p className="text-foreground-light">Team or Enterprise Plan required</p>
+              <p className="text-foreground-light">{$t('Team or Enterprise Plan required')}</p>
               <p className="text-foreground-lighter text-xs">
-                The following hooks are not available on{' '}
+                {$t('The following hooks are not available on')}{' '}
                 <InlineLink href={`/org/${organization?.slug ?? '_'}/billing`}>
-                  your plan
+                  {$t('your plan')}
                 </InlineLink>
                 .
               </p>

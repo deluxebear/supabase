@@ -14,6 +14,7 @@ import { numberFormatter, precisionFormatter, useChartSize, useStacked } from '.
 import NoDataPlaceholder from './NoDataPlaceholder'
 import { useChartHoverState } from './useChartHoverState'
 import { formatDateTime, useFormatDateTime } from '@/lib/datetime'
+import { t as $t } from '@/lib/i18n'
 
 interface Props extends CommonChartProps<any> {
   xAxisKey: string
@@ -84,7 +85,7 @@ const StackedBarChart: React.FC<Props> = ({
   if (!data || data.length === 0) {
     return (
       <NoDataPlaceholder
-        description="It may take up to 24 hours for data to refresh"
+        description={$t('It may take up to 24 hours for data to refresh')}
         size={size}
         attribute={title}
         format={format}

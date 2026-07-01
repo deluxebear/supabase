@@ -39,6 +39,7 @@ import {
 } from '@/data/storage/iceberg-namespace-table-create-mutation'
 import { useIcebergNamespaceTablesQuery } from '@/data/storage/iceberg-namespace-tables-query'
 import { useIcebergNamespacesQuery } from '@/data/storage/iceberg-namespaces-query'
+import { t as $t } from '@/lib/i18n'
 
 const formId = 'create-namespace-table'
 const NEW_NAMESPACE_MARKER = 'new-namespace'
@@ -143,7 +144,7 @@ export const CreateTableSheet = ({ open, onOpenChange }: CreateTableSheetProps) 
         <form id={formId} className="flex flex-col gap-4" onSubmit={form.handleSubmit(onSubmit)}>
           <SheetContent aria-describedby={undefined} className="flex flex-col gap-0">
             <SheetHeader className="shrink-0 flex items-center gap-4">
-              <SheetTitle>Create a new table</SheetTitle>
+              <SheetTitle>{$t('Create a new table')}</SheetTitle>
             </SheetHeader>
 
             <SheetSection className="overflow-auto grow p-0">
@@ -154,7 +155,7 @@ export const CreateTableSheet = ({ open, onOpenChange }: CreateTableSheetProps) 
                   render={({ field }) => (
                     <FormItemLayout
                       name="namespace"
-                      label="Select a namespace to create your table in"
+                      label={$t('Select a namespace to create your table in')}
                     >
                       <FormControl>
                         <Select
@@ -165,7 +166,7 @@ export const CreateTableSheet = ({ open, onOpenChange }: CreateTableSheetProps) 
                           }}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a namespace" />
+                            <SelectValue placeholder={$t('Select a namespace')} />
                           </SelectTrigger>
                           <SelectContent>
                             {namespaces.map((x) => (
@@ -177,7 +178,7 @@ export const CreateTableSheet = ({ open, onOpenChange }: CreateTableSheetProps) 
                             <SelectItem value={NEW_NAMESPACE_MARKER}>
                               <div className="flex items-center gap-x-2">
                                 <Plus size={14} />
-                                <p>Create a new namespace</p>
+                                <p>{$t('Create a new namespace')}</p>
                               </div>
                             </SelectItem>
                           </SelectContent>
@@ -191,9 +192,12 @@ export const CreateTableSheet = ({ open, onOpenChange }: CreateTableSheetProps) 
                     name="newNamespace"
                     control={form.control}
                     render={({ field }) => (
-                      <FormItemLayout name="newNamespace" label="Name of new namespace">
+                      <FormItemLayout name="newNamespace" label={$t('Name of new namespace')}>
                         <FormControl>
-                          <Input {...field} placeholder="Provide a name for your new namespace" />
+                          <Input
+                            {...field}
+                            placeholder={$t('Provide a name for your new namespace')}
+                          />
                         </FormControl>
                       </FormItemLayout>
                     )}
@@ -209,9 +213,9 @@ export const CreateTableSheet = ({ open, onOpenChange }: CreateTableSheetProps) 
                     name="name"
                     control={form.control}
                     render={({ field }) => (
-                      <FormItemLayout name="name" label="Name of table">
+                      <FormItemLayout name="name" label={$t('Name of table')}>
                         <FormControl>
-                          <Input {...field} placeholder="Provide a name for your new table" />
+                          <Input {...field} placeholder={$t('Provide a name for your new table')} />
                         </FormControl>
                       </FormItemLayout>
                     )}
@@ -219,24 +223,24 @@ export const CreateTableSheet = ({ open, onOpenChange }: CreateTableSheetProps) 
 
                   <div className="flex flex-col gap-y-2">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm">Columns</p>
+                      <p className="text-sm">{$t('Columns')}</p>
                       <Button
                         variant="default"
                         icon={<Plus />}
                         onClick={() => appendColumn({ name: '', type: 'string' })}
                       >
-                        Add column
+                        {$t('Add column')}
                       </Button>
                     </div>
                     {columns.length === 0 ? (
                       <div className="flex items-center justify-center rounded-sm border border-strong border-dashed py-4 text-foreground-lighter text-sm">
-                        Add a column to your table
+                        {$t('Add a column to your table')}
                       </div>
                     ) : (
                       <>
                         <div className="grid grid-cols-[1fr_1fr_32px]">
-                          <p className="text-xs text-foreground-lighter">Name</p>
-                          <p className="text-xs text-foreground-lighter">Type</p>
+                          <p className="text-xs text-foreground-lighter">{$t('Name')}</p>
+                          <p className="text-xs text-foreground-lighter">{$t('Type')}</p>
                         </div>
                         {columns.map((_, idx) => {
                           const columnType = form.watch(`columns.${idx}.type`)
@@ -254,7 +258,7 @@ export const CreateTableSheet = ({ open, onOpenChange }: CreateTableSheetProps) 
                                       <FormControl>
                                         <Input
                                           {...field}
-                                          placeholder="Provide a column name"
+                                          placeholder={$t('Provide a column name')}
                                           disabled={isCreating}
                                           className="h-auto"
                                         />
@@ -269,7 +273,7 @@ export const CreateTableSheet = ({ open, onOpenChange }: CreateTableSheetProps) 
                                     <FormControl>
                                       <Select value={field.value} onValueChange={field.onChange}>
                                         <SelectTrigger className="h-auto">
-                                          <SelectValue placeholder="Select a type" />
+                                          <SelectValue placeholder={$t('Select a type')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                           {COLUMN_TYPES.map((x) => (
@@ -350,10 +354,10 @@ export const CreateTableSheet = ({ open, onOpenChange }: CreateTableSheetProps) 
                   form.reset(defaultValues)
                 }}
               >
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button form={formId} type="submit" loading={isCreating}>
-                Create table
+                {$t('Create table')}
               </Button>
             </SheetFooter>
           </SheetContent>

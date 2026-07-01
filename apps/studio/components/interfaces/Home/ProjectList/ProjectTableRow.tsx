@@ -25,6 +25,7 @@ import { getComputeSize, OrgProject } from '@/data/projects/org-projects-infinit
 import type { ResourceWarning } from '@/data/usage/resource-warnings-query'
 import { BASE_PATH } from '@/lib/constants'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
+import { t as $t } from '@/lib/i18n'
 import { createNavigationHandler } from '@/lib/navigation'
 import type { Organization } from '@/types'
 
@@ -65,7 +66,7 @@ export const ProjectTableRow = ({
     e.stopPropagation()
     copyToClipboard(projectRef)
     setIsCopied(true)
-    toast.success('Copied project ID to clipboard')
+    toast.success($t('Copied project ID to clipboard'))
     setTimeout(() => setIsCopied(false), 2000)
   }
 
@@ -111,7 +112,7 @@ export const ProjectTableRow = ({
                   <div className="bg-surface-100 w-5 h-5 p-1 border border-strong rounded-md flex items-center text-black dark:text-white">
                     <InlineSVG
                       src={`${BASE_PATH}/img/icons/vercel-icon.svg`}
-                      title="Vercel Icon"
+                      title={$t('Vercel Icon')}
                       className="w-3"
                     />
                   </div>
@@ -165,7 +166,7 @@ export const ProjectTableRow = ({
               utcTimestamp={project.inserted_at}
             />
           ) : (
-            <span className="text-sm text-foreground-light">N/A</span>
+            <span className="text-sm text-foreground-light">{$t('N/A')}</span>
           )}
         </TableCell>
         <TableCell className="text-right">
@@ -175,7 +176,7 @@ export const ProjectTableRow = ({
                 <Button
                   variant="default"
                   icon={<MoreVertical />}
-                  aria-label="More actions"
+                  aria-label={$t('More actions')}
                   className="w-7"
                   onClick={(e) => e.stopPropagation()}
                 />
@@ -189,7 +190,7 @@ export const ProjectTableRow = ({
                   }}
                 >
                   <Settings size={14} />
-                  <span>Settings</span>
+                  <span>{$t('Settings')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

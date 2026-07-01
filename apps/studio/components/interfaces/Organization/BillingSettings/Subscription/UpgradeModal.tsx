@@ -18,6 +18,7 @@ import {
 import { generateUpgradeReasons } from '../helpers'
 import { useSendUpgradeFeedbackMutation } from '@/data/feedback/upgrade-survey-send'
 import type { OrgSubscription } from '@/data/subscriptions/types'
+import { t as $t } from '@/lib/i18n'
 
 export interface UpgradeSurveyModalProps {
   visible: boolean
@@ -59,7 +60,7 @@ const UpgradeSurveyModal = ({
 
   const onSubmit = async () => {
     if (selectedReasons.length === 0) {
-      return toast.error('Please select at least one reason for upgrading your subscription')
+      return toast.error($t('Please select at least one reason for upgrading your subscription'))
     }
     sendUpgradeSurvey({
       orgSlug: slug,
@@ -74,10 +75,11 @@ const UpgradeSurveyModal = ({
     <Dialog open={visible} onOpenChange={onClose}>
       <DialogContent size="xlarge">
         <DialogHeader>
-          <DialogTitle>We're excited for your upgrade</DialogTitle>
+          <DialogTitle>{$t("We're excited for your upgrade")}</DialogTitle>
           <DialogDescription>
-            What reasons motivated your decision to upgrade? Your feedback helps us improve Supabase
-            as much as we can.
+            {$t(
+              'What reasons motivated your decision to upgrade? Your feedback helps us improve Supabase as much as we can.'
+            )}
           </DialogDescription>
         </DialogHeader>
         <DialogSectionSeparator />
@@ -114,7 +116,7 @@ const UpgradeSurveyModal = ({
             </div>
             <div className="text-area-text-sm flex flex-col gap-y-2">
               <label htmlFor="message" className="text-sm whitespace-pre-line wrap-break-word">
-                Anything else that we can improve on?
+                {$t('Anything else that we can improve on?')}
               </label>
               <TextArea
                 id="message"
@@ -128,7 +130,7 @@ const UpgradeSurveyModal = ({
         </DialogSection>
         <DialogFooter>
           <Button variant="default" disabled={isSubmitting} onClick={() => onClose()}>
-            Skip
+            {$t('Skip')}
           </Button>
           <Button
             variant="primary"
@@ -136,7 +138,7 @@ const UpgradeSurveyModal = ({
             loading={isSubmitting}
             onClick={onSubmit}
           >
-            Confirm
+            {$t('Confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

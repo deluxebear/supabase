@@ -13,6 +13,7 @@ import AuthLayout from '@/components/layouts/AuthLayout/AuthLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const OAuthApps: NextPageWithLayout = () => (
@@ -20,7 +21,7 @@ const OAuthApps: NextPageWithLayout = () => (
     <PageHeader size="default">
       <PageHeaderMeta>
         <PageHeaderSummary>
-          <PageHeaderTitle>OAuth Apps</PageHeaderTitle>
+          <PageHeaderTitle>{$t('OAuth Apps')}</PageHeaderTitle>
         </PageHeaderSummary>
         <PageHeaderAside>
           <DocsButton href={`${DOCS_URL}/guides/auth/oauth-server`} />
@@ -39,7 +40,7 @@ const OAuthApps: NextPageWithLayout = () => (
 
 OAuthApps.getLayout = (page) => (
   <DefaultLayout>
-    <AuthLayout title="OAuth Apps">{page}</AuthLayout>
+    <AuthLayout title={$t('OAuth Apps')}>{page}</AuthLayout>
   </DefaultLayout>
 )
 

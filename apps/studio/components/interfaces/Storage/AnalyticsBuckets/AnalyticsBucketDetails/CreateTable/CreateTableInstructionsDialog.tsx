@@ -17,6 +17,7 @@ import {
 
 import { CreateTableInstructions } from './CreateTableInstructions'
 import { CreateTableSheet } from './CreateTableSheet'
+import { t as $t } from '@/lib/i18n'
 
 export const CreateTableInstructionsDialog = () => {
   const enableCreationOfTablesFromDashboard = useFlag('analyticsBucketsTableCreation')
@@ -36,7 +37,7 @@ export const CreateTableInstructionsDialog = () => {
             else setShowModal(true)
           }}
         >
-          Create table
+          {$t('Create table')}
         </Button>
         {enableCreationOfTablesFromDashboard && (
           <DropdownMenu>
@@ -48,7 +49,9 @@ export const CreateTableInstructionsDialog = () => {
               />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-48" align="end">
-              <DropdownMenuItem onClick={() => setShowModal(true)}>Via Pyiceberg</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowModal(true)}>
+                {$t('Via Pyiceberg')}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
@@ -57,9 +60,9 @@ export const CreateTableInstructionsDialog = () => {
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent size="xlarge">
           <DialogHeader>
-            <DialogTitle>Adding tables to your Analytics Bucket</DialogTitle>
+            <DialogTitle>{$t('Adding tables to your Analytics Bucket')}</DialogTitle>
             <DialogDescription>
-              Tables can be created or added to your bucket via Pyiceberg
+              {$t('Tables can be created or added to your bucket via Pyiceberg')}
             </DialogDescription>
           </DialogHeader>
           <CreateTableInstructions hideHeader className="rounded-t-none border-x-0 border-b-0" />

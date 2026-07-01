@@ -5,6 +5,7 @@ import { Button } from 'ui'
 import { BASE_PATH } from '@/lib/constants'
 import { captureCriticalError } from '@/lib/error-reporting'
 import { auth, buildPathWithParams } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 
 interface SignInWithCustomProps {
   providerName: string
@@ -42,7 +43,7 @@ export const SignInWithCustom = ({ providerName }: SignInWithCustomProps) => {
 
   return (
     <Button block onClick={handleCustomSignIn} size="large" variant="default" loading={loading}>
-      Continue with {providerName}
+      {$t('Continue with')} {providerName}
     </Button>
   )
 }

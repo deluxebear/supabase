@@ -10,6 +10,7 @@ import {
 } from 'ui'
 
 import { CreateCronJobForm } from './CreateCronJobSheet/CreateCronJobSheet.constants'
+import { t as $t } from '@/lib/i18n'
 
 interface HttpBodyFieldSectionProps {
   form: UseFormReturn<CreateCronJobForm>
@@ -23,7 +24,7 @@ export const HttpBodyFieldSection = ({ form }: HttpBodyFieldSectionProps) => {
         name="values.httpBody"
         render={({ field }) => (
           <FormItem className="gap-1 flex flex-col">
-            <FormLabel>HTTP Request Body</FormLabel>
+            <FormLabel>{$t('HTTP Request Body')}</FormLabel>
             <FormControl>
               <TextArea
                 className="h-72 rounded-none px-4 outline-hidden"

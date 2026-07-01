@@ -17,6 +17,7 @@ import { useReplicationPipelineStatusQuery } from '@/data/replication/pipeline-s
 import { useReplicationPipelinesQuery } from '@/data/replication/pipelines-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const NODE_WIDTH = 480
 
@@ -60,13 +61,13 @@ export const PrimaryDatabaseNode = () => {
   return (
     <NodeContainer>
       <div className="text-sm flex flex-col gap-y-0.5">
-        <p>Primary Database</p>
+        <p>{$t('Primary Database')}</p>
         <p className="text-foreground-light">{region?.displayName}</p>
         <p className="text-foreground-light">{region?.code}</p>
       </div>
       {!!project && (
         <img
-          alt="region icon"
+          alt={$t('region icon')}
           className="w-8 rounded-xs mt-0.5"
           src={`${BASE_PATH}/img/regions/${project?.region}.svg`}
         />
@@ -124,7 +125,9 @@ export const ReplicationNode = ({ id }: { id: string }) => {
           )}
         </div>
         <p className="text-foreground-light">{destination?.name}</p>
-        <p className="text-foreground-light">ID: {destination?.id}</p>
+        <p className="text-foreground-light">
+          {$t('ID:')} {destination?.id}
+        </p>
       </div>
       <Handle type="target" position={Position.Left} className="opacity-25" />
     </NodeContainer>
@@ -148,7 +151,7 @@ export const ReadReplicaNode = ({ id }: { id: string }) => {
       <Database size={20} className="text-foreground-light" />
       <div className="flex flex-col gap-y-0.5">
         <div className="flex items-center">
-          <p className="text-sm">Read Replica</p>
+          <p className="text-sm">{$t('Read Replica')}</p>
           <Tooltip>
             <TooltipTrigger>
               <div className="w-6 h-full flex items-center justify-center">
@@ -165,7 +168,9 @@ export const ReadReplicaNode = ({ id }: { id: string }) => {
         </div>
         <p className="text-sm text-foreground-light">{region?.displayName}</p>
         <div className="flex gap-x-2 items-center text-sm text-foreground-light">
-          <span>ID: {formattedId}</span>
+          <span>
+            {$t('ID:')} {formattedId}
+          </span>
           <span>•</span>
           <span>{region?.code}</span>
         </div>

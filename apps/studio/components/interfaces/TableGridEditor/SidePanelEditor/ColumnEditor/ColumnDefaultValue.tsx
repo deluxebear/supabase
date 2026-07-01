@@ -7,6 +7,7 @@ import { typeExpressionSuggestions } from './ColumnEditor.constants'
 import type { Suggestion } from './ColumnEditor.types'
 import InputWithSuggestions from './InputWithSuggestions'
 import type { EnumeratedType } from '@/data/enumerated-types/enumerated-types-query'
+import { t as $t } from '@/lib/i18n'
 
 interface ColumnDefaultValueProps {
   columnFields: ColumnField
@@ -37,7 +38,7 @@ const ColumnDefaultValue = ({
     if (enumType !== undefined) {
       return (
         <>
-          <label className="block text-foreground-light">Default Value</label>
+          <label className="block text-foreground-light">{$t('Default Value')}</label>
           <Select
             name="select-editor"
             value={formattedValue}
@@ -64,9 +65,11 @@ const ColumnDefaultValue = ({
 
   return (
     <InputWithSuggestions
-      label="Default Value"
+      label={$t('Default Value')}
       layout="vertical"
-      description="Can either be a literal or an expression. When using an expression wrap your expression in brackets, e.g. (gen_random_uuid())"
+      description={$t(
+        'Can either be a literal or an expression. When using an expression wrap your expression in brackets, e.g. (gen_random_uuid())'
+      )}
       placeholder={
         typeof columnFields.defaultValue === 'string' && columnFields.defaultValue.length === 0
           ? 'EMPTY'

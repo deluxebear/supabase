@@ -6,6 +6,7 @@ import { parseDetailLines } from './ExplainVisualizer.parser'
 import { RowCountIndicator } from './ExplainVisualizer.RowCountIndicator'
 import type { ExplainNode } from './ExplainVisualizer.types'
 import { formatNodeDuration, getScanBarColor, getScanBorderColor } from './ExplainVisualizer.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface ExplainNodeRowProps {
   node: ExplainNode
@@ -70,8 +71,9 @@ export function ExplainNodeRow({ node, depth, maxDuration }: ExplainNodeRowProps
                 {node.operation}
               </span>
               <span className="text-foreground-muted whitespace-nowrap">
-                (cost {node.cost?.end?.toFixed(1) ?? '-'}, estimated{' '}
-                {node.rows?.toLocaleString() ?? '?'} {node.rows === 1 ? 'row' : 'rows'})
+                (cost {node.cost?.end?.toFixed(1) ?? '-'}
+                {$t(', estimated')} {node.rows?.toLocaleString() ?? '?'}{' '}
+                {node.rows === 1 ? 'row' : 'rows'})
               </span>
             </div>
           </div>
@@ -94,11 +96,15 @@ export function ExplainNodeRow({ node, depth, maxDuration }: ExplainNodeRowProps
                       </span>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-xs font-sans">
-                      <p className="font-medium">Execution time: {formatNodeDuration(duration)}</p>
+                      <p className="font-medium">
+                        {$t('Execution time:')} {formatNodeDuration(duration)}
+                      </p>
                       <p className="text-foreground-lighter text-xs mt-1">
-                        This is how long this operation took to execute. The bar width shows this as
-                        a percentage of the slowest operation ({Math.round(barWidthPercent)}%) —
-                        wider bars indicate where more time is spent.
+                        {$t(
+                          'This is how long this operation took to execute. The bar width shows this as a percentage of the slowest operation ('
+                        )}
+                        {Math.round(barWidthPercent)}
+                        {$t('%) — wider bars indicate where more time is spent.')}
                       </p>
                     </TooltipContent>
                   </Tooltip>

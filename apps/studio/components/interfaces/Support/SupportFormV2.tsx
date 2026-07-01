@@ -42,6 +42,7 @@ import { useGenerateAttachmentURLsMutation } from '@/data/support/generate-attac
 import { useDeploymentCommitQuery } from '@/data/utils/deployment-commit-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { detectBrowser } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 
 const useIsSimplifiedForm = (slug: string, subscriptionPlanId?: OrganizationPlanID) => {
@@ -212,7 +213,7 @@ export const SupportFormV2 = ({ form, initialError, state, dispatch }: SupportFo
   return (
     <Form {...form}>
       <form id="support-form" className="flex flex-col gap-y-6">
-        <h3 className="px-6 text-xl">How can we help?</h3>
+        <h3 className="px-6 text-xl">{$t('How can we help?')}</h3>
 
         <div className="px-6 flex flex-col gap-y-8">
           <OrganizationSelector form={form} orgSlug={organizationSlug} />

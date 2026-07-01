@@ -15,6 +15,7 @@ import { useChartHoverState } from './useChartHoverState'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { formatDateTime, useFormatDateTime } from '@/lib/datetime'
 import { formatBytes, formatBytesMinMB } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export interface ChartHeaderProps {
   title?: string
@@ -205,7 +206,7 @@ export const ChartHeader = ({
                     target="_blank"
                     className="underline text-foreground hover:text-foreground-light"
                   >
-                    Read docs
+                    {$t('Read docs')}
                   </Link>
                 </>
               )}
@@ -269,7 +270,7 @@ export const ChartHeader = ({
       <div className="flex flex-col">
         <div className="flex items-center gap-2">
           {title && chartTitle}
-          {showNewBadge && <Badge variant="success">New</Badge>}
+          {showNewBadge && <Badge variant="success">{$t('New')}</Badge>}
         </div>
         <div className="h-4">
           {hasHighlightedValue && highlighted}

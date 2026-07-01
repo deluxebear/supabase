@@ -9,6 +9,8 @@ import {
   DialogTitle,
 } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 type DeleteMessageConfirmModalProps = {
   visible: boolean
   onConfirm: () => void
@@ -28,24 +30,25 @@ export const DeleteMessageConfirmModal = ({
     <Dialog open={visible} onOpenChange={onOpenChange}>
       <DialogContent size="small">
         <DialogHeader padding="small">
-          <DialogTitle>Delete Message</DialogTitle>
+          <DialogTitle>{$t('Delete Message')}</DialogTitle>
         </DialogHeader>
 
         <DialogSectionSeparator />
 
         <DialogSection padding="small">
           <p className="text-sm text-foreground-light">
-            Are you sure you want to delete this message and all subsequent messages? This action
-            cannot be undone.
+            {$t(
+              'Are you sure you want to delete this message and all subsequent messages? This action cannot be undone.'
+            )}
           </p>
         </DialogSection>
 
         <DialogFooter padding="small">
           <Button variant="default" onClick={onCancel}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button variant="danger" onClick={onConfirm}>
-            Delete
+            {$t('Delete')}
           </Button>
         </DialogFooter>
       </DialogContent>

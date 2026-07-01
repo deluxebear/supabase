@@ -32,6 +32,7 @@ import { useTestAuditLogDrainMutation } from '@/data/log-drains/test-audit-log-d
 import { useUpdateAuditLogDrainMutation } from '@/data/log-drains/update-audit-log-drain-mutation'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -67,36 +68,36 @@ export function OrgAuditLogDrains() {
 
   const { mutate: createLogDrain, isPending: createLoading } = useCreateAuditLogDrainMutation({
     onSuccess: () => {
-      toast.success('Audit log drain destination created')
+      toast.success($t('Audit log drain destination created'))
       setPendingLogDrainValues(null)
       setIsCreateConfirmModalOpen(false)
       setOpen(false)
     },
     onError: () => {
-      toast.error('Failed to create audit log drain')
+      toast.error($t('Failed to create audit log drain'))
     },
   })
 
   const { mutate: updateLogDrain, isPending: updateLoading } = useUpdateAuditLogDrainMutation({
     onSuccess: () => {
-      toast.success('Audit log drain updated')
+      toast.success($t('Audit log drain updated'))
       setOpen(false)
     },
     onError: () => {
       setOpen(false)
-      toast.error('Failed to update audit log drain')
+      toast.error($t('Failed to update audit log drain'))
     },
   })
 
   const { mutate: deleteLogDrain, isPending: isDeleting } = useDeleteAuditLogDrainMutation({
     onError: () => {
-      toast.error('Failed to delete audit log drain')
+      toast.error($t('Failed to delete audit log drain'))
     },
   })
 
   const { mutate: testLogDrain } = useTestAuditLogDrainMutation({
     onSuccess: () => {
-      toast.success('Audit log drain connection test succeeded')
+      toast.success($t('Audit log drain connection test succeeded'))
     },
   })
 
@@ -122,10 +123,11 @@ export function OrgAuditLogDrains() {
     return (
       <div className="flex flex-col items-center gap-4 rounded border border-dashed py-12 px-6 text-center">
         <div className="flex flex-col gap-1">
-          <p className="text-foreground">Audit log drains are not available on your plan</p>
+          <p className="text-foreground">{$t('Audit log drains are not available on your plan')}</p>
           <p className="text-sm text-foreground-light">
-            Upgrade to a Team or Enterprise Plan to export your organization audit logs to your
-            preferred destination.
+            {$t(
+              'Upgrade to a Team or Enterprise Plan to export your organization audit logs to your preferred destination.'
+            )}
           </p>
         </div>
         <UpgradePlanButton
@@ -138,7 +140,9 @@ export function OrgAuditLogDrains() {
   }
 
   if (!canManageLogDrains) {
-    return <Alert variant="default">You do not have permission to manage audit log drains</Alert>
+    return (
+      <Alert variant="default">{$t('You do not have permission to manage audit log drains')}</Alert>
+    )
   }
 
   return (
@@ -159,14 +163,14 @@ export function OrgAuditLogDrains() {
                 variant="primary"
                 className="rounded-r-none px-3"
               >
-                Add destination
+                {$t('Add destination')}
               </Button>
             </Shortcut>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="primary"
-                  title="Choose destination type"
+                  title={$t('Choose destination type')}
                   className="rounded-l-none px-[4px] py-[5px]"
                   icon={<ChevronDown />}
                 />
@@ -182,7 +186,7 @@ export function OrgAuditLogDrains() {
                       <div className="space-y-1">
                         <p className="block text-foreground">{drainType.name}</p>
                         {IS_PLATFORM && (
-                          <p className="text-xs text-foreground-lighter">Additional $60</p>
+                          <p className="text-xs text-foreground-lighter">{$t('Additional $60')}</p>
                         )}
                       </div>
                     </div>
@@ -228,7 +232,7 @@ export function OrgAuditLogDrains() {
             setIsCreateConfirmModalOpen(true)
           } else {
             if (!selectedLogDrain?.token) {
-              toast.error('Audit log drain token is required')
+              toast.error($t('Audit log drain token is required'))
               return
             }
             updateLogDrain(logDrainValues)
@@ -253,7 +257,7 @@ export function OrgAuditLogDrains() {
       <ConfirmationModal
         confirmLabel="Add destination"
         variant="default"
-        title="Confirm Audit Log Drain Creation"
+        title={$t('Confirm Audit Log Drain Creation')}
         visible={isCreateConfirmModalOpen}
         loading={createLoading}
         onConfirm={() => {
@@ -268,16 +272,17 @@ export function OrgAuditLogDrains() {
       >
         <div className="text-foreground-light text-sm space-y-2">
           <p>
-            You are about to create a new audit log drain destination:{' '}
+            {$t('You are about to create a new audit log drain destination:')}{' '}
             <span className="text-foreground">{pendingLogDrainValues?.name}</span>
           </p>
           {IS_PLATFORM && (
             <p>
-              This will incur an additional <span className="text-foreground">$60 per month</span>{' '}
-              charge to your subscription.
+              {$t('This will incur an additional')}{' '}
+              <span className="text-foreground">{$t('$60 per month')}</span>{' '}
+              {$t('charge to your subscription.')}
             </p>
           )}
-          <p>Are you sure you want to proceed?</p>
+          <p>{$t('Are you sure you want to proceed?')}</p>
         </div>
       </ConfirmationModal>
     </div>

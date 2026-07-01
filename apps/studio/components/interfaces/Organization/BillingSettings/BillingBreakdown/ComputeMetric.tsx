@@ -9,6 +9,7 @@ import { ComputeUsageMetric, PricingMetric } from '@/data/analytics/org-daily-st
 import type { OrgUsageResponse } from '@/data/usage/org-usage-query'
 import { DOCS_URL } from '@/lib/constants'
 import { formatCurrency } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export interface ComputeMetricProps {
   slug?: string
@@ -72,27 +73,28 @@ export const ComputeMetric = ({
           <div className="my-2">
             {usageMeta?.metric === ComputeUsageMetric.COMPUTE_HOURS_BRANCH ? (
               <p className="text-sm">
-                Each Preview branch is a separate environment with all Supabase services (Database,
-                Auth, Storage, etc.).{' '}
+                {$t(
+                  'Each Preview branch is a separate environment with all Supabase services (Database, Auth, Storage, etc.).'
+                )}{' '}
                 <Link
                   href={`${DOCS_URL}/guides/platform/manage-your-usage/branching`}
                   target="_blank"
                   className="transition text-brand hover:text-brand-600 underline"
                 >
-                  Read more
+                  {$t('Read more')}
                 </Link>
               </p>
             ) : (
               <p className="text-sm">
-                Every project is a dedicated server and database. For every hour your project is
-                active, it incurs compute costs based on the compute size of your project. Paused
-                projects do not incur compute costs.{' '}
+                {$t(
+                  'Every project is a dedicated server and database. For every hour your project is active, it incurs compute costs based on the compute size of your project. Paused projects do not incur compute costs.'
+                )}{' '}
                 <Link
                   href={`${DOCS_URL}/guides/platform/manage-your-usage/compute`}
                   target="_blank"
                   className="transition text-brand hover:text-brand-600 underline"
                 >
-                  Read more
+                  {$t('Read more')}
                 </Link>
               </p>
             )}
@@ -102,8 +104,8 @@ export const ComputeMetric = ({
             <table className="list-disc w-full">
               <thead>
                 <tr>
-                  <th className="text-left">Project</th>
-                  <th className="text-right">Usage</th>
+                  <th className="text-left">{$t('Project')}</th>
+                  <th className="text-right">{$t('Usage')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -119,7 +121,7 @@ export const ComputeMetric = ({
               </tbody>
               <tfoot>
                 <tr>
-                  <td className="py-2 border-t text-left">Total (Hours)</td>
+                  <td className="py-2 border-t text-left">{$t('Total (Hours)')}</td>
                   <td className="py-2 border-t text-right">
                     {formatUsage(usageMeta.metric as PricingMetric, {
                       usage: usageMeta.usage_original,

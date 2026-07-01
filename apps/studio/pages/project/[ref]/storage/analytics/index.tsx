@@ -6,6 +6,7 @@ import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { StorageBucketsLayout } from '@/components/layouts/StorageLayout/StorageBucketsLayout'
 import StorageLayout from '@/components/layouts/StorageLayout/StorageLayout'
 import { useIsAnalyticsBucketsEnabled } from '@/data/config/project-storage-config-query'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const StorageAnalyticsPage: NextPageWithLayout = () => {
@@ -21,7 +22,7 @@ const StorageAnalyticsPage: NextPageWithLayout = () => {
 
 StorageAnalyticsPage.getLayout = (page) => (
   <DefaultLayout>
-    <StorageLayout title="Analytics">
+    <StorageLayout title={$t('Analytics')}>
       <StorageBucketsLayout>{page}</StorageBucketsLayout>
     </StorageLayout>
   </DefaultLayout>

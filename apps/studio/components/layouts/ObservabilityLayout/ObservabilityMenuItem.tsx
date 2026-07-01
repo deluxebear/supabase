@@ -13,6 +13,7 @@ import {
 
 import { ContentBase } from '@/data/content/content-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import type { Dashboards } from '@/types'
 
@@ -82,7 +83,7 @@ export const ObservabilityMenuItem = ({
                 }}
               >
                 <Edit2 size={12} />
-                <div>Rename report</div>
+                <div>{$t('Rename report')}</div>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -94,7 +95,7 @@ export const ObservabilityMenuItem = ({
                 }}
               >
                 <Trash size={12} />
-                <div>Delete report</div>
+                <div>{$t('Delete report')}</div>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -18,6 +18,7 @@ import { NoPermission } from '@/components/ui/NoPermission'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const MfaPage: NextPageWithLayout = () => {
@@ -42,9 +43,9 @@ const MfaPage: NextPageWithLayout = () => {
       <PageHeader size="default">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Multi-Factor Authentication (MFA)</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Multi-Factor Authentication (MFA)')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Requires users to provide additional verification factors to authenticate
+              {$t('Requires users to provide additional verification factors to authenticate')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -66,7 +67,7 @@ const MfaPage: NextPageWithLayout = () => {
 
 MfaPage.getLayout = (page) => (
   <DefaultLayout>
-    <AuthLayout title="Multi-Factor">{page}</AuthLayout>
+    <AuthLayout title={$t('Multi-Factor')}>{page}</AuthLayout>
   </DefaultLayout>
 )
 

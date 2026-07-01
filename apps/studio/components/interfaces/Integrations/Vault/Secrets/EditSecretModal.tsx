@@ -27,6 +27,7 @@ import { useVaultSecretDecryptedValueQuery } from '@/data/vault/vault-secret-dec
 import { useVaultSecretUpdateMutation } from '@/data/vault/vault-secret-update-mutation'
 import { useVaultSecretsQuery } from '@/data/vault/vault-secrets-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import type { VaultSecret } from '@/types'
 
 const SecretSchema = z.object({
@@ -92,7 +93,7 @@ export const EditSecretModal = () => {
         },
         {
           onSuccess: () => {
-            toast.success('Successfully updated secret')
+            toast.success($t('Successfully updated secret'))
             setSelectedSecretToEdit(null)
           },
           onError: (error) => {
@@ -105,7 +106,7 @@ export const EditSecretModal = () => {
 
   useEffect(() => {
     if (isSuccess && !!secretIdToEdit && !secret) {
-      toast('Secret not found')
+      toast($t('Secret not found'))
       setSelectedSecretToEdit(null)
     }
   }, [isSuccess, secretIdToEdit, secret, setSelectedSecretToEdit])
@@ -122,7 +123,7 @@ export const EditSecretModal = () => {
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit secret</DialogTitle>
+          <DialogTitle>{$t('Edit secret')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         {isLoadingSecretValue ? (
@@ -144,7 +145,7 @@ export const EditSecretModal = () => {
                     name="name"
                     control={form.control}
                     render={({ field }) => (
-                      <FormItemLayout name="name" label="Name">
+                      <FormItemLayout name="name" label={$t('Name')}>
                         <FormControl>
                           <Input id="name" {...field} />
                         </FormControl>
@@ -158,7 +159,7 @@ export const EditSecretModal = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         name="description"
-                        label="Description"
+                        label={$t('Description')}
                         labelOptional="Optional"
                       >
                         <FormControl>
@@ -172,7 +173,7 @@ export const EditSecretModal = () => {
                     name="secret"
                     control={form.control}
                     render={({ field }) => (
-                      <FormItemLayout name="secret" label="Secret value">
+                      <FormItemLayout name="secret" label={$t('Secret value')}>
                         <FormControl>
                           <div className="relative">
                             <Textarea
@@ -227,10 +228,10 @@ export const EditSecretModal = () => {
                   setSelectedSecretToEdit(null)
                 }}
               >
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button form={formId} type="submit" loading={isSubmitting}>
-                Update secret
+                {$t('Update secret')}
               </Button>
             </DialogFooter>
           </>

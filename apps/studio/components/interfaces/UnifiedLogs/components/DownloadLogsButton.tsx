@@ -29,6 +29,7 @@ import {
 import { QuerySearchParamsType } from '../UnifiedLogs.types'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useGetUnifiedLogsMutation } from '@/data/logs/get-unified-logs'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -57,7 +58,7 @@ export const DownloadLogsButton = ({ searchParameters }: DownloadLogsButtonProps
       if (selectedFormat === 'json') {
         const blob = new Blob([JSON.stringify(res, null, 2)], { type: 'text/json;charset=utf-8;' })
         saveAs(blob, `supabase_logs.json`)
-        toast.success('Downloading logs as JSON')
+        toast.success($t('Downloading logs as JSON'))
       } else {
         if (res.length === 0) return
         const headers = Object.keys(res[0])
@@ -72,7 +73,7 @@ export const DownloadLogsButton = ({ searchParameters }: DownloadLogsButtonProps
         const csv = Papa.unparse(formattedResults, { columns: headers })
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
         saveAs(blob, `supabase_logs.csv`)
-        toast.success('Downloading logs as CSV')
+        toast.success($t('Downloading logs as CSV'))
       }
 
       setSelectedFormat(undefined)
@@ -107,7 +108,7 @@ export const DownloadLogsButton = ({ searchParameters }: DownloadLogsButtonProps
               variant="default"
               className="w-[26px]"
               icon={<Download className="text-foreground" />}
-              aria-label="Download logs"
+              aria-label={$t('Download logs')}
             />
           </DropdownMenuTrigger>
         </ShortcutTooltip>
@@ -116,17 +117,17 @@ export const DownloadLogsButton = ({ searchParameters }: DownloadLogsButtonProps
             <DropdownMenuItem asChild className="gap-x-2">
               <Link href={`/project/${ref}/settings/log-drains`}>
                 <Settings size={14} />
-                <p>Add a Log Drain</p>
+                <p>{$t('Add a Log Drain')}</p>
               </Link>
             </DropdownMenuItem>
           )}
           <DropdownMenuItem onClick={() => setSelectedFormat('csv')} className="gap-x-2">
             <Download size={14} />
-            <p>Download as CSV</p>
+            <p>{$t('Download as CSV')}</p>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setSelectedFormat('json')} className="gap-x-2">
             <Download size={14} />
-            <p>Download as JSON</p>
+            <p>{$t('Download as JSON')}</p>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -138,14 +139,16 @@ export const DownloadLogsButton = ({ searchParameters }: DownloadLogsButtonProps
       >
         <DialogContent size="small">
           <DialogHeader className="border-b">
-            <DialogTitle>Download logs as {selectedFormat?.toLocaleUpperCase()}</DialogTitle>
+            <DialogTitle>
+              {$t('Download logs as')} {selectedFormat?.toLocaleUpperCase()}
+            </DialogTitle>
             <DialogDescription>
-              Export your logs with the currently applied filters
+              {$t('Export your logs with the currently applied filters')}
             </DialogDescription>
           </DialogHeader>
           <DialogSection className="flex flex-col gap-y-2">
             <div className="flex justify-between gap-x-2">
-              <p className="text-sm mb-2">Result limit for export</p>
+              <p className="text-sm mb-2">{$t('Result limit for export')}</p>
               <Select value={numRows} onValueChange={setNumRows}>
                 <SelectTrigger className="w-24">
                   <SelectValue />
@@ -159,15 +162,15 @@ export const DownloadLogsButton = ({ searchParameters }: DownloadLogsButtonProps
             </div>
             {!('date' in searchParameters) && (
               <div className="flex justify-between gap-x-2">
-                <p className="text-sm mb-2">Duration to retrieve</p>
+                <p className="text-sm mb-2">{$t('Duration to retrieve')}</p>
                 <Select value={numHours} onValueChange={setNumHours}>
                   <SelectTrigger className="w-36">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">1 hour ago</SelectItem>
-                    <SelectItem value="12">12 hours ago</SelectItem>
-                    <SelectItem value="24">24 hours ago</SelectItem>
+                    <SelectItem value="1">{$t('1 hour ago')}</SelectItem>
+                    <SelectItem value="12">{$t('12 hours ago')}</SelectItem>
+                    <SelectItem value="24">{$t('24 hours ago')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -179,10 +182,10 @@ export const DownloadLogsButton = ({ searchParameters }: DownloadLogsButtonProps
               disabled={isPending}
               onClick={() => setSelectedFormat(undefined)}
             >
-              Cancel
+              {$t('Cancel')}
             </Button>
             <Button variant="primary" loading={isPending} onClick={onExportData}>
-              Export
+              {$t('Export')}
             </Button>
           </DialogFooter>
         </DialogContent>

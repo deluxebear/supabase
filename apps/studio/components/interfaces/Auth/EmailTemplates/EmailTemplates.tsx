@@ -35,6 +35,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const notificationEnabledKeys = TEMPLATES_SCHEMAS.filter(
   (t) => t.misc?.emailTemplateType === 'security'
@@ -75,7 +76,7 @@ export const EmailTemplates = () => {
       toast.error(`Failed to update settings: ${error?.message}`)
     },
     onSuccess: () => {
-      toast.success('Successfully updated settings')
+      toast.success($t('Successfully updated settings'))
     },
   })
 
@@ -159,29 +160,30 @@ export const EmailTemplates = () => {
             {usingBuiltInEmailSender && !isTemplateEditBlocked && (
               <Admonition
                 type="warning"
-                title="Set up custom SMTP"
+                title={$t('Set up custom SMTP')}
                 description={
                   <p>
-                    You’re using the built-in email service. This service has rate limits and is not
-                    meant to be used for production apps.{' '}
+                    {$t(
+                      'You’re using the built-in email service. This service has rate limits and is not meant to be used for production apps.'
+                    )}{' '}
                     <InlineLink
                       href={`${DOCS_URL}/guides/platform/going-into-prod#auth-rate-limits`}
                     >
-                      Learn more
+                      {$t('Learn more')}
                     </InlineLink>{' '}
                   </p>
                 }
                 layout="horizontal"
                 actions={
                   <Button asChild variant="default">
-                    <Link href={`/project/${projectRef}/auth/smtp`}>Set up SMTP</Link>
+                    <Link href={`/project/${projectRef}/auth/smtp`}>{$t('Set up SMTP')}</Link>
                   </Button>
                 }
               />
             )}
             <PageSectionMeta>
               <PageSectionSummary>
-                <PageSectionTitle>Authentication</PageSectionTitle>
+                <PageSectionTitle>{$t('Authentication')}</PageSectionTitle>
               </PageSectionSummary>
             </PageSectionMeta>
             <PageSectionContent>
@@ -218,7 +220,7 @@ export const EmailTemplates = () => {
           <PageSection>
             <PageSectionMeta>
               <PageSectionSummary>
-                <PageSectionTitle>Security</PageSectionTitle>
+                <PageSectionTitle>{$t('Security')}</PageSectionTitle>
               </PageSectionSummary>
             </PageSectionMeta>
             <PageSectionContent>
@@ -277,7 +279,7 @@ export const EmailTemplates = () => {
                     <CardFooter className="justify-end space-x-2">
                       {notificationsForm.formState.isDirty && (
                         <Button variant="default" onClick={() => notificationsForm.reset()}>
-                          Cancel
+                          {$t('Cancel')}
                         </Button>
                       )}
                       <Button
@@ -290,7 +292,7 @@ export const EmailTemplates = () => {
                         }
                         loading={isUpdatingConfig}
                       >
-                        Save changes
+                        {$t('Save changes')}
                       </Button>
                     </CardFooter>
                   </Card>

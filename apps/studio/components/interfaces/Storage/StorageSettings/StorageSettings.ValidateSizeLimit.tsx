@@ -10,6 +10,7 @@ import {
   THRESHOLD_FOR_AUTO_QUERYING_BUCKET_LIMITS,
   type BucketWithSizeLimit,
 } from '@/data/storage/buckets-max-size-limit-query'
+import { t as $t } from '@/lib/i18n'
 
 type ValidationState =
   | { status: 'initial' }
@@ -135,7 +136,7 @@ export const ValidateSizeLimit = ({
             </button>
           </TooltipTrigger>
           <TooltipContent side="bottom">
-            <p>Check that all existing buckets fit within this limit</p>
+            <p>{$t('Check that all existing buckets fit within this limit')}</p>
           </TooltipContent>
         </Tooltip>
       )}
@@ -148,13 +149,13 @@ export const ValidateSizeLimit = ({
 
       {hasSuccessfulValidation && (
         <p className="mt-2 text-xs text-right text-foreground-light">
-          All buckets fit within this limit.
+          {$t('All buckets fit within this limit.')}
         </p>
       )}
 
       {validationError && (
         <p className="mt-2 text-xs text-right text-destructive">
-          Failed to validate bucket limits: {validationError}
+          {$t('Failed to validate bucket limits:')} {validationError}
         </p>
       )}
 
@@ -162,15 +163,15 @@ export const ValidateSizeLimit = ({
         visible={showModal}
         loading={isValidating}
         size="medium"
-        title="Validate bucket size limits"
-        description="Make sure no bucket-specific limit exceeds the new global limit."
+        title={$t('Validate bucket size limits')}
+        description={$t('Make sure no bucket-specific limit exceeds the new global limit.')}
         confirmLabel="Run validation"
         onCancel={() => setShowModal(false)}
         onConfirm={handleValidate}
       >
         <p className="text-sm text-foreground-light">
-          Running this queries the <code className="text-code-inline">storage.buckets</code> table,
-          which may cause load on your database because you have more than{' '}
+          {$t('Running this queries the')} <code className="text-code-inline">storage.buckets</code>{' '}
+          {$t('table, which may cause load on your database because you have more than')}{' '}
           {THRESHOLD_FOR_AUTO_QUERYING_BUCKET_LIMITS.toLocaleString()} buckets.
         </p>
       </ConfirmationModal>

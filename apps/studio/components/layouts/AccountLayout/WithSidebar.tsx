@@ -6,6 +6,7 @@ import { cn } from 'ui'
 import type { SidebarSection } from './AccountLayout.types'
 import { getActiveKey, toSubMenuSections } from './AccountLayout.utils'
 import { SubMenu } from '@/components/ui/ProductMenu/SubMenu'
+import { t as $t } from '@/lib/i18n'
 
 interface WithSidebarProps {
   title?: string
@@ -69,7 +70,8 @@ export const SidebarContent = ({
                   className="flex text-sm flex-row gap-2 items-center text-foreground-lighter focus-visible:text-foreground hover:text-foreground"
                 >
                   <ArrowLeft strokeWidth={1.5} size={16} />
-                  Back to dashboard
+
+                  {$t('Back to dashboard')}
                 </Link>
               </div>
             </div>

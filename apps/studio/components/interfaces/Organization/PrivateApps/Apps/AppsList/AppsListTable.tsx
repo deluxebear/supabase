@@ -21,6 +21,7 @@ import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 
 import type { PrivateApp } from '../../PrivateAppsContext'
 import type { AppsSort } from '../Apps.types'
+import { t as $t } from '@/lib/i18n'
 
 interface AppsListTableProps {
   sortedApps: PrivateApp[]
@@ -46,10 +47,10 @@ export function AppsListTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
+            <TableHead>{$t('Name')}</TableHead>
             <TableHead className="w-48">
               <TableHeadSort column="created_at" currentSort={sort} onSortChange={onSortChange}>
-                Created
+                {$t('Created')}
               </TableHeadSort>
             </TableHead>
             <TableHead className="w-10" />
@@ -65,7 +66,7 @@ export function AppsListTable({
                     <p className="text-left max-w-[48ch] truncate">{app.name}</p>
                     {isInstalled && (
                       <Badge variant="success" className="uppercase">
-                        Installed
+                        {$t('Installed')}
                       </Badge>
                     )}
                   </div>
@@ -85,12 +86,14 @@ export function AppsListTable({
                     <DropdownMenuContent align="end" side="bottom" className="w-44">
                       <DropdownMenuItem className="gap-x-2" onClick={() => onViewApp(app)}>
                         <Key size={14} />
-                        View permissions
+
+                        {$t('View permissions')}
                       </DropdownMenuItem>
                       {!isInstalled && (
                         <DropdownMenuItem className="gap-x-2" onClick={() => onPromoteApp(app)}>
                           <ArrowUpCircle size={14} />
-                          Promote to installed
+
+                          {$t('Promote to installed')}
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
@@ -99,7 +102,8 @@ export function AppsListTable({
                         onClick={() => onDeleteApp(app)}
                       >
                         <Trash size={14} />
-                        Delete
+
+                        {$t('Delete')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

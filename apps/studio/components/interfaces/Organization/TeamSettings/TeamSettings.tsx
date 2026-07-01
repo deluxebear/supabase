@@ -19,6 +19,7 @@ import { DocsButton } from '@/components/ui/DocsButton'
 import { useOrganizationRolesV2Query } from '@/data/organization-members/organization-roles-query'
 import { useOrgProjectsInfiniteQuery } from '@/data/projects/org-projects-infinite-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const TeamSettings = () => {
   const { slug } = useParams()
@@ -34,7 +35,7 @@ export const TeamSettings = () => {
   return (
     <ScaffoldContainer>
       <ScaffoldSection isFullWidth className="py-8! gap-y-8">
-        <ScaffoldTitle>Team</ScaffoldTitle>
+        <ScaffoldTitle>{$t('Team')}</ScaffoldTitle>
         <ScaffoldFilterAndContent>
           <ScaffoldActionsContainer className="w-full flex-col md:flex-row gap-2 justify-between">
             <Input
@@ -45,7 +46,7 @@ export const TeamSettings = () => {
               onChange={(e: any) => setSearchString(e.target.value)}
               name="email"
               id="email"
-              placeholder="Filter members"
+              placeholder={$t('Filter members')}
             />
             <ScaffoldActionsGroup className="w-full md:w-auto">
               <DocsButton href={`${DOCS_URL}/guides/platform/access-control`} />
@@ -56,8 +57,12 @@ export const TeamSettings = () => {
           {hasProjectScopedRoles && totalCount > threshold && (
             <Admonition
               type="warning"
-              title="This page may not render properly due to the number of projects your account has access to"
-              description="We're actively looking into optimizing this page and will make things available as soon as we can!"
+              title={$t(
+                'This page may not render properly due to the number of projects your account has access to'
+              )}
+              description={$t(
+                "We're actively looking into optimizing this page and will make things available as soon as we can!"
+              )}
             />
           )}
 

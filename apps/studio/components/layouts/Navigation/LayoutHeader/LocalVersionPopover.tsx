@@ -26,6 +26,7 @@ import { InlineLink } from '@/components/ui/InlineLink'
 import { useCLIReleaseVersionQuery } from '@/data/misc/cli-release-version-query'
 import { useDeploymentMode } from '@/hooks/misc/useDeploymentMode'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export const LocalVersionPopover = () => {
@@ -66,40 +67,40 @@ export const LocalVersionPopover = () => {
         {hasLatestCLIVersion ? (
           !isBeta && hasUpdate ? (
             <div className="px-4 mb-3">
-              <p className="text-sm mb-2">A new version of Supabase CLI is available:</p>
+              <p className="text-sm mb-2">{$t('A new version of Supabase CLI is available:')}</p>
               <Tabs_Shadcn_ defaultValue="macos">
                 <TabsList_Shadcn_ className="mt-2">
                   <TabsTrigger_Shadcn_ className="px-2 text-xs" value="macos">
                     macOS
                   </TabsTrigger_Shadcn_>
                   <TabsTrigger_Shadcn_ className="px-2 text-xs" value="windows">
-                    Windows
+                    {$t('Windows')}
                   </TabsTrigger_Shadcn_>
                   <TabsTrigger_Shadcn_ className="px-2 text-xs" value="linux">
-                    Linux
+                    {$t('Linux')}
                   </TabsTrigger_Shadcn_>
                   <TabsTrigger_Shadcn_ className="px-2 text-xs" value="npm">
-                    npm / Bun
+                    {$t('npm / Bun')}
                   </TabsTrigger_Shadcn_>
                 </TabsList_Shadcn_>
                 <TabsContent_Shadcn_ className="mt-2 text-xs" value="macos">
                   <SimpleCodeBlock parentClassName="bg-selection rounded-sm px-2!">
-                    brew upgrade supabase
+                    {$t('brew upgrade supabase')}
                   </SimpleCodeBlock>
                 </TabsContent_Shadcn_>
                 <TabsContent_Shadcn_ className="mt-2 text-xs" value="windows">
                   <SimpleCodeBlock parentClassName="bg-selection rounded-sm px-2!">
-                    scoop update supabase
+                    {$t('scoop update supabase')}
                   </SimpleCodeBlock>
                 </TabsContent_Shadcn_>
                 <TabsContent_Shadcn_ className="mt-2 text-xs" value="linux">
                   <SimpleCodeBlock parentClassName="bg-selection rounded-sm px-2!">
-                    brew upgrade supabase
+                    {$t('brew upgrade supabase')}
                   </SimpleCodeBlock>
                 </TabsContent_Shadcn_>
                 <TabsContent_Shadcn_ className="mt-2 text-xs" value="npm">
                   <SimpleCodeBlock parentClassName="bg-selection rounded-sm px-2!">
-                    npm update supabase --save-dev
+                    {$t('npm update supabase --save-dev')}
                   </SimpleCodeBlock>
                 </TabsContent_Shadcn_>
               </Tabs_Shadcn_>
@@ -107,9 +108,9 @@ export const LocalVersionPopover = () => {
           ) : (
             <div className="px-4 mb-3">
               {isBeta ? (
-                <p className="text-sm">You're on the Beta version of Supabase CLI</p>
+                <p className="text-sm">{$t("You're on the Beta version of Supabase CLI")}</p>
               ) : (
-                <p className="text-sm">You're on the latest version of Supabase CLI</p>
+                <p className="text-sm">{$t("You're on the latest version of Supabase CLI")}</p>
               )}
             </div>
           )
@@ -117,9 +118,9 @@ export const LocalVersionPopover = () => {
 
         <div className="flex flex-col gap-y-2 px-4">
           <p className="text-xs text-foreground-lighter">
-            All available release versions of the CLI can be found on our{' '}
+            {$t('All available release versions of the CLI can be found on our')}{' '}
             <InlineLink href="https://github.com/supabase/cli/releases">
-              GitHub repository
+              {$t('GitHub repository')}
             </InlineLink>
             .
           </p>
@@ -128,20 +129,21 @@ export const LocalVersionPopover = () => {
         <div className="flex items-center gap-x-2 mt-3 px-4">
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="default">Release schedule</Button>
+              <Button variant="default">{$t('Release schedule')}</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader className="border-b">
-                <DialogTitle>Stable release schedule</DialogTitle>
+                <DialogTitle>{$t('Stable release schedule')}</DialogTitle>
               </DialogHeader>
               <DialogSection className="flex flex-col gap-y-3">
                 <div className="flex flex-col gap-y-2">
                   <p className="text-foreground-lighter text-xs font-mono uppercase">
-                    Approximate next release: {approximateNextRelease}
+                    {$t('Approximate next release:')} {approximateNextRelease}
                   </p>
                   <p className="text-sm">
-                    Supabase CLI releases follows a two-week schedule, with stable updates available
-                    through the{' '}
+                    {$t(
+                      'Supabase CLI releases follows a two-week schedule, with stable updates available through the'
+                    )}{' '}
                     <InlineLink
                       href={`${DOCS_URL}/guides/local-development/cli/getting-started?queryGroups=platform&platform=linux#updating-the-supabase-cli`}
                     >
@@ -152,18 +154,22 @@ export const LocalVersionPopover = () => {
                 </div>
                 <Admonition
                   type="default"
-                  title="Beta Releases"
-                  description="Beta releases are also available between stable releases through the Beta version of the CLI, which might be helpful if you are waiting for a specific fix."
+                  title={$t('Beta Releases')}
+                  description={$t(
+                    'Beta releases are also available between stable releases through the Beta version of the CLI, which might be helpful if you are waiting for a specific fix.'
+                  )}
                 >
-                  <p className="mt-2!">If you'd like to try, we recommend doing so via npm:</p>
+                  <p className="mt-2!">
+                    {$t("If you'd like to try, we recommend doing so via npm:")}
+                  </p>
                   <div className="flex items-center bg-surface-200 py-1 px-2 rounded-sm mt-2 mb-1">
                     <SimpleCodeBlock parentClassName="bg-surface-200">
-                      npm i supabase@beta --save-dev
+                      {$t('npm i supabase@beta --save-dev')}
                     </SimpleCodeBlock>
                   </div>
                   {
                     <p className="text-sm text-foreground-lighter">
-                      Latest Beta version: <span>{data.beta}</span>
+                      {$t('Latest Beta version:')} <span>{data.beta}</span>
                     </p>
                   }
                   <DocsButton
@@ -180,19 +186,19 @@ export const LocalVersionPopover = () => {
               rel="noreferrer noopener"
               href={`${DOCS_URL}/guides/local-development/cli/getting-started?queryGroups=platform&platform=linux`}
             >
-              CLI Docs
+              {$t('CLI Docs')}
             </a>
           </Button>
         </div>
         <PopoverSeparator className="my-4" />
         <div className="flex items-center gap-x-4 px-4">
           <div className="flex flex-col gap-y-1">
-            <p className="text-xs">Current version:</p>
+            <p className="text-xs">{$t('Current version:')}</p>
             <p className="text-sm font-mono">{currentCliVersion}</p>
           </div>
           {hasLatestCLIVersion && hasUpdate && !isBeta && (
             <div className="flex flex-col gap-y-1">
-              <p className="text-xs">Available version:</p>
+              <p className="text-xs">{$t('Available version:')}</p>
               <p className="text-sm font-mono">{latestCliVersion}</p>
             </div>
           )}

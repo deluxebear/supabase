@@ -11,6 +11,7 @@ import { useProjectRestartServicesMutation } from '@/data/projects/project-resta
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface RestartProjectDialogProps {
   visible: boolean
@@ -38,7 +39,7 @@ export function RestartProjectDialog({
       if (project?.ref) {
         setProjectStatus({ ref: project.ref, status: PROJECT_STATUS.RESTARTING })
       }
-      toast.success('Restarting project')
+      toast.success($t('Restarting project'))
       router.push(`/project/${project?.ref}`)
       onClose()
     },
@@ -53,7 +54,7 @@ export function RestartProjectDialog({
         if (project?.ref) {
           setProjectStatus({ ref: project.ref, status: PROJECT_STATUS.RESTARTING })
         }
-        toast.success('Restarting database')
+        toast.success($t('Restarting database'))
         router.push(`/project/${project?.ref}`)
         onClose()
       },
@@ -68,7 +69,7 @@ export function RestartProjectDialog({
     if (!project?.ref) return
 
     if (!canRestartProject) {
-      return toast.error('You do not have the required permissions to restart this project')
+      return toast.error($t('You do not have the required permissions to restart this project'))
     }
 
     if (restartType === 'project') {

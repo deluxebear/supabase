@@ -12,6 +12,7 @@ import {
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { useDataTable } from '@/components/ui/DataTable/providers/DataTableProvider'
 import { Shortcut } from '@/components/ui/Shortcut'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 interface ServiceFlowPanelControlsProps {
@@ -105,14 +106,14 @@ export const ServiceFlowPanelControls = ({
           <DropdownMenuItem className="justify-between" onClick={() => setDock('bottom')}>
             <div className="flex items-center gap-x-2">
               <PanelBottom size={14} />
-              <span>Dock to bottom</span>
+              <span>{$t('Dock to bottom')}</span>
             </div>
             {dock === 'bottom' && <Check size={14} className="text-brand" />}
           </DropdownMenuItem>
           <DropdownMenuItem className="justify-between" onClick={() => setDock('right')}>
             <div className="flex items-center gap-x-2">
               <PanelRight size={14} />
-              <span>Dock to right</span>
+              <span>{$t('Dock to right')}</span>
             </div>
             {dock === 'right' && <Check size={14} className="text-brand" />}
           </DropdownMenuItem>

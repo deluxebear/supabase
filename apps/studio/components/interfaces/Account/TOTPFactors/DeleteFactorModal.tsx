@@ -5,6 +5,7 @@ import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import { organizationKeys } from '@/data/organizations/keys'
 import { useMfaUnenrollMutation } from '@/data/profile/mfa-unenroll-mutation'
 import { useLastVisitedOrganization } from '@/hooks/misc/useLastVisitedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 interface DeleteFactorModalProps {
   visible: boolean
@@ -39,7 +40,7 @@ const DeleteFactorModal = ({
       size="medium"
       visible={visible}
       variant={'destructive'}
-      title="Confirm to delete factor"
+      title={$t('Confirm to delete factor')}
       confirmLabel="Delete"
       confirmLabelLoading="Deleting"
       loading={isPending}
@@ -54,20 +55,22 @@ const DeleteFactorModal = ({
           : 'You will no longer be able to use this authenticator app for multi-factor authentication when signing in to the dashboard',
       }}
     >
-      <p className="text-sm">Before deleting this factor, consider:</p>
+      <p className="text-sm">{$t('Before deleting this factor, consider:')}</p>
       <ul className="text-sm text-foreground-light py-1 list-disc mx-4 space-y-1">
         {lastFactorToBeDeleted ? (
           <>
-            <li>Adding another authenticator app as a factor prior to deleting</li>
-            <li>Ensure that your account does not need multi-factor authentication</li>
+            <li>{$t('Adding another authenticator app as a factor prior to deleting')}</li>
+            <li>{$t('Ensure that your account does not need multi-factor authentication')}</li>
             <li>
-              You will lose access to any organization that enforces multi-factor authentication
+              {$t(
+                'You will lose access to any organization that enforces multi-factor authentication'
+              )}
             </li>
           </>
         ) : (
           <>
-            <li>Your backup authenticator app is still available to use</li>
-            <li>Adding another authenticator app thereafter as a backup</li>
+            <li>{$t('Your backup authenticator app is still available to use')}</li>
+            <li>{$t('Adding another authenticator app thereafter as a backup')}</li>
           </>
         )}
       </ul>

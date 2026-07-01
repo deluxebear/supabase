@@ -1,6 +1,7 @@
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 
 import { PrivateApp } from '../PrivateAppsContext'
+import { t as $t } from '@/lib/i18n'
 
 interface DeleteAppModalProps {
   app: PrivateApp | null
@@ -34,8 +35,8 @@ export function DeleteAppModal({
       }}
     >
       <p className="text-sm text-foreground-light">
-        Are you sure you want to delete <strong>{app?.name}</strong>? This will also remove all
-        installations associated with this app.
+        {$t('Are you sure you want to delete')} <strong>{app?.name}</strong>
+        {$t('? This will also remove all installations associated with this app.')}
       </p>
     </ConfirmationModal>
   )

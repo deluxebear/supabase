@@ -20,6 +20,7 @@ import { Markdown } from '@/components/interfaces/Markdown'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { useSupavisorConfigurationQuery } from '@/data/database/supavisor-configuration-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 import { useDatabaseSettingsStateSnapshot } from '@/state/database-settings'
 
@@ -42,15 +43,16 @@ export const PoolingModesModal = () => {
         <DialogHeader>
           <DialogTitle>
             <div className="w-full flex items-center justify-between">
-              <p className="max-w-2xl">Which pooling mode should I use?</p>
+              <p className="max-w-2xl">{$t('Which pooling mode should I use?')}</p>
               <DocsButton
                 href={`${DOCS_URL}/guides/database/connecting-to-postgres#how-connection-pooling-works`}
               />
             </div>
           </DialogTitle>
           <DialogDescription className="max-w-2xl">
-            A connection pooler is a system (external to Postgres) which manages Postgres
-            connections by allocating connections whenever clients make requests.
+            {$t(
+              'A connection pooler is a system (external to Postgres) which manages Postgres connections by allocating connections whenever clients make requests.'
+            )}
           </DialogDescription>
         </DialogHeader>
         <DialogSectionSeparator />
@@ -79,10 +81,13 @@ This mode is similar to connecting to your database directly. There is full supp
           <div className="px-6">
             <Alert variant="warning">
               <AlertTriangleIcon strokeWidth={2} />
-              <AlertTitle>Pooling mode is currently configured to use session mode</AlertTitle>
+              <AlertTitle>
+                {$t('Pooling mode is currently configured to use session mode')}
+              </AlertTitle>
               <AlertDescription>
-                To use transaction mode concurrently with session mode, change the pooling mode to
-                transaction first in the{' '}
+                {$t(
+                  'To use transaction mode concurrently with session mode, change the pooling mode to transaction first in the'
+                )}{' '}
                 <span
                   tabIndex={0}
                   className="text-foreground cursor-pointer underline underline-offset-2"
@@ -91,17 +96,18 @@ This mode is similar to connecting to your database directly. There is full supp
                     navigateToPoolerSettings()
                   }}
                 >
-                  connection pooling settings
+                  {$t('connection pooling settings')}
                 </span>
-                . After this, you can use transaction mode on port 6543 and session mode on port
-                5432.
+                {$t(
+                  '. After this, you can use transaction mode on port 6543 and session mode on port 5432.'
+                )}
               </AlertDescription>
             </Alert>
           </div>
         )}
         <DialogFooter>
           <DialogClose onClick={() => snap.setShowPoolingModeHelper(false)}>
-            <Button variant="default">Close</Button>
+            <Button variant="default">{$t('Close')}</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

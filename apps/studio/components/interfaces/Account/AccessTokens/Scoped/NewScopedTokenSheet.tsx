@@ -35,6 +35,7 @@ import {
   type NewScopedAccessToken,
   type ScopedAccessTokenCreateVariables,
 } from '@/data/scoped-access-tokens/scoped-access-token-create-mutation'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export interface NewScopedTokenSheetProps {
@@ -75,7 +76,7 @@ export const NewScopedTokenSheet = ({
 
   const onSubmit: SubmitHandler<TokenFormValues> = async (values) => {
     if (!permissionRows || permissionRows.length === 0) {
-      toast.error('Please configure at least one permission.')
+      toast.error($t('Please configure at least one permission.'))
       return
     }
 
@@ -83,7 +84,7 @@ export const NewScopedTokenSheet = ({
       (row) => row.resource && row.actions && row.actions.length > 0
     )
     if (!hasValidPermissions) {
-      toast.error('Please ensure all permissions have both resource and action selected.')
+      toast.error($t('Please ensure all permissions have both resource and action selected.'))
       return
     }
 
@@ -91,7 +92,7 @@ export const NewScopedTokenSheet = ({
       const selectedOrgs = values.selectedOrganizations || []
 
       if (selectedOrgs.length === 0) {
-        toast.error('Please select at least one organization.')
+        toast.error($t('Please select at least one organization.'))
         return
       }
 
@@ -110,7 +111,7 @@ export const NewScopedTokenSheet = ({
       const selectedProjects = values.selectedProjects || []
 
       if (selectedProjects.length === 0) {
-        toast.error('Please select at least one project.')
+        toast.error($t('Please select at least one project.'))
         return
       }
 
@@ -138,7 +139,7 @@ export const NewScopedTokenSheet = ({
       .filter(Boolean) as ScopedAccessTokenPermission[]
 
     if (!permissions || permissions.length === 0) {
-      toast.error('Please configure at least one valid permission.')
+      toast.error($t('Please configure at least one valid permission.'))
       return
     }
 
@@ -166,12 +167,12 @@ export const NewScopedTokenSheet = ({
     }
 
     if (!finalPayload.name || finalPayload.name.trim() === '') {
-      toast.error('Please enter a token name.')
+      toast.error($t('Please enter a token name.'))
       return
     }
 
     if (!finalPayload.permissions || finalPayload.permissions.length === 0) {
-      toast.error('Please configure at least one permission.')
+      toast.error($t('Please configure at least one permission.'))
       return
     }
 
@@ -183,7 +184,7 @@ export const NewScopedTokenSheet = ({
           resourceAccess: values.resourceAccess,
           permissionCount: permissions.length,
         })
-        toast.success('Access token created successfully')
+        toast.success($t('Access token created successfully'))
         onCreateToken(data)
         handleClose()
       },
@@ -254,7 +255,7 @@ export const NewScopedTokenSheet = ({
             {tokenScope === 'V0' ? 'Generate token for experimental API' : 'Generate New Token'}
           </SheetTitle>
           <SheetDescription className="sr-only">
-            A form to generate a new scoped access token.
+            {$t('A form to generate a new scoped access token.')}
           </SheetDescription>
         </SheetHeader>
         <ScrollArea className="flex-1 max-h-[calc(100vh-116px)]">
@@ -263,12 +264,15 @@ export const NewScopedTokenSheet = ({
               <div className="px-4 sm:px-5 py-4 pb-4">
                 <Admonition
                   type="warning"
-                  title="The experimental API provides additional endpoints which allows you to manage your organizations and projects."
+                  title={$t(
+                    'The experimental API provides additional endpoints which allows you to manage your organizations and projects.'
+                  )}
                   description={
                     <>
                       <p>
-                        These include deleting organizations and projects which cannot be undone. As
-                        such, be very careful when using this API.
+                        {$t(
+                          'These include deleting organizations and projects which cannot be undone. As such, be very careful when using this API.'
+                        )}
                       </p>
                       <div className="mt-4">
                         <Button asChild variant="default" icon={<ExternalLink />}>
@@ -277,7 +281,7 @@ export const NewScopedTokenSheet = ({
                             target="_blank"
                             rel="noreferrer"
                           >
-                            Experimental API documentation
+                            {$t('Experimental API documentation')}
                           </Link>
                         </Button>
                       </div>
@@ -315,10 +319,10 @@ export const NewScopedTokenSheet = ({
         <SheetFooter className="justify-end! w-full mt-auto py-4 border-t">
           <div className="flex gap-2">
             <Button variant="default" disabled={isPending} onClick={handleClose}>
-              Cancel
+              {$t('Cancel')}
             </Button>
             <Button onClick={form.handleSubmit(onSubmit)} loading={isPending}>
-              Generate token
+              {$t('Generate token')}
             </Button>
           </div>
         </SheetFooter>

@@ -17,6 +17,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import * as z from 'zod'
 
 import { ButtonTooltip } from '../ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 
 export function MessageActions({
   children,
@@ -58,8 +59,8 @@ function MessageActionsDelete({ onClick }: { onClick: () => void }) {
       tooltip={{ content: { side: 'bottom', text: 'Delete message' } }}
       onClick={onClick}
       className="text-foreground-light hover:text-foreground p-1 rounded-sm"
-      title="Delete message"
-      aria-label="Delete message"
+      title={$t('Delete message')}
+      aria-label={$t('Delete message')}
     />
   )
 }
@@ -94,8 +95,8 @@ function MessageActionsThumbsUp({
         'p-1 rounded-sm transition-colors',
         disabled && 'opacity-50 pointer-events-none'
       )}
-      title="Good response"
-      aria-label="Good response"
+      title={$t('Good response')}
+      aria-label={$t('Good response')}
     />
   )
 }
@@ -161,8 +162,8 @@ function MessageActionsThumbsDown({
             'p-1 rounded-sm transition-colors',
             disabled && 'opacity-50 pointer-events-none'
           )}
-          title="Bad response"
-          aria-label="Bad response"
+          title={$t('Bad response')}
+          aria-label={$t('Bad response')}
         >
           <ThumbsDown
             size={14}
@@ -177,7 +178,7 @@ function MessageActionsThumbsDown({
       </PopoverTrigger>
       <PopoverContent className="w-80" align="start">
         {form.formState.isSubmitSuccessful ? (
-          <p className="text-sm">We appreciate your feedback!</p>
+          <p className="text-sm">{$t('We appreciate your feedback!')}</p>
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
@@ -185,10 +186,10 @@ function MessageActionsThumbsDown({
                 control={form.control}
                 name="reason"
                 render={({ field }) => (
-                  <FormItemLayout label="What went wrong?" labelOptional="optional">
+                  <FormItemLayout label={$t('What went wrong?')} labelOptional="optional">
                     <FormControl>
                       <TextArea
-                        placeholder="Describe why the response was not helpful..."
+                        placeholder={$t('Describe why the response was not helpful...')}
                         autoComplete="off"
                         rows={4}
                         autoFocus
@@ -200,7 +201,7 @@ function MessageActionsThumbsDown({
               />
               <div className="flex justify-end">
                 <Button variant="primary" type="submit" size="tiny">
-                  Submit feedback
+                  {$t('Submit feedback')}
                 </Button>
               </div>
             </form>

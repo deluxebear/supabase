@@ -11,6 +11,7 @@ import { useProjectApiUrl } from '@/data/config/project-endpoint-query'
 import { useProjectJsonSchemaQuery } from '@/data/docs/project-json-schema-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface ResourceContentProps {
   resourceId: string
@@ -62,7 +63,7 @@ export const ResourceContent = ({
         content={
           <>
             <label className="font-mono text-xs uppercase text-foreground-lighter inline-block mb-2">
-              Description
+              {$t('Description')}
             </label>
             <Description
               content={description}
@@ -113,20 +114,23 @@ export const ResourceContent = ({
 
       {methods.includes('GET') && (
         <DocSection
-          title="Read rows"
+          title={$t('Read rows')}
           content={
             <>
               <p>
-                To read rows in <code>{resourceId}</code>, use the <code>select</code> method.
+                {$t('To read rows in')} <code>{resourceId}</code>
+                {$t(', use the')} <code>select</code> method.
               </p>
               <p>
-                <InlineLink href={`${DOCS_URL}/reference/javascript/select`}>Learn more</InlineLink>
+                <InlineLink href={`${DOCS_URL}/reference/javascript/select`}>
+                  {$t('Learn more')}
+                </InlineLink>
               </p>
-              <h4 className="text-default">Filtering</h4>
-              <p>Supabase provides a wide range of filters.</p>
+              <h4 className="text-default">{$t('Filtering')}</h4>
+              <p>{$t('Supabase provides a wide range of filters.')}</p>
               <p>
                 <InlineLink href={`${DOCS_URL}/reference/javascript/using-filters`}>
-                  Learn more
+                  {$t('Learn more')}
                 </InlineLink>
               </p>
             </>
@@ -164,18 +168,20 @@ export const ResourceContent = ({
 
       {methods.includes('POST') && (
         <DocSection
-          title="Insert rows"
+          title={$t('Insert rows')}
           content={
             <>
               <p>
-                <code>insert</code> lets you insert into your tables. You can also insert in bulk
-                and do UPSERT.
+                <code>insert</code>{' '}
+                {$t('lets you insert into your tables. You can also insert in bulk and do UPSERT.')}
               </p>
               <p>
-                <code>insert</code> will also return the replaced values for UPSERT.
+                <code>insert</code> {$t('will also return the replaced values for UPSERT.')}
               </p>
               <p>
-                <InlineLink href={`${DOCS_URL}/reference/javascript/insert`}>Learn more</InlineLink>
+                <InlineLink href={`${DOCS_URL}/reference/javascript/insert`}>
+                  {$t('Learn more')}
+                </InlineLink>
               </p>
             </>
           }
@@ -200,19 +206,24 @@ export const ResourceContent = ({
 
       {methods.includes('PATCH') && (
         <DocSection
-          title="Update rows"
+          title={$t('Update rows')}
           content={
             <>
               <p>
-                <code>update</code> lets you update rows. <code>update</code> will match all rows by
-                default. You can update specific rows using horizontal filters, e.g. <code>eq</code>
-                , <code>lt</code>, and <code>is</code>.
+                <code>update</code> {$t('lets you update rows.')} <code>update</code>{' '}
+                {$t(
+                  'will match all rows by default. You can update specific rows using horizontal filters, e.g.'
+                )}{' '}
+                <code>eq</code>, <code>lt</code>
+                {$t(', and')} <code>is</code>.
               </p>
               <p>
-                <code>update</code> will also return the replaced values for UPDATE.
+                <code>update</code> {$t('will also return the replaced values for UPDATE.')}
               </p>
               <p>
-                <InlineLink href={`${DOCS_URL}/reference/javascript/update`}>Learn more</InlineLink>
+                <InlineLink href={`${DOCS_URL}/reference/javascript/update`}>
+                  {$t('Learn more')}
+                </InlineLink>
               </p>
             </>
           }
@@ -227,15 +238,17 @@ export const ResourceContent = ({
 
       {methods.includes('DELETE') && (
         <DocSection
-          title="Delete rows"
+          title={$t('Delete rows')}
           content={
             <>
               <p>
-                <code>delete</code> lets you delete rows. <code>delete</code> will match all rows by
-                default, so remember to specify your filters!
+                <code>delete</code> {$t('lets you delete rows.')} <code>delete</code>{' '}
+                {$t('will match all rows by default, so remember to specify your filters!')}
               </p>
               <p>
-                <InlineLink href={`${DOCS_URL}/reference/javascript/delete`}>Learn more</InlineLink>
+                <InlineLink href={`${DOCS_URL}/reference/javascript/delete`}>
+                  {$t('Learn more')}
+                </InlineLink>
               </p>
             </>
           }
@@ -251,16 +264,17 @@ export const ResourceContent = ({
       {realtimeEnabled &&
         (methods.includes('DELETE') || methods.includes('POST') || methods.includes('PATCH')) && (
           <DocSection
-            title="Subscribe to changes"
+            title={$t('Subscribe to changes')}
             content={
               <>
                 <p>
-                  Supabase provides realtime functionality and broadcasts database changes to
-                  authorized users depending on Row Level Security (RLS) policies.
+                  {$t(
+                    'Supabase provides realtime functionality and broadcasts database changes to authorized users depending on Row Level Security (RLS) policies.'
+                  )}
                 </p>
                 <p>
                   <InlineLink href={`${DOCS_URL}/reference/javascript/subscribe`}>
-                    Learn more
+                    {$t('Learn more')}
                   </InlineLink>
                 </p>
               </>

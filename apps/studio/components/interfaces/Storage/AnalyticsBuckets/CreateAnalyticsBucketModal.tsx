@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogSectionSeparator, DialogTitl
 
 import { BUCKET_TYPES } from '../Storage.constants'
 import { CreateAnalyticsBucketForm } from './CreateAnalyticsBucketForm'
+import { t as $t } from '@/lib/i18n'
 
 interface CreateAnalyticsBucketModalProps {
   open: boolean
@@ -18,7 +19,9 @@ export const CreateAnalyticsBucketModal = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent size="medium" aria-describedby={undefined}>
         <DialogHeader>
-          <DialogTitle>Create {config.singularName} bucket</DialogTitle>
+          <DialogTitle>
+            {$t('Create')} {config.singularName} bucket
+          </DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <CreateAnalyticsBucketForm type="dialog" onOpenChange={onOpenChange} />

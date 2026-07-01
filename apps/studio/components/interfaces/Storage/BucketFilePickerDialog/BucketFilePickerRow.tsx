@@ -6,6 +6,7 @@ import { Checkbox, cn, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 import { STORAGE_ROW_STATUS, STORAGE_ROW_TYPES, STORAGE_VIEWS } from '../Storage.constants'
 import { type StorageItem } from '../Storage.types'
 import { formatBytes } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 const RowIcon = ({
   view,
@@ -146,7 +147,7 @@ export const BucketFilePickerRow = ({
                 <AlertCircle size={18} strokeWidth={2} className="text-foreground-light" />
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                File is corrupted, please delete and reupload again.
+                {$t('File is corrupted, please delete and reupload again.')}
               </TooltipContent>
             </Tooltip>
           )}

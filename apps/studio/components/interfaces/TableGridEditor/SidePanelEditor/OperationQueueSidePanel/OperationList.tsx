@@ -1,6 +1,7 @@
 import { AddRowOperationItem } from './AddRowOperationItem'
 import { DeleteRowOperationItem } from './DeleteRowOperationItem'
 import { OperationItem } from './OperationItem'
+import { t as $t } from '@/lib/i18n'
 import {
   isAddRowOperation,
   isDeleteRowOperation,
@@ -16,7 +17,7 @@ export const OperationList = ({ operations }: OperationListProps) => {
   if (operations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full">
-        <p className="text-base text-foreground-muted">No pending changes</p>
+        <p className="text-base text-foreground-muted">{$t('No pending changes')}</p>
       </div>
     )
   }
@@ -30,7 +31,8 @@ export const OperationList = ({ operations }: OperationListProps) => {
       {deleteOperations.length > 0 && (
         <div className="space-y-3 p-4">
           <h3 className="text-xs text-foreground-lighter font-mono uppercase">
-            {deleteOperations.length} row deletion{deleteOperations.length !== 1 ? 's' : ''}
+            {deleteOperations.length} {$t('row deletion')}
+            {deleteOperations.length !== 1 ? 's' : ''}
           </h3>
 
           <div className="space-y-3">
@@ -49,7 +51,8 @@ export const OperationList = ({ operations }: OperationListProps) => {
       {addOperations.length > 0 && (
         <div className="space-y-3 p-4">
           <h3 className="text-xs text-foreground-lighter font-mono uppercase">
-            {addOperations.length} row addition{addOperations.length !== 1 ? 's' : ''}
+            {addOperations.length} {$t('row addition')}
+            {addOperations.length !== 1 ? 's' : ''}
           </h3>
           <div className="space-y-3">
             {addOperations.map((op) => (
@@ -67,7 +70,8 @@ export const OperationList = ({ operations }: OperationListProps) => {
       {editOperations.length > 0 && (
         <div className="space-y-3 p-4">
           <h3 className="text-xs text-foreground-lighter font-mono uppercase">
-            {editOperations.length} cell edit{editOperations.length !== 1 ? 's' : ''}
+            {editOperations.length} {$t('cell edit')}
+            {editOperations.length !== 1 ? 's' : ''}
           </h3>
 
           <div className="space-y-3">

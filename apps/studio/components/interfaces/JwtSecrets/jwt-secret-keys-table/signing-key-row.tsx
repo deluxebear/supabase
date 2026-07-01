@@ -28,6 +28,7 @@ import { AlgorithmHoverCard } from '../algorithm-hover-card'
 import { statusColors, statusLabels } from '../jwt.constants'
 import { DropdownMenuItemTooltip } from '@/components/ui/DropdownMenuItemTooltip'
 import { JWTSigningKey } from '@/data/jwt-signing-keys/jwt-signing-keys-query'
+import { t as $t } from '@/lib/i18n'
 
 interface SigningKeyRowProps {
   signingKey: components['schemas']['SigningKeyResponse']
@@ -138,7 +139,8 @@ export const SigningKeyRow = ({
                 }}
               >
                 <Eye className="mr-2 size-4" />
-                View key details
+
+                {$t('View key details')}
               </DropdownMenuItem>
             )}
             {signingKey.status === 'standby' && (
@@ -148,7 +150,8 @@ export const SigningKeyRow = ({
                   className="text-destructive"
                 >
                   <CircleArrowDown className="mr-2 size-4" />
-                  Move to previously used
+
+                  {$t('Move to previously used')}
                 </DropdownMenuItem>
               </>
             )}
@@ -167,7 +170,8 @@ export const SigningKeyRow = ({
                   }}
                 >
                   <CircleArrowUp className="mr-2 size-4" />
-                  Move to standby key
+
+                  {$t('Move to standby key')}
                 </DropdownMenuItemTooltip>
                 <DropdownMenuItem
                   onSelect={() => {
@@ -177,7 +181,8 @@ export const SigningKeyRow = ({
                   className="text-destructive"
                 >
                   <ShieldOff className="mr-2 size-4" />
-                  Revoke key
+
+                  {$t('Revoke key')}
                 </DropdownMenuItem>
               </>
             )}
@@ -196,7 +201,8 @@ export const SigningKeyRow = ({
                   }}
                 >
                   <CircleArrowUp className="mr-2 size-4" />
-                  Move to standby key
+
+                  {$t('Move to standby key')}
                 </DropdownMenuItemTooltip>
                 <DropdownMenuItem
                   onSelect={() => {
@@ -207,7 +213,8 @@ export const SigningKeyRow = ({
                   disabled={legacyKey?.id === signingKey.id}
                 >
                   <Trash2 className="mr-2 size-4" />
-                  Delete permanently
+
+                  {$t('Delete permanently')}
                 </DropdownMenuItem>
               </>
             )}

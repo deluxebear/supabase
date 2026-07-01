@@ -19,6 +19,7 @@ import { orgItemHasSubmenu, useOrgMenuNavigation } from './useOrgMenuNavigation'
 import { ICON_SIZE, ICON_STROKE_WIDTH } from '@/components/interfaces/Sidebar'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import { getPathnameWithoutQuery } from '@/lib/pathname.utils'
 import { useTrack } from '@/lib/telemetry/track'
 
@@ -125,7 +126,7 @@ export function OrgMenuContent({ onCloseSheet }: OrgMenuContentProps) {
             className="p-1! justify-start"
             icon={<ChevronLeft size={20} />}
             onClick={handleBackToTop}
-            aria-label="Back to menu"
+            aria-label={$t('Back to menu')}
             block
           >
             <span className="font-medium truncate text-sm">{sectionLabel ?? sectionKeyToShow}</span>
@@ -143,7 +144,7 @@ export function OrgMenuContent({ onCloseSheet }: OrgMenuContentProps) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto text-sidebar-foreground">
-        <nav className="flex flex-col gap-2 p-1" aria-label="Organization menu">
+        <nav className="flex flex-col gap-2 p-1" aria-label={$t('Organization menu')}>
           <SidebarMenu>
             <SidebarGroup className="gap-0.5">
               {navMenuItems.map((item, i) => (

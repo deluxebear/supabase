@@ -4,6 +4,7 @@ import { Button, Collapsible, CollapsibleContent, CollapsibleTrigger } from 'ui'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 
 import { type ExposedEntity } from './DataApiEnableSwitch.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface UnsafeEntitiesConfirmModalProps {
   visible: boolean
@@ -84,7 +85,7 @@ export const UnsafeEntitiesConfirmModal = ({
       variant="warning"
       visible={visible}
       loading={loading}
-      title="Insecure objects detected"
+      title={$t('Insecure objects detected')}
       confirmLabel="Enable Data API"
       confirmLabelLoading="Enabling"
       onCancel={onCancel}
@@ -93,7 +94,9 @@ export const UnsafeEntitiesConfirmModal = ({
     >
       <div className="text-sm text-foreground-light space-y-4">
         <p>
-          The following objects will be publicly accessible through the Data API and are insecure.
+          {$t(
+            'The following objects will be publicly accessible through the Data API and are insecure.'
+          )}
         </p>
         {groupedEntities.map(({ type, heading, recommendation, docsUrl, entities }) => (
           <div key={type} className="space-y-1">
@@ -107,7 +110,7 @@ export const UnsafeEntitiesConfirmModal = ({
                 rel="noopener noreferrer"
                 className="underline hover:text-foreground"
               >
-                Learn more
+                {$t('Learn more')}
               </a>
             </p>
           </div>

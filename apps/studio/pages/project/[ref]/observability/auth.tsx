@@ -39,6 +39,7 @@ import {
   createUsageReportConfig,
 } from '@/data/reports/v2/auth.config'
 import { useRefreshHandler, useReportDateRange } from '@/hooks/misc/useReportDateRange'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 import type { NextPageWithLayout } from '@/types'
@@ -53,7 +54,7 @@ const AuthReport: NextPageWithLayout = () => {
 
 AuthReport.getLayout = (page) => (
   <DefaultLayout>
-    <ObservabilityLayout title="Auth">{page}</ObservabilityLayout>
+    <ObservabilityLayout title={$t('Auth')}>{page}</ObservabilityLayout>
   </DefaultLayout>
 )
 
@@ -221,7 +222,7 @@ const AuthUsage = () => {
               <DocsButton href={OBSERVABILITY_DOCS_HREFS.auth} topic={REPORT_TITLE} />
               <ShortcutTooltip
                 shortcutId={SHORTCUT_IDS.OBSERVABILITY_REFRESH}
-                label="Refresh report"
+                label={$t('Refresh report')}
                 side="bottom"
               >
                 <Button
@@ -244,8 +245,10 @@ const AuthUsage = () => {
               <UpgradePrompt
                 show={showUpgradePrompt}
                 setShowUpgradePrompt={setShowUpgradePrompt}
-                title="Report date range"
-                description="Report data can be stored for a maximum of 3 months depending on the plan that your project is on."
+                title={$t('Report date range')}
+                description={$t(
+                  'Report data can be stored for a maximum of 3 months depending on the plan that your project is on.'
+                )}
                 source="authReportDateRange"
               />
               {selectedDateRange && (
@@ -270,11 +273,13 @@ const AuthUsage = () => {
             <div>
               <ReportSectionHeader
                 id="usage"
-                title="Usage"
-                description="Monitor user activity, sign-ins, sign-ups, and password reset requests to understand how users interact with your authentication system."
+                title={$t('Usage')}
+                description={$t(
+                  'Monitor user activity, sign-ins, sign-ups, and password reset requests to understand how users interact with your authentication system.'
+                )}
               />
               <ReportsSelectFilter
-                label="Provider"
+                label={$t('Provider')}
                 options={providerOptions}
                 value={usageProviderFilter || []}
                 onChange={setUsageProviderFilter}
@@ -304,12 +309,14 @@ const AuthUsage = () => {
             <div>
               <ReportSectionHeader
                 id="monitoring"
-                title="Monitoring"
-                description="Track authentication errors by status code and error type to identify issues and improve user experience."
+                title={$t('Monitoring')}
+                description={$t(
+                  'Track authentication errors by status code and error type to identify issues and improve user experience.'
+                )}
               />
 
               <ReportsNumericFilter
-                label="Status Code"
+                label={$t('Status Code')}
                 value={monitoringStatusCodeFilter}
                 onChange={setMonitoringStatusCodeFilter}
                 defaultOperator="="
@@ -337,8 +344,10 @@ const AuthUsage = () => {
           <div className="flex flex-col gap-4" id="performance">
             <ReportSectionHeader
               id="performance"
-              title="Performance"
-              description="Monitor sign-in and sign-up performance metrics including average, percentiles, and request counts to ensure optimal authentication speed."
+              title={$t('Performance')}
+              description={$t(
+                'Monitor sign-in and sign-up performance metrics including average, percentiles, and request counts to ensure optimal authentication speed.'
+              )}
             />
             <div className="grid md:grid-cols-2 gap-4">
               {latencyReportConfig.map((metric) => (
@@ -361,8 +370,10 @@ const AuthUsage = () => {
             <div className="mb-4 space-y-4">
               <ReportSectionHeader
                 id="auth-api-gateway"
-                title="Auth API Gateway"
-                description="Monitor user activity, sign-ins, sign-ups, and password reset requests to understand how users interact with your authentication system."
+                title={$t('Auth API Gateway')}
+                description={$t(
+                  'Monitor user activity, sign-ins, sign-ups, and password reset requests to understand how users interact with your authentication system.'
+                )}
               />
               <ReportFilterBar
                 filters={filters}

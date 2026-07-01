@@ -6,6 +6,7 @@ import { AnimatedLogos } from './AnimatedLogos'
 import { VoteLink } from './VoteLink'
 import { UpgradePlanButton } from '@/components/ui/UpgradePlanButton'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const LogDrainsEmpty = () => {
   const items = [
@@ -33,9 +34,11 @@ export const LogDrainsEmpty = () => {
         <div className="w-full max-w-4xl flex flex-col items-center gap-0">
           <div className="text-center mb-12">
             <AnimatedLogos />
-            <h2 className="heading-section mb-1">Capture your logs, your way</h2>
+            <h2 className="heading-section mb-1">{$t('Capture your logs, your way')}</h2>
             <p className="text-foreground-light mb-6">
-              Upgrade to a Pro, Team or Enterprise Plan to send your logs to your preferred platform
+              {$t(
+                'Upgrade to a Pro, Team or Enterprise Plan to send your logs to your preferred platform'
+              )}
             </p>
             {/* This should only be shown to free tier users so upgrade to Pro makes sense */}
             <UpgradePlanButton

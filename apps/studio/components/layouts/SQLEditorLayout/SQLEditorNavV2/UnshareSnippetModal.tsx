@@ -6,6 +6,7 @@ import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import { getContentById } from '@/data/content/content-id-query'
 import { useContentUpsertMutation } from '@/data/content/content-upsert-mutation'
 import { Snippet } from '@/data/content/sql-folders-query'
+import { t as $t } from '@/lib/i18n'
 import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
 import type { SqlSnippets } from '@/types'
 
@@ -41,7 +42,7 @@ export const UnshareSnippetModal = ({
 
     // [Joshen] Just as a final check - to ensure that the content is minimally there (empty string is fine)
     if (snippetContent === undefined) {
-      return toast.error('Unable to update snippet visibility: Content is missing')
+      return toast.error($t('Unable to update snippet visibility: Content is missing'))
     }
 
     upsertContent(
@@ -61,7 +62,7 @@ export const UnshareSnippetModal = ({
             snippet: { visibility: 'user', folder_id: null },
             skipSave: true,
           })
-          toast.success('Snippet is now unshared from the project')
+          toast.success($t('Snippet is now unshared from the project'))
           onSuccess?.()
           onClose()
         },
@@ -89,7 +90,7 @@ export const UnshareSnippetModal = ({
       >
         <li className="flex gap-3">
           <EyeOffIcon />
-          <span>Project members will no longer be able to view this query.</span>
+          <span>{$t('Project members will no longer be able to view this query.')}</span>
         </li>
       </ul>
     </ConfirmationModal>

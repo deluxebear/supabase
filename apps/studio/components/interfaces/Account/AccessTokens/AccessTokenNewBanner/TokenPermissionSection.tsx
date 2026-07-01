@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Button, Collapsible, CollapsibleContent, CollapsibleTrigger } from 'ui'
 
 import { PermissionsList } from './PermissionList'
+import { t as $t } from '@/lib/i18n'
 
 const PERMISSIONS_COLLAPSE_THRESHOLD = 5
 
@@ -32,7 +33,10 @@ export const TokenPermissionsSection = ({
             >
               <div className="flex items-center gap-1.5">
                 {permissionsOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                <span>Permissions assigned to this token ({totalCount})</span>
+                <span>
+                  {$t('Permissions assigned to this token (')}
+                  {totalCount})
+                </span>
               </div>
             </Button>
           </CollapsibleTrigger>
@@ -42,7 +46,7 @@ export const TokenPermissionsSection = ({
         </Collapsible>
       ) : (
         <>
-          <h3 className="text-sm font-medium mb-3">Permissions assigned to this token:</h3>
+          <h3 className="text-sm font-medium mb-3">{$t('Permissions assigned to this token:')}</h3>
           <PermissionsList groupedPermissions={groupedPermissions} />
         </>
       )}

@@ -26,6 +26,7 @@ import { useOngoingQueriesQuery } from '@/data/sql/ongoing-queries-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useUrlState } from '@/hooks/ui/useUrlState'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useAppStateSnapshot } from '@/state/app-state'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 import type { ResponseError } from '@/types'
@@ -85,7 +86,7 @@ export const OngoingQueriesPanel = () => {
         <SheetContent size="lg">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-x-2">
-              Running queries on{' '}
+              {$t('Running queries on')}{' '}
               {database?.identifier === project?.ref ? 'primary database' : 'read replica'}
               <Button
                 variant="default"
@@ -96,9 +97,9 @@ export const OngoingQueriesPanel = () => {
               />
             </SheetTitle>
             <SheetDescription>
-              There {queries.length === 1 ? 'is' : 'are'}{' '}
+              {$t('There')} {queries.length === 1 ? 'is' : 'are'}{' '}
               <span className="text-foreground-light">{queries.length}</span> quer
-              {queries.length === 1 ? 'y' : 'ies'} currently running{' '}
+              {queries.length === 1 ? 'y' : 'ies'} {$t('currently running')}{' '}
               {database?.identifier !== project?.ref ? `on replica ${database?.identifier}` : ''}
             </SheetDescription>
           </SheetHeader>
@@ -114,7 +115,7 @@ export const OngoingQueriesPanel = () => {
             {queries.length === 0 && (
               <div className="flex flex-col gap-y-2 items-center justify-center h-full text-foreground-light text-sm">
                 <span>
-                  No queries are currently running on the{' '}
+                  {$t('No queries are currently running on the')}{' '}
                   {database?.identifier !== project?.ref
                     ? `read replica ${database?.identifier}`
                     : (databases ?? []).length > 1
@@ -127,7 +128,7 @@ export const OngoingQueriesPanel = () => {
                   icon={<RefreshCw />}
                   onClick={() => refetch()}
                 >
-                  Refresh
+                  {$t('Refresh')}
                 </Button>
               </div>
             )}
@@ -145,10 +146,13 @@ export const OngoingQueriesPanel = () => {
                     )}
                   />
                   <div className="flex items-center gap-x-2">
-                    <p className="text-foreground-light text-xs">PID: {query.pid}</p>
+                    <p className="text-foreground-light text-xs">
+                      {$t('PID:')} {query.pid}
+                    </p>
                     <p className="text-foreground-light text-xs">•</p>
                     <p className="text-foreground-light text-xs">
-                      Started since: {dayjs(query.query_start).format('DD MMM YYYY HH:mm (ZZ)')}
+                      {$t('Started since:')}{' '}
+                      {dayjs(query.query_start).format('DD MMM YYYY HH:mm (ZZ)')}
                     </p>
                   </div>
                 </div>
@@ -162,7 +166,7 @@ export const OngoingQueriesPanel = () => {
                       onClick={() => setSelectedId(query.pid)}
                     />
                   </TooltipTrigger>
-                  <TooltipContent side="bottom">Abort query</TooltipContent>
+                  <TooltipContent side="bottom">{$t('Abort query')}</TooltipContent>
                 </Tooltip>
               </SheetSection>
             ))}
@@ -185,7 +189,7 @@ export const OngoingQueriesPanel = () => {
             })
         }}
       >
-        <p className="text-sm">This will force the query to stop running.</p>
+        <p className="text-sm">{$t('This will force the query to stop running.')}</p>
       </ConfirmationModal>
     </>
   )

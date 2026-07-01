@@ -32,6 +32,7 @@ import { useAPIKeys } from '@/data/api-keys/api-keys-query'
 import { VectorBucketIndex } from '@/data/storage/vector-buckets-indexes-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { isGreaterThanOrEqual } from '@/lib/semver'
 
 interface VectorBucketTableExamplesSheetProps {
@@ -59,14 +60,14 @@ export const VectorBucketTableExamplesSheet = ({ index }: VectorBucketTableExamp
       {/* Move into overflow menu after vectors added */}
       <SheetTrigger asChild>
         <Button variant="default" icon={<ListPlus size={12} className="text-foreground-lighter" />}>
-          Insert vectors
+          {$t('Insert vectors')}
         </Button>
       </SheetTrigger>
       <SheetContent tabIndex={undefined}>
         <div className="flex flex-col h-full" tabIndex={-1}>
           <SheetHeader>
             <SheetTitle>
-              Insert vectors into{' '}
+              {$t('Insert vectors into')}{' '}
               <code className="text-code-inline text-sm!">{index.indexName}</code>
             </SheetTitle>
           </SheetHeader>
@@ -206,9 +207,9 @@ const result = await index.putVectors({
   return (
     <SheetSection className="flex flex-col gap-6">
       <p className="text-sm text-foreground-light">
-        Use the following code snippet to insert vectors into your table. The{' '}
-        <code className="text-code-inline">data</code> property should contain all of your vector
-        data.
+        {$t('Use the following code snippet to insert vectors into your table. The')}{' '}
+        <code className="text-code-inline">data</code>{' '}
+        {$t('property should contain all of your vector data.')}
       </p>
       <div className="flex flex-col gap-2">
         <div className="flex justify-between">
@@ -216,7 +217,7 @@ const result = await index.putVectors({
             <PopoverTrigger asChild>
               <div className="flex cursor-pointer">
                 <span className="flex items-center text-foreground-lighter px-3 rounded-lg rounded-r-none text-xs border border-button border-r-0">
-                  Language
+                  {$t('Language')}
                 </span>
                 <Button
                   variant="default"
@@ -243,7 +244,7 @@ const result = await index.putVectors({
                       onSelect={() => onLanguageChange('javascript')}
                       onClick={() => onLanguageChange('javascript')}
                     >
-                      <p>JavaScript</p>
+                      <p>{$t('JavaScript')}</p>
                     </CommandItem>
                   </CommandGroup>
                 </CommandList>
@@ -266,11 +267,13 @@ const result = await index.putVectors({
         ) : !foreignTable ? (
           <Admonition
             type="default"
-            title="Insert data via SQL with a Foreign Data Wrapper"
-            description="Data from vector tables can be queried and inserted from Postgres with the S3 Vectors Wrapper as foreign tables."
+            title={$t('Insert data via SQL with a Foreign Data Wrapper')}
+            description={$t(
+              'Data from vector tables can be queried and inserted from Postgres with the S3 Vectors Wrapper as foreign tables.'
+            )}
             actions={
               <Button variant="default" onClick={onSelectQueryFromPostgres}>
-                Query from Postgres
+                {$t('Query from Postgres')}
               </Button>
             }
           />
@@ -294,7 +297,7 @@ const result = await index.putVectors({
                   rel="noreferrer"
                   href={`/project/${projectRef}/sql/new?content=${encodeURIComponent(sqlCode)}`}
                 >
-                  Query in SQL Editor
+                  {$t('Query in SQL Editor')}
                 </Link>
               </Button>
             </div>

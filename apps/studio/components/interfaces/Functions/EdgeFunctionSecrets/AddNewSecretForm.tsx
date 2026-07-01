@@ -27,6 +27,7 @@ import z from 'zod'
 import { DuplicateSecretWarningModal } from './DuplicateSecretWarningModal'
 import { useSecretsCreateMutation } from '@/data/secrets/secrets-create-mutation'
 import { useSecretsQuery } from '@/data/secrets/secrets-query'
+import { t as $t } from '@/lib/i18n'
 
 type SecretPair = {
   name: string
@@ -205,7 +206,7 @@ export const AddNewSecretForm = () => {
         <form className="w-full" onSubmit={form.handleSubmit(onSubmit)}>
           <Card>
             <CardHeader>
-              <CardTitle>Add or replace secrets</CardTitle>
+              <CardTitle>{$t('Add or replace secrets')}</CardTitle>
             </CardHeader>
             <CardContent>
               {fields.map((fieldItem, index) => (
@@ -222,9 +223,9 @@ export const AddNewSecretForm = () => {
                     name={`secrets.${index}.name`}
                     render={({ field }) => (
                       <FormItemLayout
-                        label="Name"
+                        label={$t('Name')}
                         layout="flex-row-reverse"
-                        description="A unique name for your secret."
+                        description={$t('A unique name for your secret.')}
                       >
                         <div className="flex w-full items-center gap-2">
                           <FormControl className="flex-1">
@@ -232,7 +233,7 @@ export const AddNewSecretForm = () => {
                               {...field}
                               className="w-full font-mono"
                               containerClassName="w-full"
-                              placeholder="e.g. CLIENT_KEY"
+                              placeholder={$t('e.g. CLIENT_KEY')}
                               data-1p-ignore
                               data-lpignore="true"
                               data-form-type="other"
@@ -243,7 +244,7 @@ export const AddNewSecretForm = () => {
                           <Button
                             variant="default"
                             className="w-[34px] h-[34px] shrink-0 p-0"
-                            aria-label="Remove secret"
+                            aria-label={$t('Remove secret')}
                             icon={<Trash size={12} />}
                             disabled={fields.length <= 1}
                             onClick={() => handleRemoveSecret(fieldItem.id, index)}
@@ -257,9 +258,11 @@ export const AddNewSecretForm = () => {
                     name={`secrets.${index}.value`}
                     render={({ field }) => (
                       <FormItemLayout
-                        label="Value"
+                        label={$t('Value')}
                         layout="flex-row-reverse"
-                        description="Supports multi-line values such as PEM keys, JSON, or functions."
+                        description={$t(
+                          'Supports multi-line values such as PEM keys, JSON, or functions.'
+                        )}
                       >
                         <FormControl>
                           <div className="relative w-full">
@@ -306,12 +309,12 @@ export const AddNewSecretForm = () => {
             </CardContent>
             <CardFooter className="justify-between space-x-2">
               <p className="text-sm text-foreground-muted">
-                Insert or update multiple secrets at once by pasting key-value pairs
+                {$t('Insert or update multiple secrets at once by pasting key-value pairs')}
               </p>
 
               <div className="flex items-center space-x-2">
                 <Button variant="default" onClick={handleAddAnotherSecret}>
-                  Add another
+                  {$t('Add another')}
                 </Button>
                 <Button variant="primary" type="submit" disabled={isCreating} loading={isCreating}>
                   {isCreating ? 'Saving...' : fields.length > 1 ? 'Bulk save' : 'Save'}

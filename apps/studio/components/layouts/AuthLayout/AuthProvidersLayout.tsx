@@ -5,6 +5,7 @@ import AuthLayout from './AuthLayout'
 import { PageLayout } from '@/components/layouts/PageLayout/PageLayout'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 
 export const AuthProvidersLayout = ({ children }: PropsWithChildren<{}>) => {
   const { ref } = useParams()
@@ -29,10 +30,10 @@ export const AuthProvidersLayout = ({ children }: PropsWithChildren<{}>) => {
   ]
 
   return (
-    <AuthLayout title="Sign In / Providers">
+    <AuthLayout title={$t('Sign In / Providers')}>
       {authenticationSignInProviders ? (
         <PageLayout
-          title="Sign In / Providers"
+          title={$t('Sign In / Providers')}
           subtitle="Configure authentication providers and login methods for your users"
           navigationItems={navItems}
         >

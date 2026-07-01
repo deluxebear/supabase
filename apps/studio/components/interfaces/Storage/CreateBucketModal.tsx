@@ -35,6 +35,7 @@ import { InlineLink } from '@/components/ui/InlineLink'
 import { useProjectStorageConfigQuery } from '@/data/config/project-storage-config-query'
 import { useBucketCreateMutation } from '@/data/storage/bucket-create-mutation'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const FormSchema = z
@@ -184,7 +185,7 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
     >
       <DialogContent aria-describedby={undefined}>
         <DialogHeader>
-          <DialogTitle>Create file bucket</DialogTitle>
+          <DialogTitle>{$t('Create file bucket')}</DialogTitle>
         </DialogHeader>
 
         <DialogSectionSeparator />
@@ -199,7 +200,7 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
                 render={({ field }) => (
                   <FormItemLayout
                     name="name"
-                    label="Bucket name"
+                    label={$t('Bucket name')}
                     labelOptional="Cannot be changed after creation"
                   >
                     <FormControl>
@@ -210,7 +211,7 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
                         data-form-type="other"
                         data-bwignore
                         {...field}
-                        placeholder="Enter bucket name"
+                        placeholder={$t('Enter bucket name')}
                       />
                     </FormControl>
                   </FormItemLayout>
@@ -229,8 +230,8 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
                   <FormItemLayout
                     hideMessage
                     name="public"
-                    label="Public bucket"
-                    description="Allow anyone to read objects without authorization"
+                    label={$t('Public bucket')}
+                    description={$t('Allow anyone to read objects without authorization')}
                     layout="flex"
                   >
                     <FormControl>
@@ -247,8 +248,10 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
               {isPublicBucket && (
                 <Admonition
                   type="warning"
-                  title="Public buckets are not protected"
-                  description="Users can read objects in public buckets without any authorization. Row level security (RLS) policies are still required for other operations such as object uploads and deletes."
+                  title={$t('Public buckets are not protected')}
+                  description={$t(
+                    'Users can read objects in public buckets without any authorization. Row level security (RLS) policies are still required for other operations such as object uploads and deletes.'
+                  )}
                 />
               )}
             </DialogSection>
@@ -263,8 +266,8 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
                 render={({ field }) => (
                   <FormItemLayout
                     name="has_file_size_limit"
-                    label="Restrict file size"
-                    description="Prevent uploading of files larger than a specified limit"
+                    label={$t('Restrict file size')}
+                    description={$t('Prevent uploading of files larger than a specified limit')}
                     layout="flex"
                   >
                     <FormControl>
@@ -289,14 +292,14 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
                       <FormItemLayout
                         hideMessage
                         name="formatted_size_limit"
-                        label="File size limit"
+                        label={$t('File size limit')}
                       >
                         <div className="grid grid-cols-12 gap-x-2">
                           <div className="col-span-8">
                             <FormControl>
                               <Input
                                 id="formatted_size_limit"
-                                aria-label="File size limit"
+                                aria-label={$t('File size limit')}
                                 type="number"
                                 min={0}
                                 placeholder="0"
@@ -306,7 +309,7 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
                           </div>
                           <div className="col-span-4">
                             <Select value={selectedUnit} onValueChange={setSelectedUnit}>
-                              <SelectTrigger aria-label="File size limit unit" size="small">
+                              <SelectTrigger aria-label={$t('File size limit unit')} size="small">
                                 <SelectValue>{selectedUnit}</SelectValue>
                               </SelectTrigger>
                               <SelectContent>
@@ -324,13 +327,14 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
                   />
                   {formattedSizeLimitError?.message === 'exceed_global_limit' && (
                     <FormMessage className="mt-2">
-                      Exceeds global limit of {formattedGlobalUploadLimit}. Increase limit in{' '}
+                      {$t('Exceeds global limit of')} {formattedGlobalUploadLimit}
+                      {$t('. Increase limit in')}{' '}
                       <InlineLink
                         className="text-destructive decoration-destructive-500 hover:decoration-destructive"
                         href={`/project/${ref}/storage/settings`}
                         onClick={() => onOpenChange(false)}
                       >
-                        Storage Settings
+                        {$t('Storage Settings')}
                       </InlineLink>{' '}
                       first.
                     </FormMessage>
@@ -338,13 +342,13 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
 
                   {IS_PLATFORM && (
                     <p className="text-sm text-foreground-lighter mt-2">
-                      This project has a{' '}
+                      {$t('This project has a')}{' '}
                       <InlineLink
                         className="text-foreground-light hover:text-foreground"
                         href={`/project/${ref}/storage/settings`}
                         onClick={() => onOpenChange(false)}
                       >
-                        global file size limit
+                        {$t('global file size limit')}
                       </InlineLink>{' '}
                       of {formattedGlobalUploadLimit}.
                     </p>
@@ -358,8 +362,8 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
             <DialogSection className="space-y-2">
               <FormItemLayout
                 name="has_allowed_mime_types"
-                label="Restrict MIME types"
-                description="Allow only certain types of files to be uploaded"
+                label={$t('Restrict MIME types')}
+                description={$t('Allow only certain types of files to be uploaded')}
                 layout="flex"
               >
                 <FormControl>
@@ -379,15 +383,15 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
                   render={({ field }) => (
                     <FormItemLayout
                       name="allowed_mime_types"
-                      label="Allowed MIME types"
+                      label={$t('Allowed MIME types')}
                       labelOptional="Comma separated values"
-                      description="Wildcards are allowed, e.g. image/*."
+                      description={$t('Wildcards are allowed, e.g. image/*.')}
                     >
                       <FormControl>
                         <Input
                           id="allowed_mime_types"
                           {...field}
-                          placeholder="e.g image/jpeg, image/png, audio/mpeg, video/mp4, etc"
+                          placeholder={$t('e.g image/jpeg, image/png, audio/mpeg, video/mp4, etc')}
                         />
                       </FormControl>
                     </FormItemLayout>
@@ -400,7 +404,7 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
 
         <DialogFooter>
           <Button variant="default" disabled={isCreatingBucket} onClick={() => onOpenChange(false)}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button
             form={formId}
@@ -408,7 +412,7 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
             loading={isCreatingBucket}
             disabled={isCreatingBucket}
           >
-            Create
+            {$t('Create')}
           </Button>
         </DialogFooter>
       </DialogContent>

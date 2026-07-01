@@ -4,6 +4,7 @@ import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 
 import { useProjectApiUrl } from '@/data/config/project-endpoint-query'
 import type { OAuthServerAppDeleteVariables } from '@/data/oauth-server-apps/oauth-server-app-delete-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface DeleteOAuthAppModalProps {
   visible: boolean
@@ -40,7 +41,7 @@ export const DeleteOAuthAppModal = ({
       visible={visible}
       title={
         <>
-          Confirm to delete OAuth app{' '}
+          {$t('Confirm to delete OAuth app')}{' '}
           <code className="text-code-inline">{selectedApp?.client_name}</code>
         </>
       }
@@ -53,10 +54,14 @@ export const DeleteOAuthAppModal = ({
         description: 'You will need to re-create the OAuth app if you want to revert the deletion.',
       }}
     >
-      <p className="text-sm">Before deleting this OAuth app, consider:</p>
+      <p className="text-sm">{$t('Before deleting this OAuth app, consider:')}</p>
       <ul className="space-y-2 mt-2 text-sm text-foreground-light">
-        <li className="list-disc ml-6">Any applications using this OAuth app will lose access</li>
-        <li className="list-disc ml-6">This OAuth app is no longer in use by any applications</li>
+        <li className="list-disc ml-6">
+          {$t('Any applications using this OAuth app will lose access')}
+        </li>
+        <li className="list-disc ml-6">
+          {$t('This OAuth app is no longer in use by any applications')}
+        </li>
       </ul>
     </ConfirmationModal>
   )

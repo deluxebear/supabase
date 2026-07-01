@@ -26,6 +26,7 @@ import {
   useOrgProjectsInfiniteQuery,
 } from '@/data/projects/org-projects-infinite-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 interface OrganizationProjectSelectorSelectorProps {
   slug?: string
@@ -157,12 +158,14 @@ export const OrganizationProjectSelector = ({
     if (isErrorProjects) {
       return (
         <div className="flex items-center gap-x-2 py-3 justify-center">
-          <p className="text-xs text-foreground-lighter">Failed to retrieve projects</p>
+          <p className="text-xs text-foreground-lighter">{$t('Failed to retrieve projects')}</p>
           <Tooltip>
             <TooltipTrigger>
               <HelpCircle size={14} />
             </TooltipTrigger>
-            <TooltipContent side="bottom">Error: {projectsError?.message}</TooltipContent>
+            <TooltipContent side="bottom">
+              {$t('Error:')} {projectsError?.message}
+            </TooltipContent>
           </Tooltip>
         </div>
       )
@@ -170,12 +173,16 @@ export const OrganizationProjectSelector = ({
     if (search.length > 0 && projects.length === 0) {
       return (
         <p className="text-xs text-center text-foreground-lighter py-3">
-          No projects found based on your search
+          {$t('No projects found based on your search')}
         </p>
       )
     }
     if (projects.length === 0) {
-      return <p className="text-xs text-center text-foreground-lighter py-3">No projects found</p>
+      return (
+        <p className="text-xs text-center text-foreground-lighter py-3">
+          {$t('No projects found')}
+        </p>
+      )
     }
     if (embedded) {
       return (

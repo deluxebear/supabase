@@ -16,6 +16,7 @@ import AuthLayout from '@/components/layouts/AuthLayout/AuthLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { NoPermission } from '@/components/ui/NoPermission'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const URLConfiguration: NextPageWithLayout = () => {
@@ -33,9 +34,9 @@ const URLConfiguration: NextPageWithLayout = () => {
       <PageHeader size="default">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>URL Configuration</PageHeaderTitle>
+            <PageHeaderTitle>{$t('URL Configuration')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Configure site URL and redirect URLs for authentication
+              {$t('Configure site URL and redirect URLs for authentication')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -60,7 +61,7 @@ const URLConfiguration: NextPageWithLayout = () => {
 
 URLConfiguration.getLayout = (page) => (
   <DefaultLayout>
-    <AuthLayout title="URL Configuration">{page}</AuthLayout>
+    <AuthLayout title={$t('URL Configuration')}>{page}</AuthLayout>
   </DefaultLayout>
 )
 

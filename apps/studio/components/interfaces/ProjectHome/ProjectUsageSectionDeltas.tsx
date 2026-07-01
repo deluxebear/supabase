@@ -22,6 +22,7 @@ import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useIsDataApiEnabled } from '@/hooks/misc/useIsDataApiEnabled'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 // Services the homepage shows; matches the telemetry event types.
@@ -154,11 +155,11 @@ export const ProjectUsageSectionDeltas = () => {
         <div className="flex flex-col md:flex-row md:items-center md:gap-6">
           <div className="flex items-start gap-2 heading-section text-foreground-light">
             <span className="text-foreground">{totalRequests.toLocaleString()}</span>
-            <span>Total Requests</span>
+            <span>{$t('Total Requests')}</span>
           </div>
           <div className="flex items-start gap-2 heading-section text-foreground-light">
             <span className="text-foreground">{successRate.toFixed(1)}%</span>
-            <span>Success Rate</span>
+            <span>{$t('Success Rate')}</span>
           </div>
         </div>
         <ChartIntervalDropdown
@@ -207,14 +208,14 @@ export const ProjectUsageSectionDeltas = () => {
                   <div className="flex flex-col items-end">
                     <div className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 bg-warning rounded-full" />
-                      <span className="heading-meta">Warnings</span>
+                      <span className="heading-meta">{$t('Warnings')}</span>
                     </div>
                     <span className="text-foreground text-base">{s.warn.toLocaleString()}</span>
                   </div>
                   <div className="flex flex-col items-end">
                     <div className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 bg-destructive rounded-full" />
-                      <span className="heading-meta">Errors</span>
+                      <span className="heading-meta">{$t('Errors')}</span>
                     </div>
                     <span className="text-foreground text-base">{s.err.toLocaleString()}</span>
                   </div>

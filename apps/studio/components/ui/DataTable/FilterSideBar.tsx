@@ -10,6 +10,7 @@ import { DataTableResetButton } from './DataTableResetButton'
 import { useDataTable } from './providers/DataTableProvider'
 import { LOG_DRAIN_TYPES } from '@/components/interfaces/LogDrains/LogDrains.constants'
 import { UnifiedLogsBanner } from '@/components/interfaces/UnifiedLogs/UnifiedLogsBanner'
+import { t as $t } from '@/lib/i18n'
 
 interface FilterSideBarProps {
   isFilterBarOpen: boolean
@@ -55,8 +56,8 @@ export function FilterSideBar({
       <div className="border-b border-border px-4 md:top-0">
         <div className="flex h-[48px] items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <p className="text-foreground text-lg">Logs</p>
-            <Badge variant="default">Beta</Badge>
+            <p className="text-foreground text-lg">{$t('Logs')}</p>
+            <Badge variant="default">{$t('Beta')}</Badge>
           </div>
           {table.getState().columnFilters.length ? <DataTableResetButton /> : null}
         </div>
@@ -68,8 +69,8 @@ export function FilterSideBar({
         <DataTableFilterControls dateRangeDisabled={dateRangeDisabled} />
         <FeaturePreviewSidebarPanel
           className="mx-2 my-4"
-          title="Capture your logs"
-          description="Send logs to your preferred observability or storage platform."
+          title={$t('Capture your logs')}
+          description={$t('Send logs to your preferred observability or storage platform.')}
           illustration={
             <div className="flex items-center gap-4">
               {LOG_DRAIN_TYPES.filter((t) =>
@@ -79,7 +80,7 @@ export function FilterSideBar({
           }
           actions={
             <Button asChild variant="default">
-              <Link href={`/project/${ref}/settings/log-drains`}>Go to Log Drains</Link>
+              <Link href={`/project/${ref}/settings/log-drains`}>{$t('Go to Log Drains')}</Link>
             </Button>
           }
         />

@@ -3,6 +3,7 @@ import type { KeyboardEvent, Ref } from 'react'
 import { Button } from 'ui'
 import { Input } from 'ui-patterns/DataInputs/Input'
 
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 
 interface CronJobsTabHeaderProps {
@@ -39,7 +40,7 @@ export const CronJobsTabHeader = ({
         ref={searchInputRef}
         size="tiny"
         className="w-52"
-        placeholder="Search for a job"
+        placeholder={$t('Search for a job')}
         icon={<Search />}
         value={search}
         onChange={(e) => onSearchChange(e.target.value)}
@@ -60,9 +61,9 @@ export const CronJobsTabHeader = ({
 
       <div className="flex items-center gap-x-2">
         <Button variant="default" icon={<RefreshCw />} loading={isRefreshing} onClick={onRefresh}>
-          Refresh
+          {$t('Refresh')}
         </Button>
-        <Button onClick={onCreateJob}>Create job</Button>
+        <Button onClick={onCreateJob}>{$t('Create job')}</Button>
       </div>
     </div>
   )

@@ -17,6 +17,7 @@ import { NO_ORG_MARKER, NO_PROJECT_MARKER } from './SupportForm.utils'
 import CopyButton from '@/components/ui/CopyButton'
 import { OrganizationProjectSelector } from '@/components/ui/OrganizationProjectSelector'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 
 interface ProjectAndPlanProps {
   form: UseFormReturn<SupportFormValues>
@@ -41,7 +42,7 @@ export function ProjectAndPlanInfo({
       <ProjectRefHighlighted projectRef={projectRef} />
 
       {!hasProjectSelected && (
-        <Admonition type="default" description="No project has been selected." />
+        <Admonition type="default" description={$t('No project has been selected.')} />
       )}
     </div>
   )
@@ -61,7 +62,7 @@ function ProjectSelector({ form, orgSlug, projectRef }: ProjectSelectorProps) {
       name="projectRef"
       control={form.control}
       render={({ field }) => (
-        <FormItemLayout hideMessage layout="vertical" label="Which project is affected?">
+        <FormItemLayout hideMessage layout="vertical" label={$t('Which project is affected?')}>
           <FormControl>
             <OrganizationProjectSelector
               key={orgSlug}
@@ -86,7 +87,7 @@ function ProjectSelector({ form, orgSlug, projectRef }: ProjectSelectorProps) {
                     block
                     variant="default"
                     role="combobox"
-                    aria-label="Select a project"
+                    aria-label={$t('Select a project')}
                     aria-expanded={open}
                     aria-controls={listboxId}
                     size="small"
@@ -114,7 +115,7 @@ function ProjectSelector({ form, orgSlug, projectRef }: ProjectSelectorProps) {
                   >
                     {field.value === NO_PROJECT_MARKER && <Check size={16} />}
                     <p className={cn(field.value !== NO_PROJECT_MARKER && 'ml-6')}>
-                      No specific project
+                      {$t('No specific project')}
                     </p>
                   </CommandItem>
                 </CommandGroup>
@@ -145,14 +146,14 @@ function ProjectRefHighlighted({ projectRef }: ProjectRefHighlightedProps) {
           className="flex items-center gap-x-1"
         >
           <p className="text-sm transition text-foreground-lighter">
-            Project ID:{' '}
+            {$t('Project ID:')}{' '}
             <code className="text-code-inline text-foreground-light!">{projectRef}</code>
           </p>
           <CopyButton
             iconOnly
             variant="text"
             text={projectRef}
-            onClick={() => toast.success('Copied project ID to clipboard')}
+            onClick={() => toast.success($t('Copied project ID to clipboard'))}
           />
         </motion.div>
       )}
@@ -176,25 +177,25 @@ export const PlanExpectationInfoContent = ({
     <div className="flex flex-col gap-y-3 text-sm text-foreground-light">
       {planId === 'free' && (
         <p>
-          Support on the Free plan is provided through the community and by the team on a
-          best-effort basis. For a guaranteed response time, we recommend upgrading to the Pro plan.
-          Enhanced support SLAs are available on the Enterprise plan.
+          {$t(
+            'Support on the Free plan is provided through the community and by the team on a best-effort basis. For a guaranteed response time, we recommend upgrading to the Pro plan. Enhanced support SLAs are available on the Enterprise plan.'
+          )}
         </p>
       )}
 
       {planId === 'pro' && (
         <p>
-          Pro includes email support with typical 1-business-day responses; upgrade to Team for
-          prioritized ticketing and engineering escalation, or Enterprise for enhanced SLAs.
+          {$t(
+            'Pro includes email support with typical 1-business-day responses; upgrade to Team for prioritized ticketing and engineering escalation, or Enterprise for enhanced SLAs.'
+          )}
         </p>
       )}
 
       {planId === 'team' && (
         <p>
-          The Team plan includes email support with prioritized ticketing and escalation to product
-          engineering. Low, normal, and high-severity tickets are typically handled within 1
-          business day. Urgent issues are handled within 1 day, 365 days a year. Enhanced support
-          SLAs are available on the Enterprise plan.
+          {$t(
+            'The Team plan includes email support with prioritized ticketing and escalation to product engineering. Low, normal, and high-severity tickets are typically handled within 1 business day. Urgent issues are handled within 1 day, 365 days a year. Enhanced support SLAs are available on the Enterprise plan.'
+          )}
         </p>
       )}
 
@@ -204,12 +205,12 @@ export const PlanExpectationInfoContent = ({
             <Link
               href={`/org/${orgSlug}/billing?panel=subscriptionPlan&source=planSupportExpectationInfoBox`}
             >
-              Upgrade plan
+              {$t('Upgrade plan')}
             </Link>
           </Button>
           <Button asChild variant="default" size="tiny" icon={<ExternalLink />}>
             <Link href="https://supabase.com/contact/enterprise" target="_blank" rel="noreferrer">
-              Enquire about Enterprise
+              {$t('Enquire about Enterprise')}
             </Link>
           </Button>
         </div>

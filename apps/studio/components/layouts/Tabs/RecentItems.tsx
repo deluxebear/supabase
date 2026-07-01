@@ -7,6 +7,7 @@ import { useEditorType } from '../editors/EditorsLayout.hooks'
 import { buildTableEditorUrl } from '@/components/grid/SupabaseGrid.utils'
 import { EntityTypeIcon } from '@/components/ui/EntityTypeIcon'
 import { ENTITY_TYPE } from '@/data/entity-types/entity-type-constants'
+import { t as $t } from '@/lib/i18n'
 import { editorEntityTypes, useTabsStateSnapshot } from '@/state/tabs'
 
 export function RecentItems() {
@@ -25,7 +26,7 @@ export function RecentItems() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-sm text-foreground">Recent items</h2>
+      <h2 className="text-sm text-foreground">{$t('Recent items')}</h2>
       <div className="flex flex-col gap-0">
         {sortedItems.length === 0 ? (
           <motion.div
@@ -35,9 +36,9 @@ export function RecentItems() {
           >
             <EntityTypeIcon type={'r' as ENTITY_TYPE} />
             <div>
-              <p className="text-xs text-foreground-light">No recent items yet</p>
+              <p className="text-xs text-foreground-light">{$t('No recent items yet')}</p>
               <p className="text-xs text-foreground-lighter">
-                Items will appear here as you browse through your project
+                {$t('Items will appear here as you browse through your project')}
               </p>
             </div>
           </motion.div>

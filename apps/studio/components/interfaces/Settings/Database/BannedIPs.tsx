@@ -25,6 +25,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useHighAvailability } from '@/hooks/misc/useHighAvailability'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const HA_DISABLED_TITLE = 'Network bans unavailable on High Availability projects'
 const HA_DISABLED_DESCRIPTION =
@@ -66,7 +67,7 @@ export const BannedIPs = () => {
 
   const { mutate: unbanIPs, isPending: isUnbanning } = useBannedIPsDeleteMutation({
     onSuccess: () => {
-      toast.success('IP address successfully unbanned')
+      toast.success($t('IP address successfully unbanned'))
       setSelectedIPToUnban(null) // Reset the selected IP for unban
       setShowUnban(false)
     },
@@ -94,9 +95,9 @@ export const BannedIPs = () => {
       <PageSection id="banned-ips">
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>Network bans</PageSectionTitle>
+            <PageSectionTitle>{$t('Network bans')}</PageSectionTitle>
             <PageSectionDescription>
-              IP addresses temporarily blocked due to suspicious traffic
+              {$t('IP addresses temporarily blocked due to suspicious traffic')}
             </PageSectionDescription>
           </PageSectionSummary>
           <DocsButton href={`${DOCS_URL}/reference/cli/supabase-network-bans`} />
@@ -127,7 +128,7 @@ export const BannedIPs = () => {
                     <div className="flex items-center space-x-5">
                       <Globe size={16} className="text-foreground-lighter" />
                       <p className="text-sm font-mono">{ip}</p>
-                      {ip === userIPAddress && <Badge>Your IP address</Badge>}
+                      {ip === userIPAddress && <Badge>{$t('Your IP address')}</Badge>}
                     </div>
                     <ButtonTooltip
                       variant="default"
@@ -140,7 +141,7 @@ export const BannedIPs = () => {
                         },
                       }}
                     >
-                      Unban IP
+                      {$t('Unban IP')}
                     </ButtonTooltip>
                   </CardContent>
                 ))}
@@ -148,7 +149,7 @@ export const BannedIPs = () => {
             ) : (
               <Card>
                 <CardContent className="text-foreground text-sm">
-                  There are no banned IP addresses for your project
+                  {$t('There are no banned IP addresses for your project')}
                 </CardContent>
               </Card>
             ))}
@@ -160,7 +161,7 @@ export const BannedIPs = () => {
         size="medium"
         loading={isUnbanning}
         visible={showUnban}
-        title="Confirm Unban IP"
+        title={$t('Confirm Unban IP')}
         confirmLabel="Confirm Unban"
         confirmLabelLoading="Unbanning..."
         onCancel={() => setShowUnban(false)}

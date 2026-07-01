@@ -28,6 +28,7 @@ import { useProjectStorageConfigQuery } from '@/data/config/project-storage-conf
 import { usePaginatedBucketsQuery, type Bucket } from '@/data/storage/buckets-query'
 import { IS_PLATFORM } from '@/lib/constants'
 import { formatBytes } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export const BucketsPicker = ({
   onSelectBucket,
@@ -84,10 +85,11 @@ export const BucketsPicker = ({
       {isErrorBuckets && (
         <>
           {hasNoApiKeys ? (
-            <Admonition type="warning" title="Project has no active API keys enabled">
+            <Admonition type="warning" title={$t('Project has no active API keys enabled')}>
               <p className="leading-normal! text-sm">
-                The Dashboard relies on having active API keys on the project to function. If you'd
-                like to use Storage through the Dashboard, create a set of API keys{' '}
+                {$t(
+                  "The Dashboard relies on having active API keys on the project to function. If you'd like to use Storage through the Dashboard, create a set of API keys"
+                )}{' '}
                 <InlineLink href={`/project/${projectRef}/settings/api-keys/new`}>here</InlineLink>.
               </p>
             </Admonition>
@@ -111,7 +113,7 @@ export const BucketsPicker = ({
                   <Input
                     size="tiny"
                     className="grow lg:grow-0 w-52"
-                    placeholder="Search for a bucket"
+                    placeholder={$t('Search for a bucket')}
                     value={filterString}
                     onChange={(e) => setFilterString(e.target.value)}
                     icon={<Search />}
@@ -119,7 +121,7 @@ export const BucketsPicker = ({
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="default" icon={<ArrowDownNarrowWide />}>
-                        Sorted by {sortBucket === 'alphabetical' ? 'name' : 'created at'}
+                        {$t('Sorted by')} {sortBucket === 'alphabetical' ? 'name' : 'created at'}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-40">
@@ -128,10 +130,10 @@ export const BucketsPicker = ({
                         onValueChange={(value) => setSortBucket(value as STORAGE_BUCKET_SORT)}
                       >
                         <DropdownMenuRadioItem value="alphabetical">
-                          Sort by name
+                          {$t('Sort by name')}
                         </DropdownMenuRadioItem>
                         <DropdownMenuRadioItem value="created_at">
-                          Sort by created at
+                          {$t('Sort by created at')}
                         </DropdownMenuRadioItem>
                       </DropdownMenuRadioGroup>
                     </DropdownMenuContent>

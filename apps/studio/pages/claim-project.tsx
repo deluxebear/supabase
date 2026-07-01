@@ -13,6 +13,7 @@ import { useOrganizationProjectClaimQuery } from '@/data/organizations/organizat
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { useCustomContent } from '@/hooks/custom-content/useCustomContent'
 import { withAuth } from '@/hooks/misc/withAuth'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const ClaimProjectPageLayout = ({ children }: PropsWithChildren) => {
@@ -63,7 +64,7 @@ const ClaimProjectPage: NextPageWithLayout = () => {
 
   if ((selectedOrgSlug && claimToken && isLoadingProjectClaim) || isLoadingRequester) {
     return (
-      <ProjectClaimLayout title="Claim a project" className="py-6">
+      <ProjectClaimLayout title={$t('Claim a project')} className="py-6">
         <div className="space-y-2">
           <ShimmeringLoader />
           <ShimmeringLoader className="w-3/4" />
@@ -75,11 +76,19 @@ const ClaimProjectPage: NextPageWithLayout = () => {
 
   if ((selectedOrgSlug && claimToken && isErrorProjectClaim) || isErrorRequester) {
     return (
-      <ProjectClaimLayout title="Claim a project" className="py-6">
-        <Admonition type="warning" title="Failed to retrieve project claim request details">
-          <p>Please retry your claim request from the requesting app</p>
-          {!!errorProjectClaim && <p className="mt-2">Error: {errorProjectClaim?.message}</p>}
-          {!!errorRequester && <p className="mt-2">Error: {errorRequester?.message}</p>}
+      <ProjectClaimLayout title={$t('Claim a project')} className="py-6">
+        <Admonition type="warning" title={$t('Failed to retrieve project claim request details')}>
+          <p>{$t('Please retry your claim request from the requesting app')}</p>
+          {!!errorProjectClaim && (
+            <p className="mt-2">
+              {$t('Error:')} {errorProjectClaim?.message}
+            </p>
+          )}
+          {!!errorRequester && (
+            <p className="mt-2">
+              {$t('Error:')} {errorRequester?.message}
+            </p>
+          )}
         </Admonition>
       </ProjectClaimLayout>
     )

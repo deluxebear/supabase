@@ -48,6 +48,7 @@ import { useAuthConfigUpdateMutation } from '@/data/auth/auth-config-update-muta
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 function determineMFAStatus(verifyEnabled: boolean, enrollEnabled: boolean) {
   return verifyEnabled ? (enrollEnabled ? 'Enabled' : 'Verify Enabled') : 'Disabled'
@@ -240,7 +241,7 @@ export const MfaAuthSettingsForm = () => {
           setIsUpdatingTotpForm(false)
         },
         onSuccess: () => {
-          toast.success('Successfully updated TOTP settings')
+          toast.success($t('Successfully updated TOTP settings'))
           setIsUpdatingTotpForm(false)
         },
       }
@@ -258,7 +259,7 @@ export const MfaAuthSettingsForm = () => {
           setIsUpdatingSecurityForm(false)
         },
         onSuccess: () => {
-          toast.success('Successfully updated enhanced MFA security settings')
+          toast.success($t('Successfully updated enhanced MFA security settings'))
           setIsUpdatingSecurityForm(false)
         },
       }
@@ -292,7 +293,7 @@ export const MfaAuthSettingsForm = () => {
           setIsUpdatingPhoneForm(false)
         },
         onSuccess: () => {
-          toast.success('Successfully updated phone MFA settings')
+          toast.success($t('Successfully updated phone MFA settings'))
           setIsUpdatingPhoneForm(false)
         },
       }
@@ -347,7 +348,7 @@ export const MfaAuthSettingsForm = () => {
       <PageSection>
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>Multi-Factor Authentication (MFA)</PageSectionTitle>
+            <PageSectionTitle>{$t('Multi-Factor Authentication (MFA)')}</PageSectionTitle>
           </PageSectionSummary>
         </PageSectionMeta>
         <PageSectionContent>
@@ -361,8 +362,8 @@ export const MfaAuthSettingsForm = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="TOTP (App Authenticator)"
-                        description="Control use of TOTP (App Authenticator) factors"
+                        label={$t('TOTP (App Authenticator)')}
+                        description={$t('Control use of TOTP (App Authenticator) factors')}
                       >
                         <FormControl>
                           <Select
@@ -371,7 +372,7 @@ export const MfaAuthSettingsForm = () => {
                             disabled={!canUpdateConfig}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Select status" />
+                              <SelectValue placeholder={$t('Select status')} />
                             </SelectTrigger>
                             <SelectContent>
                               {MFAFactorSelectionOptions.map((option) => (
@@ -394,8 +395,8 @@ export const MfaAuthSettingsForm = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Maximum number of per-user MFA factors"
-                        description="How many MFA factors can be enrolled at once per user."
+                        label={$t('Maximum number of per-user MFA factors')}
+                        description={$t('How many MFA factors can be enrolled at once per user.')}
                       >
                         <FormControl>
                           <InputGroup>
@@ -423,7 +424,7 @@ export const MfaAuthSettingsForm = () => {
                 <CardFooter className="justify-end space-x-2">
                   {totpForm.formState.isDirty && (
                     <Button variant="default" onClick={() => totpForm.reset()}>
-                      Cancel
+                      {$t('Cancel')}
                     </Button>
                   )}
                   <Button
@@ -432,7 +433,7 @@ export const MfaAuthSettingsForm = () => {
                     disabled={!canUpdateConfig || isUpdatingTotpForm || !totpForm.formState.isDirty}
                     loading={isUpdatingTotpForm}
                   >
-                    Save changes
+                    {$t('Save changes')}
                   </Button>
                 </CardFooter>
               </Card>
@@ -444,7 +445,7 @@ export const MfaAuthSettingsForm = () => {
       <PageSection>
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>SMS MFA</PageSectionTitle>
+            <PageSectionTitle>{$t('SMS MFA')}</PageSectionTitle>
           </PageSectionSummary>
         </PageSectionMeta>
         <PageSectionContent>
@@ -463,8 +464,8 @@ export const MfaAuthSettingsForm = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Phone"
-                        description="Control use of phone factors"
+                        label={$t('Phone')}
+                        description={$t('Control use of phone factors')}
                       >
                         <FormControl>
                           <Select
@@ -473,7 +474,7 @@ export const MfaAuthSettingsForm = () => {
                             disabled={!canUpdateConfig || !hasAccessToMFA}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Select status" />
+                              <SelectValue placeholder={$t('Select status')} />
                             </SelectTrigger>
                             <SelectContent>
                               {MFAFactorSelectionOptions.map((option) => (
@@ -492,7 +493,9 @@ export const MfaAuthSettingsForm = () => {
                     <Alert variant="warning" className="mt-3">
                       <WarningIcon />
                       <AlertTitle>
-                        To use MFA with Phone you should set up a Phone provider or Send SMS Hook.
+                        {$t(
+                          'To use MFA with Phone you should set up a Phone provider or Send SMS Hook.'
+                        )}
                       </AlertTitle>
                     </Alert>
                   )}
@@ -505,8 +508,8 @@ export const MfaAuthSettingsForm = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Phone OTP Length"
-                        description="Number of digits in OTP"
+                        label={$t('Phone OTP Length')}
+                        description={$t('Number of digits in OTP')}
                       >
                         <FormControl>
                           <InputGroup>
@@ -538,8 +541,8 @@ export const MfaAuthSettingsForm = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Phone verification message"
-                        description="To format the OTP code use `{{ .Code }}`"
+                        label={$t('Phone verification message')}
+                        description={$t('To format the OTP code use `{{ .Code }}`')}
                       >
                         <FormControl>
                           <Input
@@ -570,7 +573,7 @@ export const MfaAuthSettingsForm = () => {
                 <CardFooter className="justify-end space-x-2">
                   {phoneForm.formState.isDirty && (
                     <Button variant="default" onClick={() => phoneForm.reset()}>
-                      Cancel
+                      {$t('Cancel')}
                     </Button>
                   )}
                   <Button
@@ -584,7 +587,7 @@ export const MfaAuthSettingsForm = () => {
                     }
                     loading={isUpdatingPhoneForm}
                   >
-                    Save changes
+                    {$t('Save changes')}
                   </Button>
                 </CardFooter>
               </Card>
@@ -595,7 +598,7 @@ export const MfaAuthSettingsForm = () => {
 
       <ConfirmationModal
         visible={isConfirmationModalVisible}
-        title="Confirm SMS MFA"
+        title={$t('Confirm SMS MFA')}
         confirmLabel="Confirm and save"
         onCancel={() => setIsConfirmationModalVisible(false)}
         onConfirm={() => {
@@ -604,12 +607,14 @@ export const MfaAuthSettingsForm = () => {
         }}
         variant="warning"
       >
-        Enabling SMS MFA will result in an additional charge of <span translate="no">$75</span> per
-        month for the first project in the organization and an additional{' '}
-        <span translate="no">$10</span> per month for additional projects.
+        {$t('Enabling SMS MFA will result in an additional charge of')}{' '}
+        <span translate="no">$75</span>{' '}
+        {$t('per month for the first project in the organization and an additional')}{' '}
+        <span translate="no">$10</span> {$t('per month for additional projects.')}
         <p className="mt-2">
-          Billing will start immediately upon enabling this add-on, regardless of whether your
-          customers are using SMS MFA.
+          {$t(
+            'Billing will start immediately upon enabling this add-on, regardless of whether your customers are using SMS MFA.'
+          )}
         </p>
         <TaxDisclaimer className="mt-2" />
       </ConfirmationModal>
@@ -617,7 +622,7 @@ export const MfaAuthSettingsForm = () => {
       <PageSection>
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>Enhanced MFA Security</PageSectionTitle>
+            <PageSectionTitle>{$t('Enhanced MFA Security')}</PageSectionTitle>
           </PageSectionSummary>
         </PageSectionMeta>
         <PageSectionContent>
@@ -631,8 +636,10 @@ export const MfaAuthSettingsForm = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Limit duration of AAL1 sessions"
-                        description="A user's session will be terminated unless they verify one of their factors within 15 minutes of initial sign in. Recommendation: ON"
+                        label={$t('Limit duration of AAL1 sessions')}
+                        description={$t(
+                          "A user's session will be terminated unless they verify one of their factors within 15 minutes of initial sign in. Recommendation: ON"
+                        )}
                       >
                         <FormControl>
                           <Switch
@@ -659,7 +666,7 @@ export const MfaAuthSettingsForm = () => {
                 <CardFooter className="justify-end space-x-2">
                   {securityForm.formState.isDirty && (
                     <Button variant="default" onClick={() => securityForm.reset()}>
-                      Cancel
+                      {$t('Cancel')}
                     </Button>
                   )}
                   <Button
@@ -670,7 +677,7 @@ export const MfaAuthSettingsForm = () => {
                     }
                     loading={isUpdatingSecurityForm}
                   >
-                    Save changes
+                    {$t('Save changes')}
                   </Button>
                 </CardFooter>
               </Card>

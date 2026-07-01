@@ -2,6 +2,7 @@ import { ExternalLink, HelpCircle, LockKeyholeOpen, RectangleEllipsis } from 'lu
 import { HoverCard, HoverCardContent, HoverCardTrigger } from 'ui'
 
 import { AlgorithmDetail, algorithmDetails } from './algorithm-details'
+import { t as $t } from '@/lib/i18n'
 
 interface AlgorithmHoverCardProps {
   algorithm: keyof typeof algorithmDetails
@@ -29,7 +30,7 @@ export const AlgorithmHoverCard = ({ algorithm, legacy }: AlgorithmHoverCardProp
             <div className="flex flex-col gap-2 text-sm text-foreground-light">
               <p>{details.description}</p>
               <p>
-                Pros:
+                {$t('Pros:')}
                 <ul className="list-disc pl-6">
                   {details.pros.map((pro, i) => (
                     <li key={i}>{pro}</li>
@@ -37,7 +38,7 @@ export const AlgorithmHoverCard = ({ algorithm, legacy }: AlgorithmHoverCardProp
                 </ul>
               </p>
               <p>
-                Cons:{' '}
+                {$t('Cons:')}{' '}
                 <ul className="list-disc pl-6">
                   {details.cons.map((con, i) => (
                     <li key={i}>{con}</li>

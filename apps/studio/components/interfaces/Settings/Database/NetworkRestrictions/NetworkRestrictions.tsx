@@ -36,6 +36,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useHighAvailability } from '@/hooks/misc/useHighAvailability'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const HA_DISABLED_TITLE = 'Network restrictions unavailable on High Availability projects'
 const HA_DISABLED_DESCRIPTION =
@@ -62,7 +63,7 @@ const AllowAllAccessButton = ({ disabled, disabledTooltip, onClick }: AccessButt
       },
     }}
   >
-    Allow all access
+    {$t('Allow all access')}
   </ButtonTooltip>
 )
 
@@ -78,7 +79,7 @@ const DisallowAllAccessButton = ({ disabled, disabledTooltip, onClick }: AccessB
       },
     }}
   >
-    Restrict all access
+    {$t('Restrict all access')}
   </ButtonTooltip>
 )
 
@@ -129,7 +130,7 @@ export const NetworkRestrictions = () => {
       <PageSection id="network-restrictions">
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>Network restrictions</PageSectionTitle>
+            <PageSectionTitle>{$t('Network restrictions')}</PageSectionTitle>
           </PageSectionSummary>
           <PageSectionAside className="flex items-center gap-x-2">
             <DocsButton href={`${DOCS_URL}/guides/platform/network-restrictions`} />
@@ -144,7 +145,7 @@ export const NetworkRestrictions = () => {
                   },
                 }}
               >
-                Add restriction
+                {$t('Add restriction')}
               </ButtonTooltip>
             ) : (
               <DropdownMenu>
@@ -154,7 +155,7 @@ export const NetworkRestrictions = () => {
                     disabled={isSectionDisabled}
                     iconRight={<ChevronDown size={14} />}
                   >
-                    Add restriction
+                    {$t('Add restriction')}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" side="bottom" className="w-48">
@@ -163,14 +164,14 @@ export const NetworkRestrictions = () => {
                     disabled={isLoading}
                     onClick={() => setIsAddingAddress('IPv4')}
                   >
-                    <p className="block text-foreground">Add IPv4 restriction</p>
+                    <p className="block text-foreground">{$t('Add IPv4 restriction')}</p>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     key="IPv6"
                     disabled={isLoading}
                     onClick={() => setIsAddingAddress('IPv6')}
                   >
-                    <p className="block text-foreground">Add IPv6 restriction</p>
+                    <p className="block text-foreground">{$t('Add IPv6 restriction')}</p>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -209,11 +210,11 @@ export const NetworkRestrictions = () => {
                           className="text-foreground-light"
                         />
                         <p className="text-sm">
-                          Your network restrictions were not applied correctly
+                          {$t('Your network restrictions were not applied correctly')}
                         </p>
                       </div>
                       <p className="text-sm text-foreground-light">
-                        Please try to add your network restrictions again
+                        {$t('Please try to add your network restrictions again')}
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -238,11 +239,12 @@ export const NetworkRestrictions = () => {
                     <div className="flex items-start space-x-4">
                       <div className="space-y-0.5">
                         <p className="text-foreground text-sm">
-                          Your database can be accessed by all IP addresses
+                          {$t('Your database can be accessed by all IP addresses')}
                         </p>
                         <p className="text-foreground-light text-sm">
-                          You may start limiting access to your database by adding a network
-                          restriction.
+                          {$t(
+                            'You may start limiting access to your database by adding a network restriction.'
+                          )}
                         </p>
                       </div>
                     </div>
@@ -260,16 +262,19 @@ export const NetworkRestrictions = () => {
                       <Lock size={20} className="text-foreground-light" strokeWidth={1.5} />
                       <div className="space-y-1">
                         <p className="text-foreground-light text-sm">
-                          Your database <span className="text-amber-900 opacity-80">cannot</span> be
-                          accessed externally
+                          {$t('Your database')}{' '}
+                          <span className="text-amber-900 opacity-80">cannot</span>{' '}
+                          {$t('be accessed externally')}
                         </p>
                         <p className="text-foreground-light text-sm">
-                          All external IP addresses have been disallowed from accessing your
-                          project's database.
+                          {$t(
+                            "All external IP addresses have been disallowed from accessing your project's database."
+                          )}
                         </p>
                         <p className="text-foreground-light text-sm">
-                          Note: Restrictions only apply to your database, and not to Supabase
-                          services
+                          {$t(
+                            'Note: Restrictions only apply to your database, and not to Supabase services'
+                          )}
                         </p>
                       </div>
                     </div>
@@ -285,14 +290,16 @@ export const NetworkRestrictions = () => {
                   <>
                     <CardHeader className="md:flex-row md:items-center justify-between">
                       <CardDescription className="text-foreground-light">
-                        <p>Only the following IP addresses have access to your database.</p>
+                        <p>{$t('Only the following IP addresses have access to your database.')}</p>
                         <p>
-                          You may remove all of them to allow all IP addresses to have access to
-                          your database.
+                          {$t(
+                            'You may remove all of them to allow all IP addresses to have access to your database.'
+                          )}
                         </p>
                         <p>
-                          Note: Restrictions only apply to your database, and not to Supabase
-                          services
+                          {$t(
+                            'Note: Restrictions only apply to your database, and not to Supabase services'
+                          )}
                         </p>
                       </CardDescription>
                       <div className="flex items-center space-x-2">
@@ -332,7 +339,7 @@ export const NetworkRestrictions = () => {
                                   },
                                 }}
                               >
-                                Remove
+                                {$t('Remove')}
                               </ButtonTooltip>
                             </div>
                           )

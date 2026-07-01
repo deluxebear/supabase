@@ -26,6 +26,7 @@ import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL, IS_PLATFORM } from '@/lib/constants'
 import { getErrorMessage } from '@/lib/get-error-message'
+import { t as $t } from '@/lib/i18n'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -183,13 +184,15 @@ export const WithStatements = ({
           {isPgStatStatementsNotInstalled ? (
             <Admonition
               type="warning"
-              title="pg_stat_statements extension is not enabled"
-              description="Query Performance requires the pg_stat_statements extension. Enable it in Database → Extensions."
+              title={$t('pg_stat_statements extension is not enabled')}
+              description={$t(
+                'Query Performance requires the pg_stat_statements extension. Enable it in Database → Extensions.'
+              )}
             />
           ) : (
             <Admonition
               type="destructive"
-              title="Error loading query performance data"
+              title={$t('Error loading query performance data')}
               description={
                 errorMessage ||
                 'An error occurred while loading query performance data. Please try refreshing the page.'
@@ -206,7 +209,7 @@ export const WithStatements = ({
           <>
             <ShortcutTooltip
               shortcutId={SHORTCUT_IDS.OBSERVABILITY_REFRESH}
-              label="Refresh"
+              label={$t('Refresh')}
               side="top"
             >
               <Button
@@ -219,7 +222,7 @@ export const WithStatements = ({
             </ShortcutTooltip>
             <ShortcutTooltip
               shortcutId={SHORTCUT_IDS.OBSERVABILITY_RESET_REPORT}
-              label="Reset report"
+              label={$t('Reset report')}
               side="top"
             >
               <Button
@@ -265,21 +268,21 @@ export const WithStatements = ({
           <X size="14" />
         </Button>
         <div className="w-[33%] flex flex-col gap-y-1 text-sm">
-          <p>Reset report</p>
+          <p>{$t('Reset report')}</p>
           <p className="text-xs text-foreground-light">
-            Consider resetting the analysis after optimizing any queries
+            {$t('Consider resetting the analysis after optimizing any queries')}
           </p>
           <Button
             variant="default"
             className="mt-3! w-min"
             onClick={() => setShowResetgPgStatStatements(true)}
           >
-            Reset report
+            {$t('Reset report')}
           </Button>
         </div>
 
         <div className="w-[33%] flex flex-col gap-y-1 text-sm">
-          <p>How is this report generated?</p>
+          <p>{$t('How is this report generated?')}</p>
           <Markdown
             className="text-xs"
             content={`This report uses the pg_stat_statements table, and pg_stat_statements extension. [Learn more here](${DOCS_URL}/guides/platform/performance#examining-query-performance).`}
@@ -287,7 +290,7 @@ export const WithStatements = ({
         </div>
 
         <div className="w-[33%] flex flex-col gap-y-1 text-sm">
-          <p>Inspect your database for potential issues</p>
+          <p>{$t('Inspect your database for potential issues')}</p>
           <Markdown
             className="text-xs"
             content={`The Supabase CLI comes with a range of tools to help inspect your Postgres instances for
@@ -300,7 +303,7 @@ export const WithStatements = ({
         visible={showResetgPgStatStatements}
         size="medium"
         variant="destructive"
-        title="Reset query performance analysis"
+        title={$t('Reset query performance analysis')}
         confirmLabel="Reset report"
         confirmLabelLoading="Resetting report"
         onCancel={() => setShowResetgPgStatStatements(false)}
@@ -310,7 +313,7 @@ export const WithStatements = ({
           )?.connectionString
 
           if (IS_PLATFORM && !connectionString) {
-            return toast.error('Unable to run query: Connection string is missing')
+            return toast.error($t('Unable to run query: Connection string is missing'))
           }
 
           try {
@@ -327,12 +330,13 @@ export const WithStatements = ({
         }}
       >
         <p className="text-foreground-light text-sm">
-          This will reset the pg_stat_statements table in the extensions schema on your{' '}
+          {$t('This will reset the pg_stat_statements table in the extensions schema on your')}{' '}
           <span className="text-foreground">
             {isPrimaryDatabase ? 'primary database' : `read replica (ID: ${formattedDatabaseId})`}
           </span>
-          , which is used to calculate query performance. This data will repopulate immediately
-          after.
+          {$t(
+            ', which is used to calculate query performance. This data will repopulate immediately after.'
+          )}
         </p>
       </ConfirmationModal>
     </>

@@ -35,6 +35,7 @@ import { useEnumeratedTypesQuery } from '@/data/enumerated-types/enumerated-type
 import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useIsProtectedSchema } from '@/hooks/useProtectedSchemas'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -118,14 +119,14 @@ export const EnumeratedTypes = () => {
 
   useEffect(() => {
     if (isSuccess && !!selectedTypeIdToEdit && !typeToEdit) {
-      toast('Type cannot be found')
+      toast($t('Type cannot be found'))
       setSelectedTypeIdToEdit(null)
     }
   }, [isSuccess, selectedTypeIdToEdit, setSelectedTypeIdToEdit, typeToEdit])
 
   useEffect(() => {
     if (isSuccess && !!selectedTypeIdToDelete && !typeToDelete && !isSuccessDelete) {
-      toast('Type cannot be found')
+      toast($t('Type cannot be found'))
       setSelectedTypeIdToDelete(null)
     }
   }, [isSuccess, selectedTypeIdToDelete, setSelectedTypeIdToDelete, typeToDelete, isSuccessDelete])
@@ -157,7 +158,7 @@ export const EnumeratedTypes = () => {
             className="w-full lg:w-52"
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={onSearchInputEscape(search, setSearch)}
-            placeholder="Search for a type"
+            placeholder={$t('Search for a type')}
             icon={<Search />}
           />
         </div>
@@ -167,7 +168,7 @@ export const EnumeratedTypes = () => {
           {!isSchemaLocked && (
             <Shortcut
               id={SHORTCUT_IDS.LIST_PAGE_NEW_ITEM}
-              label="Create new enumerated type"
+              label={$t('Create new enumerated type')}
               onTrigger={() => setShowCreateTypePanel(true)}
               side="bottom"
             >
@@ -176,7 +177,7 @@ export const EnumeratedTypes = () => {
                 variant="primary"
                 onClick={() => setShowCreateTypePanel(true)}
               >
-                Create type
+                {$t('Create type')}
               </Button>
             </Shortcut>
           )}
@@ -198,9 +199,9 @@ export const EnumeratedTypes = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead key="schema">Schema</TableHead>
-                <TableHead key="name">Name</TableHead>
-                <TableHead key="values">Values</TableHead>
+                <TableHead key="schema">{$t('Schema')}</TableHead>
+                <TableHead key="name">{$t('Name')}</TableHead>
+                <TableHead key="values">{$t('Values')}</TableHead>
                 <TableHead key="actions" />
               </TableRow>
             </TableHeader>
@@ -209,9 +210,12 @@ export const EnumeratedTypes = () => {
                 {filteredEnumeratedTypes.length === 0 && search.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={4}>
-                      <p className="text-sm text-foreground">No enumerated types created yet</p>
+                      <p className="text-sm text-foreground">
+                        {$t('No enumerated types created yet')}
+                      </p>
                       <p className="text-sm text-foreground-light">
-                        There are no enumerated types found in the schema "{selectedSchema}"
+                        {$t('There are no enumerated types found in the schema "')}
+                        {selectedSchema}"
                       </p>
                     </TableCell>
                   </TableRow>
@@ -219,9 +223,11 @@ export const EnumeratedTypes = () => {
                 {filteredEnumeratedTypes.length === 0 && search.length > 0 && (
                   <TableRow>
                     <TableCell colSpan={4}>
-                      <p className="text-sm text-foreground">No results found</p>
+                      <p className="text-sm text-foreground">{$t('No results found')}</p>
                       <p className="text-sm text-foreground-light">
-                        Your search for "{search}" did not return any results
+                        {$t('Your search for "')}
+                        {search}
+                        {$t('" did not return any results')}
                       </p>
                     </TableCell>
                   </TableRow>
@@ -249,7 +255,7 @@ export const EnumeratedTypes = () => {
                                     />
                                   </DropdownMenuTrigger>
                                 </TooltipTrigger>
-                                <TooltipContent side="bottom">More options</TooltipContent>
+                                <TooltipContent side="bottom">{$t('More options')}</TooltipContent>
                               </Tooltip>
                               <DropdownMenuContent side="bottom" align="end" className="w-32">
                                 <DropdownMenuItem
@@ -257,14 +263,14 @@ export const EnumeratedTypes = () => {
                                   onClick={() => setSelectedTypeIdToEdit(type.id.toString())}
                                 >
                                   <Edit size={14} />
-                                  <p>Update type</p>
+                                  <p>{$t('Update type')}</p>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="space-x-2"
                                   onClick={() => setSelectedTypeIdToDelete(type.id.toString())}
                                 >
                                   <Trash size={14} />
-                                  <p>Delete type</p>
+                                  <p>{$t('Delete type')}</p>
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -298,7 +304,8 @@ export const EnumeratedTypes = () => {
         visible={!!typeToDelete}
         title={
           <>
-            Confirm to delete enumerated type <code className="text-sm">{typeToDelete?.name}</code>
+            {$t('Confirm to delete enumerated type')}{' '}
+            <code className="text-sm">{typeToDelete?.name}</code>
           </>
         }
         confirmLabel="Confirm delete"
@@ -311,10 +318,10 @@ export const EnumeratedTypes = () => {
             'You will need to re-create the enumerated type if you want to revert the deletion.',
         }}
       >
-        <p className="text-sm">Before deleting this enumerated type, consider:</p>
+        <p className="text-sm">{$t('Before deleting this enumerated type, consider:')}</p>
         <ul className="space-y-2 mt-2 text-sm text-foreground-light">
           <li className="list-disc ml-6">
-            This enumerated type is no longer in use in any tables or functions
+            {$t('This enumerated type is no longer in use in any tables or functions')}
           </li>
         </ul>
       </ConfirmationModal>

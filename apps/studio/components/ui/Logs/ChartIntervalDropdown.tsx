@@ -14,6 +14,7 @@ import {
 import { CHART_INTERVALS } from './logs.utils'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
+import { t as $t } from '@/lib/i18n'
 
 function getDaysRequired(startValue: number, startUnit: string): number {
   if (startUnit === 'day') return startValue
@@ -68,8 +69,9 @@ export const ChartIntervalDropdown = ({
                   </TooltipTrigger>
                   <TooltipContent side={tooltipSide}>
                     <p>
-                      Your plan only includes up to {retentionDays} day
-                      {retentionDays !== undefined && retentionDays > 1 ? 's' : ''} of log retention
+                      {$t('Your plan only includes up to')} {retentionDays} day
+                      {retentionDays !== undefined && retentionDays > 1 ? 's' : ''}{' '}
+                      {$t('of log retention')}
                     </p>
                     <p className="text-foreground-light">
                       {organizationSlug ? (
@@ -78,9 +80,9 @@ export const ChartIntervalDropdown = ({
                             className="text-foreground-light hover:text-foreground"
                             href={`/org/${organizationSlug}/billing?panel=subscriptionPlan`}
                           >
-                            Upgrade your plan
+                            {$t('Upgrade your plan')}
                           </InlineLink>{' '}
-                          to increase log retention and view statistics for the{' '}
+                          {$t('to increase log retention and view statistics for the')}{' '}
                           {i.label.toLowerCase()}
                         </>
                       ) : (

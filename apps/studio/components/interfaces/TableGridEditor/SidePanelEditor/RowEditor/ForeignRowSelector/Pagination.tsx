@@ -1,6 +1,8 @@
 import { ArrowLeft, ArrowRight, Loader } from 'lucide-react'
 import { Button } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 export interface PaginationProps {
   page: number
   setPage: (setter: (prev: number) => number) => void
@@ -35,7 +37,7 @@ const Pagination = ({
         variant="outline"
         disabled={page <= 1 || isLoading}
         onClick={onPreviousPage}
-        title="Previous Page"
+        title={$t('Previous Page')}
         style={{ padding: '3px 10px' }}
       />
 
@@ -44,7 +46,7 @@ const Pagination = ({
         variant="outline"
         disabled={hasRunOutOfRows || isLoading}
         onClick={onNextPage}
-        title="Next Page"
+        title={$t('Next Page')}
         style={{ padding: '3px 10px' }}
       />
     </div>

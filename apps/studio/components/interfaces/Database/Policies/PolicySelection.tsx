@@ -3,6 +3,7 @@ import { Edit, ExternalLink, FlaskConical, Grid } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle, Button, DialogSection } from 'ui'
 
 import CardButton from '@/components/ui/CardButton'
+import { t as $t } from '@/lib/i18n'
 
 interface PolicySelectionProps {
   description: string
@@ -25,8 +26,8 @@ const PolicySelection = ({
         <p className="text-sm text-foreground-light">{description}</p>
         <div className="grid grid-cols-1 gap-2 lg:grid-cols-1">
           <CardButton
-            title="Get started quickly"
-            description="Create a policy from a template"
+            title={$t('Get started quickly')}
+            description={$t('Create a policy from a template')}
             icon={
               <div className="flex">
                 <div
@@ -43,8 +44,8 @@ const PolicySelection = ({
             onClick={onViewTemplates}
           />
           <CardButton
-            title="For full customization"
-            description="Create a policy from scratch"
+            title={$t('For full customization')}
+            description={$t('Create a policy from scratch')}
             icon={
               <div className="flex">
                 <div
@@ -66,13 +67,13 @@ const PolicySelection = ({
       {showAssistantPreview && onToggleFeaturePreviewModal !== undefined && (
         <Alert>
           <FlaskConical />
-          <AlertTitle>Try the new Supabase Assistant for RLS policies</AlertTitle>
+          <AlertTitle>{$t('Try the new Supabase Assistant for RLS policies')}</AlertTitle>
           <AlertDescription>
-            Create RLS policies for your tables with the help of AI
+            {$t('Create RLS policies for your tables with the help of AI')}
           </AlertDescription>
           <div className="flex items-center gap-x-2 mt-3">
             <Button variant="default" onClick={onToggleFeaturePreviewModal}>
-              Toggle feature preview
+              {$t('Toggle feature preview')}
             </Button>
             <Button asChild variant="default" icon={<ExternalLink strokeWidth={1.5} />}>
               <a
@@ -80,7 +81,7 @@ const PolicySelection = ({
                 target="_blank"
                 rel="noreferrer"
               >
-                Learn more
+                {$t('Learn more')}
               </a>
             </Button>
           </div>

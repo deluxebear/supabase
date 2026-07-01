@@ -9,6 +9,7 @@ import { TextConfirmModal } from '@/components/ui/TextConfirmModalWrapper'
 import { useDatabaseCronJobDeleteMutation } from '@/data/database-cron-jobs/database-cron-jobs-delete-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { cleanPointerEventsNoneOnBody } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export const DeleteCronJob = () => {
@@ -54,7 +55,7 @@ export const DeleteCronJob = () => {
 
   useEffect(() => {
     if (grid.isSuccess && !!cronJobIdForDeletion && !cronJob && !isSuccessDelete) {
-      toast('Cron job not found')
+      toast($t('Cron job not found'))
       setCronJobForDeletion(null)
     }
   }, [cronJob, cronJobIdForDeletion, grid.isSuccess, isSuccessDelete, setCronJobForDeletion])
@@ -91,14 +92,14 @@ export const DeleteCronJob = () => {
         setCronJobForDeletion(null)
         cleanPointerEventsNoneOnBody()
       }}
-      title="Delete this cron job"
+      title={$t('Delete this cron job')}
       loading={isPending}
       confirmLabel={`Delete cron job ${cronJob.jobname}`}
       confirmPlaceholder="Type in name of cron job"
       confirmString={cronJob.jobname ?? 'Unknown'}
       text={
         <>
-          <span>This will delete the cron job</span>{' '}
+          <span>{$t('This will delete the cron job')}</span>{' '}
           <span className="text-bold text-foreground">{cronJob.jobname}</span>
         </>
       }

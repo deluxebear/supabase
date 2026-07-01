@@ -12,6 +12,7 @@ import { useCustomDomainActivateMutation } from '@/data/custom-domains/custom-do
 import { useCustomDomainDeleteMutation } from '@/data/custom-domains/custom-domains-delete-mutation'
 import type { CustomDomainResponse } from '@/data/custom-domains/custom-domains-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export type CustomDomainActivateProps = {
   projectRef?: string
@@ -34,7 +35,9 @@ export const CustomDomainActivate = ({ projectRef, customDomain }: CustomDomainA
   const { mutate: deleteCustomDomain, isPending: isDeleting } = useCustomDomainDeleteMutation({
     onSuccess: () => {
       toast.success(
-        'Custom domain setup cancelled successfully. It may take a few seconds before your custom domain is fully removed, so you may need to refresh your browser.'
+        $t(
+          'Custom domain setup cancelled successfully. It may take a few seconds before your custom domain is fully removed, so you may need to refresh your browser.'
+        )
       )
     },
   })
@@ -59,31 +62,33 @@ export const CustomDomainActivate = ({ projectRef, customDomain }: CustomDomainA
       <div className="flex flex-col items-start">
         <Panel.Content>
           <div className="flex flex-col gap-2">
-            <h4 className="text-foreground">Enable your custom domain</h4>
+            <h4 className="text-foreground">{$t('Enable your custom domain')}</h4>
             <p className="text-sm text-foreground-light">
-              Set up is almost complete. Press “Activate” below to enable{' '}
-              <code className="text-code-inline">{customDomain.hostname}</code> for this project.
+              {$t('Set up is almost complete. Press “Activate” below to enable')}{' '}
+              <code className="text-code-inline">{customDomain.hostname}</code>{' '}
+              {$t('for this project.')}
             </p>
             <p className="text-sm text-foreground-light">
-              We recommend that you schedule a downtime window of 20 - 30 minutes for your
-              application, as you will need to update any services that need to know about your
-              custom domain (e.g client side code or OAuth providers).
+              {$t(
+                'We recommend that you schedule a downtime window of 20 - 30 minutes for your application, as you will need to update any services that need to know about your custom domain (e.g client side code or OAuth providers).'
+              )}
             </p>
           </div>
           <div className="mt-4">
             <Admonition
               type="note"
-              title="Retain your CNAME record for service continuity after activation"
+              title={$t('Retain your CNAME record for service continuity after activation')}
             >
               <p>
-                Your custom domain CNAME record for{' '}
-                <code className="text-code-inline">{customDomain.hostname}</code> should resolve to{' '}
+                {$t('Your custom domain CNAME record for')}{' '}
+                <code className="text-code-inline">{customDomain.hostname}</code>{' '}
+                {$t('should resolve to')}{' '}
                 {endpoint ? (
                   <code className="text-code-inline">{endpoint}</code>
                 ) : (
                   "your project's API URL"
                 )}
-                . If you're using Cloudflare as your DNS provider, disable the proxy option.
+                {$t(". If you're using Cloudflare as your DNS provider, disable the proxy option.")}
               </p>
             </Admonition>
           </div>
@@ -101,14 +106,14 @@ export const CustomDomainActivate = ({ projectRef, customDomain }: CustomDomainA
                 onClick={onCancelCustomDomain}
                 loading={isDeleting}
               >
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button
                 disabled={isDeleting}
                 onClick={() => setIsActivateConfirmModalVisible(true)}
                 className="self-end"
               >
-                Activate
+                {$t('Activate')}
               </Button>
             </div>
           </div>
@@ -119,16 +124,18 @@ export const CustomDomainActivate = ({ projectRef, customDomain }: CustomDomainA
         size="small"
         loading={isCheckingRecord || isActivating}
         visible={isActivateConfirmModalVisible}
-        title="Activate custom domain"
+        title={$t('Activate custom domain')}
         confirmLabel="Activate"
         confirmLabelLoading="Activating"
         onCancel={() => setIsActivateConfirmModalVisible(false)}
         onConfirm={onActivateCustomDomain}
       >
         <p className="text-sm">
-          Activating <code className="text-code-inline break-normal!">{customDomain.hostname}</code>{' '}
-          will make it visible to users in place of your project’s Supabase domain. The Supabase
-          domain will continue to work too.
+          {$t('Activating')}{' '}
+          <code className="text-code-inline break-normal!">{customDomain.hostname}</code>{' '}
+          {$t(
+            'will make it visible to users in place of your project’s Supabase domain. The Supabase domain will continue to work too.'
+          )}
         </p>
       </ConfirmationModal>
     </>

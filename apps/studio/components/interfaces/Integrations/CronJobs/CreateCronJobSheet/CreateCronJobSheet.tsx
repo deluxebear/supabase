@@ -55,6 +55,7 @@ import { useDatabaseExtensionsQuery } from '@/data/database-extensions/database-
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
+import { t as $t } from '@/lib/i18n'
 import { isGreaterThanOrEqual } from '@/lib/semver'
 import { useTrack } from '@/lib/telemetry/track'
 
@@ -304,12 +305,16 @@ export const CreateCronJobSheet = ({ open, selectedCronJob, onClose }: CreateCro
                       control={form.control}
                       name="name"
                       render={({ field }) => (
-                        <FormItemLayout label="Name" layout="vertical" className="gap-1 relative">
+                        <FormItemLayout
+                          label={$t('Name')}
+                          layout="vertical"
+                          className="gap-1 relative"
+                        >
                           <FormControl>
                             <Input {...field} disabled={isEditing} />
                           </FormControl>
                           <span className="text-foreground-lighter text-xs absolute top-0 right-0">
-                            Cron jobs cannot be renamed once created
+                            {$t('Cron jobs cannot be renamed once created')}
                           </span>
                         </FormItemLayout>
                       )}
@@ -323,7 +328,7 @@ export const CreateCronJobSheet = ({ open, selectedCronJob, onClose }: CreateCro
                       control={form.control}
                       name="values.type"
                       render={({ field }) => (
-                        <FormItemLayout label="Type" layout="vertical" className="gap-1">
+                        <FormItemLayout label={$t('Type')} layout="vertical" className="gap-1">
                           <FormControl>
                             <RadioGroupStacked
                               id="function_type"
@@ -362,7 +367,8 @@ export const CreateCronJobSheet = ({ open, selectedCronJob, onClose }: CreateCro
                                     <div className="w-full flex gap-x-2 pl-11 py-2 items-center">
                                       <WarningIcon />
                                       <span className="text-xs">
-                                        <code>pg_net</code> needs to be installed to use this type
+                                        <code>pg_net</code>{' '}
+                                        {$t('needs to be installed to use this type')}
                                       </span>
                                     </div>
                                   ) : null}
@@ -379,15 +385,16 @@ export const CreateCronJobSheet = ({ open, selectedCronJob, onClose }: CreateCro
                         // @ts-ignore
                         title={
                           <span>
-                            Enable <code className="text-code-inline w-min">pg_net</code> for HTTP
-                            requests or Edge Functions
+                            {$t('Enable')} <code className="text-code-inline w-min">pg_net</code>{' '}
+                            {$t('for HTTP requests or Edge Functions')}
                           </span>
                         }
                         description={
                           <div className="flex flex-col gap-y-2">
                             <span>
-                              This will allow you to send HTTP requests or trigger an edge function
-                              within your cron jobs
+                              {$t(
+                                'This will allow you to send HTTP requests or trigger an edge function within your cron jobs'
+                              )}
                             </span>
                             <ButtonTooltip
                               variant="default"
@@ -403,7 +410,7 @@ export const CreateCronJobSheet = ({ open, selectedCronJob, onClose }: CreateCro
                                 },
                               }}
                             >
-                              Install pg_net extension
+                              {$t('Install pg_net extension')}
                             </ButtonTooltip>
                           </div>
                         }
@@ -442,7 +449,7 @@ export const CreateCronJobSheet = ({ open, selectedCronJob, onClose }: CreateCro
                 onClick={confirmOnClose}
                 disabled={isLoading}
               >
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button
                 size="tiny"

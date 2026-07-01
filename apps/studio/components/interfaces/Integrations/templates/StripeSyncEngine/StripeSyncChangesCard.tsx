@@ -12,6 +12,7 @@ import {
   isUninstallDone,
   isUninstalling,
 } from './stripe-sync-status'
+import { t as $t } from '@/lib/i18n'
 
 type StripeSyncChangesCardProps = {
   installationStatus: SchemaInstallationStatus
@@ -127,8 +128,8 @@ export const StripeSyncChangesCard = ({
                 <Table size={16} strokeWidth={1.5} className="text-foreground-lighter shrink-0" />
               )}
               <span>
-                {tableAndViewLine} <code className="text-code-inline">stripe</code> schema for
-                synced Stripe data
+                {tableAndViewLine} <code className="text-code-inline">stripe</code>{' '}
+                {$t('schema for synced Stripe data')}
               </span>
             </li>
             <li className={ListItemClassName}>

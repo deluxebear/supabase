@@ -28,6 +28,7 @@ import { useVaultSecretsQuery } from '@/data/vault/vault-secrets-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -107,7 +108,7 @@ export const SecretsManagement = () => {
                 ref={searchInputRef}
                 size="tiny"
                 className="w-52"
-                placeholder="Search by name or key ID"
+                placeholder={$t('Search by name or key ID')}
                 icon={<Search />}
                 value={searchValue ?? ''}
                 onChange={(e) => setSearchValue(e.target.value)}
@@ -129,15 +130,17 @@ export const SecretsManagement = () => {
               <Select value={selectedSort} onValueChange={(v) => setSelectedSort(v as any)}>
                 <SelectTrigger size="tiny" className="w-44">
                   <SelectValue asChild>
-                    <>Sort by {selectedSort}</>
+                    <>
+                      {$t('Sort by')} {selectedSort}
+                    </>
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="updated_at" className="text-xs">
-                    Updated at
+                    {$t('Updated at')}
                   </SelectItem>
                   <SelectItem value="name" className="text-xs">
-                    Name
+                    {$t('Name')}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -150,7 +153,7 @@ export const SecretsManagement = () => {
                 loading={isRefetching}
                 onClick={() => refetch()}
               >
-                Refresh
+                {$t('Refresh')}
               </Button>
               <DocsButton href={`${DOCS_URL}/guides/database/vault`} />
               <ButtonTooltip
@@ -166,7 +169,7 @@ export const SecretsManagement = () => {
                   },
                 }}
               >
-                Add new secret
+                {$t('Add new secret')}
               </ButtonTooltip>
             </div>
           </div>

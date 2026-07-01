@@ -17,6 +17,7 @@ import { NoSearchResults } from '@/components/ui/NoSearchResults'
 import { useDatabasePolicyDeleteMutation } from '@/data/database-policies/database-policy-delete-mutation'
 import { useTableUpdateMutation } from '@/data/tables/table-update-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface PoliciesProps {
   search?: string
@@ -61,7 +62,7 @@ export const Policies = ({
   const { mutate: deleteDatabasePolicy, isPending: isDeletingPolicy } =
     useDatabasePolicyDeleteMutation({
       onSuccess: () => {
-        toast.success('Successfully deleted policy!')
+        toast.success($t('Successfully deleted policy!'))
       },
       onSettled: () => {
         closeConfirmModal()
@@ -130,14 +131,15 @@ export const Policies = ({
     return (
       <Card className="w-full bg-transparent">
         <CardContent className="flex flex-col items-center justify-center p-8">
-          <h2 className="heading-default">No tables to create policies for</h2>
+          <h2 className="heading-default">{$t('No tables to create policies for')}</h2>
 
           <p className="text-sm text-foreground-light text-center mb-4">
-            RLS Policies control per-user access to table rows. Create a table in this schema first
-            before creating a policy.
+            {$t(
+              'RLS Policies control per-user access to table rows. Create a table in this schema first before creating a policy.'
+            )}
           </p>
           <Button asChild variant="default">
-            <Link href={`/project/${ref}/editor`}>Create a table</Link>
+            <Link href={`/project/${ref}/editor`}>{$t('Create a table')}</Link>
           </Button>
         </CardContent>
       </Card>
@@ -182,7 +184,7 @@ export const Policies = ({
       <ConfirmationModal
         visible={!isEmpty(selectedPolicyToDelete)}
         variant="destructive"
-        title="Delete policy"
+        title={$t('Delete policy')}
         description={`Are you sure you want to delete the policy “${selectedPolicyToDelete.name}”? This action cannot be undone.`}
         confirmLabel="Delete"
         confirmLabelLoading="Deleting"

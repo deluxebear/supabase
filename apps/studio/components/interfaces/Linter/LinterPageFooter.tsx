@@ -6,6 +6,7 @@ import { Markdown } from '../Markdown'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 interface LinterPageFooterProps {
@@ -43,14 +44,14 @@ export const LinterPageFooter = ({
       <div
         className={cn(hideDbInspectCTA ? 'w-[35%]' : 'w-[33%]', 'flex flex-col gap-y-1 text-sm')}
       >
-        <p>Reset suggestions</p>
+        <p>{$t('Reset suggestions')}</p>
         <p className="text-xs text-foreground-light">
-          Consider resetting the analysis after making any changes
+          {$t('Consider resetting the analysis after making any changes')}
         </p>
 
         <ShortcutTooltip
           shortcutId={SHORTCUT_IDS.ADVISORS_REFRESH}
-          label="Rerun linter"
+          label={$t('Rerun linter')}
           side="bottom"
           align="start"
         >
@@ -61,7 +62,7 @@ export const LinterPageFooter = ({
             loading={isLoading || isRefetching}
             onClick={() => refetch()}
           >
-            Rerun linter
+            {$t('Rerun linter')}
           </Button>
         </ShortcutTooltip>
       </div>
@@ -69,12 +70,12 @@ export const LinterPageFooter = ({
       <div
         className={cn(hideDbInspectCTA ? 'w-[35%]' : 'w-[33%]', 'flex flex-col gap-y-1 text-sm')}
       >
-        <p>How are these suggestions generated?</p>
+        <p>{$t('How are these suggestions generated?')}</p>
         <div className="prose text-xs">
           <p>
-            <span>These suggestions use </span>
+            <span>{$t('These suggestions use')} </span>
             <a href="https://github.com/supabase/splinter" target="" rel="">
-              splinter (Supabase Postgres LINTER)
+              {$t('splinter (Supabase Postgres LINTER)')}
             </a>
             .
           </p>
@@ -83,7 +84,7 @@ export const LinterPageFooter = ({
 
       {!hideDbInspectCTA && (
         <div className="w-[33%] flex flex-col gap-y-1 text-sm">
-          <p>Inspect your database for potential issues</p>
+          <p>{$t('Inspect your database for potential issues')}</p>
           <Markdown
             className="text-xs"
             content={`The Supabase CLI comes with a range of tools to help inspect your Postgres instances for

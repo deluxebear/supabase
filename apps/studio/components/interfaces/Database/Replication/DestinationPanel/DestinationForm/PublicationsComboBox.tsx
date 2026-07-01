@@ -21,6 +21,7 @@ import {
 
 import type { DestinationPanelSchemaType } from './DestinationForm.schema'
 import { useReplicationPublicationsQuery } from '@/data/replication/publications-query'
+import { t as $t } from '@/lib/i18n'
 
 interface PublicationsComboBoxProps {
   sourceId?: number
@@ -99,7 +100,7 @@ export const PublicationsComboBox = ({
       <PopoverContent sameWidthAsTrigger className="p-0" align="start">
         <Command>
           <CommandInput
-            placeholder="Find publication..."
+            placeholder={$t('Find publication...')}
             className="text-xs"
             value={searchTerm}
             onValueChange={setSearchTerm}
@@ -109,7 +110,8 @@ export const PublicationsComboBox = ({
               {showLoadingState ? (
                 <div className="flex items-center gap-2 text-center justify-center">
                   <Loader2 size={12} className="animate-spin" />
-                  Loading...
+
+                  {$t('Loading...')}
                 </div>
               ) : (
                 'No publications found'
@@ -119,8 +121,10 @@ export const PublicationsComboBox = ({
             <CommandGroup>
               {publications.length === 0 && !showLoadingState && (
                 <div className="text-foreground-lighter text-xs py-3 px-2 space-y-0.5">
-                  <p>No publications available</p>
-                  <p className="text-foreground-muted">Publications with no tables are hidden</p>
+                  <p>{$t('No publications available')}</p>
+                  <p className="text-foreground-muted">
+                    {$t('Publications with no tables are hidden')}
+                  </p>
                 </div>
               )}
               <ScrollArea
@@ -164,7 +168,7 @@ export const PublicationsComboBox = ({
                 onClick={onNewPublicationClick}
               >
                 <Plus size={14} strokeWidth={1.5} className="mr-2" />
-                <p>New publication</p>
+                <p>{$t('New publication')}</p>
               </CommandItem>
             </CommandGroup>
           </CommandList>

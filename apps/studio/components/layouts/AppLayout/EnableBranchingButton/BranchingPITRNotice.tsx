@@ -6,6 +6,7 @@ import { Button } from 'ui'
 
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { useAppStateSnapshot } from '@/state/app-state'
 
 export const BranchingPITRNotice = () => {
@@ -26,10 +27,13 @@ export const BranchingPITRNotice = () => {
       </div>
       <div className="flex grow items-center justify-between gap-4">
         <div className="flex flex-col gap-y-1">
-          <p className="text-sm text-foreground">Consider enabling Point in Time Recovery (PITR)</p>
+          <p className="text-sm text-foreground">
+            {$t('Consider enabling Point in Time Recovery (PITR)')}
+          </p>
           <p className="text-sm text-foreground-light">
-            This ensures you can recover production data if you merge a bad migration (e.g. delete a
-            column).
+            {$t(
+              'This ensures you can recover production data if you merge a bad migration (e.g. delete a column).'
+            )}
           </p>
         </div>
         {!canUpdateSubscription ? (
@@ -44,7 +48,7 @@ export const BranchingPITRNotice = () => {
               },
             }}
           >
-            Enable PITR add-on
+            {$t('Enable PITR add-on')}
           </ButtonTooltip>
         ) : (
           <Button size="tiny" variant="default" asChild>
@@ -52,7 +56,7 @@ export const BranchingPITRNotice = () => {
               href={`/project/${ref}/settings/addons?panel=pitr`}
               onClick={() => snap.setShowCreateBranchModal(false)}
             >
-              Enable PITR
+              {$t('Enable PITR')}
             </Link>
           </Button>
         )}

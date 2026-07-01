@@ -20,6 +20,7 @@ import { getMfaAuthenticatorAssuranceLevel } from '@/data/profile/mfa-authentica
 import { useLastSignIn } from '@/hooks/misc/useLastSignIn'
 import { captureCriticalError } from '@/lib/error-reporting'
 import { auth, buildPathWithParams, getReturnToPath } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const schema = z.object({
@@ -60,7 +61,7 @@ export const SignInForm = () => {
   }
 
   const onSubmit: SubmitHandler<z.infer<typeof schema>> = async ({ email, password }) => {
-    const toastId = toast.loading('Signing in...')
+    const toastId = toast.loading($t('Signing in...'))
 
     let token = captchaToken
     if (!token) {
@@ -108,7 +109,9 @@ export const SignInForm = () => {
 
       if (error.message.toLowerCase() === 'email not confirmed') {
         return toast.error(
-          'Your account has not been verified. Please check the verification link sent to your email. If you have not received the email or the link has expired, please sign up again to request a new verification link.',
+          $t(
+            'Your account has not been verified. Please check the verification link sent to your email. If you have not received the email or the link has expired, please sign up again to request a new verification link.'
+          ),
           { id: toastId }
         )
       }
@@ -133,7 +136,7 @@ export const SignInForm = () => {
           name="email"
           control={form.control}
           render={({ field }) => (
-            <FormItemLayout name="email" label="Email">
+            <FormItemLayout name="email" label={$t('Email')}>
               <FormControl>
                 <Input
                   id="email"
@@ -154,7 +157,7 @@ export const SignInForm = () => {
             name="password"
             control={form.control}
             render={({ field }) => (
-              <FormItemLayout name="password" label="Password">
+              <FormItemLayout name="password" label={$t('Password')}>
                 <FormControl>
                   <div className="relative">
                     <Input
@@ -186,7 +189,7 @@ export const SignInForm = () => {
             href={forgotPasswordUrl}
             className="absolute top-0 right-0 text-sm text-foreground-lighter"
           >
-            Forgot password?
+            {$t('Forgot password?')}
           </Link>
         </div>
 
@@ -206,7 +209,7 @@ export const SignInForm = () => {
 
         <LastSignInWrapper type="email">
           <Button block form={formId} type="submit" size="large" loading={isSubmitting}>
-            Sign in
+            {$t('Sign in')}
           </Button>
         </LastSignInWrapper>
       </form>

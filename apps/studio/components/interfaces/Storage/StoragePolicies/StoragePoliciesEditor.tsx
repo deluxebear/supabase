@@ -7,16 +7,17 @@ import { PolicyName } from '@/components/interfaces/Database/Policies/PolicyEdit
 import { PolicyRoles } from '@/components/interfaces/Database/Policies/PolicyEditor/PolicyRoles'
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const PolicyDefinition = ({ definition = '', onUpdatePolicyDefinition = () => {} }) => {
   return (
     <div className="flex flex-col md:flex-row gap-4 md:gap-12">
       <div className="flex md:w-1/3 flex-col space-y-2">
         <label className="text-base text-foreground-light" htmlFor="policy-name">
-          Policy definition
+          {$t('Policy definition')}
         </label>
         <p className="text-sm text-foreground-lighter">
-          Provide a SQL conditional expression that returns a boolean.
+          {$t('Provide a SQL conditional expression that returns a boolean.')}
         </p>
       </div>
       <div className="h-56 md:w-2/3">
@@ -39,17 +40,19 @@ const PolicyAllowedOperations = ({ allowedOperations = [], onToggleOperation = (
     <div className="flex flex-col md:flex-row justify-between gap-4 md:gap-12">
       <div className="flex md:w-1/3 flex-col space-y-2">
         <label className="text-base text-foreground-light" htmlFor="allowed-operation">
-          Allowed operation
+          {$t('Allowed operation')}
         </label>
         <p className="text-sm text-foreground-lighter">
-          Based on the operations you have selected, you can use the highlighted functions in the{' '}
+          {$t(
+            'Based on the operations you have selected, you can use the highlighted functions in the'
+          )}{' '}
           <a
             href={`${DOCS_URL}/reference/javascript/storage-from-list`}
             target="_blank"
             rel="noreferrer"
             className="underline"
           >
-            client library
+            {$t('client library')}
           </a>
           .
         </p>
@@ -111,8 +114,8 @@ const PolicyAllowedOperations = ({ allowedOperations = [], onToggleOperation = (
         </div>
         {hasUpdateOrDelete && (
           <p className="text-sm text-foreground-light mt-3 prose [&>code]:text-xs">
-            <code>SELECT</code> has been auto selected as <code>UPDATE</code> and{' '}
-            <code>DELETE</code> require it
+            <code>SELECT</code> {$t('has been auto selected as')} <code>UPDATE</code> and{' '}
+            <code>DELETE</code> {$t('require it')}
           </p>
         )}
         <div className="flex w-5/6 flex-wrap">
@@ -139,10 +142,10 @@ const PolicyAllowedOperations = ({ allowedOperations = [], onToggleOperation = (
 const PolicyEditorFooter = ({ onViewTemplates = () => {}, onReviewPolicy = () => {} }) => (
   <div className="flex w-full items-center justify-end gap-x-2 border-t px-6 py-3 border-default">
     <Button variant="default" onClick={onViewTemplates}>
-      View templates
+      {$t('View templates')}
     </Button>
     <Button variant="primary" onClick={onReviewPolicy}>
-      Review
+      {$t('Review')}
     </Button>
   </div>
 )

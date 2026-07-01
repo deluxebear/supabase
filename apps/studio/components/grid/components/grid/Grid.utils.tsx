@@ -9,6 +9,7 @@ import { convertByteaToHex } from '@/components/interfaces/TableGridEditor/SideP
 import { DocsButton } from '@/components/ui/DocsButton'
 import { isTableLike } from '@/data/table-editor/table-editor-types'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTableEditorTableStateSnapshot } from '@/state/table-editor-table'
 import type { Dictionary } from '@/types'
 
@@ -46,12 +47,13 @@ export function useOnRowsChange(rows: SupaRow[]) {
       const stableIdentifiers = getStableRowIdentifiers(previousRow, identifiers)
 
       if (Object.keys(stableIdentifiers).length === 0) {
-        return toast('Unable to update row as table has no primary keys', {
+        return toast($t('Unable to update row as table has no primary keys'), {
           description: (
             <div>
               <p className="text-sm text-foreground-light">
-                Add a primary key column to your table first to serve as a unique identifier for
-                each row before updating or deleting the row.
+                {$t(
+                  'Add a primary key column to your table first to serve as a unique identifier for each row before updating or deleting the row.'
+                )}
               </p>
               <div className="mt-3">
                 <DocsButton href={`${DOCS_URL}/guides/database/tables#primary-keys`} />

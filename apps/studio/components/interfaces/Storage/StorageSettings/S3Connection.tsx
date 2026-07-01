@@ -54,6 +54,7 @@ import { useStorageCredentialsQuery } from '@/data/storage/s3-access-key-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsProjectActive, useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const S3Connection = () => {
   const { ref: projectRef } = useParams()
@@ -91,7 +92,7 @@ export const S3Connection = () => {
         if (vars.features?.s3Protocol) {
           form.reset({ s3ConnectionEnabled: vars.features.s3Protocol.enabled })
         }
-        toast.success('Successfully updated storage settings')
+        toast.success($t('Successfully updated storage settings'))
       },
     })
 
@@ -130,9 +131,9 @@ export const S3Connection = () => {
         <PageSection>
           <PageSectionMeta>
             <PageSectionSummary>
-              <PageSectionTitle>Connection</PageSectionTitle>
+              <PageSectionTitle>{$t('Connection')}</PageSectionTitle>
               <PageSectionDescription>
-                Connect to your bucket using any S3-compatible service via the S3 protocol
+                {$t('Connect to your bucket using any S3-compatible service via the S3 protocol')}
               </PageSectionDescription>
             </PageSectionSummary>
             <PageSectionAside>
@@ -163,8 +164,10 @@ export const S3Connection = () => {
                           <FormItemLayout
                             layout="flex-row-reverse"
                             className="[&>*>label]:text-foreground"
-                            label="S3 protocol connection"
-                            description="Allow clients to connect to Supabase Storage via the S3 protocol"
+                            label={$t('S3 protocol connection')}
+                            description={$t(
+                              'Allow clients to connect to Supabase Storage via the S3 protocol'
+                            )}
                           >
                             <FormControl>
                               <Switch
@@ -183,7 +186,7 @@ export const S3Connection = () => {
                       <FormItemLayout
                         layout="flex-row-reverse"
                         className="[&>div]:md:w-1/2 [&>div>div]:w-full [&>div]:min-w-100"
-                        label="Endpoint"
+                        label={$t('Endpoint')}
                         isReactForm={false}
                       >
                         <Input readOnly copy value={s3connectionUrl} />
@@ -194,7 +197,7 @@ export const S3Connection = () => {
                       <FormItemLayout
                         layout="flex-row-reverse"
                         className="[&>div]:md:w-1/2 [&>div>div]:w-full [&>div]:min-w-100"
-                        label="Region"
+                        label={$t('Region')}
                         isReactForm={false}
                       >
                         <Input
@@ -212,7 +215,7 @@ export const S3Connection = () => {
                     {!isLoadingPermissions && !canUpdateStorageSettings && (
                       <CardContent>
                         <p className="text-sm text-foreground-light">
-                          You need additional permissions to update storage settings
+                          {$t('You need additional permissions to update storage settings')}
                         </p>
                       </CardContent>
                     )}
@@ -227,7 +230,7 @@ export const S3Connection = () => {
                             !form.formState.isDirty || !canUpdateStorageSettings || isUpdating
                           }
                         >
-                          Cancel
+                          {$t('Cancel')}
                         </Button>
                       )}
                       <Button
@@ -238,20 +241,20 @@ export const S3Connection = () => {
                           !form.formState.isDirty || !canUpdateStorageSettings || isUpdating
                         }
                       >
-                        Save
+                        {$t('Save')}
                       </Button>
                     </CardFooter>
                   </Card>
                 ) : (
                   <Alert variant="warning">
                     <WarningIcon />
-                    <AlertTitle>Project is paused</AlertTitle>
+                    <AlertTitle>{$t('Project is paused')}</AlertTitle>
                     <AlertDescription>
-                      To connect to your S3 bucket, you need to restore your project.
+                      {$t('To connect to your S3 bucket, you need to restore your project.')}
                     </AlertDescription>
                     <div className="mt-3 flex items-center space-x-2">
                       <Button asChild variant="default">
-                        <Link href={`/project/${projectRef}`}>Restore project</Link>
+                        <Link href={`/project/${projectRef}`}>{$t('Restore project')}</Link>
                       </Button>
                     </div>
                   </Alert>
@@ -264,9 +267,9 @@ export const S3Connection = () => {
         <PageSection>
           <PageSectionMeta>
             <PageSectionSummary>
-              <PageSectionTitle>Access keys</PageSectionTitle>
+              <PageSectionTitle>{$t('Access keys')}</PageSectionTitle>
               <PageSectionDescription>
-                Manage your access keys for this project
+                {$t('Manage your access keys for this project')}
               </PageSectionDescription>
             </PageSectionSummary>
             <PageSectionAside>
@@ -282,13 +285,13 @@ export const S3Connection = () => {
             ) : !isProjectActive ? (
               <Alert variant="warning">
                 <WarningIcon />
-                <AlertTitle>Can't fetch S3 access keys</AlertTitle>
+                <AlertTitle>{$t("Can't fetch S3 access keys")}</AlertTitle>
                 <AlertDescription>
-                  To fetch your S3 access keys, you need to restore your project.
+                  {$t('To fetch your S3 access keys, you need to restore your project.')}
                 </AlertDescription>
                 <AlertDescription>
                   <Button asChild variant="default" className="mt-3">
-                    <Link href={`/project/${projectRef}`}>Restore project</Link>
+                    <Link href={`/project/${projectRef}`}>{$t('Restore project')}</Link>
                   </Button>
                 </AlertDescription>
               </Alert>
@@ -301,9 +304,9 @@ export const S3Connection = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead key="description">Name</TableHead>
-                          <TableHead key="access-key-id">Key ID</TableHead>
-                          <TableHead key="created-at">Created at</TableHead>
+                          <TableHead key="description">{$t('Name')}</TableHead>
+                          <TableHead key="access-key-id">{$t('Key ID')}</TableHead>
+                          <TableHead key="created-at">{$t('Created at')}</TableHead>
                           <TableHead key="actions" />
                         </TableRow>
                       </TableHeader>
@@ -325,9 +328,11 @@ export const S3Connection = () => {
                         ) : (
                           <TableRow>
                             <TableCell colSpan={4} className="rounded-b-md! overflow-hidden">
-                              <p className="text-sm text-foreground">No access keys created</p>
+                              <p className="text-sm text-foreground">
+                                {$t('No access keys created')}
+                              </p>
                               <p className="text-sm text-foreground-light">
-                                There are no access keys associated with your project yet
+                                {$t('There are no access keys associated with your project yet')}
                               </p>
                             </TableCell>
                           </TableRow>

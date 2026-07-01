@@ -4,11 +4,12 @@ import { CollapsibleCardSection } from 'ui-patterns/CollapsibleCardSection'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import type { SSOConfigFormSchema } from './SSOConfig'
+import { t as $t } from '@/lib/i18n'
 
 export const SSOAdvancedSettings = ({ form }: { form: UseFormReturn<SSOConfigFormSchema> }) => (
   <CollapsibleCardSection
-    title="Advanced settings"
-    description="Required for enterprise-managed MCP authentication"
+    title={$t('Advanced settings')}
+    description={$t('Required for enterprise-managed MCP authentication')}
   >
     <FormField
       control={form.control}
@@ -16,8 +17,8 @@ export const SSOAdvancedSettings = ({ form }: { form: UseFormReturn<SSOConfigFor
       render={({ field }) => (
         <FormItemLayout
           layout="flex-row-reverse"
-          label="IDJAG Issuer"
-          description="The IDJAG issuer URL of your identity provider."
+          label={$t('IDJAG Issuer')}
+          description={$t('The IDJAG issuer URL of your identity provider.')}
         >
           <FormControl>
             <Input placeholder="https://your-org.okta.com" {...field} />

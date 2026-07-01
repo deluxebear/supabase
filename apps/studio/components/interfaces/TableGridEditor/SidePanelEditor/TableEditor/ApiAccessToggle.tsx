@@ -31,6 +31,7 @@ import {
   EMPTY_DATA_API_PRIVILEGES,
   type ApiPrivilegesByRole,
 } from '@/lib/data-api-types'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import type { DeepReadonly, Prettify } from '@/lib/type-helpers'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
@@ -320,9 +321,11 @@ export const ApiAccessToggle = ({
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h5>Data API access</h5>
+            <h5>{$t('Data API access')}</h5>
             <p className="text-sm text-foreground-lighter">
-              Allow this table to be queried via Supabase client libraries or the API directly
+              {$t(
+                'Allow this table to be queried via Supabase client libraries or the API directly'
+              )}
             </p>
           </div>
           {isNewRecord ? (
@@ -338,7 +341,7 @@ export const ApiAccessToggle = ({
                 rel="noopener noreferrer"
                 href={`/project/${projectRef}/integrations/data_api/settings`}
               >
-                Manage access
+                {$t('Manage access')}
               </Link>
             </Button>
           )}
@@ -399,7 +402,7 @@ const SchemaExposureOptions = ({
       {isError && (
         <Admonition
           type="warning"
-          description="An error occurred while fetching Data API settings."
+          description={$t('An error occurred while fetching Data API settings.')}
         />
       )}
 
@@ -418,13 +421,13 @@ const SchemaExposureOptions = ({
           title={`The "${schemaName}" schema is not exposed via the Data API`}
           description={
             <>
-              To enable API access for this table, you need to first expose the{' '}
-              <code className="text-xs">{schemaName}</code> schema in your{' '}
+              {$t('To enable API access for this table, you need to first expose the')}{' '}
+              <code className="text-xs">{schemaName}</code> {$t('schema in your')}{' '}
               <Link
                 href={`/project/${projectRef}/integrations/data_api/overview`}
                 className="text-foreground hover:underline"
               >
-                API settings
+                {$t('API settings')}
               </Link>
               .
             </>

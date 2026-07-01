@@ -3,6 +3,8 @@ import { ArrowDown, ArrowUp } from 'lucide-react'
 import { PropsWithChildren } from 'react'
 import { cn, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 export const QueryPanelContainer = ({
   children,
   className,
@@ -50,7 +52,7 @@ export const QueryPanelScoreSection = ({
       </div>
       <div className="flex flex-col gap-y-1">
         <div className="flex gap-x-2 text-sm">
-          <span className="text-foreground-light w-20">Currently:</span>
+          <span className="text-foreground-light w-20">{$t('Currently:')}</span>
           <span
             className={cn(
               'font-mono',
@@ -64,7 +66,7 @@ export const QueryPanelScoreSection = ({
         </div>
         {before !== undefined && after !== undefined && before !== after && (
           <div className="flex items-center gap-x-2 text-sm">
-            <span className="text-foreground-light w-20">With index:</span>
+            <span className="text-foreground-light w-20">{$t('With index:')}</span>
             <span className="font-mono">{after}</span>
             {before !== undefined && !hideArrowMarkers && (
               <div className="flex items-center gap-x-1">

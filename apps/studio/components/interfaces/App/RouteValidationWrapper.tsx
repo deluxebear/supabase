@@ -10,6 +10,7 @@ import { useLastVisitedOrganization } from '@/hooks/misc/useLastVisitedOrganizat
 import { useLatest } from '@/hooks/misc/useLatest'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 // Ideally these could all be within a _middleware when we use Next 12
 export const RouteValidationWrapper = ({ children }: PropsWithChildren<{}>) => {
@@ -67,7 +68,7 @@ export const RouteValidationWrapper = ({ children }: PropsWithChildren<{}>) => {
       const isValidOrg = organizations.some((org) => org.slug === slug)
 
       if (!isValidOrg) {
-        toast.error('You do not have access to this organization')
+        toast.error($t('You do not have access to this organization'))
         router.push(DEFAULT_HOME)
         return
       }
@@ -82,7 +83,7 @@ export const RouteValidationWrapper = ({ children }: PropsWithChildren<{}>) => {
     if (!!ref && isErrorProject) {
       // 404 means the project no longer exists (e.g. was deleted), not an access error
       if (projectError?.code !== 404) {
-        toast.error('You do not have access to this project')
+        toast.error($t('You do not have access to this project'))
       }
       router.push(DEFAULT_HOME)
       return

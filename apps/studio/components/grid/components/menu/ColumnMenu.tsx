@@ -16,6 +16,7 @@ import {
 
 import { useTableSort } from '@/components/grid/hooks/useTableSort'
 import type { Sort } from '@/components/grid/types'
+import { t as $t } from '@/lib/i18n'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
 import { useTableEditorTableStateSnapshot } from '@/state/table-editor-table'
 
@@ -80,7 +81,7 @@ export const ColumnMenu = ({ column, isEncrypted }: ColumnMenuProps) => {
           onClick={() => onSortColumn(true)}
         >
           <ArrowUp size={14} strokeWidth={currentSort?.ascending ? 3 : 1.5} />
-          <span>Sort Ascending</span>
+          <span>{$t('Sort Ascending')}</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           className={cn(
@@ -92,7 +93,7 @@ export const ColumnMenu = ({ column, isEncrypted }: ColumnMenuProps) => {
           onClick={() => onSortColumn(false)}
         >
           <ArrowDown size={14} strokeWidth={currentSort && !currentSort.ascending ? 3 : 1.5} />
-          <span>Sort Descending</span>
+          <span>{$t('Sort Descending')}</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -103,7 +104,7 @@ export const ColumnMenu = ({ column, isEncrypted }: ColumnMenuProps) => {
           }}
         >
           <Copy size={12} />
-          <span>Copy name</span>
+          <span>{$t('Copy name')}</span>
         </DropdownMenuItem>
         {snap.editable && (
           <>
@@ -115,11 +116,13 @@ export const ColumnMenu = ({ column, isEncrypted }: ColumnMenuProps) => {
                   disabled={isEncrypted}
                 >
                   <Edit size={14} strokeWidth={1.5} />
-                  <span>Edit column</span>
+                  <span>{$t('Edit column')}</span>
                 </DropdownMenuItem>
               </TooltipTrigger>
               {isEncrypted && (
-                <TooltipContent side="bottom">Encrypted columns cannot be edited</TooltipContent>
+                <TooltipContent side="bottom">
+                  {$t('Encrypted columns cannot be edited')}
+                </TooltipContent>
               )}
             </Tooltip>
           </>
@@ -131,12 +134,12 @@ export const ColumnMenu = ({ column, isEncrypted }: ColumnMenuProps) => {
           {column.frozen ? (
             <>
               <Unlock size={14} strokeWidth={1.5} />
-              <span>Unfreeze column</span>
+              <span>{$t('Unfreeze column')}</span>
             </>
           ) : (
             <>
               <Lock size={14} strokeWidth={1.5} />
-              <span>Freeze column</span>
+              <span>{$t('Freeze column')}</span>
             </>
           )}
         </DropdownMenuItem>
@@ -145,7 +148,7 @@ export const ColumnMenu = ({ column, isEncrypted }: ColumnMenuProps) => {
             <DropdownMenuSeparator />
             <DropdownMenuItem className="space-x-2" onClick={onDeleteColumn}>
               <Trash size={14} className="text-destructive" />
-              <span>Delete column</span>
+              <span>{$t('Delete column')}</span>
             </DropdownMenuItem>
           </>
         )}

@@ -25,6 +25,7 @@ import { AlertError } from '@/components/ui/AlertError'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { useTableApiAccessQuery } from '@/data/privileges/table-api-access-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export interface PolicyTableRowProps {
   table: PolicyTable
@@ -112,10 +113,11 @@ const PolicyTableRowComponent = ({
           className="border-0 border-y rounded-none min-h-12 flex items-center"
         >
           <p className="text-foreground-light">
-            No data will be selectable via Supabase APIs as this schema is not exposed. You may
-            configure this in your project’s{' '}
+            {$t(
+              'No data will be selectable via Supabase APIs as this schema is not exposed. You may configure this in your project’s'
+            )}{' '}
             <InlineLink href={`/project/${ref}/integrations/data_api/settings`}>
-              API settings
+              {$t('API settings')}
             </InlineLink>
             .
           </p>
@@ -151,16 +153,16 @@ const PolicyTableRowComponent = ({
       {showPolicies && (
         <CardContent className="p-0">
           {policies.length === 0 ? (
-            <p className="text-foreground-lighter text-sm p-4">No policies created yet</p>
+            <p className="text-foreground-lighter text-sm p-4">{$t('No policies created yet')}</p>
           ) : (
             <Table className="table-fixed">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[40%]">Name</TableHead>
-                  <TableHead className="w-[20%]">Command</TableHead>
-                  <TableHead className="w-[30%]">Applied to</TableHead>
+                  <TableHead className="w-[40%]">{$t('Name')}</TableHead>
+                  <TableHead className="w-[20%]">{$t('Command')}</TableHead>
+                  <TableHead className="w-[30%]">{$t('Applied to')}</TableHead>
                   <TableHead className="text-right">
-                    <span className="sr-only">Actions</span>
+                    <span className="sr-only">{$t('Actions')}</span>
                   </TableHead>
                 </TableRow>
               </TableHeader>

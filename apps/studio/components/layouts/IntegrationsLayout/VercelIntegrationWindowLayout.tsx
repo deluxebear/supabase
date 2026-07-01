@@ -4,11 +4,16 @@ import InlineSVG from 'react-inlinesvg'
 
 import IntegrationWindowLayout from './IntegrationWindowLayout'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useIntegrationInstallationSnapshot } from '@/state/integration-installation'
 
 const VERCEL_ICON = (
   <div className="bg-black shadow-sm rounded-sm p-1 w-8 h-8 flex justify-center items-center text-white">
-    <InlineSVG src={`${BASE_PATH}/img/icons/vercel-icon.svg`} title="Vercel Icon" className="w-4" />
+    <InlineSVG
+      src={`${BASE_PATH}/img/icons/vercel-icon.svg`}
+      title={$t('Vercel Icon')}
+      className="w-4"
+    />
   </div>
 )
 

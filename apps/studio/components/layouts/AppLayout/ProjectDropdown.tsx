@@ -21,6 +21,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
 import type { ManagedBy } from '@/lib/constants/infrastructure'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 // --- Sub-components ---
@@ -54,7 +55,7 @@ function ProjectDropdownNewProjectActions({
           onClick={onClose}
           className="text-xs text-foreground-light hover:text-foreground"
         >
-          New project
+          {$t('New project')}
         </Link>
       </Button>
     )
@@ -72,7 +73,7 @@ function ProjectDropdownNewProjectActions({
       >
         <Link href={href} onClick={onClose} className="w-full flex items-center gap-2">
           <Plus size={14} strokeWidth={1.5} />
-          <p>New project</p>
+          <p>{$t('New project')}</p>
         </Link>
       </CommandItem>
     </CommandGroup>

@@ -5,6 +5,7 @@ import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 
 import { useContentDeleteMutation } from '@/data/content/content-delete-mutation'
 import { Snippet } from '@/data/content/sql-folders-query'
+import { t as $t } from '@/lib/i18n'
 import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
 import { createTabId, useTabsStateSnapshot } from '@/state/tabs'
 
@@ -88,7 +89,7 @@ export const DeleteSnippetsModal = ({
       }
     >
       <p className="text-sm">
-        This action cannot be undone.{' '}
+        {$t('This action cannot be undone.')}{' '}
         {snippets.length === 1
           ? `Are you sure you want to delete '${snippets[0]?.name}'?`
           : `Are you sure you want to delete the selected ${snippets.length} quer${snippets.length > 1 ? 'ies' : 'y'}?`}

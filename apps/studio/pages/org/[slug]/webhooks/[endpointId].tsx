@@ -4,6 +4,7 @@ import { PlatformWebhooksPage } from '@/components/interfaces/Platform/Webhooks'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import OrganizationLayout from '@/components/layouts/OrganizationLayout'
 import { OrganizationSettingsLayout } from '@/components/layouts/ProjectLayout/OrganizationSettingsLayout'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const OrgWebhookEndpointSettings: NextPageWithLayout = () => {
@@ -15,7 +16,7 @@ const OrgWebhookEndpointSettings: NextPageWithLayout = () => {
 
 OrgWebhookEndpointSettings.getLayout = (page) => (
   <DefaultLayout>
-    <OrganizationLayout title="Webhooks">
+    <OrganizationLayout title={$t('Webhooks')}>
       <OrganizationSettingsLayout>{page}</OrganizationSettingsLayout>
     </OrganizationLayout>
   </DefaultLayout>

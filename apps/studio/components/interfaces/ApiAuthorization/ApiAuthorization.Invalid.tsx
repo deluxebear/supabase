@@ -4,6 +4,7 @@ import { Button } from 'ui'
 import { Admonition } from 'ui-patterns/admonition'
 
 import { InterstitialLayout, SupabaseLogo } from '@/components/layouts/InterstitialLayout'
+import { t as $t } from '@/lib/i18n'
 
 export interface ApiAuthorizationInvalidScreenProps {
   missingParameters: Array<string>
@@ -17,8 +18,8 @@ export function ApiAuthorizationInvalidScreen({
   return (
     <InterstitialLayout
       logo={<SupabaseLogo />}
-      title="Missing authorization link"
-      description="This authorization request cannot be completed"
+      title={$t('Missing authorization link')}
+      description={$t('This authorization request cannot be completed')}
     >
       <div className="flex flex-col gap-3 px-6 pb-6">
         <Admonition
@@ -28,7 +29,7 @@ export function ApiAuthorizationInvalidScreen({
           }: ${missingParameters.join(', ')}.`}
         />
         <Button variant="default" block asChild>
-          <Link href="/">Back to dashboard</Link>
+          <Link href="/">{$t('Back to dashboard')}</Link>
         </Button>
       </div>
     </InterstitialLayout>

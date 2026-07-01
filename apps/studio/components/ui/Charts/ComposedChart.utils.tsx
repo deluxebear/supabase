@@ -7,6 +7,7 @@ import { CHART_COLORS, DateTimeFormats } from './Charts.constants'
 import { formatPercentage, numberFormatter } from './Charts.utils'
 import { useFormatDateTime, useTimezone } from '@/lib/datetime'
 import { formatBytes, formatBytesMinMB } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export interface ReportAttributes {
   id?: string
@@ -279,7 +280,7 @@ export const CustomTooltip = ({
           ))}
           {active && showTotal && (
             <div className="flex md:flex-col gap-1 md:gap-0 text-foreground mt-1">
-              <span className="grow text-foreground-lighter">Total</span>
+              <span className="grow text-foreground-lighter">{$t('Total')}</span>
               <div className="flex items-end gap-1">
                 <span className="text-base">
                   {isPercentage

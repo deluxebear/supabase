@@ -1,6 +1,8 @@
 import { ArrowRight } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface RowCountIndicatorProps {
   actualRows?: number
   estimatedRows?: number
@@ -40,11 +42,12 @@ export function RowCountIndicator({
           </div>
         </TooltipTrigger>
         <TooltipContent side="top" className="max-w-xs font-sans">
-          <p className="font-medium">Filter applied</p>
+          <p className="font-medium">{$t('Filter applied')}</p>
           <p className="text-foreground-lighter text-xs mt-1">
-            {formatRowCount(totalRowsScanned)} rows were scanned,{' '}
-            {formatRowCount(rowsRemovedByFilter)} were filtered out, leaving{' '}
-            {formatRowCount(actualRows)} rows. Consider adding an index to reduce rows scanned.
+            {formatRowCount(totalRowsScanned)} {$t('rows were scanned,')}{' '}
+            {formatRowCount(rowsRemovedByFilter)} {$t('were filtered out, leaving')}{' '}
+            {formatRowCount(actualRows)}{' '}
+            {$t('rows. Consider adding an index to reduce rows scanned.')}
           </p>
         </TooltipContent>
       </Tooltip>
@@ -61,9 +64,9 @@ export function RowCountIndicator({
           </span>
         </TooltipTrigger>
         <TooltipContent side="top" className="max-w-xs font-sans">
-          <p className="font-medium">Rows returned</p>
+          <p className="font-medium">{$t('Rows returned')}</p>
           <p className="text-foreground-lighter text-xs mt-1">
-            This operation processed and returned {formatRowCount(actualRows)} rows.
+            {$t('This operation processed and returned')} {formatRowCount(actualRows)} rows.
           </p>
         </TooltipContent>
       </Tooltip>
@@ -80,10 +83,10 @@ export function RowCountIndicator({
           </span>
         </TooltipTrigger>
         <TooltipContent side="top" className="max-w-xs font-sans">
-          <p className="font-medium">Estimated rows</p>
+          <p className="font-medium">{$t('Estimated rows')}</p>
           <p className="text-foreground-lighter text-xs mt-1">
-            The planner estimates this operation will return {formatRowCount(estimatedRows)} rows.
-            Run with EXPLAIN ANALYZE to see actual row counts.
+            {$t('The planner estimates this operation will return')} {formatRowCount(estimatedRows)}{' '}
+            {$t('rows. Run with EXPLAIN ANALYZE to see actual row counts.')}
           </p>
         </TooltipContent>
       </Tooltip>

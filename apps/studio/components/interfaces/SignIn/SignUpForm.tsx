@@ -25,6 +25,7 @@ import PasswordConditionsHelper from './PasswordConditionsHelper'
 import { useSignUpMutation } from '@/data/misc/signup-mutation'
 import { BASE_PATH } from '@/lib/constants'
 import { buildPathWithParams } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 import { classifyApiError, classifyValidationError } from '@/lib/telemetry/funnel-errors'
 import { useTrackFunnelError } from '@/lib/telemetry/use-track-funnel-error'
 
@@ -134,10 +135,11 @@ export const SignUpForm = () => {
         >
           <Alert variant="default">
             <CheckCircle />
-            <AlertTitle>Check your email to confirm</AlertTitle>
+            <AlertTitle>{$t('Check your email to confirm')}</AlertTitle>
             <AlertDescription className="text-xs">
-              You've successfully signed up. Please check your email to confirm your account before
-              signing in to the Supabase dashboard. The confirmation link expires in 10 minutes.
+              {$t(
+                "You've successfully signed up. Please check your email to confirm your account before signing in to the Supabase dashboard. The confirmation link expires in 10 minutes."
+              )}
             </AlertDescription>
           </Alert>
         </motion.div>
@@ -162,7 +164,7 @@ export const SignUpForm = () => {
               name="email"
               control={form.control}
               render={({ field }) => (
-                <FormItemLayout name="email" label="Email">
+                <FormItemLayout name="email" label={$t('Email')}>
                   <FormControl>
                     <Input
                       id="email"
@@ -181,7 +183,7 @@ export const SignUpForm = () => {
               name="password"
               control={form.control}
               render={({ field }) => (
-                <FormItemLayout name="password" label="Password">
+                <FormItemLayout name="password" label={$t('Password')}>
                   <FormControl>
                     <div className="relative">
                       <Input
@@ -234,7 +236,7 @@ export const SignUpForm = () => {
               disabled={password.length === 0 || isSubmitting}
               loading={isSubmitting}
             >
-              Sign up
+              {$t('Sign up')}
             </Button>
           </form>
         </Form>

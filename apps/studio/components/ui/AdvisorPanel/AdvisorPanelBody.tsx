@@ -14,6 +14,7 @@ import {
 } from './AdvisorPanel.utils'
 import { EmptyAdvisor } from './EmptyAdvisor'
 import type { Notification } from '@/data/notifications/notifications-v2-query'
+import { t as $t } from '@/lib/i18n'
 import type { AdvisorSeverity, AdvisorTab } from '@/state/advisor-state'
 
 const NoProjectNotice = () => {
@@ -21,9 +22,9 @@ const NoProjectNotice = () => {
     <div className="absolute top-28 px-6 flex flex-col items-center justify-center w-full gap-y-2">
       <Inbox className="text-foreground-muted" strokeWidth={1} />
       <div className="text-center">
-        <p className="heading-default">Project required</p>
+        <p className="heading-default">{$t('Project required')}</p>
         <p className="text-foreground-light text-sm">
-          Select a project to view security and performance advisories
+          {$t('Select a project to view security and performance advisories')}
         </p>
       </div>
     </div>
@@ -75,8 +76,10 @@ export const AdvisorPanelBody = ({
       <div className="h-full mx-4 flex flex-col items-center justify-center gap-y-2">
         <AlertTriangle className="text-destructive" />
         <div className="flex flex-col items-center justify-center">
-          <h4 className="text-base font-normal text-foreground-light">Error loading advisories</h4>
-          <p className="text-sm text-foreground-lighter">Please try again later.</p>
+          <h4 className="text-base font-normal text-foreground-light">
+            {$t('Error loading advisories')}
+          </h4>
+          <p className="text-sm text-foreground-lighter">{$t('Please try again later.')}</p>
         </div>
       </div>
     )
@@ -161,7 +164,8 @@ export const AdvisorPanelBody = ({
       {severityFilters.length > 0 && hiddenItemsCount > 0 && (
         <div className="px-4 py-3">
           <Button variant="text" className="w-full" onClick={onClearFilters}>
-            Show {hiddenItemsCount} more issue{hiddenItemsCount !== 1 ? 's' : ''}
+            {$t('Show')} {hiddenItemsCount} {$t('more issue')}
+            {hiddenItemsCount !== 1 ? 's' : ''}
           </Button>
         </div>
       )}

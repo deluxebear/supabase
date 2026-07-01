@@ -14,6 +14,7 @@ import { Admonition } from 'ui-patterns/admonition'
 
 import { useBucketEmptyMutation } from '@/data/storage/bucket-empty-mutation'
 import type { Bucket } from '@/data/storage/buckets-query'
+import { t as $t } from '@/lib/i18n'
 import { useStorageExplorerStateSnapshot } from '@/state/storage-explorer'
 
 export interface EmptyBucketModalProps {
@@ -61,20 +62,21 @@ export const EmptyBucketModal = ({ visible, bucket, onClose }: EmptyBucketModalP
         <Admonition
           type="destructive"
           className="rounded-none border-x-0 border-t-0"
-          title="This action cannot be undone"
-          description="The contents of your bucket cannot be recovered once deleted."
+          title={$t('This action cannot be undone')}
+          description={$t('The contents of your bucket cannot be recovered once deleted.')}
         />
         <DialogSection>
           <p className="text-sm">
-            Are you sure you want to remove all contents from the bucket “{bucket?.name}”?
+            {$t('Are you sure you want to remove all contents from the bucket “')}
+            {bucket?.name}”?
           </p>
         </DialogSection>
         <DialogFooter>
           <Button variant="default" disabled={isPending} onClick={onClose}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button variant="danger" loading={isPending} onClick={onEmptyBucket}>
-            Empty bucket
+            {$t('Empty bucket')}
           </Button>
         </DialogFooter>
       </DialogContent>

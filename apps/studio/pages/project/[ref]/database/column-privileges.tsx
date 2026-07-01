@@ -34,6 +34,7 @@ import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useIsProtectedSchema } from '@/hooks/useProtectedSchemas'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const EDITABLE_ROLES = ['authenticated', 'anon', 'service_role']
@@ -227,13 +228,13 @@ const PrivilegesPage: NextPageWithLayout = () => {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-x-4 mb-1">
-                <h3 className="text-xl">Column-level privileges</h3>
+                <h3 className="text-xl">{$t('Column-level privileges')}</h3>
                 {isEnabled && (
                   <FeaturePreviewBadge featureKey={LOCAL_STORAGE_KEYS.UI_PREVIEW_CLS} />
                 )}
               </div>
               <p className="text-sm text-lighter">
-                Grant or revoke privileges on a column based on user role.
+                {$t('Grant or revoke privileges on a column based on user role.')}
               </p>
             </div>
             <DocsButton href={`${DOCS_URL}/guides/auth/column-level-security`} />
@@ -245,17 +246,22 @@ const PrivilegesPage: NextPageWithLayout = () => {
                 <Alert variant="warning">
                   <AlertCircle strokeWidth={2} />
                   <AlertTitle>
-                    Changes to column privileges will not be reflected in migrations when running{' '}
-                    <code className="text-code-inline">supabase db diff</code>.
+                    {$t(
+                      'Changes to column privileges will not be reflected in migrations when running'
+                    )}{' '}
+                    <code className="text-code-inline">{$t('supabase db diff')}</code>.
                   </AlertTitle>
                   <AlertDescription>
-                    Column privileges are not supported in the current version of the Supabase CLI.
+                    {$t(
+                      'Column privileges are not supported in the current version of the Supabase CLI.'
+                    )}
                     <br />
-                    You will need to manually apply these changes to your database.
+
+                    {$t('You will need to manually apply these changes to your database.')}
                   </AlertDescription>
                   <Button
                     variant="outline"
-                    aria-label="Dismiss"
+                    aria-label={$t('Dismiss')}
                     className="absolute top-2 right-2 p-1 pl-1!"
                     onClick={() => {
                       setDiffWarningDismissed(true)
@@ -269,21 +275,24 @@ const PrivilegesPage: NextPageWithLayout = () => {
               {!selectStarWarningDismissed && (
                 <Alert variant="warning">
                   <AlertCircle strokeWidth={2} />
-                  <AlertTitle>Changing column privileges can break existing queries.</AlertTitle>
+                  <AlertTitle>
+                    {$t('Changing column privileges can break existing queries.')}
+                  </AlertTitle>
                   <AlertDescription>
-                    If you remove a column privilege for a role, that role will lose all access to
-                    that column.
+                    {$t(
+                      'If you remove a column privilege for a role, that role will lose all access to that column.'
+                    )}
                     <br />
-                    All operations selecting <code className="text-code-inline">
-                      *
-                    </code> (including <code className="text-code-inline">returning *</code> for{' '}
+                    {$t('All operations selecting')} <code className="text-code-inline">*</code>{' '}
+                    (including <code className="text-code-inline">{$t('returning *')}</code> for{' '}
                     <code className="text-code-inline">insert</code>,{' '}
-                    <code className="text-code-inline">update</code>, and{' '}
-                    <code className="text-code-inline">delete</code>) will fail.
+                    <code className="text-code-inline">update</code>
+                    {$t(', and')} <code className="text-code-inline">delete</code>
+                    {$t(') will fail.')}
                   </AlertDescription>
                   <Button
                     variant="outline"
-                    aria-label="Dismiss"
+                    aria-label={$t('Dismiss')}
                     className="absolute top-2 right-2 p-1 pl-1!"
                     onClick={() => {
                       setSelectStarWarningDismissed(true)
@@ -330,32 +339,37 @@ const PrivilegesPage: NextPageWithLayout = () => {
                 </div>
               ) : (tables ?? []).length === 0 ? (
                 <div className="grow flex flex-col items-center justify-center w-[600px] mx-auto">
-                  <p className="text-center">There are no tables in the {selectedSchema} schema</p>
+                  <p className="text-center">
+                    {$t('There are no tables in the')} {selectedSchema} schema
+                  </p>
                   <p className="text-sm text-foreground-light text-center">
-                    Once a table is available in the schema, you may manage it's column-level
-                    privileges here
+                    {$t(
+                      "Once a table is available in the schema, you may manage it's column-level privileges here"
+                    )}
                   </p>
                   {selectedSchema === 'public' && (
                     <Button asChild className="mt-4">
-                      <Link href={`/project/${ref}/editor`}>Create a new table</Link>
+                      <Link href={`/project/${ref}/editor`}>{$t('Create a new table')}</Link>
                     </Button>
                   )}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-64 ">
-                  <p className="text-foreground-light">Select a table to edit privileges</p>
+                  <p className="text-foreground-light">{$t('Select a table to edit privileges')}</p>
                 </div>
               )}
             </>
           ) : (
             <Alert>
-              <AlertTitle>Column-level privileges is a dashboard feature preview</AlertTitle>
+              <AlertTitle>
+                {$t('Column-level privileges is a dashboard feature preview')}
+              </AlertTitle>
               <AlertDescription>
-                You may access this feature by enabling it under dashboard feature previews.
+                {$t('You may access this feature by enabling it under dashboard feature previews.')}
               </AlertDescription>
               <div className="mt-4">
                 <Button variant="default" onClick={() => toggleFeaturePreviewModal(true)}>
-                  View feature previews
+                  {$t('View feature previews')}
                 </Button>
               </div>
             </Alert>
@@ -368,7 +382,7 @@ const PrivilegesPage: NextPageWithLayout = () => {
 
 PrivilegesPage.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Column Privileges">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Column Privileges')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

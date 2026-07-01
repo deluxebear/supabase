@@ -21,6 +21,7 @@ import {
 import { useAdvisorSignals } from '@/components/ui/AdvisorPanel/useAdvisorSignals'
 import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
 import { useProjectLintsQuery } from '@/data/lint/lint-query'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAdvisorStateSnapshot } from '@/state/advisor-state'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
@@ -57,12 +58,12 @@ export const AdvisorSection = ({ showEmptyState = false }: { showEmptyState?: bo
   const hiddenIssuesCount = totalIssues - visibleAdvisorItems.length
 
   const titleContent = useMemo(() => {
-    if (totalIssues === 0) return <h2>Advisor found no issues</h2>
+    if (totalIssues === 0) return <h2>{$t('Advisor found no issues')}</h2>
     const issuesText = totalIssues === 1 ? 'issue' : 'issues'
     const numberDisplay = totalIssues.toString()
     return (
       <h2>
-        Advisor found {numberDisplay} {issuesText}
+        {$t('Advisor found')} {numberDisplay} {issuesText}
       </h2>
     )
   }, [totalIssues])
@@ -124,7 +125,7 @@ export const AdvisorSection = ({ showEmptyState = false }: { showEmptyState?: bo
         <div className="flex justify-between items-center mb-6">
           {titleContent}
           <Button variant="default" icon={<AiIconAnimation />} onClick={handleAskAssistant}>
-            Ask Assistant
+            {$t('Ask Assistant')}
           </Button>
         </div>
       )}
@@ -191,9 +192,9 @@ export const AdvisorSection = ({ showEmptyState = false }: { showEmptyState?: bo
                           }}
                         >
                           <AiAssistantDropdown
-                            label="Ask Assistant"
+                            label={$t('Ask Assistant')}
                             iconOnly
-                            tooltip="Help me fix this issue"
+                            tooltip={$t('Help me fix this issue')}
                             buildPrompt={() => createLintSummaryPrompt(item.original)}
                             onOpenAssistant={() => {
                               openSidebar(SIDEBAR_KEYS.AI_ASSISTANT)
@@ -229,7 +230,8 @@ export const AdvisorSection = ({ showEmptyState = false }: { showEmptyState?: bo
           {hiddenIssuesCount > 0 && (
             <div className="mt-4 flex justify-end">
               <Button variant="text" onClick={() => openSidebar(SIDEBAR_KEYS.ADVISOR_PANEL)}>
-                View {hiddenIssuesCount} more issue{hiddenIssuesCount !== 1 ? 's' : ''} in Advisor
+                {$t('View')} {hiddenIssuesCount} {$t('more issue')}
+                {hiddenIssuesCount !== 1 ? 's' : ''} {$t('in Advisor')}
               </Button>
             </div>
           )}
@@ -247,7 +249,7 @@ function EmptyState() {
       <CardContent className="flex flex-col items-center justify-center gap-2 p-16 h-full">
         <Shield size={20} strokeWidth={1.5} className="text-foreground-muted" />
         <p className="text-sm text-foreground-light text-center">
-          No security or performance issues found
+          {$t('No security or performance issues found')}
         </p>
       </CardContent>
     </Card>

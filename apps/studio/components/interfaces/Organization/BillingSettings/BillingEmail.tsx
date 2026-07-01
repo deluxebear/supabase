@@ -29,6 +29,7 @@ import { useOrganizationCustomerProfileQuery } from '@/data/organizations/organi
 import { useOrganizationUpdateMutation } from '@/data/organizations/organization-update-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 const FORM_ID = 'org-billing-email'
 const formSchema = z.object({
@@ -69,7 +70,7 @@ const BillingEmail = () => {
 
   const onUpdateOrganizationEmail = async (values: z.infer<typeof formSchema>) => {
     if (!canUpdateOrganization) {
-      return toast.error('You do not have the required permissions to update this organization')
+      return toast.error($t('You do not have the required permissions to update this organization'))
     }
     if (!slug) return console.error('Slug is required')
     if (!name) return console.error('Organization name is required')
@@ -83,7 +84,7 @@ const BillingEmail = () => {
       },
       {
         onSuccess: () => {
-          toast.success('Successfully saved settings')
+          toast.success($t('Successfully saved settings'))
           form.reset(values)
         },
       }
@@ -103,9 +104,9 @@ const BillingEmail = () => {
     <ScaffoldSection>
       <ScaffoldSectionDetail>
         <div className="sticky space-y-2 top-12">
-          <p className="text-foreground text-base m-0">Email Recipient</p>
+          <p className="text-foreground text-base m-0">{$t('Email Recipient')}</p>
           <p className="text-sm text-foreground-light m-0">
-            All billing correspondence will go to this email
+            {$t('All billing correspondence will go to this email')}
           </p>
         </div>
       </ScaffoldSectionDetail>
@@ -139,12 +140,12 @@ const BillingEmail = () => {
                       control={form.control}
                       name="billingEmail"
                       render={({ field }) => (
-                        <FormItemLayout label="Email address">
+                        <FormItemLayout label={$t('Email address')}>
                           <FormControl>
                             <Input
                               type="email"
                               {...field}
-                              placeholder="Email"
+                              placeholder={$t('Email')}
                               disabled={!canUpdateOrganization}
                             />
                           </FormControl>
@@ -161,11 +162,11 @@ const BillingEmail = () => {
                           hideMessage
                           label={
                             <div className="flex items-center gap-x-1">
-                              <span>Additional emails</span>
+                              <span>{$t('Additional emails')}</span>
                               <InfoTooltip side="bottom">
-                                These email addresses will be CC'd in automated invoice or payment
-                                failure emails. Payment receipts will still only go to the primary
-                                billing address.
+                                {$t(
+                                  "These email addresses will be CC'd in automated invoice or payment failure emails. Payment receipts will still only go to the primary billing address."
+                                )}
                               </InfoTooltip>
                             </div>
                           }
@@ -176,7 +177,7 @@ const BillingEmail = () => {
                                 deletableBadge
                                 showIcon={false}
                                 mode="inline-combobox"
-                                label="Add additional recipients"
+                                label={$t('Add additional recipients')}
                                 badgeLimit="wrap"
                               />
                               <MultiSelectorContent>
@@ -193,7 +194,8 @@ const BillingEmail = () => {
                                     key={`email-error-${idx}`}
                                     className="text-sm text-destructive"
                                   >
-                                    "{additionalBillingEmails[idx]}" is not a valid email address
+                                    "{additionalBillingEmails[idx]}
+                                    {$t('" is not a valid email address')}
                                   </p>
                                 ))}
                               </div>

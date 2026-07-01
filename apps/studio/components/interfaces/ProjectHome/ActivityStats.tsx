@@ -17,6 +17,7 @@ import { useResourceWarningsQuery } from '@/data/usage/resource-warnings-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { EMPTY_ARR } from '@/lib/void'
 
 export const ActivityStats = () => {
@@ -95,7 +96,7 @@ export const ActivityStats = () => {
 
         <SingleStat
           icon={<Cpu size={18} strokeWidth={1.5} className="text-foreground" />}
-          label={<span>Compute</span>}
+          label={<span>{$t('Compute')}</span>}
           value={
             <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
               {project?.infra_compute_size ? (
@@ -107,7 +108,7 @@ export const ActivityStats = () => {
                   resourceWarnings={projectResourceWarnings}
                 />
               ) : (
-                <p className="text-foreground-lighter">Unknown</p>
+                <p className="text-foreground-lighter">{$t('Unknown')}</p>
               )}
               {project?.high_availability && <HighAvailabilityBadge />}
             </div>
@@ -117,7 +118,7 @@ export const ActivityStats = () => {
         <SingleStat
           href={integrationsPath}
           icon={<Github size={18} strokeWidth={1.5} className="text-foreground" />}
-          label={<span>GitHub</span>}
+          label={<span>{$t('GitHub')}</span>}
           value={
             isLoadingGithubConnections ? (
               <Skeleton className="h-6 w-24" />
@@ -160,7 +161,7 @@ export const ActivityStats = () => {
                 utcTimestamp={currentBranch.created_at}
               />
             ) : (
-              <p className="text-foreground-lighter">Unknown</p>
+              <p className="text-foreground-lighter">{$t('Unknown')}</p>
             )
           }
         />
@@ -168,7 +169,7 @@ export const ActivityStats = () => {
         <SingleStat
           href={`/project/${ref}/database/migrations`}
           icon={<Database size={18} strokeWidth={1.5} className="text-foreground" />}
-          label={<span>Last migration</span>}
+          label={<span>{$t('Last migration')}</span>}
           trackingProperties={{
             stat_type: 'migrations',
             stat_value: migrationsData?.length ?? 0,
@@ -193,7 +194,7 @@ export const ActivityStats = () => {
         <SingleStat
           href={`/project/${ref}/database/backups/scheduled`}
           icon={<Archive size={18} strokeWidth={1.5} className="text-foreground" />}
-          label={<span>Last backup</span>}
+          label={<span>{$t('Last backup')}</span>}
           trackingProperties={{
             stat_type: 'backups',
             stat_value: backupsData?.backups?.length ?? 0,
@@ -202,7 +203,7 @@ export const ActivityStats = () => {
             isLoadingBackups ? (
               <Skeleton className="h-6 w-24" />
             ) : backupsData?.pitr_enabled ? (
-              <p>PITR enabled</p>
+              <p>{$t('PITR enabled')}</p>
             ) : latestBackup ? (
               <TimestampInfo
                 className="text-base"
@@ -211,7 +212,7 @@ export const ActivityStats = () => {
                 utcTimestamp={latestBackup.inserted_at}
               />
             ) : (
-              <p className="text-foreground-lighter">No backups</p>
+              <p className="text-foreground-lighter">{$t('No backups')}</p>
             )
           }
         />

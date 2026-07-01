@@ -1,5 +1,7 @@
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface PolicyNameProps {
   name: string
   limit?: number
@@ -11,9 +13,11 @@ export const PolicyName = ({ name = '', limit = 100, onUpdatePolicyName }: Polic
     <div className="flex flex-col md:flex-row gap-4 md:gap-12">
       <div className="flex md:w-1/3 flex-col space-y-2">
         <label className="text-base text-foreground-light" htmlFor="policy-name">
-          Policy name
+          {$t('Policy name')}
         </label>
-        <p className="text-sm text-foreground-lighter">A descriptive name for your policy</p>
+        <p className="text-sm text-foreground-lighter">
+          {$t('A descriptive name for your policy')}
+        </p>
       </div>
       <div className="relative md:w-2/3">
         <InputGroup>

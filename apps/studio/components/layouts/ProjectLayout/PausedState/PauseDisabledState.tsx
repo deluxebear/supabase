@@ -21,6 +21,7 @@ import { useStorageArchiveCreateMutation } from '@/data/storage/storage-archive-
 import { useStorageArchiveQuery } from '@/data/storage/storage-archive-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL, PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const PauseDisabledState = () => {
   const { ref } = useParams()
@@ -47,7 +48,7 @@ export const PauseDisabledState = () => {
   useEffect(() => {
     if (!isStorageArchiveSuccess) return
     if (storageArchive.fileUrl && refetchInterval !== false) {
-      toast.success('Downloading storage objects', { id: toastId })
+      toast.success($t('Downloading storage objects'), { id: toastId })
       setToastId(undefined)
       setRefetchInterval(false)
       downloadStorageArchive(storageArchive.fileUrl)
@@ -72,7 +73,9 @@ export const PauseDisabledState = () => {
   const { mutate: createStorageArchive } = useStorageArchiveCreateMutation({
     onSuccess: () => {
       const toastId = toast.loading(
-        'Retrieving storage archive. This may take a few minutes depending on the size of your storage objects.'
+        $t(
+          'Retrieving storage archive. This may take a few minutes depending on the size of your storage objects.'
+        )
       )
       setToastId(toastId)
       setRefetchInterval(5000)
@@ -81,9 +84,9 @@ export const PauseDisabledState = () => {
 
   const onSelectDownloadBackup = () => {
     if (ref === undefined) return console.error('Project ref is required')
-    if (!latestBackup) return toast.error('No backups available for download')
+    if (!latestBackup) return toast.error($t('No backups available for download'))
 
-    const toastId = toast.loading('Fetching database backup')
+    const toastId = toast.loading($t('Fetching database backup'))
 
     downloadBackup(
       {
@@ -94,7 +97,7 @@ export const PauseDisabledState = () => {
       },
       {
         onSuccess: () => {
-          toast.success('Downloading database backup', { id: toastId })
+          toast.success($t('Downloading database backup'), { id: toastId })
         },
       }
     )
@@ -112,7 +115,7 @@ export const PauseDisabledState = () => {
     if (!storageArchiveUrl) {
       createStorageArchive({ projectRef: ref })
     } else {
-      toast.success('Downloading storage objects')
+      toast.success($t('Downloading storage objects'))
       downloadStorageArchive(storageArchiveUrl)
     }
   }
@@ -123,20 +126,21 @@ export const PauseDisabledState = () => {
         showIcon={false}
         type="warning"
         className="rounded-none border-0 px-6 [&>div>div>div]:flex [&>div>div>div]:flex-col [&>div>div>div]:gap-y-3"
-        title="Project can no longer be restored through the dashboard"
+        title={$t('Project can no longer be restored through the dashboard')}
       >
         <p className="leading-normal!">
-          This project has been paused for over{' '}
+          {$t('This project has been paused for over')}{' '}
           <span className="text-foreground">
             {pauseStatus?.max_days_till_restore_disabled ?? 90} days
           </span>{' '}
-          and cannot be restored through the dashboard. However, your data remains intact and can be
-          downloaded as a backup.
+          {$t(
+            'and cannot be restored through the dashboard. However, your data remains intact and can be downloaded as a backup.'
+          )}
         </p>
 
         {!!pauseStatus?.last_paused_on && (
           <p className="text-foreground-lighter text-sm">
-            Project last paused on{' '}
+            {$t('Project last paused on')}{' '}
             <TimestampInfo
               className="text-sm"
               labelFormat="DD MMM YYYY"
@@ -146,20 +150,20 @@ export const PauseDisabledState = () => {
         )}
 
         <div>
-          <p className="leading-normal! mb-1!">Recovery options:</p>
+          <p className="leading-normal! mb-1!">{$t('Recovery options:')}</p>
           <ul className="flex flex-col gap-y-0.5">
             <li className="flex items-center gap-x-2">
               <ExternalLink size={14} />
               <InlineLink
                 href={`${DOCS_URL}/guides/platform/migrating-within-supabase/dashboard-restore`}
               >
-                Restore the backup to a new Supabase project
+                {$t('Restore the backup to a new Supabase project')}
               </InlineLink>
             </li>
             <li className="flex items-center gap-x-2">
               <ExternalLink size={14} />
               <InlineLink href={`${DOCS_URL}/guides/local-development/restoring-downloaded-backup`}>
-                Restore the backup on your local machine
+                {$t('Restore the backup on your local machine')}
               </InlineLink>
             </li>
           </ul>
@@ -167,15 +171,15 @@ export const PauseDisabledState = () => {
       </Admonition>
       <div className="border-t flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center px-6 py-4 bg-alternative">
         <div>
-          <p className="text-sm">Export your data</p>
+          <p className="text-sm">{$t('Export your data')}</p>
           <p className="text-sm text-foreground-lighter">
-            Download backups for your database and storage objects
+            {$t('Download backups for your database and storage objects')}
           </p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="default" icon={<Download />} iconRight={<ChevronDown />}>
-              Download backups
+              {$t('Download backups')}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-60" align="end">
@@ -191,11 +195,12 @@ export const PauseDisabledState = () => {
               }}
             >
               <Database size={16} />
-              Database backup (PG: {dbVersion})
+              {$t('Database backup (PG:')} {dbVersion})
             </DropdownMenuItemTooltip>
             <DropdownMenuItem className="gap-x-2" onClick={() => onSelectDownloadStorageArchive()}>
               <Storage size={16} />
-              Storage objects
+
+              {$t('Storage objects')}
             </DropdownMenuItem>
             {/* [Joshen] Once storage object download is supported, can just use the below component */}
             {/* <DropdownMenuItem className="gap-x-2" onClick={() => onSelectDownloadStorageArchive()}>

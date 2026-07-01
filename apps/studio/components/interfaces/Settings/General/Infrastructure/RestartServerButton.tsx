@@ -26,6 +26,7 @@ import {
   useSelectedProjectQuery,
 } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { type ResponseError } from '@/types'
 
 const RestartServerButton = () => {
@@ -74,14 +75,14 @@ const RestartServerButton = () => {
 
   const requestProjectRestart = () => {
     if (!canRestartProject) {
-      return toast.error('You do not have the required permissions to restart this project')
+      return toast.error($t('You do not have the required permissions to restart this project'))
     }
     restartProject({ ref: projectRef })
   }
 
   const requestDatabaseRestart = async () => {
     if (!canRestartProject) {
-      return toast.error('You do not have the required permissions to restart this project')
+      return toast.error($t('You do not have the required permissions to restart this project'))
     }
     restartProjectServices({ ref: projectRef, region: projectRegion, services: ['postgresql'] })
   }
@@ -93,7 +94,7 @@ const RestartServerButton = () => {
 
   const onRestartSuccess = () => {
     setProjectStatus({ ref: projectRef, status: PROJECT_STATUS.RESTARTING })
-    toast.success('Restarting server...')
+    toast.success($t('Restarting server...'))
     router.push(`/project/${projectRef}`)
     setServiceToRestart(undefined)
   }
@@ -131,7 +132,7 @@ const RestartServerButton = () => {
               },
             }}
           >
-            Restart project
+            {$t('Restart project')}
           </ButtonTooltip>
           {hasRestartDropdown && (
             <DropdownMenu>
@@ -152,10 +153,11 @@ const RestartServerButton = () => {
                   }}
                 >
                   <div className="space-y-0.5">
-                    <p className="block text-foreground">Fast database reboot</p>
+                    <p className="block text-foreground">{$t('Fast database reboot')}</p>
                     <p className="block text-foreground-light">
-                      Restarts only the database. Faster, but may not be able to recover from all
-                      failure modes.
+                      {$t(
+                        'Restarts only the database. Faster, but may not be able to recover from all failure modes.'
+                      )}
                     </p>
                   </div>
                 </DropdownMenuItem>
@@ -173,7 +175,7 @@ const RestartServerButton = () => {
             setServiceToRestart('database')
           }}
         >
-          Restart database
+          {$t('Restart database')}
         </Button>
       )}
 
@@ -183,8 +185,8 @@ const RestartServerButton = () => {
         title={`Restart ${serviceToRestart}`}
         description={
           <>
-            Are you sure you want to restart your {serviceToRestart}? There will be a few minutes of
-            downtime.
+            {$t('Are you sure you want to restart your')} {serviceToRestart}
+            {$t('? There will be a few minutes of downtime.')}
           </>
         }
         confirmLabel="Restart"

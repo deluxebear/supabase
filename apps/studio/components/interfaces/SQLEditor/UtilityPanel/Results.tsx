@@ -13,6 +13,7 @@ import { CellDetailPanel } from './CellDetailPanel'
 import { ResultCell } from './ResultCell'
 import { formatClipboardValue } from './Results.utils'
 import { handleCellKeyDown } from '@/components/grid/SupabaseGrid.utils'
+import { t as $t } from '@/lib/i18n'
 
 export const Results = ({ rows }: { rows: readonly any[] }) => {
   const [expandedCell, setExpandedCell] = useState<{ column: string; value: any } | null>(null)
@@ -90,7 +91,7 @@ export const Results = ({ rows }: { rows: readonly any[] }) => {
       {rows.length === 0 ? (
         <div className="bg-table-header-light in-data-[theme*=dark]:bg-table-header-dark">
           <p className="m-0 border-0 px-4 py-3 font-mono text-sm text-foreground-light">
-            Success. No rows returned
+            {$t('Success. No rows returned')}
           </p>
         </div>
       ) : (
@@ -109,7 +110,8 @@ export const Results = ({ rows }: { rows: readonly any[] }) => {
                 onFocusCapture={(e) => e.stopPropagation()}
               >
                 <Copy size={12} />
-                Copy cell content
+
+                {$t('Copy cell content')}
               </ContextMenuItem>
               <ContextMenuItem
                 className="gap-x-2"
@@ -120,7 +122,8 @@ export const Results = ({ rows }: { rows: readonly any[] }) => {
                 onFocusCapture={(e) => e.stopPropagation()}
               >
                 <Expand size={12} />
-                View cell content
+
+                {$t('View cell content')}
               </ContextMenuItem>
             </ContextMenuContent>
           </ContextMenu>

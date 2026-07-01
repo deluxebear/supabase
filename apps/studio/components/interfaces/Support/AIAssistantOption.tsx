@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { AiIconAnimation, Button } from 'ui'
 
 import { NO_ORG_MARKER, NO_PROJECT_MARKER } from './SupportForm.utils'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 interface AIAssistantOptionProps {
@@ -55,9 +56,11 @@ export const AIAssistantOption = ({
           <div className="flex items-center p-6">
             <div className="flex flex-col gap-3 z-2 shrink-0 w-full">
               <div>
-                <h5 className="text-sm font-medium text-foreground">Try Supabase Assistant</h5>
+                <h5 className="text-sm font-medium text-foreground">
+                  {$t('Try Supabase Assistant')}
+                </h5>
                 <p className="text-sm text-foreground-lighter">
-                  Ask our AI assistant to help you with your support issue.
+                  {$t('Ask our AI assistant to help you with your support issue.')}
                 </p>
               </div>
               <div>
@@ -68,12 +71,12 @@ export const AIAssistantOption = ({
                     icon={<AiIconAnimation size={14} />}
                     onClick={onAiAssistantClicked}
                   >
-                    Ask the Assistant
+                    {$t('Ask the Assistant')}
                   </Button>
                 ) : (
                   <Link href={aiLink} onClick={onAiAssistantClicked}>
                     <Button size="tiny" variant="default" icon={<AiIconAnimation size={14} />}>
-                      Ask the Assistant
+                      {$t('Ask the Assistant')}
                     </Button>
                   </Link>
                 )}
@@ -88,15 +91,16 @@ export const AIAssistantOption = ({
                   </div>
                   <div className="flex-1 bg-background-surface-200 rounded-lg p-4 max-w-[280px]">
                     <p className="text-sm text-foreground-lighter">
-                      Hi! I'm your AI assistant. How can I help you today?
+                      {$t("Hi! I'm your AI assistant. How can I help you today?")}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start justify-end gap-3 pr-10">
                   <div className="bg-background-surface-200 rounded-lg p-4 max-w-[280px]">
                     <p className="text-sm text-foreground-lighter">
-                      I can help you with database queries, API endpoints, or any other technical
-                      questions you might have.
+                      {$t(
+                        'I can help you with database queries, API endpoints, or any other technical questions you might have.'
+                      )}
                     </p>
                   </div>
                 </div>

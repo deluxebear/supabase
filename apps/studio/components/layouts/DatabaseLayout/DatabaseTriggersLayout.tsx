@@ -6,6 +6,7 @@ import DatabaseLayout from './DatabaseLayout'
 import { PageLayout } from '@/components/layouts/PageLayout/PageLayout'
 import { NoPermission } from '@/components/ui/NoPermission'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 type DatabaseTriggersLayoutProps = PropsWithChildren
 
@@ -28,12 +29,12 @@ export const DatabaseTriggersLayout = ({ children }: DatabaseTriggersLayoutProps
   ]
 
   return (
-    <DatabaseLayout title="Triggers">
+    <DatabaseLayout title={$t('Triggers')}>
       {isPermissionsLoaded && !canReadTriggers ? (
         <NoPermission isFullPage resourceText="view database triggers" />
       ) : (
         <PageLayout
-          title="Database Triggers"
+          title={$t('Database Triggers')}
           subtitle="Execute actions automatically when database events occur"
           navigationItems={navigationItems}
           size="large"

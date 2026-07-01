@@ -4,6 +4,7 @@ import { Button, FormControl, FormField, FormItem, FormMessage, Input } from 'ui
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { SSOConfigFormSchema } from './SSOConfig'
+import { t as $t } from '@/lib/i18n'
 
 export const SSODomains = ({ form }: { form: ReturnType<typeof useForm<SSOConfigFormSchema>> }) => {
   const { fields, append, remove } = useFieldArray({
@@ -31,9 +32,11 @@ export const SSODomains = ({ form }: { form: ReturnType<typeof useForm<SSOConfig
   return (
     <>
       <FormItemLayout
-        label="Email Domains"
+        label={$t('Email Domains')}
         layout="flex-row-reverse"
-        description="Users with these email domains will be redirected to your identity provider when logging in from Supabase."
+        description={$t(
+          'Users with these email domains will be redirected to your identity provider when logging in from Supabase.'
+        )}
       >
         <div className="grid gap-2 w-full">
           {fields.map((field, idx) => (
@@ -65,7 +68,7 @@ export const SSODomains = ({ form }: { form: ReturnType<typeof useForm<SSOConfig
               size="tiny"
               onClick={() => append({ value: '' })}
             >
-              Add another
+              {$t('Add another')}
             </Button>
           </div>
           {arrayLevelError && (

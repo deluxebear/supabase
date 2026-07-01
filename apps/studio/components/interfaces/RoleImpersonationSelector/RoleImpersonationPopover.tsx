@@ -5,6 +5,7 @@ import { Button, cn, Popover, PopoverContent, PopoverTrigger } from 'ui'
 
 import { getAvatarUrl, getDisplayName } from '../Auth/Users/Users.utils'
 import type { User } from '@/data/auth/users-infinite-query'
+import { t as $t } from '@/lib/i18n'
 import { useRoleImpersonationStateSnapshot } from '@/state/role-impersonation-state'
 
 export interface RoleImpersonationPopoverProps {
@@ -42,7 +43,7 @@ export const RoleImpersonationPopover = ({
           )}
         >
           <div className="flex items-center gap-1">
-            <span className="text-foreground-muted">Role</span>
+            <span className="text-foreground-muted">{$t('Role')}</span>
             <span>{currentRole}</span>
             {state.role?.type === 'postgrest' && state.role.role === 'authenticated' && (
               <>

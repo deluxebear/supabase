@@ -4,6 +4,7 @@ import {
   type ConnectedResourceUsage,
 } from '@/components/interfaces/Integrations/Landing/Landing.utils'
 import { formatDate } from '@/lib/datetime'
+import { t as $t } from '@/lib/i18n'
 
 export const KIND_ORDER: ResourceKind[] = ['oauth_app', 'api_key', 'edge_function_secret', 'smtp']
 
@@ -75,7 +76,8 @@ export const getGroupContent = ({
         badge: 'Connected',
         description: usage?.description ?? (
           <>
-            Grants {name} access to your organization and its projects through a scoped OAuth grant.
+            {$t('Grants')} {name}{' '}
+            {$t('access to your organization and its projects through a scoped OAuth grant.')}
           </>
         ),
         note:
@@ -94,9 +96,15 @@ export const getGroupContent = ({
         description:
           usage?.description ??
           (plural ? (
-            <>Secret API keys that {name} uses to authenticate to your project&apos;s API.</>
+            <>
+              {$t('Secret API keys that')} {name}{' '}
+              {$t('uses to authenticate to your project&apos;s API.')}
+            </>
           ) : (
-            <>A secret API key that {name} uses to authenticate to your project&apos;s API.</>
+            <>
+              {$t('A secret API key that')} {name}{' '}
+              {$t('uses to authenticate to your project&apos;s API.')}
+            </>
           )),
         note:
           usage?.removalWarning ??
@@ -112,12 +120,13 @@ export const getGroupContent = ({
           usage?.description ??
           (plural ? (
             <>
-              Secrets synced by {name} and exposed to your project&apos;s Edge Functions at runtime.
+              {$t('Secrets synced by')} {name}{' '}
+              {$t('and exposed to your project&apos;s Edge Functions at runtime.')}
             </>
           ) : (
             <>
-              A secret synced by {name} and exposed to your project&apos;s Edge Functions at
-              runtime.
+              {$t('A secret synced by')} {name}{' '}
+              {$t('and exposed to your project&apos;s Edge Functions at runtime.')}
             </>
           )),
         note:
@@ -131,7 +140,9 @@ export const getGroupContent = ({
       return {
         title: 'SMTP settings',
         description: usage?.description ?? (
-          <>A custom SMTP relay so your project sends emails through {name}.</>
+          <>
+            {$t('A custom SMTP relay so your project sends emails through')} {name}.
+          </>
         ),
         note:
           usage?.removalWarning ??

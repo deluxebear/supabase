@@ -6,6 +6,7 @@ import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import OrganizationLayout from '@/components/layouts/OrganizationLayout'
 import { ScaffoldContainerLegacy } from '@/components/layouts/Scaffold'
 import { useLastVisitedOrganization } from '@/hooks/misc/useLastVisitedOrganization'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const OrgIndexPage: NextPageWithLayout = () => {
@@ -37,7 +38,7 @@ const OrgIndexPage: NextPageWithLayout = () => {
 
 OrgIndexPage.getLayout = (page) => (
   <DefaultLayout>
-    <OrganizationLayout title="Organizations">{page}</OrganizationLayout>
+    <OrganizationLayout title={$t('Organizations')}>{page}</OrganizationLayout>
   </DefaultLayout>
 )
 

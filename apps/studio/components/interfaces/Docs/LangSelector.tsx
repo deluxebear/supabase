@@ -19,6 +19,7 @@ import {
 import type { ShowApiKey } from '@/components/interfaces/Docs/Docs.types'
 import { useAPIKeysQuery } from '@/data/api-keys/api-keys-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 const DEFAULT_KEY = { name: 'hide', key: 'SUPABASE_KEY' }
 
@@ -66,10 +67,10 @@ export const LangSelector = ({
         className="flex-1 flex"
       >
         <ToggleGroupItem value="js" className="flex-1 px-2 py-1 h-7 text-xs">
-          JavaScript
+          {$t('JavaScript')}
         </ToggleGroupItem>
         <ToggleGroupItem value="bash" className="flex-1 px-2 py-1 h-7 text-xs">
-          Bash
+          {$t('Bash')}
         </ToggleGroupItem>
       </ToggleGroup>
       {selectedLang == 'bash' ? (
@@ -94,13 +95,13 @@ export const LangSelector = ({
                   value={DEFAULT_KEY.key}
                   onClick={() => setSelectedApiKey(DEFAULT_KEY)}
                 >
-                  Hide keys
+                  {$t('Hide keys')}
                 </DropdownMenuRadioItem>
 
                 {publishableKeys.length > 0 && (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuLabel>Publishable keys</DropdownMenuLabel>
+                    <DropdownMenuLabel>{$t('Publishable keys')}</DropdownMenuLabel>
                     {publishableKeys.map((key) => {
                       const value = key.api_key
                       return (
@@ -124,7 +125,7 @@ export const LangSelector = ({
                 {secretKeys.length > 0 && (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuLabel>Secret keys</DropdownMenuLabel>
+                    <DropdownMenuLabel>{$t('Secret keys')}</DropdownMenuLabel>
                     {secretKeys.map((key) => {
                       const value = key.prefix + '...'
                       return (
@@ -146,7 +147,7 @@ export const LangSelector = ({
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
-                      <DropdownMenuLabel>JWT-based legacy keys</DropdownMenuLabel>
+                      <DropdownMenuLabel>{$t('JWT-based legacy keys')}</DropdownMenuLabel>
                       {legacyKeys.map((key) => {
                         const value = key.api_key
                         return (

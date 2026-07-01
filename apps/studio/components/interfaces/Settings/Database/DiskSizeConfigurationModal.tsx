@@ -40,6 +40,7 @@ import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export interface DiskSizeConfigurationProps {
   visible: boolean
@@ -137,7 +138,7 @@ const DiskSizeConfigurationModal = ({
     <Dialog open={visible} onOpenChange={(open) => hideModal(open)}>
       <DialogContent size="medium">
         <DialogHeader>
-          <DialogTitle>Increase Disk Storage Size</DialogTitle>
+          <DialogTitle>{$t('Increase Disk Storage Size')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         {isLoading ? (
@@ -151,11 +152,11 @@ const DiskSizeConfigurationModal = ({
             {currentDiskSize >= maxDiskSize ? (
               <Alert variant="warning" className="rounded-t-none border-0">
                 <WarningIcon />
-                <AlertTitle>Maximum manual disk size increase reached</AlertTitle>
+                <AlertTitle>{$t('Maximum manual disk size increase reached')}</AlertTitle>
                 <AlertDescription>
                   <p>
-                    You cannot manually expand the disk size any more than {maxDiskSize}GB. If you
-                    need more than this, contact us via support for help.
+                    {$t('You cannot manually expand the disk size any more than')} {maxDiskSize}
+                    {$t('GB. If you need more than this, contact us via support for help.')}
                   </p>
                   <Button asChild variant="default" className="mt-3">
                     <SupportLink
@@ -165,7 +166,7 @@ const DiskSizeConfigurationModal = ({
                         subject: 'Increase disk size beyond 200GB',
                       }}
                     >
-                      Contact support
+                      {$t('Contact support')}
                     </SupportLink>
                   </Button>
                 </AlertDescription>
@@ -175,7 +176,7 @@ const DiskSizeConfigurationModal = ({
                 <DialogSection className="w-full space-y-4">
                   <Alert variant={isAbleToResizeDatabase ? 'default' : 'warning'}>
                     <Info size={16} />
-                    <AlertTitle>This operation is only possible every 4 hours</AlertTitle>
+                    <AlertTitle>{$t('This operation is only possible every 4 hours')}</AlertTitle>
                     <AlertDescription>
                       <div className="mb-4">
                         {isAbleToResizeDatabase
@@ -188,7 +189,7 @@ const DiskSizeConfigurationModal = ({
                       </div>
                       <Button asChild variant="default" iconRight={<ExternalLink size={14} />}>
                         <Link href={`${DOCS_URL}/guides/platform/database-size#disk-management`}>
-                          Read more about disk management
+                          {$t('Read more about disk management')}
                         </Link>
                       </Button>
                     </AlertDescription>
@@ -203,7 +204,7 @@ const DiskSizeConfigurationModal = ({
                           <FormItemLayout
                             name="new-disk-size"
                             layout="vertical"
-                            label="New disk size"
+                            label={$t('New disk size')}
                           >
                             <FormControl>
                               <InputGroup>
@@ -221,7 +222,7 @@ const DiskSizeConfigurationModal = ({
                 </DialogSection>
                 <DialogFooter>
                   <Button variant="default" onClick={() => hideModal(false)}>
-                    Cancel
+                    {$t('Cancel')}
                   </Button>
                   <Button
                     form={formId}
@@ -230,7 +231,7 @@ const DiskSizeConfigurationModal = ({
                     disabled={!isAbleToResizeDatabase || isUpdatingDiskSize || !isDirty || loading}
                     loading={isUpdatingDiskSize || loading}
                   >
-                    Update disk size
+                    {$t('Update disk size')}
                   </Button>
                 </DialogFooter>
               </>
@@ -247,13 +248,15 @@ const DiskSizeConfigurationModal = ({
             <AlertDescription>
               {hasAccessToDiskModifications === false ? (
                 <p>
-                  If you are intending to use more than 500MB of disk space, then you will need to
-                  upgrade to at least the Pro Plan.
+                  {$t(
+                    'If you are intending to use more than 500MB of disk space, then you will need to upgrade to at least the Pro Plan.'
+                  )}
                 </p>
               ) : (
                 <p>
-                  If you are intending to use more than 8GB of disk space, then you will need to
-                  disable your spend cap.
+                  {$t(
+                    'If you are intending to use more than 8GB of disk space, then you will need to disable your spend cap.'
+                  )}
                 </p>
               )}
               <Button asChild variant="default" className="mt-3">

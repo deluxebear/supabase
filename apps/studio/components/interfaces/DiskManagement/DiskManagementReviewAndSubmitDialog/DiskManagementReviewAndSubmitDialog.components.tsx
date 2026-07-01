@@ -1,6 +1,7 @@
 import { cn } from 'ui'
 
 import { formatCurrency } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export interface BreakdownRowProps {
   label: string
@@ -29,6 +30,6 @@ export const ValueChange = ({ from, to }: { from: string; to: string }) => (
 export const PriceDelta = ({ delta }: { delta: number }) => (
   <span className={cn('text-xs', delta >= 0 ? 'text-brand' : 'text-destructive')}>
     {delta >= 0 ? `+${formatCurrency(delta)}` : `-${formatCurrency(Math.abs(delta))}`}{' '}
-    <span className="text-foreground-lighter">per month</span>
+    <span className="text-foreground-lighter">{$t('per month')}</span>
   </span>
 )

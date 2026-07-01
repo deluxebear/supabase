@@ -23,6 +23,7 @@ import { Content, ContentBase, useContentQuery } from '@/data/content/content-qu
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -185,7 +186,7 @@ const ObservabilityMenu = () => {
                   <Menu.Group
                     title={
                       <span className="flex w-full items-center justify-between relative h-6">
-                        <span className="uppercase font-mono">Custom Reports</span>
+                        <span className="uppercase font-mono">{$t('Custom Reports')}</span>
                         {reportMenuItems.length > 0 && (
                           <ButtonTooltip
                             variant="default"
@@ -228,8 +229,10 @@ const ObservabilityMenu = () => {
                 {reportMenuItems.length === 0 ? (
                   <div className="px-2">
                     <InnerSideBarEmptyPanel
-                      title="No custom reports yet"
-                      description="Create and save custom reports to track your project metrics"
+                      title={$t('No custom reports yet')}
+                      description={$t(
+                        'Create and save custom reports to track your project metrics'
+                      )}
                       actions={
                         <ButtonTooltip
                           variant="default"
@@ -247,7 +250,7 @@ const ObservabilityMenu = () => {
                             },
                           }}
                         >
-                          New custom report
+                          {$t('New custom report')}
                         </ButtonTooltip>
                       }
                     />
@@ -267,7 +270,7 @@ const ObservabilityMenu = () => {
           />
 
           <ConfirmationModal
-            title="Delete custom report"
+            title={$t('Delete custom report')}
             confirmLabel="Delete report"
             size="medium"
             loading={false}
@@ -277,7 +280,10 @@ const ObservabilityMenu = () => {
           >
             <div className="text-sm text-foreground-light grid gap-4">
               <div className="grid gap-1">
-                <p>Are you sure you want to delete '{selectedReportToDelete?.name}'?</p>
+                <p>
+                  {$t("Are you sure you want to delete '")}
+                  {selectedReportToDelete?.name}'?
+                </p>
               </div>
             </div>
           </ConfirmationModal>

@@ -17,6 +17,7 @@ import { createIndexes } from './index-advisor.utils'
 import { IndexImprovementText } from './IndexImprovementText'
 import { GetIndexAdvisorResultResponse } from '@/data/database/retrieve-index-advisor-result-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface IndexSuggestionIconProps {
   indexAdvisorResult: GetIndexAdvisorResultResponse
@@ -112,7 +113,9 @@ export const IndexSuggestionIcon = ({
         <Separator />
         <QueryPanelScoreSection
           name="Total cost of query"
-          description="An estimate of how long it will take to return all the rows (Includes start up cost)"
+          description={$t(
+            'An estimate of how long it will take to return all the rows (Includes start up cost)'
+          )}
           before={indexAdvisorResult.total_cost_before}
           after={indexAdvisorResult.total_cost_after}
         />
@@ -120,7 +123,7 @@ export const IndexSuggestionIcon = ({
           hideArrowMarkers
           className="border-t"
           name="Start up cost"
-          description="An estimate of how long it will take to fetch the first row"
+          description={$t('An estimate of how long it will take to fetch the first row')}
           before={indexAdvisorResult.startup_cost_before}
           after={indexAdvisorResult.startup_cost_after}
         />
@@ -134,10 +137,10 @@ export const IndexSuggestionIcon = ({
             }}
             disabled={isCreatingIndex}
           >
-            View details
+            {$t('View details')}
           </Button>
           <Button onClick={handleCreateIndex} loading={isCreatingIndex} disabled={isCreatingIndex}>
-            Create index
+            {$t('Create index')}
           </Button>
         </div>
       </HoverCardContent>

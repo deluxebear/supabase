@@ -12,6 +12,7 @@ import { AppLayout } from '@/components/layouts/AppLayout/AppLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { NewAccessToken } from '@/data/access-tokens/access-tokens-create-mutation'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const UserAccessTokens: NextPageWithLayout = () => {
@@ -37,17 +38,17 @@ const UserAccessTokens: NextPageWithLayout = () => {
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchString(e.target.value)}
             name="search"
             id="search"
-            placeholder="Filter tokens"
+            placeholder={$t('Filter tokens')}
           />
           <div className="flex items-center gap-x-2">
             <Button asChild variant="default" icon={<ExternalLink />}>
               <a href={`${DOCS_URL}/reference/api/introduction`} target="_blank" rel="noreferrer">
-                API Docs
+                {$t('API Docs')}
               </a>
             </Button>
             <Button asChild variant="default" icon={<ExternalLink />}>
               <a href={`${DOCS_URL}/reference/cli/start`} target="_blank" rel="noreferrer">
-                CLI docs
+                {$t('CLI docs')}
               </a>
             </Button>
             <NewTokenButton onCreateToken={setNewToken} />
@@ -67,7 +68,7 @@ const UserAccessTokens: NextPageWithLayout = () => {
 UserAccessTokens.getLayout = (page) => (
   <AppLayout>
     <DefaultLayout headerTitle="Account">
-      <AccountLayout title="Access Tokens">{page}</AccountLayout>
+      <AccountLayout title={$t('Access Tokens')}>{page}</AccountLayout>
     </DefaultLayout>
   </AppLayout>
 )

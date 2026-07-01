@@ -22,6 +22,7 @@ import {
 } from '../ui/DiskManagement.constants'
 import { DiskManagementThroughputReadReplicas } from '../ui/DiskManagementReadReplicas'
 import { useDiskAttributesQuery } from '@/data/config/disk-attributes-query'
+import { t as $t } from '@/lib/i18n'
 
 type ThroughputFieldProps = {
   form: UseFormReturn<DiskStorageSchemaType>
@@ -83,11 +84,13 @@ export function ThroughputField({ form, disableInput }: ThroughputFieldProps) {
             control={control}
             render={({ field }) => (
               <FormItemLayout
-                label="Throughput"
+                label={$t('Throughput')}
                 layout="horizontal"
                 description={
                   <span className="flex flex-col gap-y-2">
-                    <p>Higher throughput suits applications with high data transfer needs.</p>
+                    <p>
+                      {$t('Higher throughput suits applications with high data transfer needs.')}
+                    </p>
                     {!formState.errors.throughput && (
                       <DiskManagementThroughputReadReplicas
                         isDirty={formState.dirtyFields.throughput !== undefined}
@@ -112,7 +115,7 @@ export function ThroughputField({ form, disableInput }: ThroughputFieldProps) {
                       className="mb-2"
                     />
                     <p className="text-foreground-lighter">
-                      Amount of data read/written per second.
+                      {$t('Amount of data read/written per second.')}
                     </p>
                   </>
                 }
@@ -132,7 +135,7 @@ export function ThroughputField({ form, disableInput }: ThroughputFieldProps) {
                       disabled={disableInput || disableIopsInput || watchedStorageType === 'io2'}
                     />
                     <InputGroupAddon align="inline-end">
-                      <InputGroupText>MB/s</InputGroupText>
+                      <InputGroupText>{$t('MB/s')}</InputGroupText>
                     </InputGroupAddon>
                   </InputGroup>
                 </FormControl>

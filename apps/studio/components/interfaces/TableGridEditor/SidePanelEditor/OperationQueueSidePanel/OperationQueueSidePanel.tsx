@@ -14,6 +14,7 @@ import { OperationList } from './OperationList'
 import { useOperationQueueActions } from '@/components/grid/hooks/useOperationQueueActions'
 import { DiscardChangesConfirmationDialog } from '@/components/ui-patterns/Dialogs/DiscardChangesConfirmationDialog'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
+import { t as $t } from '@/lib/i18n'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
 import { QueuedOperation } from '@/state/table-editor-operation-queue.types'
 
@@ -41,7 +42,7 @@ export const OperationQueueSidePanel = () => {
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
           <SheetHeader>
-            <SheetTitle>Pending changes</SheetTitle>
+            <SheetTitle>{$t('Pending changes')}</SheetTitle>
             <SheetDescription>
               {operations.length} operation{operations.length !== 1 ? 's' : ''}
             </SheetDescription>
@@ -57,7 +58,7 @@ export const OperationQueueSidePanel = () => {
               onClick={snap.closeSidePanel}
               iconRight={<KeyboardShortcut keys={['Meta', '.']} variant="inline" />}
             >
-              Close
+              {$t('Close')}
             </Button>
             <div className="flex space-x-3">
               <Button
@@ -65,7 +66,7 @@ export const OperationQueueSidePanel = () => {
                 onClick={confirmOnClose}
                 disabled={isSaving || operations.length === 0}
               >
-                Discard
+                {$t('Discard')}
               </Button>
               <Button
                 onClick={handleSave}
@@ -75,7 +76,7 @@ export const OperationQueueSidePanel = () => {
                   isSaving ? undefined : <KeyboardShortcut keys={['Meta', 's']} variant="inline" />
                 }
               >
-                Save
+                {$t('Save')}
               </Button>
             </div>
           </SheetFooter>

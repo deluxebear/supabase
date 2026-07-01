@@ -28,6 +28,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { BASE_PATH } from '@/lib/constants'
 import { timeout } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 const DATE_FORMAT = 'DD MMM, YYYY HH:mm'
 const CONTAINER_CLASS = cn(
@@ -136,13 +137,13 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
   })
   const { mutate: deleteUserMFAFactors } = useUserDeleteMFAFactorsMutation({
     onSuccess: () => {
-      toast.success("Successfully deleted the user's factors")
+      toast.success($t("Successfully deleted the user's factors"))
       setIsDeleteFactorsModalOpen(false)
     },
   })
   const { mutate: updateUser, isPending: isUpdatingUser } = useUserUpdateMutation({
     onSuccess: () => {
-      toast.success('Successfully unbanned user')
+      toast.success($t('Successfully unbanned user'))
       setIsUnbanModalOpen(false)
     },
   })
@@ -214,8 +215,10 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
         </div>
 
         <div className={cn('flex flex-col pt-0!', PANEL_PADDING)}>
-          <p>Provider Information</p>
-          <p className="text-sm text-foreground-light">The user has the following providers</p>
+          <p>{$t('Provider Information')}</p>
+          <p className="text-sm text-foreground-light">
+            {$t('The user has the following providers')}
+          </p>
         </div>
 
         <div className={cn('flex flex-col -space-y-1 pt-0!', PANEL_PADDING)}>
@@ -259,7 +262,7 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
                 <div className="grow mt-0.5">
                   <p className="capitalize">{providerName}</p>
                   <p className="text-xs text-foreground-light">
-                    Signed in with a {providerName} account via{' '}
+                    {$t('Signed in with a')} {providerName} {$t('account via')}{' '}
                     {providerName === 'SAML' ? 'SSO' : 'OAuth'}
                   </p>
                   {authenticationSignInProviders && (
@@ -267,7 +270,7 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
                       <Link
                         href={`/project/${projectRef}/auth/providers?provider=${provider.name === 'SAML' ? 'SAML 2.0' : provider.name}`}
                       >
-                        Configure {providerName} provider
+                        {$t('Configure')} {providerName} provider
                       </Link>
                     </Button>
                   )}
@@ -277,11 +280,11 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
                     <span className="rounded-full bg-brand p-0.5 text-xs text-brand-200">
                       <Check strokeWidth={2} size={12} />
                     </span>
-                    <span className="px-1">Enabled</span>
+                    <span className="px-1">{$t('Enabled')}</span>
                   </div>
                 ) : (
                   <div className="rounded-md border border-strong bg-surface-100 py-1 px-3 text-xs text-foreground-lighter">
-                    Disabled
+                    {$t('Disabled')}
                   </div>
                 )}
               </div>
@@ -295,8 +298,8 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
           {isEmailAuth && (
             <>
               <RowAction
-                title="Reset password"
-                description="Send a password recovery email to the user"
+                title={$t('Reset password')}
+                description={$t('Send a password recovery email to the user')}
                 button={{
                   icon: <Mail />,
                   text: 'Send password recovery',
@@ -346,8 +349,8 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
           )}
           {isPhoneAuth && (
             <RowAction
-              title="Send OTP"
-              description="Passwordless login via phone for the user"
+              title={$t('Send OTP')}
+              description={$t('Passwordless login via phone for the user')}
               button={{
                 icon: <Mail />,
                 text: 'Send OTP',
@@ -372,16 +375,16 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
         <Separator />
 
         <div className={cn('flex flex-col', PANEL_PADDING)}>
-          <p>Danger zone</p>
+          <p>{$t('Danger zone')}</p>
           <p className="text-sm text-foreground-light">
-            Be wary of the following features as they cannot be undone.
+            {$t('Be wary of the following features as they cannot be undone.')}
           </p>
         </div>
 
         <div className={cn('flex flex-col -space-y-1 pt-0!', PANEL_PADDING)}>
           <RowAction
-            title="Remove MFA factors"
-            description="Removes all MFA factors associated with the user"
+            title={$t('Remove MFA factors')}
+            description={$t('Removes all MFA factors associated with the user')}
             button={{
               icon: <ShieldOff />,
               text: 'Remove MFA factors',
@@ -416,8 +419,8 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
             className="!bg border-destructive-400"
           />
           <RowAction
-            title="Delete user"
-            description="User will no longer have access to the project"
+            title={$t('Delete user')}
+            description={$t('User will no longer have access to the project')}
             button={{
               icon: <Trash />,
               variant: 'danger',
@@ -443,7 +446,7 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
       <ConfirmationModal
         visible={isDeleteFactorsModalOpen}
         variant="warning"
-        title="Confirm to remove MFA factors"
+        title={$t('Confirm to remove MFA factors')}
         confirmLabel="Remove factors"
         confirmLabelLoading="Removing"
         onCancel={() => setIsDeleteFactorsModalOpen(false)}
@@ -456,7 +459,7 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
         }}
       >
         <p className="text-sm text-foreground-light">
-          Are you sure you want to remove the MFA factors for the user{' '}
+          {$t('Are you sure you want to remove the MFA factors for the user')}{' '}
           <span className="text-foreground">{user.email ?? user.phone ?? 'this user'}</span>?
         </p>
       </ConfirmationModal>
@@ -466,7 +469,7 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
       <ConfirmationModal
         variant="warning"
         visible={isUnbanModalOpen}
-        title="Confirm to unban user"
+        title={$t('Confirm to unban user')}
         loading={isUpdatingUser}
         confirmLabel="Unban user"
         confirmLabelLoading="Unbanning"
@@ -474,8 +477,9 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
         onConfirm={() => handleUnban()}
       >
         <p className="text-sm text-foreground-light">
-          The user will have access to your project again once unbanned. Are you sure you want to
-          unban this user?
+          {$t(
+            'The user will have access to your project again once unbanned. Are you sure you want to unban this user?'
+          )}
         </p>
       </ConfirmationModal>
     </>

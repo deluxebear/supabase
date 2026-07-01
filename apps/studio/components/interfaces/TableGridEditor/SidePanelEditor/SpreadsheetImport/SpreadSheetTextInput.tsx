@@ -1,5 +1,7 @@
 import { TextArea } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface SpreadSheetTextInputProps {
   input: string
   onInputChange: (event: any) => void
@@ -9,13 +11,15 @@ const SpreadSheetTextInput = ({ input, onInputChange }: SpreadSheetTextInputProp
   <div className="space-y-10">
     <div>
       <p className="mb-2 text-sm text-foreground-light">
-        Copy a table from a spreadsheet program such as Google Sheets or Excel and paste it in the
-        field below. The first row should be the headers of the table, and your headers should not
-        include any special characters other than hyphens (<code>-</code>) or underscores (
+        {$t(
+          'Copy a table from a spreadsheet program such as Google Sheets or Excel and paste it in the field below. The first row should be the headers of the table, and your headers should not include any special characters other than hyphens ('
+        )}
+        <code>-</code>
+        {$t(') or underscores (')}
         <code>_</code>).
       </p>
       <p className="text-sm text-foreground-lighter">
-        Tip: Datetime columns should be formatted as YYYY-MM-DD HH:mm:ss
+        {$t('Tip: Datetime columns should be formatted as YYYY-MM-DD HH:mm:ss')}
       </p>
     </div>
     <TextArea className="font-mono" rows={15} value={input} onChange={onInputChange} />

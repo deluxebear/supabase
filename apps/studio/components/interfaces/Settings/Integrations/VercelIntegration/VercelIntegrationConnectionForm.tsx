@@ -33,6 +33,7 @@ import { useVercelConnectionUpdateMutation } from '@/data/integrations/vercel-co
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const VercelIntegrationConnectionForm = ({
   disabled,
@@ -133,18 +134,20 @@ const VercelIntegrationConnectionForm = ({
           <div className="flex flex-col gap-4">
             {org?.managed_by === 'vercel-marketplace' ? (
               <Alert>
-                <AlertTitle className="text-sm">Vercel Marketplace managed project</AlertTitle>
+                <AlertTitle className="text-sm">
+                  {$t('Vercel Marketplace managed project')}
+                </AlertTitle>
                 <AlertDescription className="text-xs">
-                  This project is managed via Vercel Marketplace. Environment variables are
-                  automatically synchronized for your connected Vercel projects. This integration
-                  purpose is synchronizing preview deployments environment variables with our{' '}
+                  {$t(
+                    'This project is managed via Vercel Marketplace. Environment variables are automatically synchronized for your connected Vercel projects. This integration purpose is synchronizing preview deployments environment variables with our'
+                  )}{' '}
                   <Link
                     target="_blank"
                     rel="noreferrer"
                     href={`${DOCS_URL}/guides/platform/branching`}
                     className="underline"
                   >
-                    Branching
+                    {$t('Branching')}
                   </Link>{' '}
                   feature.
                 </AlertDescription>
@@ -152,17 +155,20 @@ const VercelIntegrationConnectionForm = ({
             ) : (
               <div>
                 <div className="space-y-1 mb-4">
-                  <h5 className="text-foreground">Sync environment variables to Vercel</h5>
+                  <h5 className="text-foreground">{$t('Sync environment variables to Vercel')}</h5>
                   <p className="text-sm text-foreground-light">
-                    Choose which Vercel environments receive this project&apos;s{' '}
-                    <span className="text-foreground">production</span> credentials. Most projects
-                    only need <code>production</code>.
+                    {$t('Choose which Vercel environments receive this project&apos;s')}{' '}
+                    <span className="text-foreground">production</span>{' '}
+                    {$t('credentials. Most projects only need')} <code>production</code>.
                   </p>
                   <p className="text-sm text-foreground-light">
-                    With{' '}
-                    <InlineLink href={`/project/${project?.ref}/branches`}>Branching</InlineLink>{' '}
-                    enabled, leave Preview and Development off: Branching gives each preview branch
-                    its own database and syncs those credentials to your Vercel Preview deployments.
+                    {$t('With')}{' '}
+                    <InlineLink href={`/project/${project?.ref}/branches`}>
+                      {$t('Branching')}
+                    </InlineLink>{' '}
+                    {$t(
+                      'enabled, leave Preview and Development off: Branching gives each preview branch its own database and syncs those credentials to your Vercel Preview deployments.'
+                    )}
                   </p>
                 </div>
 
@@ -173,10 +179,10 @@ const VercelIntegrationConnectionForm = ({
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Production"
+                        label={$t('Production')}
                         description={
                           <>
-                            Syncs to the Vercel <code>production</code> env.
+                            {$t('Syncs to the Vercel')} <code>production</code> env.
                           </>
                         }
                       >
@@ -196,10 +202,10 @@ const VercelIntegrationConnectionForm = ({
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Preview"
+                        label={$t('Preview')}
                         description={
                           <>
-                            Syncs to the Vercel <code>preview</code> env.
+                            {$t('Syncs to the Vercel')} <code>preview</code> env.
                           </>
                         }
                       >
@@ -219,10 +225,10 @@ const VercelIntegrationConnectionForm = ({
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Development"
+                        label={$t('Development')}
                         description={
                           <>
-                            Syncs to the Vercel <code>development</code> env.
+                            {$t('Syncs to the Vercel')} <code>development</code> env.
                           </>
                         }
                       >
@@ -247,24 +253,24 @@ const VercelIntegrationConnectionForm = ({
                       }
                     >
                       <p>
-                        Preview and Development sync your production credentials, including the
-                        service role key and database password, to those Vercel environments.
+                        {$t(
+                          'Preview and Development sync your production credentials, including the service role key and database password, to those Vercel environments.'
+                        )}
                       </p>
                       {isBranchingEnabled ? (
                         <p>
                           <InlineLink href={`/project/${project?.ref}/branches`}>
-                            Branching
+                            {$t('Branching')}
                           </InlineLink>{' '}
-                          already provisions isolated credentials for each preview branch. With
-                          Preview enabled, deployments use production credentials until a branch
-                          finishes provisioning, which can affect production data. We recommend
-                          leaving Preview and Development off.
+                          {$t(
+                            'already provisions isolated credentials for each preview branch. With Preview enabled, deployments use production credentials until a branch finishes provisioning, which can affect production data. We recommend leaving Preview and Development off.'
+                          )}
                         </p>
                       ) : (
                         <p>
-                          To give preview deployments their own isolated credentials, use{' '}
+                          {$t('To give preview deployments their own isolated credentials, use')}{' '}
                           <InlineLink href={`/project/${project?.ref}/branches`}>
-                            Branching
+                            {$t('Branching')}
                           </InlineLink>{' '}
                           instead.
                         </p>
@@ -275,7 +281,9 @@ const VercelIntegrationConnectionForm = ({
               </div>
             )}
           </div>
-          <h5 className="mt-2 text-foreground">Customize public environment variable prefix</h5>
+          <h5 className="mt-2 text-foreground">
+            {$t('Customize public environment variable prefix')}
+          </h5>
           <div className="flex flex-col gap-4">
             <FormField
               control={form.control}
@@ -283,14 +291,14 @@ const VercelIntegrationConnectionForm = ({
               render={({ field }) => (
                 <FormItem className="grid gap-2 md:grid md:grid-cols-12 space-y-0">
                   <FormLabel className="flex flex-col space-y-2 col-span-4 text-sm justify-center text-foreground-light">
-                    Prefix
+                    {$t('Prefix')}
                   </FormLabel>
                   <FormControl className="col-span-8">
                     <Input
                       {...field}
                       className="w-full"
                       disabled={disabled}
-                      placeholder="An empty prefix will result in no public env vars"
+                      placeholder={$t('An empty prefix will result in no public env vars')}
                     />
                   </FormControl>
                   <FormDescription className="col-start-5 col-span-8 text-xs">
@@ -324,7 +332,7 @@ const VercelIntegrationConnectionForm = ({
                     >
                       PUBLIC_
                     </code>
-                    , etc.
+                    {$t(', etc.')}
                   </FormDescription>
 
                   <FormMessage className="col-start-5 col-span-8" />
@@ -335,8 +343,8 @@ const VercelIntegrationConnectionForm = ({
 
           {form.formState.isDirty ? (
             <p className="mt-2 text-sm text-warning">
-              Note: Changing these settings will <strong>not</strong> trigger a resync of
-              environment variables.
+              {$t('Note: Changing these settings will')} <strong>not</strong>{' '}
+              {$t('trigger a resync of environment variables.')}
             </p>
           ) : (
             <div className="mt-2 h-5 w-full" />
@@ -357,7 +365,7 @@ const VercelIntegrationConnectionForm = ({
         variant="warning"
         size="medium"
         loading={isPending}
-        title="Sync production credentials?"
+        title={$t('Sync production credentials?')}
         confirmLabel="Sync credentials"
         confirmLabelLoading="Saving"
         onCancel={() => {
@@ -375,21 +383,21 @@ const VercelIntegrationConnectionForm = ({
       >
         <div className="space-y-3 text-sm text-foreground-light">
           <p>
-            This syncs your production credentials to the{' '}
+            {$t('This syncs your production credentials to the')}{' '}
             <span className="text-foreground">{selectedNonProdTargets.join(' and ')}</span>{' '}
-            environment{selectedNonProdTargets.length > 1 ? 's' : ''} of your connected Vercel
-            project.
+            environment{selectedNonProdTargets.length > 1 ? 's' : ''}{' '}
+            {$t('of your connected Vercel project.')}
           </p>
           {isBranchingEnabled ? (
             <p>
-              Branching already provisions isolated credentials for each preview branch. With this
-              enabled, deployments use production credentials until a branch finishes provisioning,
-              which can affect production data. We recommend leaving it off.
+              {$t(
+                'Branching already provisions isolated credentials for each preview branch. With this enabled, deployments use production credentials until a branch finishes provisioning, which can affect production data. We recommend leaving it off.'
+              )}
             </p>
           ) : (
             <p>
-              To use isolated credentials for preview deployments instead, enable{' '}
-              <InlineLink href={`/project/${project?.ref}/branches`}>Branching</InlineLink>.
+              {$t('To use isolated credentials for preview deployments instead, enable')}{' '}
+              <InlineLink href={`/project/${project?.ref}/branches`}>{$t('Branching')}</InlineLink>.
             </p>
           )}
         </div>

@@ -32,6 +32,7 @@ import { CollapsibleCodeBlock } from './CollapsibleCodeBlock'
 import { DisplayBlockRenderer } from './DisplayBlockRenderer'
 import { defaultUrlTransform, wrapPlaceholderUrls } from './Message.utils'
 import { ChartConfig } from '@/components/interfaces/SQLEditor/UtilityPanel/ChartConfig'
+import { t as $t } from '@/lib/i18n'
 
 const Streamdown = dynamic<StreamdownProps>(
   () => import('streamdown').then((mod) => mod.Streamdown),
@@ -94,31 +95,33 @@ export const Hyperlink = memo(({ href, children }: { href?: string; children?: R
       </DialogTrigger>
       <DialogContent size="small">
         <DialogHeader className="border-b">
-          <DialogTitle>Verify the link before navigating</DialogTitle>
+          <DialogTitle>{$t('Verify the link before navigating')}</DialogTitle>
         </DialogHeader>
 
         <DialogSection className="flex flex-col">
           <p className="text-sm text-foreground-light">
-            This link will take you to the following URL:
+            {$t('This link will take you to the following URL:')}
           </p>
           <p className="text-sm text-foreground">{safeUrl}</p>
-          <p className="text-sm text-foreground-light mt-2">Are you sure you want to head there?</p>
+          <p className="text-sm text-foreground-light mt-2">
+            {$t('Are you sure you want to head there?')}
+          </p>
         </DialogSection>
 
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="default" className="opacity-100">
-              Cancel
+              {$t('Cancel')}
             </Button>
           </DialogClose>
           <DialogClose asChild>
             <Button asChild variant="primary" className="opacity-100">
               {isExternalURL ? (
                 <a href={safeUrl} target="_blank" rel="noreferrer noopener">
-                  Head to link
+                  {$t('Head to link')}
                 </a>
               ) : (
-                <Link href={safeUrl}>Head to link</Link>
+                <Link href={safeUrl}>{$t('Head to link')}</Link>
               )}
             </Button>
           </DialogClose>

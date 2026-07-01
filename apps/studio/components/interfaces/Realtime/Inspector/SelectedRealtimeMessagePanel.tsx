@@ -6,6 +6,7 @@ import {
   SelectionDetailedTimestampRow,
   withBinaryPayloadPlaceholder,
 } from './MessagesFormatters'
+import { t as $t } from '@/lib/i18n'
 
 const LogsDivider = () => {
   return (
@@ -21,7 +22,7 @@ export const SelectedRealtimeMessagePanel = ({ log }: { log: LogData }) => {
   return (
     <>
       <div className="px-8">
-        <span className="col-span-4 text-sm text-scale-900">Message</span>
+        <span className="col-span-4 text-sm text-scale-900">{$t('Message')}</span>
 
         <p className="text-wrap mt-2 overflow-x-auto whitespace-pre-wrap font-mono text-xs text-scale-1200">
           {log.message}
@@ -34,7 +35,7 @@ export const SelectedRealtimeMessagePanel = ({ log }: { log: LogData }) => {
       <LogsDivider />
       <div className="px-8 space-y-4">
         <div>
-          <h3 className="mb-4 text-sm text-foreground-lighter">Payload</h3>
+          <h3 className="mb-4 text-sm text-foreground-lighter">{$t('Payload')}</h3>
           <pre className="syntax-highlight overflow-x-auto text-sm">
             <div
               className="text-wrap"
@@ -46,7 +47,7 @@ export const SelectedRealtimeMessagePanel = ({ log }: { log: LogData }) => {
         </div>
         {binary && (
           <div>
-            <h3 className="mb-4 text-sm text-foreground-lighter">Binary payload</h3>
+            <h3 className="mb-4 text-sm text-foreground-lighter">{$t('Binary payload')}</h3>
             <pre className="overflow-x-auto whitespace-pre font-mono text-xs text-scale-1200">
               {formatHexdump(payload as ArrayBuffer | ArrayBufferView)}
             </pre>

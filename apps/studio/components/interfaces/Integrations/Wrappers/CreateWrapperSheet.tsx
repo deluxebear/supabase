@@ -47,6 +47,7 @@ import { useSchemaCreateMutation } from '@/data/database/schema-create-mutation'
 import { invalidateSchemasQuery, useSchemasQuery } from '@/data/database/schemas-query'
 import { useFDWCreateMutation } from '@/data/fdw/fdw-create-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import type { ResponseError } from '@/types'
 
@@ -258,7 +259,9 @@ export const CreateWrapperSheet = ({
             className="flex flex-col h-full"
           >
             <SheetHeader>
-              <SheetTitle>Create a {wrapperMeta.label} wrapper</SheetTitle>
+              <SheetTitle>
+                {$t('Create a')} {wrapperMeta.label} wrapper
+              </SheetTitle>
             </SheetHeader>
             <div className="grow overflow-y-auto">
               {isMarketplaceEnabled && (
@@ -266,14 +269,18 @@ export const CreateWrapperSheet = ({
                   {needsExtensions && (
                     <Admonition
                       type="warning"
-                      title="Required extensions will be installed"
-                      description="Proceeding will also install the extensions required by this wrapper."
+                      title={$t('Required extensions will be installed')}
+                      description={$t(
+                        'Proceeding will also install the extensions required by this wrapper.'
+                      )}
                     />
                   )}
                   <RequiredExtensionsSection hideSeparator />
                 </div>
               )}
-              <FormSection header={<FormSectionLabel>Wrapper Configuration</FormSectionLabel>}>
+              <FormSection
+                header={<FormSectionLabel>{$t('Wrapper Configuration')}</FormSectionLabel>}
+              >
                 <FormSectionContent className="flex flex-col space-y-2" loading={false}>
                   <FormField
                     control={form.control}
@@ -281,12 +288,12 @@ export const CreateWrapperSheet = ({
                     render={({ field }) => (
                       <FormItemLayout
                         layout="vertical"
-                        label="Wrapper Name"
+                        label={$t('Wrapper Name')}
                         name="wrapper_name"
                         description={
                           wrapper_name.length > 0 ? (
                             <>
-                              Your wrapper's server name will be{' '}
+                              {$t("Your wrapper's server name will be")}{' '}
                               <code className="text-code-inline">{wrapper_name}_server</code>
                             </>
                           ) : (
@@ -304,7 +311,11 @@ export const CreateWrapperSheet = ({
               </FormSection>
               <Separator />
               <FormSection
-                header={<FormSectionLabel>{wrapperMeta.label} Configuration</FormSectionLabel>}
+                header={
+                  <FormSectionLabel>
+                    {wrapperMeta.label} {$t('Configuration')}
+                  </FormSectionLabel>
+                }
               >
                 <FormSectionContent className="flex flex-col space-y-2" loading={false}>
                   {wrapperMeta.server.options
@@ -315,7 +326,7 @@ export const CreateWrapperSheet = ({
                 </FormSectionContent>
               </FormSection>
               <Separator />
-              <FormSection header={<FormSectionLabel>Data target</FormSectionLabel>}>
+              <FormSection header={<FormSectionLabel>{$t('Data target')}</FormSectionLabel>}>
                 <FormSectionContent className="flex flex-col space-y-2" loading={false}>
                   <FormField
                     control={form.control}
@@ -331,13 +342,14 @@ export const CreateWrapperSheet = ({
                               key="tables"
                               value="tables"
                               disabled={wrapperMeta.tables.length === 0}
-                              label="Tables"
+                              label={$t('Tables')}
                               showIndicator={false}
                             >
                               <div className="flex  gap-x-5">
                                 <div className="flex flex-col">
                                   <p className="text-foreground-light text-left">
-                                    Create foreign tables to query data from {wrapperMeta.label}.
+                                    {$t('Create foreign tables to query data from')}{' '}
+                                    {wrapperMeta.label}.
                                   </p>
                                 </div>
                               </div>
@@ -345,7 +357,7 @@ export const CreateWrapperSheet = ({
                                 <div className="w-full flex gap-x-2 py-2 items-center">
                                   <WarningIcon />
                                   <span className="text-xs">
-                                    This wrapper doesn't support using foreign tables.
+                                    {$t("This wrapper doesn't support using foreign tables.")}
                                   </span>
                                 </div>
                               ) : null}
@@ -356,14 +368,14 @@ export const CreateWrapperSheet = ({
                               disabled={
                                 !wrapperMeta.canTargetSchema || !hasRequiredVersionForeignSchema
                               }
-                              label="Schema"
+                              label={$t('Schema')}
                               showIndicator={false}
                             >
                               <div className="flex  gap-x-5">
                                 <div className="flex flex-col">
                                   <p className="text-foreground-light text-left">
-                                    Create all foreign tables from {wrapperMeta.label} in a
-                                    specified schema.
+                                    {$t('Create all foreign tables from')} {wrapperMeta.label}{' '}
+                                    {$t('in a specified schema.')}
                                   </p>
                                 </div>
                               </div>
@@ -372,9 +384,9 @@ export const CreateWrapperSheet = ({
                                   <div className="w-full flex gap-x-2 py-2 items-center">
                                     <WarningIcon />
                                     <span className="text-xs text-left">
-                                      This feature requires the{' '}
-                                      <span className="text-brand">wrappers</span> extension to be
-                                      of minimum version of 0.5.0.
+                                      {$t('This feature requires the')}{' '}
+                                      <span className="text-brand">wrappers</span>{' '}
+                                      {$t('extension to be of minimum version of 0.5.0.')}
                                     </span>
                                   </div>
                                 )
@@ -382,7 +394,7 @@ export const CreateWrapperSheet = ({
                                 <div className="w-full flex gap-x-2 py-2 items-center">
                                   <WarningIcon />
                                   <span className="text-xs">
-                                    This wrapper doesn't support using a foreign schema.
+                                    {$t("This wrapper doesn't support using a foreign schema.")}
                                   </span>
                                 </div>
                               )}
@@ -399,10 +411,11 @@ export const CreateWrapperSheet = ({
                 <FormSection
                   header={
                     <FormSectionLabel>
-                      <p>Foreign Tables</p>
+                      <p>{$t('Foreign Tables')}</p>
                       <p className="text-foreground-light mt-2 w-[90%]">
-                        You can query your data from these foreign tables after the wrapper is
-                        created
+                        {$t(
+                          'You can query your data from these foreign tables after the wrapper is created'
+                        )}
                       </p>
                     </FormSectionLabel>
                   }
@@ -422,7 +435,7 @@ export const CreateWrapperSheet = ({
                                 {table.schema_name}.{table.table_name}
                               </p>
                               <p className="text-sm text-foreground-light">
-                                Columns:{' '}
+                                {$t('Columns:')}{' '}
                                 {(table.columns ?? []).map((column: any) => column.name).join(', ')}
                               </p>
                             </div>
@@ -450,7 +463,7 @@ export const CreateWrapperSheet = ({
 
                       <div className="flex justify-end">
                         <Button variant="default" onClick={() => setSelectedTableToEdit(NewTable)}>
-                          Add foreign table
+                          {$t('Add foreign table')}
                         </Button>
                       </div>
                       {tablesField.length === 0 && errors.tables && (
@@ -467,10 +480,11 @@ export const CreateWrapperSheet = ({
                 <FormSection
                   header={
                     <FormSectionLabel>
-                      <p>Foreign Schema</p>
+                      <p>{$t('Foreign Schema')}</p>
                       <p className="text-foreground-light mt-2 w-[90%]">
-                        You can query your data from the foreign tables in the specified schema
-                        after the wrapper is created.
+                        {$t(
+                          'You can query your data from the foreign tables in the specified schema after the wrapper is created.'
+                        )}
                       </p>
                     </FormSectionLabel>
                   }
@@ -512,7 +526,7 @@ export const CreateWrapperSheet = ({
                 onClick={onCloseWithConfirmation}
                 disabled={isSubmitting}
               >
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button
                 size="tiny"
@@ -522,7 +536,7 @@ export const CreateWrapperSheet = ({
                 disabled={isSubmitting || isExtensionDataLoading}
                 loading={isSubmitting}
               >
-                Create wrapper
+                {$t('Create wrapper')}
               </Button>
             </SheetFooter>
           </form>

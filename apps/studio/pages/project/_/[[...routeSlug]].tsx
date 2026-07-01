@@ -27,6 +27,7 @@ import { ScaffoldContainer, ScaffoldSection } from '@/components/layouts/Scaffol
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { useLastVisitedOrganization } from '@/hooks/misc/useLastVisitedOrganization'
 import { withAuth } from '@/hooks/misc/withAuth'
+import { t as $t } from '@/lib/i18n'
 
 // [Joshen] I'd say we don't do route validation here, this page will act more
 // like a proxy to the project specific pages, and we let those pages handle
@@ -82,7 +83,7 @@ const GenericProjectPage: NextPage = () => {
   return (
     <div className="h-screen flex flex-col">
       <Header />
-      <PageLayout className="grow min-h-0" title="Select a project to continue">
+      <PageLayout className="grow min-h-0" title={$t('Select a project to continue')}>
         <ScaffoldContainer className="grow flex flex-col gap-y-4">
           <ScaffoldSection isFullWidth className="py-0">
             <div className="flex items-center gap-x-2">
@@ -92,8 +93,8 @@ const GenericProjectPage: NextPage = () => {
                 <Select value={selectedSlug} onValueChange={setSlug}>
                   <SelectTrigger size="tiny" className="w-60 truncate">
                     <div className="flex items-center gap-x-2">
-                      <p className="text-xs text-foreground-light">Organization:</p>
-                      <SelectValue placeholder="Select an organization" />
+                      <p className="text-xs text-foreground-light">{$t('Organization:')}</p>
+                      <SelectValue placeholder={$t('Select an organization')} />
                     </div>
                   </SelectTrigger>
                   <SelectContent className="col-span-8">
@@ -114,8 +115,8 @@ const GenericProjectPage: NextPage = () => {
             ) : isErrorOrganizations ? (
               <Alert variant="warning">
                 <AlertTriangleIcon />
-                <AlertTitle>Failed to load your Supabase organizations</AlertTitle>
-                <AlertDescription>Try refreshing the page</AlertDescription>
+                <AlertTitle>{$t('Failed to load your Supabase organizations')}</AlertTitle>
+                <AlertDescription>{$t('Try refreshing the page')}</AlertDescription>
               </Alert>
             ) : organizations.length === 0 ? (
               <NoOrganizationsState />

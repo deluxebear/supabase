@@ -5,6 +5,7 @@ import { buildExplainPrompt } from './ExplainVisualizer.ai'
 import type { QueryPlanRow } from './ExplainVisualizer.types'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
@@ -73,7 +74,7 @@ export function ExplainHeader({ mode, onToggleMode, summary, id, rows }: Explain
       {/* Title row */}
       <div className="flex items-center justify-between text-sm">
         <div className="flex items-center gap-2">
-          <h3 className="font-medium text-foreground">Query Execution Plan</h3>
+          <h3 className="font-medium text-foreground">{$t('Query Execution Plan')}</h3>
           <Tooltip>
             <TooltipTrigger>
               <HelpCircle
@@ -83,23 +84,24 @@ export function ExplainHeader({ mode, onToggleMode, summary, id, rows }: Explain
               />
             </TooltipTrigger>
             <TooltipContent side="top" className="max-w-xs p-4">
-              <h3 className="text-xs font-medium mb-2">How to read</h3>
+              <h3 className="text-xs font-medium mb-2">{$t('How to read')}</h3>
               <p className="text-foreground-light text-xs">
-                Start at the bottom where data is read from tables, then follow upward as each step
-                processes the results.
+                {$t(
+                  'Start at the bottom where data is read from tables, then follow upward as each step processes the results.'
+                )}
               </p>
 
               {isVisual && (
                 <>
-                  <h3 className="text-xs font-medium mt-4 mb-2">Key</h3>
+                  <h3 className="text-xs font-medium mt-4 mb-2">{$t('Key')}</h3>
                   <div className="flex flex-col gap-1 text-foreground-light">
                     <div className="flex items-center gap-1.5">
                       <span className="inline-block w-1.5 h-1.5 rounded-full bg-warning" />
-                      <span>Seq Scan (slow)</span>
+                      <span>{$t('Seq Scan (slow)')}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand" />
-                      <span>Index Scan (fast)</span>
+                      <span>{$t('Index Scan (fast)')}</span>
                     </div>
                   </div>
                 </>
@@ -112,7 +114,7 @@ export function ExplainHeader({ mode, onToggleMode, summary, id, rows }: Explain
               {summary.totalTime > 0 && (
                 <div className="flex items-center gap-2">
                   <span className="text-foreground-muted">/</span>
-                  <span className="text-foreground-light">Total time</span>
+                  <span className="text-foreground-light">{$t('Total time')}</span>
                   <span className="font-medium text-foreground">
                     {summary.totalTime.toFixed(2)}ms
                   </span>
@@ -124,7 +126,7 @@ export function ExplainHeader({ mode, onToggleMode, summary, id, rows }: Explain
         <div className="flex items-center gap-2">
           {id && rows && (
             <AiAssistantDropdown
-              label="Explain with AI"
+              label={$t('Explain with AI')}
               buildPrompt={buildPromptForCopy}
               onOpenAssistant={handleExplainWithAI}
               telemetrySource="explain_visualizer"

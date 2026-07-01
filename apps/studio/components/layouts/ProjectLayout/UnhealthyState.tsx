@@ -12,6 +12,7 @@ import { useProjectRestartMutation } from '@/data/projects/project-restart-mutat
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const UnhealthyState = () => {
   const router = useRouter()
@@ -39,7 +40,7 @@ export const UnhealthyState = () => {
   const { mutate: restartProject, isPending: isRestarting } = useProjectRestartMutation({
     onSuccess: () => {
       setProjectStatus({ ref: project?.ref ?? '', status: PROJECT_STATUS.RESTARTING })
-      toast.success('Restarting project...')
+      toast.success($t('Restarting project...'))
       router.push(`/project/${ref}`)
     },
     onError: (error) => {
@@ -58,10 +59,13 @@ export const UnhealthyState = () => {
               </div>
               <div className="flex flex-col gap-3">
                 <div className="space-y-1">
-                  <p>Project {project?.name} is unhealthy</p>
+                  <p>
+                    {$t('Project')} {project?.name} {$t('is unhealthy')}
+                  </p>
                   <p className="text-sm text-foreground-light">
-                    Your project is experiencing health issues and is not fully operational.
-                    Restarting the project will attempt to restore normal operation.
+                    {$t(
+                      'Your project is experiencing health issues and is not fully operational. Restarting the project will attempt to restore normal operation.'
+                    )}
                   </p>
                 </div>
                 <div>
@@ -72,7 +76,7 @@ export const UnhealthyState = () => {
                     loading={isRestarting}
                     onClick={() => setShowConfirm(true)}
                   >
-                    Restart project
+                    {$t('Restart project')}
                   </Button>
                 </div>
               </div>
@@ -84,8 +88,10 @@ export const UnhealthyState = () => {
       <ConfirmationModal
         visible={showConfirm}
         variant="destructive"
-        title="Restart project"
-        description="Are you sure you want to restart your project? There will be a few minutes of downtime."
+        title={$t('Restart project')}
+        description={$t(
+          'Are you sure you want to restart your project? There will be a few minutes of downtime.'
+        )}
         confirmLabel="Restart"
         confirmLabelLoading="Restarting"
         loading={isRestarting}

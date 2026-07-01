@@ -2,6 +2,7 @@ import { HTMLAttributes } from 'react'
 import { cn } from 'ui'
 
 import { calculateImprovement } from './index-advisor.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface IndexImprovementTextProps extends HTMLAttributes<HTMLParagraphElement> {
   indexStatements: string[]
@@ -20,8 +21,8 @@ export const IndexImprovementText = ({
 
   return (
     <p className={cn('text-sm text-foreground-light mb-3', className)} {...props}>
-      Query's performance can be improved by{' '}
-      <span className="text-brand">{improvement.toFixed(2)}%</span> by creating this{' '}
+      {$t("Query's performance can be improved by")}{' '}
+      <span className="text-brand">{improvement.toFixed(2)}%</span> {$t('by creating this')}{' '}
       {indexStatements.length > 1 ? 'indexes' : 'index'}:
     </p>
   )

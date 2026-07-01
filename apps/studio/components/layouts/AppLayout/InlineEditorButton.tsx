@@ -3,6 +3,7 @@ import { cn, KeyboardShortcut } from 'ui'
 
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useIsShortcutEnabled } from '@/state/shortcuts/useIsShortcutEnabled'
@@ -39,7 +40,7 @@ export const InlineEditorButton = () => {
           className: 'p-1 pl-2.5',
           text: (
             <div className="flex items-center gap-2.5">
-              <span>SQL Editor</span>
+              <span>{$t('SQL Editor')}</span>
               <InlineEditorKeyboardTooltip />
             </div>
           ),
@@ -47,7 +48,7 @@ export const InlineEditorButton = () => {
       }}
     >
       <SqlEditor size={16} strokeWidth={1.5} />
-      <span className="sr-only">SQL Editor</span>
+      <span className="sr-only">{$t('SQL Editor')}</span>
     </ButtonTooltip>
   )
 }

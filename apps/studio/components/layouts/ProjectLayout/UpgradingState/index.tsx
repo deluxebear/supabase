@@ -22,6 +22,7 @@ import { useProjectUpgradingStatusQuery } from '@/data/config/project-upgrade-st
 import { useInvalidateProjectDetailsQuery } from '@/data/projects/project-detail-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const UpgradingState = () => {
   const { ref } = useParams()
@@ -83,15 +84,15 @@ export const UpgradingState = () => {
                   <CheckCircle className="text-brand" size={40} strokeWidth={1.5} />
                 </div>
                 <div className="space-y-2">
-                  <p className="text-center">Upgrade completed!</p>
+                  <p className="text-center">{$t('Upgrade completed!')}</p>
                   <p className="mt-4 text-center text-sm text-foreground-light w-[300px] mx-auto">
-                    Your project has been successfully upgraded to Postgres {target_version} and is
-                    now back online.
+                    {$t('Your project has been successfully upgraded to Postgres')} {target_version}{' '}
+                    {$t('and is now back online.')}
                   </p>
                 </div>
                 <div className="mx-auto">
                   <Button loading={loading} disabled={loading} onClick={refetchProjectDetails}>
-                    Return to project
+                    {$t('Return to project')}
                   </Button>
                 </div>
               </div>
@@ -101,10 +102,13 @@ export const UpgradingState = () => {
                   <AlertCircle className="text-amber-900" size={40} strokeWidth={1.5} />
                 </div>
                 <div className="space-y-2">
-                  <p className="text-center">We ran into an issue while upgrading your project</p>
+                  <p className="text-center">
+                    {$t('We ran into an issue while upgrading your project')}
+                  </p>
                   <p className="mt-4 text-center text-sm text-foreground-light w-full md:w-[450px] mx-auto">
-                    Your project is back online and its data is not affected. Please reach out to us
-                    via our support form for assistance with the upgrade.
+                    {$t(
+                      'Your project is back online and its data is not affected. Please reach out to us via our support form for assistance with the upgrade.'
+                    )}
                   </p>
                 </div>
                 <div className="flex items-center mx-auto space-x-2">
@@ -117,11 +121,11 @@ export const UpgradingState = () => {
                         message,
                       }}
                     >
-                      Contact support
+                      {$t('Contact support')}
                     </SupportLink>
                   </Button>
                   <Button loading={loading} disabled={loading} onClick={refetchProjectDetails}>
-                    Return to project
+                    {$t('Return to project')}
                   </Button>
                 </div>
               </div>
@@ -136,21 +140,20 @@ export const UpgradingState = () => {
                 <div className="space-y-2">
                   {isPerformingFullPhysicalBackup ? (
                     <div>
-                      <p className="text-center">Performing a full backup</p>
+                      <p className="text-center">{$t('Performing a full backup')}</p>
                       <p className="text-sm text-center text-foreground-light">
-                        Upgrade is now complete, and your project is online. A full backup is now
-                        being performed to ensure that there is a proper base backup available
-                        post-upgrade. This can take from a few minutes up to several hours depending
-                        on the size of your database.
+                        {$t(
+                          'Upgrade is now complete, and your project is online. A full backup is now being performed to ensure that there is a proper base backup available post-upgrade. This can take from a few minutes up to several hours depending on the size of your database.'
+                        )}
                       </p>
                     </div>
                   ) : (
                     <div>
-                      <p className="text-center">Upgrading in progress</p>
+                      <p className="text-center">{$t('Upgrading in progress')}</p>
                       <p className="text-sm text-center text-foreground-light">
-                        Upgrades can take from a few minutes up to several hours depending on the
-                        size of your database. Your project will be offline while it is being
-                        upgraded.
+                        {$t(
+                          'Upgrades can take from a few minutes up to several hours depending on the size of your database. Your project will be offline while it is being upgraded.'
+                        )}
                       </p>
                     </div>
                   )}
@@ -233,7 +236,7 @@ export const UpgradingState = () => {
                     <Tooltip>
                       <TooltipTrigger>
                         <p className="text-sm text-center text-foreground-light">
-                          Started on: {initiatedAtUTC} (UTC)
+                          {$t('Started on:')} {initiatedAtUTC} (UTC)
                         </p>
                       </TooltipTrigger>
                       <TooltipContent side="bottom">{initiatedAt}</TooltipContent>

@@ -6,6 +6,7 @@ import { Admonition } from 'ui-patterns/admonition'
 
 import { useIncidentStatusQuery } from '@/data/platform/incident-status-query'
 import { processIncidentData } from '@/data/platform/incident-status-utils'
+import { t as $t } from '@/lib/i18n'
 
 interface IncidentAdmonitionProps {
   isActive: boolean
@@ -90,7 +91,7 @@ export function IncidentAdmonition({ isActive, className }: IncidentAdmonitionPr
             actions={
               <Button asChild variant="default" icon={<ExternalLink strokeWidth={1.5} />}>
                 <Link href="https://status.supabase.com/" target="_blank" rel="noreferrer">
-                  Status page
+                  {$t('Status page')}
                 </Link>
               </Button>
             }

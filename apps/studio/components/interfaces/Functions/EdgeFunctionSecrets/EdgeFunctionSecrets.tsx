@@ -24,6 +24,7 @@ import { useSecretsDeleteMutation } from '@/data/secrets/secrets-delete-mutation
 import { useSecretsQuery } from '@/data/secrets/secrets-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const EdgeFunctionSecrets = () => {
   const { ref: projectRef } = useParams()
@@ -89,11 +90,11 @@ export const EdgeFunctionSecrets = () => {
   }, [customSecrets, searchString])
 
   const headers = [
-    <TableHead key="secret-name">Name</TableHead>,
+    <TableHead key="secret-name">{$t('Name')}</TableHead>,
     <TableHead key="secret-value" className="flex items-center gap-x-2">
-      Digest <Badge variant="default">SHA256</Badge>
+      {$t('Digest')} <Badge variant="default">SHA256</Badge>
     </TableHead>,
-    <TableHead key="secret-updated-at">Updated</TableHead>,
+    <TableHead key="secret-updated-at">{$t('Updated')}</TableHead>,
     <TableHead key="actions" />,
   ]
 
@@ -140,15 +141,15 @@ export const EdgeFunctionSecrets = () => {
               <section className="space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                   <div className="space-y-1">
-                    <h3 className="text-foreground text-base">Custom secrets</h3>
+                    <h3 className="text-foreground text-base">{$t('Custom secrets')}</h3>
                     <p className="text-sm text-foreground-light">
-                      Secrets you have defined for this project
+                      {$t('Secrets you have defined for this project')}
                     </p>
                   </div>
                   <Input
                     size="small"
                     className="w-full md:w-80"
-                    placeholder="Search for a secret"
+                    placeholder={$t('Search for a secret')}
                     value={searchString}
                     onChange={(e) => setSearchString(e.target.value)}
                     icon={<Search />}
@@ -173,18 +174,22 @@ export const EdgeFunctionSecrets = () => {
                       ) : customSecrets.length === 0 ? (
                         <TableRow className="[&>td]:hover:bg-inherit">
                           <TableCell colSpan={headers.length}>
-                            <p className="text-sm text-foreground">No custom secrets created</p>
+                            <p className="text-sm text-foreground">
+                              {$t('No custom secrets created')}
+                            </p>
                             <p className="text-sm text-foreground-lighter">
-                              This project has no custom secrets yet.
+                              {$t('This project has no custom secrets yet.')}
                             </p>
                           </TableCell>
                         </TableRow>
                       ) : (
                         <TableRow className="[&>td]:hover:bg-inherit">
                           <TableCell colSpan={headers.length}>
-                            <p className="text-sm text-foreground">No results found</p>
+                            <p className="text-sm text-foreground">{$t('No results found')}</p>
                             <p className="text-sm text-foreground-light">
-                              Your search for "{searchString}" did not return any results
+                              {$t('Your search for "')}
+                              {searchString}
+                              {$t('" did not return any results')}
                             </p>
                           </TableCell>
                         </TableRow>
@@ -197,9 +202,9 @@ export const EdgeFunctionSecrets = () => {
               <section className="space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                   <div className="space-y-1">
-                    <h3 className="text-foreground text-base">Default secrets</h3>
+                    <h3 className="text-foreground text-base">{$t('Default secrets')}</h3>
                     <p className="text-sm text-foreground-light">
-                      Reserved secrets available in every project
+                      {$t('Reserved secrets available in every project')}
                     </p>
                   </div>
                   <DocsButton href={`${DOCS_URL}/guides/functions/secrets#default-secrets`} />
@@ -232,8 +237,9 @@ export const EdgeFunctionSecrets = () => {
         }}
       >
         <p className="text-sm">
-          Ensure none of your edge functions are actively using this secret before deleting it. This
-          action cannot be undone.
+          {$t(
+            'Ensure none of your edge functions are actively using this secret before deleting it. This action cannot be undone.'
+          )}
         </p>
       </ConfirmationModal>
     </>

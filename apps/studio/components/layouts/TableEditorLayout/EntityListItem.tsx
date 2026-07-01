@@ -42,6 +42,7 @@ import { useTableRowsCountQuery } from '@/data/table-rows/table-rows-count-query
 import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { formatSql } from '@/lib/formatSql'
+import { t as $t } from '@/lib/i18n'
 import {
   useRoleImpersonationStateSnapshot,
   type RoleImpersonationState,
@@ -254,7 +255,7 @@ export const EntityListItem = ({
                 }}
               >
                 <Copy size={12} className="shrink-0" />
-                <span>Copy name</span>
+                <span>{$t('Copy name')}</span>
               </DropdownMenuItem>
 
               {isTableLikeEntityListItem(entity) && (
@@ -263,7 +264,7 @@ export const EntityListItem = ({
                   className="space-x-2"
                   onClick={async (e) => {
                     e.stopPropagation()
-                    const toastId = toast.loading('Getting table schema...')
+                    const toastId = toast.loading($t('Getting table schema...'))
 
                     const formattedSchema = getTableDefinition({
                       id: entity.id,
@@ -278,7 +279,7 @@ export const EntityListItem = ({
 
                     try {
                       await copyToClipboard(formattedSchema, () => {
-                        toast.success('Table schema copied to clipboard', { id: toastId })
+                        toast.success($t('Table schema copied to clipboard'), { id: toastId })
                       })
                     } catch (err: unknown) {
                       if (err instanceof Error) {
@@ -290,7 +291,7 @@ export const EntityListItem = ({
                   }}
                 >
                   <Copy size={12} className="shrink-0" />
-                  <span>Copy table schema</span>
+                  <span>{$t('Copy table schema')}</span>
                 </DropdownMenuItem>
               )}
 
@@ -332,7 +333,7 @@ export const EntityListItem = ({
                   }}
                 >
                   <Copy size={12} className="shrink-0" />
-                  <span>Copy definition</span>
+                  <span>{$t('Copy definition')}</span>
                 </DropdownMenuItem>
               )}
 
@@ -349,7 +350,7 @@ export const EntityListItem = ({
                     }}
                   >
                     <Edit size={12} className="shrink-0" />
-                    <span>Edit table</span>
+                    <span>{$t('Edit table')}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     key="duplicate-table"
@@ -360,7 +361,7 @@ export const EntityListItem = ({
                     }}
                   >
                     <Copy size={12} className="shrink-0" />
-                    <span>Duplicate table</span>
+                    <span>{$t('Duplicate table')}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem key="view-policies" className="space-x-2" asChild>
                     <Link
@@ -368,14 +369,15 @@ export const EntityListItem = ({
                       href={`/project/${projectRef}/database/policies?schema=${encodeURIComponent(selectedSchema ?? '')}&search=${encodeURIComponent(String(entity.id))}`}
                     >
                       <Lock size={12} className="shrink-0" />
-                      <span>View policies</span>
+                      <span>{$t('View policies')}</span>
                     </Link>
                   </DropdownMenuItem>
 
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger className="gap-x-2">
                       <Download size={12} className="shrink-0" />
-                      Export data
+
+                      {$t('Export data')}
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
                       <DropdownMenuItem
@@ -386,7 +388,7 @@ export const EntityListItem = ({
                           exportCsv()
                         }}
                       >
-                        <span>Export table as CSV</span>
+                        <span>{$t('Export table as CSV')}</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         key="download-table-sql"
@@ -396,7 +398,7 @@ export const EntityListItem = ({
                           exportSql()
                         }}
                       >
-                        <span>Export table as SQL</span>
+                        <span>{$t('Export table as SQL')}</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         key="download-table-cli"
@@ -406,7 +408,7 @@ export const EntityListItem = ({
                           onExportCLI()
                         }}
                       >
-                        <span>Export table via CLI</span>
+                        <span>{$t('Export table via CLI')}</span>
                       </DropdownMenuItem>
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
@@ -421,7 +423,7 @@ export const EntityListItem = ({
                     }}
                   >
                     <Trash size={12} className="shrink-0" />
-                    <span>Delete table</span>
+                    <span>{$t('Delete table')}</span>
                   </DropdownMenuItem>
                 </>
               )}
@@ -433,7 +435,8 @@ export const EntityListItem = ({
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger className="gap-x-2">
                       <Download size={12} className="shrink-0" />
-                      Export data
+
+                      {$t('Export data')}
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
                       <DropdownMenuItem
@@ -444,7 +447,7 @@ export const EntityListItem = ({
                           exportCsv()
                         }}
                       >
-                        <span>Export view as CSV</span>
+                        <span>{$t('Export view as CSV')}</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         key="download-view-sql"
@@ -454,7 +457,7 @@ export const EntityListItem = ({
                           exportSql()
                         }}
                       >
-                        <span>Export view as SQL</span>
+                        <span>{$t('Export view as SQL')}</span>
                       </DropdownMenuItem>
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
@@ -469,7 +472,7 @@ export const EntityListItem = ({
                     }}
                   >
                     <Trash size={12} className="shrink-0" />
-                    <span>Delete view</span>
+                    <span>{$t('Delete view')}</span>
                   </DropdownMenuItem>
                 </>
               )}
@@ -481,7 +484,8 @@ export const EntityListItem = ({
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger className="gap-x-2">
                       <Download size={12} className="shrink-0" />
-                      Export data
+
+                      {$t('Export data')}
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
                       <DropdownMenuItem
@@ -492,7 +496,7 @@ export const EntityListItem = ({
                           exportCsv()
                         }}
                       >
-                        <span>Export view as CSV</span>
+                        <span>{$t('Export view as CSV')}</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         key="download-mv-sql"
@@ -502,7 +506,7 @@ export const EntityListItem = ({
                           exportSql()
                         }}
                       >
-                        <span>Export view as SQL</span>
+                        <span>{$t('Export view as SQL')}</span>
                       </DropdownMenuItem>
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
@@ -517,7 +521,7 @@ export const EntityListItem = ({
                     }}
                   >
                     <Trash size={12} className="shrink-0" />
-                    <span>Delete view</span>
+                    <span>{$t('Delete view')}</span>
                   </DropdownMenuItem>
                 </>
               )}
@@ -556,7 +560,7 @@ const EntityTooltipTrigger = ({
     <InlineLink
       href={`/project/${ref}/editor/${entity.id}?schema=${entity.schema}&showWarning=true`}
     >
-      Learn more
+      {$t('Learn more')}
     </InlineLink>
   )
 
@@ -565,8 +569,8 @@ const EntityTooltipTrigger = ({
       if (tableHasRlsDisabledLint) {
         tooltipContent = (
           <>
-            This table can be accessed by anyone via the Data API as RLS is disabled. {learnMoreCTA}
-            .
+            {$t('This table can be accessed by anyone via the Data API as RLS is disabled.')}{' '}
+            {learnMoreCTA}.
           </>
         )
       }
@@ -575,7 +579,7 @@ const EntityTooltipTrigger = ({
       if (viewHasLints) {
         tooltipContent = (
           <>
-            {accessWarning} as this is a Security definer view. {learnMoreCTA}.
+            {accessWarning} {$t('as this is a Security definer view.')} {learnMoreCTA}.
           </>
         )
       }
@@ -584,7 +588,7 @@ const EntityTooltipTrigger = ({
       if (materializedViewHasLints) {
         tooltipContent = (
           <>
-            {accessWarning} as this is a Security definer view {learnMoreCTA}.
+            {accessWarning} {$t('as this is a Security definer view')} {learnMoreCTA}.
           </>
         )
       }
@@ -593,7 +597,7 @@ const EntityTooltipTrigger = ({
       if (foreignTableHasLints) {
         tooltipContent = (
           <>
-            {accessWarning} as RLS is not enforced on foreign tables. {learnMoreCTA}.
+            {accessWarning} {$t('as RLS is not enforced on foreign tables.')} {learnMoreCTA}.
           </>
         )
       }
@@ -606,7 +610,7 @@ const EntityTooltipTrigger = ({
     return (
       <Tooltip>
         <TooltipTrigger className="min-w-4">
-          <Badge variant="destructive">Unrestricted</Badge>
+          <Badge variant="destructive">{$t('Unrestricted')}</Badge>
         </TooltipTrigger>
         <TooltipContent side="right" className="max-w-52">
           {tooltipContent}
@@ -622,12 +626,13 @@ const EntityTooltipTrigger = ({
   if (isRlsEnabledNoPolicies) {
     return (
       <Tooltip>
-        <TooltipTrigger className="min-w-4" aria-label="Table exposed via Data API">
+        <TooltipTrigger className="min-w-4" aria-label={$t('Table exposed via Data API')}>
           <Globe size={14} strokeWidth={1} className="text-foreground-lighter" />
         </TooltipTrigger>
         <TooltipContent side="right" className="max-w-52">
-          This table can be accessed via the Data API but no RLS policies exist so no data will be
-          returned
+          {$t(
+            'This table can be accessed via the Data API but no RLS policies exist so no data will be returned'
+          )}
         </TooltipContent>
       </Tooltip>
     )
@@ -638,10 +643,12 @@ const EntityTooltipTrigger = ({
   if (isApiExposedWithRlsAndPolicies) {
     return (
       <Tooltip>
-        <TooltipTrigger className="min-w-4" aria-label="Table exposed via Data API">
+        <TooltipTrigger className="min-w-4" aria-label={$t('Table exposed via Data API')}>
           <Globe size={14} strokeWidth={1} className="text-foreground-lighter" />
         </TooltipTrigger>
-        <TooltipContent side="right">This table can be accessed via the Data API</TooltipContent>
+        <TooltipContent side="right">
+          {$t('This table can be accessed via the Data API')}
+        </TooltipContent>
       </Tooltip>
     )
   }

@@ -3,6 +3,7 @@ import { Badge, Button } from 'ui'
 import { Admonition } from 'ui-patterns/admonition'
 
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 import { usePostgresSandbox } from '@/state/postgres-sandbox/sandbox'
 
 export const SandboxManagement = () => {
@@ -17,16 +18,16 @@ export const SandboxManagement = () => {
         className="min-h-min border-none [&>div>div>div>div>p]:!mb-0"
         actions={[
           <Button key="set-up" variant="default" onClick={() => startSandbox()}>
-            Set up sandbox
+            {$t('Set up sandbox')}
           </Button>,
         ]}
       >
         <div className="flex items-center gap-x-2">
-          <p className="text-foreground !m-0">Set up sandbox for testing</p>
-          <Badge variant="success">Recommended</Badge>
+          <p className="text-foreground !m-0">{$t('Set up sandbox for testing')}</p>
+          <Badge variant="success">{$t('Recommended')}</Badge>
         </div>
         <p className="text-foreground-light !m-0">
-          Ensure that queries do not affect your actual database
+          {$t('Ensure that queries do not affect your actual database')}
         </p>
       </Admonition>
     )
@@ -43,7 +44,9 @@ export const SandboxManagement = () => {
           <div className="bg w-6 h-6 rounded border border-border flex items-center justify-center">
             <Loader2 size={14} className="animate-spin" />
           </div>
-          <p className="text-xs !mb-0 font-mono uppercase tracking-tight">Setting up sandbox</p>
+          <p className="text-xs !mb-0 font-mono uppercase tracking-tight">
+            {$t('Setting up sandbox')}
+          </p>
         </div>
       </Admonition>
     )
@@ -54,12 +57,12 @@ export const SandboxManagement = () => {
       <Admonition
         type="warning"
         layout="horizontal"
-        title="Unable to set up sandbox"
+        title={$t('Unable to set up sandbox')}
         description={error ?? 'Please try again'}
         className="min-h-min border-none"
         actions={[
           <Button key="set-up" variant="default" onClick={() => startSandbox()}>
-            Retry set up
+            {$t('Retry set up')}
           </Button>,
         ]}
       />
@@ -97,8 +100,10 @@ export const SandboxManagement = () => {
         <div className="bg-brand-300 w-6 h-6 rounded border border-brand-500 flex items-center justify-center">
           <Box size={14} className="text-brand" />
         </div>
-        <p className="text-xs text-foreground font-mono uppercase tracking-tight">Sandbox active</p>
-        <p className="text-xs text-foreground-lighter ">Your database is never modified</p>
+        <p className="text-xs text-foreground font-mono uppercase tracking-tight">
+          {$t('Sandbox active')}
+        </p>
+        <p className="text-xs text-foreground-lighter ">{$t('Your database is never modified')}</p>
       </div>
     </Admonition>
   )

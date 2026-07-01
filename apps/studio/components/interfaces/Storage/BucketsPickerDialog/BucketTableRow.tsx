@@ -9,6 +9,7 @@ import { useBucketPolicyCount } from '@/components/interfaces/Storage/useBucketP
 import { VirtualizedTableCell, VirtualizedTableRow } from '@/components/ui/VirtualizedTable'
 import { Bucket } from '@/data/storage/buckets-query'
 import { formatBytes } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 type BucketTableMode = 'standard' | 'virtualized'
 
@@ -24,9 +25,11 @@ export const BucketTableEmptyState = ({ mode, filterString }: BucketTableEmptySt
   return (
     <BucketTableRow className="[&>td]:hover:bg-inherit">
       <BucketTableCell colSpan={5}>
-        <p className="text-sm text-foreground">No results found</p>
+        <p className="text-sm text-foreground">{$t('No results found')}</p>
         <p className="text-sm text-foreground-lighter">
-          Your search for “{filterString}” did not return any results
+          {$t('Your search for “')}
+          {filterString}
+          {$t('” did not return any results')}
         </p>
       </BucketTableCell>
     </BucketTableRow>
@@ -89,7 +92,11 @@ export const BucketTableRow = ({
           aria-disabled={isDisabled || undefined}
         >
           <BucketTableCell className="w-2 pr-1">
-            <FilesBucketIcon aria-label="bucket icon" size={16} className="text-foreground-muted" />
+            <FilesBucketIcon
+              aria-label={$t('bucket icon')}
+              size={16}
+              className="text-foreground-muted"
+            />
           </BucketTableCell>
           <BucketTableCell className="flex-1">
             <div className="flex items-center gap-2.5">
@@ -98,7 +105,7 @@ export const BucketTableRow = ({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Badge variant="warning" className="flex">
-                      Public
+                      {$t('Public')}
                     </Badge>
                   </TooltipTrigger>
                   <TooltipContent side="top">{PUBLIC_BUCKET_TOOLTIP}</TooltipContent>
@@ -138,7 +145,7 @@ export const BucketTableRow = ({
                   <ChevronRight aria-hidden={true} size={14} className="text-foreground-muted/60" />
                 </div>
                 <button tabIndex={-1} className="sr-only">
-                  Go to bucket details
+                  {$t('Go to bucket details')}
                 </button>
               </>
             )}

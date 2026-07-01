@@ -23,6 +23,7 @@ import {
 import { DestinationType } from './DestinationPanel.types'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 
 interface DestinationTypeOption {
   value: DestinationType
@@ -141,15 +142,16 @@ export const DestinationTypeSelection = () => {
       isReactForm={false}
       layout="horizontal"
       className="p-5 [&>div]:gap-y-1 [&>div>span]:text-foreground-lighter"
-      label="Type"
+      label={$t('Type')}
       labelOptional="Destination type cannot be changed after creation"
       description={
         selectedOption?.isAlpha && (
           <span className="block text-sm text-foreground-light mb-1">
-            This destination type is in alpha and may be unstable or introduce breaking changes
-            while we iterate based on customer feedback.{' '}
+            {$t(
+              'This destination type is in alpha and may be unstable or introduce breaking changes while we iterate based on customer feedback.'
+            )}{' '}
             <InlineLink href="https://github.com/orgs/supabase/discussions/39416">
-              Leave feedback
+              {$t('Leave feedback')}
             </InlineLink>
           </span>
         )
@@ -166,11 +168,11 @@ export const DestinationTypeSelection = () => {
               <selectedOption.icon size={20} className="shrink-0 text-foreground-light" />
               <div className="flex items-center gap-x-2">
                 <span className="text-sm text-foreground">{selectedOption.label}</span>
-                {selectedOption.isAlpha && <Badge variant="warning">Alpha</Badge>}
+                {selectedOption.isAlpha && <Badge variant="warning">{$t('Alpha')}</Badge>}
               </div>
             </div>
           ) : (
-            <span className="text-foreground-lighter">Select a destination type</span>
+            <span className="text-foreground-lighter">{$t('Select a destination type')}</span>
           )}
         </SelectTrigger>
         <SelectContent align="end">
@@ -185,7 +187,7 @@ export const DestinationTypeSelection = () => {
                     <div className="flex flex-col gap-y-0.5">
                       <div className="flex items-center gap-x-2">
                         <span className="text-foreground">{option.label}</span>
-                        {option.isAlpha && <Badge variant="warning">Alpha</Badge>}
+                        {option.isAlpha && <Badge variant="warning">{$t('Alpha')}</Badge>}
                       </div>
                       <span className="text-xs text-foreground-lighter">{option.description}</span>
                     </div>

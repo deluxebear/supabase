@@ -2,6 +2,7 @@ import { PropsWithChildren } from 'react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from 'ui'
 
 import { DropdownMenuItemTooltip } from '@/components/ui/DropdownMenuItemTooltip'
+import { t as $t } from '@/lib/i18n'
 
 interface DropdownControlProps {
   options: {
@@ -31,7 +32,7 @@ export const DropdownControl = ({
       <DropdownMenuTrigger className={className}>{children}</DropdownMenuTrigger>
       <DropdownMenuContent side={side} align={align}>
         <div className="overflow-auto" style={{ maxHeight: '30vh' }}>
-          {options.length === 0 && <p>No more items</p>}
+          {options.length === 0 && <p>{$t('No more items')}</p>}
           {options.map((x) => {
             return (
               <DropdownMenuItemTooltip

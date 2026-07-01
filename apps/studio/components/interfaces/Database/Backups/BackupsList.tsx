@@ -19,6 +19,7 @@ import { useSetProjectStatus } from '@/data/projects/project-detail-query'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const BackupsList = () => {
   const router = useRouter()
@@ -102,7 +103,7 @@ export const BackupsList = () => {
         confirmLabelLoading="Restoring..."
         variant="warning"
         visible={selectedBackup !== undefined}
-        title="Restore from backup"
+        title={$t('Restore from backup')}
         loading={isRestoring || isSuccessBackup}
         onCancel={() => setSelectedBackup(undefined)}
         onConfirm={() => {
@@ -114,7 +115,7 @@ export const BackupsList = () => {
         <div className="space-y-3">
           {!!selectedBackup && (
             <p className="text-sm">
-              This will restore your database to the backup made on{' '}
+              {$t('This will restore your database to the backup made on')}{' '}
               <TimestampInfo
                 displayAs="utc"
                 utcTimestamp={selectedBackup.inserted_at}
@@ -127,11 +128,11 @@ export const BackupsList = () => {
           <Admonition
             showIcon={false}
             type="warning"
-            title="This action cannot be undone"
+            title={$t('This action cannot be undone')}
             description={
               <ul className="list-disc list-inside">
-                <li>Your project will be offline during restoration</li>
-                <li>Any new data since this backup will be lost</li>
+                <li>{$t('Your project will be offline during restoration')}</li>
+                <li>{$t('Any new data since this backup will be lost')}</li>
               </ul>
             }
           />

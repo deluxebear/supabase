@@ -37,6 +37,7 @@ import { useHasEntitlementAccess } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface ProviderFormProps {
   config: components['schemas']['GoTrueConfigResponse']
@@ -142,7 +143,7 @@ export const ProviderForm = ({ config, provider, isActive }: ProviderFormProps) 
           setOpen(false)
           setUrlProvider(null)
           form.reset(getValuesForProvider(newValues))
-          toast.success('Successfully updated settings')
+          toast.success($t('Successfully updated settings'))
         },
       }
     )
@@ -193,11 +194,11 @@ export const ProviderForm = ({ config, provider, isActive }: ProviderFormProps) 
               <span className="rounded-full bg-brand p-0.5 text-xs text-brand-200">
                 <Check strokeWidth={2} size={12} />
               </span>
-              <span className="px-1">Enabled</span>
+              <span className="px-1">{$t('Enabled')}</span>
             </div>
           ) : (
             <div className="rounded-md border border-strong bg-surface-100 py-1 px-3 text-xs text-foreground-lighter">
-              Disabled
+              {$t('Disabled')}
             </div>
           )
         }
@@ -260,7 +261,7 @@ export const ProviderForm = ({ config, provider, isActive }: ProviderFormProps) 
                 <SheetSection>
                   <FormItemLayout
                     layout="horizontal"
-                    label="Callback URL (for OAuth)"
+                    label={$t('Callback URL (for OAuth)')}
                     description={
                       <Markdown
                         content={provider.misc.helper}
@@ -288,7 +289,7 @@ export const ProviderForm = ({ config, provider, isActive }: ProviderFormProps) 
                   }}
                   disabled={isUpdatingConfig}
                 >
-                  Cancel
+                  {$t('Cancel')}
                 </Button>
                 <ButtonTooltip
                   form={formId}
@@ -304,7 +305,7 @@ export const ProviderForm = ({ config, provider, isActive }: ProviderFormProps) 
                     },
                   }}
                 >
-                  Save
+                  {$t('Save')}
                 </ButtonTooltip>
               </div>
             </div>

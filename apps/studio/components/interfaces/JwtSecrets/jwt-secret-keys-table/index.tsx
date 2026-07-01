@@ -48,6 +48,7 @@ import { useLegacyJWTSigningKeyCreateMutation } from '@/data/jwt-signing-keys/le
 import { useLegacyJWTSigningKeyQuery } from '@/data/jwt-signing-keys/legacy-jwt-signing-key-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 type DialogType = 'legacy' | 'create' | 'rotate' | 'key-details' | 'revoke' | 'delete'
@@ -83,7 +84,7 @@ export const JWTSecretKeysTable = () => {
     {
       onSuccess: () => {
         setShownDialog(undefined)
-        toast.success('Successfully migrated JWT secret!')
+        toast.success($t('Successfully migrated JWT secret!'))
       },
     }
   )
@@ -139,7 +140,7 @@ export const JWTSecretKeysTable = () => {
     setSelectedKeyToUpdate(keyId)
     updateJWTSigningKey(
       { projectRef, keyId, status: 'previously_used' },
-      { onSuccess: () => toast.success('Successfully moved key to previously used') }
+      { onSuccess: () => toast.success($t('Successfully moved key to previously used')) }
     )
   }
 
@@ -147,21 +148,21 @@ export const JWTSecretKeysTable = () => {
     setSelectedKeyToUpdate(keyId)
     updateJWTSigningKey(
       { projectRef: projectRef!, keyId, status: 'standby' },
-      { onSuccess: () => toast.success('Successfully moved key to standby') }
+      { onSuccess: () => toast.success($t('Successfully moved key to standby')) }
     )
   }
 
   const handleRevokeKey = (keyId: string) => {
     updateJWTSigningKey(
       { projectRef: projectRef!, keyId, status: 'revoked' },
-      { onSuccess: () => toast.success('Successfully revoked key') }
+      { onSuccess: () => toast.success($t('Successfully revoked key')) }
     )
   }
 
   const handleDeleteKey = (keyId: string) => {
     deleteJWTSigningKey(
       { projectRef: projectRef!, keyId },
-      { onSuccess: () => toast.success('Successfully deleted key') }
+      { onSuccess: () => toast.success($t('Successfully deleted key')) }
     )
   }
 
@@ -171,8 +172,9 @@ export const JWTSecretKeysTable = () => {
         <div className="flex items-center py-8 px-8 space-x-2">
           <AlertCircle size={16} strokeWidth={1.5} />
           <p className="text-sm text-foreground-light">
-            You don't have permission to view JWT signing keys. These keys are restricted to users
-            with higher access levels.
+            {$t(
+              "You don't have permission to view JWT signing keys. These keys are restricted to users with higher access levels."
+            )}
           </p>
         </div>
       </div>
@@ -190,8 +192,10 @@ export const JWTSecretKeysTable = () => {
           <>
             {standbyKey ? (
               <ActionPanel
-                title="Rotate Signing Key"
-                description="Switch the standby key to in use. All new JSON Web Tokens issued by Supabase Auth will be signed with this key."
+                title={$t('Rotate Signing Key')}
+                description={$t(
+                  'Switch the standby key to in use. All new JSON Web Tokens issued by Supabase Auth will be signed with this key.'
+                )}
                 buttonLabel="Rotate keys"
                 onClick={() => setShownDialog('rotate')}
                 loading={isUpdatingJWTSigningKey}
@@ -200,8 +204,10 @@ export const JWTSecretKeysTable = () => {
               />
             ) : (
               <ActionPanel
-                title="Create standby key"
-                description="Set up a new key which you can switch to once it has been picked up by all components of your application."
+                title={$t('Create standby key')}
+                description={$t(
+                  'Set up a new key which you can switch to once it has been picked up by all components of your application.'
+                )}
                 buttonLabel="Create Standby Key"
                 onClick={() => setShownDialog('create')}
                 loading={isPendingMutation}
@@ -228,17 +234,17 @@ export const JWTSecretKeysTable = () => {
                   <TableHeader className="bg-200">
                     <TableRow>
                       <TableHead className="text-left font-mono uppercase text-xs text-foreground-muted h-auto py-2 pr-0 w-20">
-                        Status
+                        {$t('Status')}
                       </TableHead>
                       <TableHead className="text-left font-mono uppercase text-xs text-foreground-muted h-auto py-2 pl-0">
-                        Key ID
+                        {$t('Key ID')}
                       </TableHead>
                       <TableHead className="text-left font-mono uppercase text-xs text-foreground-muted h-auto py-2">
-                        Type
+                        {$t('Type')}
                       </TableHead>
                       <TableHead />
                       <TableHead className="text-right font-mono uppercase text-xs text-foreground-muted h-auto py-2">
-                        Actions
+                        {$t('Actions')}
                       </TableHead>
                     </TableRow>
                   </TableHeader>
@@ -280,11 +286,11 @@ export const JWTSecretKeysTable = () => {
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <h2>Previously used keys</h2>
+              <h2>{$t('Previously used keys')}</h2>
               <p className="text-sm text-foreground-lighter">
-                These JWT signing keys are still used to{' '}
-                <em className="text-brand not-italic">verify tokens</em> that are yet to expire.
-                Revoke once all tokens have expired.
+                {$t('These JWT signing keys are still used to')}{' '}
+                <em className="text-brand not-italic">{$t('verify tokens')}</em>{' '}
+                {$t('that are yet to expire. Revoke once all tokens have expired.')}
               </p>
             </div>
             <Card className="overflow-hidden">
@@ -294,19 +300,19 @@ export const JWTSecretKeysTable = () => {
                     <TableHeader className="bg-200">
                       <TableRow>
                         <TableHead className="text-left font-mono uppercase text-xs text-foreground-muted h-auto py-2 pr-0 w-20">
-                          Status
+                          {$t('Status')}
                         </TableHead>
                         <TableHead className="text-left font-mono uppercase text-xs text-foreground-muted h-auto py-2 pl-0">
-                          Key ID
+                          {$t('Key ID')}
                         </TableHead>
                         <TableHead className="text-left font-mono uppercase text-xs text-foreground-muted h-auto py-2">
-                          Type
+                          {$t('Type')}
                         </TableHead>
                         <TableHead className="text-right font-mono uppercase text-xs text-foreground-muted h-auto py-2 hidden lg:table-cell">
-                          Last rotated at
+                          {$t('Last rotated at')}
                         </TableHead>
                         <TableHead className="text-right font-mono uppercase text-xs text-foreground-muted h-auto py-2">
-                          Actions
+                          {$t('Actions')}
                         </TableHead>
                       </TableRow>
                     </TableHeader>
@@ -332,9 +338,9 @@ export const JWTSecretKeysTable = () => {
                   <div className="flex flex-col items-center justify-center text-center text-foreground-light p-8 gap-2">
                     <Timer className="size-6 text-foreground-lighter" />
                     <div className="flex flex-col gap-1">
-                      <p className="text-sm font-medium">No previously used keys</p>
+                      <p className="text-sm font-medium">{$t('No previously used keys')}</p>
                       <p className="text-xs text-foreground-lighter">
-                        Rotated keys will appear here for verification of existing tokens
+                        {$t('Rotated keys will appear here for verification of existing tokens')}
                       </p>
                     </div>
                   </div>
@@ -348,9 +354,9 @@ export const JWTSecretKeysTable = () => {
       {revokedKeys.length > 0 && (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <h2>Revoked keys</h2>
+            <h2>{$t('Revoked keys')}</h2>
             <p className="text-sm text-foreground-lighter">
-              These keys are no longer used to verify or sign JWTs.
+              {$t('These keys are no longer used to verify or sign JWTs.')}
             </p>
           </div>
           <Card className="overflow-hidden">
@@ -359,19 +365,19 @@ export const JWTSecretKeysTable = () => {
                 <TableHeader className="bg-200">
                   <TableRow>
                     <TableHead className="text-left font-mono uppercase text-xs text-foreground-muted h-auto py-2 pr-0 w-20">
-                      Status
+                      {$t('Status')}
                     </TableHead>
                     <TableHead className="text-left font-mono uppercase text-xs text-foreground-muted h-auto py-2 pl-0">
-                      Key ID
+                      {$t('Key ID')}
                     </TableHead>
                     <TableHead className="text-left font-mono uppercase text-xs text-foreground-muted h-auto py-2">
-                      Type
+                      {$t('Type')}
                     </TableHead>
                     <TableHead className="text-right font-mono uppercase text-xs text-foreground-muted h-auto py-2 hidden lg:table-cell">
-                      Last rotated at
+                      {$t('Last rotated at')}
                     </TableHead>
                     <TableHead className="text-right font-mono uppercase text-xs text-foreground-muted h-auto py-2">
-                      Actions
+                      {$t('Actions')}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -400,22 +406,23 @@ export const JWTSecretKeysTable = () => {
       <Dialog open={shownDialog === 'legacy'} onOpenChange={resetDialog}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Start using new JWT signing keys</DialogTitle>
+            <DialogTitle>{$t('Start using new JWT signing keys')}</DialogTitle>
           </DialogHeader>
           <DialogSectionSeparator />
           <DialogSection className="flex flex-col gap-2 text-sm text-foreground-light">
             <p>
-              Your project today uses a legacy symmetric JWT secret to create JWTs. To be able to
-              use an asymmetric JWT signing key you first have to migrate it to the new approach.
+              {$t(
+                'Your project today uses a legacy symmetric JWT secret to create JWTs. To be able to use an asymmetric JWT signing key you first have to migrate it to the new approach.'
+              )}
             </p>
-            <p>This change does not cause any downtime on your project.</p>
+            <p>{$t('This change does not cause any downtime on your project.')}</p>
           </DialogSection>
           <DialogFooter>
             <Button
               loading={isMigrating}
               onClick={() => migrateJWTSecret({ projectRef: projectRef! })}
             >
-              Migrate JWT secret
+              {$t('Migrate JWT secret')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -480,12 +487,12 @@ export const JWTSecretKeysTable = () => {
           <AlertDialog open={shownDialog === 'revoke'} onOpenChange={() => resetDialog()}>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Disable JWT-based legacy API keys first</AlertDialogTitle>
+                <AlertDialogTitle>{$t('Disable JWT-based legacy API keys first')}</AlertDialogTitle>
               </AlertDialogHeader>
               <AlertDialogDescription>
-                It's not possible to revoke the legacy JWT secret unless you have already disabled
-                JWT-based legacy API keys. This is because revoking the JWT secret invalidates the
-                JWT-based legacy API keys.
+                {$t(
+                  "It's not possible to revoke the legacy JWT secret unless you have already disabled JWT-based legacy API keys. This is because revoking the JWT secret invalidates the JWT-based legacy API keys."
+                )}
               </AlertDialogDescription>
               <AlertDialogFooter>
                 <AlertDialogCancel>OK</AlertDialogCancel>

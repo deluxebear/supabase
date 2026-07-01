@@ -6,6 +6,7 @@ import {
   ScaffoldSectionContent,
   ScaffoldSectionDetail,
 } from '@/components/layouts/Scaffold'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export const TIA = () => {
@@ -14,11 +15,12 @@ export const TIA = () => {
   return (
     <ScaffoldSection className="py-12">
       <ScaffoldSectionDetail>
-        <h4 className="mb-5">Transfer Impact Assessment (TIA)</h4>
+        <h4 className="mb-5">{$t('Transfer Impact Assessment (TIA)')}</h4>
         <div className="space-y-2 text-sm text-foreground-light [&_p]:m-0">
           <p>
-            All organizations can access and use our TIA as part of their GDPR-compliant data
-            transfer process.
+            {$t(
+              'All organizations can access and use our TIA as part of their GDPR-compliant data transfer process.'
+            )}
           </p>
         </div>
       </ScaffoldSectionDetail>
@@ -32,7 +34,7 @@ export const TIA = () => {
               download={true}
               onClick={() => track('document_view_button_clicked', { documentName: 'TIA' })}
             >
-              Download TIA
+              {$t('Download TIA')}
             </a>
           </Button>
         </div>

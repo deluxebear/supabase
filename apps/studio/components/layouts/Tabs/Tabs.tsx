@@ -28,6 +28,7 @@ import { SortableTab } from './SortableTab'
 import { TabPreview } from './TabPreview'
 import { useTabsScroll } from './Tabs.utils'
 import { useDashboardHistory } from '@/hooks/misc/useDashboardHistory'
+import { t as $t } from '@/lib/i18n'
 import { editorEntityTypes, useTabsStateSnapshot, type Tab } from '@/state/tabs'
 
 export const EditorTabs = () => {
@@ -166,14 +167,16 @@ export const EditorTabs = () => {
                   />
                 </ContextMenuTrigger>
                 <ContextMenuContent>
-                  <ContextMenuItem onClick={() => handleClose(tab.id)}>Close</ContextMenuItem>
+                  <ContextMenuItem onClick={() => handleClose(tab.id)}>
+                    {$t('Close')}
+                  </ContextMenuItem>
                   <ContextMenuItem onClick={() => handleCloseOthers(tab.id)}>
-                    Close Others
+                    {$t('Close Others')}
                   </ContextMenuItem>
                   <ContextMenuItem onClick={() => handleCloseRight(tab.id)}>
-                    Close to the Right
+                    {$t('Close to the Right')}
                   </ContextMenuItem>
-                  <ContextMenuItem onClick={handleCloseAll}>Close All</ContextMenuItem>
+                  <ContextMenuItem onClick={handleCloseAll}>{$t('Close All')}</ContextMenuItem>
                 </ContextMenuContent>
               </ContextMenu>
             ))}
@@ -193,7 +196,7 @@ export const EditorTabs = () => {
             >
               <Plus size={16} strokeWidth={1.5} className={'text-foreground-lighter'} />
               <div className="flex items-center gap-0">
-                <span>New</span>
+                <span>{$t('New')}</span>
               </div>
               <span
                 role="button"

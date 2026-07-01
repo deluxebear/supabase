@@ -19,6 +19,7 @@ import type { EventTrigger } from './EventTriggerList.utils'
 import { SUPABASE_ROLES } from '@/components/interfaces/Database/Roles/Roles.constants'
 import { getDatabaseFunctionsHref } from '@/components/interfaces/Database/Triggers/TriggersList/TriggerList.utils'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 
 interface EventTriggerListProps {
   filterString: string
@@ -68,9 +69,9 @@ export const EventTriggerList = ({
     return (
       <TableRow>
         <TableCell colSpan={6}>
-          <p className="text-sm text-foreground">No event triggers created yet</p>
+          <p className="text-sm text-foreground">{$t('No event triggers created yet')}</p>
           <p className="text-sm text-foreground-light">
-            There are no event triggers configured for this database
+            {$t('There are no event triggers configured for this database')}
           </p>
         </TableCell>
       </TableRow>
@@ -81,7 +82,7 @@ export const EventTriggerList = ({
     return (
       <TableRow>
         <TableCell colSpan={6}>
-          <p className="text-sm text-foreground">No results found</p>
+          <p className="text-sm text-foreground">{$t('No results found')}</p>
           <p className="text-sm text-foreground-light">
             {filterString.length > 0
               ? `Your search for "${filterString}" did not return any results`
@@ -167,7 +168,7 @@ export const EventTriggerList = ({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
-                      aria-label="More options"
+                      aria-label={$t('More options')}
                       variant="default"
                       className="px-1"
                       icon={<MoreVertical />}
@@ -176,21 +177,21 @@ export const EventTriggerList = ({
                   <DropdownMenuContent side="bottom" align="end" className="w-52">
                     <DropdownMenuItem className="space-x-2" onClick={() => onEditTrigger(trigger)}>
                       <Edit2 size={14} />
-                      <p>Edit trigger</p>
+                      <p>{$t('Edit trigger')}</p>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="space-x-2"
                       onClick={() => onEditTriggerWithAssistant(trigger)}
                     >
                       <Edit size={14} />
-                      <p>Edit with Assistant</p>
+                      <p>{$t('Edit with Assistant')}</p>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="space-x-2"
                       onClick={() => onDuplicateTrigger(trigger)}
                     >
                       <Copy size={14} />
-                      <p>Duplicate trigger</p>
+                      <p>{$t('Duplicate trigger')}</p>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -198,7 +199,7 @@ export const EventTriggerList = ({
                       onClick={() => onDeleteTrigger(trigger)}
                     >
                       <Trash stroke="red" size={14} />
-                      <p>Delete trigger</p>
+                      <p>{$t('Delete trigger')}</p>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

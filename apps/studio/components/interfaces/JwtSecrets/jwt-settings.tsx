@@ -73,6 +73,7 @@ import { useProjectPostgrestConfigQuery } from '@/data/config/project-postgrest-
 import { useLegacyJWTSigningKeyQuery } from '@/data/jwt-signing-keys/legacy-jwt-signing-key-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 const MAX_JWT_EXP = 604800
 const formSchema = z.object({
@@ -186,7 +187,7 @@ export const JWTSettings = () => {
           toast.error(`Failed to update JWT expiry: ${error?.message}`)
         },
         onSuccess: (newValues) => {
-          toast.success('Successfully updated JWT expiry')
+          toast.success($t('Successfully updated JWT expiry'))
           reset({ JWT_EXP: newValues.JWT_EXP ?? values.JWT_EXP })
         },
       }
@@ -203,7 +204,9 @@ export const JWTSettings = () => {
       await updateJwt({ projectRef, jwtSecret: jwt_secret, changeTrackingId: trackingId })
       setModalVisibility(false)
       toast(
-        'Successfully submitted JWT secret update request. Please wait while your project is updated.'
+        $t(
+          'Successfully submitted JWT secret update request. Please wait while your project is updated.'
+        )
       )
     } catch (error: any) {
       toast.error(`Failed to update JWT secret: ${error.message}`)
@@ -218,8 +221,8 @@ export const JWTSettings = () => {
             <FormItemLayout
               layout="flex-row-reverse"
               id="JWT_SECRET"
-              label="JWT secret"
-              description="Used to verify legacy user session JWTs issued by Supabase Auth."
+              label={$t('JWT secret')}
+              description={$t('Used to verify legacy user session JWTs issued by Supabase Auth.')}
             >
               <Input id="JWT_SECRET" copy reveal readOnly value={config?.jwt_secret || ''} />
             </FormItemLayout>
@@ -260,38 +263,43 @@ export const JWTSettings = () => {
               {isError ? (
                 <div className="flex items-center justify-center py-8 space-x-2">
                   <AlertCircle size={16} strokeWidth={1.5} />
-                  <p className="text-sm text-foreground-light">Failed to retrieve JWT settings</p>
+                  <p className="text-sm text-foreground-light">
+                    {$t('Failed to retrieve JWT settings')}
+                  </p>
                 </div>
               ) : (
                 <>
                   {legacyKey && legacyKey.status !== 'revoked' && (
                     <Admonition
                       type="warning"
-                      title="Legacy JWT secret has been migrated to new JWT Signing Keys"
+                      title={$t('Legacy JWT secret has been migrated to new JWT Signing Keys')}
                     >
                       <p className="leading-normal!">
-                        Legacy JWT secret can only be changed by rotating to a standby key and then
-                        revoking it. It is used to{' '}
+                        {$t(
+                          'Legacy JWT secret can only be changed by rotating to a standby key and then revoking it. It is used to'
+                        )}{' '}
                         <em className="text-foreground not-italic">
                           {legacyKey.status === 'in_use' ? 'sign and verify' : 'only verify'}
                         </em>{' '}
-                        JSON Web Tokens by Supabase products.
+                        {$t('JSON Web Tokens by Supabase products.')}
                       </p>
 
                       {legacyAPIKeysStatus && legacyAPIKeysStatus.enabled && (
                         <p className="leading-normal!">
                           <em className="text-warning not-italic">
-                            This includes the <code className="text-code-inline">anon</code> and{' '}
-                            <code className="text-code-inline">service_role</code> JWT based API
-                            keys.
+                            {$t('This includes the')} <code className="text-code-inline">anon</code>{' '}
+                            and <code className="text-code-inline">service_role</code>{' '}
+                            {$t('JWT based API keys.')}
                           </em>{' '}
-                          Consider switching to publishable and secret API keys to disable them.
+                          {$t(
+                            'Consider switching to publishable and secret API keys to disable them.'
+                          )}
                         </p>
                       )}
 
                       <Button asChild variant="default" icon={<ExternalLink />} className="mt-2">
                         <Link href={`/project/${projectRef}/settings/api-keys`}>
-                          Go to API keys
+                          {$t('Go to API keys')}
                         </Link>
                       </Button>
                     </Admonition>
@@ -299,8 +307,10 @@ export const JWTSettings = () => {
                   {legacyKey && legacyKey.status === 'revoked' && (
                     <Admonition
                       type="note"
-                      title="Your project has revoked the legacy JWT secret"
-                      description="No new JSON Web Tokens are issued nor verified with it by Supabase products."
+                      title={$t('Your project has revoked the legacy JWT secret')}
+                      description={$t(
+                        'No new JSON Web Tokens are issued nor verified with it by Supabase products.'
+                      )}
                     />
                   )}
                   <FormItemLayout
@@ -346,14 +356,15 @@ export const JWTSettings = () => {
                       <FormItemLayout
                         name="JWT_EXP"
                         layout="flex-row-reverse"
-                        label="Access token expiry time"
+                        label={$t('Access token expiry time')}
                         description={
                           <>
                             <p>
-                              How long access tokens are valid for before a refresh token has to be
-                              used.
+                              {$t(
+                                'How long access tokens are valid for before a refresh token has to be used.'
+                              )}
                             </p>
-                            <p>Recommendation: 3600 (1 hour).</p>
+                            <p>{$t('Recommendation: 3600 (1 hour).')}</p>
                           </>
                         }
                       >
@@ -389,16 +400,20 @@ export const JWTSettings = () => {
               {isUpdatingJwtSecret && (
                 <div className="flex items-center space-x-2">
                   <Loader2 className="animate-spin" size={14} />
-                  <p className="text-sm">Updating JWT secret: {jwtSecretUpdateProgressMessage}</p>
+                  <p className="text-sm">
+                    {$t('Updating JWT secret:')} {jwtSecretUpdateProgressMessage}
+                  </p>
                 </div>
               )}
 
               {isJwtSecretUpdateFailed && (
-                <Admonition type="warning" title="Failed to update JWT secret">
-                  Please try again. If the failures persist, please contact Supabase support with
-                  the following details: <br />
-                  Change tracking ID: {data?.changeTrackingId} <br />
-                  Error message: {jwtSecretUpdateErrorMessage}
+                <Admonition type="warning" title={$t('Failed to update JWT secret')}>
+                  {$t(
+                    'Please try again. If the failures persist, please contact Supabase support with the following details:'
+                  )}{' '}
+                  <br />
+                  {$t('Change tracking ID:')} {data?.changeTrackingId} <br />
+                  {$t('Error message:')} {jwtSecretUpdateErrorMessage}
                 </Admonition>
               )}
 
@@ -422,80 +437,92 @@ export const JWTSettings = () => {
                     <ol className="text-sm text-foreground-light list-decimal list-outside pl-7 space-y-2">
                       <li>
                         <p className="text-foreground">
-                          Click "Migrate JWT secret" in{' '}
+                          {$t('Click "Migrate JWT secret" in')}{' '}
                           <InlineLink href={`/project/${projectRef}/settings/jwt`}>
-                            JWT Signing Keys
+                            {$t('JWT Signing Keys')}
                           </InlineLink>
                           .
                         </p>
                         <p className="text-foreground-lighter">
-                          This imports your legacy secret into the new system and generates a
-                          standby asymmetric key.
+                          {$t(
+                            'This imports your legacy secret into the new system and generates a standby asymmetric key.'
+                          )}
                         </p>
                       </li>
                       <li>
-                        <p className="text-foreground">Create and roll out new API keys.</p>
+                        <p className="text-foreground">{$t('Create and roll out new API keys.')}</p>
                         <p className="text-foreground-lighter">
-                          In{' '}
+                          {$t('In')}{' '}
                           <InlineLink href={`/project/${projectRef}/settings/api-keys`}>
-                            API Keys
+                            {$t('API Keys')}
                           </InlineLink>
-                          , create a publishable key and secret key, then swap them into your apps
-                          in place of <code className="text-code-inline">anon</code> and{' '}
+                          {$t(
+                            ', create a publishable key and secret key, then swap them into your apps in place of'
+                          )}{' '}
+                          <code className="text-code-inline">anon</code> and{' '}
                           <code className="text-code-inline break-keep!">service_role</code>{' '}
-                          respectively. Watch the "Last used" indicators to confirm no traffic still
-                          depends on the legacy keys.
+                          {$t(
+                            'respectively. Watch the "Last used" indicators to confirm no traffic still depends on the legacy keys.'
+                          )}
                         </p>
                       </li>
                       <li>
                         <p className="text-foreground">
-                          Click "Rotate keys" in{' '}
+                          {$t('Click "Rotate keys" in')}{' '}
                           <InlineLink href={`/project/${projectRef}/settings/jwt`}>
-                            JWT Signing Keys
+                            {$t('JWT Signing Keys')}
                           </InlineLink>{' '}
-                          to start signing new JWTs with the standby key.
+                          {$t('to start signing new JWTs with the standby key.')}
                         </p>
                         <p className="text-foreground-lighter">
-                          Existing <code className="text-code-inline">anon</code>,{' '}
-                          <code className="text-code-inline">service_role</code>, and active user
-                          JWTs stay valid. Before rotating, switch any code that verifies JWTs
-                          directly against the legacy secret (e.g.{' '}
+                          {$t('Existing')} <code className="text-code-inline">anon</code>,{' '}
+                          <code className="text-code-inline">service_role</code>
+                          {$t(
+                            ', and active user JWTs stay valid. Before rotating, switch any code that verifies JWTs directly against the legacy secret (e.g.'
+                          )}{' '}
                           <code className="text-code-inline">jose</code>,{' '}
-                          <code className="text-code-inline">jsonwebtoken</code>) to{' '}
-                          <code className="text-code-inline">supabase.auth.getClaims()</code> or a
-                          JWKS-based verifier, and disable the "Verify JWT" setting on any affected
-                          Edge Functions.
+                          <code className="text-code-inline">jsonwebtoken</code>
+                          {$t(') to')}{' '}
+                          <code className="text-code-inline">supabase.auth.getClaims()</code>{' '}
+                          {$t(
+                            'or a JWKS-based verifier, and disable the "Verify JWT" setting on any affected Edge Functions.'
+                          )}
                         </p>
                       </li>
                       <li>
                         <p className="text-foreground">
-                          Optionally, revoke the legacy JWT secret in{' '}
+                          {$t('Optionally, revoke the legacy JWT secret in')}{' '}
                           <InlineLink href={`/project/${projectRef}/settings/jwt`}>
-                            JWT Signing Keys
+                            {$t('JWT Signing Keys')}
                           </InlineLink>{' '}
-                          once you're sure it's no longer in use.
+                          {$t("once you're sure it's no longer in use.")}
                         </p>
                       </li>
                     </ol>
                   ) : (
                     <ul className="text-sm text-foreground-light list-disc list-inside">
-                      <li>Zero-downtime, reversible change.</li>
-                      <li>Users remain signed in and bad actors out.</li>
+                      <li>{$t('Zero-downtime, reversible change.')}</li>
+                      <li>{$t('Users remain signed in and bad actors out.')}</li>
                       <li>
-                        Create multiple secret API keys that are immediately revocable and fully
-                        covered by audit logs.
+                        {$t(
+                          'Create multiple secret API keys that are immediately revocable and fully covered by audit logs.'
+                        )}
                       </li>
                       <li>
-                        Private keys and shared secrets are no longer visible by organization
-                        members, so they can't leak.
+                        {$t(
+                          "Private keys and shared secrets are no longer visible by organization members, so they can't leak."
+                        )}
                       </li>
                       <li>
-                        Maintain tighter alignment with SOC2 and other security compliance
-                        frameworks.
+                        {$t(
+                          'Maintain tighter alignment with SOC2 and other security compliance frameworks.'
+                        )}
                       </li>
                       <li>
-                        Improve app's performance by using public keys to verify JWTs instead of
-                        calling <code className="text-code-inline">getUser()</code>.
+                        {$t(
+                          "Improve app's performance by using public keys to verify JWTs instead of calling"
+                        )}{' '}
+                        <code className="text-code-inline">getUser()</code>.
                       </li>
                     </ul>
                   )}
@@ -508,7 +535,7 @@ export const JWTSettings = () => {
                           target="_blank"
                           rel="noreferrer"
                         >
-                          Read the full migration guide
+                          {$t('Read the full migration guide')}
                         </Link>
                       </Button>
                     ) : (
@@ -528,7 +555,7 @@ export const JWTSettings = () => {
                               },
                             }}
                           >
-                            Change legacy JWT secret
+                            {$t('Change legacy JWT secret')}
                           </ButtonTooltip>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" side="bottom">
@@ -537,7 +564,7 @@ export const JWTSettings = () => {
                             onClick={() => setIsGeneratingKey(true)}
                           >
                             <RefreshCw size={16} />
-                            <p>Generate a random secret</p>
+                            <p>{$t('Generate a random secret')}</p>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
@@ -545,7 +572,7 @@ export const JWTSettings = () => {
                             onClick={() => setIsCreatingKey(true)}
                           >
                             <PenTool size={16} />
-                            <p>Create my own secret</p>
+                            <p>{$t('Create my own secret')}</p>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -562,7 +589,7 @@ export const JWTSettings = () => {
         variant="destructive"
         size="large"
         visible={isRegeneratingKey && !disableLegacyJwtSecretRotation}
-        title="Confirm legacy JWT secret change"
+        title={$t('Confirm legacy JWT secret change')}
         confirmString="I understand and wish to proceed"
         confirmLabel={customToken ? 'Apply custom secret' : 'Generate random secret'}
         confirmPlaceholder=""
@@ -578,12 +605,15 @@ export const JWTSettings = () => {
             <Lightbulb size={24} className="shrink-0 text-brand" />
 
             <div className="flex flex-col gap-2">
-              <p>Use new JWT Signing Keys and API Keys instead</p>
+              <p>{$t('Use new JWT Signing Keys and API Keys instead')}</p>
               <p className="text-foreground-light">
-                Consider using a combination of the JWT Signing Keys and API Keys features to
-                achieve the same effect.{' '}
+                {$t(
+                  'Consider using a combination of the JWT Signing Keys and API Keys features to achieve the same effect.'
+                )}{' '}
                 <em className="text-brand not-italic">
-                  Some or all of the warnings listed below might not apply when using these features
+                  {$t(
+                    'Some or all of the warnings listed below might not apply when using these features'
+                  )}
                 </em>
                 .
               </p>
@@ -593,23 +623,25 @@ export const JWTSettings = () => {
             <CloudOff size={24} className="text-foreground-light shrink-0" />
 
             <div className="flex flex-col gap-2">
-              <p>Your application will experience significant downtime</p>
+              <p>{$t('Your application will experience significant downtime')}</p>
               <p className="text-foreground-light">
-                As new <code>anon</code> and <code>service_role</code> keys will be created and the
-                existing ones permanently destroyed, your application will stop functioning for the
-                duration it takes you to swap them.{' '}
+                {$t('As new')} <code>anon</code> and <code>service_role</code>{' '}
+                {$t(
+                  'keys will be created and the existing ones permanently destroyed, your application will stop functioning for the duration it takes you to swap them.'
+                )}{' '}
                 <em className="text-warning not-italic">
-                  If you have a mobile, desktop, CLI or any offline-capable application the downtime
-                  may be more significant and dependent on app store reviews or user-initiated
-                  upgrades or downloads!
+                  {$t(
+                    'If you have a mobile, desktop, CLI or any offline-capable application the downtime may be more significant and dependent on app store reviews or user-initiated upgrades or downloads!'
+                  )}
                 </em>
               </p>
               <p className="text-foreground-light">
-                Currently active users will be forcefully signed out (inactive users will keep their
-                sessions).
+                {$t(
+                  'Currently active users will be forcefully signed out (inactive users will keep their sessions).'
+                )}
               </p>
               <p className="text-foreground-light">
-                All long-lived Storage pre-signed URLs will be permanently invalidated.
+                {$t('All long-lived Storage pre-signed URLs will be permanently invalidated.')}
               </p>
             </div>
           </li>
@@ -617,34 +649,38 @@ export const JWTSettings = () => {
           <li className="flex gap-2 px-4">
             <Power size={24} className="text-foreground-light shrink-0" />
             <div className="flex flex-col gap-2">
-              <p>Your project and database will be restarted</p>
+              <p>{$t('Your project and database will be restarted')}</p>
               <p className="text-foreground-light">
-                This process restarts your project, terminating existing connections to your
-                database. You may see API or other unusual errors for{' '}
-                <em className="text-warning not-italic">up to 2 minutes</em> while the new secret is
-                deployed.
+                {$t(
+                  'This process restarts your project, terminating existing connections to your database. You may see API or other unusual errors for'
+                )}{' '}
+                <em className="text-warning not-italic">{$t('up to 2 minutes')}</em>{' '}
+                {$t('while the new secret is deployed.')}
               </p>
             </div>
           </li>
           <li className="flex gap-2 px-4">
             <Hourglass size={24} className="text-foreground-light shrink-0" />
             <div className="flex flex-col gap-2">
-              <p>20-minute cooldown period</p>
+              <p>{$t('20-minute cooldown period')}</p>
               <p className="text-foreground-light">
-                Should you need to revert or repeat this operation, it will take at least 20 minutes
-                before you're able to do so again.
+                {$t(
+                  "Should you need to revert or repeat this operation, it will take at least 20 minutes before you're able to do so again."
+                )}
               </p>
             </div>
           </li>
           <li className="flex gap-2 px-4">
             <TriangleAlert size={24} className="text-foreground-light shrink-0" />
             <div className="flex flex-col gap-2">
-              <p>Irreversible change! This cannot be undone!</p>
+              <p>{$t('Irreversible change! This cannot be undone!')}</p>
               <p className="text-foreground-light">
-                The old JWT secret will be permanently lost (unless you've saved it prior). Even if
-                you use it again the <code>anon</code> and <code>service_role</code> API keys{' '}
-                <em className="text-warning not-italic">will not be restorable</em> to their exact
-                values.
+                {$t(
+                  "The old JWT secret will be permanently lost (unless you've saved it prior). Even if you use it again the"
+                )}{' '}
+                <code>anon</code> and <code>service_role</code> {$t('API keys')}{' '}
+                <em className="text-warning not-italic">{$t('will not be restorable')}</em>{' '}
+                {$t('to their exact values.')}
               </p>
             </div>
           </li>
@@ -661,10 +697,11 @@ export const JWTSettings = () => {
       >
         <DialogContent size="medium">
           <DialogHeader>
-            <DialogTitle>Pick a new JWT secret</DialogTitle>
+            <DialogTitle>{$t('Pick a new JWT secret')}</DialogTitle>
             <DialogDescription>
-              Pick a new custom JWT secret. Make sure it is a strong combination of characters that
-              cannot be guessed easily.
+              {$t(
+                'Pick a new custom JWT secret. Make sure it is a strong combination of characters that cannot be guessed easily.'
+              )}
             </DialogDescription>
           </DialogHeader>
           <DialogSectionSeparator />
@@ -686,8 +723,8 @@ export const JWTSettings = () => {
                   render={({ field }) => (
                     <FormItemLayout
                       layout="vertical"
-                      label="Custom JWT secret"
-                      description="Minimally 32 characters long, '@' and '$' are not allowed."
+                      label={$t('Custom JWT secret')}
+                      description={$t("Minimally 32 characters long, '@' and '$' are not allowed.")}
                     >
                       <FormControl>
                         <Input copy reveal icon={<Key />} className="w-full text-left" {...field} />
@@ -708,7 +745,7 @@ export const JWTSettings = () => {
               }}
               disabled={isSubmittingJwtSecretUpdateRequest}
             >
-              Cancel
+              {$t('Cancel')}
             </Button>
             <Button
               variant="primary"
@@ -717,7 +754,7 @@ export const JWTSettings = () => {
               loading={isSubmittingJwtSecretUpdateRequest}
               disabled={isSubmittingJwtSecretUpdateRequest}
             >
-              Proceed to final confirmation
+              {$t('Proceed to final confirmation')}
             </Button>
           </DialogFooter>
         </DialogContent>

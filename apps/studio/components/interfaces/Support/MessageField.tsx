@@ -8,6 +8,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { IPV4SuggestionAlert } from './IPV4SuggestionAlert'
 import { IPV4_MIGRATION_STRINGS } from './Support.constants'
 import type { SupportFormValues } from './SupportForm.schema'
+import { t as $t } from '@/lib/i18n'
 
 interface MessageFieldProps {
   form: UseFormReturn<SupportFormValues>
@@ -22,7 +23,7 @@ export function MessageField({ form, originalError }: MessageFieldProps) {
       render={({ field }) => (
         <FormItemLayout
           layout="vertical"
-          label="Message"
+          label={$t('Message')}
           labelOptional="5000 character limit"
           description={
             IPV4_MIGRATION_STRINGS.some((str) => field.value.includes(str)) && (
@@ -35,7 +36,9 @@ export function MessageField({ form, originalError }: MessageFieldProps) {
               {...field}
               rows={4}
               maxLength={5000}
-              placeholder="Describe the issue you’re facing, along with any relevant information. Please be as detailed and specific as possible."
+              placeholder={$t(
+                'Describe the issue you’re facing, along with any relevant information. Please be as detailed and specific as possible.'
+              )}
             />
           </FormControl>
           {originalError && (
@@ -43,7 +46,9 @@ export function MessageField({ form, originalError }: MessageFieldProps) {
               showIcon={false}
               type="default"
               className="mt-2 max-h-[150px] overflow-y-auto"
-              title="The error that you ran into will be included in your message for reference"
+              title={$t(
+                'The error that you ran into will be included in your message for reference'
+              )}
               description={`Error: ${originalError}`}
             />
           )}

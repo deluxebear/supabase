@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Alert, AlertDescription, AlertTitle, Button, WarningIcon } from 'ui'
 
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const AuthAlert = ({
   title,
@@ -20,11 +21,11 @@ export const AuthAlert = ({
       return (
         <Alert variant="warning">
           <WarningIcon />
-          <AlertTitle>Slack (Deprecated) Provider</AlertTitle>
+          <AlertTitle>{$t('Slack (Deprecated) Provider')}</AlertTitle>
           <AlertDescription>
-            Recently, Slack has updated their OAuth API. Please use the new Slack (OIDC) provider
-            below. Developers using this provider should move over to the new provider. Please refer
-            to our{' '}
+            {$t(
+              'Recently, Slack has updated their OAuth API. Please use the new Slack (OIDC) provider below. Developers using this provider should move over to the new provider. Please refer to our'
+            )}{' '}
             <a
               href={`${DOCS_URL}/guides/auth/social-login/auth-slack`}
               className="underline"
@@ -32,7 +33,7 @@ export const AuthAlert = ({
             >
               documentation
             </a>{' '}
-            for more details.
+            {$t('for more details.')}
           </AlertDescription>
         </Alert>
       )
@@ -42,12 +43,12 @@ export const AuthAlert = ({
           <Alert>
             <WarningIcon />
             <AlertTitle>
-              SMS provider settings are disabled while the SMS hook is enabled.
+              {$t('SMS provider settings are disabled while the SMS hook is enabled.')}
             </AlertTitle>
             <AlertDescription className="flex flex-col gap-y-3">
-              <p>The SMS hook will be used in place of the SMS provider configured</p>
+              <p>{$t('The SMS hook will be used in place of the SMS provider configured')}</p>
               <Button asChild variant="default" className="w-min" icon={<ExternalLink />}>
-                <Link href={`/project/${ref}/auth/hooks`}>View auth hooks</Link>
+                <Link href={`/project/${ref}/auth/hooks`}>{$t('View auth hooks')}</Link>
               </Button>
             </AlertDescription>
           </Alert>

@@ -5,6 +5,7 @@ import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 
 import { useProjectApiUrl } from '@/data/config/project-endpoint-query'
 import { useOAuthCustomProviderUpdateMutation } from '@/data/oauth-custom-providers/oauth-custom-provider-update-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface DisableCustomProviderModalProps {
   visible: boolean
@@ -21,7 +22,7 @@ export const DisableCustomProviderModal = ({
   const { hostEndpoint: clientEndpoint } = useProjectApiUrl({ projectRef })
   const { mutate, isPending } = useOAuthCustomProviderUpdateMutation({
     onSuccess: () => {
-      toast.success('Custom provider disabled')
+      toast.success($t('Custom provider disabled'))
       onClose()
     },
   })
@@ -43,7 +44,7 @@ export const DisableCustomProviderModal = ({
       visible={visible}
       title={
         <>
-          Confirm to disable custom provider{' '}
+          {$t('Confirm to disable custom provider')}{' '}
           <code className="text-sm">{selectedProvider?.name}</code>
         </>
       }
@@ -57,13 +58,13 @@ export const DisableCustomProviderModal = ({
           'You can re-enable it at any time. Existing sessions are not affected, but new sign-ins will fail until the provider is re-enabled.',
       }}
     >
-      <p className="text-sm">Before disabling this custom provider, consider:</p>
+      <p className="text-sm">{$t('Before disabling this custom provider, consider:')}</p>
       <ul className="space-y-2 mt-2 text-sm text-foreground-light">
         <li className="list-disc ml-6">
-          Users authenticating with this provider will be unable to sign in
+          {$t('Users authenticating with this provider will be unable to sign in')}
         </li>
         <li className="list-disc ml-6">
-          Applications relying on this provider should be updated or paused
+          {$t('Applications relying on this provider should be updated or paused')}
         </li>
       </ul>
     </ConfirmationModal>

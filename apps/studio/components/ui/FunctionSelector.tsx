@@ -27,6 +27,7 @@ import {
   useDatabaseFunctionsQuery,
 } from '@/data/database-functions/database-functions-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 type DatabaseFunction = DatabaseFunctionsData[number]
 
@@ -54,7 +55,7 @@ const FunctionSelector = ({
   onChange,
   stopScrollPropagation = false,
   filterFunction = () => true,
-  noResultsLabel = <span>No functions found in this schema.</span>,
+  noResultsLabel = <span>{$t('No functions found in this schema.')}</span>,
 }: FunctionSelectorProps) => {
   const router = useRouter()
   const { ref } = useParams()
@@ -82,18 +83,22 @@ const FunctionSelector = ({
     <div className={className}>
       {isLoading && (
         <Button variant="default" className="justify-start" block size={size} loading>
-          Loading functions...
+          {$t('Loading functions...')}
         </Button>
       )}
 
       {showError && isError && (
         <Alert variant="warning" className="px-3! py-3!">
-          <AlertTitle className="text-xs text-amber-900">Failed to load functions</AlertTitle>
+          <AlertTitle className="text-xs text-amber-900">
+            {$t('Failed to load functions')}
+          </AlertTitle>
 
-          <AlertDescription className="text-xs mb-2">Error: {error.message}</AlertDescription>
+          <AlertDescription className="text-xs mb-2">
+            {$t('Error:')} {error.message}
+          </AlertDescription>
 
           <Button variant="default" size="tiny" onClick={() => refetch()}>
-            Reload functions
+            {$t('Reload functions')}
           </Button>
         </Alert>
       )}
@@ -117,18 +122,18 @@ const FunctionSelector = ({
                 </div>
               ) : (
                 <div className="w-full flex gap-1">
-                  <p className="text-foreground-lighter">Select a function</p>
+                  <p className="text-foreground-lighter">{$t('Select a function')}</p>
                 </div>
               )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="p-0" side="bottom" align="start" sameWidthAsTrigger>
             <Command>
-              <CommandInput placeholder="Search functions..." />
+              <CommandInput placeholder={$t('Search functions...')} />
               <CommandList
                 onWheel={stopScrollPropagation ? (event) => event.stopPropagation() : undefined}
               >
-                <CommandEmpty>No functions found</CommandEmpty>
+                <CommandEmpty>{$t('No functions found')}</CommandEmpty>
                 <CommandGroup>
                   <ScrollArea className={(functions || []).length > 7 ? 'h-[210px]' : ''}>
                     {!functions.length && (
@@ -180,7 +185,7 @@ const FunctionSelector = ({
                       className="w-full flex items-center gap-2"
                     >
                       <Plus size={14} strokeWidth={1.5} />
-                      <p>New function</p>
+                      <p>{$t('New function')}</p>
                     </Link>
                   </CommandItem>
                 </CommandGroup>

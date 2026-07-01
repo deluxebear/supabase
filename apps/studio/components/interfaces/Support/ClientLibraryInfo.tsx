@@ -21,6 +21,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import type { ExtendedSupportCategories } from './Support.constants'
 import type { SupportFormValues } from './SupportForm.schema'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 
 interface ClientLibraryInfoProps {
   form: UseFormReturn<SupportFormValues>
@@ -40,11 +41,11 @@ export function ClientLibraryInfo({ form, category, library }: ClientLibraryInfo
         name="library"
         control={form.control}
         render={({ field }) => (
-          <FormItemLayout layout="vertical" label="Which library are you having issues with">
+          <FormItemLayout layout="vertical" label={$t('Which library are you having issues with')}>
             <FormControl>
               <Select {...field} defaultValue={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className="w-full" aria-label="Select a library">
-                  <SelectValue placeholder="Select a library" />
+                <SelectTrigger className="w-full" aria-label={$t('Select a library')}>
+                  <SelectValue placeholder={$t('Select a library')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -78,7 +79,7 @@ const LibrarySuggestions = ({ library }: LibrarySuggestionsProps) => {
     <div className="flex flex-col gap-y-4">
       <div className="space-y-2">
         <p className="text-sm text-foreground-light">
-          Found an issue or a bug? Try searching our GitHub issues or submit a new one.
+          {$t('Found an issue or a bug? Try searching our GitHub issues or submit a new one.')}
         </p>
       </div>
       <div className="flex items-center space-x-4 overflow-x-auto">
@@ -92,7 +93,7 @@ const LibrarySuggestions = ({ library }: LibrarySuggestionsProps) => {
               <div className="space-y-1">
                 <p className="text-sm">{lib.name}</p>
                 <p className="text-sm text-foreground-light">
-                  For issues regarding the {libraryLanguage} client library
+                  {$t('For issues regarding the')} {libraryLanguage} {$t('client library')}
                 </p>
               </div>
               <div>
@@ -102,7 +103,7 @@ const LibrarySuggestions = ({ library }: LibrarySuggestionsProps) => {
                   icon={<ExternalLink size={14} strokeWidth={1.5} />}
                 >
                   <Link href={lib.url} target="_blank" rel="noreferrer">
-                    View GitHub issues
+                    {$t('View GitHub issues')}
                   </Link>
                 </Button>
               </div>
@@ -117,12 +118,12 @@ const LibrarySuggestions = ({ library }: LibrarySuggestionsProps) => {
         >
           <div className="space-y-1">
             <p className="text-sm">supabase</p>
-            <p className="text-sm text-foreground-light">For any issues about our API</p>
+            <p className="text-sm text-foreground-light">{$t('For any issues about our API')}</p>
           </div>
           <div>
             <Button asChild variant="default" icon={<ExternalLink size={14} strokeWidth={1.5} />}>
               <Link href="https://github.com/supabase/supabase" target="_blank" rel="noreferrer">
-                View GitHub issues
+                {$t('View GitHub issues')}
               </Link>
             </Button>
           </div>

@@ -20,6 +20,7 @@ import {
   convertResultsToJSON,
   convertResultsToMarkdown,
 } from '@/components/interfaces/SQLEditor/UtilityPanel/Results.utils'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -58,24 +59,24 @@ export const DownloadResultsButton = ({
   const downloadAsCSV = () => {
     const csv = convertResultsToCSV(results)
     if (!csv) {
-      toast('Results are empty')
+      toast($t('Results are empty'))
       return
     }
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     saveAs(blob, `${fileName}.csv`)
-    toast.success('Downloading results as CSV')
+    toast.success($t('Downloading results as CSV'))
     onDownloadAsCSV?.()
   }
 
   const copyAsMarkdown = () => {
     const markdownData = convertResultsToMarkdown(results)
     if (!markdownData) {
-      toast('Results are empty')
+      toast($t('Results are empty'))
       return
     }
     copyToClipboard(markdownData, () => {
-      toast.success('Copied Markdown to clipboard')
+      toast.success($t('Copied Markdown to clipboard'))
       onCopyAsMarkdown?.()
     })
   }
@@ -83,11 +84,11 @@ export const DownloadResultsButton = ({
   const copyAsJSON = () => {
     const jsonData = convertResultsToJSON(results)
     if (!jsonData) {
-      toast('Results are empty')
+      toast($t('Results are empty'))
       return
     }
     copyToClipboard(jsonData, () => {
-      toast.success('Copied JSON to clipboard')
+      toast.success($t('Copied JSON to clipboard'))
       onCopyAsJSON?.()
     })
   }
@@ -95,11 +96,11 @@ export const DownloadResultsButton = ({
   const copyAsCSV = () => {
     const csv = convertResultsToCSV(results)
     if (!csv) {
-      toast('Results are empty')
+      toast($t('Results are empty'))
       return
     }
     copyToClipboard(csv, () => {
-      toast.success('Copied CSV to clipboard')
+      toast.success($t('Copied CSV to clipboard'))
       onCopyAsCSV?.()
     })
   }
@@ -142,34 +143,34 @@ export const DownloadResultsButton = ({
           <DropdownMenuItem asChild className="gap-x-2">
             <Link href={`/project/${ref}/settings/log-drains`}>
               <Settings size={14} />
-              <p>Add a Log Drain</p>
+              <p>{$t('Add a Log Drain')}</p>
             </Link>
           </DropdownMenuItem>
         )}
         <DropdownMenuItem onClick={copyAsMarkdown} className="gap-x-2">
           <Copy size={14} />
-          <p>Copy as Markdown</p>
+          <p>{$t('Copy as Markdown')}</p>
           <span className="ml-auto">
             <KeyboardShortcut keys={['Shift', 'Meta', 'm']} />
           </span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={copyAsJSON} className="gap-x-2">
           <Copy size={14} />
-          <p>Copy as JSON</p>
+          <p>{$t('Copy as JSON')}</p>
           <span className="ml-auto">
             <KeyboardShortcut keys={['Shift', 'Meta', 'j']} />
           </span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={copyAsCSV} className="gap-x-2">
           <Copy size={14} />
-          <p>Copy as CSV</p>
+          <p>{$t('Copy as CSV')}</p>
           <span className="ml-auto">
             <KeyboardShortcut keys={['Shift', 'Meta', 'c']} />
           </span>
         </DropdownMenuItem>
         <DropdownMenuItem className="gap-x-2" onClick={() => downloadAsCSV()}>
           <Download size={14} />
-          <p>Download CSV</p>
+          <p>{$t('Download CSV')}</p>
           <span className="ml-auto">
             <KeyboardShortcut keys={['Shift', 'Meta', 'd']} />
           </span>

@@ -27,6 +27,7 @@ import { RestartReplicaConfirmationModal } from '@/components/interfaces/Setting
 import { useReplicationLagQuery } from '@/data/read-replicas/replica-lag-query'
 import { type Database } from '@/data/read-replicas/replicas-query'
 import { formatDatabaseID } from '@/data/read-replicas/replicas.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface ReadReplicaRow {
   replica: Database
@@ -68,7 +69,9 @@ export const ReadReplicaRow = ({ replica, onUpdateReplica }: ReadReplicaRow) => 
 
         <TableCell>
           <div>
-            <p>Read Replica (ID: {formattedId})</p>
+            <p>
+              {$t('Read Replica (ID:')} {formattedId})
+            </p>
             <Tooltip>
               <TooltipTrigger asChild>
                 <p className="text-foreground-lighter w-fit">{regionMeta?.displayName}</p>
@@ -118,7 +121,7 @@ export const ReadReplicaRow = ({ replica, onUpdateReplica }: ReadReplicaRow) => 
               disabled={status === 'GOING_DOWN'}
             >
               <Link href={`/project/${ref}/database/replication/replica/${replica.identifier}`}>
-                View replica
+                {$t('View replica')}
               </Link>
             </Button>
             <DropdownMenu>
@@ -132,7 +135,7 @@ export const ReadReplicaRow = ({ replica, onUpdateReplica }: ReadReplicaRow) => 
                   onClick={() => setShowConfirmRestart(true)}
                 >
                   <RotateCcw size={14} />
-                  <span>Restart replica</span>
+                  <span>{$t('Restart replica')}</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -141,7 +144,7 @@ export const ReadReplicaRow = ({ replica, onUpdateReplica }: ReadReplicaRow) => 
                   onClick={() => setShowConfirmDrop(true)}
                 >
                   <Trash size={14} />
-                  <span>Drop replica</span>
+                  <span>{$t('Drop replica')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

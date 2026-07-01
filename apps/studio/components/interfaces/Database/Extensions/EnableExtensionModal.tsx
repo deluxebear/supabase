@@ -35,6 +35,7 @@ import { useSchemasQuery } from '@/data/database/schemas-query'
 import { useIsOrioleDb, useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useProtectedSchemas } from '@/hooks/useProtectedSchemas'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const orioleExtCallOuts = ['vector', 'postgis']
 
@@ -131,7 +132,9 @@ export const EnableExtensionModal = ({
     >
       <DialogContent size="small" aria-describedby={undefined}>
         <DialogHeader>
-          <DialogTitle>Enable {extension.name}</DialogTitle>
+          <DialogTitle>
+            {$t('Enable')} {extension.name}
+          </DialogTitle>
         </DialogHeader>
 
         <DialogSectionSeparator />
@@ -139,12 +142,14 @@ export const EnableExtensionModal = ({
         {isOrioleDb && orioleExtCallOuts.includes(extension.name) && (
           <Admonition
             type="default"
-            title="Extension is limited by OrioleDB"
+            title={$t('Extension is limited by OrioleDB')}
             className="border-x-0 border-t-0 rounded-none"
           >
             <span className="block">
-              {extension.name} cannot be accelerated by indexes on tables that are using the
-              OrioleDB access method
+              {extension.name}{' '}
+              {$t(
+                'cannot be accelerated by indexes on tables that are using the OrioleDB access method'
+              )}
             </span>
             <DocsButton abbrev={false} className="mt-2" href={`${DOCS_URL}`} />
           </Admonition>
@@ -153,12 +158,13 @@ export const EnableExtensionModal = ({
         {extension.name === 'pg_cron' && project?.cloud_provider === 'FLY' && (
           <Admonition
             type="warning"
-            title="The pg_cron extension is not fully supported for Fly projects"
+            title={$t('The pg_cron extension is not fully supported for Fly projects')}
             className="border-x-0 border-t-0 rounded-none"
           >
             <p>
-              You can still enable the extension, but pg_cron jobs may not run due to the behavior
-              of Fly projects.
+              {$t(
+                'You can still enable the extension, but pg_cron jobs may not run due to the behavior of Fly projects.'
+              )}
             </p>
             <DocsButton
               className="mt-2"
@@ -181,12 +187,14 @@ export const EnableExtensionModal = ({
                 <div className="flex flex-col gap-y-2">
                   <FormItemLayout
                     isReactForm={false}
-                    label="Select a schema to enable the extension for"
+                    label={$t('Select a schema to enable the extension for')}
                   >
                     <Input disabled value={defaultSchema} />
                   </FormItemLayout>
                   <p className="text-sm text-foreground-light">
-                    Extension must be installed in the "{defaultSchema}" schema.
+                    {$t('Extension must be installed in the "')}
+                    {defaultSchema}
+                    {$t('" schema.')}
                   </p>
                 </div>
               ) : (
@@ -198,7 +206,7 @@ export const EnableExtensionModal = ({
                     render={({ field }) => (
                       <FormItemLayout
                         name="schema"
-                        label="Select a schema to enable the extension for"
+                        label={$t('Select a schema to enable the extension for')}
                       >
                         <FormControl>
                           <Select
@@ -207,11 +215,11 @@ export const EnableExtensionModal = ({
                             disabled={!!defaultSchema}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Select a schema" />
+                              <SelectValue placeholder={$t('Select a schema')} />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="custom">
-                                Create a new schema{' '}
+                                {$t('Create a new schema')}{' '}
                                 <code className="text-code-inline">{extension.name}</code>
                               </SelectItem>
                               <SelectSeparator />
@@ -221,10 +229,10 @@ export const EnableExtensionModal = ({
                                     {schema.name}
                                     {schema.name === recommendedSchema ? (
                                       <Badge className="ml-2" variant="success">
-                                        Recommended
+                                        {$t('Recommended')}
                                       </Badge>
                                     ) : !defaultSchema && schema.name === 'extensions' ? (
-                                      <Badge className="ml-2">Default</Badge>
+                                      <Badge className="ml-2">{$t('Default')}</Badge>
                                     ) : null}
                                   </SelectItem>
                                 )
@@ -238,8 +246,9 @@ export const EnableExtensionModal = ({
 
                   {!!recommendedSchema && (
                     <p className="text-sm text-foreground-light">
-                      Use the "{recommendedSchema}" schema for full compatibility with related
-                      features.
+                      {$t('Use the "')}
+                      {recommendedSchema}
+                      {$t('" schema for full compatibility with related features.')}
                     </p>
                   )}
 
@@ -249,7 +258,7 @@ export const EnableExtensionModal = ({
                       name="name"
                       control={form.control}
                       render={({ field }) => (
-                        <FormItemLayout name="name" label="Schema name">
+                        <FormItemLayout name="name" label={$t('Schema name')}>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -265,7 +274,7 @@ export const EnableExtensionModal = ({
 
         <DialogFooter>
           <Button variant="default" disabled={isEnabling} onClick={() => onCancel()}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button
             type="submit"
@@ -273,7 +282,7 @@ export const EnableExtensionModal = ({
             loading={isEnabling}
             disabled={isLoading || isEnabling}
           >
-            Enable extension
+            {$t('Enable extension')}
           </Button>
         </DialogFooter>
       </DialogContent>

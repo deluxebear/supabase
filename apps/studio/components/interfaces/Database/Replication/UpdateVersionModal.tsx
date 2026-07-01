@@ -11,6 +11,7 @@ import { useReplicationPipelineVersionQuery } from '@/data/replication/pipeline-
 import { Pipeline } from '@/data/replication/pipelines-query'
 import { useRestartPipelineHelper } from '@/data/replication/restart-pipeline-helper'
 import { useUpdatePipelineVersionMutation } from '@/data/replication/update-pipeline-version-mutation'
+import { t as $t } from '@/lib/i18n'
 import {
   PipelineStatusRequestStatus,
   usePipelineRequestStatus,
@@ -75,14 +76,14 @@ export const UpdateVersionModal = ({
       // Step 3: Restart the pipeline (stop + start)
       try {
         await restartPipeline({ projectRef, pipelineId: pipeline.id })
-        toast.success('Pipeline successfully updated and is currently restarting')
+        toast.success($t('Pipeline successfully updated and is currently restarting'))
       } catch (e) {
         // Clear optimistic state and surface a single concise error
         setRequestStatus(pipeline.id, PipelineStatusRequestStatus.None)
         toast.error(`Failed to restart pipeline: ${(e as ResponseError).message}`)
       }
     } else {
-      toast.success('Pipeline successfully updated')
+      toast.success($t('Pipeline successfully updated'))
     }
 
     onClose()
@@ -92,7 +93,7 @@ export const UpdateVersionModal = ({
     <ConfirmationModal
       size="small"
       visible={visible}
-      title="Update pipeline image"
+      title={$t('Update pipeline image')}
       className="p-0!"
       confirmLabel={confirmLabel ?? (isStopped ? 'Update image' : 'Update and restart')}
       confirmLabelLoading={confirmLabelLoading}
@@ -101,12 +102,15 @@ export const UpdateVersionModal = ({
     >
       <div className="flex flex-col gap-y-3 py-4 px-5">
         <p className="text-sm text-foreground">
-          A new pipeline image is available with improvements and bug fixes. Proceed to update?
+          {$t(
+            'A new pipeline image is available with improvements and bug fixes. Proceed to update?'
+          )}
         </p>
         {!isStopped && (
           <p className="text-sm text-foreground-light">
-            The pipeline will automatically restart when updating. Replication will continue from
-            where it left off.
+            {$t(
+              'The pipeline will automatically restart when updating. Replication will continue from where it left off.'
+            )}
           </p>
         )}
       </div>
@@ -114,19 +118,19 @@ export const UpdateVersionModal = ({
 
       <Collapsible className="px-5 py-3 group">
         <CollapsibleTrigger className="w-full flex items-center justify-between text-sm text-foreground-light">
-          <p>View version update details</p>
+          <p>{$t('View version update details')}</p>
           <ChevronDown size={14} className="group-data-open:-rotate-180 transition" />
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div className="flex flex-col gap-y-2 mt-2 pb-2">
             <div className="text-sm text-foreground prose max-w-full">
-              <p className="text-foreground-light mb-1">Current version:</p>{' '}
+              <p className="text-foreground-light mb-1">{$t('Current version:')}</p>{' '}
               <code className="text-code-inline">
                 {isLoadingVersion ? 'Loading...' : (currentVersionName ?? 'Unknown')}
               </code>
             </div>
             <div className="text-sm text-foreground prose max-w-full">
-              <p className="text-foreground-light mb-1">New version:</p>{' '}
+              <p className="text-foreground-light mb-1">{$t('New version:')}</p>{' '}
               <code className="text-code-inline">
                 {isLoadingVersion ? 'Loading...' : (newVersionName ?? 'Unknown')}
               </code>

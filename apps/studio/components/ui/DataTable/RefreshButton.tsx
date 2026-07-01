@@ -3,6 +3,7 @@ import { Button } from 'ui'
 
 import { ButtonTooltip } from '../ButtonTooltip'
 import { Shortcut } from '@/components/ui/Shortcut'
+import { t as $t } from '@/lib/i18n'
 import type { ShortcutId } from '@/state/shortcuts/registry'
 
 interface RefreshButtonProps {
@@ -38,7 +39,7 @@ export const RefreshButton = ({ isLoading, onRefresh, shortcutId }: RefreshButto
           onClick={onRefresh}
           className="w-[26px]"
           icon={icon}
-          aria-label="Refresh logs"
+          aria-label={$t('Refresh logs')}
         />
       </Shortcut>
     )

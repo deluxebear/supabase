@@ -15,6 +15,7 @@ import AuthLayout from '@/components/layouts/AuthLayout/AuthLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { NoPermission } from '@/components/ui/NoPermission'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const SessionsPage: NextPageWithLayout = () => {
@@ -32,9 +33,9 @@ const SessionsPage: NextPageWithLayout = () => {
       <PageHeader size="default">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>User Sessions</PageHeaderTitle>
+            <PageHeaderTitle>{$t('User Sessions')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Configure settings for user sessions and refresh tokens
+              {$t('Configure settings for user sessions and refresh tokens')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -56,7 +57,7 @@ const SessionsPage: NextPageWithLayout = () => {
 
 SessionsPage.getLayout = (page) => (
   <DefaultLayout>
-    <AuthLayout title="Sessions">{page}</AuthLayout>
+    <AuthLayout title={$t('Sessions')}>{page}</AuthLayout>
   </DefaultLayout>
 )
 

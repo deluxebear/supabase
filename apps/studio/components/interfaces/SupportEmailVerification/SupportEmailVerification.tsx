@@ -5,6 +5,7 @@ import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { InterstitialLayout, SupabaseLogo } from '@/components/layouts/InterstitialLayout'
 import { useVerifyEmailMutation } from '@/data/support/support-email-verification-mutation'
+import { t as $t } from '@/lib/i18n'
 
 export const SupportEmailVerification = () => {
   const { token } = useParams()
@@ -36,7 +37,7 @@ export const SupportEmailVerification = () => {
       'Email Verification',
       <Admonition
         type="warning"
-        description="No verification token was found. Please use the link from your email."
+        description={$t('No verification token was found. Please use the link from your email.')}
       />
     )
   }
@@ -56,7 +57,9 @@ export const SupportEmailVerification = () => {
       'Account linked',
       <Admonition
         type="success"
-        description="Thanks for verifying, our team now has the context they need to resolve your issue more efficiently. You can close this page."
+        description={$t(
+          'Thanks for verifying, our team now has the context they need to resolve your issue more efficiently. You can close this page.'
+        )}
       />
     )
   }
@@ -66,7 +69,9 @@ export const SupportEmailVerification = () => {
       'Link no longer valid',
       <Admonition
         type="warning"
-        description="This verification link has already been used or has expired. You can close this page."
+        description={$t(
+          'This verification link has already been used or has expired. You can close this page.'
+        )}
       />
     )
   }
@@ -75,7 +80,9 @@ export const SupportEmailVerification = () => {
     'Verification failed',
     <Admonition
       type="destructive"
-      description="We weren't able to verify your identity this time. Our team will still be in touch, verification just helps us view your organization and project details to resolve your issue more efficiently. You can close this page."
+      description={$t(
+        "We weren't able to verify your identity this time. Our team will still be in touch, verification just helps us view your organization and project details to resolve your issue more efficiently. You can close this page."
+      )}
     />
   )
 }

@@ -23,6 +23,7 @@ import {
 import type { InvocationChartDatum, InvocationUpdateAnnotation } from './EdgeFunctionOverview.utils'
 import { toAlertError } from './EdgeFunctionRecentErrors.utils'
 import { AlertError } from '@/components/ui/AlertError'
+import { t as $t } from '@/lib/i18n'
 import type { ChartIntervals } from '@/types'
 
 interface EdgeFunctionInvocationsSectionProps {
@@ -77,22 +78,22 @@ export const EdgeFunctionInvocationsSection = ({
               <PageSectionSummary>
                 <div className="flex flex-wrap items-start gap-x-8 gap-y-4">
                   <ChartMetric
-                    label="Total Invocations"
+                    label={$t('Total Invocations')}
                     value={totalInvocationCount}
                     status="default"
-                    tooltip="Total number of invocations"
+                    tooltip={$t('Total number of invocations')}
                   />
                   <ChartMetric
-                    label="5xx Rate"
+                    label={$t('5xx Rate')}
                     value={formatRate(totalErrorCount, totalInvocationCount)}
                     status="negative"
-                    tooltip="Share of invocations that returned a 5xx status code"
+                    tooltip={$t('Share of invocations that returned a 5xx status code')}
                   />
                   <ChartMetric
-                    label="4xx Rate"
+                    label={$t('4xx Rate')}
                     value={formatRate(totalWarningCount, totalInvocationCount)}
                     status="warning"
-                    tooltip="Share of invocations that returned a 4xx status code"
+                    tooltip={$t('Share of invocations that returned a 4xx status code')}
                   />
                 </div>
               </PageSectionSummary>

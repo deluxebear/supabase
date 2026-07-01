@@ -14,6 +14,7 @@ import { DashboardPreferences } from '@/components/interfaces/Settings/General/D
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import SettingsLayout from '@/components/layouts/ProjectSettingsLayout/SettingsLayout'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const Preferences: NextPageWithLayout = () => {
@@ -34,9 +35,9 @@ const Preferences: NextPageWithLayout = () => {
       <PageHeader size="small">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Dashboard</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Dashboard')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Configure dashboard query preferences for this project.
+              {$t('Configure dashboard query preferences for this project.')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -48,7 +49,7 @@ const Preferences: NextPageWithLayout = () => {
 
 Preferences.getLayout = (page) => (
   <DefaultLayout>
-    <SettingsLayout title="General">{page}</SettingsLayout>
+    <SettingsLayout title={$t('General')}>{page}</SettingsLayout>
   </DefaultLayout>
 )
 export default Preferences

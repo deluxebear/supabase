@@ -2,6 +2,7 @@ import { isEmpty } from 'lodash'
 
 import { PolicyTemplate } from './PolicyTemplates.constants'
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
+import { t as $t } from '@/lib/i18n'
 
 interface TemplatePreviewProps {
   selectedTemplate: PolicyTemplate
@@ -21,7 +22,7 @@ const TemplatePreview = ({ selectedTemplate }: TemplatePreviewProps) => {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-foreground-light text-sm">Policy SQL template:</label>
+              <label className="text-foreground-light text-sm">{$t('Policy SQL template:')}</label>
               <div className="h-64">
                 <CodeEditor isReadOnly id={id} language="pgsql" defaultValue={statement} />
               </div>

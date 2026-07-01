@@ -5,6 +5,7 @@ import { cn, Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Com
 
 import type { ResourcePickerRenderProps } from './SecondLevelNav.Layout'
 import { usePaginatedBucketsQuery } from '@/data/storage/buckets-query'
+import { t as $t } from '@/lib/i18n'
 
 type StorageResourceListProps = ResourcePickerRenderProps & {
   projectRef?: string
@@ -98,7 +99,7 @@ export const StorageResourceList = ({
         showResetIcon
         value={rawQuery}
         onValueChange={setSearch}
-        placeholder="Search buckets..."
+        placeholder={$t('Search buckets...')}
         handleReset={() => setSearch('')}
       />
       <CommandList>
@@ -107,7 +108,9 @@ export const StorageResourceList = ({
         </CommandEmpty>
         <CommandGroup>
           {isFetching && buckets.length === 0 ? (
-            <div className="px-4 py-3 text-sm text-foreground-light">Loading buckets...</div>
+            <div className="px-4 py-3 text-sm text-foreground-light">
+              {$t('Loading buckets...')}
+            </div>
           ) : (
             <div ref={scrollContainerRef} className="max-h-72 min-h-[150px] overflow-y-auto">
               {buckets.map((bucket) => {
@@ -131,7 +134,9 @@ export const StorageResourceList = ({
           )}
         </CommandGroup>
         {isFetchingNextPage && (
-          <div className="px-4 py-2 text-sm text-foreground-light">Loading more buckets...</div>
+          <div className="px-4 py-2 text-sm text-foreground-light">
+            {$t('Loading more buckets...')}
+          </div>
         )}
       </CommandList>
     </Command>

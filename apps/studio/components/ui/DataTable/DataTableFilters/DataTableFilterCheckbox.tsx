@@ -9,6 +9,7 @@ import { InputWithAddons } from '../primitives/InputWithAddons'
 import { useDataTable } from '../providers/DataTableProvider'
 import { DataTableFilterCheckboxLoader } from './DataTableFilterCheckboxLoader'
 import { SEARCH_PARAMS_PARSER } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.constants'
+import { t as $t } from '@/lib/i18n'
 
 export function DataTableFilterCheckbox<TData>({
   value: _value,
@@ -59,7 +60,7 @@ export function DataTableFilterCheckbox<TData>({
   if (!options?.length)
     return (
       <div className="flex items-center justify-center px-2 py-4 text-center border border-border rounded-sm">
-        <p className="text-xs text-foreground-light">No options available</p>
+        <p className="text-xs text-foreground-light">{$t('No options available')}</p>
       </div>
     )
 
@@ -67,7 +68,7 @@ export function DataTableFilterCheckbox<TData>({
     <div className="grid gap-2">
       {options && options.length > 4 ? (
         <InputWithAddons
-          placeholder="Search"
+          placeholder={$t('Search')}
           leading={<Search size={14} className="text-foreground-lighter" />}
           containerClassName="h-8 rounded-sm"
           value={inputValue}
@@ -78,8 +79,8 @@ export function DataTableFilterCheckbox<TData>({
         {filterOptions.length === 0 && inputValue !== '' ? (
           <div className="flex items-center justify-center px-2 py-4 text-center">
             <div className="space-y-0.5">
-              <p className="text-xs text-foreground">No results found</p>
-              <p className="text-xs text-foreground-lighter">Try a different search term</p>
+              <p className="text-xs text-foreground">{$t('No results found')}</p>
+              <p className="text-xs text-foreground-lighter">{$t('Try a different search term')}</p>
             </div>
           </div>
         ) : (

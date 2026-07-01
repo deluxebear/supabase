@@ -17,6 +17,7 @@ import { CronJob } from '@/data/database-cron-jobs/database-cron-jobs-infinite-q
 import { useInfiniteScroll } from '@/hooks/misc/useInfiniteScroll'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { cleanPointerEventsNoneOnBody } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { createNavigationHandler } from '@/lib/navigation'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
@@ -119,7 +120,7 @@ export const CronjobsTab = () => {
 
   useEffect(() => {
     if (grid.isSuccess && !!cronJobIdForEditing && !cronJobForEditing) {
-      toast('Cron job not found')
+      toast($t('Cron job not found'))
       setCronJobForEditing(null)
     }
   }, [cronJobForEditing, cronJobIdForEditing, grid.isSuccess, setCronJobForEditing])
@@ -182,7 +183,7 @@ const CronJobsFooter = ({ count }: CronJobsFooterProps) => (
   <div className="flex justify-between min-h-9 h-9 overflow-hidden items-center px-6 w-full border-t text-xs text-foreground-light">
     {count.isLoading ? (
       <span className="flex items-center gap-2">
-        <Loader2 size={14} className="animate-spin" /> Loading...
+        <Loader2 size={14} className="animate-spin" /> {$t('Loading...')}
       </span>
     ) : (
       `Total: ${count.value ?? 0} jobs${count.isEstimate ? ' (estimate)' : ''}`

@@ -35,6 +35,7 @@ import { useFDWUpdateMutation } from '@/data/fdw/fdw-update-mutation'
 import { fdwKeys } from '@/data/fdw/keys'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { isGreaterThanOrEqual } from '@/lib/semver'
 
 // Create foreign tables for vector bucket
@@ -140,27 +141,29 @@ export const InitializeForeignSchemaDialog = () => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="default">Query from Postgres</Button>
+        <Button variant="default">{$t('Query from Postgres')}</Button>
       </DialogTrigger>
       <DialogContent size="medium" aria-describedby={undefined}>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <DialogHeader>
-              <DialogTitle>Query this vector bucket from Postgres</DialogTitle>
+              <DialogTitle>{$t('Query this vector bucket from Postgres')}</DialogTitle>
             </DialogHeader>
             <DialogSectionSeparator />
             <DialogSection className="flex flex-col gap-y-4">
               <p className="text-sm">
-                Data from vector tables can be queried from Postgres with the S3 Vectors Wrapper.
-                Create a Postgres schema to expose tables from the "{bucketId}" bucket as foreign
-                tables.
+                {$t(
+                  'Data from vector tables can be queried from Postgres with the S3 Vectors Wrapper. Create a Postgres schema to expose tables from the "'
+                )}
+                {bucketId}
+                {$t('" bucket as foreign tables.')}
               </p>
               <FormField
                 control={form.control}
                 name="schema"
                 render={({ field }) => (
-                  <FormItemLayout layout="vertical" label="Schema name">
-                    <Input {...field} placeholder="Provide a name for your schema" />
+                  <FormItemLayout layout="vertical" label={$t('Schema name')}>
+                    <Input {...field} placeholder={$t('Provide a name for your schema')} />
                   </FormItemLayout>
                 )}
               />
@@ -169,10 +172,10 @@ export const InitializeForeignSchemaDialog = () => {
               <DocsButton href={`${DOCS_URL}/guides/storage/vector/querying-vectors`} />
               <div className="flex items-center gap-x-2">
                 <Button variant="default" disabled={isCreating} onClick={() => setIsOpen(false)}>
-                  Cancel
+                  {$t('Cancel')}
                 </Button>
                 <Button type="submit" variant="primary" loading={isCreating}>
-                  Create schema
+                  {$t('Create schema')}
                 </Button>
               </div>
             </DialogFooter>

@@ -23,6 +23,7 @@ import { useBucketObjectsInfiniteQuery } from '@/data/storage/bucket-objects-inf
 import { storageKeys } from '@/data/storage/keys'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { formatBytes } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { noop } from '@/lib/void'
 
 const SelectAllCheckbox = ({
@@ -76,7 +77,7 @@ const DragOverOverlay = ({
               >
                 <Upload className="text-white pointer-events-none" size={20} strokeWidth={2} />
                 <p className="text-center text-sm text-white mt-2 pointer-events-none">
-                  Drop your files to upload to this folder
+                  {$t('Drop your files to upload to this folder')}
                 </p>
               </div>
             )}
@@ -231,11 +232,11 @@ export const BucketFilePickerColumn = ({
     onDragOver(event)
 
     if (!canUpdateStorage) {
-      toast('You need additional permissions to upload files to this project')
+      toast($t('You need additional permissions to upload files to this project'))
       return
     }
     if (!hostEndpoint) {
-      toast.error('Unable to upload files at this time. Please try again.')
+      toast.error($t('Unable to upload files at this time. Please try again.'))
       return
     }
 
@@ -292,11 +293,13 @@ export const BucketFilePickerColumn = ({
                   onChange={() => onSelectAllItemsInColumn()}
                 />
                 <p className="text-sm text-foreground-light">
-                  Select all {columnFiles.length} files
+                  {$t('Select all')} {columnFiles.length} files
                 </p>
               </>
             ) : (
-              <p className="text-sm text-foreground-light">No files available for selection</p>
+              <p className="text-sm text-foreground-light">
+                {$t('No files available for selection')}
+              </p>
             )}
           </div>
         )}
@@ -312,12 +315,12 @@ export const BucketFilePickerColumn = ({
                   onChange={() => onSelectAllItemsInColumn()}
                 />
               )}
-              <p className="text-sm">Name</p>
+              <p className="text-sm">{$t('Name')}</p>
             </div>
-            <p className="w-[11%] min-w-[100px] text-sm">Size</p>
-            <p className="w-[14%] min-w-[100px] text-sm">Type</p>
-            <p className="w-[15%] min-w-[160px] text-sm">Created at</p>
-            <p className="w-[15%] min-w-[160px] text-sm">Last modified at</p>
+            <p className="w-[11%] min-w-[100px] text-sm">{$t('Size')}</p>
+            <p className="w-[14%] min-w-[100px] text-sm">{$t('Type')}</p>
+            <p className="w-[15%] min-w-[160px] text-sm">{$t('Created at')}</p>
+            <p className="w-[15%] min-w-[160px] text-sm">{$t('Last modified at')}</p>
           </div>
         )}
 
@@ -392,18 +395,20 @@ export const BucketFilePickerColumn = ({
 
         {debouncedSearchString.length > 0 && isEmpty && !isLoading && (
           <div className="h-full w-full flex flex-col items-center justify-center">
-            <p className="text-sm my-3 text-foreground">No results found in this folder</p>
+            <p className="text-sm my-3 text-foreground">{$t('No results found in this folder')}</p>
             <p className="w-40 text-center text-sm text-foreground-light">
-              Your search for "{debouncedSearchString}" did not return any results
+              {$t('Your search for "')}
+              {debouncedSearchString}
+              {$t('" did not return any results')}
             </p>
           </div>
         )}
 
         {debouncedSearchString.length === 0 && isEmpty && !isLoading && (
           <div className="h-full w-full flex flex-col items-center justify-center">
-            <p className="text-sm my-3 opacity-75">Drop your files here</p>
+            <p className="text-sm my-3 opacity-75">{$t('Drop your files here')}</p>
             <p className="w-40 text-center text-xs text-foreground-light">
-              Or upload them via the "Upload files" button above
+              {$t('Or upload them via the "Upload files" button above')}
             </p>
           </div>
         )}

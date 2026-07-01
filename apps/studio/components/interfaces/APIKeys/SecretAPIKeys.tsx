@@ -24,6 +24,7 @@ import type { APIKeysData } from '@/data/api-keys/api-keys-query'
 import { useAPIKeysQuery } from '@/data/api-keys/api-keys-query'
 import { useLogsQuery } from '@/hooks/analytics/useLogsQuery'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 interface LastSeenData {
   [hash: string]: { timestamp: number; relative: string }
@@ -107,7 +108,7 @@ export const SecretAPIKeys = () => {
     isSuccess: isDeleteSuccess,
   } = useAPIKeyDeleteMutation({
     onSuccess: () => {
-      toast.success('Successfully deleted secret key')
+      toast.success($t('Successfully deleted secret key'))
       setDeleteId(null)
     },
   })
@@ -120,7 +121,7 @@ export const SecretAPIKeys = () => {
 
   useEffect(() => {
     if (isSuccessApiKeys && !!deleteId && !apiKeyToDelete && !isDeleteSuccess) {
-      toast('Unable to find secret key')
+      toast($t('Unable to find secret key'))
       setDeleteId(null)
     }
   }, [apiKeyToDelete, deleteId, isDeleteSuccess, isSuccessApiKeys, setDeleteId])
@@ -128,8 +129,10 @@ export const SecretAPIKeys = () => {
   return (
     <div className="pb-30">
       <FormHeader
-        title="Secret keys"
-        description="These API keys allow privileged access to your project's APIs. Use in servers, functions, workers or other backend components of your application."
+        title={$t('Secret keys')}
+        description={$t(
+          "These API keys allow privileged access to your project's APIs. Use in servers, functions, workers or other backend components of your application."
+        )}
         actions={IS_PLATFORM ? <CreateSecretAPIKeyDialog /> : null}
       />
 
@@ -142,10 +145,11 @@ export const SecretAPIKeys = () => {
       ) : empty ? (
         <Card>
           <div className="rounded-b-md! overflow-hidden py-12 flex flex-col gap-1 items-center justify-center">
-            <p className="text-sm text-foreground">No secret API keys found</p>
+            <p className="text-sm text-foreground">{$t('No secret API keys found')}</p>
             <p className="text-sm text-foreground-light">
-              Your project is not accessible via secret keys—there are no active secret keys
-              created.
+              {$t(
+                'Your project is not accessible via secret keys—there are no active secret keys created.'
+              )}
             </p>
           </div>
         </Card>
@@ -154,10 +158,10 @@ export const SecretAPIKeys = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-200">
-                <TableHead>Name</TableHead>
-                <TableHead>API Key</TableHead>
+                <TableHead>{$t('Name')}</TableHead>
+                <TableHead>{$t('API Key')}</TableHead>
                 {showApiKeysLastUsed && (
-                  <TableHead className="hidden lg:table-cell">Last Used</TableHead>
+                  <TableHead className="hidden lg:table-cell">{$t('Last Used')}</TableHead>
                 )}
                 {IS_PLATFORM && <TableHead />}
               </TableRow>

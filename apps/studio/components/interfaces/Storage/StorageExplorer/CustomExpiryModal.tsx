@@ -25,6 +25,7 @@ import * as z from 'zod'
 
 import { useCopyUrl } from './useCopyUrl'
 import { DATETIME_FORMAT } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useStorageExplorerStateSnapshot } from '@/state/storage-explorer'
 
 const unitMap = {
@@ -81,13 +82,13 @@ export const CustomExpiryModal = () => {
     <Dialog open={visible} onOpenChange={handleClose}>
       <DialogContent size="small">
         <DialogHeader>
-          <DialogTitle>Custom expiry for signed URL</DialogTitle>
+          <DialogTitle>{$t('Custom expiry for signed URL')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <Form {...form}>
           <DialogSection>
             <p className="text-sm text-foreground-light mb-4">
-              Enter the duration for which the URL will be valid for:
+              {$t('Enter the duration for which the URL will be valid for:')}
             </p>
             <form
               id={formId}
@@ -100,7 +101,7 @@ export const CustomExpiryModal = () => {
                   control={form.control}
                   name="expiresIn"
                   render={({ field }) => (
-                    <FormItemLayout layout="vertical" label="Duration">
+                    <FormItemLayout layout="vertical" label={$t('Duration')}>
                       <FormControl>
                         <Input
                           {...field}
@@ -121,11 +122,14 @@ export const CustomExpiryModal = () => {
                   control={form.control}
                   name="units"
                   render={({ field }) => (
-                    <FormItemLayout layout="vertical" label="Units">
+                    <FormItemLayout layout="vertical" label={$t('Units')}>
                       <FormControl>
                         <Select value={field.value} onValueChange={field.onChange}>
                           <SelectTrigger>
-                            <SelectValue aria-label="Units" placeholder="Select an option" />
+                            <SelectValue
+                              aria-label={$t('Units')}
+                              placeholder={$t('Select an option')}
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="days">days</SelectItem>
@@ -142,13 +146,13 @@ export const CustomExpiryModal = () => {
             </form>
             {isDirty && isValid && (
               <p className="text-sm text-foreground-light mt-2">
-                URL will expire on {dayjs().add(expiresIn, units).format(DATETIME_FORMAT)}
+                {$t('URL will expire on')} {dayjs().add(expiresIn, units).format(DATETIME_FORMAT)}
               </p>
             )}
           </DialogSection>
           <DialogFooter>
             <Button variant="default" onClick={handleClose}>
-              Cancel
+              {$t('Cancel')}
             </Button>
             <Button
               form={formId}
@@ -157,7 +161,7 @@ export const CustomExpiryModal = () => {
               type="submit"
               variant="primary"
             >
-              Get signed URL
+              {$t('Get signed URL')}
             </Button>
           </DialogFooter>
         </Form>

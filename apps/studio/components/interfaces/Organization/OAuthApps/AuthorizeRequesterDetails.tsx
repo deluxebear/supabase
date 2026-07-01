@@ -18,6 +18,7 @@ import { PERMISSIONS_DESCRIPTIONS } from './OAuthApps.constants'
 import { LogoBox } from '@/components/layouts/InterstitialLayout'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const OAUTH_SCOPES_DOCS_URL = `${DOCS_URL}/guides/platform/oauth-apps/oauth-scopes`
 const PERMISSION_DETAILS_TRIGGER_CLASSNAME =
@@ -243,7 +244,7 @@ export const AuthorizeRequesterDetails = ({
       {requestedPermissions.length === 0 ? (
         <Card className="shadow-none">
           <CardContent className="border-none px-4 py-3 text-sm text-foreground-lighter">
-            No permissions requested.
+            {$t('No permissions requested.')}
           </CardContent>
         </Card>
       ) : (
@@ -252,12 +253,12 @@ export const AuthorizeRequesterDetails = ({
             <>
               <div>
                 <p className="text-xs font-medium uppercase tracking-wider text-foreground-light">
-                  Permissions
+                  {$t('Permissions')}
                 </p>
                 <p className="mt-1 text-xs text-foreground-lighter">
-                  Authorizing {name} grants it the following{' '}
-                  <InlineLink href={OAUTH_SCOPES_DOCS_URL}>access permissions</InlineLink> to the
-                  selected organization. Only continue if you trust this app.
+                  {$t('Authorizing')} {name} {$t('grants it the following')}{' '}
+                  <InlineLink href={OAUTH_SCOPES_DOCS_URL}>{$t('access permissions')}</InlineLink>{' '}
+                  {$t('to the selected organization. Only continue if you trust this app.')}
                 </p>
               </div>
 

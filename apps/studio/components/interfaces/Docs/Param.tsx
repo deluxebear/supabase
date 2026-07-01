@@ -2,6 +2,7 @@ import { noop } from 'lodash'
 import { Badge } from 'ui'
 
 import Description from '@/components/interfaces/Docs/Description'
+import { t as $t } from '@/lib/i18n'
 
 function getColumnType(type: string, format: string) {
   // json and jsonb both have type=undefined, so check format instead
@@ -52,13 +53,13 @@ const Param = ({
       </div>
       {format && (
         <div className="grid grid-cols-[auto_1fr] gap-y-2 gap-x-10 text-sm">
-          <label className="text-foreground-lighter">Type</label>
+          <label className="text-foreground-lighter">{$t('Type')}</label>
           <div className="text-foreground">{getColumnType(type, format)}</div>
-          <label className="text-foreground-lighter">Format</label>
+          <label className="text-foreground-lighter">{$t('Format')}</label>
           <div className="text-foreground">{format}</div>
           {description !== false && (
             <>
-              <label className="text-foreground-lighter">Description</label>
+              <label className="text-foreground-lighter">{$t('Description')}</label>
               <div className="text-foreground pt-1">
                 <Description
                   content={description?.toString()}

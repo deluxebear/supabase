@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
 import type { Time } from './PITR.types'
 import { formatNumberToTwoDigits, formatTimeToTimeString } from './PITR.utils'
+import { t as $t } from '@/lib/i18n'
 
 // [Joshen] This is trying to do the same thing as TimeSplitInput.tsx
 // so can we please look to try to combine these 2 components together if possible
@@ -100,14 +101,14 @@ const TimeInput = ({ defaultTime, minimumTime, maximumTime, onChange = noop }: T
               placeholder="HH"
               value={formatNumberToTwoDigits(time.h)}
               onFocus={onFocus}
-              aria-label="Hours"
+              aria-label={$t('Hours')}
               onBlur={(event) => onInputBlur(event, 'h')}
               onChange={(event) => onInputChange(event, 'h')}
               className="w-full text-sm bg-transparent p-0 text-center outline-hidden border-none focus:ring-0"
             />
           </TooltipTrigger>
 
-          <TooltipContent side="bottom">Hours (HH)</TooltipContent>
+          <TooltipContent side="bottom">{$t('Hours (HH)')}</TooltipContent>
         </Tooltip>
         <span>:</span>
         <Tooltip>
@@ -119,14 +120,14 @@ const TimeInput = ({ defaultTime, minimumTime, maximumTime, onChange = noop }: T
               placeholder="MM"
               value={formatNumberToTwoDigits(time.m)}
               onFocus={onFocus}
-              aria-label="Minutes"
+              aria-label={$t('Minutes')}
               onBlur={(event) => onInputBlur(event, 'm')}
               onChange={(event) => onInputChange(event, 'm')}
               className="w-full text-sm bg-transparent p-0 text-center outline-hidden border-none focus:ring-0"
             />
           </TooltipTrigger>
 
-          <TooltipContent side="bottom">Minutes (MM)</TooltipContent>
+          <TooltipContent side="bottom">{$t('Minutes (MM)')}</TooltipContent>
         </Tooltip>
         <span>:</span>
         <Tooltip>
@@ -138,13 +139,13 @@ const TimeInput = ({ defaultTime, minimumTime, maximumTime, onChange = noop }: T
               placeholder="SS"
               value={formatNumberToTwoDigits(time.s)}
               onFocus={onFocus}
-              aria-label="Seconds"
+              aria-label={$t('Seconds')}
               onBlur={(event) => onInputBlur(event, 's')}
               onChange={(event) => onInputChange(event, 's')}
               className="w-full text-sm bg-transparent p-0 text-center outline-hidden border-none focus:ring-0"
             />
           </TooltipTrigger>
-          <TooltipContent side="bottom">Seconds (SS)</TooltipContent>
+          <TooltipContent side="bottom">{$t('Seconds (SS)')}</TooltipContent>
         </Tooltip>
       </div>
       {error && <p className="text-sm text-red-900">{error}</p>}

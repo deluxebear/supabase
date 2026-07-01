@@ -4,6 +4,7 @@ import { ExplainHeader } from './ExplainVisualizer.Header'
 import { ExplainNodeRow } from './ExplainVisualizer.NodeRow'
 import { calculateMaxDuration, calculateSummary, createNodeTree } from './ExplainVisualizer.parser'
 import type { QueryPlanRow } from './ExplainVisualizer.types'
+import { t as $t } from '@/lib/i18n'
 
 export interface ExplainVisualizerProps {
   rows: readonly QueryPlanRow[]
@@ -20,7 +21,7 @@ export function ExplainVisualizer({ rows, onShowRaw, id }: ExplainVisualizerProp
     return (
       <div className="bg-studio">
         <p className="m-0 border-0 px-4 py-3 font-mono text-sm text-foreground-light">
-          No execution plan data available
+          {$t('No execution plan data available')}
         </p>
       </div>
     )

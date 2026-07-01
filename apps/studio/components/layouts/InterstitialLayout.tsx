@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, cn } from 'ui'
 
 import { ProfileImage } from '@/components/ui/ProfileImage'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const MotionCard = motion.create(Card)
 
@@ -148,7 +149,7 @@ export const DestinationLogo = ({ icon, name }: { icon?: ReactNode; name: string
 /** Supabase symbol (not the wordmark) rendered inset inside a LogoBox. */
 export const SupabaseLogo = () => (
   <LogoBox className="bg-surface-75">
-    <img alt="Supabase" src={`${BASE_PATH}/img/supabase-logo.svg`} className="size-7" />
+    <img alt={$t('Supabase')} src={`${BASE_PATH}/img/supabase-logo.svg`} className="size-7" />
   </LogoBox>
 )
 
@@ -176,9 +177,9 @@ export const InterstitialAccountRow = ({
         className="size-8 flex-shrink-0 rounded-full border border-muted"
       />
       <div className="min-w-0 flex-1">
-        <p className="text-xs text-foreground-light">Signed in as</p>
+        <p className="text-xs text-foreground-light">{$t('Signed in as')}</p>
         <p className="truncate text-sm text-foreground">
-          {displayName || <span className="invisible">Loading account</span>}
+          {displayName || <span className="invisible">{$t('Loading account')}</span>}
         </p>
       </div>
       {action}

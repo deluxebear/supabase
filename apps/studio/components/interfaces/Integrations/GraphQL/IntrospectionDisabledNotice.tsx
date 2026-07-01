@@ -9,6 +9,7 @@ import { IntrospectionConfirmModal } from './IntrospectionConfirmModal'
 import { useSetIntrospection } from './useSetIntrospection'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
+import { t as $t } from '@/lib/i18n'
 
 interface IntrospectionDisabledNoticeProps {
   schema: string
@@ -42,18 +43,20 @@ export const IntrospectionDisabledNotice = ({
       {isCollapsed ? (
         <div className="flex items-center justify-between gap-3 border-b bg-surface-100 px-4 py-2 text-xs text-foreground-light">
           <span>
-            GraphQL introspection is disabled — docs explorer and autocomplete are unavailable.
+            {$t(
+              'GraphQL introspection is disabled — docs explorer and autocomplete are unavailable.'
+            )}
           </span>
           <div className="flex items-center gap-1">
             <Button variant="default" size="tiny" onClick={() => setShowConfirm(true)}>
-              Enable introspection
+              {$t('Enable introspection')}
             </Button>
             <Button
               variant="text"
               size="tiny"
               icon={<ChevronDown />}
               onClick={() => setIsCollapsed(false)}
-              aria-label="Show introspection notice details"
+              aria-label={$t('Show introspection notice details')}
             />
           </div>
         </div>
@@ -61,22 +64,25 @@ export const IntrospectionDisabledNotice = ({
         <div className="relative">
           <Admonition
             type="default"
-            title="GraphQL introspection is disabled for this project"
+            title={$t('GraphQL introspection is disabled for this project')}
             className="m-0 rounded-none border-x-0 border-t-0"
           >
             <p>
-              GraphiQL relies on introspection to populate the docs explorer and field autocomplete.
-              With <code>pg_graphql</code> 1.6+, introspection is disabled by default so that
-              schemas aren't enumerable via the API. You can still run queries — only schema
-              discovery is affected.{' '}
+              {$t(
+                'GraphiQL relies on introspection to populate the docs explorer and field autocomplete. With'
+              )}{' '}
+              <code>pg_graphql</code>{' '}
+              {$t(
+                "1.6+, introspection is disabled by default so that schemas aren't enumerable via the API. You can still run queries — only schema discovery is affected."
+              )}{' '}
               <InlineLink href={PG_GRAPHQL_CONFIG_DOCS_URL} target="_blank" rel="noreferrer">
-                Learn more
+                {$t('Learn more')}
               </InlineLink>
               .
             </p>
             <div className="mt-3">
               <Button variant="default" onClick={() => setShowConfirm(true)}>
-                Enable introspection
+                {$t('Enable introspection')}
               </Button>
             </div>
           </Admonition>
@@ -86,7 +92,7 @@ export const IntrospectionDisabledNotice = ({
             size="tiny"
             icon={<ChevronUp />}
             onClick={() => setIsCollapsed(true)}
-            aria-label="Collapse introspection notice"
+            aria-label={$t('Collapse introspection notice')}
           />
         </div>
       )}

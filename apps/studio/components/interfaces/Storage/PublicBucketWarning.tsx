@@ -13,6 +13,7 @@ import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { storageKeys } from '@/data/storage/keys'
 import { usePublicBucketsWithSelectPoliciesQuery } from '@/data/storage/public-buckets-with-select-policies-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const DISMISS_DURATION_MS = 14 * 24 * 60 * 60 * 1000 // 14 days
@@ -166,7 +167,7 @@ function PublicBucketWarningView(props: PublicBucketWarningViewProps): ReactNode
       <Admonition
         type="warning"
         layout="horizontal"
-        title="Clients can list all files in this bucket"
+        title={$t('Clients can list all files in this bucket')}
         description={
           hasMultiplePolicies
             ? `${policyCount} broad SELECT policies on storage.objects allow clients to retrieve a full list of files. Public buckets don’t need these policies and they may expose more data than intended.`
@@ -175,10 +176,10 @@ function PublicBucketWarningView(props: PublicBucketWarningViewProps): ReactNode
         actions={
           <div className="flex gap-2">
             <Button variant="default" size="tiny" onClick={onDismiss}>
-              Dismiss
+              {$t('Dismiss')}
             </Button>
             <Button variant="warning" size="tiny" onClick={onShowModal}>
-              Remove policy
+              {$t('Remove policy')}
             </Button>
           </div>
         }
@@ -198,7 +199,7 @@ function PublicBucketWarningView(props: PublicBucketWarningViewProps): ReactNode
       >
         <div className="flex flex-col gap-3">
           <p className="text-sm text-foreground-light">
-            This will drop {hasMultiplePolicies ? 'one' : 'the'}{' '}
+            {$t('This will drop')} {hasMultiplePolicies ? 'one' : 'the'}{' '}
             <code className="text-code-inline">SELECT</code>
             {
               ' policy that makes the bucket’s contents listable. Object URLs will continue to work.'

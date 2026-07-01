@@ -9,6 +9,7 @@ import { InlineLink } from '@/components/ui/InlineLink'
 import { useBackupDownloadMutation } from '@/data/database/backup-download-mutation'
 import type { DatabaseBackup } from '@/data/database/backups-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 interface BackupItemProps {
   index: number
@@ -56,7 +57,7 @@ export const BackupItem = ({ index, isHealthy, backup, onSelectBackup }: BackupI
               },
             }}
           >
-            Restore
+            {$t('Restore')}
           </ButtonTooltip>
 
           {!backup.isPhysicalBackup && (
@@ -78,12 +79,12 @@ export const BackupItem = ({ index, isHealthy, backup, onSelectBackup }: BackupI
                 },
               }}
             >
-              Download
+              {$t('Download')}
             </ButtonTooltip>
           )}
         </div>
       )
-    return <Badge variant="warning">Backup In Progress...</Badge>
+    return <Badge variant="warning">{$t('Backup In Progress...')}</Badge>
   }
 
   return (
@@ -108,7 +109,7 @@ export const BackupItem = ({ index, isHealthy, backup, onSelectBackup }: BackupI
               ? 'File-level backups of your entire database.'
               : 'SQL-based backups of your entire database.'}{' '}
             <InlineLink href="https://supabase.com/blog/postgresql-physical-logical-backups">
-              Learn more
+              {$t('Learn more')}
             </InlineLink>
           </TooltipContent>
         </Tooltip>

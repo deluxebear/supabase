@@ -17,6 +17,7 @@ import { useApiAuthorizationApproveMutation } from '@/data/api-authorization/api
 import { useApiAuthorizationDeclineMutation } from '@/data/api-authorization/api-authorization-decline-mutation'
 import { useApiAuthorizationQuery } from '@/data/api-authorization/api-authorization-query'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
+import { t as $t } from '@/lib/i18n'
 import { buildStudioPageTitle } from '@/lib/page-title'
 import type { Organization } from '@/types'
 
@@ -150,7 +151,7 @@ export function ApiAuthorizationValidScreen({
   })
   const { mutate: declineRequest } = useApiAuthorizationDeclineMutation({
     onSuccess: () => {
-      toast.success('Declined API authorization request')
+      toast.success($t('Declined API authorization request'))
       navigate('/organizations')
     },
   })

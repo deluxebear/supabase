@@ -14,6 +14,7 @@ import { useOrgSubscriptionQuery } from '@/data/subscriptions/org-subscription-q
 import { useLastVisitedOrganization } from '@/hooks/misc/useLastVisitedOrganization'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import type { Organization } from '@/types'
 
 export const DeleteProjectModal = ({
@@ -97,7 +98,7 @@ export const DeleteProjectModal = ({
   async function handleDeleteProject() {
     if (project === undefined) return
     if (!isFree && selectedReason.length === 0) {
-      return toast.error('Please select a reason for deleting your project')
+      return toast.error($t('Please select a reason for deleting your project'))
     }
 
     deleteProject({ projectRef: project.ref, organizationSlug: organization?.slug })
@@ -148,7 +149,7 @@ export const DeleteProjectModal = ({
           <div className="flex flex-col gap-y-6">
             <FormItemLayout
               isReactForm={false}
-              label="What made you decide to delete your project?"
+              label={$t('What made you decide to delete your project?')}
             >
               <div className="flex flex-wrap gap-2" data-toggle="buttons">
                 {shuffledReasons.map((option) => {

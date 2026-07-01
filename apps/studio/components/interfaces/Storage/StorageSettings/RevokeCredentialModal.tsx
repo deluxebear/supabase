@@ -13,6 +13,7 @@ import {
 } from 'ui'
 
 import { useS3AccessKeyDeleteMutation } from '@/data/storage/s3-access-key-delete-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface RevokeCredentialModalProps {
   visible: boolean
@@ -28,7 +29,7 @@ export const RevokeCredentialModal = ({
   const { ref: projectRef } = useParams()
   const { mutate: deleteS3AccessKey, isPending: isDeleting } = useS3AccessKeyDeleteMutation({
     onSuccess: () => {
-      toast.success('Successfully revoked S3 access key')
+      toast.success($t('Successfully revoked S3 access key'))
       onClose()
     },
   })
@@ -38,18 +39,21 @@ export const RevokeCredentialModal = ({
       <DialogContent size="small">
         <DialogHeader>
           <DialogTitle>
-            Revoke credential <code className="text-sm">{selectedCredential?.description}</code>
+            {$t('Revoke credential')}{' '}
+            <code className="text-sm">{selectedCredential?.description}</code>
           </DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection>
           <DialogDescription>
-            This action is irreversible and requests made with these access keys will stop working.
+            {$t(
+              'This action is irreversible and requests made with these access keys will stop working.'
+            )}
           </DialogDescription>
         </DialogSection>
         <DialogFooter className="flex justify-end gap-x-1">
           <Button variant="outline" onClick={() => onClose()}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button
             variant="danger"
@@ -59,7 +63,7 @@ export const RevokeCredentialModal = ({
               deleteS3AccessKey({ id: selectedCredential.id, projectRef })
             }}
           >
-            Yes, revoke access keys
+            {$t('Yes, revoke access keys')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -42,6 +42,7 @@ import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useIsProtectedSchema, useProtectedSchemas } from '@/hooks/useProtectedSchemas'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { useEditorPanelStateSnapshot } from '@/state/editor-panel-state'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
@@ -206,21 +207,21 @@ execute function function_name();`
 
   useEffect(() => {
     if (isSuccess && !!triggerIdToEdit && !triggerToEdit) {
-      toast('Trigger not found')
+      toast($t('Trigger not found'))
       setTriggerToEdit(null)
     }
   }, [isSuccess, setTriggerToEdit, triggerIdToEdit, triggerToEdit])
 
   useEffect(() => {
     if (isSuccess && !!triggerIdToDuplicate && !triggerToDuplicate) {
-      toast('Trigger not found')
+      toast($t('Trigger not found'))
       setTriggerToDuplicate(null)
     }
   }, [isSuccess, triggerIdToDuplicate, triggerToDuplicate, setTriggerToDuplicate])
 
   useEffect(() => {
     if (isSuccess && !!triggerIdToDelete && !triggerToDelete && !isSuccessDelete) {
-      toast('Trigger not found')
+      toast($t('Trigger not found'))
       setTriggerToDelete(null)
     }
   }, [isSuccess, triggerIdToDelete, triggerToDelete, isSuccessDelete, setTriggerToDelete])
@@ -258,7 +259,7 @@ execute function function_name();`
               <InputGroupInput
                 ref={searchInputRef}
                 size="tiny"
-                placeholder="Search for a trigger"
+                placeholder={$t('Search for a trigger')}
                 value={filterString}
                 onChange={(e) => setFilterString(e.target.value)}
                 onKeyDown={onSearchInputEscape(filterString, setFilterString)}
@@ -268,7 +269,7 @@ execute function function_name();`
               </InputGroupAddon>
             </InputGroup>
             <ReportsSelectFilter
-              label="Table"
+              label={$t('Table')}
               options={tables.map((type) => ({ label: type, value: type }))}
               value={tablesFilter ?? []}
               onChange={setTablesFilter}
@@ -294,8 +295,10 @@ execute function function_name();`
         {!isSchemaLocked && (schemaTriggers ?? []).length === 0 ? (
           <EmptyStatePresentational
             icon={DatabaseZap}
-            title="Add your first trigger"
-            description="Make your database reactive. Send updates in realtime, call edge functions, or validate data as it comes in."
+            title={$t('Add your first trigger')}
+            description={$t(
+              'Make your database reactive. Send updates in realtime, call edge functions, or validate data as it comes in.'
+            )}
           >
             <CreateTriggerButtons
               hasTables={hasTables}
@@ -312,13 +315,13 @@ execute function function_name();`
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead key="name">Name</TableHead>
-                    <TableHead key="table">Table</TableHead>
-                    <TableHead key="function">Function</TableHead>
-                    <TableHead key="events">Events</TableHead>
-                    <TableHead key="orientation">Orientation</TableHead>
+                    <TableHead key="name">{$t('Name')}</TableHead>
+                    <TableHead key="table">{$t('Table')}</TableHead>
+                    <TableHead key="function">{$t('Function')}</TableHead>
+                    <TableHead key="events">{$t('Events')}</TableHead>
+                    <TableHead key="orientation">{$t('Orientation')}</TableHead>
                     <TableHead key="enabled" className="w-20">
-                      Enabled
+                      {$t('Enabled')}
                     </TableHead>
                     <TableHead key="buttons" className="w-1/12"></TableHead>
                   </TableRow>
@@ -352,15 +355,16 @@ execute function function_name();`
         visible={!!triggerToDelete}
         onCancel={() => setTriggerToDelete(null)}
         onConfirm={() => onDeleteTrigger()}
-        title="Delete this trigger"
+        title={$t('Delete this trigger')}
         loading={isDeletingTrigger}
         confirmLabel={`Delete trigger ${triggerToDelete?.name}`}
         confirmPlaceholder="Type in name of trigger"
         confirmString={triggerToDelete?.name ?? ''}
         text={
           <>
-            This will delete your trigger called{' '}
-            <span className="text-bold text-foreground">{triggerToDelete?.name}</span> of schema{' '}
+            {$t('This will delete your trigger called')}{' '}
+            <span className="text-bold text-foreground">{triggerToDelete?.name}</span>{' '}
+            {$t('of schema')}{' '}
             <span className="text-bold text-foreground">{triggerToDelete?.schema}</span>
           </>
         }

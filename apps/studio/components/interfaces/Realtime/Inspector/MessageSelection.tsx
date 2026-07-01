@@ -7,6 +7,7 @@ import type { LogData } from './Messages.types'
 import { SelectedRealtimeMessagePanel } from './SelectedRealtimeMessagePanel'
 import CopyButton from '@/components/ui/CopyButton'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -26,7 +27,7 @@ const MessageSelection = ({ log, onClose }: MessageSelectionProps) => {
   const handleCopy = () => {
     if (!log) return
     copyToClipboard(selectionText)
-    toast.success('Message copied to clipboard')
+    toast.success($t('Message copied to clipboard'))
   }
 
   useShortcut(SHORTCUT_IDS.INSPECTOR_COPY_MESSAGE, handleCopy, {
@@ -39,7 +40,7 @@ const MessageSelection = ({ log, onClose }: MessageSelectionProps) => {
     <CopyButton
       text={selectionText}
       variant="default"
-      title="Copy log to clipboard"
+      title={$t('Copy log to clipboard')}
       onClick={() => {
         track('realtime_inspector_copy_message_clicked')
       }}
@@ -80,9 +81,9 @@ const MessageSelection = ({ log, onClose }: MessageSelectionProps) => {
             </div>
           </div>
           <div className="flex flex-col gap-1">
-            <h3 className="text-sm text-foreground">Select a message</h3>
+            <h3 className="text-sm text-foreground">{$t('Select a message')}</h3>
             <p className="text-xs text-foreground-lighter">
-              Click on a message on the left to view details.
+              {$t('Click on a message on the left to view details.')}
             </p>
           </div>
         </div>

@@ -2,6 +2,7 @@ import { SignInSSOForm } from '@/components/interfaces/SignIn/SignInSSOForm'
 import { SignInLayout } from '@/components/layouts/SignInLayout/SignInLayout'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const SignInSSOPage: NextPageWithLayout = () => {
@@ -19,13 +20,13 @@ const SignInSSOPage: NextPageWithLayout = () => {
 
       <div className="my-8 self-center text-sm">
         <div>
-          <span className="text-foreground-light">Interested in SSO?</span>{' '}
+          <span className="text-foreground-light">{$t('Interested in SSO?')}</span>{' '}
           <a
             href="https://supabase.com/contact/enterprise"
             rel="noopener noreferrer"
             className="underline text-foreground hover:text-foreground-light transition"
           >
-            Let us know
+            {$t('Let us know')}
           </a>
         </div>
       </div>

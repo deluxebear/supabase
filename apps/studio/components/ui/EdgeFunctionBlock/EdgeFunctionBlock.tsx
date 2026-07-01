@@ -6,6 +6,7 @@ import { Admonition } from 'ui-patterns/admonition'
 import { CodeBlock, type CodeBlockLang } from 'ui-patterns/CodeBlock'
 
 import { ReportBlockContainer } from '@/components/interfaces/Reports/ReportBlock/ReportBlockContainer'
+import { t as $t } from '@/lib/i18n'
 
 interface EdgeFunctionBlockProps {
   /** Title of the EdgeFunctionBlock */
@@ -109,9 +110,13 @@ export const EdgeFunctionBlock = ({
           type="warning"
           className="rounded-none border-0 border-b shrink-0 bg-background-100"
         >
-          <p>An edge function with the name "{functionName}" already exists.</p>
+          <p>
+            {$t('An edge function with the name "')}
+            {functionName}
+            {$t('" already exists.')}
+          </p>
           <p className="text-foreground-light">
-            Deploying will replace the existing function. Are you sure you want to proceed?
+            {$t('Deploying will replace the existing function. Are you sure you want to proceed?')}
           </p>
           <div className="flex justify-stretch mt-2 gap-2">
             <Button
@@ -121,7 +126,7 @@ export const EdgeFunctionBlock = ({
               disabled={isDeploying}
               onClick={onCancelReplace}
             >
-              Cancel
+              {$t('Cancel')}
             </Button>
             <Button
               variant="danger"
@@ -131,7 +136,7 @@ export const EdgeFunctionBlock = ({
               disabled={isDeploying}
               onClick={onConfirmReplace}
             >
-              Replace function
+              {$t('Replace function')}
             </Button>
           </div>
         </Admonition>
@@ -153,21 +158,21 @@ export const EdgeFunctionBlock = ({
       {hasStatusMessage && (
         <div className="p-4 w-full border-t bg-surface-75 text-xs">
           {isDeploying ? (
-            <p className="text-foreground-light">Deploying function...</p>
+            <p className="text-foreground-light">{$t('Deploying function...')}</p>
           ) : errorText ? (
             <p className="text-danger">{errorText}</p>
           ) : (
             <>
               <p className="text-foreground-light mb-2">
-                The{' '}
+                {$t('The')}{' '}
                 {deploymentDetailsUrl ? (
                   <Link className="text-foreground" href={deploymentDetailsUrl}>
-                    new function
+                    {$t('new function')}
                   </Link>
                 ) : (
-                  <span className="text-foreground">new function</span>
+                  <span className="text-foreground">{$t('new function')}</span>
                 )}{' '}
-                is now live at:
+                {$t('is now live at:')}
               </p>
               <CodeBlock
                 language="bash"
@@ -176,7 +181,7 @@ export const EdgeFunctionBlock = ({
                 className="text-xs p-2"
               />
               <p className="text-foreground-light mt-4 mb-2">
-                To download and work on this function locally, use the CLI command:
+                {$t('To download and work on this function locally, use the CLI command:')}
               </p>
               <CodeBlock
                 hideLineNumbers

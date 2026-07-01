@@ -21,6 +21,7 @@ import type { Filter, Sort } from '@/components/grid/types'
 import { useTableEditorQuery } from '@/data/table-editor/table-editor-query'
 import { useTableRowsQuery } from '@/data/table-rows/table-rows-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import {
   RoleImpersonationState,
   useRoleImpersonationStateSnapshot,
@@ -163,7 +164,7 @@ export const ForeignRowSelector = ({
       header={
         <div className="flex items-center justify-between">
           <p>
-            Select a record to reference from{' '}
+            {$t('Select a record to reference from')}{' '}
             <code className="text-code-inline text-sm!">
               {schemaName}.{tableName}
             </code>
@@ -172,7 +173,7 @@ export const ForeignRowSelector = ({
             {isSaving && (
               <div className="flex items-center gap-x-2">
                 <Loader2 className="animate-spin" size={12} />
-                <p className="text-xs text-foreground-light">Saving</p>
+                <p className="text-xs text-foreground-light">{$t('Saving')}</p>
               </div>
             )}
             <Button variant="text" icon={<X />} className="w-7" onClick={closePanel} />
@@ -186,18 +187,18 @@ export const ForeignRowSelector = ({
           {isLoading && (
             <div className="flex h-full py-6 flex-col items-center justify-center space-y-2">
               <Loader2 size={14} className="animate-spin" />
-              <p className="text-sm text-foreground-light">Loading rows</p>
+              <p className="text-sm text-foreground-light">{$t('Loading rows')}</p>
             </div>
           )}
 
           {isError && (
             <div className="flex h-full py-6 flex-col items-center justify-center">
               <p className="text-sm text-foreground-light">
-                Unable to load rows from{' '}
+                {$t('Unable to load rows from')}{' '}
                 <code>
                   {schemaName}.{tableName}
                 </code>
-                . Please try again or contact support.
+                {$t('. Please try again or contact support.')}
               </p>
             </div>
           )}
@@ -232,7 +233,7 @@ export const ForeignRowSelector = ({
                             if (columns?.length === 1) onSelect({ [columns[0].source]: null })
                           }}
                         >
-                          Set NULL
+                          {$t('Set NULL')}
                         </Button>
                       </div>
                     )}
@@ -260,7 +261,7 @@ export const ForeignRowSelector = ({
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center border-b border-t border-default">
-                    <span className="text-foreground-light text-sm">No Rows Found</span>
+                    <span className="text-foreground-light text-sm">{$t('No Rows Found')}</span>
                   </div>
                 )}
               </div>

@@ -22,6 +22,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import * as z from 'zod'
 
 import { useCreateThirdPartyAuthIntegrationMutation } from '@/data/third-party-auth/integration-create-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface CreateFirebaseAuthIntegrationProps {
   visible: boolean
@@ -124,15 +125,16 @@ export const CreateFirebaseAuthIntegrationDialog = ({
             <Separator /> */}
 
               <p className="text-sm text-foreground-light">
-                This will enable a JWT token from a specific Firebase project to access data from
-                this Supabase project.
+                {$t(
+                  'This will enable a JWT token from a specific Firebase project to access data from this Supabase project.'
+                )}
               </p>
               <FormField
                 key="firebaseProjectId"
                 control={form.control}
                 name="firebaseProjectId"
                 render={({ field }) => (
-                  <FormItemLayout label="Firebase Auth Project ID">
+                  <FormItemLayout label={$t('Firebase Auth Project ID')}>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -146,13 +148,13 @@ export const CreateFirebaseAuthIntegrationDialog = ({
           {!isCreating && (
             <div className="flex-1">
               <Button variant="danger" onClick={() => onDelete()} icon={<Trash />}>
-                Remove connection
+                {$t('Remove connection')}
               </Button>
             </div>
           )}
 
           <Button disabled={isPending} variant="default" onClick={() => onClose()}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button form={FORM_ID} type="submit" disabled={isPending} loading={isPending}>
             {isCreating ? 'Create connection' : 'Update connection'}

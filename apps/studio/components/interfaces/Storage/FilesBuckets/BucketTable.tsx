@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/VirtualizedTable'
 import { Bucket } from '@/data/storage/buckets-query'
 import { formatBytes } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { createNavigationHandler } from '@/lib/navigation'
 
 type BucketTableMode = 'standard' | 'virtualized'
@@ -43,15 +44,15 @@ export const BucketTableHeader = ({ mode, hasBuckets = true }: BucketTableHeader
       <BucketTableRow>
         {hasBuckets && (
           <BucketTableHead className={`${stickyClasses} w-2 pr-1`}>
-            <span className="sr-only">Icon</span>
+            <span className="sr-only">{$t('Icon')}</span>
           </BucketTableHead>
         )}
-        <BucketTableHead className={stickyClasses}>Name</BucketTableHead>
-        <BucketTableHead className={stickyClasses}>Policies</BucketTableHead>
-        <BucketTableHead className={stickyClasses}>File size limit</BucketTableHead>
-        <BucketTableHead className={stickyClasses}>Allowed MIME types</BucketTableHead>
+        <BucketTableHead className={stickyClasses}>{$t('Name')}</BucketTableHead>
+        <BucketTableHead className={stickyClasses}>{$t('Policies')}</BucketTableHead>
+        <BucketTableHead className={stickyClasses}>{$t('File size limit')}</BucketTableHead>
+        <BucketTableHead className={stickyClasses}>{$t('Allowed MIME types')}</BucketTableHead>
         <BucketTableHead className={stickyClasses}>
-          <span className="sr-only">Actions</span>
+          <span className="sr-only">{$t('Actions')}</span>
         </BucketTableHead>
       </BucketTableRow>
     </BucketTableHeader>
@@ -70,9 +71,11 @@ export const BucketTableEmptyState = ({ mode, filterString }: BucketTableEmptySt
   return (
     <BucketTableRow className="[&>td]:hover:bg-inherit">
       <BucketTableCell colSpan={5}>
-        <p className="text-sm text-foreground">No results found</p>
+        <p className="text-sm text-foreground">{$t('No results found')}</p>
         <p className="text-sm text-foreground-lighter">
-          Your search for “{filterString}” did not return any results
+          {$t('Your search for “')}
+          {filterString}
+          {$t('” did not return any results')}
         </p>
       </BucketTableCell>
     </BucketTableRow>
@@ -114,7 +117,11 @@ export const BucketTableRow = ({
       tabIndex={0}
     >
       <BucketTableCell className="w-2 pr-1">
-        <FilesBucketIcon aria-label="bucket icon" size={16} className="text-foreground-muted" />
+        <FilesBucketIcon
+          aria-label={$t('bucket icon')}
+          size={16}
+          className="text-foreground-muted"
+        />
       </BucketTableCell>
       <BucketTableCell className="flex-1">
         <div className="flex items-center gap-2.5">
@@ -123,7 +130,7 @@ export const BucketTableRow = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Badge variant="warning" className="flex">
-                  Public
+                  {$t('Public')}
                 </Badge>
               </TooltipTrigger>
               <TooltipContent side="top">{PUBLIC_BUCKET_TOOLTIP}</TooltipContent>
@@ -159,7 +166,7 @@ export const BucketTableRow = ({
           <ChevronRight aria-hidden={true} size={14} className="text-foreground-muted/60" />
         </div>
         <button tabIndex={-1} className="sr-only">
-          Go to bucket details
+          {$t('Go to bucket details')}
         </button>
       </BucketTableCell>
     </BucketTableRow>

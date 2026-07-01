@@ -7,6 +7,7 @@ import { LogsPreviewer } from '@/components/interfaces/Settings/Logs/LogsPreview
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import LogsLayout from '@/components/layouts/LogsLayout/LogsLayout'
 import { useSupavisorConfigurationQuery } from '@/data/database/supavisor-configuration-query'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 export const LogPage: NextPageWithLayout = () => {
@@ -30,7 +31,7 @@ export const LogPage: NextPageWithLayout = () => {
 
 LogPage.getLayout = (page) => (
   <DefaultLayout>
-    <LogsLayout title="Pooler Logs">{page}</LogsLayout>
+    <LogsLayout title={$t('Pooler Logs')}>{page}</LogsLayout>
   </DefaultLayout>
 )
 

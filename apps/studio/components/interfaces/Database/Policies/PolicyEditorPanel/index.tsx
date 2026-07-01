@@ -51,6 +51,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useLatest } from '@/hooks/misc/useLatest'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
+import { t as $t } from '@/lib/i18n'
 
 interface PolicyEditorPanelProps {
   visible: boolean
@@ -138,7 +139,7 @@ export const PolicyEditorPanel = memo(function ({
     onSuccess: async () => {
       // refresh all policies
       await queryClient.invalidateQueries({ queryKey: databasePoliciesKeys.list(ref) })
-      toast.success('Successfully created new policy')
+      toast.success($t('Successfully created new policy'))
       onSelectCancel()
     },
     onError: (error) => setError(error),
@@ -146,7 +147,7 @@ export const PolicyEditorPanel = memo(function ({
 
   const { mutate: updatePolicy, isPending: isUpdating } = useDatabasePolicyUpdateMutation({
     onSuccess: () => {
-      toast.success('Successfully updated policy')
+      toast.success($t('Successfully updated policy'))
       onSelectCancel()
     },
   })
@@ -416,7 +417,7 @@ export const PolicyEditorPanel = memo(function ({
                               {supportWithCheck && showCheckBlock && (
                                 <span className="text-[#ffd700]">) </span>
                               )}
-                              <span className="text-[#569cd6]">with check</span>{' '}
+                              <span className="text-[#569cd6]">{$t('with check')}</span>{' '}
                               <span className="text-[#ffd700]">(</span>
                             </>
                           ) : (
@@ -440,7 +441,9 @@ export const PolicyEditorPanel = memo(function ({
                           <RLSCodeEditor
                             readOnly={!canUpdatePolicies}
                             id="rls-exp-two-editor"
-                            placeholder="-- Provide a SQL expression for the with check statement"
+                            placeholder={$t(
+                              '-- Provide a SQL expression for the with check statement'
+                            )}
                             defaultValue={check}
                             value={check}
                             editorRef={editorTwoRef}
@@ -506,7 +509,7 @@ export const PolicyEditorPanel = memo(function ({
                           }}
                         />
                         <Label className="text-xs cursor-pointer" htmlFor="use-check">
-                          Use check expression
+                          {$t('Use check expression')}
                         </Label>
                       </div>
                     )}
@@ -522,7 +525,7 @@ export const PolicyEditorPanel = memo(function ({
                         disabled={isExecuting || isUpdating}
                         onClick={confirmOnClose}
                       >
-                        Cancel
+                        {$t('Cancel')}
                       </Button>
 
                       <ButtonTooltip
@@ -539,7 +542,7 @@ export const PolicyEditorPanel = memo(function ({
                           },
                         }}
                       >
-                        Save policy
+                        {$t('Save policy')}
                       </ButtonTooltip>
                     </SheetFooter>
                   </div>
@@ -560,7 +563,7 @@ export const PolicyEditorPanel = memo(function ({
                         value="templates"
                         className="px-0 data-[state=active]:bg-transparent"
                       >
-                        Templates
+                        {$t('Templates')}
                       </TabsTrigger_Shadcn_>
                     </TabsList_Shadcn_>
 
@@ -625,7 +628,9 @@ export const PolicyEditorPanel = memo(function ({
 
       <DiscardChangesConfirmationDialog
         {...modalProps}
-        description="Are you sure you want to close the editor? Any unsaved changes on your policy and conversations with the Assistant will be lost."
+        description={$t(
+          'Are you sure you want to close the editor? Any unsaved changes on your policy and conversations with the Assistant will be lost.'
+        )}
       />
     </>
   )

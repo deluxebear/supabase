@@ -52,6 +52,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useLatest } from '@/hooks/misc/useLatest'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { noop } from '@/lib/void'
 import type { ResponseError } from '@/types'
 
@@ -230,7 +231,7 @@ export const PostgrestConfig = () => {
         }),
       ])
 
-      toast.success('Successfully saved settings')
+      toast.success($t('Successfully saved settings'))
       form.reset({
         dbSchema: dbSchema
           .split(',')
@@ -297,7 +298,10 @@ export const PostgrestConfig = () => {
                 </CardContent>
               ) : isError ? (
                 <CardContent>
-                  <Admonition type="destructive" description="Failed to retrieve API settings." />
+                  <Admonition
+                    type="destructive"
+                    description={$t('Failed to retrieve API settings.')}
+                  />
                 </CardContent>
               ) : (
                 <>
@@ -305,8 +309,10 @@ export const PostgrestConfig = () => {
                     <FormItemLayout
                       isReactForm={false}
                       layout="flex-row-reverse"
-                      label="Exposed schemas"
-                      description="Select schemas to include in the Data API. Schemas must be included before tables can be exposed."
+                      label={$t('Exposed schemas')}
+                      description={$t(
+                        'Select schemas to include in the Data API. Schemas must be included before tables can be exposed.'
+                      )}
                     >
                       <ExposedSchemaSelector
                         selectedSchemas={watchedDbSchema}
@@ -328,15 +334,15 @@ export const PostgrestConfig = () => {
                       />
                       {protectedSchemasExposed.length > 0 ? (
                         <p className="mt-1 text-sm text-warning">
-                          {protectedSchemasExposed.length} protected schema
-                          {protectedSchemasExposed.length > 1 ? 's' : ''} is currently exposed and
-                          should be removed
+                          {protectedSchemasExposed.length} {$t('protected schema')}
+                          {protectedSchemasExposed.length > 1 ? 's' : ''}{' '}
+                          {$t('is currently exposed and should be removed')}
                         </p>
                       ) : missingExposedSchema.length > 0 ? (
                         <p className="mt-1 text-sm text-foreground-lighter">
-                          {missingExposedSchema.length} exposed schema
-                          {missingExposedSchema.length > 1 ? 's' : ''} does not exist — safe to
-                          remove
+                          {missingExposedSchema.length} {$t('exposed schema')}
+                          {missingExposedSchema.length > 1 ? 's' : ''}{' '}
+                          {$t('does not exist — safe to remove')}
                         </p>
                       ) : null}
                     </FormItemLayout>
@@ -344,8 +350,8 @@ export const PostgrestConfig = () => {
                     <FormItemLayout
                       isReactForm={false}
                       layout="flex-row-reverse"
-                      label="Exposed tables"
-                      description="Toggle Data API access for individual tables."
+                      label={$t('Exposed tables')}
+                      description={$t('Toggle Data API access for individual tables.')}
                     >
                       <ExposedTableSelector
                         selectedSchemas={watchedDbSchema}
@@ -385,8 +391,8 @@ export const PostgrestConfig = () => {
                     <FormItemLayout
                       isReactForm={false}
                       layout="flex-row-reverse"
-                      label="Exposed functions"
-                      description="Toggle Data API access for individual functions."
+                      label={$t('Exposed functions')}
+                      description={$t('Toggle Data API access for individual functions.')}
                     >
                       <ExposedFunctionSelector
                         selectedSchemas={watchedDbSchema}
@@ -431,8 +437,10 @@ export const PostgrestConfig = () => {
                           <FormItem>
                             <FormItemLayout
                               layout="flex-row-reverse"
-                              label="Automatically expose new tables"
-                              description="Grants privileges to Data API roles by default, exposing new tables. We recommend disabling this to control access manually."
+                              label={$t('Automatically expose new tables')}
+                              description={$t(
+                                'Grants privileges to Data API roles by default, exposing new tables. We recommend disabling this to control access manually.'
+                              )}
                             >
                               <FormControl>
                                 <div>
@@ -453,8 +461,10 @@ export const PostgrestConfig = () => {
                     {watchedDbSchema.length === 0 && (
                       <Admonition
                         type="warning"
-                        title="No schema is currently selected"
-                        description="Saving with no selected schema or table will disable the Data API."
+                        title={$t('No schema is currently selected')}
+                        description={$t(
+                          'Saving with no selected schema or table will disable the Data API.'
+                        )}
                       />
                     )}
                   </CardContent>
@@ -466,8 +476,10 @@ export const PostgrestConfig = () => {
                         <FormItem>
                           <FormItemLayout
                             layout="flex-row-reverse"
-                            label="Extra search path"
-                            description="Extra schemas to add to the search path of every request."
+                            label={$t('Extra search path')}
+                            description={$t(
+                              'Extra schemas to add to the search path of every request.'
+                            )}
                           >
                             {isLoadingSchemas ? (
                               <div className="col-span-12 flex flex-col gap-2 lg:col-span-7">
@@ -482,7 +494,7 @@ export const PostgrestConfig = () => {
                               >
                                 <MultiSelectorTrigger
                                   mode="inline-combobox"
-                                  label="Select schemas..."
+                                  label={$t('Select schemas...')}
                                   badgeLimit="wrap"
                                   showIcon={false}
                                   deletableBadge
@@ -517,8 +529,10 @@ export const PostgrestConfig = () => {
                         <FormItem>
                           <FormItemLayout
                             layout="flex-row-reverse"
-                            label="Max rows"
-                            description="The maximum number of rows returned from a view, table, or function. Limits payload size for accidental or malicious requests."
+                            label={$t('Max rows')}
+                            description={$t(
+                              'The maximum number of rows returned from a view, table, or function. Limits payload size for accidental or malicious requests.'
+                            )}
                           >
                             <FormControl>
                               <InputGroup>
@@ -546,8 +560,10 @@ export const PostgrestConfig = () => {
                         <FormItem>
                           <FormItemLayout
                             layout="flex-row-reverse"
-                            label="Pool size"
-                            description="Number of maximum connections to keep open in the Data API server's database pool. Unset to let it be configured automatically based on compute size."
+                            label={$t('Pool size')}
+                            description={$t(
+                              "Number of maximum connections to keep open in the Data API server's database pool. Unset to let it be configured automatically based on compute size."
+                            )}
                           >
                             <FormControl>
                               <InputGroup>
@@ -556,7 +572,7 @@ export const PostgrestConfig = () => {
                                   disabled={!canUpdatePostgrestConfig}
                                   {...field}
                                   type="number"
-                                  placeholder="Configured automatically"
+                                  placeholder={$t('Configured automatically')}
                                   onChange={(e) =>
                                     field.onChange(
                                       e.target.value === '' ? null : Number(e.target.value)
@@ -599,12 +615,12 @@ export const PostgrestConfig = () => {
               <FormItemLayout
                 isReactForm={false}
                 layout="flex-row-reverse"
-                label="Harden Data API"
-                description="Expose a custom schema instead of the public schema"
+                label={$t('Harden Data API')}
+                description={$t('Expose a custom schema instead of the public schema')}
               >
                 <div className="flex gap-2 items-center justify-end">
                   <Button variant="default" icon={<Lock />} onClick={() => setShowModal(true)}>
-                    Harden Data API
+                    {$t('Harden Data API')}
                   </Button>
                 </div>
               </FormItemLayout>

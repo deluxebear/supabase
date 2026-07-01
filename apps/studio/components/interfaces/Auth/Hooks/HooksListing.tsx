@@ -21,6 +21,7 @@ import { Hook, HOOKS_DEFINITIONS } from './hooks.constants'
 import { extractMethod, isValidHook } from './hooks.utils'
 import { AlertError } from '@/components/ui/AlertError'
 import { useAuthConfigQuery } from '@/data/auth/auth-config-query'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -64,7 +65,7 @@ export const HooksListing = () => {
 
   useEffect(() => {
     if (!!hook && !selectedHook) {
-      toast('Hook not found')
+      toast($t('Hook not found'))
       setHook(null)
     }
   }, [hook, selectedHook, setHook])
@@ -96,7 +97,7 @@ export const HooksListing = () => {
     <PageSection>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Hooks</PageSectionTitle>
+          <PageSectionTitle>{$t('Hooks')}</PageSectionTitle>
         </PageSectionSummary>
         <PageSectionAside>
           <AddHookDropdown
@@ -112,8 +113,10 @@ export const HooksListing = () => {
       <PageSectionContent>
         {!hasValidHooks && (
           <EmptyStatePresentational
-            title="Create an auth hook"
-            description="Use Postgres functions or HTTP endpoints to customize your authentication flow."
+            title={$t('Create an auth hook')}
+            description={$t(
+              'Use Postgres functions or HTTP endpoints to customize your authentication flow.'
+            )}
           >
             <AddHookDropdown
               variant="default"

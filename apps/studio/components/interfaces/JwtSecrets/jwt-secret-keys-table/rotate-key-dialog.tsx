@@ -22,6 +22,7 @@ import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { useEdgeFunctionsQuery } from '@/data/edge-functions/edge-functions-query'
 import { useJWTSigningKeyUpdateMutation } from '@/data/jwt-signing-keys/jwt-signing-key-update-mutation'
 import { JWTSigningKey } from '@/data/jwt-signing-keys/jwt-signing-keys-query'
+import { t as $t } from '@/lib/i18n'
 
 export function RotateKeyDialog({
   projectRef,
@@ -44,7 +45,7 @@ export function RotateKeyDialog({
 
   const { mutate, isPending: isPendingMutation } = useJWTSigningKeyUpdateMutation({
     onSuccess: () => {
-      toast.success('Signing key rotated successfully')
+      toast.success($t('Signing key rotated successfully'))
       onClose()
     },
     onError: (error) => {
@@ -57,10 +58,12 @@ export function RotateKeyDialog({
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Rotate JWT signing key</DialogTitle>
+        <DialogTitle>{$t('Rotate JWT signing key')}</DialogTitle>
         <DialogDescription>
-          Change the key used by Supabase Auth to create new JSON Web Tokens. Non-expired tokens
-          remain <span className="text-brand">valid and accepted</span>!
+          {$t(
+            'Change the key used by Supabase Auth to create new JSON Web Tokens. Non-expired tokens remain'
+          )}{' '}
+          <span className="text-brand">{$t('valid and accepted')}</span>!
         </DialogDescription>
       </DialogHeader>
       <DialogSectionSeparator />
@@ -73,7 +76,8 @@ export function RotateKeyDialog({
             )}
           >
             <Timer size={14} />
-            Standby key
+
+            {$t('Standby key')}
           </Badge>
           <div>
             <ArrowRight className="size-4 text-foreground-light" />
@@ -86,7 +90,8 @@ export function RotateKeyDialog({
               )}
             >
               <Key size={14} />
-              Current key
+
+              {$t('Current key')}
             </Badge>
           </div>
           <div className="text-xs text-foreground-light font-mono text-center">
@@ -104,7 +109,8 @@ export function RotateKeyDialog({
             )}
           >
             <Key size={14} />
-            Current key
+
+            {$t('Current key')}
           </Badge>
           <div>
             <ArrowRight className="h-4 w-4 text-foreground-light" />
@@ -116,7 +122,8 @@ export function RotateKeyDialog({
             )}
           >
             <Timer size={14} />
-            Previous key
+
+            {$t('Previous key')}
           </Badge>
           <div />
           <div />
@@ -136,7 +143,7 @@ export function RotateKeyDialog({
           </>
         ) : (
           <>
-            <div className="text-sm">To proceed please confirm:</div>
+            <div className="text-sm">{$t('To proceed please confirm:')}</div>
 
             <Label
               htmlFor="understands-standby"
@@ -149,7 +156,7 @@ export function RotateKeyDialog({
                 onCheckedChange={(value) => setStandbyUnderstood(!!value)}
               />
               <p className="text-sm text-foreground-light">
-                All of my application's components have picked up the standby key.
+                {$t("All of my application's components have picked up the standby key.")}
               </p>
               <ButtonTooltip
                 variant="default"
@@ -160,12 +167,14 @@ export function RotateKeyDialog({
                     className: 'max-w-[320px] p-4',
                     text: (
                       <p>
-                        If your application verifies JWTs on its own in backend servers, functions,
-                        lambdas or other such components, ensure that they've picked up and are
-                        verifying tokens against the standby key.
+                        {$t(
+                          "If your application verifies JWTs on its own in backend servers, functions, lambdas or other such components, ensure that they've picked up and are verifying tokens against the standby key."
+                        )}
                         <br />
                         <br />
-                        Recommendation: Periodically fetch the public keys from the project's{' '}
+                        {$t(
+                          "Recommendation: Periodically fetch the public keys from the project's"
+                        )}{' '}
                         <code>jwks.json</code> endpoint.
                       </p>
                     ),
@@ -185,7 +194,9 @@ export function RotateKeyDialog({
                 onCheckedChange={(value) => setPreviouslyUsedUnderstood(!!value)}
               />
               <p className="text-sm text-foreground-light">
-                To invalidate non-expired JWTs I need to explicitly revoke the currently used key.
+                {$t(
+                  'To invalidate non-expired JWTs I need to explicitly revoke the currently used key.'
+                )}
               </p>
               <ButtonTooltip
                 variant="default"
@@ -196,16 +207,20 @@ export function RotateKeyDialog({
                     className: 'max-w-[320px] p-4',
                     text: (
                       <p>
-                        Rotating the signing key only changes what key is used by Supabase Auth to
-                        issue <em className="text-brand not-italic">new tokens</em>
+                        {$t(
+                          'Rotating the signing key only changes what key is used by Supabase Auth to issue'
+                        )}{' '}
+                        <em className="text-brand not-italic">{$t('new tokens')}</em>
                         .<br />
                         <br />
-                        To prevent users from being prematurely signed out, you have to manually
-                        revoke the current in use key after rotation.
+                        {$t(
+                          'To prevent users from being prematurely signed out, you have to manually revoke the current in use key after rotation.'
+                        )}
                         <br />
                         <br />
-                        Recommendation: If your JWT expiry time is 1 hour, wait at least 1 hour and
-                        15 minutes before revoking the key.
+                        {$t(
+                          'Recommendation: If your JWT expiry time is 1 hour, wait at least 1 hour and 15 minutes before revoking the key.'
+                        )}
                       </p>
                     ),
                   },
@@ -222,8 +237,9 @@ export function RotateKeyDialog({
                   onCheckedChange={(value) => setEdgeFunctionsVerifyJWTUnderstood(!!value)}
                 />
                 <p className="text-sm text-foreground-light">
-                  The following Edge Functions may stop functioning for signed-in users as they
-                  verify the legacy JWT secret:{' '}
+                  {$t(
+                    'The following Edge Functions may stop functioning for signed-in users as they verify the legacy JWT secret:'
+                  )}{' '}
                   {verifyJWTEdgeFunctions
                     .map(({ name }) => (
                       <a
@@ -250,19 +266,21 @@ export function RotateKeyDialog({
                       className: 'max-w-[320px] p-4',
                       text: (
                         <p>
-                          Some of your Edge Functions are set up to require a JWT in the{' '}
-                          <code>Authorization</code> header signed with the{' '}
-                          <em className="text-brand not-italic">legacy JWT secret</em>. Rotation
-                          causes{' '}
-                          <em className="text-brand not-italic">invocations by signed-in users</em>{' '}
-                          to fail with HTTP 401 Unauthorized, as the JWT no longer meets this
-                          requirement.
+                          {$t('Some of your Edge Functions are set up to require a JWT in the')}{' '}
+                          <code>{$t('Authorization')}</code> {$t('header signed with the')}{' '}
+                          <em className="text-brand not-italic">{$t('legacy JWT secret')}</em>
+                          {$t('. Rotation causes')}{' '}
+                          <em className="text-brand not-italic">
+                            {$t('invocations by signed-in users')}
+                          </em>{' '}
+                          {$t(
+                            'to fail with HTTP 401 Unauthorized, as the JWT no longer meets this requirement.'
+                          )}
                           <br />
                           <br />
-                          Recommendation: Change all of your Edge Functions to no longer verify JWT
-                          and implement the verification logic in the function's code yourself by
-                          using the Supabase client library or any other library for working with
-                          JWT.
+                          {$t(
+                            "Recommendation: Change all of your Edge Functions to no longer verify JWT and implement the verification logic in the function's code yourself by using the Supabase client library or any other library for working with JWT."
+                          )}
                         </p>
                       ),
                     },
@@ -284,7 +302,7 @@ export function RotateKeyDialog({
           }
           loading={isPendingMutation}
         >
-          Rotate signing key
+          {$t('Rotate signing key')}
         </Button>
       </DialogFooter>
     </>

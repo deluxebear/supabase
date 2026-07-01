@@ -11,6 +11,7 @@ import { SignInLayout } from '@/components/layouts/SignInLayout/SignInLayout'
 import { useAddLoginEvent } from '@/data/misc/audit-login-mutation'
 import { useLatest } from '@/hooks/misc/useLatest'
 import { auth, buildPathWithParams, getReturnToPath } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import type { NextPageWithLayout } from '@/types'
 
@@ -82,7 +83,7 @@ const SignInMfaPage: NextPageWithLayout = () => {
       .catch((error) => {
         Sentry.captureException(error)
         console.error('Auth initialization error:', error)
-        toast.error('Failed to initialize authentication. Please try again.')
+        toast.error($t('Failed to initialize authentication. Please try again.'))
         setLoading(false)
         router.push({ pathname: '/sign-in', query: router.query })
       })

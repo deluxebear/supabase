@@ -37,6 +37,7 @@ import { getTableDefinition } from '@/data/database/table-definition-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { formatSql } from '@/lib/formatSql'
+import { t as $t } from '@/lib/i18n'
 
 // ReactFlow is scaling everything by the factor of 2
 export const TABLE_NODE_WIDTH = 320
@@ -135,7 +136,7 @@ const TableNodeComponent = ({
                           onClick={() => schemaGraphContext.onEditTable(data.id)}
                         >
                           <Edit size={12} />
-                          <p>Edit table</p>
+                          <p>{$t('Edit table')}</p>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="flex items-center space-x-2 whitespace-nowrap"
@@ -150,7 +151,7 @@ const TableNodeComponent = ({
                           }
                         >
                           <TableEditor size={12} />
-                          <p>View in Table Editor</p>
+                          <p>{$t('View in Table Editor')}</p>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -161,14 +162,14 @@ const TableNodeComponent = ({
                           }}
                         >
                           <Copy size={12} />
-                          <span>Copy name</span>
+                          <span>{$t('Copy name')}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           key="copy-schema-sql"
                           className="space-x-2"
                           onClick={async (e) => {
                             e.stopPropagation()
-                            const toastId = toast.loading('Getting table schema...')
+                            const toastId = toast.loading($t('Getting table schema...'))
 
                             const formattedSchema = getTableDefinition({
                               id: data.id,
@@ -183,7 +184,9 @@ const TableNodeComponent = ({
 
                             try {
                               await copyToClipboard(formattedSchema, () => {
-                                toast.success('Table schema copied to clipboard', { id: toastId })
+                                toast.success($t('Table schema copied to clipboard'), {
+                                  id: toastId,
+                                })
                               })
                             } catch (err) {
                               toast.error(
@@ -196,7 +199,7 @@ const TableNodeComponent = ({
                           }}
                         >
                           <Copy size={12} />
-                          <span>Copy as SQL</span>
+                          <span>{$t('Copy as SQL')}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           key="copy-schema-markdown"
@@ -207,7 +210,7 @@ const TableNodeComponent = ({
 
                             try {
                               await copyToClipboard(markdown, () => {
-                                toast.success('Table schema copied to clipboard')
+                                toast.success($t('Table schema copied to clipboard'))
                               })
                             } catch (err) {
                               toast.error(
@@ -217,7 +220,7 @@ const TableNodeComponent = ({
                           }}
                         >
                           <Copy size={12} />
-                          <span>Copy as Markdown</span>
+                          <span>{$t('Copy as Markdown')}</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -324,12 +327,12 @@ const TableNodeComponent = ({
                         className="space-x-2"
                       >
                         <Edit size={12} />
-                        <p>Edit column</p>
+                        <p>{$t('Edit column')}</p>
                       </DropdownMenuItem>
                     </TooltipTrigger>
                     {!canUpdateColumns && (
                       <TooltipContent side="bottom">
-                        Additional permissions required to edit column
+                        {$t('Additional permissions required to edit column')}
                       </TooltipContent>
                     )}
                   </Tooltip>
@@ -342,7 +345,7 @@ const TableNodeComponent = ({
                     }}
                   >
                     <Copy size={12} />
-                    <span>Copy name</span>
+                    <span>{$t('Copy name')}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

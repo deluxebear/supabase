@@ -8,6 +8,7 @@ import DeleteFactorModal from './DeleteFactorModal'
 import { AlertError } from '@/components/ui/AlertError'
 import { useMfaListFactorsQuery } from '@/data/profile/mfa-list-factors-query'
 import { DATETIME_FORMAT } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const TOTPFactors = () => {
   const [isAddNewFactorOpen, setIsAddNewFactorOpen] = useState(false)
@@ -18,7 +19,9 @@ export const TOTPFactors = () => {
     <>
       <section className="space-y-3">
         <p className="text-sm text-foreground-light">
-          Use an authenticator app (like 1Password or Authy) to verify your identity at sign-in.
+          {$t(
+            'Use an authenticator app (like 1Password or Authy) to verify your identity at sign-in.'
+          )}
         </p>
         <div>
           {isLoading && <GenericSkeletonLoader />}
@@ -32,19 +35,19 @@ export const TOTPFactors = () => {
                   return (
                     <div key={factor.id} className="flex flex-row justify-between py-2">
                       <p className="text-sm text-foreground flex items-center space-x-2">
-                        <span className="text-foreground-light">Name:</span>{' '}
+                        <span className="text-foreground-light">{$t('Name:')}</span>{' '}
                         <span>{factor.friendly_name ?? 'No name provided'}</span>
                       </p>
                       <div className="flex items-center gap-4">
                         <p className="text-sm text-foreground-light">
-                          Added on {dayjs(factor.updated_at).format(DATETIME_FORMAT)}
+                          {$t('Added on')} {dayjs(factor.updated_at).format(DATETIME_FORMAT)}
                         </p>
                         <Button
                           size="tiny"
                           variant="default"
                           onClick={() => setFactorToBeDeleted(factor.id)}
                         >
-                          Remove
+                          {$t('Remove')}
                         </Button>
                       </div>
                     </div>
@@ -54,7 +57,7 @@ export const TOTPFactors = () => {
               {data.totp.length < 2 ? (
                 <>
                   <div className="pt-2">
-                    <Button onClick={() => setIsAddNewFactorOpen(true)}>Add new app</Button>
+                    <Button onClick={() => setIsAddNewFactorOpen(true)}>{$t('Add new app')}</Button>
                   </div>
                 </>
               ) : null}

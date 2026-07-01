@@ -7,6 +7,7 @@ import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { useInstalledIntegrations } from '@/components/interfaces/Integrations/Landing/useInstalledIntegrations'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const sectionLabelCls =
   'px-2 pt-4 pb-1.5 font-mono text-xs uppercase tracking-wider text-foreground-lighter'
@@ -70,12 +71,12 @@ export const MarketplaceSidebar = () => {
         href={baseHref}
         active={isDiscoverActive}
         icon={<LayoutGrid size={13} />}
-        label="Explore all"
+        label={$t('Explore all')}
       />
 
       {isLoading ? (
         <>
-          <div className={sectionLabelCls}>Installed</div>
+          <div className={sectionLabelCls}>{$t('Installed')}</div>
           <div className="space-y-1">
             <ShimmeringLoader />
             <ShimmeringLoader />
@@ -84,7 +85,9 @@ export const MarketplaceSidebar = () => {
         </>
       ) : installedIntegrations.length > 0 ? (
         <>
-          <div className={sectionLabelCls}>Installed · {installedIntegrations.length}</div>
+          <div className={sectionLabelCls}>
+            {$t('Installed ·')} {installedIntegrations.length}
+          </div>
           {installedIntegrations.map((integration) => {
             const isActive = activeIntegrationId === integration.id
             return (
@@ -108,7 +111,7 @@ export const MarketplaceSidebar = () => {
         </>
       ) : null}
 
-      <div className={sectionLabelCls}>Resources</div>
+      <div className={sectionLabelCls}>{$t('Resources')}</div>
       {HELP_LINKS.map(({ icon, label, href }) => (
         <a
           key={label}

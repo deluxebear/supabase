@@ -16,6 +16,7 @@ import { useInboundBranding } from '@/hooks/misc/useInboundBranding'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { IS_PLATFORM } from '@/lib/constants'
 import type { ExternalIdentityProviderConfig } from '@/lib/external-identity-providers'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const SignInPage: NextPageWithLayout = () => {
@@ -56,7 +57,7 @@ const SignInPage: NextPageWithLayout = () => {
           <LastSignInWrapper type="sso">
             <Button asChild block size="large" variant="outline" icon={<Lock />}>
               <Link href={{ pathname: '/sign-in-sso', query: router.query }}>
-                Continue with SSO
+                {$t('Continue with SSO')}
               </Link>
             </Button>
           </LastSignInWrapper>
@@ -107,7 +108,7 @@ const SignInPage: NextPageWithLayout = () => {
               className="-mt-2 text-foreground-light"
               onClick={() => setShowOtherOptions(true)}
             >
-              Show other options
+              {$t('Show other options')}
             </Button>
           ))}
       </div>
@@ -120,12 +121,12 @@ const SignInPage: NextPageWithLayout = () => {
 
       {signUpEnabled && (
         <div className="self-center my-8 text-sm">
-          <span className="text-foreground-light">Don’t have an account?</span>{' '}
+          <span className="text-foreground-light">{$t('Don’t have an account?')}</span>{' '}
           <Link
             href={{ pathname: '/sign-up', query: router.query }}
             className="underline transition text-foreground hover:text-foreground-light"
           >
-            Sign up
+            {$t('Sign up')}
           </Link>
         </div>
       )}

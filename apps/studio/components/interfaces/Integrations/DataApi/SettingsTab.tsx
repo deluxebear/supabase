@@ -5,6 +5,7 @@ import { DataApiDisabledState } from '@/components/interfaces/Integrations/DataA
 import { ServiceList } from '@/components/interfaces/Settings/API/ServiceList'
 import { useIsDataApiEnabled } from '@/hooks/misc/useIsDataApiEnabled'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const DataApiSettingsTab = () => {
   const { ref: projectRef } = useParams()
@@ -13,7 +14,7 @@ export const DataApiSettingsTab = () => {
   if (IS_PLATFORM && !isPending && !isEnabled) {
     return (
       <ConstrainedIntegrationTabScaffold className="p-0!">
-        <DataApiDisabledState description="configure settings" />
+        <DataApiDisabledState description={$t('configure settings')} />
       </ConstrainedIntegrationTabScaffold>
     )
   }

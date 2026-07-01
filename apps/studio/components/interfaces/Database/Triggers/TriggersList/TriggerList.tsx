@@ -32,6 +32,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useIsProtectedSchema } from '@/hooks/useProtectedSchemas'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -82,9 +83,10 @@ export const TriggerList = ({ editTrigger, duplicateTrigger, deleteTrigger }: Tr
     return (
       <TableRow key={schema}>
         <TableCell colSpan={7}>
-          <p className="text-sm text-foreground">No triggers created yet</p>
+          <p className="text-sm text-foreground">{$t('No triggers created yet')}</p>
           <p className="text-sm text-foreground-light">
-            There are no triggers found in the schema "{schema}"
+            {$t('There are no triggers found in the schema "')}
+            {schema}"
           </p>
         </TableCell>
       </TableRow>
@@ -95,9 +97,11 @@ export const TriggerList = ({ editTrigger, duplicateTrigger, deleteTrigger }: Tr
     return (
       <TableRow key={schema}>
         <TableCell colSpan={7}>
-          <p className="text-sm text-foreground">No results found</p>
+          <p className="text-sm text-foreground">{$t('No results found')}</p>
           <p className="text-sm text-foreground-light">
-            Your search for "{filterString}" did not return any results
+            {$t('Your search for "')}
+            {filterString}
+            {$t('" did not return any results')}
           </p>
         </TableCell>
       </TableRow>
@@ -188,7 +192,7 @@ export const TriggerList = ({ editTrigger, duplicateTrigger, deleteTrigger }: Tr
                           />
                         </DropdownMenuTrigger>
                       </TooltipTrigger>
-                      <TooltipContent side="bottom">More options</TooltipContent>
+                      <TooltipContent side="bottom">{$t('More options')}</TooltipContent>
                     </Tooltip>
                     <DropdownMenuContent side="bottom" align="end" className="w-52">
                       <DropdownMenuItem
@@ -198,7 +202,7 @@ export const TriggerList = ({ editTrigger, duplicateTrigger, deleteTrigger }: Tr
                         }}
                       >
                         <Edit2 size={14} />
-                        <p>Edit trigger</p>
+                        <p>{$t('Edit trigger')}</p>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="space-x-2"
@@ -232,16 +236,16 @@ export const TriggerList = ({ editTrigger, duplicateTrigger, deleteTrigger }: Tr
                         }}
                       >
                         <Edit size={14} />
-                        <p>Edit with Assistant</p>
+                        <p>{$t('Edit with Assistant')}</p>
                       </DropdownMenuItem>
                       <DropdownMenuItem className="space-x-2" onClick={() => duplicateTrigger(x)}>
                         <Copy size={14} />
-                        <p>Duplicate trigger</p>
+                        <p>{$t('Duplicate trigger')}</p>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem className="space-x-2" onClick={() => deleteTrigger(x)}>
                         <Trash stroke="red" size={14} />
-                        <p>Delete trigger</p>
+                        <p>{$t('Delete trigger')}</p>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

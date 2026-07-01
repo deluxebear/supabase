@@ -6,6 +6,7 @@ import LogsLayout from '@/components/layouts/LogsLayout/LogsLayout'
 import { NoPermission } from '@/components/ui/NoPermission'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const LogsPage: NextPageWithLayout = () => {
@@ -24,7 +25,7 @@ const LogsPage: NextPageWithLayout = () => {
 
 LogsPage.getLayout = (page) => (
   <DefaultLayout>
-    <LogsLayout title="Auth Logs">{page}</LogsLayout>
+    <LogsLayout title={$t('Auth Logs')}>{page}</LogsLayout>
   </DefaultLayout>
 )
 

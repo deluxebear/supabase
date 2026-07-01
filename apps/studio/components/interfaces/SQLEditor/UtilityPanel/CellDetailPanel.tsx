@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from 'ui'
 import { Markdown } from '@/components/interfaces/Markdown'
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
 import { TwoOptionToggle } from '@/components/ui/TwoOptionToggle'
+import { t as $t } from '@/lib/i18n'
 
 interface CellDetailPanelProps {
   column: string
@@ -34,7 +35,7 @@ export const CellDetailPanel = ({ column, value, visible, onClose }: CellDetailP
         <SheetHeader className="py-2.5">
           <SheetTitle className="flex items-center justify-between pr-7">
             <p className="truncate">
-              Viewing cell details on column: <code className="text-sm">{column}</code>
+              {$t('Viewing cell details on column:')} <code className="text-sm">{column}</code>
             </p>
             {showMarkdownToggle && (
               <TwoOptionToggle

@@ -40,6 +40,7 @@ import { FeaturePreview, useFeaturePreviews } from './useFeaturePreviews'
 import { useBannerStack } from '@/components/ui/BannerStack/BannerStackProvider'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const FEATURE_PREVIEW_KEY_TO_CONTENT: {
@@ -124,8 +125,10 @@ export const FeaturePreviewModal = () => {
     <Dialog open={showFeaturePreviewModal} onOpenChange={toggleFeaturePreviewModal}>
       <DialogContent size="xlarge" className="flex flex-col max-w-4xl! h-[90dvh] md:h-auto">
         <DialogHeader>
-          <DialogTitle>Dashboard feature previews</DialogTitle>
-          <DialogDescription>Get early access to new features and give feedback</DialogDescription>
+          <DialogTitle>{$t('Dashboard feature previews')}</DialogTitle>
+          <DialogDescription>
+            {$t('Get early access to new features and give feedback')}
+          </DialogDescription>
         </DialogHeader>
 
         <DialogSectionSeparator />
@@ -159,7 +162,7 @@ export const FeaturePreviewModal = () => {
                         <EyeOff size={14} strokeWidth={1.5} className="text-foreground-light" />
                       )}
                       <p>{selectedFeature.name}</p>
-                      {selectedFeature.isNew && <Badge variant="success">New</Badge>}
+                      {selectedFeature.isNew && <Badge variant="success">{$t('New')}</Badge>}
                     </div>
                   </SelectTrigger>
                   <SelectContent className="p-0! [&>div]:w-full! [&>div]:p-0! [&>div]:flex! [&>div]:flex-col! w-full flex">
@@ -191,19 +194,19 @@ export const FeaturePreviewModal = () => {
                           target="_blank"
                           rel="noreferrer"
                         >
-                          Give feedback
+                          {$t('Give feedback')}
                         </Link>
                       </Button>
                     )}
                     {isSelectedFeatureEnabled ? (
                       <Button variant="default" onClick={() => toggleFeature()}>
-                        Disable feature
+                        {$t('Disable feature')}
                       </Button>
                     ) : (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button variant="default" onClick={() => toggleFeature()}>
-                            Enable feature
+                            {$t('Enable feature')}
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent side="bottom" className="max-w-64 text-center">
@@ -224,9 +227,9 @@ export const FeaturePreviewModal = () => {
             <div className="h-[550px] flex flex-col items-center justify-center">
               <FlaskConical size={30} strokeWidth={1.5} className="text-foreground-light" />
               <div className="mt-1 mb-3 flex flex-col items-center gap-y-0.5">
-                <p className="text-sm">No feature previews available</p>
+                <p className="text-sm">{$t('No feature previews available')}</p>
                 <p className="text-sm text-foreground-light">
-                  Have an idea for the dashboard? Let us know via GitHub Discussions!
+                  {$t('Have an idea for the dashboard? Let us know via GitHub Discussions!')}
                 </p>
               </div>
               <Button asChild variant="default" icon={<ExternalLink strokeWidth={1.5} />}>
@@ -235,7 +238,7 @@ export const FeaturePreviewModal = () => {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  GitHub Discussions
+                  {$t('GitHub Discussions')}
                 </Link>
               </Button>
             </div>
@@ -282,7 +285,7 @@ const FeaturePreviewItem = ({
           {feature.name}
         </p>
       </div>
-      {feature.isNew && <Badge variant="success">New</Badge>}
+      {feature.isNew && <Badge variant="success">{$t('New')}</Badge>}
     </button>
   )
 }

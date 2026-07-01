@@ -9,6 +9,7 @@ import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 import { DATE_FORMAT, MessageDetailsPanel } from './MessageDetailsPanel'
 import { AlertError } from '@/components/ui/AlertError'
 import { PostgresQueueMessage } from '@/data/database-queues/database-queue-messages-infinite-query'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 interface QueueDataGridProps {
@@ -61,7 +62,7 @@ const messagesCols = [
         return (
           <div className="flex items-center">
             <Badge variant="default">
-              Archived at {dayjs(row.archived_at).format(DATE_FORMAT)}
+              {$t('Archived at')} {dayjs(row.archived_at).format(DATE_FORMAT)}
             </Badge>
           </div>
         )
@@ -194,12 +195,12 @@ export const QueueMessagesDataGrid = ({
             <div className="absolute top-28 px-6 flex flex-col items-center justify-center w-full gap-y-2">
               <TextSearch className="text-foreground-muted" strokeWidth={1} />
               <div className="text-center">
-                <p className="text-foreground">No messages found</p>
+                <p className="text-foreground">{$t('No messages found')}</p>
                 <p className="text-foreground-light">
-                  The selected queue doesn't have any messages.
+                  {$t("The selected queue doesn't have any messages.")}
                 </p>
                 <Button className="mt-2" onClick={() => showMessageModal()}>
-                  Add message
+                  {$t('Add message')}
                 </Button>
               </div>
             </div>

@@ -4,6 +4,7 @@ import { Trash2 } from 'lucide-react'
 import { DropdownMenuItemTooltip } from '@/components/ui/DropdownMenuItemTooltip'
 import type { APIKeysData } from '@/data/api-keys/api-keys-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 interface APIKeyDeleteDialogProps {
   apiKey: Extract<APIKeysData[number], { type: 'secret' | 'publishable' }>
@@ -34,7 +35,7 @@ export const APIKeyDeleteDialog = ({ apiKey, setKeyToDelete }: APIKeyDeleteDialo
         },
       }}
     >
-      <Trash2 size={14} /> Delete API key
+      <Trash2 size={14} /> {$t('Delete API key')}
     </DropdownMenuItemTooltip>
   )
 }

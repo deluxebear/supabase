@@ -11,6 +11,7 @@ import {
   type Project,
 } from '@/data/projects/project-detail-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import pingPostgrest from '@/lib/pingPostgrest'
 
 export interface ConnectingStateProps {
@@ -58,7 +59,7 @@ const ConnectingState = ({ project }: ConnectingStateProps) => {
               <Badge variant="success">
                 <div className="flex items-center gap-2">
                   <Loader className="animate-spin" size={12} />
-                  <span>Connecting to project</span>
+                  <span>{$t('Connecting to project')}</span>
                 </div>
               </Badge>
             </div>
@@ -80,17 +81,20 @@ const ConnectingState = ({ project }: ConnectingStateProps) => {
               </div>
 
               <div className="space-y-1">
-                <p className="text-center">Connecting to {project.name}</p>
+                <p className="text-center">
+                  {$t('Connecting to')} {project.name}
+                </p>
                 <p className="text-center text-sm text-foreground-light">
-                  If you are unable to connect after a few minutes, check your project's health to
-                  verify if it's running into any resource constraints.
+                  {$t(
+                    "If you are unable to connect after a few minutes, check your project's health to verify if it's running into any resource constraints."
+                  )}
                 </p>
               </div>
 
               <div className="flex items-center justify-center space-x-2">
                 <Button asChild variant="default">
                   <Link href={`/project/${ref}/settings/infrastructure`}>
-                    Check database health
+                    {$t('Check database health')}
                   </Link>
                 </Button>
                 <Button asChild variant="default" icon={<ExternalLink strokeWidth={1.5} />}>
@@ -98,7 +102,7 @@ const ConnectingState = ({ project }: ConnectingStateProps) => {
                     href={`${DOCS_URL}/guides/troubleshooting?products=platform#unable-to-connect-to-your-supabase-project`}
                     className="translate-y-px"
                   >
-                    Troubleshooting
+                    {$t('Troubleshooting')}
                   </Link>
                 </Button>
               </div>

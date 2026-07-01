@@ -12,6 +12,7 @@ import type { ColumnHeaderProps, ColumnType, GridForeignKey } from '../../types'
 import { ColumnMenu } from '../menu/ColumnMenu'
 import { getColumnFormat } from './ColumnHeader.utils'
 import { getForeignKeyCascadeAction } from '@/components/interfaces/TableGridEditor/SidePanelEditor/ColumnEditor/ColumnEditor.utils'
+import { t as $t } from '@/lib/i18n'
 
 export function ColumnHeader<R>({
   column,
@@ -50,7 +51,7 @@ export function ColumnHeader<R>({
                 </div>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="font-normal">
-                Primary key
+                {$t('Primary key')}
               </TooltipContent>
             </Tooltip>
           )}
@@ -76,7 +77,7 @@ export function ColumnHeader<R>({
                 <Lock size={14} strokeWidth={2} />
               </TooltipTrigger>
               <TooltipContent side="bottom" className="font-normal">
-                Encrypted column
+                {$t('Encrypted column')}
               </TooltipContent>
             </Tooltip>
           )}
@@ -87,12 +88,14 @@ export function ColumnHeader<R>({
                   className="flex items-center"
                   onClick={() => openSheet(column.name as string)}
                 >
-                  <span className="sr-only">View {column.name} index suggestion</span>
+                  <span className="sr-only">
+                    {$t('View')} {column.name} {$t('index suggestion')}
+                  </span>
                   <Lightbulb size={14} strokeWidth={2} className="text-warning!" />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="font-normal">
-                Index might improve performance. Click for details.
+                {$t('Index might improve performance. Click for details.')}
               </TooltipContent>
             </Tooltip>
           )}
@@ -122,7 +125,7 @@ function ColumnIcon({
           </TooltipTrigger>
           <TooltipContent side="bottom">
             <div className="font-normal">
-              <p className="text-xs text-foreground-light">Foreign key relation:</p>
+              <p className="text-xs text-foreground-light">{$t('Foreign key relation:')}</p>
               <div className="flex items-center space-x-1">
                 <p className="text-xs text-foreground!">{name}</p>
                 <ArrowRight size={14} strokeWidth={1.5} className="text-foreground-light!" />
@@ -133,12 +136,12 @@ function ColumnIcon({
               </div>
               {foreignKey?.updateAction !== FOREIGN_KEY_CASCADE_ACTION.NO_ACTION && (
                 <p className="text-xs text-foreground! mt-1">
-                  On update: {getForeignKeyCascadeAction(foreignKey?.updateAction)}
+                  {$t('On update:')} {getForeignKeyCascadeAction(foreignKey?.updateAction)}
                 </p>
               )}
               {foreignKey?.deletionAction !== FOREIGN_KEY_CASCADE_ACTION.NO_ACTION && (
                 <p className="text-xs text-foreground! mt-1">
-                  On delete: {getForeignKeyCascadeAction(foreignKey?.deletionAction)}
+                  {$t('On delete:')} {getForeignKeyCascadeAction(foreignKey?.deletionAction)}
                 </p>
               )}
             </div>

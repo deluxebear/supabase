@@ -10,6 +10,7 @@ import { AlertError } from '@/components/ui/AlertError'
 import { ProductMenu } from '@/components/ui/ProductMenu'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { getPathnameWithoutQuery } from '@/lib/pathname.utils'
 
 export function IntegrationsProductMenu() {
@@ -73,7 +74,7 @@ export function IntegrationsProductMenu() {
             <Menu.Group
               title={
                 <div className="flex flex-col space-y-2 uppercase font-mono">
-                  <span>Installed</span>
+                  <span>{$t('Installed')}</span>
                 </div>
               }
             />

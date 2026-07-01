@@ -2,6 +2,7 @@ import { StoragePolicies } from '@/components/interfaces/Storage/StoragePolicies
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { StorageBucketsLayout } from '@/components/layouts/StorageLayout/StorageBucketsLayout'
 import StorageLayout from '@/components/layouts/StorageLayout/StorageLayout'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const FilesPoliciesPage: NextPageWithLayout = () => {
@@ -10,7 +11,7 @@ const FilesPoliciesPage: NextPageWithLayout = () => {
 
 FilesPoliciesPage.getLayout = (page) => (
   <DefaultLayout>
-    <StorageLayout title="Policies">
+    <StorageLayout title={$t('Policies')}>
       <StorageBucketsLayout>{page}</StorageBucketsLayout>
     </StorageLayout>
   </DefaultLayout>

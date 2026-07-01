@@ -13,6 +13,7 @@ import { InstallOAuthIntegrationButton } from '@/components/interfaces/Integrati
 import { useIntegrationDetail } from '@/components/interfaces/Integrations/Landing/useIntegrationDetail'
 import { AddWrapperButton } from '@/components/interfaces/Integrations/Wrappers/AddWrapperButton'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
+import { t as $t } from '@/lib/i18n'
 
 export const centeredContentClass = 'mx-auto w-full max-w-6xl px-6 xl:px-10'
 
@@ -62,10 +63,10 @@ export const MarketplaceDetail = () => {
   if (!integration) {
     return (
       <>
-        <MarketplaceDetailBreadrumbs title="Integration not found" />
+        <MarketplaceDetailBreadrumbs title={$t('Integration not found')} />
         <div className={cn(centeredContentClass, 'py-8')}>
-          <Admonition type="warning" title="This integration is not currently available">
-            Please try again later or contact support if the problem persists.
+          <Admonition type="warning" title={$t('This integration is not currently available')}>
+            {$t('Please try again later or contact support if the problem persists.')}
           </Admonition>
         </div>
       </>
@@ -88,7 +89,7 @@ export const MarketplaceDetail = () => {
       case 'installed':
         return (
           <Button variant="outline" disabled>
-            Installed
+            {$t('Installed')}
           </Button>
         )
       default:
@@ -121,7 +122,7 @@ export const MarketplaceDetail = () => {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Dashboard
+                  {$t('Dashboard')}
                 </a>
               </Button>
             )}
@@ -134,7 +135,7 @@ export const MarketplaceDetail = () => {
                 asChild
               >
                 <a href={integrationStatus.partner_links.manage} target="_blank" rel="noreferrer">
-                  Manage
+                  {$t('Manage')}
                 </a>
               </Button>
             )}
@@ -147,7 +148,7 @@ export const MarketplaceDetail = () => {
                 asChild
               >
                 <a href={integration.docsUrl} target="_blank" rel="noreferrer">
-                  Docs
+                  {$t('Docs')}
                 </a>
               </Button>
             )}

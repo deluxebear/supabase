@@ -25,6 +25,7 @@ import { InlineLink } from '@/components/ui/InlineLink'
 import { useOrganizationLinkAwsMarketplaceMutation } from '@/data/organizations/organization-link-aws-marketplace-mutation'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import type { Organization } from '@/types'
 
@@ -148,16 +149,16 @@ export const AwsMarketplaceOnboardingScreen = ({ buyerId }: { buyerId?: string }
         <div className="flex flex-col gap-3">
           <Admonition
             type="warning"
-            title="Setup unavailable"
+            title={$t('Setup unavailable')}
             description={
               <p>
-                Open the onboarding link from AWS Marketplace again. The link must include a{' '}
+                {$t('Open the onboarding link from AWS Marketplace again. The link must include a')}{' '}
                 <code className="text-code-inline">buyer_id</code> parameter.
               </p>
             }
           />
           <Button variant="default" block asChild>
-            <Link href="/organizations">Back to dashboard</Link>
+            <Link href="/organizations">{$t('Back to dashboard')}</Link>
           </Button>
         </div>
       </AwsMarketplaceInterstitial>
@@ -180,20 +181,20 @@ export const AwsMarketplaceOnboardingScreen = ({ buyerId }: { buyerId?: string }
         <div className="flex flex-col gap-3">
           <Admonition
             type="warning"
-            title="Unable to load setup"
+            title={$t('Unable to load setup')}
             description={
               <>
-                Please try again. If the problem persists, contact support.
+                {$t('Please try again. If the problem persists, contact support.')}
                 {effectiveError && (
                   <span className="mt-1 block text-foreground-lighter">
-                    Error: {effectiveError.message}
+                    {$t('Error:')} {effectiveError.message}
                   </span>
                 )}
               </>
             }
           />
           <Button variant="default" block asChild>
-            <Link href="/organizations">Back to dashboard</Link>
+            <Link href="/organizations">{$t('Back to dashboard')}</Link>
           </Button>
         </div>
       </AwsMarketplaceInterstitial>
@@ -208,7 +209,7 @@ export const AwsMarketplaceOnboardingScreen = ({ buyerId }: { buyerId?: string }
         <div className="flex flex-col gap-3">
           <ContractIneligibilityNotice reason={reason} />
           <Button variant="default" block asChild>
-            <Link href="/organizations">Back to dashboard</Link>
+            <Link href="/organizations">{$t('Back to dashboard')}</Link>
           </Button>
         </div>
       </AwsMarketplaceInterstitial>
@@ -221,7 +222,7 @@ export const AwsMarketplaceOnboardingScreen = ({ buyerId }: { buyerId?: string }
         <div className="flex flex-col gap-3">
           <Admonition
             type="success"
-            title="Organization linked"
+            title={$t('Organization linked')}
             description={
               linkedOrganization
                 ? `${linkedOrganization.name} will be billed through AWS Marketplace.`
@@ -230,7 +231,7 @@ export const AwsMarketplaceOnboardingScreen = ({ buyerId }: { buyerId?: string }
           />
           <Button variant="primary" block asChild>
             <Link href={`/org/${linkedOrganization?.slug ?? linkedOrgSlug}`}>
-              Go to organization
+              {$t('Go to organization')}
             </Link>
           </Button>
         </div>
@@ -287,7 +288,9 @@ export const AwsMarketplaceOnboardingScreen = ({ buyerId }: { buyerId?: string }
           {!hasLinkableOrganizations && hasAnyOrganizations && (
             <Admonition
               type="warning"
-              description="None of your current organizations can be linked to this AWS Marketplace subscription."
+              description={$t(
+                'None of your current organizations can be linked to this AWS Marketplace subscription.'
+              )}
             />
           )}
 
@@ -303,9 +306,9 @@ export const AwsMarketplaceOnboardingScreen = ({ buyerId }: { buyerId?: string }
             </Button>
             <p className="text-center text-xs text-foreground-lighter text-balance">
               <InlineLink href={`${DOCS_URL}/guides/platform/aws-marketplace`}>
-                Learn more
+                {$t('Learn more')}
               </InlineLink>{' '}
-              about billing through AWS.
+              {$t('about billing through AWS.')}
             </p>
           </div>
         </div>

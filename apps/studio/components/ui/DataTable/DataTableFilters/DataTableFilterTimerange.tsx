@@ -12,6 +12,7 @@ import {
 import { maybeShowUpgradePromptIfNotEntitled } from '@/components/interfaces/Settings/Logs/Logs.utils'
 import UpgradePrompt from '@/components/interfaces/Settings/Logs/UpgradePrompt'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
+import { t as $t } from '@/lib/i18n'
 
 export function DataTableFilterTimerange<TData>({
   value: _value,
@@ -117,8 +118,10 @@ export function DataTableFilterTimerange<TData>({
       <UpgradePrompt
         show={showUpgradePrompt}
         setShowUpgradePrompt={setShowUpgradePrompt}
-        title="Log date range"
-        description="Log data can be retained for a maximum of 3 months depending on the plan that your project is on."
+        title={$t('Log date range')}
+        description={$t(
+          'Log data can be retained for a maximum of 3 months depending on the plan that your project is on.'
+        )}
         source="unifiedLogsDateRange"
       />
     </>

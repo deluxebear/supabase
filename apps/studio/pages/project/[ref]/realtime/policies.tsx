@@ -14,6 +14,7 @@ import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import RealtimeLayout from '@/components/layouts/RealtimeLayout/RealtimeLayout'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const RealtimePoliciesPage: NextPageWithLayout = () => {
@@ -22,8 +23,10 @@ const RealtimePoliciesPage: NextPageWithLayout = () => {
       <PageHeader size="large">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Policies</PageHeaderTitle>
-            <PageHeaderDescription>Control access to your realtime channels</PageHeaderDescription>
+            <PageHeaderTitle>{$t('Policies')}</PageHeaderTitle>
+            <PageHeaderDescription>
+              {$t('Control access to your realtime channels')}
+            </PageHeaderDescription>
           </PageHeaderSummary>
           <PageHeaderAside>
             <DocsButton href={`${DOCS_URL}/guides/realtime/authorization`} />
@@ -43,7 +46,7 @@ const RealtimePoliciesPage: NextPageWithLayout = () => {
 
 RealtimePoliciesPage.getLayout = (page) => (
   <DefaultLayout>
-    <RealtimeLayout title="Policies">{page}</RealtimeLayout>
+    <RealtimeLayout title={$t('Policies')}>{page}</RealtimeLayout>
   </DefaultLayout>
 )
 

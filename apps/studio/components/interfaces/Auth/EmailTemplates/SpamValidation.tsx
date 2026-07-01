@@ -4,6 +4,7 @@ import { Admonition } from 'ui-patterns/admonition'
 
 import { Markdown } from '@/components/interfaces/Markdown'
 import { ValidateSpamResponse } from '@/data/auth/validate-spam-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface SpamValidationProps {
   spamRules?: ValidateSpamResponse['rules']
@@ -29,8 +30,10 @@ export const SpamValidation = ({ spamRules = [] }: SpamValidationProps) => {
           <CardContent className="py-6 flex flex-col gap-2">
             <Admonition
               type="destructive"
-              title="Issues to resolve"
-              description="This email is likely to be marked as spam by email servers. Please resolve the below issues before saving."
+              title={$t('Issues to resolve')}
+              description={$t(
+                'This email is likely to be marked as spam by email servers. Please resolve the below issues before saving.'
+              )}
               className="bg-destructive-300/50 dark:bg-destructive-200 border-destructive-400"
             />
 
@@ -39,8 +42,8 @@ export const SpamValidation = ({ spamRules = [] }: SpamValidationProps) => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Warning</TableHead>
-                      <TableHead>Description</TableHead>
+                      <TableHead>{$t('Warning')}</TableHead>
+                      <TableHead>{$t('Description')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

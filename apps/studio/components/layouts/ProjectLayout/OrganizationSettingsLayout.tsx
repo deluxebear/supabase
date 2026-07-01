@@ -9,6 +9,7 @@ import { ProductMenuShortcuts } from '@/components/ui/ProductMenu/ProductMenuSho
 import { convertSectionsToProductMenu } from '@/components/ui/ProductMenu/SubMenu.utils'
 import { useCurrentPath } from '@/hooks/misc/useCurrentPath'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 interface OrganizationSettingsMenuItemsProps {
@@ -267,11 +268,11 @@ export function OrganizationSettingsLayout({ children }: PropsWithChildren) {
     <>
       <ProductMenuShortcuts menu={orgSettingsMenu} />
       <WithSidebar
-        title="Organization Settings"
+        title={$t('Organization Settings')}
         sections={sections}
         header={
           <div className="border-default flex min-h-(--header-height) items-center border-b px-6">
-            <h4 className="text-lg">Settings</h4>
+            <h4 className="text-lg">{$t('Settings')}</h4>
           </div>
         }
       >

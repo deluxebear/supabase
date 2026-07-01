@@ -5,6 +5,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { CreateProjectForm } from './ProjectCreation.schema'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
+import { t as $t } from '@/lib/i18n'
 
 interface HighAvailabilityInputProps {
   form: UseFormReturn<CreateProjectForm>
@@ -21,15 +22,16 @@ export const HighAvailabilityInput = ({ form }: HighAvailabilityInputProps) => {
       name="highAvailability"
       render={({ field }) => (
         <FormItemLayout
-          label="High Availability"
+          label={$t('High Availability')}
           description={
             <>
-              Powered by{' '}
+              {$t('Powered by')}{' '}
               <Link href="https://multigres.com/" target="_blank" className="text-link">
-                Multigres
+                {$t('Multigres')}
               </Link>
-              : horizontally scalable Postgres for multi-tenant, highly available, globally
-              distributed deployments while staying true to standard Postgres.
+              {$t(
+                ': horizontally scalable Postgres for multi-tenant, highly available, globally distributed deployments while staying true to standard Postgres.'
+              )}
             </>
           }
           layout="horizontal"

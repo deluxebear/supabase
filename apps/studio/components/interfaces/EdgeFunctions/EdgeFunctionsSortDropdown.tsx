@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
 } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 export const EDGE_FUNCTIONS_SORT_VALUES = [
   'name:asc',
   'name:desc',
@@ -52,7 +54,7 @@ export const EdgeFunctionsSortDropdown = ({ value, onChange }: EdgeFunctionsSort
             )
           }
         >
-          Sorted by {getSortLabel(value)}
+          {$t('Sorted by')} {getSortLabel(value)}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-48">
@@ -61,24 +63,32 @@ export const EdgeFunctionsSortDropdown = ({ value, onChange }: EdgeFunctionsSort
           onValueChange={(val) => onChange(val as EdgeFunctionsSort)}
         >
           <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Sort by name</DropdownMenuSubTrigger>
+            <DropdownMenuSubTrigger>{$t('Sort by name')}</DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
-              <DropdownMenuRadioItem value="name:asc">Ascending</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="name:desc">Descending</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="name:asc">{$t('Ascending')}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="name:desc">{$t('Descending')}</DropdownMenuRadioItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
           <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Sort by created at</DropdownMenuSubTrigger>
+            <DropdownMenuSubTrigger>{$t('Sort by created at')}</DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
-              <DropdownMenuRadioItem value="created_at:asc">Ascending</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="created_at:desc">Descending</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="created_at:asc">
+                {$t('Ascending')}
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="created_at:desc">
+                {$t('Descending')}
+              </DropdownMenuRadioItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
           <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Sort by updated at</DropdownMenuSubTrigger>
+            <DropdownMenuSubTrigger>{$t('Sort by updated at')}</DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
-              <DropdownMenuRadioItem value="updated_at:asc">Ascending</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="updated_at:desc">Descending</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="updated_at:asc">
+                {$t('Ascending')}
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="updated_at:desc">
+                {$t('Descending')}
+              </DropdownMenuRadioItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
         </DropdownMenuRadioGroup>

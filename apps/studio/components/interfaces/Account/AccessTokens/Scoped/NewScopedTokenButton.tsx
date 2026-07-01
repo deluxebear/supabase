@@ -3,6 +3,7 @@ import { Button } from 'ui'
 
 import { NewScopedTokenSheet } from './NewScopedTokenSheet'
 import { type NewScopedAccessToken } from '@/data/scoped-access-tokens/scoped-access-token-create-mutation'
+import { t as $t } from '@/lib/i18n'
 
 export interface NewScopedTokenButtonProps {
   onCreateToken: (token: NewScopedAccessToken) => void
@@ -19,7 +20,7 @@ export const NewScopedTokenButton = ({ onCreateToken }: NewScopedTokenButtonProp
           setVisible(true)
         }}
       >
-        Generate new token
+        {$t('Generate new token')}
       </Button>
 
       <NewScopedTokenSheet

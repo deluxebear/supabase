@@ -40,6 +40,7 @@ import EnumeratedTypeValueRow from './EnumeratedTypeValueRow'
 import { useEnumeratedTypeUpdateMutation } from '@/data/enumerated-types/enumerated-type-update-mutation'
 import type { EnumeratedType } from '@/data/enumerated-types/enumerated-types-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface EditEnumeratedTypeSidePanelProps {
   visible: boolean
@@ -186,7 +187,7 @@ const EditEnumeratedTypeSidePanel = ({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>{$t('Name')}</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -199,11 +200,11 @@ const EditEnumeratedTypeSidePanel = ({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>{$t('Description')}</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
-                  <FormDescription>Optional</FormDescription>
+                  <FormDescription>{$t('Optional')}</FormDescription>
                 </FormItem>
               )}
             />
@@ -216,15 +217,16 @@ const EditEnumeratedTypeSidePanel = ({
                   'leading-normal'
                 )}
               >
-                Values
+                {$t('Values')}
               </span>
               <Alert>
                 <AlertCircle strokeWidth={1.5} />
-                <AlertTitle>Existing values cannot be deleted or sorted</AlertTitle>
+                <AlertTitle>{$t('Existing values cannot be deleted or sorted')}</AlertTitle>
                 <AlertDescription>
                   <p className="leading-normal! track">
-                    You will need to delete and recreate the enumerated type with the updated values
-                    instead.
+                    {$t(
+                      'You will need to delete and recreate the enumerated type with the updated values instead.'
+                    )}
                   </p>
                   <Button
                     asChild
@@ -237,7 +239,7 @@ const EditEnumeratedTypeSidePanel = ({
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Learn more
+                      {$t('Learn more')}
                     </Link>
                   </Button>
                 </AlertDescription>
@@ -268,11 +270,11 @@ const EditEnumeratedTypeSidePanel = ({
               icon={<Plus strokeWidth={1.5} />}
               onClick={() => append({ isNew: true, originalValue: '', updatedValue: '' })}
             >
-              Add value
+              {$t('Add value')}
             </Button>
 
             <Button ref={submitRef} type="submit" variant="default" className="hidden">
-              Update
+              {$t('Update')}
             </Button>
           </form>
         </Form>

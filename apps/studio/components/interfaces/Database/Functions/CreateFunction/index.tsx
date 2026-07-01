@@ -49,6 +49,7 @@ import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
 import { useProtectedSchemas } from '@/hooks/useProtectedSchemas'
+import { t as $t } from '@/lib/i18n'
 
 const FORM_ID = 'create-function-sidepanel'
 
@@ -193,10 +194,10 @@ export const CreateFunction = ({
                   name="schema"
                   render={({ field }) => (
                     <FormItemLayout
-                      label="Schema"
+                      label={$t('Schema')}
                       description={
                         <>
-                          Tables made in the table editor will be in{' '}
+                          {$t('Tables made in the table editor will be in')}{' '}
                           <code className="text-code-inline">public</code>
                         </>
                       }
@@ -218,12 +219,12 @@ export const CreateFunction = ({
                   name="name"
                   render={({ field }) => (
                     <FormItemLayout
-                      label="Name of function"
-                      description="Name will also be used for the function name in postgres"
+                      label={$t('Name of function')}
+                      description={$t('Name will also be used for the function name in postgres')}
                       layout="horizontal"
                     >
                       <FormControl>
-                        <Input {...field} placeholder="Name of function" />
+                        <Input {...field} placeholder={$t('Name of function')} />
                       </FormControl>
                     </FormItemLayout>
                   )}
@@ -237,7 +238,7 @@ export const CreateFunction = ({
                   control={form.control}
                   name="type"
                   render={({ field }) => (
-                    <FormItemLayout label="Type" layout="horizontal">
+                    <FormItemLayout label={$t('Type')} layout="horizontal">
                       <Select
                         disabled={isEditing}
                         onValueChange={field.onChange}
@@ -248,15 +249,15 @@ export const CreateFunction = ({
                         </SelectTrigger>
                         <SelectContent align="end">
                           <SelectItem value="function">
-                            <p>Function</p>
+                            <p>{$t('Function')}</p>
                             <p className="text-foreground-lighter">
-                              For query logic, triggers, and RPC calls
+                              {$t('For query logic, triggers, and RPC calls')}
                             </p>
                           </SelectItem>
                           <SelectItem value="procedure">
-                            <p>Stored procedure</p>
+                            <p>{$t('Stored procedure')}</p>
                             <p className="text-foreground-lighter">
-                              For batch or multi-step tasks that manages transactions
+                              {$t('For batch or multi-step tasks that manages transactions')}
                             </p>
                           </SelectItem>
                         </SelectContent>
@@ -269,7 +270,7 @@ export const CreateFunction = ({
                     control={form.control}
                     name="return_type"
                     render={({ field }) => (
-                      <FormItemLayout label="Return type" layout="horizontal">
+                      <FormItemLayout label={$t('Return type')} layout="horizontal">
                         {/* Form selects don't need form controls, otherwise the CSS gets weird */}
                         <Select
                           disabled={isEditing}
@@ -312,13 +313,17 @@ export const CreateFunction = ({
                   render={({ field }) => (
                     <FormItem className="space-y-4 flex flex-col h-full">
                       <div className="px-content">
-                        <FormLabel className="text-base text-foreground">Definition</FormLabel>
+                        <FormLabel className="text-base text-foreground">
+                          {$t('Definition')}
+                        </FormLabel>
                         <FormDescription className="text-sm text-foreground-light">
                           <p>
-                            The language below should be written in{' '}
+                            {$t('The language below should be written in')}{' '}
                             <code className="text-code-inline">{language}</code>.
                           </p>
-                          {!isEditing && <p>Change the language in the Advanced Settings below.</p>}
+                          {!isEditing && (
+                            <p>{$t('Change the language in the Advanced Settings below.')}</p>
+                          )}
                         </FormDescription>
                       </div>
                       <div
@@ -347,9 +352,11 @@ export const CreateFunction = ({
                     <div className="space-y-8 rounded-sm bg-studio py-4 px-6 border border-overlay">
                       <FormItem className="flex flex-row items-center justify-between">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-sm">Show advanced settings</FormLabel>
+                          <FormLabel className="text-sm">{$t('Show advanced settings')}</FormLabel>
                           <FormDescription className="text-foreground-lighter">
-                            These are settings that might be familiar for Postgres developers
+                            {$t(
+                              'These are settings that might be familiar for Postgres developers'
+                            )}
                           </FormDescription>
                         </div>
                         <FormControl>
@@ -370,7 +377,7 @@ export const CreateFunction = ({
                             control={form.control}
                             name="behavior"
                             render={({ field }) => (
-                              <FormItemLayout label="Behavior" layout="horizontal">
+                              <FormItemLayout label={$t('Behavior')} layout="horizontal">
                                 {/* Form selects don't need form controls, otherwise the CSS gets weird */}
                                 <Select defaultValue={field.value} onValueChange={field.onChange}>
                                   <SelectTrigger className="col-span-8">
@@ -399,7 +406,7 @@ export const CreateFunction = ({
                       </SheetSection>
                       <Separator className={focusedEditor ? 'hidden' : ''} />
                       <SheetSection className={focusedEditor ? 'hidden' : ''}>
-                        <h5 className="text-base text-foreground mb-4">Type of Security</h5>
+                        <h5 className="text-base text-foreground mb-4">{$t('Type of Security')}</h5>
                         <FormField
                           control={form.control}
                           name="security_definer"
@@ -415,22 +422,26 @@ export const CreateFunction = ({
                                   <RadioGroupStackedItem
                                     value="SECURITY_INVOKER"
                                     id="SECURITY_INVOKER"
-                                    label="SECURITY INVOKER"
+                                    label={$t('SECURITY INVOKER')}
                                     description={
                                       <>
-                                        Function is to be executed with the privileges of the user
-                                        that <span className="text-foreground">calls it</span>.
+                                        {$t(
+                                          'Function is to be executed with the privileges of the user that'
+                                        )}{' '}
+                                        <span className="text-foreground">{$t('calls it')}</span>.
                                       </>
                                     }
                                   />
                                   <RadioGroupStackedItem
                                     value="SECURITY_DEFINER"
                                     id="SECURITY_DEFINER"
-                                    label="SECURITY DEFINER"
+                                    label={$t('SECURITY DEFINER')}
                                     description={
                                       <>
-                                        Function is to be executed with the privileges of the user
-                                        that <span className="text-foreground">created it</span>.
+                                        {$t(
+                                          'Function is to be executed with the privileges of the user that'
+                                        )}{' '}
+                                        <span className="text-foreground">{$t('created it')}</span>.
                                       </>
                                     }
                                   />
@@ -449,7 +460,7 @@ export const CreateFunction = ({
           </Form>
           <SheetFooter>
             <Button disabled={isCreating || isUpdating} variant="default" onClick={confirmOnClose}>
-              Cancel
+              {$t('Cancel')}
             </Button>
             <Button
               form={FORM_ID}
@@ -479,14 +490,16 @@ const FormFieldArgs = ({ readonly }: FormFieldConfigParamsProps) => {
   return (
     <div className="flex flex-col gap-y-4">
       <div>
-        <h5 className="text-base text-foreground">Arguments</h5>
+        <h5 className="text-base text-foreground">{$t('Arguments')}</h5>
         <p className="text-sm text-foreground-light">
-          Arguments can be referenced in the function body using either names or numbers.
+          {$t('Arguments can be referenced in the function body using either names or numbers.')}
         </p>
       </div>
       <div className="space-y-2">
         {readonly && isEmpty(fields) && (
-          <span className="text-sm text-foreground-lighter">No argument for this function</span>
+          <span className="text-sm text-foreground-lighter">
+            {$t('No argument for this function')}
+          </span>
         )}
         {fields.map((field, index) => {
           return (
@@ -554,7 +567,7 @@ const FormFieldArgs = ({ readonly }: FormFieldConfigParamsProps) => {
             onClick={() => append({ name: '', type: 'integer' })}
             disabled={readonly}
           >
-            Add a new argument
+            {$t('Add a new argument')}
           </Button>
         )}
       </div>
@@ -593,7 +606,7 @@ const FormFieldLanguage = () => {
     <FormField
       name="language"
       render={({ field }) => (
-        <FormItemLayout label="Language" layout="horizontal">
+        <FormItemLayout label={$t('Language')} layout="horizontal">
           {/* Form selects don't need form controls, otherwise the CSS gets weird */}
           <Select onValueChange={field.onChange} defaultValue={field.value}>
             <SelectTrigger className="col-span-8">

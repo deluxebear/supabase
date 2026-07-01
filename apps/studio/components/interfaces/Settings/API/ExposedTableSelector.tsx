@@ -24,6 +24,7 @@ import { exposedTableCountsQueryOptions } from '@/data/privileges/exposed-table-
 import { exposedTablesInfiniteQueryOptions } from '@/data/privileges/exposed-tables-infinite-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { pluralize } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 interface ExposedTableSelectorProps {
   disabled?: boolean
@@ -123,7 +124,7 @@ export const ExposedTableSelector = ({
         <Command shouldFilter={false}>
           <CommandInput
             className="text-xs"
-            placeholder="Find table..."
+            placeholder={$t('Find table...')}
             value={search}
             onValueChange={setSearch}
           />
@@ -140,7 +141,9 @@ export const ExposedTableSelector = ({
                 </>
               ) : isError ? (
                 <div className="flex items-center py-3 justify-center">
-                  <p className="text-xs text-foreground-lighter">Failed to retrieve tables</p>
+                  <p className="text-xs text-foreground-lighter">
+                    {$t('Failed to retrieve tables')}
+                  </p>
                 </div>
               ) : (
                 <>
@@ -212,15 +215,16 @@ export const ExposedTableSelector = ({
                                     <button
                                       type="button"
                                       tabIndex={-1}
-                                      aria-label="Schema not exposed"
+                                      aria-label={$t('Schema not exposed')}
                                       className="inline-flex items-center text-foreground-muted hover:text-foreground-light"
                                     >
                                       <Info size={14} />
                                     </button>
                                   </TooltipTrigger>
                                   <TooltipContent side="left" className="max-w-[320px] text-xs">
-                                    The schema "{table.schema}" must be exposed before enabling this
-                                    table.
+                                    {$t('The schema "')}
+                                    {table.schema}
+                                    {$t('" must be exposed before enabling this table.')}
                                   </TooltipContent>
                                 </Tooltip>
                               )}

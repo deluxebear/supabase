@@ -25,6 +25,7 @@ import { useBackupDownloadMutation } from '@/data/database/backup-download-mutat
 import { useDownloadableBackupQuery } from '@/data/database/backup-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const RestoreFailedState = () => {
   const { ref } = useParams()
@@ -77,14 +78,15 @@ export const RestoreFailedState = () => {
                 <CriticalIcon className="w-5 h-5" />
               </div>
               <div className="space-y-1">
-                <p>Something went wrong while restoring your project</p>
+                <p>{$t('Something went wrong while restoring your project')}</p>
                 <p className="text-sm text-foreground-light">
-                  Your project's data is intact, but your project is inaccessible due to a
-                  restoration failure. Database backups for this project can still be accessed{' '}
+                  {$t(
+                    "Your project's data is intact, but your project is inaccessible due to a restoration failure. Database backups for this project can still be accessed"
+                  )}{' '}
                   <InlineLink href={`/project/${ref}/database/backups/scheduled`}>here</InlineLink>.
                 </p>
                 <p className="text-sm text-foreground-light">
-                  Please contact support for assistance.
+                  {$t('Please contact support for assistance.')}
                 </p>
               </div>
             </div>
@@ -98,7 +100,7 @@ export const RestoreFailedState = () => {
                     subject: 'Restoration failed for project',
                   }}
                 >
-                  Contact support
+                  {$t('Contact support')}
                 </SupportLink>
               </Button>
 
@@ -115,7 +117,7 @@ export const RestoreFailedState = () => {
                 }}
                 onClick={onClickDownloadBackup}
               >
-                Download backup
+                {$t('Download backup')}
               </ButtonTooltip>
 
               <DropdownMenu>
@@ -140,9 +142,9 @@ export const RestoreFailedState = () => {
                       <Trash size={14} />
                     </div>
                     <div className="">
-                      <p>Delete project</p>
+                      <p>{$t('Delete project')}</p>
                       <p className="text-foreground-lighter">
-                        Project cannot be restored once it is deleted
+                        {$t('Project cannot be restored once it is deleted')}
                       </p>
                     </div>
                   </DropdownMenuItemTooltip>
@@ -156,7 +158,7 @@ export const RestoreFailedState = () => {
       <Dialog open={showCliBackup} onOpenChange={setShowCliBackup}>
         <DialogContent size="medium">
           <DialogHeader>
-            <DialogTitle>Back up your database</DialogTitle>
+            <DialogTitle>{$t('Back up your database')}</DialogTitle>
           </DialogHeader>
           <DialogSection>
             <LogicalBackupCliInstructions showResetPassword={false} />

@@ -12,6 +12,7 @@ import { NoPermission } from '@/components/ui/NoPermission'
 import { useDatabasePublicationsQuery } from '@/data/database-publications/database-publications-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const DatabasePublications: NextPageWithLayout = () => {
@@ -56,7 +57,7 @@ const DatabasePublications: NextPageWithLayout = () => {
 
 DatabasePublications.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Publications">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Publications')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

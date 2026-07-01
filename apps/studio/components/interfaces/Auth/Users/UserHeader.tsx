@@ -5,6 +5,7 @@ import { PANEL_PADDING } from './Users.constants'
 import { getDisplayName } from './Users.utils'
 import CopyButton from '@/components/ui/CopyButton'
 import { User } from '@/data/auth/users-infinite-query'
+import { t as $t } from '@/lib/i18n'
 
 export const UserHeader = ({ user }: { user: User }) => {
   const displayName = getDisplayName(user)
@@ -28,7 +29,7 @@ export const UserHeader = ({ user }: { user: User }) => {
         </div>
       ) : isAnonUser ? (
         <>
-          <p>Anonymous user</p>
+          <p>{$t('Anonymous user')}</p>
           <div className="flex items-center gap-x-1">
             <p className="text-foreground-light text-sm">{user.id}</p>
             <CopyButton

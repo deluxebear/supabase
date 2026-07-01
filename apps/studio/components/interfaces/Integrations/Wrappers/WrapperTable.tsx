@@ -23,6 +23,7 @@ import { WrapperRow } from './WrapperRow'
 import { wrapperMetaComparator } from './Wrappers.utils'
 import { useFDWsQuery } from '@/data/fdw/fdws-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface WrapperTableProps {
   isLatest?: boolean
@@ -53,7 +54,7 @@ export const WrapperTable = ({ isLatest = false }: WrapperTableProps) => {
 
   useEffect(() => {
     if (isError && !!selectedWrapperIdToEdit && !selectedWrapperToEdit) {
-      toast('Wrapper not found')
+      toast($t('Wrapper not found'))
       setSelectedWrapperToEdit(null)
     }
   }, [isError, selectedWrapperIdToEdit, selectedWrapperToEdit, setSelectedWrapperToEdit])
@@ -61,7 +62,7 @@ export const WrapperTable = ({ isLatest = false }: WrapperTableProps) => {
   if (!integration || integration.type !== 'wrapper') {
     return (
       <p className="text-foreground-light text-sm">
-        The referenced ID doesn't correspond to a wrapper integration
+        {$t("The referenced ID doesn't correspond to a wrapper integration")}
       </p>
     )
   }
@@ -72,11 +73,11 @@ export const WrapperTable = ({ isLatest = false }: WrapperTableProps) => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[220px]">Name</TableHead>
-              <TableHead>Tables</TableHead>
-              <TableHead>Encrypted key</TableHead>
+              <TableHead className="w-[220px]">{$t('Name')}</TableHead>
+              <TableHead>{$t('Tables')}</TableHead>
+              <TableHead>{$t('Encrypted key')}</TableHead>
               <TableHead className="w-24">
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">{$t('Actions')}</span>
               </TableHead>
             </TableRow>
           </TableHeader>

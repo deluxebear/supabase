@@ -63,6 +63,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const TemplatePage: NextPageWithLayout = () => {
@@ -109,7 +110,7 @@ const RedirectToTemplates = () => {
       toast.error(`Failed to update settings: ${error?.message}`)
     },
     onSuccess: () => {
-      toast.success('Successfully updated settings')
+      toast.success($t('Successfully updated settings'))
     },
   })
 
@@ -178,11 +179,11 @@ const RedirectToTemplates = () => {
         <Admonition
           className="max-w-md"
           type="default"
-          title="Unable to find template"
+          title={$t('Unable to find template')}
           description={`${templateId ? `The template "${templateId}"` : 'This template'} doesn’t seem to exist.`}
         >
           <Button asChild variant="default" className="mt-2">
-            <Link href={`/project/${ref}/auth/templates`}>Head back</Link>
+            <Link href={`/project/${ref}/auth/templates`}>{$t('Head back')}</Link>
           </Button>
         </Admonition>
       </div>
@@ -196,7 +197,7 @@ const RedirectToTemplates = () => {
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link href={`/project/${ref}/auth/templates`}>Emails</Link>
+                <Link href={`/project/${ref}/auth/templates`}>{$t('Emails')}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
@@ -230,7 +231,7 @@ const RedirectToTemplates = () => {
               <PageSection>
                 <PageSectionMeta>
                   <PageSectionSummary>
-                    <PageSectionTitle>Configuration</PageSectionTitle>
+                    <PageSectionTitle>{$t('Configuration')}</PageSectionTitle>
                   </PageSectionSummary>
                 </PageSectionMeta>
                 <PageSectionContent>
@@ -244,8 +245,8 @@ const RedirectToTemplates = () => {
                             render={({ field }) => (
                               <FormItemLayout
                                 layout="flex-row-reverse"
-                                label="Enable notification"
-                                description="Send this email to users when triggered"
+                                label={$t('Enable notification')}
+                                description={$t('Send this email to users when triggered')}
                               >
                                 <FormControl>
                                   <Switch
@@ -261,7 +262,7 @@ const RedirectToTemplates = () => {
                         <CardFooter className="justify-end space-x-2">
                           {templateForm.formState.isDirty && (
                             <Button variant="default" onClick={() => templateForm.reset()}>
-                              Cancel
+                              {$t('Cancel')}
                             </Button>
                           )}
                           <Button
@@ -274,7 +275,7 @@ const RedirectToTemplates = () => {
                             }
                             loading={isUpdatingConfig}
                           >
-                            Save changes
+                            {$t('Save changes')}
                           </Button>
                         </CardFooter>
                       </Card>
@@ -288,7 +289,7 @@ const RedirectToTemplates = () => {
               {(showConfigurationSection || isTemplateEditBlocked) && (
                 <PageSectionMeta>
                   <PageSectionSummary>
-                    <PageSectionTitle>Content</PageSectionTitle>
+                    <PageSectionTitle>{$t('Content')}</PageSectionTitle>
                   </PageSectionSummary>
                 </PageSectionMeta>
               )}
@@ -317,7 +318,7 @@ const RedirectToTemplates = () => {
 
 TemplatePage.getLayout = (page) => (
   <DefaultLayout>
-    <AuthLayout title="Emails">{page}</AuthLayout>
+    <AuthLayout title={$t('Emails')}>{page}</AuthLayout>
   </DefaultLayout>
 )
 

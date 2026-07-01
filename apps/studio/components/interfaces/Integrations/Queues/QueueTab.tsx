@@ -24,6 +24,7 @@ import { useQueuesExposePostgrestStatusQuery } from '@/data/database-queues/data
 import { useTableUpdateMutation } from '@/data/tables/table-update-mutation'
 import { useTablesQuery } from '@/data/tables/tables-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const QueueTab = () => {
   const { childId: queueName, ref } = useParams()
@@ -87,7 +88,7 @@ export const QueueTab = () => {
 
   const onToggleRLS = async () => {
     if (!project) return console.error('Project is required')
-    if (!queueTable) return toast.error('Unable to toggle RLS: Queue table not found')
+    if (!queueTable) return toast.error($t('Unable to toggle RLS: Queue table not found'))
     const payload = {
       id: queueTable.id,
       rls_enabled: true,
@@ -114,8 +115,8 @@ export const QueueTab = () => {
             className="px-1.5"
             onClick={() => setPurgeQueueModalShown(true)}
             icon={<Paintbrush />}
-            title="Purge messages"
-            aria-label="Purge messages"
+            title={$t('Purge messages')}
+            aria-label={$t('Purge messages')}
             tooltip={{ content: { side: 'bottom', text: 'Purge messages' } }}
           />
 
@@ -124,8 +125,8 @@ export const QueueTab = () => {
             className="px-1.5"
             onClick={() => setDeleteQueueModalShown(true)}
             icon={<Trash2 />}
-            title="Delete queue"
-            aria-label="Delete queue"
+            title={$t('Delete queue')}
+            aria-label={$t('Delete queue')}
             tooltip={{ content: { side: 'bottom', text: 'Delete queue' } }}
           />
 
@@ -153,7 +154,7 @@ export const QueueTab = () => {
                     passHref
                     href={`/project/${ref}/database/policies?search=${queueTable?.id}&schema=pgmq`}
                   >
-                    Add RLS policy
+                    {$t('Add RLS policy')}
                   </Link>
                 </ButtonTooltip>
               ) : (
@@ -178,7 +179,7 @@ export const QueueTab = () => {
                     passHref
                     href={`/project/${ref}/database/policies?search=${queueTable?.id}&schema=pgmq`}
                   >
-                    Auth {queuePolicies.length > 1 ? 'policies' : 'policy'}
+                    {$t('Auth')} {queuePolicies.length > 1 ? 'policies' : 'policy'}
                   </Link>
                 </Button>
               )}
@@ -194,27 +195,32 @@ export const QueueTab = () => {
                   variant={isExposed ? 'warning' : 'default'}
                   icon={<Lock strokeWidth={1.5} />}
                 >
-                  RLS disabled
+                  {$t('RLS disabled')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-80 text-sm" align="end">
                 <h3 className="text-xs flex items-center gap-x-2">
-                  <Lock size={14} /> Row Level Security (RLS)
+                  <Lock size={14} /> {$t('Row Level Security (RLS)')}
                 </h3>
                 <div className="grid gap-2 mt-2 text-foreground-light text-xs">
                   {isExposed ? (
                     <>
                       <p>
-                        You can restrict and control who can manage this queue using Row Level
-                        Security.
+                        {$t(
+                          'You can restrict and control who can manage this queue using Row Level Security.'
+                        )}
                       </p>
-                      <p>With RLS enabled, anonymous users will not have access to this queue.</p>
+                      <p>
+                        {$t(
+                          'With RLS enabled, anonymous users will not have access to this queue.'
+                        )}
+                      </p>
                       <Button
                         variant="default"
                         className="w-min"
                         onClick={() => setRlsConfirmModalOpen(!rlsConfirmModalOpen)}
                       >
-                        Enable RLS for this queue
+                        {$t('Enable RLS for this queue')}
                       </Button>
                     </>
                   ) : (
@@ -231,7 +237,7 @@ You may opt to manage your queues via any Supabase client libraries or PostgREST
                         className="w-min"
                         onClick={() => setRlsConfirmModalOpen(!rlsConfirmModalOpen)}
                       >
-                        Enable RLS for this queue
+                        {$t('Enable RLS for this queue')}
                       </Button>
                     </>
                   )}
@@ -241,7 +247,7 @@ You may opt to manage your queues via any Supabase client libraries or PostgREST
           )}
 
           <Button variant="primary" onClick={() => setSendMessageModalShown(true)}>
-            Add message
+            {$t('Add message')}
           </Button>
 
           {/* <DocsButton href={docsUrl} />} */}
@@ -274,7 +280,7 @@ You may opt to manage your queues via any Supabase client libraries or PostgREST
 
       <ConfirmationModal
         visible={rlsConfirmModalOpen}
-        title="Enable Row Level Security"
+        title={$t('Enable Row Level Security')}
         confirmLabel="Enable RLS"
         confirmLabelLoading="Enabling RLS"
         loading={isUpdatingTable}
@@ -282,7 +288,8 @@ You may opt to manage your queues via any Supabase client libraries or PostgREST
         onConfirm={() => onToggleRLS()}
       >
         <p className="text-sm text-foreground-light">
-          Are you sure you want to enable Row Level Security for the queue "{queueName}"?
+          {$t('Are you sure you want to enable Row Level Security for the queue "')}
+          {queueName}"?
         </p>
       </ConfirmationModal>
     </div>

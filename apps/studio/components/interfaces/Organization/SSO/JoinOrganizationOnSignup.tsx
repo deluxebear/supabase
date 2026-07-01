@@ -13,6 +13,7 @@ import {
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { SSOConfigFormSchema } from './SSOConfig'
+import { t as $t } from '@/lib/i18n'
 
 export const JoinOrganizationOnSignup = ({
   form,
@@ -29,8 +30,10 @@ export const JoinOrganizationOnSignup = ({
         render={({ field }) => (
           <FormItemLayout
             layout="flex-row-reverse"
-            label="Automatically add users to organization on sign up"
-            description="If disabled, users will need to be invited to the organization after signing up."
+            label={$t('Automatically add users to organization on sign up')}
+            description={$t(
+              'If disabled, users will need to be invited to the organization after signing up.'
+            )}
           >
             <FormControl className="flex items-center gap-2">
               <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -44,22 +47,22 @@ export const JoinOrganizationOnSignup = ({
           name="roleOnJoin"
           render={({ field }) => (
             <FormItemLayout
-              label="Default role on join"
-              description="Select a role for the user when they join the organization"
+              label={$t('Default role on join')}
+              description={$t('Select a role for the user when they join the organization')}
               layout="flex-row-reverse"
               className="justify-between"
             >
               <FormControl>
                 <Select value={field.value} onValueChange={(val) => field.onChange(val)}>
                   <SelectTrigger className="w-52">
-                    <SelectValue placeholder="Select a role" />
+                    <SelectValue placeholder={$t('Select a role')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectItem value="Owner">Owner</SelectItem>
-                      <SelectItem value="Administrator">Administrator</SelectItem>
-                      <SelectItem value="Developer">Developer</SelectItem>
-                      <SelectItem value="Read-only">Read-only</SelectItem>
+                      <SelectItem value="Owner">{$t('Owner')}</SelectItem>
+                      <SelectItem value="Administrator">{$t('Administrator')}</SelectItem>
+                      <SelectItem value="Developer">{$t('Developer')}</SelectItem>
+                      <SelectItem value="Read-only">{$t('Read-only')}</SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>

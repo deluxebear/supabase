@@ -17,6 +17,7 @@ import ObservabilityLayout from '@/components/layouts/ObservabilityLayout/Observ
 import { DatabaseSelector } from '@/components/ui/DatabaseSelector'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const REPORT_TITLE = 'Query Performance'
@@ -80,8 +81,10 @@ const QueryPerformanceReport: NextPageWithLayout = () => {
       <div className="h-full flex flex-col p-6">
         <Admonition
           type="destructive"
-          title="Project not found"
-          description="Unable to load project data. Please check your project reference and try again."
+          title={$t('Project not found')}
+          description={$t(
+            'Unable to load project data. Please check your project reference and try again.'
+          )}
         />
       </div>
     )
@@ -107,7 +110,7 @@ const QueryPerformanceReport: NextPageWithLayout = () => {
 
 QueryPerformanceReport.getLayout = (page) => (
   <DefaultLayout>
-    <ObservabilityLayout title="Query Performance">{page}</ObservabilityLayout>
+    <ObservabilityLayout title={$t('Query Performance')}>{page}</ObservabilityLayout>
   </DefaultLayout>
 )
 

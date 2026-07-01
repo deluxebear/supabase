@@ -13,6 +13,7 @@ import {
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { useIsProjectActive } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -43,7 +44,7 @@ export const DeployEdgeFunctionButton = () => {
             },
           }}
         >
-          Deploy a new function
+          {$t('Deploy a new function')}
         </ButtonTooltip>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
@@ -56,8 +57,8 @@ export const DeployEdgeFunctionButton = () => {
         >
           <Code className="shrink-0" size={16} strokeWidth={1.5} />
           <div>
-            <span className="text-foreground">Via Editor</span>
-            <p>Write and deploy in the browser</p>
+            <span className="text-foreground">{$t('Via Editor')}</span>
+            <p>{$t('Write and deploy in the browser')}</p>
           </div>
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -69,8 +70,8 @@ export const DeployEdgeFunctionButton = () => {
         >
           <Terminal className="shrink-0" size={16} strokeWidth={1.5} />
           <div>
-            <span className="text-foreground">Via CLI</span>
-            <p>Write locally, deploy with the CLI</p>
+            <span className="text-foreground">{$t('Via CLI')}</span>
+            <p>{$t('Write locally, deploy with the CLI')}</p>
           </div>
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -105,8 +106,8 @@ export const DeployEdgeFunctionButton = () => {
         >
           <AiIconAnimation className="shrink-0" size={16} />
           <div>
-            <span className="text-foreground">Via AI Assistant</span>
-            <p>Let the Assistant write and deploy for you</p>
+            <span className="text-foreground">{$t('Via AI Assistant')}</span>
+            <p>{$t('Let the Assistant write and deploy for you')}</p>
           </div>
         </DropdownMenuItem>
       </DropdownMenuContent>

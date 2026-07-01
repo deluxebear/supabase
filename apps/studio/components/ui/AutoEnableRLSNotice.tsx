@@ -25,6 +25,7 @@ import { useDatabaseEventTriggersQuery } from '@/data/database-event-triggers/da
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export const AutoEnableRLSNotice = ({ iconOnly }: { iconOnly?: boolean }) => {
@@ -62,8 +63,10 @@ export const AutoEnableRLSNotice = ({ iconOnly }: { iconOnly?: boolean }) => {
     <Admonition
       type="note"
       layout="responsive"
-      title="Automatically enable Row Level Security (RLS) on new tables"
-      description="Protect future tables by automatically enabling RLS whenever a table is created."
+      title={$t('Automatically enable Row Level Security (RLS) on new tables')}
+      description={$t(
+        'Protect future tables by automatically enabling RLS whenever a table is created.'
+      )}
       actions={
         <>
           <CreateEnsureRLSTriggerDialog />
@@ -72,7 +75,7 @@ export const AutoEnableRLSNotice = ({ iconOnly }: { iconOnly?: boolean }) => {
             variant="text"
             className="w-6"
             tooltip={{ content: { side: 'bottom', text: 'Dismiss' } }}
-            aria-label="Dismiss RLS notice"
+            aria-label={$t('Dismiss RLS notice')}
             onClick={() => setIsMinimized(true)}
           />
         </>
@@ -96,7 +99,7 @@ const CreateEnsureRLSTriggerDialog = ({ iconOnly }: { iconOnly?: boolean }) => {
     useDatabaseEventTriggerCreateMutation({
       onSuccess: () => {
         toast.success(
-          'Successfully set up database trigger to automatically enable RLS on all new tables'
+          $t('Successfully set up database trigger to automatically enable RLS on all new tables')
         )
         setOpen(false)
       },
@@ -123,14 +126,14 @@ const CreateEnsureRLSTriggerDialog = ({ iconOnly }: { iconOnly?: boolean }) => {
             tooltip={{ content: { side: 'bottom', text: 'Auto-enable RLS for new tables' } }}
           />
         ) : (
-          <Button variant="default">Set up trigger</Button>
+          <Button variant="default">{$t('Set up trigger')}</Button>
         )}
       </DialogTrigger>
       <DialogContent size="large">
         <DialogHeader>
-          <DialogTitle>Automatically enable RLS for new tables</DialogTitle>
+          <DialogTitle>{$t('Automatically enable RLS for new tables')}</DialogTitle>
           <DialogDescription>
-            Protect future tables with a built-in database trigger.
+            {$t('Protect future tables with a built-in database trigger.')}
           </DialogDescription>
         </DialogHeader>
 
@@ -138,13 +141,16 @@ const CreateEnsureRLSTriggerDialog = ({ iconOnly }: { iconOnly?: boolean }) => {
 
         <DialogSection className="text-sm flex flex-col gap-y-2">
           <p>
-            Tables in exposed schemas such as <code className="text-code-inline">public</code> are
-            reachable through your project’s API. Enable Row Level Security (RLS) on these tables so
-            access is governed by the policies you define, not just the project API key.
+            {$t('Tables in exposed schemas such as')}{' '}
+            <code className="text-code-inline">public</code>{' '}
+            {$t(
+              'are reachable through your project’s API. Enable Row Level Security (RLS) on these tables so access is governed by the policies you define, not just the project API key.'
+            )}
           </p>
           <p>
-            This trigger automatically enables RLS whenever a new table is created. Review the SQL
-            before creating it:
+            {$t(
+              'This trigger automatically enables RLS whenever a new table is created. Review the SQL before creating it:'
+            )}
           </p>
         </DialogSection>
 
@@ -157,7 +163,7 @@ const CreateEnsureRLSTriggerDialog = ({ iconOnly }: { iconOnly?: boolean }) => {
 
         <DialogFooter>
           <Button variant="default" disabled={isCreating} onClick={() => setOpen(false)}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <ButtonTooltip
             disabled={!canCreateTriggers}
@@ -172,7 +178,7 @@ const CreateEnsureRLSTriggerDialog = ({ iconOnly }: { iconOnly?: boolean }) => {
               },
             }}
           >
-            Create trigger
+            {$t('Create trigger')}
           </ButtonTooltip>
         </DialogFooter>
       </DialogContent>

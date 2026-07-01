@@ -12,6 +12,7 @@ import type {
   FileInfo,
   FileStatus,
 } from '@/hooks/branches/useEdgeFunctionsDiff'
+import { t as $t } from '@/lib/i18n'
 import { EMPTY_ARR } from '@/lib/void'
 
 const EMPTY_FUNCTION_BODY: EdgeFunctionBodyData = {
@@ -179,9 +180,9 @@ export const EdgeFunctionsDiffPanel = ({
     return (
       <div className="p-6 text-center">
         <Wind size={32} strokeWidth={1.5} className="text-foreground-muted mx-auto mb-8" />
-        <h3 className="mb-1">No changes detected between branches</h3>
+        <h3 className="mb-1">{$t('No changes detected between branches')}</h3>
         <p className="text-sm text-foreground-light">
-          Any changes to your edge functions will be shown here for review
+          {$t('Any changes to your edge functions will be shown here for review')}
         </p>
       </div>
     )

@@ -16,6 +16,7 @@ import { APIKeyDeleteDialog } from './APIKeyDeleteDialog'
 import { ApiKeyPill } from './ApiKeyPill'
 import { TextConfirmModal } from '@/components/ui/TextConfirmModalWrapper'
 import type { APIKeysData } from '@/data/api-keys/api-keys-query'
+import { t as $t } from '@/lib/i18n'
 
 export const APIKeyRow = ({
   apiKey,
@@ -57,7 +58,9 @@ export const APIKeyRow = ({
           <div className="flex flex-col">
             <span className="font-medium">{apiKey.name}</span>
             <div className="text-sm text-foreground-lighter">
-              {apiKey.description || <span className="text-foreground-muted">No description</span>}
+              {apiKey.description || (
+                <span className="text-foreground-muted">{$t('No description')}</span>
+              )}
             </div>
           </div>
         </TableCell>
@@ -80,7 +83,7 @@ export const APIKeyRow = ({
                   label={lastSeen.relative}
                 />
               ) : (
-                <span className="text-foreground-lighter">Never used</span>
+                <span className="text-foreground-lighter">{$t('Never used')}</span>
               )}
             </div>
           </TableCell>

@@ -24,6 +24,7 @@ import { useReplicationSourcesQuery } from '@/data/replication/sources-query'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useShowMultigresLogs } from '@/hooks/misc/useShowMultigresLogs'
+import { t as $t } from '@/lib/i18n'
 
 export function SidebarCollapsible({
   children,
@@ -221,7 +222,7 @@ export function LogsSidebarMenuV2() {
         <InnerSideBarFilters className="w-full p-0 gap-0">
           <InnerSideBarFilterSearchInput
             name="search-collections"
-            placeholder="Search collections..."
+            placeholder={$t('Search collections...')}
             aria-labelledby="Search collections"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
@@ -241,11 +242,11 @@ export function LogsSidebarMenuV2() {
       {templatesEnabled && (
         <div className="px-2">
           <InnerSideMenuItem
-            title="Templates"
+            title={$t('Templates')}
             isActive={isActive(`/project/${ref}/logs/explorer/templates`)}
             href={`/project/${ref}/logs/explorer/templates`}
           >
-            Templates
+            {$t('Templates')}
           </InnerSideMenuItem>
         </div>
       )}
@@ -253,7 +254,7 @@ export function LogsSidebarMenuV2() {
 
       {collectionsEnabled && (
         <>
-          <SidebarCollapsible title="Collections" defaultOpen={true}>
+          <SidebarCollapsible title={$t('Collections')} defaultOpen={true}>
             {filteredLogs.map((collection) => {
               const isItemActive = isActive(collection?.url ?? '')
               return (
@@ -269,7 +270,7 @@ export function LogsSidebarMenuV2() {
           {OPERATIONAL_COLLECTIONS.length > 0 && (
             <>
               <Separator className="my-4" />
-              <SidebarCollapsible title="Database operations" defaultOpen={true}>
+              <SidebarCollapsible title={$t('Database operations')} defaultOpen={true}>
                 {filteredOperationalLogs.map((collection) => (
                   <LogsSidebarItem
                     key={collection.key}
@@ -284,7 +285,7 @@ export function LogsSidebarMenuV2() {
           <Separator className="my-4" />
         </>
       )}
-      <SidebarCollapsible title="Queries" defaultOpen={true}>
+      <SidebarCollapsible title={$t('Queries')} defaultOpen={true}>
         {savedQueriesLoading && (
           <div className="p-4">
             <GenericSkeletonLoader />
@@ -293,13 +294,13 @@ export function LogsSidebarMenuV2() {
         {savedQueries.length === 0 && (
           <InnerSideBarEmptyPanel
             className="mx-4"
-            title="No queries created yet"
+            title={$t('No queries created yet')}
             description={
               IS_PLATFORM ? 'Create and save your queries to use them in the explorer' : undefined
             }
             actions={
               <Button asChild variant="default">
-                <Link href={`/project/${ref}/logs/explorer`}>Create query</Link>
+                <Link href={`/project/${ref}/logs/explorer`}>{$t('Create query')}</Link>
               </Button>
             }
           />
@@ -313,8 +314,8 @@ export function LogsSidebarMenuV2() {
 
       <FeaturePreviewSidebarPanel
         className="mx-4 mt-4"
-        title="Capture your logs"
-        description="Send logs to your preferred observability or storage platform."
+        title={$t('Capture your logs')}
+        description={$t('Send logs to your preferred observability or storage platform.')}
         illustration={
           <div className="flex items-center gap-4">
             {LOG_DRAIN_TYPES.filter((t) =>
@@ -326,7 +327,7 @@ export function LogsSidebarMenuV2() {
         }
         actions={
           <Button asChild variant="default">
-            <Link href={`/project/${ref}/settings/log-drains`}>Go to Log Drains</Link>
+            <Link href={`/project/${ref}/settings/log-drains`}>{$t('Go to Log Drains')}</Link>
           </Button>
         }
       />

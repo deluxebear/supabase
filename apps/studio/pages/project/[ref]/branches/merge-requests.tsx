@@ -35,6 +35,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import type { NextPageWithLayout } from '@/types'
 
@@ -109,7 +110,7 @@ const MergeRequestsPage: NextPageWithLayout = () => {
       },
       {
         onSuccess: () => {
-          toast.success('Merge request created')
+          toast.success($t('Merge request created'))
 
           track(
             'branch_create_merge_request_button_clicked',
@@ -138,7 +139,7 @@ const MergeRequestsPage: NextPageWithLayout = () => {
       },
       {
         onSuccess: () => {
-          toast.success('Merge request closed')
+          toast.success($t('Merge request closed'))
 
           track('branch_close_merge_request_button_clicked', undefined, {
             project: projectRef,
@@ -184,7 +185,8 @@ const MergeRequestsPage: NextPageWithLayout = () => {
                           <div className="flex items-center gap-2 text-sm text-foreground-light">
                             <GitMerge strokeWidth={1.5} size={16} className="text-brand" />
                             <span className="text-foreground">{currentBranch.name}</span>
-                            last viewed
+
+                            {$t('last viewed')}
                           </div>
                           <Button
                             variant="primary"
@@ -194,7 +196,7 @@ const MergeRequestsPage: NextPageWithLayout = () => {
                               currentBranch && handleMarkBranchForReview(currentBranch)
                             }
                           >
-                            Create merge request
+                            {$t('Create merge request')}
                           </Button>
                         </div>
                       </div>
@@ -268,7 +270,7 @@ const MergeRequestsPage: NextPageWithLayout = () => {
                                             handleCloseMergeRequest(branch)
                                           }}
                                         >
-                                          <X size={14} /> Close this merge request
+                                          <X size={14} /> {$t('Close this merge request')}
                                         </DropdownMenuItem>
                                       </Tooltip>
                                     </DropdownMenuContent>
@@ -333,7 +335,7 @@ const MergeRequestsPageWrapper = ({ children }: PropsWithChildren<{}>) => {
       },
       {
         onSuccess: () => {
-          toast.success('Merge request created')
+          toast.success($t('Merge request created'))
 
           track(
             'branch_create_merge_request_button_clicked',
@@ -352,7 +354,7 @@ const MergeRequestsPageWrapper = ({ children }: PropsWithChildren<{}>) => {
 
   return (
     <PageLayout
-      title="Merge requests"
+      title={$t('Merge requests')}
       subtitle="Review and merge changes from one branch into another"
       primaryActions={
         <BranchSelector
@@ -374,7 +376,7 @@ const MergeRequestsPageWrapper = ({ children }: PropsWithChildren<{}>) => {
               rel="noreferrer"
               href="https://github.com/orgs/supabase/discussions/18937"
             >
-              Branching feedback
+              {$t('Branching feedback')}
             </a>
           </Button>
           <DocsButton href={`${DOCS_URL}/guides/platform/branching`} />

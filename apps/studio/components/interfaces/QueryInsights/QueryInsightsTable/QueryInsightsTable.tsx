@@ -30,6 +30,7 @@ import { FilterPopover } from '@/components/ui/FilterPopover'
 import { TwoOptionToggle } from '@/components/ui/TwoOptionToggle'
 import { useExecuteSqlMutation } from '@/data/sql/execute-sql-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -345,7 +346,7 @@ export const QueryInsightsTable = ({
             />
             {appNameFilter.length > 0 ? (
               <FilterPill
-                label="Source"
+                label={$t('Source')}
                 value={appNameFilter.join(', ')}
                 onClear={() => setAppNameFilter([])}
               />
@@ -370,25 +371,29 @@ export const QueryInsightsTable = ({
                     value="all"
                     className="text-xs py-3 border-b font-mono uppercase"
                   >
-                    All{triageItems.length > 0 && ` (${triageItems.length})`}
+                    {$t('All')}
+                    {triageItems.length > 0 && ` (${triageItems.length})`}
                   </TabsTrigger_Shadcn_>
                   <TabsTrigger_Shadcn_
                     value="error"
                     className="text-xs py-3 border-b font-mono uppercase"
                   >
-                    Errors{errorCount > 0 && ` (${errorCount})`}
+                    {$t('Errors')}
+                    {errorCount > 0 && ` (${errorCount})`}
                   </TabsTrigger_Shadcn_>
                   <TabsTrigger_Shadcn_
                     value="index"
                     className="text-xs py-3 border-b font-mono uppercase"
                   >
-                    Index{indexCount > 0 && ` (${indexCount})`}
+                    {$t('Index')}
+                    {indexCount > 0 && ` (${indexCount})`}
                   </TabsTrigger_Shadcn_>
                   <TabsTrigger_Shadcn_
                     value="slow"
                     className="text-xs py-3 border-b font-mono uppercase"
                   >
-                    Slow{slowCount > 0 && ` (${slowCount})`}
+                    {$t('Slow')}
+                    {slowCount > 0 && ` (${slowCount})`}
                   </TabsTrigger_Shadcn_>
                 </TabsList_Shadcn_>
               </Tabs_Shadcn_>
@@ -401,7 +406,7 @@ export const QueryInsightsTable = ({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 name="search"
                 id="search"
-                placeholder="Search queries..."
+                placeholder={$t('Search queries...')}
                 className="w-64"
                 actions={[
                   searchQuery && (
@@ -440,7 +445,7 @@ export const QueryInsightsTable = ({
             className="rounded-full shadow-md"
             onClick={() => onCurrentSelectQuery?.(null)}
           >
-            Clear query
+            {$t('Clear query')}
           </Button>
         </div>
         {isLoading ? (
@@ -491,7 +496,7 @@ export const QueryInsightsTable = ({
                   <div className="absolute top-20 px-6 flex flex-col items-center justify-center w-full gap-y-2">
                     <TextSearch className="text-foreground-muted" strokeWidth={1} />
                     <div className="text-center">
-                      <p className="text-foreground">No issues found</p>
+                      <p className="text-foreground">{$t('No issues found')}</p>
                       <p className="text-foreground-light">
                         {data.length === 0
                           ? 'No query data available yet'
@@ -547,7 +552,7 @@ export const QueryInsightsTable = ({
                   <div className="absolute top-20 px-6 flex flex-col items-center justify-center w-full gap-y-2">
                     <TextSearch className="text-foreground-muted" strokeWidth={1} />
                     <div className="text-center">
-                      <p className="text-foreground">No queries found</p>
+                      <p className="text-foreground">{$t('No queries found')}</p>
                       <p className="text-foreground-light">
                         {searchQuery.trim()
                           ? 'No queries match your search criteria'

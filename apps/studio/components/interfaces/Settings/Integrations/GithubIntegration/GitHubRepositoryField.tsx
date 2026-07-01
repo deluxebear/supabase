@@ -21,6 +21,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { useGitHubAuthorizationQuery } from '@/data/integrations/github-authorization-query'
 import { useGitHubRepositoriesQuery } from '@/data/integrations/github-repositories-query'
 import { openInstallGitHubIntegrationWindow } from '@/lib/github'
+import { t as $t } from '@/lib/i18n'
 import { EMPTY_ARR } from '@/lib/void'
 
 export type GitHubRepository = {
@@ -32,7 +33,7 @@ export type GitHubRepository = {
 
 export const GITHUB_ICON = (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 98 96" className="w-5 shrink-0">
-    <title>GitHub icon</title>
+    <title>{$t('GitHub icon')}</title>
     <path
       fill="currentColor"
       fillRule="evenodd"
@@ -147,7 +148,7 @@ export const GitHubRepositoryField = <TFormValues extends FieldValues>({
                 }}
                 icon={GITHUB_ICON}
               >
-                Connect GitHub
+                {$t('Connect GitHub')}
               </Button>
             </FormControl>
           ) : (
@@ -175,9 +176,9 @@ export const GitHubRepositoryField = <TFormValues extends FieldValues>({
               </PopoverTrigger>
               <PopoverContent className="p-0" side="bottom" align="start" sameWidthAsTrigger>
                 <Command>
-                  <CommandInput placeholder="Search repositories..." />
+                  <CommandInput placeholder={$t('Search repositories...')} />
                   <CommandList className="!max-h-[220px]">
-                    <CommandEmpty>No repositories found.</CommandEmpty>
+                    <CommandEmpty>{$t('No repositories found.')}</CommandEmpty>
                     {repositories.length > 0 ? (
                       <CommandGroup>
                         {repositories.map((repo) => (
@@ -221,7 +222,8 @@ export const GitHubRepositoryField = <TFormValues extends FieldValues>({
                         }}
                       >
                         <PlusIcon size={16} />
-                        Add GitHub Repositories
+
+                        {$t('Add GitHub Repositories')}
                       </CommandItem>
                     </CommandGroup>
                     {hasPartialResponseDueToSSO && (
@@ -237,7 +239,7 @@ export const GitHubRepositoryField = <TFormValues extends FieldValues>({
                           >
                             <RefreshCw size={16} className="mt-0.5 shrink-0" />
                             <div className="text-xs text-foreground-light">
-                              Re-authorize GitHub with SSO to show all repositories
+                              {$t('Re-authorize GitHub with SSO to show all repositories')}
                             </div>
                           </CommandItem>
                         </CommandGroup>

@@ -51,6 +51,7 @@ import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useIsProtectedSchema } from '@/hooks/useProtectedSchemas'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAppStateSnapshot } from '@/state/app-state'
 import { useTableEditorTableStateSnapshot } from '@/state/table-editor-table'
@@ -189,11 +190,11 @@ export const GridHeaderActions = ({ table, isRefetching }: GridHeaderActionsProp
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="border border-strong rounded-sm bg-overlay-hover px-3 py-1 text-xs">
-                  Viewing as read-only
+                  {$t('Viewing as read-only')}
                 </div>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                You need additional permissions to manage your project's data
+                {$t("You need additional permissions to manage your project's data")}
               </TooltipContent>
             </Tooltip>
           )}
@@ -216,7 +217,7 @@ export const GridHeaderActions = ({ table, isRefetching }: GridHeaderActionsProp
                     }}
                   >
                     <Link passHref href={getTablePoliciesUrl(projectRef, table.schema, table.name)}>
-                      Add RLS policy
+                      {$t('Add RLS policy')}
                     </Link>
                   </ButtonTooltip>
                 ) : (
@@ -252,21 +253,23 @@ export const GridHeaderActions = ({ table, isRefetching }: GridHeaderActionsProp
               <Popover modal={false} open={showWarning} onOpenChange={setShowWarning}>
                 <PopoverTrigger asChild>
                   <Button variant="danger" icon={<Lock strokeWidth={1.5} />}>
-                    RLS disabled
+                    {$t('RLS disabled')}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-80 text-sm" align="end">
                   <h4 className="flex items-center gap-2">
-                    <Lock size={16} /> Row Level Security (RLS)
+                    <Lock size={16} /> {$t('Row Level Security (RLS)')}
                   </h4>
                   <div className="grid gap-2 mt-4 text-foreground-light text-xs">
                     <p>
-                      You can restrict and control who can read, write and update data in this table
-                      using Row Level Security.
+                      {$t(
+                        'You can restrict and control who can read, write and update data in this table using Row Level Security.'
+                      )}
                     </p>
                     <p>
-                      With RLS enabled, anonymous users will not be able to read/write data in the
-                      table.
+                      {$t(
+                        'With RLS enabled, anonymous users will not be able to read/write data in the table.'
+                      )}
                     </p>
                     {!isSchemaLocked && (
                       <Button
@@ -274,7 +277,7 @@ export const GridHeaderActions = ({ table, isRefetching }: GridHeaderActionsProp
                         className="mt-2 w-min"
                         onClick={() => setRlsConfirmModalOpen(!rlsConfirmModalOpen)}
                       >
-                        Enable RLS for this table
+                        {$t('Enable RLS for this table')}
                       </Button>
                     )}
                   </div>
@@ -300,18 +303,19 @@ export const GridHeaderActions = ({ table, isRefetching }: GridHeaderActionsProp
             <Popover modal={false} open={showWarning} onOpenChange={setShowWarning}>
               <PopoverTrigger asChild>
                 <Button variant="warning" icon={<Unlock strokeWidth={1.5} />}>
-                  Unprotected Data API access
+                  {$t('Unprotected Data API access')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="min-w-[395px] text-sm" align="end">
                 <h3 className="flex items-center gap-2">
-                  <Unlock size={16} /> Secure Foreign table
+                  <Unlock size={16} /> {$t('Secure Foreign table')}
                 </h3>
                 <div className="grid gap-2 mt-4 text-foreground-light text-sm">
                   <p>
-                    Foreign tables do not enforce RLS, which may allow unrestricted access. To
-                    secure them, either move foreign tables to a private schema not exposed by
-                    PostgREST, or <a href="">disable PostgREST access</a> entirely.
+                    {$t(
+                      'Foreign tables do not enforce RLS, which may allow unrestricted access. To secure them, either move foreign tables to a private schema not exposed by PostgREST, or'
+                    )}{' '}
+                    <a href="">{$t('disable PostgREST access')}</a> entirely.
                   </p>
 
                   <div className="mt-2">
@@ -320,7 +324,7 @@ export const GridHeaderActions = ({ table, isRefetching }: GridHeaderActionsProp
                         target="_blank"
                         href={`${DOCS_URL}/guides/database/extensions/wrappers/overview#security`}
                       >
-                        Learn more
+                        {$t('Learn more')}
                       </Link>
                     </Button>
                   </div>
@@ -337,20 +341,22 @@ export const GridHeaderActions = ({ table, isRefetching }: GridHeaderActionsProp
                 variant="default"
                 icon={<MoreVertical />}
                 className="h-7 w-7"
-                aria-label="More actions"
+                aria-label={$t('More actions')}
               />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-48">
               {isTable && realtimeEnabled && (
                 <DropdownMenuItem className="gap-x-2" onClick={() => setRealtimeDialogOpen(true)}>
                   <Realtime size={14} className={isRealtimeEnabled ? 'text-brand' : ''} />
-                  <span>{isRealtimeEnabled ? 'Disable' : 'Enable'} Realtime</span>
+                  <span>
+                    {isRealtimeEnabled ? 'Disable' : 'Enable'} {$t('Realtime')}
+                  </span>
                 </DropdownMenuItem>
               )}
               {doesHaveAutoGeneratedAPIDocs && (
                 <DropdownMenuItem className="gap-x-2" onClick={() => onViewAPIDocs()}>
                   <BookOpenText size={14} />
-                  <span>View API docs</span>
+                  <span>{$t('View API docs')}</span>
                 </DropdownMenuItem>
               )}
               {isTable && isIndexAdvisorAvailable && !isIndexAdvisorEnabled && (
@@ -361,7 +367,7 @@ export const GridHeaderActions = ({ table, isRefetching }: GridHeaderActionsProp
                     onClick={() => setIndexAdvisorDialogOpen(true)}
                   >
                     <Lightbulb size={14} />
-                    <span>Enable Index Advisor</span>
+                    <span>{$t('Enable Index Advisor')}</span>
                   </DropdownMenuItem>
                 </>
               )}

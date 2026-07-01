@@ -16,6 +16,7 @@ import {
 import { LintInfo } from '../Linter/Linter.constants'
 import { useLintRuleDeleteMutation } from '@/data/lint/delete-lint-rule-mutation'
 import { LintException } from '@/data/lint/lint-rules-query'
+import { t as $t } from '@/lib/i18n'
 
 interface EnableRuleModalProps {
   lint: LintInfo
@@ -42,25 +43,28 @@ export const EnableRuleModal = ({ lint, rule }: EnableRuleModalProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="default">Enable rule</Button>
+        <Button variant="default">{$t('Enable rule')}</Button>
       </DialogTrigger>
       <DialogContent size="small">
         <DialogHeader>
-          <DialogTitle>Enable rule</DialogTitle>
+          <DialogTitle>{$t('Enable rule')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection>
           <p className="text-sm">
-            The "{lint.title}" rule will be visible in the Advisor reports, and will be included in
-            email notifications for this project.
+            {$t('The "')}
+            {lint.title}
+            {$t(
+              '" rule will be visible in the Advisor reports, and will be included in email notifications for this project.'
+            )}
           </p>
         </DialogSection>
         <DialogFooter>
           <Button disabled={isDeleting} variant="default" onClick={() => setOpen(false)}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button loading={isDeleting} variant="primary" onClick={onDeleteRule}>
-            Enable
+            {$t('Enable')}
           </Button>
         </DialogFooter>
       </DialogContent>

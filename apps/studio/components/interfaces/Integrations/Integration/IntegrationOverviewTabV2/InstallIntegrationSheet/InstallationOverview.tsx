@@ -16,6 +16,7 @@ import { type ExtensionsSchema, type InstallIntegrationSheetProps } from './Inst
 import { Markdown } from '@/components/interfaces/Markdown'
 import { useDatabaseExtensionsQuery } from '@/data/database-extensions/database-extensions-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const InstallationOverview = ({
   integration,
@@ -52,9 +53,9 @@ export const InstallationOverview = ({
   return (
     <SheetSection className="flex flex-col gap-y-4 py-0">
       <div>
-        <h4>Installs</h4>
+        <h4>{$t('Installs')}</h4>
         <p className="text-sm text-foreground-light">
-          What this integration will run on your project
+          {$t('What this integration will run on your project')}
         </p>
       </div>
 
@@ -81,7 +82,7 @@ export const InstallationOverview = ({
               {involvesExtensions && (
                 <>
                   <TabsTrigger_Shadcn_ value="extensions" className="font-mono uppercase text-xs">
-                    Extensions
+                    {$t('Extensions')}
                   </TabsTrigger_Shadcn_>
                   <TabsTrigger_Shadcn_ value="sql" className="font-mono uppercase text-xs">
                     SQL
@@ -90,7 +91,7 @@ export const InstallationOverview = ({
               )}
               {involvesEdgeFunctions && (
                 <TabsTrigger_Shadcn_ value="edge_functions" className="font-mono uppercase text-xs">
-                  Edge Functions
+                  {$t('Edge Functions')}
                 </TabsTrigger_Shadcn_>
               )}
             </TabsList_Shadcn_>
@@ -102,11 +103,11 @@ export const InstallationOverview = ({
                   <div key={extName} className="py-3 px-4 flex items-center justify-between">
                     <code className="text-xs">{extName}</code>
                     {!ext ? (
-                      <Badge variant="warning">Unavailable</Badge>
+                      <Badge variant="warning">{$t('Unavailable')}</Badge>
                     ) : ext.installed_version ? (
-                      <Badge variant="secondary">Installed</Badge>
+                      <Badge variant="secondary">{$t('Installed')}</Badge>
                     ) : (
-                      <Badge variant="warning">Required</Badge>
+                      <Badge variant="warning">{$t('Required')}</Badge>
                     )}
                   </div>
                 )

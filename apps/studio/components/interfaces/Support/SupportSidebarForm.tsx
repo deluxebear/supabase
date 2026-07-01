@@ -16,6 +16,7 @@ import { SupportFormV3 } from './SupportFormV3'
 import { useSupportForm } from './useSupportForm'
 import { useIncidentStatusQuery } from '@/data/platform/incident-status-query'
 import { useStateTransition } from '@/hooks/misc/useStateTransition'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 function useSupportFormTelemetry() {
@@ -60,7 +61,7 @@ export function SupportForm({ initialParams }: SupportFormProps) {
 
   const sendTelemetry = useSupportFormTelemetry()
   useStateTransition(state, 'submitting', 'success', (_, curr) => {
-    toast.success('Support request sent. Thank you!')
+    toast.success($t('Support request sent. Thank you!'))
     sendTelemetry({
       projectRef: curr.sentProjectRef,
       orgSlug: curr.sentOrgSlug,
@@ -156,7 +157,7 @@ export function SupportFormStatusButton() {
         </Button>
       </TooltipTrigger>
       <TooltipContent side="bottom" align="center">
-        Check the Supabase status page
+        {$t('Check the Supabase status page')}
       </TooltipContent>
     </Tooltip>
   )

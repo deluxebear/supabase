@@ -5,48 +5,49 @@ import { getPipelineDisplayState, normalizePipelineStatusName } from '../Pipelin
 import { RetryPolicy, SlotWalStatus, TableState } from './ReplicationPipelineStatus.types'
 import { ReplicationPipelineStatusData } from '@/data/replication/pipeline-status-query'
 import { formatBytes } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { PipelineStatusRequestStatus } from '@/state/replication-pipeline-request-status'
 
 export const getStatusConfig = (state: TableState['state']) => {
   switch (state.name) {
     case 'queued':
       return {
-        badge: <Badge variant="warning">Queued</Badge>,
+        badge: <Badge variant="warning">{$t('Queued')}</Badge>,
         description: 'Table is waiting for the pipeline to pick it up for replication.',
         tooltip: 'Table is waiting for the pipeline to pick it up for replication.',
         color: 'text-warning',
       }
     case 'copying_table':
       return {
-        badge: <Badge variant="success">Copying</Badge>,
+        badge: <Badge variant="success">{$t('Copying')}</Badge>,
         description: "Table's existing rows are being copied before live streaming begins.",
         tooltip: "Table's existing rows are being copied before live streaming begins.",
         color: 'text-brand-600',
       }
     case 'copied_table':
       return {
-        badge: <Badge variant="success">Copied</Badge>,
+        badge: <Badge variant="success">{$t('Copied')}</Badge>,
         description: "Table copy is complete and it's preparing to follow WAL changes.",
         tooltip: "Table copy is complete and it's preparing to follow WAL changes.",
         color: 'text-success-600',
       }
     case 'following_wal':
       return {
-        badge: <Badge variant="success">Live</Badge>,
+        badge: <Badge variant="success">{$t('Live')}</Badge>,
         description: 'Table is streaming new changes in real time from the WAL.',
         tooltip: 'Table is streaming new changes in real time from the WAL.',
         color: 'text-success-600',
       }
     case 'error':
       return {
-        badge: <Badge variant="destructive">Error</Badge>,
+        badge: <Badge variant="destructive">{$t('Error')}</Badge>,
         description: 'Replication is paused because the table encountered an error.',
         tooltip: 'Replication is paused because the table encountered an error.',
         color: 'text-destructive-600',
       }
     default:
       return {
-        badge: <Badge variant="warning">Unknown</Badge>,
+        badge: <Badge variant="warning">{$t('Unknown')}</Badge>,
         description: 'Table status is unavailable.',
         tooltip: 'Table status is unavailable.',
         color: 'text-warning',

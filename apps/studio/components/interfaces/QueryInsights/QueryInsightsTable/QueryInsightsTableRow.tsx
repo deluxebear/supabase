@@ -4,6 +4,7 @@ import { AiIconAnimation, Button, cn, Tooltip, TooltipContent, TooltipTrigger } 
 import type { ClassifiedQuery } from '../QueryInsightsHealth/QueryInsightsHealth.types'
 import { ISSUE_DOT_COLORS, ISSUE_ICONS } from './QueryInsightsTable.constants'
 import { formatDuration, getColumnName, getTableName } from './QueryInsightsTable.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface QueryInsightsTableRowProps {
   item: ClassifiedQuery
@@ -88,8 +89,9 @@ export const QueryInsightsTableRow = ({
             </div>
           </TooltipTrigger>
           <TooltipContent side="top" className="max-w-[220px] text-center">
-            Average execution time per call. High mean time means individual runs are slow —
-            directly felt by users.
+            {$t(
+              'Average execution time per call. High mean time means individual runs are slow — directly felt by users.'
+            )}
           </TooltipContent>
         </Tooltip>
 
@@ -100,13 +102,14 @@ export const QueryInsightsTableRow = ({
                 {item.prop_total_time.toFixed(1)}%
               </span>
               <span className="text-[10px] text-foreground-muted uppercase tracking-wide leading-snug">
-                of db
+                {$t('of db')}
               </span>
             </div>
           </TooltipTrigger>
           <TooltipContent side="top" className="max-w-[220px] text-center">
-            Percentage of total database execution time. Fixing high-impact queries has the biggest
-            overall effect on your database.
+            {$t(
+              'Percentage of total database execution time. Fixing high-impact queries has the biggest overall effect on your database.'
+            )}
           </TooltipContent>
         </Tooltip>
 
@@ -120,7 +123,7 @@ export const QueryInsightsTableRow = ({
             </div>
           </TooltipTrigger>
           <TooltipContent side="top" className="max-w-[220px] text-center">
-            Number of times this query ran in the selected time window.
+            {$t('Number of times this query ran in the selected time window.')}
           </TooltipContent>
         </Tooltip>
       </div>
@@ -134,7 +137,7 @@ export const QueryInsightsTableRow = ({
             onGoToLogs?.()
           }}
         >
-          Go to Logs
+          {$t('Go to Logs')}
         </Button>
 
         {(item.issueType === 'index' || item.issueType === 'slow') && (
@@ -147,7 +150,7 @@ export const QueryInsightsTableRow = ({
               onExplain?.()
             }}
           >
-            Explain
+            {$t('Explain')}
           </Button>
         )}
 
@@ -160,7 +163,7 @@ export const QueryInsightsTableRow = ({
               onCreateIndex?.()
             }}
           >
-            Create Index
+            {$t('Create Index')}
           </Button>
         )}
 
@@ -174,7 +177,7 @@ export const QueryInsightsTableRow = ({
               onAiSuggestedFix?.()
             }}
           >
-            Fix with AI
+            {$t('Fix with AI')}
           </Button>
         )}
       </div>

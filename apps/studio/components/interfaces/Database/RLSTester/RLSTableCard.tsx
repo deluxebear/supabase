@@ -4,6 +4,7 @@ import { cn, Collapsible, CollapsibleContent, CollapsibleTrigger, WarningIcon } 
 
 import type { Policy } from '@/components/interfaces/Database/Policies/PolicyTableRow/PolicyTableRow.utils'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 
 interface RLSTableCardProps {
   table: { schema: string; name: string; isRLSEnabled: boolean }
@@ -27,8 +28,9 @@ export const RLSTableCard = ({
     if (!isRLSEnabled) {
       return (
         <p>
-          RLS is disabled and all data is publicly accessible. We highly recommend enabling RLS and
-          adding policies to restrict access.
+          {$t(
+            'RLS is disabled and all data is publicly accessible. We highly recommend enabling RLS and adding policies to restrict access.'
+          )}
         </p>
       )
     }
@@ -36,9 +38,9 @@ export const RLSTableCard = ({
     if (noPolicies) {
       return (
         <p>
-          RLS is enabled but no policies exist for the{' '}
-          <code className="text-code-inline">{role}</code> role on this table - no data will be
-          returned.
+          {$t('RLS is enabled but no policies exist for the')}{' '}
+          <code className="text-code-inline">{role}</code>{' '}
+          {$t('role on this table - no data will be returned.')}
         </p>
       )
     }
@@ -47,10 +49,11 @@ export const RLSTableCard = ({
       return (
         <>
           <p>
-            The policy "{trueOnlyPolicy.name}" for the{' '}
-            <code className="text-code-inline">{role}</code> role on this table evaluates to{' '}
-            <code className="text-code-inline">true</code>, so all data from this query is
-            accessible to this user.
+            {$t('The policy "')}
+            {trueOnlyPolicy.name}
+            {$t('" for the')} <code className="text-code-inline">{role}</code>{' '}
+            {$t('role on this table evaluates to')} <code className="text-code-inline">true</code>
+            {$t(', so all data from this query is accessible to this user.')}
           </p>
           <TableAccessPolicySummary
             policies={policies}
@@ -64,10 +67,11 @@ export const RLSTableCard = ({
       return (
         <>
           <p>
-            The policy "{falseOnlyPolicy.name}" for the{' '}
-            <code className="text-code-inline">{role}</code> role on this table evaluates to{' '}
-            <code className="text-code-inline">false</code>, so no data from this query is
-            accessible to this user.
+            {$t('The policy "')}
+            {falseOnlyPolicy.name}
+            {$t('" for the')} <code className="text-code-inline">{role}</code>{' '}
+            {$t('role on this table evaluates to')} <code className="text-code-inline">false</code>
+            {$t(', so no data from this query is accessible to this user.')}
           </p>
           <TableAccessPolicySummary
             policies={policies}
@@ -80,9 +84,10 @@ export const RLSTableCard = ({
     return (
       <>
         <p>
-          {policies.length} {policies.length > 1 ? 'policies apply' : 'policy applies'} for the{' '}
-          <code className="text-code-inline">{role}</code> role on this table. Only rows that match{' '}
-          {policies.length > 1 ? 'these conditions' : 'this condition'} are returned.
+          {policies.length} {policies.length > 1 ? 'policies apply' : 'policy applies'}{' '}
+          {$t('for the')} <code className="text-code-inline">{role}</code>{' '}
+          {$t('role on this table. Only rows that match')}{' '}
+          {policies.length > 1 ? 'these conditions' : 'this condition'} {$t('are returned.')}
         </p>
         <TableAccessPolicySummary
           policies={policies}
@@ -165,7 +170,7 @@ const TableAccessPolicySummary = ({
             <div>
               <p>{policy.name}</p>
               <p className="text-foreground-lighter">
-                Show rows where:{' '}
+                {$t('Show rows where:')}{' '}
                 <code className="text-code-inline text-foreground">{policy.definition}</code>
               </p>
             </div>

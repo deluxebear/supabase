@@ -13,6 +13,7 @@ import Panel from '@/components/ui/Panel'
 import { useJwtSecretUpdatingStatusQuery } from '@/data/config/jwt-secret-updating-status-query'
 import { useProjectSettingsV2Query } from '@/data/config/project-settings-v2-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 export const DisplayApiSettings = ({
   showTitle = true,
@@ -70,7 +71,7 @@ export const DisplayApiSettings = ({
     try {
       return getLastUsedAPIKeys(apiKeys, lastUsedLogData)
     } catch (e: any) {
-      toast.error('Failed to identify when the anon and service_role keys were last used')
+      toast.error($t('Failed to identify when the anon and service_role keys were last used'))
       console.error(e)
       return {}
     }
@@ -82,11 +83,14 @@ export const DisplayApiSettings = ({
       title={
         showTitle && (
           <div className="space-y-3">
-            <h5 className="text-base">Project API Keys</h5>
+            <h5 className="text-base">{$t('Project API Keys')}</h5>
             <p className="text-sm text-foreground-light">
-              Your API is secured behind an API gateway which requires an API Key for every request.
+              {$t(
+                'Your API is secured behind an API gateway which requires an API Key for every request.'
+              )}
               <br />
-              You can use the keys below in the Supabase client libraries.
+
+              {$t('You can use the keys below in the Supabase client libraries.')}
               <br />
             </p>
           </div>
@@ -96,14 +100,15 @@ export const DisplayApiSettings = ({
       {isLoading ? (
         <div className="flex items-center justify-center py-8 space-x-2">
           <Loader2 className="animate-spin" size={16} strokeWidth={1.5} />
-          <p className="text-sm text-foreground-light">Retrieving API keys</p>
+          <p className="text-sm text-foreground-light">{$t('Retrieving API keys')}</p>
         </div>
       ) : !canReadAPIKeys ? (
         <div className="flex items-center py-8 px-8 space-x-2">
           <AlertCircle size={16} strokeWidth={1.5} />
           <p className="text-sm text-foreground-light">
-            You don't have permission to view API keys. These keys restricted to users with higher
-            access levels.
+            {$t(
+              "You don't have permission to view API keys. These keys restricted to users with higher access levels."
+            )}
           </p>
         </div>
       ) : isProjectSettingsError || isJwtSecretUpdateStatusError ? (
@@ -153,16 +158,17 @@ export const DisplayApiSettings = ({
               description={
                 x.tags === 'service_role' ? (
                   <>
-                    This key has the ability to bypass Row Level Security. Never share it publicly.
-                    If leaked, generate a new JWT secret immediately.{' '}
+                    {$t(
+                      'This key has the ability to bypass Row Level Security. Never share it publicly. If leaked, generate a new JWT secret immediately.'
+                    )}{' '}
                     {showLegacyText && (
                       <span>
-                        Prefer using{' '}
+                        {$t('Prefer using')}{' '}
                         <Link
                           href={`/project/${projectRef}/settings/api-keys/new`}
                           className="text-link underline"
                         >
-                          Secret API keys
+                          {$t('Secret API keys')}
                         </Link>{' '}
                         instead.
                       </span>
@@ -170,16 +176,17 @@ export const DisplayApiSettings = ({
                   </>
                 ) : (
                   <>
-                    This key is safe to use in a browser if you have enabled Row Level Security for
-                    your tables and configured policies.{' '}
+                    {$t(
+                      'This key is safe to use in a browser if you have enabled Row Level Security for your tables and configured policies.'
+                    )}{' '}
                     {showLegacyText && (
                       <span>
-                        Prefer using{' '}
+                        {$t('Prefer using')}{' '}
                         <Link
                           href={`/project/${projectRef}/settings/api-keys/new`}
                           className="text-link underline"
                         >
-                          Publishable API keys
+                          {$t('Publishable API keys')}
                         </Link>{' '}
                         instead.
                       </span>
@@ -222,7 +229,7 @@ export const DisplayApiSettings = ({
       {showNotice ? (
         <Panel.Notice
           className="border-t"
-          title="API keys have moved"
+          title={$t('API keys have moved')}
           badgeLabel="Changelog"
           description={`
   \`anon\` and \`service_role\` API keys can now be replaced with \`publishable\` and \`secret\` API keys.

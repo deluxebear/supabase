@@ -21,6 +21,7 @@ import { useDatabaseRolesQuery } from '@/data/database-roles/database-roles-quer
 import { useMaxConnectionsQuery } from '@/data/database/max-connections-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -116,7 +117,7 @@ export const RolesList = () => {
 
   useEffect(() => {
     if (isSuccess && !!selectedRoleIdToDelete && !roleToDelete && !isSuccessDelete) {
-      toast('Role cannot be found')
+      toast($t('Role cannot be found'))
       setSelectedRoleIdToDelete(null)
     }
   }, [isSuccess, selectedRoleIdToDelete, roleToDelete, isSuccessDelete, setSelectedRoleIdToDelete])
@@ -129,7 +130,7 @@ export const RolesList = () => {
             ref={searchInputRef}
             size="tiny"
             className="w-52"
-            placeholder="Search for a role"
+            placeholder={$t('Search for a role')}
             icon={<Search />}
             value={filterString}
             onChange={(event) => setFilterString(event.target.value)}
@@ -157,7 +158,7 @@ export const RolesList = () => {
               )}
               onClick={() => setFilterType('all')}
             >
-              All roles
+              {$t('All roles')}
             </button>
             <div className="h-full w-px border-r border-strong"></div>
             <button
@@ -169,7 +170,7 @@ export const RolesList = () => {
               )}
               onClick={() => setFilterType('active')}
             >
-              Active roles
+              {$t('Active roles')}
             </button>
           </div>
         </div>
@@ -204,7 +205,7 @@ export const RolesList = () => {
               </div>
             </TooltipTrigger>
             <TooltipContent align="start" side="bottom" className="space-y-1">
-              <p className="text-foreground-light pr-2">Connections by roles:</p>
+              <p className="text-foreground-light pr-2">{$t('Connections by roles:')}</p>
               {rolesWithActiveConnections.map((role) => (
                 <div key={role.id}>
                   {role.name}: {role.activeConnections}
@@ -215,7 +216,7 @@ export const RolesList = () => {
           {canUpdateRoles ? (
             <Shortcut
               id={SHORTCUT_IDS.LIST_PAGE_NEW_ITEM}
-              label="Add new role"
+              label={$t('Add new role')}
               onTrigger={() => setIsCreatingRole(true)}
               side="bottom"
             >
@@ -224,7 +225,7 @@ export const RolesList = () => {
                 icon={<Plus size={12} />}
                 onClick={() => setIsCreatingRole(true)}
               >
-                Add role
+                {$t('Add role')}
               </Button>
             </Shortcut>
           ) : (
@@ -239,7 +240,7 @@ export const RolesList = () => {
                 },
               }}
             >
-              Add role
+              {$t('Add role')}
             </ButtonTooltip>
           )}
         </div>
@@ -248,8 +249,8 @@ export const RolesList = () => {
       <div className="space-y-4">
         <div>
           <div className="bg-surface-100 border border-default px-card py-3 rounded-t flex items-center space-x-4">
-            <p className="text-sm text-foreground-light">Roles managed by Supabase</p>
-            <Badge variant="success">Protected</Badge>
+            <p className="text-sm text-foreground-light">{$t('Roles managed by Supabase')}</p>
+            <Badge variant="success">{$t('Protected')}</Badge>
           </div>
 
           {isLoading
@@ -266,7 +267,7 @@ export const RolesList = () => {
 
         <div>
           <div className="bg-surface-100 border border-default px-card py-3 rounded-t">
-            <p className="text-sm text-foreground-light">Other database roles</p>
+            <p className="text-sm text-foreground-light">{$t('Other database roles')}</p>
           </div>
 
           {isLoading
@@ -296,8 +297,9 @@ export const RolesList = () => {
         onConfirm={deleteRole}
       >
         <p className="text-sm">
-          This will automatically revoke any membership of this role in other roles, and this action
-          cannot be undone.
+          {$t(
+            'This will automatically revoke any membership of this role in other roles, and this action cannot be undone.'
+          )}
         </p>
       </ConfirmationModal>
     </>

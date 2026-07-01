@@ -18,6 +18,7 @@ import type { OrganizationPaymentMethod } from '@/data/organizations/organizatio
 import type { PlanId } from '@/data/subscriptions/types'
 import { BASE_PATH } from '@/lib/constants'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
+import { t as $t } from '@/lib/i18n'
 
 interface CreditCardProps {
   paymentMethod: OrganizationPaymentMethod
@@ -96,7 +97,7 @@ const CreditCard = ({
         <div className="flex items-center gap-8">
           <div className="relative shrink-0">
             <img
-              alt="Credit card brand"
+              alt={$t('Credit card brand')}
               src={`${BASE_PATH}/img/payment-methods/${paymentMethod.card.brand
                 .replace(' ', '-')
                 .toLowerCase()}.png`}
@@ -113,7 +114,7 @@ const CreditCard = ({
                     />
                   </span>
                 </TooltipTrigger>
-                <TooltipContent side="top">Handled via Stripe Projects</TooltipContent>
+                <TooltipContent side="top">{$t('Handled via Stripe Projects')}</TooltipContent>
               </Tooltip>
             )}
           </div>
@@ -121,15 +122,20 @@ const CreditCard = ({
             <div className="flex items-center gap-8">
               <p className="prose text-sm font-mono">**** **** **** {paymentMethod.card.last4}</p>
               <p className="text-sm tabular-nums">
-                Expires: {paymentMethod.card.exp_month}/{paymentMethod.card.exp_year}
+                {$t('Expires:')} {paymentMethod.card.exp_month}/{paymentMethod.card.exp_year}
               </p>
             </div>
             {isSpt && spt && (
               <div className="mt-2.5 flex items-center gap-2 border-t pt-2.5 text-xs text-foreground-light">
                 <p className="m-0">
-                  Managed via Stripe Projects · Token ending in{' '}
+                  {$t('Managed via Stripe Projects · Token ending in')}{' '}
                   <code className="text-code-inline">{spt.last4}</code>
-                  {tokenExpiry && <span> · Expires {tokenExpiry}</span>}
+                  {tokenExpiry && (
+                    <span>
+                      {' '}
+                      {$t('· Expires')} {tokenExpiry}
+                    </span>
+                  )}
                 </p>
               </div>
             )}
@@ -137,9 +143,9 @@ const CreditCard = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {!isSpt && isCardExpiringSoon && <Badge variant="warning">Expiring soon</Badge>}
-          {!isSpt && isCardExpired && <Badge variant="destructive">Expired</Badge>}
-          {!isSpt && !isCardExpired && isActive && <Badge variant="success">Active</Badge>}
+          {!isSpt && isCardExpiringSoon && <Badge variant="warning">{$t('Expiring soon')}</Badge>}
+          {!isSpt && isCardExpired && <Badge variant="destructive">{$t('Expired')}</Badge>}
+          {!isSpt && !isCardExpired && isActive && <Badge variant="success">{$t('Active')}</Badge>}
           {stripeStatus && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -158,7 +164,7 @@ const CreditCard = ({
                   variant="outline"
                   className="hover:border-muted px-1"
                   icon={<MoreHorizontal />}
-                  aria-label="More options"
+                  aria-label={$t('More options')}
                 />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-36">
@@ -168,7 +174,7 @@ const CreditCard = ({
                       key="make-default"
                       onClick={() => setSelectedMethodForUse?.(paymentMethod)}
                     >
-                      <p>Use this card</p>
+                      <p>{$t('Use this card')}</p>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                   </>
@@ -187,7 +193,7 @@ const CreditCard = ({
                     },
                   }}
                 >
-                  <p>Delete card</p>
+                  <p>{$t('Delete card')}</p>
                 </DropdownMenuItemTooltip>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -3,6 +3,7 @@ import { FormControl, FormField, Input, SheetSection } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { CreateQueueForm } from './CreateQueueSheet.schema'
+import { t as $t } from '@/lib/i18n'
 
 export function QueueNameField({ form }: { form: UseFormReturn<CreateQueueForm> }) {
   return (
@@ -11,12 +12,12 @@ export function QueueNameField({ form }: { form: UseFormReturn<CreateQueueForm> 
         control={form.control}
         name="name"
         render={({ field }) => (
-          <FormItemLayout label="Name" layout="vertical" className="gap-1 relative">
+          <FormItemLayout label={$t('Name')} layout="vertical" className="gap-1 relative">
             <FormControl>
               <Input {...field} />
             </FormControl>
             <span className="text-foreground-lighter text-xs absolute top-0 right-0">
-              Can include letters, numbers, underscores, and hyphens
+              {$t('Can include letters, numbers, underscores, and hyphens')}
             </span>
           </FormItemLayout>
         )}

@@ -11,6 +11,7 @@ import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { PageLayout } from '@/components/layouts/PageLayout/PageLayout'
 import StorageLayout from '@/components/layouts/StorageLayout/StorageLayout'
 import { DocsButton } from '@/components/ui/DocsButton'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const VectorsBucketPage: NextPageWithLayout = () => {
@@ -53,7 +54,7 @@ const VectorsBucketPage: NextPageWithLayout = () => {
 
 VectorsBucketPage.getLayout = (page) => (
   <DefaultLayout>
-    <StorageLayout title="Buckets">{page}</StorageLayout>
+    <StorageLayout title={$t('Buckets')}>{page}</StorageLayout>
   </DefaultLayout>
 )
 

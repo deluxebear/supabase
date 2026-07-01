@@ -12,6 +12,7 @@ import * as z from 'zod'
 import { useResetPasswordMutation } from '@/data/misc/reset-password-mutation'
 import { BASE_PATH } from '@/lib/constants'
 import { auth } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 
 const forgotPasswordSchema = z.object({
   email: z.string().min(1, 'Please provide an email address').email('Must be a valid email'),
@@ -82,14 +83,16 @@ const ConfirmResetCodeForm = ({ email }: { email: string }) => {
       >
         <Admonition
           type="default"
-          title="Check your email for a reset code"
-          description="You'll receive an email if an account associated with the email address exists"
+          title={$t('Check your email for a reset code')}
+          description={$t(
+            "You'll receive an email if an account associated with the email address exists"
+          )}
         />
         <FormField
           control={codeForm.control}
           name="code"
           render={({ field }) => (
-            <FormItemLayout label="Code">
+            <FormItemLayout label={$t('Code')}>
               <FormControl>
                 <Input {...field} placeholder="123456" autoComplete="off" disabled={isLoading} />
               </FormControl>
@@ -100,7 +103,7 @@ const ConfirmResetCodeForm = ({ email }: { email: string }) => {
         <div className="border-t border-overlay-border" />
 
         <Button block form="code-input-form" type="submit" size="medium" loading={isLoading}>
-          Confirm reset code
+          {$t('Confirm reset code')}
         </Button>
       </form>
     </Form>
@@ -157,7 +160,7 @@ const ForgotPasswordForm = ({ onSuccess }: { onSuccess: (email: string) => void 
           control={forgotPasswordForm.control}
           name="email"
           render={({ field }) => (
-            <FormItemLayout label="Email">
+            <FormItemLayout label={$t('Email')}>
               <FormControl>
                 <Input
                   {...field}
@@ -195,7 +198,7 @@ const ForgotPasswordForm = ({ onSuccess }: { onSuccess: (email: string) => void 
           disabled={isPending}
           loading={isPending}
         >
-          Send reset code
+          {$t('Send reset code')}
         </Button>
       </form>
     </Form>

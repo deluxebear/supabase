@@ -19,6 +19,7 @@ import { SparkBar } from '@/components/ui/SparkBar'
 import type { OrgSubscription } from '@/data/subscriptions/types'
 import type { OrgMetricsUsage, OrgUsageResponse } from '@/data/usage/org-usage-query'
 import { USAGE_APPROACHING_THRESHOLD } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 export interface AttributeUsageProps {
@@ -109,7 +110,9 @@ const AttributeUsage = ({
                                     strokeWidth={2}
                                     className={exceededLimitStyle}
                                   />
-                                  <p className={`text-sm ${exceededLimitStyle}`}>Exceeded limit</p>
+                                  <p className={`text-sm ${exceededLimitStyle}`}>
+                                    {$t('Exceeded limit')}
+                                  </p>
                                 </div>
                               ) : (
                                 usageRatio >= USAGE_APPROACHING_THRESHOLD && (
@@ -119,19 +122,23 @@ const AttributeUsage = ({
                                       strokeWidth={2}
                                       className="text-amber-900"
                                     />
-                                    <p className="text-sm text-amber-900">Approaching limit</p>
+                                    <p className="text-sm text-amber-900">
+                                      {$t('Approaching limit')}
+                                    </p>
                                   </div>
                                 )
                               )}
                             </TooltipTrigger>
                             <TooltipContent side="bottom">
                               <p>
-                                Exceeding your plans included usage will lead to restrictions to
-                                your project.
+                                {$t(
+                                  'Exceeding your plans included usage will lead to restrictions to your project.'
+                                )}
                               </p>
                               <p>
-                                Upgrade to a usage-based plan or disable the spend cap to avoid
-                                restrictions.
+                                {$t(
+                                  'Upgrade to a usage-based plan or disable the spend cap to avoid restrictions.'
+                                )}
                               </p>
                             </TooltipContent>
                           </Tooltip>
@@ -162,10 +169,10 @@ const AttributeUsage = ({
                       {usageMeta && usageMeta.pricing_free_units !== 0 && (
                         <div className="flex items-center justify-between border-b py-1">
                           <p className="text-xs text-foreground-light">
-                            Included in {subscription?.plan?.name} Plan
+                            {$t('Included in')} {subscription?.plan?.name} {$t('Plan')}
                           </p>
                           {usageMeta.unlimited ? (
-                            <p className="text-xs">Unlimited</p>
+                            <p className="text-xs">{$t('Unlimited')}</p>
                           ) : (
                             <p className="text-xs">
                               {attribute.unit === 'bytes' || attribute.unit === 'gigabytes'
@@ -178,7 +185,7 @@ const AttributeUsage = ({
                       {currentBillingCycleSelected && usageMeta && (
                         <div className="flex items-center justify-between py-1">
                           <p className="text-xs text-foreground-light">
-                            {attribute.chartPrefix || 'Used '} in period
+                            {attribute.chartPrefix || 'Used '} {$t('in period')}
                           </p>
                           <p className="text-xs">
                             {attribute.unit === 'bytes' || attribute.unit === 'gigabytes'
@@ -189,7 +196,7 @@ const AttributeUsage = ({
                       )}
                       {currentBillingCycleSelected && (usageMeta?.pricing_free_units ?? 0) > 0 && (
                         <div className="flex items-center justify-between border-t py-1">
-                          <p className="text-xs text-foreground-light">Overage in period</p>
+                          <p className="text-xs text-foreground-light">{$t('Overage in period')}</p>
                           <p className="text-xs">
                             {(usageMeta?.pricing_free_units ?? 0) === -1 || usageExcess < 0
                               ? `0${attribute.unit === 'bytes' || attribute.unit === 'gigabytes' ? ' GB' : ''}`
@@ -237,9 +244,9 @@ const AttributeUsage = ({
                     <Panel.Content>
                       <div className="flex flex-col items-center justify-center">
                         <BarChart2 className="text-foreground-light mb-2" />
-                        <p className="text-sm">No data in period</p>
+                        <p className="text-sm">{$t('No data in period')}</p>
                         <p className="text-sm text-foreground-light">
-                          May take up to 24 hours to show
+                          {$t('May take up to 24 hours to show')}
                         </p>
                       </div>
                     </Panel.Content>
@@ -251,16 +258,16 @@ const AttributeUsage = ({
                 <Panel.Content>
                   <div className="flex w-full items-center flex-col justify-center space-y-2 md:flex-row md:justify-between">
                     <div className="space-y-1">
-                      <p className="text-sm">Not included in plan</p>
+                      <p className="text-sm">{$t('Not included in plan')}</p>
                       <div>
                         <p className="text-sm text-foreground-light">
-                          You need to be on a higher plan in order to use this feature.
+                          {$t('You need to be on a higher plan in order to use this feature.')}
                         </p>
                       </div>
                     </div>
 
                     <Button variant="primary" asChild>
-                      <Link href={upgradeUrl}>Upgrade plan</Link>
+                      <Link href={upgradeUrl}>{$t('Upgrade plan')}</Link>
                     </Button>
                   </div>
                 </Panel.Content>

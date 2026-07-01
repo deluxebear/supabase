@@ -7,6 +7,7 @@ import { useDebounce } from '../hooks/useDebounce'
 import { InputWithAddons } from '../primitives/InputWithAddons'
 import { Slider } from '../primitives/Slider'
 import { useDataTable } from '../providers/DataTableProvider'
+import { t as $t } from '@/lib/i18n'
 
 function getFilter(filterValue: unknown) {
   return typeof filterValue === 'number'
@@ -55,7 +56,7 @@ export function DataTableFilterSlider<TData>({
       <div className="flex items-center gap-4">
         <div className="grid w-full gap-1.5">
           <Label htmlFor={`min-${value}`} className="px-2 text-muted-foreground">
-            Min.
+            {$t('Min.')}
           </Label>
           <InputWithAddons
             placeholder="from"
@@ -72,7 +73,7 @@ export function DataTableFilterSlider<TData>({
         </div>
         <div className="grid w-full gap-1.5">
           <Label htmlFor={`max-${value}`} className="px-2 text-muted-foreground">
-            Max.
+            {$t('Max.')}
           </Label>
           <InputWithAddons
             placeholder="to"

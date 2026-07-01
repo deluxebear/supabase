@@ -22,6 +22,7 @@ import { PolicyRow } from '@/components/interfaces/Database/Policies/PolicyTable
 import type { Policy } from '@/components/interfaces/Database/Policies/PolicyTableRow/PolicyTableRow.utils'
 import { PUBLIC_BUCKET_TOOLTIP } from '@/components/interfaces/Storage/Storage.constants'
 import { Bucket } from '@/data/storage/buckets-query'
+import { t as $t } from '@/lib/i18n'
 
 interface StoragePoliciesBucketRowProps {
   table: string
@@ -59,7 +60,7 @@ export const StoragePoliciesBucketRow = forwardRef<HTMLDivElement, StoragePolici
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Badge variant="warning" className="flex">
-                      Public
+                      {$t('Public')}
                     </Badge>
                   </TooltipTrigger>
                   <TooltipContent side="top">{PUBLIC_BUCKET_TOOLTIP}</TooltipContent>
@@ -68,23 +69,23 @@ export const StoragePoliciesBucketRow = forwardRef<HTMLDivElement, StoragePolici
             </div>
           </div>
           <Button variant="outline" onClick={() => onSelectPolicyAdd(bucket?.name, table)}>
-            New policy
+            {$t('New policy')}
           </Button>
         </CardHeader>
         {policies.length === 0 ? (
           <CardContent>
-            <p className="text-sm text-foreground-lighter">No policies created yet</p>
+            <p className="text-sm text-foreground-lighter">{$t('No policies created yet')}</p>
           </CardContent>
         ) : (
           <CardContent className="p-0">
             <Table className="table-fixed">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[40%]">Name</TableHead>
-                  <TableHead className="w-[20%]">Command</TableHead>
-                  <TableHead className="w-[30%]">Applied to</TableHead>
+                  <TableHead className="w-[40%]">{$t('Name')}</TableHead>
+                  <TableHead className="w-[20%]">{$t('Command')}</TableHead>
+                  <TableHead className="w-[30%]">{$t('Applied to')}</TableHead>
                   <TableHead className="text-right">
-                    <span className="sr-only">Actions</span>
+                    <span className="sr-only">{$t('Actions')}</span>
                   </TableHead>
                 </TableRow>
               </TableHeader>

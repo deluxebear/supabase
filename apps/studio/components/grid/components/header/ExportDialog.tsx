@@ -23,6 +23,7 @@ import { getConnectionStrings } from '@/components/interfaces/Connect/DatabaseSe
 import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { getAllTableRowsSql } from '@/data/table-rows/table-rows-query'
 import { pluckObjectFields } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { RoleImpersonationState, wrapWithRoleImpersonation } from '@/lib/role-impersonation'
 import { useRoleImpersonationStateSnapshot } from '@/state/role-impersonation-state'
 
@@ -88,22 +89,24 @@ pg_dump -h ${db_host} -p ${db_port} -d ${db_name} -U ${db_user} --table="${table
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Export table data via CLI</DialogTitle>
+          <DialogTitle>{$t('Export table data via CLI')}</DialogTitle>
         </DialogHeader>
 
         <DialogSectionSeparator />
 
         <DialogSection className="flex flex-col gap-y-4">
           <p className="text-sm">
-            We highly recommend using <code>{selectedTab === 'csv' ? 'psql' : 'pg_dump'}</code> to
-            export your table data, in particular if your table is relatively large. This can be
-            done via the following command that you can run in your terminal:
+            {$t('We highly recommend using')}{' '}
+            <code>{selectedTab === 'csv' ? 'psql' : 'pg_dump'}</code>{' '}
+            {$t(
+              'to export your table data, in particular if your table is relatively large. This can be done via the following command that you can run in your terminal:'
+            )}
           </p>
 
           <Tabs_Shadcn_ value={selectedTab} onValueChange={setSelectedTab}>
             <TabsList_Shadcn_ className="gap-x-3">
-              <TabsTrigger_Shadcn_ value="csv">As CSV</TabsTrigger_Shadcn_>
-              <TabsTrigger_Shadcn_ value="sql">As SQL</TabsTrigger_Shadcn_>
+              <TabsTrigger_Shadcn_ value="csv">{$t('As CSV')}</TabsTrigger_Shadcn_>
+              <TabsTrigger_Shadcn_ value="sql">{$t('As SQL')}</TabsTrigger_Shadcn_>
             </TabsList_Shadcn_>
             <TabsContent_Shadcn_ value="csv">
               <CodeBlock
@@ -125,31 +128,35 @@ pg_dump -h ${db_host} -p ${db_port} -d ${db_name} -U ${db_user} --table="${table
               <Admonition
                 type="note"
                 className="mt-2"
-                title="Filters are not supported when exporting as SQL via pg_dump"
-                description="If you'd like to export as SQL, we recommend creating a view first then exporting the data from there via pg_dump instead"
+                title={$t('Filters are not supported when exporting as SQL via pg_dump')}
+                description={$t(
+                  "If you'd like to export as SQL, we recommend creating a view first then exporting the data from there via pg_dump instead"
+                )}
               />
             </TabsContent_Shadcn_>
           </Tabs_Shadcn_>
 
           <p className="text-sm">
-            You will be prompted for your database password, and the output file{' '}
+            {$t('You will be prompted for your database password, and the output file')}{' '}
             <code>
               {outputName}.{selectedTab}
             </code>{' '}
-            will be saved in the current directory that your terminal is in.
+            {$t('will be saved in the current directory that your terminal is in.')}
           </p>
 
           {selectedTab === 'sql' && (
             <p className="text-sm text-foreground-light">
-              Note: <code>pg_dump</code> needs to match your project's Postgres version. If you run
-              into a server version mismatch error, you will need to update <code>pg_dump</code>{' '}
-              before running the command.
+              {$t('Note:')} <code>pg_dump</code>{' '}
+              {$t(
+                "needs to match your project's Postgres version. If you run into a server version mismatch error, you will need to update"
+              )}{' '}
+              <code>pg_dump</code> {$t('before running the command.')}
             </p>
           )}
         </DialogSection>
         <DialogFooter>
           <Button variant="default" onClick={() => onOpenChange(false)}>
-            Close
+            {$t('Close')}
           </Button>
         </DialogFooter>
       </DialogContent>

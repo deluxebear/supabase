@@ -11,6 +11,7 @@ import { StorageBucketsLayout } from '@/components/layouts/StorageLayout/Storage
 import StorageLayout from '@/components/layouts/StorageLayout/StorageLayout'
 import { useIsVectorBucketsEnabled } from '@/data/config/project-storage-config-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const StorageVectorsPage: NextPageWithLayout = () => {
@@ -36,7 +37,7 @@ const StorageVectorsPage: NextPageWithLayout = () => {
 
 StorageVectorsPage.getLayout = (page) => (
   <DefaultLayout>
-    <StorageLayout title="Vectors">
+    <StorageLayout title={$t('Vectors')}>
       <StorageBucketsLayout>{page}</StorageBucketsLayout>
     </StorageLayout>
   </DefaultLayout>

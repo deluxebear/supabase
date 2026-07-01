@@ -12,6 +12,7 @@ import {
 } from 'ui'
 
 import { PERMISSIONS_DESCRIPTIONS } from '../OAuthApps.constants'
+import { t as $t } from '@/lib/i18n'
 
 const ScopeDropdownCheckboxItem = ({
   children,
@@ -81,17 +82,17 @@ const Scope = ({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-40">
-          <DropdownMenuLabel>Select an access level</DropdownMenuLabel>
+          <DropdownMenuLabel>{$t('Select an access level')}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <ScopeDropdownCheckboxItem scopeName={readScopeName} scopes={scopes} onChange={setScopes}>
-            Read
+            {$t('Read')}
           </ScopeDropdownCheckboxItem>
           <ScopeDropdownCheckboxItem
             scopeName={writeScopeName}
             scopes={scopes}
             onChange={setScopes}
           >
-            Write
+            {$t('Write')}
           </ScopeDropdownCheckboxItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -109,7 +110,7 @@ export const ScopesPanel = ({
   return (
     <div className="-space-y-px">
       <Scope
-        title="Analytics"
+        title={$t('Analytics')}
         description={PERMISSIONS_DESCRIPTIONS.ANALYTICS}
         readScopeName={OAuthScope.ANALYTICS_READ}
         writeScopeName={OAuthScope.ANALYTICS_WRITE}
@@ -117,7 +118,7 @@ export const ScopesPanel = ({
         setScopes={setScopes}
       />
       <Scope
-        title="Analytics Config"
+        title={$t('Analytics Config')}
         description={PERMISSIONS_DESCRIPTIONS.ANALYTICS_CONFIG}
         readScopeName={OAuthScope.ANALYTICS_CONFIG_READ}
         writeScopeName={OAuthScope.ANALYTICS_CONFIG_WRITE}
@@ -125,7 +126,7 @@ export const ScopesPanel = ({
         setScopes={setScopes}
       />
       <Scope
-        title="Auth"
+        title={$t('Auth')}
         description={PERMISSIONS_DESCRIPTIONS.AUTH}
         readScopeName={OAuthScope.AUTH_READ}
         writeScopeName={OAuthScope.AUTH_WRITE}
@@ -133,7 +134,7 @@ export const ScopesPanel = ({
         setScopes={setScopes}
       />
       <Scope
-        title="Database"
+        title={$t('Database')}
         description={PERMISSIONS_DESCRIPTIONS.DATABASE}
         readScopeName={OAuthScope.DATABASE_READ}
         writeScopeName={OAuthScope.DATABASE_WRITE}
@@ -141,7 +142,7 @@ export const ScopesPanel = ({
         setScopes={setScopes}
       />
       <Scope
-        title="Domains"
+        title={$t('Domains')}
         description={PERMISSIONS_DESCRIPTIONS.DOMAINS}
         readScopeName={OAuthScope.DOMAINS_READ}
         writeScopeName={OAuthScope.DOMAINS_WRITE}
@@ -149,7 +150,7 @@ export const ScopesPanel = ({
         setScopes={setScopes}
       />
       <Scope
-        title="Edge Functions"
+        title={$t('Edge Functions')}
         description={PERMISSIONS_DESCRIPTIONS.EDGE_FUNCTIONS}
         readScopeName={OAuthScope.EDGE_FUNCTIONS_READ}
         writeScopeName={OAuthScope.EDGE_FUNCTIONS_WRITE}
@@ -157,7 +158,7 @@ export const ScopesPanel = ({
         setScopes={setScopes}
       />
       <Scope
-        title="Environment"
+        title={$t('Environment')}
         description={PERMISSIONS_DESCRIPTIONS.ENVIRONMENT}
         readScopeName={OAuthScope.ENVIRONMENT_READ}
         writeScopeName={OAuthScope.ENVIRONMENT_WRITE}
@@ -165,7 +166,7 @@ export const ScopesPanel = ({
         setScopes={setScopes}
       />
       <Scope
-        title="Organizations"
+        title={$t('Organizations')}
         description={PERMISSIONS_DESCRIPTIONS.ORGANIZATIONS}
         readScopeName={OAuthScope.ORGANIZATIONS_READ}
         writeScopeName={OAuthScope.ORGANIZATIONS_WRITE}
@@ -173,7 +174,7 @@ export const ScopesPanel = ({
         setScopes={setScopes}
       />
       <Scope
-        title="Projects"
+        title={$t('Projects')}
         description={PERMISSIONS_DESCRIPTIONS.PROJECTS}
         readScopeName={OAuthScope.PROJECTS_READ}
         writeScopeName={OAuthScope.PROJECTS_WRITE}
@@ -189,7 +190,7 @@ export const ScopesPanel = ({
         setScopes={setScopes}
       />
       <Scope
-        title="Secrets"
+        title={$t('Secrets')}
         description={PERMISSIONS_DESCRIPTIONS.SECRETS}
         readScopeName={OAuthScope.SECRETS_READ}
         writeScopeName={OAuthScope.SECRETS_WRITE}
@@ -197,7 +198,7 @@ export const ScopesPanel = ({
         setScopes={setScopes}
       />
       <Scope
-        title="Storage"
+        title={$t('Storage')}
         description={PERMISSIONS_DESCRIPTIONS.STORAGE}
         readScopeName={OAuthScope.STORAGE_READ}
         writeScopeName={OAuthScope.STORAGE_WRITE}

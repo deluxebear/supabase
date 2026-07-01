@@ -2,6 +2,7 @@ import { AiIconAnimation, cn, KeyboardShortcut } from 'ui'
 
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useIsShortcutEnabled } from '@/state/shortcuts/useIsShortcutEnabled'
@@ -32,7 +33,7 @@ export const AssistantButton = () => {
           className: 'p-1 pl-2.5',
           text: (
             <div className="flex items-center gap-2.5">
-              <span>AI Assistant</span>
+              <span>{$t('AI Assistant')}</span>
               {isAIAssistantHotkeyEnabled && <KeyboardShortcut keys={['Meta', 'I']} />}
             </div>
           ),
@@ -44,7 +45,7 @@ export const AssistantButton = () => {
         size={16}
         className={cn(isOpen && 'text-background')}
       />
-      <span className="sr-only">AI Assistant</span>
+      <span className="sr-only">{$t('AI Assistant')}</span>
     </ButtonTooltip>
   )
 }

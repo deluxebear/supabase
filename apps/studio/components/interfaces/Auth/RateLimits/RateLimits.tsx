@@ -42,6 +42,7 @@ import { useAuthConfigQuery } from '@/data/auth/auth-config-query'
 import { useAuthConfigUpdateMutation } from '@/data/auth/auth-config-update-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const RateLimits = () => {
   const { ref: projectRef } = useParams()
@@ -63,7 +64,7 @@ export const RateLimits = () => {
   } = useAuthConfigQuery({ projectRef })
   const { mutate: updateAuthConfig, isPending: isUpdatingConfig } = useAuthConfigUpdateMutation({
     onSuccess: () => {
-      toast.success('Rate limits successfully updated')
+      toast.success($t('Rate limits successfully updated'))
     },
     onError: (error) => {
       toast.error(`Failed to update rate limits: ${error.message}`)
@@ -233,8 +234,10 @@ export const RateLimits = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Rate limit for sending emails"
-                        description="Number of emails that can be sent per hour from your project"
+                        label={$t('Rate limit for sending emails')}
+                        description={$t(
+                          'Number of emails that can be sent per hour from your project'
+                        )}
                       >
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -257,15 +260,15 @@ export const RateLimits = () => {
                               {!authConfig.EXTERNAL_EMAIL_ENABLED ? (
                                 <>
                                   <p className="font-medium">
-                                    Email-based logins are not enabled for your project
+                                    {$t('Email-based logins are not enabled for your project')}
                                   </p>
                                   <p className="mt-1">
-                                    Enable email-based logins to update this rate limit
+                                    {$t('Enable email-based logins to update this rate limit')}
                                   </p>
                                   <div className="mt-3">
                                     <Button asChild variant="default" size="tiny">
                                       <Link href={`/project/${projectRef}/auth/providers`}>
-                                        View auth providers
+                                        {$t('View auth providers')}
                                       </Link>
                                     </Button>
                                   </div>
@@ -273,23 +276,24 @@ export const RateLimits = () => {
                               ) : (
                                 <>
                                   <p className="font-medium">
-                                    Custom SMTP or Send Email hook is required to update this
-                                    configuration
+                                    {$t(
+                                      'Custom SMTP or Send Email hook is required to update this configuration'
+                                    )}
                                   </p>
                                   <p className="mt-1">
-                                    The built-in email service has a fixed rate limit. Set up a
-                                    custom SMTP provider or enable the Send Email hook to update
-                                    your email rate limit
+                                    {$t(
+                                      'The built-in email service has a fixed rate limit. Set up a custom SMTP provider or enable the Send Email hook to update your email rate limit'
+                                    )}
                                   </p>
                                   <div className="mt-3 flex gap-2">
                                     <Button asChild variant="default" size="tiny">
                                       <Link href={`/project/${projectRef}/auth/smtp`}>
-                                        View SMTP settings
+                                        {$t('View SMTP settings')}
                                       </Link>
                                     </Button>
                                     <Button asChild variant="default" size="tiny">
                                       <Link href={`/project/${projectRef}/auth/hooks`}>
-                                        View hooks
+                                        {$t('View hooks')}
                                       </Link>
                                     </Button>
                                   </div>
@@ -310,8 +314,10 @@ export const RateLimits = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Rate limit for sending SMS messages"
-                        description="Number of SMS messages that can be sent per hour from your project"
+                        label={$t('Rate limit for sending SMS messages')}
+                        description={$t(
+                          'Number of SMS messages that can be sent per hour from your project'
+                        )}
                       >
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -332,15 +338,15 @@ export const RateLimits = () => {
                           {!canUpdateConfig || !canUpdateSMSRateLimit ? (
                             <TooltipContent side="left" className="w-80 p-4">
                               <p className="font-medium">
-                                Phone-based logins are not enabled for your project
+                                {$t('Phone-based logins are not enabled for your project')}
                               </p>
                               <p className="mt-1">
-                                Enable phone-based logins to update this rate limit
+                                {$t('Enable phone-based logins to update this rate limit')}
                               </p>
                               <div className="mt-3">
                                 <Button asChild variant="default" size="tiny">
                                   <Link href={`/project/${projectRef}/auth/providers`}>
-                                    View auth providers
+                                    {$t('View auth providers')}
                                   </Link>
                                 </Button>
                               </div>
@@ -359,8 +365,10 @@ export const RateLimits = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Rate limit for token refreshes"
-                        description="Number of sessions that can be refreshed in a 5 minute interval per IP address"
+                        label={$t('Rate limit for token refreshes')}
+                        description={$t(
+                          'Number of sessions that can be refreshed in a 5 minute interval per IP address'
+                        )}
                       >
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -373,7 +381,7 @@ export const RateLimits = () => {
                                   disabled={!canUpdateConfig}
                                 />
                                 <InputGroupAddon align="inline-end">
-                                  <InputGroupText>requests/5 min</InputGroupText>
+                                  <InputGroupText>{$t('requests/5 min')}</InputGroupText>
                                 </InputGroupAddon>
                               </InputGroup>
                             </FormControl>
@@ -381,18 +389,20 @@ export const RateLimits = () => {
                           {!canUpdateConfig && (
                             <TooltipContent side="left" className="w-80 p-4">
                               <p className="font-medium">
-                                You don't have permission to update this setting
+                                {$t("You don't have permission to update this setting")}
                               </p>
                               <p className="mt-1">
-                                You need additional permissions to update auth configuration
-                                settings
+                                {$t(
+                                  'You need additional permissions to update auth configuration settings'
+                                )}
                               </p>
                             </TooltipContent>
                           )}
                         </Tooltip>
                         {rateLimitForm.watch('RATE_LIMIT_TOKEN_REFRESH') > 0 && (
                           <p className="text-foreground-lighter text-sm mt-2">
-                            {rateLimitForm.watch('RATE_LIMIT_TOKEN_REFRESH') * 12} requests per hour
+                            {rateLimitForm.watch('RATE_LIMIT_TOKEN_REFRESH') * 12}{' '}
+                            {$t('requests per hour')}
                           </p>
                         )}
                       </FormItemLayout>
@@ -407,8 +417,10 @@ export const RateLimits = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Rate limit for token verifications"
-                        description="Number of OTP and magic link verifications that can be made in a 5 minute interval per IP address"
+                        label={$t('Rate limit for token verifications')}
+                        description={$t(
+                          'Number of OTP and magic link verifications that can be made in a 5 minute interval per IP address'
+                        )}
                       >
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -421,7 +433,7 @@ export const RateLimits = () => {
                                   disabled={!canUpdateConfig}
                                 />
                                 <InputGroupAddon align="inline-end">
-                                  <InputGroupText>requests/5 min</InputGroupText>
+                                  <InputGroupText>{$t('requests/5 min')}</InputGroupText>
                                 </InputGroupAddon>
                               </InputGroup>
                             </FormControl>
@@ -429,18 +441,20 @@ export const RateLimits = () => {
                           {!canUpdateConfig && (
                             <TooltipContent side="left" className="w-80 p-4">
                               <p className="font-medium">
-                                You don't have permission to update this setting
+                                {$t("You don't have permission to update this setting")}
                               </p>
                               <p className="mt-1">
-                                You need additional permissions to update auth configuration
-                                settings
+                                {$t(
+                                  'You need additional permissions to update auth configuration settings'
+                                )}
                               </p>
                             </TooltipContent>
                           )}
                         </Tooltip>
                         {rateLimitForm.watch('RATE_LIMIT_VERIFY') > 0 && (
                           <p className="text-foreground-lighter text-sm mt-2">
-                            {rateLimitForm.watch('RATE_LIMIT_VERIFY') * 12} requests per hour
+                            {rateLimitForm.watch('RATE_LIMIT_VERIFY') * 12}{' '}
+                            {$t('requests per hour')}
                           </p>
                         )}
                       </FormItemLayout>
@@ -455,8 +469,10 @@ export const RateLimits = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Rate limit for anonymous users"
-                        description="Number of anonymous sign-ins that can be made per hour per IP address"
+                        label={$t('Rate limit for anonymous users')}
+                        description={$t(
+                          'Number of anonymous sign-ins that can be made per hour per IP address'
+                        )}
                       >
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -477,13 +493,14 @@ export const RateLimits = () => {
                           {!canUpdateConfig || !canUpdateAnonymousUsersRateLimit ? (
                             <TooltipContent side="left" className="w-80 p-4">
                               <p className="font-medium">
-                                Anonymous sign-ins are not enabled for your project. Enable them to
-                                control this rate limit.
+                                {$t(
+                                  'Anonymous sign-ins are not enabled for your project. Enable them to control this rate limit.'
+                                )}
                               </p>
                               <div className="mt-3">
                                 <Button asChild variant="default" size="tiny">
                                   <Link href={`/project/${projectRef}/auth/providers`}>
-                                    View auth settings
+                                    {$t('View auth settings')}
                                   </Link>
                                 </Button>
                               </div>
@@ -502,8 +519,10 @@ export const RateLimits = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Rate limit for sign-ups and sign-ins"
-                        description="Number of sign-up and sign-in requests that can be made in a 5 minute interval per IP address (excludes anonymous users)"
+                        label={$t('Rate limit for sign-ups and sign-ins')}
+                        description={$t(
+                          'Number of sign-up and sign-in requests that can be made in a 5 minute interval per IP address (excludes anonymous users)'
+                        )}
                       >
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -516,7 +535,7 @@ export const RateLimits = () => {
                                   disabled={!canUpdateConfig}
                                 />
                                 <InputGroupAddon align="inline-end">
-                                  <InputGroupText>requests/5 min</InputGroupText>
+                                  <InputGroupText>{$t('requests/5 min')}</InputGroupText>
                                 </InputGroupAddon>
                               </InputGroup>
                             </FormControl>
@@ -524,18 +543,19 @@ export const RateLimits = () => {
                           {!canUpdateConfig && (
                             <TooltipContent side="left" className="w-80 p-4">
                               <p className="font-medium">
-                                You don't have permission to update this setting
+                                {$t("You don't have permission to update this setting")}
                               </p>
                               <p className="mt-1">
-                                You need additional permissions to update auth configuration
-                                settings
+                                {$t(
+                                  'You need additional permissions to update auth configuration settings'
+                                )}
                               </p>
                             </TooltipContent>
                           )}
                         </Tooltip>
                         {rateLimitForm.watch('RATE_LIMIT_OTP') > 0 && (
                           <p className="text-foreground-lighter text-sm mt-2">
-                            {rateLimitForm.watch('RATE_LIMIT_OTP') * 12} requests per hour
+                            {rateLimitForm.watch('RATE_LIMIT_OTP') * 12} {$t('requests per hour')}
                           </p>
                         )}
                       </FormItemLayout>
@@ -550,8 +570,10 @@ export const RateLimits = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Rate limit for Web3 sign-ups and sign-ins"
-                        description="Number of Web3 sign-up or sign-in requests that can be made per IP address in 5 minutes"
+                        label={$t('Rate limit for Web3 sign-ups and sign-ins')}
+                        description={$t(
+                          'Number of Web3 sign-up or sign-in requests that can be made per IP address in 5 minutes'
+                        )}
                       >
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -564,7 +586,7 @@ export const RateLimits = () => {
                                   disabled={!canUpdateConfig || !canUpdateWeb3RateLimit}
                                 />
                                 <InputGroupAddon align="inline-end">
-                                  <InputGroupText>requests/5 min</InputGroupText>
+                                  <InputGroupText>{$t('requests/5 min')}</InputGroupText>
                                 </InputGroupAddon>
                               </InputGroup>
                             </FormControl>
@@ -572,13 +594,14 @@ export const RateLimits = () => {
                           {!canUpdateConfig || !canUpdateWeb3RateLimit ? (
                             <TooltipContent side="left" className="w-80 p-4">
                               <p className="font-medium">
-                                Web3 auth provider is not enabled for this project. Enable it to
-                                control this rate limit.
+                                {$t(
+                                  'Web3 auth provider is not enabled for this project. Enable it to control this rate limit.'
+                                )}
                               </p>
                               <div className="mt-3">
                                 <Button asChild variant="default" size="tiny">
                                   <Link href={`/project/${projectRef}/auth/providers`}>
-                                    View Auth provider settings
+                                    {$t('View Auth provider settings')}
                                   </Link>
                                 </Button>
                               </div>
@@ -593,7 +616,7 @@ export const RateLimits = () => {
                 <CardFooter className="justify-end space-x-2">
                   {rateLimitForm.formState.isDirty && (
                     <Button variant="default" onClick={() => rateLimitForm.reset()}>
-                      Cancel
+                      {$t('Cancel')}
                     </Button>
                   )}
                   <Button
@@ -604,7 +627,7 @@ export const RateLimits = () => {
                     }
                     loading={isUpdatingConfig}
                   >
-                    Save changes
+                    {$t('Save changes')}
                   </Button>
                 </CardFooter>
               </Card>
@@ -616,9 +639,9 @@ export const RateLimits = () => {
       <PageSection>
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>IP Address Forwarding</PageSectionTitle>
+            <PageSectionTitle>{$t('IP Address Forwarding')}</PageSectionTitle>
             <PageSectionDescription>
-              Control how Auth determines source IP address for rate limiting.
+              {$t('Control how Auth determines source IP address for rate limiting.')}
             </PageSectionDescription>
           </PageSectionSummary>
         </PageSectionMeta>
@@ -633,14 +656,15 @@ export const RateLimits = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Enable IP address forwarding"
+                        label={$t('Enable IP address forwarding')}
                         description=<>
-                          Clients can forward end-user IP addresses to Auth for rate limiting when
-                          using secret API keys.{' '}
+                          {$t(
+                            'Clients can forward end-user IP addresses to Auth for rate limiting when using secret API keys.'
+                          )}{' '}
                           <InlineLink
                             href={`${DOCS_URL}/guides/auth/rate-limits#ip-address-forwarding`}
                           >
-                            Learn more
+                            {$t('Learn more')}
                           </InlineLink>
                         </>
                       >
@@ -658,7 +682,7 @@ export const RateLimits = () => {
                 <CardFooter className="justify-end space-x-2">
                   {ipForwardingForm.formState.isDirty && (
                     <Button variant="default" onClick={() => ipForwardingForm.reset()}>
-                      Cancel
+                      {$t('Cancel')}
                     </Button>
                   )}
                   <Button
@@ -669,7 +693,7 @@ export const RateLimits = () => {
                     }
                     loading={isUpdatingConfig}
                   >
-                    Save changes
+                    {$t('Save changes')}
                   </Button>
                 </CardFooter>
               </Card>

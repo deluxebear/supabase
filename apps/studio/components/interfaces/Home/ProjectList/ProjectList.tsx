@@ -35,6 +35,7 @@ import { useResourceWarningsQuery } from '@/data/usage/resource-warnings-query'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { Organization } from '@/types'
 
 export interface ProjectListProps {
@@ -193,12 +194,18 @@ export const ProjectList = ({
                   }}
                   className={cn(noResults && 'text-foreground-muted')}
                 >
-                  Project
+                  {$t('Project')}
                 </TableHeadSort>
               </TableHead>
-              <TableHead className={cn(noResults && 'text-foreground-muted')}>Status</TableHead>
-              <TableHead className={cn(noResults && 'text-foreground-muted')}>Compute</TableHead>
-              <TableHead className={cn(noResults && 'text-foreground-muted')}>Region</TableHead>
+              <TableHead className={cn(noResults && 'text-foreground-muted')}>
+                {$t('Status')}
+              </TableHead>
+              <TableHead className={cn(noResults && 'text-foreground-muted')}>
+                {$t('Compute')}
+              </TableHead>
+              <TableHead className={cn(noResults && 'text-foreground-muted')}>
+                {$t('Region')}
+              </TableHead>
               <TableHead
                 className={cn(noResults && 'text-foreground-muted')}
                 aria-sort={getProjectListAriaSort(sort)}
@@ -214,7 +221,7 @@ export const ProjectList = ({
                   }}
                   className={cn(noResults && 'text-foreground-muted')}
                 >
-                  Created
+                  {$t('Created')}
                 </TableHeadSort>
               </TableHead>
               <TableHead className={cn(noResults && 'text-foreground-muted')} />
@@ -231,7 +238,9 @@ export const ProjectList = ({
                         ? `No projects found`
                         : `No ${filterStatus[0] === 'INACTIVE' ? 'paused' : 'active'} projects found`
                     }
-                    description="Your search for projects with the specified status did not return any results"
+                    description={$t(
+                      'Your search for projects with the specified status did not return any results'
+                    )}
                     onResetFilter={() => setFilterStatus([])}
                   />
                 </TableCell>
@@ -285,7 +294,9 @@ export const ProjectList = ({
               ? `No projects found`
               : `No ${filterStatus[0] === 'INACTIVE' ? 'paused' : 'active'} projects found`
           }
-          description="Your search for projects with the specified status did not return any results"
+          description={$t(
+            'Your search for projects with the specified status did not return any results'
+          )}
           onResetFilter={() => setFilterStatus([])}
         />
       ) : noResultsFromSearch ? (

@@ -14,6 +14,7 @@ import {
 } from 'ui'
 
 import { OrgCommandItem } from './OrgCommandItem'
+import { t as $t } from '@/lib/i18n'
 import type { Organization } from '@/types'
 
 export interface OrganizationDropdownCommandContentProps {
@@ -63,7 +64,7 @@ export function OrganizationDropdownCommandContent({
               className="text-xs text-foreground-light hover:text-foreground"
               onClick={onClose}
             >
-              All Organizations
+              {$t('All Organizations')}
             </Link>
           </Button>
           {organizationCreationEnabled && (
@@ -79,18 +80,18 @@ export function OrganizationDropdownCommandContent({
                 className="text-xs text-foreground-light hover:text-foreground"
                 onClick={onClose}
               >
-                New organization
+                {$t('New organization')}
               </Link>
             </Button>
           )}
         </div>
         <CommandInput
-          placeholder="Find organization..."
+          placeholder={$t('Find organization...')}
           wrapperClassName="shrink-0"
           className="text-base sm:text-sm"
         />
         <CommandList className="flex flex-col flex-1 min-h-0 overflow-y-auto p-1 max-h-none!">
-          <CommandEmpty>No organizations found</CommandEmpty>
+          <CommandEmpty>{$t('No organizations found')}</CommandEmpty>
           <CommandGroup className="min-h-0">{orgList}</CommandGroup>
         </CommandList>
       </Command>
@@ -99,9 +100,9 @@ export function OrganizationDropdownCommandContent({
 
   return (
     <Command className={className}>
-      <CommandInput placeholder="Find organization..." />
+      <CommandInput placeholder={$t('Find organization...')} />
       <CommandList>
-        <CommandEmpty>No organizations found</CommandEmpty>
+        <CommandEmpty>{$t('No organizations found')}</CommandEmpty>
         <CommandGroup>
           <ScrollArea className={(organizations || []).length > 7 ? 'md:h-[210px]' : ''}>
             {orgList}
@@ -111,7 +112,7 @@ export function OrganizationDropdownCommandContent({
         <CommandGroup>
           <CommandItem className="cursor-pointer w-full" onSelect={() => onClose()}>
             <Link href="/organizations" className="flex items-center gap-2 w-full">
-              All Organizations
+              {$t('All Organizations')}
             </Link>
           </CommandItem>
         </CommandGroup>
@@ -122,7 +123,7 @@ export function OrganizationDropdownCommandContent({
               <CommandItem className="cursor-pointer w-full" onSelect={() => onClose()}>
                 <Link href="/new" className="flex items-center gap-2 w-full">
                   <Plus size={14} strokeWidth={1.5} />
-                  <p>New organization</p>
+                  <p>{$t('New organization')}</p>
                 </Link>
               </CommandItem>
             </CommandGroup>

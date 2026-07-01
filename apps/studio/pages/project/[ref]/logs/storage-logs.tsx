@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import { LogsPreviewer } from '@/components/interfaces/Settings/Logs/LogsPreviewer'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import LogsLayout from '@/components/layouts/LogsLayout/LogsLayout'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 export const LogPage: NextPageWithLayout = () => {
@@ -22,7 +23,7 @@ export const LogPage: NextPageWithLayout = () => {
 
 LogPage.getLayout = (page) => (
   <DefaultLayout>
-    <LogsLayout title="Storage Logs">{page}</LogsLayout>
+    <LogsLayout title={$t('Storage Logs')}>{page}</LogsLayout>
   </DefaultLayout>
 )
 

@@ -24,6 +24,7 @@ import { exposedFunctionCountsQueryOptions } from '@/data/privileges/exposed-fun
 import { exposedFunctionsInfiniteQueryOptions } from '@/data/privileges/exposed-functions-infinite-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { pluralize } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 interface ExposedFunctionSelectorProps {
   disabled?: boolean
@@ -129,7 +130,7 @@ export const ExposedFunctionSelector = ({
         <Command shouldFilter={false}>
           <CommandInput
             className="text-xs"
-            placeholder="Find function..."
+            placeholder={$t('Find function...')}
             value={search}
             onValueChange={setSearch}
           />
@@ -146,7 +147,9 @@ export const ExposedFunctionSelector = ({
                 </>
               ) : isError ? (
                 <div className="flex items-center py-3 justify-center">
-                  <p className="text-xs text-foreground-lighter">Failed to retrieve functions</p>
+                  <p className="text-xs text-foreground-lighter">
+                    {$t('Failed to retrieve functions')}
+                  </p>
                 </div>
               ) : (
                 <>
@@ -218,15 +221,16 @@ export const ExposedFunctionSelector = ({
                                     <button
                                       type="button"
                                       tabIndex={-1}
-                                      aria-label="Schema not exposed"
+                                      aria-label={$t('Schema not exposed')}
                                       className="inline-flex items-center text-foreground-muted hover:text-foreground-light"
                                     >
                                       <Info size={14} />
                                     </button>
                                   </TooltipTrigger>
                                   <TooltipContent side="left" className="max-w-[320px] text-xs">
-                                    The schema "{fn.schema}" must be exposed before enabling this
-                                    function.
+                                    {$t('The schema "')}
+                                    {fn.schema}
+                                    {$t('" must be exposed before enabling this function.')}
                                   </TooltipContent>
                                 </Tooltip>
                               )}

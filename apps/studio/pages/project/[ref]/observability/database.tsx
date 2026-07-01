@@ -45,6 +45,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
 import { formatBytes } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -60,7 +61,7 @@ const DatabaseReport: NextPageWithLayout = () => {
 
 DatabaseReport.getLayout = (page) => (
   <DefaultLayout>
-    <ObservabilityLayout title="Database">{page}</ObservabilityLayout>
+    <ObservabilityLayout title={$t('Database')}>{page}</ObservabilityLayout>
   </DefaultLayout>
 )
 
@@ -238,7 +239,7 @@ const DatabaseUsage = () => {
             <DocsButton href={OBSERVABILITY_DOCS_HREFS.database} topic={REPORT_TITLE} />
             <ShortcutTooltip
               shortcutId={SHORTCUT_IDS.OBSERVABILITY_REFRESH}
-              label="Refresh report"
+              label={$t('Refresh report')}
               side="bottom"
             >
               <Button
@@ -262,8 +263,10 @@ const DatabaseUsage = () => {
               <UpgradePrompt
                 show={showUpgradePrompt}
                 setShowUpgradePrompt={setShowUpgradePrompt}
-                title="Report date range"
-                description="Report data can be stored for a maximum of 3 months depending on the plan that your project is on."
+                title={$t('Report date range')}
+                description={$t(
+                  'Report data can be stored for a maximum of 3 months depending on the plan that your project is on.'
+                )}
                 source="databaseReportDateRange"
               />
               {selectedDateRange && (
@@ -319,7 +322,7 @@ const DatabaseUsage = () => {
         {selectedDateRange && isReplicaSelected && (
           <LazyComposedChartHandler
             id="replication-lag"
-            label="Replication lag"
+            label={$t('Replication lag')}
             format="s"
             valuePrecision={2}
             showTooltip
@@ -349,7 +352,7 @@ const DatabaseUsage = () => {
         <ReportWidget
           isLoading={isLoading}
           params={params.largeObjects}
-          title="Database Size"
+          title={$t('Database Size')}
           data={data.largeObjects || []}
           queryType={'db'}
           resolvedSql={largeObjectsSql}
@@ -358,13 +361,13 @@ const DatabaseUsage = () => {
               <div>
                 <div className="flex flex-wrap items-center gap-8 mt-5">
                   <div className="flex flex-col gap-1">
-                    <p className="text-sm text-foreground-light">Space used</p>
+                    <p className="text-sm text-foreground-light">{$t('Space used')}</p>
                     <span className="text-lg font-semibold text-foreground">
                       {formatBytes(databaseSizeBytes, 2, 'GB')}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <p className="text-sm text-foreground-light">Provisioned disk size</p>
+                    <p className="text-sm text-foreground-light">{$t('Provisioned disk size')}</p>
                     <span className="text-lg font-semibold text-foreground">
                       {currentDiskSize} GB
                     </span>
@@ -374,7 +377,7 @@ const DatabaseUsage = () => {
                     {project?.cloud_provider === 'AWS' ? (
                       <Button asChild variant="default">
                         <Link href={`/project/${ref}/settings/compute-and-disk`}>
-                          Increase disk size
+                          {$t('Increase disk size')}
                         </Link>
                       </Button>
                     ) : (
@@ -391,16 +394,18 @@ const DatabaseUsage = () => {
                           },
                         }}
                       >
-                        Increase disk size
+                        {$t('Increase disk size')}
                       </ButtonTooltip>
                     )}
                   </div>
                 </div>
 
-                <p className="mt-8 text-sm font-medium text-foreground-light">Large Objects</p>
+                <p className="mt-8 text-sm font-medium text-foreground-light">
+                  {$t('Large Objects')}
+                </p>
                 {!props.isLoading && props.data.length === 0 && (
                   <span className="text-sm text-foreground-light mt-2 block">
-                    No large objects found
+                    {$t('No large objects found')}
                   </span>
                 )}
                 {!props.isLoading && props.data.length > 0 && (
@@ -408,10 +413,10 @@ const DatabaseUsage = () => {
                     className="space-y-3 mt-4"
                     head={[
                       <Table.th key="object" className="py-2">
-                        Object
+                        {$t('Object')}
                       </Table.th>,
                       <Table.th key="size" className="py-2">
-                        Size
+                        {$t('Size')}
                       </Table.th>,
                     ]}
                     body={props.data?.map((object) => {
@@ -442,10 +447,9 @@ const DatabaseUsage = () => {
                 <AlertDescription>
                   <div className="space-y-2">
                     <p>
-                      New Supabase projects have a database size of ~40-60mb. This space includes
-                      pre-installed extensions, schemas, and default Postgres data. Additional
-                      database size is used when installing extensions, even if those extensions are
-                      inactive.
+                      {$t(
+                        'New Supabase projects have a database size of ~40-60mb. This space includes pre-installed extensions, schemas, and default Postgres data. Additional database size is used when installing extensions, even if those extensions are inactive.'
+                      )}
                     </p>
 
                     <Button asChild variant="default" icon={<ExternalLink />}>
@@ -454,7 +458,7 @@ const DatabaseUsage = () => {
                         target="_blank"
                         rel="noreferrer"
                       >
-                        Read about database size
+                        {$t('Read about database size')}
                       </Link>
                     </Button>
                   </div>

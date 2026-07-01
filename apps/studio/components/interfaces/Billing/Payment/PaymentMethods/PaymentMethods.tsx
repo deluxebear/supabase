@@ -29,6 +29,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
 import { getURL } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 const PaymentMethods = () => {
   const { slug } = useParams()
@@ -64,7 +65,7 @@ const PaymentMethods = () => {
       <ScaffoldSection>
         <ScaffoldSectionDetail>
           <div className="sticky space-y-2 top-12">
-            <p className="text-foreground text-base m-0">Payment Methods</p>
+            <p className="text-foreground text-base m-0">{$t('Payment Methods')}</p>
             <p className="text-sm text-foreground-light mb-2 pr-4 m-0">
               {isStripeManagedOrganization
                 ? 'Billing for this organisation is handled through Stripe Projects.'
@@ -103,7 +104,7 @@ const PaymentMethods = () => {
                     <Admonition
                       type="note"
                       layout="horizontal"
-                      title="Payment is currently by invoice"
+                      title={$t('Payment is currently by invoice')}
                       description={
                         isStripeManagedOrganization
                           ? 'You get a monthly invoice and payment link via email. Manage payment methods through Stripe Projects.'
@@ -122,7 +123,7 @@ const PaymentMethods = () => {
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              View Stripe Projects docs
+                              {$t('View Stripe Projects docs')}
                             </a>
                           </Button>
                         ) : (
@@ -133,7 +134,7 @@ const PaymentMethods = () => {
                                 subject: 'Request to change payment method',
                               }}
                             >
-                              Contact support
+                              {$t('Contact support')}
                             </SupportLink>
                           </Button>
                         )
@@ -146,7 +147,7 @@ const PaymentMethods = () => {
                         <div className="flex items-center justify-between py-4 px-8">
                           {!canUpdatePaymentMethods ? (
                             <p className="text-sm text-foreground-light">
-                              You need additional permissions to manage payment methods
+                              {$t('You need additional permissions to manage payment methods')}
                             </p>
                           ) : (
                             <div />
@@ -157,7 +158,7 @@ const PaymentMethods = () => {
                             disabled={!canUpdatePaymentMethods}
                             onClick={() => setShowAddPaymentMethodModal(true)}
                           >
-                            Add new card
+                            {$t('Add new card')}
                           </Button>
                         </div>
                       ) : undefined
@@ -168,7 +169,7 @@ const PaymentMethods = () => {
                         {(paymentMethods?.data?.length ?? 0) === 0 ? (
                           <div className="flex items-center gap-2 opacity-50">
                             <CreditCardIcon size={16} strokeWidth={1.5} />
-                            <p className="text-sm">No payment methods</p>
+                            <p className="text-sm">{$t('No payment methods')}</p>
                           </div>
                         ) : (
                           <div className="space-y-3">
@@ -202,7 +203,7 @@ const PaymentMethods = () => {
         onCancel={() => setShowAddPaymentMethodModal(false)}
         onConfirm={() => {
           setShowAddPaymentMethodModal(false)
-          toast.success('Successfully added new payment method')
+          toast.success($t('Successfully added new payment method'))
         }}
       />
 

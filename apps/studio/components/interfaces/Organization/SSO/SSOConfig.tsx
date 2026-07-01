@@ -28,6 +28,7 @@ import { useSSOConfigUpdateMutation } from '@/data/sso/sso-config-update-mutatio
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const FormSchema = z
   .object({
@@ -134,7 +135,7 @@ export const SSOConfig = () => {
 
   const { mutate: createSSOConfig, isPending: isCreating } = useSSOConfigCreateMutation({
     onSuccess: () => {
-      toast.success('Successfully created SSO configuration')
+      toast.success($t('Successfully created SSO configuration'))
       // Reset form to current values to mark as clean
       // This allows useEffect to reset with fresh data when query refetches
       form.reset(form.getValues())
@@ -143,7 +144,7 @@ export const SSOConfig = () => {
 
   const { mutate: updateSSOConfig, isPending: isUpdating } = useSSOConfigUpdateMutation({
     onSuccess: () => {
-      toast.success('Successfully updated SSO configuration')
+      toast.success($t('Successfully updated SSO configuration'))
       // Reset form to current values to mark as clean
       // This allows useEffect to reset with fresh data when query refetches
       form.reset(form.getValues())
@@ -154,7 +155,7 @@ export const SSOConfig = () => {
 
   const { mutate: deleteSSOConfig, isPending: isDeleting } = useSSOConfigDeleteMutation({
     onSuccess: () => {
-      toast.success('Successfully deleted SSO configuration')
+      toast.success($t('Successfully deleted SSO configuration'))
       setIsDeleteModalVisible(false)
       form.reset(defaultValues)
     },
@@ -273,15 +274,15 @@ export const SSOConfig = () => {
                       render={({ field }) => (
                         <FormItemLayout
                           layout="flex-row-reverse"
-                          label="Enable Single Sign-On"
+                          label={$t('Enable Single Sign-On')}
                           description={
                             <>
-                              Enable and configure SSO for your organization.{' '}
+                              {$t('Enable and configure SSO for your organization.')}{' '}
                               <InlineLink
                                 className="text-foreground-lighter hover:text-foreground"
                                 href={`${DOCS_URL}/guides/platform/sso`}
                               >
-                                Learn more
+                                {$t('Learn more')}
                               </InlineLink>
                               .
                             </>
@@ -304,8 +305,10 @@ export const SSOConfig = () => {
                           render={({ field }) => (
                             <FormItemLayout
                               layout="flex-row-reverse"
-                              label="Enable SP-initiated login"
-                              description="Allow users to start the login flow from the Supabase dashboard by entering their email address. Requires configuring email domains below."
+                              label={$t('Enable SP-initiated login')}
+                              description={$t(
+                                'Allow users to start the login flow from the Supabase dashboard by entering their email address. Requires configuring email domains below.'
+                              )}
                             >
                               <FormControl>
                                 <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -317,27 +320,28 @@ export const SSOConfig = () => {
                         {form.watch('enableSpInitiated') && (
                           <Admonition
                             type="note"
-                            title="Understanding SSO login flows"
+                            title={$t('Understanding SSO login flows')}
                             className="mt-4"
                           >
                             <div className="space-y-3 text-sm">
                               <div>
-                                <strong>SP-initiated (Service Provider):</strong> Users start at
-                                supabase.com, enter their email address, and are redirected to your
-                                identity provider (Okta, Azure AD, etc.) for authentication.
-                                Requires configuring email domains.
+                                <strong>{$t('SP-initiated (Service Provider):')}</strong>{' '}
+                                {$t(
+                                  'Users start at supabase.com, enter their email address, and are redirected to your identity provider (Okta, Azure AD, etc.) for authentication. Requires configuring email domains.'
+                                )}
                               </div>
                               <div>
-                                <strong>IdP-initiated (Identity Provider):</strong> Users click an
-                                app tile or bookmark in your identity provider dashboard and are
-                                directly authenticated into Supabase. Works automatically without
-                                domain configuration.
+                                <strong>{$t('IdP-initiated (Identity Provider):')}</strong>{' '}
+                                {$t(
+                                  'Users click an app tile or bookmark in your identity provider dashboard and are directly authenticated into Supabase. Works automatically without domain configuration.'
+                                )}
                               </div>
                               <p className="text-foreground-lighter">
-                                Most enterprises use IdP-initiated flow for its simplicity. Enable
-                                SP-initiated only if you need users to start at supabase.com.{' '}
+                                {$t(
+                                  'Most enterprises use IdP-initiated flow for its simplicity. Enable SP-initiated only if you need users to start at supabase.com.'
+                                )}{' '}
                                 <InlineLink href={`${DOCS_URL}/guides/platform/sso#login-flows`}>
-                                  Learn more about SSO flows
+                                  {$t('Learn more about SSO flows')}
                                 </InlineLink>
                                 .
                               </p>
@@ -387,7 +391,7 @@ export const SSOConfig = () => {
                           onClick={() => setIsDeleteModalVisible(true)}
                           disabled={isCreating || isUpdating || isDeleting}
                         >
-                          Delete SSO Provider
+                          {$t('Delete SSO Provider')}
                         </Button>
                       )}
                     </div>
@@ -398,7 +402,7 @@ export const SSOConfig = () => {
                           disabled={isCreating || isUpdating}
                           onClick={() => form.reset()}
                         >
-                          Cancel
+                          {$t('Cancel')}
                         </Button>
                       )}
                       <Button
@@ -407,7 +411,7 @@ export const SSOConfig = () => {
                         loading={isCreating || isUpdating}
                         disabled={!form.formState.isDirty || isCreating || isUpdating}
                       >
-                        Save changes
+                        {$t('Save changes')}
                       </Button>
                     </div>
                   </CardFooter>
@@ -419,7 +423,7 @@ export const SSOConfig = () => {
               visible={isDeleteModalVisible}
               size="small"
               variant="destructive"
-              title="Delete SSO Provider"
+              title={$t('Delete SSO Provider')}
               loading={isDeleting}
               confirmString={ssoConfig?.domains?.[0] || organization?.slug || ''}
               confirmPlaceholder={`Type ${ssoConfig?.domains?.[0] ? 'the first domain' : 'the organization slug'} to confirm`}
@@ -429,7 +433,7 @@ export const SSOConfig = () => {
             >
               <div className="space-y-3">
                 <p className="text-sm text-foreground-lighter">
-                  You are about to delete the SSO provider
+                  {$t('You are about to delete the SSO provider')}
                   {ssoConfig?.domains?.[0] && (
                     <>
                       {' '}
@@ -444,27 +448,28 @@ export const SSOConfig = () => {
                   <div className="rounded-md bg-destructive/10 border border-destructive/30 p-3">
                     <p className="text-sm text-foreground">
                       <span className="font-semibold">
-                        {ssoMemberCount} organization member{ssoMemberCount !== 1 ? 's' : ''}
+                        {ssoMemberCount} {$t('organization member')}
+                        {ssoMemberCount !== 1 ? 's' : ''}
                       </span>{' '}
-                      who authenticate via SSO will be{' '}
-                      <span className="font-semibold">permanently removed</span> from this
-                      organization.
+                      {$t('who authenticate via SSO will be')}{' '}
+                      <span className="font-semibold">{$t('permanently removed')}</span>{' '}
+                      {$t('from this organization.')}
                     </p>
                   </div>
                 )}
 
-                <p className="text-sm text-foreground-lighter">This action will:</p>
+                <p className="text-sm text-foreground-lighter">{$t('This action will:')}</p>
                 <ul className="text-sm text-foreground-lighter list-disc list-inside space-y-1 ml-2">
-                  <li>Disable SSO authentication for this organization</li>
-                  <li>Remove all members who signed up using SSO</li>
-                  <li>Prevent future SSO-based sign-ins</li>
+                  <li>{$t('Disable SSO authentication for this organization')}</li>
+                  <li>{$t('Remove all members who signed up using SSO')}</li>
+                  <li>{$t('Prevent future SSO-based sign-ins')}</li>
                 </ul>
 
                 <p className="text-sm text-foreground-lighter">
                   <span className="text-foreground font-semibold">
-                    This action cannot be undone.
+                    {$t('This action cannot be undone.')}
                   </span>{' '}
-                  Members will need to be re-invited if you wish to restore their access.
+                  {$t('Members will need to be re-invited if you wish to restore their access.')}
                 </p>
               </div>
             </TextConfirmModal>

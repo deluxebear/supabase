@@ -8,6 +8,7 @@ import { cn } from 'ui'
 import { usageKeys } from '@/data/usage/keys'
 import type { ResourceWarning } from '@/data/usage/resource-warnings-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 type Severity = 'warning' | 'critical' | null
 
@@ -133,14 +134,14 @@ export const ResourceWarningsTab = () => {
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-foreground-light">
-          Override resource warning banners for the current project.
+          {$t('Override resource warning banners for the current project.')}
         </p>
         <button
           onClick={handleReset}
           disabled={isDisabled}
           className="text-xs text-foreground-lighter hover:text-foreground transition underline disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Reset to real data
+          {$t('Reset to real data')}
         </button>
       </div>
 
@@ -152,21 +153,21 @@ export const ResourceWarningsTab = () => {
 
       <div className={cn('space-y-3', isDisabled && 'opacity-50 pointer-events-none')}>
         <div className="flex items-center justify-between py-2 border-b border-overlay">
-          <span className="text-sm font-medium">Read-only mode</span>
+          <span className="text-sm font-medium">{$t('Read-only mode')}</span>
           <div className="flex gap-1">
             <SeverityButton
               active={!isReadOnly}
               variant="off"
               onClick={() => handleReadOnlyChange(false)}
             >
-              Off
+              {$t('Off')}
             </SeverityButton>
             <SeverityButton
               active={isReadOnly}
               variant="critical"
               onClick={() => handleReadOnlyChange(true)}
             >
-              On
+              {$t('On')}
             </SeverityButton>
           </div>
         </div>
@@ -180,14 +181,14 @@ export const ResourceWarningsTab = () => {
                 variant="off"
                 onClick={() => handleSeverityChange(key, null)}
               >
-                Off
+                {$t('Off')}
               </SeverityButton>
               <SeverityButton
                 active={severities[key] === 'warning'}
                 variant="warning"
                 onClick={() => handleSeverityChange(key, 'warning')}
               >
-                Warn
+                {$t('Warn')}
               </SeverityButton>
               {hasCritical && (
                 <SeverityButton
@@ -195,7 +196,7 @@ export const ResourceWarningsTab = () => {
                   variant="critical"
                   onClick={() => handleSeverityChange(key, 'critical')}
                 >
-                  Crit
+                  {$t('Crit')}
                 </SeverityButton>
               )}
             </div>

@@ -2,6 +2,7 @@ import { BookOpen, Github } from 'lucide-react'
 import { Badge, Button } from 'ui'
 
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface ClientLibraryProps {
   language: string
@@ -39,21 +40,21 @@ export const ClientLibrary = ({
             className="block md:hidden"
           />
           <h5 className="flex items-center gap-2 text-base text-foreground">
-            {language} {!officialSupport && <Badge variant="success">Community</Badge>}
+            {language} {!officialSupport && <Badge variant="success">{$t('Community')}</Badge>}
           </h5>
         </div>
         <div className="flex gap-2">
           {docsUrl && (
             <a href={docsUrl} target="_blank" rel="noreferrer">
               <Button icon={<BookOpen />} variant="default">
-                Docs
+                {$t('Docs')}
               </Button>
             </a>
           )}
           {gitUrl && (
             <a href={gitUrl} target="_blank" rel="noreferrer">
               <Button icon={<Github />} variant="default">
-                <span className="hidden md:inline">See</span> GitHub
+                <span className="hidden md:inline">{$t('See')}</span> {$t('GitHub')}
               </Button>
             </a>
           )}

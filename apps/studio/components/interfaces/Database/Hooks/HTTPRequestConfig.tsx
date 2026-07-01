@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/Forms/FormSection'
 import { useEdgeFunctionsQuery } from '@/data/edge-functions/edge-functions-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface HTTPRequestConfigProps {
   form: UseFormReturn<WebhookFormValues>
@@ -54,7 +55,7 @@ export const HTTPRequestConfig = ({ form }: HTTPRequestConfigProps) => {
           control={form.control}
           name="http_method"
           render={({ field }) => (
-            <FormItemLayout label="Method" layout="vertical" className="gap-1">
+            <FormItemLayout label={$t('Method')} layout="vertical" className="gap-1">
               <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger>
@@ -79,7 +80,7 @@ export const HTTPRequestConfig = ({ form }: HTTPRequestConfigProps) => {
                 label="URL"
                 layout="vertical"
                 className="gap-1"
-                description="URL of the HTTP request. Must include HTTP/HTTPS"
+                description={$t('URL of the HTTP request. Must include HTTP/HTTPS')}
               >
                 <FormControl>
                   <Input {...field} placeholder="http://api.com/path/resource" />
@@ -89,11 +90,13 @@ export const HTTPRequestConfig = ({ form }: HTTPRequestConfigProps) => {
           />
         ) : functionType === 'supabase_function' && edgeFunctions.length === 0 ? (
           <div className="space-y-1">
-            <p className="text-sm text-foreground-light">Select which edge function to trigger</p>
+            <p className="text-sm text-foreground-light">
+              {$t('Select which edge function to trigger')}
+            </p>
             <div className="px-4 py-4 border rounded-sm bg-surface-300 border-strong flex items-center justify-between space-x-4">
-              <p className="text-sm">No edge functions created yet</p>
+              <p className="text-sm">{$t('No edge functions created yet')}</p>
               <Button asChild>
-                <Link href={`/project/${ref}/functions`}>Create an edge function</Link>
+                <Link href={`/project/${ref}/functions`}>{$t('Create an edge function')}</Link>
               </Button>
             </div>
           </div>
@@ -103,14 +106,14 @@ export const HTTPRequestConfig = ({ form }: HTTPRequestConfigProps) => {
             name="http_url"
             render={({ field }) => (
               <FormItemLayout
-                label="Select which edge function to trigger"
+                label={$t('Select which edge function to trigger')}
                 layout="vertical"
                 className="gap-1"
               >
                 <Select value={field.value} onValueChange={field.onChange}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select an edge function" />
+                      <SelectValue placeholder={$t('Select an edge function')} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -137,7 +140,7 @@ export const HTTPRequestConfig = ({ form }: HTTPRequestConfigProps) => {
           name="timeout_ms"
           render={({ field }) => (
             <FormItemLayout
-              label="Timeout"
+              label={$t('Timeout')}
               labelOptional="Between 1000ms to 10,000ms"
               layout="vertical"
               className="gap-1"

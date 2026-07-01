@@ -6,6 +6,7 @@ import { Input } from 'ui-patterns/DataInputs/Input'
 
 import { useGroupedPermissions } from '../hooks/useGroupedPermissions'
 import { TokenPermissionsSection } from './TokenPermissionSection'
+import { t as $t } from '@/lib/i18n'
 
 interface AccessTokenNewBannerProps<T> {
   token: T
@@ -52,7 +53,7 @@ export const AccessTokenNewBanner = <T,>({
             id="access-token-value"
             value={getTokenValue(token)}
             onChange={() => {}}
-            onCopy={() => toast.success('Token copied to clipboard')}
+            onCopy={() => toast.success($t('Token copied to clipboard'))}
           />
         </div>
 

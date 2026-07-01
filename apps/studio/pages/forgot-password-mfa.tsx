@@ -9,6 +9,7 @@ import { LogoLoader } from 'ui'
 import { SignInMfaForm } from '@/components/interfaces/SignIn/SignInMfaForm'
 import { ForgotPasswordLayout } from '@/components/layouts/SignInLayout/ForgotPasswordLayout'
 import { auth, buildPathWithParams, getReturnToPath } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const ForgotPasswordMfa: NextPageWithLayout = () => {
@@ -60,7 +61,7 @@ const ForgotPasswordMfa: NextPageWithLayout = () => {
       .catch((error) => {
         Sentry.captureException(error)
         console.error('Auth initialization error:', error)
-        toast.error('Failed to initialize authentication. Please try again.')
+        toast.error($t('Failed to initialize authentication. Please try again.'))
         setLoading(false)
         router.push({ pathname: '/sign-in', query: router.query })
       })

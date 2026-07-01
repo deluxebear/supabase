@@ -1,5 +1,7 @@
 import { Loader2 } from 'lucide-react'
 
+import { t as $t } from '@/lib/i18n'
+
 export type DNSTableHeaderProps = {
   display: string
 }
@@ -10,16 +12,16 @@ export const DNSTableHeaders = ({ display }: DNSTableHeaderProps) => {
     return (
       <div className="flex gap-4">
         <div className="w-[50px]">
-          <p className="text-foreground-light text-sm">Type</p>
+          <p className="text-foreground-light text-sm">{$t('Type')}</p>
         </div>
         <div className="text-sm grid gap-2 md:grid md:grid-cols-12 md:gap-x-4 input-mono flex-1">
           <div className="flex flex-row space-x-2 justify-between col-span-12">
-            <label className="block text-foreground-light text-sm break-all">Name</label>
+            <label className="block text-foreground-light text-sm break-all">{$t('Name')}</label>
           </div>
         </div>
         <div className="text-sm grid gap-2 md:grid md:grid-cols-12 md:gap-x-4 input-mono flex-1">
           <div className="flex flex-row space-x-2 justify-between col-span-12">
-            <label className="block text-foreground-light text-sm break-all">Content</label>
+            <label className="block text-foreground-light text-sm break-all">{$t('Content')}</label>
           </div>
         </div>
       </div>
@@ -31,7 +33,7 @@ export const DNSTableHeaders = ({ display }: DNSTableHeaderProps) => {
     <div className="flex items-center gap-2">
       <Loader2 size={14} className="animate-spin" />
       <p className="text-sm text-foreground-light">
-        Validating custom domain and TLS configuration...
+        {$t('Validating custom domain and TLS configuration...')}
       </p>
     </div>
   )

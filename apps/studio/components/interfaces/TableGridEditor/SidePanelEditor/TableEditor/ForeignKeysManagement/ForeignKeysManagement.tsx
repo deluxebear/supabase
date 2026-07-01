@@ -11,6 +11,7 @@ import { AlertError } from '@/components/ui/AlertError'
 import { useForeignKeyConstraintsQuery } from '@/data/database/foreign-key-constraints-query'
 import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 interface ForeignKeysManagementProps {
@@ -62,7 +63,7 @@ export const ForeignKeysManagement = ({
   return (
     <>
       <div className="w-full space-y-4 ">
-        <h5>Foreign keys</h5>
+        <h5>{$t('Foreign keys')}</h5>
 
         {isLoading && <GenericSkeletonLoader />}
 
@@ -115,7 +116,7 @@ export const ForeignKeysManagement = ({
             </div>
             <div className="flex items-center justify-center rounded-sm border border-strong border-dashed py-3">
               <Button variant="default" onClick={() => setOpen(true)}>
-                Add foreign key relation
+                {$t('Add foreign key relation')}
               </Button>
             </div>
           </>

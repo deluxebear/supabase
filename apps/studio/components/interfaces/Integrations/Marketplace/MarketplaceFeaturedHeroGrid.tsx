@@ -7,6 +7,7 @@ import { IntegrationLogo } from '../Integration/IntegrationLogo'
 import { getMarketplaceSource, MarketplaceSourceBadge } from './Marketplace.constants'
 import type { IntegrationDefinition } from '@/components/interfaces/Integrations/Landing/Integrations.constants'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const FEATURED_INTEGRATION_IMAGES: Record<string, string> = {
   cron: `${BASE_PATH}/img/integrations/covers/cron-cover.webp`,
@@ -54,7 +55,7 @@ export const MarketplaceFeaturedHeroGrid = ({
   return (
     <section className="@container">
       <div className="mb-2">
-        <h2 className="text-sm">Featured integrations</h2>
+        <h2 className="text-sm">{$t('Featured integrations')}</h2>
       </div>
       <div className="grid grid-cols-1 @lg:grid-cols-2 @3xl:grid-cols-4 gap-3 items-stretch">
         <div className="col-span-1 @lg:col-span-2">
@@ -66,7 +67,7 @@ export const MarketplaceFeaturedHeroGrid = ({
               <div className="relative z-10 flex flex-col gap-2.5 p-4 flex-1 min-w-0">
                 <div className="flex items-start justify-between">
                   <IntegrationLogo integration={primaryIntegration} />
-                  {primaryInstalled && <Badge variant="success">Installed</Badge>}
+                  {primaryInstalled && <Badge variant="success">{$t('Installed')}</Badge>}
                 </div>
                 <div className="@lg:max-w-2/3">
                   <div className="mb-1 text-sm font-medium text-pretty">
@@ -78,7 +79,7 @@ export const MarketplaceFeaturedHeroGrid = ({
                     </p>
                   )}
                   <div className="text-xs flex items-center gap-1 text-foreground-lighter shrink-0 mt-4">
-                    <span>Built by</span>
+                    <span>{$t('Built by')}</span>
                     <span>{primaryIntegration.author?.name}</span>
                   </div>
                 </div>
@@ -140,7 +141,7 @@ export const MarketplaceFeaturedHeroGrid = ({
                   <div className="flex flex-col gap-2.5 p-4 flex-1">
                     <div className="flex items-start justify-between">
                       <IntegrationLogo integration={integration} size="h-9 w-9" />
-                      {isInstalled && <Badge variant="success">Installed</Badge>}
+                      {isInstalled && <Badge variant="success">{$t('Installed')}</Badge>}
                     </div>
                     <div>
                       <div className="mb-1 text-sm font-medium">{integration.name}</div>
@@ -159,7 +160,7 @@ export const MarketplaceFeaturedHeroGrid = ({
                         )}
                       </div>
                       <div className="text-xs flex items-center gap-1 text-foreground-lighter">
-                        <span>Built by</span>
+                        <span>{$t('Built by')}</span>
                         <span>{integration.author?.name}</span>
                       </div>
                     </div>

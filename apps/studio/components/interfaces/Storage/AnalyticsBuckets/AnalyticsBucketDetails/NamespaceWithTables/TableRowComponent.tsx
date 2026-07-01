@@ -45,6 +45,7 @@ import { useStartPipelineMutation } from '@/data/replication/start-pipeline-muta
 import { useReplicationTablesQuery } from '@/data/replication/tables-query'
 import { useIcebergNamespaceTableDeleteMutation } from '@/data/storage/iceberg-namespace-table-delete-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface TableRowComponentProps {
   table: { id: number; name: string; isConnected: boolean }
@@ -116,9 +117,9 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
   const onConfirmStopReplication = async () => {
     if (!projectRef) return console.error('Project ref is required')
     if (!bucketId) return console.error('Bucket ID is required')
-    if (!sourceId) return toast.error('Source ID is required')
-    if (!publication) return toast.error('Unable to find existing publication')
-    if (!pipeline) return toast.error('Unable to find existing pipeline')
+    if (!sourceId) return toast.error($t('Source ID is required'))
+    if (!publication) return toast.error($t('Unable to find existing publication'))
+    if (!pipeline) return toast.error($t('Unable to find existing pipeline'))
 
     try {
       setIsUpdatingReplication(true)
@@ -135,7 +136,7 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
       })
       await startPipeline({ projectRef, pipelineId: pipeline.id })
       setShowStopReplicationModal(false)
-      toast.success('Successfully disabled replication for table! Pipeline is being restarted.')
+      toast.success($t('Successfully disabled replication for table! Pipeline is being restarted.'))
     } catch (error: any) {
       toast.error(`Failed to disable replication for table: ${error.message}`)
     } finally {
@@ -146,15 +147,15 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
   const onConfirmStartReplication = async () => {
     if (!projectRef) return console.error('Project ref is required')
     if (!bucketId) return console.error('Bucket ID is required')
-    if (!sourceId) return toast.error('Source ID is required')
-    if (!publication) return toast.error('Unable to find existing publication')
-    if (!pipeline) return toast.error('Unable to find existing pipeline')
+    if (!sourceId) return toast.error($t('Source ID is required'))
+    if (!publication) return toast.error($t('Unable to find existing publication'))
+    if (!pipeline) return toast.error($t('Unable to find existing pipeline'))
 
     // [Joshen ALPHA] This has potential to be flaky - we should see how we can get the table name and schema better
     const pgTable = tables?.find(
       (t) => getNamespaceTableNameFromPostgresTableName(t) === table.name
     )
-    if (!pgTable) return toast.error('Unable to find corresponding Postgres table')
+    if (!pgTable) return toast.error($t('Unable to find corresponding Postgres table'))
 
     try {
       setIsUpdatingReplication(true)
@@ -169,7 +170,7 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
       })
       await startPipeline({ projectRef, pipelineId: pipeline.id })
       setShowStartReplicationModal(false)
-      toast.success('Successfully enabled replication for table! Pipeline is being restarted.')
+      toast.success($t('Successfully enabled replication for table! Pipeline is being restarted.'))
     } catch (error: any) {
       toast.error(`Failed to enable replication for table: ${error.message}`)
     } finally {
@@ -180,7 +181,7 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
   // [Joshen] For ETL replication context
   const onConfirmRemoveTable = async () => {
     if (!bucketId) return console.error('Bucket ID is required')
-    if (!wrapperInstance || !wrapperMeta) return toast.error('Unable to find wrapper')
+    if (!wrapperInstance || !wrapperMeta) return toast.error($t('Unable to find wrapper'))
 
     try {
       setIsRemovingTable(true)
@@ -234,7 +235,7 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
         table: table.name,
       })
 
-      toast.success('Successfully removed table!')
+      toast.success($t('Successfully removed table!'))
       setShowRemoveTableModal(false)
     } catch (error: any) {
       toast.error(`Failed to remove table: ${error.message}`)
@@ -345,7 +346,7 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
                             href={`/project/${projectRef}/database/replication/${pipeline?.id}?search=${inferredPostgresTable.schema}.${inferredPostgresTable.name}`}
                           >
                             <Eye size={12} className="text-foreground-lighter" />
-                            <p>View pipeline</p>
+                            <p>{$t('View pipeline')}</p>
                           </Link>
                         </DropdownMenuItem>
                       )}
@@ -355,7 +356,7 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
                           onClick={() => setShowStopReplicationModal(true)}
                         >
                           <Pause size={12} className="text-foreground-lighter" />
-                          <p>Disable replication</p>
+                          <p>{$t('Disable replication')}</p>
                         </DropdownMenuItem>
                       ) : (
                         <DropdownMenuItem
@@ -363,7 +364,7 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
                           onClick={() => setShowStartReplicationModal(true)}
                         >
                           <Play size={12} className="text-foreground-lighter" />
-                          <p>Enable replication</p>
+                          <p>{$t('Enable replication')}</p>
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
@@ -382,7 +383,7 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
                     }}
                   >
                     <Trash size={12} className="text-foreground-lighter" />
-                    <p>Delete table</p>
+                    <p>{$t('Delete table')}</p>
                   </DropdownMenuItemTooltip>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -406,7 +407,7 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
                   onClick={() => setShowRemoveTableModal(true)}
                 >
                   <Trash size={12} className="text-foreground-lighter" />
-                  <p>Delete table</p>
+                  <p>{$t('Delete table')}</p>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -445,13 +446,13 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
                     href={`/project/${projectRef}/sql/new?content=${encodeURIComponent(`select * from ${schema}.${table.name};`)}`}
                   >
                     <SqlEditor size={12} className="text-foreground-lighter" />
-                    <p>Query in SQL Editor</p>
+                    <p>{$t('Query in SQL Editor')}</p>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="flex items-center gap-x-2">
                   <Link href={`/project/${projectRef}/editor/${x.id}?schema=${x.schema}`}>
                     <TableEditor size={12} className="text-foreground-lighter" />
-                    <p>View in Table Editor</p>
+                    <p>{$t('View in Table Editor')}</p>
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -476,11 +477,13 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
                   >
                     ?
                   </div>
-                  <p className="text-foreground-lighter">No matching foreign table in schema</p>
+                  <p className="text-foreground-lighter">
+                    {$t('No matching foreign table in schema')}
+                  </p>
                 </div>
               </TooltipTrigger>
               <TooltipContent side="right">
-                Update the schema tables if you'd like to query this table from Postgres
+                {$t("Update the schema tables if you'd like to query this table from Postgres")}
               </TooltipContent>
             </Tooltip>
           </TableCell>
@@ -493,14 +496,17 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
         variant="warning"
         visible={showStopReplicationModal}
         loading={isUpdatingReplication}
-        title="Confirm to disable replication for table"
+        title={$t('Confirm to disable replication for table')}
         confirmLabel="Disable replication"
         onCancel={() => setShowStopReplicationModal(false)}
         onConfirm={() => onConfirmStopReplication()}
       >
         <p className="text-sm text-foreground-light">
-          Data within the "{table.name}" table will stop replicating. However do note that,
-          re-enabling replication on this table will clear and re-sync all data in it. Are you sure?
+          {$t('Data within the "')}
+          {table.name}
+          {$t(
+            '" table will stop replicating. However do note that, re-enabling replication on this table will clear and re-sync all data in it. Are you sure?'
+          )}
         </p>
       </ConfirmationModal>
 
@@ -509,14 +515,15 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
         variant="warning"
         visible={showStartReplicationModal}
         loading={isUpdatingReplication}
-        title="Enable replication for table"
+        title={$t('Enable replication for table')}
         confirmLabel="Enable replication"
         onCancel={() => setShowStartReplicationModal(false)}
         onConfirm={() => onConfirmStartReplication()}
       >
         <p className="text-sm text-foreground-light">
-          Re-enabling replication on the "{table.name}" table will clear and re-sync all data in it.
-          Are you sure?
+          {$t('Re-enabling replication on the "')}
+          {table.name}
+          {$t('" table will clear and re-sync all data in it. Are you sure?')}
         </p>
       </ConfirmationModal>
 
@@ -526,7 +533,7 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
         visible={showRemoveTableModal}
         loading={isRemovingTable}
         title={`Confirm to delete table "${table.name}"`}
-        description="This action cannot be undone."
+        description={$t('This action cannot be undone.')}
         confirmLabel="Delete table"
         onCancel={() => setShowRemoveTableModal(false)}
         onConfirm={() => {
@@ -538,7 +545,7 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
         }}
       >
         <p className="text-sm text-foreground-light">
-          Data from this Iceberg table will be permanently lost. Are you sure?
+          {$t('Data from this Iceberg table will be permanently lost. Are you sure?')}
         </p>
       </ConfirmationModal>
     </>

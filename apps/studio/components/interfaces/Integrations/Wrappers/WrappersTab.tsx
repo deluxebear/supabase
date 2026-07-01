@@ -15,6 +15,7 @@ import { useFDWsQuery } from '@/data/fdw/fdws-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -59,7 +60,7 @@ export const WrappersTab = () => {
   })
 
   if (!wrapperMeta) {
-    return <div>Missing integration.</div>
+    return <div>{$t('Missing integration.')}</div>
   }
 
   return (
@@ -68,7 +69,7 @@ export const WrappersTab = () => {
         <div className="w-full h-48 max-w-4xl">
           <div className="border rounded-lg h-full flex flex-col gap-y-2 items-center justify-center">
             <p className="text-sm text-foreground-light">
-              No {wrapperMeta.label} wrappers have been installed
+              {$t('No')} {wrapperMeta.label} {$t('wrappers have been installed')}
             </p>
             <AddWrapperButton onClick={() => setIsCreating(true)} />
           </div>

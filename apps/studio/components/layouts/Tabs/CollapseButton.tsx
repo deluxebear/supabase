@@ -2,6 +2,7 @@ import { useBreakpoint } from 'common'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { cn, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
 import { useAppStateSnapshot } from '@/state/app-state'
 
 export function CollapseButton({ hideTabs }: { hideTabs: boolean }) {
@@ -33,7 +34,7 @@ export function CollapseButton({ hideTabs }: { hideTabs: boolean }) {
                 strokeWidth={1.5}
                 className="text-foreground-lighter hover:text-foreground-light"
               />
-              <span className="sr-only">Collapse sidebar</span>
+              <span className="sr-only">{$t('Collapse sidebar')}</span>
             </>
           ) : (
             <>
@@ -42,7 +43,7 @@ export function CollapseButton({ hideTabs }: { hideTabs: boolean }) {
                 strokeWidth={1.5}
                 className="text-foreground-lighter hover:text-foreground-light"
               />
-              <span className="sr-only">Expand sidebar</span>
+              <span className="sr-only">{$t('Expand sidebar')}</span>
             </>
           )}
         </button>

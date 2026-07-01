@@ -18,6 +18,8 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
+import { t as $t } from '@/lib/i18n'
+
 import '@xyflow/react/dist/style.css'
 
 import { LOCAL_STORAGE_KEYS, useParams } from 'common'
@@ -220,7 +222,7 @@ export const SchemaGraph = () => {
     if (!tables) return
     copyToClipboard(tablesToSQL(tables))
     setCopied(true)
-    toast.success('Successfully copied as SQL')
+    toast.success($t('Successfully copied as SQL'))
   }
 
   const copyAsMarkdown = () => {
@@ -230,7 +232,7 @@ export const SchemaGraph = () => {
       .map((node) => node.data as TableNodeData)
     copyToClipboard(getSchemaAsMarkdown(selectedSchema, tableNodes))
     setCopied(true)
-    toast.success('Successfully copied as Markdown')
+    toast.success($t('Successfully copied as Markdown'))
   }
 
   const [schemaSelectorOpen, setSchemaSelectorOpen] = useState(false)
@@ -397,17 +399,18 @@ export const SchemaGraph = () => {
                         side: 'bottom',
                         text: (
                           <div className="max-w-[180px] space-y-2 text-foreground-light">
-                            <p className="text-foreground">Note</p>
+                            <p className="text-foreground">{$t('Note')}</p>
                             <p>
-                              This schema is for context or debugging only. Table order and
-                              constraints may be invalid. Not meant to be run as-is.
+                              {$t(
+                                'This schema is for context or debugging only. Table order and constraints may be invalid. Not meant to be run as-is.'
+                              )}
                             </p>
                           </div>
                         ),
                       },
                     }}
                   >
-                    Copy as SQL
+                    {$t('Copy as SQL')}
                   </ButtonTooltip>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -417,7 +420,7 @@ export const SchemaGraph = () => {
                         className="rounded-l-none pl-1 pr-0"
                         icon={<ChevronDown size={12} />}
                       >
-                        <span className="sr-only">Export options</span>
+                        <span className="sr-only">{$t('Export options')}</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-44">
@@ -429,7 +432,7 @@ export const SchemaGraph = () => {
                         }}
                       >
                         <Copy size={12} />
-                        <span>Copy as Markdown</span>
+                        <span>{$t('Copy as Markdown')}</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="flex items-center space-x-2 whitespace-nowrap"
@@ -439,7 +442,7 @@ export const SchemaGraph = () => {
                         }}
                       >
                         <Download size={12} />
-                        <span>Download as PNG</span>
+                        <span>{$t('Download as PNG')}</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="flex items-center space-x-2 whitespace-nowrap"
@@ -449,7 +452,7 @@ export const SchemaGraph = () => {
                         }}
                       >
                         <Download size={12} />
-                        <span>Download as SVG</span>
+                        <span>{$t('Download as SVG')}</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -463,19 +466,21 @@ export const SchemaGraph = () => {
                     tooltipOpen={autoLayoutDialogOpen ? false : undefined}
                   >
                     <AlertDialogTrigger asChild>
-                      <Button variant="default">Auto layout</Button>
+                      <Button variant="default">{$t('Auto layout')}</Button>
                     </AlertDialogTrigger>
                   </Shortcut>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Confirm to rearrange all nodes</AlertDialogTitle>
+                      <AlertDialogTitle>{$t('Confirm to rearrange all nodes')}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Auto layout will rearrange all nodes in the graph. This cannot be undone.
+                        {$t(
+                          'Auto layout will rearrange all nodes in the graph. This cannot be undone.'
+                        )}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={resetLayout}>Apply</AlertDialogAction>
+                      <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
+                      <AlertDialogAction onClick={resetLayout}>{$t('Apply')}</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -487,7 +492,7 @@ export const SchemaGraph = () => {
       {isLoadingTables && (
         <div className="w-full h-full flex items-center justify-center gap-x-2">
           <Loader2 className="animate-spin text-foreground-light" size={16} />
-          <p className="text-sm text-foreground-light">Loading tables</p>
+          <p className="text-sm text-foreground-light">{$t('Loading tables')}</p>
         </div>
       )}
       {isErrorTables && (
@@ -502,7 +507,7 @@ export const SchemaGraph = () => {
               <Admonition
                 type="default"
                 className="max-w-md"
-                title="No tables in schema"
+                title={$t('No tables in schema')}
                 description={
                   isSchemaLocked
                     ? `The “${selectedSchema}” schema is managed by Supabase and is read-only through
@@ -514,7 +519,7 @@ export const SchemaGraph = () => {
               >
                 {canAddTables && (
                   <Button asChild className="mt-2 w-min" variant="default" icon={<Plus />}>
-                    <Link href={`/project/${ref}/editor?create=table`}>New table</Link>
+                    <Link href={`/project/${ref}/editor?create=table`}>{$t('New table')}</Link>
                   </Button>
                 )}
               </Admonition>
@@ -567,7 +572,7 @@ export const SchemaGraph = () => {
                           fetchNextPage()
                         }}
                       >
-                        Load more tables
+                        {$t('Load more tables')}
                       </Button>
                     </Panel>
                   )}

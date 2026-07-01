@@ -18,6 +18,7 @@ import { DocsButton } from '@/components/ui/DocsButton'
 import { NoPermission } from '@/components/ui/NoPermission'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const AuditLogsPage: NextPageWithLayout = () => {
@@ -35,9 +36,9 @@ const AuditLogsPage: NextPageWithLayout = () => {
       <PageHeader size="default">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Audit Logs</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Audit Logs')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Track and monitor auth events in your project
+              {$t('Track and monitor auth events in your project')}
             </PageHeaderDescription>
           </PageHeaderSummary>
           <PageHeaderAside>
@@ -62,7 +63,7 @@ const AuditLogsPage: NextPageWithLayout = () => {
 
 AuditLogsPage.getLayout = (page) => (
   <DefaultLayout>
-    <AuthLayout title="Audit Logs">{page}</AuthLayout>
+    <AuthLayout title={$t('Audit Logs')}>{page}</AuthLayout>
   </DefaultLayout>
 )
 

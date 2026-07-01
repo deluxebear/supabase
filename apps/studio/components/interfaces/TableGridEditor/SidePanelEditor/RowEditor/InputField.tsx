@@ -26,6 +26,7 @@ import { DATETIME_TYPES, JSON_TYPES, TEXT_TYPES } from '../SidePanelEditor.const
 import { DateTimeInput } from './DateTimeInput'
 import type { EditValue, RowField } from './RowEditor.types'
 import { isValueTruncated } from './RowEditor.utils'
+import { t as $t } from '@/lib/i18n'
 
 const TRUNCATE_DESCRIPTION =
   'Note: Value is too large to be rendered in the dashboard. Please expand the editor to edit the value'
@@ -129,7 +130,8 @@ export const InputField = ({
                 <span className="text-sm text-foreground-lighter">{field.comment} </span>
               )}
               <span className="text-sm text-foreground-lighter">
-                {field.comment && '('}Has a foreign key relation to
+                {field.comment && '('}
+                {$t('Has a foreign key relation to')}
               </span>
               <span className="text-code font-mono text-xs text-foreground-lighter">
                 {field.foreignKey.target_table_schema}.{field.foreignKey.target_table_name}.
@@ -159,10 +161,12 @@ export const InputField = ({
                 <DropdownMenuContent align="end" className="w-28">
                   {field.isNullable && (
                     <DropdownMenuItem onClick={() => onUpdateField({ [field.name]: null })}>
-                      Set to NULL
+                      {$t('Set to NULL')}
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem onClick={onSelectForeignKey}>Select record</DropdownMenuItem>
+                  <DropdownMenuItem onClick={onSelectForeignKey}>
+                    {$t('Select record')}
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
@@ -225,11 +229,11 @@ export const InputField = ({
                 {isEditable && (
                   <>
                     <DropdownMenuItem onClick={() => onUpdateField({ [field.name]: null })}>
-                      Set to NULL
+                      {$t('Set to NULL')}
                     </DropdownMenuItem>
                     {isNewRow && (
                       <DropdownMenuItem onClick={() => onUpdateField({ [field.name]: undefined })}>
-                        Set to Default
+                        {$t('Set to Default')}
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
@@ -239,7 +243,7 @@ export const InputField = ({
                 <DropdownMenuItem
                   onClick={() => onEditText({ column: field.name, value: field.value || '' })}
                 >
-                  Expand editor
+                  {$t('Expand editor')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -297,7 +301,11 @@ export const InputField = ({
         isNullable={field.isNullable}
         description={
           <>
-            {field.defaultValue && <p>Default: {field.defaultValue}</p>}
+            {field.defaultValue && (
+              <p>
+                {$t('Default:')} {field.defaultValue}
+              </p>
+            )}
             {field.comment && <p>{field.comment}</p>}
           </>
         }
@@ -330,7 +338,7 @@ export const InputField = ({
           disabled={!isEditable}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select a value" />
+            <SelectValue placeholder={$t('Select a value')} />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
@@ -356,7 +364,7 @@ export const InputField = ({
         description={
           <>
             {field.comment && <p>{field.comment}</p>}
-            <p>Bytea columns are edited and displayed as hex in the dashboard</p>
+            <p>{$t('Bytea columns are edited and displayed as hex in the dashboard')}</p>
           </>
         }
         error={errors[field.name]}

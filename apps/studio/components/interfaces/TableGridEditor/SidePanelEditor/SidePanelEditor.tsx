@@ -66,6 +66,7 @@ import { useUrlState } from '@/hooks/ui/useUrlState'
 import { useVisibleKey } from '@/hooks/ui/useVisibleKey'
 import { type ApiPrivilegesByRole } from '@/lib/data-api-types'
 import { isObjectContainingKeys } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import type { SafePostgresTable } from '@/lib/postgres-types'
 import { useTrack } from '@/lib/telemetry/track'
 import type { DeepReadonly, Prettify } from '@/lib/type-helpers'
@@ -273,7 +274,7 @@ export const SidePanelEditor = ({
 
           if (!row) {
             saveRowError = new Error('No row found')
-            toast.error('No row found')
+            toast.error($t('No row found'))
             onComplete(saveRowError)
             return
           }
@@ -286,7 +287,7 @@ export const SidePanelEditor = ({
               rowIdentifiers: configuration.identifiers,
               payload,
               enumArrayColumns,
-              onSuccess: () => toast.success('Successfully updated row'),
+              onSuccess: () => toast.success($t('Successfully updated row')),
             })
           } catch (error: any) {
             saveRowError = error
@@ -294,7 +295,9 @@ export const SidePanelEditor = ({
         } else {
           saveRowError = new Error('No primary key')
           toast.error(
-            "We can't make changes to this table because there is no primary key. Please create a primary key and try again."
+            $t(
+              "We can't make changes to this table because there is no primary key. Please create a primary key and try again."
+            )
           )
         }
       }
@@ -607,11 +610,15 @@ export const SidePanelEditor = ({
     if (!apiAccessToggleHandler.isSuccess) {
       if (apiAccessToggleHandler.isPending) {
         toast.info(
-          'Cannot save table yet because Data API settings are still loading. Please try again in a moment.'
+          $t(
+            'Cannot save table yet because Data API settings are still loading. Please try again in a moment.'
+          )
         )
       } else {
         toast.error(
-          'Cannot save table because there was an error loading Data API settings. Please refresh the page and try again.'
+          $t(
+            'Cannot save table because there was an error loading Data API settings. Please refresh the page and try again.'
+          )
         )
       }
       return
@@ -821,7 +828,7 @@ export const SidePanelEditor = ({
         })
 
         if (table === undefined) {
-          return toast.error('Failed to update table')
+          return toast.error($t('Failed to update table'))
         }
         if (isTableLike(table)) {
           await updateTableRealtime(table, isRealtimeEnabled)

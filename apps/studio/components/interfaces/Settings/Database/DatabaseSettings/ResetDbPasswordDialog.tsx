@@ -23,6 +23,7 @@ import { useDatabasePasswordResetMutation } from '@/data/database/database-passw
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsProjectActive, useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DEFAULT_MINIMUM_PASSWORD_STRENGTH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { passwordStrength, PasswordStrengthScore } from '@/lib/password-strength'
 import { generateStrongPassword } from '@/lib/project'
 
@@ -69,7 +70,7 @@ export const ResetDbPasswordDialog = ({
   const { mutate: resetDatabasePassword, isPending: isUpdatingPassword } =
     useDatabasePasswordResetMutation({
       onSuccess: async (_data, variables) => {
-        toast.success('Successfully updated database password')
+        toast.success($t('Successfully updated database password'))
         onPasswordReset?.(variables.password)
         setShowResetDbPass(false)
       },
@@ -151,7 +152,7 @@ export const ResetDbPasswordDialog = ({
       </DialogTrigger>
       <DialogContent size="medium">
         <DialogHeader>
-          <DialogTitle>Reset database password</DialogTitle>
+          <DialogTitle>{$t('Reset database password')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection className="w-full space-y-8">
@@ -172,7 +173,7 @@ export const ResetDbPasswordDialog = ({
               copy={password.length > 0}
               aria-invalid={!!passwordStrengthWarning}
               type="password"
-              placeholder="Type in a strong password"
+              placeholder={$t('Type in a strong password')}
               value={password}
               autoComplete="off"
               onChange={onDbPassChange}
@@ -185,7 +186,7 @@ export const ResetDbPasswordDialog = ({
             disabled={isUpdatingPassword}
             onClick={() => setShowResetDbPass(false)}
           >
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button
             variant="primary"
@@ -193,7 +194,7 @@ export const ResetDbPasswordDialog = ({
             disabled={isUpdatingPassword}
             onClick={() => confirmResetDbPass()}
           >
-            Reset password
+            {$t('Reset password')}
           </Button>
         </DialogFooter>
       </DialogContent>

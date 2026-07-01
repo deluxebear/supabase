@@ -41,6 +41,7 @@ import { useAuthConfigQuery } from '@/data/auth/auth-config-query'
 import { useAuthConfigUpdateMutation } from '@/data/auth/auth-config-update-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const CAPTCHA_PROVIDERS = [
   { key: 'hcaptcha', label: 'hCaptcha' },
@@ -119,7 +120,7 @@ export const ProtectionAuthSettingsForm = () => {
       toast.error(`Failed to update settings: ${error?.message}`)
     },
     onSuccess: () => {
-      toast.success('Successfully updated settings')
+      toast.success($t('Successfully updated settings'))
     },
   })
 
@@ -246,7 +247,7 @@ export const ProtectionAuthSettingsForm = () => {
     <PageSection>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Bot and Abuse Protection</PageSectionTitle>
+          <PageSectionTitle>{$t('Bot and Abuse Protection')}</PageSectionTitle>
         </PageSectionSummary>
       </PageSectionMeta>
       <PageSectionContent>
@@ -260,8 +261,8 @@ export const ProtectionAuthSettingsForm = () => {
                   render={({ field }) => (
                     <FormItemLayout
                       layout="flex-row-reverse"
-                      label="Enable Captcha protection"
-                      description="Protect authentication endpoints from bots and abuse."
+                      label={$t('Enable Captcha protection')}
+                      description={$t('Protect authentication endpoints from bots and abuse.')}
                     >
                       <FormControl>
                         <Switch
@@ -286,7 +287,10 @@ export const ProtectionAuthSettingsForm = () => {
                           (x) => x.key === field.value
                         )
                         return (
-                          <FormItemLayout layout="flex-row-reverse" label="Choose Captcha Provider">
+                          <FormItemLayout
+                            layout="flex-row-reverse"
+                            label={$t('Choose Captcha Provider')}
+                          >
                             <FormControl>
                               <Select
                                 value={field.value}
@@ -294,7 +298,7 @@ export const ProtectionAuthSettingsForm = () => {
                                 disabled={!canUpdateConfig}
                               >
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select provider" />
+                                  <SelectValue placeholder={$t('Select provider')} />
                                 </SelectTrigger>
                                 <SelectContent align="end">
                                   {CAPTCHA_PROVIDERS.map((x) => (
@@ -315,7 +319,7 @@ export const ProtectionAuthSettingsForm = () => {
                               }
                               className="mt-2 text-xs text-foreground-light hover:text-foreground no-underline"
                             >
-                              How to set up {selectedProvider?.label}?
+                              {$t('How to set up')} {selectedProvider?.label}?
                             </InlineLink>
                           </FormItemLayout>
                         )
@@ -330,8 +334,8 @@ export const ProtectionAuthSettingsForm = () => {
                       render={({ field }) => (
                         <FormItemLayout
                           layout="flex-row-reverse"
-                          label="Captcha secret"
-                          description="Obtain this secret from the provider."
+                          label={$t('Captcha secret')}
+                          description={$t('Obtain this secret from the provider.')}
                         >
                           <FormControl>
                             <Input {...field} reveal copy disabled={!canUpdateConfig} />
@@ -350,15 +354,17 @@ export const ProtectionAuthSettingsForm = () => {
                   render={({ field }) => (
                     <FormItemLayout
                       layout="flex-row-reverse"
-                      label="Prevent use of leaked passwords"
-                      description="Rejects the use of known or easy to guess passwords on sign up or password change. "
+                      label={$t('Prevent use of leaked passwords')}
+                      description={$t(
+                        'Rejects the use of known or easy to guess passwords on sign up or password change. '
+                      )}
                     >
                       <div className="flex items-center justify-end gap-2">
                         <Badge variant={field.value ? 'success' : 'default'}>
                           {field.value ? 'Enabled' : 'Disabled'}
                         </Badge>
                         <Link href={`/project/${projectRef}/auth/providers?provider=Email`}>
-                          <Button variant="default">Configure in email provider</Button>
+                          <Button variant="default">{$t('Configure in email provider')}</Button>
                         </Link>
                       </div>
                     </FormItemLayout>
@@ -369,7 +375,7 @@ export const ProtectionAuthSettingsForm = () => {
               <CardFooter className="justify-end space-x-2">
                 {isDirty && (
                   <Button variant="default" onClick={() => protectionForm.reset()}>
-                    Cancel
+                    {$t('Cancel')}
                   </Button>
                 )}
                 <Button
@@ -378,7 +384,7 @@ export const ProtectionAuthSettingsForm = () => {
                   disabled={!canUpdateConfig || isUpdatingConfig || !isDirty}
                   loading={isUpdatingConfig}
                 >
-                  Save changes
+                  {$t('Save changes')}
                 </Button>
               </CardFooter>
             </Card>

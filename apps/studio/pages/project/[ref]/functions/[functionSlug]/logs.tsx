@@ -4,6 +4,7 @@ import { LogsPreviewer } from '@/components/interfaces/Settings/Logs/LogsPreview
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import EdgeFunctionDetailsLayout from '@/components/layouts/EdgeFunctionsLayout/EdgeFunctionDetailsLayout'
 import { useEdgeFunctionQuery } from '@/data/edge-functions/edge-function-query'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 export const LogPage: NextPageWithLayout = () => {
@@ -30,7 +31,7 @@ export const LogPage: NextPageWithLayout = () => {
 
 LogPage.getLayout = (page) => (
   <DefaultLayout>
-    <EdgeFunctionDetailsLayout title="Logs">{page}</EdgeFunctionDetailsLayout>
+    <EdgeFunctionDetailsLayout title={$t('Logs')}>{page}</EdgeFunctionDetailsLayout>
   </DefaultLayout>
 )
 

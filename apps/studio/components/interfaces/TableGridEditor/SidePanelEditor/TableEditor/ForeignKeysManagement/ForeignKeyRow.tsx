@@ -6,6 +6,7 @@ import { Badge, Button, cn } from 'ui'
 
 import type { ForeignKey } from '../../ForeignKeySelector/ForeignKeySelector.types'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface ForeignKeyProps {
   foreignKey: ForeignKey
@@ -56,7 +57,8 @@ export const ForeignKeyRow = ({
               </Badge>
             )}
             <p className="text-sm text-foreground-light">
-              {foreignKey.columns.length > 1 ? 'Composite foreign' : 'Foreign'} key relation to:
+              {foreignKey.columns.length > 1 ? 'Composite foreign' : 'Foreign'}{' '}
+              {$t('key relation to:')}
             </p>
             <Button
               asChild
@@ -106,15 +108,15 @@ export const ForeignKeyRow = ({
       {!disabled && (
         <div className="flex items-center gap-x-2">
           <Button variant="default" onClick={onSelectEdit}>
-            Edit
+            {$t('Edit')}
           </Button>
           {foreignKey.toRemove ? (
             <Button variant="default" onClick={onSelectUndoRemove}>
-              Cancel remove
+              {$t('Cancel remove')}
             </Button>
           ) : (
             <Button variant="default" onClick={onSelectRemove}>
-              Remove
+              {$t('Remove')}
             </Button>
           )}
         </div>

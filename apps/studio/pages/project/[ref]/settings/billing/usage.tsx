@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import SettingsLayout from '@/components/layouts/ProjectSettingsLayout/SettingsLayout'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const ProjectBillingUsage: NextPageWithLayout = () => {
@@ -35,7 +36,7 @@ const ProjectBillingUsage: NextPageWithLayout = () => {
 
 ProjectBillingUsage.getLayout = (page) => (
   <DefaultLayout>
-    <SettingsLayout title="Usage">{page}</SettingsLayout>
+    <SettingsLayout title={$t('Usage')}>{page}</SettingsLayout>
   </DefaultLayout>
 )
 

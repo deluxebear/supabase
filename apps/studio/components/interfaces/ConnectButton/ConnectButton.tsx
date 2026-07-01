@@ -7,6 +7,7 @@ import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAppStateSnapshot } from '@/state/app-state'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
@@ -50,7 +51,7 @@ export const ConnectButton = ({
             setShowConnect(true)
           }}
         >
-          <span className={cn({ 'sr-only': iconOnly })}>Connect</span>
+          <span className={cn({ 'sr-only': iconOnly })}>{$t('Connect')}</span>
         </Button>
       </ShortcutTooltip>
     )
@@ -74,7 +75,7 @@ export const ConnectButton = ({
         },
       }}
     >
-      <span className={cn({ 'sr-only': iconOnly })}>Connect</span>
+      <span className={cn({ 'sr-only': iconOnly })}>{$t('Connect')}</span>
     </ButtonTooltip>
   )
 }

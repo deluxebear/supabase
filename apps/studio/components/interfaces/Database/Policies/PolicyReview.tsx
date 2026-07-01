@@ -4,6 +4,7 @@ import { Button, DialogFooter, DialogSection } from 'ui'
 
 import type { PolicyForReview } from './Policies.types'
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
+import { t as $t } from '@/lib/i18n'
 
 interface PolicyReviewProps {
   policy: PolicyForReview
@@ -33,7 +34,7 @@ export const PolicyReview = ({
           <div className="flex items-center justify-between space-y-8">
             <div className="flex flex-col">
               <p className="text-sm text-foreground-light">
-                This is the SQL statement that will be used to create your policy.
+                {$t('This is the SQL statement that will be used to create your policy.')}
               </p>
             </div>
           </div>
@@ -41,7 +42,7 @@ export const PolicyReview = ({
             {isEmpty(policy) ? (
               <div className="my-10 flex items-center justify-center space-x-2 opacity-50">
                 <p className="text-base text-foreground-light">
-                  There are no changes made to this policy
+                  {$t('There are no changes made to this policy')}
                 </p>
               </div>
             ) : (
@@ -62,7 +63,7 @@ export const PolicyReview = ({
       </DialogSection>
       <DialogFooter>
         <Button variant="default" onClick={onSelectBack}>
-          Back to edit
+          {$t('Back to edit')}
         </Button>
         <Button
           variant="primary"
@@ -70,7 +71,7 @@ export const PolicyReview = ({
           onClick={onSavePolicy}
           loading={isSaving}
         >
-          Save policy
+          {$t('Save policy')}
         </Button>
       </DialogFooter>
     </>

@@ -6,6 +6,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { DASHBOARD_LOG_CATEGORIES } from './dashboard-logs'
 import type { SupportFormValues } from './SupportForm.schema'
+import { t as $t } from '@/lib/i18n'
 
 interface DashboardLogsToggleProps {
   form: UseFormReturn<SupportFormValues>
@@ -39,13 +40,15 @@ export function DashboardLogsToggle({
           align={align}
           label={
             <div className="flex items-center gap-x-2">
-              <span className="text-foreground">Include dashboard activity log</span>
+              <span className="text-foreground">{$t('Include dashboard activity log')}</span>
             </div>
           }
           description={
             <div className="flex flex-col">
               <span className="text-foreground-light">
-                Share sanitized logs of recent dashboard actions to help reproduce the issue.
+                {$t(
+                  'Share sanitized logs of recent dashboard actions to help reproduce the issue.'
+                )}
               </span>
               <Collapsible className="mt-2" open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
                 <CollapsibleTrigger
@@ -57,7 +60,7 @@ export function DashboardLogsToggle({
                     size={14}
                     className="transition-all group-data-open:rotate-90 text-foreground-muted -ml-1"
                   />
-                  <span className="text-sm">Preview log</span>
+                  <span className="text-sm">{$t('Preview log')}</span>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="mt-2">
                   <pre className="bg-background-surface-200 border border-strong rounded-lg p-3 max-h-60 overflow-y-auto overflow-x-auto text-xs text-foreground-light whitespace-pre-wrap">

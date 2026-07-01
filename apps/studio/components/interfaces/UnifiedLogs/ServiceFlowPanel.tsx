@@ -35,6 +35,7 @@ import {
   useUnifiedLogInspectionQuery,
 } from '@/data/logs/unified-log-inspection-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 
 interface ServiceFlowPanelProps {
   dock: 'bottom' | 'right'
@@ -135,11 +136,11 @@ export function ServiceFlowPanel({
                     value="overview"
                     className="border-b py-3 font-mono text-xs uppercase"
                   >
-                    Overview
+                    {$t('Overview')}
                   </TabsTrigger>
                 )}
                 <TabsTrigger value="raw-json" className="border-b py-3 font-mono text-xs uppercase">
-                  Raw JSON
+                  {$t('Raw JSON')}
                 </TabsTrigger>
               </TabsList>
 
@@ -153,7 +154,9 @@ export function ServiceFlowPanel({
                 className="mt-0 grow overflow-auto py-2"
               >
                 {error ? (
-                  <div className="py-8 text-center text-destructive">Error: {error.toString()}</div>
+                  <div className="py-8 text-center text-destructive">
+                    {$t('Error:')} {error.toString()}
+                  </div>
                 ) : serviceFlowType === 'postgres' ? (
                   <PostgresFlowDetail
                     data={selectedRow}
@@ -165,7 +168,7 @@ export function ServiceFlowPanel({
                 ) : (
                   <div>
                     <DetailSectionHeader
-                      title="Request started"
+                      title={$t('Request started')}
                       icon={Clock}
                       summary={formattedTime ?? undefined}
                     />
@@ -232,7 +235,7 @@ export function ServiceFlowPanel({
               {isLoading && shouldShowServiceFlow && (
                 <div className="flex items-center gap-3 border-b border-border bg-surface-100 p-3 text-foreground-light">
                   <Skeleton className="h-4 w-4 animate-pulse rounded-full" />
-                  <span className="text-sm">Enriching log...</span>
+                  <span className="text-sm">{$t('Enriching log...')}</span>
                 </div>
               )}
               <div className="sticky top-2 z-10 flex justify-end px-2 -mb-9 pointer-events-none">

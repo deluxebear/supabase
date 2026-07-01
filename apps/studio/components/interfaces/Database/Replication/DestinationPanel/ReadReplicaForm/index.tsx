@@ -23,6 +23,7 @@ import { AVAILABLE_REPLICA_REGIONS } from '@/components/interfaces/Settings/Infr
 import { Region, useReadReplicaSetUpMutation } from '@/data/read-replicas/replica-setup-mutation'
 import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { AWS_REGIONS_DEFAULT, BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface ReadReplicaFormProps {
   onSuccess: () => void
@@ -60,7 +61,7 @@ export const ReadReplicaForm = ({ onSuccess, onClose }: ReadReplicaFormProps) =>
   const onSubmit = async () => {
     const regionKey = AWS_REGIONS[selectedRegion as AWS_REGIONS_KEYS].code
     if (!projectRef) return console.error('Project is required')
-    if (!regionKey) return toast.error('Unable to deploy replica: Unsupported region selected')
+    if (!regionKey) return toast.error($t('Unable to deploy replica: Unsupported region selected'))
 
     const primary = data?.find((db) => db.identifier === projectRef)
     setUpReplica({ projectRef, region: regionKey as Region, size: primary?.size ?? 't4g.small' })
@@ -79,7 +80,7 @@ export const ReadReplicaForm = ({ onSuccess, onClose }: ReadReplicaFormProps) =>
           isReactForm={false}
           layout="horizontal"
           className="p-5 [&>div]:gap-y-1 [&>div>span]:text-foreground-lighter"
-          label="Region"
+          label={$t('Region')}
           labelOptional="Select a region to deploy your replica in"
         >
           <Select
@@ -88,14 +89,14 @@ export const ReadReplicaForm = ({ onSuccess, onClose }: ReadReplicaFormProps) =>
             disabled={!canDeployReplica}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select a region" />
+              <SelectValue placeholder={$t('Select a region')} />
             </SelectTrigger>
             <SelectContent>
               {availableRegions.map((region) => (
                 <SelectItem key={region.key} value={region.key}>
                   <div className="flex gap-x-3 items-center">
                     <img
-                      alt="region icon"
+                      alt={$t('region icon')}
                       className="w-5 rounded-xs"
                       src={`${BASE_PATH}/img/regions/${region.region}.svg`}
                     />
@@ -116,17 +117,18 @@ export const ReadReplicaForm = ({ onSuccess, onClose }: ReadReplicaFormProps) =>
         <div className="flex items-center gap-x-4">
           <InfoIcon className="h-5 w-5" />
           <p className="text-sm">
-            New replica will cost an additional <span translate="no">{totalCost}/month</span>
+            {$t('New replica will cost an additional')}{' '}
+            <span translate="no">{totalCost}/month</span>
           </p>
           <ReadReplicaPricingDialog />
         </div>
 
         <div className="flex items-center gap-x-2">
           <Button disabled={isSettingUp} variant="default" onClick={onClose}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button disabled={!canDeployReplica} loading={isSettingUp} onClick={onSubmit}>
-            Deploy replica
+            {$t('Deploy replica')}
           </Button>
         </div>
       </SheetFooter>

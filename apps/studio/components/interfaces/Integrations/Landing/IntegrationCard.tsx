@@ -6,6 +6,7 @@ import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { IntegrationDefinition } from './Integrations.constants'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 type IntegrationCardProps = IntegrationDefinition & {
   isInstalled?: boolean
@@ -74,7 +75,7 @@ export const IntegrationCard = ({
               <p className="text-foreground-light text-sm line-clamp-3">{description}</p>
               <div className="flex items-center gap-x-1 mt-4">
                 {status && <Badge variant="warning">{status}</Badge>}
-                {shouldShowOfficialBadge && <Badge>Official</Badge>}
+                {shouldShowOfficialBadge && <Badge>{$t('Official')}</Badge>}
               </div>
             </div>
           </CardContent>
@@ -94,7 +95,7 @@ export const IntegrationCard = ({
             {isInstalled && (
               <div className="flex items-center gap-x-1">
                 <BadgeCheck size={14} className="text-brand-link" />
-                <span className="text-brand-link text-xs">Installed</span>
+                <span className="text-brand-link text-xs">{$t('Installed')}</span>
               </div>
             )}
           </div>
@@ -104,7 +105,7 @@ export const IntegrationCard = ({
             <p className="text-foreground-light text-xs flex-1">{description}</p>
             <div className="flex items-center gap-x-1 mt-4">
               {status && <Badge variant="warning">{status}</Badge>}
-              {shouldShowOfficialBadge && <Badge>Official</Badge>}
+              {shouldShowOfficialBadge && <Badge>{$t('Official')}</Badge>}
             </div>
           </div>
         </CardContent>

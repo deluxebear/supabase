@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { LogoLoader } from 'ui'
 
 import { useSignOut } from '@/lib/auth'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const LogoutPage: NextPageWithLayout = () => {
@@ -13,7 +14,7 @@ const LogoutPage: NextPageWithLayout = () => {
   useEffect(() => {
     const logout = async () => {
       await signOut()
-      toast('Successfully logged out')
+      toast($t('Successfully logged out'))
       await router.push('/sign-in')
     }
     logout()

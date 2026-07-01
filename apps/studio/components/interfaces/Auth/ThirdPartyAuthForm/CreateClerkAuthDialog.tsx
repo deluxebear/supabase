@@ -22,6 +22,7 @@ import * as z from 'zod'
 
 import { InlineLink } from '@/components/ui/InlineLink'
 import { useCreateThirdPartyAuthIntegrationMutation } from '@/data/third-party-auth/integration-create-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface CreateClerkAuthIntegrationProps {
   visible: boolean
@@ -97,7 +98,7 @@ export const CreateClerkAuthIntegrationDialog = ({
     <Dialog open={visible} onOpenChange={() => onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="truncate">Add new Clerk connection</DialogTitle>
+          <DialogTitle className="truncate">{$t('Add new Clerk connection')}</DialogTitle>
         </DialogHeader>
 
         <Separator />
@@ -105,22 +106,22 @@ export const CreateClerkAuthIntegrationDialog = ({
           <Form {...form}>
             <form id={FORM_ID} onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <p className="text-sm text-foreground-light">
-                Register your Clerk domain. Visit{' '}
+                {$t('Register your Clerk domain. Visit')}{' '}
                 <InlineLink
                   href="https://dashboard.clerk.com/setup/supabase"
                   target="_blank"
                   rel="noopener"
                 >
-                  Clerk's Connect with Supabase page
+                  {$t("Clerk's Connect with Supabase page")}
                 </InlineLink>{' '}
-                to configure your Clerk instance.
+                {$t('to configure your Clerk instance.')}
               </p>
               <FormField
                 key="domain"
                 control={form.control}
                 name="domain"
                 render={({ field }) => (
-                  <FormItemLayout label="Clerk Domain">
+                  <FormItemLayout label={$t('Clerk Domain')}>
                     <FormControl>
                       <Input
                         {...field}
@@ -137,10 +138,10 @@ export const CreateClerkAuthIntegrationDialog = ({
         </DialogSection>
         <DialogFooter>
           <Button disabled={isPending} variant="default" onClick={() => onClose()}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button form={FORM_ID} type="submit" disabled={isPending} loading={isPending}>
-            Create connection
+            {$t('Create connection')}
           </Button>
         </DialogFooter>
       </DialogContent>

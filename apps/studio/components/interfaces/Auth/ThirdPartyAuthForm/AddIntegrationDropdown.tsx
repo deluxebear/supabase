@@ -16,6 +16,7 @@ import {
   getIntegrationTypeLabel,
   INTEGRATION_TYPES,
 } from './ThirdPartyAuthForm.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface AddIntegrationDropdownProps {
   buttonText?: string
@@ -59,11 +60,11 @@ export const AddIntegrationDropdown = ({
     <DropdownMenu open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button variant={variant} iconRight={<ChevronDown />}>
-          Add provider
+          {$t('Add provider')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align={align} className="w-56">
-        <DropdownMenuLabel>Select provider</DropdownMenuLabel>
+        <DropdownMenuLabel>{$t('Select provider')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <ProviderDropdownItem type="firebase" onSelectIntegrationType={onSelectIntegrationType} />
         <ProviderDropdownItem type="clerk" onSelectIntegrationType={onSelectIntegrationType} />

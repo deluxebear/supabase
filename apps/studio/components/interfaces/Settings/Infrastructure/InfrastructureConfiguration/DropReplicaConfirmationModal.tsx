@@ -8,6 +8,7 @@ import { replicaKeys } from '@/data/read-replicas/keys'
 import { useReadReplicaRemoveMutation } from '@/data/read-replicas/replica-remove-mutation'
 import type { Database } from '@/data/read-replicas/replicas-query'
 import { formatDatabaseID } from '@/data/read-replicas/replicas.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface DropReplicaConfirmationModalProps {
   selectedReplica?: Database
@@ -48,7 +49,7 @@ export const DropReplicaConfirmationModal = ({
 
   const onConfirmRemove = async () => {
     if (!projectRef) return console.error('Project is required')
-    if (selectedReplica === undefined) return toast.error('No replica selected')
+    if (selectedReplica === undefined) return toast.error($t('No replica selected'))
 
     removeReadReplica({
       projectRef,
@@ -73,11 +74,12 @@ export const DropReplicaConfirmationModal = ({
         description: 'You may still deploy a new replica in this region thereafter',
       }}
     >
-      <p className="text-sm">Before deleting this replica, consider:</p>
+      <p className="text-sm">{$t('Before deleting this replica, consider:')}</p>
       <ul className="text-sm text-foreground-light py-1 list-disc mx-4 space-y-1">
         <li>
-          Network traffic from this region may slow down, especially if you have no other replicas
-          in this region
+          {$t(
+            'Network traffic from this region may slow down, especially if you have no other replicas in this region'
+          )}
         </li>
       </ul>
     </ConfirmationModal>

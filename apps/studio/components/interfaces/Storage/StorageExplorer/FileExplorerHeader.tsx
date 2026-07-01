@@ -49,6 +49,7 @@ import { useStoragePreference } from './useStoragePreference'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useStorageExplorerStateSnapshot } from '@/state/storage-explorer'
@@ -94,13 +95,13 @@ const NavigateDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent size="small">
         <DialogHeader>
-          <DialogTitle>Navigate to folder</DialogTitle>
+          <DialogTitle>{$t('Navigate to folder')}</DialogTitle>
           <DialogDescription className="sr-only">
-            Enter a folder path within this bucket.
+            {$t('Enter a folder path within this bucket.')}
           </DialogDescription>
         </DialogHeader>
         <DialogSection className="flex flex-col gap-y-2">
-          <Label htmlFor={inputId}>Path</Label>
+          <Label htmlFor={inputId}>{$t('Path')}</Label>
           <Input
             id={inputId}
             autoFocus
@@ -114,15 +115,15 @@ const NavigateDialog = ({
             }}
           />
           <FieldDescription id={descriptionId} className="text-foreground-lighter">
-            Enter a folder path within this bucket.
+            {$t('Enter a folder path within this bucket.')}
           </FieldDescription>
         </DialogSection>
         <DialogFooter>
           <Button variant="default" onClick={onCancel}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button variant="primary" onClick={onSubmit}>
-            Navigate
+            {$t('Navigate')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -304,7 +305,7 @@ export const FileExplorerHeader = ({
               <Button
                 size="tiny"
                 variant="outline"
-                aria-label="Go up one level"
+                aria-label={$t('Go up one level')}
                 className="w-7 shrink-0 px-1"
                 icon={<ArrowLeft size={14} />}
                 onClick={() => {
@@ -347,7 +348,7 @@ export const FileExplorerHeader = ({
                   size="tiny"
                   icon={<Edit2 />}
                   variant="outline"
-                  aria-label="Navigate"
+                  aria-label={$t('Navigate')}
                   className="w-7 px-1"
                   disabled={isPathDialogOpen || loading.isLoading}
                   onClick={onOpenNavigate}
@@ -358,7 +359,7 @@ export const FileExplorerHeader = ({
                   size="tiny"
                   icon={<RefreshCw />}
                   variant="outline"
-                  aria-label="Reload"
+                  aria-label={$t('Reload')}
                   className="w-7 px-1"
                   loading={isRefreshing}
                   onClick={refreshData}
@@ -370,7 +371,7 @@ export const FileExplorerHeader = ({
                   <Button
                     variant="outline"
                     size="tiny"
-                    aria-label="View options"
+                    aria-label={$t('View options')}
                     className="w-7 px-1"
                     icon={view === 'LIST' ? <List size={16} /> : <Columns size={16} />}
                   />
@@ -386,7 +387,7 @@ export const FileExplorerHeader = ({
                   ))}
                   <DropdownMenuSeparator />
                   <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>Sort by</DropdownMenuSubTrigger>
+                    <DropdownMenuSubTrigger>{$t('Sort by')}</DropdownMenuSubTrigger>
                     <DropdownMenuSubContent className="w-44">
                       {SORT_BY_OPTIONS.map((option) => (
                         <DropdownMenuItem key={option.key} onClick={() => setSortBy(option.key)}>
@@ -399,7 +400,7 @@ export const FileExplorerHeader = ({
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
                   <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>Sort order</DropdownMenuSubTrigger>
+                    <DropdownMenuSubTrigger>{$t('Sort order')}</DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
                       {SORT_ORDER_OPTIONS.map((option) => (
                         <DropdownMenuItem
@@ -443,7 +444,7 @@ export const FileExplorerHeader = ({
                     },
                   }}
                 >
-                  Create folder
+                  {$t('Create folder')}
                 </ButtonTooltip>
               </ShortcutTooltip>
               <ShortcutTooltip
@@ -465,7 +466,7 @@ export const FileExplorerHeader = ({
                     },
                   }}
                 >
-                  Upload files
+                  {$t('Upload files')}
                 </ButtonTooltip>
               </ShortcutTooltip>
             </div>

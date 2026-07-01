@@ -17,6 +17,7 @@ import { useTablesQuery } from '@/data/tables/tables-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -92,7 +93,7 @@ export const PublicationsTables = () => {
           ref={searchInputRef}
           icon={<Search />}
           className="w-48"
-          placeholder="Search for a table"
+          placeholder={$t('Search for a table')}
           value={filterString}
           onChange={(e) => setFilterString(e.target.value)}
           onKeyDown={onSearchInputEscape(filterString, setFilterString)}
@@ -103,7 +104,7 @@ export const PublicationsTables = () => {
         <Admonition
           type="warning"
           className="mb-4 w-full"
-          description="You need additional permissions to update database replications."
+          description={$t('You need additional permissions to update database replications.')}
         />
       )}
 
@@ -111,8 +112,8 @@ export const PublicationsTables = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead className="hidden lg:table-cell">Description</TableHead>
+              <TableHead>{$t('Name')}</TableHead>
+              <TableHead className="hidden lg:table-cell">{$t('Description')}</TableHead>
               {/*
                     We've disabled All tables toggle for publications.
                     See https://github.com/supabase/supabase/pull/7233.
@@ -158,9 +159,11 @@ export const PublicationsTables = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={3}>
-                    <p>The selected publication with ID {id} cannot be found</p>
+                    <p>
+                      {$t('The selected publication with ID')} {id} {$t('cannot be found')}
+                    </p>
                     <p className="text-foreground-light">
-                      Head back to the list of publications to select one from there
+                      {$t('Head back to the list of publications to select one from there')}
                     </p>
                   </TableCell>
                 </TableRow>

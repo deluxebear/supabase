@@ -6,6 +6,7 @@ import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 import { HeaderBanner } from '@/components/interfaces/Organization/HeaderBanner'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 // Update this whenever the banner content below changes so old client bundles
 // stop displaying outdated notices after the relevant date passes.
@@ -65,10 +66,10 @@ export const NoticeBanner = () => {
   return (
     <HeaderBanner
       variant="note"
-      title="Upcoming maintenance"
+      title={$t('Upcoming maintenance')}
       description={
         <>
-          Shared pooler maintenance in{' '}
+          {$t('Shared pooler maintenance in')}{' '}
           <a target="_blank" rel="noopener referrer" href={maintenanceWindow.url}>
             {project.region}
           </a>{' '}

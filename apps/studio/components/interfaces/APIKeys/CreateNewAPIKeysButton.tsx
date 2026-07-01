@@ -16,6 +16,7 @@ import {
 import { Admonition } from 'ui-patterns/admonition'
 
 import { useAPIKeyCreateMutation } from '@/data/api-keys/api-key-create-mutation'
+import { t as $t } from '@/lib/i18n'
 
 export const CreateNewAPIKeysButton = () => {
   const { ref: projectRef } = useParams()
@@ -50,7 +51,7 @@ export const CreateNewAPIKeysButton = () => {
       }
 
       setCreateKeysDialogOpen(false)
-      toast.success('Successfully created a new set of API keys!')
+      toast.success($t('Successfully created a new set of API keys!'))
     } catch (error) {
       console.error('Failed to create API keys:', error)
       throw error
@@ -59,24 +60,30 @@ export const CreateNewAPIKeysButton = () => {
 
   return (
     <AlertDialog open={createKeysDialogOpen} onOpenChange={setCreateKeysDialogOpen}>
-      <Button onClick={() => setCreateKeysDialogOpen(true)}>Create new API keys</Button>
+      <Button onClick={() => setCreateKeysDialogOpen(true)}>{$t('Create new API keys')}</Button>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Create new API keys</AlertDialogTitle>
+          <AlertDialogTitle>{$t('Create new API keys')}</AlertDialogTitle>
           <AlertDialogDescription>
-            This will create a default publishable key and a default secret key both named{' '}
-            <code className="break-keep! text-code-inline">default</code>. These keys are required
-            to connect your application to your Supabase project.
+            {$t('This will create a default publishable key and a default secret key both named')}{' '}
+            <code className="break-keep! text-code-inline">default</code>
+            {$t('. These keys are required to connect your application to your Supabase project.')}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && (
           <AlertDialogBody>
-            <Admonition type="destructive" title="Unable to create API keys" description={error} />
+            <Admonition
+              type="destructive"
+              title={$t('Unable to create API keys')}
+              description={error}
+            />
           </AlertDialogBody>
         )}
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleCreateNewApiKeys}>Create keys</AlertDialogAction>
+          <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
+          <AlertDialogAction onClick={handleCreateNewApiKeys}>
+            {$t('Create keys')}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

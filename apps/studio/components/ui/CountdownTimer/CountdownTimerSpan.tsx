@@ -1,5 +1,7 @@
 import MotionNumber from '@number-flow/react'
 
+import { t as $t } from '@/lib/i18n'
+
 interface CountdownTimerSpanProps {
   seconds: number
 }
@@ -14,7 +16,7 @@ const CountdownTimerSpan = ({ seconds }: CountdownTimerSpanProps) => {
 
   return (
     <span className="inline-flex gap-2">
-      <span className="text-foreground-lighter text-sm p-0">Time remaining: </span>
+      <span className="text-foreground-lighter text-sm p-0">{$t('Time remaining:')} </span>
       <span className="text-foreground text-sm font-mono flex items-center gap-0">
         <MotionNumber format={formatConfig} value={Number(formatValue(hours))} />
         hr

@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 import { getForeignKeyCascadeAction } from '../ColumnEditor/ColumnEditor.utils'
 import type { ForeignKey } from './ForeignKeySelector.types'
 import type { ForeignKeyConstraint } from '@/data/database/foreign-key-constraints-query'
+import { t as $t } from '@/lib/i18n'
 
 export interface ForeignKeyDirtyState {
   id?: number | string
@@ -67,19 +68,19 @@ export const generateCascadeActionDescription = (
     case FOREIGN_KEY_CASCADE_ACTION.NO_ACTION:
       return (
         <>
-          <span className="text-foreground-light">{actionName}</span>: {actionVerb} a record from{' '}
-          <code className="text-code-inline">{reference}</code> will{' '}
-          <span className="text-amber-900 opacity-75">raise an error</span> if there are records
-          existing in this table that reference it
+          <span className="text-foreground-light">{actionName}</span>: {actionVerb}{' '}
+          {$t('a record from')} <code className="text-code-inline">{reference}</code> will{' '}
+          <span className="text-amber-900 opacity-75">{$t('raise an error')}</span>{' '}
+          {$t('if there are records existing in this table that reference it')}
         </>
       )
     case FOREIGN_KEY_CASCADE_ACTION.CASCADE:
       return (
         <>
-          <span className="text-foreground-light">{actionName}</span>: {actionVerb} a record from{' '}
-          <code className="text-code-inline">{reference}</code> will{' '}
-          <span className="text-amber-900 opacity-75">also {action}</span> any records that
-          reference it in this table
+          <span className="text-foreground-light">{actionName}</span>: {actionVerb}{' '}
+          {$t('a record from')} <code className="text-code-inline">{reference}</code> will{' '}
+          <span className="text-amber-900 opacity-75">also {action}</span>{' '}
+          {$t('any records that reference it in this table')}
         </>
       )
     case FOREIGN_KEY_CASCADE_ACTION.RESTRICT:
@@ -91,31 +92,32 @@ export const generateCascadeActionDescription = (
               <HelpCircle className="text-foreground-light" size={16} strokeWidth={1.5} />
             </TooltipTrigger>
             <TooltipContent side="bottom" className="w-80">
-              This is similar to no action, but the restrict check cannot be deferred till later in
-              the transaction
+              {$t(
+                'This is similar to no action, but the restrict check cannot be deferred till later in the transaction'
+              )}
             </TooltipContent>
           </Tooltip>
-          : {actionVerb} a record from <code className="text-code-inline">{reference}</code> will{' '}
-          <span className="text-amber-900 opacity-75">prevent {actionVerb.toLowerCase()}</span>{' '}
-          existing referencing rows from this table.
+          : {actionVerb} {$t('a record from')} <code className="text-code-inline">{reference}</code>{' '}
+          will <span className="text-amber-900 opacity-75">prevent {actionVerb.toLowerCase()}</span>{' '}
+          {$t('existing referencing rows from this table.')}
         </>
       )
     case FOREIGN_KEY_CASCADE_ACTION.SET_DEFAULT:
       return (
         <>
-          <span className="text-foreground-light">{actionName}</span>: {actionVerb} a record from{' '}
-          <code className="text-code-inline">{reference}</code> will set the value of any existing
-          records in this table referencing it to their{' '}
-          <span className="text-amber-900 opacity-75">default value</span>
+          <span className="text-foreground-light">{actionName}</span>: {actionVerb}{' '}
+          {$t('a record from')} <code className="text-code-inline">{reference}</code>{' '}
+          {$t('will set the value of any existing records in this table referencing it to their')}{' '}
+          <span className="text-amber-900 opacity-75">{$t('default value')}</span>
         </>
       )
     case FOREIGN_KEY_CASCADE_ACTION.SET_NULL:
       return (
         <>
-          <span className="text-foreground-light">{actionName}</span>: {actionVerb} a record from{' '}
-          <code className="text-code-inline">{reference}</code> will set the value of any existing
-          records in this table referencing it{' '}
-          <span className="text-amber-900 opacity-75">to NULL</span>
+          <span className="text-foreground-light">{actionName}</span>: {actionVerb}{' '}
+          {$t('a record from')} <code className="text-code-inline">{reference}</code>{' '}
+          {$t('will set the value of any existing records in this table referencing it')}{' '}
+          <span className="text-amber-900 opacity-75">{$t('to NULL')}</span>
         </>
       )
   }

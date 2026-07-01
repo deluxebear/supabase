@@ -10,6 +10,7 @@ import {
   useConnectServerEnv,
 } from '@/components/interfaces/ConnectSheet/useConnectServerEnv'
 import CopyButton from '@/components/ui/CopyButton'
+import { t as $t } from '@/lib/i18n'
 
 function ServerEnvContent() {
   const { ref } = useParams()
@@ -25,7 +26,7 @@ function ServerEnvContent() {
             variant="default"
             size="tiny"
             asyncText={buildEnv}
-            aria-label="Copy all variables"
+            aria-label={$t('Copy all variables')}
             disabled={!canReadAPIKeys}
           />
         </div>
@@ -35,7 +36,7 @@ function ServerEnvContent() {
               variant="default"
               size="tiny"
               iconOnly
-              aria-label="Copy project URL"
+              aria-label={$t('Copy project URL')}
               text={apiUrl}
             />
           </EnvRow>
@@ -44,7 +45,7 @@ function ServerEnvContent() {
               variant="default"
               size="tiny"
               iconOnly
-              aria-label="Copy publishable key"
+              aria-label={$t('Copy publishable key')}
               text={publishableKey}
               disabled={!canReadAPIKeys}
             />
@@ -55,7 +56,7 @@ function ServerEnvContent() {
               variant="default"
               size="tiny"
               iconOnly
-              aria-label="Copy JWKS URL"
+              aria-label={$t('Copy JWKS URL')}
               text={jwksUrl}
             />
           </EnvRow>
@@ -64,13 +65,15 @@ function ServerEnvContent() {
 
       <Admonition
         variant="default"
-        title="On Supabase Edge Functions these are injected automatically"
-        description="No setup is needed for Edge Functions. For other runtimes, copy the values above into your environment. Need a secret key? Create or manage them in API Keys settings."
+        title={$t('On Supabase Edge Functions these are injected automatically')}
+        description={$t(
+          'No setup is needed for Edge Functions. For other runtimes, copy the values above into your environment. Need a secret key? Create or manage them in API Keys settings.'
+        )}
         actions={
           ref
             ? [
                 <Button asChild key="api-keys" variant="default">
-                  <Link href={`/project/${ref}/settings/api-keys`}>View API keys</Link>
+                  <Link href={`/project/${ref}/settings/api-keys`}>{$t('View API keys')}</Link>
                 </Button>,
               ]
             : undefined

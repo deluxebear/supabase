@@ -6,6 +6,7 @@ import { AccordionContent, AccordionItem, AccordionTrigger, Button } from 'ui'
 
 import { RestartProjectDialog } from './RestartProjectDialog'
 import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 interface StepTriggerProps {
@@ -59,14 +60,14 @@ export function RestartDatabaseTroubleshootingSection({
         value={`step-${number}`}
         className="border-b border-default last:border-b-0 px-3 py-2"
       >
-        <StepTrigger number={number} title="Try restarting your project" />
+        <StepTrigger number={number} title={$t('Try restarting your project')} />
         <AccordionContent className="pt-1">
           <div className="px-2">
             <p className="text-sm text-foreground-light mb-3">
-              Restarting your project can help resolve timeout errors or stale connections.
+              {$t('Restarting your project can help resolve timeout errors or stale connections.')}
             </p>
             <Button variant="default" size="tiny" onClick={handleClick}>
-              Restart project
+              {$t('Restart project')}
             </Button>
           </div>
         </AccordionContent>
@@ -120,7 +121,7 @@ export function TroubleshootingGuideSection({
             iconRight={<ExternalLink />}
           >
             <a href={href} target="_blank" rel="noopener noreferrer">
-              View troubleshooting guide
+              {$t('View troubleshooting guide')}
             </a>
           </Button>
         </div>
@@ -151,12 +152,12 @@ export function FixWithAITroubleshootingSection({
       value={`step-${number}`}
       className="border-b border-default last:border-b-0 px-3 py-2"
     >
-      <StepTrigger number={number} title="Debug with AI" />
+      <StepTrigger number={number} title={$t('Debug with AI')} />
       <AccordionContent className="pt-1">
         <div className="px-2">
           <p className="text-sm text-foreground-light mb-3">{description}</p>
           <AiAssistantDropdown
-            label="Debug with AI"
+            label={$t('Debug with AI')}
             buildPrompt={buildPrompt}
             onOpenAssistant={() => {
               track('inline_error_troubleshooter_action_clicked', {

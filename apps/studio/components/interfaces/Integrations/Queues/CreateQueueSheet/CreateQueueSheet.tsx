@@ -26,6 +26,7 @@ import { useDatabaseQueueCreateMutation } from '@/data/database-queues/database-
 import { useQueuesExposePostgrestStatusQuery } from '@/data/database-queues/database-queues-expose-postgrest-status-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
+import { t as $t } from '@/lib/i18n'
 
 export interface CreateQueueSheetProps {
   visible: boolean
@@ -78,7 +79,7 @@ export const CreateQueueSheet = ({ visible, onClose }: CreateQueueSheetProps) =>
 
   const onSubmit: SubmitHandler<CreateQueueForm> = async ({ name, enableRls, values }) => {
     if (!project?.ref) {
-      toast.error('Project not found')
+      toast.error($t('Project not found'))
       return
     }
 
@@ -112,7 +113,7 @@ export const CreateQueueSheet = ({ visible, onClose }: CreateQueueSheetProps) =>
       <SheetContent size="default" className="w-[35%]" tabIndex={undefined}>
         <div className="flex flex-col h-full" tabIndex={-1}>
           <SheetHeader>
-            <SheetTitle>Create a new queue</SheetTitle>
+            <SheetTitle>{$t('Create a new queue')}</SheetTitle>
           </SheetHeader>
 
           <div className="overflow-auto grow">
@@ -140,7 +141,7 @@ export const CreateQueueSheet = ({ visible, onClose }: CreateQueueSheetProps) =>
               onClick={confirmOnClose}
               disabled={isPending}
             >
-              Cancel
+              {$t('Cancel')}
             </Button>
             <Button
               size="tiny"
@@ -150,7 +151,7 @@ export const CreateQueueSheet = ({ visible, onClose }: CreateQueueSheetProps) =>
               loading={isPending}
               disabled={!project?.ref}
             >
-              Create queue
+              {$t('Create queue')}
             </Button>
           </SheetFooter>
         </div>

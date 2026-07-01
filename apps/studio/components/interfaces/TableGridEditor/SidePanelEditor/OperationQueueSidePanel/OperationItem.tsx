@@ -6,6 +6,7 @@ import { formatOperationItemValue } from './OperationQueueSidePanel.utils'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { tableRowKeys } from '@/data/table-rows/keys'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
 import { EditCellContentPayload } from '@/state/table-editor-operation-queue.types'
 
@@ -59,7 +60,7 @@ export const OperationItem = ({ operationId, tableId, content }: OperationItemPr
         </div>
         <ButtonTooltip
           variant="text"
-          aria-label="Discard change"
+          aria-label={$t('Discard change')}
           className="px-1.5"
           icon={<Undo2 />}
           onClick={handleDelete}

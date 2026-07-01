@@ -8,6 +8,7 @@ import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 import { ButtonTooltip } from './ButtonTooltip'
 import { useFreeProjectLimitCheckQuery } from '@/data/organizations/free-project-limit-check-query'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
+import { t as $t } from '@/lib/i18n'
 import type { Organization } from '@/types'
 
 export interface ProjectClaimChooseOrgProps {
@@ -50,22 +51,22 @@ const OrganizationCard = ({
                 isSuccess && freePlanWithExceedingLimits ? (
                   <div className="space-y-3 w-96 p-2">
                     <p className="text-sm leading-normal">
-                      The following members have reached their maximum limits for the number of
-                      active free plan projects within organizations where they are an administrator
-                      or owner:
+                      {$t(
+                        'The following members have reached their maximum limits for the number of active free plan projects within organizations where they are an administrator or owner:'
+                      )}
                     </p>
                     <ul className="pl-5 list-disc">
                       {membersExceededLimit.map((member, idx: number) => (
                         <li key={`member-${idx}`}>
                           {member.username || member.primary_email} (Limit:{' '}
-                          {member.free_project_limit} free projects)
+                          {member.free_project_limit} {$t('free projects)')}
                         </li>
                       ))}
                     </ul>
                     <p className="text-sm leading-normal">
-                      These members will need to either delete, pause, or upgrade one or more of
-                      these projects before you're able to create a free project within this
-                      organization.
+                      {$t(
+                        "These members will need to either delete, pause, or upgrade one or more of these projects before you're able to create a free project within this organization."
+                      )}
                     </p>
                   </div>
                 ) : undefined,
@@ -78,7 +79,7 @@ const OrganizationCard = ({
           className="shrink-0"
           disabled={isSuccess && freePlanWithExceedingLimits}
         >
-          Choose
+          {$t('Choose')}
         </ButtonTooltip>
       </CardHeader>
     </Card>
@@ -129,10 +130,10 @@ export function OrganizationSelector({
       {isLoadingOrgs ? (
         <ShimmeringLoader />
       ) : isErrorOrgs ? (
-        <div>Error</div>
+        <div>{$t('Error')}</div>
       ) : isSuccessOrgs && organizations.length === 0 ? (
         <span className="text-sm text-foreground-light">
-          It seems you don't have any organizations yet.
+          {$t("It seems you don't have any organizations yet.")}
         </span>
       ) : (
         <>
@@ -140,11 +141,13 @@ export function OrganizationSelector({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search..."
+            placeholder={$t('Search...')}
           />
           <div>
             {filteredOrgs.length === 0 && (
-              <div className="text-center text-foreground-light py-6">No organizations found.</div>
+              <div className="text-center text-foreground-light py-6">
+                {$t('No organizations found.')}
+              </div>
             )}
             {filteredOrgs.map((org) => (
               <OrganizationCard key={org.id} org={org} onSelect={onSelectOrg} />
@@ -160,7 +163,7 @@ export function OrganizationSelector({
                   }}
                   variant="default"
                 >
-                  Show all organizations
+                  {$t('Show all organizations')}
                 </Button>
               </div>
             )}
@@ -170,10 +173,10 @@ export function OrganizationSelector({
       {canCreateNewOrg && (
         <Card className="flex items-center justify-between border-dashed pr-6">
           <CardHeader className="border-none">
-            <CardTitle>Need a new organization?</CardTitle>
+            <CardTitle>{$t('Need a new organization?')}</CardTitle>
           </CardHeader>
           <Button size="small" className="" asChild variant="default">
-            <Link href={`/new?${searchParams.toString()}`}>New Organization</Link>
+            <Link href={`/new?${searchParams.toString()}`}>{$t('New Organization')}</Link>
           </Button>
         </Card>
       )}

@@ -4,6 +4,7 @@ import { cn } from 'ui'
 
 import { getMarketplaceType, getMarketplaceTypeLabel } from './Marketplace.constants'
 import type { IntegrationDefinition } from '@/components/interfaces/Integrations/Landing/Integrations.constants'
+import { t as $t } from '@/lib/i18n'
 
 interface RailRowProps {
   label?: string
@@ -77,13 +78,13 @@ export const MarketplaceDetailRail = ({ integration, isInstalled }: MarketplaceD
   return (
     <aside className="sticky top-16 flex flex-col gap-4 self-start text-sm">
       <RailGroup>
-        <RailRow label="Type" value={typeLabel} />
-        <RailRow label="Built by" value={integration.author?.name || 'Supabase'} />
-        {isInstalled && <RailRow label="Status" value="Installed" />}
+        <RailRow label={$t('Type')} value={typeLabel} />
+        <RailRow label={$t('Built by')} value={integration.author?.name || 'Supabase'} />
+        {isInstalled && <RailRow label={$t('Status')} value="Installed" />}
       </RailGroup>
 
       {(docsUrl || siteUrl) && (
-        <RailGroup title="Links">
+        <RailGroup title={$t('Links')}>
           {docsUrl && (
             <RailRow value="Documentation" icon={<BookOpen size={14} />} href={docsUrl} />
           )}

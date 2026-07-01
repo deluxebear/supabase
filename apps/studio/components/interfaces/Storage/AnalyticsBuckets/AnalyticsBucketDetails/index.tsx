@@ -33,6 +33,7 @@ import { AlertError } from '@/components/ui/AlertError'
 import { useDatabaseExtensionsQuery } from '@/data/database-extensions/database-extensions-query'
 import { useIcebergNamespacesQuery } from '@/data/storage/iceberg-namespaces-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const AnalyticBucketDetails = () => {
   const router = useRouter()
@@ -193,8 +194,10 @@ export const AnalyticBucketDetails = () => {
                             className="animate-spin text-foreground-muted"
                           />
                         }
-                        title="Connecting table(s) to bucket"
-                        description="Tables will be shown here once the connection is complete"
+                        title={$t('Connecting table(s) to bucket')}
+                        description={$t(
+                          'Tables will be shown here once the connection is complete'
+                        )}
                       />
                     ) : null}
                   </>
@@ -222,15 +225,16 @@ export const AnalyticBucketDetails = () => {
 
           <ScaffoldSection isFullWidth className="flex flex-col gap-y-4">
             <header>
-              <ScaffoldSectionTitle>Manage</ScaffoldSectionTitle>
+              <ScaffoldSectionTitle>{$t('Manage')}</ScaffoldSectionTitle>
             </header>
             <Card>
               <CardContent className="flex flex-col md:flex-row md:justify-between gap-y-4 gap-x-8 md:items-center">
                 <div className="flex flex-col">
-                  <h3>Delete bucket</h3>
+                  <h3>{$t('Delete bucket')}</h3>
                   <p className="text-sm text-foreground-lighter">
-                    This will also delete any data in your bucket. Make sure you have a backup if
-                    you want to keep your data.
+                    {$t(
+                      'This will also delete any data in your bucket. Make sure you have a backup if you want to keep your data.'
+                    )}
                   </p>
                 </div>
                 <Button
@@ -238,7 +242,7 @@ export const AnalyticBucketDetails = () => {
                   disabled={!bucket?.name || !isSuccessBucket}
                   onClick={() => setShowDeleteModal(true)}
                 >
-                  Delete bucket
+                  {$t('Delete bucket')}
                 </Button>
               </CardContent>
             </Card>

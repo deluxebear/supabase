@@ -3,6 +3,7 @@ import { Admonition } from 'ui-patterns/admonition'
 
 import CopyButton from '@/components/ui/CopyButton'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface CopyPromptAdmonitionProps {
   stepsContainerRef: RefObject<HTMLDivElement | null>
@@ -145,12 +146,12 @@ export function CopyPromptAdmonition({
       <div className="absolute -inset-16 z-0 opacity-50">
         <img
           src={`${BASE_PATH}/img/reports/bg-grafana-dark.svg`}
-          alt="Supabase Grafana"
+          alt={$t('Supabase Grafana')}
           className="w-full h-full object-cover object-right hidden dark:block"
         />
         <img
           src={`${BASE_PATH}/img/reports/bg-grafana-light.svg`}
-          alt="Supabase Grafana"
+          alt={$t('Supabase Grafana')}
           className="w-full h-full object-cover object-right dark:hidden"
         />
         <div className="absolute inset-0 bg-linear-to-r from-background-alternative to-transparent" />
@@ -158,7 +159,7 @@ export function CopyPromptAdmonition({
 
       <div className="relative flex flex-col md:flex-row md:items-center gap-y-2 md:gap-x-8 justify-between">
         <div className="flex flex-col gap-y-0.5">
-          <p className="heading-default">Give your agent everything it needs</p>
+          <p className="heading-default">{$t('Give your agent everything it needs')}</p>
         </div>
       </div>
     </Admonition>

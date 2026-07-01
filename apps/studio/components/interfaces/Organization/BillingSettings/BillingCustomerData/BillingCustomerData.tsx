@@ -31,6 +31,7 @@ import { useOrganizationTaxIdQuery } from '@/data/organizations/organization-tax
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { STRIPE_PUBLIC_KEY } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const stripePromise = loadStripe(STRIPE_PUBLIC_KEY)
 
@@ -93,7 +94,7 @@ export const BillingCustomerData = () => {
           tax_id: data.tax_id,
         })
 
-        toast.success('Successfully updated billing data')
+        toast.success($t('Successfully updated billing data'))
 
         queryClient.setQueriesData<any[]>(
           { queryKey: organizationKeys.list(), exact: true },
@@ -168,12 +169,14 @@ export const BillingCustomerData = () => {
     <ScaffoldSection>
       <ScaffoldSectionDetail>
         <div className="sticky space-y-2 top-12 pr-3">
-          <p className="text-foreground text-base m-0">Billing Address &amp; Tax ID</p>
+          <p className="text-foreground text-base m-0">{$t('Billing Address &amp; Tax ID')}</p>
           <p className="text-sm text-foreground-light m-0">
-            Changes will be reflected in every upcoming invoice, past invoices are not affected
+            {$t(
+              'Changes will be reflected in every upcoming invoice, past invoices are not affected'
+            )}
           </p>
           <p className="text-sm text-foreground-light m-0">
-            A Tax ID is only required for registered businesses.
+            {$t('A Tax ID is only required for registered businesses.')}
           </p>
         </div>
       </ScaffoldSectionDetail>
@@ -225,8 +228,9 @@ export const BillingCustomerData = () => {
                       <CardFooter className="border-t justify-end px-8">
                         {!canUpdateBillingCustomerData && (
                           <span className="text-sm text-foreground-lighter mr-auto">
-                            You need additional permissions to manage this organization's billing
-                            address
+                            {$t(
+                              "You need additional permissions to manage this organization's billing address"
+                            )}
                           </span>
                         )}
                         <div className="flex items-center gap-2">
@@ -235,7 +239,7 @@ export const BillingCustomerData = () => {
                             onClick={handleReset}
                             disabled={isSubmitDisabled}
                           >
-                            Cancel
+                            {$t('Cancel')}
                           </Button>
                           <Button
                             variant="primary"
@@ -243,7 +247,7 @@ export const BillingCustomerData = () => {
                             disabled={isSubmitDisabled}
                             loading={isSubmitting}
                           >
-                            Save
+                            {$t('Save')}
                           </Button>
                         </div>
                       </CardFooter>

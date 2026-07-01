@@ -19,6 +19,8 @@ import {
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import * as z from 'zod'
 
+import { t as $t } from '@/lib/i18n'
+
 const formSchema = z.object({
   name: z.string().min(1, 'Required'),
   description: z.string().optional(),
@@ -72,9 +74,9 @@ export const UpdateSavedQueryModal = ({
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItemLayout layout="vertical" label="Name">
+                  <FormItemLayout layout="vertical" label={$t('Name')}>
                     <FormControl>
-                      <Input {...field} placeholder="Enter text" />
+                      <Input {...field} placeholder={$t('Enter text')} />
                     </FormControl>
                   </FormItemLayout>
                 )}
@@ -85,9 +87,13 @@ export const UpdateSavedQueryModal = ({
                 control={form.control}
                 name="description"
                 render={({ field }) => (
-                  <FormItemLayout layout="vertical" label="Description">
+                  <FormItemLayout layout="vertical" label={$t('Description')}>
                     <FormControl>
-                      <Textarea {...field} placeholder="Describe query" className="resize-none" />
+                      <Textarea
+                        {...field}
+                        placeholder={$t('Describe query')}
+                        className="resize-none"
+                      />
                     </FormControl>
                   </FormItemLayout>
                 )}
@@ -95,10 +101,10 @@ export const UpdateSavedQueryModal = ({
             </DialogSection>
             <DialogFooter>
               <Button type="reset" variant="default" onClick={handleCancel} disabled={isSubmitting}>
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button type="submit" loading={isSubmitting} disabled={isSubmitting || !isDirty}>
-                Save query
+                {$t('Save query')}
               </Button>
             </DialogFooter>
           </form>

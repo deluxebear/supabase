@@ -5,6 +5,7 @@ import { Badge, Button } from 'ui'
 import { Admonition } from 'ui-patterns/admonition'
 
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface AlphaNoticeProps {
   entity: string
@@ -31,7 +32,7 @@ export const AlphaNotice = ({
           className="mt-2"
         >
           <Link target="_blank" rel="noopener noreferrer" href={feedbackUrl}>
-            Share feedback
+            {$t('Share feedback')}
           </Link>
         </Button>
       }
@@ -41,12 +42,12 @@ export const AlphaNotice = ({
       <div className="absolute -inset-16 z-0 opacity-50">
         <img
           src={`${BASE_PATH}/img/reports/bg-grafana-dark.svg`}
-          alt="Supabase Grafana"
+          alt={$t('Supabase Grafana')}
           className="w-full h-full object-cover object-right hidden dark:block"
         />
         <img
           src={`${BASE_PATH}/img/reports/bg-grafana-light.svg`}
-          alt="Supabase Grafana"
+          alt={$t('Supabase Grafana')}
           className="w-full h-full object-cover object-right dark:hidden"
         />
         <div className="absolute inset-0 bg-linear-to-r from-background-alternative to-transparent" />
@@ -57,14 +58,17 @@ export const AlphaNotice = ({
         <div className="flex flex-col gap-y-0.5">
           <div className="flex flex-col gap-y-2 items-start">
             <Badge variant="success" className="-ml-0.5">
-              New
+              {$t('New')}
             </Badge>
-            <p className="text-sm font-medium">Introducing {entity.toLocaleLowerCase()}</p>
+            <p className="text-sm font-medium">
+              {$t('Introducing')} {entity.toLocaleLowerCase()}
+            </p>
           </div>
           <p className="text-sm text-foreground-lighter text-balance">
-            {entity} {entity.endsWith('s') ? 'are' : 'is'} now in private alpha. Expect rapid
-            changes, limited features, and possible breaking updates. Please share feedback as we
-            refine the experience and expand access.
+            {entity} {entity.endsWith('s') ? 'are' : 'is'}{' '}
+            {$t(
+              'now in private alpha. Expect rapid changes, limited features, and possible breaking updates. Please share feedback as we refine the experience and expand access.'
+            )}
           </p>
           {children}
         </div>

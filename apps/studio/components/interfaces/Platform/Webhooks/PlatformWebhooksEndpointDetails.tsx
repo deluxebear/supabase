@@ -33,6 +33,7 @@ import { getStatusLevel } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { DataTableColumnStatusCode } from '@/components/ui/DataTable/DataTableColumn/DataTableColumnStatusCode'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -67,7 +68,9 @@ const DEFAULT_DELIVERY_SORTING: SortingState = [{ id: 'attemptAt', desc: true }]
 const DELIVERY_COLUMNS: ColumnDef<WebhookDelivery>[] = [
   {
     accessorKey: 'status',
-    header: ({ column }) => <TanStackTableHeadSort column={column}>Status</TanStackTableHeadSort>,
+    header: ({ column }) => (
+      <TanStackTableHeadSort column={column}>{$t('Status')}</TanStackTableHeadSort>
+    ),
     cell: ({ row }) => (
       <Badge variant={statusBadgeVariant[row.original.status]}>{row.original.status}</Badge>
     ),
@@ -75,13 +78,15 @@ const DELIVERY_COLUMNS: ColumnDef<WebhookDelivery>[] = [
   {
     accessorKey: 'eventType',
     header: ({ column }) => (
-      <TanStackTableHeadSort column={column}>Event type</TanStackTableHeadSort>
+      <TanStackTableHeadSort column={column}>{$t('Event type')}</TanStackTableHeadSort>
     ),
     cell: ({ row }) => <code className="text-code-inline">{row.original.eventType}</code>,
   },
   {
     accessorKey: 'responseCode',
-    header: ({ column }) => <TanStackTableHeadSort column={column}>Response</TanStackTableHeadSort>,
+    header: ({ column }) => (
+      <TanStackTableHeadSort column={column}>{$t('Response')}</TanStackTableHeadSort>
+    ),
     sortingFn: (rowA, rowB, columnId) => {
       const responseA = rowA.getValue<number | undefined>(columnId) ?? -1
       const responseB = rowB.getValue<number | undefined>(columnId) ?? -1
@@ -101,7 +106,7 @@ const DELIVERY_COLUMNS: ColumnDef<WebhookDelivery>[] = [
   {
     accessorKey: 'attemptAt',
     header: ({ column }) => (
-      <TanStackTableHeadSort column={column}>Attempted</TanStackTableHeadSort>
+      <TanStackTableHeadSort column={column}>{$t('Attempted')}</TanStackTableHeadSort>
     ),
     cell: ({ row }) => (
       <TimestampInfo
@@ -113,7 +118,7 @@ const DELIVERY_COLUMNS: ColumnDef<WebhookDelivery>[] = [
   {
     id: DELIVERY_ACTIONS_COLUMN_ID,
     enableSorting: false,
-    header: () => <span className="sr-only">Actions</span>,
+    header: () => <span className="sr-only">{$t('Actions')}</span>,
     cell: ({ row, table }) => {
       const { onRetryDelivery } = table.options.meta as {
         onRetryDelivery: (deliveryId: string) => void
@@ -203,34 +208,34 @@ export const PlatformWebhooksEndpointDetails = ({
   return (
     <div className="space-y-16">
       <div className="space-y-4">
-        <h2 className="text-foreground text-xl">Overview</h2>
+        <h2 className="text-foreground text-xl">{$t('Overview')}</h2>
         <Card className="overflow-hidden">
           <CardContent className="pb-5">
             <dl className="grid grid-cols-1 gap-x-10 gap-y-6 md:grid-cols-2">
-              {hasName && <DetailItem label="Name">{selectedEndpoint.name}</DetailItem>}
+              {hasName && <DetailItem label={$t('Name')}>{selectedEndpoint.name}</DetailItem>}
 
               <DetailItem label="URL" ddClassName="flex items-start gap-2 text-sm">
                 <span className="break-all">{selectedEndpoint.url}</span>
                 <ShortcutTooltip
                   shortcutId={SHORTCUT_IDS.PLATFORM_WEBHOOKS_COPY_ENDPOINT_URL}
-                  label="Copy endpoint URL"
+                  label={$t('Copy endpoint URL')}
                 >
                   <Button
                     variant="text"
                     size="tiny"
                     className="mt-0.5 shrink-0 h-5 w-5 p-0"
                     icon={<Copy size={12} />}
-                    aria-label="Copy endpoint URL"
+                    aria-label={$t('Copy endpoint URL')}
                     onClick={onCopyUrl}
                   />
                 </ShortcutTooltip>
               </DetailItem>
 
               {hasDescription && (
-                <DetailItem label="Description">{selectedEndpoint.description}</DetailItem>
+                <DetailItem label={$t('Description')}>{selectedEndpoint.description}</DetailItem>
               )}
 
-              <DetailItem label="Event types" ddClassName="flex flex-wrap gap-2">
+              <DetailItem label={$t('Event types')} ddClassName="flex flex-wrap gap-2">
                 {(selectedEndpoint.eventTypes.includes('*')
                   ? ['All events (*)']
                   : selectedEndpoint.eventTypes
@@ -245,7 +250,7 @@ export const PlatformWebhooksEndpointDetails = ({
               </DetailItem>
 
               {hasCustomHeaders && (
-                <DetailItem label="Custom headers">
+                <DetailItem label={$t('Custom headers')}>
                   <div className="rounded-md border divide-y divide-border">
                     {selectedEndpoint.customHeaders.map((header) => (
                       <div
@@ -260,9 +265,9 @@ export const PlatformWebhooksEndpointDetails = ({
                 </DetailItem>
               )}
 
-              <DetailItem label="Created by">{selectedEndpoint.createdBy}</DetailItem>
+              <DetailItem label={$t('Created by')}>{selectedEndpoint.createdBy}</DetailItem>
 
-              <DetailItem label="Created at">
+              <DetailItem label={$t('Created at')}>
                 <TimestampInfo className="text-sm" utcTimestamp={selectedEndpoint.createdAt} />
               </DetailItem>
             </dl>
@@ -271,11 +276,11 @@ export const PlatformWebhooksEndpointDetails = ({
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-foreground text-xl">Deliveries</h2>
+        <h2 className="text-foreground text-xl">{$t('Deliveries')}</h2>
         <div className="flex items-center justify-between gap-2">
           <Input
             ref={deliverySearchRef}
-            placeholder="Search deliveries"
+            placeholder={$t('Search deliveries')}
             size="tiny"
             icon={<Search />}
             value={deliverySearch}
@@ -346,9 +351,9 @@ export const PlatformWebhooksEndpointDetails = ({
               ) : (
                 <TableRow className="[&>td]:hover:bg-inherit">
                   <TableCell colSpan={DELIVERY_COLUMNS.length}>
-                    <p className="text-sm text-foreground">No deliveries found</p>
+                    <p className="text-sm text-foreground">{$t('No deliveries found')}</p>
                     <p className="text-sm text-foreground-lighter">
-                      Try adjusting your search to see more webhook attempts.
+                      {$t('Try adjusting your search to see more webhook attempts.')}
                     </p>
                   </TableCell>
                 </TableRow>
@@ -358,14 +363,14 @@ export const PlatformWebhooksEndpointDetails = ({
           {filteredDeliveries.length > 0 && (
             <CardFooter className="border-t p-4 flex items-center justify-between">
               <p className="text-foreground-muted text-sm">
-                Showing {deliveryRangeStart} to {deliveryRangeEnd} of {filteredDeliveries.length}{' '}
-                deliveries
+                {$t('Showing')} {deliveryRangeStart} to {deliveryRangeEnd} of{' '}
+                {filteredDeliveries.length} deliveries
               </p>
-              <div className="flex items-center gap-x-2" aria-label="Pagination">
+              <div className="flex items-center gap-x-2" aria-label={$t('Pagination')}>
                 <Button
                   icon={<ChevronLeft />}
                   className="w-7 hit-area-2"
-                  aria-label="Previous page"
+                  aria-label={$t('Previous page')}
                   variant="default"
                   size="tiny"
                   disabled={!table.getCanPreviousPage()}
@@ -374,7 +379,7 @@ export const PlatformWebhooksEndpointDetails = ({
                 <Button
                   icon={<ChevronRight />}
                   className="w-7 hit-area-2"
-                  aria-label="Next page"
+                  aria-label={$t('Next page')}
                   variant="default"
                   size="tiny"
                   disabled={!table.getCanNextPage()}

@@ -11,6 +11,7 @@ import { ProductMenuShortcuts } from '@/components/ui/ProductMenu/ProductMenuSho
 import { useHighAvailability } from '@/hooks/misc/useHighAvailability'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { withAuth } from '@/hooks/misc/withAuth'
+import { t as $t } from '@/lib/i18n'
 
 /**
  * Menu-only component for the Realtime section. Used by the desktop sidebar and by the
@@ -49,8 +50,10 @@ export const RealtimeLayout = ({ title, children }: PropsWithChildren<RealtimeLa
         >
           <HighAvailabilityDisabledEmptyState
             icon={<Realtime size={22} strokeWidth={1.5} />}
-            title="Realtime unavailable on High Availability projects"
-            description="We're working to bring realtime to High Availability projects. Contact support if this is blocking your work."
+            title={$t('Realtime unavailable on High Availability projects')}
+            description={$t(
+              "We're working to bring realtime to High Availability projects. Contact support if this is blocking your work."
+            )}
           />
         </main>
       </>

@@ -10,6 +10,7 @@ import type { Filter, SpecificFilterColumn } from './Users.constants'
 import { formatEstimatedCount } from '@/components/grid/components/footer/pagination/Pagination.utils'
 import { useUsersCountQuery } from '@/data/auth/users-count-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface UsersFooterProps {
   filter: Filter
@@ -65,12 +66,12 @@ export const UsersFooter = ({
         <div className="flex items-center gap-x-2">
           {isLoadingCount || isFetchingCount || countData === undefined ? (
             <span className="flex items-center gap-2">
-              <Loader2 size={14} className="animate-spin" /> Loading...
+              <Loader2 size={14} className="animate-spin" /> {$t('Loading...')}
             </span>
           ) : (
             <>
               <span>
-                Total:{' '}
+                {$t('Total:')}{' '}
                 {countData?.is_estimate
                   ? formatEstimatedCount(totalUsers)
                   : totalUsers.toLocaleString()}{' '}
@@ -95,19 +96,22 @@ export const UsersFooter = ({
                   <TooltipContent side="top" className="w-80">
                     {specificFilterColumn === 'freeform' ? (
                       <>
-                        This is an estimated value as your project has more than{' '}
+                        {$t('This is an estimated value as your project has more than')}{' '}
                         {THRESHOLD_COUNT.toLocaleString()} users.
                         <br />
-                        <span className="text-brand">Click to retrieve the exact count.</span>{' '}
+                        <span className="text-brand">
+                          {$t('Click to retrieve the exact count.')}
+                        </span>{' '}
                       </>
                     ) : (
                       <>
                         <p className="mb-1">
-                          This is an estimated value which may not be accurate.
+                          {$t('This is an estimated value which may not be accurate.')}
                         </p>
                         <p>
-                          If you'd like to retrieve the exact count, change the search to{' '}
-                          <span className="text-warning">all columns</span> from the header.
+                          {$t("If you'd like to retrieve the exact count, change the search to")}{' '}
+                          <span className="text-warning">{$t('all columns')}</span>{' '}
+                          {$t('from the header.')}
                         </p>{' '}
                       </>
                     )}
@@ -121,7 +125,7 @@ export const UsersFooter = ({
       <ConfirmationModal
         variant="warning"
         visible={showFetchExactCountModal}
-        title="Fetch exact user count"
+        title={$t('Fetch exact user count')}
         confirmLabel="Fetch exact count"
         onCancel={() => setShowFetchExactCountModal(false)}
         onConfirm={() => {
@@ -130,8 +134,8 @@ export const UsersFooter = ({
         }}
       >
         <p className="text-sm text-foreground-light">
-          Your project has more than {THRESHOLD_COUNT.toLocaleString()} users, and fetching the
-          exact count may cause performance issues on your database.
+          {$t('Your project has more than')} {THRESHOLD_COUNT.toLocaleString()}{' '}
+          {$t('users, and fetching the exact count may cause performance issues on your database.')}
         </p>
       </ConfirmationModal>
     </>

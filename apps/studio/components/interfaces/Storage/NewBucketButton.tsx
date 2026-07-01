@@ -4,6 +4,7 @@ import { MouseEventHandler } from 'react'
 
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 export const CreateBucketButton = ({
   onClick,
@@ -28,7 +29,7 @@ export const CreateBucketButton = ({
         },
       }}
     >
-      New bucket
+      {$t('New bucket')}
     </ButtonTooltip>
   )
 }

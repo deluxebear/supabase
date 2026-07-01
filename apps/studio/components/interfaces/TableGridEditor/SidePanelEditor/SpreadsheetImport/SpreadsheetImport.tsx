@@ -25,6 +25,7 @@ import {
   isParsingState,
   useSpreadsheetImport,
 } from './useSpreadsheetImport'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 interface SpreadsheetImportProps {
@@ -64,20 +65,20 @@ export const SpreadsheetImport = ({
 
   const onConfirm = (resolve: () => void) => {
     if (state._tag === 'no_selected_file') {
-      toast.error('Please upload a file to import your data with')
+      toast.error($t('Please upload a file to import your data with'))
       resolve()
     } else if (state._tag === 'no_pasted_text') {
-      toast.error('Please paste some CSV text to import')
+      toast.error($t('Please paste some CSV text to import'))
       resolve()
     } else if (state._tag === 'parsing_file' || state._tag === 'parsing_text') {
-      toast.error('Your data is still being processed, please wait a moment')
+      toast.error($t('Your data is still being processed, please wait a moment'))
       resolve()
     } else if (state.selectedHeaders.length === 0) {
-      toast.error('Please select at least one header from your CSV')
+      toast.error($t('Please select at least one header from your CSV'))
       resolve()
     } else if (!isCompatible) {
       toast.error(
-        'The data that you are trying to import is incompatible with your table structure'
+        $t('The data that you are trying to import is incompatible with your table structure')
       )
       resolve()
     } else {
@@ -100,7 +101,7 @@ export const SpreadsheetImport = ({
       header={
         selectedTable !== undefined ? (
           <>
-            Add data to <code className="text-sm ml-1">{selectedTable.name}</code>
+            {$t('Add data to')} <code className="text-sm ml-1">{selectedTable.name}</code>
           </>
         ) : (
           'Add content to new table'
@@ -120,8 +121,8 @@ export const SpreadsheetImport = ({
         <div className="pt-6">
           <Tabs value={tab} onValueChange={handleSwitchTab}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="fileUpload">Upload CSV</TabsTrigger>
-              <TabsTrigger value="pasteText">Paste text</TabsTrigger>
+              <TabsTrigger value="fileUpload">{$t('Upload CSV')}</TabsTrigger>
+              <TabsTrigger value="pasteText">{$t('Paste text')}</TabsTrigger>
             </TabsList>
             <TabsContent value="fileUpload">
               <SpreadsheetFileDropZone

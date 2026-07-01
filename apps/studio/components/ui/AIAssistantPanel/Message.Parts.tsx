@@ -14,6 +14,7 @@ import {
 } from './Message.utils'
 import { MessageMarkdown } from './MessageMarkdown'
 import { parseSupportRequestMessage, SupportRequestMessage } from './SupportRequestMessage'
+import { t as $t } from '@/lib/i18n'
 
 function MessagePartText({ textPart }: { textPart: TextUIPart }) {
   const { id, isLoading, readOnly, isUserMessage, state } = useMessageInfoContext()
@@ -106,7 +107,7 @@ function ToolDisplayExecuteSqlLoading({ label = 'Writing SQL...' }: { label?: st
 }
 
 function ToolDisplayExecuteSqlFailure() {
-  return <div className="text-xs text-danger">Failed to execute SQL.</div>
+  return <div className="text-xs text-danger">{$t('Failed to execute SQL.')}</div>
 }
 
 function MessagePartExecuteSql({
@@ -192,13 +193,14 @@ function MessagePartDeployEdgeFunction({ toolPart }: { toolPart: ToolUIPart }) {
     return (
       <div className="my-4 rounded-lg border bg-surface-75 heading-meta h-9 px-3 text-foreground-light flex items-center gap-2">
         <Loader2 className="w-4 h-4 animate-spin" />
-        Writing Edge Function...
+
+        {$t('Writing Edge Function...')}
       </div>
     )
   }
 
   if (state === 'output-error') {
-    return <p className="text-xs text-danger">Failed to deploy Edge Function.</p>
+    return <p className="text-xs text-danger">{$t('Failed to deploy Edge Function.')}</p>
   }
 
   if (!TOOL_DEPLOY_EDGE_FUNCTION_STATES_WITH_INPUT.has(state)) return null

@@ -13,6 +13,7 @@ import {
   SupabaseLogo,
 } from '@/components/layouts/InterstitialLayout'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { EMPTY_ARR } from '@/lib/void'
 
@@ -85,18 +86,18 @@ export const RedeemCreditsScreen = () => {
   if (isOrganizationsError) {
     return (
       <RedeemCreditsInterstitial
-        title="Unable to load credit redemption"
-        description="Please try again before redeeming this code"
+        title={$t('Unable to load credit redemption')}
+        description={$t('Please try again before redeeming this code')}
       >
         <div className="flex flex-col gap-3">
           <Admonition
             type="warning"
             description={
               <>
-                We could not load your organizations.
+                {$t('We could not load your organizations.')}
                 {organizationsError && (
                   <span className="mt-1 block text-foreground-lighter">
-                    Error: {organizationsError.message}
+                    {$t('Error:')} {organizationsError.message}
                   </span>
                 )}
               </>
@@ -120,8 +121,8 @@ export const RedeemCreditsScreen = () => {
   return (
     <>
       <RedeemCreditsInterstitial
-        title="Redeem credits"
-        description="Choose an organization to redeem this code"
+        title={$t('Redeem credits')}
+        description={$t('Choose an organization to redeem this code')}
       >
         <div className="flex flex-col gap-5">
           <InterstitialAccountRow displayName={displayName} />
@@ -142,7 +143,7 @@ export const RedeemCreditsScreen = () => {
           {organizationOptions.length === 0 && (
             <Admonition
               type="warning"
-              description="Create an organization before redeeming this credit code."
+              description={$t('Create an organization before redeeming this credit code.')}
             />
           )}
 
@@ -153,11 +154,12 @@ export const RedeemCreditsScreen = () => {
               disabled={!selectedOrgSlug || organizationOptions.length === 0}
               onClick={openRedemption}
             >
-              Redeem credits
+              {$t('Redeem credits')}
             </Button>
             <p className="text-center text-xs text-foreground-lighter text-balance">
-              Credits apply to one organization and are used toward future invoices before your
-              payment method is charged.
+              {$t(
+                'Credits apply to one organization and are used toward future invoices before your payment method is charged.'
+              )}
             </p>
           </div>
         </div>
@@ -185,7 +187,7 @@ const ConnectLoadingCards = () => (
         </div>
       </CardContent>
     </Card>
-    <section className="space-y-2" aria-label="Organizations">
+    <section className="space-y-2" aria-label={$t('Organizations')}>
       <ShimmeringLoader className="h-3 w-24 py-0" />
       {Array.from({ length: 3 }).map((_, index) => (
         <Card key={index} className="shadow-none">

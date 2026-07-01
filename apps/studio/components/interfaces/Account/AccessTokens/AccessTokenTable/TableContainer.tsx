@@ -9,6 +9,7 @@ import {
 } from 'ui/src/components/shadcn/ui/table'
 
 import { AccessTokenSort, AccessTokenSortColumn } from '../AccessToken.types'
+import { t as $t } from '@/lib/i18n'
 
 const tableHeaderClass = 'text-left font-mono uppercase text-xs text-foreground-lighter py-2'
 
@@ -24,15 +25,15 @@ export const TableContainer = ({ children, sort, onSortChange }: TableContainerP
       <Table className="p-5 table-auto">
         <TableHeader>
           <TableRow className="bg-200">
-            <TableHead className={tableHeaderClass}>Token</TableHead>
+            <TableHead className={tableHeaderClass}>{$t('Token')}</TableHead>
             <TableHead className={tableHeaderClass}>
               <TableHeadSort column="last_used_at" currentSort={sort} onSortChange={onSortChange}>
-                Last used
+                {$t('Last used')}
               </TableHeadSort>
             </TableHead>
             <TableHead className={tableHeaderClass}>
               <TableHeadSort column="expires_at" currentSort={sort} onSortChange={onSortChange}>
-                Expires
+                {$t('Expires')}
               </TableHeadSort>
             </TableHead>
             <TableHead className={cn(tableHeaderClass, 'text-right!')} />

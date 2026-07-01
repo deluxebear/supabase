@@ -16,6 +16,7 @@ import { useProjectPauseStatusQuery } from '@/data/projects/project-pause-status
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const Project = () => {
   const { data: project } = useSelectedProjectQuery()
@@ -53,7 +54,7 @@ export const Project = () => {
       <PageSection id="restart-project">
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>Project availability</PageSectionTitle>
+            <PageSectionTitle>{$t('Project availability')}</PageSectionTitle>
             <PageSectionDescription>
               {isPaused
                 ? 'Resume your paused project or review recovery options'
@@ -74,7 +75,7 @@ export const Project = () => {
                 {isPaused ? (
                   shouldShowDashboardLink ? (
                     <Button asChild variant="default">
-                      <Link href={`/project/${project?.ref}`}>View project dashboard</Link>
+                      <Link href={`/project/${project?.ref}`}>{$t('View project dashboard')}</Link>
                     </Button>
                   ) : (
                     <ResumeProjectButton />
@@ -91,10 +92,10 @@ export const Project = () => {
                   id="pause-project"
                 >
                   <div>
-                    <p className="text-sm">Pause project</p>
+                    <p className="text-sm">{$t('Pause project')}</p>
                     <div className="max-w-[420px]">
                       <p className="text-sm text-foreground-light">
-                        Your project will not be accessible while it is paused.
+                        {$t('Your project will not be accessible while it is paused.')}
                       </p>
                     </div>
                   </div>

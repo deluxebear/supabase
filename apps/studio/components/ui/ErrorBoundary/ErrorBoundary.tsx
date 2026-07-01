@@ -4,6 +4,8 @@ import { ErrorInfo } from 'react'
 import { ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary'
 import { Alert, AlertDescription, AlertTitle, Button } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface ErrorFallbackProps {
   error: Error
   resetErrorBoundary: () => void
@@ -26,10 +28,12 @@ const ErrorFallback = ({
       <Alert variant="destructive">
         <AlertCircle />
         <AlertTitle>{message}</AlertTitle>
-        <AlertDescription>We've been notified and will review and fix this issue.</AlertDescription>
+        <AlertDescription>
+          {$t("We've been notified and will review and fix this issue.")}
+        </AlertDescription>
         <div className="mt-4 flex gap-2">
           <Button variant="default" onClick={resetErrorBoundary} className="text-sm">
-            Try again
+            {$t('Try again')}
           </Button>
           {actions?.map((action, index) => (
             <Button key={index} variant="default" onClick={action.onClick} className="text-sm">

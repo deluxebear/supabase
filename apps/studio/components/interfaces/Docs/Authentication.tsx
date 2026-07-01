@@ -8,6 +8,7 @@ import { InlineLink } from '@/components/ui/InlineLink'
 import { useAPIKeys } from '@/data/api-keys/api-keys-query'
 import { useProjectSettingsV2Query } from '@/data/config/project-settings-v2-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 interface AuthenticationProps {
   selectedLang: 'bash' | 'js'
@@ -39,40 +40,47 @@ const Authentication = ({ selectedLang, showApiKey }: AuthenticationProps) => {
   return (
     <div className="flex flex-col flex-1">
       <DocSection
-        title="Authentication"
+        title={$t('Authentication')}
         content={
           <>
-            <p>Supabase works through a mixture of JWT and Key auth.</p>
+            <p>{$t('Supabase works through a mixture of JWT and Key auth.')}</p>
             <p>
-              If no <code>Authorization</code> header is included, the API will assume that you are
-              making a request with an anonymous user.
+              {$t('If no')} <code>{$t('Authorization')}</code>{' '}
+              {$t(
+                'header is included, the API will assume that you are making a request with an anonymous user.'
+              )}
             </p>
             <p>
-              If an <code>Authorization</code> header is included, the API will "switch" to the role
-              of the user making the request. See the User Management section for more details.
+              {$t('If an')} <code>{$t('Authorization')}</code>{' '}
+              {$t(
+                'header is included, the API will "switch" to the role of the user making the request. See the User Management section for more details.'
+              )}
             </p>
-            <p>We recommend setting your keys as Environment Variables.</p>
+            <p>{$t('We recommend setting your keys as Environment Variables.')}</p>
           </>
         }
       />
 
       <DocSection
-        title="Client API Keys"
+        title={$t('Client API Keys')}
         content={
           <>
             <p>
-              Client keys allow "anonymous access" to your database, until the user has logged in.
-              After logging in the keys will switch to the user's own login token.
+              {$t(
+                'Client keys allow "anonymous access" to your database, until the user has logged in. After logging in the keys will switch to the user\'s own login token.'
+              )}
             </p>
             <p>
-              In this documentation, we will refer to the key using the name{' '}
+              {$t('In this documentation, we will refer to the key using the name')}{' '}
               <code>SUPABASE_KEY</code>.
             </p>
             <p>
-              We have provided you a Client Key to get started. You will soon be able to add as many
-              keys as you like. You can find the <code>anon</code> key in the{' '}
+              {$t(
+                'We have provided you a Client Key to get started. You will soon be able to add as many keys as you like. You can find the'
+              )}{' '}
+              <code>anon</code> {$t('key in the')}{' '}
               <InlineLink href={`/project/${projectRef}/settings/api-keys`}>
-                API Keys Settings
+                {$t('API Keys Settings')}
               </InlineLink>{' '}
               page.
             </p>
@@ -95,23 +103,25 @@ const Authentication = ({ selectedLang, showApiKey }: AuthenticationProps) => {
       />
 
       <DocSection
-        title="Service Keys"
+        title={$t('Service Keys')}
         content={
           <>
             <p>
-              Service keys have FULL access to your data, bypassing any security policies. Be VERY
-              careful where you expose these keys. They should only be used on a server and never on
-              a client or browser.
+              {$t(
+                'Service keys have FULL access to your data, bypassing any security policies. Be VERY careful where you expose these keys. They should only be used on a server and never on a client or browser.'
+              )}
             </p>
             <p>
-              In this documentation, we will refer to the key using the name{' '}
+              {$t('In this documentation, we will refer to the key using the name')}{' '}
               <code>SERVICE_KEY</code>.
             </p>
             <p>
-              We have provided you with a Service Key to get started. Soon you will be able to add
-              as many keys as you like. You can find the <code>service_role</code> in the{' '}
+              {$t(
+                'We have provided you with a Service Key to get started. Soon you will be able to add as many keys as you like. You can find the'
+              )}{' '}
+              <code>service_role</code> {$t('in the')}{' '}
               <InlineLink href={`/project/${projectRef}/settings/api-keys`}>
-                API Keys Settings
+                {$t('API Keys Settings')}
               </InlineLink>{' '}
               page.
             </p>

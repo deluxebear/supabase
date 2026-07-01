@@ -13,6 +13,7 @@ import {
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { useOpenIDConfigurationQuery } from '@/data/oauth-server-apps/oauth-openid-configuration-query'
+import { t as $t } from '@/lib/i18n'
 
 interface OAuthEndpointsTableProps {
   isLoading?: boolean
@@ -57,10 +58,11 @@ export const OAuthEndpointsTable = ({
     <PageSection className={cn(className)}>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>OAuth Endpoints</PageSectionTitle>
+          <PageSectionTitle>{$t('OAuth Endpoints')}</PageSectionTitle>
           <PageSectionDescription>
-            Share these endpoints with third-party applications that need to integrate with your
-            OAuth 2.1 server.
+            {$t(
+              'Share these endpoints with third-party applications that need to integrate with your OAuth 2.1 server.'
+            )}
           </PageSectionDescription>
         </PageSectionSummary>
       </PageSectionMeta>

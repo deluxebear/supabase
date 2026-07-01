@@ -33,6 +33,7 @@ import { useUpdateLogDrainMutation } from '@/data/log-drains/update-log-drain-mu
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import type { NextPageWithLayout } from '@/types'
@@ -64,12 +65,12 @@ const LogDrainsSettings: NextPageWithLayout = () => {
 
   const { mutate: createLogDrain, isPending: createLoading } = useCreateLogDrainMutation({
     onSuccess: () => {
-      toast.success('Log drain destination created')
+      toast.success($t('Log drain destination created'))
       setIsCreateConfirmModalOpen(false)
       setOpen(false)
     },
     onError: () => {
-      toast.error('Failed to create log drain')
+      toast.error($t('Failed to create log drain'))
       setIsCreateConfirmModalOpen(false)
       setOpen(false)
     },
@@ -77,12 +78,12 @@ const LogDrainsSettings: NextPageWithLayout = () => {
 
   const { mutate: updateLogDrain, isPending: updateLoading } = useUpdateLogDrainMutation({
     onSuccess: () => {
-      toast.success('Log drain updated')
+      toast.success($t('Log drain updated'))
       setOpen(false)
     },
     onError: () => {
       setOpen(false)
-      toast.error('Failed to update log drain')
+      toast.error($t('Failed to update log drain'))
     },
   })
 
@@ -143,7 +144,7 @@ const LogDrainsSettings: NextPageWithLayout = () => {
               setIsCreateConfirmModalOpen(true)
             } else {
               if (!logDrainValues.id || !selectedLogDrain?.token) {
-                toast.error('Unable to update log drain: missing ID or token')
+                toast.error($t('Unable to update log drain: missing ID or token'))
                 return
               }
               updateLogDrain(logDrainValues)
@@ -154,7 +155,7 @@ const LogDrainsSettings: NextPageWithLayout = () => {
         {isLoadingPermissions ? (
           <GenericSkeletonLoader />
         ) : !canManageLogDrains ? (
-          <Alert variant="default">You do not have permission to manage log drains</Alert>
+          <Alert variant="default">{$t('You do not have permission to manage log drains')}</Alert>
         ) : (
           <LogDrains onUpdateDrainClick={handleUpdateClick} onNewDrainClick={handleNewClick} />
         )}
@@ -163,7 +164,7 @@ const LogDrainsSettings: NextPageWithLayout = () => {
       <ConfirmationModal
         confirmLabel="Add destination"
         variant="default"
-        title="Confirm Log Drain Creation"
+        title={$t('Confirm Log Drain Creation')}
         visible={isCreateConfirmModalOpen}
         onConfirm={() => {
           if (pendingLogDrainValues) {
@@ -179,16 +180,17 @@ const LogDrainsSettings: NextPageWithLayout = () => {
       >
         <div className="text-foreground-light text-sm space-y-2">
           <p>
-            You are about to create a new log drain destination:{' '}
+            {$t('You are about to create a new log drain destination:')}{' '}
             <span className="text-foreground">{pendingLogDrainValues?.name}</span>
           </p>
           {IS_PLATFORM && (
             <p>
-              This will incur an additional <span className="text-foreground">$60 per month</span>{' '}
-              charge to your subscription.
+              {$t('This will incur an additional')}{' '}
+              <span className="text-foreground">{$t('$60 per month')}</span>{' '}
+              {$t('charge to your subscription.')}
             </p>
           )}
-          <p>Are you sure you want to proceed?</p>
+          <p>{$t('Are you sure you want to proceed?')}</p>
         </div>
       </ConfirmationModal>
     </ScaffoldSection>
@@ -198,7 +200,7 @@ const LogDrainsSettings: NextPageWithLayout = () => {
   if (!isLoadingEntitlement && hasAccessToLogDrains) {
     return (
       <PageLayout
-        title="Log Drains"
+        title={$t('Log Drains')}
         subtitle="Send your project logs to third party destinations"
         primaryActions={
           <>
@@ -217,14 +219,14 @@ const LogDrainsSettings: NextPageWithLayout = () => {
                     variant="primary"
                     className="rounded-r-none px-3"
                   >
-                    Add destination
+                    {$t('Add destination')}
                   </Button>
                 </Shortcut>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="primary"
-                      title="Choose token scope"
+                      title={$t('Choose token scope')}
                       className="rounded-l-none px-[4px] py-[5px]"
                       icon={<ChevronDown />}
                     />
@@ -240,7 +242,9 @@ const LogDrainsSettings: NextPageWithLayout = () => {
                           <div className="space-y-1">
                             <p className="block text-foreground">{drainType.name}</p>
                             {IS_PLATFORM && (
-                              <p className="text-xs text-foreground-lighter">Additional $60</p>
+                              <p className="text-xs text-foreground-lighter">
+                                {$t('Additional $60')}
+                              </p>
                             )}
                           </div>
                         </div>
@@ -264,7 +268,7 @@ const LogDrainsSettings: NextPageWithLayout = () => {
 
 LogDrainsSettings.getLayout = (page: ReactElement) => (
   <DefaultLayout>
-    <SettingsLayout title="Log Drains">{page}</SettingsLayout>
+    <SettingsLayout title={$t('Log Drains')}>{page}</SettingsLayout>
   </DefaultLayout>
 )
 

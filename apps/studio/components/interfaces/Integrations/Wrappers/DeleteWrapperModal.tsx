@@ -18,6 +18,7 @@ import { getWrapperMetaForWrapper, wrapperMetaComparator } from './Wrappers.util
 import { useFDWDeleteMutation } from '@/data/fdw/fdw-delete-mutation'
 import { useFDWsQuery } from '@/data/fdw/fdws-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const DeleteWrapperModal = () => {
   const { id, ref } = useParams()
@@ -66,7 +67,7 @@ export const DeleteWrapperModal = () => {
 
   useEffect(() => {
     if (isSuccess && !!selectedWrapperIdToDelete && !selectedWrapper && !isSuccessDelete) {
-      toast('Wrapper not found')
+      toast($t('Wrapper not found'))
       setSelectedWrapperToDelete(null)
     }
   }, [
@@ -86,14 +87,14 @@ export const DeleteWrapperModal = () => {
         <AlertDialogHeader>
           <AlertDialogTitle>{`Confirm to disable ${selectedWrapper?.name}`}</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to disable {selectedWrapper?.name}? This will also remove all
-            tables created with this wrapper.
+            {$t('Are you sure you want to disable')} {selectedWrapper?.name}
+            {$t('? This will also remove all tables created with this wrapper.')}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction variant="danger" onClick={onConfirmDelete}>
-            Confirm
+            {$t('Confirm')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

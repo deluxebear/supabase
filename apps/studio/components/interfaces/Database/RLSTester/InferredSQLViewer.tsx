@@ -3,6 +3,7 @@ import { Loader2 } from 'lucide-react'
 import { Badge, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
+import { t as $t } from '@/lib/i18n'
 
 export const InferredSQLViewer = ({
   sql,
@@ -15,17 +16,18 @@ export const InferredSQLViewer = ({
     <>
       <div className="flex items-center justify-between px-4 py-2">
         <div className="flex items-center gap-x-2">
-          <p className="text-sm">Inferred SQL:</p>
+          <p className="text-sm">{$t('Inferred SQL:')}</p>
           {isLoading && <Loader2 size={14} className="animate-spin text-foreground-lighter" />}
         </div>
         <div className="flex items-center gap-x-2">
           <Tooltip>
             <TooltipTrigger>
-              <Badge variant="warning">Generated</Badge>
+              <Badge variant="warning">{$t('Generated')}</Badge>
             </TooltipTrigger>
             <TooltipContent side="bottom" align="end" className="w-64 text-center">
-              This query is inferred from client library code with the help of the Assistant and may
-              not guarantee correctness.
+              {$t(
+                'This query is inferred from client library code with the help of the Assistant and may not guarantee correctness.'
+              )}
             </TooltipContent>
           </Tooltip>
         </div>

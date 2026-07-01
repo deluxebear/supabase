@@ -26,6 +26,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useDeploymentMode } from '@/hooks/misc/useDeploymentMode'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const General = () => {
   const { data: project } = useSelectedProjectQuery()
@@ -64,7 +65,7 @@ export const General = () => {
       {
         onSuccess: ({ name }) => {
           form.reset({ name })
-          toast.success('Successfully saved settings')
+          toast.success($t('Successfully saved settings'))
         },
       }
     )
@@ -77,7 +78,7 @@ export const General = () => {
       <PageSection>
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>General settings</PageSectionTitle>
+            <PageSectionTitle>{$t('General settings')}</PageSectionTitle>
           </PageSectionSummary>
         </PageSectionMeta>
         <PageSectionContent className="space-y-4">
@@ -93,7 +94,7 @@ export const General = () => {
                 <CardContent>
                   <FormItemLayout
                     layout="flex-row-reverse"
-                    label="Project name"
+                    label={$t('Project name')}
                     className="[&>div]:md:w-1/2 [&>div>div]:md:w-full"
                   >
                     <Input readOnly value={project.name ?? ''} />
@@ -105,12 +106,13 @@ export const General = () => {
           {isCli && (
             <Admonition
               type="default"
-              title="Local development with the Supabase CLI"
+              title={$t('Local development with the Supabase CLI')}
               description={
                 <p>
-                  Project settings are configured in{' '}
-                  <code className="text-code-inline">supabase/config.toml</code> — applied on{' '}
-                  <code className="text-code-inline">supabase start</code>.
+                  {$t('Project settings are configured in')}{' '}
+                  <code className="text-code-inline">supabase/config.toml</code>{' '}
+                  {$t('— applied on')}{' '}
+                  <code className="text-code-inline">{$t('supabase start')}</code>.
                 </p>
               }
               actions={<DocsButton href={`${DOCS_URL}/guides/local-development`} />}
@@ -119,8 +121,10 @@ export const General = () => {
           {isSelfHosted && (
             <Admonition
               type="default"
-              title="Self-hosted Supabase"
-              description={<p>Project settings are configured via environment variables.</p>}
+              title={$t('Self-hosted Supabase')}
+              description={
+                <p>{$t('Project settings are configured via environment variables.')}</p>
+              }
               actions={<DocsButton href={`${DOCS_URL}/guides/self-hosting`} />}
             />
           )}
@@ -134,7 +138,7 @@ export const General = () => {
       <PageSection>
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>General settings</PageSectionTitle>
+            <PageSectionTitle>{$t('General settings')}</PageSectionTitle>
           </PageSectionSummary>
         </PageSectionMeta>
         <PageSectionContent>
@@ -142,12 +146,13 @@ export const General = () => {
             <Admonition
               type="default"
               className="mb-4"
-              title="You are currently on a preview branch of your project"
+              title={$t('You are currently on a preview branch of your project')}
             >
-              Certain settings are not available while you're on a preview branch. To adjust your
-              project settings, you may return to your{' '}
+              {$t(
+                "Certain settings are not available while you're on a preview branch. To adjust your project settings, you may return to your"
+              )}{' '}
               <InlineLink href={`/project/${project?.parent_project_ref}/settings/general`}>
-                main branch
+                {$t('main branch')}
               </InlineLink>
               .
             </Admonition>
@@ -170,8 +175,8 @@ export const General = () => {
                       render={({ field }) => (
                         <FormItemLayout
                           layout="flex-row-reverse"
-                          label="Project name"
-                          description="Displayed throughout the dashboard."
+                          label={$t('Project name')}
+                          description={$t('Displayed throughout the dashboard.')}
                           className="[&>div]:md:w-1/2"
                         >
                           <FormControl>
@@ -189,8 +194,8 @@ export const General = () => {
                   <CardContent>
                     <FormItemLayout
                       layout="flex-row-reverse"
-                      label="Project ID"
-                      description="Reference used in APIs and URLs."
+                      label={$t('Project ID')}
+                      description={$t('Reference used in APIs and URLs.')}
                       className="[&>div]:md:w-1/2 [&>div>div]:md:w-full"
                     >
                       <FormControl>
@@ -202,7 +207,7 @@ export const General = () => {
                   <CardContent>
                     <FormItemLayout
                       layout="flex-row-reverse"
-                      label="Project region"
+                      label={$t('Project region')}
                       description={regionLabel?.name}
                       className="[&>div]:md:w-1/2 [&>div>div]:md:w-full"
                     >
@@ -220,7 +225,7 @@ export const General = () => {
                         disabled={isUpdating}
                         onClick={() => form.reset({ name: project?.name ?? '' })}
                       >
-                        Cancel
+                        {$t('Cancel')}
                       </Button>
                     )}
                     <Button
@@ -231,7 +236,7 @@ export const General = () => {
                       }
                       loading={isUpdating}
                     >
-                      Save changes
+                      {$t('Save changes')}
                     </Button>
                   </CardFooter>
                 </Card>

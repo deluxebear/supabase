@@ -3,6 +3,8 @@ import type { ReactNode } from 'react'
 import { CodeBlock } from 'ui-patterns/CodeBlock'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 
+import { t as $t } from '@/lib/i18n'
+
 type IntrospectionMode = 'enable' | 'disable'
 
 interface ModeCopy {
@@ -18,10 +20,11 @@ const COPY: Record<IntrospectionMode, ModeCopy> = {
     title: 'Enable GraphQL introspection?',
     confirmLabel: 'Enable introspection',
     confirmLabelLoading: 'Enabling...',
-    persistenceBullet: (_schema) => <>This setting persists until explicitly disabled.</>,
+    persistenceBullet: (_schema) => <>{$t('This setting persists until explicitly disabled.')}</>,
     securityBullet: (
       <>
-        External actors will be able to introspect your schema using the <code>anon</code> key.
+        {$t('External actors will be able to introspect your schema using the')} <code>anon</code>{' '}
+        key.
       </>
     ),
   },
@@ -29,12 +32,14 @@ const COPY: Record<IntrospectionMode, ModeCopy> = {
     title: 'Disable GraphQL introspection?',
     confirmLabel: 'Disable introspection',
     confirmLabelLoading: 'Disabling...',
-    persistenceBullet: (_schema) => <>This setting persists until explicitly re-enabled.</>,
+    persistenceBullet: (_schema) => <>{$t('This setting persists until explicitly re-enabled.')}</>,
     securityBullet: (
       <>
-        External actors will no longer be able to introspect your schema via the <code>anon</code>{' '}
-        key. GraphiQL's docs explorer and autocomplete will stop working until introspection is
-        re-enabled.
+        {$t('External actors will no longer be able to introspect your schema via the')}{' '}
+        <code>anon</code>{' '}
+        {$t(
+          "key. GraphiQL's docs explorer and autocomplete will stop working until introspection is re-enabled."
+        )}
       </>
     ),
   },
@@ -84,20 +89,25 @@ export const IntrospectionConfirmModal = ({
           <li>{copy.securityBullet}</li>
           {hasPreservedOptions && (
             <li>
-              Existing <code>@graphql(...)</code> options on this schema will be preserved:{' '}
+              {$t('Existing')} <code>@graphql(...)</code>{' '}
+              {$t('options on this schema will be preserved:')}{' '}
               <PreservedOptionKeys keys={otherExistingKeys} />.
             </li>
           )}
           {existingDirectiveIsMalformed && (
             <li className="text-warning">
-              The existing <code>@graphql(...)</code> directive on this schema could not be parsed
-              and will be replaced by the statement below.
+              {$t('The existing')} <code>@graphql(...)</code>{' '}
+              {$t(
+                'directive on this schema could not be parsed and will be replaced by the statement below.'
+              )}
             </li>
           )}
         </ul>
 
         <div>
-          <p className="text-foreground-light mb-2">The following statement will be executed:</p>
+          <p className="text-foreground-light mb-2">
+            {$t('The following statement will be executed:')}
+          </p>
           <CodeBlock language="sql" className="text-xs" hideLineNumbers>
             {sql}
           </CodeBlock>

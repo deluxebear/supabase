@@ -20,6 +20,7 @@ import { AlertError } from '@/components/ui/AlertError'
 import { useAuthConfigQuery } from '@/data/auth/auth-config-query'
 import { useAuthConfigUpdateMutation } from '@/data/auth/auth-config-update-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 const schema = z.object({
   SITE_URL: z.string().min(1, 'Must have a Site URL'),
@@ -68,7 +69,7 @@ const SiteUrl = () => {
           setIsUpdatingSiteUrl(false)
         },
         onSuccess: () => {
-          toast.success('Successfully updated site URL')
+          toast.success($t('Successfully updated site URL'))
           setIsUpdatingSiteUrl(false)
         },
       }
@@ -99,7 +100,7 @@ const SiteUrl = () => {
     <PageSection>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Site URL</PageSectionTitle>
+          <PageSectionTitle>{$t('Site URL')}</PageSectionTitle>
         </PageSectionSummary>
       </PageSectionMeta>
       <PageSectionContent>
@@ -113,8 +114,10 @@ const SiteUrl = () => {
                   render={({ field }) => (
                     <FormItemLayout
                       layout="flex-row-reverse"
-                      label="Site URL"
-                      description="Configure the default redirect URL used when a redirect URL is not specified or doesn't match one from the allow list. This value is also exposed as a template variable in the email templates section. Wildcards cannot be used here."
+                      label={$t('Site URL')}
+                      description={$t(
+                        "Configure the default redirect URL used when a redirect URL is not specified or doesn't match one from the allow list. This value is also exposed as a template variable in the email templates section. Wildcards cannot be used here."
+                      )}
                     >
                       <FormControl>
                         <Input {...field} disabled={!canUpdateConfig} />
@@ -127,7 +130,7 @@ const SiteUrl = () => {
               <CardFooter className="justify-end space-x-2">
                 {isDirty && (
                   <Button variant="default" onClick={() => siteUrlForm.reset()}>
-                    Cancel
+                    {$t('Cancel')}
                   </Button>
                 )}
                 <Button
@@ -136,7 +139,7 @@ const SiteUrl = () => {
                   disabled={!canUpdateConfig || isUpdatingSiteUrl || !isDirty}
                   loading={isUpdatingSiteUrl}
                 >
-                  Save changes
+                  {$t('Save changes')}
                 </Button>
               </CardFooter>
             </Card>

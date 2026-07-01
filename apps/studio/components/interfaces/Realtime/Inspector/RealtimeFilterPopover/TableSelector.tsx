@@ -20,6 +20,7 @@ import {
 
 import { useEntityTypesQuery } from '@/data/entity-types/entity-types-infinite-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface TableSelectorProps {
   className?: string
@@ -96,29 +97,34 @@ const TableSelector = ({
                 </p>
               </div>
             ) : (
-              <p className="flex text-xs text-light">Loading tables...</p>
+              <p className="flex text-xs text-light">{$t('Loading tables...')}</p>
             )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="p-0 w-64" side="bottom" align="start">
           <Command>
-            <CommandInput placeholder="Find table..." onValueChange={(str) => searchTables(str)} />
+            <CommandInput
+              placeholder={$t('Find table...')}
+              onValueChange={(str) => searchTables(str)}
+            />
             <CommandList>
               {isLoading && (
                 <div className="flex items-center justify-center space-x-2 px-3 py-2">
                   <Loader className="animate-spin" size={12} />
-                  <p className="flex text-xs text-light">Loading tables...</p>
+                  <p className="flex text-xs text-light">{$t('Loading tables...')}</p>
                 </div>
               )}
 
               {showError && isError && (
                 <Alert variant="warning" className="px-3! py-3! border-0! rounded-none">
-                  <AlertTitle className="text-xs text-amber-900">Failed to load tables</AlertTitle>
+                  <AlertTitle className="text-xs text-amber-900">
+                    {$t('Failed to load tables')}
+                  </AlertTitle>
                   <AlertDescription className="text-xs mb-2">
-                    Error: {(error as any)?.message}
+                    {$t('Error:')} {(error as any)?.message}
                   </AlertDescription>
                   <Button variant="default" size="tiny" onClick={() => refetch()}>
-                    Reload tables
+                    {$t('Reload tables')}
                   </Button>
                 </Alert>
               )}
@@ -127,7 +133,9 @@ const TableSelector = ({
                 <>
                   <CommandGroup forceMount>
                     <ScrollArea className={(entities || []).length > 7 ? 'h-[210px]' : ''}>
-                      {entities.length === 0 && <CommandEmpty>No tables found</CommandEmpty>}
+                      {entities.length === 0 && (
+                        <CommandEmpty>{$t('No tables found')}</CommandEmpty>
+                      )}
                       {!searchInput && (
                         <CommandItem
                           key="all-tables"
@@ -141,7 +149,7 @@ const TableSelector = ({
                             setOpen(false)
                           }}
                         >
-                          <span>All tables</span>
+                          <span>{$t('All tables')}</span>
                           {selectedSchemaName === '*' && (
                             <Check className="text-brand" strokeWidth={2} />
                           )}

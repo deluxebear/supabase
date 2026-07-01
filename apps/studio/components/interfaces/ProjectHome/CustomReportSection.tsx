@@ -35,6 +35,7 @@ import {
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { useTrack } from '@/lib/telemetry/track'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
@@ -169,7 +170,7 @@ export function CustomReportSection() {
             String(x.id) === String(snippet.id) || String(x.attribute) === `snippet_${snippet.id}`
         )
       ) {
-        toast('This block is already in your report')
+        toast($t('This block is already in your report'))
         return
       }
       // If the Home report doesn't exist yet, create it with the new block
@@ -334,7 +335,7 @@ export function CustomReportSection() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="heading-section">Reports</h3>
+        <h3 className="heading-section">{$t('Reports')}</h3>
         <div className="flex items-center gap-x-2">
           {layout.length > 0 && (
             <ButtonTooltip
@@ -352,7 +353,7 @@ export function CustomReportSection() {
               onSelect={addSnippetToReport}
               trigger={
                 <Button variant="default" icon={<Plus />}>
-                  Add block
+                  {$t('Add block')}
                 </Button>
               }
               side="bottom"
@@ -373,9 +374,9 @@ export function CustomReportSection() {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
           >
-            <h4>Build a custom report</h4>
+            <h4>{$t('Build a custom report')}</h4>
             <p className="text-sm text-foreground-light mb-4">
-              Keep track of your most important metrics
+              {$t('Keep track of your most important metrics')}
             </p>
             {canUpdateReport || canCreateReport ? (
               <SnippetDropdown
@@ -383,7 +384,7 @@ export function CustomReportSection() {
                 onSelect={addSnippetToReport}
                 trigger={
                   <Button variant="default" iconRight={<Plus size={14} />}>
-                    Add your first block
+                    {$t('Add your first block')}
                   </Button>
                 }
                 side="bottom"
@@ -391,7 +392,9 @@ export function CustomReportSection() {
                 autoFocus
               />
             ) : (
-              <p className="text-sm text-foreground-light">No charts set up yet in report</p>
+              <p className="text-sm text-foreground-light">
+                {$t('No charts set up yet in report')}
+              </p>
             )}
           </div>
         ) : (

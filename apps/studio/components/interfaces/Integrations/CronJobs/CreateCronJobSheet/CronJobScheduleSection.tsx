@@ -25,6 +25,7 @@ import { type CreateCronJobForm } from './CreateCronJobSheet.constants'
 import { useSqlCronGenerateMutation } from '@/data/ai/sql-cron-mutation'
 import { useCronTimezoneQuery } from '@/data/database-cron-jobs/database-cron-timezone-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface CronJobScheduleSectionProps {
   form: UseFormReturn<CreateCronJobForm>
@@ -81,7 +82,7 @@ export const CronJobScheduleSection = ({ form, supportsSeconds }: CronJobSchedul
           return (
             <FormItem className="flex flex-col gap-1">
               <div className="flex flex-row justify-between">
-                <FormLabel>Schedule</FormLabel>
+                <FormLabel>{$t('Schedule')}</FormLabel>
                 <span className="text-foreground-lighter text-xs">
                   {useNaturalLanguage
                     ? 'Describe your schedule in words'
@@ -93,7 +94,7 @@ export const CronJobScheduleSection = ({ form, supportsSeconds }: CronJobSchedul
                 {useNaturalLanguage ? (
                   <Input
                     value={inputValue}
-                    placeholder="E.g. every 5 minutes"
+                    placeholder={$t('E.g. every 5 minutes')}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault()
@@ -124,7 +125,7 @@ export const CronJobScheduleSection = ({ form, supportsSeconds }: CronJobSchedul
                       setInputValue('')
                     }}
                   />
-                  <p className="text-sm text-foreground-light">Use natural language</p>
+                  <p className="text-sm text-foreground-light">{$t('Use natural language')}</p>
                 </div>
 
                 <ul className="flex gap-2 flex-wrap mt-2">
@@ -151,7 +152,7 @@ export const CronJobScheduleSection = ({ form, supportsSeconds }: CronJobSchedul
                 <Accordion type="single" collapsible>
                   <AccordionItem value="item-1" className="border-none">
                     <AccordionTrigger className="text-xs text-foreground-light font-normal gap-2 justify-start py-1 ">
-                      View syntax chart
+                      {$t('View syntax chart')}
                     </AccordionTrigger>
                     <AccordionContent asChild className="pb-0!">
                       <CronSyntaxChart />
@@ -161,7 +162,7 @@ export const CronJobScheduleSection = ({ form, supportsSeconds }: CronJobSchedul
               </div>
               <div className="bg-surface-100 p-4 rounded-sm grid gap-y-4 border">
                 <h4 className="text-sm text-foreground">
-                  Schedule {timezone ? `(${timezone})` : ''}
+                  {$t('Schedule')} {timezone ? `(${timezone})` : ''}
                 </h4>
                 <span
                   className={cn(
@@ -178,7 +179,7 @@ export const CronJobScheduleSection = ({ form, supportsSeconds }: CronJobSchedul
 
                 {!inputValue && !isGeneratingCron && !scheduleString ? (
                   <span className="text-sm text-foreground-light">
-                    Describe your schedule above
+                    {$t('Describe your schedule above')}
                   </span>
                 ) : (
                   <span className="text-sm text-foreground-light flex items-center gap-2">

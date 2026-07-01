@@ -5,6 +5,7 @@ import { Button, cn, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 import { ConnectServerEnvSecret, SERVER_ENV_VARS } from '../../../useConnectServerEnv'
 import { EnvRow } from './EnvRow'
 import CopyButton from '@/components/ui/CopyButton'
+import { t as $t } from '@/lib/i18n'
 
 export interface SecretEnvRowProps {
   secret: ConnectServerEnvSecret
@@ -14,14 +15,14 @@ export function SecretEnvRow({ secret }: SecretEnvRowProps) {
   const isDisabled = !secret.exists || !secret.canReveal
 
   const onToggle = () => {
-    secret.toggle().catch(() => toast.error('Failed to reveal secret API key'))
+    secret.toggle().catch(() => toast.error($t('Failed to reveal secret API key')))
   }
 
   const onCopy = async () => {
     try {
       return await secret.getValue()
     } catch {
-      toast.error('Failed to copy secret API key')
+      toast.error($t('Failed to copy secret API key'))
       return ''
     }
   }
@@ -55,7 +56,7 @@ export function SecretEnvRow({ secret }: SecretEnvRowProps) {
         variant="default"
         size="tiny"
         iconOnly
-        aria-label="Copy secret key"
+        aria-label={$t('Copy secret key')}
         asyncText={onCopy}
         disabled={isDisabled}
       />

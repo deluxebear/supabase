@@ -13,6 +13,7 @@ import { useClientSecretDeleteMutation } from '@/data/oauth-secrets/client-secre
 import { Secret, useClientSecretsQuery } from '@/data/oauth-secrets/client-secrets-query'
 import { useOrganizationMembersQuery } from '@/data/organizations/organization-members-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 export interface SecretRowProps {
   secret: Secret
@@ -35,7 +36,7 @@ export const SecretRow = ({ secret, appId }: SecretRowProps) => {
   const { mutate: deleteSecret, isPending: isDeleting } = useClientSecretDeleteMutation({
     onSuccess: () => {
       // Show success toast and close modal after successful deletion
-      toast.success('Successfully deleted client secret')
+      toast.success($t('Successfully deleted client secret'))
       setShowDeleteModal(false)
     },
   })
@@ -72,15 +73,16 @@ export const SecretRow = ({ secret, appId }: SecretRowProps) => {
             </div>
             <div className="flex flex-col gap-0">
               <p className="text-sm text-foreground-lighter">
-                Added {isNew ? 'now' : dayjs(secret.created_at).fromNow()} by {generatedByName}
+                {$t('Added')} {isNew ? 'now' : dayjs(secret.created_at).fromNow()} by{' '}
+                {generatedByName}
               </p>
               {secret.last_used_at && (
                 <p className="text-sm text-foreground-lighter">
-                  Last used {dayjs(secret.last_used_at).fromNow()}
+                  {$t('Last used')} {dayjs(secret.last_used_at).fromNow()}
                 </p>
               )}
               {!secret.last_used_at && !isNew && (
-                <p className="text-sm text-foreground-lighter">Never used</p>
+                <p className="text-sm text-foreground-lighter">{$t('Never used')}</p>
               )}
             </div>
           </div>
@@ -110,7 +112,7 @@ export const SecretRow = ({ secret, appId }: SecretRowProps) => {
       <ConfirmationModal
         visible={showDeleteModal}
         variant="destructive"
-        title="Confirm to delete client secret"
+        title={$t('Confirm to delete client secret')}
         confirmLabel="Delete"
         confirmLabelLoading="Deleting"
         loading={isDeleting}

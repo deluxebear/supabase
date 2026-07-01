@@ -26,6 +26,7 @@ import { ReadReplicaForm } from './ReadReplicaForm'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface DestinationPanelProps {
   onSuccessCreateReadReplica?: () => void
@@ -118,11 +119,12 @@ export const DestinationPanel = ({ onSuccessCreateReadReplica }: DestinationPane
               <SheetSection>
                 <div className={cn('border rounded-md p-6 flex flex-col gap-y-4')}>
                   <div className="flex flex-col gap-y-1">
-                    <h4>Request Pipelines access</h4>
+                    <h4>{$t('Request Pipelines access')}</h4>
                     <p className="text-sm text-foreground-light">
-                      Pipelines is in <span className="text-foreground">alpha</span> and being
-                      rolled out gradually. Request access below to join the waitlist. Read replicas
-                      are available now.
+                      {$t('Pipelines is in')} <span className="text-foreground">alpha</span>{' '}
+                      {$t(
+                        'and being rolled out gradually. Request access below to join the waitlist. Read replicas are available now.'
+                      )}
                     </p>
                   </div>
                   <div className="flex gap-x-2">
@@ -136,7 +138,7 @@ export const DestinationPanel = ({ onSuccessCreateReadReplica }: DestinationPane
                         rel="noreferrer"
                         href="https://forms.supabase.com/pg_replicate"
                       >
-                        Request alpha access
+                        {$t('Request alpha access')}
                       </Link>
                     </Button>
                     <DocsButton href={`${DOCS_URL}/guides/database/replication#pipelines`} />

@@ -29,6 +29,7 @@ import InformationBox from '@/components/ui/InformationBox'
 import { useNetworkRestrictionsQuery } from '@/data/network-restrictions/network-restrictions-query'
 import { useNetworkRestrictionsApplyMutation } from '@/data/network-restrictions/network-retrictions-apply-mutation'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const IPV4_MAX_CIDR_BLOCK_SIZE = 32
 const IPV6_MAX_CIDR_BLOCK_SIZE = 128
@@ -56,7 +57,7 @@ const AddRestrictionModal = ({
   const { mutate: applyNetworkRestrictions, isPending: isApplying } =
     useNetworkRestrictionsApplyMutation({
       onSuccess: () => {
-        toast.success('Successfully added restriction')
+        toast.success($t('Successfully added restriction'))
         onClose()
       },
     })
@@ -160,12 +161,17 @@ const AddRestrictionModal = ({
         <Form {...form}>
           <DialogSection className="space-y-4">
             <p className="text-sm text-foreground-light">
-              This will add an IP address range to a list of allowed ranges that can access your
-              database.
+              {$t(
+                'This will add an IP address range to a list of allowed ranges that can access your database.'
+              )}
             </p>
             <InformationBox
-              title="Note: Restrictions only apply to direct connections to your database and connection pooler"
-              description="They do not currently apply to APIs offered over HTTPS, such as PostgREST, Storage, or Authentication."
+              title={$t(
+                'Note: Restrictions only apply to direct connections to your database and connection pooler'
+              )}
+              description={$t(
+                'They do not currently apply to APIs offered over HTTPS, such as PostgREST, Storage, or Authentication.'
+              )}
               urlLabel="Learn more"
               url={`${DOCS_URL}/guides/platform/network-restrictions#limitations`}
             />
@@ -197,16 +203,15 @@ const AddRestrictionModal = ({
                       layout="vertical"
                       label={
                         <div className="flex items-center space-x-2">
-                          <p>CIDR Block Size</p>
+                          <p>{$t('CIDR Block Size')}</p>
                           <Tooltip>
                             <TooltipTrigger>
                               <HelpCircle size="14" strokeWidth={2} />
                             </TooltipTrigger>
                             <TooltipContent side="bottom" className="w-80">
-                              Classless inter-domain routing (CIDR) notation is the notation used to
-                              identify networks and hosts in the networks. The block size tells us
-                              how many bits we need to take for the network prefix, and is a value
-                              between 0 to{' '}
+                              {$t(
+                                'Classless inter-domain routing (CIDR) notation is the notation used to identify networks and hosts in the networks. The block size tells us how many bits we need to take for the network prefix, and is a value between 0 to'
+                              )}{' '}
                               {type === 'IPv4'
                                 ? IPV4_MAX_CIDR_BLOCK_SIZE
                                 : IPV6_MAX_CIDR_BLOCK_SIZE}
@@ -241,34 +246,36 @@ const AddRestrictionModal = ({
           {isValidCIDR ? (
             <DialogSection className="space-y-1">
               <p className="text-sm">
-                The address range <code className="text-code-inline">{normalizedAddress}</code> will
-                be restricted
+                {$t('The address range')}{' '}
+                <code className="text-code-inline">{normalizedAddress}</code>{' '}
+                {$t('will be restricted')}
               </p>
               <p className="text-sm text-foreground-light">
-                Selected address space:{' '}
+                {$t('Selected address space:')}{' '}
                 <code className="text-code-inline">{addressRange.start}</code> to{' '}
                 <code className="text-code-inline">{addressRange.end}</code>{' '}
               </p>
               <p className="text-sm text-foreground-light">
-                Number of addresses: {availableAddresses}
+                {$t('Number of addresses:')} {availableAddresses}
               </p>
             </DialogSection>
           ) : (
             <DialogSection>
               <div className="h-[68px] flex items-center">
                 <p className="text-sm text-foreground-light">
-                  A summary of your restriction will be shown here after entering a valid IP address
-                  and CIDR block size. IP addresses will also be normalized.
+                  {$t(
+                    'A summary of your restriction will be shown here after entering a valid IP address and CIDR block size. IP addresses will also be normalized.'
+                  )}
                 </p>
               </div>
             </DialogSection>
           )}
           <DialogFooter>
             <Button variant="default" disabled={isApplying} onClick={() => onClose()}>
-              Cancel
+              {$t('Cancel')}
             </Button>
             <Button form={formId} type="submit" loading={isApplying} disabled={isApplying}>
-              Save restriction
+              {$t('Save restriction')}
             </Button>
           </DialogFooter>
         </Form>

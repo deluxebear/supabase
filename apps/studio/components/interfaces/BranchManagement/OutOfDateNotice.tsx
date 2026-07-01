@@ -15,6 +15,7 @@ import {
 import { Admonition } from 'ui-patterns/admonition'
 
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 interface OutOfDateNoticeProps {
@@ -102,18 +103,19 @@ export const OutOfDateNotice = ({
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Update branch with modified functions</AlertDialogTitle>
+                <AlertDialogTitle>{$t('Update branch with modified functions')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This branch has {modifiedFunctionsCount} modified edge function
-                  {modifiedFunctionsCount !== 1 ? 's' : ''} that will be overwritten when updating
-                  with the latest functions from the production branch. This action cannot be
-                  undone.
+                  {$t('This branch has')} {modifiedFunctionsCount} {$t('modified edge function')}
+                  {modifiedFunctionsCount !== 1 ? 's' : ''}{' '}
+                  {$t(
+                    'that will be overwritten when updating with the latest functions from the production branch. This action cannot be undone.'
+                  )}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
                 <AlertDialogAction variant="warning" onClick={() => handleUpdate(true)}>
-                  Update anyway
+                  {$t('Update anyway')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

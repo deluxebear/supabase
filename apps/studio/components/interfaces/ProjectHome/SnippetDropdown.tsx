@@ -19,6 +19,7 @@ import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/L
 import { useContentInfiniteQuery } from '@/data/content/content-infinite-query'
 import type { Content } from '@/data/content/content-query'
 import { SNIPPET_PAGE_LIMIT } from '@/data/content/sql-folders-query'
+import { t as $t } from '@/lib/i18n'
 import { editorPanelState } from '@/state/editor-panel-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -95,16 +96,18 @@ export const SnippetDropdown = ({
           <CommandInput
             showResetIcon
             autoFocus={autoFocus}
-            placeholder="Search snippets..."
+            placeholder={$t('Search snippets...')}
             value={search}
             onValueChange={setSearch}
             handleReset={() => setSearch('')}
           />
           <CommandList ref={scrollRootRef}>
             {isLoading ? (
-              <p className="text-xs text-center text-foreground-lighter py-3">Loading...</p>
+              <p className="text-xs text-center text-foreground-lighter py-3">{$t('Loading...')}</p>
             ) : search.length > 0 && snippets.length === 0 ? (
-              <p className="text-xs text-center text-foreground-lighter py-3">No snippets found</p>
+              <p className="text-xs text-center text-foreground-lighter py-3">
+                {$t('No snippets found')}
+              </p>
             ) : (
               <CommandGroup>
                 <ScrollArea className={snippets.length > 7 ? 'h-[210px]' : ''}>
@@ -140,7 +143,7 @@ export const SnippetDropdown = ({
               >
                 <div className="w-full flex items-center gap-2">
                   <Plus size={14} strokeWidth={1.5} />
-                  <p>Create snippet</p>
+                  <p>{$t('Create snippet')}</p>
                 </div>
               </CommandItem>
             </CommandGroup>

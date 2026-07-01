@@ -4,6 +4,7 @@ import { Admonition } from 'ui-patterns/admonition'
 
 import { usePgPartmanStatus } from '../usePgPartmanStatus'
 import { EnableExtensionModal } from '@/components/interfaces/Database/Extensions/EnableExtensionModal'
+import { t as $t } from '@/lib/i18n'
 
 export function PgPartmanCallout() {
   const { pgPartmanExtension, isAvailable, isInstalled } = usePgPartmanStatus()
@@ -15,8 +16,10 @@ export function PgPartmanCallout() {
     <div className="mx-5 my-2">
       <Admonition
         type="tip"
-        title="pg_partman is now available"
-        description="Unlock partitioned queues for automatic data retention, lower storage costs, and faster performance at scale."
+        title={$t('pg_partman is now available')}
+        description={$t(
+          'Unlock partitioned queues for automatic data retention, lower storage costs, and faster performance at scale.'
+        )}
       >
         <Button
           variant="default"
@@ -24,7 +27,7 @@ export function PgPartmanCallout() {
           className="mt-2"
           onClick={() => setShowEnableModal(true)}
         >
-          Enable pg_partman
+          {$t('Enable pg_partman')}
         </Button>
       </Admonition>
       {pgPartmanExtension && (

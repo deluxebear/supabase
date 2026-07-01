@@ -15,6 +15,7 @@ import {
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { StorageItemWithColumn } from '../Storage.types'
+import { t as $t } from '@/lib/i18n'
 
 interface MoveItemsModalProps {
   bucketName: string
@@ -72,14 +73,14 @@ export const MoveItemsModal = ({
           <form>
             <FormItemLayout
               label={`Path to new directory in ${bucketName}`}
-              description="Leave blank to move items to the root of the bucket"
+              description={$t('Leave blank to move items to the root of the bucket')}
               layout="vertical"
               isReactForm={false}
             >
               <Input
                 autoFocus
                 type="text"
-                placeholder="e.g folder1/subfolder2"
+                placeholder={$t('e.g folder1/subfolder2')}
                 value={newPath}
                 onChange={(event) => setNewPath(event.target.value)}
               />
@@ -90,7 +91,7 @@ export const MoveItemsModal = ({
         </DialogSection>
         <DialogFooter>
           <Button variant="default" onClick={onSelectCancel}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button variant="primary" loading={moving} onClick={onConfirmMove}>
             {moving ? 'Moving files' : 'Move files'}

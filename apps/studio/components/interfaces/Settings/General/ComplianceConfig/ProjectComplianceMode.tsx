@@ -21,6 +21,7 @@ import { useProjectSettingsV2Query } from '@/data/config/project-settings-v2-que
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const ComplianceConfig = () => {
   const { ref } = useParams()
@@ -47,7 +48,7 @@ export const ComplianceConfig = () => {
   const { mutate: updateComplianceConfig, isPending: isSubmitting } =
     useComplianceConfigUpdateMutation({
       onSuccess: () => {
-        toast.success('Successfully updated project compliance configuration')
+        toast.success($t('Successfully updated project compliance configuration'))
       },
       onError: (error) => {
         setIsSensitive(initialIsSensitive)
@@ -70,9 +71,9 @@ export const ComplianceConfig = () => {
       <PageSectionMeta>
         <div className="flex flex-col gap-3 @lg:flex-row @lg:items-center @lg:justify-between">
           <PageSectionSummary>
-            <PageSectionTitle>High Compliance Configuration</PageSectionTitle>
+            <PageSectionTitle>{$t('High Compliance Configuration')}</PageSectionTitle>
             <PageSectionDescription>
-              For projects storing and processing sensitive data (HIPAA).
+              {$t('For projects storing and processing sensitive data (HIPAA).')}
             </PageSectionDescription>
           </PageSectionSummary>
           <DocsButton href={`${DOCS_URL}/guides/platform/hipaa-projects`} />
@@ -82,11 +83,13 @@ export const ComplianceConfig = () => {
         <Card>
           <CardContent className="flex flex-col gap-4 @lg:flex-row @lg:items-center @lg:justify-between">
             <div className="space-y-2 max-w-2xl">
-              <p className="text-sm">Apply additional compliance controls to project</p>
+              <p className="text-sm">{$t('Apply additional compliance controls to project')}</p>
               <p className="text-sm text-foreground-light">
-                Enable security warnings in the{' '}
-                <InlineLink href={`/project/${ref}/advisors/security`}>Security Advisor</InlineLink>{' '}
-                to enforce requirements for managing sensitive data.
+                {$t('Enable security warnings in the')}{' '}
+                <InlineLink href={`/project/${ref}/advisors/security`}>
+                  {$t('Security Advisor')}
+                </InlineLink>{' '}
+                {$t('to enforce requirements for managing sensitive data.')}
               </p>
             </div>
             <div className="flex items-center justify-end space-x-2">
@@ -111,8 +114,9 @@ export const ComplianceConfig = () => {
                   </TooltipTrigger>
                   {!canUpdateComplianceConfig && (
                     <TooltipContent side="bottom" className="w-64 text-center">
-                      You need additional permissions to update the compliance configuration for
-                      your project
+                      {$t(
+                        'You need additional permissions to update the compliance configuration for your project'
+                      )}
                     </TooltipContent>
                   )}
                 </Tooltip>

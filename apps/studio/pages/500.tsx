@@ -8,6 +8,7 @@ import { Button } from 'ui'
 import { SupportLink } from '@/components/interfaces/Support/SupportLink'
 import { useLastVisitedOrganization } from '@/hooks/misc/useLastVisitedOrganization'
 import { useSignOut } from '@/lib/auth'
+import { t as $t } from '@/lib/i18n'
 
 const Error500: NextPage = () => {
   const router = useRouter()
@@ -45,10 +46,11 @@ const Error500: NextPage = () => {
         </nav>
       </div>
       <div className="flex w-[320px] flex-col items-center justify-center space-y-3">
-        <h4 className="text-lg">Something went wrong 🤕</h4>
+        <h4 className="text-lg">{$t('Something went wrong 🤕')}</h4>
         <p className="text-center">
-          Sorry about that, please try again later or feel free to reach out to us if the problem
-          persists.
+          {$t(
+            'Sorry about that, please try again later or feel free to reach out to us if the problem persists.'
+          )}
         </p>
       </div>
       <div className="flex items-center space-x-4">
@@ -59,14 +61,14 @@ const Error500: NextPage = () => {
                 !!lastVisitedOrganization ? `/org/${lastVisitedOrganization}` : '/organizations'
               }
             >
-              Head back
+              {$t('Head back')}
             </Link>
           </Button>
         ) : (
-          <Button onClick={onClickLogout}>Head back</Button>
+          <Button onClick={onClickLogout}>{$t('Head back')}</Button>
         )}
         <Button variant="secondary" asChild>
-          <SupportLink>Submit a support request</SupportLink>
+          <SupportLink>{$t('Submit a support request')}</SupportLink>
         </Button>
       </div>
     </div>

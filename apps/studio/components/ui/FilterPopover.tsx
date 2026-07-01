@@ -15,6 +15,8 @@ import {
 import { Input } from 'ui-patterns/DataInputs/Input'
 import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 
+import { t as $t } from '@/lib/i18n'
+
 interface FilterPopoverProps<T> {
   title?: string
   options: T[]
@@ -127,7 +129,7 @@ export const FilterPopover = <T extends Record<string, any>>({
               setSelectedOptions([value])
             }}
           >
-            Only
+            {$t('Only')}
           </button>
         )}
       </div>
@@ -223,7 +225,7 @@ export const FilterPopover = <T extends Record<string, any>>({
               if (!!setSearch) setSearch(e.target.value)
             }}
             className="rounded-none border-x-0 border-t-0 bg-surface-100 px-3"
-            placeholder="Search for a project..."
+            placeholder={$t('Search for a project...')}
             actions={
               (search ?? '').length > 0 ? (
                 <X size={14} className="cursor-pointer mr-1" onClick={() => setSearch('')} />
@@ -232,7 +234,7 @@ export const FilterPopover = <T extends Record<string, any>>({
           />
         )}
         {(search ?? '').length > 0 && options.length === 0 && (
-          <p className="text-xs text-foreground-lighter pt-3 px-3">No results found</p>
+          <p className="text-xs text-foreground-lighter pt-3 px-3">{$t('No results found')}</p>
         )}
         <ScrollArea className={options.length > 7 ? maxHeightClass : ''}>
           <div className="px-3 pt-3 flex flex-col gap-y-2">
@@ -292,7 +294,7 @@ export const FilterPopover = <T extends Record<string, any>>({
               setOpen(false)
             }}
           >
-            Save
+            {$t('Save')}
           </Button>
         </div>
       </PopoverContent>

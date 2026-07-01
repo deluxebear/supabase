@@ -18,6 +18,7 @@ import { columnToFilterProperty } from './FilterPopoverNew.utils'
 import { useTableFilter } from '@/components/grid/hooks/useTableFilter'
 import type { Filter } from '@/components/grid/types'
 import { useSqlFilterGenerateMutation } from '@/data/ai/sql-filter-mutation'
+import { t as $t } from '@/lib/i18n'
 import { useTableEditorTableStateSnapshot } from '@/state/table-editor-table'
 
 export interface FilterPopoverProps {
@@ -78,10 +79,10 @@ function DatePickerOption({ onChange, onCancel, search }: CustomOptionProps) {
       />
       <div className="flex justify-end gap-2 py-3 px-4 border-t">
         <Button variant="default" onClick={onCancel}>
-          Cancel
+          {$t('Cancel')}
         </Button>
         <Button variant="primary" onClick={() => onChange(date ? format(date, 'yyyy-MM-dd') : '')}>
-          Apply
+          {$t('Apply')}
         </Button>
       </div>
     </div>
@@ -230,7 +231,10 @@ export const FilterPopoverNew = ({
   const icon = isGenerating ? (
     <AiIconAnimation size={16} loading />
   ) : isRefetching ? (
-    <Loader2 className="animate-spin text-brand h-4 w-4 shrink-0" aria-label="Loading table data" />
+    <Loader2
+      className="animate-spin text-brand h-4 w-4 shrink-0"
+      aria-label={$t('Loading table data')}
+    />
   ) : null
 
   return (

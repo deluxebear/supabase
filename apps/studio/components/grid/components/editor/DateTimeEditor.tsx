@@ -18,6 +18,7 @@ import { TimestampInfo, timestampLocalFormatter } from 'ui-patterns/TimestampInf
 
 import { BlockKeys } from '../common/BlockKeys'
 import { useIsQueueOperationsEnabled } from '@/components/interfaces/Account/Preferences/useDashboardSettings'
+import { t as $t } from '@/lib/i18n'
 
 interface BaseEditorProps<TRow, TSummaryRow = unknown> extends RenderEditCellProps<
   TRow,
@@ -97,11 +98,13 @@ function BaseEditor<TRow, TSummaryRow = unknown>({
           />
         </BlockKeys>
         <div className="px-3 py-1 flex flex-col gap-y-0.5">
-          <p className="text-xs text-foreground-lighter">Formatted value:</p>
+          <p className="text-xs text-foreground-lighter">{$t('Formatted value:')}</p>
           {(inputValue ?? '').length === 0 ? (
-            <p className="text-sm font-mono text-foreground-light">Enter a valid date format</p>
+            <p className="text-sm font-mono text-foreground-light">
+              {$t('Enter a valid date format')}
+            </p>
           ) : timeValue === 'Invalid Date' ? (
-            <p className="text-sm font-mono text-foreground-light">Invalid date format</p>
+            <p className="text-sm font-mono text-foreground-light">{$t('Invalid date format')}</p>
           ) : type === 'datetimetz' ? (
             <TimestampInfo
               displayAs="utc"
@@ -133,9 +136,9 @@ function BaseEditor<TRow, TSummaryRow = unknown>({
             </div>
             <div className="flex items-center space-x-2">
               <div className="px-1 h-[22px] rounded-sm bg-surface-300 border border-strong flex items-center justify-center">
-                <span className="text-[10px]">Esc</span>
+                <span className="text-[10px]">{$t('Esc')}</span>
               </div>
-              <p className="text-xs text-foreground-light">Cancel changes</p>
+              <p className="text-xs text-foreground-light">{$t('Cancel changes')}</p>
             </div>
           </div>
           <div className="flex">
@@ -146,7 +149,7 @@ function BaseEditor<TRow, TSummaryRow = unknown>({
                   className="rounded-r-none"
                   onClick={() => saveChanges(null)}
                 >
-                  Set NULL
+                  {$t('Set NULL')}
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -157,13 +160,13 @@ function BaseEditor<TRow, TSummaryRow = unknown>({
                     />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-20" align="end">
-                    <DropdownMenuItem onClick={setToNow}>Set to NOW</DropdownMenuItem>
+                    <DropdownMenuItem onClick={setToNow}>{$t('Set to NOW')}</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>
             ) : (
               <Button variant="default" onClick={setToNow}>
-                Set to NOW
+                {$t('Set to NOW')}
               </Button>
             )}
           </div>

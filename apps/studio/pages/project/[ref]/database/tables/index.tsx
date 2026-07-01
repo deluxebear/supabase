@@ -12,6 +12,7 @@ import { PageLayout } from '@/components/layouts/PageLayout/PageLayout'
 import { AutoEnableRLSNotice } from '@/components/ui/AutoEnableRLSNotice'
 import { Entity, isTableLike, postgresTableToEntity } from '@/data/table-editor/table-editor-types'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
+import { t as $t } from '@/lib/i18n'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
 import { TableEditorTableStateContextProvider } from '@/state/table-editor-table'
 import type { NextPageWithLayout } from '@/types'
@@ -29,7 +30,7 @@ const DatabaseTables: NextPageWithLayout = () => {
   return (
     <>
       <PageLayout
-        title="Database Tables"
+        title={$t('Database Tables')}
         size="large"
         primaryActions={isAutoEnableRLSMinimized && <AutoEnableRLSNotice iconOnly />}
       >
@@ -84,7 +85,7 @@ const DatabaseTables: NextPageWithLayout = () => {
 
 DatabaseTables.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Tables">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Tables')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

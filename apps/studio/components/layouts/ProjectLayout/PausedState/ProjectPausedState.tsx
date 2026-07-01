@@ -25,6 +25,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { usePHFlag } from '@/hooks/ui/useFlag'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export interface ProjectPausedStateProps {
   product?: string
@@ -59,7 +60,11 @@ export const ProjectPausedState = ({ product }: ProjectPausedStateProps) => {
         <PauseCircle size={48} strokeWidth={1} className="text-foreground-lighter shrink-0 mb-4" />
         <div className="flex-1">
           <div>
-            <h2 className="mb-4">The project "{project?.name}" is currently paused</h2>
+            <h2 className="mb-4">
+              {$t('The project "')}
+              {project?.name}
+              {$t('" is currently paused')}
+            </h2>
             <div className="text-foreground-light max-w-4xl">
               {isLoading && <GenericSkeletonLoader className="mt-3" />}
 
@@ -67,8 +72,9 @@ export const ProjectPausedState = ({ product }: ProjectPausedStateProps) => {
                 isFreePlan ? (
                   <>
                     <p className="text-sm">
-                      All data, including backups and storage objects, remains safe. You can resume
-                      this project from the dashboard within{' '}
+                      {$t(
+                        'All data, including backups and storage objects, remains safe. You can resume this project from the dashboard within'
+                      )}{' '}
                       <Tooltip>
                         <TooltipTrigger>
                           <span className={cn(InlineLinkClassName, 'text-foreground')}>
@@ -77,8 +83,10 @@ export const ProjectPausedState = ({ product }: ProjectPausedStateProps) => {
                           </span>{' '}
                         </TooltipTrigger>
                         <TooltipContent side="bottom" className="w-80 text-center">
-                          Free projects cannot be restored through the dashboard if they are paused
-                          for more than {pauseStatus.max_days_till_restore_disabled} days
+                          {$t(
+                            'Free projects cannot be restored through the dashboard if they are paused for more than'
+                          )}{' '}
+                          {pauseStatus.max_days_till_restore_disabled} days
                         </TooltipContent>
                       </Tooltip>{' '}
                       (until{' '}
@@ -91,8 +99,9 @@ export const ProjectPausedState = ({ product }: ProjectPausedStateProps) => {
                         className="text-sm text-foreground"
                         labelFormat="DD MMM YYYY"
                       />
-                      ). After that, this project will not be resumable, but data will still be
-                      available for download.
+                      {$t(
+                        '). After that, this project will not be resumable, but data will still be available for download.'
+                      )}
                     </p>
                     <p className="text-sm mt-4">
                       {enableProBenefitWording === 'variant-a'
@@ -102,17 +111,19 @@ export const ProjectPausedState = ({ product }: ProjectPausedStateProps) => {
                   </>
                 ) : (
                   <p className="text-sm">
-                    Your project data is safe but inaccessible while paused. Once resumed, usage
-                    will be billed by compute size and hours active.
+                    {$t(
+                      'Your project data is safe but inaccessible while paused. Once resumed, usage will be billed by compute size and hours active.'
+                    )}
                   </p>
                 )
               ) : !isLoading ? (
                 <p className="text-sm">
-                  All of your project's data is still intact, but your project is inaccessible while
-                  paused.{' '}
+                  {$t(
+                    "All of your project's data is still intact, but your project is inaccessible while paused."
+                  )}{' '}
                   {product !== undefined ? (
                     <>
-                      Resume this project to access the{' '}
+                      {$t('Resume this project to access the')}{' '}
                       <span className="text-brand">{product}</span> page.
                     </>
                   ) : !isRestoreDisabled ? (
@@ -141,7 +152,7 @@ export const ProjectPausedState = ({ product }: ProjectPausedStateProps) => {
             <UpgradePlanButton source="projectPausedStateRestore" />
           ) : (
             <Button asChild variant="default">
-              <Link href={`/project/${ref}/settings/general`}>View project settings</Link>
+              <Link href={`/project/${ref}/settings/general`}>{$t('View project settings')}</Link>
             </Button>
           )}
         </CardFooter>

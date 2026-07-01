@@ -10,6 +10,7 @@ import { useEnabledIdentityProviders } from '@/hooks/misc/useEnabledIdentityProv
 import { useInboundBranding } from '@/hooks/misc/useInboundBranding'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import type { ExternalIdentityProviderConfig } from '@/lib/external-identity-providers'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const SignUpPage: NextPageWithLayout = () => {
@@ -67,7 +68,7 @@ const SignUpPage: NextPageWithLayout = () => {
             className="-mt-2 text-foreground-light"
             onClick={() => setShowOtherOptions(true)}
           >
-            Show other options
+            {$t('Show other options')}
           </Button>
         )}
       </div>
@@ -79,12 +80,12 @@ const SignUpPage: NextPageWithLayout = () => {
       <div className="flex flex-col gap-5">{renderAuthOptions(signUpProviders)}</div>
 
       <div className="my-8 self-center text-sm">
-        <span className="text-foreground-light">Have an account?</span>{' '}
+        <span className="text-foreground-light">{$t('Have an account?')}</span>{' '}
         <Link
           href="/sign-in"
           className="underline text-foreground hover:text-foreground-light transition"
         >
-          Sign in
+          {$t('Sign in')}
         </Link>
       </div>
     </>

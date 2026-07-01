@@ -47,6 +47,7 @@ import { useSetProjectStatus } from '@/data/projects/project-detail-query'
 import { useProjectUpgradeMutation } from '@/data/projects/project-upgrade-mutation'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { DOCS_URL, PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const formatValue = ({ postgres_version, release_channel }: ProjectUpgradeTargetVersion) => {
   return `${postgres_version}|${release_channel}`
@@ -78,19 +79,19 @@ export const ProjectUpgradeAlert = () => {
   const { mutate: upgradeProject, isPending: isUpgrading } = useProjectUpgradeMutation({
     onSuccess: (res, variables) => {
       setProjectStatus({ ref: variables.ref, status: PROJECT_STATUS.UPGRADING })
-      toast.success('Upgrading project')
+      toast.success($t('Upgrading project'))
       router.push(`/project/${variables.ref}?upgradeInitiated=true&trackingId=${res.tracking_id}`)
     },
   })
 
   const onConfirmUpgrade = async (values: z.infer<typeof FormSchema>) => {
-    if (!ref) return toast.error('Project ref not found')
+    if (!ref) return toast.error($t('Project ref not found'))
 
     const { postgresVersionSelection } = values
 
     const versionDetails = extractPostgresVersionDetails(postgresVersionSelection)
-    if (!versionDetails) return toast.error('Invalid Postgres version')
-    if (!versionDetails.postgresEngine) return toast.error('Missing target version')
+    if (!versionDetails) return toast.error($t('Invalid Postgres version'))
+    if (!versionDetails.postgresEngine) return toast.error($t('Missing target version'))
 
     upgradeProject({
       ref,
@@ -119,10 +120,16 @@ export const ProjectUpgradeAlert = () => {
   }, [data, form])
 
   return (
-    <Alert title="Your project can be upgraded to the latest version of Postgres">
-      <AlertTitle>Your project can be upgraded to the latest version of Postgres</AlertTitle>
+    <Alert title={$t('Your project can be upgraded to the latest version of Postgres')}>
+      <AlertTitle>
+        {$t('Your project can be upgraded to the latest version of Postgres')}
+      </AlertTitle>
       <AlertDescription>
-        <p>The latest version of Postgres ({latestPgVersion}) is available for your project.</p>
+        <p>
+          {$t('The latest version of Postgres (')}
+          {latestPgVersion}
+          {$t(') is available for your project.')}
+        </p>
         <Dialog open={showUpgradeModal} onOpenChange={(open) => setShowUpgradeModal(open)}>
           <DialogTrigger asChild>
             <ButtonTooltip
@@ -140,12 +147,12 @@ export const ProjectUpgradeAlert = () => {
                 },
               }}
             >
-              Upgrade project
+              {$t('Upgrade project')}
             </ButtonTooltip>
           </DialogTrigger>
           <DialogContent size="small">
             <DialogHeader>
-              <DialogTitle>Confirm to upgrade Postgres version</DialogTitle>
+              <DialogTitle>{$t('Confirm to upgrade Postgres version')}</DialogTitle>
             </DialogHeader>
             <DialogSectionSeparator />
             <Form {...form}>
@@ -154,13 +161,17 @@ export const ProjectUpgradeAlert = () => {
                   type="warning"
                   className="border-x-0 border-t-0 rounded-none"
                   title={`Your project will be offline for up to ${durationEstimateHours} hour${durationEstimateHours === 1 ? '' : 's'}`}
-                  description="It is advised to upgrade at a time when there will be minimal impact for your application."
+                  description={$t(
+                    'It is advised to upgrade at a time when there will be minimal impact for your application.'
+                  )}
                 />
                 <DialogSection>
                   <div className="space-y-4">
                     <p className="text-sm">
-                      All services will be offline and you will not be able to downgrade back to
-                      Postgres {currentPgVersion}.
+                      {$t(
+                        'All services will be offline and you will not be able to downgrade back to Postgres'
+                      )}{' '}
+                      {currentPgVersion}.
                     </p>
                     {isDiskSizeUpdated && (
                       <Markdown
@@ -172,13 +183,14 @@ export const ProjectUpgradeAlert = () => {
                     )}
                     {/* @ts-ignore */}
                     {(data?.potential_breaking_changes ?? []).length > 0 && (
-                      <Alert variant="destructive" title="Breaking changes">
+                      <Alert variant="destructive" title={$t('Breaking changes')}>
                         <AlertCircle className="h-4 w-4" strokeWidth={2} />
-                        <AlertTitle>Breaking changes</AlertTitle>
+                        <AlertTitle>{$t('Breaking changes')}</AlertTitle>
                         <AlertDescription className="flex flex-col gap-3">
                           <p>
-                            Your project will be upgraded across major versions of Postgres. This
-                            may involve breaking changes.
+                            {$t(
+                              'Your project will be upgraded across major versions of Postgres. This may involve breaking changes.'
+                            )}
                           </p>
 
                           <div>
@@ -188,7 +200,7 @@ export const ProjectUpgradeAlert = () => {
                                 target="_blank"
                                 rel="noreferrer"
                               >
-                                View docs
+                                {$t('View docs')}
                               </Link>
                             </Button>
                           </div>
@@ -198,26 +210,32 @@ export const ProjectUpgradeAlert = () => {
                     {legacyAuthCustomRoles.length > 0 && (
                       <Alert
                         variant="warning"
-                        title="Custom Postgres roles using md5 authentication have been detected"
+                        title={$t(
+                          'Custom Postgres roles using md5 authentication have been detected'
+                        )}
                       >
                         <AlertTriangle className="h-4 w-4" strokeWidth={2} />
                         <AlertTitle>
-                          Custom Postgres roles will not work automatically after upgrade
+                          {$t('Custom Postgres roles will not work automatically after upgrade')}
                         </AlertTitle>
                         <AlertDescription className="flex flex-col gap-3">
-                          <p>You must run a series of commands after upgrading.</p>
+                          <p>{$t('You must run a series of commands after upgrading.')}</p>
                           <p>
-                            This is because new Postgres versions use scram-sha-256 authentication
-                            by default and do not support md5, as it has been deprecated.
+                            {$t(
+                              'This is because new Postgres versions use scram-sha-256 authentication by default and do not support md5, as it has been deprecated.'
+                            )}
                           </p>
                           <div>
-                            <p className="mb-1">Run the following commands after the upgrade:</p>
+                            <p className="mb-1">
+                              {$t('Run the following commands after the upgrade:')}
+                            </p>
                             <div className="flex items-baseline gap-2">
                               <code className="text-xs">
                                 {legacyAuthCustomRoles.map((role) => (
                                   <div key={role} className="pb-1">
-                                    ALTER ROLE <span className="text-brand">{role}</span> WITH
-                                    PASSWORD '<span className="text-brand">newpassword</span>';
+                                    {$t('ALTER ROLE')} <span className="text-brand">{role}</span>{' '}
+                                    {$t("WITH PASSWORD '")}
+                                    <span className="text-brand">newpassword</span>';
                                   </div>
                                 ))}
                               </code>
@@ -230,7 +248,7 @@ export const ProjectUpgradeAlert = () => {
                                 target="_blank"
                                 rel="noreferrer"
                               >
-                                View docs
+                                {$t('View docs')}
                               </Link>
                             </Button>
                           </div>
@@ -241,11 +259,11 @@ export const ProjectUpgradeAlert = () => {
                       control={form.control}
                       name="postgresVersionSelection"
                       render={({ field }) => (
-                        <FormItemLayout label="Select the version of Postgres to upgrade to">
+                        <FormItemLayout label={$t('Select the version of Postgres to upgrade to')}>
                           <FormControl>
                             <Select value={field.value} onValueChange={field.onChange}>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select a Postgres version" />
+                                <SelectValue placeholder={$t('Select a Postgres version')} />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectGroup>
@@ -281,10 +299,10 @@ export const ProjectUpgradeAlert = () => {
                     onClick={() => setShowUpgradeModal(false)}
                     disabled={isUpgrading}
                   >
-                    Cancel
+                    {$t('Cancel')}
                   </Button>
                   <Button type="submit" disabled={isUpgrading} loading={isUpgrading}>
-                    Confirm upgrade
+                    {$t('Confirm upgrade')}
                   </Button>
                 </DialogFooter>
               </form>

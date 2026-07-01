@@ -14,6 +14,7 @@ import {
   SupabaseLogo,
 } from '@/components/layouts/InterstitialLayout'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const INTERSTITIAL_TITLE = 'Link AWS Marketplace'
 const INTERSTITIAL_DESCRIPTION = 'Choose an organization to bill through AWS'
@@ -51,7 +52,7 @@ export const ConnectLoadingCards = () => (
         </div>
       </CardContent>
     </Card>
-    <section className="space-y-2" aria-label="Organizations">
+    <section className="space-y-2" aria-label={$t('Organizations')}>
       <ShimmeringLoader className="h-3 w-24 py-0" />
       {Array.from({ length: 3 }).map((_, index) => (
         <Card key={index} className="shadow-none">
@@ -114,27 +115,35 @@ export function ContractIneligibilityNotice({
       return (
         <Admonition
           type="success"
-          title="Credits accepted"
-          description="Your Supabase organization credit balance will be updated after AWS finishes processing the offer. This can take 1 or 2 days."
+          title={$t('Credits accepted')}
+          description={$t(
+            'Your Supabase organization credit balance will be updated after AWS finishes processing the offer. This can take 1 or 2 days.'
+          )}
         />
       )
     case 'AGREEMENT_BASED_OFFER':
       return (
         <Admonition
           type="success"
-          title="No action required"
-          description="Your existing Supabase organization remains linked to AWS Marketplace and your projects will continue to run as usual."
+          title={$t('No action required')}
+          description={$t(
+            'Your existing Supabase organization remains linked to AWS Marketplace and your projects will continue to run as usual.'
+          )}
         />
       )
     case 'NO_ACTIVE_CONTRACT_FOUND':
       return (
         <Admonition
           type="warning"
-          title="Still syncing"
-          description="Thanks for purchasing Supabase through AWS Marketplace. It can take a few minutes before the subscription is ready to link. Try again shortly."
+          title={$t('Still syncing')}
+          description={$t(
+            'Thanks for purchasing Supabase through AWS Marketplace. It can take a few minutes before the subscription is ready to link. Try again shortly.'
+          )}
         />
       )
     default:
-      return <Admonition type="default" description="If the problem persists, contact support." />
+      return (
+        <Admonition type="default" description={$t('If the problem persists, contact support.')} />
+      )
   }
 }

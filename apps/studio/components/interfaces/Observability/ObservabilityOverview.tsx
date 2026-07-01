@@ -22,6 +22,7 @@ import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useIsDataApiEnabled } from '@/hooks/misc/useIsDataApiEnabled'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -174,10 +175,10 @@ export const ObservabilityOverview = () => {
           <ReportHeader title={REPORT_TITLE} />
           <Tooltip>
             <TooltipTrigger asChild>
-              <Badge variant="warning">Beta</Badge>
+              <Badge variant="warning">{$t('Beta')}</Badge>
             </TooltipTrigger>
             <TooltipContent>
-              <p>This page is subject to change</p>
+              <p>{$t('This page is subject to change')}</p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -185,11 +186,11 @@ export const ObservabilityOverview = () => {
           <DocsButton href={OBSERVABILITY_DOCS_HREFS.overview} topic={REPORT_TITLE} />
           <ShortcutTooltip
             shortcutId={SHORTCUT_IDS.OBSERVABILITY_REFRESH}
-            label="Refresh report"
+            label={$t('Refresh report')}
             side="bottom"
           >
             <Button variant="outline" icon={<RefreshCw size={14} />} onClick={handleRefresh}>
-              Refresh
+              {$t('Refresh')}
             </Button>
           </ShortcutTooltip>
           <ChartIntervalDropdown

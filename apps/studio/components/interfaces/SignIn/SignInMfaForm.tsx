@@ -19,6 +19,7 @@ import { useMfaChallengeAndVerifyMutation } from '@/data/profile/mfa-challenge-a
 import { useMfaListFactorsQuery } from '@/data/profile/mfa-list-factors-query'
 import { useSignOut } from '@/lib/auth'
 import { getReturnToPath } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 
 const schema = z.object({
   code: z.string().min(1, 'MFA Code is required'),
@@ -107,11 +108,11 @@ export const SignInMfaForm = ({ context = 'sign-in' }: SignInMfaFormProps) => {
         additionalActions={
           <>
             <Button asChild variant="default">
-              <Link href="/sign-in">Back to sign in</Link>
+              <Link href="/sign-in">{$t('Back to sign in')}</Link>
             </Button>
             <Button asChild variant="default">
               <Link href="https://supabase.com/support" target="_blank" rel="noreferrer">
-                Contact support
+                {$t('Contact support')}
               </Link>
             </Button>
           </>
@@ -179,7 +180,7 @@ export const SignInMfaForm = ({ context = 'sign-in' }: SignInMfaFormProps) => {
                 onClick={onClickLogout}
                 className="opacity-80 hover:opacity-100 transition"
               >
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button
                 block
@@ -198,7 +199,7 @@ export const SignInMfaForm = ({ context = 'sign-in' }: SignInMfaFormProps) => {
 
       <div className="my-8">
         <div className="text-sm">
-          <span className="text-foreground-light">Unable to sign in?</span>{' '}
+          <span className="text-foreground-light">{$t('Unable to sign in?')}</span>{' '}
         </div>
         <ul className="list-disc pl-6">
           {factors?.totp.length === 2 && (
@@ -218,7 +219,7 @@ export const SignInMfaForm = ({ context = 'sign-in' }: SignInMfaFormProps) => {
               href="/logout"
               className="text-sm transition text-foreground-light hover:text-foreground"
             >
-              Force sign out and clear cookies
+              {$t('Force sign out and clear cookies')}
             </Link>
           </li>
           <li>
@@ -229,7 +230,7 @@ export const SignInMfaForm = ({ context = 'sign-in' }: SignInMfaFormProps) => {
                 category: SupportCategories.LOGIN_ISSUES,
               }}
             >
-              Reach out to us via support
+              {$t('Reach out to us via support')}
             </SupportLink>
           </li>
         </ul>

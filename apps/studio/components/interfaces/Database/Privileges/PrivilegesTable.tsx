@@ -8,6 +8,7 @@ import {
 import { usePrivilegesState } from './Privileges.utils'
 import Table from '@/components/to-be-cleaned/Table'
 import type { ColumnPrivilege } from '@/data/privileges/column-privileges-query'
+import { t as $t } from '@/lib/i18n'
 
 export interface PrivilegesTableProps extends Pick<
   ReturnType<typeof usePrivilegesState>,
@@ -47,7 +48,7 @@ const PrivilegesTable = ({
       className="table-fixed mb-4"
       head={[
         <Table.th key="header-column">
-          <span>Column</span>
+          <span>{$t('Column')}</span>
         </Table.th>,
         ...ALL_PRIVILEGE_TYPES.map((privilege) => {
           const checked = tableCheckedStates[privilege]
@@ -101,7 +102,7 @@ const PrivilegesTable = ({
           {TABLE_PRIVILEGE_TYPES.map((privilege) => {
             return (
               <Table.td key={privilege}>
-                <span className="ml-5 text-xs text-foreground-lighter">N/A</span>
+                <span className="ml-5 text-xs text-foreground-lighter">{$t('N/A')}</span>
               </Table.td>
             )
           })}

@@ -36,6 +36,7 @@ import { StorageExplorer } from '@/components/interfaces/Storage/StorageExplorer
 import { useBucketPolicyCount } from '@/components/interfaces/Storage/useBucketPolicyCount'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import StorageLayout from '@/components/layouts/StorageLayout/StorageLayout'
+import { t as $t } from '@/lib/i18n'
 import { StorageExplorerStateContextProvider } from '@/state/storage-explorer'
 import type { NextPageWithLayout } from '@/types'
 
@@ -94,13 +95,13 @@ const BucketPage: NextPageWithLayout = () => {
                 <Link
                   href={`/project/${ref}/storage/files/policies?search=${encodeURIComponent(bucket?.name ?? '')}`}
                 >
-                  Policies
+                  {$t('Policies')}
                 </Link>
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="tiny" iconRight={<ChevronDown size={14} />}>
-                    Edit bucket
+                    {$t('Edit bucket')}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-40">
@@ -109,7 +110,7 @@ const BucketPage: NextPageWithLayout = () => {
                     onClick={() => setShowEditModal(true)}
                   >
                     <Settings size={12} />
-                    <p>Bucket settings</p>
+                    <p>{$t('Bucket settings')}</p>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -117,14 +118,14 @@ const BucketPage: NextPageWithLayout = () => {
                     onClick={() => setShowEmptyModal(true)}
                   >
                     <FolderOpen size={12} />
-                    <p>Empty bucket</p>
+                    <p>{$t('Empty bucket')}</p>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="flex items-center space-x-2"
                     onClick={() => setShowDeleteModal(true)}
                   >
                     <Trash2 size={12} />
-                    <p>Delete bucket</p>
+                    <p>{$t('Delete bucket')}</p>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -134,13 +135,13 @@ const BucketPage: NextPageWithLayout = () => {
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link href={`/project/${ref}/storage/files`}>Files</Link>
+                <Link href={`/project/${ref}/storage/files`}>{$t('Files')}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link href={`/project/${ref}/storage/files`}>Buckets</Link>
+                <Link href={`/project/${ref}/storage/files`}>{$t('Buckets')}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
@@ -151,7 +152,7 @@ const BucketPage: NextPageWithLayout = () => {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Badge variant="warning" className="flex shrink-0">
-                        Public
+                        {$t('Public')}
                       </Badge>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">{PUBLIC_BUCKET_TOOLTIP}</TooltipContent>
@@ -199,7 +200,7 @@ const BucketPage: NextPageWithLayout = () => {
 
 BucketPage.getLayout = (page) => (
   <DefaultLayout>
-    <StorageLayout title="Buckets">{page}</StorageLayout>
+    <StorageLayout title={$t('Buckets')}>{page}</StorageLayout>
   </DefaultLayout>
 )
 

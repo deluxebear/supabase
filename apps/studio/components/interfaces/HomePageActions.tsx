@@ -20,6 +20,7 @@ import { useOrgProjectsInfiniteQuery } from '@/data/projects/org-projects-infini
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -82,7 +83,7 @@ export const HomePageActions = ({ slug: _slug, hideNewProject = false }: HomePag
       <div className="flex flex-col gap-2 min-w-0 flex-1 basis-full md:basis-auto sm:flex-row sm:flex-wrap sm:items-center">
         <Input
           ref={searchInputRef}
-          placeholder="Search for a project"
+          placeholder={$t('Search for a project')}
           icon={<Search />}
           size="tiny"
           className="w-full sm:w-32 md:w-64"
@@ -106,7 +107,7 @@ export const HomePageActions = ({ slug: _slug, hideNewProject = false }: HomePag
         <div className="flex items-center gap-2">
           <FilterPopover
             name="Status"
-            title="Filter projects by status"
+            title={$t('Filter projects by status')}
             options={[
               { key: PROJECT_STATUS.ACTIVE_HEALTHY, label: 'Active' },
               { key: PROJECT_STATUS.INACTIVE, label: 'Paused' },
@@ -156,7 +157,7 @@ export const HomePageActions = ({ slug: _slug, hideNewProject = false }: HomePag
             side="bottom"
           >
             <Button asChild icon={<Plus />} variant="primary" size="tiny">
-              <Link href={`/new/${slug}`}>New project</Link>
+              <Link href={`/new/${slug}`}>{$t('New project')}</Link>
             </Button>
           </Shortcut>
         )}

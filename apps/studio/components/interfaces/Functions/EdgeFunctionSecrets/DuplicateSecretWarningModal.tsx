@@ -1,5 +1,7 @@
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 
+import { t as $t } from '@/lib/i18n'
+
 interface DuplicateSecretWarningModalProps {
   visible: boolean
   onCancel: () => void
@@ -19,7 +21,7 @@ export const DuplicateSecretWarningModal = ({
     <ConfirmationModal
       visible={visible}
       size="medium"
-      title="Confirm replacing existing secret"
+      title={$t('Confirm replacing existing secret')}
       confirmLabel="Replace secret"
       confirmLabelLoading="Replacing secret"
       variant="warning"
@@ -28,8 +30,11 @@ export const DuplicateSecretWarningModal = ({
       onConfirm={onConfirm}
     >
       <p className="text-sm text-foreground-light">
-        A secret with the name "{secretName}" already exists. Continuing will replace the existing
-        secret with the new value. This action cannot be undone. Are you sure you want to proceed?
+        {$t('A secret with the name "')}
+        {secretName}
+        {$t(
+          '" already exists. Continuing will replace the existing secret with the new value. This action cannot be undone. Are you sure you want to proceed?'
+        )}
       </p>
     </ConfirmationModal>
   )

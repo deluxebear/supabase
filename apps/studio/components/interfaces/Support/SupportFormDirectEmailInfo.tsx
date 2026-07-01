@@ -2,6 +2,7 @@ import { toast } from 'sonner'
 
 import { NO_PROJECT_MARKER } from './SupportForm.utils'
 import CopyButton from '@/components/ui/CopyButton'
+import { t as $t } from '@/lib/i18n'
 
 interface SupportFormDirectEmailContentProps {
   projectRef: string | null
@@ -13,7 +14,7 @@ export function SupportFormDirectEmailContent({ projectRef }: SupportFormDirectE
   return (
     <div className="text-sm text-foreground-light">
       <p className="flex items-center gap-x-1.5 flex-wrap">
-        Please email us directly at
+        {$t('Please email us directly at')}
         <span className="inline-flex items-center gap-x-1">
           <a
             href={`mailto:support@supabase.com?subject=${encodeURIComponent('Support Request')}${hasProjectRef ? `${encodeURIComponent(' for Project ID: ')}${encodeURIComponent(projectRef)}` : ''}&body=${encodeURIComponent('Here is a detailed description of the problem I am experiencing and any other information that might be helpful...')}`}
@@ -27,20 +28,20 @@ export function SupportFormDirectEmailContent({ projectRef }: SupportFormDirectE
             variant="text"
             text="support@supabase.com"
             iconOnly
-            onClick={() => toast.success('Copied email address to clipboard')}
+            onClick={() => toast.success($t('Copied email address to clipboard'))}
           />
         </span>{' '}
-        and include as much information as possible
+        {$t('and include as much information as possible')}
         {hasProjectRef && (
           <>
-            , along with project ID
+            {$t(', along with project ID')}
             <span className="inline-flex items-center gap-x-1">
               <code className="text-code-inline !text-foreground-light">{projectRef}</code>
               <CopyButton
                 iconOnly
                 variant="text"
                 text={projectRef}
-                onClick={() => toast.success('Copied project ID to clipboard')}
+                onClick={() => toast.success($t('Copied project ID to clipboard'))}
               />
             </span>
           </>

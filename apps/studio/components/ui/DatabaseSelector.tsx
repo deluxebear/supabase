@@ -28,6 +28,7 @@ import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { formatDatabaseID, formatDatabaseRegion } from '@/data/read-replicas/replicas.utils'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 
 interface DatabaseSelectorProps {
@@ -86,7 +87,7 @@ export const DatabaseSelector = ({
         <div className={cn('flex cursor-pointer', className)}>
           {!isForm && (
             <span className="flex items-center text-foreground-lighter px-3 rounded-lg rounded-r-none text-xs border border-button border-r-0">
-              Source
+              {$t('Source')}
             </span>
           )}
           <Button
@@ -170,7 +171,8 @@ export const DatabaseSelector = ({
                         <TooltipTrigger asChild>
                           <div className="px-2 py-1.5 w-full flex items-center justify-between">
                             <p className="text-xs text-foreground-lighter">
-                              Read replica ({region} - {id})
+                              {$t('Read replica (')}
+                              {region} - {id})
                             </p>
                           </div>
                         </TooltipTrigger>
@@ -234,7 +236,7 @@ export const DatabaseSelector = ({
                     className="w-full flex items-center gap-2"
                   >
                     <Plus size={14} strokeWidth={1.5} />
-                    <p>Create a new read replica</p>
+                    <p>{$t('Create a new read replica')}</p>
                   </Link>
                 </CommandItem>
               </CommandGroup>

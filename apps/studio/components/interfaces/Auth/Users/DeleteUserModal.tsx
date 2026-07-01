@@ -4,6 +4,7 @@ import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 
 import { useUserDeleteMutation } from '@/data/auth/user-delete-mutation'
 import { User } from '@/data/auth/users-infinite-query'
+import { t as $t } from '@/lib/i18n'
 
 interface DeleteUserModalProps {
   visible: boolean
@@ -39,7 +40,7 @@ export const DeleteUserModal = ({
     <ConfirmationModal
       visible={visible}
       variant="destructive"
-      title="Confirm to delete user"
+      title={$t('Confirm to delete user')}
       loading={isDeleting}
       confirmLabel="Delete"
       onCancel={() => onClose()}
@@ -51,7 +52,7 @@ export const DeleteUserModal = ({
       }}
     >
       <p className="text-sm text-foreground-light">
-        This is permanent! Are you sure you want to delete the user{' '}
+        {$t('This is permanent! Are you sure you want to delete the user')}{' '}
         {selectedUser?.email ?? selectedUser?.phone ?? 'this user'}?
       </p>
     </ConfirmationModal>

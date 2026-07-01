@@ -9,6 +9,7 @@ import { BannerCard } from '../BannerCard'
 import { useBannerStack } from '../BannerStackProvider'
 import { useFeaturePreviewModal } from '@/components/interfaces/App/FeaturePreview/FeaturePreviewContext'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
+import { t as $t } from '@/lib/i18n'
 
 const text = 'select * from colors'
 
@@ -45,7 +46,7 @@ export const BannerRlsTester = () => {
       <div className="flex flex-col gap-y-4">
         <div className="flex flex-col gap-y-2 items-start">
           <Badge variant="success" className="-ml-0.5 uppercase inline-flex items-center mb-2">
-            Preview
+            {$t('Preview')}
           </Badge>
 
           <div className={cn('transition-all bg-surface-100 w-full border rounded-md')}>
@@ -83,11 +84,11 @@ export const BannerRlsTester = () => {
                   <div className="flex items-center gap-x-2">
                     <Check size={12} strokeWidth={3} className="text-brand" />
                     <p>
-                      Can access <code className="text-code-inline">public.colors</code>
+                      {$t('Can access')} <code className="text-code-inline">public.colors</code>
                     </p>
                   </div>
                   <div>
-                    <p className="text-foreground-light mt-0.5 ml-5">2 policies applied</p>
+                    <p className="text-foreground-light mt-0.5 ml-5">{$t('2 policies applied')}</p>
                   </div>
                 </motion.div>
               )}
@@ -95,9 +96,9 @@ export const BannerRlsTester = () => {
           </div>
         </div>
         <div className="flex flex-col gap-y-1 mb-2">
-          <p className="text-sm font-medium">Row Level Security (RLS) Tester</p>
+          <p className="text-sm font-medium">{$t('Row Level Security (RLS) Tester')}</p>
           <p className="text-xs text-foreground-lighter text-balance">
-            Verify your RLS policies are correct by running queries as a specific user
+            {$t('Verify your RLS policies are correct by running queries as a specific user')}
           </p>
         </div>
         <Button
@@ -105,7 +106,7 @@ export const BannerRlsTester = () => {
           className="w-min"
           onClick={() => selectFeaturePreview(LOCAL_STORAGE_KEYS.UI_PREVIEW_RLS_TESTER)}
         >
-          Enable feature preview
+          {$t('Enable feature preview')}
         </Button>
       </div>
     </BannerCard>

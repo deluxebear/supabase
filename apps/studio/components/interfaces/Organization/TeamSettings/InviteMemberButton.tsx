@@ -63,6 +63,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
 import { DOCS_URL } from '@/lib/constants'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -276,24 +277,26 @@ export const InviteMemberButton = () => {
               },
             }}
           >
-            Invite members
+            {$t('Invite members')}
           </ButtonTooltip>
         </Shortcut>
       </SheetTrigger>
       <SheetContent className="flex flex-col gap-0">
         <SheetHeader>
-          <SheetTitle>Invite team members</SheetTitle>
+          <SheetTitle>{$t('Invite team members')}</SheetTitle>
           <SheetDescription>
-            Send invitations and choose the access each new team member receives.
+            {$t('Send invitations and choose the access each new team member receives.')}
           </SheetDescription>
         </SheetHeader>
         <Admonition
           type="note"
           showIcon={false}
-          title="Single Sign-On (SSO) available"
+          title={$t('Single Sign-On (SSO) available')}
           layout={!hasAccessToSso ? 'vertical' : 'horizontal'}
           className="rounded-none border-t-0 border-x-0 px-5"
-          description="Enforce login via your company identity provider for added security and access control. Available on Team plan and above."
+          description={$t(
+            'Enforce login via your company identity provider for added security and access control. Available on Team plan and above.'
+          )}
           actions={
             <>
               <DocsButton href={`${DOCS_URL}/guides/platform/sso`} />
@@ -320,12 +323,12 @@ export const InviteMemberButton = () => {
                 render={({ field }) => (
                   <FormItemLayout
                     layout="horizontal"
-                    label="Role"
+                    label={$t('Role')}
                     description={
                       <>
-                        Learn more about{' '}
+                        {$t('Learn more about')}{' '}
                         <InlineLink href={`${DOCS_URL}/guides/platform/access-control`}>
-                          roles and permissions
+                          {$t('roles and permissions')}
                         </InlineLink>
                       </>
                     }
@@ -374,21 +377,25 @@ export const InviteMemberButton = () => {
                   render={({ field }) => (
                     <FormItemLayout
                       layout="horizontal"
-                      label="Invitation type"
-                      description="Choose how the invitee should authenticate"
+                      label={$t('Invitation type')}
+                      description={$t('Choose how the invitee should authenticate')}
                     >
                       <FormControl className="col-span-6">
                         <Select value={field.value} onValueChange={field.onChange}>
                           <SelectTrigger>
-                            <SelectValue placeholder="Automatic (based on your account)" />
+                            <SelectValue placeholder={$t('Automatic (based on your account)')} />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectGroup>
                               <SelectItem value="auto">
-                                Automatic (based on your account)
+                                {$t('Automatic (based on your account)')}
                               </SelectItem>
-                              <SelectItem value="sso">Require SSO authentication</SelectItem>
-                              <SelectItem value="non-sso">Email/password authentication</SelectItem>
+                              <SelectItem value="sso">
+                                {$t('Require SSO authentication')}
+                              </SelectItem>
+                              <SelectItem value="non-sso">
+                                {$t('Email/password authentication')}
+                              </SelectItem>
                             </SelectGroup>
                           </SelectContent>
                         </Select>
@@ -404,8 +411,10 @@ export const InviteMemberButton = () => {
                   render={({ field }) => (
                     <FormItemLayout
                       layout="horizontal"
-                      label="Grant this role on all projects"
-                      description="Apply this role to all current and future projects in the organization"
+                      label={$t('Grant this role on all projects')}
+                      description={$t(
+                        'Apply this role to all current and future projects in the organization'
+                      )}
                     >
                       <FormControl className="col-span-6">
                         <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -421,8 +430,8 @@ export const InviteMemberButton = () => {
                   render={({ field }) => (
                     <FormItemLayout
                       layout="horizontal"
-                      label="Select a project"
-                      description="Project access can be adjusted after the user joins"
+                      label={$t('Select a project')}
+                      description={$t('Project access can be adjusted after the user joins')}
                     >
                       <FormControl className="col-span-6">
                         <OrganizationProjectSelector
@@ -445,14 +454,14 @@ export const InviteMemberButton = () => {
                 name="email"
                 control={form.control}
                 render={({ field }) => (
-                  <FormItemLayout layout="horizontal" label="Email addresses">
+                  <FormItemLayout layout="horizontal" label={$t('Email addresses')}>
                     <FormControl className="col-span-6">
                       <ExpandingTextArea
                         autoFocus
                         {...field}
                         autoComplete="off"
                         disabled={isInviting}
-                        placeholder="name@example.com, name2@example.com, ..."
+                        placeholder={$t('name@example.com, name2@example.com, ...')}
                         className="max-h-48"
                         data-1p-ignore
                         data-lpignore="true"
@@ -468,7 +477,7 @@ export const InviteMemberButton = () => {
         </SheetSection>
         <SheetFooter>
           <Button variant="default" onClick={confirmOnClose}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Shortcut
             id={SHORTCUT_IDS.ORG_TEAM_INVITE_SUBMIT}
@@ -489,7 +498,9 @@ export const InviteMemberButton = () => {
       </SheetContent>
       <DiscardChangesConfirmationDialog
         {...discardChangesModalProps}
-        description="Are you sure you want to discard your changes? Your invitation will not be sent."
+        description={$t(
+          'Are you sure you want to discard your changes? Your invitation will not be sent.'
+        )}
       />
     </Sheet>
   )

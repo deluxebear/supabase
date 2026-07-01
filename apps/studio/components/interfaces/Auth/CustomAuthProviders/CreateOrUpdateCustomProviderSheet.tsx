@@ -42,6 +42,7 @@ import {
   type OAuthCustomProviderUpdateVariables,
 } from '@/data/oauth-custom-providers/oauth-custom-provider-update-mutation'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
+import { t as $t } from '@/lib/i18n'
 
 interface CreateOrUpdateCustomProviderSheetProps {
   visible: boolean
@@ -160,14 +161,14 @@ export const CreateOrUpdateCustomProviderSheet = ({
   const { mutate: createCustomProvider, isPending: isCreating } =
     useOAuthCustomProviderCreateMutation({
       onSuccess: () => {
-        toast.success('Custom provider created successfully')
+        toast.success($t('Custom provider created successfully'))
         onClose()
       },
     })
   const { mutate: updateCustomProvider, isPending: isUpdating } =
     useOAuthCustomProviderUpdateMutation({
       onSuccess: () => {
-        toast.success('Custom provider updated successfully')
+        toast.success($t('Custom provider updated successfully'))
         onClose()
       },
     })
@@ -267,7 +268,7 @@ export const CreateOrUpdateCustomProviderSheet = ({
               )}
             >
               <X className="h-3 w-3" />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{$t('Close')}</span>
             </SheetClose>
             <SheetTitle className="truncate">
               {isEditMode ? 'Update Custom Auth Provider' : 'Create Custom Auth Provider'}
@@ -283,8 +284,10 @@ export const CreateOrUpdateCustomProviderSheet = ({
                 render={({ field }) => (
                   <FormItemLayout
                     layout="horizontal"
-                    label="Provider Identifier"
-                    description="Lowercase letters, numbers, and hyphens only. Used in SDK: signInWithOAuth({ provider: 'custom:my-company' })"
+                    label={$t('Provider Identifier')}
+                    description={$t(
+                      "Lowercase letters, numbers, and hyphens only. Used in SDK: signInWithOAuth({ provider: 'custom:my-company' })"
+                    )}
                   >
                     <FormControl>
                       <InputGroup>
@@ -311,9 +314,9 @@ export const CreateOrUpdateCustomProviderSheet = ({
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItemLayout layout="horizontal" label="Display Name">
+                  <FormItemLayout layout="horizontal" label={$t('Display Name')}>
                     <FormControl>
-                      <Input {...field} placeholder="Provider name" />
+                      <Input {...field} placeholder={$t('Provider name')} />
                     </FormControl>
                   </FormItemLayout>
                 )}
@@ -323,19 +326,19 @@ export const CreateOrUpdateCustomProviderSheet = ({
                 control={form.control}
                 name="provider_type"
                 render={({ field }) => (
-                  <FormItemLayout layout="horizontal" label="Configuration Method">
+                  <FormItemLayout layout="horizontal" label={$t('Configuration Method')}>
                     <RadioGroupStacked value={field.value} onValueChange={field.onChange}>
                       <RadioGroupStackedItem
                         className="[&>div]:px-3"
                         value="oidc"
-                        label="Auto-discovery (Recommended)"
-                        description="Automatically fetch OAuth endpoints"
+                        label={$t('Auto-discovery (Recommended)')}
+                        description={$t('Automatically fetch OAuth endpoints')}
                       />
                       <RadioGroupStackedItem
                         className="[&>div]:px-3"
                         value="oauth2"
-                        label="Manual configuration"
-                        description="Enter endpoints myself"
+                        label={$t('Manual configuration')}
+                        description={$t('Enter endpoints myself')}
                       />
                     </RadioGroupStacked>
                   </FormItemLayout>
@@ -344,15 +347,17 @@ export const CreateOrUpdateCustomProviderSheet = ({
             </SheetSection>
             <Separator />
             <SheetSection className="grow px-5 space-y-4">
-              <FormSectionLabel>OAuth Endpoints</FormSectionLabel>
+              <FormSectionLabel>{$t('OAuth Endpoints')}</FormSectionLabel>
               <FormField
                 control={form.control}
                 name="issuer"
                 render={({ field }) => (
                   <FormItemLayout
                     layout="horizontal"
-                    label="Issuer URL"
-                    description="Base URL of your OAuth provider. Discovery runs when you save."
+                    label={$t('Issuer URL')}
+                    description={$t(
+                      'Base URL of your OAuth provider. Discovery runs when you save.'
+                    )}
                   >
                     <FormControl>
                       <Input {...field} placeholder="https://auth.company.com" />
@@ -367,7 +372,7 @@ export const CreateOrUpdateCustomProviderSheet = ({
                   control={form.control}
                   name="authorization_url"
                   render={({ field }) => (
-                    <FormItemLayout layout="horizontal" label="Authorization URL">
+                    <FormItemLayout layout="horizontal" label={$t('Authorization URL')}>
                       <FormControl>
                         <Input {...field} placeholder="https://auth.company.com/oauth/authorize" />
                       </FormControl>
@@ -378,7 +383,7 @@ export const CreateOrUpdateCustomProviderSheet = ({
                   control={form.control}
                   name="token_url"
                   render={({ field }) => (
-                    <FormItemLayout layout="horizontal" label="Token URL">
+                    <FormItemLayout layout="horizontal" label={$t('Token URL')}>
                       <FormControl>
                         <Input {...field} placeholder="https://auth.company.com/oauth/token" />
                       </FormControl>
@@ -389,7 +394,7 @@ export const CreateOrUpdateCustomProviderSheet = ({
                   control={form.control}
                   name="userinfo_url"
                   render={({ field }) => (
-                    <FormItemLayout layout="horizontal" label="Userinfo URL">
+                    <FormItemLayout layout="horizontal" label={$t('Userinfo URL')}>
                       <FormControl>
                         <Input {...field} placeholder="https://auth.company.com/oauth/userinfo" />
                       </FormControl>
@@ -402,8 +407,8 @@ export const CreateOrUpdateCustomProviderSheet = ({
                   render={({ field }) => (
                     <FormItemLayout
                       layout="horizontal"
-                      label="JWKS URI"
-                      description="Required for ID token verification"
+                      label={$t('JWKS URI')}
+                      description={$t('Required for ID token verification')}
                     >
                       <FormControl>
                         <Input
@@ -423,8 +428,10 @@ export const CreateOrUpdateCustomProviderSheet = ({
                   render={({ field }) => (
                     <FormItemLayout
                       layout="horizontal"
-                      label="Discovery URL"
-                      description="Leave empty to use standard path: {issuer}/.well-known/openid-configuration. Only needed if your provider uses a non-standard discovery path. Discovery runs when you save."
+                      label={$t('Discovery URL')}
+                      description={$t(
+                        'Leave empty to use standard path: {issuer}/.well-known/openid-configuration. Only needed if your provider uses a non-standard discovery path. Discovery runs when you save.'
+                      )}
                     >
                       <FormControl>
                         <Input
@@ -447,9 +454,9 @@ export const CreateOrUpdateCustomProviderSheet = ({
                 control={form.control}
                 name="client_id"
                 render={({ field }) => (
-                  <FormItemLayout layout="horizontal" label="Client ID">
+                  <FormItemLayout layout="horizontal" label={$t('Client ID')}>
                     <FormControl>
-                      <Input {...field} placeholder="Client ID" />
+                      <Input {...field} placeholder={$t('Client ID')} />
                     </FormControl>
                   </FormItemLayout>
                 )}
@@ -458,9 +465,9 @@ export const CreateOrUpdateCustomProviderSheet = ({
                 control={form.control}
                 name="client_secret"
                 render={({ field }) => (
-                  <FormItemLayout layout="horizontal" label="Client Secret">
+                  <FormItemLayout layout="horizontal" label={$t('Client Secret')}>
                     <FormControl>
-                      <Input {...field} type="password" placeholder="Client secret" />
+                      <Input {...field} type="password" placeholder={$t('Client secret')} />
                     </FormControl>
                   </FormItemLayout>
                 )}
@@ -474,11 +481,11 @@ export const CreateOrUpdateCustomProviderSheet = ({
                 render={({ field }) => (
                   <FormItemLayout
                     layout="horizontal"
-                    label="Scopes"
-                    description="Comma-separated list. Common: openid, email, profile"
+                    label={$t('Scopes')}
+                    description={$t('Comma-separated list. Common: openid, email, profile')}
                   >
                     <FormControl>
-                      <Input {...field} placeholder="openid, email, profile" />
+                      <Input {...field} placeholder={$t('openid, email, profile')} />
                     </FormControl>
                   </FormItemLayout>
                 )}
@@ -489,8 +496,10 @@ export const CreateOrUpdateCustomProviderSheet = ({
                 render={({ field }) => (
                   <FormItemLayout
                     layout="horizontal"
-                    label="Allow users without email"
-                    description="Allows the user to successfully authenticate when the provider does not return an email address."
+                    label={$t('Allow users without email')}
+                    description={$t(
+                      'Allows the user to successfully authenticate when the provider does not return an email address.'
+                    )}
                   >
                     <FormControl>
                       <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -503,8 +512,8 @@ export const CreateOrUpdateCustomProviderSheet = ({
             <SheetSection className="grow px-5 space-y-4">
               <FormItemLayout
                 layout="horizontal"
-                label="Callback URL"
-                description="Configure this in your OAuth provider's settings."
+                label={$t('Callback URL')}
+                description={$t("Configure this in your OAuth provider's settings.")}
               >
                 <PasswordInput
                   copy
@@ -519,7 +528,7 @@ export const CreateOrUpdateCustomProviderSheet = ({
         </Form>
         <SheetFooter>
           <Button variant="default" onClick={confirmOnClose}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button type="submit" form={FORM_ID} loading={isCreating || isUpdating}>
             {isEditMode ? 'Update provider' : 'Create and enable provider'}

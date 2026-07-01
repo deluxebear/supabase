@@ -3,6 +3,7 @@ import { Tabs_Shadcn_, TabsList_Shadcn_, TabsTrigger_Shadcn_ } from 'ui'
 
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { FilterPopover } from '@/components/ui/FilterPopover'
+import { t as $t } from '@/lib/i18n'
 import { AdvisorSeverity, AdvisorTab } from '@/state/advisor-state'
 
 const severityOptions = [
@@ -43,20 +44,20 @@ export const AdvisorFilters = ({
         <Tabs_Shadcn_ value={activeTab} onValueChange={onTabChange} className="h-full pl-4">
           <TabsList_Shadcn_ className="border-b-0 gap-4 h-full">
             <TabsTrigger_Shadcn_ value="all" className="h-full text-xs">
-              All
+              {$t('All')}
             </TabsTrigger_Shadcn_>
             <TabsTrigger_Shadcn_ value="security" className="h-full text-xs">
-              Security
+              {$t('Security')}
             </TabsTrigger_Shadcn_>
             <TabsTrigger_Shadcn_ value="performance" className="h-full text-xs">
-              Performance
+              {$t('Performance')}
             </TabsTrigger_Shadcn_>
             {isPlatform && (
               <TabsTrigger_Shadcn_
                 value="messages"
                 className="h-full text-xs flex items-center gap-2"
               >
-                Messages
+                {$t('Messages')}
               </TabsTrigger_Shadcn_>
             )}
           </TabsList_Shadcn_>

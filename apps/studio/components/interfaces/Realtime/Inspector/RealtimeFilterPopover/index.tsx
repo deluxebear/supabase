@@ -25,6 +25,7 @@ import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useDatabasePublicationsQuery } from '@/data/database-publications/database-publications-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -95,11 +96,11 @@ export const RealtimeFilterPopover = ({
       >
         {isFiltered ? (
           <>
-            <span className="mr-1">Filtered by </span>
+            <span className="mr-1">{$t('Filtered by')} </span>
             <Badge variant="success">table: {config.table}</Badge>
           </>
         ) : (
-          <span className="mr-1">Filter messages</span>
+          <span className="mr-1">{$t('Filter messages')}</span>
         )}
       </Button>
     </PopoverTrigger>
@@ -117,7 +118,7 @@ export const RealtimeFilterPopover = ({
         )}
         <PopoverContent className="p-0 w-[365px]" align="start">
           <div className="border-b border-overlay text-xs px-4 py-3 text-foreground">
-            Listen to event types
+            {$t('Listen to event types')}
           </div>
           <div className="py-3 px-4 border-b border-overlay">
             <div className="flex items-center justify-between gap-2">
@@ -127,7 +128,7 @@ export const RealtimeFilterPopover = ({
                   className="bg-foreground rounded-sm text-background-muted"
                 />
                 <label htmlFor="toggle-presence" className="text-sm">
-                  Presence
+                  {$t('Presence')}
                 </label>
               </div>
               <Switch
@@ -140,7 +141,7 @@ export const RealtimeFilterPopover = ({
               />
             </div>
             <p className="text-xs text-foreground-light pt-1">
-              Store and synchronize user state consistently across clients
+              {$t('Store and synchronize user state consistently across clients')}
             </p>
           </div>
           <div className="py-3 px-4 border-b border-overlay">
@@ -151,7 +152,7 @@ export const RealtimeFilterPopover = ({
                   className="bg-foreground rounded-sm text-background-muted"
                 />
                 <label htmlFor="toggle-broadcast" className="text-sm">
-                  Broadcast
+                  {$t('Broadcast')}
                 </label>
               </div>
               <Switch
@@ -164,7 +165,7 @@ export const RealtimeFilterPopover = ({
               />
             </div>
             <p className="text-xs  text-foreground-light pt-1">
-              Send any data to any client subscribed to the same channel
+              {$t('Send any data to any client subscribed to the same channel')}
             </p>
           </div>
           <div className="py-3 px-4 border-b border-overlay">
@@ -181,7 +182,7 @@ export const RealtimeFilterPopover = ({
                   htmlFor="toggle-db-changes"
                   className={cn('text-sm', !config.enableDbChanges && 'text-foreground-lighter')}
                 >
-                  Database changes
+                  {$t('Database changes')}
                 </label>
               </div>
               <Switch
@@ -195,17 +196,17 @@ export const RealtimeFilterPopover = ({
               />
             </div>
             <p className="text-xs text-foreground-light pt-1">
-              Listen for Database inserts, updates, deletes and more
+              {$t('Listen for Database inserts, updates, deletes and more')}
             </p>
             {!config.enableDbChanges && (
               <p className="text-xs text-foreground-light mt-2">
-                Enable{' '}
+                {$t('Enable')}{' '}
                 <InlineLink
                   href={`/project/${ref}/database/publications${!!realtimePublication ? `/${realtimePublication.id}` : ''}`}
                 >
-                  realtime publications
+                  {$t('realtime publications')}
                 </InlineLink>{' '}
-                for your tables to listen for database changes
+                {$t('for your tables to listen for database changes')}
               </p>
             )}
           </div>
@@ -213,7 +214,7 @@ export const RealtimeFilterPopover = ({
           {tempConfig.enableDbChanges && config.enableDbChanges && (
             <>
               <div className="border-b border-overlay text-xs px-4 py-3 text-foreground">
-                Filter messages from database changes
+                {$t('Filter messages from database changes')}
               </div>
               <div className="flex border-b border-overlay p-4 gap-y-2 flex-col">
                 <FilterSchema
@@ -238,14 +239,14 @@ export const RealtimeFilterPopover = ({
                   />
                 </div>
                 <p className="text-xs text-foreground-light pl-[80px]">
-                  Learn more about realtime filtering in{' '}
+                  {$t('Learn more about realtime filtering in')}{' '}
                   <Link
                     className="underline"
                     target="_blank"
                     rel="noreferrer"
                     href={`${DOCS_URL}/guides/realtime/postgres-changes#available-filters`}
                   >
-                    our docs
+                    {$t('our docs')}
                   </Link>
                 </p>
               </div>
@@ -253,14 +254,14 @@ export const RealtimeFilterPopover = ({
           )}
           <div className="px-4 py-2 gap-2 flex justify-end">
             <Button variant="default" onClick={() => setOpen(false)}>
-              Cancel
+              {$t('Cancel')}
             </Button>
-            <Button onClick={() => setApplyConfigOpen(true)}>Apply</Button>
+            <Button onClick={() => setApplyConfigOpen(true)}>{$t('Apply')}</Button>
           </div>
         </PopoverContent>
       </Popover>
       <ConfirmationModal
-        title="Previously found messages will be lost"
+        title={$t('Previously found messages will be lost')}
         variant="destructive"
         confirmLabel="Confirm"
         size="small"
@@ -274,8 +275,9 @@ export const RealtimeFilterPopover = ({
         }}
       >
         <p className="text-sm text-foreground-light">
-          The realtime inspector will clear currently collected messages and start listening for new
-          messages matching the updated filters.
+          {$t(
+            'The realtime inspector will clear currently collected messages and start listening for new messages matching the updated filters.'
+          )}
         </p>
       </ConfirmationModal>
     </>

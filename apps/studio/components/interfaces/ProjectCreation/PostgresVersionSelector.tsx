@@ -17,6 +17,7 @@ import { useProjectCreationPostgresVersionsQuery } from '@/data/config/project-c
 import { useProjectUnpausePostgresVersionsQuery } from '@/data/config/project-unpause-postgres-versions-query'
 import { PostgresEngine, ReleaseChannel } from '@/data/projects/new-project.constants'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface PostgresVersionDetails {
   postgresEngine?: Exclude<PostgresEngine, '13' | '14'>
@@ -113,7 +114,7 @@ export const PostgresVersionSelector = ({
         }
       >
         <SelectTrigger className="[&>:nth-child(1)]:w-full [&>:nth-child(1)]:flex [&>:nth-child(1)]:items-start">
-          <SelectValue placeholder="Select a Postgres version for your project" />
+          <SelectValue placeholder={$t('Select a Postgres version for your project')} />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
@@ -134,7 +135,7 @@ export const PostgresVersionSelector = ({
                         <Badge variant="warning">{value.release_channel}</Badge>
                       )}
                       {value.postgres_engine.includes('oriole') && (
-                        <Badge variant="default">OrioleDB</Badge>
+                        <Badge variant="default">{$t('OrioleDB')}</Badge>
                       )}
                     </div>
                   </div>

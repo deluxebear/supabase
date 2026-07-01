@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { Button } from 'ui'
 import { Admonition } from 'ui-patterns/admonition'
 
+import { t as $t } from '@/lib/i18n'
+
 // [Joshen] In the future, conditionals should be from resource exhaustion endpoint as single source of truth
 interface DiskIOBandwidthWarningsProps {
   hasAccessToComputeSizes: boolean
@@ -24,13 +26,13 @@ export const DiskIOBandwidthWarnings = ({
     return (
       <Admonition
         type="destructive"
-        title="Your Disk IO Budget has been used up"
+        title={$t('Your Disk IO Budget has been used up')}
         description={
           <>
             <p className="mb-4">
-              Your workload has used up all your Disk IO Budget and is now running at the baseline
-              performance. If you need consistent disk performance, consider upgrading to a larger
-              compute add-on.
+              {$t(
+                'Your workload has used up all your Disk IO Budget and is now running at the baseline performance. If you need consistent disk performance, consider upgrading to a larger compute add-on.'
+              )}
             </p>
             <Button asChild variant="danger">
               <Link href={upgradeUrl}>
@@ -47,14 +49,14 @@ export const DiskIOBandwidthWarnings = ({
     return (
       <Admonition
         type="destructive"
-        title="You are close to running out of Disk IO Budget"
+        title={$t('You are close to running out of Disk IO Budget')}
         description={
           <>
             <p className="mb-4">
-              Your workload has consumed {latestIoBudgetConsumption}% of your Disk IO Budget. If you
-              use up all your Disk IO Budget, your instance will reverted to baseline performance.
-              If you need consistent disk performance, consider upgrading to a larger compute
-              add-on.
+              {$t('Your workload has consumed')} {latestIoBudgetConsumption}
+              {$t(
+                '% of your Disk IO Budget. If you use up all your Disk IO Budget, your instance will reverted to baseline performance. If you need consistent disk performance, consider upgrading to a larger compute add-on.'
+              )}
             </p>
             <Button asChild variant="danger">
               <Link href={upgradeUrl}>
@@ -71,13 +73,13 @@ export const DiskIOBandwidthWarnings = ({
     return (
       <Admonition
         type="warning"
-        title="You ran out of IO Budget at least once"
+        title={$t('You ran out of IO Budget at least once')}
         description={
           <>
             <p className="mb-4">
-              Your workload has used up all your Disk IO Budget and reverted to baseline performance
-              at least once during this billing cycle. If you need consistent disk performance,
-              consider upgrading to a larger compute add-on.
+              {$t(
+                'Your workload has used up all your Disk IO Budget and reverted to baseline performance at least once during this billing cycle. If you need consistent disk performance, consider upgrading to a larger compute add-on.'
+              )}
             </p>
             <Button asChild variant="warning">
               <Link href={upgradeUrl}>
@@ -94,14 +96,14 @@ export const DiskIOBandwidthWarnings = ({
     return (
       <Admonition
         type="warning"
-        title="You were close to using all your IO Budget at least once"
+        title={$t('You were close to using all your IO Budget at least once')}
         description={
           <>
             <p className="mb-4">
-              Your workload has consumed {highestIoBudgetConsumption}% of your Disk IO budget during
-              this billing cycle. If you use up all your Disk IO Budget, your instance will reverted
-              to baseline performance. If you need consistent disk performance, consider upgrading
-              to a larger compute add-on.
+              {$t('Your workload has consumed')} {highestIoBudgetConsumption}
+              {$t(
+                '% of your Disk IO budget during this billing cycle. If you use up all your Disk IO Budget, your instance will reverted to baseline performance. If you need consistent disk performance, consider upgrading to a larger compute add-on.'
+              )}
             </p>
             <Button asChild variant="warning">
               <Link href={upgradeUrl}>

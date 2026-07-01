@@ -2,6 +2,7 @@ import { PropsWithChildren } from 'react'
 
 import { unixMicroToIsoTimestamp } from './Messages.utils'
 import CopyButton from '@/components/ui/CopyButton'
+import { t as $t } from '@/lib/i18n'
 
 export const RowLayout = ({ children }: PropsWithChildren<{}>) => (
   <div className="flex h-full w-full items-center gap-4">{children}</div>
@@ -15,7 +16,7 @@ export const SelectionDetailedTimestampRow = ({
   hideCopy?: boolean
 }) => (
   <SelectionDetailedRow
-    label="Timestamp"
+    label={$t('Timestamp')}
     value={unixMicroToIsoTimestamp(value)}
     hideCopy={hideCopy}
   />
@@ -42,7 +43,7 @@ export const SelectionDetailedRow = ({
           text={value}
           className="group-hover:opacity-100 opacity-0 my-auto transition col-span-2  h-4 w-4 px-0 py-0"
           variant="text"
-          title="Copy to clipboard"
+          title={$t('Copy to clipboard')}
         />
       )}
     </div>

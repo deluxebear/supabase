@@ -18,6 +18,7 @@ import { CodeBlock } from 'ui-patterns/CodeBlock'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { FDWTable } from '@/data/fdw/fdws-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface InsertDataDialogProps {
   table: string
@@ -39,12 +40,12 @@ values (
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="default">Insert data</Button>
+        <Button variant="default">{$t('Insert data')}</Button>
       </DialogTrigger>
       <DialogContent aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>
-            Insert data into <code className="text-code-inline">{table}</code>
+            {$t('Insert data into')} <code className="text-code-inline">{table}</code>
           </DialogTitle>
         </DialogHeader>
 
@@ -52,11 +53,13 @@ values (
 
         <DialogSection className="flex flex-col gap-y-2">
           <p className="text-sm">
-            The Iceberg Foreign Data Wrapper (FDW) supports inserting data into Iceberg tables using
-            standard SQL <code className="text-code-inline">INSERT</code> statements.
+            {$t(
+              'The Iceberg Foreign Data Wrapper (FDW) supports inserting data into Iceberg tables using standard SQL'
+            )}{' '}
+            <code className="text-code-inline">INSERT</code> statements.
           </p>
           <p className="text-sm">
-            Use the following SQL snippet to insert data into your iceberg table:
+            {$t('Use the following SQL snippet to insert data into your iceberg table:')}
           </p>
         </DialogSection>
 
@@ -78,7 +81,7 @@ values (
           />
           <Button asChild variant="default" icon={<SqlEditor />}>
             <Link href={`/project/${ref}/sql/new?content=${encodeURIComponent(sql)}`}>
-              Open in SQL Editor
+              {$t('Open in SQL Editor')}
             </Link>
           </Button>
         </DialogFooter>

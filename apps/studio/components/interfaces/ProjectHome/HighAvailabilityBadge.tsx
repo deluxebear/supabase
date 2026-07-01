@@ -4,6 +4,7 @@ import { cn, HoverCard, HoverCardContent, HoverCardTrigger, Separator } from 'ui
 
 import { ServerLightGrid } from './ServerLightGrid'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface HighAvailabilityBadgeProps {
   size?: 'default' | 'small'
@@ -33,9 +34,10 @@ export function HighAvailabilityBadge({ size = 'default' }: HighAvailabilityBadg
         <Separator />
         <div className="flex flex-col gap-1 p-3 px-5">
           <p className="text-sm text-foreground-light">
-            Driven by <span className="text-foreground">Multigres</span>, a horizontally scalable
-            Postgres architecture that supports highly-available and globally distributed
-            deployments.
+            {$t('Driven by')} <span className="text-foreground">{$t('Multigres')}</span>
+            {$t(
+              ', a horizontally scalable Postgres architecture that supports highly-available and globally distributed deployments.'
+            )}
           </p>
           <Link
             href={`${DOCS_URL}/guides/deployment/high-availability`}
@@ -43,7 +45,7 @@ export function HighAvailabilityBadge({ size = 'default' }: HighAvailabilityBadg
             rel="noopener noreferrer"
             className="mt-1 inline-flex items-center gap-1 text-xs text-foreground-lighter transition-colors hover:text-foreground"
           >
-            Read more
+            {$t('Read more')}
             <ArrowRight size={12} strokeWidth={1.5} />
           </Link>
         </div>

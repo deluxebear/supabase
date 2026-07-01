@@ -4,6 +4,7 @@ import { Admonition } from 'ui-patterns/admonition'
 
 import PartnerIcon from '@/components/ui/PartnerIcon'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
+import { t as $t } from '@/lib/i18n'
 
 export type StripeTokenStatus = 'connected' | 'attention' | 'unknown'
 
@@ -34,12 +35,14 @@ export function StripePaymentConnection({
     return (
       <Admonition
         type="warning"
-        title="Stripe payment connection needs attention"
-        description="The payment token linked to this organisation may be invalid or expired. To keep billing active, review and update it in your Stripe Dashboard."
+        title={$t('Stripe payment connection needs attention')}
+        description={$t(
+          'The payment token linked to this organisation may be invalid or expired. To keep billing active, review and update it in your Stripe Dashboard.'
+        )}
         actions={
           <Button asChild variant="warning" iconRight={<ExternalLink size={14} />}>
             <a href={STRIPE_DASHBOARD_URL} target="_blank" rel="noopener noreferrer">
-              Review in Stripe Dashboard
+              {$t('Review in Stripe Dashboard')}
             </a>
           </Button>
         }
@@ -51,8 +54,8 @@ export function StripePaymentConnection({
     return (
       <Admonition
         type="default"
-        title="Stripe payment setup in progress"
-        description="Your Stripe payment connection is being configured. Check back shortly."
+        title={$t('Stripe payment setup in progress')}
+        description={$t('Your Stripe payment connection is being configured. Check back shortly.')}
       />
     )
   }
@@ -65,13 +68,13 @@ export function StripePaymentConnection({
         size="large"
       />
       <div className="space-y-1">
-        <p className="text-sm text-foreground">Payment managed through Stripe</p>
+        <p className="text-sm text-foreground">{$t('Payment managed through Stripe')}</p>
         <p className="text-sm text-foreground-light max-w-sm text-balance">
-          Billing for this organisation is handled via a connected Stripe payment token.
+          {$t('Billing for this organisation is handled via a connected Stripe payment token.')}
         </p>
         {hasTokenSummary && (
           <p className="text-xs text-foreground-light">
-            Token ending in {tokenLast4} expires {tokenExpiry}.
+            {$t('Token ending in')} {tokenLast4} expires {tokenExpiry}.
           </p>
         )}
       </div>
@@ -81,7 +84,7 @@ export function StripePaymentConnection({
           target="_blank"
           rel="noopener noreferrer"
         >
-          Manage via Stripe CLI
+          {$t('Manage via Stripe CLI')}
         </a>
       </Button>
     </div>

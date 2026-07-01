@@ -6,6 +6,7 @@ import { TextConfirmModal } from '@/components/ui/TextConfirmModalWrapper'
 import { useDatabaseTriggerDeleteMutation } from '@/data/database-triggers/database-trigger-delete-mutation'
 import { useDatabaseHooksQuery } from '@/data/database-triggers/database-triggers-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const DeleteHookModal = () => {
   const { data: project } = useSelectedProjectQuery()
@@ -35,7 +36,7 @@ export const DeleteHookModal = () => {
 
   async function handleDelete() {
     if (!project) return console.error('Project ref is required')
-    if (!selectedHook) return toast.error('Unable to find selected hook')
+    if (!selectedHook) return toast.error($t('Unable to find selected hook'))
 
     deleteDatabaseTrigger({
       trigger: selectedHook,
@@ -46,7 +47,7 @@ export const DeleteHookModal = () => {
 
   useEffect(() => {
     if (isSuccess && !!selectedHookIdToDelete && !selectedHook && !isSuccessDelete) {
-      toast('Webhook not found')
+      toast($t('Webhook not found'))
       setSelectedHookIdToDelete(null)
     }
   }, [isSuccess, isSuccessDelete, selectedHook, selectedHookIdToDelete, setSelectedHookIdToDelete])
@@ -58,15 +59,16 @@ export const DeleteHookModal = () => {
       size="small"
       onCancel={() => setSelectedHookIdToDelete(null)}
       onConfirm={handleDelete}
-      title="Delete database webhook"
+      title={$t('Delete database webhook')}
       loading={isDeleting}
       confirmLabel={`Delete ${name}`}
       confirmPlaceholder="Type in name of webhook"
       confirmString={name || ''}
       text={
         <>
-          This will delete the webhook <span className="text-bold text-foreground">{name}</span>{' '}
-          from the schema <span className="text-bold text-foreground">{schema}</span>
+          {$t('This will delete the webhook')}{' '}
+          <span className="text-bold text-foreground">{name}</span> {$t('from the schema')}{' '}
+          <span className="text-bold text-foreground">{schema}</span>
         </>
       }
       alert={{ title: 'You cannot recover this webhook once deleted.' }}

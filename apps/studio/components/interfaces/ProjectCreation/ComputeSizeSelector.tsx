@@ -19,6 +19,7 @@ import Panel from '@/components/ui/Panel'
 import { instanceSizeSpecs } from '@/data/projects/new-project.constants'
 import { getCloudProviderArchitecture } from '@/lib/cloudprovider-utils'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface ComputeSizeSelectorProps {
   form: UseFormReturn<CreateProjectForm>
@@ -33,17 +34,19 @@ export const ComputeSizeSelector = ({ form }: ComputeSizeSelectorProps) => {
         render={({ field }) => (
           <FormItemLayout
             layout="horizontal"
-            label="Compute size"
+            label={$t('Compute size')}
             description={
               <>
                 <p>
-                  The size for your dedicated database. You can change this later. Learn more about{' '}
+                  {$t(
+                    'The size for your dedicated database. You can change this later. Learn more about'
+                  )}{' '}
                   <InlineLink href={`${DOCS_URL}/guides/platform/compute-add-ons`}>
-                    compute add-ons
+                    {$t('compute add-ons')}
                   </InlineLink>{' '}
                   and{' '}
                   <InlineLink href={`${DOCS_URL}/guides/platform/manage-your-usage/compute`}>
-                    compute billing
+                    {$t('compute billing')}
                   </InlineLink>
                   .
                 </p>
@@ -52,7 +55,7 @@ export const ComputeSizeSelector = ({ form }: ComputeSizeSelectorProps) => {
           >
             <Select value={field.value} onValueChange={(value) => field.onChange(value)}>
               <SelectTrigger className="[&>span>div>div>[data-field=instance-details]]:hidden">
-                <SelectValue placeholder="Select a compute size" />
+                <SelectValue placeholder={$t('Select a compute size')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
@@ -72,7 +75,7 @@ export const ComputeSizeSelector = ({ form }: ComputeSizeSelectorProps) => {
 
                             <div className="text-sm">
                               <span className="text-foreground">
-                                {instanceSizeSpecs[option].ram} RAM /{' '}
+                                {instanceSizeSpecs[option].ram} {$t('RAM /')}{' '}
                                 {instanceSizeSpecs[option].cpu}{' '}
                                 {getCloudProviderArchitecture(
                                   form.getValues('cloudProvider') as CloudProvider
@@ -94,7 +97,7 @@ export const ComputeSizeSelector = ({ form }: ComputeSizeSelectorProps) => {
                     })}
                   <SelectItem key={'disabled'} value={'disabled'} disabled>
                     <div className="flex items-center justify-center w-full">
-                      <span>Larger instance sizes available after creation</span>
+                      <span>{$t('Larger instance sizes available after creation')}</span>
                     </div>
                   </SelectItem>
                 </SelectGroup>

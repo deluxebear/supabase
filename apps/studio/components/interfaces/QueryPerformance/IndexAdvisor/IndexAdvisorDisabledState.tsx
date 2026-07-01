@@ -10,6 +10,7 @@ import { useDatabaseExtensionEnableMutation } from '@/data/database-extensions/d
 import { useDatabaseExtensionsQuery } from '@/data/database-extensions/database-extensions-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const IndexAdvisorDisabledState = () => {
   const { ref } = useParams()
@@ -45,7 +46,7 @@ export const IndexAdvisorDisabledState = () => {
           version: indexAdvisor.default_version,
         })
       }
-      toast.success('Successfully enabled index advisor!')
+      toast.success($t('Successfully enabled index advisor!'))
     } catch (error: any) {
       toast.error(`Failed to enable index advisor: ${error.message}`)
     }
@@ -77,7 +78,9 @@ export const IndexAdvisorDisabledState = () => {
         <div className="flex items-center gap-x-2">
           {indexAdvisor === undefined ? (
             <Button asChild variant="default">
-              <Link href={`/project/${ref}/settings/infrastructure`}>Upgrade Postgres version</Link>
+              <Link href={`/project/${ref}/settings/infrastructure`}>
+                {$t('Upgrade Postgres version')}
+              </Link>
             </Button>
           ) : (
             <Button
@@ -86,7 +89,7 @@ export const IndexAdvisorDisabledState = () => {
               loading={isEnablingExtension}
               onClick={() => onEnableIndexAdvisor()}
             >
-              Enable extensions
+              {$t('Enable extensions')}
             </Button>
           )}
           <DocsButton href={`${DOCS_URL}/guides/database/extensions/index_advisor`} />

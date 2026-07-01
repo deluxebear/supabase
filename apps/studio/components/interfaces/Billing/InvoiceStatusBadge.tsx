@@ -3,6 +3,7 @@ import { Badge, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 import { InvoiceStatus } from './Invoices.types'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface InvoiceStatusBadgeProps {
   status: InvoiceStatus
@@ -63,39 +64,43 @@ const InvoiceStatusBadge = ({
           (paymentProcessing ? (
             <div className="space-y-1">
               <p>
-                While most credit card payments get processed instantly, some Indian card providers
-                may take up to 72 hours to process payments. We’re still waiting for your card
-                provider to process this payment.
+                {$t(
+                  'While most credit card payments get processed instantly, some Indian card providers may take up to 72 hours to process payments. We’re still waiting for your card provider to process this payment.'
+                )}
               </p>
 
               <p>
-                We recommend proactively{' '}
+                {$t('We recommend proactively')}{' '}
                 <InlineLink href={`${DOCS_URL}/guides/platform/credits#credit-top-ups`}>
-                  topping up your credits
+                  {$t('topping up your credits')}
                 </InlineLink>{' '}
-                to avoid this issue in the future.
+                {$t('to avoid this issue in the future.')}
               </p>
             </div>
           ) : paymentAttempted ? (
             <p>
-              We were not able to collect the payment. Make sure you have a valid payment method and
-              enough funds. Outstanding invoices may cause restrictions. You can manually pay the
-              invoice using the “Pay now” button.
+              {$t(
+                'We were not able to collect the payment. Make sure you have a valid payment method and enough funds. Outstanding invoices may cause restrictions. You can manually pay the invoice using the “Pay now” button.'
+              )}
             </p>
           ) : (
             <p>
-              The invoice will soon be charged for. Please make sure to pay in a timely manner,
-              especially if you pay via invoice instead of card. You can pay the invoice using your
-              card using the “Pay now” button.
+              {$t(
+                'The invoice will soon be charged for. Please make sure to pay in a timely manner, especially if you pay via invoice instead of card. You can pay the invoice using your card using the “Pay now” button.'
+              )}
             </p>
           ))}
 
         {status === InvoiceStatus.PAID && (
-          <p>The invoice has been paid successfully. No further action is required on your side.</p>
+          <p>
+            {$t(
+              'The invoice has been paid successfully. No further action is required on your side.'
+            )}
+          </p>
         )}
 
         {status === InvoiceStatus.VOID && (
-          <p>This invoice has been forgiven. No further action is required on your side.</p>
+          <p>{$t('This invoice has been forgiven. No further action is required on your side.')}</p>
         )}
       </TooltipContent>
     </Tooltip>

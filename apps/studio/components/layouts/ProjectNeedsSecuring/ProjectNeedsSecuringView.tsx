@@ -47,6 +47,7 @@ import {
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
 import { AlertError } from '@/components/ui/AlertError'
+import { t as $t } from '@/lib/i18n'
 import { createNavigationHandler } from '@/lib/navigation'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -107,7 +108,7 @@ export const ProjectNeedsSecuringView = ({
             </div>
           </PageHeaderIcon>
           <PageHeaderSummary>
-            <PageHeaderTitle>Your project needs securing</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Your project needs securing')}</PageHeaderTitle>
             <PageHeaderDescription>{formatRlsDescription(issueCount)}</PageHeaderDescription>
           </PageHeaderSummary>
           <PageHeaderAside>
@@ -119,7 +120,7 @@ export const ProjectNeedsSecuringView = ({
                   onDismiss()
                 }}
               >
-                Skip to home
+                {$t('Skip to home')}
               </Link>
             </Button>
           </PageHeaderAside>
@@ -130,11 +131,11 @@ export const ProjectNeedsSecuringView = ({
         <PageSection>
           <PageSectionMeta>
             <PageSectionSummary>
-              <PageSectionTitle>Review and fix</PageSectionTitle>
+              <PageSectionTitle>{$t('Review and fix')}</PageSectionTitle>
             </PageSectionSummary>
             <PageSectionAside>
               <AiAssistantDropdown
-                label="Ask Assistant"
+                label={$t('Ask Assistant')}
                 size="tiny"
                 buildPrompt={() => promptMarkdown}
                 onOpenAssistant={handleOpenAssistant}
@@ -158,17 +159,17 @@ export const ProjectNeedsSecuringView = ({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Schema</TableHead>
+                      <TableHead>{$t('Name')}</TableHead>
+                      <TableHead>{$t('Schema')}</TableHead>
                       <TableHead>
                         <div className="flex items-center gap-1.5">
-                          <span>Accessible via Data API</span>
+                          <span>{$t('Accessible via Data API')}</span>
                           <Button_Shadcn_ asChild variant="ghost" size="icon" className="h-6 w-6">
                             <Link
                               href={`/project/${projectRef}/integrations/data_api/settings`}
                               target="_blank"
                               rel="noreferrer"
-                              aria-label="Open Data API settings"
+                              aria-label={$t('Open Data API settings')}
                             >
                               <ExternalLink size={14} aria-hidden="true" />
                             </Link>

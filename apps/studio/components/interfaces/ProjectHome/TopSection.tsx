@@ -12,6 +12,7 @@ import { useBranchesQuery } from '@/data/branches/branches-query'
 import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
 import { useIsOrioleDb, useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL, IS_PLATFORM, PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const TopSection = () => {
   const isOrioleDb = useIsOrioleDb()
@@ -62,15 +63,16 @@ export const TopSection = () => {
                 {isOrioleDb && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Badge variant="warning">OrioleDB</Badge>
+                      <Badge variant="warning">{$t('OrioleDB')}</Badge>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" align="start" className="max-w-80 text-center">
-                      This project is using Postgres with OrioleDB which is currently in preview and
-                      not suitable for production workloads. View our{' '}
+                      {$t(
+                        'This project is using Postgres with OrioleDB which is currently in preview and not suitable for production workloads. View our'
+                      )}{' '}
                       <InlineLink href={`${DOCS_URL}/guides/database/orioledb`}>
                         documentation
                       </InlineLink>{' '}
-                      for all limitations.
+                      {$t('for all limitations.')}
                     </TooltipContent>
                   </Tooltip>
                 )}

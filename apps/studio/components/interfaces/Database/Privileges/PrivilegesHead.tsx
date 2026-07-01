@@ -9,6 +9,7 @@ import {
 } from 'ui'
 
 import { SchemaSelector } from '@/components/ui/SchemaSelector'
+import { t as $t } from '@/lib/i18n'
 
 export interface PrivilegesHeadProps {
   disabled: boolean
@@ -61,7 +62,7 @@ const PrivilegesHead = ({
           onClick={resetChanges}
           disabled={!hasChanges || isApplyingChanges}
         >
-          Reset
+          {$t('Reset')}
         </Button>
         <Button
           variant="primary"
@@ -70,7 +71,7 @@ const PrivilegesHead = ({
           disabled={disabled || !hasChanges || isApplyingChanges}
           loading={isApplyingChanges}
         >
-          Apply Changes
+          {$t('Apply Changes')}
         </Button>
       </div>
     </div>
@@ -89,7 +90,7 @@ const RolesSelect = ({
   return (
     <Select value={selectedRole} onValueChange={onChangeRole}>
       <SelectTrigger size="tiny" className="w-40">
-        <SelectValue placeholder="Select a role" />
+        <SelectValue placeholder={$t('Select a role')} />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
@@ -118,13 +119,13 @@ const TablesSelect = ({
   return (
     <Select value={selectedTable?.name} onValueChange={onChangeTable}>
       <SelectTrigger size="tiny" className="w-44">
-        <SelectValue placeholder="Select a table" />
+        <SelectValue placeholder={$t('Select a table')} />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
           {tables.length === 0 ? (
             <div className="text-xs text-foreground-light p-2">
-              No tables available in this schema
+              {$t('No tables available in this schema')}
             </div>
           ) : null}
           {tables.map((table) => (

@@ -3,6 +3,7 @@ import { Admonition } from 'ui-patterns/admonition'
 
 import type { Filter, Sort } from './types'
 import { isMsSqlForeignTable, type Entity } from '@/data/table-editor/table-editor-types'
+import { t as $t } from '@/lib/i18n'
 
 type ValidateMsSqlSortingParams = {
   filters: Filter[]
@@ -63,15 +64,17 @@ const MsSqlAdmonition = ({ title, children }: MsSqlAdmonitionProps): ReactNode =
 )
 
 const MsSqlSortWarningAdmonition = (): ReactNode => (
-  <MsSqlAdmonition title="Cannot sort by filtered column">
-    Sorting only by columns filtered with "=" or "is" doesn't work on MSSQL tables. Pick a different
-    sorting column, or add a column not in your filter.
+  <MsSqlAdmonition title={$t('Cannot sort by filtered column')}>
+    {$t(
+      'Sorting only by columns filtered with "=" or "is" doesn\'t work on MSSQL tables. Pick a different sorting column, or add a column not in your filter.'
+    )}
   </MsSqlAdmonition>
 )
 
 const MsSqlNoValidSortAdmonition = (): ReactNode => (
-  <MsSqlAdmonition title="No valid sort column remaining">
-    All columns that can be sorted have been filtered with "=" or "is", which doesn't work on MSSQL
-    tables. Remove a column from your filter to continue.
+  <MsSqlAdmonition title={$t('No valid sort column remaining')}>
+    {$t(
+      'All columns that can be sorted have been filtered with "=" or "is", which doesn\'t work on MSSQL tables. Remove a column from your filter to continue.'
+    )}
   </MsSqlAdmonition>
 )

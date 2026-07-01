@@ -24,6 +24,7 @@ import { getStatusLevel } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.
 import { DataTableColumnStatusCode } from '@/components/ui/DataTable/DataTableColumn/DataTableColumnStatusCode'
 import { Shortcut } from '@/components/ui/Shortcut'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -72,7 +73,7 @@ export const PlatformWebhooksDeliveryDetailsSheet = ({
       <SheetContent size="default" className="flex flex-col gap-0">
         <SheetHeader>
           <div className="flex items-center gap-2">
-            <SheetTitle>Delivery details</SheetTitle>
+            <SheetTitle>{$t('Delivery details')}</SheetTitle>
             {selectedDelivery && (
               <Badge variant={statusBadgeVariant[selectedDelivery.status]}>
                 {formatDeliveryStatus(selectedDelivery.status)}
@@ -88,21 +89,21 @@ export const PlatformWebhooksDeliveryDetailsSheet = ({
               <Card>
                 <CardContent className="grid grid-cols-1 gap-4 p-4 @md:grid-cols-2">
                   <div className="space-y-1">
-                    <p className="text-sm text-foreground-light">Delivery ID</p>
+                    <p className="text-sm text-foreground-light">{$t('Delivery ID')}</p>
                     <code className="text-code-inline">{selectedDelivery.id}</code>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm text-foreground-light">Attempt</p>
+                    <p className="text-sm text-foreground-light">{$t('Attempt')}</p>
                     <p className="text-sm text-foreground">
                       {deliveryAttempt ? `#${deliveryAttempt}` : '-'}
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm text-foreground-light">Timestamp</p>
+                    <p className="text-sm text-foreground-light">{$t('Timestamp')}</p>
                     <TimestampInfo className="text-sm" utcTimestamp={selectedDelivery.attemptAt} />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm text-foreground-light">Response code</p>
+                    <p className="text-sm text-foreground-light">{$t('Response code')}</p>
                     {selectedDelivery.responseCode ? (
                       <DataTableColumnStatusCode
                         value={selectedDelivery.responseCode}
@@ -122,39 +123,39 @@ export const PlatformWebhooksDeliveryDetailsSheet = ({
               >
                 <TabsList className="w-full">
                   <TabsTrigger value="event" className="flex-1">
-                    Event
+                    {$t('Event')}
                   </TabsTrigger>
                   <TabsTrigger value="response" className="flex-1">
-                    Response
+                    {$t('Response')}
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="event" className="space-y-4 pt-4">
                   <div className="space-y-1">
-                    <p className="text-sm text-foreground-light">Event type</p>
+                    <p className="text-sm text-foreground-light">{$t('Event type')}</p>
                     <code className="text-code-inline">{selectedDelivery.eventType}</code>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm text-foreground-light">Event ID</p>
+                    <p className="text-sm text-foreground-light">{$t('Event ID')}</p>
                     <code className="text-code-inline">{selectedDelivery.id}</code>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm text-foreground-light">Event timestamp</p>
+                    <p className="text-sm text-foreground-light">{$t('Event timestamp')}</p>
                     <TimestampInfo className="text-sm" utcTimestamp={selectedDelivery.attemptAt} />
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm text-foreground-light">Payload</p>
+                      <p className="text-sm text-foreground-light">{$t('Payload')}</p>
                       <ShortcutTooltip
                         shortcutId={SHORTCUT_IDS.PLATFORM_WEBHOOKS_COPY_PAYLOAD}
-                        label="Copy event payload"
+                        label={$t('Copy event payload')}
                       >
                         <Button
                           variant="text"
                           icon={<Copy size={14} />}
                           onClick={() => onCopy(deliveryEventPayload, 'event payload')}
                         >
-                          Copy
+                          {$t('Copy')}
                         </Button>
                       </ShortcutTooltip>
                     </div>
@@ -168,13 +169,13 @@ export const PlatformWebhooksDeliveryDetailsSheet = ({
 
                 <TabsContent value="response" className="space-y-4 pt-4">
                   <div className="space-y-1">
-                    <p className="text-sm text-foreground-light">Status</p>
+                    <p className="text-sm text-foreground-light">{$t('Status')}</p>
                     <Badge variant={statusBadgeVariant[selectedDelivery.status]}>
                       {formatDeliveryStatus(selectedDelivery.status)}
                     </Badge>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm text-foreground-light">Response code</p>
+                    <p className="text-sm text-foreground-light">{$t('Response code')}</p>
                     {selectedDelivery.responseCode ? (
                       <DataTableColumnStatusCode
                         value={selectedDelivery.responseCode}
@@ -187,17 +188,17 @@ export const PlatformWebhooksDeliveryDetailsSheet = ({
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm text-foreground-light">Response payload</p>
+                      <p className="text-sm text-foreground-light">{$t('Response payload')}</p>
                       <ShortcutTooltip
                         shortcutId={SHORTCUT_IDS.PLATFORM_WEBHOOKS_COPY_PAYLOAD}
-                        label="Copy response payload"
+                        label={$t('Copy response payload')}
                       >
                         <Button
                           variant="text"
                           icon={<Copy size={14} />}
                           onClick={() => onCopy(deliveryResponsePayload, 'response payload')}
                         >
-                          Copy
+                          {$t('Copy')}
                         </Button>
                       </ShortcutTooltip>
                     </div>
@@ -224,7 +225,7 @@ export const PlatformWebhooksDeliveryDetailsSheet = ({
                 icon={<RotateCcw />}
                 onClick={() => onRetryDelivery(retryableDelivery.id)}
               >
-                Retry delivery
+                {$t('Retry delivery')}
               </Button>
             </Shortcut>
           </SheetFooter>

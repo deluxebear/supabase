@@ -18,6 +18,7 @@ import { AlertError } from '@/components/ui/AlertError'
 import { ResourceList } from '@/components/ui/Resource/ResourceList'
 import { HorizontalShimmerWithIcon } from '@/components/ui/Shimmers'
 import { useAuthConfigQuery } from '@/data/auth/auth-config-query'
+import { t as $t } from '@/lib/i18n'
 
 export const AuthProvidersForm = () => {
   const { ref: projectRef } = useParams()
@@ -33,9 +34,9 @@ export const AuthProvidersForm = () => {
     <PageSection>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Auth Providers</PageSectionTitle>
+          <PageSectionTitle>{$t('Auth Providers')}</PageSectionTitle>
           <PageSectionDescription>
-            Authenticate your users through a suite of providers and login methods
+            {$t('Authenticate your users through a suite of providers and login methods')}
           </PageSectionDescription>
         </PageSectionSummary>
       </PageSectionMeta>
@@ -51,16 +52,16 @@ export const AuthProvidersForm = () => {
               <Alert className="flex w-full items-center justify-between my-3" variant="warning">
                 <WarningIcon />
                 <div>
-                  <AlertTitle>OTP expiry exceeds recommended threshold</AlertTitle>
+                  <AlertTitle>{$t('OTP expiry exceeds recommended threshold')}</AlertTitle>
                   <AlertDescription className="flex flex-col gap-y-3">
                     <p>
-                      We have detected that you have enabled the email provider with the OTP expiry
-                      set to more than an hour. It is recommended to set this value to less than an
-                      hour.
+                      {$t(
+                        'We have detected that you have enabled the email provider with the OTP expiry set to more than an hour. It is recommended to set this value to less than an hour.'
+                      )}
                     </p>
                     <Button asChild variant="default" className="w-min" icon={<ExternalLink />}>
                       <Link href="https://supabase.com/docs/guides/platform/going-into-prod#security">
-                        View security recommendations
+                        {$t('View security recommendations')}
                       </Link>
                     </Button>
                   </AlertDescription>

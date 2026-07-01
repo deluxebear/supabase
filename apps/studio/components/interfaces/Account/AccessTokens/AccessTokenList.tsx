@@ -24,6 +24,7 @@ import { ExpiresCell, LastUsedCell, TokenNameCell } from './AccessTokenTable/Tok
 import { AlertError } from '@/components/ui/AlertError'
 import { useAccessTokenDeleteMutation } from '@/data/access-tokens/access-tokens-delete-mutation'
 import { AccessToken, useAccessTokensQuery } from '@/data/access-tokens/access-tokens-query'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export interface AccessTokenListProps {
@@ -46,7 +47,7 @@ export const AccessTokenList = ({ searchString = '', onDeleteSuccess }: AccessTo
     onSuccess: (_, vars) => {
       track('access_token_removed', { tokenType: 'classic' })
       onDeleteSuccess(vars.id)
-      toast.success('Successfully deleted access token')
+      toast.success($t('Successfully deleted access token'))
       setIsOpen(false)
     },
     onError: (error) => {
@@ -95,9 +96,9 @@ export const AccessTokenList = ({ searchString = '', onDeleteSuccess }: AccessTo
       <TableContainer sort={sort} onSortChange={onSortChange}>
         <TableRow>
           <TableCell colSpan={4} className="py-12">
-            <p className="text-sm text-center text-foreground">No access tokens found</p>
+            <p className="text-sm text-center text-foreground">{$t('No access tokens found')}</p>
             <p className="text-sm text-center text-foreground-light">
-              You do not have any tokens created yet
+              {$t('You do not have any tokens created yet')}
             </p>
           </TableCell>
         </TableRow>
@@ -119,7 +120,7 @@ export const AccessTokenList = ({ searchString = '', onDeleteSuccess }: AccessTo
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="default"
-                      title="More options"
+                      title={$t('More options')}
                       className="w-7"
                       icon={<MoreVertical />}
                     />
@@ -133,7 +134,7 @@ export const AccessTokenList = ({ searchString = '', onDeleteSuccess }: AccessTo
                       }}
                     >
                       <Trash size={12} />
-                      <p>Delete token</p>
+                      <p>{$t('Delete token')}</p>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -146,7 +147,7 @@ export const AccessTokenList = ({ searchString = '', onDeleteSuccess }: AccessTo
       <ConfirmationModal
         visible={isOpen}
         variant="destructive"
-        title="Confirm to delete"
+        title={$t('Confirm to delete')}
         confirmLabel="Delete"
         confirmLabelLoading="Deleting"
         onCancel={() => setIsOpen(false)}
@@ -155,7 +156,9 @@ export const AccessTokenList = ({ searchString = '', onDeleteSuccess }: AccessTo
         }}
       >
         <p className="py-4 text-sm text-foreground-light">
-          This action cannot be undone. Are you sure you want to delete "{token?.name}" token?
+          {$t('This action cannot be undone. Are you sure you want to delete "')}
+          {token?.name}
+          {$t('" token?')}
         </p>
       </ConfirmationModal>
     </>

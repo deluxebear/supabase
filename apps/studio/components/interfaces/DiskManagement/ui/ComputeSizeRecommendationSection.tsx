@@ -11,6 +11,7 @@ import {
   mapAddOnVariantIdToComputeSize,
 } from '../DiskManagement.utils'
 import { RESTRICTED_COMPUTE_FOR_IOPS_ON_GP3 } from './DiskManagement.constants'
+import { t as $t } from '@/lib/i18n'
 
 interface ComputeSizeRecommendationSectionProps {
   actions?: ReactNode
@@ -47,11 +48,11 @@ export function ComputeSizeRecommendationSection({
             <div className="flex flex-col gap-2">
               <div>
                 <p className="text-sm text-foreground-light">
-                  To achieve higher IOPS performance we recommend using the{' '}
+                  {$t('To achieve higher IOPS performance we recommend using the')}{' '}
                   <span className="text-foreground">
                     {mapAddOnVariantIdToComputeSize(computeSizeRecommendedForIops)}
                   </span>{' '}
-                  compute size.
+                  {$t('compute size.')}
                 </p>
               </div>
               {actions && <div>{actions}</div>}

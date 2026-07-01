@@ -17,6 +17,7 @@ import { getOrgSubscriptionPlan, NO_ORG_MARKER, NO_PROJECT_MARKER } from './Supp
 // End of third-party imports
 
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
+import { t as $t } from '@/lib/i18n'
 
 interface OrganizationSelectorProps {
   form: UseFormReturn<SupportFormValues>
@@ -34,7 +35,11 @@ export function OrganizationSelector({ form, orgSlug }: OrganizationSelectorProp
       render={({ field }) => {
         const { ref: _ref, ...fieldWithoutRef } = field
         return (
-          <FormItemLayout hideMessage layout="vertical" label="Which organization is affected?">
+          <FormItemLayout
+            hideMessage
+            layout="vertical"
+            label={$t('Which organization is affected?')}
+          >
             <FormControl>
               <Select
                 {...fieldWithoutRef}
@@ -48,11 +53,11 @@ export function OrganizationSelector({ form, orgSlug }: OrganizationSelectorProp
                   }
                 }}
               >
-                <SelectTrigger className="w-full" aria-label="Select an organization">
-                  <SelectValue asChild placeholder="Select an organization">
+                <SelectTrigger className="w-full" aria-label={$t('Select an organization')}>
+                  <SelectValue asChild placeholder={$t('Select an organization')}>
                     <div className="flex items-center gap-x-2">
                       {orgSlug === NO_ORG_MARKER ? (
-                        <span>No specific organization</span>
+                        <span>{$t('No specific organization')}</span>
                       ) : (
                         (organizations ?? []).find((o) => o.slug === field.value)?.name
                       )}
@@ -68,7 +73,9 @@ export function OrganizationSelector({ form, orgSlug }: OrganizationSelectorProp
                       </SelectItem>
                     ))}
                     {isSuccessOrganizations && (organizations ?? []).length === 0 && (
-                      <SelectItem value={NO_ORG_MARKER}>No specific organization</SelectItem>
+                      <SelectItem value={NO_ORG_MARKER}>
+                        {$t('No specific organization')}
+                      </SelectItem>
                     )}
                   </SelectGroup>
                 </SelectContent>

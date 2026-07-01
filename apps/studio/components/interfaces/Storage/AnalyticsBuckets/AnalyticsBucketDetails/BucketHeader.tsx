@@ -4,6 +4,7 @@ import {
   ScaffoldSectionDescription,
   ScaffoldSectionTitle,
 } from '@/components/layouts/Scaffold'
+import { t as $t } from '@/lib/i18n'
 
 interface BucketHeaderProps {
   showActions?: boolean
@@ -13,9 +14,9 @@ export const BucketHeader = ({ showActions = true }: BucketHeaderProps) => {
   return (
     <ScaffoldHeader className="pt-0 flex flex-row justify-between items-end gap-x-8">
       <div>
-        <ScaffoldSectionTitle>Tables</ScaffoldSectionTitle>
+        <ScaffoldSectionTitle>{$t('Tables')}</ScaffoldSectionTitle>
         <ScaffoldSectionDescription>
-          Analytics tables stored in this bucket
+          {$t('Analytics tables stored in this bucket')}
         </ScaffoldSectionDescription>
       </div>
       {showActions && (

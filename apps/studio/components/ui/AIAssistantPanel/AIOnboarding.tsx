@@ -8,6 +8,7 @@ import type { SqlSnippet } from './AIAssistant.types'
 import { LINTER_LEVELS } from '@/components/interfaces/Linter/Linter.constants'
 import { createLintSummaryPrompt } from '@/components/interfaces/Linter/Linter.utils'
 import { useProjectLintsQuery, type Lint } from '@/data/lint/lint-query'
+import { t as $t } from '@/lib/i18n'
 
 interface AIOnboardingProps {
   sqlSnippets?: SqlSnippet[]
@@ -52,10 +53,10 @@ export const AIOnboarding = ({
     <div className="flex-1 overflow-y-auto">
       <div className="w-full flex-1 max-h-full min-h-full px-4 flex flex-col gap-0">
         <div className="mt-auto w-full space-y-6 py-8 ">
-          <h2 className="heading-section text-foreground mx-4">How can I assist you?</h2>
+          <h2 className="heading-section text-foreground mx-4">{$t('How can I assist you?')}</h2>
           {suggestions?.prompts?.length ? (
             <div>
-              <h3 className="heading-meta text-foreground-light mb-3 mx-4">Suggestions</h3>
+              <h3 className="heading-meta text-foreground-light mb-3 mx-4">{$t('Suggestions')}</h3>
               {prompts.map((item, index) => (
                 <motion.div
                   key={item.title}
@@ -93,7 +94,7 @@ export const AIOnboarding = ({
                   {performanceErrorLints.length > 0 && (
                     <div className="mb-4">
                       <h3 className="heading-meta text-foreground-light mb-3 mx-4">
-                        Improve Performance
+                        {$t('Improve Performance')}
                       </h3>
                       {performanceErrorLints.map((lint, index) => {
                         return (
@@ -124,7 +125,7 @@ export const AIOnboarding = ({
                   {securityErrorLints.length > 0 && (
                     <div className="mb-4">
                       <h3 className="heading-meta text-foreground-light mb-3 mx-4">
-                        Improve Security
+                        {$t('Improve Security')}
                       </h3>
                       {securityErrorLints.map((lint, index) => {
                         return (
@@ -147,7 +148,7 @@ export const AIOnboarding = ({
                   )}
 
                   <div>
-                    <h3 className="heading-meta text-foreground-light mb-3 mx-4">Ideas</h3>
+                    <h3 className="heading-meta text-foreground-light mb-3 mx-4">{$t('Ideas')}</h3>
                     {prompts.map((item, index) => (
                       <Button
                         key={`${item.title}-${index}`}

@@ -47,6 +47,7 @@ import { useReplicationSourcesQuery } from '@/data/replication/sources-query'
 import { checkLocalETLNotSetUp } from '@/data/replication/utils'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -223,7 +224,7 @@ export const Destinations = () => {
           <div className="flex items-center">
             <Input
               ref={searchInputRef}
-              placeholder="Filter destinations"
+              placeholder={$t('Filter destinations')}
               size="tiny"
               icon={<Search />}
               value={filterString}
@@ -244,7 +245,7 @@ export const Destinations = () => {
           <div className="flex items-center gap-x-2">
             <Shortcut
               id={SHORTCUT_IDS.LIST_PAGE_NEW_ITEM}
-              label="Add destination"
+              label={$t('Add destination')}
               onTrigger={openDestinationPanel}
               options={{ enabled: !!newDestinationDefaultType }}
               side="bottom"
@@ -255,7 +256,7 @@ export const Destinations = () => {
                 disabled={!newDestinationDefaultType}
                 onClick={openDestinationPanel}
               >
-                Add destination
+                {$t('Add destination')}
               </Button>
             </Shortcut>
             <DocsButton href={`${DOCS_URL}/guides/database/replication`} />
@@ -266,7 +267,7 @@ export const Destinations = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-52">
                   <DropdownMenuItem onClick={() => setShowDisablePipelinesDialog(true)}>
-                    Disable Pipelines
+                    {$t('Disable Pipelines')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -286,7 +287,7 @@ export const Destinations = () => {
         {isLocalETLNotSetUp && (
           <Admonition
             type="default"
-            title="ETL API not set up locally — destinations cannot be managed"
+            title={$t('ETL API not set up locally — destinations cannot be managed')}
           />
         )}
 
@@ -300,15 +301,15 @@ export const Destinations = () => {
                   <TableRow>
                     <TableHead key="type" className="w-[20px]" />
                     <TableHead key="name" className="w-[250px]">
-                      Name
+                      {$t('Name')}
                     </TableHead>
                     <TableHead key="status" className="w-[150px]">
-                      Status
+                      {$t('Status')}
                     </TableHead>
                     <TableHead key="lag" className="w-[150px]">
-                      Lag
+                      {$t('Lag')}
                     </TableHead>
-                    <TableHead key="publication">Publication</TableHead>
+                    <TableHead key="publication">{$t('Publication')}</TableHead>
                     <TableHead key="actions" />
                   </TableRow>
                 </TableHeader>
@@ -333,9 +334,11 @@ export const Destinations = () => {
                     (hasReplicas || hasDestinations) && (
                       <TableRow>
                         <TableCell colSpan={6}>
-                          <p>No results found</p>
+                          <p>{$t('No results found')}</p>
                           <p className="text-foreground-light">
-                            Your search for "{filterString}" did not return any results.
+                            {$t('Your search for "')}
+                            {filterString}
+                            {$t('" did not return any results.')}
                           </p>
                         </TableCell>
                       </TableRow>
@@ -354,10 +357,11 @@ export const Destinations = () => {
                 'flex flex-col px-16 rounded-lg justify-center items-center py-8 mt-4'
               )}
             >
-              <h4>Replication keeps your data in sync across systems</h4>
+              <h4>{$t('Replication keeps your data in sync across systems')}</h4>
               <p className="text-foreground-light text-sm text-balance text-center mt-1">
-                Deploy Read Replicas for lower latency and workload isolation, or add a Pipelines
-                destination for analytics workloads.
+                {$t(
+                  'Deploy Read Replicas for lower latency and workload isolation, or add a Pipelines destination for analytics workloads.'
+                )}
               </p>
               <Button
                 icon={<Plus />}
@@ -365,7 +369,7 @@ export const Destinations = () => {
                 onClick={openDestinationPanel}
                 className="mt-4"
               >
-                Add destination
+                {$t('Add destination')}
               </Button>
             </div>
           )

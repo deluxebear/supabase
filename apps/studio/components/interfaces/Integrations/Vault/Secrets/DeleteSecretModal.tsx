@@ -15,6 +15,7 @@ import {
 import { useVaultSecretDeleteMutation } from '@/data/vault/vault-secret-delete-mutation'
 import { useVaultSecretsQuery } from '@/data/vault/vault-secrets-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const DeleteSecretModal = () => {
   const { data: project } = useSelectedProjectQuery()
@@ -50,7 +51,7 @@ export const DeleteSecretModal = () => {
 
   useEffect(() => {
     if (isSuccess && !!secretIdToDelete && !selectedSecret && !isSuccessDelete) {
-      toast('Secret not found')
+      toast($t('Secret not found'))
       setSelectedSecretToDelete(null)
     }
   }, [isSuccess, isSuccessDelete, secretIdToDelete, selectedSecret, setSelectedSecretToDelete])
@@ -59,24 +60,25 @@ export const DeleteSecretModal = () => {
     <AlertDialog open={!!selectedSecret} onOpenChange={() => setSelectedSecretToDelete(null)}>
       <AlertDialogContent size="small">
         <AlertDialogHeader>
-          <AlertDialogTitle>Confirm to delete secret</AlertDialogTitle>
+          <AlertDialogTitle>{$t('Confirm to delete secret')}</AlertDialogTitle>
           <AlertDialogDescription className="space-y-4">
             <p className="text-sm">
-              The following secret will be permanently removed and cannot be recovered. Are you
-              sure?
+              {$t(
+                'The following secret will be permanently removed and cannot be recovered. Are you sure?'
+              )}
             </p>
             <div className="space-y-1">
               <p className="text-sm">{selectedSecret?.description}</p>
               <p className="text-sm text-foreground-light">
-                ID: <code className="text-code-inline">{selectedSecret?.id}</code>
+                {$t('ID:')} <code className="text-code-inline">{selectedSecret?.id}</code>
               </p>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction variant="danger" onClick={onConfirmDeleteSecret}>
-            Confirm
+            {$t('Confirm')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -44,6 +44,7 @@ import {
 } from '@/components/interfaces/TableGridEditor/SidePanelEditor/SidePanelEditor.constants'
 import type { PostgresDataTypeOption } from '@/components/interfaces/TableGridEditor/SidePanelEditor/SidePanelEditor.types'
 import type { EnumeratedType } from '@/data/enumerated-types/enumerated-types-query'
+import { t as $t } from '@/lib/i18n'
 
 interface ColumnTypeProps {
   name: string
@@ -119,7 +120,7 @@ export const ColumnType = ({
             <FormItemLayout
               layout="vertical"
               name={name}
-              label="Column type"
+              label={$t('Column type')}
               description={unsupportedDataTypeText}
               className={className}
             >
@@ -132,7 +133,7 @@ export const ColumnType = ({
         return (
           <FormItem className={cn('flex flex-col space-y-2', className)}>
             <FormLabel className="text-foreground flex gap-2 items-center wrap-break-word">
-              Type
+              {$t('Type')}
             </FormLabel>
             <Popover modal open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
@@ -161,12 +162,12 @@ export const ColumnType = ({
               <PopoverContent id={listboxId} className="w-[460px] p-0" side="bottom" align="center">
                 <Command>
                   <CommandInput
-                    placeholder="Search types..."
+                    placeholder={$t('Search types...')}
                     // [Joshen] Addresses style issues when this component is being used in the old Form component
                     // Specifically in WrapperDynamicColumns - can be cleaned up once we're no longer using that
                     className="bg-transparent! focus:shadow-none! focus:ring-0! text-xs"
                   />
-                  <CommandEmpty>Type not found.</CommandEmpty>
+                  <CommandEmpty>{$t('Type not found.')}</CommandEmpty>
 
                   <CommandList>
                     <ScrollArea className="h-[240px]">
@@ -261,26 +262,26 @@ export const ColumnType = ({
                 <CriticalIcon />
                 <AlertTitle>
                   {' '}
-                  It is recommended to use{' '}
+                  {$t('It is recommended to use')}{' '}
                   <code className="text-code-inline">{recommendation.alternative}</code> instead
                 </AlertTitle>
                 <AlertDescription>
                   <p>
-                    Postgres recommends against using the data type{' '}
-                    <code className="text-code-inline">{field.value}</code> unless you have a very
-                    specific use case.
+                    {$t('Postgres recommends against using the data type')}{' '}
+                    <code className="text-code-inline">{field.value}</code>{' '}
+                    {$t('unless you have a very specific use case.')}
                   </p>
                   <div className="flex items-center space-x-2 mt-3">
                     <Button asChild variant="default" icon={<ExternalLink />}>
                       <Link href={recommendation.reference} target="_blank" rel="noreferrer">
-                        Read more
+                        {$t('Read more')}
                       </Link>
                     </Button>
                     <Button
                       variant="primary"
                       onClick={() => field.onChange(recommendation.alternative)}
                     >
-                      Use {recommendation.alternative}
+                      {$t('Use')} {recommendation.alternative}
                     </Button>
                   </div>
                 </AlertDescription>

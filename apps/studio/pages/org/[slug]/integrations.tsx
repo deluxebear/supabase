@@ -10,6 +10,7 @@ import {
 import { IntegrationSettings } from '@/components/interfaces/Organization/IntegrationSettings/IntegrationSettings'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import OrganizationLayout from '@/components/layouts/OrganizationLayout'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const OrgIntegrationSettings: NextPageWithLayout = () => {
@@ -18,9 +19,9 @@ const OrgIntegrationSettings: NextPageWithLayout = () => {
       <PageHeader size="small">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Integrations</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Integrations')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Connect external services to your organization
+              {$t('Connect external services to your organization')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -34,7 +35,7 @@ const OrgIntegrationSettings: NextPageWithLayout = () => {
 
 OrgIntegrationSettings.getLayout = (page) => (
   <DefaultLayout>
-    <OrganizationLayout title="Integrations">{page}</OrganizationLayout>
+    <OrganizationLayout title={$t('Integrations')}>{page}</OrganizationLayout>
   </DefaultLayout>
 )
 

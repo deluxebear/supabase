@@ -9,6 +9,8 @@ import {
   DropdownMenuTrigger,
 } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 // [Joshen] Currently not being used, refer to Users.utils -> formatUserColumns for more info
 export const SelectHeaderCell = ({
   selectedUsers,
@@ -32,7 +34,7 @@ export const SelectHeaderCell = ({
         <input
           ref={inputRef}
           type="checkbox"
-          aria-label="Select-all"
+          aria-label={$t('Select-all')}
           className="sb-grid-select-cell__header__input"
           disabled={false}
           checked={isRowSelected}
@@ -91,7 +93,8 @@ export const HeaderCell = ({
               }}
             >
               <SortDesc size={14} />
-              Sort descending
+
+              {$t('Sort descending')}
             </DropdownMenuItem>
             <DropdownMenuItem
               className="flex items-center gap-x-2"
@@ -101,7 +104,8 @@ export const HeaderCell = ({
               }}
             >
               <SortAsc size={14} />
-              Sort ascending
+
+              {$t('Sort ascending')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -19,6 +19,7 @@ import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { useCheckOpenAIKeyQuery } from '@/data/ai/check-api-key-query'
 import { useSqlTitleGenerateMutation } from '@/data/ai/sql-title-mutation'
 import { useOrgAiOptInLevel } from '@/hooks/misc/useOrgOptedIntoAi'
+import { t as $t } from '@/lib/i18n'
 
 interface SaveSnippetDialogProps {
   open: boolean
@@ -59,12 +60,12 @@ export const SaveSnippetDialog = ({ open, sql, onOpenChange, onSave }: SaveSnipp
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent size="small">
         <DialogHeader>
-          <DialogTitle>Save snippet</DialogTitle>
+          <DialogTitle>{$t('Save snippet')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection className="flex flex-col gap-y-4 py-5">
           <div className="flex flex-col gap-y-2">
-            <Label htmlFor="snippet-name">Name</Label>
+            <Label htmlFor="snippet-name">{$t('Name')}</Label>
             <Input
               id="snippet-name"
               autoFocus
@@ -98,7 +99,7 @@ export const SaveSnippetDialog = ({ open, sql, onOpenChange, onSave }: SaveSnipp
                 <div className="scale-75">
                   <AiIconAnimation loading={isGenerating} />
                 </div>
-                <span>Generate with AI</span>
+                <span>{$t('Generate with AI')}</span>
               </div>
             </ButtonTooltip>
           </div>
@@ -106,10 +107,10 @@ export const SaveSnippetDialog = ({ open, sql, onOpenChange, onSave }: SaveSnipp
         <DialogSectionSeparator />
         <DialogFooter className="px-5 py-4">
           <Button variant="default" onClick={() => onOpenChange(false)}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button disabled={!name.trim()} onClick={handleSave}>
-            Save snippet
+            {$t('Save snippet')}
           </Button>
         </DialogFooter>
       </DialogContent>

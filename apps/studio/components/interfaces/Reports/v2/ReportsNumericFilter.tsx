@@ -13,6 +13,8 @@ import { Button, cn } from 'ui'
 import { Input } from 'ui-patterns/DataInputs/Input'
 import { z } from 'zod'
 
+import { t as $t } from '@/lib/i18n'
+
 const OPERATOR_LABELS = {
   '=': 'Equals',
   '>=': 'Greater than or equal to',
@@ -137,7 +139,7 @@ export const ReportsNumericFilter = ({
           className="px-3 py-3 flex flex-col gap-y-3"
         >
           <div className="flex flex-col gap-y-1">
-            <Label className="text-xs">Operator</Label>
+            <Label className="text-xs">{$t('Operator')}</Label>
             <Select
               value={tempValue?.operator || defaultOperator}
               onValueChange={handleOperatorChange}
@@ -157,7 +159,7 @@ export const ReportsNumericFilter = ({
           </div>
 
           <div className="flex flex-col gap-y-1">
-            <Label className="text-xs">Value</Label>
+            <Label className="text-xs">{$t('Value')}</Label>
             <Input
               autoFocus
               type="number"
@@ -182,7 +184,7 @@ export const ReportsNumericFilter = ({
 
         <div className="flex items-center justify-end gap-2 border-t border-default p-2">
           <Button size="tiny" variant="outline" onClick={handleClearAll}>
-            Clear
+            {$t('Clear')}
           </Button>
           <Button
             loading={isLoading}
@@ -191,7 +193,7 @@ export const ReportsNumericFilter = ({
             onClick={handleApply}
             type="button"
           >
-            Apply
+            {$t('Apply')}
           </Button>
         </div>
       </PopoverContent>

@@ -5,6 +5,7 @@ import { useAnalyticsBucketDeleteCleanUp } from './AnalyticsBucketDetails/useAna
 import { TextConfirmModal } from '@/components/ui/TextConfirmModalWrapper'
 import { useAnalyticsBucketDeleteMutation } from '@/data/storage/analytics-bucket-delete-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export interface DeleteAnalyticsBucketModalProps {
   visible: boolean
@@ -61,8 +62,8 @@ export const DeleteAnalyticsBucketModal = ({
       }}
     >
       <p className="text-sm">
-        Your bucket <span className="font-bold text-foreground">{bucketId}</span> and all of its
-        contents will be permanently deleted.
+        {$t('Your bucket')} <span className="font-bold text-foreground">{bucketId}</span>{' '}
+        {$t('and all of its contents will be permanently deleted.')}
       </p>
     </TextConfirmModal>
   )

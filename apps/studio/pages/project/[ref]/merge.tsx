@@ -34,6 +34,7 @@ import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
 import { useBranchMergeDiff } from '@/hooks/branches/useBranchMergeDiff'
 import { useWorkflowManagement } from '@/hooks/branches/useWorkflowManagement'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import type { NextPageWithLayout } from '@/types'
 
@@ -122,7 +123,7 @@ const MergePage: NextPageWithLayout = () => {
             requestReview: false,
           },
           {
-            onSuccess: () => toast.success('Branch updated successfully'),
+            onSuccess: () => toast.success($t('Branch updated successfully')),
           }
         )
       }
@@ -176,7 +177,7 @@ const MergePage: NextPageWithLayout = () => {
 
   const { mutate: pushBranch, isPending: isPushing } = useBranchPushMutation({
     onSuccess: (data) => {
-      toast.success('Branch update initiated!')
+      toast.success($t('Branch update initiated!'))
       if (data?.workflow_run_id) {
         addWorkflowRun(data.workflow_run_id)
       }
@@ -194,7 +195,7 @@ const MergePage: NextPageWithLayout = () => {
     onSuccess: (data) => {
       setIsSubmitting(false)
       if (data.workflowRunId) {
-        toast.success('Branch merge initiated!')
+        toast.success($t('Branch merge initiated!'))
         addWorkflowRun(data.workflowRunId)
 
         track(
@@ -203,7 +204,7 @@ const MergePage: NextPageWithLayout = () => {
           { project: parentProjectRef }
         )
       } else {
-        toast.info('No changes to merge')
+        toast.info($t('No changes to merge'))
       }
     },
     onError: (error) => {
@@ -223,7 +224,7 @@ const MergePage: NextPageWithLayout = () => {
 
   const { mutate: deleteBranch, isPending: isDeleting } = useBranchDeleteMutation({
     onSuccess: () => {
-      toast.success('Branch closed successfully')
+      toast.success($t('Branch closed successfully'))
       router.push(`/project/${parentProjectRef}/branches`)
       track('branch_delete_button_clicked', { origin: 'merge_page' }, { project: parentProjectRef })
     },
@@ -306,9 +307,9 @@ const MergePage: NextPageWithLayout = () => {
       <PageLayout>
         <ScaffoldContainer size="full">
           <div className="flex items-center flex-col justify-center w-full py-16">
-            <ProductEmptyState title="Merge Request">
+            <ProductEmptyState title={$t('Merge Request')}>
               <p className="text-sm text-foreground-light">
-                You can only review changes when on a preview branch
+                {$t('You can only review changes when on a preview branch')}
               </p>
             </ProductEmptyState>
           </div>
@@ -339,15 +340,15 @@ const MergePage: NextPageWithLayout = () => {
           {hasGHProductionDeployEnabled ? (
             <Admonition
               type="default"
-              title="Branch cannot be merged as deploy to production from GitHub is enabled"
+              title={$t('Branch cannot be merged as deploy to production from GitHub is enabled')}
               className="my-4"
             >
               <p className="text-balance">
-                Branches should be managed via GitHub to prevent drifts in migrations from your
-                repository's state. You may either move your schema changes to a GitHub pull
-                request, or disable "Deploy to production" in the{' '}
+                {$t(
+                  'Branches should be managed via GitHub to prevent drifts in migrations from your repository\'s state. You may either move your schema changes to a GitHub pull request, or disable "Deploy to production" in the'
+                )}{' '}
                 <InlineLink href={`/project/${parentProjectRef}/settings/integrations`}>
-                  GitHub integration settings
+                  {$t('GitHub integration settings')}
                 </InlineLink>
                 .
               </p>
@@ -395,7 +396,9 @@ const MergePage: NextPageWithLayout = () => {
                       icon={<GitBranchIcon size={16} strokeWidth={1.5} />}
                       className="shrink-0"
                     >
-                      <Link href={`/project/${parentProjectRef}/branches`}>Create new branch</Link>
+                      <Link href={`/project/${parentProjectRef}/branches`}>
+                        {$t('Create new branch')}
+                      </Link>
                     </Button>
                   ) : hasCurrentWorkflowCompleted ? (
                     <Button
@@ -405,7 +408,7 @@ const MergePage: NextPageWithLayout = () => {
                       icon={<X size={16} strokeWidth={1.5} />}
                       className="shrink-0"
                     >
-                      Close branch
+                      {$t('Close branch')}
                     </Button>
                   ) : undefined
                 }
@@ -454,7 +457,7 @@ const MergePage: NextPageWithLayout = () => {
 
       <ConfirmationModal
         visible={showConfirmDialog}
-        title="Confirm Branch Merge"
+        title={$t('Confirm Branch Merge')}
         description={`Are you sure you want to merge "${
           currentBranch?.name
         }" into "${mainBranch?.name || 'main'}"? This action cannot be undone.`}

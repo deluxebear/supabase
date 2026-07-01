@@ -24,6 +24,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAppStateSnapshot } from '@/state/app-state'
 import type { NextPageWithLayout } from '@/types'
@@ -81,7 +82,7 @@ const BranchesPage: NextPageWithLayout = () => {
 
   const { mutate: deleteBranch, isPending: isDeleting } = useBranchDeleteMutation({
     onSuccess: () => {
-      toast.success('Successfully deleted branch')
+      toast.success($t('Successfully deleted branch'))
       setSelectedBranchToDelete(undefined)
     },
   })
@@ -171,7 +172,7 @@ const BranchesPage: NextPageWithLayout = () => {
         onCancel={() => setSelectedBranchToDelete(undefined)}
         onConfirm={() => onConfirmDeleteBranch()}
         loading={isDeleting}
-        title="Delete branch"
+        title={$t('Delete branch')}
         confirmLabel="Delete branch"
         confirmPlaceholder="Type in name of branch"
         confirmString={selectedBranchToDelete?.name ?? ''}
@@ -180,7 +181,7 @@ const BranchesPage: NextPageWithLayout = () => {
         }}
         text={
           <>
-            This will delete your database preview branch{' '}
+            {$t('This will delete your database preview branch')}{' '}
             <span className="text-bold text-foreground">{selectedBranchToDelete?.name}</span>.
           </>
         }
@@ -214,7 +215,7 @@ BranchesPage.getLayout = (page) => {
           },
         }}
       >
-        Create branch
+        {$t('Create branch')}
       </ButtonTooltip>
     )
 
@@ -230,7 +231,7 @@ BranchesPage.getLayout = (page) => {
             rel="noreferrer"
             href="https://github.com/orgs/supabase/discussions/18937"
           >
-            Branching feedback
+            {$t('Branching feedback')}
           </a>
         </Button>
         <DocsButton href={`${DOCS_URL}/guides/platform/branching`} />
@@ -239,7 +240,7 @@ BranchesPage.getLayout = (page) => {
 
     return (
       <PageLayout
-        title="Branches"
+        title={$t('Branches')}
         subtitle="Manage your database preview branches and deployments"
         primaryActions={primaryActions}
         secondaryActions={secondaryActions}

@@ -3,6 +3,8 @@ import type { MouseEventHandler } from 'react'
 
 import { Button, cn } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface SubmitButtonProps {
   isSubmitting: boolean
   userEmail: string
@@ -28,11 +30,12 @@ export function SubmitButton({
         loading={isSubmitting}
         onClick={onClick}
       >
-        Send support request
+        {$t('Send support request')}
       </Button>
       <p className={cn('text-xs text-foreground-lighter text-balance pr-4', descriptionClassName)}>
-        We will contact you at <span className="text-foreground font-medium">{userEmail}</span>.
-        Please ensure emails from supabase.com are allowed.
+        {$t('We will contact you at')}{' '}
+        <span className="text-foreground font-medium">{userEmail}</span>
+        {$t('. Please ensure emails from supabase.com are allowed.')}
       </p>
     </div>
   )

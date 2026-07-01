@@ -16,6 +16,7 @@ import { useDatabaseHooksQuery } from '@/data/database-triggers/database-trigger
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -70,7 +71,7 @@ export const HooksList = () => {
           <InputGroupInput
             ref={searchInputRef}
             size="tiny"
-            placeholder="Search for a webhook"
+            placeholder={$t('Search for a webhook')}
             value={filterString}
             onChange={(e) => setFilterString(e.target.value)}
             onKeyDown={onSearchInputEscape(filterString, setFilterString)}
@@ -94,7 +95,7 @@ export const HooksList = () => {
               },
             }}
           >
-            Create a new hook
+            {$t('Create a new hook')}
           </ButtonTooltip>
         </div>
       </div>

@@ -10,6 +10,7 @@ import {
 
 import { DEFAULT_SECTION_STATE, type SectionState } from './SQLEditorNav.constants'
 import { useLocalStorage } from '@/hooks/misc/useLocalStorage'
+import { t as $t } from '@/lib/i18n'
 
 const OPTIONS = ['templates', 'examples'] as const
 
@@ -38,7 +39,7 @@ export function ReferenceSnippetsSection() {
         })
       }}
     >
-      <InnerSideMenuCollapsibleTrigger title="Reference" />
+      <InnerSideMenuCollapsibleTrigger title={$t('Reference')} />
       <InnerSideMenuCollapsibleContent className="group-data-open:pt-2">
         {OPTIONS.map((pageId) => {
           const active = isPageActive(pageId)

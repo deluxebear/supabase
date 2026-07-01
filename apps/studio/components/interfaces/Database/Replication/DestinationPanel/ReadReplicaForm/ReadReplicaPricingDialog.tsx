@@ -22,6 +22,7 @@ import { DocsButton } from '@/components/ui/DocsButton'
 import { InlineLinkClassName } from '@/components/ui/InlineLink'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const ReadReplicaPricingDialog = () => {
   const { data: project } = useSelectedProjectQuery()
@@ -33,7 +34,7 @@ export const ReadReplicaPricingDialog = () => {
     <Dialog>
       <DialogTrigger asChild>
         <button className={cn(InlineLinkClassName, 'text-sm text-foreground-light')}>
-          Learn more
+          {$t('Learn more')}
         </button>
       </DialogTrigger>
       <DialogContent
@@ -41,37 +42,38 @@ export const ReadReplicaPricingDialog = () => {
         aria-describedby={undefined}
       >
         <DialogHeader>
-          <DialogTitle>Calculating costs for a new read replica</DialogTitle>
+          <DialogTitle>{$t('Calculating costs for a new read replica')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection>
           {showNewDiskManagementUI ? (
             <>
               <p className="text-foreground-light text-sm mb-2">
-                Read replicas will match the compute size of your primary database and will include
-                25% more disk size than the primary database to accommodate WAL files.
+                {$t(
+                  'Read replicas will match the compute size of your primary database and will include 25% more disk size than the primary database to accommodate WAL files.'
+                )}
               </p>
               <p className="text-foreground-light text-sm">
-                The additional cost for the replica breaks down to:
+                {$t('The additional cost for the replica breaks down to:')}
               </p>
               <Table>
                 <TableHeader className="font-mono uppercase text-xs [&_th]:h-auto [&_th]:pb-2 [&_th]:pt-4">
                   <TableRow>
-                    <TableHead className="w-[140px] pl-0">Item</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="text-right pr-0">Cost (/month)</TableHead>
+                    <TableHead className="w-[140px] pl-0">{$t('Item')}</TableHead>
+                    <TableHead>{$t('Description')}</TableHead>
+                    <TableHead className="text-right pr-0">{$t('Cost (/month)')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="[&_td]:py-0 [&_tr]:h-[50px] [&_tr]:border-dotted">
                   <TableRow>
-                    <TableCell className="pl-0">Compute size</TableCell>
+                    <TableCell className="pl-0">{$t('Compute size')}</TableCell>
                     <TableCell>{compute.label}</TableCell>
                     <TableCell className="text-right font-mono pr-0" translate="no">
                       {compute.cost}
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell className="pl-0">Disk size</TableCell>
+                    <TableCell className="pl-0">{$t('Disk size')}</TableCell>
                     <TableCell>{disk.label}</TableCell>
                     <TableCell className="text-right font-mono pr-0" translate="no">
                       {disk.cost}
@@ -86,7 +88,7 @@ export const ReadReplicaPricingDialog = () => {
                   </TableRow>
                   {disk.type === 'gp3' && (
                     <TableRow>
-                      <TableCell className="pl-0">Throughput</TableCell>
+                      <TableCell className="pl-0">{$t('Throughput')}</TableCell>
                       <TableCell>{throughput.label}</TableCell>
                       <TableCell className="text-right font-mono pr-0">{throughput.cost}</TableCell>
                     </TableRow>
@@ -96,9 +98,11 @@ export const ReadReplicaPricingDialog = () => {
             </>
           ) : (
             <p className="text-foreground-light text-sm">
-              Read replicas will be on the same compute size as your primary database. Deploying a
-              read replica on the <span className="text-foreground">{compute.label}</span> size
-              incurs additional{' '}
+              {$t(
+                'Read replicas will be on the same compute size as your primary database. Deploying a read replica on the'
+              )}{' '}
+              <span className="text-foreground">{compute.label}</span>{' '}
+              {$t('size incurs additional')}{' '}
               <span className="text-foreground" translate="no">
                 {compute?.priceDescription}
               </span>

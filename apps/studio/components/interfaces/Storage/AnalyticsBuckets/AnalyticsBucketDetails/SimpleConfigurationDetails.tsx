@@ -22,6 +22,7 @@ import { useVaultSecretDecryptedValueQuery } from '@/data/vault/vault-secret-dec
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const SimpleConfigurationDetails = ({ bucketName }: { bucketName?: string }) => {
   const { data: project } = useSelectedProjectQuery()
@@ -57,13 +58,13 @@ export const SimpleConfigurationDetails = ({ bucketName }: { bucketName?: string
     <ScaffoldSection isFullWidth>
       <ScaffoldHeader className="flex flex-row justify-between items-end gap-x-8 pt-0">
         <div>
-          <ScaffoldSectionTitle>Connection details</ScaffoldSectionTitle>
+          <ScaffoldSectionTitle>{$t('Connection details')}</ScaffoldSectionTitle>
           <ScaffoldSectionDescription>
-            Connect to this bucket from an Iceberg client.{' '}
+            {$t('Connect to this bucket from an Iceberg client.')}{' '}
             <InlineLink
               href={`${DOCS_URL}/guides/storage/analytics/connecting-to-analytics-bucket`}
             >
-              Learn more
+              {$t('Learn more')}
             </InlineLink>
           </ScaffoldSectionDescription>
         </div>
@@ -76,11 +77,11 @@ export const SimpleConfigurationDetails = ({ bucketName }: { bucketName?: string
       </ScaffoldHeader>
 
       {isSuccessApiKeys && isSuccessVaultDecrypt && !isTokenValid && (
-        <Admonition type="warning" title="Catalog token is no longer valid" className="mb-4">
+        <Admonition type="warning" title={$t('Catalog token is no longer valid')} className="mb-4">
           <p>
-            The Iceberg wrapper's catalog token doesn't match with any of your project's API keys,
-            and hence authorization will fail when connecting to your bucket. Update the catalog
-            token to use any of your project's API keys.
+            {$t(
+              "The Iceberg wrapper's catalog token doesn't match with any of your project's API keys, and hence authorization will fail when connecting to your bucket. Update the catalog token to use any of your project's API keys."
+            )}
           </p>
           {canReadAPIKeys && <UpdateCatalogTokenDialog vaultTokenId={wrapperValues?.vault_token} />}
         </Admonition>

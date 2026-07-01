@@ -26,6 +26,7 @@ import { RevokeAppModal } from '@/components/interfaces/Organization/OAuthApps/R
 import { TextConfirmModal } from '@/components/ui/TextConfirmModalWrapper'
 import type { AuthorizedApp } from '@/data/oauth/authorized-apps-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 export const MarketplaceIntegrationSettingsTab = () => {
   const { ref, integration } = useIntegrationDetail()
@@ -42,7 +43,7 @@ export const MarketplaceIntegrationSettingsTab = () => {
   const { removeResource, isRemoving } = useConnectedResourceMutations({
     projectRef: ref,
     orgSlug: organization?.slug,
-    onSuccess: () => toast.success('Successfully removed the connected resource'),
+    onSuccess: () => toast.success($t('Successfully removed the connected resource')),
   })
 
   const integrationName = integration?.name ?? 'this integration'
@@ -133,7 +134,7 @@ export const MarketplaceIntegrationSettingsTab = () => {
         <div className="mx-auto w-full max-w-3xl">
           <div className="flex flex-col gap-y-3">
             <h2 className="flex items-center gap-x-2 text-2xl text-foreground">
-              Connected resources
+              {$t('Connected resources')}
             </h2>
           </div>
 
@@ -145,14 +146,14 @@ export const MarketplaceIntegrationSettingsTab = () => {
             ) : isError ? (
               <Admonition
                 type="warning"
-                title="Failed to load connected resources"
+                title={$t('Failed to load connected resources')}
                 description={error?.message}
                 className="mt-8"
               />
             ) : groups.length === 0 ? (
               <Admonition
                 type="default"
-                title="No connected resources"
+                title={$t('No connected resources')}
                 description={`${integrationName} doesn't have any resources connected to your project.`}
                 className="mt-8"
               />
@@ -161,7 +162,7 @@ export const MarketplaceIntegrationSettingsTab = () => {
                 {showOrphanedResourcesWarning && (
                   <Admonition
                     type="warning"
-                    title="OAuth application is missing"
+                    title={$t('OAuth application is missing')}
                     description={`No OAuth app is connected for ${integrationName}, but other resources associated with it are still present on your project. ${integrationName} may not work correctly without an OAuth app. Reconnect it, or to fully disconnect the integration, remove the remaining resources below.`}
                     className="mb-8 mt-0"
                   />
@@ -186,8 +187,8 @@ export const MarketplaceIntegrationSettingsTab = () => {
         onConfirm={onConfirmRemove}
       >
         <p className="text-sm text-foreground-light">
-          This removes the resource immediately and may stop {integrationName} from working
-          correctly. This action cannot be undone.
+          {$t('This removes the resource immediately and may stop')} {integrationName}{' '}
+          {$t('from working correctly. This action cannot be undone.')}
         </p>
       </ConfirmationModal>
 

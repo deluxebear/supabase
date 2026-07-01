@@ -8,6 +8,7 @@ import {
   FormSectionLabel,
 } from '@/components/ui/Forms/FormSection'
 import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 interface HTTPParametersProps {
   form: UseFormReturn<WebhookFormValues>
@@ -16,7 +17,9 @@ interface HTTPParametersProps {
 export const HTTPParameters = ({ form }: HTTPParametersProps) => {
   return (
     <FormSection
-      header={<FormSectionLabel className="lg:col-span-4!">HTTP Parameters</FormSectionLabel>}
+      header={
+        <FormSectionLabel className="lg:col-span-4!">{$t('HTTP Parameters')}</FormSectionLabel>
+      }
     >
       <FormSectionContent loading={false} className="lg:col-span-8!">
         <KeyValueFieldArray

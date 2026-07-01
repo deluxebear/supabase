@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { TextConfirmModal } from '@/components/ui/TextConfirmModalWrapper'
 import { useDatabaseQueuePurgeMutation } from '@/data/database-queues/database-queues-purge-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface PurgeQueueProps {
   queueName: string
@@ -40,14 +41,14 @@ export const PurgeQueue = ({ queueName, visible, onClose }: PurgeQueueProps) => 
       visible={visible}
       onCancel={() => onClose()}
       onConfirm={handlePurge}
-      title="Purge this queue"
+      title={$t('Purge this queue')}
       loading={isPending}
       confirmLabel={`Purge queue ${queueName}`}
       confirmPlaceholder="Type in name of queue"
       confirmString={queueName ?? 'Unknown'}
       text={
         <>
-          <span>This will purge the queue</span>{' '}
+          <span>{$t('This will purge the queue')}</span>{' '}
           <span className="text-bold text-foreground">{queueName}</span>
         </>
       }

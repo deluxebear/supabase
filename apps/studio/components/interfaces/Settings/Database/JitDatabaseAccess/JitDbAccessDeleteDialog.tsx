@@ -12,6 +12,7 @@ import {
 import { Admonition } from 'ui-patterns/admonition'
 
 import type { JitUserRule } from './JitDbAccess.types'
+import { t as $t } from '@/lib/i18n'
 
 interface JitDbAccessDeleteDialogProps {
   user: JitUserRule | null
@@ -34,16 +35,17 @@ export function JitDbAccessDeleteDialog({
     <AlertDialog open={!!user} onOpenChange={(open) => !open && !isDeleting && onClose()}>
       <AlertDialogContent size="small">
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete temporary access rule</AlertDialogTitle>
+          <AlertDialogTitle>{$t('Delete temporary access rule')}</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-2 text-sm">
               <p>
-                Remove the temporary access rule for{' '}
+                {$t('Remove the temporary access rule for')}{' '}
                 <strong className="text-foreground">{userDisplayName}</strong>?
               </p>
               <p>
-                This revokes any assigned database roles for this member and removes their temporary
-                access configuration.
+                {$t(
+                  'This revokes any assigned database roles for this member and removes their temporary access configuration.'
+                )}
               </p>
             </div>
           </AlertDialogDescription>
@@ -52,15 +54,15 @@ export function JitDbAccessDeleteDialog({
           <AlertDialogBody>
             <Admonition
               type="destructive"
-              title="Unable to delete temporary access rule"
+              title={$t('Unable to delete temporary access rule')}
               description={error}
             />
           </AlertDialogBody>
         )}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction variant="danger" loading={isDeleting} onClick={onConfirm}>
-            Delete rule
+            {$t('Delete rule')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

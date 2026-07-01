@@ -9,6 +9,7 @@ import { useDeleteLogDrainMutation } from '@/data/log-drains/delete-log-drain-mu
 import { LogDrainData, useLogDrainsQuery } from '@/data/log-drains/log-drains-query'
 import { useTestLogDrainMutation } from '@/data/log-drains/test-log-drain-mutation'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export function LogDrains({
@@ -32,13 +33,13 @@ export function LogDrains({
 
   const { mutate: deleteLogDrain, isPending: isDeleting } = useDeleteLogDrainMutation({
     onError: () => {
-      toast.error('Failed to delete log drain')
+      toast.error($t('Failed to delete log drain'))
     },
   })
 
   const { mutate: testLogDrain } = useTestLogDrainMutation({
     onSuccess: () => {
-      toast.success('Log drain connection test succeeded')
+      toast.success($t('Log drain connection test succeeded'))
     },
   })
 

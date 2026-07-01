@@ -4,6 +4,7 @@ import {
   parseSupportAssistantPrompt,
   type ParsedSupportAssistantPrompt,
 } from '@/components/interfaces/Support/SupportAssistant.utils'
+import { t as $t } from '@/lib/i18n'
 
 export function parseSupportRequestMessage(text: string) {
   return parseSupportAssistantPrompt(text)
@@ -16,23 +17,24 @@ export function SupportRequestMessage({ request }: { request: ParsedSupportAssis
         <div className="space-y-4">
           <Mail size={16} strokeWidth={1.5} className="text-foreground-muted" />
           <div className="space-y-1">
-            <p className="heading-default text-foreground">Support request submitted</p>
+            <p className="heading-default text-foreground">{$t('Support request submitted')}</p>
             <p>
-              Supabase Support already has this ticket. Assistant is reviewing the same request to
-              help in the interim.
+              {$t(
+                'Supabase Support already has this ticket. Assistant is reviewing the same request to help in the interim.'
+              )}
             </p>
           </div>
         </div>
 
         {request.subject && (
           <div>
-            <p className="heading-meta text-foreground-light">Subject</p>
+            <p className="heading-meta text-foreground-light">{$t('Subject')}</p>
             <p className="text-foreground">{request.subject}</p>
           </div>
         )}
         {request.message && (
           <div>
-            <p className="heading-meta text-foreground-light">Message</p>
+            <p className="heading-meta text-foreground-light">{$t('Message')}</p>
             <p className="line-clamp-6 whitespace-pre-wrap break-words text-foreground">
               {request.message}
             </p>

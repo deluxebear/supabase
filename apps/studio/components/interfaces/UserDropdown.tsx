@@ -26,6 +26,7 @@ import { UpgradePlanButton } from '@/components/ui/UpgradePlanButton'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useUpgradeCtaExperiment } from '@/hooks/misc/useUpgradeCtaExperiment'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useProfileNameAndPicture } from '@/lib/profile'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAppStateSnapshot } from '@/state/app-state'
@@ -117,7 +118,8 @@ export function UserDropdown({
                   }}
                 >
                   <User2 size={14} strokeWidth={1.5} className="text-foreground-lighter" />
-                  Account
+
+                  {$t('Account')}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -125,7 +127,8 @@ export function UserDropdown({
                 onClick={() => toggleFeaturePreviewModal(true)}
               >
                 <FlaskConical size={14} strokeWidth={1.5} className="text-foreground-lighter" />
-                Feature previews
+
+                {$t('Feature previews')}
               </DropdownMenuItem>
               <DropdownMenuItem className="flex gap-2 cursor-pointer" asChild>
                 <Link
@@ -134,7 +137,8 @@ export function UserDropdown({
                   rel="noopener noreferrer"
                 >
                   <ScrollText size={14} strokeWidth={1.5} className="text-foreground-lighter" />
-                  Changelog
+
+                  {$t('Changelog')}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -143,7 +147,7 @@ export function UserDropdown({
         )}
 
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Theme</DropdownMenuLabel>
+          <DropdownMenuLabel>{$t('Theme')}</DropdownMenuLabel>
           <DropdownMenuRadioGroup
             value={theme}
             onValueChange={(value) => {
@@ -194,7 +198,7 @@ export function UserDropdown({
                   router.push('/logout')
                 }}
               >
-                Log out
+                {$t('Log out')}
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </>

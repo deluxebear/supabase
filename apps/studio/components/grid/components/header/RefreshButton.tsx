@@ -6,6 +6,7 @@ import { Button } from 'ui'
 import { useTableIndexAdvisor } from '@/components/grid/context/TableIndexAdvisorContext'
 import { Shortcut } from '@/components/ui/Shortcut'
 import { tableRowKeys } from '@/data/table-rows/keys'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 export type RefreshButtonProps = {
@@ -37,7 +38,7 @@ export const RefreshButton = ({ tableId, isRefetching }: RefreshButtonProps) => 
         icon={<RefreshCw />}
         onClick={() => onClick()}
         className="w-7 p-0"
-        aria-label="Refresh table data"
+        aria-label={$t('Refresh table data')}
       />
     </Shortcut>
   )

@@ -4,6 +4,7 @@ import { Button, IconDiscord } from 'ui'
 
 import { NO_PROJECT_MARKER } from './SupportForm.utils'
 import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 
 interface SuccessProps {
@@ -47,15 +48,15 @@ export const Success = ({
       <Check strokeWidth={1.5} size={24} className="text-brand" />
 
       <div className="flex max-w-[620px] flex-col items-center gap-2">
-        <h3 className="text-xl">Support request sent</h3>
+        <h3 className="text-xl">{$t('Support request sent')}</h3>
         <p className="text-balance text-sm text-foreground-light">
           {selectedProject !== NO_PROJECT_MARKER && (
             <>
-              Your ticket has been logged for{' '}
+              {$t('Your ticket has been logged for')}{' '}
               <span className="font-medium text-foreground">{projectName}</span>.{' '}
             </>
           )}
-          We&apos;ll reach out at{' '}
+          {$t('We&apos;ll reach out at')}{' '}
           <span className="font-medium text-foreground">{respondToEmail}</span>.
         </p>
       </div>
@@ -68,7 +69,7 @@ export const Success = ({
           icon={<IconDiscord size={16} fill="hsl(var(--background-default))" />}
         >
           <Link href="https://discord.supabase.com/" target="_blank">
-            Join Discord
+            {$t('Join Discord')}
           </Link>
         </Button>
       </div>

@@ -9,6 +9,7 @@ import {
   ScaffoldHeader,
   ScaffoldTitle,
 } from '@/components/layouts/Scaffold'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const ProjectInfrastructure: NextPageWithLayout = () => {
@@ -16,9 +17,9 @@ const ProjectInfrastructure: NextPageWithLayout = () => {
     <>
       <ScaffoldContainer>
         <ScaffoldHeader>
-          <ScaffoldTitle>Infrastructure</ScaffoldTitle>
+          <ScaffoldTitle>{$t('Infrastructure')}</ScaffoldTitle>
           <ScaffoldDescription>
-            General information regarding your server instance
+            {$t('General information regarding your server instance')}
           </ScaffoldDescription>
         </ScaffoldHeader>
       </ScaffoldContainer>
@@ -31,7 +32,7 @@ const ProjectInfrastructure: NextPageWithLayout = () => {
 
 ProjectInfrastructure.getLayout = (page) => (
   <DefaultLayout>
-    <SettingsLayout title="Infrastructure">{page}</SettingsLayout>
+    <SettingsLayout title={$t('Infrastructure')}>{page}</SettingsLayout>
   </DefaultLayout>
 )
 

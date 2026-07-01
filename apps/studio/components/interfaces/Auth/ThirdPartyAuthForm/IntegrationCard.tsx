@@ -11,6 +11,7 @@ import {
 } from './ThirdPartyAuthForm.utils'
 import { ThirdPartyAuthIntegration } from '@/data/third-party-auth/integrations-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface IntegrationCardProps {
   integration: ThirdPartyAuthIntegration
@@ -23,10 +24,11 @@ export const getIntegrationTypeDescription = (type: INTEGRATION_TYPES) => {
     case 'firebase':
       return (
         <>
-          Allow users to use Supabase with Firebase project. You'll need to setup RLS policies for
-          all tables that you want to access with a Firebase JWT token. Additionally, you'll need to
-          add custom code to set the <code>authenticated</code> role to all your present and future
-          users. You can read more in the{' '}
+          {$t(
+            "Allow users to use Supabase with Firebase project. You'll need to setup RLS policies for all tables that you want to access with a Firebase JWT token. Additionally, you'll need to add custom code to set the"
+          )}{' '}
+          <code>authenticated</code>{' '}
+          {$t('role to all your present and future users. You can read more in the')}{' '}
           <a
             className="hover:decoration-brand underline hover:text-foreground transition"
             href={`${DOCS_URL}/guides/auth`}
@@ -40,8 +42,9 @@ export const getIntegrationTypeDescription = (type: INTEGRATION_TYPES) => {
     case 'auth0':
       return (
         <>
-          Allow users to use Supabase with Auth0 project. Additional setup may be required. You can
-          read more in the{' '}
+          {$t(
+            'Allow users to use Supabase with Auth0 project. Additional setup may be required. You can read more in the'
+          )}{' '}
           <a
             className="hover:decoration-brand underline hover:text-foreground transition"
             href={`${DOCS_URL}/guides/auth`}
@@ -54,8 +57,9 @@ export const getIntegrationTypeDescription = (type: INTEGRATION_TYPES) => {
     case 'awsCognito':
       return (
         <>
-          Allow users to use Supabase with an Amazon Cognito. Additional setup may be required. You
-          can read more in the{' '}
+          {$t(
+            'Allow users to use Supabase with an Amazon Cognito. Additional setup may be required. You can read more in the'
+          )}{' '}
           <a
             className="hover:decoration-brand underline hover:text-foreground transition"
             href={`${DOCS_URL}/guides/auth/third-party/aws-cognito`}
@@ -69,8 +73,9 @@ export const getIntegrationTypeDescription = (type: INTEGRATION_TYPES) => {
     case 'clerk':
       return (
         <>
-          Allow users to use Supabase with Clerk. Additional setup may be required. You can read
-          more in the{' '}
+          {$t(
+            'Allow users to use Supabase with Clerk. Additional setup may be required. You can read more in the'
+          )}{' '}
           <a
             className="hover:decoration-brand underline hover:text-foreground transition"
             href={`${DOCS_URL}/guides/auth/third-party/clerk`}
@@ -84,8 +89,9 @@ export const getIntegrationTypeDescription = (type: INTEGRATION_TYPES) => {
     case 'workos':
       return (
         <>
-          Allow users to use Supabase with WorkOS. Additional setup may be required. You can read
-          more in the{' '}
+          {$t(
+            'Allow users to use Supabase with WorkOS. Additional setup may be required. You can read more in the'
+          )}{' '}
           <a
             className="hover:decoration-brand underline hover:text-foreground transition"
             href={`${DOCS_URL}/guides/auth/third-party/workos`}
@@ -116,7 +122,7 @@ export const IntegrationTypeContent = ({
 
       return (
         <div className="text-sm flex flex-row gap-x-4">
-          <span className="text-foreground-light w-36">Firebase Project ID</span>
+          <span className="text-foreground-light w-36">{$t('Firebase Project ID')}</span>
           <span className="text-foreground">{projectName}</span>
         </div>
       )
@@ -127,7 +133,7 @@ export const IntegrationTypeContent = ({
 
       return (
         <div className="text-sm flex flex-row gap-x-4">
-          <span className="text-foreground-light w-36">Auth0 Domain Name</span>
+          <span className="text-foreground-light w-36">{$t('Auth0 Domain Name')}</span>
           <span className="text-foreground">{domainName}</span>
         </div>
       )
@@ -141,11 +147,11 @@ export const IntegrationTypeContent = ({
       return (
         <div className="text-sm flex flex-col gap-y-2">
           <div className="flex flex-row gap-x-4">
-            <span className="text-foreground-light w-36">Region</span>
+            <span className="text-foreground-light w-36">{$t('Region')}</span>
             <span className="text-foreground">{region}</span>
           </div>
           <div className="flex flex-row gap-x-4">
-            <span className="text-foreground-light w-36">User Pool ID</span>
+            <span className="text-foreground-light w-36">{$t('User Pool ID')}</span>
             <span className="text-foreground">{userPoolId}</span>
           </div>
         </div>
@@ -155,7 +161,7 @@ export const IntegrationTypeContent = ({
     case 'clerk':
       return (
         <div className="text-sm flex flex-row gap-x-4">
-          <span className="text-foreground-light w-36">Domain</span>
+          <span className="text-foreground-light w-36">{$t('Domain')}</span>
           <span className="text-foreground">{integration?.oidc_issuer_url ?? ''}</span>
         </div>
       )
@@ -163,14 +169,14 @@ export const IntegrationTypeContent = ({
     case 'workos':
       return (
         <div className="text-sm flex flex-row gap-x-4">
-          <span className="text-foreground-light w-36">Issuer URL</span>
+          <span className="text-foreground-light w-36">{$t('Issuer URL')}</span>
           <span className="text-foreground">{integration?.oidc_issuer_url ?? ''}</span>
         </div>
       )
 
     case 'custom':
     default:
-      return <>Custom</>
+      return <>{$t('Custom')}</>
   }
 }
 
@@ -202,7 +208,7 @@ export const IntegrationCard = ({
             {/* TODO: this should be a configure integration where it would show the sheet and the user can disable or delete the integration
               but there's no "edit integration" endpoing for now. */}
             <Button variant="danger" disabled={!canUpdateConfig} onClick={() => onDelete()}>
-              Delete integration
+              {$t('Delete integration')}
             </Button>
           </div>
         </div>
@@ -212,11 +218,11 @@ export const IntegrationCard = ({
               <div className="h-3.5 w-3.5 bg-brand rounded-full flex justify-center items-center">
                 <Check className="h-2 w-2 text-background-overlay" strokeWidth={6} />
               </div>
-              <span>Enabled</span>
+              <span>{$t('Enabled')}</span>
             </Badge>
           ) : (
             <Badge variant="warning">
-              <span>Disabled</span>
+              <span>{$t('Disabled')}</span>
             </Badge>
           )}
         </div>

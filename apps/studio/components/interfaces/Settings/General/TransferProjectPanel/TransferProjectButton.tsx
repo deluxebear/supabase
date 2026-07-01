@@ -35,6 +35,7 @@ import { useProjectTransferPreviewQuery } from '@/data/projects/project-transfer
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const TransferProjectButton = () => {
   const { data: project } = useSelectedProjectQuery()
@@ -111,7 +112,7 @@ export const TransferProjectButton = () => {
             },
           }}
         >
-          Transfer project
+          {$t('Transfer project')}
         </ButtonTooltip>
       </DialogTrigger>
       <DialogContent size="xlarge">
@@ -121,8 +122,9 @@ export const TransferProjectButton = () => {
         <DialogSectionSeparator />
         <DialogSection className="text-foreground-light">
           <p className="text-sm">
-            To transfer projects, the owner must be a member of both the source and target
-            organizations. Consider the following before transferring your project:
+            {$t(
+              'To transfer projects, the owner must be a member of both the source and target organizations. Consider the following before transferring your project:'
+            )}
           </p>
 
           <ul className="mt-4 space-y-5 text-sm">
@@ -131,10 +133,11 @@ export const TransferProjectButton = () => {
                 <Loader />
               </span>
               <div>
-                <p className="font-bold">Possible downtime</p>
+                <p className="font-bold">{$t('Possible downtime')}</p>
                 <p>
-                  There might be a short downtime when transferring projects from a paid to a free
-                  organization.
+                  {$t(
+                    'There might be a short downtime when transferring projects from a paid to a free organization.'
+                  )}
                 </p>
               </div>
             </li>
@@ -144,10 +147,11 @@ export const TransferProjectButton = () => {
                 <Shield />
               </span>
               <div>
-                <p className="font-bold">Permissions</p>
+                <p className="font-bold">{$t('Permissions')}</p>
                 <p>
-                  Depending on your role in the target organization, your level of permissions may
-                  change after transfer.
+                  {$t(
+                    'Depending on your role in the target organization, your level of permissions may change after transfer.'
+                  )}
                 </p>
               </div>
             </li>
@@ -157,10 +161,11 @@ export const TransferProjectButton = () => {
                 <Wrench size={24} className="shrink-0" />
               </span>
               <div>
-                <p className="font-bold">Features</p>
+                <p className="font-bold">{$t('Features')}</p>
                 <p>
-                  Moving your project to an organization with a smaller subscription plan may result
-                  in the loss of certain features (i.e. image transformations).
+                  {$t(
+                    'Moving your project to an organization with a smaller subscription plan may result in the loss of certain features (i.e. image transformations).'
+                  )}
                 </p>
               </div>
             </li>
@@ -180,20 +185,21 @@ export const TransferProjectButton = () => {
             <div className="space-y-2">
               {organizations.length === 0 ? (
                 <div className="flex items-center gap-3 bg-surface-200 p-3 text-sm rounded-md border">
-                  <InfoIcon /> You do not have any organizations you can transfer your project to.
+                  <InfoIcon />{' '}
+                  {$t('You do not have any organizations you can transfer your project to.')}
                 </div>
               ) : (
                 <FormItemLayout
                   id="organization"
                   isReactForm={false}
                   layout="vertical"
-                  label="Select Target Organization"
+                  label={$t('Select Target Organization')}
                   className="gap-[2px]"
                   size="tiny"
                 >
                   <Select onValueChange={(slug) => setSelectedOrg(slug)} value={selectedOrg}>
                     <SelectTrigger id="organization">
-                      <SelectValue placeholder="Select Organization" />
+                      <SelectValue placeholder={$t('Select Organization')} />
                     </SelectTrigger>
                     <SelectContent>
                       {organizations.map((x) => (
@@ -214,7 +220,7 @@ export const TransferProjectButton = () => {
             <DialogSection>
               <div className="space-y-2">
                 {transferPreviewData && transferPreviewData.errors.length > 0 && (
-                  <Admonition type="danger" title="Project cannot be transferred">
+                  <Admonition type="danger" title={$t('Project cannot be transferred')}>
                     <div className="space-y-1">
                       {transferPreviewData.errors.map((error) => (
                         <p key={error.key}>{error.message}</p>
@@ -223,22 +229,23 @@ export const TransferProjectButton = () => {
                     {transferPreviewData.members_exceeding_free_project_limit.length > 0 && (
                       <div className="space-y-2">
                         <p className="text-sm text-foreground-light">
-                          These members have reached their maximum limits for the number of active
-                          Free plan projects within organizations where they are an administrator or
-                          owner:
+                          {$t(
+                            'These members have reached their maximum limits for the number of active Free plan projects within organizations where they are an administrator or owner:'
+                          )}
                         </p>
                         <ul className="pl-5 text-sm list-disc text-foreground-light">
                           {(transferPreviewData.members_exceeding_free_project_limit || []).map(
                             (member, idx: number) => (
                               <li key={`member-${idx}`}>
-                                {member.name} (Limit: {member.limit} free projects)
+                                {member.name} (Limit: {member.limit} {$t('free projects)')}
                               </li>
                             )
                           )}
                         </ul>
                         <p className="text-sm text-foreground-light">
-                          These members will need to either delete, pause, or upgrade one or more of
-                          their projects before you can transfer this project.
+                          {$t(
+                            'These members will need to either delete, pause, or upgrade one or more of their projects before you can transfer this project.'
+                          )}
                         </p>
                       </div>
                     )}
@@ -267,14 +274,14 @@ export const TransferProjectButton = () => {
                 {transferPreviewError && !transferError && (
                   <Admonition
                     type="danger"
-                    title="Project cannot be transferred"
+                    title={$t('Project cannot be transferred')}
                     description={transferPreviewError.message}
                   />
                 )}
                 {transferError && (
                   <Admonition
                     type="danger"
-                    title="Project cannot be transferred"
+                    title={$t('Project cannot be transferred')}
                     description={transferError.message}
                   />
                 )}
@@ -284,7 +291,7 @@ export const TransferProjectButton = () => {
         )}
         <DialogFooter>
           <Button variant="default" onClick={() => setIsOpen(false)}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button
             onClick={() => handleTransferProject()}
@@ -292,7 +299,7 @@ export const TransferProjectButton = () => {
               !transferPreviewData || !transferPreviewData.valid || isTransferring || !selectedOrg
             }
           >
-            Transfer Project
+            {$t('Transfer Project')}
           </Button>
         </DialogFooter>
       </DialogContent>

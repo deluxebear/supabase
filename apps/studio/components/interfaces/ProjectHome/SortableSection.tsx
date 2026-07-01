@@ -3,6 +3,8 @@ import { GripVertical } from 'lucide-react'
 import type { CSSProperties, ReactNode } from 'react'
 import { cn } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 type SortableSectionProps = {
   id: string
   children: ReactNode
@@ -23,7 +25,7 @@ export const SortableSection = ({ id, children }: SortableSectionProps) => {
   return (
     <div ref={setNodeRef} style={style} className="relative will-change-transform">
       <button
-        aria-label="Drag to reorder section"
+        aria-label={$t('Drag to reorder section')}
         className="absolute -left-6 top-2 text-foreground-muted hover:text-foreground focus:outline-hidden cursor-grab active:cursor-grabbing"
         {...attributes}
         {...listeners}

@@ -16,6 +16,7 @@ import { useDatabasePublicationsQuery } from '@/data/database-publications/datab
 import { useDatabasePublicationUpdateMutation } from '@/data/database-publications/database-publications-update-mutation'
 import { Entity } from '@/data/table-editor/table-editor-types'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export const RealtimeToggleDialog = ({
@@ -85,22 +86,22 @@ export const RealtimeToggleDialog = ({
       <DialogContent size="small" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>
-            {isRealtimeEnabled ? 'Disable' : 'Enable'} realtime for {table.name}
+            {isRealtimeEnabled ? 'Disable' : 'Enable'} {$t('realtime for')} {table.name}
           </DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection>
           <div className="space-y-2">
             <p className="text-sm">
-              Once realtime has been {isRealtimeEnabled ? 'disabled' : 'enabled'}, the table will{' '}
-              {isRealtimeEnabled ? 'no longer ' : ''}broadcast any changes to authorized
-              subscribers.
+              {$t('Once realtime has been')} {isRealtimeEnabled ? 'disabled' : 'enabled'}
+              {$t(', the table will')} {isRealtimeEnabled ? 'no longer ' : ''}
+              {$t('broadcast any changes to authorized subscribers.')}
             </p>
             {!isRealtimeEnabled && (
               <p className="text-sm">
-                You may also select which events to broadcast to subscribers on the{' '}
+                {$t('You may also select which events to broadcast to subscribers on the')}{' '}
                 <InlineLink href={`/project/${ref}/database/publications`}>
-                  database publications
+                  {$t('database publications')}
                 </InlineLink>{' '}
                 settings.
               </p>
@@ -109,7 +110,7 @@ export const RealtimeToggleDialog = ({
         </DialogSection>
         <DialogFooter>
           <Button variant="default" disabled={isTogglingRealtime} onClick={() => setOpen(false)}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button variant="primary" loading={isTogglingRealtime} onClick={toggleRealtime}>
             {isRealtimeEnabled ? 'Disable' : 'Enable'} realtime

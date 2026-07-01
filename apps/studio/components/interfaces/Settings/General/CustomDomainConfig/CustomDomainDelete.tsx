@@ -10,6 +10,7 @@ import Panel from '@/components/ui/Panel'
 import { useCustomDomainDeleteMutation } from '@/data/custom-domains/custom-domains-delete-mutation'
 import type { CustomDomainResponse } from '@/data/custom-domains/custom-domains-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export type CustomDomainDeleteProps = {
   projectRef?: string
@@ -43,7 +44,7 @@ export const CustomDomainDelete = ({ projectRef, customDomain }: CustomDomainDel
     <>
       <Panel.Content>
         <div className="w-full space-y-2">
-          <p className="text-xs text-foreground-light">Active custom domain:</p>
+          <p className="text-xs text-foreground-light">{$t('Active custom domain:')}</p>
           <div className="flex items-center space-x-2">
             <code className="text-lg mx-0 flex items-center space-x-2">
               <div className="h-2 w-2 rounded-full bg-brand" />
@@ -53,7 +54,7 @@ export const CustomDomainDelete = ({ projectRef, customDomain }: CustomDomainDel
             </code>
           </div>
           <p className="text-sm text-foreground-light">
-            Your custom domain is currently active and is serving traffic
+            {$t('Your custom domain is currently active and is serving traffic')}
           </p>
         </div>
       </Panel.Content>
@@ -68,7 +69,7 @@ export const CustomDomainDelete = ({ projectRef, customDomain }: CustomDomainDel
             icon={<Trash />}
             onClick={() => setIsDeleteConfirmModalVisible(true)}
           >
-            Delete custom domain
+            {$t('Delete custom domain')}
           </Button>
         </div>
       </Panel.Content>
@@ -76,7 +77,7 @@ export const CustomDomainDelete = ({ projectRef, customDomain }: CustomDomainDel
       <ConfirmationModal
         visible={isDeleteConfirmModalVisible}
         variant="destructive"
-        title="Delete custom domain"
+        title={$t('Delete custom domain')}
         confirmLabel="Delete"
         confirmLabelLoading="Deleting"
         loading={isDeletingCustomDomain}
@@ -84,17 +85,19 @@ export const CustomDomainDelete = ({ projectRef, customDomain }: CustomDomainDel
         onConfirm={onDeleteCustomDomain}
       >
         <p className="text-sm mb-4">
-          Are you sure you want to delete the custom domain{' '}
-          <code className="text-code-inline break-normal!">{customDomain.hostname}</code> for your
-          project? You will need to re-verify this domain if you want to use it again.
+          {$t('Are you sure you want to delete the custom domain')}{' '}
+          <code className="text-code-inline break-normal!">{customDomain.hostname}</code>{' '}
+          {$t(
+            'for your project? You will need to re-verify this domain if you want to use it again.'
+          )}
         </p>
 
         <FormItemLayout
           isReactForm={false}
           layout="flex"
           name="removeCustomDomain"
-          label="Also remove custom domain add-on"
-          description="Stops the monthly add-on charge for this project"
+          label={$t('Also remove custom domain add-on')}
+          description={$t('Stops the monthly add-on charge for this project')}
           className="[&>div:first-child>button]:translate-y-0.5"
         >
           <Checkbox

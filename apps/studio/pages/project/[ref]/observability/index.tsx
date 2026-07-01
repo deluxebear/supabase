@@ -12,6 +12,7 @@ import ObservabilityLayout from '@/components/layouts/ObservabilityLayout/Observ
 import ProductEmptyState from '@/components/to-be-cleaned/ProductEmptyState'
 import { useContentQuery } from '@/data/content/content-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import type { NextPageWithLayout } from '@/types'
 
@@ -71,7 +72,7 @@ export const UserReportPage: NextPageWithLayout = () => {
     <div className="h-full w-full">
       <>
         <ProductEmptyState
-          title="Observability"
+          title={$t('Observability')}
           ctaButtonLabel="New custom report"
           onClickCta={() => {
             setShowCreateReportModal(true)
@@ -79,10 +80,13 @@ export const UserReportPage: NextPageWithLayout = () => {
           disabled={!canCreateReport}
           disabledMessage="You need additional permissions to create a report"
         >
-          <p className="text-foreground-light text-sm">Create custom reports for your projects.</p>
           <p className="text-foreground-light text-sm">
-            Get a high level overview of your network traffic, user actions, and infrastructure
-            health.
+            {$t('Create custom reports for your projects.')}
+          </p>
+          <p className="text-foreground-light text-sm">
+            {$t(
+              'Get a high level overview of your network traffic, user actions, and infrastructure health.'
+            )}
           </p>
         </ProductEmptyState>
         <CreateReportModal
@@ -97,7 +101,7 @@ export const UserReportPage: NextPageWithLayout = () => {
 
 UserReportPage.getLayout = (page) => (
   <DefaultLayout>
-    <ObservabilityLayout title="Overview">{page}</ObservabilityLayout>
+    <ObservabilityLayout title={$t('Overview')}>{page}</ObservabilityLayout>
   </DefaultLayout>
 )
 

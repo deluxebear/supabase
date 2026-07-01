@@ -9,6 +9,7 @@ import { useIsMarketplaceEnabled } from '@/components/interfaces/App/FeaturePrev
 import { useDatabaseExtensionsQuery } from '@/data/database-extensions/database-extensions-query'
 import { useQueuesExposePostgrestStatusQuery } from '@/data/database-queues/database-queues-expose-postgrest-status-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 const QueuesContent = () => {
   const { ref } = useParams()
@@ -29,15 +30,19 @@ const QueuesContent = () => {
   return (
     <Admonition
       type="default"
-      title="Queues can be managed via any Supabase client library or PostgREST endpoints"
+      title={$t('Queues can be managed via any Supabase client library or PostgREST endpoints')}
     >
       <p>
-        You may choose to toggle the exposure of Queues through Data APIs via the queues settings
+        {$t(
+          'You may choose to toggle the exposure of Queues through Data APIs via the queues settings'
+        )}
       </p>
 
       {isQueuesInstalled && (
         <Button asChild variant="default" className="mt-2">
-          <Link href={`/project/${ref}/integrations/queues/settings`}>Manage queues settings</Link>
+          <Link href={`/project/${ref}/integrations/queues/settings`}>
+            {$t('Manage queues settings')}
+          </Link>
         </Button>
       )}
     </Admonition>

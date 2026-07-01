@@ -29,6 +29,7 @@ import z from 'zod'
 
 import { useProfileIdentitiesQuery } from '@/data/profile/profile-identities-query'
 import { useProfileUpdateMutation } from '@/data/profile/profile-update-mutation'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 
 const FormSchema = z.object({
@@ -66,7 +67,7 @@ export const ProfileInformation = () => {
 
   const { mutate: updateProfile, isPending: isUpdatingProfile } = useProfileUpdateMutation({
     onSuccess: (data) => {
-      toast.success('Successfully saved profile')
+      toast.success($t('Successfully saved profile'))
       const { first_name, last_name, username, primary_email } = data
       form.reset({
         first_name: first_name ?? undefined,
@@ -91,7 +92,7 @@ export const ProfileInformation = () => {
     <PageSection>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Profile information</PageSectionTitle>
+          <PageSectionTitle>{$t('Profile information')}</PageSectionTitle>
         </PageSectionSummary>
       </PageSectionMeta>
       <PageSectionContent>
@@ -103,9 +104,9 @@ export const ProfileInformation = () => {
                   control={form.control}
                   name="first_name"
                   render={({ field }) => (
-                    <FormItemLayout label="First name" layout="flex-row-reverse">
+                    <FormItemLayout label={$t('First name')} layout="flex-row-reverse">
                       <FormControl className="col-span-8">
-                        <Input {...field} placeholder="First name" className="w-full" />
+                        <Input {...field} placeholder={$t('First name')} className="w-full" />
                       </FormControl>
                     </FormItemLayout>
                   )}
@@ -116,9 +117,9 @@ export const ProfileInformation = () => {
                   control={form.control}
                   name="last_name"
                   render={({ field }) => (
-                    <FormItemLayout label="Last name" layout="flex-row-reverse">
+                    <FormItemLayout label={$t('Last name')} layout="flex-row-reverse">
                       <FormControl className="col-span-8">
-                        <Input {...field} placeholder="Last name" className="w-full" />
+                        <Input {...field} placeholder={$t('Last name')} className="w-full" />
                       </FormControl>
                     </FormItemLayout>
                   )}
@@ -130,7 +131,7 @@ export const ProfileInformation = () => {
                   name="primary_email"
                   render={({ field }) => (
                     <FormItemLayout
-                      label="Primary email"
+                      label={$t('Primary email')}
                       description={
                         profile?.is_sso_user
                           ? 'Managed by your SSO provider and cannot be changed here'
@@ -146,7 +147,7 @@ export const ProfileInformation = () => {
                             disabled={profile?.is_sso_user}
                           >
                             <SelectTrigger className="col-span-8 w-full">
-                              <SelectValue placeholder="Select primary email" />
+                              <SelectValue placeholder={$t('Select primary email')} />
                             </SelectTrigger>
                             <SelectContent className="col-span-8">
                               {isIdentitiesSuccess &&
@@ -169,7 +170,7 @@ export const ProfileInformation = () => {
                   name="username"
                   render={({ field }) => (
                     <FormItemLayout
-                      label="Username"
+                      label={$t('Username')}
                       description={
                         profile?.is_sso_user
                           ? 'Managed by your SSO provider and cannot be changed here'
@@ -182,7 +183,7 @@ export const ProfileInformation = () => {
                           <Input
                             {...field}
                             className="w-full"
-                            placeholder="Username"
+                            placeholder={$t('Username')}
                             disabled={profile?.is_sso_user}
                           />
                         </div>
@@ -194,7 +195,7 @@ export const ProfileInformation = () => {
               <CardFooter className="justify-end space-x-2">
                 {form.formState.isDirty && (
                   <Button variant="default" onClick={() => form.reset()}>
-                    Cancel
+                    {$t('Cancel')}
                   </Button>
                 )}
                 <Button
@@ -203,7 +204,7 @@ export const ProfileInformation = () => {
                   loading={isUpdatingProfile || isIdentitiesLoading}
                   disabled={!form.formState.isDirty}
                 >
-                  Save
+                  {$t('Save')}
                 </Button>
               </CardFooter>
             </Card>

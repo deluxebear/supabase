@@ -25,6 +25,7 @@ import {
 } from '@/data/custom-domains/custom-domains-query'
 import { useProjectAddonsQuery } from '@/data/subscriptions/project-addons-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 export const CustomDomainConfig = () => {
   const { ref } = useParams()
@@ -64,9 +65,9 @@ export const CustomDomainConfig = () => {
     <PageSection id="custom-domains">
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>Custom domains</PageSectionTitle>
+          <PageSectionTitle>{$t('Custom domains')}</PageSectionTitle>
           <PageSectionDescription>
-            Present a branded experience to your users
+            {$t('Present a branded experience to your users')}
           </PageSectionDescription>
         </PageSectionSummary>
       </PageSectionMeta>
@@ -108,12 +109,12 @@ export const CustomDomainConfig = () => {
               <div className="flex items-center justify-center space-x-2 py-8">
                 <AlertCircle size={16} strokeWidth={1.5} />
                 <p className="text-sm text-foreground-light">
-                  Failed to retrieve custom domain configuration. Please try again later or{' '}
+                  {$t('Failed to retrieve custom domain configuration. Please try again later or')}{' '}
                   <SupportLink
                     queryParams={{ projectRef: ref, category: SupportCategories.SALES_ENQUIRY }}
                     className={InlineLinkClassName}
                   >
-                    contact support
+                    {$t('contact support')}
                   </SupportLink>
                   .
                 </p>

@@ -23,6 +23,7 @@ import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { User, useUsersInfiniteQuery } from '@/data/auth/users-infinite-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useRoleImpersonationStateSnapshot } from '@/state/role-impersonation-state'
 import { ResponseError } from '@/types'
 
@@ -67,7 +68,7 @@ export const UserSelector = () => {
   }
 
   return (
-    <FormItemLayout isReactForm={false} label="Select which user to test as">
+    <FormItemLayout isReactForm={false} label={$t('Select which user to test as')}>
       <Popover open={open} onOpenChange={setOpen} modal>
         <PopoverTrigger asChild>
           <Button
@@ -86,7 +87,7 @@ export const UserSelector = () => {
           <Command shouldFilter={false}>
             <CommandInput
               showResetIcon
-              placeholder="Search for a user"
+              placeholder={$t('Search for a user')}
               className="text-xs"
               value={searchText}
               onValueChange={setSearchText}
@@ -94,10 +95,10 @@ export const UserSelector = () => {
 
             {isError ? (
               <Admonition showIcon={false} type="warning" className="border-0 rounded-none text-xs">
-                Failed to fetch users: {error.message}
+                {$t('Failed to fetch users:')} {error.message}
               </Admonition>
             ) : (
-              <CommandEmpty>No user found</CommandEmpty>
+              <CommandEmpty>{$t('No user found')}</CommandEmpty>
             )}
 
             <CommandList>

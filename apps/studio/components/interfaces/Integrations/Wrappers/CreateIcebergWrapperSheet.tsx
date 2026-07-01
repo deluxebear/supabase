@@ -29,6 +29,7 @@ import { useSchemaCreateMutation } from '@/data/database/schema-create-mutation'
 import { useSchemasQuery } from '@/data/database/schemas-query'
 import { useFDWCreateMutation } from '@/data/fdw/fdw-create-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const FORM_ID = 'create-wrapper-form'
@@ -239,10 +240,14 @@ export const CreateIcebergWrapperSheet = ({
             className="flex flex-col h-full"
           >
             <SheetHeader>
-              <SheetTitle>Create a {wrapperMeta.label} wrapper</SheetTitle>
+              <SheetTitle>
+                {$t('Create a')} {wrapperMeta.label} wrapper
+              </SheetTitle>
             </SheetHeader>
             <SheetSection className="grow overflow-y-auto">
-              <FormSection header={<FormSectionLabel>Wrapper Configuration</FormSectionLabel>}>
+              <FormSection
+                header={<FormSectionLabel>{$t('Wrapper Configuration')}</FormSectionLabel>}
+              >
                 <FormSectionContent className="flex flex-col space-y-2" loading={false}>
                   <FormField
                     control={form.control}
@@ -250,11 +255,11 @@ export const CreateIcebergWrapperSheet = ({
                     render={({ field }) => (
                       <FormItemLayout
                         layout="horizontal"
-                        label="Wrapper Name"
+                        label={$t('Wrapper Name')}
                         description={
                           wrapperName.length > 0 ? (
                             <>
-                              Your wrapper's server name will be{' '}
+                              {$t("Your wrapper's server name will be")}{' '}
                               <code className="text-code-inline">{wrapperName}_server</code>
                             </>
                           ) : (
@@ -270,7 +275,7 @@ export const CreateIcebergWrapperSheet = ({
                   />
                 </FormSectionContent>
               </FormSection>
-              <FormSection header={<FormSectionLabel>Data target</FormSectionLabel>}>
+              <FormSection header={<FormSectionLabel>{$t('Data target')}</FormSectionLabel>}>
                 <FormSectionContent className="flex flex-col space-y-2" loading={false}>
                   <FormField
                     control={form.control}
@@ -282,13 +287,13 @@ export const CreateIcebergWrapperSheet = ({
                             <RadioGroupStackedItem
                               key="S3Tables"
                               value="S3Tables"
-                              label="AWS S3 Tables"
+                              label={$t('AWS S3 Tables')}
                               showIndicator={false}
                             >
                               <div className="flex gap-x-5">
                                 <div className="flex flex-col">
                                   <p className="text-foreground-light text-left">
-                                    AWS S3 storage that's optimized for analytics workloads.
+                                    {$t("AWS S3 storage that's optimized for analytics workloads.")}
                                   </p>
                                 </div>
                               </div>
@@ -296,13 +301,15 @@ export const CreateIcebergWrapperSheet = ({
                             <RadioGroupStackedItem
                               key="R2Catalog"
                               value="R2Catalog"
-                              label="Cloudflare R2 Catalog"
+                              label={$t('Cloudflare R2 Catalog')}
                               showIndicator={false}
                             >
                               <div className="flex gap-x-5">
                                 <div className="flex flex-col">
                                   <p className="text-foreground-light text-left">
-                                    Managed Apache Iceberg built directly into your R2 bucket.
+                                    {$t(
+                                      'Managed Apache Iceberg built directly into your R2 bucket.'
+                                    )}
                                   </p>
                                 </div>
                               </div>
@@ -310,13 +317,13 @@ export const CreateIcebergWrapperSheet = ({
                             <RadioGroupStackedItem
                               key="IcebergRestCatalog"
                               value="IcebergRestCatalog"
-                              label="Iceberg REST Catalog"
+                              label={$t('Iceberg REST Catalog')}
                               showIndicator={false}
                             >
                               <div className="flex gap-x-5">
                                 <div className="flex flex-col">
                                   <p className="text-foreground-light text-left">
-                                    Can be used with any S3-compatible storage.
+                                    {$t('Can be used with any S3-compatible storage.')}
                                   </p>
                                 </div>
                               </div>
@@ -330,7 +337,11 @@ export const CreateIcebergWrapperSheet = ({
               </FormSection>
 
               <FormSection
-                header={<FormSectionLabel>{wrapperMeta.label} Configuration</FormSectionLabel>}
+                header={
+                  <FormSectionLabel>
+                    {wrapperMeta.label} {$t('Configuration')}
+                  </FormSectionLabel>
+                }
               >
                 <FormSectionContent className="flex flex-col space-y-2" loading={false}>
                   {targetOptions.map((option) =>
@@ -354,10 +365,11 @@ export const CreateIcebergWrapperSheet = ({
               <FormSection
                 header={
                   <FormSectionLabel>
-                    <p>Foreign Schema</p>
+                    <p>{$t('Foreign Schema')}</p>
                     <p className="text-foreground-light mt-2 w-[90%]">
-                      You can query your data from the foreign tables in the specified schema after
-                      the wrapper is created.
+                      {$t(
+                        'You can query your data from the foreign tables in the specified schema after the wrapper is created.'
+                      )}
                     </p>
                   </FormSectionLabel>
                 }
@@ -390,7 +402,7 @@ export const CreateIcebergWrapperSheet = ({
                 onClick={onCloseWithConfirmation}
                 disabled={isLoading}
               >
-                Cancel
+                {$t('Cancel')}
               </Button>
               <Button
                 size="tiny"
@@ -400,7 +412,7 @@ export const CreateIcebergWrapperSheet = ({
                 loading={isLoading}
                 disabled={isLoading || !isDirty}
               >
-                Create wrapper
+                {$t('Create wrapper')}
               </Button>
             </SheetFooter>
           </form>

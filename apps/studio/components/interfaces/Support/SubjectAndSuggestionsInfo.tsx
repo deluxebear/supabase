@@ -10,6 +10,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { DocsSuggestions } from './DocsSuggestions'
 import type { ExtendedSupportCategories } from './Support.constants'
 import type { SupportFormValues } from './SupportForm.schema'
+import { t as $t } from '@/lib/i18n'
 
 const INCLUDE_DISCUSSIONS: ExtendedSupportCategories[] = [
   SupportCategories.DATABASE_UNRESPONSIVE,
@@ -33,9 +34,9 @@ export function SubjectAndSuggestionsInfo({
         name="subject"
         control={form.control}
         render={({ field }) => (
-          <FormItemLayout layout="vertical" label="Subject">
+          <FormItemLayout layout="vertical" label={$t('Subject')}>
             <FormControl>
-              <Input {...field} placeholder="Summary of the problem you have" />
+              <Input {...field} placeholder={$t('Summary of the problem you have')} />
             </FormControl>
           </FormItemLayout>
         )}
@@ -55,7 +56,7 @@ interface GitHubDiscussionSuggestionProps {
 function GitHubDiscussionSuggestion({ subject }: GitHubDiscussionSuggestionProps) {
   return (
     <p className="flex items-center gap-x-1 text-foreground-lighter text-sm">
-      Check our
+      {$t('Check our')}
       <Link
         key="gh-discussions"
         href={`https://github.com/orgs/supabase/discussions?discussions_q=${subject}`}
@@ -63,10 +64,11 @@ function GitHubDiscussionSuggestion({ subject }: GitHubDiscussionSuggestionProps
         rel="noreferrer"
         className="flex items-center gap-x-1 underline hover:text-foreground transition"
       >
-        GitHub discussions
+        {$t('GitHub discussions')}
         <ExternalLink size={14} strokeWidth={2} />
       </Link>
-      for a quick answer
+
+      {$t('for a quick answer')}
     </p>
   )
 }

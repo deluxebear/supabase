@@ -20,6 +20,7 @@ import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { useDataTable } from '@/components/ui/DataTable/providers/DataTableProvider'
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -95,7 +96,8 @@ export const RowSelectionHeader = () => {
                 <DropdownMenuContent align="end" className="w-44">
                   <DropdownMenuItem onClick={() => onCopy('json')} className="gap-2 text-xs">
                     <Copy size={13} />
-                    Copy as JSON
+
+                    {$t('Copy as JSON')}
                     <ShortcutBadge
                       shortcutId={SHORTCUT_IDS.RESULTS_COPY_JSON}
                       className="ml-auto"
@@ -103,7 +105,8 @@ export const RowSelectionHeader = () => {
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onCopy('markdown')} className="gap-2 text-xs">
                     <Copy size={13} />
-                    Copy as Markdown
+
+                    {$t('Copy as Markdown')}
                     <ShortcutBadge
                       shortcutId={SHORTCUT_IDS.RESULTS_COPY_MARKDOWN}
                       className="ml-auto"
@@ -113,7 +116,7 @@ export const RowSelectionHeader = () => {
               </DropdownMenu>
 
               <AiAssistantDropdown
-                label="Explain with AI"
+                label={$t('Explain with AI')}
                 buildPrompt={() => buildLogsPrompt(selectedRows)}
                 onOpenAssistant={handleOpenAiAssistant}
                 telemetrySource="log_explorer"

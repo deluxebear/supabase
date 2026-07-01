@@ -5,6 +5,7 @@ import { Button, copyToClipboard } from 'ui'
 
 import { getDecryptedValue } from '@/data/vault/vault-secret-decrypted-value-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const CopyEnvButton = ({
   serverOptions,
@@ -33,14 +34,14 @@ export const CopyEnvButton = ({
     ).then((values) => values.join('\n'))
 
     copyToClipboard(envFile, () => {
-      toast.success('Copied to clipboard as environment variables')
+      toast.success($t('Copied to clipboard as environment variables'))
       setIsLoading(false)
     })
   }, [serverOptions, values])
 
   return (
     <Button variant="default" loading={isLoading} icon={<Copy />} onClick={onCopy}>
-      Copy all
+      {$t('Copy all')}
     </Button>
   )
 }

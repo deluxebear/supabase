@@ -15,6 +15,7 @@ import { useEdgeFunctionsQuery } from '@/data/edge-functions/edge-functions-quer
 import { usePaginatedBucketsQuery, type Bucket } from '@/data/storage/buckets-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { BASE_PATH, DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useAppStateSnapshot } from '@/state/app-state'
 
 type DocsSections = typeof DOCS_MENU
@@ -78,7 +79,7 @@ export const FirstLevelNav = (): ReactNode => {
     <>
       <nav aria-labelledby="api-docs-rest-categories" className="px-2 py-4  border-b">
         <h2 id="api-docs-rest-categories" className="sr-only">
-          REST API Docs
+          {$t('REST API Docs')}
         </h2>
         {docsMenu.map((item) => {
           const isActive = currentSection === item.key
@@ -120,7 +121,7 @@ export const FirstLevelNav = (): ReactNode => {
           onClick={() => snap.setShowProjectApiDocs(false)}
         >
           <Link className="justify-start!" href={`/project/${ref}/integrations/graphiql`}>
-            GraphiQL
+            {$t('GraphiQL')}
           </Link>
         </Button>
         <Button block asChild variant="text" size="small" icon={<BookOpen />}>
@@ -130,7 +131,7 @@ export const FirstLevelNav = (): ReactNode => {
             rel="noreferrer"
             className="justify-start!"
           >
-            GraphQL guide
+            {$t('GraphQL guide')}
           </Link>
         </Button>
       </div>
@@ -138,7 +139,7 @@ export const FirstLevelNav = (): ReactNode => {
       <div className="px-2 py-4">
         <Button block asChild variant="text" size="small" icon={<Book />}>
           <Link href={`${DOCS_URL}`} target="_blank" rel="noreferrer" className="justify-start!">
-            Documentation
+            {$t('Documentation')}
           </Link>
         </Button>
         <Button block asChild variant="text" size="small" icon={<BookOpen />}>
@@ -148,7 +149,7 @@ export const FirstLevelNav = (): ReactNode => {
             rel="noreferrer"
             className="justify-start!"
           >
-            REST guide
+            {$t('REST guide')}
           </Link>
         </Button>
       </div>

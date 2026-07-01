@@ -1,5 +1,7 @@
 import { SheetHeader, SheetTitle } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface CreateFunctionHeaderProps {
   selectedFunction?: string
   isDuplicating?: boolean
@@ -16,11 +18,12 @@ export const CreateFunctionHeader = ({
           {selectedFunction !== undefined ? (
             isDuplicating ? (
               <>
-                Duplicate <code className="text-code-inline text-sm">{selectedFunction}</code>
+                {$t('Duplicate')}{' '}
+                <code className="text-code-inline text-sm">{selectedFunction}</code>
               </>
             ) : (
               <>
-                Edit <code className="text-code-inline text-sm">{selectedFunction}</code>
+                {$t('Edit')} <code className="text-code-inline text-sm">{selectedFunction}</code>
               </>
             )
           ) : (

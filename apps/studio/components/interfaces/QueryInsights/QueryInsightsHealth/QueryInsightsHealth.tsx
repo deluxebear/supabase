@@ -6,6 +6,7 @@ import { HEALTH_COLORS, HEALTH_LEVELS } from './QueryInsightsHealth.constants'
 import { QueryInsightsHealthMetric } from './QueryInsightsHealthMetric'
 import { QueryInsightsHealthScore } from './QueryInsightsHealthScore'
 import { QueryInsightsHealthScoreSkeleton } from './QueryInsightsHealthScoreSkeleton'
+import { t as $t } from '@/lib/i18n'
 
 interface QueryInsightsHealthProps {
   data: QueryPerformanceRow[]
@@ -32,24 +33,24 @@ export const QueryInsightsHealth = ({ data, isLoading }: QueryInsightsHealthProp
       <div className="flex-1 border-l h-full">
         <div className="grid grid-cols-2">
           <QueryInsightsHealthMetric
-            label="Average P95"
+            label={$t('Average P95')}
             value={`${avgP95}ms`}
             className="border-b"
             isLoading={isLoading}
           />
           <QueryInsightsHealthMetric
-            label="Total Calls"
+            label={$t('Total Calls')}
             value={totalCalls.toLocaleString()}
             className="border-l border-b"
             isLoading={isLoading}
           />
           <QueryInsightsHealthMetric
-            label="Total Rows Read"
+            label={$t('Total Rows Read')}
             value={totalRowsRead.toLocaleString()}
             isLoading={isLoading}
           />
           <QueryInsightsHealthMetric
-            label="Cache Hit Rate"
+            label={$t('Cache Hit Rate')}
             value={cacheHitRate}
             className="border-l"
             isLoading={isLoading}

@@ -32,6 +32,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import type { Enum } from './AuthProvidersForm.types'
 import { Markdown } from '@/components/interfaces/Markdown'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface FormFieldProps {
   projectRef: string | undefined
@@ -213,7 +214,7 @@ const FormField = ({
                       {...field}
                       id={name}
                       rows={4}
-                      placeholder="Enter multi-line text"
+                      placeholder={$t('Enter multi-line text')}
                       className="resize-none"
                       readOnly={readOnly}
                     />
@@ -301,7 +302,7 @@ const FormField = ({
                         <span>
                           <Button asChild variant="default" size="tiny" icon={<ExternalLink />}>
                             <a href={properties.link} target="_blank" rel="noreferrer noopener">
-                              Documentation
+                              {$t('Documentation')}
                             </a>
                           </Button>
                         </span>
@@ -354,7 +355,7 @@ const FormField = ({
                       onValueChange={field.onChange}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select an option" />
+                        <SelectValue placeholder={$t('Select an option')} />
                       </SelectTrigger>
                       <SelectContent>
                         {properties.enum.map((option: Enum) => (

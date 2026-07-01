@@ -24,6 +24,7 @@ import type { ResourceWarning } from '@/data/usage/resource-warnings-query'
 import { useCustomContent } from '@/hooks/custom-content/useCustomContent'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { Organization } from '@/types'
 
 export interface ProjectCardProps {
@@ -98,11 +99,11 @@ export const ProjectCard = ({
                           onClick={(e) => {
                             e.stopPropagation()
                             copyToClipboard(projectRef)
-                            toast.success('Copied project ID to clipboard')
+                            toast.success($t('Copied project ID to clipboard'))
                           }}
                         >
                           <Copy size={14} />
-                          <span>Copy project ID</span>
+                          <span>{$t('Copy project ID')}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="gap-x-2"
@@ -112,7 +113,7 @@ export const ProjectCard = ({
                           }}
                         >
                           <Settings size={14} />
-                          <span>Settings</span>
+                          <span>{$t('Settings')}</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -135,7 +136,7 @@ export const ProjectCard = ({
                   <div className="bg-surface-100 w-5 h-5 p-1 border border-strong rounded-md flex items-center justify-center text-black dark:text-white">
                     <InlineSVG
                       src={`${BASE_PATH}/img/icons/vercel-icon.svg`}
-                      title="Vercel Icon"
+                      title={$t('Vercel Icon')}
                       className="w-3"
                     />
                   </div>

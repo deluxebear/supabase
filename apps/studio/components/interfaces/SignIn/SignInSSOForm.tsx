@@ -12,6 +12,7 @@ import { useLastSignIn } from '@/hooks/misc/useLastSignIn'
 import { BASE_PATH } from '@/lib/constants'
 import { captureCriticalError } from '@/lib/error-reporting'
 import { auth, buildPathWithParams } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 
 const schema = z.object({
   email: z.string().min(1, 'Email is required').email('Must be a valid email'),
@@ -31,7 +32,7 @@ export const SignInSSOForm = () => {
   const isSubmitting = form.formState.isSubmitting
 
   const onSubmit: SubmitHandler<z.infer<typeof schema>> = async ({ email }) => {
-    const toastId = toast.loading('Signing in...')
+    const toastId = toast.loading($t('Signing in...'))
 
     let token = captchaToken
     if (!token) {
@@ -84,7 +85,7 @@ export const SignInSSOForm = () => {
           name="email"
           control={form.control}
           render={({ field }) => (
-            <FormItemLayout name="email" label="Email">
+            <FormItemLayout name="email" label={$t('Email')}>
               <FormControl>
                 <Input
                   id="email"
@@ -113,7 +114,7 @@ export const SignInSSOForm = () => {
         </div>
 
         <Button block form={formId} type="submit" size="large" loading={isSubmitting}>
-          Sign in
+          {$t('Sign in')}
         </Button>
       </form>
     </Form>

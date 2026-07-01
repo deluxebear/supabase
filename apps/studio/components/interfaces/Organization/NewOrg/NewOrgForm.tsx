@@ -57,6 +57,7 @@ import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useLastVisitedOrganization } from '@/hooks/misc/useLastVisitedOrganization'
 import { PRICING_TIER_LABELS_ORG, STRIPE_PUBLIC_KEY } from '@/lib/constants'
 import { validateReturnTo } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import {
   classifyApiError,
@@ -403,10 +404,11 @@ export const NewOrgForm = ({
         <Panel
           title={
             <div key="panel-title">
-              <h3>Create a new organization</h3>
+              <h3>{$t('Create a new organization')}</h3>
               <p className="text-sm text-foreground-lighter text-balance">
-                Organizations are a way to group your projects. Each organization can be configured
-                with different team members and billing settings.
+                {$t(
+                  'Organizations are a way to group your projects. Each organization can be configured with different team members and billing settings.'
+                )}
               </p>
             </div>
           }
@@ -420,7 +422,7 @@ export const NewOrgForm = ({
                   else router.push('/organizations')
                 }}
               >
-                Cancel
+                {$t('Cancel')}
               </Button>
 
               <Button
@@ -430,7 +432,7 @@ export const NewOrgForm = ({
                 loading={newOrgLoading}
                 disabled={newOrgLoading || creationPreviewIsFetching}
               >
-                Create organization
+                {$t('Create organization')}
               </Button>
             </div>
           }
@@ -456,12 +458,15 @@ export const NewOrgForm = ({
                   name="plan"
                   render={({ field }) => (
                     <FormItemLayout
-                      label="Plan"
+                      label={$t('Plan')}
                       layout="horizontal"
                       description={
                         <>
-                          Which plan fits your organization's needs best?{' '}
-                          <InlineLink href="https://supabase.com/pricing">Learn more</InlineLink>.
+                          {$t("Which plan fits your organization's needs best?")}{' '}
+                          <InlineLink href="https://supabase.com/pricing">
+                            {$t('Learn more')}
+                          </InlineLink>
+                          .
                         </>
                       }
                     >
@@ -502,7 +507,7 @@ export const NewOrgForm = ({
                       <FormItemLayout
                         label={
                           <div className="flex space-x-2 text-sm items-center">
-                            <span>Spend Cap</span>
+                            <span>{$t('Spend Cap')}</span>
                             <HelpCircle
                               size={16}
                               strokeWidth={1.5}

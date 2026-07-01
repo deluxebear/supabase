@@ -35,6 +35,7 @@ import { usePlatformAppDeleteMutation } from '@/data/platform-apps/platform-app-
 import { usePlatformAppInstallationCreateMutation } from '@/data/platform-apps/platform-app-installation-create-mutation'
 import { usePlatformAppSigningKeyCreateMutation } from '@/data/platform-apps/platform-app-signing-key-create-mutation'
 import { useCopyToClipboard } from '@/hooks/ui/useCopyToClipboard'
+import { t as $t } from '@/lib/i18n'
 
 type CreatePlatformAppResponse = components['schemas']['CreatePlatformAppResponse']
 type CreatePlatformAppSigningKeyResponse =
@@ -145,9 +146,9 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
           className="min-w-[600px]! flex flex-col h-full gap-0"
         >
           <SheetHeader>
-            <SheetTitle>Create private app</SheetTitle>
+            <SheetTitle>{$t('Create private app')}</SheetTitle>
             <SheetDescription className="sr-only">
-              Create a private app to generate scoped access tokens for your organization.
+              {$t('Create a private app to generate scoped access tokens for your organization.')}
             </SheetDescription>
           </SheetHeader>
 
@@ -155,14 +156,14 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
             <div className="px-5 sm:px-6 py-6">
               <CreateAppSheetStep
                 number={1}
-                title="App details"
-                description="The first app you create will be automatically installed."
+                title={$t('App details')}
+                description={$t('The first app you create will be automatically installed.')}
                 disabled={keyRevealed}
               >
-                <FormLayout label="Name" id="app-name">
+                <FormLayout label={$t('Name')} id="app-name">
                   <Input
                     id="app-name"
-                    placeholder="My integration"
+                    placeholder={$t('My integration')}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     disabled={isLoading}
@@ -172,13 +173,13 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
 
               <CreateAppSheetStep
                 number={2}
-                title="Permissions"
-                description="Select the permissions this app requires."
+                title={$t('Permissions')}
+                description={$t('Select the permissions this app requires.')}
                 disabled={keyRevealed}
               >
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm">Configure permissions</span>
+                    <span className="text-sm">{$t('Configure permissions')}</span>
                     <div className="flex items-center gap-2">
                       {selectedPermissions.length > 0 && (
                         <Button
@@ -202,14 +203,14 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                             icon={<Plus size={14} />}
                             disabled={isLoading}
                           >
-                            Add permission
+                            {$t('Add permission')}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-[400px] p-0" align="end">
                           <Command>
-                            <CommandInput placeholder="Search permissions..." />
+                            <CommandInput placeholder={$t('Search permissions...')} />
                             <CommandList>
-                              <CommandEmpty>No permissions found.</CommandEmpty>
+                              <CommandEmpty>{$t('No permissions found.')}</CommandEmpty>
                               <CommandGroup className="[&>div]:text-left">
                                 <div className="max-h-[210px] overflow-y-auto">
                                   {PERMISSIONS.map((perm) => (
@@ -244,7 +245,7 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                   {selectedPermissions.length === 0 ? (
                     <div className="text-center py-8 border border-dashed border-border rounded-lg">
                       <p className="text-sm text-foreground-light">
-                        No permissions configured yet.
+                        {$t('No permissions configured yet.')}
                       </p>
                     </div>
                   ) : (
@@ -285,7 +286,7 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                   <div className="w-full flex gap-x-2 items-center">
                     <WarningIcon />
                     <span className="text-xs text-foreground-lighter">
-                      Once you've set these permissions, you cannot edit them.
+                      {$t("Once you've set these permissions, you cannot edit them.")}
                     </span>
                   </div>
                 </div>
@@ -294,7 +295,7 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
               <div ref={step3Ref}>
                 <CreateAppSheetStep
                   number={3}
-                  title="Signing key"
+                  title={$t('Signing key')}
                   description={
                     isCreatingKey
                       ? 'Generating your signing key...'
@@ -307,13 +308,13 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                 >
                   {isCreatingKey && (
                     <p className="text-sm text-foreground-light animate-pulse">
-                      Generating signing key...
+                      {$t('Generating signing key...')}
                     </p>
                   )}
                   {keyRevealed && (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-medium">Private key</h3>
+                        <h3 className="text-sm font-medium">{$t('Private key')}</h3>
                         <div className="flex items-center gap-2">
                           <Button
                             variant="default"
@@ -321,7 +322,7 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                             icon={<Copy size={12} />}
                             onClick={() => copy(generatedKey.private_key, { withToast: true })}
                           >
-                            Copy
+                            {$t('Copy')}
                           </Button>
                           <Button
                             variant="default"
@@ -339,7 +340,7 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                               URL.revokeObjectURL(url)
                             }}
                           >
-                            Download
+                            {$t('Download')}
                           </Button>
                         </div>
                       </div>
@@ -356,7 +357,7 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                           onCheckedChange={(v) => setKeyCopied(Boolean(v))}
                         />
                         <span className="text-sm text-warning cursor-pointer select-none">
-                          I have copied the key and stored it securely
+                          {$t('I have copied the key and stored it securely')}
                         </span>
                       </label>
                     </div>
@@ -369,7 +370,7 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
           <SheetFooter className="justify-end! w-full mt-auto py-4 border-t">
             <div className="flex gap-2">
               <Button variant="default" onClick={handleRequestClose} disabled={isLoading}>
-                Cancel
+                {$t('Cancel')}
               </Button>
               {keyRevealed ? (
                 <Button
@@ -380,7 +381,7 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                     handleClose()
                   }}
                 >
-                  Done
+                  {$t('Done')}
                 </Button>
               ) : (
                 <Button
@@ -389,7 +390,7 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                   loading={isLoading}
                   onClick={handleCreate}
                 >
-                  Create app
+                  {$t('Create app')}
                 </Button>
               )}
             </div>
@@ -400,7 +401,7 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
       <ConfirmationModal
         variant="destructive"
         visible={showCloseConfirm}
-        title="Close without saving?"
+        title={$t('Close without saving?')}
         confirmLabel="Close"
         confirmLabelLoading="Closing..."
         onCancel={() => setShowCloseConfirm(false)}

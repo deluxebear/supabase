@@ -11,6 +11,7 @@ import {
 } from './ContextSearchResults.shared'
 import { useInfiniteTablesQuery } from '@/data/tables/tables-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface TableSearchResultsProps {
   debouncedFilterString: string
@@ -93,10 +94,10 @@ export function TableSearchResults({ debouncedFilterString }: TableSearchResults
         ) : isErrorTables ? (
           <div className="h-full flex flex-col items-center justify-center py-12 px-4 gap-4 text-center text-foreground-lighter">
             <Database className="h-6 w-6" strokeWidth={1.5} />
-            <p className="text-sm">Failed to load tables</p>
+            <p className="text-sm">{$t('Failed to load tables')}</p>
           </div>
         ) : tableResults.length === 0 ? (
-          <EmptyState icon={Database} label="Database Tables" query={debouncedFilterString} />
+          <EmptyState icon={Database} label={$t('Database Tables')} query={debouncedFilterString} />
         ) : (
           <>
             <ResultsList
@@ -116,11 +117,12 @@ export function TableSearchResults({ debouncedFilterString }: TableSearchResults
               <div className="flex items-center gap-x-2">
                 {isLoadingTables ? (
                   <span className="flex items-center gap-2">
-                    <Loader2 size={14} className="animate-spin" /> Loading...
+                    <Loader2 size={14} className="animate-spin" /> {$t('Loading...')}
                   </span>
                 ) : (
                   <span>
-                    Total: {totalTables.toLocaleString()} table{totalTables !== 1 ? 's' : ''}
+                    {$t('Total:')} {totalTables.toLocaleString()} table
+                    {totalTables !== 1 ? 's' : ''}
                     {hasNextTablesPage ? ' loaded' : ''}
                   </span>
                 )}

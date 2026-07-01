@@ -1,6 +1,8 @@
 import { X } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface FilterPillProps {
   label: string
   value: string
@@ -22,7 +24,9 @@ export const FilterPill = ({ label, value, onClear }: FilterPillProps) => {
         >
           <X size={14} className="text-foreground-light hover:text-foreground" />
         </TooltipTrigger>
-        <TooltipContent side="bottom">Clear {label.toLowerCase()} filter</TooltipContent>
+        <TooltipContent side="bottom">
+          {$t('Clear')} {label.toLowerCase()} filter
+        </TooltipContent>
       </Tooltip>
     </div>
   )

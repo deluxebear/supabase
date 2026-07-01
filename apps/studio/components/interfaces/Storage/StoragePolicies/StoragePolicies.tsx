@@ -32,6 +32,7 @@ import { useDatabasePolicyUpdateMutation } from '@/data/database-policies/databa
 import { usePaginatedBucketsQuery } from '@/data/storage/buckets-query'
 import { useDebouncedValue } from '@/hooks/misc/useDebouncedValue'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const StoragePolicies = () => {
   const { ref: projectRef } = useParams()
@@ -81,7 +82,7 @@ export const StoragePolicies = () => {
     useDatabasePolicyDeleteMutation({
       onSuccess: async () => {
         await refetch()
-        toast.success('Successfully deleted policy!')
+        toast.success($t('Successfully deleted policy!'))
         setSelectedPolicyToDelete(undefined)
       },
       onError: (error: any) => {
@@ -150,7 +151,7 @@ export const StoragePolicies = () => {
   const onCancelPolicyDelete = () => setSelectedPolicyToDelete(undefined)
 
   const onSavePolicySuccess = async () => {
-    toast.success('Successfully saved policy!')
+    toast.success($t('Successfully saved policy!'))
     await refetch()
     onCancelPolicyEdit()
   }
@@ -270,10 +271,11 @@ export const StoragePolicies = () => {
             <PageSection>
               <PageSectionMeta>
                 <PageSectionSummary>
-                  <PageSectionTitle>Schema</PageSectionTitle>
+                  <PageSectionTitle>{$t('Schema')}</PageSectionTitle>
                   <PageSectionDescription>
-                    Write policies for the tables under the storage schema directly for greater
-                    control
+                    {$t(
+                      'Write policies for the tables under the storage schema directly for greater control'
+                    )}
                   </PageSectionDescription>
                 </PageSectionSummary>
               </PageSectionMeta>
@@ -282,7 +284,7 @@ export const StoragePolicies = () => {
                   {/* Section for policies under storage.objects that are not tied to any buckets */}
                   <StoragePoliciesBucketRow
                     table="objects"
-                    label="Other policies under storage.objects"
+                    label={$t('Other policies under storage.objects')}
                     policies={ungroupedPolicies}
                     onSelectPolicyAdd={onSelectPolicyAdd}
                     onSelectPolicyEdit={onSelectPolicyEdit}
@@ -292,7 +294,7 @@ export const StoragePolicies = () => {
                   {/* Section for policies under storage.buckets */}
                   <StoragePoliciesBucketRow
                     table="buckets"
-                    label="Policies under storage.buckets"
+                    label={$t('Policies under storage.buckets')}
                     policies={storageBucketPolicies}
                     onSelectPolicyAdd={onSelectPolicyAdd}
                     onSelectPolicyEdit={onSelectPolicyEdit}
@@ -329,7 +331,7 @@ export const StoragePolicies = () => {
       <ConfirmationModal
         visible={!isEmpty(selectedPolicyToDelete)}
         variant="destructive"
-        title="Delete policy"
+        title={$t('Delete policy')}
         description={`Are you sure you want to delete the policy “${selectedPolicyToDelete?.name}”? This action cannot be undone.`}
         confirmLabel="Delete"
         confirmLabelLoading="Deleting"

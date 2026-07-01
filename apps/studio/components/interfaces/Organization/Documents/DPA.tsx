@@ -11,6 +11,7 @@ import { InlineLink } from '@/components/ui/InlineLink'
 import { TextConfirmModal } from '@/components/ui/TextConfirmModalWrapper'
 import { useDpaRequestMutation } from '@/data/documents/dpa-request-mutation'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { useTrack } from '@/lib/telemetry/track'
 
@@ -24,14 +25,14 @@ export const DPA = () => {
   const track = useTrack()
   const { mutate: requestDpa, isPending: isRequesting } = useDpaRequestMutation({
     onSuccess: () => {
-      toast.success('DPA request sent successfully')
+      toast.success($t('DPA request sent successfully'))
       setIsOpen(false)
     },
   })
 
   const onConfirmRequest = async () => {
-    if (!slug) return toast.error('Organization not found.')
-    if (!profile?.primary_email) return toast.error('Profile email not found.')
+    if (!slug) return toast.error($t('Organization not found.'))
+    if (!profile?.primary_email) return toast.error($t('Profile email not found.'))
     requestDpa({ recipient_email: profile?.primary_email, slug: slug })
   }
 
@@ -39,14 +40,15 @@ export const DPA = () => {
     <>
       <ScaffoldSection className="py-12">
         <ScaffoldSectionDetail>
-          <h4 className="mb-5">Data Processing Addendum (DPA)</h4>
+          <h4 className="mb-5">{$t('Data Processing Addendum (DPA)')}</h4>
           <div className="space-y-2 text-sm text-foreground-light [&_p]:m-0">
             <p>
-              All organizations can sign our Data Processing Addendum ("DPA") as part of their GDPR
-              compliance.
+              {$t(
+                'All organizations can sign our Data Processing Addendum ("DPA") as part of their GDPR compliance.'
+              )}
             </p>
             <p>
-              You can review a static PDF version of our latest DPA document{' '}
+              {$t('You can review a static PDF version of our latest DPA document')}{' '}
               <InlineLink
                 href="https://supabase.com/downloads/docs/Supabase+DPA+260601.pdf"
                 onClick={() => track('dpa_pdf_opened', { source: 'studio' })}
@@ -66,7 +68,7 @@ export const DPA = () => {
               }}
               variant="default"
             >
-              Request DPA
+              {$t('Request DPA')}
             </Button>
           </div>
         </ScaffoldSectionContent>
@@ -74,7 +76,7 @@ export const DPA = () => {
 
       <TextConfirmModal
         visible={isOpen}
-        title="Request executable DPA to sign"
+        title={$t('Request executable DPA to sign')}
         loading={isRequesting}
         confirmPlaceholder="Enter your email address"
         confirmString={profile?.primary_email ?? ''}
@@ -85,16 +87,19 @@ export const DPA = () => {
       >
         <div className="space-y-2 text-sm">
           <p>
-            To make the DPA legally binding, you need to sign and complete the details through a
-            PandaDoc document that we prepare.
+            {$t(
+              'To make the DPA legally binding, you need to sign and complete the details through a PandaDoc document that we prepare.'
+            )}
           </p>
           <p>
-            Please enter your email address to request an executable version of the DPA. You will
-            receive a document link via PandaDoc in the next 24 hours.
+            {$t(
+              'Please enter your email address to request an executable version of the DPA. You will receive a document link via PandaDoc in the next 24 hours.'
+            )}
           </p>
           <p>
-            Once signed, the DPA will be considered executed and you'll be notified of any future
-            updates via this email.
+            {$t(
+              "Once signed, the DPA will be considered executed and you'll be notified of any future updates via this email."
+            )}
           </p>
         </div>
       </TextConfirmModal>

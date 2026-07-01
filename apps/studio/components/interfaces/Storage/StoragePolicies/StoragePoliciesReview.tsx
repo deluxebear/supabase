@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { Button, DialogFooter, DialogSection, DialogSectionSeparator } from 'ui'
 
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
+import { t as $t } from '@/lib/i18n'
 
 const ReviewEmptyState = () => {
   return (
     <div className="my-10 flex items-center justify-center space-x-2 opacity-50">
-      <p>There are no changes made to this policy</p>
+      <p>{$t('There are no changes made to this policy')}</p>
     </div>
   )
 }
@@ -34,9 +35,11 @@ const StoragePoliciesReview = ({
         <div className="flex items-center justify-between space-y-8 space-x-4">
           <div className="flex flex-col">
             <p className="text-sm text-foreground-light">
-              These are the SQL statements that will be used to create your policies. The suffix
-              appended to the end of your policy name (<code>[hashString]_[number]</code>) just
-              functions as a unique identifier for each of your policies.
+              {$t(
+                'These are the SQL statements that will be used to create your policies. The suffix appended to the end of your policy name ('
+              )}
+              <code>[hashString]_[number]</code>
+              {$t(') just functions as a unique identifier for each of your policies.')}
             </p>
           </div>
         </div>
@@ -63,11 +66,11 @@ const StoragePoliciesReview = ({
       <DialogSectionSeparator />
       <DialogFooter>
         <Button variant="default" onClick={onSelectBack}>
-          Back to edit
+          {$t('Back to edit')}
         </Button>
         {policyStatements.length > 0 && (
           <Button variant="primary" onClick={onSavePolicy} loading={isSaving}>
-            Save policy
+            {$t('Save policy')}
           </Button>
         )}
       </DialogFooter>

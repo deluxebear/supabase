@@ -27,6 +27,7 @@ import * as z from 'zod'
 import { NO_PROJECT_MARKER } from '@/components/interfaces/Support/SupportForm.utils'
 import { useSendSupportTicketMutation } from '@/data/feedback/support-ticket-send'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 
 const setDeletionRequestFlag = () => {
@@ -70,7 +71,9 @@ export const DeleteAccountButton = () => {
       setIsOpen(false)
       setDeletionRequestFlag()
       toast.success(
-        'Successfully submitted account deletion request - we will reach out to you via email once the request is completed!',
+        $t(
+          'Successfully submitted account deletion request - we will reach out to you via email once the request is completed!'
+        ),
         { duration: 8000 }
       )
     },
@@ -83,7 +86,9 @@ export const DeleteAccountButton = () => {
     if (!accountEmail) return console.error('Account information is required')
 
     if (hasActiveDeletionRequest()) {
-      return toast.error('You have already submitted a deletion request within the last 30 days.')
+      return toast.error(
+        $t('You have already submitted a deletion request within the last 30 days.')
+      )
     }
 
     const payload = {
@@ -107,24 +112,26 @@ export const DeleteAccountButton = () => {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="danger" loading={!accountEmail}>
-          Request to delete account
+          {$t('Request to delete account')}
         </Button>
       </DialogTrigger>
       <DialogContent className="w-[500px]!">
         <DialogHeader>
           {(organizations ?? []).length > 0 ? (
             <>
-              <DialogTitle>Leave all organizations before requesting account deletion</DialogTitle>
+              <DialogTitle>
+                {$t('Leave all organizations before requesting account deletion')}
+              </DialogTitle>
               <DialogDescription>
-                This will allow us to process your account deletion request faster
+                {$t('This will allow us to process your account deletion request faster')}
               </DialogDescription>
             </>
           ) : (
             <>
-              <DialogTitle>Are you sure you want to delete your account?</DialogTitle>
+              <DialogTitle>{$t('Are you sure you want to delete your account?')}</DialogTitle>
               <DialogDescription>
-                Deleting your account is permanent and{' '}
-                <span className="text-foreground">cannot</span> be undone
+                {$t('Deleting your account is permanent and')}{' '}
+                <span className="text-foreground">cannot</span> {$t('be undone')}
               </DialogDescription>
             </>
           )}
@@ -138,14 +145,14 @@ export const DeleteAccountButton = () => {
               <>
                 <DialogSection>
                   <span className="text-sm text-foreground flex flex-col gap-y-2">
-                    Before submitting an account deletion request, please ensure that your account
-                    is not part of any organization. This can be done by leaving or deleting the
-                    organizations that you are a part of.
+                    {$t(
+                      'Before submitting an account deletion request, please ensure that your account is not part of any organization. This can be done by leaving or deleting the organizations that you are a part of.'
+                    )}
                   </span>
                 </DialogSection>
                 <DialogFooter>
                   <Button block variant="primary" size="medium" onClick={() => setIsOpen(false)}>
-                    Understood
+                    {$t('Understood')}
                   </Button>
                 </DialogFooter>
               </>
@@ -162,9 +169,9 @@ export const DeleteAccountButton = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Please type{' '}
-                            <span className="font-bold">{profile?.primary_email ?? ''}</span> to
-                            confirm
+                            {$t('Please type')}{' '}
+                            <span className="font-bold">{profile?.primary_email ?? ''}</span>{' '}
+                            {$t('to confirm')}
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -172,7 +179,7 @@ export const DeleteAccountButton = () => {
                               {...field}
                               autoComplete="off"
                               disabled={isPending}
-                              placeholder="Enter the account above"
+                              placeholder={$t('Enter the account above')}
                             />
                           </FormControl>
                         </FormItem>
@@ -189,7 +196,7 @@ export const DeleteAccountButton = () => {
                       loading={isPending}
                       disabled={account !== accountEmail || isPending}
                     >
-                      Submit request for account deletion
+                      {$t('Submit request for account deletion')}
                     </Button>
                   </DialogFooter>
                 </form>

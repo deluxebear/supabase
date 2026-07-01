@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 import { SlotLagMetricKey, SlotLagMetrics } from './ReplicationPipelineStatus.types'
 import { getFormattedLagValue } from './ReplicationPipelineStatus.utils'
 import { SlotConnectionIndicator, SlotStatusBadge } from './SlotStatus'
+import { t as $t } from '@/lib/i18n'
 
 interface SlotLagField {
   key: SlotLagMetricKey
@@ -34,7 +35,9 @@ const SLOT_LAG_FIELDS: SlotLagField[] = [
     type: 'bytes',
     description: (
       <>
-        How much more can pile up before the pipeline has to be set up again. Controlled by the{' '}
+        {$t(
+          'How much more can pile up before the pipeline has to be set up again. Controlled by the'
+        )}{' '}
         <code className="text-code-inline">max_slot_wal_keep_size</code> setting.
       </>
     ),

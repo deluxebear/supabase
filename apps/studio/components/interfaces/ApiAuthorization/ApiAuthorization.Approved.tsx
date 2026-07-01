@@ -8,6 +8,7 @@ import {
 } from '@/components/interfaces/Organization/OAuthApps/AuthorizeRequesterDetails'
 import { InterstitialLayout, LogoPair, SupabaseLogo } from '@/components/layouts/InterstitialLayout'
 import type { ApiAuthorizationResponse } from '@/data/api-authorization/api-authorization-query'
+import { t as $t } from '@/lib/i18n'
 import type { Organization } from '@/types'
 
 export interface ApiAuthorizationApprovedScreenProps {
@@ -30,12 +31,12 @@ export function ApiAuthorizationApprovedScreen({
         />
       }
       title={requester.name}
-      description="is authorized for Supabase"
+      description={$t('is authorized for Supabase')}
     >
       <div className="flex flex-col gap-5 px-6 pb-6">
         <Admonition
           type="success"
-          title="Authorization approved"
+          title={$t('Authorization approved')}
           description={`${requester.name} has access to ${organizationName} and its projects.`}
         />
         <AuthorizeRequesterDetails
@@ -46,7 +47,7 @@ export function ApiAuthorizationApprovedScreen({
           scopes={requester.scopes}
         />
         <p className="text-center text-xs text-foreground-lighter">
-          Approved on {dayjs(requester.approved_at).format('DD MMM YYYY HH:mm:ss (ZZ)')}.
+          {$t('Approved on')} {dayjs(requester.approved_at).format('DD MMM YYYY HH:mm:ss (ZZ)')}.
         </p>
       </div>
     </InterstitialLayout>

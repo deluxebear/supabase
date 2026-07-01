@@ -34,6 +34,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const FormSchema = z.object({
   postgresVersionSelection: z.string(),
@@ -89,7 +90,7 @@ export const ResumeProjectButton = ({
   const { mutate: restoreProject, isPending: isRestoring } = useProjectRestoreMutation({
     onSuccess: async (_, variables) => {
       setProjectStatus({ ref: variables.ref, status: PROJECT_STATUS.RESTORING })
-      toast.success('Restoring project, project will be ready in a few minutes')
+      toast.success($t('Restoring project, project will be ready in a few minutes'))
       await router.push(`/project/${variables.ref}`)
     },
   })
@@ -102,15 +103,15 @@ export const ResumeProjectButton = ({
 
   const onSelectRestore = () => {
     if (project?.status !== PROJECT_STATUS.INACTIVE) {
-      return toast.error('Unable to resume: project is not paused')
+      return toast.error($t('Unable to resume: project is not paused'))
     }
 
     if (isRestoreDisabled) {
-      return toast.error('This project can no longer be resumed from the dashboard')
+      return toast.error($t('This project can no longer be resumed from the dashboard'))
     }
 
     if (!canResumeProject) {
-      return toast.error('You do not have the required permissions to restore this project')
+      return toast.error($t('You do not have the required permissions to restore this project'))
     }
 
     if (hasMembersExceedingFreeTierLimit) {
@@ -122,7 +123,7 @@ export const ResumeProjectButton = ({
 
   const onConfirmRestore = async (values: z.infer<typeof FormSchema>) => {
     if (!project) {
-      return toast.error('Unable to restore: project is required')
+      return toast.error($t('Unable to restore: project is required'))
     }
 
     if (!newProjectInternalOnlyConfiguration) {
@@ -178,7 +179,7 @@ export const ResumeProjectButton = ({
       <ConfirmationModal
         visible={showConfirmRestore}
         size="small"
-        title="Resume this project"
+        title={$t('Resume this project')}
         onCancel={() => setShowConfirmRestore(false)}
         onConfirm={() => form.handleSubmit(onConfirmRestore)()}
         loading={isRestoring}
@@ -204,7 +205,7 @@ export const ResumeProjectButton = ({
                         field={field}
                         form={form}
                         type="unpause"
-                        label="Postgres version"
+                        label={$t('Postgres version')}
                         layout="vertical"
                         dbRegion={region?.displayName ?? ''}
                         cloudProvider={(project?.cloud_provider ?? 'AWS') as CloudProvider}
@@ -226,25 +227,27 @@ export const ResumeProjectButton = ({
         <DialogContent size="medium" className="gap-0 pb-0">
           <DialogHeader className="border-b">
             <DialogTitle className="leading-normal">
-              Your organization has members who have exceeded their free project limits
+              {$t('Your organization has members who have exceeded their free project limits')}
             </DialogTitle>
           </DialogHeader>
           <DialogSection className="text-sm">
             <p className="text-foreground-light">
-              The following members have reached their maximum limits for the number of active free
-              plan projects within organizations where they are an administrator or owner:
+              {$t(
+                'The following members have reached their maximum limits for the number of active free plan projects within organizations where they are an administrator or owner:'
+              )}
             </p>
             <ul className="my-4 list-disc list-inside">
               {(membersExceededLimit ?? []).map((member, idx: number) => (
                 <li key={`member-${idx}`}>
-                  {member.username || member.primary_email} (Limit: {member.free_project_limit} free
-                  projects)
+                  {member.username || member.primary_email} (Limit: {member.free_project_limit}{' '}
+                  {$t('free projects)')}
                 </li>
               ))}
             </ul>
             <p className="text-foreground-light">
-              These members will need to either delete, pause, or upgrade one or more of these
-              projects before you're able to resume this project.
+              {$t(
+                "These members will need to either delete, pause, or upgrade one or more of these projects before you're able to resume this project."
+              )}
             </p>
           </DialogSection>
           <DialogFooter>
@@ -253,7 +256,7 @@ export const ResumeProjectButton = ({
               variant="default"
               onClick={() => setShowFreeProjectLimitWarning(false)}
             >
-              Understood
+              {$t('Understood')}
             </Button>
           </DialogFooter>
         </DialogContent>

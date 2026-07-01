@@ -17,6 +17,7 @@ import { CreateVectorBucketDialog } from './CreateVectorBucketDialog'
 import { VectorBucketsErrorState } from './VectorBucketsErrorState'
 import { AlphaNotice } from '@/components/ui/AlphaNotice'
 import { useVectorBucketsQuery } from '@/data/storage/vector-buckets-query'
+import { t as $t } from '@/lib/i18n'
 import { createNavigationHandler } from '@/lib/navigation'
 
 /**
@@ -71,13 +72,13 @@ export const VectorsBuckets = () => {
                 ) : (
                   <div className="flex flex-col gap-y-4">
                     <div className="py-0">
-                      <PageSectionTitle>Buckets</PageSectionTitle>
+                      <PageSectionTitle>{$t('Buckets')}</PageSectionTitle>
                     </div>
                     <div className="flex grow justify-between gap-x-2 items-center">
                       <Input
                         size="tiny"
                         className="grow lg:grow-0 w-52"
-                        placeholder="Search for a bucket"
+                        placeholder={$t('Search for a bucket')}
                         value={filterString}
                         onChange={(e) => setFilterString(e.target.value)}
                         icon={<Search />}
@@ -95,13 +96,13 @@ export const VectorsBuckets = () => {
                             <TableRow>
                               {filteredBuckets.length > 0 && (
                                 <TableHead className="w-2 pr-1">
-                                  <span className="sr-only">Icon</span>
+                                  <span className="sr-only">{$t('Icon')}</span>
                                 </TableHead>
                               )}
-                              <TableHead>Name</TableHead>
-                              <TableHead>Created at</TableHead>
+                              <TableHead>{$t('Name')}</TableHead>
+                              <TableHead>{$t('Created at')}</TableHead>
                               <TableHead>
-                                <span className="sr-only">Actions</span>
+                                <span className="sr-only">{$t('Actions')}</span>
                               </TableHead>
                             </TableRow>
                           </TableHeader>
@@ -109,9 +110,13 @@ export const VectorsBuckets = () => {
                             {filteredBuckets.length === 0 && filterString.length > 0 && (
                               <TableRow className="[&>td]:hover:bg-inherit">
                                 <TableCell colSpan={3}>
-                                  <p className="text-sm text-foreground">No results found</p>
+                                  <p className="text-sm text-foreground">
+                                    {$t('No results found')}
+                                  </p>
                                   <p className="text-sm text-foreground-lighter">
-                                    Your search for "{filterString}" did not return any results
+                                    {$t('Your search for "')}
+                                    {filterString}
+                                    {$t('" did not return any results')}
                                   </p>
                                 </TableCell>
                               </TableRow>

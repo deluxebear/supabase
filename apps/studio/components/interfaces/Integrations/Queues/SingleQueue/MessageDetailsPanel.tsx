@@ -22,6 +22,7 @@ import { PostgresQueueMessage } from '@/data/database-queues/database-queue-mess
 import { useDatabaseQueueMessageReadMutation } from '@/data/database-queues/database-queue-messages-read-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { prettifyJSON } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export const DATE_FORMAT = 'DD MMM, YYYY HH:mm'
 
@@ -107,7 +108,7 @@ export const MessageDetailsPanel = ({
             value="details"
             className="px-0 pb-0 h-full text-xs  data-[state=active]:bg-transparent shadow-none!"
           >
-            Overview
+            {$t('Overview')}
           </TabsTrigger_Shadcn_>
         </TabsList_Shadcn_>
         <TabsContent_Shadcn_ value="details" className="w-full mt-0 overflow-y-auto grow">
@@ -124,7 +125,7 @@ export const MessageDetailsPanel = ({
             <RowData property="Retries" value={`${selectedMessage.read_ct}`} />
 
             <div className="mt-2">
-              <h4 className="text-foreground-light py-1">Payload</h4>
+              <h4 className="text-foreground-light py-1">{$t('Payload')}</h4>
               <CodeEditor
                 isReadOnly
                 hideLineNumbers
@@ -140,8 +141,10 @@ export const MessageDetailsPanel = ({
             {!selectedMessage.archived_at ? (
               <>
                 <RowAction
-                  title="Postpone message"
-                  description="The message will be postponed and won't show up in reads for 60 seconds."
+                  title={$t('Postpone message')}
+                  description={$t(
+                    "The message will be postponed and won't show up in reads for 60 seconds."
+                  )}
                   button={{
                     icon: <Clock12 />,
                     text: 'Postpone',
@@ -166,8 +169,10 @@ export const MessageDetailsPanel = ({
                   }
                 />
                 <RowAction
-                  title="Archive message"
-                  description="The message will be marked as archived and hidden from future reads by consumers. You can still access the message later."
+                  title={$t('Archive message')}
+                  description={$t(
+                    'The message will be marked as archived and hidden from future reads by consumers. You can still access the message later.'
+                  )}
                   button={{
                     icon: <Archive />,
                     text: 'Archive',
@@ -192,8 +197,8 @@ export const MessageDetailsPanel = ({
                   }
                 />
                 <RowAction
-                  title="Delete message"
-                  description="The message cannot be recovered afterwards."
+                  title={$t('Delete message')}
+                  description={$t('The message cannot be recovered afterwards.')}
                   button={{
                     icon: <Trash2 />,
                     text: 'Delete',

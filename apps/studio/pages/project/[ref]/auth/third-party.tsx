@@ -10,6 +10,7 @@ import { NoPermission } from '@/components/ui/NoPermission'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const ThirdPartyPage: NextPageWithLayout = () => {
@@ -23,7 +24,7 @@ const ThirdPartyPage: NextPageWithLayout = () => {
 
   if (!showThirdPartyAuth) {
     return (
-      <AuthLayout title="Sign In / Providers">
+      <AuthLayout title={$t('Sign In / Providers')}>
         <UnknownInterface urlBack={`/project/${ref}/auth/providers`} />
       </AuthLayout>
     )

@@ -24,6 +24,7 @@ import { NoPermission } from '@/components/ui/NoPermission'
 import { useAPIKeyDeleteMutation } from '@/data/api-keys/api-key-delete-mutation'
 import { APIKeysData, useAPIKeysQuery } from '@/data/api-keys/api-keys-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 export const PublishableAPIKeys = () => {
   const { ref: projectRef } = useParams()
@@ -67,7 +68,7 @@ export const PublishableAPIKeys = () => {
     isSuccess: isDeleteSuccess,
   } = useAPIKeyDeleteMutation({
     onSuccess: () => {
-      toast.success('Successfully deleted publishable key')
+      toast.success($t('Successfully deleted publishable key'))
       setDeleteId(null)
     },
   })
@@ -80,7 +81,7 @@ export const PublishableAPIKeys = () => {
 
   useEffect(() => {
     if (isSuccessApiKeys && !!deleteId && !apiKeyToDelete && !isDeleteSuccess) {
-      toast('Unable to find publishable key')
+      toast($t('Unable to find publishable key'))
       setDeleteId(null)
     }
   }, [apiKeyToDelete, deleteId, isDeleteSuccess, isSuccessApiKeys, setDeleteId])
@@ -88,8 +89,10 @@ export const PublishableAPIKeys = () => {
   return (
     <div>
       <FormHeader
-        title="Publishable key"
-        description="This key is safe to use in a browser if you have enabled Row Level Security (RLS) for your tables and configured policies."
+        title={$t('Publishable key')}
+        description={$t(
+          'This key is safe to use in a browser if you have enabled Row Level Security (RLS) for your tables and configured policies.'
+        )}
         actions={IS_PLATFORM ? <CreatePublishableAPIKeyDialog /> : null}
       />
 
@@ -102,9 +105,11 @@ export const PublishableAPIKeys = () => {
       ) : showSelfHostedEmptyState ? (
         <Card>
           <div className="rounded-b-md! overflow-hidden py-12 flex flex-col gap-1 items-center justify-center">
-            <p className="text-sm text-foreground">No publishable API keys found</p>
+            <p className="text-sm text-foreground">{$t('No publishable API keys found')}</p>
             <p className="text-sm text-foreground-light">
-              This may be a configuration issue. Ensure your API keys are available to Studio.
+              {$t(
+                'This may be a configuration issue. Ensure your API keys are available to Studio.'
+              )}
             </p>
           </div>
         </Card>
@@ -113,8 +118,8 @@ export const PublishableAPIKeys = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-200">
-                <TableHead>Name</TableHead>
-                <TableHead>API Key</TableHead>
+                <TableHead>{$t('Name')}</TableHead>
+                <TableHead>{$t('API Key')}</TableHead>
                 {IS_PLATFORM && <TableHead />}
               </TableRow>
             </TableHeader>
@@ -124,7 +129,9 @@ export const PublishableAPIKeys = () => {
                 <TableRow>
                   <TableCell colSpan={IS_PLATFORM ? 3 : 2} className="p-0">
                     <Admonition showIcon={false} type="default" className="border-0 rounded-none">
-                      <p className="text-foreground-light">No publishable keys created yet</p>
+                      <p className="text-foreground-light">
+                        {$t('No publishable keys created yet')}
+                      </p>
                     </Admonition>
                   </TableCell>
                 </TableRow>
@@ -146,7 +153,7 @@ export const PublishableAPIKeys = () => {
               <TableRow className="border-b-0">
                 <TableCell colSpan={IS_PLATFORM ? 3 : 2} className="py-2">
                   <p className="text-xs text-foreground-lighter font-normal">
-                    Publishable keys can be safely shared publicly
+                    {$t('Publishable keys can be safely shared publicly')}
                   </p>
                 </TableCell>
               </TableRow>

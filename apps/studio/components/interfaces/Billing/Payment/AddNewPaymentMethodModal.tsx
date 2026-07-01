@@ -11,6 +11,7 @@ import { getStripeElementsAppearanceOptions } from './Payment.utils'
 import { useOrganizationPaymentMethodSetupIntent } from '@/data/organizations/organization-payment-method-setup-intent-mutation'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { STRIPE_PUBLIC_KEY } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface AddNewPaymentMethodModalProps {
   visible: boolean
@@ -126,7 +127,7 @@ const AddNewPaymentMethodModal = ({
       <Dialog open={visible && intent !== undefined} onOpenChange={onLocalCancel}>
         <DialogContent size="medium" className="PAYMENT">
           <DialogHeader>
-            <DialogTitle>Add new payment method</DialogTitle>
+            <DialogTitle>{$t('Add new payment method')}</DialogTitle>
           </DialogHeader>
           <DialogSectionSeparator />
           <Elements stripe={stripePromise} options={options}>

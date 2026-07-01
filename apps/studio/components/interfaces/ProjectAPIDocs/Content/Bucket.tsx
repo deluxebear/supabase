@@ -6,6 +6,7 @@ import ResourceContent from '../ResourceContent'
 import type { ContentProps } from './Content.types'
 import { useBucketInfoQueryPreferCached } from '@/data/storage/buckets-query'
 import { formatBytes } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useAppStateSnapshot } from '@/state/app-state'
 
 export const Bucket = ({ language, apikey, endpoint }: ContentProps) => {
@@ -30,7 +31,7 @@ export const Bucket = ({ language, apikey, endpoint }: ContentProps) => {
           </Badge>
         </div>
         <p className="text-sm text-foreground-light">
-          Allowed MIME types:{' '}
+          {$t('Allowed MIME types:')}{' '}
           {allowedMimeTypes === null
             ? 'All types are allowed'
             : (allowedMimeTypes ?? []).length === 0
@@ -40,7 +41,7 @@ export const Bucket = ({ language, apikey, endpoint }: ContentProps) => {
                 : 'Unknown'}
         </p>
         <p className="text-sm text-foreground-light">
-          Max file size limit:{' '}
+          {$t('Max file size limit:')}{' '}
           {maxFileSizeLimit === null ? 'No limit' : `${formatBytes(maxFileSizeLimit)}`}
         </p>
       </div>

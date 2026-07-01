@@ -36,6 +36,7 @@ import { useEdgeFunctionsQuery } from '@/data/edge-functions/edge-functions-quer
 import { edgeFunctionReports } from '@/data/reports/v2/edge-functions.config'
 import { useRefreshHandler, useReportDateRange } from '@/hooks/misc/useReportDateRange'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 import type { NextPageWithLayout } from '@/types'
@@ -50,7 +51,7 @@ const EdgeFunctionsReportV2: NextPageWithLayout = () => {
 
 EdgeFunctionsReportV2.getLayout = (page) => (
   <DefaultLayout>
-    <ObservabilityLayout title="Edge Functions">{page}</ObservabilityLayout>
+    <ObservabilityLayout title={$t('Edge Functions')}>{page}</ObservabilityLayout>
   </DefaultLayout>
 )
 
@@ -155,7 +156,7 @@ const EdgeFunctionsUsage = () => {
               <DocsButton href={OBSERVABILITY_DOCS_HREFS.edgeFunctions} topic={REPORT_TITLE} />
               <ShortcutTooltip
                 shortcutId={SHORTCUT_IDS.OBSERVABILITY_REFRESH}
-                label="Refresh report"
+                label={$t('Refresh report')}
                 side="bottom"
               >
                 <Button
@@ -181,8 +182,10 @@ const EdgeFunctionsUsage = () => {
               <UpgradePrompt
                 show={showUpgradePrompt}
                 setShowUpgradePrompt={setShowUpgradePrompt}
-                title="Report date range"
-                description="Report data can be stored for a maximum of 3 months depending on the plan that your project is on."
+                title={$t('Report date range')}
+                description={$t(
+                  'Report data can be stored for a maximum of 3 months depending on the plan that your project is on.'
+                )}
                 source="edgeFunctionsReportDateRange"
               />
 
@@ -202,7 +205,7 @@ const EdgeFunctionsUsage = () => {
             </div>
             <div className="w-full flex items-center gap-2 flex-wrap">
               <ReportsSelectFilter
-                label="Function"
+                label={$t('Function')}
                 options={
                   functions?.map((fn: { name: string; id: string }) => ({
                     label: fn.name,
@@ -216,7 +219,7 @@ const EdgeFunctionsUsage = () => {
               />
 
               <ReportsNumericFilter
-                label="Status Code"
+                label={$t('Status Code')}
                 value={statusCodeFilter}
                 onChange={setStatusCodeFilter}
                 defaultOperator="="
@@ -224,10 +227,10 @@ const EdgeFunctionsUsage = () => {
               />
 
               <ReportsNumericFilter
-                label="Execution Time"
+                label={$t('Execution Time')}
                 value={executionTimeFilter}
                 onChange={setExecutionTimeFilter}
-                placeholder="Enter time in ms"
+                placeholder={$t('Enter time in ms')}
                 min={0}
                 max={99999}
                 defaultOperator=">="
@@ -235,7 +238,7 @@ const EdgeFunctionsUsage = () => {
               />
 
               <ReportsSelectFilter
-                label="Region"
+                label={$t('Region')}
                 options={EDGE_FUNCTION_REGIONS.map((region) => ({
                   value: region.key,
                   label: (

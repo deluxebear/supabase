@@ -20,6 +20,7 @@ import { SecondLevelNav } from './SecondLevelNav'
 import { useAPIKeys } from '@/data/api-keys/api-keys-query'
 import { useProjectApiUrl } from '@/data/config/project-endpoint-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { useAppStateSnapshot } from '@/state/app-state'
 
 /**
@@ -71,7 +72,7 @@ export const ProjectAPIDocs = () => {
       <div className="flex items-start h-full">
         <div className="w-72 border-r h-full">
           <div className="border-b px-4 py-2 flex items-center justify-between">
-            <h4>API Docs</h4>
+            <h4>{$t('API Docs')}</h4>
             <div className="flex items-center space-x-1">
               {!isEntityDocs && <LanguageSelector simplifiedVersion />}
               {isIntroduction && (

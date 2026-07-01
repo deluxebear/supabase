@@ -35,6 +35,7 @@ import { formatDatabaseID } from '@/data/read-replicas/replicas.utils'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 
 // [Joshen] Foresee that we'll skip this view for initial launch
@@ -218,7 +219,7 @@ const MapView = ({
                   <div className="px-3 py-2 flex flex-col">
                     <div className="flex items-center gap-x-2">
                       <img
-                        alt="region icon"
+                        alt={$t('region icon')}
                         className="w-4 rounded-xs"
                         src={`${BASE_PATH}/img/regions/${tooltip.region.region}.svg`}
                       />
@@ -245,12 +246,12 @@ const MapView = ({
             <div>
               <p className="text-xs text-foreground-light">
                 {databasesInSelectedRegion.length} database
-                {databasesInSelectedRegion.length > 1 ? 's' : ''} deployed in
+                {databasesInSelectedRegion.length > 1 ? 's' : ''} {$t('deployed in')}
               </p>
               <p className="text-sm">{selectedRegion.name}</p>
             </div>
             <img
-              alt="region icon"
+              alt={$t('region icon')}
               className="w-10 rounded-xs"
               src={`${BASE_PATH}/img/regions/${selectedRegion.region}.svg`}
             />
@@ -276,22 +277,24 @@ const MapView = ({
                                 `(ID: ${formatDatabaseID(database.identifier)})`
                               }`}
                           {database.status === REPLICA_STATUS.ACTIVE_HEALTHY ? (
-                            <Badge variant="success">Healthy</Badge>
+                            <Badge variant="success">{$t('Healthy')}</Badge>
                           ) : database.status === REPLICA_STATUS.COMING_UP ? (
-                            <Badge>Coming up</Badge>
+                            <Badge>{$t('Coming up')}</Badge>
                           ) : database.status === REPLICA_STATUS.RESTARTING ? (
-                            <Badge>Restarting</Badge>
+                            <Badge>{$t('Restarting')}</Badge>
                           ) : database.status === REPLICA_STATUS.RESIZING ? (
-                            <Badge>Resizing</Badge>
+                            <Badge>{$t('Resizing')}</Badge>
                           ) : (
-                            <Badge variant="warning">Unhealthy</Badge>
+                            <Badge variant="warning">{$t('Unhealthy')}</Badge>
                           )}
                         </p>
                         <p className="text-xs text-foreground-light">
                           AWS{projectHomepageShowInstanceSize ? ` • ${database.size}` : ''}
                         </p>
                         {database.identifier !== ref && (
-                          <p className="text-xs text-foreground-light">Created on: {created}</p>
+                          <p className="text-xs text-foreground-light">
+                            {$t('Created on:')} {created}
+                          </p>
                         )}
                       </div>
                       {database.identifier !== ref && (
@@ -308,7 +311,7 @@ const MapView = ({
                                 dbSelectorState.setSelectedDatabaseId(database.identifier)
                               }}
                             >
-                              View connection string
+                              {$t('View connection string')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="gap-x-2"
@@ -317,7 +320,7 @@ const MapView = ({
                               <Link
                                 href={`/project/${ref}/observability/database?db=${database.identifier}&chart=replication-lag`}
                               >
-                                View replication lag
+                                {$t('View replication lag')}
                               </Link>
                             </DropdownMenuItem>
 
@@ -328,7 +331,7 @@ const MapView = ({
                               onClick={() => onSelectRestartReplica(database)}
                               disabled={database.status !== REPLICA_STATUS.ACTIVE_HEALTHY}
                             >
-                              Restart replica
+                              {$t('Restart replica')}
                             </DropdownMenuItem>
 
                             <DropdownMenuItemTooltip
@@ -342,7 +345,7 @@ const MapView = ({
                                 },
                               }}
                             >
-                              Drop replica
+                              {$t('Drop replica')}
                             </DropdownMenuItemTooltip>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -372,7 +375,7 @@ const MapView = ({
                 },
               }}
             >
-              Deploy new replica here
+              {$t('Deploy new replica here')}
             </ButtonTooltip>
             <Button
               variant="default"
@@ -381,7 +384,7 @@ const MapView = ({
                 setZoom(1.5)
               }}
             >
-              Close
+              {$t('Close')}
             </Button>
           </div>
         </div>

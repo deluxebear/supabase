@@ -22,6 +22,7 @@ import {
 } from './Permissions.types'
 import { togglePermissionResource } from './Permissions.utils'
 import { ACCESS_TOKEN_RESOURCES } from '@/components/interfaces/Account/AccessTokens/AccessToken.constants'
+import { t as $t } from '@/lib/i18n'
 
 export const PermissionResourceSelector = <TFormValues extends PermissionsFormValues>({
   open,
@@ -42,14 +43,14 @@ export const PermissionResourceSelector = <TFormValues extends PermissionsFormVa
     <Popover open={open} onOpenChange={onOpenChange} modal={true}>
       <PopoverTrigger asChild>
         <Button variant="default" size="tiny" icon={<Plus className="h-4 w-4" />}>
-          Add permission
+          {$t('Add permission')}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[400px] p-0" align={align}>
         <Command>
-          <CommandInput placeholder="Search resources..." />
+          <CommandInput placeholder={$t('Search resources...')} />
           <CommandList>
-            <CommandEmpty>No resources found.</CommandEmpty>
+            <CommandEmpty>{$t('No resources found.')}</CommandEmpty>
 
             <CommandGroup className="[&>div]:text-left">
               <div className="max-h-[210px] overflow-y-auto">

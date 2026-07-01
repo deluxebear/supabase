@@ -13,6 +13,7 @@ import OrganizationLayout from '@/components/layouts/OrganizationLayout'
 import { OrganizationSettingsLayout } from '@/components/layouts/ProjectLayout/OrganizationSettingsLayout'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const OrgSecuritySettings: NextPageWithLayout = () => {
@@ -28,9 +29,9 @@ const OrgSecuritySettings: NextPageWithLayout = () => {
       <PageHeader size="small">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Security</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Security')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Organization-wide security controls and MFA enforcement
+              {$t('Organization-wide security controls and MFA enforcement')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -42,7 +43,7 @@ const OrgSecuritySettings: NextPageWithLayout = () => {
 
 OrgSecuritySettings.getLayout = (page) => (
   <DefaultLayout>
-    <OrganizationLayout title="Security">
+    <OrganizationLayout title={$t('Security')}>
       <OrganizationSettingsLayout>{page}</OrganizationSettingsLayout>
     </OrganizationLayout>
   </DefaultLayout>

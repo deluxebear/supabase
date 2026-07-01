@@ -39,6 +39,7 @@ import { useAuthConfigUpdateMutation } from '@/data/auth/auth-config-update-muta
 import { useAuthTemplateResetMutation } from '@/data/auth/auth-template-reset-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 const smtpEnabledSchema = z.object({
   ENABLE_SMTP: z.literal(true),
@@ -190,7 +191,7 @@ export const SmtpForm = () => {
           onError?.()
         },
         onSuccess: () => {
-          toast.success('Successfully updated settings')
+          toast.success($t('Successfully updated settings'))
           onSuccess?.()
         },
       }
@@ -224,7 +225,7 @@ export const SmtpForm = () => {
               )
             )
             if (results.some((r) => r.status === 'rejected')) {
-              toast.error('SMTP disabled, but some email templates could not be reset')
+              toast.error($t('SMTP disabled, but some email templates could not be reset'))
             }
           } finally {
             resolve()
@@ -292,12 +293,12 @@ export const SmtpForm = () => {
                   render={({ field }) => (
                     <FormItemLayout
                       layout="flex-row-reverse"
-                      label="Enable custom SMTP"
+                      label={$t('Enable custom SMTP')}
                       description={
                         <p className="text-sm text-foreground-lighter">
-                          Send auth emails through your custom SMTP provider.{' '}
+                          {$t('Send auth emails through your custom SMTP provider.')}{' '}
                           <InlineLink href={`/project/${projectRef}/auth/rate-limits`}>
-                            Rate limits
+                            {$t('Rate limits')}
                           </InlineLink>{' '}
                           apply.
                         </p>
@@ -320,9 +321,9 @@ export const SmtpForm = () => {
                   <CardContent className="py-6">
                     <div className="grid grid-cols-12 gap-6">
                       <div className="col-span-4">
-                        <h3 className="text-sm mb-1">Sender details</h3>
+                        <h3 className="text-sm mb-1">{$t('Sender details')}</h3>
                         <p className="text-sm text-foreground-lighter text-balance">
-                          Configure the sender information for your emails.
+                          {$t('Configure the sender information for your emails.')}
                         </p>
                       </div>
                       <div className="col-span-8 space-y-4">
@@ -331,8 +332,8 @@ export const SmtpForm = () => {
                           name="SMTP_ADMIN_EMAIL"
                           render={({ field }) => (
                             <FormItemLayout
-                              label="Sender email address"
-                              description="The email address the emails are sent from."
+                              label={$t('Sender email address')}
+                              description={$t('The email address the emails are sent from.')}
                             >
                               <FormControl>
                                 <Input
@@ -350,13 +351,13 @@ export const SmtpForm = () => {
                           name="SMTP_SENDER_NAME"
                           render={({ field }) => (
                             <FormItemLayout
-                              label="Sender name"
-                              description="Name displayed in the recipient's inbox."
+                              label={$t('Sender name')}
+                              description={$t("Name displayed in the recipient's inbox.")}
                             >
                               <FormControl>
                                 <Input
                                   {...field}
-                                  placeholder="Your Name"
+                                  placeholder={$t('Your Name')}
                                   disabled={!canUpdateConfig}
                                 />
                               </FormControl>
@@ -370,9 +371,9 @@ export const SmtpForm = () => {
                   <CardContent className="py-6">
                     <div className="grid grid-cols-12 gap-6">
                       <div className="col-span-4">
-                        <h3 className="text-sm mb-1">SMTP provider settings</h3>
+                        <h3 className="text-sm mb-1">{$t('SMTP provider settings')}</h3>
                         <p className="text-sm text-foreground-lighter text-balance">
-                          Your SMTP credentials will always be encrypted in our database.
+                          {$t('Your SMTP credentials will always be encrypted in our database.')}
                         </p>
                       </div>
                       <div className="col-span-8 space-y-4">
@@ -381,8 +382,8 @@ export const SmtpForm = () => {
                           name="SMTP_HOST"
                           render={({ field }) => (
                             <FormItemLayout
-                              label="Host"
-                              description="Hostname or IP address of your SMTP server."
+                              label={$t('Host')}
+                              description={$t('Hostname or IP address of your SMTP server.')}
                             >
                               <FormControl>
                                 <Input
@@ -398,10 +399,10 @@ export const SmtpForm = () => {
                         {form.watch('SMTP_HOST')?.endsWith('.gmail.com') && (
                           <Admonition
                             type="warning"
-                            title="Check your SMTP provider"
-                            description="It looks like the SMTP provider you entered is designed
-                            for sending personal rather than transactional email messages. Email deliverability may
-                            be impacted."
+                            title={$t('Check your SMTP provider')}
+                            description={$t(
+                              'It looks like the SMTP provider you entered is designed\n                            for sending personal rather than transactional email messages. Email deliverability may\n                            be impacted.'
+                            )}
                             className="mb-4 bg-warning-200 border-warning-400"
                           />
                         )}
@@ -411,13 +412,13 @@ export const SmtpForm = () => {
                           name="SMTP_PORT"
                           render={({ field }) => (
                             <FormItemLayout
-                              label="Port number"
+                              label={$t('Port number')}
                               description={
                                 <>
                                   <span className="block">
-                                    Port used by your SMTP server. Common ports include 465 and 587.
-                                    Avoid using port 25 as it is often blocked by providers to curb
-                                    spam.
+                                    {$t(
+                                      'Port used by your SMTP server. Common ports include 465 and 587. Avoid using port 25 as it is often blocked by providers to curb spam.'
+                                    )}
                                   </span>
                                 </>
                               }
@@ -440,8 +441,10 @@ export const SmtpForm = () => {
                           name="SMTP_MAX_FREQUENCY"
                           render={({ field }) => (
                             <FormItemLayout
-                              label="Minimum interval per user"
-                              description="The minimum time in seconds between emails before another email can be sent to the same user."
+                              label={$t('Minimum interval per user')}
+                              description={$t(
+                                'The minimum time in seconds between emails before another email can be sent to the same user.'
+                              )}
                             >
                               <FormControl>
                                 <InputGroup>
@@ -465,13 +468,13 @@ export const SmtpForm = () => {
                           name="SMTP_USER"
                           render={({ field }) => (
                             <FormItemLayout
-                              label="Username"
-                              description="Username for your SMTP server."
+                              label={$t('Username')}
+                              description={$t('Username for your SMTP server.')}
                             >
                               <FormControl>
                                 <Input
                                   {...field}
-                                  placeholder="SMTP Username"
+                                  placeholder={$t('SMTP Username')}
                                   disabled={!canUpdateConfig}
                                 />
                               </FormControl>
@@ -484,8 +487,10 @@ export const SmtpForm = () => {
                           name="SMTP_PASS"
                           render={({ field }) => (
                             <FormItemLayout
-                              label="Password"
-                              description="Password for your SMTP server. For security reasons, this password cannot be viewed once saved."
+                              label={$t('Password')}
+                              description={$t(
+                                'Password for your SMTP server. For security reasons, this password cannot be viewed once saved.'
+                              )}
                             >
                               <FormControl>
                                 <PasswordInput {...field} reveal copy disabled={!canUpdateConfig} />
@@ -505,12 +510,13 @@ export const SmtpForm = () => {
                   className="rounded-none border-x-0 border-t-0"
                   description={
                     <>
-                      The email rate limit will be increased to 30 emails per hour after enabling
-                      custom SMTP. It can be{' '}
+                      {$t(
+                        'The email rate limit will be increased to 30 emails per hour after enabling custom SMTP. It can be'
+                      )}{' '}
                       <InlineLink href={`/project/${projectRef}/auth/rate-limits`}>
-                        adjusted further
+                        {$t('adjusted further')}
                       </InlineLink>{' '}
-                      at any time.
+                      {$t('at any time.')}
                     </>
                   }
                 />
@@ -526,7 +532,7 @@ export const SmtpForm = () => {
                         setEnableSmtp(isSmtpEnabled(authConfig))
                       }}
                     >
-                      Cancel
+                      {$t('Cancel')}
                     </Button>
                   )}
                   <Button
@@ -535,7 +541,7 @@ export const SmtpForm = () => {
                     loading={isUpdatingConfig}
                     disabled={!canUpdateConfig || !isDirty}
                   >
-                    Save changes
+                    {$t('Save changes')}
                   </Button>
                 </div>
               </CardFooter>

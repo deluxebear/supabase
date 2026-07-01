@@ -12,6 +12,8 @@ import {
 import { PageBreadcrumbs, PageBreadcrumbsActions } from 'ui-patterns/PageBreadcrumbs'
 import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 
+import { t as $t } from '@/lib/i18n'
+
 interface MarketplaceDetailBreadrumbsProps {
   isLoading?: boolean
   title?: string
@@ -40,7 +42,7 @@ export const MarketplaceDetailBreadrumbs = ({
       <BreadcrumbList className="flex-1 min-w-0 flex-nowrap [&_li]:text-xs">
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link href={`/project/${ref}/integrations`}>Integrations</Link>
+            <Link href={`/project/${ref}/integrations`}>{$t('Integrations')}</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
@@ -48,7 +50,7 @@ export const MarketplaceDetailBreadrumbs = ({
           <BreadcrumbPage className="block min-w-0 truncate">
             {isLoading ? <ShimmeringLoader className="w-24" /> : title}
           </BreadcrumbPage>
-          {isInstalled && <Badge variant="success">Installed</Badge>}
+          {isInstalled && <Badge variant="success">{$t('Installed')}</Badge>}
         </BreadcrumbItem>
       </BreadcrumbList>
     </PageBreadcrumbs>

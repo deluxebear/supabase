@@ -5,6 +5,7 @@ import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import SettingsLayout from '@/components/layouts/ProjectSettingsLayout/SettingsLayout'
 import { DisplayApiSettings } from '@/components/ui/ProjectSettings/DisplayApiSettings'
 import { ToggleLegacyApiKeysPanel } from '@/components/ui/ProjectSettings/ToggleLegacyApiKeys'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const ApiKeysLegacyPage: NextPageWithLayout = () => {
@@ -18,7 +19,7 @@ const ApiKeysLegacyPage: NextPageWithLayout = () => {
 
 ApiKeysLegacyPage.getLayout = (page) => (
   <DefaultLayout>
-    <SettingsLayout title="API Keys (Legacy)">
+    <SettingsLayout title={$t('API Keys (Legacy)')}>
       <ApiKeysLayout>{page}</ApiKeysLayout>
     </SettingsLayout>
   </DefaultLayout>

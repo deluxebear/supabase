@@ -37,6 +37,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { CreateCronJobForm } from './CreateCronJobSheet/CreateCronJobSheet.constants'
 import { useEdgeFunctionsQuery } from '@/data/edge-functions/edge-functions-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface HTTPRequestFieldsProps {
   form: UseFormReturn<CreateCronJobForm>
@@ -82,11 +83,11 @@ export const EdgeFunctionSection = ({ form }: HTTPRequestFieldsProps) => {
         name="values.method"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Method</FormLabel>
+            <FormLabel>{$t('Method')}</FormLabel>
             <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a method for the API call" />
+                  <SelectValue placeholder={$t('Select a method for the API call')} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -101,16 +102,18 @@ export const EdgeFunctionSection = ({ form }: HTTPRequestFieldsProps) => {
 
       {edgeFunctions.length === 0 ? (
         <div className="space-y-1">
-          <p className="text-sm text-foreground-light">Select which edge function to trigger</p>
+          <p className="text-sm text-foreground-light">
+            {$t('Select which edge function to trigger')}
+          </p>
           {isLoading ? (
             <Button variant="default" className="justify-start" block size="small" loading>
-              Loading edge functions...
+              {$t('Loading edge functions...')}
             </Button>
           ) : (
             <div className="px-4 py-4 border rounded-sm bg-surface-300 border-strong flex items-center justify-between space-x-4">
-              <p className="text-sm">No edge functions created yet</p>
+              <p className="text-sm">{$t('No edge functions created yet')}</p>
               <Button asChild>
-                <Link href={`/project/${ref}/functions`}>Create an edge function</Link>
+                <Link href={`/project/${ref}/functions`}>{$t('Create an edge function')}</Link>
               </Button>
             </div>
           )}
@@ -124,7 +127,7 @@ export const EdgeFunctionSection = ({ form }: HTTPRequestFieldsProps) => {
 
             return (
               <FormItem>
-                <FormLabel>Edge Function</FormLabel>
+                <FormLabel>{$t('Edge Function')}</FormLabel>
                 <Popover open={open} onOpenChange={setOpen}>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -153,9 +156,9 @@ export const EdgeFunctionSection = ({ form }: HTTPRequestFieldsProps) => {
                   </PopoverTrigger>
                   <PopoverContent id={listboxId} className="p-0" sameWidthAsTrigger>
                     <Command>
-                      <CommandInput placeholder="Search edge functions..." />
+                      <CommandInput placeholder={$t('Search edge functions...')} />
                       <CommandList>
-                        <CommandEmpty>No edge function found.</CommandEmpty>
+                        <CommandEmpty>{$t('No edge function found.')}</CommandEmpty>
                         <CommandGroup>
                           <ScrollArea className={edgeFunctions.length > 7 ? 'h-[210px]' : ''}>
                             {edgeFunctions.map((fn) => {
@@ -194,7 +197,7 @@ export const EdgeFunctionSection = ({ form }: HTTPRequestFieldsProps) => {
         control={form.control}
         name="values.timeoutMs"
         render={({ field: { ref, ...rest } }) => (
-          <FormItemLayout label="Timeout" layout="vertical" className="gap-1">
+          <FormItemLayout label={$t('Timeout')} layout="vertical" className="gap-1">
             <InputGroup>
               <InputGroupInput {...rest} type="number" placeholder="1000" />
               <InputGroupAddon align="inline-end">

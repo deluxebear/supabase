@@ -22,6 +22,7 @@ import { useIntegrationsVercelConnectionSyncEnvsMutation } from '@/data/integrat
 import type { IntegrationProjectConnection } from '@/data/integrations/integrations.types'
 import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 interface IntegrationConnectionItemProps extends IntegrationConnectionProps {
   disabled?: boolean
@@ -60,7 +61,7 @@ export const IntegrationConnectionItem = forwardRef<HTMLLIElement, IntegrationCo
     const { mutate: syncEnvs, isPending: isSyncEnvLoading } =
       useIntegrationsVercelConnectionSyncEnvsMutation({
         onSuccess: () => {
-          toast.success('Successfully synced environment variables')
+          toast.success($t('Successfully synced environment variables'))
           setDropdownVisible(false)
         },
       })
@@ -88,7 +89,7 @@ export const IntegrationConnectionItem = forwardRef<HTMLLIElement, IntegrationCo
                   },
                 }}
               >
-                Manage
+                {$t('Manage')}
               </ButtonTooltip>
             ) : (
               <DropdownMenu
@@ -98,7 +99,7 @@ export const IntegrationConnectionItem = forwardRef<HTMLLIElement, IntegrationCo
               >
                 <DropdownMenuTrigger asChild>
                   <Button iconRight={<ChevronDown size={14} />} variant="default">
-                    <span>Manage</span>
+                    <span>{$t('Manage')}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="bottom" align="end">
@@ -110,7 +111,7 @@ export const IntegrationConnectionItem = forwardRef<HTMLLIElement, IntegrationCo
                           connection.supabase_project_ref
                         )}
                       >
-                        Configure connection
+                        {$t('Configure connection')}
                       </Link>
                     </DropdownMenuItem>
                   )}
@@ -128,14 +129,14 @@ export const IntegrationConnectionItem = forwardRef<HTMLLIElement, IntegrationCo
                       ) : (
                         <RefreshCw size={14} />
                       )}
-                      <p>Resync environment variables</p>
+                      <p>{$t('Resync environment variables')}</p>
                     </DropdownMenuItem>
                   )}
                   {((type === 'Vercel' && org?.managed_by !== 'vercel-marketplace') ||
                     router.pathname !== projectIntegrationUrl) && <DropdownMenuSeparator />}
                   <DropdownMenuItem className="space-x-2" onSelect={() => setIsOpen(true)}>
                     <Trash size={14} />
-                    <p>Delete connection</p>
+                    <p>{$t('Delete connection')}</p>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

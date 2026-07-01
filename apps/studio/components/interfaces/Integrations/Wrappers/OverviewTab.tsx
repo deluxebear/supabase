@@ -21,6 +21,7 @@ import { useDatabaseExtensionsQuery } from '@/data/database-extensions/database-
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
+import { t as $t } from '@/lib/i18n'
 
 const WrapperOverviewContent = () => {
   const { id } = useParams()
@@ -53,7 +54,7 @@ const WrapperOverviewContent = () => {
   return (
     <>
       <div className="flex flex-col gap-y-5">
-        <p>Recent wrappers</p>
+        <p>{$t('Recent wrappers')}</p>
         <WrapperTable />
       </div>
 
@@ -105,19 +106,21 @@ const AddNewWrapperCTA = () => {
 
   if (!!wrapperMeta && isWrappersExtensionInstalled && !hasRequiredVersion) {
     return (
-      <Admonition type="warning" title="Your extension version is outdated for this wrapper">
+      <Admonition type="warning" title={$t('Your extension version is outdated for this wrapper')}>
         <div className="flex flex-col gap-y-2 [&>p]:mb-0!">
           <p>
-            The {wrapperMeta.label} wrapper requires a minimum extension version of{' '}
-            {wrapperMeta.minimumExtensionVersion}. You have version{' '}
-            {wrappersExtension?.installed_version} installed. Please{' '}
-            {databaseNeedsUpgrading && 'upgrade your database then '}update the extension by
-            disabling and enabling the <code className="text-code-inline">wrappers</code> extension
-            to create this wrapper.
+            {$t('The')} {wrapperMeta.label} {$t('wrapper requires a minimum extension version of')}{' '}
+            {wrapperMeta.minimumExtensionVersion}
+            {$t('. You have version')} {wrappersExtension?.installed_version}{' '}
+            {$t('installed. Please')} {databaseNeedsUpgrading && 'upgrade your database then '}
+            {$t('update the extension by disabling and enabling the')}{' '}
+            <code className="text-code-inline">wrappers</code>{' '}
+            {$t('extension to create this wrapper.')}
           </p>
           <p className="text-warning">
-            Warning: Before reinstalling the wrapper extension, you must first remove all existing
-            wrappers. Afterward, you can recreate the wrappers.
+            {$t(
+              'Warning: Before reinstalling the wrapper extension, you must first remove all existing wrappers. Afterward, you can recreate the wrappers.'
+            )}
           </p>
         </div>
         <Button asChild variant="default" className="w-min mt-3">
@@ -149,7 +152,7 @@ const AddNewWrapperCTA = () => {
           },
         }}
       >
-        Add new wrapper
+        {$t('Add new wrapper')}
       </ButtonTooltip>
     </div>
   )
@@ -176,7 +179,7 @@ export const WrapperContent = () => {
     return (
       <ScaffoldContainer>
         <ScaffoldSection isFullWidth>
-          <p className="text-sm text-foreground-light">Unsupported integration type</p>
+          <p className="text-sm text-foreground-light">{$t('Unsupported integration type')}</p>
         </ScaffoldSection>
       </ScaffoldContainer>
     )

@@ -28,6 +28,7 @@ import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useDeploymentMode } from '@/hooks/misc/useDeploymentMode'
 import { DOCS_URL } from '@/lib/constants'
 import { pluckObjectFields } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 interface ConnectStepsSectionProps {
   steps: ResolvedStep[]
@@ -206,16 +207,20 @@ export function ConnectStepsSection({ steps, state, projectKeys }: ConnectStepsS
   return (
     <div className="bg-muted/50 flex-1">
       <div className="p-8 flex flex-col gap-y-6">
-        <h3>Connect your app</h3>
+        <h3>{$t('Connect your app')}</h3>
 
         {showIpv4AddonNotice && (
           <Admonition
             type="default"
             title={`${state.connectionMethod === 'direct' ? 'Direct connections use' : 'Transaction pooler uses'} IPv6 by default`}
-            description="Enable the dedicated IPv4 address add-on to connect from IPv4-only networks"
+            description={$t(
+              'Enable the dedicated IPv4 address add-on to connect from IPv4-only networks'
+            )}
             actions={[
               <Button asChild key="addon" variant="default">
-                <Link href={`/project/${ref}/settings/addons?panel=ipv4`}>Enable IPv4 add-on</Link>
+                <Link href={`/project/${ref}/settings/addons?panel=ipv4`}>
+                  {$t('Enable IPv4 add-on')}
+                </Link>
               </Button>,
               <DocsButton key="docs" href={`${DOCS_URL}/guides/platform/ipv4-address`} />,
             ]}
@@ -225,16 +230,20 @@ export function ConnectStepsSection({ steps, state, projectKeys }: ConnectStepsS
         {showSessionPoolerNotice && (
           <Admonition
             type="default"
-            title="Only use Session Pooler on an IPv4 network"
-            description="Session pooler connections are IPv4 proxied for free. Use Direct Connection if connecting via an IPv6 network."
+            title={$t('Only use Session Pooler on an IPv4 network')}
+            description={$t(
+              'Session pooler connections are IPv4 proxied for free. Use Direct Connection if connecting via an IPv6 network.'
+            )}
           />
         )}
 
         {showSelfHostedMcpNotice && (
           <Admonition
             type="default"
-            title="MCP for self-hosted Supabase requires extra setup"
-            description="The configuration below points at the hosted Supabase MCP server. To use MCP against your self-hosted instance, follow the self-hosted MCP guide."
+            title={$t('MCP for self-hosted Supabase requires extra setup')}
+            description={$t(
+              'The configuration below points at the hosted Supabase MCP server. To use MCP against your self-hosted instance, follow the self-hosted MCP guide.'
+            )}
             actions={[
               <DocsButton
                 key="docs"

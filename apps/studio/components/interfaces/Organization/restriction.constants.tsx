@@ -3,6 +3,7 @@ import { type ReactNode } from 'react'
 import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 
 import { InlineLink } from '@/components/ui/InlineLink'
+import { t as $t } from '@/lib/i18n'
 
 export const RESTRICTION_MESSAGES = {
   GRACE_PERIOD: {
@@ -11,12 +12,14 @@ export const RESTRICTION_MESSAGES = {
       const label = dayjs(date).format('DD MMM, YYYY')
       return (
         <>
-          You have a grace period until{' '}
-          <TimestampInfo className="text-sm" utcTimestamp={date} label={label} />. After that, your
-          projects will be restricted while your organization is over quota.{' '}
-          <InlineLink href={`/org/${slug}/usage`}>Review usage</InlineLink> or{' '}
-          <InlineLink href={`/org/${slug}/billing`}>manage your plan</InlineLink> to avoid
-          restrictions.
+          {$t('You have a grace period until')}{' '}
+          <TimestampInfo className="text-sm" utcTimestamp={date} label={label} />
+          {$t(
+            '. After that, your projects will be restricted while your organization is over quota.'
+          )}{' '}
+          <InlineLink href={`/org/${slug}/usage`}>{$t('Review usage')}</InlineLink> or{' '}
+          <InlineLink href={`/org/${slug}/billing`}>{$t('manage your plan')}</InlineLink>{' '}
+          {$t('to avoid restrictions.')}
         </>
       )
     },
@@ -25,8 +28,8 @@ export const RESTRICTION_MESSAGES = {
     title: 'Grace period is over',
     description: (slug: string): ReactNode => (
       <>
-        Your projects will not be able to serve requests when you use up your quota.{' '}
-        <InlineLink href={`/org/${slug}/billing`}>Review billing</InlineLink>
+        {$t('Your projects will not be able to serve requests when you use up your quota.')}{' '}
+        <InlineLink href={`/org/${slug}/billing`}>{$t('Review billing')}</InlineLink>
       </>
     ),
   },
@@ -34,8 +37,10 @@ export const RESTRICTION_MESSAGES = {
     title: 'Services restricted',
     description: (slug: string): ReactNode => (
       <>
-        Your projects are unable to serve requests as your organization has used up its quota.{' '}
-        <InlineLink href={`/org/${slug}/billing`}>Resolve billing issues</InlineLink>
+        {$t(
+          'Your projects are unable to serve requests as your organization has used up its quota.'
+        )}{' '}
+        <InlineLink href={`/org/${slug}/billing`}>{$t('Resolve billing issues')}</InlineLink>
       </>
     ),
   },
@@ -43,8 +48,9 @@ export const RESTRICTION_MESSAGES = {
     title: 'Outstanding invoices',
     description: (slug: string): ReactNode => (
       <>
-        Please <InlineLink href={`/org/${slug}/billing#invoices`}>pay your invoices</InlineLink> to
-        avoid service disruption
+        {$t('Please')}{' '}
+        <InlineLink href={`/org/${slug}/billing#invoices`}>{$t('pay your invoices')}</InlineLink>{' '}
+        {$t('to avoid service disruption')}
       </>
     ),
   },
@@ -52,8 +58,9 @@ export const RESTRICTION_MESSAGES = {
     title: 'Outstanding invoices in other organization',
     description: (slug: string): ReactNode => (
       <>
-        Please <InlineLink href={`/org/${slug}/billing#invoices`}>pay invoices</InlineLink> for
-        other organizations to avoid service disruption
+        {$t('Please')}{' '}
+        <InlineLink href={`/org/${slug}/billing#invoices`}>{$t('pay invoices')}</InlineLink>{' '}
+        {$t('for other organizations to avoid service disruption')}
       </>
     ),
   },

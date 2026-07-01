@@ -11,6 +11,7 @@ import CardButton from '@/components/ui/CardButton'
 import LogsExplorerHeader from '@/components/ui/Logs/LogsExplorerHeader'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 export const LogsTemplatesPage: NextPageWithLayout = () => {
@@ -45,7 +46,7 @@ export const LogsTemplatesPage: NextPageWithLayout = () => {
 
 LogsTemplatesPage.getLayout = (page) => (
   <DefaultLayout>
-    <LogsLayout title="Templates">{page}</LogsLayout>
+    <LogsLayout title={$t('Templates')}>{page}</LogsLayout>
   </DefaultLayout>
 )
 
@@ -87,7 +88,7 @@ const Template = ({ projectRef, template }: { projectRef?: string; template: Log
                   setShowPreview(!showPreview)
                 }}
               >
-                <span>Preview</span>
+                <span>{$t('Preview')}</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="rounded-lg bg-alternative p-0">

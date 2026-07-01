@@ -25,6 +25,7 @@ import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
 import { formatCurrency } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useAddonsPagePanel } from '@/state/addons-page'
 
 const CustomDomainSidePanel = () => {
@@ -120,7 +121,7 @@ const CustomDomainSidePanel = () => {
       }
       header={
         <div className="flex w-full items-center justify-between">
-          <h4>Custom domains</h4>
+          <h4>{$t('Custom domains')}</h4>
           <DocsButton href={`${DOCS_URL}/guides/platform/custom-domains`} />
         </div>
       }
@@ -132,20 +133,22 @@ const CustomDomainSidePanel = () => {
             customDomainsDisabledDueToQuota && (
               <Alert variant="default" className="mb-2">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Adding new custom domains temporarily disabled</AlertTitle>
+                <AlertTitle>{$t('Adding new custom domains temporarily disabled')}</AlertTitle>
                 <AlertDescription className="flex flex-col gap-3">
-                  We are working with our upstream DNS provider before we are able to sign up new
-                  custom domains. Please check back in a few hours.
+                  {$t(
+                    'We are working with our upstream DNS provider before we are able to sign up new custom domains. Please check back in a few hours.'
+                  )}
                 </AlertDescription>
               </Alert>
             )}
           <p className="text-sm">
-            Custom domains allow you to present a branded experience to your users. You may set up
-            your custom domain in the{' '}
+            {$t(
+              'Custom domains allow you to present a branded experience to your users. You may set up your custom domain in the'
+            )}{' '}
             <InlineLink href={`/project/${projectRef}/settings/general#custom-domains`}>
-              General Settings
+              {$t('General Settings')}
             </InlineLink>{' '}
-            page after enabling the add-on.
+            {$t('page after enabling the add-on.')}
           </p>
 
           <div className={cn('mt-8! pb-4', !hasAccessToCustomDomain && 'opacity-75')}>
@@ -161,11 +164,11 @@ const CustomDomainSidePanel = () => {
                 label={
                   <div className="w-full group text-left">
                     <div className="border-b border-default px-4 py-2 group-hover:border-control">
-                      <p className="text-sm">No custom domain</p>
+                      <p className="text-sm">{$t('No custom domain')}</p>
                     </div>
                     <div className="px-4 py-2">
                       <p className="text-foreground-light">
-                        Use the default supabase domain for your API
+                        {$t('Use the default supabase domain for your API')}
                       </p>
                       <div className="flex items-center space-x-1 mt-2">
                         <p className="text-foreground text-sm" translate="no">
@@ -190,7 +193,7 @@ const CustomDomainSidePanel = () => {
                       </div>
                       <div className="px-4 py-2">
                         <p className="text-foreground-light">
-                          Present a branded experience to your users
+                          {$t('Present a branded experience to your users')}
                         </p>
                         <div className="flex items-center space-x-1 mt-2">
                           <p className="text-foreground text-sm" translate="no">
@@ -210,8 +213,9 @@ const CustomDomainSidePanel = () => {
 
           {hasChanges && selectedOption !== 'cd_none' && (
             <p className="text-sm text-foreground-light">
-              There are no immediate charges. The add-on is billed at the end of your billing cycle
-              based on your usage and prorated to the hour.
+              {$t(
+                'There are no immediate charges. The add-on is billed at the end of your billing cycle based on your usage and prorated to the hour.'
+              )}
             </p>
           )}
 

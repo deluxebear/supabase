@@ -18,6 +18,7 @@ import { useIsDataApiEnabled } from '@/hooks/misc/useIsDataApiEnabled'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const DataApiDocsTab = () => {
   const DEFAULT_KEY = { name: 'hide', key: 'SUPABASE_KEY' }
@@ -129,7 +130,7 @@ export const DataApiDocsTab = () => {
   }
 
   if (!isEnabled) {
-    return <DataApiDisabledState description="view the documentation" />
+    return <DataApiDisabledState description={$t('view the documentation')} />
   }
 
   return (

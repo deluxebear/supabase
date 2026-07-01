@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import { Button, Card, cn } from 'ui'
 
 import { LazyComposedChartHandler } from '@/components/ui/Charts/ComposedChartHandler'
+import { t as $t } from '@/lib/i18n'
 
 interface ReportsChartUpsellProps {
   report: {
@@ -68,7 +69,7 @@ export const ReportChartUpsell = ({ report, orgSlug }: ReportsChartUpsellProps) 
               provider: 'logs',
             },
           ]}
-          label="Sample Report"
+          label={$t('Sample Report')}
           startDate={startDate}
           endDate={endDate}
           data={demoData as any}

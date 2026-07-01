@@ -38,6 +38,7 @@ import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useEdgeFunctionsQuery } from '@/data/edge-functions/edge-functions-query'
 import { useIsProjectActive } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL, IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import type { NextPageWithLayout } from '@/types'
@@ -114,10 +115,11 @@ const EdgeFunctionsPage: NextPageWithLayout = () => {
               (IS_PLATFORM ? (
                 <AlertError error={error} subject="Failed to retrieve edge functions" />
               ) : (
-                <Admonition type="warning" title="Failed to retrieve edge functions">
+                <Admonition type="warning" title={$t('Failed to retrieve edge functions')}>
                   <p className="prose [&>code]:text-xs text-sm">
-                    Edge functions could not be read from disk. The functions directory may be
-                    missing, not mounted into Studio, or unreadable.
+                    {$t(
+                      'Edge functions could not be read from disk. The functions directory may be missing, not mounted into Studio, or unreadable.'
+                    )}
                   </p>
                 </Admonition>
               ))}
@@ -130,12 +132,12 @@ const EdgeFunctionsPage: NextPageWithLayout = () => {
                         <div className="relative">
                           <ShortcutTooltip
                             shortcutId={SHORTCUT_IDS.LIST_PAGE_FOCUS_SEARCH}
-                            label="Search functions"
+                            label={$t('Search functions')}
                             side="bottom"
                           >
                             <Input
                               ref={searchInputRef}
-                              placeholder="Search function names"
+                              placeholder={$t('Search function names')}
                               icon={<Search />}
                               size="tiny"
                               className="w-32 md:w-64"
@@ -171,7 +173,7 @@ const EdgeFunctionsPage: NextPageWithLayout = () => {
                           loading={isFetching}
                           onClick={() => refetch()}
                         >
-                          Refresh
+                          {$t('Refresh')}
                         </Button>
                       </ShortcutTooltip>
                       <span className="border-l border-default pl-2 text-xs text-foreground-light">
@@ -184,17 +186,23 @@ const EdgeFunctionsPage: NextPageWithLayout = () => {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Name</TableHead>
+                            <TableHead>{$t('Name')}</TableHead>
                             <TableHead>URL</TableHead>
-                            <TableHead className="hidden 2xl:table-cell">Created</TableHead>
-                            <TableHead className="lg:table-cell">Updated</TableHead>
+                            <TableHead className="hidden 2xl:table-cell">{$t('Created')}</TableHead>
+                            <TableHead className="lg:table-cell">{$t('Updated')}</TableHead>
                             {showLastHourStats && (
                               <>
-                                <TableHead className="lg:table-cell">Total requests (1h)</TableHead>
-                                <TableHead className="lg:table-cell">5xx error rate (1h)</TableHead>
+                                <TableHead className="lg:table-cell">
+                                  {$t('Total requests (1h)')}
+                                </TableHead>
+                                <TableHead className="lg:table-cell">
+                                  {$t('5xx error rate (1h)')}
+                                </TableHead>
                               </>
                             )}
-                            <TableHead className="hidden 2xl:table-cell">Deployments</TableHead>
+                            <TableHead className="hidden 2xl:table-cell">
+                              {$t('Deployments')}
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
 
@@ -207,9 +215,13 @@ const EdgeFunctionsPage: NextPageWithLayout = () => {
                             ) : (
                               <TableRow>
                                 <TableCell colSpan={showLastHourStats ? 8 : 6}>
-                                  <p className="text-sm text-foreground">No results found</p>
+                                  <p className="text-sm text-foreground">
+                                    {$t('No results found')}
+                                  </p>
                                   <p className="text-sm text-foreground-light">
-                                    Your search for "{search}" did not return any results
+                                    {$t('Your search for "')}
+                                    {search}
+                                    {$t('" did not return any results')}
                                   </p>
                                 </TableCell>
                               </TableRow>
@@ -234,14 +246,14 @@ const EdgeFunctionsPage: NextPageWithLayout = () => {
 EdgeFunctionsPage.getLayout = (page: React.ReactElement) => {
   return (
     <DefaultLayout>
-      <EdgeFunctionsLayout title="Edge Functions">
+      <EdgeFunctionsLayout title={$t('Edge Functions')}>
         <div className="w-full min-h-full flex flex-col items-stretch">
           <PageHeader size="large">
             <PageHeaderMeta>
               <PageHeaderSummary>
-                <PageHeaderTitle>Edge Functions</PageHeaderTitle>
+                <PageHeaderTitle>{$t('Edge Functions')}</PageHeaderTitle>
                 <PageHeaderDescription>
-                  Run server-side logic close to your users
+                  {$t('Run server-side logic close to your users')}
                 </PageHeaderDescription>
               </PageHeaderSummary>
               <PageHeaderAside>
@@ -252,7 +264,7 @@ EdgeFunctionsPage.getLayout = (page: React.ReactElement) => {
                     rel="noreferrer"
                     href="https://github.com/supabase/supabase/tree/master/examples/edge-functions/supabase/functions"
                   >
-                    Examples
+                    {$t('Examples')}
                   </a>
                 </Button>
                 {IS_PLATFORM && <DeployEdgeFunctionButton />}

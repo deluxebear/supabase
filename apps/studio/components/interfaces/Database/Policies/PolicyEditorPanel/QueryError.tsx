@@ -12,6 +12,7 @@ import {
 } from 'ui'
 
 import { QueryResponseError } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 
 export const QueryError = ({
   error,
@@ -41,7 +42,7 @@ export const QueryError = ({
           />
         </svg>
         <div className="flex flex-col gap-3">
-          <AlertTitle className="m-0">Error running SQL query</AlertTitle>
+          <AlertTitle className="m-0">{$t('Error running SQL query')}</AlertTitle>
 
           <Collapsible
             defaultOpen

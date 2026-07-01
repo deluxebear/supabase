@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { Button } from 'ui'
 
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const Error404: NextPage = ({}) => {
   const { resolvedTheme } = useTheme()
@@ -52,14 +53,14 @@ const Error404: NextPage = ({}) => {
         }`}
       >
         <div className="flex w-[380px] flex-col items-center justify-center space-y-3 text-center">
-          <h3 className="text-xl">Looking for something? 🔍</h3>
+          <h3 className="text-xl">{$t('Looking for something? 🔍')}</h3>
           <p className="text-foreground-light">
-            We couldn't find the page that you're looking for!
+            {$t("We couldn't find the page that you're looking for!")}
           </p>
         </div>
         <div className="flex items-center space-x-4">
           <Button asChild size="small">
-            <Link href="/projects">Head back</Link>
+            <Link href="/projects">{$t('Head back')}</Link>
           </Button>
         </div>
       </div>

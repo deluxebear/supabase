@@ -8,6 +8,7 @@ import ConfirmDisableReadOnlyModeModal from './DatabaseSettings/ConfirmDisableRe
 import { useResourceWarningsQuery } from '@/data/usage/resource-warnings-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const DatabaseReadOnlyAlert = () => {
   const { ref: projectRef } = useParams()
@@ -27,40 +28,44 @@ export const DatabaseReadOnlyAlert = () => {
         <Alert variant="destructive">
           <AlertTriangle />
           <AlertTitle>
-            Project is in read-only mode and database is no longer accepting write requests
+            {$t('Project is in read-only mode and database is no longer accepting write requests')}
           </AlertTitle>
           <AlertDescription>
-            You have reached 95% of your project's disk space, and read-only mode has been enabled
-            to preserve your database's stability and prevent your project from exceeding its
-            current billing plan. To resolve this, you may:
+            {$t(
+              "You have reached 95% of your project's disk space, and read-only mode has been enabled to preserve your database's stability and prevent your project from exceeding its current billing plan. To resolve this, you may:"
+            )}
             <ul className="list-disc pl-6 mt-1">
               <li>
-                Temporarily disable read-only mode to free up space and reduce your database size
+                {$t(
+                  'Temporarily disable read-only mode to free up space and reduce your database size'
+                )}
               </li>
               {organization?.plan.id === 'free' ? (
                 <li>
                   <Link
                     href={`/org/${organization?.slug}/billing?panel=subscriptionPlan&source=databaseReadOnlyAlertUpgradePlan`}
                   >
-                    <a className="text underline">Upgrade to the Pro Plan</a>
+                    <a className="text underline">{$t('Upgrade to the Pro Plan')}</a>
                   </Link>{' '}
-                  to increase your database size limit to 8GB.
+                  {$t('to increase your database size limit to 8GB.')}
                 </li>
               ) : organization?.plan.id === 'pro' && organization?.usage_billing_enabled ? (
                 <li>
                   <Link
                     href={`/org/${organization?.slug}/billing?panel=subscriptionPlan&source=databaseReadOnlyAlertSpendCap`}
                   >
-                    <a className="text-foreground underline">Disable your Spend Cap</a>
+                    <a className="text-foreground underline">{$t('Disable your Spend Cap')}</a>
                   </Link>{' '}
-                  to allow your project to auto-scale and expand beyond the 8GB database size limit
+                  {$t(
+                    'to allow your project to auto-scale and expand beyond the 8GB database size limit'
+                  )}
                 </li>
               ) : null}
             </ul>
           </AlertDescription>
           <div className="mt-4 flex items-center space-x-2">
             <Button variant="default" onClick={() => setShowConfirmationModal(true)}>
-              Disable read-only mode
+              {$t('Disable read-only mode')}
             </Button>
             <Button asChild variant="default" icon={<ExternalLink />}>
               <a
@@ -68,7 +73,7 @@ export const DatabaseReadOnlyAlert = () => {
                 target="_blank"
                 rel="noreferrer"
               >
-                Learn more
+                {$t('Learn more')}
               </a>
             </Button>
           </div>

@@ -4,6 +4,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { SingleValueFieldArray } from 'ui-patterns/form/SingleValueFieldArray/SingleValueFieldArray'
 
 import type { SSOConfigFormSchema } from './SSOConfig'
+import { t as $t } from '@/lib/i18n'
 
 type ProviderAttribute = 'emailMapping' | 'userNameMapping' | 'firstNameMapping' | 'lastNameMapping'
 
@@ -105,11 +106,13 @@ export const AttributeMapping = ({
 
   return (
     <FormItemLayout
-      label="Attribute mapping"
+      label={$t('Attribute mapping')}
       layout="flex-row-reverse"
       description={
         <div className="flex flex-col gap-2">
-          <p>Map SSO attributes to user fields. Presets for supported identity providers:</p>
+          <p>
+            {$t('Map SSO attributes to user fields. Presets for supported identity providers:')}
+          </p>
           <div className="flex flex-wrap items-center gap-2">
             {PROVIDER_PRESETS.map((preset) => (
               <Button key={preset.name} variant="outline" onClick={() => applyPreset(preset)}>
@@ -163,7 +166,7 @@ const MappingFieldArray = ({
     <div className="w-full min-w-0 space-y-1">
       <div className="flex items-center justify-between gap-2">
         <span className="text-foreground-light">{label}</span>
-        {!required ? <span className="text-foreground-muted">Optional</span> : null}
+        {!required ? <span className="text-foreground-muted">{$t('Optional')}</span> : null}
       </div>
       <SingleValueFieldArray
         control={form.control}

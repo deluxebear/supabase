@@ -19,6 +19,7 @@ import { Admonition } from 'ui-patterns/admonition'
 import { DocsButton } from './DocsButton'
 import { InlineLinkClassName } from './InlineLink'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { ResponseError } from '@/types'
 
 interface HighQueryCostErrorProps {
@@ -35,8 +36,10 @@ export const HighCostError = ({
   return (
     <Admonition
       type="default"
-      title="Data not loaded to protect database performance"
-      description="The query to retrieve the data was not run as it could place heavy load on the database and impact performance"
+      title={$t('Data not loaded to protect database performance')}
+      description={$t(
+        'The query to retrieve the data was not run as it could place heavy load on the database and impact performance'
+      )}
     >
       <div className="mt-2 flex items-center gap-x-2 items-center">
         {!!onSelectLoadData && (
@@ -54,34 +57,41 @@ const HighQueryCostDialog = ({ error, suggestions = [] }: HighQueryCostErrorProp
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">Learn more</Button>
+        <Button variant="outline">{$t('Learn more')}</Button>
       </DialogTrigger>
       <DialogContent onOpenAutoFocus={(event) => event.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Estimated query cost exceeds safety thresholds</DialogTitle>
+          <DialogTitle>{$t('Estimated query cost exceeds safety thresholds')}</DialogTitle>
           <DialogDescription>
-            Preventive measure to mitigate impacting the database
+            {$t('Preventive measure to mitigate impacting the database')}
           </DialogDescription>
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection className="flex flex-col gap-y-2 text-sm">
           <p>
-            The dashboard runs optimized SQL queries on your project’s database to load data for
-            this interface.
+            {$t(
+              'The dashboard runs optimized SQL queries on your project’s database to load data for this interface.'
+            )}
           </p>
           <p>
-            However, the query was skipped as its{' '}
+            {$t('However, the query was skipped as its')}{' '}
             <Tooltip>
-              <TooltipTrigger className={InlineLinkClassName}>estimated cost</TooltipTrigger>
+              <TooltipTrigger className={InlineLinkClassName}>
+                {$t('estimated cost')}
+              </TooltipTrigger>
               <TooltipContent side="bottom" className="flex flex-col gap-y-1">
-                <p>Estimated cost: {metadata?.cost.toLocaleString()}</p>
+                <p>
+                  {$t('Estimated cost:')} {metadata?.cost.toLocaleString()}
+                </p>
                 <p className="text-foreground-light">
-                  Determined via the <code className="text-code-inline">EXPLAIN</code> command
+                  {$t('Determined via the')} <code className="text-code-inline">EXPLAIN</code>{' '}
+                  command
                 </p>
               </TooltipContent>
             </Tooltip>{' '}
-            is high and could place significant load on the database with high disk I/O or CPU
-            usage.
+            {$t(
+              'is high and could place significant load on the database with high disk I/O or CPU usage.'
+            )}
           </p>
         </DialogSection>
 
@@ -90,12 +100,12 @@ const HighQueryCostDialog = ({ error, suggestions = [] }: HighQueryCostErrorProp
             <DialogSectionSeparator />
             <DialogSection className="flex flex-col gap-y-4 text-sm">
               <p className="font-mono text-foreground-lighter uppercase tracking-tight text-sm">
-                Suggested steps
+                {$t('Suggested steps')}
               </p>
 
               {suggestions.length > 0 && (
                 <div className="flex flex-col gap-y-1">
-                  <p>You may check the following to lower the cost of the query</p>
+                  <p>{$t('You may check the following to lower the cost of the query')}</p>
                   <ul className="list-disc pl-6">
                     {suggestions.map((x) => (
                       <li key={x}>{x}</li>
@@ -113,7 +123,7 @@ const HighQueryCostDialog = ({ error, suggestions = [] }: HighQueryCostErrorProp
           />
           <DialogClose asChild>
             <Button variant="default" className="opacity-100">
-              Understood
+              {$t('Understood')}
             </Button>
           </DialogClose>
         </DialogFooter>
@@ -134,46 +144,53 @@ const LoadDataWarningDialog = ({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="default">Load data</Button>
+        <Button variant="default">{$t('Load data')}</Button>
       </DialogTrigger>
       <DialogContent onOpenAutoFocus={(event) => event.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Confirm to proceed loading data</DialogTitle>
+          <DialogTitle>{$t('Confirm to proceed loading data')}</DialogTitle>
           <DialogDescription>
-            Preventive measure to mitigate impacting the database
+            {$t('Preventive measure to mitigate impacting the database')}
           </DialogDescription>
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection className="flex flex-col gap-y-2 text-sm">
           <p>
-            The query to load your table's data was initially skipped as its{' '}
+            {$t("The query to load your table's data was initially skipped as its")}{' '}
             <Tooltip>
-              <TooltipTrigger className={InlineLinkClassName}>estimated cost</TooltipTrigger>
+              <TooltipTrigger className={InlineLinkClassName}>
+                {$t('estimated cost')}
+              </TooltipTrigger>
               <TooltipContent side="bottom" className="flex flex-col gap-y-1">
-                <p>Estimated cost: {metadata?.cost.toLocaleString()}</p>
+                <p>
+                  {$t('Estimated cost:')} {metadata?.cost.toLocaleString()}
+                </p>
                 <p className="text-foreground-light">
-                  Determined via the <code className="text-code-inline">EXPLAIN</code> command
+                  {$t('Determined via the')} <code className="text-code-inline">EXPLAIN</code>{' '}
+                  command
                 </p>
               </TooltipContent>
             </Tooltip>{' '}
-            is high and could place significant load on the database with high disk I/O or CPU
-            usage.
+            {$t(
+              'is high and could place significant load on the database with high disk I/O or CPU usage.'
+            )}
           </p>
 
           <p>
-            You may proceed to run the query, and we'll suppress this warning for this table for the
-            rest of this browser session.
+            {$t(
+              "You may proceed to run the query, and we'll suppress this warning for this table for the rest of this browser session."
+            )}
           </p>
         </DialogSection>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="default" className="opacity-100">
-              Cancel
+              {$t('Cancel')}
             </Button>
           </DialogClose>
           <DialogClose asChild>
             <Button variant="warning" onClick={() => onSelectLoadData()}>
-              I understand, proceed
+              {$t('I understand, proceed')}
             </Button>
           </DialogClose>
         </DialogFooter>

@@ -11,6 +11,7 @@ import { CreatedSecret, useClientSecretsQuery } from '@/data/oauth-secrets/clien
 import { OAuthApp } from '@/data/oauth/oauth-apps-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface Props {
   selectedApp?: OAuthApp
@@ -40,9 +41,9 @@ export const OAuthSecrets = ({ selectedApp }: Props) => {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
-          <span className="text-sm text-foreground">Client secrets</span>
+          <span className="text-sm text-foreground">{$t('Client secrets')}</span>
           <span className="text-sm text-foreground-light">
-            For handling callbacks in the OAuth 2.0 flow. Learn more{' '}
+            {$t('For handling callbacks in the OAuth 2.0 flow. Learn more')}{' '}
             <InlineLink
               href={`${DOCS_URL}/guides/integrations/build-a-supabase-integration#handling-the-callback`}
             >
@@ -65,7 +66,7 @@ export const OAuthSecrets = ({ selectedApp }: Props) => {
               },
             }}
           >
-            Generate new secret
+            {$t('Generate new secret')}
           </ButtonTooltip>
         )}
       </div>
@@ -74,7 +75,7 @@ export const OAuthSecrets = ({ selectedApp }: Props) => {
         <Alert variant="default">
           <InfoIcon />
           <AlertTitle>
-            Make sure to copy your new client secret now. You won't be able to see it again.
+            {$t("Make sure to copy your new client secret now. You won't be able to see it again.")}
           </AlertTitle>
         </Alert>
       )}

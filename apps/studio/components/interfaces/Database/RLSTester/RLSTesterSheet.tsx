@@ -43,6 +43,7 @@ import type { Policy } from '@/components/interfaces/Database/Policies/PolicyTab
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
 import { FeaturePreviewBadge } from '@/components/ui/FeaturePreviewBadge'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { PostgresSandboxProvider } from '@/state/postgres-sandbox/sandbox'
@@ -155,18 +156,18 @@ const RLSTesterSheetContents = ({ handleSelectEditPolicy }: RLSTesterSheetProps)
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="default" icon={<Code />}>
-          Test
+          {$t('Test')}
         </Button>
       </SheetTrigger>
 
       <SheetContent className="w-[600px]! flex flex-col gap-y-0">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-x-4">
-            <span>What data can my users see?</span>
+            <span>{$t('What data can my users see?')}</span>
             <FeaturePreviewBadge featureKey={LOCAL_STORAGE_KEYS.UI_PREVIEW_RLS_TESTER} />
           </SheetTitle>
           <SheetDescription>
-            See what data a user is allowed to read based on your RLS policies
+            {$t('See what data a user is allowed to read based on your RLS policies')}
           </SheetDescription>
         </SheetHeader>
 
@@ -182,7 +183,7 @@ const RLSTesterSheetContents = ({ handleSelectEditPolicy }: RLSTesterSheetProps)
             <DialogSectionSeparator />
 
             <div className="flex items-center justify-between px-5 py-2">
-              <p className="text-sm">Query</p>
+              <p className="text-sm">{$t('Query')}</p>
               <div className="flex items-center gap-x-2">
                 <Select
                   value={format}
@@ -200,9 +201,9 @@ const RLSTesterSheetContents = ({ handleSelectEditPolicy }: RLSTesterSheetProps)
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectLabel>Query format</SelectLabel>
+                      <SelectLabel>{$t('Query format')}</SelectLabel>
                       <SelectItem value="sql">SQL</SelectItem>
-                      <SelectItem value="lib">Client library</SelectItem>
+                      <SelectItem value="lib">{$t('Client library')}</SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -244,7 +245,7 @@ const RLSTesterSheetContents = ({ handleSelectEditPolicy }: RLSTesterSheetProps)
             <div className="p-4">
               <Admonition
                 type="warning"
-                title="Error parsing query"
+                title={$t('Error parsing query')}
                 description={parseQueryError.message}
               />
             </div>
@@ -252,7 +253,7 @@ const RLSTesterSheetContents = ({ handleSelectEditPolicy }: RLSTesterSheetProps)
             <div className="p-4">
               <Admonition
                 type="warning"
-                title="Error parsing client code"
+                title={$t('Error parsing client code')}
                 description={parseClientCodeError.message}
               />
             </div>
@@ -261,12 +262,12 @@ const RLSTesterSheetContents = ({ handleSelectEditPolicy }: RLSTesterSheetProps)
               <div className="p-4">
                 <Admonition
                   type="warning"
-                  title="Error running SQL query"
+                  title={$t('Error running SQL query')}
                   description={executeSqlError.message}
                   actions={[
                     <AiAssistantDropdown
                       key="ai-assistant"
-                      label="Ask Assistant"
+                      label={$t('Ask Assistant')}
                       telemetrySource="rls_tester"
                       buildPrompt={() => getDebugPrompt({ includeSql: true })}
                       onOpenAssistant={onDebugWithAssistant}
@@ -296,12 +297,12 @@ const RLSTesterSheetContents = ({ handleSelectEditPolicy }: RLSTesterSheetProps)
               rel="noopener noreferrer"
               href="https://github.com/orgs/supabase/discussions/45233"
             >
-              Give feedback
+              {$t('Give feedback')}
             </a>
           </Button>
           <div className="flex items-center gap-x-2">
             <Button variant="default" disabled={isLoading} onClick={() => setOpen(false)}>
-              Cancel
+              {$t('Cancel')}
             </Button>
             <Button
               variant="primary"
@@ -309,7 +310,7 @@ const RLSTesterSheetContents = ({ handleSelectEditPolicy }: RLSTesterSheetProps)
               disabled={format === 'lib' && !inferredSQL}
               onClick={onRunQuery}
             >
-              Run query
+              {$t('Run query')}
             </Button>
           </div>
         </SheetFooter>

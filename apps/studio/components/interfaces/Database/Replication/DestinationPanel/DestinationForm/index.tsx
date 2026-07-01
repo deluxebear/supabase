@@ -41,6 +41,7 @@ import { useReplicationPipelineByIdQuery } from '@/data/replication/pipeline-by-
 import { useReplicationPublicationsQuery } from '@/data/replication/publications-query'
 import { useReplicationSourcesQuery } from '@/data/replication/sources-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 const formId = 'destination-editor'
 
@@ -303,7 +304,7 @@ export const DestinationForm = ({
           <Form {...form}>
             <form id={formId} onSubmit={form.handleSubmit(onSubmit)}>
               <div className="p-5 flex flex-col gap-y-6">
-                <p className="text-sm font-medium text-foreground">Destination details</p>
+                <p className="text-sm font-medium text-foreground">{$t('Destination details')}</p>
 
                 <div className="space-y-4">
                   <DestinationNameInput form={form} />
@@ -380,7 +381,7 @@ export const DestinationForm = ({
         </AnimatePresence>
         <div className="flex items-center gap-x-2">
           <Button disabled={isSaving} variant="default" onClick={onClose}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button disabled={isSubmitDisabled} loading={isSaving} form={formId} type="submit">
             {getSubmitButtonText()}

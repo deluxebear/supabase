@@ -31,6 +31,7 @@ import {
 import Table from '@/components/to-be-cleaned/Table'
 import { useOtelLogKeysQuery } from '@/data/logs/otel-log-keys-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export interface LogsExplorerHeaderProps {
   subtitle?: string
@@ -58,7 +59,7 @@ const LogsExplorerHeader = ({ subtitle }: LogsExplorerHeaderProps) => {
             <List size={14} strokeWidth={3} />
           </div>
 
-          <h1>Logs Explorer</h1>
+          <h1>{$t('Logs Explorer')}</h1>
         </div>
         {subtitle && <span className="text-2xl text-foreground-light">{subtitle}</span>}
       </div>
@@ -69,7 +70,7 @@ const LogsExplorerHeader = ({ subtitle }: LogsExplorerHeaderProps) => {
           size="large"
           header={
             <div className="flex flex-row justify-between items-center">
-              <h3>Field Reference</h3>
+              <h3>{$t('Field Reference')}</h3>
               <Button
                 variant="text"
                 className="px-1"
@@ -88,7 +89,7 @@ const LogsExplorerHeader = ({ subtitle }: LogsExplorerHeaderProps) => {
               onClick={() => setShowReference(true)}
               icon={<BookOpen strokeWidth={1.5} />}
             >
-              <span>Field Reference</span>
+              <span>{$t('Field Reference')}</span>
             </Button>
           }
         >
@@ -96,23 +97,25 @@ const LogsExplorerHeader = ({ subtitle }: LogsExplorerHeaderProps) => {
             <div className="pt-4 pb-2 space-y-1">
               {useOtel ? (
                 <p className="text-sm">
-                  The following table shows the fields available on each source. Nested fields live
-                  in the <code className="text-xs">log_attributes</code> map and are read with{' '}
-                  <code className="text-xs">log_attributes['key']</code> — no unnesting joins
-                  needed.
+                  {$t(
+                    'The following table shows the fields available on each source. Nested fields live in the'
+                  )}{' '}
+                  <code className="text-xs">log_attributes</code> {$t('map and are read with')}{' '}
+                  <code className="text-xs">log_attributes['key']</code>{' '}
+                  {$t('— no unnesting joins needed.')}
                 </p>
               ) : (
                 <p className="text-sm">
-                  The following table shows all the available paths that can be queried from each
-                  respective source. Do note that to access nested keys, you would need to perform
-                  the necessary{' '}
+                  {$t(
+                    'The following table shows all the available paths that can be queried from each respective source. Do note that to access nested keys, you would need to perform the necessary'
+                  )}{' '}
                   <Link
                     href={`${DOCS_URL}/guides/platform/logs#unnesting-arrays`}
                     target="_blank"
                     rel="noreferrer"
                     className="text-brand"
                   >
-                    unnesting joins
+                    {$t('unnesting joins')}
                     <ExternalLink
                       size={14}
                       className="ml-1 inline translate-y-[-2px]"
@@ -140,9 +143,9 @@ const LogsExplorerHeader = ({ subtitle }: LogsExplorerHeaderProps) => {
               </PopoverTrigger>
               <PopoverContent className="p-0" sameWidthAsTrigger>
                 <Command>
-                  <CommandInput placeholder="Search source..." />
+                  <CommandInput placeholder={$t('Search source...')} />
                   <CommandList>
-                    <CommandEmpty>No source found.</CommandEmpty>
+                    <CommandEmpty>{$t('No source found.')}</CommandEmpty>
                     <CommandGroup>
                       {schemas.map((schema) => (
                         <CommandItem
@@ -170,15 +173,15 @@ const LogsExplorerHeader = ({ subtitle }: LogsExplorerHeaderProps) => {
               </PopoverContent>
             </Popover>
             {useOtel && isLoadingKeys ? (
-              <p className="text-sm text-foreground-light py-2">Loading fields…</p>
+              <p className="text-sm text-foreground-light py-2">{$t('Loading fields…')}</p>
             ) : (
               <Table
                 head={[
                   <Table.th className="text-xs p-2!" key="path">
-                    Path
+                    {$t('Path')}
                   </Table.th>,
                   <Table.th key="type" className="text-xs p-2!">
-                    Type
+                    {$t('Type')}
                   </Table.th>,
                 ]}
                 body={(() => {
@@ -226,7 +229,7 @@ const Field = ({
               <Check size={14} strokeWidth={3} className="text-brand" />
             </TooltipTrigger>
             <TooltipContent side="bottom" className="font-sans">
-              Copied
+              {$t('Copied')}
             </TooltipContent>
           </Tooltip>
         ) : (
@@ -235,7 +238,7 @@ const Field = ({
               <Copy size={14} />
             </TooltipTrigger>
             <TooltipContent side="bottom" className="font-sans">
-              Copy value
+              {$t('Copy value')}
             </TooltipContent>
           </Tooltip>
         )}

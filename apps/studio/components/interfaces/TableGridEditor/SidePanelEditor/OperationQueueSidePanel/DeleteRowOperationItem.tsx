@@ -6,6 +6,7 @@ import { formatOperationItemValue } from './OperationQueueSidePanel.utils'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { tableRowKeys } from '@/data/table-rows/keys'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
 import { DeleteRowPayload } from '@/state/table-editor-operation-queue.types'
 
@@ -54,7 +55,7 @@ export const DeleteRowOperationItem = ({
               {fullTableName}
             </code>
             <div className="text-xs text-foreground mt-1 ml-0.5">
-              <span>Delete row</span>
+              <span>{$t('Delete row')}</span>
               <span className="text-foreground-muted mx-1.5">·</span>
               <span>where {whereClause}</span>
             </div>
@@ -62,7 +63,7 @@ export const DeleteRowOperationItem = ({
         </div>
         <ButtonTooltip
           variant="text"
-          aria-label="Discard change"
+          aria-label={$t('Discard change')}
           className="w-7"
           icon={<Undo2 />}
           onClick={handleDelete}
@@ -77,7 +78,7 @@ export const DeleteRowOperationItem = ({
       </CardHeader>
 
       <CardContent className="py-2 px-3 font-mono text-xs bg-destructive-100/30">
-        <div className="text-destructive py-0.5">Row will be deleted</div>
+        <div className="text-destructive py-0.5">{$t('Row will be deleted')}</div>
       </CardContent>
     </Card>
   )

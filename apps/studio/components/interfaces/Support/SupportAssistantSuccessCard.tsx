@@ -13,6 +13,7 @@ import {
 
 import type { SubmittedSupportRequest } from './SupportForm.state'
 import { NO_PROJECT_MARKER } from './SupportForm.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface SupportAssistantSuccessCardProps {
   request: SubmittedSupportRequest
@@ -44,7 +45,7 @@ function SupportAssistantSuccessCardLoadingShell({ className }: { className?: st
     <Card
       role="button"
       tabIndex={0}
-      aria-label="Open assistant response"
+      aria-label={$t('Open assistant response')}
       className={cn(
         'group cursor-pointer bg-muted/50 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
         className
@@ -56,8 +57,8 @@ function SupportAssistantSuccessCardLoadingShell({ className }: { className?: st
             <AiIconAnimation size={14} />
           </div>
           <div className="min-w-0 space-y-1">
-            <CardTitle>While you wait</CardTitle>
-            <CardDescription>Assistant may be able to help</CardDescription>
+            <CardTitle>{$t('While you wait')}</CardTitle>
+            <CardDescription>{$t('Assistant may be able to help')}</CardDescription>
           </div>
         </div>
         <ArrowUpRight

@@ -3,6 +3,7 @@ import { Admonition } from 'ui-patterns/admonition'
 
 import { useOrgProjectsInfiniteQuery } from '@/data/projects/org-projects-infinite-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 const EXCLUDED_PLANS = ['free', 'platform', 'enterprise']
 
@@ -24,9 +25,12 @@ export const NoProjectsOnPaidOrgInfo = () => {
       title={`Your organization is on the ${organization.plan.name} plan with no projects running`}
       description={
         <div className="max-w-full! prose text-sm">
-          The monthly fees for the paid plan still apply. To cancel your subscription, head over to
-          your{' '}
-          <Link href={`/org/${organization?.slug}/billing`}>organization billing settings</Link>
+          {$t(
+            'The monthly fees for the paid plan still apply. To cancel your subscription, head over to your'
+          )}{' '}
+          <Link href={`/org/${organization?.slug}/billing`}>
+            {$t('organization billing settings')}
+          </Link>
         </div>
       }
     />

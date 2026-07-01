@@ -5,6 +5,7 @@ import { MissingExtensionAlert } from './MissingExtensionAlert'
 import { useIntegrationDetail } from '@/components/interfaces/Integrations/Landing/useIntegrationDetail'
 import { useDatabaseExtensionsQuery } from '@/data/database-extensions/database-extensions-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const RequiredExtensionsSection = ({
   hide = false,
@@ -36,7 +37,7 @@ export const RequiredExtensionsSection = ({
     <>
       {!hideSeparator && <Separator />}
       <div className={cn('flex flex-col gap-y-4', className)}>
-        <h4>Required extensions</h4>
+        <h4>{$t('Required extensions')}</h4>
         <Card>
           <CardContent className="p-0">
             <ul className="text-foreground-light text-sm">
@@ -58,14 +59,14 @@ export const RequiredExtensionsSection = ({
                     <div className="shrink-0">
                       {extension ? (
                         isInstalled ? (
-                          <Badge variant="secondary">Installed</Badge>
+                          <Badge variant="secondary">{$t('Installed')}</Badge>
                         ) : isMarketplaceEnabled ? (
-                          <Badge variant="warning">Required</Badge>
+                          <Badge variant="warning">{$t('Required')}</Badge>
                         ) : (
                           <MissingExtensionAlert extension={extension} />
                         )
                       ) : (
-                        <span className="text-foreground-muted">Unavailable</span>
+                        <span className="text-foreground-muted">{$t('Unavailable')}</span>
                       )}
                     </div>
                   </li>

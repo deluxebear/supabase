@@ -5,6 +5,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { CreateCronJobForm } from './CreateCronJobSheet/CreateCronJobSheet.constants'
 import FunctionSelector from '@/components/ui/FunctionSelector'
 import { SchemaSelector } from '@/components/ui/SchemaSelector'
+import { t as $t } from '@/lib/i18n'
 
 interface SqlFunctionSectionProps {
   form: UseFormReturn<CreateCronJobForm>
@@ -19,7 +20,7 @@ export const SqlFunctionSection = ({ form }: SqlFunctionSectionProps) => {
         control={form.control}
         name="values.schema"
         render={({ field }) => (
-          <FormItemLayout label="Schema" className="gap-1">
+          <FormItemLayout label={$t('Schema')} className="gap-1">
             <SchemaSelector
               size="small"
               className="w-56 2xl:w-full"
@@ -39,7 +40,7 @@ export const SqlFunctionSection = ({ form }: SqlFunctionSectionProps) => {
         control={form.control}
         name="values.functionName"
         render={({ field }) => (
-          <FormItemLayout label="Function name" className="gap-1">
+          <FormItemLayout label={$t('Function name')} className="gap-1">
             <FunctionSelector
               size="small"
               className="w-56 2xl:w-full"

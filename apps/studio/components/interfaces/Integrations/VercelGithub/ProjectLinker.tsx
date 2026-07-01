@@ -31,6 +31,7 @@ import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { BASE_PATH } from '@/lib/constants'
 import { openInstallGitHubIntegrationWindow } from '@/lib/github'
+import { t as $t } from '@/lib/i18n'
 import { EMPTY_ARR } from '@/lib/void'
 
 export interface Project {
@@ -179,24 +180,30 @@ const ProjectLinker = ({
 
         {loadingForeignProjects ? (
           <div className="w-1/2 mx-auto space-y-2 py-4">
-            <p className="text-sm text-foreground text-center">Loading projects</p>
+            <p className="text-sm text-foreground text-center">{$t('Loading projects')}</p>
             <ShimmerLine active />
           </div>
         ) : showNoEntitiesState && (noSupabaseProjects || noForeignProjects) ? (
           <div className="text-center">
-            <h5 className="text-foreground">No {missingEntity} Projects found</h5>
+            <h5 className="text-foreground">
+              {$t('No')} {missingEntity} {$t('Projects found')}
+            </h5>
             <p className="text-foreground-light text-sm">
-              You will need to create a {missingEntity} Project to link to a {oppositeMissingEntity}{' '}
-              Project.
+              {$t('You will need to create a')} {missingEntity} {$t('Project to link to a')}{' '}
+              {oppositeMissingEntity} {$t('Project.')}
               <br />
-              You can skip this and create a Project Connection later.
+              {$t('You can skip this and create a Project Connection later.')}
             </p>
           </div>
         ) : (
           <div className="flex justify-center gap-0 w-full relative">
             <Panel>
               <div className="bg-white shadow-sm border rounded-sm p-1 w-12 h-12 flex justify-center items-center">
-                <img src={`${BASE_PATH}/img/supabase-logo.svg`} alt="Supabase" className="w-6" />
+                <img
+                  src={`${BASE_PATH}/img/supabase-logo.svg`}
+                  alt={$t('Supabase')}
+                  className="w-6"
+                />
               </div>
 
               <OrganizationProjectSelector
@@ -216,13 +223,13 @@ const ProjectLinker = ({
                         <div className="bg-white shadow-sm border rounded-sm p-1 w-6 h-6 flex justify-center items-center">
                           <img
                             src={`${BASE_PATH}/img/supabase-logo.svg`}
-                            alt="Supabase"
+                            alt={$t('Supabase')}
                             className="w-4"
                           />
                         </div>
                         <p>{project.name}</p>
-                        {project.status === 'INACTIVE' && <Badge>Paused</Badge>}
-                        {project.status === 'GOING_DOWN' && <Badge>Pausing</Badge>}
+                        {project.status === 'INACTIVE' && <Badge>{$t('Paused')}</Badge>}
+                        {project.status === 'GOING_DOWN' && <Badge>{$t('Pausing')}</Badge>}
                       </div>
                       {project.ref === supabaseProjectRef && <Check size={16} />}
                     </div>
@@ -248,7 +255,7 @@ const ProjectLinker = ({
                         <div className="bg-white shadow-sm border rounded-sm p-1 w-6 h-6 flex justify-center items-center">
                           <img
                             src={`${BASE_PATH}/img/supabase-logo.svg`}
-                            alt="Supabase"
+                            alt={$t('Supabase')}
                             className="w-4"
                           />
                         </div>
@@ -279,7 +286,7 @@ const ProjectLinker = ({
                             className="w-full flex items-center gap-2"
                           >
                             <Plus size={14} strokeWidth={1.5} />
-                            <p>Create a new project</p>
+                            <p>{$t('Create a new project')}</p>
                           </Link>
                         </CommandItem>
                       </CommandGroup>
@@ -325,9 +332,9 @@ const ProjectLinker = ({
                 </PopoverTrigger>
                 <PopoverContent className="p-0" side="bottom" align="center" sameWidthAsTrigger>
                   <Command>
-                    <CommandInput placeholder="Search for a project" />
+                    <CommandInput placeholder={$t('Search for a project')} />
                     <CommandList className="max-h-[170px]!">
-                      <CommandEmpty>No results found.</CommandEmpty>
+                      <CommandEmpty>{$t('No results found.')}</CommandEmpty>
                       <CommandGroup>
                         {foreignProjects.map((project, i) => {
                           return (
@@ -348,7 +355,7 @@ const ProjectLinker = ({
                           )
                         })}
                         {foreignProjects.length === 0 && (
-                          <CommandEmpty>No results found.</CommandEmpty>
+                          <CommandEmpty>{$t('No results found.')}</CommandEmpty>
                         )}
                       </CommandGroup>
                       {mode === 'GitHub' && (
@@ -360,7 +367,8 @@ const ProjectLinker = ({
                               onSelect={() => openInstallGitHubIntegrationWindow('install')}
                             >
                               <PlusIcon size={16} />
-                              Add GitHub Repositories
+
+                              {$t('Add GitHub Repositories')}
                             </CommandItem>
                           </CommandGroup>
                         </>
@@ -383,7 +391,7 @@ const ProjectLinker = ({
               onSkip()
             }}
           >
-            Skip
+            {$t('Skip')}
           </Button>
         )}
         <Button
@@ -401,7 +409,7 @@ const ProjectLinker = ({
             !selectedForeignProject
           }
         >
-          Connect project
+          {$t('Connect project')}
         </Button>
       </div>
     </div>

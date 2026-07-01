@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { type MouseEventHandler } from 'react'
 import { Button, cn, DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 type Props = {
   label: string
   icon?: React.ReactNode
@@ -40,11 +42,11 @@ export function LogsSidebarItem({ label, icon, dropdownItems, href, isActive, on
           >
             <Button
               variant="text"
-              title="Actions"
+              title={$t('Actions')}
               className="space-x-0 h-7 px-1.5 opacity-0 group-hover:opacity-100 bg-transparent! data-open:opacity-100"
               icon={<MoreHorizontal size={14} />}
             >
-              <div className="sr-only">Actions</div>
+              <div className="sr-only">{$t('Actions')}</div>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-48" align="end">

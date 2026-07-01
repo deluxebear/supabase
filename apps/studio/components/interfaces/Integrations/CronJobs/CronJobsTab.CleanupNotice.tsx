@@ -29,6 +29,7 @@ import {
 } from './CronJobsTab.useCleanupActions'
 import { InlineLinkClassName } from '@/components/ui/InlineLink'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface CronJobRunDetailsOverflowNoticeV2Props {
   queryCost?: number
@@ -43,7 +44,7 @@ export const CronJobRunDetailsOverflowNotice = (props: CronJobRunDetailsOverflow
       layout="horizontal"
       actions={<CronJobRunDetailsOverflowDialog {...props} />}
     >
-      <p className="text-xs">Last run for each cron job omitted due to high query cost</p>
+      <p className="text-xs">{$t('Last run for each cron job omitted due to high query cost')}</p>
     </Admonition>
   )
 }
@@ -77,36 +78,43 @@ const CronJobRunDetailsOverflowDialog = ({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="default">Learn more</Button>
+        <Button variant="default">{$t('Learn more')}</Button>
       </DialogTrigger>
       <DialogContent
         aria-describedby={undefined}
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>Last run for cron jobs omitted for overview</DialogTitle>
+          <DialogTitle>{$t('Last run for cron jobs omitted for overview')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection className="flex flex-col gap-y-2">
           <p className="text-sm">
-            The dashboard fetches data for the cron jobs overview by running a join between the{' '}
+            {$t(
+              'The dashboard fetches data for the cron jobs overview by running a join between the'
+            )}{' '}
             <code className="text-code-inline">cron.job</code> and{' '}
-            <code className="text-code-inline break-keep!">cron.job_run_details</code> tables to
-            show each cron job's latest run.
+            <code className="text-code-inline break-keep!">cron.job_run_details</code>{' '}
+            {$t("tables to show each cron job's latest run.")}
           </p>
 
           <p className="text-sm">
-            However, the join was skipped as the{' '}
+            {$t('However, the join was skipped as the')}{' '}
             <Tooltip>
-              <TooltipTrigger className={InlineLinkClassName}>estimated query cost</TooltipTrigger>
+              <TooltipTrigger className={InlineLinkClassName}>
+                {$t('estimated query cost')}
+              </TooltipTrigger>
               <TooltipContent side="bottom" className="flex flex-col gap-y-1">
-                <p>Estimated cost: {queryCost?.toLocaleString()}</p>
+                <p>
+                  {$t('Estimated cost:')} {queryCost?.toLocaleString()}
+                </p>
                 <p className="text-foreground-light">
-                  Determined via the <code className="text-code-inline">EXPLAIN</code> command
+                  {$t('Determined via the')} <code className="text-code-inline">EXPLAIN</code>{' '}
+                  command
                 </p>
               </TooltipContent>
             </Tooltip>{' '}
-            exceeds safety thresholds, likely due to the size of{' '}
+            {$t('exceeds safety thresholds, likely due to the size of')}{' '}
             <code className="text-code-inline break-keep!">cron.job_run_details</code> table.
           </p>
         </DialogSection>
@@ -115,17 +123,19 @@ const CronJobRunDetailsOverflowDialog = ({
 
         <DialogSection className="flex flex-col gap-y-4">
           <p className="font-mono text-foreground-lighter uppercase tracking-tight text-sm">
-            Suggested steps
+            {$t('Suggested steps')}
           </p>
 
           <p className="text-sm">
-            We recommend removing the old run history now, then scheduling a cron job that keeps
-            trimming the <code className="text-code-inline">cron.job_run_details</code> table
-            automatically. This also prevents unnecessary bloat on the database.
+            {$t(
+              'We recommend removing the old run history now, then scheduling a cron job that keeps trimming the'
+            )}{' '}
+            <code className="text-code-inline">cron.job_run_details</code>{' '}
+            {$t('table automatically. This also prevents unnecessary bloat on the database.')}
           </p>
 
           <div className="flex flex-col gap-y-2 text-sm">
-            <p className="text-foreground">Step 1: Delete older entries</p>
+            <p className="text-foreground">{$t('Step 1: Delete older entries')}</p>
 
             {isDeleting ? (
               <DeletionProgress progress={cleanupState.progress} onCancel={cancelDeletion} />
@@ -145,7 +155,7 @@ const CronJobRunDetailsOverflowDialog = ({
                     onValueChange={setCleanupInterval}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select an interval" />
+                      <SelectValue placeholder={$t('Select an interval')} />
                     </SelectTrigger>
                     <SelectContent>
                       {CLEANUP_INTERVALS.map((option) => (
@@ -161,18 +171,18 @@ const CronJobRunDetailsOverflowDialog = ({
                   disabled={isBusy}
                   onClick={() => runBatchedDeletion(cleanupInterval)}
                 >
-                  Delete rows now
+                  {$t('Delete rows now')}
                 </Button>
               </div>
             )}
           </div>
 
           <div className="flex flex-col gap-y-2 text-sm">
-            <p className="text-foreground">Step 2: Schedule an automated cleanup</p>
+            <p className="text-foreground">{$t('Step 2: Schedule an automated cleanup')}</p>
 
             {!canSchedule ? (
               <p className="text-foreground-lighter text-xs">
-                Complete step 1 to enable scheduling a daily cleanup job.
+                {$t('Complete step 1 to enable scheduling a daily cleanup job.')}
               </p>
             ) : isScheduleSuccess ? (
               <ScheduleSuccess />
@@ -199,7 +209,7 @@ const CronJobRunDetailsOverflowDialog = ({
                     })
                   }}
                 >
-                  Schedule cleanup job
+                  {$t('Schedule cleanup job')}
                 </Button>
               </>
             )}
@@ -230,10 +240,10 @@ const DeletionProgress = ({ progress, onCancel }: DeletionProgressProps) => {
       </div>
       <div className="flex items-center justify-between">
         <span className="text-xs text-foreground-light">
-          Deleted {totalRowsDeleted.toLocaleString()} rows so far...
+          {$t('Deleted')} {totalRowsDeleted.toLocaleString()} {$t('rows so far...')}
         </span>
         <Button variant="outline" size="tiny" onClick={onCancel}>
-          Cancel
+          {$t('Cancel')}
         </Button>
       </div>
     </div>
@@ -247,7 +257,9 @@ interface DeletionSuccessProps {
 const DeletionSuccess = ({ totalRowsDeleted }: DeletionSuccessProps) => (
   <div className="flex items-center gap-2 text-brand">
     <CheckCircle2 size={16} />
-    <span className="text-sm">Successfully deleted {totalRowsDeleted.toLocaleString()} rows.</span>
+    <span className="text-sm">
+      {$t('Successfully deleted')} {totalRowsDeleted.toLocaleString()} rows.
+    </span>
   </div>
 )
 
@@ -260,10 +272,12 @@ const DeletionError = ({ error, onRetry }: DeletionErrorProps) => (
   <div className="space-y-2">
     <div className="flex items-center gap-2 text-destructive">
       <XCircle size={16} />
-      <span className="text-sm">Deletion failed: {error}</span>
+      <span className="text-sm">
+        {$t('Deletion failed:')} {error}
+      </span>
     </div>
     <Button variant="default" size="small" onClick={onRetry}>
-      Retry
+      {$t('Retry')}
     </Button>
   </div>
 )
@@ -272,11 +286,11 @@ const ScheduleSuccess = () => (
   <div className="space-y-2">
     <div className="flex items-center gap-2 text-brand">
       <CheckCircle2 size={16} />
-      <span className="text-sm">Daily cleanup job scheduled successfully.</span>
+      <span className="text-sm">{$t('Daily cleanup job scheduled successfully.')}</span>
     </div>
     <div className="flex items-center gap-2">
       <p className="text-foreground-lighter text-xs">
-        New cleanup job should now be visible in the cron jobs overview.
+        {$t('New cleanup job should now be visible in the cron jobs overview.')}
       </p>
     </div>
   </div>

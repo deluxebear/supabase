@@ -27,6 +27,7 @@ import {
 import { EditorTablePageLink } from '@/data/prefetchers/project.$ref.editor.$id'
 import { useTableRowsQuery } from '@/data/table-rows/table-rows-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface ReferenceRecordPeekProps {
   table: PGTable
@@ -88,7 +89,7 @@ export const ReferenceRecordPeek = ({ table, column, value }: ReferenceRecordPee
                 <TooltipTrigger>
                   <Key size={14} strokeWidth={2} className="text-brand rotate-45" />
                 </TooltipTrigger>
-                <TooltipContent side="bottom">Primary key</TooltipContent>
+                <TooltipContent side="bottom">{$t('Primary key')}</TooltipContent>
               </Tooltip>
             )}
             <span className="text-xs truncate">{column.name}</span>
@@ -116,7 +117,7 @@ export const ReferenceRecordPeek = ({ table, column, value }: ReferenceRecordPee
   return (
     <>
       <p className="px-2 py-2 text-xs text-foreground-light border-b">
-        Referencing record from{' '}
+        {$t('Referencing record from')}{' '}
         <span className="text-foreground">
           {table.schema}.{table.name}
         </span>
@@ -147,10 +148,12 @@ export const ReferenceRecordPeek = ({ table, column, value }: ReferenceRecordPee
               )}
               {isError && (
                 <p className="text-foreground-light">
-                  Failed to find referencing row: {error.message}
+                  {$t('Failed to find referencing row:')} {error.message}
                 </p>
               )}
-              {isSuccess && <p className="text-foreground-light">No results were returned</p>}
+              {isSuccess && (
+                <p className="text-foreground-light">{$t('No results were returned')}</p>
+              )}
             </div>
           ),
         }}
@@ -162,7 +165,7 @@ export const ReferenceRecordPeek = ({ table, column, value }: ReferenceRecordPee
           id={String(table.id)}
           filters={[{ column, operator: '=', value: String(value) }]}
         >
-          <Button variant="default">Open table</Button>
+          <Button variant="default">{$t('Open table')}</Button>
         </EditorTablePageLink>
       </div>
     </>

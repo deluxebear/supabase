@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useState } from 'react'
 import { Badge, cn } from 'ui'
 
 import { LastSignInType, useLastSignIn } from '@/hooks/misc/useLastSignIn'
+import { t as $t } from '@/lib/i18n'
 
 export function LastSignInWrapper({
   children,
@@ -27,7 +28,7 @@ export function LastSignInWrapper({
           variant="success"
           className="absolute -right-4 -top-3 shadow-sm z-10 bg-brand-400 text-foreground pointer-events-none"
         >
-          Last used
+          {$t('Last used')}
         </Badge>
       )}
       <div

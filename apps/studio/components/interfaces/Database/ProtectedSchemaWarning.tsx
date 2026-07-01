@@ -13,18 +13,20 @@ import {
 import { Admonition } from 'ui-patterns/admonition'
 
 import { INTERNAL_SCHEMAS, useIsProtectedSchema } from '@/hooks/useProtectedSchemas'
+import { t as $t } from '@/lib/i18n'
 
 export const ProtectedSchemaDialog = ({ onClose }: { onClose: () => void }) => {
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Schemas managed by Supabase</DialogTitle>
+        <DialogTitle>{$t('Schemas managed by Supabase')}</DialogTitle>
       </DialogHeader>
       <DialogSectionSeparator />
       <DialogSection className="space-y-2 prose">
         <p className="text-sm">
-          The following schemas are managed by Supabase and are currently protected from write
-          access through the dashboard.
+          {$t(
+            'The following schemas are managed by Supabase and are currently protected from write access through the dashboard.'
+          )}
         </p>
         <div className="flex flex-wrap gap-1">
           {INTERNAL_SCHEMAS.map((schema) => (
@@ -34,18 +36,20 @@ export const ProtectedSchemaDialog = ({ onClose }: { onClose: () => void }) => {
           ))}
         </div>
         <p className="text-sm mt-4!">
-          These schemas are critical to the functionality of your Supabase project and hence we
-          highly recommend not altering them.
+          {$t(
+            'These schemas are critical to the functionality of your Supabase project and hence we highly recommend not altering them.'
+          )}
         </p>
         <p className="text-sm">
-          You can, however, still interact with those schemas through the SQL Editor although we
-          advise you only do so if you know what you are doing.
+          {$t(
+            'You can, however, still interact with those schemas through the SQL Editor although we advise you only do so if you know what you are doing.'
+          )}
         </p>
       </DialogSection>
       <DialogFooter>
         <div className="flex items-center justify-end space-x-2">
           <Button variant="default" onClick={onClose}>
-            Understood
+            {$t('Understood')}
           </Button>
         </div>
       </DialogFooter>
@@ -81,18 +85,22 @@ export const ProtectedSchemaWarning = ({
       description={
         reason === 'fdw' && fdwType === 'iceberg' ? (
           <p>
-            The <code className="text-code-inline">{schema}</code> schema is used by Supabase to
-            connect to analytics buckets and is read-only through the dashboard.
+            {$t('The')} <code className="text-code-inline">{schema}</code>{' '}
+            {$t(
+              'schema is used by Supabase to connect to analytics buckets and is read-only through the dashboard.'
+            )}
           </p>
         ) : reason === 'fdw' && fdwType === 's3_vectors' ? (
           <p>
-            The <code className="text-code-inline">{schema}</code> schema is used by Supabase to
-            connect to vector buckets and is read-only through the dashboard.
+            {$t('The')} <code className="text-code-inline">{schema}</code>{' '}
+            {$t(
+              'schema is used by Supabase to connect to vector buckets and is read-only through the dashboard.'
+            )}
           </p>
         ) : (
           <p>
-            The <code className="text-code-inline">{schema}</code> schema is managed by Supabase and
-            is read-only through the dashboard.
+            {$t('The')} <code className="text-code-inline">{schema}</code>{' '}
+            {$t('schema is managed by Supabase and is read-only through the dashboard.')}
           </p>
         )
       }
@@ -101,7 +109,7 @@ export const ProtectedSchemaWarning = ({
           <Dialog open={showModal} onOpenChange={setShowModal}>
             <DialogTrigger asChild>
               <Button variant="default" size="tiny" onClick={() => setShowModal(true)}>
-                Learn more
+                {$t('Learn more')}
               </Button>
             </DialogTrigger>
             <DialogContent>

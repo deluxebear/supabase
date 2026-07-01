@@ -44,6 +44,7 @@ import { DiscardChangesConfirmationDialog } from '@/components/ui-patterns/Dialo
 import { InlineLink } from '@/components/ui/InlineLink'
 import { Shortcut } from '@/components/ui/Shortcut'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
+import { t as $t } from '@/lib/i18n'
 import { httpEndpointUrlSchema } from '@/lib/validation/http-url'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -280,7 +281,7 @@ export const PlatformWebhooksEndpointSheet = ({
                     <FormItemLayout
                       label={
                         <>
-                          Name
+                          {$t('Name')}
                           {/* Technically optional but encourage, so no (optional) label */}
                         </>
                       }
@@ -298,7 +299,7 @@ export const PlatformWebhooksEndpointSheet = ({
                   control={form.control}
                   name="url"
                   render={({ field }) => (
-                    <FormItemLayout label="Endpoint URL" layout="vertical" className="gap-1">
+                    <FormItemLayout label={$t('Endpoint URL')} layout="vertical" className="gap-1">
                       <FormControl>
                         <Input {...field} placeholder="https://api.example.com/webhooks/supabase" />
                       </FormControl>
@@ -313,7 +314,8 @@ export const PlatformWebhooksEndpointSheet = ({
                     <FormItemLayout
                       label={
                         <>
-                          Description <span className="text-foreground-muted">(optional)</span>
+                          {$t('Description')}{' '}
+                          <span className="text-foreground-muted">(optional)</span>
                         </>
                       }
                       layout="vertical"
@@ -323,7 +325,7 @@ export const PlatformWebhooksEndpointSheet = ({
                         <Textarea
                           {...field}
                           rows={4}
-                          placeholder="Optional description for this endpoint"
+                          placeholder={$t('Optional description for this endpoint')}
                           className="resize-none"
                         />
                       </FormControl>
@@ -344,9 +346,9 @@ export const PlatformWebhooksEndpointSheet = ({
                             className="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3"
                           >
                             <div className="space-y-0.5">
-                              <p className="text-sm text-foreground">Enable endpoint</p>
+                              <p className="text-sm text-foreground">{$t('Enable endpoint')}</p>
                               <p className="text-sm text-foreground-lighter">
-                                Disabled endpoints won’t receive deliveries
+                                {$t('Disabled endpoints won’t receive deliveries')}
                               </p>
                             </div>
                             <FormControl>
@@ -376,24 +378,25 @@ export const PlatformWebhooksEndpointSheet = ({
 
                     return (
                       <FormItemLayout
-                        label="Event types"
+                        label={$t('Event types')}
                         description={
                           scope === 'organization' ? (
                             <>
-                              Project events are triggered when any project in this organization
-                              matches the event type. Add a{' '}
+                              {$t(
+                                'Project events are triggered when any project in this organization matches the event type. Add a'
+                              )}{' '}
                               <InlineLink href="/project/_/settings/webhooks">
-                                project endpoint
+                                {$t('project endpoint')}
                               </InlineLink>{' '}
-                              to listen to events on an individual project only.
+                              {$t('to listen to events on an individual project only.')}
                             </>
                           ) : (
                             <>
-                              Project events are triggered for this project only. Add an{' '}
+                              {$t('Project events are triggered for this project only. Add an')}{' '}
                               <InlineLink href={`/org/${orgSlug ?? '_'}/webhooks`}>
-                                organization endpoint
+                                {$t('organization endpoint')}
                               </InlineLink>{' '}
-                              to listen to events from any project in your organization.
+                              {$t('to listen to events from any project in your organization.')}
                             </>
                           )
                         }
@@ -438,7 +441,7 @@ export const PlatformWebhooksEndpointSheet = ({
                                     />
                                   </FormControl>
                                   <span className="text-sm text-foreground">
-                                    Subscribe to all events{' '}
+                                    {$t('Subscribe to all events')}{' '}
                                     <code className="text-code-inline">(*)</code>
                                   </span>
                                 </Label>
@@ -559,10 +562,11 @@ export const PlatformWebhooksEndpointSheet = ({
                 <FormItemLayout
                   label={
                     <>
-                      Custom headers <span className="text-foreground-muted">(optional)</span>
+                      {$t('Custom headers')}{' '}
+                      <span className="text-foreground-muted">(optional)</span>
                     </>
                   }
-                  description="Optional HTTP headers sent with every delivery."
+                  description={$t('Optional HTTP headers sent with every delivery.')}
                   layout="vertical"
                   className="gap-3"
                 >
@@ -583,7 +587,7 @@ export const PlatformWebhooksEndpointSheet = ({
         </SheetSection>
         <SheetFooter>
           <Button variant="default" onClick={confirmOnClose}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Shortcut
             id={SHORTCUT_IDS.ACTION_BAR_SAVE}

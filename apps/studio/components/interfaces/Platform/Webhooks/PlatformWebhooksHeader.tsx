@@ -20,6 +20,7 @@ import {
 
 import { DocsButton } from '@/components/ui/DocsButton'
 import { FeaturePreviewBadge } from '@/components/ui/FeaturePreviewBadge'
+import { t as $t } from '@/lib/i18n'
 
 interface PlatformWebhooksHeaderProps {
   hasSelectedEndpoint: boolean
@@ -54,7 +55,7 @@ export const PlatformWebhooksHeader = ({
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Endpoint</BreadcrumbPage>
+              <BreadcrumbPage>{$t('Endpoint')}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </PageHeaderBreadcrumb>

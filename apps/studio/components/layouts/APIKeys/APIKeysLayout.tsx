@@ -5,6 +5,7 @@ import { PageLayout } from '@/components/layouts/PageLayout/PageLayout'
 import { ScaffoldContainer } from '@/components/layouts/Scaffold'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const ApiKeysLayout = ({ children }: PropsWithChildren) => {
   const { ref: projectRef } = useParams()
@@ -24,7 +25,7 @@ const ApiKeysLayout = ({ children }: PropsWithChildren) => {
 
   return (
     <PageLayout
-      title="API Keys"
+      title={$t('API Keys')}
       subtitle="Configure API keys to securely control access to your project"
       navigationItems={navigationItems}
       secondaryActions={<DocsButton href={`${DOCS_URL}/guides/api/api-keys`} />}

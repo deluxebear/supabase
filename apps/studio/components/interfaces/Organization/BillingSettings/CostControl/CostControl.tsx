@@ -25,6 +25,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { BASE_PATH, DOCS_URL } from '@/lib/constants'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
+import { t as $t } from '@/lib/i18n'
 import { useOrgSettingsPageStateSnapshot } from '@/state/organization-settings'
 
 export interface CostControlProps {}
@@ -63,14 +64,14 @@ const CostControl = ({}: CostControlProps) => {
         <ScaffoldSectionDetail>
           <div className="sticky space-y-6 top-12">
             <div className="space-y-2">
-              <p className="text-foreground text-base m-0">Cost Control</p>
+              <p className="text-foreground text-base m-0">{$t('Cost Control')}</p>
               <p className="text-sm text-foreground-light m-0">
-                Allow scaling beyond your plan's{' '}
-                <InlineLink href={`/org/${slug}/usage`}>included quota</InlineLink>.
+                {$t("Allow scaling beyond your plan's")}{' '}
+                <InlineLink href={`/org/${slug}/usage`}>{$t('included quota')}</InlineLink>.
               </p>
             </div>
             <div className="space-y-2">
-              <p className="text-sm text-foreground-light m-0">More information</p>
+              <p className="text-sm text-foreground-light m-0">{$t('More information')}</p>
               <div>
                 <Link
                   href={`${DOCS_URL}/guides/platform/cost-control#spend-cap`}
@@ -78,7 +79,7 @@ const CostControl = ({}: CostControlProps) => {
                   rel="noreferrer"
                 >
                   <div className="flex items-center space-x-2 opacity-50 hover:opacity-100 transition">
-                    <p className="text-sm m-0">Spend cap</p>
+                    <p className="text-sm m-0">{$t('Spend cap')}</p>
                     <ExternalLink size={16} strokeWidth={1.5} />
                   </div>
                 </Link>
@@ -110,7 +111,7 @@ const CostControl = ({}: CostControlProps) => {
                   />
 
                   <AlertTitle className="text-sm">
-                    The Spend Cap is not available for organizations managed by{' '}
+                    {$t('The Spend Cap is not available for organizations managed by')}{' '}
                     {PARTNER_TO_NAME[selectedOrganization?.managed_by]}.
                   </AlertTitle>
                 </Alert>
@@ -128,23 +129,26 @@ const CostControl = ({}: CostControlProps) => {
                         } plan`}
                         description={
                           <>
-                            {currentPlan?.name || ''} plan requires you to have spend cap off at all
-                            times. Your projects will never become unresponsive. Only when your{' '}
+                            {currentPlan?.name || ''}{' '}
+                            {$t(
+                              'plan requires you to have spend cap off at all times. Your projects will never become unresponsive. Only when your'
+                            )}{' '}
                             <Link
                               href={`/org/${slug}/usage`}
                               className="text-green-900 transition hover:text-green-1000"
                             >
-                              included usage
+                              {$t('included usage')}
                             </Link>{' '}
-                            is exceeded will you be charged for any additional usage.
+                            {$t('is exceeded will you be charged for any additional usage.')}
                           </>
                         }
                       />
                     </>
                   ) : (
                     <p className="text-sm text-foreground-light">
-                      If you need to go beyond the included quota, simply switch off your spend cap
-                      to pay for additional usage.
+                      {$t(
+                        'If you need to go beyond the included quota, simply switch off your spend cap to pay for additional usage.'
+                      )}
                     </p>
                   )}
 
@@ -152,7 +156,7 @@ const CostControl = ({}: CostControlProps) => {
                     <div>
                       <div className="rounded-md bg-surface-200 w-[160px] h-[96px] shadow-sm">
                         <Image
-                          alt="Spend Cap"
+                          alt={$t('Spend Cap')}
                           width={160}
                           height={96}
                           src={
@@ -169,16 +173,18 @@ const CostControl = ({}: CostControlProps) => {
                     </div>
                     <div>
                       <p className="mb-1">
-                        Spend cap is {isUsageBillingEnabled ? 'disabled' : 'enabled'}
+                        {$t('Spend cap is')} {isUsageBillingEnabled ? 'disabled' : 'enabled'}
                       </p>
                       <p className="text-sm text-foreground-light">
                         {isUsageBillingEnabled ? (
-                          <span>You will be charged for usage beyond the included quota.</span>
+                          <span>
+                            {$t('You will be charged for usage beyond the included quota.')}
+                          </span>
                         ) : (
                           <span>
-                            You won't be charged any extra for usage. However, your projects could
-                            become unresponsive or enter read only mode if you exceed the included
-                            quota.
+                            {$t(
+                              "You won't be charged any extra for usage. However, your projects could become unresponsive or enter read only mode if you exceed the included quota."
+                            )}
                           </span>
                         )}
                       </p>
@@ -189,7 +195,7 @@ const CostControl = ({}: CostControlProps) => {
                           disabled={!canChangeTier}
                           onClick={() => snap.setPanelKey('costControl')}
                         >
-                          Change spend cap
+                          {$t('Change spend cap')}
                         </Button>
                       </ProjectUpdateDisabledTooltip>
                     </div>

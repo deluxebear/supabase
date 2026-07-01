@@ -25,6 +25,7 @@ import { NoSearchResults } from '@/components/ui/NoSearchResults'
 import { useDatabaseExtensionsQuery } from '@/data/database-extensions/database-extensions-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -85,7 +86,7 @@ export const Extensions = () => {
           <InputGroupInput
             ref={searchInputRef}
             size="tiny"
-            placeholder="Search for an extension"
+            placeholder={$t('Search for an extension')}
             value={filterString}
             onChange={(e) => setFilterString(e.target.value)}
             onKeyDown={onSearchInputEscape(filterString, setFilterString)}
@@ -99,7 +100,7 @@ export const Extensions = () => {
       {isPermissionsLoaded && !canUpdateExtensions && (
         <InformationBox
           icon={<AlertCircle className="text-foreground-light" size={18} strokeWidth={2} />}
-          title="You need additional permissions to update database extensions"
+          title={$t('You need additional permissions to update database extensions')}
         />
       )}
 
@@ -111,16 +112,16 @@ export const Extensions = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead key="name">Name</TableHead>
+                  <TableHead key="name">{$t('Name')}</TableHead>
                   <TableHead key="version" className="w-28">
-                    Version
+                    {$t('Version')}
                   </TableHead>
-                  <TableHead key="schema">Schema</TableHead>
+                  <TableHead key="schema">{$t('Schema')}</TableHead>
                   <TableHead key="description" className="min-w-80">
-                    Description
+                    {$t('Description')}
                   </TableHead>
-                  <TableHead key="used-by">Used by</TableHead>
-                  <TableHead key="links">Links</TableHead>
+                  <TableHead key="used-by">{$t('Used by')}</TableHead>
+                  <TableHead key="links">{$t('Links')}</TableHead>
                   {/*
                     [Joshen] All these classes are just to make the last column sticky
                     I reckon we can pull these out into the Table component where we can declare
@@ -129,7 +130,7 @@ export const Extensions = () => {
                   */}
                   <TableHead key="enabled" className="px-0">
                     <div className="bg-200! px-4 w-full h-full flex items-center border-l">
-                      Enabled
+                      {$t('Enabled')}
                     </div>
                   </TableHead>
                 </TableRow>

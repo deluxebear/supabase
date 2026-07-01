@@ -26,6 +26,7 @@ import z from 'zod'
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
 import { useDatabaseQueueMessageSendMutation } from '@/data/database-queues/database-queue-messages-send-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface SendMessageModalProps {
   visible: boolean
@@ -91,7 +92,7 @@ export const SendMessageModal = ({ visible, onClose }: SendMessageModalProps) =>
     <Dialog open={visible} onOpenChange={onClose}>
       <DialogContent size="medium">
         <DialogHeader>
-          <DialogTitle>Add a message to the queue</DialogTitle>
+          <DialogTitle>{$t('Add a message to the queue')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection className="flex flex-col gap-y-4">
@@ -106,10 +107,12 @@ export const SendMessageModal = ({ visible, onClose }: SendMessageModalProps) =>
                 name="delay"
                 render={({ field: { ref, ...rest } }) => (
                   <FormItemLayout
-                    label="Delay"
+                    label={$t('Delay')}
                     layout="vertical"
                     className="gap-1"
-                    description="Time in seconds before the message becomes available for reading."
+                    description={$t(
+                      'Time in seconds before the message becomes available for reading.'
+                    )}
                   >
                     <FormControl>
                       <InputGroup>
@@ -126,7 +129,7 @@ export const SendMessageModal = ({ visible, onClose }: SendMessageModalProps) =>
                 control={form.control}
                 name="payload"
                 render={({ field }) => (
-                  <FormItemLayout label="Message payload" layout="vertical" className="gap-1">
+                  <FormItemLayout label={$t('Message payload')} layout="vertical" className="gap-1">
                     <FormControl>
                       <CodeEditor
                         id="message-payload"
@@ -146,7 +149,7 @@ export const SendMessageModal = ({ visible, onClose }: SendMessageModalProps) =>
         </DialogSection>
         <DialogFooter>
           <Button variant="default" onClick={onClose} disabled={isPending}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <Button
             variant="primary"
@@ -155,7 +158,7 @@ export const SendMessageModal = ({ visible, onClose }: SendMessageModalProps) =>
             disabled={isPending}
             loading={isPending}
           >
-            Add
+            {$t('Add')}
           </Button>
         </DialogFooter>
       </DialogContent>

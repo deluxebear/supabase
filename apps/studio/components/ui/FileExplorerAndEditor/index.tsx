@@ -15,6 +15,7 @@ import {
 } from './FileExplorerAndEditor.utils'
 import { FileExplorerAndEditorRow } from './FileExplorerAndEditorRow'
 import { AIEditor } from '@/components/ui/AIEditor'
+import { t as $t } from '@/lib/i18n'
 
 interface FileExplorerAndEditorProps {
   files: FileData[]
@@ -105,7 +106,9 @@ export const FileExplorerAndEditor = ({
         } catch (error) {
           toast.error(
             <div className="flex flex-col gap-y-1">
-              <p className="text-foreground">Failed to extract {file.name}</p>
+              <p className="text-foreground">
+                {$t('Failed to extract')} {file.name}
+              </p>
               <p className="text-foreground-light">
                 {error instanceof Error ? error.message : 'Unknown error occurred'}
               </p>
@@ -187,7 +190,8 @@ export const FileExplorerAndEditor = ({
       toast.success(
         <div className="flex flex-col gap-y-1">
           <p className="text-foreground">
-            Successfully added dropped file{totalFilesProcessed > 1 ? 's' : ''}
+            {$t('Successfully added dropped file')}
+            {totalFilesProcessed > 1 ? 's' : ''}
           </p>
           <p className="text-foreground-light">{messages.join(', ')}.</p>
         </div>,
@@ -245,7 +249,7 @@ export const FileExplorerAndEditor = ({
     (id: number, newName: string) => {
       // Don't allow empty names
       if (!newName.trim()) {
-        toast.error('File name cannot be empty')
+        toast.error($t('File name cannot be empty'))
         return exitEditMode()
       }
 
@@ -379,13 +383,14 @@ export const FileExplorerAndEditor = ({
             <div className="w-96 py-20 bg/60 border-2 border-dashed border-muted flex items-center justify-center">
               {isExtractingZip && extractionProgress ? (
                 <div className="text-center space-y-2">
-                  <div className="text-base">Extracting zip file...</div>
+                  <div className="text-base">{$t('Extracting zip file...')}</div>
                   <div className="text-sm text-foreground-light">
-                    Processing file {extractionProgress.current} of {extractionProgress.total}
+                    {$t('Processing file')} {extractionProgress.current} of{' '}
+                    {extractionProgress.total}
                   </div>
                 </div>
               ) : (
-                <div className="text-base">Drop files here to add them</div>
+                <div className="text-base">{$t('Drop files here to add them')}</div>
               )}
             </div>
           </motion.div>
@@ -395,18 +400,18 @@ export const FileExplorerAndEditor = ({
       <div className="min-w-64 w-64 border-r bg-surface-200 flex flex-col">
         <div className="py-4 px-6 border-b flex items-center justify-between">
           <h3 className="text-sm font-normal font-mono uppercase text-lighter tracking-wide">
-            Files
+            {$t('Files')}
           </h3>
           {IS_PLATFORM && (
             <Button size="tiny" variant="default" icon={<Plus size={14} />} onClick={addNewFile}>
-              Add File
+              {$t('Add File')}
             </Button>
           )}
         </div>
         <div className="flex-1 overflow-y-auto">
           <TreeView
             data={flattenTree(treeData)}
-            aria-label="files tree"
+            aria-label={$t('files tree')}
             nodeRenderer={renderNode}
           />
         </div>
@@ -416,10 +421,12 @@ export const FileExplorerAndEditor = ({
         {selectedFile && isBinaryFile(selectedFile.name) ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="text-foreground-light text-lg mb-2">Cannot Edit Selected File</div>
+              <div className="text-foreground-light text-lg mb-2">
+                {$t('Cannot Edit Selected File')}
+              </div>
               <div className="text-foreground-lighter text-sm">
-                Binary files like .{selectedFile.name.split('.').pop()} cannot be edited in the text
-                editor
+                {$t('Binary files like .')}
+                {selectedFile.name.split('.').pop()} {$t('cannot be edited in the text editor')}
               </div>
             </div>
           </div>

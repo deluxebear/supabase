@@ -19,6 +19,7 @@ import { CreateNewAPIKeysButton } from './CreateNewAPIKeysButton'
 import { FeatureBanner } from '@/components/ui/FeatureBanner'
 import { InlineLink, InlineLinkClassName } from '@/components/ui/InlineLink'
 import { APIKeysData } from '@/data/api-keys/api-keys-query'
+import { t as $t } from '@/lib/i18n'
 
 // Mock API Keys for demo
 const mockApiKeys = [
@@ -56,10 +57,10 @@ const ApiKeysTableIllustration = () => {
                 key=""
                 className="text-left font-mono uppercase text-xs text-foreground-lighter h-auto py-2 overflow-hidden w-[180px]"
               >
-                Name
+                {$t('Name')}
               </TableHead>
               <TableHead className="text-left font-mono uppercase text-xs text-foreground-lighter h-auto py-2 pr-0">
-                API Key
+                {$t('API Key')}
               </TableHead>
               <TableHead
                 className="text-right font-mono uppercase text-xs text-foreground-lighter h-auto py-2"
@@ -111,9 +112,9 @@ export const ApiKeysCreateCallout = () => {
   return (
     <FeatureBanner illustration={<ApiKeysIllustrationWithOverlay />} bgAlt>
       <div className="flex flex-col gap-0 z-2">
-        <p className="text-sm text-foreground">Create API keys</p>
+        <p className="text-sm text-foreground">{$t('Create API keys')}</p>
         <p className="text-sm text-foreground-lighter lg:max-w-sm 2xl:max-w-none">
-          Use keys to authenticate requests to your app
+          {$t('Use keys to authenticate requests to your app')}
         </p>
         <div className="mt-4">
           <CreateNewAPIKeysButton />
@@ -131,14 +132,15 @@ export const ApiKeysFeedbackBanner = () => {
       dismissable
     >
       <div className="p-5">
-        <p className="text-sm text-foreground">Your new API keys are here</p>
+        <p className="text-sm text-foreground">{$t('Your new API keys are here')}</p>
         <p className="text-sm text-foreground-lighter">
-          We've updated our API keys to better support your application needs.{' '}
+          {$t("We've updated our API keys to better support your application needs.")}{' '}
           <InlineLink
             href="https://github.com/orgs/supabase/discussions/29260"
             className="inline-flex items-center gap-1"
           >
-            Join the discussion on GitHub <ExternalLink aria-hidden size={14} strokeWidth={1.5} />
+            {$t('Join the discussion on GitHub')}{' '}
+            <ExternalLink aria-hidden size={14} strokeWidth={1.5} />
           </InlineLink>
         </p>
       </div>
@@ -147,7 +149,7 @@ export const ApiKeysFeedbackBanner = () => {
 
       <div className="px-5 py-2 bg-surface-200/30">
         <p className="text-sm text-foreground-lighter">
-          Having trouble with the new API keys?{' '}
+          {$t('Having trouble with the new API keys?')}{' '}
           <SupportLink
             className={InlineLinkClassName}
             queryParams={{
@@ -155,7 +157,7 @@ export const ApiKeysFeedbackBanner = () => {
               subject: 'Help with API keys',
             }}
           >
-            Contact support
+            {$t('Contact support')}
           </SupportLink>
         </p>
       </div>

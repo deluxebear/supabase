@@ -28,6 +28,7 @@ import {
 import CopyButton from '@/components/ui/CopyButton'
 import { DataTableFilterField } from '@/components/ui/DataTable/DataTable.types'
 import { useCopyToClipboard } from '@/hooks/ui/useCopyToClipboard'
+import { t as $t } from '@/lib/i18n'
 
 interface DataTableSheetRowActionProps<
   TData,
@@ -96,7 +97,7 @@ export function DataTableSheetRowAction<TData, TFields extends DataTableFilterFi
             className="flex items-center gap-2"
           >
             <Filter size={12} />
-            Add as filter for {column?.id}
+            {$t('Add as filter for')} {column?.id}
           </DropdownMenuItem>
         )
       case 'input':
@@ -111,7 +112,7 @@ export function DataTableSheetRowAction<TData, TFields extends DataTableFilterFi
             className="flex items-center gap-2"
           >
             <Filter size={12} />
-            Add as filter for {column?.id}
+            {$t('Add as filter for')} {column?.id}
           </DropdownMenuItem>
         )
       case 'slider':
@@ -123,7 +124,8 @@ export function DataTableSheetRowAction<TData, TFields extends DataTableFilterFi
             >
               {/* FIXME: change icon as it is not clear */}
               <ChevronLeft size={12} />
-              Less or equal than
+
+              {$t('Less or equal than')}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => column?.setFilterValue([value, 5000])}
@@ -131,14 +133,16 @@ export function DataTableSheetRowAction<TData, TFields extends DataTableFilterFi
             >
               {/* FIXME: change icon as it is not clear */}
               <ChevronRight size={12} />
-              Greater or equal than
+
+              {$t('Greater or equal than')}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => column?.setFilterValue([value])}
               className="flex items-center gap-2"
             >
               <Equal size={12} />
-              Equal to
+
+              {$t('Equal to')}
             </DropdownMenuItem>
           </DropdownMenuGroup>
         )
@@ -151,7 +155,8 @@ export function DataTableSheetRowAction<TData, TFields extends DataTableFilterFi
               className="flex items-center gap-2"
             >
               <CalendarSearch size={12} />
-              Exact timestamp
+
+              {$t('Exact timestamp')}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
@@ -162,7 +167,8 @@ export function DataTableSheetRowAction<TData, TFields extends DataTableFilterFi
               className="flex items-center gap-2"
             >
               <CalendarClock size={12} />
-              Same hour
+
+              {$t('Same hour')}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
@@ -173,7 +179,8 @@ export function DataTableSheetRowAction<TData, TFields extends DataTableFilterFi
               className="flex items-center gap-2"
             >
               <CalendarDays size={12} />
-              Same day
+
+              {$t('Same day')}
             </DropdownMenuItem>
           </DropdownMenuGroup>
         )
@@ -217,7 +224,7 @@ export function DataTableSheetRowAction<TData, TFields extends DataTableFilterFi
             className="flex items-center gap-2"
           >
             <Copy size={12} />
-            Copy {label}
+            {$t('Copy')} {label}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

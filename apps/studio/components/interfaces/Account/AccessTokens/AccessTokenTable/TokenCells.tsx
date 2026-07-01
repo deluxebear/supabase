@@ -2,6 +2,8 @@ import dayjs from 'dayjs'
 import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 import { TableCell } from 'ui/src/components/shadcn/ui/table'
 
+import { t as $t } from '@/lib/i18n'
+
 interface TokenNameCellProps {
   name: string
   tokenAlias: string
@@ -34,7 +36,7 @@ export const LastUsedCell = ({ lastUsedAt }: LastUsedCellProps) => (
         className="text-sm"
       />
     ) : (
-      <p className="text-foreground-light text-sm">Never used</p>
+      <p className="text-foreground-light text-sm">{$t('Never used')}</p>
     )}
   </TableCell>
 )
@@ -47,7 +49,7 @@ export const ExpiresCell = ({ expiresAt }: ExpiresCellProps) => (
   <TableCell className="min-w-28 text-foreground-light">
     {expiresAt ? (
       dayjs(expiresAt).isBefore(dayjs()) ? (
-        <TimestampInfo utcTimestamp={expiresAt} label="Expired" className="text-sm" />
+        <TimestampInfo utcTimestamp={expiresAt} label={$t('Expired')} className="text-sm" />
       ) : (
         <TimestampInfo
           utcTimestamp={expiresAt}
@@ -56,7 +58,7 @@ export const ExpiresCell = ({ expiresAt }: ExpiresCellProps) => (
         />
       )
     ) : (
-      <p className="text-foreground-light text-sm">Never</p>
+      <p className="text-foreground-light text-sm">{$t('Never')}</p>
     )}
   </TableCell>
 )

@@ -7,6 +7,7 @@ import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useLastVisitedOrganization } from '@/hooks/misc/useLastVisitedOrganization'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export const HomeIcon = ({ className }: { className?: string }) => {
@@ -35,7 +36,7 @@ export const HomeIcon = ({ className }: { className?: string }) => {
       className={cn('items-center justify-center shrink-0 flex', className)}
     >
       <img
-        alt="Supabase"
+        alt={$t('Supabase')}
         src={`${router.basePath}/img/supabase-logo.svg`}
         className={largeLogo ? 'h-[20px]' : 'h-[18px]'}
       />

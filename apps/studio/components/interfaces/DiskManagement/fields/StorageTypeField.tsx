@@ -25,6 +25,7 @@ import FormMessage from '../ui/FormMessage'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { useDiskAttributesQuery } from '@/data/config/disk-attributes-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 type StorageTypeFieldProps = {
   form: UseFormReturn<DiskStorageSchemaType>
@@ -45,7 +46,7 @@ export function StorageTypeField({ form, disableInput }: StorageTypeFieldProps) 
       name="storageType"
       control={control}
       render={({ field }) => (
-        <FormItemLayout layout="horizontal" label="Storage type">
+        <FormItemLayout layout="horizontal" label={$t('Storage type')}>
           <Select
             {...field}
             onValueChange={async (e: DiskType) => {
@@ -122,8 +123,9 @@ export function StorageTypeField({ form, disableInput }: StorageTypeFieldProps) 
                       </TooltipTrigger>
                       {disableIo2 && (
                         <TooltipContent side="right" className="w-64">
-                          IO2 Volume Type is not available in your project's region (
-                          {project?.region}). More information available{' '}
+                          {$t("IO2 Volume Type is not available in your project's region (")}
+                          {project?.region}
+                          {$t('). More information available')}{' '}
                           <InlineLink href="https://docs.aws.amazon.com/ebs/latest/userguide/provisioned-iops.html#io2-bx-considerations">
                             here
                           </InlineLink>

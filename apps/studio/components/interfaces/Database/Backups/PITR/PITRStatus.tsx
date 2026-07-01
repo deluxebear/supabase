@@ -10,6 +10,7 @@ import { FormPanel } from '@/components/ui/Forms/FormPanel'
 import { useBackupsQuery } from '@/data/database/backups-query'
 import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 interface PITRStatusProps {
   selectedTimezone: Timezone
@@ -55,7 +56,7 @@ const PITRStatus = ({
             <div className="flex items-center space-x-4">
               <AlertCircle className="text-foreground-light" size={18} strokeWidth={1.5} />
               <span className="text-foreground-light text-sm">
-                You'll be able to pick the right date and time when you begin
+                {$t("You'll be able to pick the right date and time when you begin")}
               </span>
             </div>
             <ButtonTooltip
@@ -72,7 +73,7 @@ const PITRStatus = ({
                 },
               }}
             >
-              Start a restore
+              {$t('Start a restore')}
             </ButtonTooltip>
           </div>
         }
@@ -86,11 +87,13 @@ const PITRStatus = ({
           </div>
           <div className="flex items-center space-x-20">
             <div className="space-y-2">
-              <p className="text-sm text-foreground-light">Database restore available from</p>
+              <p className="text-sm text-foreground-light">
+                {$t('Database restore available from')}
+              </p>
               <p className="text-2xl">{earliestAvailableBackup}</p>
             </div>
             <div className="space-y-2">
-              <p className="text-sm text-foreground-light">Latest restore available at</p>
+              <p className="text-sm text-foreground-light">{$t('Latest restore available at')}</p>
               <p className="text-2xl">{latestAvailableBackup}</p>
             </div>
           </div>

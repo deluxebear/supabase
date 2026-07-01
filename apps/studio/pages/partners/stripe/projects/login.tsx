@@ -21,6 +21,7 @@ import { accountRequestQueryOptions } from '@/data/partners/stripe-projects-quer
 import { withAuth } from '@/hooks/misc/withAuth'
 import { useSignOut } from '@/lib/auth'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { buildStudioPageTitle } from '@/lib/page-title'
 import { useProfileNameAndPicture } from '@/lib/profile'
 import type { NextPageWithLayout } from '@/types'
@@ -85,11 +86,11 @@ const StripeProjectsLoginPage: NextPageWithLayout = () => {
       <InterstitialLayout
         logo={
           <LogoPair
-            left={<PartnerLogo src={`${BASE_PATH}/img/icons/stripe-icon.svg`} alt="Stripe" />}
+            left={<PartnerLogo src={`${BASE_PATH}/img/icons/stripe-icon.svg`} alt={$t('Stripe')} />}
             right={<SupabaseLogo />}
           />
         }
-        title="Authorize Stripe Projects"
+        title={$t('Authorize Stripe Projects')}
         description={interstitialDescription}
       >
         <div className="px-6 pb-6">
@@ -112,9 +113,9 @@ const StripeProjectsLoginPage: NextPageWithLayout = () => {
 
           {isConfirmed && (
             <div className="flex flex-col gap-4">
-              <Admonition type="success" title="Stripe Projects authorized" />
+              <Admonition type="success" title={$t('Stripe Projects authorized')} />
               <p className="text-center text-xs text-foreground-lighter text-balance">
-                You can now close this tab.
+                {$t('You can now close this tab.')}
               </p>
             </div>
           )}
@@ -125,14 +126,14 @@ const StripeProjectsLoginPage: NextPageWithLayout = () => {
                 type="warning"
                 description={
                   <>
-                    You're signed in to a different account. Sign out and sign back in as{' '}
-                    <span className="font-medium text-foreground">{accountRequest?.email}</span>.
-                    Then return to Stripe to restart the request.
+                    {$t("You're signed in to a different account. Sign out and sign back in as")}{' '}
+                    <span className="font-medium text-foreground">{accountRequest?.email}</span>
+                    {$t('. Then return to Stripe to restart the request.')}
                   </>
                 }
               />
               <Button variant="default" block onClick={() => signOut()}>
-                Sign out
+                {$t('Sign out')}
               </Button>
             </div>
           )}
@@ -143,17 +144,19 @@ const StripeProjectsLoginPage: NextPageWithLayout = () => {
                 type="tip"
                 description={
                   <>
-                    <span className="font-medium text-foreground">{linkedOrg.name}</span> is already
-                    linked to this Stripe account, and just needs to be confirmed.
+                    <span className="font-medium text-foreground">{linkedOrg.name}</span>{' '}
+                    {$t(
+                      'is already linked to this Stripe account, and just needs to be confirmed.'
+                    )}
                   </>
                 }
               />
               <div className="flex flex-col gap-2">
                 <Button variant="primary" block loading={isConfirming} onClick={handleApprove}>
-                  Authorize Stripe Projects
+                  {$t('Authorize Stripe Projects')}
                 </Button>
                 <Button variant="text" block onClick={() => router.push('/')}>
-                  Cancel
+                  {$t('Cancel')}
                 </Button>
               </div>
             </div>
@@ -190,10 +193,10 @@ const StripeProjectsLoginPage: NextPageWithLayout = () => {
                   disabled={isConfirming}
                   onClick={handleApprove}
                 >
-                  Create organization
+                  {$t('Create organization')}
                 </Button>
                 <Button variant="text" onClick={() => router.push('/')}>
-                  Cancel
+                  {$t('Cancel')}
                 </Button>
               </div>
             </div>
@@ -203,11 +206,11 @@ const StripeProjectsLoginPage: NextPageWithLayout = () => {
             <div className="flex flex-col gap-3">
               <Admonition
                 type="danger"
-                title="Unable to load authorization"
+                title={$t('Unable to load authorization')}
                 description={error?.message}
               />
               <Button variant="default" block onClick={() => signOut()}>
-                Sign out
+                {$t('Sign out')}
               </Button>
             </div>
           )}

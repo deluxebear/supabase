@@ -15,6 +15,7 @@ import { getDocument } from '@/data/documents/document-query'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export const SecurityQuestionnaire = () => {
@@ -52,10 +53,12 @@ export const SecurityQuestionnaire = () => {
   return (
     <ScaffoldSection className="py-12">
       <ScaffoldSectionDetail>
-        <h4 className="mb-5">Standard Security Questionnaire</h4>
+        <h4 className="mb-5">{$t('Standard Security Questionnaire')}</h4>
         <div className="space-y-2 text-sm text-foreground-light [&_p]:m-0">
           <p>
-            Organizations on Team Plan or above have access to our standard security questionnaire.
+            {$t(
+              'Organizations on Team Plan or above have access to our standard security questionnaire.'
+            )}
           </p>
         </div>
       </ScaffoldSectionDetail>
@@ -72,7 +75,7 @@ export const SecurityQuestionnaire = () => {
               <Link
                 href={`/org/${slug}/billing?panel=subscriptionPlan&source=securityQuestionnaire`}
               >
-                Upgrade to Team
+                {$t('Upgrade to Team')}
               </Link>
             </Button>
           </div>
@@ -84,7 +87,7 @@ export const SecurityQuestionnaire = () => {
               onClick={handleDownloadClick}
               disabled={!slug}
             >
-              Download Questionnaire
+              {$t('Download Questionnaire')}
             </Button>
           </div>
         )}

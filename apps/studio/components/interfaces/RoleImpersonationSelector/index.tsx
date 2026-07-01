@@ -6,6 +6,7 @@ import { RoleImpersonationRadio } from './RoleImpersonationRadio'
 import { UserImpersonationSelector } from './UserImpersonationSelector'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { PostgrestRole } from '@/lib/role-impersonation'
 import { useRoleImpersonationStateSnapshot } from '@/state/role-impersonation-state'
 
@@ -83,17 +84,17 @@ export const RoleImpersonationSelector = ({
               isSelected={selectedOption === 'service_role'}
               onSelectedChange={onSelectedChange}
               label={serviceRoleLabel}
-              description="Superuser"
+              description={$t('Superuser')}
               icon={<ServiceRoleIcon isSelected={selectedOption === 'service_role'} />}
               fullWidth={isVertical}
             />
 
             <RoleImpersonationRadio
               value="anon"
-              label="Anonymous"
+              label={$t('Anonymous')}
               isSelected={selectedOption === 'anon'}
               onSelectedChange={onSelectedChange}
-              description="Not logged in"
+              description={$t('Not logged in')}
               icon={<AnonIcon isSelected={selectedOption === 'anon'} />}
               fullWidth={isVertical}
             />
@@ -101,13 +102,13 @@ export const RoleImpersonationSelector = ({
             {!disallowAuthenticatedOption && (
               <RoleImpersonationRadio
                 value="authenticated"
-                label="Authenticated"
+                label={$t('Authenticated')}
                 isSelected={
                   selectedOption === 'authenticated' &&
                   (isAuthenticatedOptionFullySelected || 'partially')
                 }
                 onSelectedChange={onSelectedChange}
-                description="Specific logged in user"
+                description={$t('Specific logged in user')}
                 icon={<AuthenticatedIcon isSelected={selectedOption === 'authenticated'} />}
                 fullWidth={isVertical}
               />
@@ -118,36 +119,36 @@ export const RoleImpersonationSelector = ({
         {selectedOption === 'service_role' && (
           <div>
             <p className="text-sm">
-              Full admin access
-              <Badge className="ml-2">Default</Badge>
+              {$t('Full admin access')}
+              <Badge className="ml-2">{$t('Default')}</Badge>
             </p>
             <p className="text-foreground-light text-sm">
-              The <code className="text-code-inline">postgres</code> role, which bypasses all Row
-              Level Security (RLS) policies.
+              {$t('The')} <code className="text-code-inline">postgres</code>{' '}
+              {$t('role, which bypasses all Row Level Security (RLS) policies.')}
             </p>
           </div>
         )}
 
         {selectedOption === 'anon' && (
           <div>
-            <p className="text-sm">For unauthenticated access</p>
+            <p className="text-sm">{$t('For unauthenticated access')}</p>
             <p className="text-foreground-light text-sm">
-              The <code className="text-code-inline">anon</code> role, which the API (PostgREST)
-              uses when a user is not logged in.
+              {$t('The')} <code className="text-code-inline">anon</code>{' '}
+              {$t('role, which the API (PostgREST) uses when a user is not logged in.')}
               <br />
-              Row Level Security (RLS) policies apply.
+              {$t('Row Level Security (RLS) policies apply.')}
             </p>
           </div>
         )}
 
         {selectedOption === 'authenticated' && (
           <div>
-            <p className="text-sm">For authenticated access</p>
+            <p className="text-sm">{$t('For authenticated access')}</p>
             <p className="text-foreground-light text-sm">
-              The <code className="text-code-inline">authenticated</code> role, which the API
-              (PostgREST) uses when a user is logged in.
+              {$t('The')} <code className="text-code-inline">authenticated</code>{' '}
+              {$t('role, which the API (PostgREST) uses when a user is logged in.')}
               <br />
-              Row Level Security (RLS) policies apply.
+              {$t('Row Level Security (RLS) policies apply.')}
             </p>
           </div>
         )}

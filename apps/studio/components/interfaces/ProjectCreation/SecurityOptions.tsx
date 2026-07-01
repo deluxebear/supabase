@@ -20,6 +20,7 @@ import { InlineLink } from '@/components/ui/InlineLink'
 import Panel from '@/components/ui/Panel'
 import { useTrackDefaultPrivilegesExposure } from '@/hooks/misc/useDataApiRevokeOnCreateDefault'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface SecurityOptionsProps {
   form: UseFormReturn<CreateProjectForm>
@@ -42,7 +43,7 @@ export const SecurityOptions = ({ form, layout = 'horizontal' }: SecurityOptions
 
   return (
     <Panel.Content className="pb-8">
-      <FormItemLayout layout={layout} label="Security" isReactForm={false}>
+      <FormItemLayout layout={layout} label={$t('Security')} isReactForm={false}>
         <div className="flex flex-col gap-4">
           <FormField
             name="dataApi"
@@ -57,10 +58,11 @@ export const SecurityOptions = ({ form, layout = 'horizontal' }: SecurityOptions
                   />
                 </FormControl>
                 <div className="space-y-1">
-                  <FormLabel className="text-sm text-foreground">Enable Data API</FormLabel>
+                  <FormLabel className="text-sm text-foreground">{$t('Enable Data API')}</FormLabel>
                   <FormDescription className="text-foreground-lighter">
-                    Autogenerate a RESTful API for your public schema. Recommended if using a client
-                    library like{' '}
+                    {$t(
+                      'Autogenerate a RESTful API for your public schema. Recommended if using a client library like'
+                    )}{' '}
                     <InlineLink href={`${DOCS_URL}/reference/javascript/introduction`}>
                       supabase-js
                     </InlineLink>
@@ -96,7 +98,7 @@ export const SecurityOptions = ({ form, layout = 'horizontal' }: SecurityOptions
                         </span>
                       </TooltipTrigger>
                       <TooltipContent side="top">
-                        Enable the Data API to configure default privileges.
+                        {$t('Enable the Data API to configure default privileges.')}
                       </TooltipContent>
                     </Tooltip>
                   )}
@@ -105,13 +107,13 @@ export const SecurityOptions = ({ form, layout = 'horizontal' }: SecurityOptions
                   <FormLabel
                     className={cn('text-sm text-foreground', !dataApi && 'text-foreground-muted')}
                   >
-                    Automatically expose new tables
+                    {$t('Automatically expose new tables')}
                   </FormLabel>
                   <FormDescription className="text-foreground-lighter">
-                    Grants privileges to Data API roles by default, exposing new tables.
+                    {$t('Grants privileges to Data API roles by default, exposing new tables.')}
                     <br />
                     <strong className="font-medium text-foreground-light">
-                      We recommend disabling this to control access manually.
+                      {$t('We recommend disabling this to control access manually.')}
                     </strong>
                   </FormDescription>
                 </div>
@@ -132,10 +134,13 @@ export const SecurityOptions = ({ form, layout = 'horizontal' }: SecurityOptions
                   />
                 </FormControl>
                 <div className="space-y-1">
-                  <FormLabel className="text-sm text-foreground">Enable automatic RLS</FormLabel>
+                  <FormLabel className="text-sm text-foreground">
+                    {$t('Enable automatic RLS')}
+                  </FormLabel>
                   <FormDescription className="text-foreground-lighter">
-                    Create an event trigger that automatically enables Row Level Security on all new
-                    tables in the public schema.
+                    {$t(
+                      'Create an event trigger that automatically enables Row Level Security on all new tables in the public schema.'
+                    )}
                   </FormDescription>
                 </div>
               </FormItem>
@@ -145,9 +150,11 @@ export const SecurityOptions = ({ form, layout = 'horizontal' }: SecurityOptions
           {!dataApi && (
             <Admonition
               type="warning"
-              title="Client libraries need Data API to query your database"
+              title={$t('Client libraries need Data API to query your database')}
             >
-              Disabling it means supabase-js and similar libraries can't query or mutate data.
+              {$t(
+                "Disabling it means supabase-js and similar libraries can't query or mutate data."
+              )}
             </Admonition>
           )}
         </div>

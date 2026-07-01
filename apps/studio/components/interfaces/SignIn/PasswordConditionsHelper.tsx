@@ -1,3 +1,5 @@
+import { t as $t } from '@/lib/i18n'
+
 export type PasswordConditionsHelperProps = {
   password: string
 }
@@ -11,12 +13,17 @@ const PasswordConditionsHelper = ({ password }: PasswordConditionsHelperProps) =
 
   return (
     <div className="text-sm">
-      <PasswordCondition title="Uppercase letter" isMet={hasUppercase} />
-      <PasswordCondition title="Lowercase letter" isMet={hasLowercase} />
-      <PasswordCondition title="Number" isMet={hasNumber} />
-      <PasswordCondition title="Special character (e.g. !?<>@#$%)" isMet={hasSpecialCharacter} />
-      <PasswordCondition title="8 characters or more" isMet={isEightCharactersLong} />
-      {password.length > 72 && <PasswordCondition title="72 characters or less" isMet={false} />}
+      <PasswordCondition title={$t('Uppercase letter')} isMet={hasUppercase} />
+      <PasswordCondition title={$t('Lowercase letter')} isMet={hasLowercase} />
+      <PasswordCondition title={$t('Number')} isMet={hasNumber} />
+      <PasswordCondition
+        title={$t('Special character (e.g. !?<>@#$%)')}
+        isMet={hasSpecialCharacter}
+      />
+      <PasswordCondition title={$t('8 characters or more')} isMet={isEightCharactersLong} />
+      {password.length > 72 && (
+        <PasswordCondition title={$t('72 characters or less')} isMet={false} />
+      )}
     </div>
   )
 }

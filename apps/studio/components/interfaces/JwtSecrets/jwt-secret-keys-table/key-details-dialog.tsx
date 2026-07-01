@@ -14,6 +14,7 @@ import {
 
 import CopyButton from '@/components/ui/CopyButton'
 import { JWTSigningKey } from '@/data/jwt-signing-keys/jwt-signing-keys-query'
+import { t as $t } from '@/lib/i18n'
 
 export function KeyDetailsDialog({
   selectedKey,
@@ -33,22 +34,23 @@ export function KeyDetailsDialog({
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Key Details</DialogTitle>
+        <DialogTitle>{$t('Key Details')}</DialogTitle>
       </DialogHeader>
       <DialogSectionSeparator />
       <DialogSection className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="key-id">Key ID</Label>
+          <Label htmlFor="key-id">{$t('Key ID')}</Label>
           <Input id="key-id" value={selectedKey.id} readOnly />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="discovery-url">Discovery URL</Label>
+          <Label htmlFor="discovery-url">{$t('Discovery URL')}</Label>
           <Input id="discovery-url" value={jwksURL.href} readOnly />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="jwk" className="flex flex-row gap-2 items-center">
             <FileKey className="size-4 text-foreground-light" />
-            Public key set (JSON Web Key Set format)
+
+            {$t('Public key set (JSON Web Key Set format)')}
           </Label>
           <div className="relative">
             <Textarea className="font-mono text-sm pr-10" rows={8} value={jwks} readOnly />

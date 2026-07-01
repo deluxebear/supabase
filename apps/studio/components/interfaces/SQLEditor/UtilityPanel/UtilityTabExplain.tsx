@@ -10,6 +10,7 @@ import {
   isTextFormatExplain,
 } from '@/components/interfaces/ExplainVisualizer/ExplainVisualizer.utils'
 import CopyButton from '@/components/ui/CopyButton'
+import { t as $t } from '@/lib/i18n'
 import { useSqlEditorSessionSnapshot } from '@/state/sql-editor/sql-editor-session-state'
 
 export type UtilityTabExplainProps = {
@@ -26,7 +27,7 @@ export function UtilityTabExplain({ id, isExecuting }: UtilityTabExplainProps) {
     return (
       <div className="flex items-center gap-x-4 px-6 py-4 bg-table-header-light in-data-[theme*=dark]:bg-table-header-dark">
         <Loader2 size={14} className="animate-spin" />
-        <p className="m-0 border-0 font-mono text-sm">Running EXPLAIN ANALYZE...</p>
+        <p className="m-0 border-0 font-mono text-sm">{$t('Running EXPLAIN ANALYZE...')}</p>
       </div>
     )
   }
@@ -48,7 +49,7 @@ export function UtilityTabExplain({ id, isExecuting }: UtilityTabExplainProps) {
               ))
             ) : (
               <p className="font-mono text-sm tracking-tight">
-                Error: {explainResult.error?.message}
+                {$t('Error:')} {explainResult.error?.message}
               </p>
             )}
           </div>
@@ -60,7 +61,7 @@ export function UtilityTabExplain({ id, isExecuting }: UtilityTabExplainProps) {
                   <CopyButton iconOnly variant="default" text={formattedError.join('\n')} />
                 </TooltipTrigger>
                 <TooltipContent side="bottom" align="center">
-                  <span>Copy error</span>
+                  <span>{$t('Copy error')}</span>
                 </TooltipContent>
               </Tooltip>
             )}
@@ -74,7 +75,9 @@ export function UtilityTabExplain({ id, isExecuting }: UtilityTabExplainProps) {
     return (
       <div className="bg-table-header-light in-data-[theme*=dark]:bg-table-header-dark overflow-y-auto">
         <p className="m-0 border-0 px-4 py-4 text-sm text-foreground-light">
-          No execution plan available. The query will be analyzed when you switch to this tab.
+          {$t(
+            'No execution plan available. The query will be analyzed when you switch to this tab.'
+          )}
         </p>
       </div>
     )
@@ -87,7 +90,7 @@ export function UtilityTabExplain({ id, isExecuting }: UtilityTabExplainProps) {
     return (
       <div className="bg-table-header-light in-data-[theme*=dark]:bg-table-header-dark overflow-y-auto">
         <p className="m-0 border-0 px-4 py-4 text-sm text-foreground-light">
-          Unable to parse explain results. Please try running the query again.
+          {$t('Unable to parse explain results. Please try running the query again.')}
         </p>
       </div>
     )
@@ -99,7 +102,7 @@ export function UtilityTabExplain({ id, isExecuting }: UtilityTabExplainProps) {
       <div className="h-full flex flex-col pb-9">
         <div className="px-4 py-3 bg-surface-100 border-b border-default flex items-center gap-2">
           <span className="text-sm text-foreground-light">
-            Visual execution plan is only available for TEXT format. Showing raw output.
+            {$t('Visual execution plan is only available for TEXT format. Showing raw output.')}
           </span>
         </div>
         <Results rows={explainResult.rows} />

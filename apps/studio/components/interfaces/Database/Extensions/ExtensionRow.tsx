@@ -16,6 +16,7 @@ import { DatabaseExtension } from '@/data/database-extensions/database-extension
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsOrioleDb, useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface ExtensionRowProps {
   extension: DatabaseExtension
@@ -77,7 +78,7 @@ export const ExtensionRow = ({ extension }: ExtensionRowProps) => {
                   },
                 }}
               >
-                Deprecated
+                {$t('Deprecated')}
               </ButtonTooltip>
             )}
           </div>
@@ -110,7 +111,7 @@ export const ExtensionRow = ({ extension }: ExtensionRowProps) => {
               )}
               {!isOn && (
                 <span className="text-foreground-lighter text-xs">
-                  Install extension to use {extensionMeta.product}
+                  {$t('Install extension to use')} {extensionMeta.product}
                 </span>
               )}
             </div>
@@ -141,7 +142,7 @@ export const ExtensionRow = ({ extension }: ExtensionRowProps) => {
                   className="font-mono tracking-tighter"
                   href={docsUrl}
                 >
-                  Docs
+                  {$t('Docs')}
                 </a>
               </Button>
             )}
@@ -190,7 +191,7 @@ export const ExtensionRow = ({ extension }: ExtensionRowProps) => {
 
       <ConfirmationModal
         visible={isDisableModalOpen}
-        title="Confirm to disable extension"
+        title={$t('Confirm to disable extension')}
         confirmLabel="Disable"
         variant="destructive"
         confirmLabelLoading="Disabling"
@@ -200,7 +201,9 @@ export const ExtensionRow = ({ extension }: ExtensionRowProps) => {
       >
         <div className="flex flex-col gap-y-3">
           <p className="text-sm text-foreground-light">
-            Are you sure you want to turn OFF the "{extension.name}" extension?
+            {$t('Are you sure you want to turn OFF the "')}
+            {extension.name}
+            {$t('" extension?')}
           </p>
           {EXTENSION_DISABLE_WARNINGS[extension.name] && (
             <Admonition type="warning">{EXTENSION_DISABLE_WARNINGS[extension.name]}</Admonition>

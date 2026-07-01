@@ -9,6 +9,7 @@ import { type SqlSnippet } from './AIAssistant.types'
 import { ModelSelector } from './ModelSelector'
 import { getSnippetContent, SnippetRow } from './SnippetRow'
 import type { AssistantModelId } from '@/lib/ai/model.utils'
+import { t as $t } from '@/lib/i18n'
 
 export interface FormProps {
   /* The ref for the textarea, optional. Exposed for the CommandsPopover to attach events. */
@@ -142,7 +143,7 @@ const AssistantChatFormComponent = forwardRef<HTMLFormElement, FormProps>(
                 onStop ? (
                   <ButtonTooltip
                     variant="outline"
-                    aria-label="Stop response"
+                    aria-label={$t('Stop response')}
                     icon={<Square fill="currentColor" className="scale-75" />}
                     onClick={onStop}
                     className="w-7 h-7 rounded-full p-0 text-center flex items-center justify-center"
@@ -154,7 +155,7 @@ const AssistantChatFormComponent = forwardRef<HTMLFormElement, FormProps>(
               ) : (
                 <ButtonTooltip
                   type="submit"
-                  aria-label="Send message"
+                  aria-label={$t('Send message')}
                   icon={<ArrowUp />}
                   disabled={!canSubmit}
                   className={cn(

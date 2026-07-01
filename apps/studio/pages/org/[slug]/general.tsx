@@ -14,6 +14,7 @@ import OrganizationLayout from '@/components/layouts/OrganizationLayout'
 import { OrganizationSettingsLayout } from '@/components/layouts/ProjectLayout/OrganizationSettingsLayout'
 import { usePermissionsQuery } from '@/data/permissions/permissions-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const OrgGeneralSettings: NextPageWithLayout = () => {
@@ -25,9 +26,9 @@ const OrgGeneralSettings: NextPageWithLayout = () => {
       <PageHeader size="default">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Organization Settings</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Organization Settings')}</PageHeaderTitle>
             <PageHeaderDescription>
-              General configuration, privacy, and lifecycle controls
+              {$t('General configuration, privacy, and lifecycle controls')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -45,7 +46,7 @@ const OrgGeneralSettings: NextPageWithLayout = () => {
 
 OrgGeneralSettings.getLayout = (page) => (
   <DefaultLayout>
-    <OrganizationLayout title="General">
+    <OrganizationLayout title={$t('General')}>
       <OrganizationSettingsLayout>{page}</OrganizationSettingsLayout>
     </OrganizationLayout>
   </DefaultLayout>

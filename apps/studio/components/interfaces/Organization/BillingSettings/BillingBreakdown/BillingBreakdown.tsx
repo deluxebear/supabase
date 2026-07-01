@@ -18,6 +18,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
+import { t as $t } from '@/lib/i18n'
 
 const BillingBreakdown = () => {
   const { slug: orgSlug } = useParams()
@@ -48,7 +49,7 @@ const BillingBreakdown = () => {
     <ScaffoldSection>
       <ScaffoldSectionDetail>
         <div className="sticky space-y-2 top-12 pr-6">
-          <p className="text-foreground text-base m-0">Upcoming Invoice</p>
+          <p className="text-foreground text-base m-0">{$t('Upcoming Invoice')}</p>
           <div className="py-2">
             {selectedOrganization?.managed_by !== MANAGED_BY.AWS_MARKETPLACE && (
               <SparkBar
@@ -72,27 +73,30 @@ const BillingBreakdown = () => {
             {selectedOrganization?.managed_by === MANAGED_BY.AWS_MARKETPLACE ? (
               <>
                 <p>
-                  AWS Marketplace sends two invoices each month: one for your fixed subscription
-                  fee, billed on the day you subscribed, and one for your usage charges from the
-                  previous month, billed by the 3rd.
+                  {$t(
+                    'AWS Marketplace sends two invoices each month: one for your fixed subscription fee, billed on the day you subscribed, and one for your usage charges from the previous month, billed by the 3rd.'
+                  )}
                 </p>
 
                 <p>
-                  For a more detailed breakdown, visit the{' '}
-                  <InlineLink href={`/org/${orgSlug}/usage`}>usage page.</InlineLink>
+                  {$t('For a more detailed breakdown, visit the')}{' '}
+                  <InlineLink href={`/org/${orgSlug}/usage`}>{$t('usage page.')}</InlineLink>
                 </p>
               </>
             ) : (
               <>
-                Your upcoming invoice will continue to update until the end of your billing cycle on{' '}
-                {billingCycleEnd.format('MMMM DD')}. For a more detailed breakdown, visit the{' '}
-                <InlineLink href={`/org/${orgSlug}/usage`}>usage page.</InlineLink>
+                {$t(
+                  'Your upcoming invoice will continue to update until the end of your billing cycle on'
+                )}{' '}
+                {billingCycleEnd.format('MMMM DD')}
+                {$t('. For a more detailed breakdown, visit the')}{' '}
+                <InlineLink href={`/org/${orgSlug}/usage`}>{$t('usage page.')}</InlineLink>
               </>
             )}
           </p>
           <br />
           <p className="text-sm text-foreground-light mt-4">
-            Add-on changes or new projects may take up to an hour to appear.
+            {$t('Add-on changes or new projects may take up to an hour to appear.')}
           </p>
         </div>
       </ScaffoldSectionDetail>

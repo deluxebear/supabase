@@ -2,6 +2,7 @@ import { useParams } from 'common'
 import { useEffect } from 'react'
 
 import { useGitHubAuthorizationCreateMutation } from '@/data/integrations/github-authorization-create-mutation'
+import { t as $t } from '@/lib/i18n'
 
 const GitHubIntegrationAuthorize = () => {
   const { code, state, setup_action } = useParams()
@@ -22,11 +23,11 @@ const GitHubIntegrationAuthorize = () => {
 
   return (
     <div className="h-screen flex flex-col justify-center items-center gap-4">
-      <h2>Completing GitHub Authorization...</h2>
+      <h2>{$t('Completing GitHub Authorization...')}</h2>
 
-      {isSuccess && <p>You can now close this window.</p>}
-      {isPending && <p>Authorizing...</p>}
-      {isError && <p>Unable to authorize. Please try again.</p>}
+      {isSuccess && <p>{$t('You can now close this window.')}</p>}
+      {isPending && <p>{$t('Authorizing...')}</p>}
+      {isError && <p>{$t('Unable to authorize. Please try again.')}</p>}
     </div>
   )
 }

@@ -11,6 +11,7 @@ import { formatDuration } from './QueryPerformance.utils'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
 import { formatSql } from '@/lib/formatSql'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -81,9 +82,9 @@ export const QueryDetail = ({ selectedRow, onClickViewSuggestion, onClose }: Que
     <QueryPanelContainer>
       <QueryPanelSection className="pt-2 border-b relative">
         <div className="flex items-center justify-between mb-4">
-          <h4>Query pattern</h4>
+          <h4>{$t('Query pattern')}</h4>
           <AiAssistantDropdown
-            label="Explain with AI"
+            label={$t('Explain with AI')}
             buildPrompt={buildPromptForCopy}
             onOpenAssistant={handleExplainQuery}
             telemetrySource="query_performance"
@@ -107,13 +108,13 @@ export const QueryDetail = ({ selectedRow, onClickViewSuggestion, onClose }: Que
               className="mt-2 border-brand-400 bg-alternative [&>svg]:p-0.5 [&>svg]:bg-transparent [&>svg]:text-brand"
             >
               <Lightbulb />
-              <AlertTitle>Suggested optimization: Add an index</AlertTitle>
+              <AlertTitle>{$t('Suggested optimization: Add an index')}</AlertTitle>
               <AlertDescription>
-                Adding an index will help this query execute faster
+                {$t('Adding an index will help this query execute faster')}
               </AlertDescription>
               <AlertDescription>
                 <Button className="mt-3" onClick={() => onClickViewSuggestion()}>
-                  View suggestion
+                  {$t('View suggestion')}
                 </Button>
               </AlertDescription>
             </Alert>
@@ -137,7 +138,7 @@ export const QueryDetail = ({ selectedRow, onClickViewSuggestion, onClose }: Que
         </div>
       </QueryPanelSection>
       <QueryPanelSection className="pb-3 pt-6">
-        <h4 className="mb-4">Metadata</h4>
+        <h4 className="mb-4">{$t('Metadata')}</h4>
         <ul className="flex flex-col gap-y-3 divide-y divide-dashed">
           {report
             .filter((x) => x.id !== 'query')

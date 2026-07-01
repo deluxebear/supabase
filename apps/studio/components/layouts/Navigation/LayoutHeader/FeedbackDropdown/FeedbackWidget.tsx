@@ -30,6 +30,7 @@ import { useFeedbackCategoryQuery } from '@/data/feedback/feedback-category'
 import { useSendFeedbackMutation } from '@/data/feedback/feedback-send'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { timeout } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { useTrack } from '@/lib/telemetry/track'
 
@@ -95,7 +96,7 @@ export const FeedbackWidget = ({ onClose, onSwitchToIssueOptions }: FeedbackWidg
     await timeout(100)
     toPng(document.body, { filter })
       .then((dataUrl: any) => setScreenshot(dataUrl))
-      .catch(() => toast.error('Failed to capture screenshot'))
+      .catch(() => toast.error($t('Failed to capture screenshot')))
       .finally(() => setIsSavingScreenshot(false))
   }
 
@@ -129,7 +130,7 @@ export const FeedbackWidget = ({ onClose, onSwitchToIssueOptions }: FeedbackWidg
 
   const sendFeedback = async () => {
     if (feedback.length === 0 && screenshot !== undefined) {
-      return toast.error('Please include a message in your feedback.')
+      return toast.error($t('Please include a message in your feedback.'))
     } else if (feedback.length > 0) {
       setSending(true)
 
@@ -171,20 +172,21 @@ export const FeedbackWidget = ({ onClose, onSwitchToIssueOptions }: FeedbackWidg
       <div className="py-6 px-4 grid gap-4 text-center text-foreground-light">
         <CircleCheck className="mx-auto text-brand-500" size={24} />
         <div className="flex flex-col gap-1">
-          <p className="text-foreground text-base">Your feedback has been sent. Thanks!</p>
+          <p className="text-foreground text-base">{$t('Your feedback has been sent. Thanks!')}</p>
           <p className="text-sm text-balance">
-            We don’t always respond to feedback. If you need help with your project, use the button
-            below.
+            {$t(
+              'We don’t always respond to feedback. If you need help with your project, use the button below.'
+            )}
           </p>
         </div>
       </div>
       <PopoverSeparator />
       <div className="px-4 pt-4 pb-4 flex flex-row items-center justify-between">
         <Button variant="default" size="tiny" onClick={onSwitchToIssueOptions}>
-          Get help
+          {$t('Get help')}
         </Button>
         <Button variant="default" size="tiny" onClick={onClose}>
-          Close
+          {$t('Close')}
         </Button>
       </div>
     </>
@@ -196,7 +198,7 @@ export const FeedbackWidget = ({ onClose, onSwitchToIssueOptions }: FeedbackWidg
     <>
       <div className="p-4">
         <TextArea
-          placeholder="My idea for improving Supabase is..."
+          placeholder={$t('My idea for improving Supabase is...')}
           rows={6}
           value={feedback}
           onChange={(e) => setFeedback(e.target.value)}
@@ -216,18 +218,18 @@ export const FeedbackWidget = ({ onClose, onSwitchToIssueOptions }: FeedbackWidg
           >
             <Admonition
               type="caution"
-              title="This looks like an issue that’s better handled by support"
+              title={$t('This looks like an issue that’s better handled by support')}
               className="rounded-none border-x-0 border-b-0"
             >
               <p>
-                Please{' '}
+                {$t('Please')}{' '}
                 <SupportLink
                   className={cn(InlineLinkClassName)}
                   queryParams={{ projectRef: slug, message: feedback }}
                 >
-                  open a support ticket
+                  {$t('open a support ticket')}
                 </SupportLink>{' '}
-                to get help, as we do not reply to all product feedback.
+                {$t('to get help, as we do not reply to all product feedback.')}
               </p>
             </Admonition>
           </motion.div>
@@ -238,7 +240,7 @@ export const FeedbackWidget = ({ onClose, onSwitchToIssueOptions }: FeedbackWidg
 
       <div className="px-4 pt-4 pb-4 flex flex-row items-center justify-between">
         <Button variant="default" size="tiny" onClick={onSwitchToIssueOptions}>
-          Get help instead
+          {$t('Get help instead')}
         </Button>
         <div className="flex items-center gap-2 flex-row">
           {!!screenshot ? (
@@ -284,7 +286,8 @@ export const FeedbackWidget = ({ onClose, onSwitchToIssueOptions }: FeedbackWidg
                   }}
                 >
                   <Upload size={14} />
-                  Upload screenshot
+
+                  {$t('Upload screenshot')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -293,7 +296,8 @@ export const FeedbackWidget = ({ onClose, onSwitchToIssueOptions }: FeedbackWidg
                   onSelect={() => captureScreenshot()}
                 >
                   <Camera size={14} />
-                  Capture screenshot
+
+                  {$t('Capture screenshot')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -313,7 +317,7 @@ export const FeedbackWidget = ({ onClose, onSwitchToIssueOptions }: FeedbackWidg
               track('send_feedback_button_clicked')
             }}
           >
-            Send
+            {$t('Send')}
           </Button>
         </div>
       </div>

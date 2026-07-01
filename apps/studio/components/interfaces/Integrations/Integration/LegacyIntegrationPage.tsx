@@ -28,6 +28,7 @@ import { IntegrationLogo } from '@/components/interfaces/Integrations/Integratio
 import { InstallOAuthIntegrationButton } from '@/components/interfaces/Integrations/Integration/IntegrationOverviewTabV2/InstallIntegrationSheet/InstallOAuthIntegrationButton'
 import { useIntegrationDetail } from '@/components/interfaces/Integrations/Landing/useIntegrationDetail'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
+import { t as $t } from '@/lib/i18n'
 
 const LegacyIntegrationPage = () => {
   const {
@@ -60,8 +61,8 @@ const LegacyIntegrationPage = () => {
         <PageContainer size="full">
           <PageSection>
             <PageSectionContent>
-              <Admonition type="warning" title="This integration is not currently available">
-                Please try again later or contact support if the problem persists.
+              <Admonition type="warning" title={$t('This integration is not currently available')}>
+                {$t('Please try again later or contact support if the problem persists.')}
               </Admonition>
             </PageSectionContent>
           </PageSection>
@@ -82,7 +83,7 @@ const LegacyIntegrationPage = () => {
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link href={`/project/${ref}/integrations`}>Integrations</Link>
+                <Link href={`/project/${ref}/integrations`}>{$t('Integrations')}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />

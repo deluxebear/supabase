@@ -10,6 +10,7 @@ import {
   ESTIMATED_CHARACTER_PIXEL_WIDTH,
   getColumnDefaultWidth,
 } from '@/components/grid/utils/gridColumns'
+import { t as $t } from '@/lib/i18n'
 import { useTableEditorTableStateSnapshot } from '@/state/table-editor-table'
 
 export interface SelectorGridProps {
@@ -27,7 +28,7 @@ const columnRender = (name: string, isPrimaryKey = false) => {
               <Key size={14} strokeWidth={2} />
             </div>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Primary key</TooltipContent>
+          <TooltipContent side="bottom">{$t('Primary key')}</TooltipContent>
         </Tooltip>
       )}
 

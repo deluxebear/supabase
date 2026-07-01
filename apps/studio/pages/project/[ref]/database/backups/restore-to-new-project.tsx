@@ -15,6 +15,7 @@ import DatabaseLayout from '@/components/layouts/DatabaseLayout/DatabaseLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const RestoreToNewProjectPage: NextPageWithLayout = () => {
@@ -30,7 +31,7 @@ const RestoreToNewProjectPage: NextPageWithLayout = () => {
       <PageHeader>
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Database Backups</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Database Backups')}</PageHeaderTitle>
           </PageHeaderSummary>
         </PageHeaderMeta>
         <PageHeaderNavigationTabs>
@@ -52,7 +53,7 @@ const RestoreToNewProjectPage: NextPageWithLayout = () => {
 
 RestoreToNewProjectPage.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Backups">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Backups')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

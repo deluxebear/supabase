@@ -26,6 +26,7 @@ import type { Policy } from '@/components/interfaces/Database/Policies/PolicyTab
 import { useMainScrollContainer } from '@/components/layouts/MainScrollContainerContext'
 import { NoSearchResults } from '@/components/ui/NoSearchResults'
 import { type Bucket } from '@/data/storage/buckets-query'
+import { t as $t } from '@/lib/i18n'
 
 export type SelectBucketPolicyForAction = {
   addPolicy: (bucketName?: string, table?: string) => void
@@ -63,14 +64,16 @@ export const BucketsPolicies = ({
       <Collapsible open={expanded} onOpenChange={setExpanded}>
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>Buckets</PageSectionTitle>
+            <PageSectionTitle>{$t('Buckets')}</PageSectionTitle>
             <PageSectionDescription>
-              Write policies for each bucket to control access to the bucket and its contents
+              {$t(
+                'Write policies for each bucket to control access to the bucket and its contents'
+              )}
             </PageSectionDescription>
           </PageSectionSummary>
           <CollapsibleTrigger asChild>
             <button>
-              <span className="sr-only">Toggle bucket list</span>
+              <span className="sr-only">{$t('Toggle bucket list')}</span>
               <ChevronUp
                 size={14}
                 className={cn(
@@ -90,7 +93,7 @@ export const BucketsPolicies = ({
               <div className="mb-4">
                 <Input
                   size="tiny"
-                  placeholder="Filter buckets"
+                  placeholder={$t('Filter buckets')}
                   className="block"
                   containerClassName="w-full lg:w-52"
                   value={search || ''}
@@ -229,7 +232,7 @@ type BucketsPoliciesLoaderProps = HTMLAttributes<HTMLDivElement>
 const BucketsPoliciesLoader = forwardRef<HTMLDivElement, BucketsPoliciesLoaderProps>(
   (props: BucketsPoliciesLoaderProps, ref) => (
     <div ref={ref} {...props}>
-      <p className="sr-only">Loading more...</p>
+      <p className="sr-only">{$t('Loading more...')}</p>
       <ShimmeringLoader />
     </div>
   )

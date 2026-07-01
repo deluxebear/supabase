@@ -19,6 +19,7 @@ import CopyButton from '@/components/ui/CopyButton'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { createCliLoginSession } from '@/data/cli/login'
 import { withAuth } from '@/hooks/misc/withAuth'
+import { t as $t } from '@/lib/i18n'
 import { buildStudioPageTitle } from '@/lib/page-title'
 import { useProfile } from '@/lib/profile'
 import type { NextPageWithLayout } from '@/types'
@@ -197,8 +198,8 @@ export const CliLoginScreen = ({
 
     return (
       <CliLoginInterstitial
-        title="Missing sign-in parameters"
-        description="This Supabase CLI sign-in request cannot be authorized"
+        title={$t('Missing sign-in parameters')}
+        description={$t('This Supabase CLI sign-in request cannot be authorized')}
       >
         <div className="flex flex-col gap-3">
           <Admonition
@@ -208,7 +209,7 @@ export const CliLoginScreen = ({
             }: ${status.missingParameters.join(', ')}.`}
           />
           <Button variant="default" block asChild>
-            <Link href="/organizations">Back to dashboard</Link>
+            <Link href="/organizations">{$t('Back to dashboard')}</Link>
           </Button>
         </div>
       </CliLoginInterstitial>
@@ -218,25 +219,25 @@ export const CliLoginScreen = ({
   if (status._tag === 'error') {
     return (
       <CliLoginInterstitial
-        title="Unable to create CLI sign-in"
-        description="Retry the sign-in command from Supabase CLI"
+        title={$t('Unable to create CLI sign-in')}
+        description={$t('Retry the sign-in command from Supabase CLI')}
       >
         <div className="flex flex-col gap-3">
           <Admonition
             type="warning"
             description={
               <>
-                Supabase could not create the CLI sign-in session.
+                {$t('Supabase could not create the CLI sign-in session.')}
                 {status.message && (
                   <span className="mt-1 block text-foreground-lighter">
-                    Error: {status.message}
+                    {$t('Error:')} {status.message}
                   </span>
                 )}
               </>
             }
           />
           <Button variant="default" block asChild>
-            <Link href="/organizations">Back to dashboard</Link>
+            <Link href="/organizations">{$t('Back to dashboard')}</Link>
           </Button>
         </div>
       </CliLoginInterstitial>
@@ -245,8 +246,8 @@ export const CliLoginScreen = ({
 
   return (
     <CliLoginInterstitial
-      title="Authorize Supabase CLI"
-      description="Enter this verification code in Supabase CLI to finish signing in"
+      title={$t('Authorize Supabase CLI')}
+      description={$t('Enter this verification code in Supabase CLI to finish signing in')}
     >
       <div className="flex flex-col gap-5">
         <div className="flex flex-col items-center gap-3">
@@ -280,8 +281,8 @@ export const CliLoginScreen = ({
         <InterstitialAccountRow displayName={displayName} />
 
         <p className="text-center text-xs text-foreground-lighter text-balance">
-          After authorizing, you can close this tab or manage tokens like this one in{' '}
-          <InlineLink href="/account/tokens">Access Tokens</InlineLink>.
+          {$t('After authorizing, you can close this tab or manage tokens like this one in')}{' '}
+          <InlineLink href="/account/tokens">{$t('Access Tokens')}</InlineLink>.
         </p>
       </div>
     </CliLoginInterstitial>

@@ -11,6 +11,7 @@ import { PageSection, PageSectionContent } from 'ui-patterns/PageSection'
 import { EnumeratedTypes } from '@/components/interfaces/Database/EnumeratedTypes/EnumeratedTypes'
 import DatabaseLayout from '@/components/layouts/DatabaseLayout/DatabaseLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
+import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const DatabaseEnumeratedTypes: NextPageWithLayout = () => {
@@ -19,9 +20,9 @@ const DatabaseEnumeratedTypes: NextPageWithLayout = () => {
       <PageHeader size="large">
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>Database Enumerated Types</PageHeaderTitle>
+            <PageHeaderTitle>{$t('Database Enumerated Types')}</PageHeaderTitle>
             <PageHeaderDescription>
-              Custom data types that you can use in your database tables or functions
+              {$t('Custom data types that you can use in your database tables or functions')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
@@ -39,7 +40,7 @@ const DatabaseEnumeratedTypes: NextPageWithLayout = () => {
 
 DatabaseEnumeratedTypes.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Enumerated Types">{page}</DatabaseLayout>
+    <DatabaseLayout title={$t('Enumerated Types')}>{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

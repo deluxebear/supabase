@@ -16,6 +16,7 @@ import { useProjectSettingsV2Query } from '@/data/config/project-settings-v2-que
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export type LogicalBackupCliInstructionsProps = {
   enabled?: boolean
@@ -67,18 +68,20 @@ export const LogicalBackupCliInstructions = ({
   return (
     <div className={cn('space-y-3', className)}>
       <div className="space-y-1">
-        <h4 className="text-sm font-medium">Back up your database with the Supabase CLI</h4>
+        <h4 className="text-sm font-medium">{$t('Back up your database with the Supabase CLI')}</h4>
         <p className="text-sm text-foreground-light">
-          Use your direct connection string — replace {DB_PASSWORD_PLACEHOLDER} with your database
-          password.{' '}
-          <InlineLink href={`${DOCS_URL}/guides/platform/backups`}>Backup documentation</InlineLink>
+          {$t('Use your direct connection string — replace')} {DB_PASSWORD_PLACEHOLDER}{' '}
+          {$t('with your database password.')}{' '}
+          <InlineLink href={`${DOCS_URL}/guides/platform/backups`}>
+            {$t('Backup documentation')}
+          </InlineLink>
           .
         </p>
         <p className="text-sm text-foreground-light">
-          Any reserved character in your password must be percent-encoded in the URL (e.g.{' '}
+          {$t('Any reserved character in your password must be percent-encoded in the URL (e.g.')}{' '}
           <code>@</code>&nbsp;→&nbsp;<code>%40</code>, <code>:</code>&nbsp;→&nbsp;<code>%3A</code>,{' '}
-          <code>/</code>&nbsp;→&nbsp;<code>%2F</code>, <code>#</code>&nbsp;→&nbsp;<code>%23</code>).
-          Encode <code>%</code> as <code>%25</code> first.
+          <code>/</code>&nbsp;→&nbsp;<code>%2F</code>, <code>#</code>&nbsp;→&nbsp;<code>%23</code>
+          {$t('). Encode')} <code>%</code> as <code>%25</code> first.
         </p>
       </div>
 
@@ -100,7 +103,7 @@ export const LogicalBackupCliInstructions = ({
             },
           }}
         >
-          Reset database password
+          {$t('Reset database password')}
         </ButtonTooltip>
       )}
 
@@ -108,9 +111,9 @@ export const LogicalBackupCliInstructions = ({
 
       {isError && (
         <p className="text-sm text-foreground-light">
-          Could not load connection details. Open{' '}
-          <InlineLink href={resetPasswordHref}>Database settings</InlineLink> to copy your
-          connection string manually.
+          {$t('Could not load connection details. Open')}{' '}
+          <InlineLink href={resetPasswordHref}>{$t('Database settings')}</InlineLink>{' '}
+          {$t('to copy your connection string manually.')}
         </p>
       )}
 

@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
+import { t as $t } from '@/lib/i18n'
 
 interface PolicyDefinitionProps {
   operation: string
@@ -38,7 +39,7 @@ const PolicyDefinition = ({
           <div className="flex w-1/3 flex-col space-y-2">
             <div className="flex items-center space-x-2">
               <label className="text-base text-foreground-light" htmlFor="policy-name">
-                USING expression
+                {$t('USING expression')}
               </label>
               <Tooltip>
                 <TooltipTrigger>
@@ -48,23 +49,24 @@ const PolicyDefinition = ({
                 <TooltipContent side="bottom">
                   <div className="w-[300px] space-y-2">
                     <p className="text-xs text-foreground">
-                      This expression will be added to queries that refer to the table if row-level
-                      security is enabled.
+                      {$t(
+                        'This expression will be added to queries that refer to the table if row-level security is enabled.'
+                      )}
                     </p>
                     <p className="text-xs text-foreground">
-                      Rows for which the expression returns true will be visible. Any rows for which
-                      the expression returns false or null will not be visible to the user (in a
-                      SELECT), and will not be available for modification (in an UPDATE or DELETE).
+                      {$t(
+                        'Rows for which the expression returns true will be visible. Any rows for which the expression returns false or null will not be visible to the user (in a SELECT), and will not be available for modification (in an UPDATE or DELETE).'
+                      )}
                     </p>
                     <p className="text-xs text-foreground">
-                      Such rows are silently suppressed - no error is reported.
+                      {$t('Such rows are silently suppressed - no error is reported.')}
                     </p>
                   </div>
                 </TooltipContent>
               </Tooltip>
             </div>
             <p className="text-sm text-foreground-lighter">
-              Provide a SQL conditional expression that returns a boolean.
+              {$t('Provide a SQL conditional expression that returns a boolean.')}
             </p>
           </div>
           <div className={`w-2/3 ${showCheck(operation) ? 'h-32' : 'h-56'}`}>
@@ -81,7 +83,7 @@ const PolicyDefinition = ({
           <div className="flex w-1/3 flex-col space-y-2">
             <div className="flex items-center space-x-2">
               <label className="text-base text-foreground-light" htmlFor="policy-name">
-                WITH CHECK expression
+                {$t('WITH CHECK expression')}
               </label>
               <Tooltip>
                 <TooltipTrigger>
@@ -91,24 +93,26 @@ const PolicyDefinition = ({
                 <TooltipContent side="bottom">
                   <div className="w-[300px] space-y-2">
                     <p className="text-xs text-foreground">
-                      This expression will be used in INSERT and UPDATE queries against the table if
-                      row-level security is enabled.
+                      {$t(
+                        'This expression will be used in INSERT and UPDATE queries against the table if row-level security is enabled.'
+                      )}
                     </p>
                     <p className="text-xs text-foreground">
-                      Only rows for which the expression evaluates to true will be allowed. An error
-                      will be thrown if the expression evaluates to false or null for any of the
-                      records inserted or any of the records that result from the update.
+                      {$t(
+                        'Only rows for which the expression evaluates to true will be allowed. An error will be thrown if the expression evaluates to false or null for any of the records inserted or any of the records that result from the update.'
+                      )}
                     </p>
                     <p className="text-xs text-foreground">
-                      Note that this expression is evaluated against the proposed new contents of
-                      the row, not the original contents.
+                      {$t(
+                        'Note that this expression is evaluated against the proposed new contents of the row, not the original contents.'
+                      )}
                     </p>
                   </div>
                 </TooltipContent>
               </Tooltip>
             </div>
             <p className="text-sm text-foreground-lighter">
-              Provide a SQL conditional expression that returns a boolean.
+              {$t('Provide a SQL conditional expression that returns a boolean.')}
             </p>
           </div>
           <div className={`w-2/3 ${showUsing(operation) ? 'h-32' : 'h-56'}`}>

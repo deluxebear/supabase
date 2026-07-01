@@ -28,6 +28,7 @@ import { ENTITY_TYPE } from '@/data/entity-types/entity-type-constants'
 import { isTableLike } from '@/data/table-editor/table-editor-types'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useCsvFileDrop } from '@/hooks/ui/useCsvFileDrop'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
 import { useTableEditorTableStateSnapshot } from '@/state/table-editor-table'
@@ -298,14 +299,14 @@ export const Grid = memo(
                 <>
                   {page > 1 ? (
                     <div className="flex flex-col items-center justify-center">
-                      <p className="text-sm text-light">This page does not have any data</p>
+                      <p className="text-sm text-light">{$t('This page does not have any data')}</p>
                       <div className="flex items-center space-x-2 mt-4">
                         <Button
                           variant="default"
                           className="pointer-events-auto"
                           onClick={() => snap.setPage(1)}
                         >
-                          Head back to first page
+                          {$t('Head back to first page')}
                         </Button>
                       </div>
                     </div>
@@ -316,12 +317,15 @@ export const Grid = memo(
                         isTableEmpty && isDraggedOver && 'border-2 border-dashed border-brand'
                       )}
                     >
-                      <p className="text-sm text-light pointer-events-auto">This table is empty</p>
+                      <p className="text-sm text-light pointer-events-auto">
+                        {$t('This table is empty')}
+                      </p>
                       {tableEntityType === ENTITY_TYPE.FOREIGN_TABLE ? (
                         <div className="flex items-center space-x-2 mt-4">
                           <p className="text-sm text-light pointer-events-auto">
-                            This table is a foreign table. Add data to the connected source to get
-                            started.
+                            {$t(
+                              'This table is a foreign table. Add data to the connected source to get started.'
+                            )}
                           </p>
                         </div>
                       ) : canImportData ? (
@@ -334,10 +338,10 @@ export const Grid = memo(
                               track('import_data_button_clicked', { tableType: 'Existing Table' })
                             }}
                           >
-                            Import data from CSV
+                            {$t('Import data from CSV')}
                           </Button>
                           <p className="text-xs text-foreground-light pointer-events-auto">
-                            or drag and drop a CSV file here
+                            {$t('or drag and drop a CSV file here')}
                           </p>
                         </div>
                       ) : null}
@@ -345,7 +349,7 @@ export const Grid = memo(
                   ) : (
                     <div className="flex flex-col items-center justify-center">
                       <p className="text-sm text-light pointer-events-auto">
-                        The filters applied have returned no results from this table
+                        {$t('The filters applied have returned no results from this table')}
                       </p>
                       <div className="flex items-center space-x-2 mt-4">
                         <Button
@@ -353,7 +357,7 @@ export const Grid = memo(
                           className="pointer-events-auto"
                           onClick={() => removeAllFilters()}
                         >
-                          Remove all filters
+                          {$t('Remove all filters')}
                         </Button>
                       </div>
                     </div>

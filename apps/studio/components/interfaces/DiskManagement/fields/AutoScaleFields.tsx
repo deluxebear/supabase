@@ -14,6 +14,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { DiskStorageSchemaType } from '../DiskManagement.schema'
 import { DISK_AUTOSCALE_CONFIG_DEFAULTS } from '../ui/DiskManagement.constants'
 import { useDiskAutoscaleCustomConfigQuery } from '@/data/config/disk-autoscale-config-query'
+import { t as $t } from '@/lib/i18n'
 
 type AutoScaleFieldProps = {
   form: UseFormReturn<DiskStorageSchemaType>
@@ -56,7 +57,7 @@ export const AutoScaleFields = ({ form }: AutoScaleFieldProps) => {
           return (
             <FormItemLayout
               layout="horizontal"
-              label="Autoscale growth percent"
+              label={$t('Autoscale growth percent')}
               id={field.name}
               labelOptional="Percentage of current disk size to grow"
               description={
@@ -102,7 +103,7 @@ export const AutoScaleFields = ({ form }: AutoScaleFieldProps) => {
           return (
             <FormItemLayout
               layout="horizontal"
-              label="Minimum increment"
+              label={$t('Minimum increment')}
               id={field.name}
               labelOptional="Minimum value to autoscale disk size by"
               description={
@@ -148,7 +149,7 @@ export const AutoScaleFields = ({ form }: AutoScaleFieldProps) => {
           return (
             <FormItemLayout
               layout="horizontal"
-              label="Maximum disk size"
+              label={$t('Maximum disk size')}
               id={field.name}
               labelOptional="Maximum size that the disk can grow to"
               className="[&>div>span]:text-foreground-lighter"
@@ -180,15 +181,16 @@ export const AutoScaleFields = ({ form }: AutoScaleFieldProps) => {
 
       {
         <Admonition type="default" showIcon={false} className="[&>div]:text-foreground-light">
-          Disk size will automatically be expanded by{' '}
+          {$t('Disk size will automatically be expanded by')}{' '}
           <span className="text-foreground">
             {String(formattedGrowValue).length > 4
               ? formattedGrowValue.toFixed(2)
               : formattedGrowValue}{' '}
             GB
           </span>{' '}
-          to a total of <span className="text-foreground">{formattedTotalSizeAfterGrowth} GB</span>{' '}
-          when the database reaches 90% of the disk size
+          {$t('to a total of')}{' '}
+          <span className="text-foreground">{formattedTotalSizeAfterGrowth} GB</span>{' '}
+          {$t('when the database reaches 90% of the disk size')}
         </Admonition>
       }
     </>

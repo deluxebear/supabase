@@ -6,6 +6,7 @@ import { UpgradePlanButton } from '@/components/ui/UpgradePlanButton'
 import { PricingMetric } from '@/data/analytics/org-daily-stats-query'
 import { OrgMetricsUsage, useOrgUsageQuery } from '@/data/usage/org-usage-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 type MetricUnit = 'gigabytes' | 'count'
@@ -215,8 +216,10 @@ export const PlanUsageCard = () => {
       >
         <div className="flex items-center justify-between gap-4 p-4 pb-2">
           <div className="flex flex-col min-w-0">
-            <h5 className="text-sm text-foreground truncate">Free plan usage</h5>
-            <p className="text-xs text-foreground-lighter truncate">Current billing cycle</p>
+            <h5 className="text-sm text-foreground truncate">{$t('Free plan usage')}</h5>
+            <p className="text-xs text-foreground-lighter truncate">
+              {$t('Current billing cycle')}
+            </p>
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0">
             <UpgradePlanButton

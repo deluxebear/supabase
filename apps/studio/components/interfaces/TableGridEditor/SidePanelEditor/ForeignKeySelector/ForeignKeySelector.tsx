@@ -38,6 +38,7 @@ import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
 import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 const EMPTY_STATE: ForeignKey = {
   id: undefined,
@@ -312,7 +313,7 @@ export const ForeignKeySelector = ({
           <div className="py-6 space-y-6">
             <InformationBox
               icon={<HelpCircle size={20} strokeWidth={1.5} />}
-              title="What are foreign keys?"
+              title={$t('What are foreign keys?')}
               description={`Foreign keys help maintain referential integrity of your data by ensuring that no
                 one can insert rows into the table that do not have a matching entry to another
                 table.`}
@@ -323,7 +324,7 @@ export const ForeignKeySelector = ({
               id="schema"
               isReactForm={false}
               layout="vertical"
-              label="Select a schema"
+              label={$t('Select a schema')}
               className="gap-[2px]"
               size="tiny"
             >
@@ -344,7 +345,7 @@ export const ForeignKeySelector = ({
               id="table"
               isReactForm={false}
               layout="vertical"
-              label="Select a table to reference to"
+              label={$t('Select a table to reference to')}
               className="gap-[2px]"
               size="tiny"
             >
@@ -376,16 +377,16 @@ export const ForeignKeySelector = ({
                 {isLoadingSelectedTable ? (
                   <div className="flex py-6 flex-col items-center justify-center space-y-2">
                     <Loader2 size={14} className="animate-spin" />
-                    <p className="text-sm text-foreground-light">Loading table columns</p>
+                    <p className="text-sm text-foreground-light">{$t('Loading table columns')}</p>
                   </div>
                 ) : (
                   <div className="flex flex-col gap-y-3">
                     <label className="text-foreground-light text-sm">
-                      Select columns from{' '}
+                      {$t('Select columns from')}{' '}
                       <code className="text-code-inline">
                         {fk.schema}.{fk.table}
                       </code>{' '}
-                      to reference to
+                      {$t('to reference to')}
                     </label>
                     <div className="grid grid-cols-10 gap-y-2">
                       <div className="col-span-5 text-xs">
@@ -397,7 +398,7 @@ export const ForeignKeySelector = ({
                       {fk.columns.length === 0 && (
                         <Alert className="col-span-10 py-2 px-3">
                           <AlertDescription>
-                            There are no foreign key relations between the tables
+                            {$t('There are no foreign key relations between the tables')}
                           </AlertDescription>
                         </Alert>
                       )}
@@ -480,15 +481,16 @@ export const ForeignKeySelector = ({
                     </div>
                     <div className="space-y-2">
                       <Button variant="default" onClick={addColumn}>
-                        Add another column
+                        {$t('Add another column')}
                       </Button>
                       {errors.columns && <p className="text-red-900 text-sm">{errors.columns}</p>}
                       {hasTypeErrors && (
                         <Alert variant="warning">
-                          <AlertTitle>Column types do not match</AlertTitle>
+                          <AlertTitle>{$t('Column types do not match')}</AlertTitle>
                           <AlertDescription>
-                            The following columns cannot be referenced as they are not of the same
-                            type:
+                            {$t(
+                              'The following columns cannot be referenced as they are not of the same type:'
+                            )}
                           </AlertDescription>
                           <ul className="list-disc pl-5 mt-2 text-foreground-light">
                             {(errors?.types ?? []).map((x, idx: number) => {
@@ -501,7 +503,8 @@ export const ForeignKeySelector = ({
                                     x.sourceTypeSchema,
                                     x.sourceIsArray
                                   )}
-                                  ) and <code className="text-code-inline">{x.target}</code>(
+                                  {$t(') and')} <code className="text-code-inline">{x.target}</code>
+                                  (
                                   {displayColumnType(
                                     x.targetType,
                                     x.targetTypeSchema,
@@ -516,10 +519,11 @@ export const ForeignKeySelector = ({
                       )}
                       {hasTypeNotices && (
                         <Alert>
-                          <AlertTitle>Column types will be updated</AlertTitle>
+                          <AlertTitle>{$t('Column types will be updated')}</AlertTitle>
                           <AlertDescription>
-                            The following columns will have their types updated to match their
-                            referenced column
+                            {$t(
+                              'The following columns will have their types updated to match their referenced column'
+                            )}
                           </AlertDescription>
                           <ul className="list-disc pl-5 mt-2 text-foreground-light">
                             {(errors?.typeNotice ?? []).map((x, idx: number) => {
@@ -551,33 +555,38 @@ export const ForeignKeySelector = ({
 
                     <InformationBox
                       icon={<HelpCircle size="20" strokeWidth={1.5} />}
-                      title="Which action is most appropriate?"
+                      title={$t('Which action is most appropriate?')}
                       description={
                         <>
                           <p>
-                            The choice of the action depends on what kinds of objects the related
-                            tables represent:
+                            {$t(
+                              'The choice of the action depends on what kinds of objects the related tables represent:'
+                            )}
                           </p>
                           <ul className="mt-2 list-disc pl-4 space-y-1">
                             <li>
-                              <code className="text-code-inline">Cascade</code>: if the referencing
-                              table represents something that is a component of what is represented
-                              by the referenced table and cannot exist independently
+                              <code className="text-code-inline">{$t('Cascade')}</code>
+                              {$t(
+                                ': if the referencing table represents something that is a component of what is represented by the referenced table and cannot exist independently'
+                              )}
                             </li>
                             <li>
-                              <code className="text-code-inline">Restrict</code> or{' '}
-                              <code className="text-code-inline">No action</code>: if the two tables
-                              represent independent objects
+                              <code className="text-code-inline">{$t('Restrict')}</code> or{' '}
+                              <code className="text-code-inline">{$t('No action')}</code>
+                              {$t(': if the two tables represent independent objects')}
                             </li>
                             <li>
-                              <code className="text-code-inline">Set NULL</code> or{' '}
-                              <code className="text-code-inline">Set default</code>: if a
-                              foreign-key relationship represents optional information
+                              <code className="text-code-inline">{$t('Set NULL')}</code> or{' '}
+                              <code className="text-code-inline">{$t('Set default')}</code>
+                              {$t(
+                                ': if a foreign-key relationship represents optional information'
+                              )}
                             </li>
                           </ul>
                           <p className="mt-2">
-                            Typically, restricting and cascading deletes are the most common
-                            options, but the default behavior is no action
+                            {$t(
+                              'Typically, restricting and cascading deletes are the most common options, but the default behavior is no action'
+                            )}
                           </p>
                         </>
                       }
@@ -589,7 +598,7 @@ export const ForeignKeySelector = ({
                       id="updateAction"
                       isReactForm={false}
                       layout="vertical"
-                      label="Action if referenced row is updated"
+                      label={$t('Action if referenced row is updated')}
                       description={
                         <p>
                           {generateCascadeActionDescription(
@@ -624,7 +633,7 @@ export const ForeignKeySelector = ({
                       id="deletionAction"
                       isReactForm={false}
                       layout="vertical"
-                      label="Action if referenced row is removed"
+                      label={$t('Action if referenced row is removed')}
                       description={
                         <p>
                           {generateCascadeActionDescription(

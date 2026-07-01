@@ -6,6 +6,7 @@ import { cn } from 'ui'
 import { POLICY_MODAL_VIEWS } from '@/components/interfaces/Database/Policies/Policies.constants'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const StoragePolicyEditorModalTitle = ({
   view,
@@ -36,9 +37,9 @@ export const StoragePolicyEditorModalTitle = ({
             )}
           >
             <ChevronLeft strokeWidth={2} size={14} />
-            <span className="sr-only">Back</span>
+            <span className="sr-only">{$t('Back')}</span>
           </button>
-          <span>Select a template to use for your new policy</span>
+          <span>{$t('Select a template to use for your new policy')}</span>
         </div>
       </div>
     )
@@ -55,7 +56,7 @@ export const StoragePolicyEditorModalTitle = ({
         )}
       >
         <X size={16} />
-        <span className="sr-only">Close</span>
+        <span className="sr-only">{$t('Close')}</span>
       </DialogPrimitive.Close>
     </div>
   )

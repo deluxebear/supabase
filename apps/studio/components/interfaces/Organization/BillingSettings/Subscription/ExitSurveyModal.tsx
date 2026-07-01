@@ -20,6 +20,7 @@ import { CANCELLATION_REASONS } from '@/components/interfaces/Billing/Billing.co
 import { useSendDowngradeFeedbackMutation } from '@/data/feedback/exit-survey-send'
 import { getComputeSize, OrgProject } from '@/data/projects/org-projects-infinite-query'
 import { useOrgSubscriptionUpdateMutation } from '@/data/subscriptions/org-subscription-update-mutation'
+import { t as $t } from '@/lib/i18n'
 
 export interface ExitSurveyModalProps {
   visible: boolean
@@ -72,7 +73,7 @@ export const ExitSurveyModal = ({ visible, projects, onClose }: ExitSurveyModalP
 
   const onSubmit = async () => {
     if (selectedReason.length === 0) {
-      return toast.error('Please select a reason for canceling your subscription')
+      return toast.error($t('Please select a reason for canceling your subscription'))
     }
 
     await downgradeOrganization()
@@ -115,13 +116,13 @@ export const ExitSurveyModal = ({ visible, projects, onClose }: ExitSurveyModalP
     <Dialog open={visible} onOpenChange={onClose}>
       <DialogContent size="xlarge">
         <DialogHeader>
-          <DialogTitle>Help us improve</DialogTitle>
+          <DialogTitle>{$t('Help us improve')}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection>
           <div className="flex flex-col space-y-4">
             <p className="text-sm text-foreground-light">
-              What made you decide to downgrade your plan?
+              {$t('What made you decide to downgrade your plan?')}
             </p>
             <div className="space-y-8 mt-6">
               <div className="flex flex-wrap gap-2" data-toggle="buttons">
@@ -172,8 +173,9 @@ export const ExitSurveyModal = ({ visible, projects, onClose }: ExitSurveyModalP
                 title={`${projectsWithComputeDowngrade.length} of your projects will be restarted upon clicking confirm,`}
                 description={
                   <>
-                    This is due to changes in compute instances from the downgrade. Affected
-                    projects include{' '}
+                    {$t(
+                      'This is due to changes in compute instances from the downgrade. Affected projects include'
+                    )}{' '}
                     {projectsWithComputeDowngrade.map((project) => project.name).join(', ')}.
                   </>
                 }
@@ -183,15 +185,16 @@ export const ExitSurveyModal = ({ visible, projects, onClose }: ExitSurveyModalP
 
           <div className="flex items-center justify-between border-t px-4 py-4">
             <p className="text-xs text-foreground-lighter">
-              The unused amount for the remaining time of your billing cycle will be refunded as
-              credits
+              {$t(
+                'The unused amount for the remaining time of your billing cycle will be refunded as credits'
+              )}
             </p>
           </div>
         </DialogSection>
 
         <DialogFooter>
           <Button variant="default" onClick={() => onClose()}>
-            Cancel
+            {$t('Cancel')}
           </Button>
           <ProjectUpdateDisabledTooltip projectUpdateDisabled={subscriptionUpdateDisabled}>
             <Button
@@ -201,7 +204,7 @@ export const ExitSurveyModal = ({ visible, projects, onClose }: ExitSurveyModalP
               disabled={subscriptionUpdateDisabled || isSubmitting}
               onClick={onSubmit}
             >
-              Downgrade Now
+              {$t('Downgrade Now')}
             </Button>
           </ProjectUpdateDisabledTooltip>
         </DialogFooter>

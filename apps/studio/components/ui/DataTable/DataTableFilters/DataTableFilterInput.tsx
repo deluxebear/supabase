@@ -6,6 +6,7 @@ import type { DataTableInputFilterField } from '../DataTable.types'
 import { useDebounce } from '../hooks/useDebounce'
 import { InputWithAddons } from '../primitives/InputWithAddons'
 import { useDataTable } from '../providers/DataTableProvider'
+import { t as $t } from '@/lib/i18n'
 
 function getFilter(filterValue: unknown) {
   return typeof filterValue === 'string' ? filterValue : null
@@ -39,7 +40,7 @@ export function DataTableFilterInput<TData>({ value: _value }: DataTableInputFil
         {value}
       </Label>
       <InputWithAddons
-        placeholder="Search"
+        placeholder={$t('Search')}
         leading={<Search className="h-4 w-4" />}
         containerClassName="h-9 rounded-sm"
         name={value}

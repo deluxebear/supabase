@@ -5,6 +5,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { DataApiDisabledAlert } from './DataApiDisabledAlert'
 import type { DataApiFormValues } from './DataApiEnableSwitch.types'
 import { FormActions } from '@/components/ui/Forms/FormActions'
+import { t as $t } from '@/lib/i18n'
 
 export const DataApiEnableSwitchForm = ({
   form,
@@ -36,8 +37,10 @@ export const DataApiEnableSwitchForm = ({
               <FormItem className="space-y-4">
                 <FormItemLayout
                   layout="flex-row-reverse"
-                  label="Enable Data API"
-                  description="When enabled you will be able to use any Supabase client library and PostgREST endpoints with any schema configured in the Settings tab."
+                  label={$t('Enable Data API')}
+                  description={$t(
+                    'When enabled you will be able to use any Supabase client library and PostgREST endpoints with any schema configured in the Settings tab.'
+                  )}
                 >
                   <FormControl>
                     <Switch

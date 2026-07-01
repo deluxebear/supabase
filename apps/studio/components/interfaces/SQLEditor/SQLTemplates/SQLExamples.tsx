@@ -10,6 +10,7 @@ import { SQL_TEMPLATES } from '@/components/interfaces/SQLEditor/SQLEditor.queri
 import { ActionCard } from '@/components/layouts/Tabs/ActionCard'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { useTrack } from '@/lib/telemetry/track'
 import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
@@ -39,7 +40,7 @@ const SQLExamples = () => {
     if (!profile) return console.error('Profile is required')
 
     if (!canCreateSQLSnippet) {
-      return toast('Your queries will not be saved as you do not have sufficient permissions')
+      return toast($t('Your queries will not be saved as you do not have sufficient permissions'))
     }
 
     try {
@@ -62,8 +63,10 @@ const SQLExamples = () => {
     <div className="block h-full space-y-8 overflow-y-auto p-6 px-10 bg-dash-sidebar dark:bg-surface-100">
       <div className="mb-8">
         <div className="mb-6">
-          <h2 className="mb-1">Examples</h2>
-          <p className="text-foreground-light text-sm">End-to-end examples and starter projects</p>
+          <h2 className="mb-1">{$t('Examples')}</h2>
+          <p className="text-foreground-light text-sm">
+            {$t('End-to-end examples and starter projects')}
+          </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
           {quickStart.map((x, i) => (

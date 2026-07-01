@@ -27,6 +27,7 @@ import CopyButton from '@/components/ui/CopyButton'
 import { useIncidentStatusQuery } from '@/data/platform/incident-status-query'
 import { useStateTransition } from '@/hooks/misc/useStateTransition'
 import { BASE_PATH, DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export { SupportForm, SupportFormStatusButton } from './SupportSidebarForm'
@@ -72,7 +73,7 @@ function SupportFormPageContent() {
 
   const sendTelemetry = useSupportFormTelemetry()
   useStateTransition(state, 'submitting', 'success', (_, curr) => {
-    toast.success('Support request sent. Thank you!')
+    toast.success($t('Support request sent. Thank you!'))
     sendTelemetry({
       projectRef: curr.sentProjectRef,
       orgSlug: curr.sentOrgSlug,
@@ -135,7 +136,7 @@ function SupportFormHeader() {
     <div className="flex flex-col items-start justify-between gap-y-2 sm:flex-row sm:items-center">
       <div className="flex items-center space-x-3">
         <SVG src={`${BASE_PATH}/img/supabase-logo.svg`} className="h-4 w-4" />
-        <h3 className="m-0 text-lg">Supabase support</h3>
+        <h3 className="m-0 text-lg">{$t('Supabase support')}</h3>
       </div>
 
       <div className="flex items-center gap-x-3">
@@ -145,7 +146,7 @@ function SupportFormHeader() {
             target="_blank"
             rel="noreferrer"
           >
-            Troubleshooting
+            {$t('Troubleshooting')}
           </Link>
         </Button>
         <Tooltip>
@@ -177,7 +178,7 @@ function SupportFormHeader() {
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom" align="center">
-            Check the Supabase status page
+            {$t('Check the Supabase status page')}
           </TooltipContent>
         </Tooltip>
       </div>
@@ -195,14 +196,16 @@ function SupportFormDirectEmailInfo({ projectRef }: SupportFormDirectEmailInfoPr
   return (
     <Admonition
       type="default"
-      title="Having trouble submitting the form?"
+      title={$t('Having trouble submitting the form?')}
       description={
         <>
           <p className="mb-2.5!">
-            Please email us directly. Include your project ID and as much information as possible.
+            {$t(
+              'Please email us directly. Include your project ID and as much information as possible.'
+            )}
           </p>
           <p className="flex items-center gap-x-1.5 flex-wrap">
-            Email:{' '}
+            {$t('Email:')}{' '}
             <span className="inline-flex items-center gap-x-1">
               <a
                 href={`mailto:support@supabase.com?subject=${encodeURIComponent('Support Request')}${hasProjectRef ? `${encodeURIComponent(' for Project ID: ')}${encodeURIComponent(projectRef)}` : ''}&body=${encodeURIComponent('Here is a detailed description of the problem I am experiencing and any other information that might be helpful...')}`}
@@ -216,20 +219,20 @@ function SupportFormDirectEmailInfo({ projectRef }: SupportFormDirectEmailInfoPr
                 variant="text"
                 text="support@supabase.com"
                 iconOnly
-                onClick={() => toast.success('Copied email address to clipboard')}
+                onClick={() => toast.success($t('Copied email address to clipboard'))}
               />
             </span>
           </p>
           {hasProjectRef && (
             <p className="flex items-center gap-x-1.5 flex-wrap">
-              Project ID:{' '}
+              {$t('Project ID:')}{' '}
               <span className="inline-flex items-center gap-x-1">
                 <code className="text-code-inline text-foreground-light!">{projectRef}</code>
                 <CopyButton
                   iconOnly
                   variant="text"
                   text={projectRef}
-                  onClick={() => toast.success('Copied project ID to clipboard')}
+                  onClick={() => toast.success($t('Copied project ID to clipboard'))}
                 />
               </span>
             </p>

@@ -17,6 +17,7 @@ import { isTableLike } from '@/data/table-editor/table-editor-types'
 import { useGetCellValueMutation } from '@/data/table-rows/get-cell-value-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { minifyJSON, prettifyJSON, removeJSONTrailingComma, tryParseJson } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 interface JsonEditProps {
   row?: { [key: string]: any }
@@ -69,7 +70,7 @@ export const JsonEditor = ({
         if (onSaveJSON) onSaveJSON(minifiedJSON, resolve)
       } catch (error: any) {
         resolve()
-        toast.error('JSON seems to have an invalid structure.')
+        toast.error($t('JSON seems to have an invalid structure.'))
       }
     },
     [onSaveJSON]
@@ -103,7 +104,7 @@ export const JsonEditor = ({
     )
       return
     if (selectedTable.primary_keys.length === 0) {
-      return toast('Unable to load value as table has no primary keys')
+      return toast($t('Unable to load value as table has no primary keys'))
     }
 
     const pkMatch = selectedTable.primary_keys.reduce((a, b) => {
@@ -148,11 +149,11 @@ export const JsonEditor = ({
         <div className="flex items-center justify-between">
           {view === 'edit' ? (
             <p>
-              {readOnly ? 'Viewing' : 'Editing'} value of: <code>{column}</code>
+              {readOnly ? 'Viewing' : 'Editing'} {$t('value of:')} <code>{column}</code>
             </p>
           ) : (
             <p>
-              Viewing value of: <code>{column}</code>
+              {$t('Viewing value of:')} <code>{column}</code>
             </p>
           )}
           {(!isTruncated || (isTruncated && isSuccess)) && (
@@ -212,14 +213,17 @@ export const JsonEditor = ({
             )}
           >
             <div className="flex flex-col gap-y-1 w-80">
-              <p>JSON value is larger than {MAX_CHARACTERS.toLocaleString()} characters</p>
+              <p>
+                {$t('JSON value is larger than')} {MAX_CHARACTERS.toLocaleString()} characters
+              </p>
               <p className="text-foreground-light">
-                You may try to render the entire JSON value, but your browser may run into
-                performance issues
+                {$t(
+                  'You may try to render the entire JSON value, but your browser may run into performance issues'
+                )}
               </p>
             </div>
             <Button variant="default" loading={isPending} onClick={loadFullValue}>
-              Load full JSON data
+              {$t('Load full JSON data')}
             </Button>
           </div>
         )}

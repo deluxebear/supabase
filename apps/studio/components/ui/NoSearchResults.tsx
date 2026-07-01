@@ -1,5 +1,7 @@
 import { Button, cn } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 export interface NoSearchResultsProps {
   searchString?: string
   withinTableCell?: boolean
@@ -33,7 +35,7 @@ export const NoSearchResults = ({
       </div>
       {onResetFilter !== undefined && (
         <Button variant="default" onClick={() => onResetFilter()}>
-          Reset filter
+          {$t('Reset filter')}
         </Button>
       )}
     </div>

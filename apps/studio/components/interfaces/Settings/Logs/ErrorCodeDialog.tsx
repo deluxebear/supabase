@@ -15,6 +15,7 @@ import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { useErrorCodesQuery } from '@/data/content-api/docs-error-codes-query'
 import { Service, type ErrorCodeQueryQuery } from '@/data/graphql/graphql'
+import { t as $t } from '@/lib/i18n'
 
 interface ErrorCodeDialogProps {
   open: boolean
@@ -41,7 +42,7 @@ export const ErrorCodeDialog = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="mb-4">
-            Help for error code <code>{errorCode}</code>
+            {$t('Help for error code')} <code>{errorCode}</code>
           </DialogTitle>
           <DialogDescription>
             {isLoading && <LoadingState />}
@@ -64,12 +65,12 @@ const LoadingState = () => (
 const SuccessState = ({ data }: { data: ErrorCodeQueryQuery | undefined }) => {
   const errors = data?.errors?.nodes?.filter((error) => !!error.message)
   if (!errors || errors.length === 0) {
-    return <>No information found for this error code.</>
+    return <>{$t('No information found for this error code.')}</>
   }
 
   return (
     <>
-      <p className="mb-4">Possible explanations for this error:</p>
+      <p className="mb-4">{$t('Possible explanations for this error:')}</p>
       <div className="grid gap-2 grid-cols-[max-content_1fr]">
         {errors.map((error) => (
           <ErrorExplanation key={`${error.service}-${error.code}`} {...error} />
@@ -100,12 +101,12 @@ const ErrorExplanation = ({
 const ErrorState = ({ refetch }: { refetch?: () => void }) => (
   <Alert variant="warning">
     <AlertTriangle />
-    <AlertTitle>Lookup failed</AlertTitle>
+    <AlertTitle>{$t('Lookup failed')}</AlertTitle>
     <AlertDescription>
-      <p>Failed to look up error code help info</p>
+      <p>{$t('Failed to look up error code help info')}</p>
       {refetch && (
         <Button_Shadcn_ variant="outline" size="sm" className="mt-2" onClick={refetch}>
-          Try again
+          {$t('Try again')}
         </Button_Shadcn_>
       )}
     </AlertDescription>

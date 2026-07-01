@@ -20,6 +20,7 @@ import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { ASSISTANT_MODELS, isAdvanceOnlyModelId } from '@/lib/ai/model.utils'
 import type { AssistantModelId } from '@/lib/ai/model.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface ModelSelectorProps {
   selectedModel: AssistantModelId
@@ -83,12 +84,12 @@ export const ModelSelector = ({ selectedModel, onSelectModel }: ModelSelectorPro
                       <TooltipTrigger asChild>
                         <div>
                           <Badge role="button" variant="warning">
-                            Upgrade
+                            {$t('Upgrade')}
                           </Badge>
                         </div>
                       </TooltipTrigger>
                       <TooltipContent side="right">
-                        {m.id} is available on Pro plans and above
+                        {m.id} {$t('is available on Pro plans and above')}
                       </TooltipContent>
                     </Tooltip>
                   ) : (

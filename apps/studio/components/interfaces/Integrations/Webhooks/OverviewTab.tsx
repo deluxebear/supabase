@@ -13,6 +13,7 @@ import { useHooksEnableMutation } from '@/data/database/hooks-enable-mutation'
 import { useSchemasQuery } from '@/data/database/schemas-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 const WebhooksContent = () => {
   const { ref: projectRef } = useParams()
@@ -36,7 +37,7 @@ const WebhooksContent = () => {
   const { mutate: enableHooks, isPending: isEnablingHooks } = useHooksEnableMutation({
     onSuccess: async () => {
       await refetch()
-      toast.success('Successfully enabled webhooks')
+      toast.success($t('Successfully enabled webhooks'))
     },
   })
 
@@ -64,10 +65,15 @@ const WebhooksContent = () => {
   if (isSchemasLoaded && isHooksEnabled) return null
 
   return (
-    <Admonition showIcon={false} type="default" title="Enable database webhooks on your project">
+    <Admonition
+      showIcon={false}
+      type="default"
+      title={$t('Enable database webhooks on your project')}
+    >
       <p>
-        Database Webhooks can be used to trigger serverless functions or send requests to an HTTP
-        endpoint
+        {$t(
+          'Database Webhooks can be used to trigger serverless functions or send requests to an HTTP endpoint'
+        )}
       </p>
       <ButtonTooltip
         className="mt-2 w-fit"
@@ -82,7 +88,7 @@ const WebhooksContent = () => {
           },
         }}
       >
-        Enable webhooks
+        {$t('Enable webhooks')}
       </ButtonTooltip>
     </Admonition>
   )

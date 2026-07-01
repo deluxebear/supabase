@@ -5,6 +5,8 @@ import { Button } from 'ui'
 import { Admonition } from 'ui-patterns/admonition'
 import { Input } from 'ui-patterns/DataInputs/Input'
 
+import { t as $t } from '@/lib/i18n'
+
 interface NewOAuthAppBannerProps {
   oauthApp: OAuthClient
   onClose: () => void
@@ -19,8 +21,9 @@ export const NewOAuthAppBanner = ({ oauthApp, onClose }: NewOAuthAppBannerProps)
       description={
         <div className="w-full space-y-2">
           <p className="text-sm">
-            Do copy this client id and client secret and store it in a secure place - you will not
-            be able to see it again.
+            {$t(
+              'Do copy this client id and client secret and store it in a secure place - you will not be able to see it again.'
+            )}
           </p>
           <div className="">
             <Input
@@ -30,7 +33,7 @@ export const NewOAuthAppBanner = ({ oauthApp, onClose }: NewOAuthAppBannerProps)
               className="input-mono"
               value={oauthApp?.client_id}
               onChange={() => {}}
-              onCopy={() => toast.success('Client Id copied to clipboard')}
+              onCopy={() => toast.success($t('Client Id copied to clipboard'))}
             />
           </div>
           <div className="">
@@ -41,7 +44,7 @@ export const NewOAuthAppBanner = ({ oauthApp, onClose }: NewOAuthAppBannerProps)
               className=" input-mono"
               value={oauthApp?.client_secret}
               onChange={() => {}}
-              onCopy={() => toast.success('Client secret copied to clipboard')}
+              onCopy={() => toast.success($t('Client secret copied to clipboard'))}
             />
           </div>
         </div>

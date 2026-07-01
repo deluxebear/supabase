@@ -13,6 +13,7 @@ import type { ReportConfig } from '@/data/reports/v2/reports.types'
 import { useFillTimeseriesSorted } from '@/hooks/analytics/useFillTimeseriesSorted'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 export interface ReportChartV2Props {
   report: ReportConfig
@@ -153,7 +154,7 @@ export const ReportChartV2 = ({
           <Loader2 className="size-5 animate-spin text-foreground-light" />
         ) : isErrorState ? (
           <p className="text-sm text-foreground-light text-center h-full flex items-center justify-center">
-            Error loading chart data
+            {$t('Error loading chart data')}
           </p>
         ) : (
           <div className="w-full relative">

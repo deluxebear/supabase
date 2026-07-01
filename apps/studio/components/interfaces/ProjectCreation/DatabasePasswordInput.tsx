@@ -8,6 +8,7 @@ import { CreateProjectForm } from './ProjectCreation.schema'
 import { SpecialSymbolsCallout } from './SpecialSymbolsCallout'
 import Panel from '@/components/ui/Panel'
 import { PasswordStrengthBar } from '@/components/ui/PasswordStrengthBar'
+import { t as $t } from '@/lib/i18n'
 import { passwordStrength } from '@/lib/password-strength'
 import { generateStrongPassword } from '@/lib/project'
 
@@ -54,7 +55,7 @@ export const DatabasePasswordInput = ({ form }: DatabasePasswordInputProps) => {
 
           return (
             <FormItemLayout
-              label="Database password"
+              label={$t('Database password')}
               layout="horizontal"
               description={
                 <>
@@ -72,7 +73,7 @@ export const DatabasePasswordInput = ({ form }: DatabasePasswordInputProps) => {
                 <Input
                   copy={field.value.length > 0}
                   type="password"
-                  placeholder="Type in a strong password"
+                  placeholder={$t('Type in a strong password')}
                   {...field}
                   autoComplete="off"
                   onChange={async (event) => {

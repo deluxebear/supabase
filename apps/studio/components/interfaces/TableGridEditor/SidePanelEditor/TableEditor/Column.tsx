@@ -29,6 +29,7 @@ import { checkIfRelationChanged } from './ForeignKeysManagement/ForeignKeysManag
 import { useForeignKeyConstraintsQuery } from '@/data/database/foreign-key-constraints-query'
 import type { EnumeratedType } from '@/data/enumerated-types/enumerated-types-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { EMPTY_ARR, EMPTY_OBJ } from '@/lib/void'
 
 /**
@@ -132,7 +133,7 @@ export const Column = ({
       <div className="w-[25%]">
         <div className="flex w-[95%] items-center justify-between">
           <Input
-            aria-label="Column name"
+            aria-label={$t('Column name')}
             size="small"
             value={column.name}
             title={column.name}
@@ -165,7 +166,8 @@ export const Column = ({
                 align="center"
               >
                 <div className="text-xs px-2 pt-2">
-                  Involved in {relations.length} foreign key{relations.length > 1 ? 's' : ''}
+                  {$t('Involved in')} {relations.length} {$t('foreign key')}
+                  {relations.length > 1 ? 's' : ''}
                 </div>
                 <Command>
                   <CommandList>
@@ -195,7 +197,7 @@ export const Column = ({
                                 <p className="truncate">
                                   {relation.name || (
                                     <>
-                                      To{' '}
+                                      {$t('To')}{' '}
                                       {relation.columns
                                         .filter((c) => c.source === column.name)
                                         .map((c) => {
@@ -207,7 +209,7 @@ export const Column = ({
                                         })}
                                       {relation.columns.length > 1 && (
                                         <>
-                                          and {relation.columns.length - 1} other column
+                                          and {relation.columns.length - 1} {$t('other column')}
                                           {relation.columns.length > 2 ? 's' : ''}
                                         </>
                                       )}
@@ -228,7 +230,7 @@ export const Column = ({
                         onClick={() => onEditForeignKey()}
                       >
                         <Plus size={14} strokeWidth={1.5} />
-                        <p>Add foreign key relation</p>
+                        <p>{$t('Add foreign key relation')}</p>
                       </CommandItem>
                     </CommandGroup>
                   </CommandList>
@@ -259,7 +261,7 @@ export const Column = ({
       <div className={`${isNewRecord ? 'w-[25%]' : 'w-[30%]'}`}>
         <div className="w-[95%]">
           <InputWithSuggestions
-            aria-label="Column default value"
+            aria-label={$t('Column default value')}
             data-testid={`${column.name}-default-value`}
             placeholder={
               typeof column.defaultValue === 'string' && column.defaultValue.length === 0
@@ -284,7 +286,7 @@ export const Column = ({
       </div>
       <div className="w-[10%]">
         <Checkbox
-          aria-label="Check to make this column a primary key"
+          aria-label={$t('Check to make this column a primary key')}
           checked={column.isPrimaryKey}
           onCheckedChange={() => {
             const updatedValue = !column.isPrimaryKey
@@ -314,7 +316,7 @@ export const Column = ({
             </PopoverTrigger>
             <PopoverContent align="end" className="w-80 p-0">
               <div className="flex items-center justify-center bg-surface-200 gap-y-1 py-1.5 px-3 border-b border-overlay">
-                <h5 className="text-foreground">Extra options</h5>
+                <h5 className="text-foreground">{$t('Extra options')}</h5>
               </div>
 
               <div className="flex flex-col gap-y-4 p-4" key={`${column.id}_configuration`}>
@@ -323,8 +325,10 @@ export const Column = ({
                     isReactForm={false}
                     layout="flex"
                     id="isNullable"
-                    label="Is Nullable"
-                    description="Specify if the column can assume a NULL value if no value is provided"
+                    label={$t('Is Nullable')}
+                    description={$t(
+                      'Specify if the column can assume a NULL value if no value is provided'
+                    )}
                   >
                     <Checkbox
                       id="isNullable"
@@ -338,8 +342,8 @@ export const Column = ({
                     isReactForm={false}
                     layout="flex"
                     id="isUnique"
-                    label="Is Unique"
-                    description="Enforce if values in the column should be unique across rows"
+                    label={$t('Is Unique')}
+                    description={$t('Enforce if values in the column should be unique across rows')}
                   >
                     <Checkbox
                       id="isUnique"
@@ -353,8 +357,10 @@ export const Column = ({
                     isReactForm={false}
                     layout="flex"
                     id="isIdentity"
-                    label="Is Identity"
-                    description="Automatically assign a sequential unique number to the column"
+                    label={$t('Is Identity')}
+                    description={$t(
+                      'Automatically assign a sequential unique number to the column'
+                    )}
                   >
                     <Checkbox
                       id="isIdentity"
@@ -372,8 +378,10 @@ export const Column = ({
                     isReactForm={false}
                     layout="flex"
                     id="defineAsArray"
-                    label="Define as Array"
-                    description="Define your column as a variable-length multidimensional array"
+                    label={$t('Define as Array')}
+                    description={$t(
+                      'Define your column as a variable-length multidimensional array'
+                    )}
                   >
                     <Checkbox
                       id="defineAsArray"

@@ -31,6 +31,7 @@ import { useSchemasQuery } from '@/data/database/schemas-query'
 import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useIsProtectedSchema } from '@/hooks/useProtectedSchemas'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -84,7 +85,7 @@ export const Indexes = () => {
   } = useDatabaseIndexDeleteMutation({
     onSuccess: async () => {
       setDeleteIndexId(null)
-      toast.success('Successfully deleted index')
+      toast.success($t('Successfully deleted index'))
     },
   })
 
@@ -132,14 +133,14 @@ export const Indexes = () => {
 
   useEffect(() => {
     if (isSuccessIndexes && !!editIndexId && !selectedIndex) {
-      toast('Index not found')
+      toast($t('Index not found'))
       setEditIndexId(null)
     }
   }, [isSuccessIndexes, editIndexId, selectedIndex, setEditIndexId])
 
   useEffect(() => {
     if (isSuccessIndexes && !!deleteIndexId && !selectedIndexToDelete && !isSuccessDelete) {
-      toast('Index not found')
+      toast($t('Index not found'))
       setDeleteIndexId(null)
     }
   }, [isSuccessIndexes, deleteIndexId, selectedIndexToDelete, isSuccessDelete, setDeleteIndexId])
@@ -153,7 +154,7 @@ export const Indexes = () => {
             {isErrorSchemas && (
               <div className="w-[260px] text-foreground-light text-sm border px-3 py-1.5 rounded-sm flex items-center space-x-2">
                 <AlertCircle strokeWidth={2} size={16} />
-                <p>Failed to load schemas</p>
+                <p>{$t('Failed to load schemas')}</p>
               </div>
             )}
             {isSuccessSchemas && (
@@ -181,14 +182,14 @@ export const Indexes = () => {
               className="w-full lg:w-52"
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={onSearchInputEscape(search, setSearch)}
-              placeholder="Search for an index"
+              placeholder={$t('Search for an index')}
               icon={<Search />}
             />
 
             {!isSchemaLocked && (
               <Shortcut
                 id={SHORTCUT_IDS.LIST_PAGE_NEW_ITEM}
-                label="Create new index"
+                label={$t('Create new index')}
                 onTrigger={() => setShowCreateIndex(true)}
                 options={{ enabled: isSuccessSchemas }}
                 side="bottom"
@@ -199,7 +200,7 @@ export const Indexes = () => {
                   onClick={() => setShowCreateIndex(true)}
                   disabled={!isSuccessSchemas}
                 >
-                  Create index
+                  {$t('Create index')}
                 </Button>
               </Shortcut>
             )}
@@ -219,9 +220,9 @@ export const Indexes = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead key="table">Table</TableHead>
-                      <TableHead key="columns">Columns</TableHead>
-                      <TableHead key="name">Name</TableHead>
+                      <TableHead key="table">{$t('Table')}</TableHead>
+                      <TableHead key="columns">{$t('Columns')}</TableHead>
+                      <TableHead key="name">{$t('Name')}</TableHead>
                       <TableHead key="buttons" />
                     </TableRow>
                   </TableHeader>
@@ -229,9 +230,10 @@ export const Indexes = () => {
                     {indexes.length === 0 && search.length === 0 && (
                       <TableRow>
                         <TableCell colSpan={4}>
-                          <p className="text-sm text-foreground">No indexes created yet</p>
+                          <p className="text-sm text-foreground">{$t('No indexes created yet')}</p>
                           <p className="text-sm text-foreground-light">
-                            There are no indexes found in the schema "{selectedSchema}"
+                            {$t('There are no indexes found in the schema "')}
+                            {selectedSchema}"
                           </p>
                         </TableCell>
                       </TableRow>
@@ -239,9 +241,11 @@ export const Indexes = () => {
                     {indexes.length === 0 && search.length > 0 && (
                       <TableRow>
                         <TableCell colSpan={4}>
-                          <p className="text-sm text-foreground">No results found</p>
+                          <p className="text-sm text-foreground">{$t('No results found')}</p>
                           <p className="text-sm text-foreground-light">
-                            Your search for "{search}" did not return any results
+                            {$t('Your search for "')}
+                            {search}
+                            {$t('" did not return any results')}
                           </p>
                         </TableCell>
                       </TableRow>
@@ -261,11 +265,11 @@ export const Indexes = () => {
                           <TableCell>
                             <div className="flex justify-end items-center space-x-2">
                               <Button variant="default" onClick={() => setEditIndexId(index.name)}>
-                                View definition
+                                {$t('View definition')}
                               </Button>
                               {!isSchemaLocked && (
                                 <Button
-                                  aria-label="Delete index"
+                                  aria-label={$t('Delete index')}
                                   variant="text"
                                   className="px-1"
                                   icon={<Trash />}
@@ -289,7 +293,7 @@ export const Indexes = () => {
         visible={!!selectedIndex}
         header={
           <>
-            <span>Index:</span>
+            <span>{$t('Index:')}</span>
             <code className="text-sm ml-2">{selectedIndex?.name}</code>
           </>
         }
@@ -316,7 +320,7 @@ export const Indexes = () => {
         visible={!!selectedIndexToDelete}
         title={
           <>
-            Confirm to delete index{' '}
+            {$t('Confirm to delete index')}{' '}
             <code className="text-code-inline">{selectedIndexToDelete?.name}</code>
           </>
         }
@@ -336,12 +340,13 @@ export const Indexes = () => {
         <ul className="mt-4 space-y-5">
           <li className="flex gap-3">
             <div>
-              <strong className="text-sm">Before deleting this index, consider:</strong>
+              <strong className="text-sm">{$t('Before deleting this index, consider:')}</strong>
               <ul className="space-y-2 mt-2 text-sm text-foreground-light">
-                <li className="list-disc ml-6">This index is no longer in use</li>
+                <li className="list-disc ml-6">{$t('This index is no longer in use')}</li>
                 <li className="list-disc ml-6">
-                  The table which the index is on is not currently in use, as dropping an index
-                  requires a short exclusive access lock on the table.
+                  {$t(
+                    'The table which the index is on is not currently in use, as dropping an index requires a short exclusive access lock on the table.'
+                  )}
                 </li>
               </ul>
             </div>

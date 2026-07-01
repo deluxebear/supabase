@@ -20,6 +20,7 @@ import { useProjectPostgrestConfigUpdateMutation } from '@/data/config/project-p
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsDataApiEnabled } from '@/hooks/misc/useIsDataApiEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const DataApiEnableSwitch = () => {
   const { ref: projectRef } = useParams()
@@ -110,7 +111,7 @@ export const DataApiEnableSwitch = () => {
       } catch (error) {
         console.error('Failed to check for exposed entities', error)
         dispatchEnableCheck({ type: 'DISMISS' })
-        toast.error('Failed to check for exposed entities')
+        toast.error($t('Failed to check for exposed entities'))
       }
     },
     [projectRef, isEnabled, config?.db_schema, project?.connectionString, doUpdate]

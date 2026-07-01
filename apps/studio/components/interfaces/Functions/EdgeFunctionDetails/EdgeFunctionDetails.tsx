@@ -49,6 +49,7 @@ import { useEdgeFunctionDeleteMutation } from '@/data/edge-functions/edge-functi
 import { useEdgeFunctionUpdateMutation } from '@/data/edge-functions/edge-functions-update-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 
 const FormSchema = z.object({
   name: z.string().min(0, 'Name is required'),
@@ -146,7 +147,7 @@ export const EdgeFunctionDetails = () => {
       <PageSection>
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>Function configuration</PageSectionTitle>
+            <PageSectionTitle>{$t('Function configuration')}</PageSectionTitle>
           </PageSectionSummary>
         </PageSectionMeta>
         <PageSectionContent>
@@ -159,9 +160,9 @@ export const EdgeFunctionDetails = () => {
                     name="name"
                     render={({ field }) => (
                       <FormItemLayout
-                        label="Name"
+                        label={$t('Name')}
                         layout="flex-row-reverse"
-                        description="Your slug and endpoint URL will remain the same"
+                        description={$t('Your slug and endpoint URL will remain the same')}
                       >
                         <FormControl>
                           <Input {...field} className="w-64" disabled={!canUpdateEdgeFunction} />
@@ -178,25 +179,26 @@ export const EdgeFunctionDetails = () => {
                         name="verify_jwt"
                         render={({ field }) => (
                           <FormItemLayout
-                            label="Verify JWT with legacy secret"
+                            label={$t('Verify JWT with legacy secret')}
                             layout="flex-row-reverse"
                             description={
                               <>
                                 <p className="mb-2">
-                                  Requires a JWT signed{' '}
+                                  {$t('Requires a JWT signed')}{' '}
                                   <em className="text-foreground not-italic">
-                                    only by the legacy secret
+                                    {$t('only by the legacy secret')}
                                   </em>{' '}
-                                  in the{' '}
+                                  {$t('in the')}{' '}
                                   <code className="text-code-inline break-keep!">
-                                    Authorization
+                                    {$t('Authorization')}
                                   </code>{' '}
-                                  header. The <code className="text-code-inline">anon</code> key
-                                  satisfies this.
+                                  {$t('header. The')} <code className="text-code-inline">anon</code>{' '}
+                                  {$t('key satisfies this.')}
                                 </p>
                                 <p>
-                                  Recommended: OFF with JWT and custom auth logic in your function
-                                  code.
+                                  {$t(
+                                    'Recommended: OFF with JWT and custom auth logic in your function code.'
+                                  )}
                                 </p>
                               </>
                             }
@@ -216,7 +218,7 @@ export const EdgeFunctionDetails = () => {
                     <CardFooter className="flex justify-end space-x-2">
                       {form.formState.isDirty && (
                         <Button variant="default" onClick={() => form.reset()}>
-                          Cancel
+                          {$t('Cancel')}
                         </Button>
                       )}
                       <Button
@@ -225,7 +227,7 @@ export const EdgeFunctionDetails = () => {
                         loading={isUpdating}
                         disabled={!canUpdateEdgeFunction || !form.formState.isDirty}
                       >
-                        Save changes
+                        {$t('Save changes')}
                       </Button>
                     </CardFooter>
                   </>
@@ -239,7 +241,7 @@ export const EdgeFunctionDetails = () => {
       <PageSection>
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>Invoke function</PageSectionTitle>
+            <PageSectionTitle>{$t('Invoke function')}</PageSectionTitle>
           </PageSectionSummary>
         </PageSectionMeta>
         <PageSectionContent>
@@ -263,7 +265,7 @@ export const EdgeFunctionDetails = () => {
                       className="ml-auto -translate-y-2 translate-x-3"
                       onClick={() => setShowKey(!showKey)}
                     >
-                      {showKey ? 'Hide' : 'Show'} anon key
+                      {showKey ? 'Hide' : 'Show'} {$t('anon key')}
                     </Button>
                   )}
                 </TabsList>
@@ -312,7 +314,7 @@ export const EdgeFunctionDetails = () => {
           <PageSection>
             <PageSectionMeta>
               <PageSectionSummary>
-                <PageSectionTitle>Develop locally</PageSectionTitle>
+                <PageSectionTitle>{$t('Develop locally')}</PageSectionTitle>
               </PageSectionSummary>
             </PageSectionMeta>
             <PageSectionContent>
@@ -325,7 +327,7 @@ export const EdgeFunctionDetails = () => {
                         description: 'Download the function to your local machine',
                         jsx: () => (
                           <>
-                            <span className="text-brand">supabase</span> functions download{' '}
+                            <span className="text-brand">supabase</span> {$t('functions download')}{' '}
                             {selectedFunction?.slug}
                           </>
                         ),
@@ -342,15 +344,17 @@ export const EdgeFunctionDetails = () => {
           <PageSection>
             <PageSectionMeta>
               <PageSectionSummary>
-                <PageSectionTitle>Delete function</PageSectionTitle>
+                <PageSectionTitle>{$t('Delete function')}</PageSectionTitle>
               </PageSectionSummary>
             </PageSectionMeta>
             <PageSectionContent>
               <Alert variant="destructive">
                 <CriticalIcon />
-                <AlertTitle>Once your function is deleted, it can no longer be restored</AlertTitle>
+                <AlertTitle>
+                  {$t('Once your function is deleted, it can no longer be restored')}
+                </AlertTitle>
                 <AlertDescription>
-                  Make sure you have made a backup if you want to restore your edge function
+                  {$t('Make sure you have made a backup if you want to restore your edge function')}
                 </AlertDescription>
                 <AlertDescription className="mt-3">
                   <Button
@@ -359,7 +363,7 @@ export const EdgeFunctionDetails = () => {
                     loading={selectedFunction?.id === undefined}
                     onClick={() => setShowDeleteModal(true)}
                   >
-                    Delete edge function
+                    {$t('Delete edge function')}
                   </Button>
                 </AlertDescription>
               </Alert>

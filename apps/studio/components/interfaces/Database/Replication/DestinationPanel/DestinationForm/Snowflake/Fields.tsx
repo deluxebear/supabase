@@ -6,18 +6,19 @@ import { Input as PasswordInput } from 'ui-patterns/DataInputs/Input'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import type { DestinationPanelSchemaType } from '../DestinationForm.schema'
+import { t as $t } from '@/lib/i18n'
 
 export const SnowflakeFields = ({ form }: { form: UseFormReturn<DestinationPanelSchemaType> }) => {
   const [showPrivateKeyPassphrase, setShowPrivateKeyPassphrase] = useState(false)
 
   return (
     <div className="flex flex-col gap-y-6 p-5">
-      <p className="text-sm font-medium text-foreground">Snowflake settings</p>
+      <p className="text-sm font-medium text-foreground">{$t('Snowflake settings')}</p>
 
       <div className="flex flex-col gap-y-1">
-        <p className="text-sm font-medium text-foreground">Connection</p>
+        <p className="text-sm font-medium text-foreground">{$t('Connection')}</p>
         <p className="text-sm text-foreground-light">
-          Configure the Snowflake account, user, and target namespace for replicated data.
+          {$t('Configure the Snowflake account, user, and target namespace for replicated data.')}
         </p>
       </div>
 
@@ -28,11 +29,11 @@ export const SnowflakeFields = ({ form }: { form: UseFormReturn<DestinationPanel
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="Account ID"
-              description="Snowflake account identifier, for example ORGNAME-ACCOUNTNAME"
+              label={$t('Account ID')}
+              description={$t('Snowflake account identifier, for example ORGNAME-ACCOUNTNAME')}
             >
               <FormControl>
-                <Input {...field} placeholder="MYORG-MYACCOUNT" value={field.value ?? ''} />
+                <Input {...field} placeholder={$t('MYORG-MYACCOUNT')} value={field.value ?? ''} />
               </FormControl>
             </FormItemLayout>
           )}
@@ -44,8 +45,8 @@ export const SnowflakeFields = ({ form }: { form: UseFormReturn<DestinationPanel
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="User"
-              description="Snowflake user configured for key-pair authentication"
+              label={$t('User')}
+              description={$t('Snowflake user configured for key-pair authentication')}
             >
               <FormControl>
                 <Input {...field} placeholder="ETL_USER" value={field.value ?? ''} />
@@ -60,8 +61,8 @@ export const SnowflakeFields = ({ form }: { form: UseFormReturn<DestinationPanel
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="Database"
-              description="Snowflake database where replicated tables will be created"
+              label={$t('Database')}
+              description={$t('Snowflake database where replicated tables will be created')}
             >
               <FormControl>
                 <Input {...field} placeholder="ANALYTICS" value={field.value ?? ''} />
@@ -76,8 +77,8 @@ export const SnowflakeFields = ({ form }: { form: UseFormReturn<DestinationPanel
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="Schema"
-              description="Snowflake schema where replicated tables will be created"
+              label={$t('Schema')}
+              description={$t('Snowflake schema where replicated tables will be created')}
             >
               <FormControl>
                 <Input {...field} placeholder="PUBLIC" value={field.value ?? ''} />
@@ -92,8 +93,8 @@ export const SnowflakeFields = ({ form }: { form: UseFormReturn<DestinationPanel
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="Role"
-              description="Optional Snowflake role to assume after connecting"
+              label={$t('Role')}
+              description={$t('Optional Snowflake role to assume after connecting')}
             >
               <FormControl>
                 <Input {...field} placeholder="ETL_ROLE" value={field.value ?? ''} />
@@ -104,9 +105,9 @@ export const SnowflakeFields = ({ form }: { form: UseFormReturn<DestinationPanel
       </div>
 
       <div className="flex flex-col gap-y-1">
-        <p className="text-sm font-medium text-foreground">Authentication</p>
+        <p className="text-sm font-medium text-foreground">{$t('Authentication')}</p>
         <p className="text-sm text-foreground-light">
-          Use the RSA private key whose public key is registered on the Snowflake user.
+          {$t('Use the RSA private key whose public key is registered on the Snowflake user.')}
         </p>
       </div>
 
@@ -117,8 +118,8 @@ export const SnowflakeFields = ({ form }: { form: UseFormReturn<DestinationPanel
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="Private key"
-              description="RSA private key PEM contents in PKCS#8 or PKCS#1 format"
+              label={$t('Private key')}
+              description={$t('RSA private key PEM contents in PKCS#8 or PKCS#1 format')}
             >
               <FormControl>
                 <TextArea
@@ -140,14 +141,14 @@ export const SnowflakeFields = ({ form }: { form: UseFormReturn<DestinationPanel
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="Private key passphrase"
-              description="Optional passphrase for encrypted private keys"
+              label={$t('Private key passphrase')}
+              description={$t('Optional passphrase for encrypted private keys')}
             >
               <FormControl>
                 <PasswordInput
                   value={field.value ?? ''}
                   type={showPrivateKeyPassphrase ? 'text' : 'password'}
-                  placeholder="Optional"
+                  placeholder={$t('Optional')}
                   onChange={(event) => field.onChange(event.target.value)}
                   actions={
                     <div className="flex items-center justify-center">

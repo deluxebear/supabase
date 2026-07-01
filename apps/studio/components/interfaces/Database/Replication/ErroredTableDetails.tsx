@@ -5,6 +5,7 @@ import { isValidRetryPolicy } from './ReplicationPipelineStatus/ReplicationPipel
 import { RetryCountdown } from './RetryCountdown'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { ReplicationPipelineTableStatus } from '@/data/replication/pipeline-replication-status-query'
+import { t as $t } from '@/lib/i18n'
 
 interface ErroredTableDetailsProps {
   table: ReplicationPipelineTableStatus
@@ -25,7 +26,9 @@ export const ErroredTableDetails = ({ table }: ErroredTableDetailsProps) => {
         aria-label={`Error details for table ${tableName}`}
       >
         {state.solution && <div className="text-xs text-foreground-light">{state.solution}</div>}
-        <div className="text-xs text-foreground-lighter">Invalid retry policy configuration</div>
+        <div className="text-xs text-foreground-lighter">
+          {$t('Invalid retry policy configuration')}
+        </div>
       </div>
     )
   }
@@ -35,15 +38,16 @@ export const ErroredTableDetails = ({ table }: ErroredTableDetailsProps) => {
       {retryPolicy === 'no_retry' ? (
         <div className="flex flex-col gap-y-3">
           <p className="text-xs text-foreground-lighter">
-            This error requires manual intervention from our{' '}
+            {$t('This error requires manual intervention from our')}{' '}
             <InlineLink
               className="text-foreground-lighter hover:text-foreground"
               href={`/support?projectRef=${projectRef}&category=dashboard_bug&subject=Database%20replication%20error&error=${encodeURIComponent(state.reason ?? '')}`}
             >
               support
             </InlineLink>
-            . Alternatively, you may also recreate the pipeline. Use the table actions menu on the
-            right to view the full error details.
+            {$t(
+              '. Alternatively, you may also recreate the pipeline. Use the table actions menu on the right to view the full error details.'
+            )}
           </p>
         </div>
       ) : retryPolicy === 'manual_retry' ? (
@@ -52,14 +56,17 @@ export const ErroredTableDetails = ({ table }: ErroredTableDetailsProps) => {
             <div className="flex items-start gap-x-2">
               <CriticalIcon />
               <div className="flex-1 text-xs text-destructive-900">
-                <p className="font-semibold mb-1">Action required to continue replication</p>
+                <p className="font-semibold mb-1">
+                  {$t('Action required to continue replication')}
+                </p>
                 <p className="text-foreground-light">
                   {state.solution}
                   {state.solution && !/[.!?]$/.test(state.solution.trim()) && '.'}
                 </p>
                 <p className="text-foreground-light mt-2">
-                  Restart table replication from the table actions menu on the right. The pipeline
-                  will restart automatically.
+                  {$t(
+                    'Restart table replication from the table actions menu on the right. The pipeline will restart automatically.'
+                  )}
                 </p>
               </div>
             </div>
@@ -68,7 +75,9 @@ export const ErroredTableDetails = ({ table }: ErroredTableDetailsProps) => {
       ) : retryPolicy === 'timed_retry' ? (
         <div className="flex flex-col text-foreground-lighter gap-y-3">
           <p className="text-xs">
-            Replication will retry automatically. The pipeline will restart to apply the retry.
+            {$t(
+              'Replication will retry automatically. The pipeline will restart to apply the retry.'
+            )}
           </p>
           <RetryCountdown nextRetryTime={state.retry_policy.next_retry} />
         </div>

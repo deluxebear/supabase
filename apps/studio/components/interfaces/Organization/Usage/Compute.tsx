@@ -15,6 +15,7 @@ import {
 } from '@/data/analytics/org-daily-stats-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export interface ComputeProps {
   orgDailyStats: OrgDailyUsageResponse | undefined
@@ -95,7 +96,7 @@ const Compute = ({ orgDailyStats, isLoadingOrgDailyStats }: ComputeProps) => {
               {chartData.length > 0 && (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <p className="text-sm">Compute Hours usage</p>
+                    <p className="text-sm">{$t('Compute Hours usage')}</p>
                   </div>
                 </div>
               )}
@@ -109,7 +110,7 @@ const Compute = ({ orgDailyStats, isLoadingOrgDailyStats }: ComputeProps) => {
                     <span className="font-medium">
                       {computeUsageMetricLabel(key.toUpperCase() as ComputeUsageMetric)}
                     </span>{' '}
-                    Compute Hours usage in period
+                    {$t('Compute Hours usage in period')}
                   </p>
                   <p className="text-sm">
                     {chartData.reduce((prev, cur) => prev + ((cur[key] as number) ?? 0), 0)} hours
@@ -119,8 +120,10 @@ const Compute = ({ orgDailyStats, isLoadingOrgDailyStats }: ComputeProps) => {
             </div>
 
             <div className="space-y-1">
-              <p className="text-sm">Compute Hours usage per day</p>
-              <p className="text-sm text-foreground-light">The data refreshes every hour.</p>
+              <p className="text-sm">{$t('Compute Hours usage per day')}</p>
+              <p className="text-sm text-foreground-light">
+                {$t('The data refreshes every hour.')}
+              </p>
             </div>
 
             {chartData.length > 0 && notAllValuesZero ? (
@@ -136,8 +139,10 @@ const Compute = ({ orgDailyStats, isLoadingOrgDailyStats }: ComputeProps) => {
                 <Panel.Content>
                   <div className="flex flex-col items-center justify-center">
                     <BarChart2 className="text-foreground-light mb-2" />
-                    <p className="text-sm">No data in period</p>
-                    <p className="text-sm text-foreground-light">May take up to one hour to show</p>
+                    <p className="text-sm">{$t('No data in period')}</p>
+                    <p className="text-sm text-foreground-light">
+                      {$t('May take up to one hour to show')}
+                    </p>
                   </div>
                 </Panel.Content>
               </Panel>

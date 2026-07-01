@@ -14,6 +14,7 @@ import { useOrganizationCustomerProfileUpdateMutation } from '@/data/organizatio
 import { useOrganizationPaymentMethodMarkAsDefaultMutation } from '@/data/organizations/organization-payment-method-default-mutation'
 import { useOrganizationTaxIdQuery } from '@/data/organizations/organization-tax-id-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 interface AddPaymentMethodFormProps {
   returnUrl: string
@@ -63,7 +64,7 @@ const AddPaymentMethodForm = ({ onCancel, onConfirm }: AddPaymentMethodFormProps
     }
 
     if (isPrimaryBillingAddress && isTaxIdError) {
-      toast.error('Unable to load current tax ID. Please try again.')
+      toast.error($t('Unable to load current tax ID. Please try again.'))
       setIsSaving(false)
       if (document !== undefined) {
         document.body.classList.remove('pointer-events-auto!')
@@ -121,7 +122,9 @@ const AddPaymentMethodForm = ({ onCancel, onConfirm }: AddPaymentMethodFormProps
           })
         } catch {
           toast.error(
-            'Your payment method was added successfully, but we could not save your billing address. Please update it in your organization settings.'
+            $t(
+              'Your payment method was added successfully, but we could not save your billing address. Please update it in your organization settings.'
+            )
           )
         }
       }
@@ -156,7 +159,7 @@ const AddPaymentMethodForm = ({ onCancel, onConfirm }: AddPaymentMethodFormProps
             }
           )
         } catch (error) {
-          toast.error('Failed to set payment method as default')
+          toast.error($t('Failed to set payment method as default'))
         }
       } else {
         if (selectedOrganization) {
@@ -215,7 +218,7 @@ const AddPaymentMethodForm = ({ onCancel, onConfirm }: AddPaymentMethodFormProps
             }}
           />
           <Label htmlFor="save-as-default" className="text-foreground-light">
-            Save as default payment method
+            {$t('Save as default payment method')}
           </Label>
         </div>
 
@@ -230,7 +233,7 @@ const AddPaymentMethodForm = ({ onCancel, onConfirm }: AddPaymentMethodFormProps
             }}
           />
           <Label htmlFor="is-primary-billing-address" className="text-foreground-light">
-            Use the billing address as my organization's primary address
+            {$t("Use the billing address as my organization's primary address")}
           </Label>
         </div>
       </DialogSection>
@@ -243,7 +246,7 @@ const AddPaymentMethodForm = ({ onCancel, onConfirm }: AddPaymentMethodFormProps
           block
           disabled={isSaving}
         >
-          Cancel
+          {$t('Cancel')}
         </Button>
         <Button
           block
@@ -254,7 +257,7 @@ const AddPaymentMethodForm = ({ onCancel, onConfirm }: AddPaymentMethodFormProps
           disabled={isSaving}
           onClick={handleSubmit}
         >
-          Add payment method
+          {$t('Add payment method')}
         </Button>
       </DialogFooter>
     </>

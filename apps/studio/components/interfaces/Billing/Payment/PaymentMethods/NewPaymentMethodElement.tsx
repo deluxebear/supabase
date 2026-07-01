@@ -48,6 +48,7 @@ import {
 } from '@/components/interfaces/Organization/BillingSettings/BillingCustomerData/TaxID.utils'
 import type { CustomerAddress, CustomerTaxId } from '@/data/organizations/types'
 import { getURL } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export const BillingCustomerDataSchema = z.object({
   tax_id_type: z.string(),
@@ -328,7 +329,7 @@ export const NewPaymentMethodElement = forwardRef(
     return (
       <div className="space-y-2">
         <p className="text-sm text-foreground-lighter">
-          Please ensure CVC and postal codes match what’s on file for your card.
+          {$t('Please ensure CVC and postal codes match what’s on file for your card.')}
         </p>
 
         <PaymentElement
@@ -347,7 +348,7 @@ export const NewPaymentMethodElement = forwardRef(
               onCheckedChange={() => setPurchasingAsBusiness(!purchasingAsBusiness)}
             />
             <label htmlFor="business" className="text-foreground text-sm leading-none">
-              I’m purchasing as a business
+              {$t('I’m purchasing as a business')}
             </label>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -357,10 +358,9 @@ export const NewPaymentMethodElement = forwardRef(
                 />
               </TooltipTrigger>
               <TooltipContent side="top" className="w-72">
-                Check this only if you need a tax ID (e.g. US EIN, VAT, GST) on your invoice. You’ll
-                be asked to enter it, and it’ll appear on a compliant business invoice. If you don’t
-                have a tax ID, or don’t need one shown, leave this unchecked. You’ll still receive a
-                receipt.
+                {$t(
+                  'Check this only if you need a tax ID (e.g. US EIN, VAT, GST) on your invoice. You’ll be asked to enter it, and it’ll appear on a compliant business invoice. If you don’t have a tax ID, or don’t need one shown, leave this unchecked. You’ll still receive a receipt.'
+                )}
               </TooltipContent>
             </Tooltip>
           </div>
@@ -425,9 +425,9 @@ export const NewPaymentMethodElement = forwardRef(
                         align="start"
                       >
                         <Command>
-                          <CommandInput placeholder="Search tax ID..." />
+                          <CommandInput placeholder={$t('Search tax ID...')} />
                           <CommandList>
-                            <CommandEmpty>No tax ID found.</CommandEmpty>
+                            <CommandEmpty>{$t('No tax ID found.')}</CommandEmpty>
                             <CommandGroup>
                               {availableTaxIds.map((option) => (
                                 <CommandItem

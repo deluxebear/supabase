@@ -30,6 +30,7 @@ import { useOrganizationAvailableRegionsQuery } from '@/data/organizations/organ
 import { useIncidentStatusQuery } from '@/data/platform/incident-status-query'
 import type { DesiredInstanceSize } from '@/data/projects/new-project.constants'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface RegionSelectorProps {
   form: UseFormReturn<CreateProjectForm>
@@ -150,17 +151,17 @@ export const RegionSelector = ({
             <>
               <FormItemLayout
                 layout={layout}
-                label="Region"
+                label={$t('Region')}
                 description={
                   <>
-                    <p>Select the region closest to your users for the best performance.</p>
+                    <p>{$t('Select the region closest to your users for the best performance.')}</p>
                     {showNonProdFields && (
                       <div className="mt-2 text-warning">
-                        <p>Only these regions are supported for local/staging projects:</p>
+                        <p>{$t('Only these regions are supported for local/staging projects:')}</p>
                         <ul className="list-disc list-inside mt-1">
-                          <li>East US (North Virginia)</li>
-                          <li>Central EU (Frankfurt)</li>
-                          <li>Southeast Asia (Singapore)</li>
+                          <li>{$t('East US (North Virginia)')}</li>
+                          <li>{$t('Central EU (Frankfurt)')}</li>
+                          <li>{$t('Southeast Asia (Singapore)')}</li>
                         </ul>
                       </div>
                     )}
@@ -180,7 +181,7 @@ export const RegionSelector = ({
                         <div className="flex items-center gap-x-3">
                           {selectedRegion?.code && (
                             <img
-                              alt="region icon"
+                              alt={$t('region icon')}
                               className="w-5 rounded-xs"
                               src={`${BASE_PATH}/img/regions/${selectedRegion.code}.svg`}
                             />
@@ -198,7 +199,7 @@ export const RegionSelector = ({
                     {smartRegionEnabled && (
                       <>
                         <SelectGroup>
-                          <SelectLabel>General regions</SelectLabel>
+                          <SelectLabel>{$t('General regions')}</SelectLabel>
                           {smartRegions.map((value) => {
                             return (
                               <SelectItem
@@ -209,7 +210,7 @@ export const RegionSelector = ({
                                 <div className="flex flex-row items-center justify-between w-full">
                                   <div className="flex items-center gap-x-3">
                                     <img
-                                      alt="region icon"
+                                      alt={$t('region icon')}
                                       className="w-5 rounded-xs"
                                       src={`${BASE_PATH}/img/regions/${value.code}.svg`}
                                     />
@@ -221,7 +222,7 @@ export const RegionSelector = ({
                                   <div>
                                     {recommendedSmartRegions.has(value.code) && (
                                       <Badge variant="success" className="mr-1">
-                                        Recommended
+                                        {$t('Recommended')}
                                       </Badge>
                                     )}
                                   </div>
@@ -235,7 +236,7 @@ export const RegionSelector = ({
                     )}
 
                     <SelectGroup>
-                      <SelectLabel>Specific regions</SelectLabel>
+                      <SelectLabel>{$t('Specific regions')}</SelectLabel>
                       {regionOptions.map((value) => {
                         return (
                           <SelectItem
@@ -250,7 +251,7 @@ export const RegionSelector = ({
                             <div className="flex flex-row items-center justify-between w-full gap-x-2">
                               <div className="flex items-center gap-x-3">
                                 <img
-                                  alt="region icon"
+                                  alt={$t('region icon')}
                                   className="w-5 rounded-xs"
                                   src={`${BASE_PATH}/img/regions/${value.code}.svg`}
                                 />
@@ -264,18 +265,20 @@ export const RegionSelector = ({
 
                               {recommendedSpecificRegions.has(value.code) && (
                                 <Badge variant="success" className="mr-1">
-                                  Recommended
+                                  {$t('Recommended')}
                                 </Badge>
                               )}
                               {value.status !== undefined && value.status === 'capacity' && (
                                 <Tooltip>
                                   <TooltipTrigger>
                                     <Badge variant="warning" className="mr-1">
-                                      Unavailable
+                                      {$t('Unavailable')}
                                     </Badge>
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    Temporarily unavailable due to this region being at capacity.
+                                    {$t(
+                                      'Temporarily unavailable due to this region being at capacity.'
+                                    )}
                                   </TooltipContent>
                                 </Tooltip>
                               )}
@@ -292,11 +295,12 @@ export const RegionSelector = ({
                 <FormItemLayout layout="horizontal">
                   <Admonition
                     type="warning"
-                    title="Incident in progress for this region"
+                    title={$t('Incident in progress for this region')}
                     description={
                       <>
-                        We're currently investigating an issue that may impact projects in this
-                        region. Follow updates on{' '}
+                        {$t(
+                          "We're currently investigating an issue that may impact projects in this region. Follow updates on"
+                        )}{' '}
                         <InlineLink href="https://status.supabase.com">
                           status.supabase.com
                         </InlineLink>

@@ -6,6 +6,7 @@ import { ActionCard } from './ActionCard'
 import { RecentItems } from './RecentItems'
 import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useIsProtectedSchema } from '@/hooks/useProtectedSchemas'
+import { t as $t } from '@/lib/i18n'
 import {
   useImpersonatedAAL,
   useImpersonatedExternalAuth,
@@ -48,28 +49,32 @@ export function NewTab() {
         {(!!impersonatedUser || !!impersonatedExternalUser || impersonatingAnon) && (
           <Card>
             <CardHeader className="py-2 px-3 flex-row items-center justify-between w-full space-y-0">
-              <CardTitle className="text-foreground-light">Currently impersonating as</CardTitle>
+              <CardTitle className="text-foreground-light">
+                {$t('Currently impersonating as')}
+              </CardTitle>
               <Button
                 variant="default"
                 className="font-sans"
                 onClick={() => roleState.setRole(undefined)}
               >
-                Stop
+                {$t('Stop')}
               </Button>
             </CardHeader>
             <CardContent className="py-2 px-3 text-sm flex items-center justify-between">
               <div className="flex items-center gap-x-2">
                 {impersonatingAnon ? (
-                  <p>Anonymous</p>
+                  <p>{$t('Anonymous')}</p>
                 ) : (
                   <p>{impersonatedUser?.email ?? impersonatedExternalUser}</p>
                 )}
                 {impersonatedAAL && <Badge>{impersonatedAAL.toUpperCase()}</Badge>}
               </div>
-              {impersonatingAnon && <p className="text-foreground-lighter">Not logged-in</p>}
+              {impersonatingAnon && (
+                <p className="text-foreground-lighter">{$t('Not logged-in')}</p>
+              )}
               {!!impersonatedUser && (
                 <p>
-                  ID: <code className="text-code-inline">{impersonatedUser.id}</code>
+                  {$t('ID:')} <code className="text-code-inline">{impersonatedUser.id}</code>
                 </p>
               )}
             </CardContent>

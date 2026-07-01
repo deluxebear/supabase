@@ -12,6 +12,7 @@ import {
 } from 'ui'
 
 import { useDisableReadOnlyModeMutation } from '@/data/config/project-temp-disable-read-only-mutation'
+import { t as $t } from '@/lib/i18n'
 
 interface ConfirmDisableReadOnlyModeModalProps {
   visible: boolean
@@ -25,7 +26,7 @@ const ConfirmDisableReadOnlyModeModal = ({
   const { ref } = useParams()
   const { mutateAsync: disableReadOnlyMode, isPending } = useDisableReadOnlyModeMutation({
     onSuccess: () => {
-      toast.success('Successfully disabled read-only mode for 15 minutes')
+      toast.success($t('Successfully disabled read-only mode for 15 minutes'))
       onClose()
     },
   })
@@ -34,24 +35,26 @@ const ConfirmDisableReadOnlyModeModal = ({
     <AlertDialog open={visible} onOpenChange={onClose}>
       <AlertDialogContent size="medium">
         <AlertDialogHeader>
-          <AlertDialogTitle>Confirm to temporarily disable read-only mode</AlertDialogTitle>
+          <AlertDialogTitle>{$t('Confirm to temporarily disable read-only mode')}</AlertDialogTitle>
           <AlertDialogDescription>
             <div className="flex flex-col space-y-2">
               <p className="text-sm">
-                This will temporarily allow writes to your database for the{' '}
-                <span className="text-amber-900">next 15 minutes</span>, during which you can reduce
-                your database size. After deleting data, you should run a vacuum to reclaim as much
-                space as possible.
+                {$t('This will temporarily allow writes to your database for the')}{' '}
+                <span className="text-amber-900">{$t('next 15 minutes')}</span>
+                {$t(
+                  ', during which you can reduce your database size. After deleting data, you should run a vacuum to reclaim as much space as possible.'
+                )}
               </p>
               <p className="text-sm">
-                If your database size has not been sufficiently reduced after 15 minutes, read-only
-                mode will be toggled back on. Otherwise, it will stay disabled.
+                {$t(
+                  'If your database size has not been sufficiently reduced after 15 minutes, read-only mode will be toggled back on. Otherwise, it will stay disabled.'
+                )}
               </p>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction
             onClick={async () => {
               if (!ref) return console.error('Project ref is required')
@@ -60,7 +63,7 @@ const ConfirmDisableReadOnlyModeModal = ({
             disabled={isPending}
             loading={isPending}
           >
-            Disable read-only mode
+            {$t('Disable read-only mode')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
