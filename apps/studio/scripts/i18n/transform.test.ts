@@ -11,16 +11,16 @@ function run(source: string) {
 }
 
 describe('transformSourceFile', () => {
-  it('wraps a JSX text node with t() and imports it', () => {
+  it('wraps a JSX text node with $t() and imports it aliased', () => {
     const { text, keys } = run(`export const C = () => <div>Save changes</div>`)
-    expect(text).toContain(`import { t } from '@/lib/i18n'`)
-    expect(text).toContain(`<div>{t('Save changes')}</div>`)
+    expect(text).toContain(`import { t as $t } from '@/lib/i18n'`)
+    expect(text).toContain(`<div>{$t('Save changes')}</div>`)
     expect(keys).toContain('Save changes')
   })
 
   it('wraps an allowlisted attribute', () => {
     const { text } = run(`export const C = () => <input placeholder="Search tables" />`)
-    expect(text).toContain(`placeholder={t('Search tables')}`)
+    expect(text).toContain(`placeholder={$t('Search tables')}`)
   })
 
   it('leaves structural attributes alone', () => {
@@ -32,7 +32,17 @@ describe('transformSourceFile', () => {
   it('wraps a sonner toast string argument', () => {
     const src = `import { toast } from 'sonner'\nexport const f = () => toast.success('Saved successfully')`
     const { text } = run(src)
-    expect(text).toContain(`toast.success(t('Saved successfully'))`)
+    expect(text).toContain(`toast.success($t('Saved successfully'))`)
+  })
+
+  it('does not collide with a local identifier named t in scope', () => {
+    const { text } = run(`export const C = () => arr.map((t) => <div>Save changes</div>)`)
+    expect(text).toContain(`$t('Save changes')`)
+    expect(text).not.toMatch(/[^$]t\('Save changes'\)/)
+
+    const project = new Project({ useInMemoryFileSystem: true })
+    const sf = project.createSourceFile('C4.tsx', text)
+    expect(transformSourceFile(sf).changed).toBe(false)
   })
 
   it('is idempotent — a second pass makes no changes', () => {
@@ -53,7 +63,7 @@ describe('transformSourceFile', () => {
   it('collapses multiline JSX text into a single-space key and stays reparseable', () => {
     const source = `export const C = () => (\n  <div>\n    Save\n    changes\n  </div>\n)`
     const { text, keys } = run(source)
-    expect(text).toContain(`{t('Save changes')}`)
+    expect(text).toContain(`{$t('Save changes')}`)
     expect(keys).toContain('Save changes')
 
     // Ensure the emitted output is valid, reparseable TS with no stray raw newlines.
@@ -67,7 +77,7 @@ describe('transformSourceFile', () => {
     const src = `import { toast } from 'sonner'\nexport const f = () => toast.success('It\\'s a \\\\ backslash')`
     const { text, keys } = run(src)
     expect(keys).toContain("It's a \\ backslash")
-    expect(text).toContain(`toast.success(t('It\\'s a \\\\ backslash'))`)
+    expect(text).toContain(`toast.success($t('It\\'s a \\\\ backslash'))`)
 
     const project = new Project({ useInMemoryFileSystem: true })
     const sf = project.createSourceFile('C3.tsx', text)

@@ -4,8 +4,11 @@ import { isTranslatableAttr, isTranslatableText, TOAST_METHODS } from './classif
 
 const I18N_IMPORT = '@/lib/i18n'
 
-// Turn an English source string into a valid single-quoted t() call, escaping
-// backslashes and single quotes.
+// Turn an English source string into a valid single-quoted $t() call, escaping
+// backslashes and single quotes. We use the $t alias (rather than a bare t)
+// because many components have a local identifier named `t` in scope (e.g.
+// `array.map((t, i) => ...)`), which would shadow or type-conflict with a
+// plain `t` import.
 function tCall(key: string): string {
   const escaped = key
     .replace(/\\/g, '\\\\')
@@ -13,7 +16,7 @@ function tCall(key: string): string {
     .replace(/\n/g, '\\n')
     .replace(/\r/g, '\\r')
     .replace(/\t/g, '\\t')
-  return `t('${escaped}')`
+  return `$t('${escaped}')`
 }
 
 function ensureImport(sf: SourceFile): void {
@@ -23,12 +26,16 @@ function ensureImport(sf: SourceFile): void {
 
   const existing = sf.getImportDeclaration((d) => d.getModuleSpecifierValue() === I18N_IMPORT)
   if (existing) {
-    if (!existing.getNamedImports().some((n) => n.getName() === 't')) {
-      existing.addNamedImport('t')
+    const hasAlias = existing.getNamedImports().some((n) => n.getAliasNode()?.getText() === '$t')
+    if (!hasAlias) {
+      existing.addNamedImport({ name: 't', alias: '$t' })
     }
     return
   }
-  sf.insertImportDeclaration(0, { moduleSpecifier: I18N_IMPORT, namedImports: ['t'] })
+  sf.insertImportDeclaration(0, {
+    moduleSpecifier: I18N_IMPORT,
+    namedImports: [{ name: 't', alias: '$t' }],
+  })
 }
 
 export function transformSourceFile(sf: SourceFile): { keys: string[]; changed: boolean } {

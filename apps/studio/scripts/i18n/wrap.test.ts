@@ -17,7 +17,7 @@ describe('collectFromProject', () => {
     const project = new Project({ useInMemoryFileSystem: true })
     project.createSourceFile(
       'a.tsx',
-      `import { t } from '@/lib/i18n'\nexport const A = () => <div>{t('Alpha label')}</div>`
+      `import { t as $t } from '@/lib/i18n'\nexport const A = () => <div>{$t('Alpha label')}</div>`
     )
     const { filesChanged } = collectFromProject(project)
     expect(filesChanged).toBe(0)
