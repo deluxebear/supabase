@@ -1077,6 +1077,9 @@ importers:
       http-status:
         specifier: ^2.1.0
         version: 2.1.0
+      i18next:
+        specifier: ^26.3.3
+        version: 26.3.3(typescript@6.0.2)
       icons:
         specifier: workspace:*
         version: link:../../packages/icons
@@ -1152,6 +1155,9 @@ importers:
       react-hook-form:
         specifier: ^7.71.2
         version: 7.72.1(react@19.2.6)
+      react-i18next:
+        specifier: ^17.0.8
+        version: 17.0.8(i18next@26.3.3(typescript@6.0.2))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.2)
       react-inlinesvg:
         specifier: ^4.0.4
         version: 4.0.4(react@19.2.6)
@@ -1347,7 +1353,7 @@ importers:
         version: 2.11.3(@types/node@22.13.14)(typescript@6.0.2)
       next-router-mock:
         specifier: ^0.9.13
-        version: 0.9.13(next@16.2.6(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(react@19.2.6)
+        version: 0.9.13(next@16.2.6(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(react@19.2.6)
       node-mocks-http:
         specifier: ^1.17.2
         version: 1.17.2(@types/node@22.13.14)
@@ -2231,7 +2237,7 @@ importers:
         version: link:../config
       next-router-mock:
         specifier: ^0.9.13
-        version: 0.9.13(next@16.2.6(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(react@19.2.6)
+        version: 0.9.13(next@16.2.6(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(react@19.2.6)
       tailwindcss:
         specifier: 'catalog:'
         version: 4.2.4
@@ -2719,7 +2725,7 @@ importers:
         version: link:../config
       next-router-mock:
         specifier: ^0.9.13
-        version: 0.9.13(next@16.2.6(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(react@19.2.6)
+        version: 0.9.13(next@16.2.6(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(react@19.2.6)
       tailwindcss:
         specifier: ^4.2.4
         version: 4.2.4
@@ -3216,6 +3222,10 @@ packages:
 
   '@babel/runtime@7.26.10':
     resolution: {integrity: sha512-2WJMeRQPHKSPemqk/awGrAiuFfzBmOIPXKizAsVhWH9YJqLZ0H+HS4c8loHGgW6utJ3E/ejXQUsiGaQy2NZ9Fw==}
+    engines: {node: '>=6.9.0'}
+
+  '@babel/runtime@7.29.7':
+    resolution: {integrity: sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw==}
     engines: {node: '>=6.9.0'}
 
   '@babel/template@7.27.0':
@@ -11513,7 +11523,7 @@ packages:
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
-    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+    deprecated: Glob versions prior to v9 are no longer supported
 
   glob@9.3.5:
     resolution: {integrity: sha512-e1LleDykUz2Iu+MTYdkSsuWX8lvAjAcs0Xef0lNIu0S2wOAzuTxCJtcd9S3cijlwYF18EsU3rzb8jPVobxDh9Q==}
@@ -11849,6 +11859,9 @@ packages:
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
 
+  html-parse-stringify@3.0.1:
+    resolution: {integrity: sha512-KknJ50kTInJ7qIScF3jeaFRpMpE8/lfiTdzf/twXyPBLAGrLRTmkz3AdTnKeh40X8k9L2fdYwEp/42WGXIRGcg==}
+
   html-to-image@1.11.13:
     resolution: {integrity: sha512-cuOPoI7WApyhBElTTb9oqsawRvZ0rHhaHwghRLlTuffoD1B2aDemlCruLeZrUIIdvG7gs9xeELEPm6PhuASqrg==}
 
@@ -11916,6 +11929,14 @@ packages:
 
   hyphenate-style-name@1.0.4:
     resolution: {integrity: sha512-ygGZLjmXfPHj+ZWh6LwbC37l43MhfztxetbFCoYTM2VjkIUpeHgSNn7QIyVFj7YQ1Wl9Cbw5sholVJPzWvC2MQ==}
+
+  i18next@26.3.3:
+    resolution: {integrity: sha512-aYVegyBdXSO93CMMihvr47jI7GHSOcIahMpJX+qzUXDzW4xDJf2uenIA+45vDU+YhiVdcfsql70AC9RVdMNrHg==}
+    peerDependencies:
+      typescript: ^5 || ^6
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   iceberg-js@0.8.1:
     resolution: {integrity: sha512-1dhVQZXhcHje7798IVM+xoo/1ZdVfzOMIc8/rgVSijRK38EDqOJoGula9N/8ZI5RD8QTxNQtK/Gozpr+qUqRRA==}
@@ -14961,6 +14982,22 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
 
+  react-i18next@17.0.8:
+    resolution: {integrity: sha512-0ooKbGLU8JXhe1zwpQUWIeXSgLPOfwJmgheWRIUpcoA0CpyabpGhayjdG+/eA5esC1AQ8h2jWpXjJfzQzeDOCw==}
+    peerDependencies:
+      i18next: '>= 26.2.0'
+      react: '>= 16.8.0'
+      react-dom: '*'
+      react-native: '*'
+      typescript: ^5 || ^6
+    peerDependenciesMeta:
+      react-dom:
+        optional: true
+      react-native:
+        optional: true
+      typescript:
+        optional: true
+
   react-inlinesvg@4.0.4:
     resolution: {integrity: sha512-OnXi+IHoY2zj6rt+kLmXQth9HZ3rS1TDtDwjFbELcCZngAJC32nXp2ZzLp4FpijzISDe7YfHI3SFs9qALWv+xw==}
     peerDependencies:
@@ -17107,6 +17144,10 @@ packages:
       jsdom:
         optional: true
 
+  void-elements@3.1.0:
+    resolution: {integrity: sha512-Dhxzh5HZuiHQhbvTW9AMetFfBHDMYpo23Uo9btPXgdYP+3T5S+p+jgNy7spra+veYhBP2dCSgxR/i2Y02h5/6w==}
+    engines: {node: '>=0.10.0'}
+
   vscode-languageserver-types@3.17.5:
     resolution: {integrity: sha512-Ld1VelNuX9pdF39h2Hgaeb5hEZM2Z3jUrrMgWQAu82jMtZp7p3vJT3BzToKtZI7NgQssZje5o0zryOrhQvzQAg==}
 
@@ -18377,6 +18418,8 @@ snapshots:
   '@babel/runtime@7.26.10':
     dependencies:
       regenerator-runtime: 0.14.0
+
+  '@babel/runtime@7.29.7': {}
 
   '@babel/template@7.27.0':
     dependencies:
@@ -28397,6 +28440,10 @@ snapshots:
 
   html-escaper@2.0.2: {}
 
+  html-parse-stringify@3.0.1:
+    dependencies:
+      void-elements: 3.1.0
+
   html-to-image@1.11.13: {}
 
   html-url-attributes@3.0.0: {}
@@ -28475,6 +28522,10 @@ snapshots:
   hyperdyperid@1.2.0: {}
 
   hyphenate-style-name@1.0.4: {}
+
+  i18next@26.3.3(typescript@6.0.2):
+    optionalDependencies:
+      typescript: 6.0.2
 
   iceberg-js@0.8.1: {}
 
@@ -30788,7 +30839,7 @@ snapshots:
     dependencies:
       js-yaml-loader: 1.2.2
 
-  next-router-mock@0.9.13(next@16.2.6(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(react@19.2.6):
+  next-router-mock@0.9.13(next@16.2.6(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(react@19.2.6):
     dependencies:
       next: 16.2.6(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4)
       react: 19.2.6
@@ -32371,6 +32422,17 @@ snapshots:
   react-hook-form@7.72.1(react@19.2.6):
     dependencies:
       react: 19.2.6
+
+  react-i18next@17.0.8(i18next@26.3.3(typescript@6.0.2))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.2):
+    dependencies:
+      '@babel/runtime': 7.29.7
+      html-parse-stringify: 3.0.1
+      i18next: 26.3.3(typescript@6.0.2)
+      react: 19.2.6
+      use-sync-external-store: 1.6.0(react@19.2.6)
+    optionalDependencies:
+      react-dom: 19.2.6(react@19.2.6)
+      typescript: 6.0.2
 
   react-inlinesvg@4.0.4(react@19.2.6):
     dependencies:
@@ -34880,6 +34942,8 @@ snapshots:
       jsdom: 28.1.0(@noble/hashes@1.8.0)(supports-color@8.1.1)
     transitivePeerDependencies:
       - msw
+
+  void-elements@3.1.0: {}
 
   vscode-languageserver-types@3.17.5: {}
 
