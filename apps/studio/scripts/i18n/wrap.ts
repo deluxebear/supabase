@@ -20,7 +20,10 @@ export function wrapProject(opts: {
   globs: string[]
   dryRun?: boolean
 }): { filesChanged: number; keys: string[] } {
-  const project = new Project({ tsConfigFilePath: opts.tsConfigFilePath })
+  const project = new Project({
+    tsConfigFilePath: opts.tsConfigFilePath,
+    skipAddingFilesFromTsConfig: true,
+  })
   project.addSourceFilesAtPaths(opts.globs)
   const result = collectFromProject(project)
   if (!opts.dryRun) project.saveSync()
@@ -33,7 +36,12 @@ if (process.argv[1] && process.argv[1].endsWith('wrap.ts')) {
   const cwd = process.cwd() // apps/studio
   const { filesChanged, keys } = wrapProject({
     tsConfigFilePath: join(cwd, 'tsconfig.json'),
-    globs: [join(cwd, 'components/**/*.tsx'), join(cwd, 'pages/**/*.tsx')],
+    globs: [
+      join(cwd, 'components/**/*.tsx'),
+      join(cwd, 'pages/**/*.tsx'),
+      '!' + join(cwd, '**/*.test.tsx'),
+      '!' + join(cwd, '**/*.spec.tsx'),
+    ],
     dryRun,
   })
   writeFileSync(join(cwd, 'scripts/i18n/keys.json'), JSON.stringify(keys.sort(), null, 2) + '\n')
