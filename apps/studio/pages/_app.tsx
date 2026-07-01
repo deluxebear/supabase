@@ -58,6 +58,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { AuthProvider } from '@/lib/auth'
 import { API_URL, BASE_PATH, IS_PLATFORM, useDefaultProvider } from '@/lib/constants'
 import { TimezoneProvider, useTimezone } from '@/lib/datetime'
+import { I18nProvider } from '@/lib/i18n/I18nProvider'
 import { ProfileProvider } from '@/lib/profile'
 import { Telemetry } from '@/lib/telemetry'
 import { ToastErrorTracker } from '@/lib/toast-errors'
@@ -170,79 +171,81 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ErrorBoundary FallbackComponent={GlobalErrorBoundaryState} onError={errorBoundaryHandler}>
-        <NuqsAdapter>
-          <HydrationBoundary state={pageProps.dehydratedState}>
-            <AuthProvider>
-              <FeatureFlagProviderWithOrgContext API_URL={API_URL} enabled={IS_PLATFORM}>
-                <ProfileProvider>
-                  <TimezoneProvider>
-                    <TimestampInfoTimezoneBridge>
-                      <Head>
-                        <title>{appTitle ?? 'Supabase'}</title>
-                        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-                        <meta property="og:image" content={`${BASE_PATH}/img/supabase-og.png`} />
-                        <meta name="googlebot" content="notranslate" />
-                        {/* [Alaister]: This has to be an inline style tag here and not a separate component due to next/font */}
-                        <style
-                          dangerouslySetInnerHTML={{
-                            __html: `:root{--font-custom:${customFont.style.fontFamily};--font-source-code-pro:${sourceCodePro.style.fontFamily};}`,
-                          }}
-                        />
-                        {/* Speed up initial API loading times by pre-connecting to the API domain */}
-                        {IS_PLATFORM && (
-                          <link
-                            rel="preconnect"
-                            href={new URL(API_URL).origin}
-                            crossOrigin="use-credentials"
+      <I18nProvider>
+        <ErrorBoundary FallbackComponent={GlobalErrorBoundaryState} onError={errorBoundaryHandler}>
+          <NuqsAdapter>
+            <HydrationBoundary state={pageProps.dehydratedState}>
+              <AuthProvider>
+                <FeatureFlagProviderWithOrgContext API_URL={API_URL} enabled={IS_PLATFORM}>
+                  <ProfileProvider>
+                    <TimezoneProvider>
+                      <TimestampInfoTimezoneBridge>
+                        <Head>
+                          <title>{appTitle ?? 'Supabase'}</title>
+                          <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+                          <meta property="og:image" content={`${BASE_PATH}/img/supabase-og.png`} />
+                          <meta name="googlebot" content="notranslate" />
+                          {/* [Alaister]: This has to be an inline style tag here and not a separate component due to next/font */}
+                          <style
+                            dangerouslySetInnerHTML={{
+                              __html: `:root{--font-custom:${customFont.style.fontFamily};--font-source-code-pro:${sourceCodePro.style.fontFamily};}`,
+                            }}
                           />
+                          {/* Speed up initial API loading times by pre-connecting to the API domain */}
+                          {IS_PLATFORM && (
+                            <link
+                              rel="preconnect"
+                              href={new URL(API_URL).origin}
+                              crossOrigin="use-credentials"
+                            />
+                          )}
+                        </Head>
+                        <MetaFaviconsPagesRouter
+                          includeManifest
+                          applicationName="Supabase Studio"
+                          route={isNonProdEnv ? '/favicon/staging' : '/favicon'}
+                        />
+                        <TooltipProvider>
+                          <RouteValidationWrapper>
+                            <ThemeProvider>
+                              <DevToolbarProvider apiUrl={API_URL}>
+                                <AiAssistantStateContextProvider>
+                                  <CommandProvider>
+                                    <BannerStackProvider>
+                                      <FeaturePreviewContextProvider>
+                                        <MainScrollContainerProvider>
+                                          {getLayout(<Component {...pageProps} />)}
+                                        </MainScrollContainerProvider>
+                                        <GlobalShortcuts />
+                                        <StudioCommandMenu />
+                                        <FeaturePreviewModal />
+                                      </FeaturePreviewContextProvider>
+                                    </BannerStackProvider>
+                                    <Toaster />
+                                    <MonacoThemeProvider />
+                                  </CommandProvider>
+                                </AiAssistantStateContextProvider>
+                                <DevToolbar extraTabs={devToolbarExtraTabs} />
+                                <DevToolbarTrigger />
+                              </DevToolbarProvider>
+                            </ThemeProvider>
+                          </RouteValidationWrapper>
+                        </TooltipProvider>
+                        <Telemetry />
+                        <ToastErrorTracker />
+                        {!isTestEnv && (
+                          <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
                         )}
-                      </Head>
-                      <MetaFaviconsPagesRouter
-                        includeManifest
-                        applicationName="Supabase Studio"
-                        route={isNonProdEnv ? '/favicon/staging' : '/favicon'}
-                      />
-                      <TooltipProvider>
-                        <RouteValidationWrapper>
-                          <ThemeProvider>
-                            <DevToolbarProvider apiUrl={API_URL}>
-                              <AiAssistantStateContextProvider>
-                                <CommandProvider>
-                                  <BannerStackProvider>
-                                    <FeaturePreviewContextProvider>
-                                      <MainScrollContainerProvider>
-                                        {getLayout(<Component {...pageProps} />)}
-                                      </MainScrollContainerProvider>
-                                      <GlobalShortcuts />
-                                      <StudioCommandMenu />
-                                      <FeaturePreviewModal />
-                                    </FeaturePreviewContextProvider>
-                                  </BannerStackProvider>
-                                  <Toaster />
-                                  <MonacoThemeProvider />
-                                </CommandProvider>
-                              </AiAssistantStateContextProvider>
-                              <DevToolbar extraTabs={devToolbarExtraTabs} />
-                              <DevToolbarTrigger />
-                            </DevToolbarProvider>
-                          </ThemeProvider>
-                        </RouteValidationWrapper>
-                      </TooltipProvider>
-                      <Telemetry />
-                      <ToastErrorTracker />
-                      {!isTestEnv && (
-                        <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
-                      )}
-                    </TimestampInfoTimezoneBridge>
-                  </TimezoneProvider>
-                </ProfileProvider>
-              </FeatureFlagProviderWithOrgContext>
-            </AuthProvider>
-          </HydrationBoundary>
-        </NuqsAdapter>
-        <TelemetryTagManager />
-      </ErrorBoundary>
+                      </TimestampInfoTimezoneBridge>
+                    </TimezoneProvider>
+                  </ProfileProvider>
+                </FeatureFlagProviderWithOrgContext>
+              </AuthProvider>
+            </HydrationBoundary>
+          </NuqsAdapter>
+          <TelemetryTagManager />
+        </ErrorBoundary>
+      </I18nProvider>
     </QueryClientProvider>
   )
 }
