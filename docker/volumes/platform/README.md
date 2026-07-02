@@ -384,7 +384,7 @@ auth users, storage buckets, and logs — not the default project's.
   surfaces.
 - Any pg-meta sub-resource route beyond `query`/lints/migrations (`tables`, `views`, `extensions`,
   etc.) — only those three were threaded with `projectRef`.
-- `pages/api/platform/mcp.ts` — confirmed untouched, out of scope for M2.1.
+- `pages/api/mcp/index.ts` — confirmed untouched, out of scope for M2.1.
 
 These still return the **default** project's data/keys regardless of the selected project's `ref`.
 
