@@ -3,6 +3,8 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { fetchPost } from '@/data/fetchers'
 import { constructHeaders } from '@/lib/api/apiHelpers'
 import apiWrapper from '@/lib/api/apiWrapper'
+import { resolveProjectConnection } from '@/lib/api/self-platform/resolve-connection'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 
@@ -19,12 +21,23 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 }
 
 const handlePost = async (req: NextApiRequest, res: NextApiResponse) => {
+  // [self-platform] Per-ref GoTrue target for registry-resolved projects;
+  // plain self-hosted and unregistered default keep the global env.
+  let authBaseUrl = process.env.SUPABASE_URL
+  let serviceKey = process.env.SUPABASE_SERVICE_KEY
+  if (IS_SELF_PLATFORM) {
+    const conn = await resolveProjectConnection(String(req.query.ref))
+    if (conn.row) {
+      authBaseUrl = conn.supabaseUrl
+      serviceKey = conn.serviceKey
+    }
+  }
   const headers = constructHeaders({
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    Authorization: `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
+    Authorization: `Bearer ${serviceKey}`,
   })
-  const url = `${process.env.SUPABASE_URL}/auth/v1/recover`
+  const url = `${authBaseUrl}/auth/v1/recover`
   const payload = { email: req.body.email }
 
   const response = await fetchPost(url, payload, { headers })
