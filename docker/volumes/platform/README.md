@@ -167,3 +167,176 @@ in front of the existing single self-hosted project, not a general multi-tenant 
 - **Auth settings and Storage settings config endpoints are unimplemented** (`/platform/auth/
   {ref}/config`, `/platform/projects/{ref}/config/storage`) — only reachable today via a stray
   sidebar-hover prefetch, not by visiting those settings pages, which are out of M1 scope.
+
+## M2: multi-project registry
+
+M1 hardcoded a single project (`default`, resolved from global `docker/.env`-sourced process
+env). M2 adds `platform.projects`, a real registry table that lets self-platform mode host
+**multiple** independently-connected Supabase stacks (or, as a lighter-weight substitute, multiple
+databases behind one stack — see below) side by side, each addressed by its own `ref`, with
+Studio's core data-plane routes resolving the right connection per request instead of always
+falling back to the single global-env project.
+
+### `platform.projects` table
+
+Defined in `docker/volumes/platform/migrations/02-projects.sql` (loaded into `platform-db`
+alongside the M1 `platform.*` schema). One row per registered project:
+
+| Column                                  | Purpose                                                                                 |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `ref` (unique)                          | The project ref used in URLs/API paths (`/project/{ref}`, `/api/platform/pg-meta/{ref}/query`, ...). |
+| `organization_id`                       | FK to `platform.organizations` — which org's project list this shows up in.             |
+| `name`, `status`, `cloud_provider`, `region` | Display metadata, contract-shaped to match the real hosted API's project object.     |
+| `db_host`, `db_port`, `db_name`, `db_user`, `db_user_readonly` | Connection coordinates, in plaintext. `db_host` **must** be a hostname reachable from the pg-meta container's Docker network (e.g. `db`), never `localhost`/`127.0.0.1` (that only resolves to the host running the CLI). |
+| `kong_url`, `rest_url`                  | The project's browser-facing gateway/REST URLs.                                         |
+| `db_pass_enc`, `service_key_enc`, `anon_key_enc`, `jwt_secret_enc`, `publishable_key_enc`, `secret_key_enc` | AES-encrypted secrets (see below) — never stored in plaintext. |
+
+`apps/studio/lib/api/self-platform/resolve-connection.ts`'s `resolveProjectConnection(ref)` is
+the single entry point every registry-aware route calls: registry hit -> decrypt secrets, build a
+DSN, re-encrypt with pg-meta's transport key; `ref === 'default'` with **no** registry row ->
+fall back to the M1 global-env project (zero-break, see "M2 boundary" below); any other unknown
+ref -> throws `ProjectNotFound`, which routes map to `404 {"message":"Project not found"}`.
+
+### `PLATFORM_ENCRYPTION_KEY` — required, back it up
+
+Registry secret columns (`*_enc`) are AES-encrypted (via `crypto-js`, same library/pattern as the
+GoTrue metadata columns) with `PLATFORM_ENCRYPTION_KEY`. This key is required in **two places**,
+independently, because two different processes need it:
+
+1. **`docker/.env`** — read by `register-project.ts` (the CLI below) when it encrypts secrets on
+   `register`/`--from-current-env`, and when it would need to decrypt for any future CLI read
+   path. Generate with `openssl rand -hex 32` (or similar); never commit `docker/.env`.
+2. **`apps/studio/.env.local`** (source-built dev server) or the Studio container's env (Docker
+   deployment) — read by `apps/studio/lib/api/self-platform/secrets.ts` at request time to
+   *decrypt* the columns `resolveProjectConnection` just read. **Must be byte-identical to
+   `docker/.env`'s value.** A mismatch (or a value present in one place but not the other) fails
+   closed: every registry-backed route 500s with `Error: PLATFORM_ENCRYPTION_KEY is not set` (if
+   unset) or a decrypt failure (if mismatched) — this is not a soft-degrade, secrets simply cannot
+   be read. Discovered live during M2 Task 10 acceptance: the CLI worked fine (its shell had the
+   key exported from `docker/.env`), but the dev server 500'd on every per-project SQL query until
+   the same key was added to `apps/studio/.env.local` too — see that file's inline comment.
+
+**Losing this key is unrecoverable for the registry.** There is no key-rotation or re-encryption
+tooling. If `PLATFORM_ENCRYPTION_KEY` is lost (and not recoverable from a backup of `docker/.env`),
+every secret column in `platform.projects` (db passwords, service/anon/JWT keys for every
+registered project) becomes permanently undecryptable — the only recovery path is
+`deregister`-then-`register` every project again with fresh credentials. **Back up `docker/.env`
+somewhere durable outside the repo** (it's gitignored and never committed) before registering any
+project you don't want to have to re-enter by hand.
+
+### `register-project` CLI
+
+`docker/scripts/platform/register-project.ts`, run via `pnpm exec tsx`. Talks to `platform-db`
+through `docker exec -i supabase-platform-db psql` (no new DB-client dependency added). Always
+export `PLATFORM_ENCRYPTION_KEY` first (register/deregister need it to encrypt; a missing key
+fails closed with `PLATFORM_ENCRYPTION_KEY is not set`, never silently writes plaintext):
+
+```bash
+cd /Volumes/data/projects/supabase
+export PLATFORM_ENCRYPTION_KEY=$(grep -E '^PLATFORM_ENCRYPTION_KEY=' docker/.env | cut -d= -f2)
+```
+
+**`register --from-current-env`** — registers/updates a project by reading the *current shell's*
+env for the real `docker/.env` variable names (`POSTGRES_HOST`, `POSTGRES_PASSWORD`, `ANON_KEY`,
+`SERVICE_ROLE_KEY`, `JWT_SECRET`, `SUPABASE_URL`/`SUPABASE_PUBLIC_URL`, ...) — this is how you
+register the existing main stack as `ref=default`. The shell must actually have those variables
+exported first; sourcing `docker/.env` directly with `set -a; . docker/.env; set +a` works, but
+note some unrelated lines in `docker/.env` (e.g. `STUDIO_DEFAULT_ORGANIZATION=Default Organization`,
+unquoted values containing spaces) will emit harmless "command not found" warnings from the shell
+when sourced this way — they don't affect the variables the CLI actually reads, and the
+registration still succeeds:
+
+```bash
+set -a; . docker/.env; set +a
+pnpm exec tsx docker/scripts/platform/register-project.ts register --from-current-env --ref default --org default
+```
+
+**`register` with explicit flags** — for any project that isn't "the current `docker/.env`
+stack", e.g. a second project. Required flags: `--ref --org --name --db-host --kong-url --db-pass
+--service-key --anon-key --jwt-secret`; optional: `--db-port` (default `5432`), `--db-name`
+(default `postgres`), `--db-user` (default `supabase_admin`), `--db-user-readonly`, `--rest-url`
+(default `<kong-url>/rest/v1/`), `--publishable-key`, `--secret-key`. Both branches (`register`
+and `--from-current-env`) are guarded against silently registering empty-secret projects — missing
+required fields fail with `missing required field(s): ...` rather than exiting 0:
+
+```bash
+pnpm exec tsx docker/scripts/platform/register-project.ts register \
+  --ref proj-b --org default --name "Project B" \
+  --db-host db --db-port 5432 --db-name projectb \
+  --kong-url http://localhost:8100 \
+  --db-pass "$POSTGRES_PASSWORD" --service-key "$SERVICE_ROLE_KEY" \
+  --anon-key "$ANON_KEY" --jwt-secret "$JWT_SECRET"
+```
+
+**`deregister --ref <ref>`** — deletes the row. `ref=default` deregistering does **not** break
+anything: `resolveProjectConnection('default')` falls back to the M1 global-env project the moment
+the registry row is gone (verified live, see the M2 acceptance record).
+
+**`list`** — prints `ref, organization_id, name, status, db_host` for every registered project.
+No pagination (see "known limitations" below — this is the admin CLI, separate from the
+paginated `/api/platform/projects` route).
+
+### Registering a second project without a second stack
+
+A full second `docker compose` stack (different project name/ports/volumes) is the "real" way to
+get a second project, but for local verification a lighter substitute works and is enough to prove
+real isolation: create a **second database on the same Postgres server** and register it with the
+same `kong_url`/keys but a different `db_name`:
+
+```bash
+docker exec supabase-db psql -U postgres -c "create database projectb;"
+docker exec supabase-db psql -U postgres -d projectb -c "create table only_in_b (id serial primary key, note text);"
+```
+
+then `register --ref proj-b ... --db-name projectb` (same `db-host`/`kong-url`/keys as `default`).
+Because `resolveProjectConnection` builds a full `postgresql://user:pass@host:port/dbname` DSN per
+row, switching project refs in Studio genuinely reconnects to a different database on the same
+server — `select current_database()` returns a different value per ref, and a table that only
+exists in one database (like `only_in_b` above) is queryable under that ref and fails with
+`relation "only_in_b" does not exist` under any other ref. This is real Postgres-level isolation
+(different `pg_database`, no data path crosses over), just not a full second Kong/GoTrue/pg-meta
+stack — API keys and the gateway URL are shared across projects registered this way, since they
+all point at the one running stack's Kong. A full second stack would additionally isolate those.
+
+### M2 boundary
+
+M2 makes the **core data plane** — the routes a day-to-day dashboard session actually depends on
+— resolve per `ref` from the registry instead of always reading global env:
+
+- Seed/bootstrap routes (`pages/api/platform/projects/[ref]/index.ts` and `.../databases.ts`) —
+  note `.../billing/addons.ts` at the same path level is a separate, still-static stub (always
+  `{ selected_addons: [], available_addons: [] }`), not registry-aware
+- Project settings (`pages/api/platform/projects/[ref]/settings.ts`) and API keys
+  (`pages/api/v1/projects/[ref]/api-keys*`)
+- SQL query execution (`pages/api/platform/pg-meta/[ref]/query/index.ts` via
+  `executeQuery({ projectRef })`) — this is what both the SQL Editor and (transitively) Table
+  Editor's query-shaped operations use
+- Project list endpoints (`/api/platform/projects` with the `Version: 2` header,
+  `/api/platform/organizations/{slug}/projects`) — both now enumerate every registered project,
+  not a hardcoded single entry
+
+**Still global, not yet per-project (deferred to M2.1):** Auth admin (GoTrue users/config),
+Storage, Realtime, Edge Functions, Logs/Analytics, and any other pg-meta sub-resource route not
+listed above (`tables`, `views`, `extensions`, etc. — only the `query` route was threaded with
+`projectRef` in M2) all still talk to the single global-env project/pg-meta target regardless of
+the selected project's registry row. Practically: switching to a non-default registered project
+and visiting Auth/Storage/Logs will show the **default** project's data, not that project's — only
+Project Overview, Settings, API Keys, and SQL Editor are genuinely project-scoped today.
+
+**Also not project-scoped (pre-existing, unrelated to the registry):** SQL Editor's saved
+snippets (`SNIPPETS_MANAGEMENT_FOLDER`, on-disk) are a single shared folder read by every project
+— the same snippet list appears in every registered project's SQL Editor sidebar. Query
+*execution* is correctly routed per-project (see above); the snippet *list/metadata* is not.
+
+### Known limitations (M2)
+
+- **Pagination is not yet sliced.** `listAllProjectsV2` and the org-projects route accept
+  `limit`/`offset` query params and echo them back in the `pagination` envelope, but the
+  underlying registry read is not actually paginated at the SQL level — both routes currently
+  return every registered project regardless of `limit`/`offset`. Fine at current scale
+  (single-digit projects); would need a real `LIMIT`/`OFFSET` (or keyset) query before this
+  registry is used with a large number of projects.
+- **No re-encryption/key-rotation tooling** for `PLATFORM_ENCRYPTION_KEY` (see above).
+- **The CLI has no `update`-only or `rotate-secret` command** — re-running `register` with the
+  same `--ref` upserts (all columns overwritten), which is fine for re-registering but has no
+  narrower "just change one field" affordance.

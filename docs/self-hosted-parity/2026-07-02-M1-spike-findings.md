@@ -447,7 +447,7 @@ below; not a substitution, the feature now genuinely works end-to-end).
   `m1_check = 1, 1 row`. Screenshots: `task12-evidence-05a-sql-editor.png` (clean load),
   `task12-evidence-05b-sql-run-success.png` (extensions query result).
   **Pre-fix, this failed** with a client-side toast `"Unable to run query: Connection string is
-  missing"` for every query, new or pre-existing — see fix below.
+missing"` for every query, new or pre-existing — see fix below.
 - **Table Editor (read):** created `m1_acceptance_test(id serial pk, note text)` + seed row via
   SQL Editor; Table Editor sidebar and grid showed it correctly (`id=1, note='seed'`).
   Screenshot: `task12-evidence-05c-table-editor.png`.
@@ -467,7 +467,7 @@ below; not a substitution, the feature now genuinely works end-to-end).
 - **Database** (`/project/default/database/tables`): loads cleanly, lists `m1_acceptance_test`
   with correct column/row counts. Screenshot: `task12-evidence-05h-database.png`.
 - **Auth** (`/project/default/auth/users`): loads cleanly, lists the underlying self-hosted
-  project's GoTrue users ("Total: 10 users (estimated)") — correctly the *project's* auth users,
+  project's GoTrue users ("Total: 10 users (estimated)") — correctly the _project's_ auth users,
   distinct from platform-auth's dashboard users. Screenshot: `task12-evidence-05i-auth.png`.
 - **Storage** (`/project/default/storage/buckets`): loads cleanly, empty-state "Create a file
   bucket" UI. Screenshot: `task12-evidence-05j-storage.png`.
@@ -551,7 +551,7 @@ f842388791c54366fdb5d7bd7a6cb0a4`), cleared `.next`, restarted `pnpm dev:studio`
   `{"id":1,"primary_email":"johndoe@supabase.io","username":"johndoe",...,"connectionString":""}`
   shape, byte-identical to the pre-platform-mode default.
 - **`/project/default` direct access:** `curl -s -o /dev/null -w "%{http_code}"
-  http://localhost:8082/project/default` → 200 (no redirect to `/sign-in` — direct access intact).
+http://localhost:8082/project/default` → 200 (no redirect to `/sign-in` — direct access intact).
   Confirmed visually too: headless-browser navigation landed straight on the Default Project
   overview page, no login gate. Screenshot: `task12-evidence-09-selfhosted-regression.png`.
 
@@ -568,3 +568,254 @@ still client-redirects unauthenticated per item 1; `GET /api/platform/profile` u
 Editor's `databases.ts` connection-string gap — see above), with its own RED/GREEN unit test and
 live re-verification, committed separately from this doc. No other code changes were made during
 acceptance; all other items passed against the code as it stood at the start of this task.
+
+## M2 验收
+
+**Date:** 2026-07-02. **Branch:** `feat/f9-f16-m1-login-gate`. Task 10 of the M2 (`platform.projects`
+registry) plan — end-to-end multi-project isolation verification, README, and regression. Environment:
+platform mini-stack (`platform-auth` :8110, `platform-db` :5434 host-port) + main self-hosted stack
+(Kong :8100, `supabase-db`) both already running; Studio dev server (`pnpm dev:studio`, :8082)
+started fresh against `apps/studio/.env.local`. Logged in as the existing `admin@internal.test`
+dashboard user (real GoTrue password grant against `platform-auth`, real bearer token used for every
+curl below — not a session-injection workaround).
+
+### Step 1 — unit sweep
+
+```
+cd apps/studio && pnpm exec vitest run lib/api/ lib/constants/ lib/hosted-api-allowlist.test.ts pages/api/platform/
+```
+
+**PASS — 42 test files, 317 tests, all green** (`Test Files 42 passed (42)`, `Tests 317 passed
+(317)`, 5.69s). Covers every M1 route plus all new M2 files: `lib/api/self-platform/{db,
+resolve-connection,projects,list-user-projects,organizations,profiles}.test.ts`, the registry-backed
+`pages/api/platform/projects/**` and `organizations/[slug]/projects` suites (both the registry-hit
+and plain-self-hosted-zero-break variants), `lib/api/self-hosted/query.test.ts` (executeQuery
+projectRef threading), and the pre-existing M1 suites — no regressions.
+
+### Step 2 — second-project approach
+
+Used the brief's **sanctioned substitute** (a full second compose stack wasn't practical here): a
+second database, `projectb`, on the _same_ `supabase-db` Postgres server as `default` (`postgres`
+db), with one table that exists **only** there:
+
+```
+$ docker exec supabase-db psql -U postgres -c "create database projectb;"
+CREATE DATABASE
+$ docker exec supabase-db psql -U postgres -d projectb -c "create table only_in_b (id serial primary key, note text not null); insert into only_in_b (note) values ('project-b-isolation-proof');"
+CREATE TABLE
+INSERT 0 1
+```
+
+Registered with the same Kong URL/keys as `default` but `--db-name projectb` — real Postgres-level
+isolation (separate `pg_database`, no shared data path), just not a separate Kong/GoTrue/pg-meta
+stack (see README's "Registering a second project without a second stack").
+
+### Step 3 — register default + proj-b, `list`
+
+```
+$ export PLATFORM_ENCRYPTION_KEY=$(grep -E '^PLATFORM_ENCRYPTION_KEY=' docker/.env | cut -d= -f2)
+$ set -a; . docker/.env; set +a   # (harmless "command not found" noise from unrelated
+                                   #  unquoted docker/.env lines; POSTGRES_*/ANON_KEY/etc. all set fine)
+$ pnpm exec tsx docker/scripts/platform/register-project.ts register --from-current-env --ref default --org default
+registered default (org default)
+$ pnpm exec tsx docker/scripts/platform/register-project.ts register --ref proj-b --org default --name "Project B" \
+    --db-host db --db-port 5432 --db-name projectb --kong-url http://localhost:8100 \
+    --db-pass <redacted> --service-key <redacted> --anon-key <redacted> --jwt-secret <redacted>
+registered proj-b (org default)
+$ pnpm exec tsx docker/scripts/platform/register-project.ts list
+   ref   | organization_id |      name       |     status     | db_host
+---------+-----------------+-----------------+----------------+---------
+ default |               1 | Default Project | ACTIVE_HEALTHY | db
+ proj-b  |               1 | Project B       | ACTIVE_HEALTHY | db
+(2 rows)
+```
+
+**Real gap found and fixed locally (not a code change — env-only, same class as Task 11/12's
+`PLATFORM_PG_META_URL` finding):** the CLI's shell had `PLATFORM_ENCRYPTION_KEY` exported and
+registration succeeded, but the Studio **dev-server process** only reads `apps/studio/.env.local`/
+`.env` — it did not have the key, so every registry-backed route 500'd with `Error:
+PLATFORM_ENCRYPTION_KEY is not set` (`lib/api/self-platform/secrets.ts`) until the same key (byte-
+identical to `docker/.env`) was added to `apps/studio/.env.local` too. Documented in both the env
+file's inline comment and the new README section below.
+
+### Step 4 — dev-server E2E
+
+**4a. Both projects listed.**
+
+```
+$ curl -s http://localhost:8082/api/platform/projects -H "Authorization: Bearer $TOKEN" -H "Version: 2"
+{"pagination":{"count":2,"limit":100,"offset":0},"projects":[
+  {"id":5,"ref":"default","name":"Default Project", ... },
+  {"id":6,"ref":"proj-b","name":"Project B", ... }
+]}
+$ curl -s http://localhost:8082/api/platform/organizations/default/projects -H "Authorization: Bearer $TOKEN"
+{"pagination":{"count":2, ...},"projects":[{"ref":"default", ...},{"ref":"proj-b", ...}]}
+```
+
+Also confirmed visually (real UI, logged-in headless-browser session): `/org/default` renders a
+project grid with both **Default Project** and **Project B** cards (`AWS | local` each). Screenshot
+evidence captured to `/tmp/m2-10-evidence/01-org-default-two-projects.png` (scratch, not committed).
+
+**4b/4c. Isolation — the crux.**
+
+```
+$ curl -s -X POST http://localhost:8082/api/platform/pg-meta/default/query -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" -d '{"query":"select current_database();"}'
+[{"current_database":"postgres"}]
+
+$ curl -s -X POST http://localhost:8082/api/platform/pg-meta/proj-b/query -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" -d '{"query":"select current_database();"}'
+[{"current_database":"projectb"}]
+
+$ curl -s -X POST http://localhost:8082/api/platform/pg-meta/proj-b/query -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" -d '{"query":"select * from only_in_b;"}'
+[{"id":1,"note":"project-b-isolation-proof"}]
+
+$ curl -s -X POST http://localhost:8082/api/platform/pg-meta/default/query -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" -d '{"query":"select * from only_in_b;"}'
+{"message":"relation \"only_in_b\" does not exist","formattedError":"ERROR:  42P01: relation \"only_in_b\" does not exist\nLINE 1: select * from only_in_b;\n                      ^\n"}
+```
+
+**Isolation proven**: the identical query returns a different `current_database()` per `ref`, and a
+table that exists only in `projectb` is queryable under `proj-b` and fails with "relation does not
+exist" under `default` — real Postgres-level data-plane isolation, not just a different label in the
+UI. Corroborated in the live UI: the project's "Connect" dialog → Direct connection → URI shows
+`postgresql://supabase_admin:[YOUR-PASSWORD]@db:5432/postgres` for `default` and
+`postgresql://supabase_admin:[YOUR-PASSWORD]@db:5432/projectb` for `proj-b` (screenshots
+`/tmp/m2-10-evidence/11-projb-connect-dialog.png`, `12-default-connect-dialog.png`). (A live in-editor
+query _run_ via the headless-browser Monaco editor hit an unrelated, pre-existing snippet-autosave
+race — "Unable to find snippet with ID ..." — reproduced identically for a brand-new query under
+_both_ `default` and `proj-b`, i.e. not project-registry-specific; the curl evidence above hits the
+exact same `pages/api/platform/pg-meta/[ref]/query/index.ts` route the SQL Editor's Run button POSTs
+to, so it is conclusive for the isolation claim regardless.)
+
+**4d. Settings/API keys reflect the resolved project.**
+
+```
+$ curl -s http://localhost:8082/api/platform/projects/proj-b/settings -H "Authorization: Bearer $TOKEN"
+{"db_host":"db","db_name":"projectb","name":"Project B","ref":"proj-b", ...}
+$ curl -s http://localhost:8082/api/platform/projects/default/settings -H "Authorization: Bearer $TOKEN"
+{"db_host":"db","db_name":"postgres","name":"Default Project","ref":"default", ...}
+```
+
+`db_name` correctly differs (`projectb` vs `postgres`); `service_api_keys`/`jwt_secret` are
+identical between the two by design of the sanctioned substitute (both registered with the same
+Kong/keys — see Step 2). `GET /api/v1/projects/{ref}/api-keys` shows the same pattern.
+
+**4e. Unknown ref → 404.**
+
+```
+$ curl -s -w '\n%{http_code}\n' http://localhost:8082/api/platform/projects/ghost -H "Authorization: Bearer $TOKEN"
+{"message":"Project not found"}
+404
+```
+
+### Step 5 — regression
+
+**(i) Empty-registry fallback (zero-break).** Deregistered both projects:
+
+```
+$ pnpm exec tsx docker/scripts/platform/register-project.ts deregister --ref default
+deregistered default
+$ pnpm exec tsx docker/scripts/platform/register-project.ts deregister --ref proj-b
+deregistered proj-b
+$ pnpm exec tsx docker/scripts/platform/register-project.ts list
+ ref | organization_id | name | status | db_host
+-----+-----------------+------+--------+---------
+(0 rows)
+```
+
+```
+$ curl -s -w '\n%{http_code}\n' -X POST http://localhost:8082/api/platform/pg-meta/default/query -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" -d '{"query":"select current_database();"}'
+[{"current_database":"postgres"}]
+200
+$ curl -s -w '\n%{http_code}\n' -X POST http://localhost:8082/api/platform/pg-meta/proj-b/query -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" -d '{"query":"select current_database();"}'
+{"message":"Project not found"}
+404
+```
+
+`default` falls all the way back to the M1 global-env connection and still returns the correct DB
+(`postgres`, 200) with **no registry rows at all** — confirmed also via the live UI (`/project/default`
+overview loads, "Status: Healthy"). The now-deregistered `proj-b` correctly 404s like any unknown
+ref. Both projects were then re-registered (same values as Step 3) to restore state for the rest of
+this record and for whoever picks up M2.1 next.
+
+**(ii) Plain self-hosted regression.** Backed up the platform profile
+(`.env.local` → `.env.local.platform.bak`, md5 `5d5c47fe9ec9c1ec27a770df9c4c5b3b`), swapped in the
+existing `.env.local.selfhosted.bak`, cleared `.next`, restarted `pnpm dev:studio`.
+
+```
+$ curl -s http://localhost:8082/api/platform/profile
+{"id":1,"primary_email":"johndoe@supabase.io","username":"johndoe", ...,"connectionString":""}
+$ curl -s -X POST http://localhost:8082/api/platform/pg-meta/default/query -H "Content-Type: application/json" \
+    -d '{"query":"select current_database();"}'
+[{"current_database":"postgres"}]
+$ curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8082/api/platform/pg-meta/default/tables?included_schemas=public
+200
+$ curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8082/api/platform/projects/default
+200
+```
+
+Live UI, headless browser: `/project/default` → 200, direct access, no sign-in gate (screenshot
+`/tmp/m2-10-evidence/13-selfhosted-project-default.png`); `/project/default/sql/new` (SQL Editor) →
+200, sidebar loads existing snippets cleanly; `/project/default/editor` (Table Editor) → 200, "No
+tables or views" empty-state (screenshot `/tmp/m2-10-evidence/14-selfhosted-table-editor.png`). johndoe
+stub is byte-identical to the M1 acceptance record's shape (`connectionString:""` included). Swapped
+back (`.env.local.platform.bak` → `.env.local`, md5-verified byte-identical restore, backup file then
+removed), cleared `.next`, restarted, re-confirmed platform mode active (`/api/platform/profile`
+unauthenticated → 401, both `default`/`proj-b` still listed).
+
+**Concern (environment flake, not a regression, not fixed):** during this step's initial dev-server
+restarts, `/project/default` (and every other page — same failure at `pages/_app.tsx`'s global
+import) intermittently 500'd with `Module not found:
+Can't resolve '@vercel/turbopack-next/internal/font/google/font'` while resolving
+`apps/studio/fonts/index.ts`'s `Source_Code_Pro` Google Font import under Turbopack dev mode. This
+is pre-existing (unrelated to `IS_PLATFORM`/the registry — reproduced identically under the platform
+profile earlier in the same session, and is a known class of Turbopack `next/font/google` dev-mode
+flake, not project-registry code) and resolved itself after repeated restarts/retries in both
+sessions; direct network connectivity to `fonts.googleapis.com`/`fonts.gstatic.com` was confirmed
+fine throughout (curl 200s), so the data-plane API checks above stood in as primary evidence
+whenever a given attempt was mid-flake, and full-page screenshots were still obtained once it
+cleared. Not a Task 10 or M2 code change; flagged here for whoever next hits it.
+
+### Step 6 — README
+
+Added to `docker/volumes/platform/README.md`: a `## M2: multi-project registry` section covering
+the `platform.projects` table (columns, purpose, `resolveProjectConnection` contract),
+`PLATFORM_ENCRYPTION_KEY` (required in **both** `docker/.env` and `apps/studio/.env.local`/the
+Studio container env, byte-identical, backup warning — loss is unrecoverable for the registry), the
+`register-project` CLI (`register`, `--from-current-env`, `deregister`, `list`, the env-sourcing
+caveat), how to register a second project without a second stack (this record's own approach), the
+M2 boundary (core data plane — seed routes, settings, API keys, SQL query execution, project lists —
+is per-`ref`; Auth admin/Storage/Realtime/Edge Functions/Logs and all pg-meta sub-resources other
+than `query` remain global, deferred to M2.1; SQL Editor snippets are also not project-scoped,
+pre-existing/unrelated to the registry), and known M2 limitations (pagination not sliced at the SQL
+level, no key-rotation tooling).
+
+### Files changed / restored (this task)
+
+- `docker/volumes/platform/README.md` — M2 section added (committed).
+- `docs/self-hosted-parity/2026-07-02-M1-spike-findings.md` — this section (committed).
+- `apps/studio/.env.local` — `PLATFORM_ENCRYPTION_KEY` added (gitignored, not committed); swapped to
+  the self-hosted profile and back for Step 5(ii), restored byte-identical (md5-verified).
+- `apps/studio/lib/api/apiWrapper.ts` — temporarily added a `console.error` in the catch-all to
+  diagnose the 500 above; reverted before commit (`git diff` clean).
+- `platform.projects` (in `platform-db`, not a repo file) — `default`/`proj-b` registered,
+  deregistered, then re-registered during Step 5(i); ends this task registered with both rows
+  present.
+- `supabase-db`'s `postgres` server — new `projectb` database + `only_in_b` table (Step 2), left in
+  place (backs the still-registered `proj-b` row).
+- No `.env`/`docker/.env`/secrets committed — verified via `git status` before committing (only the
+  two docs files staged).
+
+### Summary
+
+**M2 acceptance: PASS.** Unit sweep 317/317. Multi-project isolation proven at both the
+`current_database()` level and the table-existence level via direct API calls against the real
+`pages/api/platform/pg-meta/[ref]/query` route, corroborated by matching live-UI evidence (project
+list, connect-dialog connection strings). Both regressions pass: the empty-registry fallback keeps
+`default` fully working with zero registry rows, and plain self-hosted mode (profile swapped out and
+back) is unaffected by any M2 code. One pre-existing, unrelated Turbopack dev-mode font-loading flake
+was encountered and worked around, not a functional gap in M2.
