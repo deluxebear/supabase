@@ -125,18 +125,45 @@ Captured via headless-browser Network panel across `/` → `/sign-in` → `/org`
 → `/project/default` → `/project/default/editor` (forced navigation). All are `/api/platform/*`
 or `/api/v1/*` and all return `404` (middleware block) unless noted:
 
-| Path                                                            | Status | Frontend hook (file)                                                                                                                          | First seen at               |
-| --------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| `/api/platform/notifications?offset=0&limit=20&status=new,seen` | 404    | `data/notifications/notifications-v2-query.ts`                                                                                                | pre-login boot (`/sign-in`) |
-| `/api/platform/telemetry/feature-flags`                         | 404    | `packages/common/feature-flags.tsx` (`getFeatureFlags`, called by `useFeatureFlags`/`FeatureFlagProvider`, exposed via `hooks/ui/useFlag.ts`) | pre-login boot              |
-| `/api/platform/profile`                                         | 404    | `data/profile/profile-query.ts` (via `lib/profile.tsx` `ProfileProvider`)                                                                     | post-login (`/org`)         |
-| `/api/platform/profile/permissions`                             | 404    | `data/permissions/permissions-query.ts` (via `ProfileProvider`'s `usePermissionsQuery`)                                                       | post-login                  |
-| `/api/platform/stripe/invoices/overdue`                         | 404    | `data/invoices/invoices-overdue-query.ts`                                                                                                     | post-login                  |
-| `/api/platform/projects/default`                                | 404    | `data/projects/project-detail-query.ts` (via `hooks/misc/useSelectedProject.ts`)                                                              | `/project/default`          |
-| `/api/platform/projects/default/databases`                      | 404    | `data/read-replicas/replicas-query.ts`                                                                                                        | `/project/default`          |
-| `/api/platform/projects/default/billing/addons`                 | 404    | `data/subscriptions/project-addons-query.ts`                                                                                                  | `/project/default`          |
-| `/api/platform/telemetry/feature-flags?project_ref=default`     | 404    | `packages/common/feature-flags.tsx` (same hook, project-scoped call)                                                                          | `/project/default`          |
-| `/api/v1/projects/default/network-bans/retrieve` (POST)         | 404    | `data/banned-ips/banned-ips-query.ts`                                                                                                         | `/project/default`          |
+| Path                                                            | Status | Frontend hook (file)                                                                                                                          | First seen at               | Task 11 disposition                                                                                                                                                                                                                                                                                 |
+| --------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/api/platform/notifications?offset=0&limit=20&status=new,seen` | 404    | `data/notifications/notifications-v2-query.ts`                                                                                                | pre-login boot (`/sign-in`) | **stubbed-now** — `pages/api/platform/notifications.ts`                                                                                                                                                                                                                                             |
+| `/api/platform/telemetry/feature-flags`                         | 404    | `packages/common/feature-flags.tsx` (`getFeatureFlags`, called by `useFeatureFlags`/`FeatureFlagProvider`, exposed via `hooks/ui/useFlag.ts`) | pre-login boot              | **stubbed-now** — `pages/api/platform/telemetry/feature-flags.ts` (no auth: fires pre-login)                                                                                                                                                                                                        |
+| `/api/platform/profile`                                         | 404    | `data/profile/profile-query.ts` (via `lib/profile.tsx` `ProfileProvider`)                                                                     | post-login (`/org`)         | **implemented-by-task-6**                                                                                                                                                                                                                                                                           |
+| `/api/platform/profile/permissions`                             | 404    | `data/permissions/permissions-query.ts` (via `ProfileProvider`'s `usePermissionsQuery`)                                                       | post-login                  | **implemented-by-task-8**                                                                                                                                                                                                                                                                           |
+| `/api/platform/stripe/invoices/overdue`                         | 404    | `data/invoices/invoices-overdue-query.ts`                                                                                                     | post-login                  | **stubbed-now** — `pages/api/platform/stripe/invoices/overdue.ts`                                                                                                                                                                                                                                   |
+| `/api/platform/projects/default`                                | 404    | `data/projects/project-detail-query.ts` (via `hooks/misc/useSelectedProject.ts`)                                                              | `/project/default`          | **implemented-pre-existing** — `pages/api/platform/projects/[ref]/index.ts` is a generic self-hosted route (predates this branch) with no `IS_PLATFORM` gate; now reachable once Task 2's allowlist opened `/api/platform/*` for self-platform. See `## Task 11 关注点` for a real bug found in it. |
+| `/api/platform/projects/default/databases`                      | 404    | `data/read-replicas/replicas-query.ts`                                                                                                        | `/project/default`          | **implemented-pre-existing** — `pages/api/platform/projects/[ref]/databases.ts`, same as above                                                                                                                                                                                                      |
+| `/api/platform/projects/default/billing/addons`                 | 404    | `data/subscriptions/project-addons-query.ts`                                                                                                  | `/project/default`          | **implemented-pre-existing** — `pages/api/platform/projects/[ref]/billing/addons.ts`, same as above                                                                                                                                                                                                 |
+| `/api/platform/telemetry/feature-flags?project_ref=default`     | 404    | `packages/common/feature-flags.tsx` (same hook, project-scoped call)                                                                          | `/project/default`          | **stubbed-now** — same file as the pre-login row above                                                                                                                                                                                                                                              |
+| `/api/v1/projects/default/network-bans/retrieve` (POST)         | 404    | `data/banned-ips/banned-ips-query.ts`                                                                                                         | `/project/default`          | **stubbed-now** — `pages/api/v1/projects/[ref]/network-bans/retrieve.ts`                                                                                                                                                                                                                            |
+
+### Task 11: newly-discovered gaps (deeper shell mount)
+
+Once the profile → permissions → organizations → projects chain actually resolves (see
+`## Task 11 关注点` below for what it took to get there live), the project shell mounts fully and
+fires a second wave of requests the Task 1 spike never reached. Captured via live re-verification
+(`/organizations` → `/org/default` → `/project/default` → Table Editor → SQL Editor), all
+`stubbed-now` unless noted:
+
+| Path                                                                | Status (before) | Frontend hook (file)                                  | First seen at                      | Disposition                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------------------------------------------------------- | --------------- | ----------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/api/platform/organizations/{slug}/entitlements`                   | 404             | `data/entitlements/entitlements-query.ts`             | `/org/default`                     | stubbed-now — `pages/api/platform/organizations/[slug]/entitlements.ts`                                                                                                                                                                                                                                                                                              |
+| `/api/platform/organizations/{slug}/usage`                          | 404             | `data/usage/org-usage-query.ts`                       | `/org/default`                     | stubbed-now — `pages/api/platform/organizations/[slug]/usage.ts`                                                                                                                                                                                                                                                                                                     |
+| `/api/platform/organizations/{slug}/oauth/apps?type=authorized`     | 404             | `data/oauth/authorized-apps-query.ts`                 | `/org/default`                     | stubbed-now — `pages/api/platform/organizations/[slug]/oauth/apps/index.ts`                                                                                                                                                                                                                                                                                          |
+| `/api/platform/projects-resource-warnings?slug=...` / `?ref=...`    | 404             | `data/usage/resource-warnings-query.ts`               | `/org/default`, `/project/default` | stubbed-now — `pages/api/platform/projects-resource-warnings.ts` (called with both `slug` and `ref` query params by different call sites; same handler covers both)                                                                                                                                                                                                  |
+| `/api/v1/projects/{ref}/branches`                                   | 404             | branches list hook (project overview branch selector) | `/project/default`                 | stubbed-now — `pages/api/v1/projects/[ref]/branches.ts` — **visibly broke the UI**: orange "Failed to load branches" banner in the project topbar                                                                                                                                                                                                                    |
+| `/api/v1/projects/{ref}/health?services=...`                        | 404             | project health-status hook (project overview)         | `/project/default`                 | stubbed-now — `pages/api/v1/projects/[ref]/health.ts` — **visibly broke the UI**: project overview showed status "Unhealthy"                                                                                                                                                                                                                                         |
+| `/api/platform/database/{ref}/backups`                              | 404             | project overview "Last backup" card                   | `/project/default`                 | stubbed-now — `pages/api/platform/database/[ref]/backups.ts`                                                                                                                                                                                                                                                                                                         |
+| `/api/platform/projects/{ref}/load-balancers`                       | 404             | project overview / database settings                  | `/project/default`                 | stubbed-now — `pages/api/platform/projects/[ref]/load-balancers.ts`                                                                                                                                                                                                                                                                                                  |
+| `/api/platform/projects/{ref}/databases-statuses`                   | 404             | project overview / database settings                  | `/project/default`                 | stubbed-now — `pages/api/platform/projects/[ref]/databases-statuses.ts`                                                                                                                                                                                                                                                                                              |
+| `/api/v1/projects/{ref}/upgrade/status`                             | 404             | project overview upgrade-banner check                 | `/project/default`                 | stubbed-now — `pages/api/v1/projects/[ref]/upgrade/status.ts`                                                                                                                                                                                                                                                                                                        |
+| `/api/platform/projects/{ref}/analytics/endpoints/usage.api-counts` | 500             | project overview request-count chart                  | `/project/default`                 | **intentionally-skipped** — pre-existing self-hosted route (`lib/api/self-hosted/logs.ts`) `assert`s `LOGFLARE_PRIVATE_ACCESS_TOKEN`; 500s identically in plain self-hosted mode today, not platform-specific. Non-blocking (chart area just stays empty).                                                                                                           |
+| `/api/platform/auth/{ref}/config`                                   | 404             | Auth settings hook (sidebar-hover prefetch)           | stray, outside the explicit walk   | **intentionally-skipped (deferred)** — has a contract (`GoTrueConfigController_getGoTrueConfig`) but the response schema (`GoTrueConfigResponse`) is a large multi-field GoTrue settings object; never actually visited (Auth settings page), only prefetched on sidebar hover. Left for a follow-up task scoped to the Auth settings page rather than guessed here. |
+| `/api/platform/projects/{ref}/config/storage`                       | 404             | Storage settings hook (sidebar-hover prefetch)        | stray, outside the explicit walk   | **intentionally-skipped (deferred)** — same reasoning, `StorageConfigResponse` is a large settings object; deferred to a Storage-settings-page task.                                                                                                                                                                                                                 |
+
+All ten `stubbed-now` rows above are now typed contract-minimal stubs; all four
+`intentionally-skipped` rows are documented in `## 有意不实现`.
 
 Not observed (never reached — see conclusion a): any `/api/platform/pg-meta/*` or other
 project-content routes (Table Editor grid data, SQL Editor snippets, etc.), because the project
@@ -224,8 +251,117 @@ No blocking gaps found; all three degrade non-fatally without their env vars:
 
 None of these need an `.env.local` fallback to unblock M1; they're cosmetic/log-noise only.
 
+## Task 11: contract-minimal boot stubs + live re-verification
+
+Task 11 filled in every remaining `stubbed-now` path from the table above (10 files), then did a
+LIVE re-verification (real dev server, real platform-auth session, headless-browser walk) rather
+than code inspection. That surfaced three things worth recording that are **not** stub gaps and
+were **not** fixed as part of this task (see rules in the task brief: don't patch existing
+implemented endpoints, record concerns instead) — they were only patched **locally and
+temporarily, then fully reverted before committing**, purely to get far enough into the app to
+finish the walk and discover the stub-shaped gaps above.
+
+**Concern 1 — `PLATFORM_PG_META_URL` is never set anywhere.** `lib/constants/index.ts` branches
+`PG_META_URL` on `IS_PLATFORM`: self-hosted uses `STUDIO_PG_META_URL`/`PLATFORM_PG_META_URL`
+depending on mode, but nothing in `docker/.env`/`.env.local`/the task brief's own env-var list
+ever sets `PLATFORM_PG_META_URL`. Without it, `PG_META_URL` resolves to `undefined` and every
+self-platform DB-backed route (`profile`, `organizations`, `projects`) 500s outright. **Not
+reverted** — this is a pure env-var addition (`PLATFORM_PG_META_URL=http://localhost:8100/pg`,
+same target as `STUDIO_PG_META_URL`) made only in the local `.env.local` for this verification
+session, which was restored byte-identical afterwards. This needs to land as a real env default
+(docker/.env or the platform mini-stack compose file) before any future task relies on a working
+dev environment — flagging for whoever owns environment/deploy config next.
+
+**Concern 2 (HIGH severity) — `lib/api/apiHelpers.ts`'s `constructHeaders()` strips the pg-meta
+`apiKey` header whenever `IS_PLATFORM` is true.** Line ~31: `...(!IS_PLATFORM && { apiKey:
+process.env.SUPABASE_SERVICE_KEY })`. This predates the whole M1 branch (last touched by an
+import-order chore, `205cbe7d26`) and is not a Task 6-10 output, but Task 6-10's
+`lib/api/self-platform/db.ts` (and every self-hosted-style pg-meta route) calls into it. Self-platform
+mode sets `IS_PLATFORM=true` but still talks to the **same Kong-fronted pg-meta service as
+self-hosted** (confirmed: `PLATFORM_PG_META_URL` points at the same `localhost:8100/pg` as
+`STUDIO_PG_META_URL` — there is no separate platform-only pg-meta). Kong's key-auth plugin
+requires this header; without it every platform-metadata DB query (profile, organizations,
+projects, and the pg-meta bridge itself) 500s with `"No API key found in request"` wrapped as an
+opaque `{"error":{}}` (Error serializes to `{}` through `apiWrapper`'s catch-all). **Reproduced
+live**: `GET /api/platform/profile` 500'd with an empty profile table (should have been a clean
+404 `"User's profile not found"`, which `lib/profile.tsx`'s `createProfile()` auto-recovery
+depends on) until this was fixed. **Verified fix** (temporarily, then `git checkout`'d — not in
+the commit): change the condition to always include the `apiKey` header (or gate it on whether
+the target pg-meta is Kong-fronted, e.g. `!IS_PLATFORM || IS_SELF_PLATFORM`). After that one-line
+change, `profile`/`organizations`/`projects` all returned correct data end-to-end. **This blocks
+the entire self-platform DB story and needs a real (committed, reviewed) fix in a follow-up
+task** — it is squarely infra-plumbing, not a missing-endpoint stub, so out of Task 11's charter
+to fix directly.
+
+**Concern 3 (HIGH severity) — the pre-existing (non-Task-6-10) `projects/[ref]/index.ts` route
+always returns `connectionString: ''`, which is fatal in self-platform mode.**
+`data/fetchers.ts`'s `pgMetaGuard()` calls `isValidConnString(connString)`, which is
+`IS_PLATFORM ? Boolean(connString) : true` — i.e. self-hosted mode (`IS_PLATFORM=false`) always
+bypasses this client-side gate regardless of the value, but self-platform mode (`IS_PLATFORM=true`)
+enforces it. Since `pages/api/platform/projects/[ref]/index.ts` (generic self-hosted route,
+predates this branch, no `IS_PLATFORM`/`IS_SELF_PLATFORM` branching) hardcodes
+`connectionString: ''`, **every pg-meta-backed client request in self-platform mode is blocked
+client-side before it's even sent** — Table Editor showed "Failed to load schemas — API Error:
+happened while trying to acquire connection to the database" and "Failed to load tables" for the
+identical reason, with zero `/api/platform/pg-meta/*` network requests ever firing (matches spike
+conclusion (a)'s prediction, but from a different root cause than assumed — not
+`assertSelfHosted`, but this client-side gate). Some pg-meta routes (`types.ts`, `publications.ts`,
+`policies.ts`, etc.) additionally forward the client-supplied `connectionString` verbatim as the
+`x-connection-encrypted` header to pg-meta, so it must be a _real_ encrypted connection string,
+not just any truthy value. **Verified fix** (temporarily, then `git checkout`'d — not in the
+commit): set `connectionString: encryptString(getConnectionString({ readOnly: false }))` (the
+same helpers `lib/api/self-hosted/query.ts` already uses server-side) instead of `''`. After that
+change plus Concern 2's fix, Table Editor and SQL Editor both rendered cleanly (no error banners,
+"No tables or views", pg-meta `/types`, `/publications`, and `/query` POST all 200'd), and a
+pre-existing on-disk snippet (`Untitled query 207`, `SELECT ... FROM pg_available_extensions`)
+opened correctly. **Needs a real (committed, reviewed) fix in a follow-up task** — same reasoning
+as Concern 2: this is a pre-existing shared file with a platform-shape gap, not a missing
+endpoint.
+
+Net effect: with Concerns 1-3 fixed (even if only locally/temporarily for this verification), the
+full boot walk — sign-in → `/organizations` → `/org/default` → `/project/default` → Table Editor →
+SQL Editor — is clean: no unexpected non-2xx `/api/*` requests, only the two documented
+pre-existing non-platform-specific 500s (`/api/incident-banner`, analytics endpoints without
+`LOGFLARE_PRIVATE_ACCESS_TOKEN`).
+
+## 有意不实现
+
+Paths deliberately left unstubbed, with justification:
+
+- **`/api/platform/projects/{ref}/analytics/endpoints/*`** (project overview request-count chart)
+  — 500s because `lib/api/self-hosted/logs.ts` `assert`s `LOGFLARE_PRIVATE_ACCESS_TOKEN`, which is
+  unset. Identical behavior in plain self-hosted mode today — not platform-specific, pre-existing,
+  non-blocking (chart area stays empty, no crash).
+- **`/api/platform/auth/{ref}/config`** (Auth settings page config) — has a contract
+  (`GoTrueConfigController_getGoTrueConfig` → `GoTrueConfigResponse`), but that response schema is
+  a large multi-field GoTrue settings object (dozens of fields covering every auth provider/JWT/
+  rate-limit setting). Only observed as a stray sidebar-hover prefetch during the SQL Editor walk,
+  never from actually visiting the Auth settings page (out of this task's explicit walk scope:
+  "Table Editor, SQL Editor at minimum"). Deferred to a task that actually implements the Auth
+  settings page, where the real minimal-legal shape can be derived from what that page reads.
+- **`/api/platform/projects/{ref}/config/storage`** (Storage settings page config) — same
+  reasoning as above (`StorageConfigResponse` is a large settings object), same stray-prefetch
+  origin, deferred to a Storage-settings-page task.
+- **ConfigCat / PostHog / Sentry / Usercentrics / `/api/incident-banner`** — carried over from the
+  Task 1 spike's conclusion (c); all degrade non-fatally without their env vars (console log/warn
+  only, no render break), none are platform-mode-specific, none need an `.env.local` fallback.
+
 ## Files changed / restored
 
 - `apps/studio/.env.local` — temporarily overridden for the spike, restored byte-identical to
   the pre-spike backup (verified via `md5`) before committing this doc.
 - `docs/self-hosted-parity/2026-07-02-M1-spike-findings.md` — this file (committed).
+
+### Task 11 additions
+
+- `apps/studio/.env.local` — temporarily overridden again for the Task 11 live re-verification
+  (self-platform env vars per the task's Step 3 + a discovered `PLATFORM_PG_META_URL` addition,
+  see Concern 1), restored byte-identical to the pre-Task-11 version (verified via `md5`) before
+  committing.
+- `apps/studio/lib/api/apiHelpers.ts` and
+  `apps/studio/pages/api/platform/projects/[ref]/index.ts` — temporarily patched locally to work
+  around Concerns 2 and 3 solely to finish the live walk past those blockers; both fully reverted
+  via `git checkout` before committing (confirmed clean via `git status`/`git diff`). Not part of
+  this task's commit.
+- 10 new contract-minimal stub route files under `apps/studio/pages/api/platform/` and
+  `apps/studio/pages/api/v1/` (see the two tables above) — committed.
