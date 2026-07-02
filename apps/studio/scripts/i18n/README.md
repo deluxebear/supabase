@@ -73,3 +73,15 @@
   conflicts itself via `git checkout --theirs` even without the driver
   registered — but it avoids stopping on a conflict if you run a plain
   `git merge` yourself.
+
+- **Activation glue is protected from take-theirs.** `apps/studio/pages/_app.tsx`
+  (mounts `<I18nProvider>`) and `apps/studio/components/interfaces/UserDropdown.tsx`
+  (mounts `<LanguageSwitcher/>`) are hand-authored integration points that the
+  codemod does **not** regenerate. Both are excluded from the `merge=i18n-theirs`
+  auto-resolution (via `!merge` overrides in `.gitattributes`) and from
+  `sync-upstream.sh`'s `git checkout --theirs` selection, so an upstream merge
+  that touches either file surfaces as a normal conflict instead of silently
+  discarding the glue. If that happens, resolve it manually, keeping the
+  `<I18nProvider>` wrapper in `_app.tsx` and the `<LanguageSwitcher/>` mount in
+  `UserDropdown.tsx`. `sync-upstream.sh` also verifies both are present after
+  the merge/re-wrap and aborts with an error if either is missing.
