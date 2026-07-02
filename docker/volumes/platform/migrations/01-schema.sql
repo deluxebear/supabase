@@ -5,9 +5,10 @@ create schema if not exists auth;
 
 -- GoTrue's runtime queries reference some auth tables unqualified (relying on
 -- search_path), same as the main stack's supabase_auth_admin role config.
+-- Default to public for DDL; unqualified lookups (e.g. identities) fall through to auth.
 -- Without this, new connections default to search_path "$user",public and
 -- GoTrue signup fails with: relation "identities" does not exist (42P01).
-alter role postgres set search_path to auth, public;
+alter role postgres set search_path to public, auth;
 
 create schema if not exists platform;
 
