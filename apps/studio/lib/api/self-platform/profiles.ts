@@ -51,51 +51,51 @@ export async function createProfileWithDefaultMembership(input: {
   email: string
 }): Promise<PlatformProfileRow> {
   const username = input.email.split('@')[0] || input.email
-  // [self-platform] I1: `membership` silently inserts zero rows (and errors
-  // nowhere) if the `default` org is missing — the CTE chain still succeeds
-  // and returns the profile row, leaving the user org-less with no signal.
-  // Report membership_created back from the same query (checked against
-  // actual row existence, not "was just inserted", so a pre-existing
-  // membership from an earlier call still counts as success) and throw if
-  // it's false.
-  const { data, error } = await executePlatformQuery<
-    PlatformProfileRow & { membership_created: boolean }
-  >({
+  // [self-platform] I1: the membership insert is a `where o.slug = 'default'`
+  // join — if the seed org is missing, the CTE chain still succeeds and
+  // returns the profile row, silently leaving the user org-less. We must
+  // fail loudly instead.
+  //
+  // Note this can NOT be checked by reading back
+  // platform.organization_members in the same statement/snapshot as the
+  // membership insert: an `exists(select 1 from platform.organization_members
+  // ...)` run alongside the insert CTE never observes the row the insert
+  // CTE just wrote (base-table reads inside a single statement all see the
+  // same snapshot, taken before any of the statement's own writes). That
+  // previously made membership_created always false, throwing on every
+  // fresh profile creation. Instead we detect the real failure condition —
+  // org existence — via a `target_org` CTE, a plain SELECT that's fully
+  // visible in the same snapshot, and drive both the membership insert and
+  // the check off of it.
+  const { data, error } = await executePlatformQuery<PlatformProfileRow & { org_exists: boolean }>({
     query: `
-      with new_profile as (
+      with target_org as (
+        select id from platform.organizations where slug = 'default'
+      ), new_profile as (
         insert into platform.profiles (gotrue_id, username, primary_email)
         values ($1, $2, $3)
         on conflict (gotrue_id) do update set updated_at = now()
         returning id, gotrue_id, username, primary_email, first_name, last_name
       ), membership as (
         insert into platform.organization_members (organization_id, profile_id)
-        select o.id, p.id
-        from platform.organizations o
+        select t.id, p.id
+        from target_org t
         cross join new_profile p
-        where o.slug = 'default'
         on conflict do nothing
-        returning profile_id
       )
       select
-        new_profile.*,
-        exists (
-          select 1
-          from platform.organization_members m
-          join platform.organizations o on o.id = m.organization_id
-          where m.profile_id = new_profile.id and o.slug = 'default'
-        ) as membership_created
-      from new_profile
+        np.*,
+        (select count(*) from target_org) > 0 as org_exists
+      from new_profile np
     `,
     parameters: [input.gotrueId, username, input.email],
   })
   if (error) throw error
   const row = data?.[0]
   if (!row) throw new Error('profile creation returned no row')
-  if (!row.membership_created) {
-    throw new Error(
-      "Failed to create default organization membership: the 'default' organization was not found, or the membership insert failed"
-    )
+  if (!row.org_exists) {
+    throw new Error('default organization is missing; cannot provision membership')
   }
-  const { membership_created, ...profile } = row
+  const { org_exists, ...profile } = row
   return profile
 }

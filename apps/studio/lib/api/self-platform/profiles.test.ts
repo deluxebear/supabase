@@ -55,7 +55,7 @@ describe('getProfileByGotrueId', () => {
 describe('createProfileWithDefaultMembership', () => {
   it('derives username from the email local part', async () => {
     vi.mocked(executePlatformQuery).mockResolvedValue({
-      data: [{ ...row, membership_created: true }],
+      data: [{ ...row, org_exists: true }],
       error: undefined,
     })
     await createProfileWithDefaultMembership({
@@ -76,14 +76,18 @@ describe('createProfileWithDefaultMembership', () => {
     ).rejects.toThrow('db down')
   })
 
-  // I1: the membership insert is a `where o.slug = 'default'` join — if the
-  // seed org is missing, the CTE chain still succeeds and returns the
-  // profile row, silently leaving the user org-less. membership_created
-  // reports the real post-insert state; a false value must throw instead of
-  // returning a profile with no org.
-  it('throws when the default org lookup yields no membership', async () => {
+  // I1 (refix): the membership insert is a `where slug = 'default'` lookup —
+  // if the seed org is missing, the CTE chain still succeeds and returns the
+  // profile row, silently leaving the user org-less. org_exists is derived
+  // from a `target_org` CTE (a plain SELECT, visible in the same snapshot as
+  // the membership insert) rather than reading back
+  // platform.organization_members in the same statement — that read can
+  // never observe a row inserted earlier in the same statement/snapshot, so
+  // it was always false and threw on every fresh profile creation. A false
+  // org_exists must still throw instead of returning a profile with no org.
+  it('throws when the default org does not exist', async () => {
     vi.mocked(executePlatformQuery).mockResolvedValue({
-      data: [{ ...row, membership_created: false }],
+      data: [{ ...row, org_exists: false }],
       error: undefined,
     })
     await expect(
@@ -91,9 +95,9 @@ describe('createProfileWithDefaultMembership', () => {
     ).rejects.toThrow(/default.*organization/i)
   })
 
-  it('returns the profile (without the membership_created flag) when membership was created', async () => {
+  it('returns the profile (without the org_exists flag) when the default org exists', async () => {
     vi.mocked(executePlatformQuery).mockResolvedValue({
-      data: [{ ...row, membership_created: true }],
+      data: [{ ...row, org_exists: true }],
       error: undefined,
     })
     const result = await createProfileWithDefaultMembership({
@@ -101,6 +105,6 @@ describe('createProfileWithDefaultMembership', () => {
       email: 'admin@internal.test',
     })
     expect(result).toEqual(row)
-    expect(result).not.toHaveProperty('membership_created')
+    expect(result).not.toHaveProperty('org_exists')
   })
 })
