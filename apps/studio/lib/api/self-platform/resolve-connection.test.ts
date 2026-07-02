@@ -63,6 +63,32 @@ describe('resolveProjectConnection', () => {
     await expect(resolveProjectConnection('ghost')).rejects.toBeInstanceOf(ProjectNotFound)
   })
 
+  // [self-platform] IMPORTANT 3(a) — M1->M2 upgrade path: an existing M1
+  // platform-db data dir never gets the 02-projects.sql migration (it only
+  // runs on an empty data dir), so getProjectByRef throws undefined-table on
+  // every ref. Must not 500 for the default project — fall through to the
+  // global-env fallback like a normal miss.
+  it('treats a missing platform.projects table as a registry miss for "default"', async () => {
+    vi.mocked(getProjectByRef).mockRejectedValue(
+      new Error('relation "platform.projects" does not exist')
+    )
+    const r = await resolveProjectConnection('default')
+    expect(r.pgConnEncrypted).toBe('enc(postgresql://rw@global/postgres)')
+    expect(r.row).toBeNull()
+  })
+
+  it('still throws ProjectNotFound for a non-default ref when the table is missing', async () => {
+    vi.mocked(getProjectByRef).mockRejectedValue(
+      new Error('relation "platform.projects" does not exist')
+    )
+    await expect(resolveProjectConnection('proj-b')).rejects.toBeInstanceOf(ProjectNotFound)
+  })
+
+  it('re-throws unrelated getProjectByRef errors instead of treating them as a miss', async () => {
+    vi.mocked(getProjectByRef).mockRejectedValue(new Error('connection refused'))
+    await expect(resolveProjectConnection('default')).rejects.toThrow('connection refused')
+  })
+
   it('populates row: registry row for a hit, null for the default fallback', async () => {
     vi.mocked(getProjectByRef).mockResolvedValue(row as any)
     const hit = await resolveProjectConnection('proj-b')

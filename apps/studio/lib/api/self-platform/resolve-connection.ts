@@ -95,8 +95,25 @@ function fromGlobalEnv(): ResolvedConnection {
   }
 }
 
+// [self-platform] An M1 deployment's platform-db data dir predates the M2
+// `platform.projects` migration (02-projects.sql only runs on an empty data
+// dir on first init), so a pulled-forward M1->M2 upgrade with no manual
+// migration apply hits this on every ref. Treat it as a registry miss rather
+// than letting it 500 every [ref] route.
+const MISSING_PROJECTS_TABLE = 'relation "platform.projects" does not exist'
+
 export async function resolveProjectConnection(ref: string): Promise<ResolvedConnection> {
-  const row = await getProjectByRef(ref)
+  let row: PlatformProjectRow | null
+  try {
+    row = await getProjectByRef(ref)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    if (!message.includes(MISSING_PROJECTS_TABLE)) throw err
+    console.log(
+      `[self-platform] platform.projects table missing (pre-M2 platform-db data dir) — treating "${ref}" as a registry miss. Run docker/volumes/platform/migrations/02-projects.sql to upgrade.`
+    )
+    row = null
+  }
   if (row) return fromRow(row)
   if (ref === 'default') {
     console.log('[self-platform] project registry miss for "default", using global env')
