@@ -84,12 +84,40 @@ export async function getProjectByRef(ref: string): Promise<PlatformProjectRow |
   return rows[0] ?? null
 }
 
-export async function listProjectsByOrgId(orgId: number): Promise<PlatformProjectRow[]> {
-  return queryProjectRows('where organization_id = $1 order by id', [orgId])
+export async function listProjectsByOrgId(
+  orgId: number,
+  limit = 100,
+  offset = 0
+): Promise<PlatformProjectRow[]> {
+  return queryProjectRows('where organization_id = $1 order by id limit $2 offset $3', [
+    orgId,
+    limit,
+    offset,
+  ])
 }
 
-export async function listAllProjects(): Promise<PlatformProjectRow[]> {
-  return queryProjectRows('order by id')
+export async function listAllProjects(limit = 100, offset = 0): Promise<PlatformProjectRow[]> {
+  return queryProjectRows('order by id limit $1 offset $2', [limit, offset])
+}
+
+// [self-platform] Total-row counts for the paginated list routes. These hit
+// platform.projects directly (no analytics columns), so — unlike
+// queryProjectRows — they don't need the pre-M2.1 degradation retry.
+export async function countProjectsByOrgId(orgId: number): Promise<number> {
+  const { data, error } = await executePlatformQuery<{ count: number }>({
+    query: 'select count(*)::int as count from platform.projects where organization_id = $1',
+    parameters: [orgId],
+  })
+  if (error) throw error
+  return data?.[0]?.count ?? 0
+}
+
+export async function countAllProjects(): Promise<number> {
+  const { data, error } = await executePlatformQuery<{ count: number }>({
+    query: 'select count(*)::int as count from platform.projects',
+  })
+  if (error) throw error
+  return data?.[0]?.count ?? 0
 }
 
 export function toProjectDetailResponse(

@@ -84,4 +84,37 @@ describe('GET /platform/organizations/{slug}/projects (self-platform)', () => {
     await handler(req as any, res as any)
     expect(res._getStatusCode()).toBe(405)
   })
+
+  it('returns 400 for an array-valued slug parameter', async () => {
+    const { req, res } = createMocks({ method: 'GET', query: { slug: ['a', 'b'] } })
+    await handler(req as any, res as any)
+    expect(res._getStatusCode()).toBe(400)
+    expect(res._getJSONData()).toEqual({ message: 'Invalid slug parameter' })
+    expect(listOrgProjectsV2).not.toHaveBeenCalled()
+  })
+
+  it('returns 400 for an invalid limit parameter', async () => {
+    const { req, res } = createMocks({
+      method: 'GET',
+      query: { slug: 'acme', limit: 'abc' },
+    })
+    await handler(req as any, res as any)
+    expect(res._getStatusCode()).toBe(400)
+    expect(res._getJSONData()).toEqual({ message: 'Invalid pagination parameters' })
+    expect(listOrgProjectsV2).not.toHaveBeenCalled()
+  })
+
+  it('passes through valid limit/offset query params', async () => {
+    vi.mocked(listOrgProjectsV2).mockResolvedValue({
+      pagination: { count: 1, limit: 1, offset: 1 },
+      projects: [],
+    } as any)
+    const { req, res } = createMocks({
+      method: 'GET',
+      query: { slug: 'acme', limit: '1', offset: '1' },
+    })
+    await handler(req as any, res as any)
+    expect(listOrgProjectsV2).toHaveBeenCalledWith('acme', 1, 1)
+    expect(res._getStatusCode()).toBe(200)
+  })
 })

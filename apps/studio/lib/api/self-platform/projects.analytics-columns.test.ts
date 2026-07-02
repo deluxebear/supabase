@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { executePlatformQuery } from './db'
-import { getProjectByRef, listAllProjects } from './projects'
+import {
+  countAllProjects,
+  countProjectsByOrgId,
+  getProjectByRef,
+  listAllProjects,
+} from './projects'
 
 vi.mock('./db', () => ({ executePlatformQuery: vi.fn() }))
 const mockQuery = vi.mocked(executePlatformQuery)
@@ -64,5 +69,26 @@ describe('projects.ts analytics columns', () => {
     })
     await expect(listAllProjects()).rejects.toThrow('relation "platform.projects" does not exist')
     expect(mockQuery).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('projects.ts pagination (M2.1)', () => {
+  it('listAllProjects passes limit/offset as SQL parameters', async () => {
+    mockQuery.mockResolvedValueOnce({ data: [], error: undefined })
+    await listAllProjects(25, 50)
+    const call = mockQuery.mock.calls[0][0]
+    expect(call.query).toContain('limit $1 offset $2')
+    expect(call.parameters).toEqual([25, 50])
+  })
+
+  it('countAllProjects returns the scalar count', async () => {
+    mockQuery.mockResolvedValueOnce({ data: [{ count: 7 }], error: undefined })
+    await expect(countAllProjects()).resolves.toBe(7)
+  })
+
+  it('countProjectsByOrgId filters by org', async () => {
+    mockQuery.mockResolvedValueOnce({ data: [{ count: 3 }], error: undefined })
+    await expect(countProjectsByOrgId(1)).resolves.toBe(3)
+    expect(mockQuery.mock.calls[0][0].parameters).toEqual([1])
   })
 })

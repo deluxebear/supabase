@@ -47,4 +47,31 @@ describe('GET /platform/projects (self-platform)', () => {
     await handler(req as any, res as any)
     expect(res._getStatusCode()).toBe(405)
   })
+
+  it('returns 400 for an invalid limit parameter', async () => {
+    const { req, res } = createMocks({
+      method: 'GET',
+      headers: { version: '2' },
+      query: { limit: 'abc' },
+    })
+    await handler(req as any, res as any)
+    expect(res._getStatusCode()).toBe(400)
+    expect(res._getJSONData()).toEqual({ message: 'Invalid pagination parameters' })
+    expect(listAllProjectsV2).not.toHaveBeenCalled()
+  })
+
+  it('passes through valid limit/offset query params', async () => {
+    vi.mocked(listAllProjectsV2).mockResolvedValue({
+      pagination: { count: 1, limit: 1, offset: 1 },
+      projects: [],
+    } as any)
+    const { req, res } = createMocks({
+      method: 'GET',
+      headers: { version: '2' },
+      query: { limit: '1', offset: '1' },
+    })
+    await handler(req as any, res as any)
+    expect(listAllProjectsV2).toHaveBeenCalledWith(1, 1)
+    expect(res._getStatusCode()).toBe(200)
+  })
 })

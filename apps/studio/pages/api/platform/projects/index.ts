@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
 import { listAllProjectsV2 } from '@/lib/api/self-platform/list-user-projects'
+import { parsePaginationParam } from '@/lib/api/self-platform/pagination'
 import { DEFAULT_PROJECT } from '@/lib/constants/api'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
@@ -25,9 +26,11 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(200).json([DEFAULT_PROJECT])
   }
 
-  const result = await listAllProjectsV2(
-    Number(req.query.limit ?? 100),
-    Number(req.query.offset ?? 0)
-  )
+  const limit = parsePaginationParam(req.query.limit, 100)
+  const offset = parsePaginationParam(req.query.offset, 0)
+  if (limit === null || offset === null) {
+    return res.status(400).json({ message: 'Invalid pagination parameters' })
+  }
+  const result = await listAllProjectsV2(limit, offset)
   return res.status(200).json(result)
 }

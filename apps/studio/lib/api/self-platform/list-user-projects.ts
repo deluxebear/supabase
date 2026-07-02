@@ -1,118 +1,149 @@
-// [self-platform] Project-list assembly: registry rows → the project-switcher
+// [self-platform] Project-list assembly: registry rows → the api-types
 // list shapes (org-scoped + global V2). Falls back to the single
-// DEFAULT_PROJECT when the registry has no rows in scope — preserves M1
-// behavior for a freshly bootstrapped deployment with nothing registered yet.
+// DEFAULT_PROJECT when the registry is empty — preserves M1 behavior for a
+// freshly bootstrapped deployment with nothing registered yet.
+import type { components } from 'api-types'
+
 import { getOrganizationBySlug, listOrganizations } from './organizations'
-import { listAllProjects, listProjectsByOrgId, type PlatformProjectRow } from './projects'
+import {
+  countAllProjects,
+  countProjectsByOrgId,
+  listAllProjects,
+  listProjectsByOrgId,
+  type PlatformProjectRow,
+} from './projects'
 import { DEFAULT_PROJECT } from '@/lib/constants/api'
+
+export type OrganizationProjectsResponse = components['schemas']['OrganizationProjectsResponse']
+export type ListProjectsPaginatedResponse = components['schemas']['ListProjectsPaginatedResponse']
+type OrgProjectItem = OrganizationProjectsResponse['projects'][number]
+type GlobalProjectItem = ListProjectsPaginatedResponse['projects'][number]
+
+// [self-platform] Schema shape + the M1-era extras the M2 list shipped
+// (id/organization_id/organization_slug/preview_branch_refs). Untyped UI
+// paths may still read them at runtime; extras are additive so the value
+// stays assignable to OrganizationProjectsResponse['projects'][number].
+// Revisit (drop extras) when M3 reworks the list consumers.
+type OrgProjectItemCompat = OrgProjectItem & {
+  id: number
+  organization_id: number
+  organization_slug: string
+  preview_branch_refs: string[]
+}
 
 // Registry rows have no inserted_at column; mirror the fixed placeholder
 // used by the other self-platform mappers (projects.ts).
 const PLACEHOLDER_INSERTED_AT = '2021-08-02T06:40:40.646Z'
 
-interface Pagination {
-  count: number
-  limit: number
-  offset: number
-}
-
-interface OrgProjectListItem {
-  id: number
-  ref: string
-  name: string
-  organization_id: number
-  cloud_provider: string
-  status: string
-  region: string
-  inserted_at: string
-  organization_slug: string
-  is_branch: boolean
-  preview_branch_refs: string[]
-  databases: { identifier: string; region: string; status: string; type: 'PRIMARY' }[]
-}
-
-interface GlobalProjectListItem {
-  id: number
-  ref: string
-  name: string
-  organization_id: number
-  cloud_provider: string
-  status: string
-  region: string
-  inserted_at: string
-  organization_slug: string
-  preview_branch_refs: string[]
-}
-
-function toOrgProjectListItem(row: PlatformProjectRow, orgSlug: string): OrgProjectListItem {
+function toOrgProjectItem(row: PlatformProjectRow, orgSlug: string): OrgProjectItemCompat {
   return {
     id: row.id,
     ref: row.ref,
     name: row.name,
     organization_id: row.organization_id,
+    organization_slug: orgSlug,
     cloud_provider: row.cloud_provider,
-    status: row.status,
     region: row.region,
     inserted_at: PLACEHOLDER_INSERTED_AT,
-    organization_slug: orgSlug,
+    integration_source: null,
     is_branch: false,
     preview_branch_refs: [],
-    databases: [{ identifier: row.ref, region: row.region, status: row.status, type: 'PRIMARY' }],
-  }
-}
-
-function defaultOrgProject(orgSlug: string): OrgProjectListItem {
-  return {
-    ...DEFAULT_PROJECT,
-    organization_slug: orgSlug,
-    is_branch: false,
-    preview_branch_refs: [],
+    status: row.status as OrgProjectItem['status'],
     databases: [
       {
-        identifier: DEFAULT_PROJECT.ref,
-        region: DEFAULT_PROJECT.region,
-        status: DEFAULT_PROJECT.status,
+        identifier: row.ref,
+        cloud_provider: row.cloud_provider,
+        region: row.region,
+        status: row.status as OrgProjectItem['databases'][number]['status'],
         type: 'PRIMARY',
       },
     ],
   }
 }
 
-function toGlobalProjectListItem(row: PlatformProjectRow, orgSlug: string): GlobalProjectListItem {
+function defaultOrgProject(orgSlug: string): OrgProjectItemCompat {
+  return {
+    id: DEFAULT_PROJECT.id,
+    ref: DEFAULT_PROJECT.ref,
+    name: DEFAULT_PROJECT.name,
+    organization_id: DEFAULT_PROJECT.organization_id,
+    organization_slug: orgSlug,
+    cloud_provider: DEFAULT_PROJECT.cloud_provider,
+    region: DEFAULT_PROJECT.region,
+    inserted_at: DEFAULT_PROJECT.inserted_at,
+    integration_source: null,
+    is_branch: false,
+    preview_branch_refs: [],
+    status: DEFAULT_PROJECT.status as OrgProjectItem['status'],
+    databases: [
+      {
+        identifier: DEFAULT_PROJECT.ref,
+        cloud_provider: DEFAULT_PROJECT.cloud_provider,
+        region: DEFAULT_PROJECT.region,
+        status: DEFAULT_PROJECT.status as OrgProjectItem['databases'][number]['status'],
+        type: 'PRIMARY',
+      },
+    ],
+  }
+}
+
+function toGlobalProjectItem(row: PlatformProjectRow, orgSlug: string): GlobalProjectItem {
   return {
     id: row.id,
     ref: row.ref,
     name: row.name,
     organization_id: row.organization_id,
+    organization_slug: orgSlug,
     cloud_provider: row.cloud_provider,
     status: row.status,
     region: row.region,
     inserted_at: PLACEHOLDER_INSERTED_AT,
-    organization_slug: orgSlug,
+    is_branch_enabled: false,
+    is_physical_backups_enabled: null,
     preview_branch_refs: [],
+    subscription_id: null,
+  }
+}
+
+function defaultGlobalProject(): GlobalProjectItem {
+  return {
+    ...DEFAULT_PROJECT,
+    organization_slug: 'default',
+    is_branch_enabled: false,
+    is_physical_backups_enabled: null,
+    preview_branch_refs: [],
+    subscription_id: null,
   }
 }
 
 // [self-platform] Org-scoped project list (org home + project selector).
 // Returns null when the org slug doesn't resolve — the route maps that to
-// a 404.
+// a 404. pagination.count is the org's TOTAL project count.
 export async function listOrgProjectsV2(
   slug: string,
   limit = 100,
   offset = 0
-): Promise<{ pagination: Pagination; projects: OrgProjectListItem[] } | null> {
+): Promise<OrganizationProjectsResponse | null> {
   const org = await getOrganizationBySlug(slug)
   if (!org) return null
 
-  const rows = await listProjectsByOrgId(org.id)
-  const projects =
-    rows.length > 0
-      ? rows.map((row) => toOrgProjectListItem(row, org.slug))
-      : [defaultOrgProject(org.slug)]
+  const [rows, total] = await Promise.all([
+    listProjectsByOrgId(org.id, limit, offset),
+    countProjectsByOrgId(org.id),
+  ])
+
+  if (total === 0) {
+    // Empty registry: single default-project fallback (M1 behavior). The
+    // fallback "row" only exists on page one; count stays 1.
+    return {
+      pagination: { count: 1, limit, offset },
+      projects: offset === 0 ? [defaultOrgProject(org.slug)] : [],
+    }
+  }
 
   return {
-    pagination: { count: projects.length, limit, offset },
-    projects,
+    pagination: { count: total, limit, offset },
+    projects: rows.map((row) => toOrgProjectItem(row, org.slug)),
   }
 }
 
@@ -125,19 +156,25 @@ export async function listOrgProjectsV2(
 export async function listAllProjectsV2(
   limit = 100,
   offset = 0
-): Promise<{ pagination: Pagination; projects: GlobalProjectListItem[] }> {
-  const [rows, orgs] = await Promise.all([listAllProjects(), listOrganizations()])
+): Promise<ListProjectsPaginatedResponse> {
+  const [rows, total, orgs] = await Promise.all([
+    listAllProjects(limit, offset),
+    countAllProjects(),
+    listOrganizations(),
+  ])
   const slugById = new Map(orgs.map((org) => [org.id, org.slug]))
 
-  const projects =
-    rows.length > 0
-      ? rows.map((row) =>
-          toGlobalProjectListItem(row, slugById.get(row.organization_id) ?? 'default')
-        )
-      : [{ ...DEFAULT_PROJECT, organization_slug: 'default', preview_branch_refs: [] as string[] }]
+  if (total === 0) {
+    return {
+      pagination: { count: 1, limit, offset },
+      projects: offset === 0 ? [defaultGlobalProject()] : [],
+    }
+  }
 
   return {
-    pagination: { count: projects.length, limit, offset },
-    projects,
+    pagination: { count: total, limit, offset },
+    projects: rows.map((row) =>
+      toGlobalProjectItem(row, slugById.get(row.organization_id) ?? 'default')
+    ),
   }
 }

@@ -44,7 +44,7 @@ describe('listProjectsByOrgId', () => {
   it('binds org id', async () => {
     vi.mocked(executePlatformQuery).mockResolvedValue({ data: [row], error: undefined })
     expect(await listProjectsByOrgId(1)).toEqual([row])
-    expect(vi.mocked(executePlatformQuery).mock.calls.at(-1)![0].parameters).toEqual([1])
+    expect(vi.mocked(executePlatformQuery).mock.calls.at(-1)![0].parameters).toEqual([1, 100, 0])
   })
 })
 

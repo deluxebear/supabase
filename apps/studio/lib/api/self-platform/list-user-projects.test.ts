@@ -2,7 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { listAllProjectsV2, listOrgProjectsV2 } from './list-user-projects'
 import { getOrganizationBySlug, listOrganizations } from './organizations'
-import { listAllProjects, listProjectsByOrgId } from './projects'
+import {
+  countAllProjects,
+  countProjectsByOrgId,
+  listAllProjects,
+  listProjectsByOrgId,
+} from './projects'
 
 vi.mock('./organizations', () => ({
   getOrganizationBySlug: vi.fn(),
@@ -11,6 +16,8 @@ vi.mock('./organizations', () => ({
 vi.mock('./projects', () => ({
   listAllProjects: vi.fn(),
   listProjectsByOrgId: vi.fn(),
+  countAllProjects: vi.fn(),
+  countProjectsByOrgId: vi.fn(),
 }))
 
 const org = { id: 1, slug: 'acme', name: 'Acme' }
@@ -55,11 +62,13 @@ describe('listOrgProjectsV2', () => {
   it('lists two registered projects for an org', async () => {
     vi.mocked(getOrganizationBySlug).mockResolvedValue(org)
     vi.mocked(listProjectsByOrgId).mockResolvedValue([rowA, { ...rowB, organization_id: 1 }])
+    vi.mocked(countProjectsByOrgId).mockResolvedValue(2)
 
     const result = await listOrgProjectsV2('acme')
 
     expect(getOrganizationBySlug).toHaveBeenCalledWith('acme')
-    expect(listProjectsByOrgId).toHaveBeenCalledWith(1)
+    expect(listProjectsByOrgId).toHaveBeenCalledWith(1, 100, 0)
+    expect(countProjectsByOrgId).toHaveBeenCalledWith(1)
     expect(result?.pagination).toEqual({ count: 2, limit: 100, offset: 0 })
     expect(result?.projects).toHaveLength(2)
     expect(result?.projects[0]).toMatchObject({
@@ -67,10 +76,17 @@ describe('listOrgProjectsV2', () => {
       name: 'Project A',
       organization_id: 1,
       organization_slug: 'acme',
+      integration_source: null,
       is_branch: false,
       preview_branch_refs: [],
       databases: [
-        { identifier: 'proj-a', region: 'us-east-1', status: 'ACTIVE_HEALTHY', type: 'PRIMARY' },
+        {
+          identifier: 'proj-a',
+          cloud_provider: 'AWS',
+          region: 'us-east-1',
+          status: 'ACTIVE_HEALTHY',
+          type: 'PRIMARY',
+        },
       ],
     })
     expect(result?.projects[1]).toMatchObject({ ref: 'proj-b', organization_slug: 'acme' })
@@ -79,6 +95,7 @@ describe('listOrgProjectsV2', () => {
   it('falls back to the single default project when the org has no registered projects', async () => {
     vi.mocked(getOrganizationBySlug).mockResolvedValue(org)
     vi.mocked(listProjectsByOrgId).mockResolvedValue([])
+    vi.mocked(countProjectsByOrgId).mockResolvedValue(0)
 
     const result = await listOrgProjectsV2('acme')
 
@@ -93,6 +110,17 @@ describe('listOrgProjectsV2', () => {
     })
   })
 
+  it('returns empty projects (but count 1) for an empty registry when offset >= 1', async () => {
+    vi.mocked(getOrganizationBySlug).mockResolvedValue(org)
+    vi.mocked(listProjectsByOrgId).mockResolvedValue([])
+    vi.mocked(countProjectsByOrgId).mockResolvedValue(0)
+
+    const result = await listOrgProjectsV2('acme', 100, 1)
+
+    expect(result?.pagination).toEqual({ count: 1, limit: 100, offset: 1 })
+    expect(result?.projects).toEqual([])
+  })
+
   it('returns null when the org is not found', async () => {
     vi.mocked(getOrganizationBySlug).mockResolvedValue(null)
 
@@ -100,12 +128,14 @@ describe('listOrgProjectsV2', () => {
     expect(listProjectsByOrgId).not.toHaveBeenCalled()
   })
 
-  it('passes through limit/offset into pagination', async () => {
+  it('passes limit/offset through to the data layer and pagination', async () => {
     vi.mocked(getOrganizationBySlug).mockResolvedValue(org)
     vi.mocked(listProjectsByOrgId).mockResolvedValue([rowA])
+    vi.mocked(countProjectsByOrgId).mockResolvedValue(1)
 
     const result = await listOrgProjectsV2('acme', 50, 10)
 
+    expect(listProjectsByOrgId).toHaveBeenCalledWith(1, 50, 10)
     expect(result?.pagination).toEqual({ count: 1, limit: 50, offset: 10 })
   })
 })
@@ -113,6 +143,7 @@ describe('listOrgProjectsV2', () => {
 describe('listAllProjectsV2', () => {
   it('maps each project to its organization slug via a single listOrganizations call', async () => {
     vi.mocked(listAllProjects).mockResolvedValue([rowA, rowB])
+    vi.mocked(countAllProjects).mockResolvedValue(2)
     vi.mocked(listOrganizations).mockResolvedValue([
       { id: 1, slug: 'acme', name: 'Acme' },
       { id: 2, slug: 'other', name: 'Other' },
@@ -127,17 +158,32 @@ describe('listAllProjectsV2', () => {
         ref: 'proj-a',
         organization_slug: 'acme',
         preview_branch_refs: [],
+        is_branch_enabled: false,
+        subscription_id: null,
       }),
       expect.objectContaining({
         ref: 'proj-b',
         organization_slug: 'other',
         preview_branch_refs: [],
+        is_branch_enabled: false,
+        subscription_id: null,
       }),
     ])
   })
 
+  it('passes limit/offset through to listAllProjects', async () => {
+    vi.mocked(listAllProjects).mockResolvedValue([rowA])
+    vi.mocked(countAllProjects).mockResolvedValue(1)
+    vi.mocked(listOrganizations).mockResolvedValue([{ id: 1, slug: 'acme', name: 'Acme' }])
+
+    await listAllProjectsV2(25, 50)
+
+    expect(listAllProjects).toHaveBeenCalledWith(25, 50)
+  })
+
   it('falls back to a single default project when the registry is empty', async () => {
     vi.mocked(listAllProjects).mockResolvedValue([])
+    vi.mocked(countAllProjects).mockResolvedValue(0)
     vi.mocked(listOrganizations).mockResolvedValue([])
 
     const result = await listAllProjectsV2()
@@ -150,5 +196,16 @@ describe('listAllProjectsV2', () => {
         preview_branch_refs: [],
       }),
     ])
+  })
+
+  it('returns empty projects (but count 1) for an empty registry when offset >= 1', async () => {
+    vi.mocked(listAllProjects).mockResolvedValue([])
+    vi.mocked(countAllProjects).mockResolvedValue(0)
+    vi.mocked(listOrganizations).mockResolvedValue([])
+
+    const result = await listAllProjectsV2(100, 1)
+
+    expect(result.pagination).toEqual({ count: 1, limit: 100, offset: 1 })
+    expect(result.projects).toEqual([])
   })
 })

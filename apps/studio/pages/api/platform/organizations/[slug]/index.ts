@@ -21,6 +21,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (!IS_SELF_PLATFORM) {
     return res.status(404).json({ message: 'Not available on this deployment' })
   }
+  if (Array.isArray(req.query.slug)) {
+    return res.status(400).json({ message: 'Invalid slug parameter' })
+  }
 
   const slug = String(req.query.slug)
   const row = await getOrganizationBySlug(slug)
