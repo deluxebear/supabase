@@ -26,6 +26,8 @@ const row = {
   jwt_secret_enc: 'x',
   publishable_key_enc: null,
   secret_key_enc: null,
+  logflare_url: null,
+  logflare_token_enc: null,
 }
 
 describe('getProjectByRef', () => {

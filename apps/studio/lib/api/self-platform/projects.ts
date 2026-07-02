@@ -27,6 +27,8 @@ export interface PlatformProjectRow {
   jwt_secret_enc: string
   publishable_key_enc: string | null
   secret_key_enc: string | null
+  logflare_url: string | null
+  logflare_token_enc: string | null
 }
 
 type ProjectDetailResponse = components['schemas']['ProjectDetailResponse']
@@ -35,33 +37,59 @@ export const PROJECT_SELECT_COLUMNS = `
   id, ref, organization_id, name, status, cloud_provider, region,
   db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
   db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc,
-  publishable_key_enc, secret_key_enc
+  publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc
 `
 
-export async function getProjectByRef(ref: string): Promise<PlatformProjectRow | null> {
+// [self-platform] Pre-M2.1 platform-db data dirs lack the analytics columns
+// (03-analytics.sql applied manually on upgrades). Retry without them and
+// treat both as NULL so an un-migrated deployment keeps working — mirrors
+// the missing-table handling in resolve-connection.ts.
+const LEGACY_SELECT_COLUMNS = `
+  id, ref, organization_id, name, status, cloud_provider, region,
+  db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
+  db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc,
+  publishable_key_enc, secret_key_enc
+`
+const MISSING_ANALYTICS_COLUMN = 'column "logflare_url" does not exist'
+
+async function queryProjectRows(
+  suffix: string,
+  parameters?: unknown[]
+): Promise<PlatformProjectRow[]> {
   const { data, error } = await executePlatformQuery<PlatformProjectRow>({
-    query: `select ${PROJECT_SELECT_COLUMNS} from platform.projects where ref = $1`,
-    parameters: [ref],
+    query: `select ${PROJECT_SELECT_COLUMNS} from platform.projects ${suffix}`,
+    parameters,
   })
-  if (error) throw error
-  return data?.[0] ?? null
+  if (!error) return data ?? []
+  if (!error.message.includes(MISSING_ANALYTICS_COLUMN)) throw error
+  console.log(
+    '[self-platform] platform.projects has no analytics columns (pre-M2.1 platform-db) — treating logflare_url/logflare_token_enc as NULL. Run docker/volumes/platform/migrations/03-analytics.sql to upgrade.'
+  )
+  const legacy = await executePlatformQuery<
+    Omit<PlatformProjectRow, 'logflare_url' | 'logflare_token_enc'>
+  >({
+    query: `select ${LEGACY_SELECT_COLUMNS} from platform.projects ${suffix}`,
+    parameters,
+  })
+  if (legacy.error) throw legacy.error
+  return (legacy.data ?? []).map((row) => ({
+    ...row,
+    logflare_url: null,
+    logflare_token_enc: null,
+  }))
+}
+
+export async function getProjectByRef(ref: string): Promise<PlatformProjectRow | null> {
+  const rows = await queryProjectRows('where ref = $1', [ref])
+  return rows[0] ?? null
 }
 
 export async function listProjectsByOrgId(orgId: number): Promise<PlatformProjectRow[]> {
-  const { data, error } = await executePlatformQuery<PlatformProjectRow>({
-    query: `select ${PROJECT_SELECT_COLUMNS} from platform.projects where organization_id = $1 order by id`,
-    parameters: [orgId],
-  })
-  if (error) throw error
-  return data ?? []
+  return queryProjectRows('where organization_id = $1 order by id', [orgId])
 }
 
 export async function listAllProjects(): Promise<PlatformProjectRow[]> {
-  const { data, error } = await executePlatformQuery<PlatformProjectRow>({
-    query: `select ${PROJECT_SELECT_COLUMNS} from platform.projects order by id`,
-  })
-  if (error) throw error
-  return data ?? []
+  return queryProjectRows('order by id')
 }
 
 export function toProjectDetailResponse(

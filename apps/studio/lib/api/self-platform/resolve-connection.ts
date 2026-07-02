@@ -35,6 +35,10 @@ export interface ResolvedConnection {
   jwtSecret: string
   publishableKey: string | null
   secretKey: string | null
+  // [self-platform] Per-project Logflare target. null = analytics not
+  // configured for this project — routes 404, NEVER fall back to global.
+  logflareUrl: string | null
+  logflareToken: string | null
   // [self-platform] Raw registry row for a hit, null for the global-env
   // fallback. Lets callers (e.g. Task 6) map from the row without a second
   // getProjectByRef lookup.
@@ -65,6 +69,8 @@ function fromRow(row: PlatformProjectRow): ResolvedConnection {
     jwtSecret: decryptSecret(row.jwt_secret_enc),
     publishableKey: row.publishable_key_enc ? decryptSecret(row.publishable_key_enc) : null,
     secretKey: row.secret_key_enc ? decryptSecret(row.secret_key_enc) : null,
+    logflareUrl: row.logflare_url,
+    logflareToken: row.logflare_token_enc ? decryptSecret(row.logflare_token_enc) : null,
     row,
   }
 }
@@ -91,6 +97,8 @@ function fromGlobalEnv(): ResolvedConnection {
     jwtSecret: process.env.AUTH_JWT_SECRET || '',
     publishableKey: process.env.SUPABASE_PUBLISHABLE_KEY || null,
     secretKey: process.env.SUPABASE_SECRET_KEY || null,
+    logflareUrl: process.env.LOGFLARE_URL || null,
+    logflareToken: process.env.LOGFLARE_PRIVATE_ACCESS_TOKEN || null,
     row: null,
   }
 }
