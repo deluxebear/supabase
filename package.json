@@ -42,9 +42,13 @@
     "knip": "pnpx knip@~5.50.0",
     "authorize-vercel-deploys": "tsx scripts/authorizeVercelDeploys.ts"
   },
+  "dependencies": {
+    "crypto-js": "^4.2.0"
+  },
   "devDependencies": {
     "@aws-sdk/client-secrets-manager": "^3.1041.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.7.0",
+    "@types/crypto-js": "^4.2.2",
     "@types/node": "catalog:",
     "eslint": "^9.0.0",
     "jsdom": "^28.1.0",
