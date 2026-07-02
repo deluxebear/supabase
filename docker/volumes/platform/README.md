@@ -197,6 +197,32 @@ DSN, re-encrypt with pg-meta's transport key; `ref === 'default'` with **no** re
 fall back to the M1 global-env project (zero-break, see "M2 boundary" below); any other unknown
 ref -> throws `ProjectNotFound`, which routes map to `404 {"message":"Project not found"}`.
 
+### Upgrading an existing M1 platform-db
+
+`docker/volumes/platform/migrations/02-projects.sql` only runs automatically against an **empty**
+`platform-db` data directory (that's how the base `postgres:17-alpine` image's
+`/docker-entrypoint-initdb.d` init mechanism works — it only fires on first init). If you already
+have an M1 deployment running (a `platform-db` volume created before M2 shipped) and pull forward
+to M2, that volume's data directory is *not* empty, so `02-projects.sql` never runs and
+`platform.projects` never gets created. Every `resolveProjectConnection` call then throws
+`relation "platform.projects" does not exist` (`resolveProjectConnection` treats this as a
+registry miss — `ref='default'` still falls back to the global-env project, but this is a
+defensive fallback, not a substitute for actually running the migration; any non-default ref still
+404s until the table exists and is populated).
+
+Apply the migration by hand once, against the running `platform-db` container:
+
+```bash
+docker exec -i supabase-platform-db psql -U postgres -d platform < docker/volumes/platform/migrations/02-projects.sql
+```
+
+Note this is a plain `create table` (no `if not exists`), so only run it once per data
+directory — re-running it after it has already succeeded fails with `relation "platform.projects"
+already exists`, which is harmless (the table is already there) but not silently idempotent. After
+applying it, register the existing project as `ref=default` with
+`register-project.ts --from-current-env` (see below) if you want it to show up as a real registry
+row instead of relying on the global-env fallback.
+
 ### `PLATFORM_ENCRYPTION_KEY` — required, back it up
 
 Registry secret columns (`*_enc`) are AES-encrypted (via `crypto-js`, same library/pattern as the
@@ -322,6 +348,26 @@ listed above (`tables`, `views`, `extensions`, etc. — only the `query` route w
 the selected project's registry row. Practically: switching to a non-default registered project
 and visiting Auth/Storage/Logs will show the **default** project's data, not that project's — only
 Project Overview, Settings, API Keys, and SQL Editor are genuinely project-scoped today.
+
+**Top-priority for M2.1 — these deferred routes surface KEYS, not just data.** Most of the
+still-global routes above leak the *wrong project's rows* (bad, but data-scoped). A subset instead
+return **global credentials for any `ref`** — do not treat these as project-scoped, and prioritize
+them first when picking up M2.1:
+
+- `pages/api/platform/projects/[ref]/api-keys/temporary.ts` — returns the global
+  `SUPABASE_SERVICE_KEY` regardless of `ref` (consumed by the Realtime Inspector).
+- `pages/api/platform/props/project/[ref]/api.ts` — returns the global anon/service keys
+  regardless of `ref` (consumed by Docs/API surfaces shown in the dashboard).
+- `pages/api/platform/auth/[ref]/*` — GoTrue admin config/users for the global project only.
+- `pages/api/platform/projects/[ref]/config/*` — project config (Postgres, auth, storage, etc.)
+  for the global project only.
+- `pages/api/platform/projects/[ref]/api/rest.ts` and `.../api/graphql.ts` — global
+  PostgREST/pg-graphql surfaces.
+
+Visiting any of these for a non-default registered project today silently hands back the
+**default** project's secrets under that other project's `ref` — a real cross-project credential
+leak risk in a multi-project deployment, not just a UI data-mismatch. This finding is doc-only
+here (plan-scoped to M2.1); no code fix shipped in M2.
 
 **Also not project-scoped (pre-existing, unrelated to the registry):** SQL Editor's saved
 snippets (`SNIPPETS_MANAGEMENT_FOLDER`, on-disk) are a single shared folder read by every project
