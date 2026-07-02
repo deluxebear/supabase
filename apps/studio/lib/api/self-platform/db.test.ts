@@ -59,4 +59,15 @@ describe('executePlatformQuery', () => {
     expect(data).toBeUndefined()
     expect(error?.message).toContain('boom')
   })
+
+  it('returns error tuple (does not throw) when the response body is not JSON', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('<html>502 Bad Gateway</html>', { status: 502 }))
+    )
+    const { executePlatformQuery } = await loadDb()
+    const { data, error } = await executePlatformQuery({ query: 'select 1' })
+    expect(data).toBeUndefined()
+    expect(error).toBeInstanceOf(Error)
+  })
 })

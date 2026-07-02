@@ -41,10 +41,17 @@ export async function executePlatformQuery<T = unknown>({
     body: JSON.stringify(requestBody),
   })
 
-  const result = await response.json()
-  if (!response.ok) {
-    const message = typeof result?.message === 'string' ? result.message : JSON.stringify(result)
-    return { data: undefined, error: new Error(message) }
+  try {
+    const result = await response.json()
+    if (!response.ok) {
+      const message = typeof result?.message === 'string' ? result.message : JSON.stringify(result)
+      return { data: undefined, error: new Error(message) }
+    }
+    return { data: result as T[], error: undefined }
+  } catch (error) {
+    if (error instanceof Error) {
+      return { data: undefined, error }
+    }
+    throw error
   }
-  return { data: result as T[], error: undefined }
 }
