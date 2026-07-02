@@ -94,9 +94,14 @@ PLATFORM_PG_META_URL=http://localhost:8100/pg
 Notes on two easy-to-miss entries:
 
 - **`PLATFORM_POSTGRES_PASSWORD` must be byte-identical to `docker/.env`'s value.** It is used
-  server-side by `lib/api/self-platform/db.ts` to build the encrypted connection Studio uses to
-  query `platform-db` directly (profiles, organizations, membership). A mismatch fails
-  authentication and `/api/platform/profile` / `/api/platform/organizations` 500.
+  server-side by `lib/api/self-platform/db.ts` to build the connection string Studio uses to query
+  `platform-db` (profiles, organizations, membership). A mismatch fails authentication and
+  `/api/platform/profile` / `/api/platform/organizations` 500.
+  **Note (ledger #12):** `PLATFORM_POSTGRES_HOST` (and the rest of `PLATFORM_POSTGRES_*`) is
+  consumed to build that connection string, but Studio never opens a raw Postgres socket to it
+  itself — the string is AES-encrypted and handed to pg-meta's `/query` endpoint via the
+  `x-connection-encrypted` header (the same proxy mechanism `lib/api/self-hosted/query.ts` uses
+  for the real *project* database); pg-meta is what actually dials Postgres.
 - **`PLATFORM_PG_META_URL` is required and easy to forget** — it is *not* one of the
   `PLATFORM_POSTGRES_*` variables above, and nothing in the platform-db/platform-auth stack
   needs it directly. It exists because `lib/constants/index.ts` resolves `PG_META_URL` (the URL
@@ -277,12 +282,19 @@ set -a; . docker/.env; set +a
 pnpm exec tsx docker/scripts/platform/register-project.ts register --from-current-env --ref default --org default
 ```
 
+**`--from-current-env` also auto-picks-up `LOGFLARE_URL`/`LOGFLARE_PRIVATE_ACCESS_TOKEN`** (M2.1)
+— if those are present in the environment when `--from-current-env` runs, they populate
+`logflare_url`/`logflare_token_enc` on the same upsert; see "Analytics (M2.1)" below for the
+env-injection invocation this repo actually used, since `docker/.env` doesn't define
+`LOGFLARE_URL` by default (no Logflare container deployed on this machine).
+
 **`register` with explicit flags** — for any project that isn't "the current `docker/.env`
 stack", e.g. a second project. Required flags: `--ref --org --name --db-host --kong-url --db-pass
 --service-key --anon-key --jwt-secret`; optional: `--db-port` (default `5432`), `--db-name`
 (default `postgres`), `--db-user` (default `supabase_admin`), `--db-user-readonly`, `--rest-url`
-(default `<kong-url>/rest/v1/`), `--publishable-key`, `--secret-key`. Both branches (`register`
-and `--from-current-env`) are guarded against silently registering empty-secret projects — missing
+(default `<kong-url>/rest/v1/`), `--publishable-key`, `--secret-key`, `--logflare-url`,
+`--logflare-token` (M2.1 — see "Analytics (M2.1)" below). Both branches (`register` and
+`--from-current-env`) are guarded against silently registering empty-secret projects — missing
 required fields fail with `missing required field(s): ...` rather than exiting 0:
 
 ```bash
@@ -341,33 +353,68 @@ M2 makes the **core data plane** — the routes a day-to-day dashboard session a
   `/api/platform/organizations/{slug}/projects`) — both now enumerate every registered project,
   not a hardcoded single entry
 
-**Still global, not yet per-project (deferred to M2.1):** Auth admin (GoTrue users/config),
-Storage, Realtime, Edge Functions, Logs/Analytics, and any other pg-meta sub-resource route not
-listed above (`tables`, `views`, `extensions`, etc. — only the `query` route was threaded with
-`projectRef` in M2) all still talk to the single global-env project/pg-meta target regardless of
-the selected project's registry row. Practically: switching to a non-default registered project
-and visiting Auth/Storage/Logs will show the **default** project's data, not that project's — only
-Project Overview, Settings, API Keys, and SQL Editor are genuinely project-scoped today.
+**Fixed in M2.1 — resolved per-ref.** As of M2.1 (see "M2.1: per-ref hardening" below), all of the
+following `[ref]` route families resolve their target from the registry per `ref` — via
+`resolveProjectConnection`, the `getAdminContextForRef`/`getAdminClientForRef` admin-client
+factory, or `getAnalyticsTarget`, the same pattern SQL Editor established in M2 — instead of
+silently falling back to the single global-env project:
 
-**Top-priority for M2.1 — these deferred routes surface KEYS, not just data.** Most of the
-still-global routes above leak the *wrong project's rows* (bad, but data-scoped). A subset instead
-return **global credentials for any `ref`** — do not treat these as project-scoped, and prioritize
-them first when picking up M2.1:
+- **Auth admin**: invite, magic-link, OTP, password-recovery, user list/get, MFA factors
+  (`pages/api/platform/auth/[ref]/{invite,magiclink,otp,recover}.ts`,
+  `.../auth/[ref]/users*`).
+- **Storage**: buckets, objects (upload/download/list/move/sign/public-url), vector buckets and
+  their indexes (14 routes under `pages/api/platform/storage/[ref]/`).
+- **Analytics/Logs**: Logflare query endpoints and log drains (see "Analytics (M2.1)" below).
+- **Props**: project API-key surface (`pages/api/platform/props/project/[ref]/api.ts`) and its
+  index.
+- **Lints and migrations**: `lib/api/self-hosted/{lints,migrations}.ts` and their routes
+  (`projects/[ref]/run-lints.ts`, `v1/projects/[ref]/database/migrations.ts`).
 
-- `pages/api/platform/projects/[ref]/api-keys/temporary.ts` — returns the global
-  `SUPABASE_SERVICE_KEY` regardless of `ref` (consumed by the Realtime Inspector).
-- `pages/api/platform/props/project/[ref]/api.ts` — returns the global anon/service keys
-  regardless of `ref` (consumed by Docs/API surfaces shown in the dashboard).
-- `pages/api/platform/auth/[ref]/*` — GoTrue admin config/users for the global project only.
-- `pages/api/platform/projects/[ref]/config/*` — project config (Postgres, auth, storage, etc.)
-  for the global project only.
-- `pages/api/platform/projects/[ref]/api/rest.ts` and `.../api/graphql.ts` — global
-  PostgREST/pg-graphql surfaces.
+Practically: switching to a non-default registered project now shows *that* project's own
+auth users, storage buckets, and logs — not the default project's.
 
-Visiting any of these for a non-default registered project today silently hands back the
-**default** project's secrets under that other project's `ref` — a real cross-project credential
-leak risk in a multi-project deployment, not just a UI data-mismatch. This finding is doc-only
-here (plan-scoped to M2.1); no code fix shipped in M2.
+**Still global, not yet per-project (post-M2.1 gap):**
+
+- `pages/api/platform/auth/[ref]/config` — GoTrue admin *settings* specifically (separate from the
+  now-per-ref invite/otp/magiclink/recover/users routes above). This sub-route was never
+  implemented in M1 (see "Known limitations (M1)") and is still global-shaped if built out later.
+- Realtime, Edge Functions.
+- `pages/api/platform/projects/[ref]/config/*` — project config (Postgres, auth, storage, etc.).
+- `pages/api/platform/projects/[ref]/api/rest.ts` and `.../api/graphql.ts` — PostgREST/pg-graphql
+  surfaces.
+- Any pg-meta sub-resource route beyond `query`/lints/migrations (`tables`, `views`, `extensions`,
+  etc.) — only those three were threaded with `projectRef`.
+- `pages/api/platform/mcp.ts` — confirmed untouched, out of scope for M2.1.
+
+These still return the **default** project's data/keys regardless of the selected project's `ref`.
+
+**Credential-bearing gaps — fixed in M2.1, plus what's still open.** Most of the still-global
+routes above leak the *wrong project's rows* (bad, but data-scoped). A subset return **global
+credentials for any `ref`** instead — these were the top M2.1 priority:
+
+- ~~`pages/api/platform/projects/[ref]/api-keys/temporary.ts`~~ — **fixed** (see "Short-lived
+  per-project JWTs" — it now mints a per-project-scoped, 5-minute JWT instead of returning the
+  global `SUPABASE_SERVICE_KEY` verbatim).
+- ~~`pages/api/platform/props/project/[ref]/api.ts`~~ — **fixed**: returns the resolved
+  connection's own anon/service keys per `ref` instead of the global ones.
+- `pages/api/platform/auth/[ref]/config` — **still open** (see above; never implemented).
+- `pages/api/platform/projects/[ref]/config/*` — **still open**, global project only.
+- `pages/api/platform/projects/[ref]/api/rest.ts` and `.../api/graphql.ts` — **still open**,
+  global PostgREST/pg-graphql surfaces.
+
+Visiting any of the still-open routes above for a non-default registered project today silently
+hands back the **default** project's secrets under that other project's `ref` — a real
+cross-project credential leak risk in a multi-project deployment, not just a UI data-mismatch.
+Doc-only here; no code fix shipped for these in M2.1 either — next priority for a future hardening
+pass.
+
+### Short-lived per-project JWTs
+
+`pages/api/platform/projects/[ref]/api-keys/temporary.ts` (consumed by the Realtime Inspector and
+Storage Explorer) resolves the project's own JWT secret per `ref` and mints a short-lived HS256
+JWT (`exp - iat = 300` seconds) instead of returning a raw, long-lived service-role key. Plain
+self-hosted mode (`IS_SELF_PLATFORM` false) is unchanged — it still returns the global
+`SUPABASE_SERVICE_KEY` verbatim, matching pre-M2.1 behavior byte-for-byte.
 
 **Also not project-scoped (pre-existing, unrelated to the registry):** SQL Editor's saved
 snippets (`SNIPPETS_MANAGEMENT_FOLDER`, on-disk) are a single shared folder read by every project
@@ -376,13 +423,98 @@ snippets (`SNIPPETS_MANAGEMENT_FOLDER`, on-disk) are a single shared folder read
 
 ### Known limitations (M2)
 
-- **Pagination is not yet sliced.** `listAllProjectsV2` and the org-projects route accept
-  `limit`/`offset` query params and echo them back in the `pagination` envelope, but the
-  underlying registry read is not actually paginated at the SQL level — both routes currently
-  return every registered project regardless of `limit`/`offset`. Fine at current scale
-  (single-digit projects); would need a real `LIMIT`/`OFFSET` (or keyset) query before this
-  registry is used with a large number of projects.
+- ~~Pagination is not yet sliced.~~ **Fixed in M2.1** (Task 11): `listAllProjectsV2` and the
+  org-projects route now apply real `LIMIT`/`OFFSET` (plus `COUNT(*)`) at the SQL level via
+  `listAllProjects`/`listProjectsByOrgId` in `lib/api/self-platform/projects.ts` — the
+  `pagination` envelope reflects an actually-sliced result, not just echoed-back params.
 - **No re-encryption/key-rotation tooling** for `PLATFORM_ENCRYPTION_KEY` (see above).
 - **The CLI has no `update`-only or `rotate-secret` command** — re-running `register` with the
   same `--ref` upserts (all columns overwritten), which is fine for re-registering but has no
   narrower "just change one field" affordance.
+
+## M2.1: per-ref hardening
+
+M2 left several `[ref]` route families — including two that surfaced credentials, not just data —
+still reading the single global-env project regardless of the selected registry row. M2.1 closes
+those gaps (see the updated "M2 boundary" section above for the full before/after route list) and
+adds one capability the registry didn't have in M2 at all: per-project Logs/Analytics.
+
+### Analytics (M2.1)
+
+`platform.projects` gained two nullable columns via
+`docker/volumes/platform/migrations/03-analytics.sql`:
+
+| Column | Purpose |
+| --- | --- |
+| `logflare_url` | The project's Logflare **base** URL — no `/api/` suffix. Code appends `/api/endpoints/query/{name}` itself (see `getAnalyticsTarget` in `apps/studio/lib/api/self-hosted/logs.ts`). |
+| `logflare_token_enc` | AES-encrypted (same `PLATFORM_ENCRYPTION_KEY` scheme as every other `*_enc` column) Logflare private access token. |
+
+**NULL in either column means analytics is not configured for that project.** Studio's Logs routes
+(`pages/api/platform/projects/[ref]/analytics/*`, including log drains) then return `404
+{"message":"Analytics is not configured for this project"}` — they **never** fall back to the
+global stack's `LOGFLARE_URL`/`LOGFLARE_PRIVATE_ACCESS_TOKEN`, even if those env vars happen to be
+set for the Studio process. This is a hard invariant enforced per-route via the
+`AnalyticsNotConfigured` error type, not a soft default.
+
+**The `?project=default` assumption.** When Studio queries a registered project's Logflare, it
+always sets the outbound `?project=` query param to the literal string `default`
+(`AnalyticsTarget.projectParam`), never the registry's own `ref`. This is deliberate: a registered
+per-project analytics backend is assumed to be a **vanilla self-hosted stack**, and every vanilla
+self-hosted Logflare instance self-identifies its own (only) project as `default` internally,
+regardless of whatever ref/name Studio's registry gave it. If a future registered project's
+Logflare is ever *not* a vanilla single-project self-hosted stack, this assumption needs
+revisiting.
+
+**Applying the migration** (mirrors Task 2's live verification command — safe to re-run, uses
+`add column if not exists`):
+
+```bash
+docker exec -i supabase-platform-db psql -U postgres -d platform -v ON_ERROR_STOP=1 \
+  < docker/volumes/platform/migrations/03-analytics.sql
+```
+
+**This environment has no Logflare container deployed** — `docker/.env` does not define
+`LOGFLARE_URL` by default (analytics is an opt-in docker-compose add-on, not part of the base
+stack). The documented backfill path is **env-injection at CLI invocation time**, not a
+`docker/.env` edit:
+
+```bash
+LOGFLARE_URL=http://localhost:4000 \
+  pnpm exec tsx docker/scripts/platform/register-project.ts register --from-current-env --ref default --org default
+```
+
+(`docker/.env` is still sourced first per the usual `--from-current-env` flow — see the CLI
+section above — this just adds `LOGFLARE_URL` to the shell for this one invocation.) The
+`on conflict (ref)` upsert means re-running this is always safe. This has already been run for the
+`default` row on this machine (Task 3).
+
+### Upgrading an existing M2 platform-db to M2.1
+
+If you already applied M2's `02-projects.sql` and registered projects before M2.1 shipped:
+
+1. Apply `03-analytics.sql` (above). Existing rows get `NULL` for both new columns — expected, not
+   an error.
+2. **Before** the migration is applied at all, the registry read code degrades gracefully instead
+   of crashing: `apps/studio/lib/api/self-platform/projects.ts` detects the missing-column error,
+   retries with a legacy column list, and logs
+   `[self-platform] platform.projects has no analytics columns (pre-M2.1 platform-db) — treating
+   logflare_url/logflare_token_enc as NULL. Run docker/volumes/platform/migrations/03-analytics.sql
+   to upgrade.` — analytics is simply treated as not-configured (404s) until you migrate.
+3. Backfill `logflare_url`/`logflare_token_enc` for existing rows one of two ways:
+   - **Re-run `register --from-current-env`** (or `register` with explicit flags) for that ref —
+     the upsert overwrites *all* columns, so re-supply every flag/env var you originally used, not
+     just the Logflare ones. See the env-injection invocation above for `default`.
+   - **Hand-write just the two columns** if you don't want a full re-register. Generate the token
+     ciphertext with the CLI's own `encryptSecret` helper:
+     ```bash
+     export PLATFORM_ENCRYPTION_KEY=$(grep -E '^PLATFORM_ENCRYPTION_KEY=' docker/.env | cut -d= -f2)
+     pnpm exec tsx -e "
+       import('./docker/scripts/platform/register-project.ts').then(({ encryptSecret }) =>
+         console.log(encryptSecret('<your-logflare-private-access-token>'))
+       )"
+     ```
+     then apply it directly:
+     ```bash
+     docker exec -i supabase-platform-db psql -U postgres -d platform -c \
+       "update platform.projects set logflare_url = 'http://localhost:4000', logflare_token_enc = '<ciphertext from above>' where ref = 'default';"
+     ```
