@@ -54,7 +54,10 @@ describe('getProfileByGotrueId', () => {
 
 describe('createProfileWithDefaultMembership', () => {
   it('derives username from the email local part', async () => {
-    vi.mocked(executePlatformQuery).mockResolvedValue({ data: [row], error: undefined })
+    vi.mocked(executePlatformQuery).mockResolvedValue({
+      data: [{ ...row, membership_created: true }],
+      error: undefined,
+    })
     await createProfileWithDefaultMembership({
       gotrueId: row.gotrue_id,
       email: 'admin@internal.test',
@@ -71,5 +74,33 @@ describe('createProfileWithDefaultMembership', () => {
     await expect(
       createProfileWithDefaultMembership({ gotrueId: row.gotrue_id, email: 'a@b.c' })
     ).rejects.toThrow('db down')
+  })
+
+  // I1: the membership insert is a `where o.slug = 'default'` join — if the
+  // seed org is missing, the CTE chain still succeeds and returns the
+  // profile row, silently leaving the user org-less. membership_created
+  // reports the real post-insert state; a false value must throw instead of
+  // returning a profile with no org.
+  it('throws when the default org lookup yields no membership', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({
+      data: [{ ...row, membership_created: false }],
+      error: undefined,
+    })
+    await expect(
+      createProfileWithDefaultMembership({ gotrueId: row.gotrue_id, email: 'admin@internal.test' })
+    ).rejects.toThrow(/default.*organization/i)
+  })
+
+  it('returns the profile (without the membership_created flag) when membership was created', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({
+      data: [{ ...row, membership_created: true }],
+      error: undefined,
+    })
+    const result = await createProfileWithDefaultMembership({
+      gotrueId: row.gotrue_id,
+      email: 'admin@internal.test',
+    })
+    expect(result).toEqual(row)
+    expect(result).not.toHaveProperty('membership_created')
   })
 })

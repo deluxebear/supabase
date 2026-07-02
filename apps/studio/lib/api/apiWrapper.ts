@@ -2,6 +2,7 @@ import type { JwtPayload } from '@supabase/supabase-js'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 import { IS_PLATFORM } from '../constants'
+import { IS_SELF_PLATFORM } from '../constants/self-platform'
 import { apiAuthenticate } from './apiAuthenticate'
 import { ResponseError, ResponseFailure } from '@/types'
 
@@ -32,13 +33,22 @@ async function apiWrapper(
     res: NextApiResponse,
     claims?: JwtPayload
   ) => Promise<NextApiResponse | Response | void>,
-  options?: { withAuth: boolean }
+  options?: { withAuth?: boolean }
 ): Promise<NextApiResponse | Response | void> {
   try {
     const { withAuth } = options || {}
     let claims: JwtPayload | undefined
 
-    if (IS_PLATFORM && withAuth) {
+    // [self-platform] Default-deny: routes that don't explicitly opt in/out of
+    // auth (withAuth left undefined) are auth-required in self-platform mode.
+    // Explicit `{ withAuth: true }` / `{ withAuth: false }` always win. This
+    // only changes behavior for IS_SELF_PLATFORM — plain self-hosted
+    // (IS_PLATFORM false) never reaches apiAuthenticate, and real cloud
+    // (IS_PLATFORM && !IS_SELF_PLATFORM) keeps `undefined ?? false` = false,
+    // i.e. unchanged.
+    const requireAuth = withAuth ?? IS_SELF_PLATFORM
+
+    if (IS_PLATFORM && requireAuth) {
       const response = await apiAuthenticate(req, res)
       if (!isResponseOk(response)) {
         return res.status(401).json({

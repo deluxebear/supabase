@@ -37,7 +37,12 @@ export const HOSTED_SUPPORTED_API_URLS = [
 // and the TanStack guard strips BASE_PATH before calling. Entries are path
 // suffixes, so `endsWith` stays correct regardless.
 export function isHostedSupportedApiPath(pathname: string): boolean {
-  if (IS_SELF_PLATFORM && (pathname.includes('/api/platform/') || pathname.includes('/api/v1/'))) {
+  // [self-platform] Anchor at the start of the (basePath-relative) path so a
+  // smuggled path like `/foo/api/v1/x` can't match via a mid-string `.includes`.
+  if (
+    IS_SELF_PLATFORM &&
+    (pathname.startsWith('/api/platform/') || pathname.startsWith('/api/v1/'))
+  ) {
     return true
   }
   return HOSTED_SUPPORTED_API_URLS.some((url) => pathname.endsWith(url))

@@ -11,7 +11,8 @@ import apiWrapper from '@/lib/api/apiWrapper'
 type FeatureFlagsResponse =
   paths['/platform/telemetry/feature-flags']['get']['responses']['200']['content']['application/json']
 
-export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
+export default (req: NextApiRequest, res: NextApiResponse) =>
+  apiWrapper(req, res, handler, { withAuth: false })
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {

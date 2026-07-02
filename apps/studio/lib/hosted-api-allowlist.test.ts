@@ -33,4 +33,13 @@ describe('isHostedSupportedApiPath', () => {
     const { isHostedSupportedApiPath } = await loadAllowlist('true')
     expect(isHostedSupportedApiPath('/api/totally-unknown')).toBe(false)
   })
+
+  // [self-platform] C1 hardening: matching used to be `.includes`, so a
+  // smuggled path with `/api/v1/` or `/api/platform/` anywhere mid-string
+  // (not just as the actual API prefix) would incorrectly pass.
+  it('rejects a smuggled path where /api/platform/ or /api/v1/ only appears mid-string', async () => {
+    const { isHostedSupportedApiPath } = await loadAllowlist('true')
+    expect(isHostedSupportedApiPath('/foo/api/v1/projects/default/api-keys')).toBe(false)
+    expect(isHostedSupportedApiPath('/foo/api/platform/profile')).toBe(false)
+  })
 })

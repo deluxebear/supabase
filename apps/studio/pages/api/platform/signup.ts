@@ -7,7 +7,10 @@ import apiWrapper from '@/lib/api/apiWrapper'
 import { PLATFORM_GOTRUE_URL } from '@/lib/api/self-platform/constants'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
-export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
+// [self-platform] Public: called pre-login from the sign-up page, before any
+// session exists.
+export default (req: NextApiRequest, res: NextApiResponse) =>
+  apiWrapper(req, res, handler, { withAuth: false })
 
 // exported for handler-level tests
 export async function handler(req: NextApiRequest, res: NextApiResponse) {

@@ -51,7 +51,16 @@ export async function createProfileWithDefaultMembership(input: {
   email: string
 }): Promise<PlatformProfileRow> {
   const username = input.email.split('@')[0] || input.email
-  const { data, error } = await executePlatformQuery<PlatformProfileRow>({
+  // [self-platform] I1: `membership` silently inserts zero rows (and errors
+  // nowhere) if the `default` org is missing — the CTE chain still succeeds
+  // and returns the profile row, leaving the user org-less with no signal.
+  // Report membership_created back from the same query (checked against
+  // actual row existence, not "was just inserted", so a pre-existing
+  // membership from an earlier call still counts as success) and throw if
+  // it's false.
+  const { data, error } = await executePlatformQuery<
+    PlatformProfileRow & { membership_created: boolean }
+  >({
     query: `
       with new_profile as (
         insert into platform.profiles (gotrue_id, username, primary_email)
@@ -65,12 +74,28 @@ export async function createProfileWithDefaultMembership(input: {
         cross join new_profile p
         where o.slug = 'default'
         on conflict do nothing
+        returning profile_id
       )
-      select * from new_profile
+      select
+        new_profile.*,
+        exists (
+          select 1
+          from platform.organization_members m
+          join platform.organizations o on o.id = m.organization_id
+          where m.profile_id = new_profile.id and o.slug = 'default'
+        ) as membership_created
+      from new_profile
     `,
     parameters: [input.gotrueId, username, input.email],
   })
   if (error) throw error
-  if (!data?.[0]) throw new Error('profile creation returned no row')
-  return data[0]
+  const row = data?.[0]
+  if (!row) throw new Error('profile creation returned no row')
+  if (!row.membership_created) {
+    throw new Error(
+      "Failed to create default organization membership: the 'default' organization was not found, or the membership insert failed"
+    )
+  }
+  const { membership_created, ...profile } = row
+  return profile
 }

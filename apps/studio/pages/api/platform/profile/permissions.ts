@@ -5,6 +5,7 @@ import type { components } from 'api-types'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
+import { getOrganizationBySlug } from '@/lib/api/self-platform/organizations'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 type AccessControlPermission = components['schemas']['AccessControlPermission']
@@ -24,12 +25,21 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
       .json({ data: null, error: { message: `Method ${req.method} Not Allowed` } })
   }
 
+  // [self-platform] I2: derive the org from platform.organizations like every
+  // other endpoint does, instead of fabricating id 1 / slug 'default'.
+  const org = await getOrganizationBySlug('default')
+  if (!org) {
+    // No seed org — there's nothing to grant a wildcard on. Empty
+    // permissions rather than a fabricated id.
+    return res.status(200).json([])
+  }
+
   const permissions: AccessControlPermission[] = [
     {
       actions: ['%'],
       condition: null,
-      organization_id: 1,
-      organization_slug: 'default',
+      organization_id: org.id,
+      organization_slug: org.slug,
       project_ids: [],
       project_refs: [],
       resources: ['%'],
