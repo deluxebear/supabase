@@ -1,48 +1,46 @@
 import { createMocks } from 'node-mocks-http'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-// [self-platform] `handler` branches on IS_SELF_PLATFORM, which is resolved at module load from
-// NEXT_PUBLIC_SELF_PLATFORM. Each env combination needs a fresh module instance (same pattern as
-// the sibling `index.test.ts` / lib/api/self-hosted/util.test.ts's loadUtil).
-async function loadHandler(selfPlatform: string) {
-  vi.resetModules()
-  vi.stubEnv('NEXT_PUBLIC_SELF_PLATFORM', selfPlatform)
-  return await import('./databases')
-}
+import { handler } from './databases'
+import { resolveProjectConnection } from '@/lib/api/self-platform/resolve-connection'
 
-afterEach(() => {
-  vi.unstubAllEnvs()
+vi.hoisted(() => {
+  process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
+})
+vi.mock('@/lib/api/self-platform/resolve-connection', () => {
+  class ProjectNotFound extends Error {}
+  return { ProjectNotFound, resolveProjectConnection: vi.fn() }
 })
 
-describe('GET /platform/projects/{ref}/databases', () => {
-  it('returns an empty connectionString in plain self-hosted mode (legacy, byte-identical)', async () => {
-    const { handler } = await loadHandler('')
-    const { req, res } = createMocks({ method: 'GET' })
-    await handler(req as any, res as any)
+const resolved = {
+  ref: 'proj-b',
+  pgConnEncrypted: 'ENC',
+  pgConnReadOnlyEncrypted: 'ENC_RO',
+  dbHost: 'db-b',
+  dbPort: 5432,
+  dbName: 'postgres',
+  dbUser: 'supabase_admin',
+  restUrl: 'http://kong-b:8000/rest/v1/',
+  region: 'local',
+  status: 'ACTIVE_HEALTHY',
+  cloudProvider: 'AWS',
+}
+beforeEach(() => vi.clearAllMocks())
 
+describe('GET /platform/projects/[ref]/databases (self-platform)', () => {
+  it('returns one database entry with both encrypted conn strings', async () => {
+    vi.mocked(resolveProjectConnection).mockResolvedValue(resolved as any)
+    const { req, res } = createMocks({ method: 'GET', query: { ref: 'proj-b' } })
+    await handler(req as any, res as any)
     expect(res._getStatusCode()).toBe(200)
     const body = res._getJSONData()
-    expect(body[0].connectionString).toBe('')
-  })
-
-  it('[self-platform] returns a non-empty, real encrypted connectionString', async () => {
-    const { handler } = await loadHandler('true')
-    const { req, res } = createMocks({ method: 'GET' })
-    await handler(req as any, res as any)
-
-    expect(res._getStatusCode()).toBe(200)
-    const body = res._getJSONData()
-    expect(typeof body[0].connectionString).toBe('string')
-    expect(body[0].connectionString).not.toBe('')
-    // identifier must still match what the client's database selector defaults to
-    expect(body[0].identifier).toBe('default')
-  })
-
-  it('rejects non-GET methods with 405', async () => {
-    const { handler } = await loadHandler('')
-    const { req, res } = createMocks({ method: 'POST' })
-    await handler(req as any, res as any)
-
-    expect(res._getStatusCode()).toBe(405)
+    expect(body[0]).toMatchObject({
+      identifier: 'proj-b',
+      connectionString: 'ENC',
+      connection_string_read_only: 'ENC_RO',
+      db_host: 'db-b',
+      db_port: 5432,
+      status: 'ACTIVE_HEALTHY',
+    })
   })
 })

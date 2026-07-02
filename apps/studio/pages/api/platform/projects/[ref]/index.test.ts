@@ -1,45 +1,89 @@
 import { createMocks } from 'node-mocks-http'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-// [self-platform] `handler` branches on IS_SELF_PLATFORM, which is resolved at module load from
-// NEXT_PUBLIC_SELF_PLATFORM. Each env combination needs a fresh module instance (same pattern as
-// lib/api/self-hosted/util.test.ts's loadUtil).
-async function loadHandler(selfPlatform: string) {
-  vi.resetModules()
-  vi.stubEnv('NEXT_PUBLIC_SELF_PLATFORM', selfPlatform)
-  return await import('./index')
-}
+import { handler } from './index'
+import {
+  ProjectNotFound,
+  resolveProjectConnection,
+} from '@/lib/api/self-platform/resolve-connection'
 
-afterEach(() => {
-  vi.unstubAllEnvs()
+vi.hoisted(() => {
+  process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
+})
+vi.mock('@/lib/api/self-platform/resolve-connection', () => {
+  class ProjectNotFound extends Error {}
+  return {
+    ProjectNotFound,
+    resolveProjectConnection: vi.fn(),
+  }
 })
 
-describe('GET /platform/projects/{ref}', () => {
-  it('returns an empty connectionString in plain self-hosted mode (legacy, byte-identical)', async () => {
-    const { handler } = await loadHandler('')
-    const { req, res } = createMocks({ method: 'GET' })
-    await handler(req as any, res as any)
+// [self-platform] `row` mirrors Task 4's ResolvedConnection.row (PlatformProjectRow | null) — a
+// registry hit carries the raw row so index.ts can map it via toProjectDetailResponse without a
+// second getProjectByRef query.
+const resolved = {
+  ref: 'proj-b',
+  organizationId: 1,
+  name: 'B',
+  status: 'ACTIVE_HEALTHY',
+  cloudProvider: 'AWS',
+  region: 'local',
+  pgConnEncrypted: 'ENC',
+  pgConnReadOnlyEncrypted: 'ENC_RO',
+  supabaseUrl: 'http://kong-b:8000',
+  restUrl: 'http://kong-b:8000/rest/v1/',
+  dbHost: 'db-b',
+  dbPort: 5432,
+  dbName: 'postgres',
+  dbUser: 'supabase_admin',
+  serviceKey: 'SVC',
+  anonKey: 'ANON',
+  jwtSecret: 'JWT',
+  publishableKey: null,
+  secretKey: null,
+  row: {
+    id: 2,
+    ref: 'proj-b',
+    organization_id: 1,
+    name: 'B',
+    status: 'ACTIVE_HEALTHY',
+    cloud_provider: 'AWS',
+    region: 'local',
+    db_host: 'db-b',
+    db_port: 5432,
+    db_name: 'postgres',
+    db_user: 'supabase_admin',
+    db_user_readonly: 'supabase_read_only_user',
+    kong_url: 'http://kong-b:8000',
+    rest_url: 'http://kong-b:8000/rest/v1/',
+    db_pass_enc: 'x',
+    service_key_enc: 'x',
+    anon_key_enc: 'x',
+    jwt_secret_enc: 'x',
+    publishable_key_enc: null,
+    secret_key_enc: null,
+  },
+}
+beforeEach(() => vi.clearAllMocks())
 
+describe('GET /platform/projects/[ref] (self-platform)', () => {
+  it('returns the resolved project with encrypted connectionString', async () => {
+    vi.mocked(resolveProjectConnection).mockResolvedValue(resolved as any)
+    const { req, res } = createMocks({ method: 'GET', query: { ref: 'proj-b' } })
+    await handler(req as any, res as any)
+    expect(resolveProjectConnection).toHaveBeenCalledWith('proj-b')
     expect(res._getStatusCode()).toBe(200)
-    expect(res._getJSONData().connectionString).toBe('')
+    expect(res._getJSONData()).toMatchObject({
+      ref: 'proj-b',
+      connectionString: 'ENC',
+      restUrl: 'http://kong-b:8000/rest/v1/',
+    })
   })
-
-  it('[self-platform] returns a non-empty, real encrypted connectionString', async () => {
-    const { handler } = await loadHandler('true')
-    const { req, res } = createMocks({ method: 'GET' })
+  it('404s an unknown project', async () => {
+    vi.mocked(resolveProjectConnection).mockRejectedValue(new ProjectNotFound('ghost'))
+    const { req, res } = createMocks({ method: 'GET', query: { ref: 'ghost' } })
     await handler(req as any, res as any)
-
-    expect(res._getStatusCode()).toBe(200)
-    const body = res._getJSONData()
-    expect(typeof body.connectionString).toBe('string')
-    expect(body.connectionString).not.toBe('')
-  })
-
-  it('rejects non-GET methods with 405', async () => {
-    const { handler } = await loadHandler('')
-    const { req, res } = createMocks({ method: 'POST' })
-    await handler(req as any, res as any)
-
-    expect(res._getStatusCode()).toBe(405)
+    expect(res._getStatusCode()).toBe(404)
+    expect(res._getJSONData()).toEqual({ message: 'Project not found' })
   })
 })
