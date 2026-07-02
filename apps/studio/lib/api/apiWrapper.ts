@@ -50,7 +50,7 @@ async function apiWrapper(
       claims = response
     }
 
-    return handler(req, res, claims)
+    return await handler(req, res, claims) // [self-platform] await so async handler rejections hit the catch below
   } catch (error) {
     return res.status(500).json({ error })
   }
