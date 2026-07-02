@@ -18,7 +18,8 @@ export type ProjectSettings = components['schemas']['ProjectSettingsResponse'] &
 
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+// [self-platform] exported for handler-level tests
+export async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req
 
   switch (method) {

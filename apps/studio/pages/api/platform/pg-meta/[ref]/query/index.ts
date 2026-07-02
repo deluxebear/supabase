@@ -9,7 +9,8 @@ import { ProjectNotFound } from '@/lib/api/self-platform/resolve-connection'
 export default (req: NextApiRequest, res: NextApiResponse) =>
   apiWrapper(req, res, handler, { withAuth: true })
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+// [self-platform] exported for handler-level tests
+export async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req
 
   switch (method) {
