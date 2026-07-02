@@ -1,3 +1,7 @@
+// [self-platform] Local platform API needs its own /api/platform + /api/v1
+// routes reachable in platform mode; everything else keeps 404ing.
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
+
 // [Joshen] Allowlist of API endpoints supported in hosted (platform) mode.
 // Every other /api/* route must 404 in platform mode. Shared by the Next
 // middleware (proxy.ts) and the TanStack request middleware (start.ts) so
@@ -33,5 +37,8 @@ export const HOSTED_SUPPORTED_API_URLS = [
 // and the TanStack guard strips BASE_PATH before calling. Entries are path
 // suffixes, so `endsWith` stays correct regardless.
 export function isHostedSupportedApiPath(pathname: string): boolean {
+  if (IS_SELF_PLATFORM && (pathname.includes('/api/platform/') || pathname.includes('/api/v1/'))) {
+    return true
+  }
   return HOSTED_SUPPORTED_API_URLS.some((url) => pathname.endsWith(url))
 }
