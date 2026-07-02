@@ -3,6 +3,7 @@ import { snakeCase } from 'lodash'
 import z from 'zod'
 
 import { IS_PLATFORM } from '@/lib/constants'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 /**
  * Construct headers for api request.
@@ -28,7 +29,12 @@ export function constructHeaders(headers: { [prop: string]: any }) {
       ...cleansedHeaders,
       // [Joshen] JFYI both Alaister and I checked on this and realised this might not be used actually
       // Could be safe to remove but leaving it here for now
-      ...(!IS_PLATFORM && { apiKey: `${process.env.SUPABASE_SERVICE_KEY}` }),
+      // [self-platform] Self-platform builds run IS_PLATFORM=true but still front pg-meta the
+      // self-hosted way (via Kong), which requires this apiKey header. Only a real managed
+      // platform deployment (IS_PLATFORM && !IS_SELF_PLATFORM) should have it stripped.
+      ...((!IS_PLATFORM || IS_SELF_PLATFORM) && {
+        apiKey: `${process.env.SUPABASE_SERVICE_KEY}`,
+      }),
     }
   } else {
     return {
