@@ -1,0 +1,2 @@
+apps/studio/components/**/*.tsx merge=i18n-theirs
+apps/studio/pages/**/*.tsx merge=i18n-theirs
