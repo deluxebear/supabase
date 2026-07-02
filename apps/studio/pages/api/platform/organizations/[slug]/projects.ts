@@ -3,13 +3,14 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
+import { getOrganizationBySlug } from '@/lib/api/self-platform/organizations'
 import { DEFAULT_PROJECT } from '@/lib/constants/api'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export default (req: NextApiRequest, res: NextApiResponse) =>
   apiWrapper(req, res, handler, { withAuth: true })
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', ['GET'])
     return res
@@ -20,10 +21,14 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(404).json({ message: 'Not available on this deployment' })
   }
 
+  const slug = String(req.query.slug)
+  const org = await getOrganizationBySlug(slug)
+  if (!org) return res.status(404).json({ message: 'Organization not found' })
+
   const projects = [
     {
       ...DEFAULT_PROJECT,
-      organization_slug: 'default',
+      organization_slug: org.slug,
       is_branch: false,
       preview_branch_refs: [] as string[],
       databases: [
