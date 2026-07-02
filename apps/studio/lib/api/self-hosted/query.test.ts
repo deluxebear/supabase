@@ -32,7 +32,6 @@ afterEach(() => {
 
 describe('executeQuery projectRef', () => {
   it('uses the resolved encrypted DSN when projectRef given', async () => {
-    const { resolveProjectConnection } = await import('@/lib/api/self-platform/resolve-connection')
     vi.clearAllMocks()
 
     await executeQuery({ query: 'select 1', projectRef: 'proj-b' })
@@ -40,7 +39,6 @@ describe('executeQuery projectRef', () => {
     expect(new Headers(init.headers).get('x-connection-encrypted')).toBe('ENC-B')
   })
   it('uses read-only DSN when readOnly + projectRef', async () => {
-    const { resolveProjectConnection } = await import('@/lib/api/self-platform/resolve-connection')
     vi.clearAllMocks()
 
     await executeQuery({ query: 'select 1', projectRef: 'proj-b', readOnly: true })
