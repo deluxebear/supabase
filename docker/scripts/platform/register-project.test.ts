@@ -167,3 +167,74 @@ describe('assertRequiredInput', () => {
     )
   })
 })
+
+describe('analytics fields (M2.1)', () => {
+  it('buildUpsertSql includes logflare columns as $20/$21', () => {
+    const { query } = buildUpsertSql()
+    expect(query).toContain('logflare_url')
+    expect(query).toContain('logflare_token_enc')
+    expect(query).toContain('$21')
+    expect(query).toContain('logflare_url=excluded.logflare_url')
+  })
+
+  it('buildRowParams encrypts token and passes url through; null when absent', () => {
+    const base = {
+      ref: 'r',
+      org: 'o',
+      name: 'n',
+      dbHost: 'db',
+      dbPort: 5432,
+      dbName: 'postgres',
+      dbUser: 'u',
+      kongUrl: 'http://k',
+      restUrl: 'http://k/rest/v1/',
+      dbPass: 'p',
+      serviceKey: 's',
+      anonKey: 'a',
+      jwtSecret: 'j',
+    }
+    const enc = (s: string) => `enc(${s})`
+    const withAnalytics = buildRowParams(
+      { ...base, logflareUrl: 'http://lf', logflareToken: 'tok' } as any,
+      enc
+    )
+    expect(withAnalytics).toHaveLength(21)
+    expect(withAnalytics[19]).toBe('http://lf')
+    expect(withAnalytics[20]).toBe('enc(tok)')
+    const without = buildRowParams(base as any, enc)
+    expect(without[19]).toBeNull()
+    expect(without[20]).toBeNull()
+  })
+
+  it('resolveInputFromEnv picks up LOGFLARE_URL and LOGFLARE_PRIVATE_ACCESS_TOKEN', () => {
+    const input = resolveInputFromEnv(
+      {
+        POSTGRES_PASSWORD: 'p',
+        SERVICE_ROLE_KEY: 's',
+        ANON_KEY: 'a',
+        JWT_SECRET: 'j',
+        API_EXTERNAL_URL: 'http://k',
+        LOGFLARE_URL: 'http://lf',
+        LOGFLARE_PRIVATE_ACCESS_TOKEN: 'tok',
+      } as any,
+      { ref: 'default', org: 'default', name: 'D' }
+    )
+    expect(input.logflareUrl).toBe('http://lf')
+    expect(input.logflareToken).toBe('tok')
+  })
+
+  it('analytics fields are not required', () => {
+    const input = resolveInputFromEnv(
+      {
+        POSTGRES_PASSWORD: 'p',
+        SERVICE_ROLE_KEY: 's',
+        ANON_KEY: 'a',
+        JWT_SECRET: 'j',
+        API_EXTERNAL_URL: 'http://k',
+      } as any,
+      { ref: 'default', org: 'default', name: 'D' }
+    )
+    expect(input.logflareUrl).toBeNull()
+    expect(() => assertRequiredInput(input)).not.toThrow()
+  })
+})

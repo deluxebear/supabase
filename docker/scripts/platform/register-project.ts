@@ -25,6 +25,8 @@ export interface RegisterInput {
   jwtSecret: string
   publishableKey?: string | null
   secretKey?: string | null
+  logflareUrl?: string | null
+  logflareToken?: string | null
 }
 
 export function parseArgs(argv: string[]) {
@@ -58,9 +60,9 @@ export function buildUpsertSql(): { query: string } {
     query: `insert into platform.projects
       (ref, organization_id, name, status, cloud_provider, region,
        db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
-       db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc, publishable_key_enc, secret_key_enc)
+       db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc, publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc)
       values ($1,(select id from platform.organizations where slug=$2),$3,$4,$5,$6,
-              $7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+              $7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
       on conflict (ref) do update set
         name=excluded.name, status=excluded.status, cloud_provider=excluded.cloud_provider,
         region=excluded.region, db_host=excluded.db_host, db_port=excluded.db_port,
@@ -69,6 +71,7 @@ export function buildUpsertSql(): { query: string } {
         db_pass_enc=excluded.db_pass_enc, service_key_enc=excluded.service_key_enc,
         anon_key_enc=excluded.anon_key_enc, jwt_secret_enc=excluded.jwt_secret_enc,
         publishable_key_enc=excluded.publishable_key_enc, secret_key_enc=excluded.secret_key_enc,
+        logflare_url=excluded.logflare_url, logflare_token_enc=excluded.logflare_token_enc,
         updated_at=now()`,
   }
 }
@@ -94,6 +97,8 @@ export function buildRowParams(input: RegisterInput, encrypt: (s: string) => str
     encrypt(input.jwtSecret),
     input.publishableKey ? encrypt(input.publishableKey) : null,
     input.secretKey ? encrypt(input.secretKey) : null,
+    input.logflareUrl ?? null,
+    input.logflareToken ? encrypt(input.logflareToken) : null,
   ]
 }
 
@@ -130,6 +135,8 @@ export function resolveInputFromEnv(
     jwtSecret: env.JWT_SECRET || env.AUTH_JWT_SECRET || '',
     publishableKey: env.SUPABASE_PUBLISHABLE_KEY || null,
     secretKey: env.SUPABASE_SECRET_KEY || null,
+    logflareUrl: env.LOGFLARE_URL || null,
+    logflareToken: env.LOGFLARE_PRIVATE_ACCESS_TOKEN || null,
   }
 }
 
@@ -247,6 +254,8 @@ export function main(argv = process.argv.slice(2)) {
           jwtSecret: flags['jwt-secret'],
           publishableKey: flags['publishable-key'] || null,
           secretKey: flags['secret-key'] || null,
+          logflareUrl: flags['logflare-url'] || null,
+          logflareToken: flags['logflare-token'] || null,
         } as RegisterInput
       })()
   // Belt-and-suspenders: required(flags, [...]) above only checks the
