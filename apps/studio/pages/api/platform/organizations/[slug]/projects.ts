@@ -1,10 +1,10 @@
 // [self-platform] Org-scoped project list (used by org home + project
-// selector). M1: the single default project; registry-backed in M2.
+// selector). Registry-backed in M2; falls back to the single default
+// project when the org has nothing registered (M1 behavior).
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
-import { getOrganizationBySlug } from '@/lib/api/self-platform/organizations'
-import { DEFAULT_PROJECT } from '@/lib/constants/api'
+import { listOrgProjectsV2 } from '@/lib/api/self-platform/list-user-projects'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export default (req: NextApiRequest, res: NextApiResponse) =>
@@ -22,31 +22,12 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   const slug = String(req.query.slug)
-  const org = await getOrganizationBySlug(slug)
-  if (!org) return res.status(404).json({ message: 'Organization not found' })
+  const result = await listOrgProjectsV2(
+    slug,
+    Number(req.query.limit ?? 100),
+    Number(req.query.offset ?? 0)
+  )
+  if (!result) return res.status(404).json({ message: 'Organization not found' })
 
-  const projects = [
-    {
-      ...DEFAULT_PROJECT,
-      organization_slug: org.slug,
-      is_branch: false,
-      preview_branch_refs: [] as string[],
-      databases: [
-        {
-          identifier: DEFAULT_PROJECT.ref,
-          region: DEFAULT_PROJECT.region,
-          status: DEFAULT_PROJECT.status,
-          type: 'PRIMARY',
-        },
-      ],
-    },
-  ]
-  return res.status(200).json({
-    pagination: {
-      count: projects.length,
-      limit: Number(req.query.limit ?? 100),
-      offset: Number(req.query.offset ?? 0),
-    },
-    projects,
-  })
+  return res.status(200).json(result)
 }

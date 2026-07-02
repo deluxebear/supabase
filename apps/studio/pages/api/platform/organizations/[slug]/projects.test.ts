@@ -2,25 +2,61 @@ import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { handler } from './projects'
-import { getOrganizationBySlug } from '@/lib/api/self-platform/organizations'
+import { listOrgProjectsV2 } from '@/lib/api/self-platform/list-user-projects'
 
 vi.hoisted(() => {
   process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
 })
 
-vi.mock('@/lib/api/self-platform/organizations', () => ({
-  getOrganizationBySlug: vi.fn(),
+vi.mock('@/lib/api/self-platform/list-user-projects', () => ({
+  listOrgProjectsV2: vi.fn(),
 }))
 
 beforeEach(() => vi.clearAllMocks())
 
 describe('GET /platform/organizations/{slug}/projects (self-platform)', () => {
-  it('returns the paginated project list for a known org', async () => {
-    vi.mocked(getOrganizationBySlug).mockResolvedValue({
-      id: 1,
-      slug: 'default',
-      name: 'Default Organization',
-    })
+  it('returns the registry-backed paginated project list for a known org', async () => {
+    vi.mocked(listOrgProjectsV2).mockResolvedValue({
+      pagination: { count: 2, limit: 100, offset: 0 },
+      projects: [
+        {
+          ref: 'proj-a',
+          organization_slug: 'acme',
+          is_branch: false,
+          preview_branch_refs: [],
+          databases: [{ identifier: 'proj-a', type: 'PRIMARY' }],
+        },
+        {
+          ref: 'proj-b',
+          organization_slug: 'acme',
+          is_branch: false,
+          preview_branch_refs: [],
+          databases: [{ identifier: 'proj-b', type: 'PRIMARY' }],
+        },
+      ],
+    } as any)
+    const { req, res } = createMocks({ method: 'GET', query: { slug: 'acme' } })
+    await handler(req as any, res as any)
+    expect(listOrgProjectsV2).toHaveBeenCalledWith('acme', 100, 0)
+    expect(res._getStatusCode()).toBe(200)
+    const body = res._getJSONData()
+    expect(body.pagination).toEqual({ count: 2, limit: 100, offset: 0 })
+    expect(body.projects).toHaveLength(2)
+  })
+
+  it('falls back to the single default project when the org registry is empty', async () => {
+    vi.mocked(listOrgProjectsV2).mockResolvedValue({
+      pagination: { count: 1, limit: 100, offset: 0 },
+      projects: [
+        {
+          ref: 'default',
+          organization_slug: 'default',
+          is_branch: false,
+          preview_branch_refs: [],
+          databases: [{ identifier: 'default', type: 'PRIMARY' }],
+        },
+      ],
+    } as any)
     const { req, res } = createMocks({ method: 'GET', query: { slug: 'default' } })
     await handler(req as any, res as any)
     expect(res._getStatusCode()).toBe(200)
@@ -36,7 +72,7 @@ describe('GET /platform/organizations/{slug}/projects (self-platform)', () => {
   })
 
   it('returns 404 for an unknown org slug', async () => {
-    vi.mocked(getOrganizationBySlug).mockResolvedValue(null)
+    vi.mocked(listOrgProjectsV2).mockResolvedValue(null)
     const { req, res } = createMocks({ method: 'GET', query: { slug: 'nope' } })
     await handler(req as any, res as any)
     expect(res._getStatusCode()).toBe(404)
