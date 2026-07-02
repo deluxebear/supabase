@@ -46,6 +46,8 @@ const applyAndTrackMigrationsQuery = (query: string, name?: string) => {
 
 export type ListMigrationVersionsOptions = {
   headers?: HeadersInit
+  // [self-platform] Registry ref to run against the resolved project's DB.
+  projectRef?: string
 }
 
 /**
@@ -55,12 +57,14 @@ export type ListMigrationVersionsOptions = {
  */
 export async function listMigrationVersions({
   headers,
+  projectRef,
 }: ListMigrationVersionsOptions): Promise<WrappedResult<ListMigrationsResult[]>> {
   assertSelfHosted()
 
   const { data, error } = await executeQuery<ListMigrationsResult>({
     query: listMigrationVersionsQuery(),
     headers,
+    projectRef,
   })
 
   if (error) {
@@ -79,6 +83,8 @@ export type ApplyAndTrackMigrationsOptions = {
   query: string
   name?: string
   headers?: HeadersInit
+  // [self-platform] Registry ref to run against the resolved project's DB.
+  projectRef?: string
 }
 
 /**
@@ -90,12 +96,14 @@ export async function applyAndTrackMigrations<T = unknown>({
   query,
   name,
   headers,
+  projectRef,
 }: ApplyAndTrackMigrationsOptions): Promise<WrappedResult<T[]>> {
   assertSelfHosted()
 
   const initializeResponse = await executeQuery<void>({
     query: initializeHistoryTableQuery(),
     headers,
+    projectRef,
   })
 
   if (initializeResponse.error) {
@@ -105,6 +113,7 @@ export async function applyAndTrackMigrations<T = unknown>({
   const applyAndTrackResponse = await executeQuery<T>({
     query: applyAndTrackMigrationsQuery(query, name),
     headers,
+    projectRef,
   })
 
   return applyAndTrackResponse
