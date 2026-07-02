@@ -161,7 +161,7 @@ describe('api/self-hosted/settings', () => {
       ])
     })
 
-    it('uses resolved app_config endpoint/storage_endpoint from supabaseUrl', () => {
+    it('uses resolved app_config endpoint/storage_endpoint as a bare host derived from supabaseUrl', () => {
       const s = getProjectSettings({
         ref: 'proj-b',
         name: 'B',
@@ -184,11 +184,44 @@ describe('api/self-hosted/settings', () => {
         secretKey: null,
       } as any)
 
-      expect(s.app_config?.endpoint).toBe('http://kong-b:8000')
-      expect(s.app_config?.storage_endpoint).toBe('http://kong-b:8000')
+      // [self-platform] CRITICAL: endpoint/storage_endpoint must be a bare host
+      // (no scheme) — consumers build `${protocol}://${endpoint}` themselves.
+      // Embedding the full supabaseUrl here produced `http://http://...`.
+      expect(s.app_config?.endpoint).not.toContain('://')
+      expect(s.app_config?.endpoint).toBe('kong-b:8000')
+      expect(s.app_config?.storage_endpoint).toBe('kong-b:8000')
+      expect(s.app_config?.protocol).toBe('http')
       expect(s.cloud_provider).toBe('AWS')
       expect(s.region).toBe('local')
       expect(s.status).toBe('ACTIVE_HEALTHY')
+    })
+
+    it('falls back to the global endpoint/protocol when resolved.supabaseUrl is empty/invalid', () => {
+      const s = getProjectSettings({
+        ref: 'default',
+        name: 'Default Project',
+        dbHost: 'db-default',
+        dbPort: 5432,
+        dbName: 'postgres',
+        dbUser: 'supabase_admin',
+        region: 'local',
+        cloudProvider: 'AWS',
+        supabaseUrl: '',
+        restUrl: '',
+        jwtSecret: 'JWT-DEFAULT',
+        anonKey: 'ANON-DEFAULT',
+        serviceKey: 'SVC-DEFAULT',
+        pgConnEncrypted: '',
+        pgConnReadOnlyEncrypted: '',
+        organizationId: null,
+        status: 'ACTIVE_HEALTHY',
+        publishableKey: null,
+        secretKey: null,
+      } as any)
+
+      expect(s.app_config?.endpoint).toBe('localhost:8000')
+      expect(s.app_config?.storage_endpoint).toBe('localhost:8000')
+      expect(s.app_config?.protocol).toBe('http')
     })
 
     it('still calls assertSelfHosted when resolved is provided', () => {

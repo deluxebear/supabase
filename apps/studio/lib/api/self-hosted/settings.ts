@@ -27,12 +27,30 @@ export function getProjectSettings(resolved?: ResolvedConnection) {
   assertSelfHosted()
 
   if (resolved) {
+    // [self-platform] app_config.endpoint/storage_endpoint must be a BARE
+    // HOST (no scheme) — consumers build `${protocol}://${endpoint}`
+    // themselves (see data/config/project-endpoint-query.ts). resolved.supabaseUrl
+    // is a FULL url (e.g. http://localhost:8100), so derive both the host and
+    // the protocol from it instead of embedding the full url as the endpoint
+    // and reusing the unrelated global PROJECT_ENDPOINT_PROTOCOL. Falls back
+    // to the global env values if resolved.supabaseUrl is empty/invalid (e.g.
+    // the default-fallback connection when SUPABASE_URL is unset).
+    let endpoint = PROJECT_ENDPOINT
+    let protocol = PROJECT_ENDPOINT_PROTOCOL
+    try {
+      const u = new URL(resolved.supabaseUrl)
+      endpoint = u.host
+      protocol = u.protocol.replace(':', '')
+    } catch {
+      // resolved.supabaseUrl empty/invalid — keep the global-env fallback above.
+    }
+
     return {
       app_config: {
         db_schema: 'public',
-        endpoint: resolved.supabaseUrl,
-        storage_endpoint: resolved.supabaseUrl,
-        protocol: PROJECT_ENDPOINT_PROTOCOL,
+        endpoint,
+        storage_endpoint: endpoint,
+        protocol,
       },
       cloud_provider: resolved.cloudProvider,
       db_dns_name: '-',
