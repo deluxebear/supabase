@@ -4,6 +4,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { IS_PLATFORM } from '../constants'
 import { IS_SELF_PLATFORM } from '../constants/self-platform'
 import { apiAuthenticate } from './apiAuthenticate'
+import { ProjectNotFound } from './self-platform/resolve-connection'
 import { ResponseError, ResponseFailure } from '@/types'
 
 export function isResponseOk<T>(response: T | ResponseFailure | undefined): response is T {
@@ -62,6 +63,12 @@ async function apiWrapper(
 
     return await handler(req, res, claims) // [self-platform] await so async handler rejections hit the catch below
   } catch (error) {
+    // [self-platform] Registry miss thrown by resolveProjectConnection maps
+    // to 404 wherever a route lets it propagate (same body shape as the
+    // in-route mappings in the M2 Task 6/7 handlers).
+    if (error instanceof ProjectNotFound) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
     return res.status(500).json({ error })
   }
 }
