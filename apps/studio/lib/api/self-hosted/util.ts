@@ -10,12 +10,15 @@ import {
   POSTGRES_USER_READ_WRITE,
 } from './constants'
 import { IS_PLATFORM } from '@/lib/constants'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 /**
  * Asserts that the current environment is self-hosted.
+ * [self-platform] Self-platform builds run IS_PLATFORM=true against the
+ * local single-project stack, so they count as self-hosted here.
  */
 export function assertSelfHosted() {
-  if (IS_PLATFORM) {
+  if (IS_PLATFORM && !IS_SELF_PLATFORM) {
     throw new Error('This function can only be called in self-hosted environments')
   }
 }
