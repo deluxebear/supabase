@@ -30,8 +30,6 @@ export interface PlatformProjectRow {
 }
 
 type ProjectDetailResponse = components['schemas']['ProjectDetailResponse']
-type DatabaseDetailResponse = components['schemas']['DatabaseDetailResponse']
-type ProjectSettingsResponse = components['schemas']['ProjectSettingsResponse']
 
 export const PROJECT_SELECT_COLUMNS = `
   id, ref, organization_id, name, status, cloud_provider, region,
@@ -88,58 +86,5 @@ export function toProjectDetailResponse(
     status: row.status as ProjectDetailResponse['status'],
     subscription_id: '',
     updated_at: '2021-08-02T06:40:40.646Z',
-  }
-}
-
-export function toDatabaseDetailResponse(
-  row: PlatformProjectRow,
-  connEnc: string,
-  connRoEnc: string
-): DatabaseDetailResponse {
-  return {
-    cloud_provider: 'AWS',
-    connectionString: connEnc,
-    connection_string_read_only: connRoEnc,
-    db_host: row.db_host,
-    db_name: row.db_name,
-    db_port: row.db_port,
-    db_user: row.db_user,
-    identifier: row.ref,
-    inserted_at: '2021-08-02T06:40:40.646Z',
-    region: row.region,
-    restUrl: row.rest_url,
-    size: '',
-    status: row.status as DatabaseDetailResponse['status'],
-  }
-}
-
-export function toProjectSettingsResponse(
-  row: PlatformProjectRow,
-  decrypted: { jwtSecret: string; anonKey: string; serviceKey: string }
-): ProjectSettingsResponse {
-  return {
-    app_config: {
-      db_schema: 'public',
-      endpoint: row.kong_url,
-      storage_endpoint: row.kong_url,
-    },
-    cloud_provider: row.cloud_provider,
-    db_dns_name: '-',
-    db_host: row.db_host,
-    db_ip_addr_config: 'legacy',
-    db_name: row.db_name,
-    db_port: row.db_port,
-    db_user: row.db_user,
-    inserted_at: '2021-08-02T06:40:40.646Z',
-    jwt_secret: decrypted.jwtSecret,
-    name: row.name,
-    ref: row.ref,
-    region: row.region,
-    service_api_keys: [
-      { api_key: decrypted.anonKey, name: 'anon key', tags: 'anon' },
-      { api_key: decrypted.serviceKey, name: 'service_role key', tags: 'service_role' },
-    ],
-    ssl_enforced: false,
-    status: row.status,
   }
 }

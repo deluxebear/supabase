@@ -23,7 +23,10 @@ const resolved = {
   restUrl: 'http://kong-b:8000/rest/v1/',
   region: 'local',
   status: 'ACTIVE_HEALTHY',
-  cloudProvider: 'AWS',
+  // Deliberately distinct from the self-hosted branch's hardcoded 'AWS', to
+  // prove the resolved branch reads cloud_provider from the registry row
+  // (via ResolvedConnection.cloudProvider) rather than hardcoding it.
+  cloudProvider: 'FLY',
 }
 beforeEach(() => vi.clearAllMocks())
 
@@ -42,5 +45,15 @@ describe('GET /platform/projects/[ref]/databases (self-platform)', () => {
       db_port: 5432,
       status: 'ACTIVE_HEALTHY',
     })
+  })
+
+  // [self-platform] CLEANUP — row-source-of-truth: cloud_provider must come
+  // from the resolved connection, not be hardcoded to 'AWS'.
+  it('uses the resolved connection cloud_provider, not a hardcoded value', async () => {
+    vi.mocked(resolveProjectConnection).mockResolvedValue(resolved as any)
+    const { req, res } = createMocks({ method: 'GET', query: { ref: 'proj-b' } })
+    await handler(req as any, res as any)
+    const body = res._getJSONData()
+    expect(body[0].cloud_provider).toBe('FLY')
   })
 })

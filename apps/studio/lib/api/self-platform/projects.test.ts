@@ -1,13 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { executePlatformQuery } from './db'
-import {
-  getProjectByRef,
-  listProjectsByOrgId,
-  toDatabaseDetailResponse,
-  toProjectDetailResponse,
-  toProjectSettingsResponse,
-} from './projects'
+import { getProjectByRef, listProjectsByOrgId, toProjectDetailResponse } from './projects'
 
 vi.mock('./db', () => ({ executePlatformQuery: vi.fn() }))
 
@@ -66,29 +60,5 @@ describe('mappers', () => {
       cloud_provider: 'AWS',
       region: 'local',
     })
-  })
-  it('toDatabaseDetailResponse uses identifier=ref + both encrypted conn strings', () => {
-    const res = toDatabaseDetailResponse(row, 'ENC', 'ENC_RO')
-    expect(res).toMatchObject({
-      identifier: 'proj-b',
-      db_host: 'db-b',
-      db_port: 5432,
-      connectionString: 'ENC',
-      connection_string_read_only: 'ENC_RO',
-      status: 'ACTIVE_HEALTHY',
-    })
-  })
-  it('toProjectSettingsResponse builds service_api_keys from decrypted values', () => {
-    const res = toProjectSettingsResponse(row, {
-      jwtSecret: 'JWT',
-      anonKey: 'ANON',
-      serviceKey: 'SVC',
-    })
-    expect(res.jwt_secret).toBe('JWT')
-    expect(res.service_api_keys).toEqual([
-      { api_key: 'ANON', name: 'anon key', tags: 'anon' },
-      { api_key: 'SVC', name: 'service_role key', tags: 'service_role' },
-    ])
-    expect(res).toMatchObject({ ref: 'proj-b', db_host: 'db-b', db_port: 5432 })
   })
 })

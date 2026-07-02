@@ -50,7 +50,12 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
     const conn = await resolveProjectConnection(ref)
     const body: ResponseData = [
       {
-        cloud_provider: 'AWS',
+        // [self-platform] row-source-of-truth: use the registry's cloud_provider
+        // for a resolved project (the self-hosted branch above has no `conn` /
+        // registry row, so it stays the hardcoded 'AWS'). Narrows the row's
+        // `text` column -> the DatabaseDetailResponse cloud_provider enum;
+        // sanctioned `as X['cloud_provider']` exception (not `as any`).
+        cloud_provider: conn.cloudProvider as ResponseData[number]['cloud_provider'],
         connectionString: conn.pgConnEncrypted,
         connection_string_read_only: conn.pgConnReadOnlyEncrypted,
         db_host: conn.dbHost,
