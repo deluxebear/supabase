@@ -1,4 +1,5 @@
 volumes/db/data
+volumes/platform/db/data
 volumes/storage
 .env
 test.http

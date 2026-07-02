@@ -1,0 +1,60 @@
+# Platform control-plane mini-stack (F9+F16 M1): metadata db + dashboard auth.
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.platform.yml up -d platform-db platform-auth
+# Requires in .env: PLATFORM_POSTGRES_PASSWORD, PLATFORM_JWT_SECRET (>= 32 chars)
+
+services:
+  platform-db:
+    container_name: supabase-platform-db
+    image: postgres:17-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres', '-d', 'platform']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    environment:
+      POSTGRES_DB: platform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${PLATFORM_POSTGRES_PASSWORD}
+    ports:
+      - '${PLATFORM_POSTGRES_HOST_PORT:-5433}:5432'
+    volumes:
+      - ./volumes/platform/db/data:/var/lib/postgresql/data:Z
+      - ./volumes/platform/migrations:/docker-entrypoint-initdb.d:Z
+
+  platform-auth:
+    container_name: supabase-platform-auth
+    image: supabase/gotrue:v2.189.0
+    restart: unless-stopped
+    depends_on:
+      platform-db:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:9999/health']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - '${PLATFORM_GOTRUE_HOST_PORT:-8110}:9999'
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      API_EXTERNAL_URL: http://localhost:${PLATFORM_GOTRUE_HOST_PORT:-8110}
+
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://postgres:${PLATFORM_POSTGRES_PASSWORD}@platform-db:5432/platform
+
+      GOTRUE_SITE_URL: ${PLATFORM_SITE_URL:-http://localhost:8082}
+      GOTRUE_URI_ALLOW_LIST: ${PLATFORM_SITE_URL:-http://localhost:8082}/**
+      GOTRUE_DISABLE_SIGNUP: 'false'
+
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_EXP: ${PLATFORM_JWT_EXPIRY:-3600}
+      GOTRUE_JWT_SECRET: ${PLATFORM_JWT_SECRET}
+
+      # M1: no SMTP — email signup with autoconfirm (spec §4.1; tighten in M3)
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: 'true'
+      GOTRUE_MAILER_AUTOCONFIRM: 'true'
