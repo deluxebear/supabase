@@ -26,12 +26,18 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(400).json({ message: 'email and password are required' })
   }
 
-  const response = await fetch(`${PLATFORM_GOTRUE_URL}/signup`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  })
-  const result = await response.json()
+  let response: Response
+  let result: any
+  try {
+    response = await fetch(`${PLATFORM_GOTRUE_URL}/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
+    result = await response.json()
+  } catch {
+    return res.status(502).json({ message: 'Signup failed: platform auth service unreachable' })
+  }
 
   if (!response.ok) {
     const message =

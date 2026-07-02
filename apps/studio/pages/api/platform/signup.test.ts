@@ -45,4 +45,33 @@ describe('POST /platform/signup (self-platform)', () => {
     expect(res._getStatusCode()).toBe(422)
     expect(res._getJSONData()).toEqual({ message: 'User already registered' })
   })
+
+  it('returns 502 { message } when gotrue is unreachable (fetch rejects)', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('fetch failed')))
+    const { req, res } = createMocks({
+      method: 'POST',
+      body: { email: 'a@b.c', password: 'pw', hcaptchaToken: null, redirectTo: '/' },
+    })
+    await handler(req as any, res as any)
+    expect(res._getStatusCode()).toBe(502)
+    expect(res._getJSONData()).toEqual({
+      message: 'Signup failed: platform auth service unreachable',
+    })
+  })
+
+  it('returns 502 { message } when gotrue responds with a non-JSON body', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('<html>502 Bad Gateway</html>', { status: 502 }))
+    )
+    const { req, res } = createMocks({
+      method: 'POST',
+      body: { email: 'a@b.c', password: 'pw', hcaptchaToken: null, redirectTo: '/' },
+    })
+    await handler(req as any, res as any)
+    expect(res._getStatusCode()).toBe(502)
+    expect(res._getJSONData()).toEqual({
+      message: 'Signup failed: platform auth service unreachable',
+    })
+  })
 })
