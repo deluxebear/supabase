@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
-import { selfHostedSupabaseAdmin as supabase } from '@/lib/api/self-hosted-admin'
+import { getAdminClientForRef } from '@/lib/api/self-hosted-admin'
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
@@ -21,7 +21,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-const handleGet = async (_req: NextApiRequest, res: NextApiResponse) => {
+const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
+  // [self-platform] Per-ref storage client (global on plain self-hosted).
+  const supabase = await getAdminClientForRef(req.query.ref)
   const { data, error } = await supabase.storage.vectors.listBuckets()
   if (error) return res.status(500).json({ error: { message: error.message } })
 
@@ -29,6 +31,8 @@ const handleGet = async (_req: NextApiRequest, res: NextApiResponse) => {
 }
 
 const handlePost = async (req: NextApiRequest, res: NextApiResponse) => {
+  // [self-platform] Per-ref storage client (global on plain self-hosted).
+  const supabase = await getAdminClientForRef(req.query.ref)
   const { bucketName } = req.body
   const { data, error } = await supabase.storage.vectors.createBucket(bucketName)
   if (error) return res.status(400).json({ error: { message: error.message } })

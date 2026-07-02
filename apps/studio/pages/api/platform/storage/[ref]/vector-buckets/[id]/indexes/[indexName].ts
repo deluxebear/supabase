@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
-import { selfHostedSupabaseAdmin as supabase } from '@/lib/api/self-hosted-admin'
+import { getAdminClientForRef } from '@/lib/api/self-hosted-admin'
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
@@ -19,6 +19,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 const handleDelete = async (req: NextApiRequest, res: NextApiResponse) => {
+  // [self-platform] Per-ref storage client (global on plain self-hosted).
+  const supabase = await getAdminClientForRef(req.query.ref)
   const { id, indexName } = req.query
 
   const { data, error } = await supabase.storage.vectors

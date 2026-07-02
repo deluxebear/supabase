@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
-import { selfHostedSupabaseAdmin as supabase } from '@/lib/api/self-hosted-admin'
+import { getAdminContextForRef } from '@/lib/api/self-hosted-admin'
 
 const wrappedHandler = (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 
@@ -18,6 +18,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 }
 
 const handlePost = async (req: NextApiRequest, res: NextApiResponse) => {
+  // [self-platform] Per-ref storage client + public base URL (global on plain self-hosted).
+  const { client: supabase, publicBaseUrl } = await getAdminContextForRef(req.query.ref)
   const { id } = req.query
   const { path, expiresIn = 60 * 60 * 24 } = req.body
 
@@ -29,7 +31,9 @@ const handlePost = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ error: { message: error.message } })
   }
 
-  const parsed = new URL(process.env.SUPABASE_PUBLIC_URL!)
+  // change the domain name to the client-reachable base URL since the
+  // service-internal URL is not accessible from the client
+  const parsed = new URL(publicBaseUrl)
   const remapped = (data ?? []).map((item) => {
     if (!item.signedUrl) return item
     const signedUrl = new URL(item.signedUrl)

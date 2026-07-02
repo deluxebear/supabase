@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
-import { selfHostedSupabaseAdmin as supabase } from '@/lib/api/self-hosted-admin'
+import { getAdminClientForRef } from '@/lib/api/self-hosted-admin'
 
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 
@@ -22,6 +22,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 }
 
 const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
+  // [self-platform] Per-ref storage client (global on plain self-hosted).
+  const supabase = await getAdminClientForRef(req.query.ref)
   const { id } = req.query
 
   const { data, error } = await supabase.storage.getBucket(id as string)
@@ -33,6 +35,8 @@ const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
 }
 
 const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
+  // [self-platform] Per-ref storage client (global on plain self-hosted).
+  const supabase = await getAdminClientForRef(req.query.ref)
   const { id } = req.query
   const {
     public: isPublicBucket,
@@ -53,6 +57,8 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
 }
 
 const handleDelete = async (req: NextApiRequest, res: NextApiResponse) => {
+  // [self-platform] Per-ref storage client (global on plain self-hosted).
+  const supabase = await getAdminClientForRef(req.query.ref)
   const { id } = req.query
 
   const { data, error } = await supabase.storage.deleteBucket(id as string)
