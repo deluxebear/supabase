@@ -99,11 +99,16 @@ export function applyRevealToApiKey(key: NonPlatformApiKey, reveal: boolean): No
   return { ...key, api_key: key.prefix }
 }
 
+// [self-platform] Optional `resolved` param mirrors getNonPlatformApiKeys:
+// with it, looks up the per-project key from a registry-resolved connection
+// (self-platform multi-project). Without it, the historical global-env path —
+// byte identical to M1 — keeps plain self-hosted zero-break.
 export function getNonPlatformApiKeyById(
   id: string,
-  reveal: boolean
+  reveal: boolean,
+  resolved?: Parameters<typeof getNonPlatformApiKeys>[0]
 ): NonPlatformApiKey | undefined {
-  const key = getNonPlatformApiKeys().find((entry) => entry.id === id)
+  const key = getNonPlatformApiKeys(resolved).find((entry) => entry.id === id)
   if (!key) return undefined
 
   return applyRevealToApiKey(key, reveal)

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { getNonPlatformApiKeys, parseRevealQuery } from './api-keys'
+import { getNonPlatformApiKeyById, getNonPlatformApiKeys, parseRevealQuery } from './api-keys'
 
 vi.mock('./util', () => ({
   assertSelfHosted: vi.fn(),
@@ -198,6 +198,56 @@ describe('api/self-hosted/api-keys', () => {
         name: 'service_role',
         api_key: 'PROJECT-SERVICE',
       })
+    })
+  })
+
+  // [self-platform] CRITICAL 2 — the by-id lookup must thread the resolved
+  // connection through to getNonPlatformApiKeys, not fall back to the
+  // no-arg (global-env) overload.
+  describe('getNonPlatformApiKeyById', () => {
+    it('returns the global-env key when no resolved connection is given (M1 parity)', () => {
+      vi.stubEnv('SUPABASE_SERVICE_KEY', 'global-service')
+
+      const key = getNonPlatformApiKeyById('service_role', true)
+
+      expect(key).toMatchObject({ id: 'service_role', api_key: 'global-service' })
+    })
+
+    it('returns the RESOLVED project key, not the global env key, when resolved is given', () => {
+      // Global env set to a distinct value to prove it is NOT returned.
+      vi.stubEnv('SUPABASE_SERVICE_KEY', 'global-service')
+
+      const key = getNonPlatformApiKeyById('service_role', true, {
+        anonKey: 'ANON-B',
+        serviceKey: 'PROJECT-SERVICE',
+        publishableKey: null,
+        secretKey: null,
+      })
+
+      expect(key).toMatchObject({ id: 'service_role', api_key: 'PROJECT-SERVICE' })
+      expect(key?.api_key).not.toBe('global-service')
+    })
+
+    it('masks the resolved secret key when reveal is false', () => {
+      const key = getNonPlatformApiKeyById('secret', false, {
+        anonKey: 'ANON-B',
+        serviceKey: 'SVC-B',
+        publishableKey: null,
+        secretKey: 'sb_secret_b_abcdefghijklmnop',
+      })
+
+      expect(key).toMatchObject({ id: 'secret', api_key: 'sb_secret_b_abc' })
+    })
+
+    it('returns undefined for an unknown id with a resolved connection', () => {
+      const key = getNonPlatformApiKeyById('missing', true, {
+        anonKey: 'ANON-B',
+        serviceKey: 'SVC-B',
+        publishableKey: null,
+        secretKey: null,
+      })
+
+      expect(key).toBeUndefined()
     })
   })
 
