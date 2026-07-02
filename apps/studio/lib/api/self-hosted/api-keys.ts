@@ -36,8 +36,8 @@ export function getNonPlatformApiKeys(resolved?: {
 }): NonPlatformApiKey[] {
   assertSelfHosted()
 
-  const anon = resolved?.anonKey ?? process.env.SUPABASE_ANON_KEY ?? ''
-  const service = resolved?.serviceKey ?? process.env.SUPABASE_SERVICE_KEY ?? ''
+  const anon = resolved ? resolved.anonKey : (process.env.SUPABASE_ANON_KEY ?? '')
+  const service = resolved ? resolved.serviceKey : (process.env.SUPABASE_SERVICE_KEY ?? '')
 
   const keys: NonPlatformApiKey[] = [
     {
@@ -60,7 +60,7 @@ export function getNonPlatformApiKeys(resolved?: {
     },
   ]
 
-  const publishableKey = resolved?.publishableKey ?? process.env.SUPABASE_PUBLISHABLE_KEY
+  const publishableKey = resolved ? resolved.publishableKey : process.env.SUPABASE_PUBLISHABLE_KEY
   if (publishableKey) {
     keys.push({
       name: 'publishable',
@@ -73,7 +73,7 @@ export function getNonPlatformApiKeys(resolved?: {
     })
   }
 
-  const secretKey = resolved?.secretKey ?? process.env.SUPABASE_SECRET_KEY
+  const secretKey = resolved ? resolved.secretKey : process.env.SUPABASE_SECRET_KEY
   if (secretKey) {
     keys.push({
       name: 'secret',

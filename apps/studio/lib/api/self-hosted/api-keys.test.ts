@@ -171,6 +171,34 @@ describe('api/self-hosted/api-keys', () => {
 
       expect(mockAssertSelfHosted).toHaveBeenCalled()
     })
+
+    it('does not expose global env keys when resolved project has null publishable/secret keys', () => {
+      // Global env is set to non-empty values to test isolation.
+      vi.stubEnv('SUPABASE_ANON_KEY', 'global-anon')
+      vi.stubEnv('SUPABASE_SERVICE_KEY', 'global-service')
+      vi.stubEnv('SUPABASE_PUBLISHABLE_KEY', 'GLOBAL_PUB')
+      vi.stubEnv('SUPABASE_SECRET_KEY', 'GLOBAL_SEC')
+
+      const keys = getNonPlatformApiKeys({
+        anonKey: 'PROJECT-ANON',
+        serviceKey: 'PROJECT-SERVICE',
+        publishableKey: null,
+        secretKey: null,
+      })
+
+      // Should only have the two legacy keys from resolved project, not global publishable/secret
+      expect(keys).toHaveLength(2)
+      expect(keys.map((k) => k.api_key)).not.toContain('GLOBAL_PUB')
+      expect(keys.map((k) => k.api_key)).not.toContain('GLOBAL_SEC')
+      expect(keys[0]).toMatchObject({
+        name: 'anon',
+        api_key: 'PROJECT-ANON',
+      })
+      expect(keys[1]).toMatchObject({
+        name: 'service_role',
+        api_key: 'PROJECT-SERVICE',
+      })
+    })
   })
 
   describe('parseRevealQuery', () => {
