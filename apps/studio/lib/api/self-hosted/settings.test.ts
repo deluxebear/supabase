@@ -127,4 +127,94 @@ describe('api/self-hosted/settings', () => {
       expect(settings.inserted_at).toBe('2021-08-02T06:40:40.646Z')
     })
   })
+
+  // [self-platform] resolved-connection branch — self-platform multi-project.
+  describe('getProjectSettings with resolved connection', () => {
+    it('uses resolved project values when provided', () => {
+      const s = getProjectSettings({
+        ref: 'proj-b',
+        name: 'B',
+        dbHost: 'db-b',
+        dbPort: 5432,
+        dbName: 'postgres',
+        dbUser: 'supabase_admin',
+        region: 'local',
+        cloudProvider: 'AWS',
+        supabaseUrl: 'http://kong-b:8000',
+        restUrl: 'http://kong-b:8000/rest/v1/',
+        jwtSecret: 'JWT-B',
+        anonKey: 'ANON-B',
+        serviceKey: 'SVC-B',
+        pgConnEncrypted: '',
+        pgConnReadOnlyEncrypted: '',
+        organizationId: 1,
+        status: 'ACTIVE_HEALTHY',
+        publishableKey: null,
+        secretKey: null,
+      } as any)
+      expect(s.ref).toBe('proj-b')
+      expect(s.db_host).toBe('db-b')
+      expect(s.jwt_secret).toBe('JWT-B')
+      expect(s.service_api_keys).toEqual([
+        { api_key: 'ANON-B', name: 'anon key', tags: 'anon' },
+        { api_key: 'SVC-B', name: 'service_role key', tags: 'service_role' },
+      ])
+    })
+
+    it('uses resolved app_config endpoint/storage_endpoint from supabaseUrl', () => {
+      const s = getProjectSettings({
+        ref: 'proj-b',
+        name: 'B',
+        dbHost: 'db-b',
+        dbPort: 5432,
+        dbName: 'postgres',
+        dbUser: 'supabase_admin',
+        region: 'local',
+        cloudProvider: 'AWS',
+        supabaseUrl: 'http://kong-b:8000',
+        restUrl: 'http://kong-b:8000/rest/v1/',
+        jwtSecret: 'JWT-B',
+        anonKey: 'ANON-B',
+        serviceKey: 'SVC-B',
+        pgConnEncrypted: '',
+        pgConnReadOnlyEncrypted: '',
+        organizationId: 1,
+        status: 'ACTIVE_HEALTHY',
+        publishableKey: null,
+        secretKey: null,
+      } as any)
+
+      expect(s.app_config?.endpoint).toBe('http://kong-b:8000')
+      expect(s.app_config?.storage_endpoint).toBe('http://kong-b:8000')
+      expect(s.cloud_provider).toBe('AWS')
+      expect(s.region).toBe('local')
+      expect(s.status).toBe('ACTIVE_HEALTHY')
+    })
+
+    it('still calls assertSelfHosted when resolved is provided', () => {
+      getProjectSettings({
+        ref: 'proj-b',
+        name: 'B',
+        dbHost: 'db-b',
+        dbPort: 5432,
+        dbName: 'postgres',
+        dbUser: 'supabase_admin',
+        region: 'local',
+        cloudProvider: 'AWS',
+        supabaseUrl: 'http://kong-b:8000',
+        restUrl: 'http://kong-b:8000/rest/v1/',
+        jwtSecret: 'JWT-B',
+        anonKey: 'ANON-B',
+        serviceKey: 'SVC-B',
+        pgConnEncrypted: '',
+        pgConnReadOnlyEncrypted: '',
+        organizationId: 1,
+        status: 'ACTIVE_HEALTHY',
+        publishableKey: null,
+        secretKey: null,
+      } as any)
+
+      expect(mockAssertSelfHosted).toHaveBeenCalled()
+    })
+  })
 })

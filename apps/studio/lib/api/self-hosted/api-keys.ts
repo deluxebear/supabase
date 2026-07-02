@@ -24,13 +24,25 @@ export function parseRevealQuery(value: string | string[] | undefined): boolean 
   return raw === 'true'
 }
 
-export function getNonPlatformApiKeys(): NonPlatformApiKey[] {
+// [self-platform] Optional `resolved` param: with it, uses the
+// per-project keys from a registry-resolved connection (self-platform
+// multi-project). Without it, the historical global-env path — byte
+// identical to M1 — keeps plain self-hosted zero-break.
+export function getNonPlatformApiKeys(resolved?: {
+  anonKey: string
+  serviceKey: string
+  publishableKey: string | null
+  secretKey: string | null
+}): NonPlatformApiKey[] {
   assertSelfHosted()
+
+  const anon = resolved?.anonKey ?? process.env.SUPABASE_ANON_KEY ?? ''
+  const service = resolved?.serviceKey ?? process.env.SUPABASE_SERVICE_KEY ?? ''
 
   const keys: NonPlatformApiKey[] = [
     {
       name: 'anon',
-      api_key: process.env.SUPABASE_ANON_KEY ?? '',
+      api_key: anon,
       id: 'anon',
       type: 'legacy',
       hash: '',
@@ -39,7 +51,7 @@ export function getNonPlatformApiKeys(): NonPlatformApiKey[] {
     },
     {
       name: 'service_role',
-      api_key: process.env.SUPABASE_SERVICE_KEY ?? '',
+      api_key: service,
       id: 'service_role',
       type: 'legacy',
       hash: '',
@@ -48,7 +60,7 @@ export function getNonPlatformApiKeys(): NonPlatformApiKey[] {
     },
   ]
 
-  const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY
+  const publishableKey = resolved?.publishableKey ?? process.env.SUPABASE_PUBLISHABLE_KEY
   if (publishableKey) {
     keys.push({
       name: 'publishable',
@@ -61,7 +73,7 @@ export function getNonPlatformApiKeys(): NonPlatformApiKey[] {
     })
   }
 
-  const secretKey = process.env.SUPABASE_SECRET_KEY
+  const secretKey = resolved?.secretKey ?? process.env.SUPABASE_SECRET_KEY
   if (secretKey) {
     keys.push({
       name: 'secret',
