@@ -48,6 +48,15 @@
         "NEXT_PUBLIC_ONGOING_INCIDENT",
         // These envs are technically passthrough env vars because they're only used on the server side of Nextjs
         "PLATFORM_PG_META_URL",
+        // [self-platform] Server-side env for the platform control-plane stack
+        // (lib/api/self-platform/constants.ts, secrets.ts).
+        "PLATFORM_POSTGRES_HOST",
+        "PLATFORM_POSTGRES_PORT",
+        "PLATFORM_POSTGRES_DB",
+        "PLATFORM_POSTGRES_USER",
+        "PLATFORM_POSTGRES_PASSWORD",
+        "PLATFORM_GOTRUE_URL",
+        "PLATFORM_ENCRYPTION_KEY",
         "STUDIO_PG_META_URL",
         "PG_META_CRYPTO_KEY",
         "PGRST_DB_SCHEMAS",
@@ -116,6 +125,13 @@
         // to gate Vite-only `import.meta.glob`). Not a real process env var
         // but turbo's `no-undeclared-env-vars` lint flags any `env.SSR` access.
         "SSR",
+        // Read by scripts/i18n/engine.ts (machine-translation tooling, not part
+        // of the app build). Declared here so the studio-package turbo env lint
+        // rule passes even though turbo doesn't directly drive that script.
+        "I18N_TRANSLATE_ENDPOINT",
+        "I18N_TRANSLATE_API_KEY",
+        "I18N_TRANSLATE_MODEL",
+        "I18N_TRANSLATE_BATCH",
       ],
       "passThroughEnv": [
         "CURRENT_CLI_VERSION",
