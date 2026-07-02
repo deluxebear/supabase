@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildRowParams, buildUpsertSql, parseArgs, resolveInputFromEnv } from './register-project'
+import {
+  assertRequiredInput,
+  buildRowParams,
+  buildUpsertSql,
+  parseArgs,
+  resolveInputFromEnv,
+} from './register-project'
 
 describe('parseArgs', () => {
   it('parses register with flags', () => {
@@ -63,17 +69,21 @@ describe('buildRowParams', () => {
 })
 
 describe('resolveInputFromEnv', () => {
-  it('maps docker env to a register input', () => {
+  it('maps the real docker/.env variable names to a register input', () => {
+    // These are the actual names present in docker/.env (verified via
+    // `grep -E '^(POSTGRES_|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|SUPABASE_|API_EXTERNAL_URL|KONG_)' docker/.env`),
+    // NOT the upstream supabase/supabase names (SUPABASE_ANON_KEY,
+    // SUPABASE_SERVICE_KEY) this used to read.
     const input = resolveInputFromEnv(
       {
         POSTGRES_HOST: 'db',
         POSTGRES_PORT: '5432',
         POSTGRES_DB: 'postgres',
         POSTGRES_PASSWORD: 'pw',
-        SUPABASE_URL: 'http://kong:8000',
-        SUPABASE_PUBLIC_URL: 'http://kong:8000',
-        SUPABASE_ANON_KEY: 'anon',
-        SUPABASE_SERVICE_KEY: 'svc',
+        API_EXTERNAL_URL: 'http://localhost:8100',
+        SUPABASE_PUBLIC_URL: 'http://localhost:8100',
+        ANON_KEY: 'anon',
+        SERVICE_ROLE_KEY: 'svc',
         JWT_SECRET: 'jwt',
       } as any,
       { ref: 'default', org: 'default', name: 'Default Project' }
@@ -86,7 +96,74 @@ describe('resolveInputFromEnv', () => {
       serviceKey: 'svc',
       anonKey: 'anon',
       jwtSecret: 'jwt',
-      kongUrl: 'http://kong:8000',
+      kongUrl: 'http://localhost:8100',
+      restUrl: 'http://localhost:8100/rest/v1/',
     })
+  })
+
+  it('falls back to the upstream supabase/supabase env names when present', () => {
+    const input = resolveInputFromEnv(
+      {
+        SUPABASE_URL: 'http://kong:8000',
+        SUPABASE_ANON_KEY: 'anon-old',
+        SUPABASE_SERVICE_KEY: 'svc-old',
+      } as any,
+      { ref: 'default', org: 'default', name: 'Default Project' }
+    )
+    expect(input).toMatchObject({
+      kongUrl: 'http://kong:8000',
+      anonKey: 'anon-old',
+      serviceKey: 'svc-old',
+    })
+  })
+})
+
+describe('assertRequiredInput', () => {
+  const validInput = {
+    ref: 'default',
+    org: 'default',
+    name: 'Default Project',
+    dbHost: 'db',
+    dbPort: 5432,
+    dbName: 'postgres',
+    dbUser: 'supabase_admin',
+    kongUrl: 'http://localhost:8100',
+    restUrl: 'http://localhost:8100/rest/v1/',
+    dbPass: 'pw',
+    serviceKey: 'svc',
+    anonKey: 'anon',
+    jwtSecret: 'jwt',
+  }
+
+  it('does not throw when every critical field is populated', () => {
+    expect(() => assertRequiredInput(validInput as any)).not.toThrow()
+  })
+
+  it('throws mentioning the missing field when resolveInputFromEnv is given an env missing SERVICE_ROLE_KEY', () => {
+    const input = resolveInputFromEnv(
+      {
+        POSTGRES_HOST: 'db',
+        POSTGRES_PORT: '5432',
+        POSTGRES_DB: 'postgres',
+        POSTGRES_PASSWORD: 'pw',
+        API_EXTERNAL_URL: 'http://localhost:8100',
+        SUPABASE_PUBLIC_URL: 'http://localhost:8100',
+        ANON_KEY: 'anon',
+        // SERVICE_ROLE_KEY intentionally omitted
+        JWT_SECRET: 'jwt',
+      } as any,
+      { ref: 'default', org: 'default', name: 'Default Project' }
+    )
+    expect(() => assertRequiredInput(input)).toThrowError(/serviceKey/)
+  })
+
+  it('throws mentioning every missing field for a fully-empty env', () => {
+    // dbHost always defaults to 'db' inside resolveInputFromEnv (it's the
+    // docker-network hostname, safe to default), so it's excluded here —
+    // every other critical field defaults to '' and must be reported.
+    const input = resolveInputFromEnv({} as any, { ref: '', org: '', name: '' })
+    expect(() => assertRequiredInput(input)).toThrowError(
+      /ref.*org.*name.*kongUrl.*dbPass.*serviceKey.*anonKey.*jwtSecret/
+    )
   })
 })

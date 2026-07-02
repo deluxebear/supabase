@@ -97,13 +97,26 @@ export function buildRowParams(input: RegisterInput, encrypt: (s: string) => str
   ]
 }
 
+// [self-platform] Maps the *actual* docker/.env variable names (see
+// docker/docker-compose.yml + docker/.env.example) to a RegisterInput.
+// SUPABASE_URL/SUPABASE_ANON_KEY/SUPABASE_SERVICE_KEY are NOT present in
+// docker/.env (SUPABASE_URL is only ever hardcoded per-service inside
+// docker-compose.yml); the real stack uses API_EXTERNAL_URL/
+// SUPABASE_PUBLIC_URL and ANON_KEY/SERVICE_ROLE_KEY. Fallbacks to the old
+// names are kept for forwards-compat with hand-rolled .env files that use
+// the upstream supabase/supabase naming.
 export function resolveInputFromEnv(
   env: NodeJS.ProcessEnv,
   base: { ref: string; org: string; name: string }
 ): RegisterInput {
-  const kong = env.SUPABASE_URL || env.SUPABASE_PUBLIC_URL || ''
+  // kongUrl is the browser-facing gateway URL (used by Studio's frontend to
+  // reach the project), NOT the docker-network-internal kong:8000 address.
+  const kong = env.SUPABASE_URL || env.API_EXTERNAL_URL || env.SUPABASE_PUBLIC_URL || ''
   return {
     ...base,
+    // dbHost MUST be the docker-network hostname (e.g. "db") reachable from
+    // the pg-meta container — never localhost/127.0.0.1, which only resolves
+    // to the host running this CLI, not the container network.
     dbHost: env.POSTGRES_HOST || 'db',
     dbPort: parseInt(env.POSTGRES_PORT || '5432', 10),
     dbName: env.POSTGRES_DB || 'postgres',
@@ -112,11 +125,38 @@ export function resolveInputFromEnv(
     kongUrl: kong,
     restUrl: (env.SUPABASE_PUBLIC_URL || kong).replace(/\/$/, '') + '/rest/v1/',
     dbPass: env.POSTGRES_PASSWORD || '',
-    serviceKey: env.SUPABASE_SERVICE_KEY || '',
-    anonKey: env.SUPABASE_ANON_KEY || '',
-    jwtSecret: env.JWT_SECRET || '',
+    serviceKey: env.SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY || '',
+    anonKey: env.ANON_KEY || env.SUPABASE_ANON_KEY || '',
+    jwtSecret: env.JWT_SECRET || env.AUTH_JWT_SECRET || '',
     publishableKey: env.SUPABASE_PUBLISHABLE_KEY || null,
     secretKey: env.SUPABASE_SECRET_KEY || null,
+  }
+}
+
+// [self-platform] Guards both register branches (explicit --flags and
+// --from-current-env) against silently writing empty-string-encrypted
+// secrets. resolveInputFromEnv defaults missing env vars to '', so without
+// this check a misconfigured shell (stack env not sourced) would still
+// exit 0 having registered a project nothing can connect to.
+const REQUIRED_INPUT_FIELDS: Array<[keyof RegisterInput, string]> = [
+  ['ref', 'ref'],
+  ['org', 'org'],
+  ['name', 'name'],
+  ['dbHost', 'dbHost'],
+  ['kongUrl', 'kongUrl'],
+  ['dbPass', 'dbPass'],
+  ['serviceKey', 'serviceKey'],
+  ['anonKey', 'anonKey'],
+  ['jwtSecret', 'jwtSecret'],
+]
+
+export function assertRequiredInput(input: RegisterInput): void {
+  const missing = REQUIRED_INPUT_FIELDS.filter(([key]) => {
+    const value = input[key]
+    return value === undefined || value === null || String(value).trim() === ''
+  }).map(([, label]) => label)
+  if (missing.length) {
+    throw new Error(`missing required field(s): ${missing.join(', ')}`)
   }
 }
 
@@ -209,6 +249,11 @@ export function main(argv = process.argv.slice(2)) {
           secretKey: flags['secret-key'] || null,
         } as RegisterInput
       })()
+  // Belt-and-suspenders: required(flags, [...]) above only checks the
+  // explicit-flags branch. This also catches a misconfigured
+  // --from-current-env (resolveInputFromEnv defaults missing vars to '')
+  // AND anything the explicit branch let through (e.g. a flag set to '').
+  assertRequiredInput(input)
   const { query } = buildUpsertSql()
   psql(
     query,
