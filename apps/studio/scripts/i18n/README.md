@@ -22,29 +22,36 @@
   export I18N_TRANSLATE_MODEL="..."
   ```
 
+  Calling `translate.ts` directly with no `I18N_TRANSLATE_*` configured
+  throws — it requires a working engine. `sync-upstream.sh` (below) guards
+  against this for you; it only invokes `translate.ts` when both
+  `I18N_TRANSLATE_ENDPOINT` and `I18N_TRANSLATE_API_KEY` are set.
+
   **Caveat:** the initial bulk `zh-CN.json` catalog in this fork was produced
   via ad-hoc LLM subagent translation, not through this script (no
   `I18N_TRANSLATE_*` was configured at that time). Going forward, `translate.ts`
-  is the supported path for translating keys added by an upstream sync. If you
-  run `wrap.ts` / `sync-upstream.sh` without the `I18N_TRANSLATE_*` env vars
-  set, `translate.ts` is skipped or has nothing to authenticate with — any
-  newly-wrapped keys simply have no entry in `zh-CN.json` yet, and the runtime
-  i18n provider falls back to the English key text for them until you run
-  `translate.ts` with the env vars configured. Nothing breaks; the app just
-  shows English for untranslated keys in the meantime.
+  is the supported path for translating keys added by an upstream sync. Any
+  newly-wrapped keys that haven't been translated yet simply have no entry in
+  `zh-CN.json`, and the runtime i18n provider falls back to the English key
+  text for them until you run `translate.ts` with the env vars configured.
 
 - **Sync upstream:** `./scripts/i18n/sync-upstream.sh upstream/master`
 
-  This merges the given upstream ref, resolves any conflicts in
+  This verifies the upstream ref exists, merges it, resolves any conflicts in
   `apps/studio/components/**` or `apps/studio/pages/**` `.tsx` files in favor
-  of upstream (`git checkout --theirs`), then re-runs `wrap.ts` (idempotent) so
-  newly-merged upstream strings get wrapped, then re-runs `translate.ts`
-  (incremental) so only the newly-added keys are translated. `zh-CN.json` is
-  fork-only and is never part of the upstream merge, so existing translations
-  are always preserved — but per the caveat above, new keys only get real
-  translations if `I18N_TRANSLATE_*` is set when you run the script; otherwise
-  they fall back to English until you run `translate.ts` later with the env
-  vars configured.
+  of upstream (`git checkout --theirs`, scoped to only the conflicted `.tsx`
+  files — other conflicted file types, e.g. `.ts`/`.css`/`.json`, are left for
+  you to resolve manually so fork-specific changes are never silently
+  discarded), then re-runs `wrap.ts` (idempotent) so newly-merged upstream
+  strings get wrapped.
+
+  It then runs `translate.ts` **only if** `I18N_TRANSLATE_ENDPOINT` and
+  `I18N_TRANSLATE_API_KEY` are both set in the environment. If they aren't,
+  the script prints a warning and skips translation — `zh-CN.json` is left
+  unchanged (existing translations are always preserved either way, since
+  `zh-CN.json` is fork-only and never part of the upstream merge), and any
+  newly-added keys fall back to English until you run `translate.ts` yourself
+  with credentials configured.
 
   The script stops before committing (`git merge --no-commit`) so you can
   review the diff — including the wrap/translate changes — before finalizing
