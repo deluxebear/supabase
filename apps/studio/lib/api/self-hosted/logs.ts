@@ -4,7 +4,9 @@ import { stripIndent } from 'common-tags'
 
 import { WrappedResult } from './types'
 import { assertSelfHosted } from './util'
+import { resolveProjectConnection } from '@/lib/api/self-platform/resolve-connection'
 import { PROJECT_ANALYTICS_URL } from '@/lib/constants/api'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export type RetrieveAnalyticsDataOptions = {
   name: string
@@ -20,6 +22,48 @@ export type AnalyticsResult = {
   [key: string]: any
 }
 
+// [self-platform] Per-ref Logflare target. A registry hit is authoritative:
+// NULL analytics fields mean "not configured" (404), NEVER the global stack.
+export class AnalyticsNotConfigured extends Error {
+  constructor(ref: string) {
+    super(`Analytics is not configured for project: ${ref}`)
+    this.name = 'AnalyticsNotConfigured'
+  }
+}
+
+export type AnalyticsTarget = {
+  // Logflare BASE url, no trailing slash, no /api suffix.
+  baseUrl: string
+  token: string
+  // Logflare's ?project= identifier. A registered stack is a vanilla
+  // self-hosted deployment that identifies itself as 'default' internally
+  // (documented assumption, spec §4.5).
+  projectParam: string
+}
+
+export async function getAnalyticsTarget(
+  ref: string | string[] | undefined
+): Promise<AnalyticsTarget> {
+  if (IS_SELF_PLATFORM) {
+    const conn = await resolveProjectConnection(String(ref))
+    if (conn.row) {
+      if (!conn.logflareUrl || !conn.logflareToken) throw new AnalyticsNotConfigured(conn.ref)
+      return {
+        baseUrl: conn.logflareUrl.replace(/\/$/, ''),
+        token: conn.logflareToken,
+        projectParam: 'default',
+      }
+    }
+  }
+  assert(process.env.LOGFLARE_URL, 'LOGFLARE_URL is required')
+  assert(process.env.LOGFLARE_PRIVATE_ACCESS_TOKEN, 'LOGFLARE_PRIVATE_ACCESS_TOKEN is required')
+  return {
+    baseUrl: process.env.LOGFLARE_URL.replace(/\/$/, ''),
+    token: process.env.LOGFLARE_PRIVATE_ACCESS_TOKEN,
+    projectParam: String(ref),
+  }
+}
+
 /**
  * Retrieves analytics data from Logflare.
  *
@@ -31,11 +75,23 @@ export async function retrieveAnalyticsData({
   params,
 }: RetrieveAnalyticsDataOptions): Promise<WrappedResult<AnalyticsResult>> {
   assertSelfHosted()
-  assert(PROJECT_ANALYTICS_URL, 'PROJECT_ANALYTICS_URL is required')
-  assert(process.env.LOGFLARE_PRIVATE_ACCESS_TOKEN, 'LOGFLARE_PRIVATE_ACCESS_TOKEN is required')
 
-  const url = new URL(`${PROJECT_ANALYTICS_URL}endpoints/query/${name}`)
-  url.searchParams.set('project', projectRef)
+  let url: URL
+  let token: string
+  if (IS_SELF_PLATFORM) {
+    // [self-platform] Per-ref target; AnalyticsNotConfigured/ProjectNotFound
+    // propagate to the route.
+    const target = await getAnalyticsTarget(projectRef)
+    url = new URL(`${target.baseUrl}/api/endpoints/query/${name}`)
+    url.searchParams.set('project', target.projectParam)
+    token = target.token
+  } else {
+    assert(PROJECT_ANALYTICS_URL, 'PROJECT_ANALYTICS_URL is required')
+    assert(process.env.LOGFLARE_PRIVATE_ACCESS_TOKEN, 'LOGFLARE_PRIVATE_ACCESS_TOKEN is required')
+    url = new URL(`${PROJECT_ANALYTICS_URL}endpoints/query/${name}`)
+    url.searchParams.set('project', projectRef)
+    token = process.env.LOGFLARE_PRIVATE_ACCESS_TOKEN
+  }
 
   // Add all other params
   Object.entries(params).forEach(([key, value]) => {
@@ -48,7 +104,7 @@ export async function retrieveAnalyticsData({
     const response = await fetch(url, {
       method: 'GET',
       headers: {
-        'x-api-key': process.env.LOGFLARE_PRIVATE_ACCESS_TOKEN,
+        'x-api-key': token,
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },

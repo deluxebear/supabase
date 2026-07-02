@@ -1,25 +1,47 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
+import { AnalyticsNotConfigured, getAnalyticsTarget } from '@/lib/api/self-hosted/logs'
+import { ProjectNotFound } from '@/lib/api/self-platform/resolve-connection'
 import { PROJECT_ANALYTICS_URL } from '@/lib/constants/api'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req
   const { uuid } = req.query
 
-  const missingEnvVars = envVarsSet()
-
-  if (missingEnvVars !== true) {
-    return res
-      .status(500)
-      .json({ error: { message: `${missingEnvVars.join(', ')} env variables are not set` } })
-  }
-
-  const baseUrl = PROJECT_ANALYTICS_URL
-  if (!baseUrl) {
-    return res.status(500).json({ error: { message: `LOGFLARE_URL env variable is not set` } })
+  // [self-platform] Per-ref Logflare target; plain self-hosted keeps the
+  // byte-identical env-check path below.
+  let baseUrl: string
+  let token: string
+  if (IS_SELF_PLATFORM) {
+    try {
+      const target = await getAnalyticsTarget(req.query.ref)
+      baseUrl = target.baseUrl
+      token = target.token
+    } catch (err) {
+      if (err instanceof ProjectNotFound) {
+        return res.status(404).json({ message: 'Project not found' })
+      }
+      if (err instanceof AnalyticsNotConfigured) {
+        return res.status(404).json({ message: 'Analytics is not configured for this project' })
+      }
+      throw err
+    }
+  } else {
+    const missingEnvVars = envVarsSet()
+    if (missingEnvVars !== true) {
+      return res
+        .status(500)
+        .json({ error: { message: `${missingEnvVars.join(', ')} env variables are not set` } })
+    }
+    if (!PROJECT_ANALYTICS_URL) {
+      return res.status(500).json({ error: { message: `LOGFLARE_URL env variable is not set` } })
+    }
+    baseUrl = PROJECT_ANALYTICS_URL
+    token = process.env.LOGFLARE_PRIVATE_ACCESS_TOKEN!
   }
 
   switch (method) {
@@ -30,7 +52,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       const result = await fetch(url, {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${process.env.LOGFLARE_PRIVATE_ACCESS_TOKEN}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
@@ -46,7 +68,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         body: JSON.stringify(req.body),
         method: 'PUT',
         headers: {
-          Authorization: `Bearer ${process.env.LOGFLARE_PRIVATE_ACCESS_TOKEN}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
@@ -65,7 +87,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
       await fetch(deleteUrl, {
         headers: {
-          Authorization: `Bearer ${process.env.LOGFLARE_PRIVATE_ACCESS_TOKEN}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
