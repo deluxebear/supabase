@@ -744,8 +744,7 @@ acted on.
 | `pages/api/platform/organizations/[slug]/entitlements.ts` | GET | Was an unconditional M1 stub (`{ entitlements: [] }`); self-platform mode now also lights up two feature flags, `project_scoped_roles` and `security.enforce_mfa` (both `hasAccess: true`), so TeamSettings/SecuritySettings render their M3.1 UI. Plain self-hosted (`IS_SELF_PLATFORM` false) keeps the M1 empty stub byte-identical. |
 | `pages/api/platform/organizations/[slug]/sso.ts` | GET | Stub — always `404 {"message": "Failed to find an existing SSO Provider for this organization"}`. The frontend's `sso-config-query.ts` treats that exact message as "SSO not configured" and renders normally rather than as an error. |
 
-All of these are `IS_SELF_PLATFORM`-gated (`404 {"message": "Not available on this deployment"}`
-otherwise) and require auth (`withAuth: true`). `entitlements.ts` and `sso.ts` carry no
+All of these except `entitlements.ts` are `IS_SELF_PLATFORM`-gated (`404 {"message": "Not available on this deployment"}` otherwise); `entitlements.ts` instead keeps the plain-mode M1 empty stub (200) byte-identical — see its row above. All require auth (`withAuth: true`). `entitlements.ts` and `sso.ts` carry no
 `guardOrgRoute`/`checkPermission` call — `entitlements.ts` is read-shaped, contract-minimal data
 with nothing to protect, and `sso.ts` is a fixed 404 stub.
 
