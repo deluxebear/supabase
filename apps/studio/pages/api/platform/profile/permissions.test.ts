@@ -1,3 +1,4 @@
+import type { JwtPayload } from '@supabase/supabase-js'
 import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -11,6 +12,8 @@ vi.hoisted(() => {
 })
 
 vi.mock('@/lib/api/self-platform/members', () => ({ getMemberContext: vi.fn() }))
+
+const claimsOf = (sub: string) => ({ sub }) as JwtPayload
 
 const OWNER_CTX = {
   gotrueId: 'g-1',
@@ -34,7 +37,7 @@ describe('GET /platform/profile/permissions (M3.0)', () => {
   it('expands the member roles through the real matrix', async () => {
     vi.mocked(getMemberContext).mockResolvedValue(OWNER_CTX)
     const { req, res } = createMocks({ method: 'GET' })
-    await handler(req, res, { sub: 'g-1' })
+    await handler(req, res, claimsOf('g-1'))
     expect(res._getStatusCode()).toBe(200)
     // Response equals the real expansion — not a hand-rolled wildcard.
     expect(res._getJSONData()).toEqual(JSON.parse(JSON.stringify(expandPermissions(OWNER_CTX))))
@@ -44,7 +47,7 @@ describe('GET /platform/profile/permissions (M3.0)', () => {
   it('zero-role member gets an empty grant list (fail closed)', async () => {
     vi.mocked(getMemberContext).mockResolvedValue({ gotrueId: 'g-2', roles: [] })
     const { req, res } = createMocks({ method: 'GET' })
-    await handler(req, res, { sub: 'g-2' })
+    await handler(req, res, claimsOf('g-2'))
     expect(res._getStatusCode()).toBe(200)
     expect(res._getJSONData()).toEqual([])
   })
@@ -59,7 +62,7 @@ describe('GET /platform/profile/permissions (M3.0)', () => {
 
   it('405 for non-GET', async () => {
     const { req, res } = createMocks({ method: 'POST' })
-    await handler(req, res, { sub: 'g-1' })
+    await handler(req, res, claimsOf('g-1'))
     expect(res._getStatusCode()).toBe(405)
   })
 })
