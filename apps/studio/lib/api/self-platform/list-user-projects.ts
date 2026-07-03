@@ -212,6 +212,11 @@ export async function listAllProjectsV2(
   const slugById = new Map(orgs.map((org) => [org.id, org.slug]))
 
   if (total === 0) {
+    if (orgIds.length === 0) {
+      // Purely-derived visibility whose project ids no longer resolve —
+      // fail closed, never the default fallback (spec §8).
+      return { pagination: { count: 0, limit, offset }, projects: [] }
+    }
     return {
       pagination: { count: 1, limit, offset },
       projects: offset === 0 ? [defaultGlobalProject()] : [],

@@ -317,10 +317,11 @@ describe('listAllProjectsV2', () => {
     vi.mocked(countProjectsVisible).mockResolvedValue(0)
     vi.mocked(listOrganizations).mockResolvedValue([])
 
-    await listAllProjectsV2(DERIVED_CTX)
+    const result = await listAllProjectsV2(DERIVED_CTX)
 
     expect(listProjectsVisible).toHaveBeenCalledWith([], [10], 100, 0)
     expect(countProjectsVisible).toHaveBeenCalledWith([], [10])
+    expect(result).toEqual({ pagination: { count: 0, limit: 100, offset: 0 }, projects: [] })
   })
 
   it('zero-role member: fail-closed short-circuit issues NO SQL and NO default fallback', async () => {
