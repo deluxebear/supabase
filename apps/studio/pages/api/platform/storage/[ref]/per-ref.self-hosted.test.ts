@@ -7,6 +7,13 @@ vi.mock('@/lib/api/self-platform/resolve-connection', async (importOriginal) => 
   resolveProjectConnection,
 }))
 
+// [self-platform] Task 13: RBAC guards now gate these routes under
+// IS_SELF_PLATFORM. This suite runs with it stubbed false (see below), so the
+// guard never fires — stubbed open regardless, to stay inert if that changes.
+vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({
+  guardProjectRoute: vi.fn().mockResolvedValue(true),
+}))
+
 // 与 per-ref.test.ts 完全相同的 14 元组清单（逐字复制）
 const ROUTES: Array<[string, string, Record<string, string>]> = [
   ['./buckets/index', 'GET', {}],

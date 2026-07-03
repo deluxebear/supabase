@@ -21,6 +21,13 @@ vi.mock('@/lib/api/self-hosted-admin', () => ({
   getAdminContextForRef,
 }))
 
+// [self-platform] Task 13: RBAC guards now gate these routes under
+// IS_SELF_PLATFORM. This suite runs with it stubbed false (see below), so the
+// guard never fires — stubbed open regardless, to stay inert if that changes.
+vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({
+  guardProjectRoute: vi.fn().mockResolvedValue(true),
+}))
+
 const resolveProjectConnection = vi.fn()
 vi.mock('@/lib/api/self-platform/resolve-connection', async (importOriginal) => ({
   ...(await importOriginal<object>()),

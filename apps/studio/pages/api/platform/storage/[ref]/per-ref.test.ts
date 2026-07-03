@@ -13,6 +13,13 @@ vi.mock('@/lib/api/apiAuthenticate', () => ({
   apiAuthenticate: vi.fn().mockResolvedValue({ sub: 'test-user' }),
 }))
 
+// [self-platform] Task 13: RBAC guards now gate these routes. Stub them open
+// so this sweep keeps exercising business logic — the guard's own behavior
+// is covered by storage-rbac.test.ts.
+vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({
+  guardProjectRoute: vi.fn().mockResolvedValue(true),
+}))
+
 const getAdminClientForRef = vi.fn()
 const getAdminContextForRef = vi.fn()
 vi.mock('@/lib/api/self-hosted-admin', () => ({
