@@ -118,6 +118,13 @@ export async function createDerivedRoleWithAssignment(input: {
   profileId: number
   projectIds: number[]
 }): Promise<void> {
+  // Data-layer guarantee (spec §5.3 HARD, "永不落库"): a derived role with
+  // zero project links must never be created, regardless of caller. Routes
+  // already 400 on empty role_scoped_projects before reaching here — this is
+  // the belt-and-braces backstop.
+  if (input.projectIds.length === 0) {
+    throw new Error('createDerivedRoleWithAssignment requires a non-empty projectIds')
+  }
   const { orgId, baseRoleId, profileId, projectIds } = input
   const { data, error } = await executePlatformQuery<{ role_id: number }>({
     query: `
@@ -147,6 +154,12 @@ export async function createDerivedRoleWithAssignment(input: {
 }
 
 export async function replaceRoleProjects(roleId: number, projectIds: number[]): Promise<void> {
+  // Data-layer guarantee (spec §5.3 HARD, "永不落库"): a derived role must
+  // never be left with zero project links. Routes already 400 on empty
+  // role_scoped_projects before reaching here — this is the backstop.
+  if (projectIds.length === 0) {
+    throw new Error('replaceRoleProjects requires a non-empty projectIds')
+  }
   const { error } = await executePlatformQuery({
     query: `
       with cleared as (

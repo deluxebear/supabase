@@ -108,8 +108,12 @@ async function handlePatch(req: NextApiRequest, res: NextApiResponse, claims?: J
   if (scoped === undefined) {
     await assignRoleToMember(target.profile_id, roleId)
   } else {
-    const refMap = await getOrgProjectIdsByRefs(org.orgId, scoped)
-    const missing = scoped.filter((ref) => !refMap.has(ref))
+    // Dedupe refs before validation/mapping: duplicate refs in the input
+    // would otherwise produce duplicate project ids -> role_projects PK
+    // violation -> 500.
+    const uniqueRefs = [...new Set(scoped)]
+    const refMap = await getOrgProjectIdsByRefs(org.orgId, uniqueRefs)
+    const missing = uniqueRefs.filter((ref) => !refMap.has(ref))
     if (missing.length > 0) {
       return res.status(400).json({ message: `Unknown project refs: ${missing.join(', ')}` })
     }
@@ -117,7 +121,7 @@ async function handlePatch(req: NextApiRequest, res: NextApiResponse, claims?: J
       orgId: org.orgId,
       baseRoleId: roleId,
       profileId: target.profile_id,
-      projectIds: scoped.map((ref) => refMap.get(ref)!),
+      projectIds: uniqueRefs.map((ref) => refMap.get(ref)!),
     })
   }
   return res.status(200).json({})

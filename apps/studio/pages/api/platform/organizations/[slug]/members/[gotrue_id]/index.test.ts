@@ -85,6 +85,20 @@ describe('PATCH /platform/organizations/{slug}/members/{gotrue_id} (self-platfor
     expect(res._getStatusCode()).toBe(200)
   })
 
+  it('dedupes duplicate refs before validation and mapping', async () => {
+    vi.mocked(getOrgProjectIdsByRefs).mockResolvedValue(new Map([['proj-b', 10]]))
+    const { req, res } = patchReq({ role_id: 3, role_scoped_projects: ['proj-b', 'proj-b'] })
+    await handler(req as never, res as never, claimsOf('g-admin'))
+    expect(getOrgProjectIdsByRefs).toHaveBeenCalledWith(1, ['proj-b'])
+    expect(createDerivedRoleWithAssignment).toHaveBeenCalledWith({
+      orgId: 1,
+      baseRoleId: 3,
+      profileId: 42,
+      projectIds: [10],
+    })
+    expect(res._getStatusCode()).toBe(200)
+  })
+
   it('HARD: empty role_scoped_projects is 400 and never reaches the data layer', async () => {
     const { req, res } = patchReq({ role_id: 3, role_scoped_projects: [] })
     await handler(req as never, res as never, claimsOf('g-admin'))

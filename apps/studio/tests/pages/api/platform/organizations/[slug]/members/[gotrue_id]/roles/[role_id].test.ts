@@ -67,6 +67,18 @@ describe('PUT .../members/{gotrue_id}/roles/{role_id} (self-platform)', () => {
     expect(res._getStatusCode()).toBe(200)
   })
 
+  it('dedupes duplicate refs before validation and mapping', async () => {
+    vi.mocked(getOrgProjectIdsByRefs).mockResolvedValue(new Map([['proj-b', 10]]))
+    const { req, res } = reqOf('PUT', {
+      name: 'Developer-scoped-x',
+      role_scoped_projects: ['proj-b', 'proj-b'],
+    })
+    await handler(req as never, res as never, claimsOf('g-admin'))
+    expect(getOrgProjectIdsByRefs).toHaveBeenCalledWith(1, ['proj-b'])
+    expect(replaceRoleProjects).toHaveBeenCalledWith(7, [10])
+    expect(res._getStatusCode()).toBe(200)
+  })
+
   it('HARD: empty role_scoped_projects is 400 and never reaches the data layer', async () => {
     const { req, res } = reqOf('PUT', { name: 'x', role_scoped_projects: [] })
     await handler(req as never, res as never, claimsOf('g-admin'))

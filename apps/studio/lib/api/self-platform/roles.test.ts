@@ -141,6 +141,18 @@ describe('createDerivedRoleWithAssignment', () => {
       })
     ).rejects.toThrow('Failed to create derived role')
   })
+
+  it('HARD (spec §5.3, 永不落库): rejects empty projectIds without querying', async () => {
+    await expect(
+      createDerivedRoleWithAssignment({
+        orgId: 1,
+        baseRoleId: 3,
+        profileId: 42,
+        projectIds: [],
+      })
+    ).rejects.toThrow('createDerivedRoleWithAssignment requires a non-empty projectIds')
+    expect(executePlatformQuery).not.toHaveBeenCalled()
+  })
 })
 
 describe('replaceRoleProjects', () => {
@@ -153,6 +165,13 @@ describe('replaceRoleProjects', () => {
     // 独立的 modifying CTE 执行顺序不保证，若 insert 先跑，
     // on conflict do nothing 保留旧行后 delete 再删掉它们 → 交集 refs 丢失。
     expect(call.query).toContain('from cleared')
+  })
+
+  it('HARD (spec §5.3, 永不落库): rejects empty projectIds without querying', async () => {
+    await expect(replaceRoleProjects(7, [])).rejects.toThrow(
+      'replaceRoleProjects requires a non-empty projectIds'
+    )
+    expect(executePlatformQuery).not.toHaveBeenCalled()
   })
 })
 

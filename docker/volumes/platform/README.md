@@ -762,14 +762,24 @@ chosen, not the most specific one. `expandPermissions` follows the same additive
 permission-check side: every held role independently contributes its own grant templates; nothing
 subtracts a permission a stronger role already grants.
 
-This additive design is also why `secrets:Read` stays gated to Owner/Administrator only (see
-M3.0's "Enforcement subject and credential-bearing routes" above) rather than something a
-project-scoped derived role could ever be granted. Per "Shared-stack JWT secret" (M2.2, above), on
-the common single-stack deployment a JWT secret or minted service JWT handed out for one `ref` is
-cryptographically valid for every sibling project registered on that same stack. If a narrow,
-single-project derived role could carry `secrets:Read`, additive grants would turn what looks like
-a "just this one project" role into a credential that unlocks every sibling project on the stack —
-keeping `secrets:Read` entirely off the grantable-via-derived-role surface is what closes that gap.
+`secrets:Read` is only in the Owner and Administrator grant templates (`ROLE_MATRIX`); Developer
+and Read-only's templates never include it, base or derived — no amount of project-scoping can add
+an action a role's base template doesn't carry. But a **derived** Owner or Administrator role *does*
+carry `secrets:Read`, because `expandPermissions` (`rbac/expand.ts`) expands a derived role using
+its base role's templates with that role's own `project_refs` filled in, and the Owner/Administrator
+templates are `{ actions: ['%'], resources: ['%'] }`. So an Owner or Administrator role scoped to a
+single project X still passes a `secrets:Read` check on X (see `api-keys/temporary.ts`, which checks
+`SECRETS_READ` with `projectRef`). Per "Shared-stack JWT secret" (M2.2, above), on the common
+single-stack deployment that credential is cryptographically valid for every sibling project on the
+stack — so granting a project-scoped Owner/Administrator role is effectively granting stack-wide
+credential visibility, same as granting the org-wide role, and should be treated that way. Scoping
+Owner/Administrator to one project is **not** a credential-containment mechanism.
+
+This is not a privilege-escalation path: only an existing Owner can create a derived Owner, only an
+existing Owner or Administrator can create a derived Administrator (`DENY_OWNER_ROLE_GRANTS` in
+`rbac/matrix.ts`), and both grantors already hold `secrets:Read` themselves. Stripping Class C
+(`secrets:*`) actions from derived-role expansions — so "Administrator on project X" could mean
+admin-without-credentials — is recorded as a candidate M3.2+ hardening, not something M3.1 does.
 
 ### Empty derived role = zero grants (I1)
 

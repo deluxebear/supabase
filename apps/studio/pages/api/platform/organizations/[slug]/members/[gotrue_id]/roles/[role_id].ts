@@ -105,14 +105,18 @@ async function handlePut(
     return res.status(404).json({ message: 'Member role not found' })
   }
 
-  const refMap = await getOrgProjectIdsByRefs(org.orgId, scoped)
-  const missing = scoped.filter((ref) => !refMap.has(ref))
+  // Dedupe refs before validation/mapping: duplicate refs in the input would
+  // otherwise produce duplicate project ids -> role_projects PK violation ->
+  // 500.
+  const uniqueRefs = [...new Set(scoped)]
+  const refMap = await getOrgProjectIdsByRefs(org.orgId, uniqueRefs)
+  const missing = uniqueRefs.filter((ref) => !refMap.has(ref))
   if (missing.length > 0) {
     return res.status(400).json({ message: `Unknown project refs: ${missing.join(', ')}` })
   }
   await replaceRoleProjects(
     roleId,
-    scoped.map((ref) => refMap.get(ref)!)
+    uniqueRefs.map((ref) => refMap.get(ref)!)
   )
   return res.status(200).json({})
 }
