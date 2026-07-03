@@ -1,10 +1,12 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { executePlatformQuery } from './db'
 import {
   getOrganizationBySlug,
+  getOrgMfaEnforced,
   listOrganizations,
   listOrganizationsForProfile,
+  setOrgMfaEnforced,
   toOrganizationResponse,
   toOrganizationSlugResponse,
 } from './organizations'
@@ -70,5 +72,49 @@ describe('queries', () => {
     expect(call.parameters).toEqual([GOTRUE_ID])
     expect(call.query).toContain('platform.organization_members')
     expect(call.query).toContain('join platform.profiles')
+  })
+})
+
+describe('org MFA enforcement flag (M3.1)', () => {
+  beforeEach(() => {
+    vi.mocked(executePlatformQuery).mockReset()
+  })
+
+  it('reads the flag parameterized; missing column degrades to false with a warn', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({
+      data: [{ enforce_mfa: true }],
+      error: undefined,
+    })
+    expect(await getOrgMfaEnforced(1)).toBe(true)
+    expect(vi.mocked(executePlatformQuery).mock.calls[0][0].parameters).toEqual([1])
+
+    // 缺列（pre-05 库）→ false，不炸页
+    vi.mocked(executePlatformQuery).mockResolvedValue({
+      data: undefined,
+      error: new Error('column "enforce_mfa" does not exist'),
+    })
+    expect(await getOrgMfaEnforced(1)).toBe(false)
+  })
+
+  it('propagates non-missing-column read errors', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({
+      data: undefined,
+      error: new Error('connection refused'),
+    })
+    await expect(getOrgMfaEnforced(1)).rejects.toThrow('connection refused')
+  })
+
+  it('writes the flag parameterized and propagates errors (PATCH is honest)', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({ data: [], error: undefined })
+    await setOrgMfaEnforced(1, true)
+    const call = vi.mocked(executePlatformQuery).mock.calls.at(-1)![0]
+    expect(call.parameters).toEqual([1, true])
+    expect(call.query).toContain('update platform.organizations')
+
+    vi.mocked(executePlatformQuery).mockResolvedValue({
+      data: undefined,
+      error: new Error('column "enforce_mfa" does not exist'),
+    })
+    await expect(setOrgMfaEnforced(1, true)).rejects.toThrow()
   })
 })

@@ -91,3 +91,37 @@ export async function listOrganizationsForProfile(
   if (error) throw error
   return data ?? []
 }
+
+const MISSING_ENFORCE_MFA_COLUMN = 'column "enforce_mfa" does not exist'
+
+let warnedMissingEnforceMfa = false
+
+// [self-platform] M3.1: org MFA-enforcement flag (05-mfa-enforcement.sql).
+// Reads degrade to false on a pre-05 database (warn once, fail soft — same
+// pattern as the analytics-column degradation in projects.ts); writes
+// propagate the error so a PATCH against an unmigrated db fails honestly.
+export async function getOrgMfaEnforced(orgId: number): Promise<boolean> {
+  const { data, error } = await executePlatformQuery<{ enforce_mfa: boolean }>({
+    query: 'select enforce_mfa from platform.organizations where id = $1',
+    parameters: [orgId],
+  })
+  if (error) {
+    if (!error.message.includes(MISSING_ENFORCE_MFA_COLUMN)) throw error
+    if (!warnedMissingEnforceMfa) {
+      warnedMissingEnforceMfa = true
+      console.warn(
+        '[self-platform] platform.organizations.enforce_mfa missing (pre-M3.1 platform-db) — reporting MFA enforcement as OFF. Run docker/volumes/platform/migrations/05-mfa-enforcement.sql to upgrade.'
+      )
+    }
+    return false
+  }
+  return data?.[0]?.enforce_mfa ?? false
+}
+
+export async function setOrgMfaEnforced(orgId: number, enforced: boolean): Promise<void> {
+  const { error } = await executePlatformQuery({
+    query: 'update platform.organizations set enforce_mfa = $2, updated_at = now() where id = $1',
+    parameters: [orgId, enforced],
+  })
+  if (error) throw error
+}
