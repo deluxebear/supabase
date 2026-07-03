@@ -20,6 +20,7 @@ import {
 } from '@/data/organization-members/organization-roles-query'
 import { organizationKeys as organizationKeysV1 } from '@/data/organizations/keys'
 import { OrganizationMember } from '@/data/organizations/organization-members-query'
+import { invalidatePermissionsQuery } from '@/data/permissions/permissions-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { t as $t } from '@/lib/i18n'
 
@@ -121,6 +122,9 @@ export const UpdateRolesConfirmationModal = ({
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: organizationKeys.rolesV2(slug) }),
         queryClient.invalidateQueries({ queryKey: organizationKeysV1.members(slug) }),
+        // [self-platform] M3.1: batched project-scope path skips per-mutation
+        // invalidation; refresh the caller's permission cache here.
+        invalidatePermissionsQuery(queryClient),
       ])
       toast.success(`Successfully updated role for ${member.username}`)
       onClose(true)

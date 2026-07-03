@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { organizationKeys } from './keys'
 import { handleError, patch } from '@/data/fetchers'
 import { organizationKeys as organizationKeysV1 } from '@/data/organizations/keys'
+import { invalidatePermissionsQuery } from '@/data/permissions/permissions-query'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type OrganizationMemberAssignRoleVariables = {
@@ -63,6 +64,10 @@ export const useOrganizationMemberAssignRoleMutation = ({
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: organizationKeys.rolesV2(slug) }),
           queryClient.invalidateQueries({ queryKey: organizationKeysV1.members(slug) }),
+          // [self-platform] M3.1: role changes affect the CALLER's own
+          // permission set when self-editing; permissions-query staleTime is
+          // 5 minutes, so invalidate explicitly.
+          invalidatePermissionsQuery(queryClient),
         ])
       }
 
