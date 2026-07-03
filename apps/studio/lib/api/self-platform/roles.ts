@@ -2,8 +2,8 @@
 // derived (project-scoped) role lifecycle. Derived roles are created
 // IMPLICITLY by PATCH member V2 (cloud parity — there is no standalone
 // create-role endpoint) and garbage-collected when their last holder
-// unassigns. Names are server-generated and unique; the UI maps derived ->
-// base via base_role_id and never shows the name.
+// unassigns. Derived names follow the format "base_role_name_scoped_uuid"
+// (underscore-delimited); the UI extracts the base name via split('_')[0].
 //
 // SNAPSHOT SAFETY (M1 I1-BUG lesson): inside a single multi-CTE statement,
 // sub-selects see the PRE-statement snapshot. Two consequences encoded here:
@@ -123,7 +123,7 @@ export async function createDerivedRoleWithAssignment(input: {
     query: `
       with new_role as (
         insert into platform.roles (organization_id, base_role_id, name, description)
-        select $1, r.id, r.name || '-scoped-' || gen_random_uuid(), null
+        select $1, r.id, r.name || '_scoped_' || gen_random_uuid(), null
         from platform.roles r
         where r.id = $2 and r.organization_id = $1 and r.base_role_id = r.id
         returning id

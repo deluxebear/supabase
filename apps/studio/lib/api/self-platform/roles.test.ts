@@ -126,6 +126,8 @@ describe('createDerivedRoleWithAssignment', () => {
     expect(call.query).toContain('gen_random_uuid()')
     expect(call.query).toContain('platform.role_projects')
     expect(call.query).toContain('platform.member_roles')
+    // REGRESSION PIN: UI display depends on underscore-delimited names (split('_')[0])
+    expect(call.query).toContain("'_scoped_'")
   })
 
   it('throws when the base role is invalid (no row inserted)', async () => {
