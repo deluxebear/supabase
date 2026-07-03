@@ -1,10 +1,15 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
+import {
+  ProjectNotFound,
+  resolveProjectConnection,
+} from '@/lib/api/self-platform/resolve-connection'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req
 
   switch (method) {
@@ -18,13 +23,26 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-const handleGet = async (_req: NextApiRequest, res: NextApiResponse) => {
-  const response = await fetch(`${process.env.SUPABASE_URL}/rest/v1/`, {
-    method: 'GET',
-    headers: {
-      apikey: process.env.SUPABASE_SERVICE_KEY!,
-    },
-  })
+const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
+  // [self-platform] Proxy the resolved project's REST endpoint; plain
+  // self-hosted keeps the global env target byte-identically.
+  let restUrl = `${process.env.SUPABASE_URL}/rest/v1/`
+  let apikey = process.env.SUPABASE_SERVICE_KEY!
+  if (IS_SELF_PLATFORM) {
+    try {
+      const conn = await resolveProjectConnection(String(req.query.ref))
+      if (conn.row) {
+        restUrl = `${conn.supabaseUrl}/rest/v1/`
+        apikey = conn.serviceKey
+      }
+    } catch (err) {
+      if (err instanceof ProjectNotFound) {
+        return res.status(404).json({ message: 'Project not found' })
+      }
+      throw err
+    }
+  }
+  const response = await fetch(restUrl, { method: 'GET', headers: { apikey } })
   if (response.ok) {
     const data = await response.json()
 
