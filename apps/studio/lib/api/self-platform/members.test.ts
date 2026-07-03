@@ -141,6 +141,7 @@ describe('listMembers', () => {
     expect(call.query).toContain('auth.mfa_factors')
     expect(call.query).toContain("status = 'verified'")
     expect(call.query).toContain('r.organization_id = om.organization_id')
+    expect(call.query).toContain('array_agg(mr.role_id::int')
     expect(rows).toEqual([
       {
         gotrue_id: GOTRUE_ID,
@@ -183,5 +184,7 @@ describe('getMemberInOrg', () => {
       gotrue_id: GOTRUE_ID,
       role_ids: [1, 5],
     })
+    const call = vi.mocked(executePlatformQuery).mock.calls[0][0]
+    expect(call.query).toContain('array_agg(mr.role_id::int')
   })
 })

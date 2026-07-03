@@ -114,6 +114,7 @@ export type MemberListRow = {
 // the platform metadata schema share the platform database
 // (docker-compose.platform.yml GOTRUE_DB_DATABASE_URL). role_ids only counts
 // roles belonging to THIS org (cross-org isolation).
+// role_ids casts to int inside array_agg: pg-meta parses scalar int8 as a JS number but int8[] as string[] (live-verified) — without the cast role_ids.includes(n) never matches.
 export async function listMembers(orgId: number): Promise<MemberListRow[]> {
   const { data, error } = await executePlatformQuery<MemberListRow>({
     query: `
@@ -123,7 +124,7 @@ export async function listMembers(orgId: number): Promise<MemberListRow[]> {
                where f.user_id = pr.gotrue_id and f.status = 'verified'
              ) as mfa_enabled,
              coalesce(
-               (select array_agg(mr.role_id order by mr.role_id)
+               (select array_agg(mr.role_id::int order by mr.role_id)
                   from platform.member_roles mr
                   join platform.roles r on r.id = mr.role_id
                  where mr.profile_id = pr.id
@@ -147,6 +148,7 @@ export type OrgMemberRow = {
   role_ids: number[]
 }
 
+// role_id::int inside array_agg — pg-meta returns int8[] as string[] (see listMembers note).
 export async function getMemberInOrg(
   orgId: number,
   gotrueId: string
@@ -155,7 +157,7 @@ export async function getMemberInOrg(
     query: `
       select pr.id as profile_id, pr.gotrue_id,
              coalesce(
-               (select array_agg(mr.role_id order by mr.role_id)
+               (select array_agg(mr.role_id::int order by mr.role_id)
                   from platform.member_roles mr
                   join platform.roles r on r.id = mr.role_id
                  where mr.profile_id = pr.id
