@@ -25,7 +25,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (Array.isArray(req.query.slug)) {
     return res.status(400).json({ message: 'Invalid slug parameter' })
   }
-  const limit = parsePaginationParam(req.query.limit, 100)
+  const limit = parsePaginationParam(req.query.limit, 100, 1000)
   const offset = parsePaginationParam(req.query.offset, 0)
   if (limit === null || offset === null) {
     return res.status(400).json({ message: 'Invalid pagination parameters' })

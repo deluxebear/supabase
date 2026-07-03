@@ -117,4 +117,18 @@ describe('GET /platform/organizations/{slug}/projects (self-platform)', () => {
     expect(listOrgProjectsV2).toHaveBeenCalledWith('acme', 1, 1)
     expect(res._getStatusCode()).toBe(200)
   })
+
+  it('clamps limit above 1000 but leaves offset above 1000 unclamped', async () => {
+    vi.mocked(listOrgProjectsV2).mockResolvedValue({
+      pagination: { count: 0, limit: 1000, offset: 1500 },
+      projects: [],
+    } as any)
+    const { req, res } = createMocks({
+      method: 'GET',
+      query: { slug: 'acme', limit: '5000', offset: '1500' },
+    })
+    await handler(req as any, res as any)
+    expect(listOrgProjectsV2).toHaveBeenCalledWith('acme', 1000, 1500)
+    expect(res._getStatusCode()).toBe(200)
+  })
 })

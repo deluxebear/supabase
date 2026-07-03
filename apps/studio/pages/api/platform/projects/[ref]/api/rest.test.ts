@@ -17,7 +17,10 @@ vi.mock('@/lib/api/self-platform/resolve-connection', async (importOriginal) => 
 })
 
 beforeEach(() => resolveProjectConnection.mockReset())
-afterEach(() => vi.unstubAllGlobals())
+afterEach(() => {
+  vi.unstubAllGlobals()
+  vi.unstubAllEnvs()
+})
 
 describe('GET /platform/projects/{ref}/api/rest (self-platform)', () => {
   it('proxies the resolved project REST url with its service key', async () => {
@@ -33,6 +36,29 @@ describe('GET /platform/projects/{ref}/api/rest (self-platform)', () => {
     await handler(req as any, res as any)
     expect(fetchMock.mock.calls[0][0]).toBe('http://kong-b:8100/rest/v1/')
     expect(fetchMock.mock.calls[0][1].headers.apikey).toBe('service-b')
+    expect(res._getStatusCode()).toBe(200)
+    vi.unstubAllGlobals()
+  })
+
+  it('unregistered default (row null) falls through to global env url/key', async () => {
+    vi.stubEnv('SUPABASE_URL', 'http://kong-global:8100')
+    vi.stubEnv('SUPABASE_SERVICE_KEY', 'global-service-key')
+    // A successful resolve with no registered row (the unregistered-default
+    // case). The `if (conn.row)` guard must fall through to the global env
+    // target — conn.supabaseUrl/serviceKey must NOT be used.
+    resolveProjectConnection.mockResolvedValueOnce({
+      row: null,
+      supabaseUrl: 'http://kong-b:8100',
+      serviceKey: 'sk',
+      anonKey: 'ak',
+    })
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ paths: {} }) })
+    vi.stubGlobal('fetch', fetchMock)
+    const { handler } = await import('./rest')
+    const { req, res } = createMocks({ method: 'GET', query: { ref: 'default' } })
+    await handler(req as any, res as any)
+    expect(fetchMock.mock.calls[0][0]).toBe('http://kong-global:8100/rest/v1/')
+    expect(fetchMock.mock.calls[0][1].headers.apikey).toBe('global-service-key')
     expect(res._getStatusCode()).toBe(200)
     vi.unstubAllGlobals()
   })
