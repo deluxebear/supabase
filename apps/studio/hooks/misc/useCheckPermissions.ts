@@ -1,69 +1,17 @@
 import { useIsLoggedIn, useParams } from 'common'
-import jsonLogic from 'json-logic-js'
 import { useMemo } from 'react'
 
 import { useSelectedOrganizationQuery } from './useSelectedOrganization'
 import { useSelectedProjectQuery } from './useSelectedProject'
 import { usePermissionsQuery } from '@/data/permissions/permissions-query'
 import { IS_PLATFORM } from '@/lib/constants'
+// [self-platform] Evaluator extracted to lib/permissions-check.ts so the
+// server-side RBAC enforcement shares it. Re-exported for existing
+// consumers (TeamSettings.utils, InviteMemberButton, ...).
+import { doPermissionsCheck } from '@/lib/permissions-check'
 import type { Permission } from '@/types'
 
-const toRegexpString = (actionOrResource: string) =>
-  `^${actionOrResource.replace('.', '\\.').replace('%', '.*')}$`
-
-function doPermissionConditionCheck(permissions: Permission[], data?: object) {
-  const isRestricted = permissions
-    .filter((permission) => permission.restrictive)
-    .some(
-      ({ condition }: { condition: jsonLogic.RulesLogic }) =>
-        condition === null || jsonLogic.apply(condition, data)
-    )
-  if (isRestricted) return false
-
-  return permissions
-    .filter((permission) => !permission.restrictive)
-    .some(
-      ({ condition }: { condition: jsonLogic.RulesLogic }) =>
-        condition === null || jsonLogic.apply(condition, data)
-    )
-}
-
-export function doPermissionsCheck(
-  permissions: Permission[] | undefined,
-  action: string,
-  resource: string,
-  data?: object,
-  organizationSlug?: string,
-  projectRef?: string
-) {
-  if (!permissions || !Array.isArray(permissions)) {
-    return false
-  }
-
-  if (projectRef) {
-    const projectPermissions = permissions.filter(
-      (permission) =>
-        permission.organization_slug === organizationSlug &&
-        permission.actions.some((act) => (action ? action.match(toRegexpString(act)) : null)) &&
-        permission.resources.some((res) => resource.match(toRegexpString(res))) &&
-        permission.project_refs?.includes(projectRef)
-    )
-    if (projectPermissions.length > 0) {
-      return doPermissionConditionCheck(projectPermissions, { resource_name: resource, ...data })
-    }
-  }
-
-  const orgPermissions = permissions
-    // filter out org-level permission
-    .filter((permission) => !permission.project_refs || permission.project_refs.length === 0)
-    .filter(
-      (permission) =>
-        permission.organization_slug === organizationSlug &&
-        permission.actions.some((act) => (action ? action.match(toRegexpString(act)) : null)) &&
-        permission.resources.some((res) => resource.match(toRegexpString(res)))
-    )
-  return doPermissionConditionCheck(orgPermissions, { resource_name: resource, ...data })
-}
+export { doPermissionsCheck }
 
 export function useGetPermissions(
   permissionsOverride?: Permission[],
