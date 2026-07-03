@@ -94,7 +94,7 @@ describe('matrix + expandPermissions', () => {
   })
 
   it('Developer: content read/write, user_content writes, NO credentials/control-plane writes', () => {
-    expect(can(DEV, 'tenant:Sql:%', 'tables')).toBe(true)
+    expect(can(DEV, 'tenant:Sql:Admin:Write', 'tables')).toBe(true)
     expect(can(DEV, 'auth:Execute', 'projects')).toBe(true)
     expect(can(DEV, 'storage:Admin:Write', 'projects')).toBe(true)
     expect(can(DEV, 'write:Create', 'user_content')).toBe(true)
