@@ -22,6 +22,11 @@ describe('GET /platform/organizations/{slug}/members/invitations (self-platform,
     vi.mocked(guardOrgRoute).mockResolvedValue({ orgId: 1, orgSlug: 'default' })
     const { req, res } = createMocks({ method: 'GET', query: { slug: 'default' } })
     await handler(req as never, res as never, claimsOf('g-1'))
+    expect(vi.mocked(guardOrgRoute).mock.calls[0][2]).toMatchObject({
+      slug: 'default',
+      action: 'read:Read',
+      resource: 'organizations',
+    })
     expect(res._getStatusCode()).toBe(200)
     expect(res._getJSONData()).toEqual({ invitations: [] })
   })
@@ -40,8 +45,10 @@ describe('GET /platform/organizations/{slug}/members/invitations (self-platform,
     const post = createMocks({ method: 'POST', query: { slug: 'default' } })
     await handler(post.req as never, post.res as never, claimsOf('g-1'))
     expect(post.res._getStatusCode()).toBe(405)
+    expect(guardOrgRoute).not.toHaveBeenCalled()
     const arr = createMocks({ method: 'GET', query: { slug: ['a', 'b'] } })
     await handler(arr.req as never, arr.res as never, claimsOf('g-1'))
     expect(arr.res._getStatusCode()).toBe(400)
+    expect(arr.res._getJSONData()).toEqual({ message: 'Invalid slug parameter' })
   })
 })
