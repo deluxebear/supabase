@@ -379,34 +379,46 @@ auth users, storage buckets, and logs — not the default project's.
   now-per-ref invite/otp/magiclink/recover/users routes above). This sub-route was never
   implemented in M1 (see "Known limitations (M1)") and is still global-shaped if built out later.
 - Realtime, Edge Functions.
-- `pages/api/platform/projects/[ref]/config/*` — project config (Postgres, auth, storage, etc.).
-- `pages/api/platform/projects/[ref]/api/rest.ts` and `.../api/graphql.ts` — PostgREST/pg-graphql
-  surfaces.
 - Any pg-meta sub-resource route beyond `query`/lints/migrations (`tables`, `views`, `extensions`,
   etc.) — only those three were threaded with `projectRef`.
-- `pages/api/mcp/index.ts` — confirmed untouched, out of scope for M2.1.
+- `pages/api/mcp/index.ts` — confirmed untouched as of M2.1; see "MCP per-ref asymmetry" under
+  "M2.2: credential closure" below for the per-operation breakdown as of M2.2 (`getLogs` is
+  transitively per-ref, `getSecurityAdvisors`/`getPerformanceAdvisors` are not).
 
 These still return the **default** project's data/keys regardless of the selected project's `ref`.
 
-**Credential-bearing gaps — fixed in M2.1, plus what's still open.** Most of the still-global
-routes above leak the *wrong project's rows* (bad, but data-scoped). A subset return **global
-credentials for any `ref`** instead — these were the top M2.1 priority:
+**Fixed in M2.2 — resolved per-ref.** `pages/api/platform/projects/[ref]/config/index.ts` and
+`.../config/postgrest.ts` (project config, including `jwt_secret`) and
+`pages/api/platform/projects/[ref]/api/rest.ts` and `.../api/graphql.ts` (PostgREST/pg-graphql
+proxy surfaces) now resolve the target project via `resolveProjectConnection` per `ref`, with the
+same `conn.row` zero-break gate and `ProjectNotFound` -> 404 skeleton as every other per-ref route.
+See "M2.2: credential closure" below for details.
 
-- ~~`pages/api/platform/projects/[ref]/api-keys/temporary.ts`~~ — **fixed** (see "Short-lived
-  per-project JWTs" — it now mints a per-project-scoped, 5-minute JWT instead of returning the
-  global `SUPABASE_SERVICE_KEY` verbatim).
-- ~~`pages/api/platform/props/project/[ref]/api.ts`~~ — **fixed**: returns the resolved
+**Credential-bearing gaps — fixed in M2.1 and M2.2.** Most of the still-global routes above leak
+the *wrong project's rows* (bad, but data-scoped). A subset return **global credentials for any
+`ref`** instead — these were the top M2.1/M2.2 priority, and all of them are now fixed:
+
+- ~~`pages/api/platform/projects/[ref]/api-keys/temporary.ts`~~ — **fixed in M2.1** (see
+  "Short-lived per-project JWTs" — it now mints a per-project-scoped, 5-minute JWT instead of
+  returning the global `SUPABASE_SERVICE_KEY` verbatim).
+- ~~`pages/api/platform/props/project/[ref]/api.ts`~~ — **fixed in M2.1**: returns the resolved
   connection's own anon/service keys per `ref` instead of the global ones.
-- `pages/api/platform/auth/[ref]/config` — **still open** (see above; never implemented).
-- `pages/api/platform/projects/[ref]/config/*` — **still open**, global project only.
-- `pages/api/platform/projects/[ref]/api/rest.ts` and `.../api/graphql.ts` — **still open**,
-  global PostgREST/pg-graphql surfaces.
+- ~~`pages/api/platform/projects/[ref]/config/index.ts` and `.../config/postgrest.ts`~~ — **fixed
+  in M2.2**: `jwt_secret` now comes from the resolved project per `ref` (see "M2.2: credential
+  closure" below).
+- ~~`pages/api/platform/projects/[ref]/api/rest.ts` and `.../api/graphql.ts`~~ — **fixed in
+  M2.2**: the PostgREST/pg-graphql proxy now targets the resolved project's own URL and
+  anon/service key per `ref` instead of the global ones.
+- `pages/api/platform/auth/[ref]/config` — still not credential-bearing today because it's
+  **unimplemented**, not because it was hardened (see above); if it's ever built out, it needs the
+  same per-ref treatment as every route above.
 
-Visiting any of the still-open routes above for a non-default registered project today silently
-hands back the **default** project's secrets under that other project's `ref` — a real
-cross-project credential leak risk in a multi-project deployment, not just a UI data-mismatch.
-Doc-only here; no code fix shipped for these in M2.1 either — next priority for a future hardening
-pass.
+As of M2.2, there are **no remaining known credential-bearing routes that ignore `ref`** — the
+`auth/[ref]/config` line above is the one open item, and it's open because the route doesn't exist
+yet, not because it leaks. If new credential-bearing routes are added later, the invariant every
+fixed route above now follows is: resolve via `resolveProjectConnection` (or the equivalent
+admin-client/analytics-target factory) before touching any secret, and 404 via `ProjectNotFound`
+for unknown refs rather than silently falling through to the global project.
 
 ### Short-lived per-project JWTs
 
@@ -518,3 +530,74 @@ If you already applied M2's `02-projects.sql` and registered projects before M2.
      docker exec -i supabase-platform-db psql -U postgres -d platform -c \
        "update platform.projects set logflare_url = 'http://localhost:4000', logflare_token_enc = '<ciphertext from above>' where ref = 'default';"
      ```
+
+## M2.2: credential closure
+
+M2.1 closed the two credential-bearing gaps that mint or return secrets outright (temporary JWTs,
+the props API-key surface) but left four routes still reading the global-env project regardless of
+`ref`: the two project-config routes (`config/index.ts`, `config/postgrest.ts`, both of which
+return `jwt_secret`) and the two data-plane proxy routes (`api/rest.ts`, `api/graphql.ts`, both of
+which forward a service-role `apikey`). M2.2 closes those, using the same pattern the M2/M2.1
+routes already established.
+
+### Fixed in M2.2
+
+- `pages/api/platform/projects/[ref]/config/index.ts` and `.../config/postgrest.ts` — `jwt_secret`
+  is now resolved via `resolveProjectConnection(ref)` when `IS_SELF_PLATFORM` is set and the
+  registry has a row for that `ref`; the other PostgREST-shaped fields (`db_schema`, `max_rows`,
+  etc.) are stack-level config the registry doesn't model, so they keep their historical
+  env-sourced values. `ref='default'` with no registry row falls back to the global-env
+  `jwt_secret` byte-for-byte (zero-break); any other unknown `ref` -> `404 {"message": "Project
+  not found"}`. Plain self-hosted mode (`IS_SELF_PLATFORM` false) is unchanged.
+- `pages/api/platform/projects/[ref]/api/rest.ts` and `.../api/graphql.ts` — both now resolve the
+  target project's own Supabase URL and anon/service key via `resolveProjectConnection(ref)`
+  before proxying the request (GET for rest, POST for graphql), instead of always proxying to the
+  global-env project with the global service key. Same `conn.row` zero-break gate and
+  `ProjectNotFound` -> 404 skeleton as every other per-ref route in this stack; ghost refs never
+  reach the outbound `fetch()` call.
+
+With this, every route identified across M2/M2.1/M2.2 that returns a credential (JWT secret,
+service key, anon key) resolves that credential per registered `ref` rather than from global
+process env. See "Credential-bearing gaps — fixed in M2.1 and M2.2" above for the consolidated
+list and the current "no known remaining gaps" status.
+
+### Shared-stack JWT secret
+
+Projects registered against the **same** underlying stack (see "Registering a second project
+without a second stack" above) share that stack's JWT secret. `register-project.ts` takes a
+`--jwt-secret` value per row, but the worked example above (and most realistic single-stack
+setups) registers every project on one stack with the *same* `--jwt-secret`, because there is only
+one Kong/GoTrue/PostgREST instance and it only trusts one signing key. The practical consequence:
+a JWT that validates for one `ref` — including a short-lived `temporary` JWT minted for it (see
+"Short-lived per-project JWTs") or the `jwt_secret` value returned by `config/index`/
+`config/postgrest` for it — is cryptographically valid for its sibling projects on that same stack
+too. This is not a bug in the M2.2 per-ref fixes above: per-`ref` resolution correctly returns
+*that project's own* configured secret, it's just that the secret happens to be identical across
+siblings because they share one instance that only knows one signing key. A genuinely isolated
+secret per project requires a genuinely separate stack (its own GoTrue/PostgREST processes, each
+configured with its own `JWT_SECRET`) — the "second database, same stack" substitute documented
+above proves connection-level isolation but not JWT-level isolation. **This is the boundary M3's
+RBAC work needs to design against**: role/claim checks that assume a `ref`-scoped JWT is only
+usable against that one `ref` do not hold under shared-stack registration.
+
+### MCP per-ref asymmetry
+
+In self-platform mode, `pages/api/mcp/index.ts` (consuming `lib/api/self-hosted/mcp.ts` — **not**
+`pages/api/platform/mcp.ts`, which does not exist; an earlier draft of the M2.1 README cited that
+wrong path and it was corrected during M2.1's review, see `.superpowers/sdd/progress.md`'s Task 12
+entry) is only partially per-ref today:
+
+- `getDebuggingOperations().getLogs` **is** per-ref, transitively — it calls
+  `retrieveAnalyticsData({ name: 'logs.all', projectRef, ... })`, the same per-project Logflare
+  resolution `getAnalyticsTarget` established for the Logs UI in M2.1.
+- `getSecurityAdvisors` and `getPerformanceAdvisors` are **not** per-ref — both receive a
+  `projectRef` parameter but ignore it (`_projectRef`) and call
+  `getLints({ headers, exposedSchemas })`, which always queries the single global-env project's
+  database, regardless of which project the MCP session is conceptually scoped to.
+
+Threading `projectRef` through the advisors/lints path is deferred: `pages/api/mcp/index.ts`
+currently constructs one `createSupabaseMcpServer` per request scoped to a single
+`projectId: DEFAULT_PROJECT.ref`, so the MCP server itself isn't multi-project-aware yet — fixing
+`getLints`'s global-DB read in isolation wouldn't make MCP usable end-to-end against a non-default
+registered project. This is tracked as follow-up work for whenever MCP is made multi-project, not
+a credential leak (lints/advisors results are data-scoped, not secret-bearing).
