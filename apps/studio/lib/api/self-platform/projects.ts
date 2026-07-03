@@ -52,6 +52,8 @@ const LEGACY_SELECT_COLUMNS = `
 `
 const MISSING_ANALYTICS_COLUMN = 'column "logflare_url" does not exist'
 
+let warnedMissingAnalyticsColumns = false
+
 async function queryProjectRows(
   suffix: string,
   parameters?: unknown[]
@@ -62,9 +64,12 @@ async function queryProjectRows(
   })
   if (!error) return data ?? []
   if (!error.message.includes(MISSING_ANALYTICS_COLUMN)) throw error
-  console.log(
-    '[self-platform] platform.projects has no analytics columns (pre-M2.1 platform-db) — treating logflare_url/logflare_token_enc as NULL. Run docker/volumes/platform/migrations/03-analytics.sql to upgrade.'
-  )
+  if (!warnedMissingAnalyticsColumns) {
+    warnedMissingAnalyticsColumns = true
+    console.warn(
+      '[self-platform] platform.projects has no analytics columns (pre-M2.1 platform-db) — treating logflare_url/logflare_token_enc as NULL. Run docker/volumes/platform/migrations/03-analytics.sql to upgrade.'
+    )
+  }
   const legacy = await executePlatformQuery<
     Omit<PlatformProjectRow, 'logflare_url' | 'logflare_token_enc'>
   >({

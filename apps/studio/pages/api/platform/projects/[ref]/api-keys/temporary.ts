@@ -56,7 +56,12 @@ const handlePost = async (req: NextApiRequest, res: NextApiResponse) => {
     }
     try {
       const parsed = JSON.parse(rawClaims)
-      if (typeof parsed?.role === 'string') role = parsed.role
+      if (parsed?.role !== undefined) {
+        if (typeof parsed.role !== 'string') {
+          return res.status(400).json({ message: 'Invalid claims parameter' })
+        }
+        role = parsed.role
+      }
     } catch {
       return res.status(400).json({ message: 'Invalid claims parameter' })
     }

@@ -70,6 +70,31 @@ describe('projects.ts analytics columns', () => {
     await expect(listAllProjects()).rejects.toThrow('relation "platform.projects" does not exist')
     expect(mockQuery).toHaveBeenCalledTimes(1)
   })
+
+  it('warns only once across repeated degraded reads', async () => {
+    // [self-platform] warnedMissingAnalyticsColumns is module-level state, so
+    // the earlier degradation test in this file (which also trips the warn
+    // path) would otherwise pollute this assertion. Force a pristine module
+    // instance — including a fresh mocked ./db — via vi.resetModules() +
+    // dynamic import, same pattern as db.test.ts's loadDb() helper.
+    vi.resetModules()
+    const { executePlatformQuery: freshExecutePlatformQuery } = await import('./db')
+    const freshMockQuery = vi.mocked(freshExecutePlatformQuery)
+    const { getProjectByRef: freshGetProjectByRef } = await import('./projects')
+
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const legacyErr = { data: undefined, error: new Error('column "logflare_url" does not exist') }
+    const { logflare_url: _u, logflare_token_enc: _t, ...legacyRow } = fullRow
+    freshMockQuery
+      .mockResolvedValueOnce(legacyErr)
+      .mockResolvedValueOnce({ data: [legacyRow], error: undefined })
+      .mockResolvedValueOnce(legacyErr)
+      .mockResolvedValueOnce({ data: [legacyRow], error: undefined })
+    await freshGetProjectByRef('proj-b')
+    await freshGetProjectByRef('proj-b')
+    expect(warn).toHaveBeenCalledTimes(1)
+    warn.mockRestore()
+  })
 })
 
 describe('projects.ts pagination (M2.1)', () => {

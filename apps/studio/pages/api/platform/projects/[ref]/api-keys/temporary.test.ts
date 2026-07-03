@@ -73,6 +73,16 @@ describe('POST /platform/projects/{ref}/api-keys/temporary (self-platform)', () 
     }
   })
 
+  it('400s a valid-JSON claims object whose role is not a string', async () => {
+    resolveProjectConnection.mockResolvedValue({ row: { id: 2 }, jwtSecret: 's' })
+    const { req, res } = createMocks({
+      method: 'POST',
+      query: { ref: 'proj-b', claims: JSON.stringify({ role: 123 }) },
+    })
+    await handler(req as any, res as any)
+    expect(res._getStatusCode()).toBe(400)
+  })
+
   it('404s unknown ref; 500s (fail closed) on empty jwt secret', async () => {
     resolveProjectConnection.mockRejectedValueOnce(new ProjectNotFound('ghost'))
     const { req: r1, res: s1 } = createMocks({ method: 'POST', query: { ref: 'ghost' } })
