@@ -9,6 +9,13 @@ vi.hoisted(() => {
   process.env.NEXT_PUBLIC_IS_PLATFORM = 'true'
 })
 
+// [self-platform] Task 14: RBAC guards now gate this route. Stub it open so
+// this sweep keeps exercising business logic — the guard's own behavior is
+// covered by run-lints-rbac.test.ts.
+vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({
+  guardProjectRoute: vi.fn().mockResolvedValue(true),
+}))
+
 // [self-platform] vi.hoisted() avoids the vi.mock factory TDZ — the mocked
 // module is loaded via run-lints.ts's own import chain, which resolves
 // before this file's top-level `const` bindings would have initialized

@@ -1,8 +1,11 @@
+import { PermissionAction } from '@supabase/shared-types/out/constants'
+import type { JwtPayload } from '@supabase/supabase-js'
 import { paths } from 'api-types'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
 import { POSTGRES_PORT } from '@/lib/api/self-hosted/constants'
+import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import {
   ProjectNotFound,
   resolveProjectConnection,
@@ -16,13 +19,25 @@ type ResponseData =
   paths['/platform/projects/{ref}/databases']['get']['responses']['200']['content']['application/json']
 
 // [self-platform] exported for handler-level tests
-export async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function handler(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', ['GET'])
     return res
       .status(405)
       .json({ data: null, error: { message: `Method ${req.method} Not Allowed` } })
   }
+
+  // [self-platform] M3.0 RBAC guard (spec §7.3), placed before the
+  // single-method body (no method switch here). 404-before-403 lives inside
+  // guardProjectRoute (resolver-first).
+  if (IS_SELF_PLATFORM) {
+    const ok = await guardProjectRoute(res, claims, {
+      action: PermissionAction.READ,
+      projectRef: String(req.query.ref),
+    })
+    if (!ok) return
+  }
+
   if (!IS_SELF_PLATFORM) {
     // Plain self-hosted: historical stub, unchanged (M1 leftover `cloud_provider: 'localhost' as
     // any` corrected to the legal 'AWS' enum member).

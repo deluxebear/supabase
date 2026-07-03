@@ -1,15 +1,25 @@
 import assert from 'node:assert'
+import { PermissionAction } from '@supabase/shared-types/out/constants'
+import type { JwtPayload } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
 import { AnalyticsNotConfigured, retrieveAnalyticsData } from '@/lib/api/self-hosted/logs'
+import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { ProjectNotFound } from '@/lib/api/self-platform/resolve-connection'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 
+// [self-platform] POST here is a log QUERY (the body carries filter params),
+// read semantics recorded — both methods gate on the same read action.
+const RBAC_ACTIONS: Record<string, string> = {
+  GET: PermissionAction.ANALYTICS_READ,
+  POST: PermissionAction.ANALYTICS_READ,
+}
+
 // [self-platform] exported for handler-level tests
-export async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function handler(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
   const { method } = req
 
   switch (method) {
@@ -27,6 +37,19 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
         }
         if (typeof name !== 'string') {
           return res.status(400).json({ message: 'Invalid name parameter' })
+        }
+
+        // [self-platform] M3.0 RBAC guard (spec §7.3), placed AFTER the
+        // param-400 validation above — that validation is M2.2 behavior and
+        // is test-pinned to run first. 404-before-403 lives inside
+        // guardProjectRoute (resolver-first).
+        const action = RBAC_ACTIONS[method ?? '']
+        if (action) {
+          const ok = await guardProjectRoute(res, claims, {
+            action,
+            projectRef: ref,
+          })
+          if (!ok) return
         }
       } else {
         assert(typeof ref === 'string', 'Invalid or missing ref parameter')

@@ -11,6 +11,12 @@ vi.mock('@/lib/api/self-platform/resolve-connection', () => {
   class ProjectNotFound extends Error {}
   return { ProjectNotFound, resolveProjectConnection: vi.fn() }
 })
+// [self-platform] Task 14: RBAC guards now gate this route. Stub it open so
+// this sweep keeps exercising business logic — the guard's own behavior is
+// covered by databases-rbac.test.ts.
+vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({
+  guardProjectRoute: vi.fn().mockResolvedValue(true),
+}))
 
 const resolved = {
   ref: 'proj-b',

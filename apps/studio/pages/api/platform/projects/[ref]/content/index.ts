@@ -1,9 +1,12 @@
+import { PermissionAction } from '@supabase/shared-types/out/constants'
+import type { JwtPayload } from '@supabase/supabase-js'
 import { paths } from 'api-types'
 import { compact } from 'lodash'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { z } from 'zod'
 
 import apiWrapper from '@/lib/api/apiWrapper'
+import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import {
   deleteSnippet,
   getSnippets,
@@ -11,6 +14,7 @@ import {
   SnippetSchema,
   updateSnippet,
 } from '@/lib/api/snippets.utils'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 // Next.js defaults the API body parser to a 1mb limit, which rejects large SQL
 // snippets (e.g. multi-thousand-line RPCs) with a 413 before they can be saved.
@@ -25,8 +29,30 @@ export const config = {
 
 const wrappedHandler = (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+const RBAC_ACTIONS: Record<string, string> = {
+  GET: PermissionAction.READ,
+  PUT: PermissionAction.UPDATE,
+  DELETE: PermissionAction.DELETE,
+}
+
+// [self-platform] exported for handler-level tests
+export async function handler(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
   const { method } = req
+
+  // [self-platform] M3.0 RBAC guard (spec §7.3). 404-before-403 lives inside
+  // guardProjectRoute (resolver-first) — a behavior change here: this route
+  // previously ignored `ref` entirely.
+  if (IS_SELF_PLATFORM) {
+    const action = RBAC_ACTIONS[method ?? '']
+    if (action) {
+      const ok = await guardProjectRoute(res, claims, {
+        action,
+        resource: 'user_content',
+        projectRef: String(req.query.ref),
+      })
+      if (!ok) return
+    }
+  }
 
   switch (method) {
     case 'GET':

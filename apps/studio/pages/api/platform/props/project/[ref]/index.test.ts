@@ -19,6 +19,12 @@ vi.mock('@/lib/api/self-platform/resolve-connection', async (importOriginal) => 
   ...(await importOriginal<object>()),
   resolveProjectConnection,
 }))
+// [self-platform] Task 14: RBAC guards now gate this route. Stub it open so
+// this sweep keeps exercising business logic — the guard's own behavior is
+// covered by props-rbac.test.ts.
+vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({
+  guardProjectRoute: vi.fn().mockResolvedValue(true),
+}))
 
 const conn = {
   row: { id: 2 },

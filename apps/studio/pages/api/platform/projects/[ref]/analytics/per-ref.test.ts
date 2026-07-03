@@ -10,6 +10,13 @@ vi.hoisted(() => {
   process.env.NEXT_PUBLIC_IS_PLATFORM = 'true'
 })
 
+// [self-platform] Task 14: RBAC guards now gate these routes. Stub them open
+// so this sweep keeps exercising business logic — the guard's own behavior
+// is covered by analytics-rbac.test.ts.
+vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({
+  guardProjectRoute: vi.fn().mockResolvedValue(true),
+}))
+
 const { getAnalyticsTarget, retrieveAnalyticsData } = vi.hoisted(() => ({
   getAnalyticsTarget: vi.fn(),
   retrieveAnalyticsData: vi.fn(),

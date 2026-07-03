@@ -1,16 +1,38 @@
+import { PermissionAction } from '@supabase/shared-types/out/constants'
+import type { JwtPayload } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
 import { AnalyticsNotConfigured, getAnalyticsTarget } from '@/lib/api/self-hosted/logs'
+import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { ProjectNotFound } from '@/lib/api/self-platform/resolve-connection'
 import { PROJECT_ANALYTICS_URL } from '@/lib/constants/api'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 
-export async function handler(req: NextApiRequest, res: NextApiResponse) {
+const RBAC_ACTIONS: Record<string, string> = {
+  GET: PermissionAction.ANALYTICS_ADMIN_READ,
+  PUT: PermissionAction.ANALYTICS_ADMIN_WRITE,
+  DELETE: PermissionAction.ANALYTICS_ADMIN_WRITE,
+}
+
+export async function handler(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
   const { method } = req
   const { uuid } = req.query
+
+  // [self-platform] M3.0 RBAC guard (spec §7.3). 404-before-403 lives inside
+  // guardProjectRoute (resolver-first).
+  if (IS_SELF_PLATFORM) {
+    const action = RBAC_ACTIONS[method ?? '']
+    if (action) {
+      const ok = await guardProjectRoute(res, claims, {
+        action,
+        projectRef: String(req.query.ref),
+      })
+      if (!ok) return
+    }
+  }
 
   // [self-platform] Per-ref Logflare target; plain self-hosted keeps the
   // byte-identical env-check path below.

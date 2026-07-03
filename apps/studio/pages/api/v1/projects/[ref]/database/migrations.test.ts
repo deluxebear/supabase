@@ -9,6 +9,13 @@ vi.hoisted(() => {
   process.env.NEXT_PUBLIC_IS_PLATFORM = 'true'
 })
 
+// [self-platform] Task 14: RBAC guards now gate this route. Stub it open so
+// this sweep keeps exercising business logic — the guard's own behavior is
+// covered by migrations-rbac.test.ts.
+vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({
+  guardProjectRoute: vi.fn().mockResolvedValue(true),
+}))
+
 // [self-platform] vi.hoisted() avoids the vi.mock factory TDZ (see
 // run-lints.test.ts / Task 6/7 precedent).
 const { listMigrationVersions, applyAndTrackMigrations } = vi.hoisted(() => ({
