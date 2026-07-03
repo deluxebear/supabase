@@ -6,6 +6,7 @@ import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { handler } from './index'
+import { checkPermissionWithContext } from '@/lib/api/self-platform/rbac/enforce'
 import { resolveProjectConnection } from '@/lib/api/self-platform/resolve-connection'
 
 vi.hoisted(() => {
@@ -15,8 +16,33 @@ vi.mock('@/lib/api/self-platform/resolve-connection', () => {
   class ProjectNotFound extends Error {}
   return { ProjectNotFound, resolveProjectConnection: vi.fn() }
 })
+// [self-platform] Task 12: the route now gates on tenant:Sql:Query before
+// executeQuery. These pre-existing tests aren't exercising the readOnly
+// matrix (see index.rbac.test.ts for that) — default to an Owner-shaped
+// context so `can` is true and readOnly resolves false, preserving this
+// suite's original (pre-guard) behavior.
+vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({ checkPermissionWithContext: vi.fn() }))
 
-beforeEach(() => vi.clearAllMocks())
+const OWNER_CTX = {
+  gotrueId: 'g-1',
+  roles: [
+    {
+      id: 1,
+      baseRoleId: 1,
+      baseRoleName: 'Owner',
+      name: 'Owner',
+      orgId: 1,
+      orgSlug: 'default',
+      projectRefs: [],
+      projectIds: [],
+    },
+  ],
+}
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  vi.mocked(checkPermissionWithContext).mockResolvedValue({ can: true, ctx: OWNER_CTX })
+})
 
 describe('POST /platform/pg-meta/[ref]/query (self-platform)', () => {
   it('returns 404 Project not found when resolveProjectConnection throws ProjectNotFound', async () => {
@@ -32,6 +58,9 @@ describe('POST /platform/pg-meta/[ref]/query (self-platform)', () => {
 
     expect(res._getStatusCode()).toBe(404)
     expect(res._getJSONData()).toEqual({ message: 'Project not found' })
+    // [self-platform] Task 12: 404-before-403 — the permission check never
+    // runs when the ref doesn't resolve.
+    expect(checkPermissionWithContext).not.toHaveBeenCalled()
   })
 
   it('executes against the resolved project connection when the project is registered', async () => {
