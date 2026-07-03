@@ -108,14 +108,24 @@ const handleGetAll = async (req: NextApiRequest, res: NextApiResponse) => {
   // M2 C1 convention: bare host derived from the resolved kong URL.
   try {
     const conn = await resolveProjectConnection(String(req.query.ref))
+    // [self-platform] conn.supabaseUrl is only the project's public-facing
+    // kong URL for a registry hit (conn.row set). For the unregistered
+    // 'default' fallback, resolveProjectConnection's fromGlobalEnv() sets
+    // supabaseUrl = process.env.SUPABASE_URL — the service-INTERNAL url
+    // (e.g. kong:8000), which is non-empty in real deployments and must
+    // NOT be used to derive the public endpoint/protocol. Only derive from
+    // conn.supabaseUrl when there's an actual registry row; otherwise keep
+    // the PROJECT_ENDPOINT / PROJECT_ENDPOINT_PROTOCOL globals (public host).
     let endpoint = PROJECT_ENDPOINT
     let protocol = PROJECT_ENDPOINT_PROTOCOL
-    try {
-      const u = new URL(conn.supabaseUrl)
-      endpoint = u.host
-      protocol = u.protocol.replace(':', '')
-    } catch {
-      // empty/invalid resolved url (unregistered default) — keep globals.
+    if (conn.row) {
+      try {
+        const u = new URL(conn.supabaseUrl)
+        endpoint = u.host
+        protocol = u.protocol.replace(':', '')
+      } catch {
+        // registry row with a somehow-malformed kong_url — keep globals.
+      }
     }
     const restUrl = conn.restUrl || PROJECT_REST_URL
     const serviceApiKeys = [
