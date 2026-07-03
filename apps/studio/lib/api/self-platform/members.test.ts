@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { executePlatformQuery } from './db'
-import { getMemberContext } from './members'
+import { getMemberContext, getMemberInOrg, isOrgScopedRole, listMembers } from './members'
 
 vi.mock('./db', () => ({ executePlatformQuery: vi.fn() }))
 
@@ -107,5 +107,81 @@ describe('getMemberContext', () => {
       error: new Error('connection refused'),
     })
     await expect(getMemberContext(GOTRUE_ID)).rejects.toThrow('connection refused')
+  })
+})
+
+describe('isOrgScopedRole', () => {
+  it('is true only when the role is its own base (id === baseRoleId)', () => {
+    expect(isOrgScopedRole({ id: 1, baseRoleId: 1 })).toBe(true)
+    expect(isOrgScopedRole({ id: 7, baseRoleId: 3 })).toBe(false)
+  })
+})
+
+describe('listMembers', () => {
+  beforeEach(() => {
+    vi.mocked(executePlatformQuery).mockReset()
+  })
+
+  it('parameterizes orgId, reads verified mfa factors, scopes role_ids to the org', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({
+      data: [
+        {
+          gotrue_id: GOTRUE_ID,
+          username: 'admin',
+          primary_email: 'admin@internal.test',
+          mfa_enabled: true,
+          role_ids: [1],
+        },
+      ],
+      error: undefined,
+    })
+    const rows = await listMembers(1)
+    const call = vi.mocked(executePlatformQuery).mock.calls[0][0]
+    expect(call.parameters).toEqual([1])
+    expect(call.query).toContain('auth.mfa_factors')
+    expect(call.query).toContain("status = 'verified'")
+    expect(call.query).toContain('r.organization_id = om.organization_id')
+    expect(rows).toEqual([
+      {
+        gotrue_id: GOTRUE_ID,
+        username: 'admin',
+        primary_email: 'admin@internal.test',
+        mfa_enabled: true,
+        role_ids: [1],
+      },
+    ])
+  })
+
+  it('propagates query errors (fail closed, no fabricated rows)', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({
+      data: undefined,
+      error: new Error('boom'),
+    })
+    await expect(listMembers(1)).rejects.toThrow('boom')
+  })
+})
+
+describe('getMemberInOrg', () => {
+  beforeEach(() => {
+    vi.mocked(executePlatformQuery).mockReset()
+  })
+
+  it('returns null when the gotrue id has no membership row in the org', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({ data: [], error: undefined })
+    expect(await getMemberInOrg(1, GOTRUE_ID)).toBeNull()
+    const call = vi.mocked(executePlatformQuery).mock.calls[0][0]
+    expect(call.parameters).toEqual([1, GOTRUE_ID])
+  })
+
+  it('returns profile id and org-scoped role ids', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({
+      data: [{ profile_id: 42, gotrue_id: GOTRUE_ID, role_ids: [1, 5] }],
+      error: undefined,
+    })
+    expect(await getMemberInOrg(1, GOTRUE_ID)).toEqual({
+      profile_id: 42,
+      gotrue_id: GOTRUE_ID,
+      role_ids: [1, 5],
+    })
   })
 })

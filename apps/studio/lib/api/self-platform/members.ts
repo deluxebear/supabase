@@ -92,3 +92,82 @@ export async function getMemberContext(gotrueId: string): Promise<MemberContext>
   }
   return { gotrueId, roles: [...byRole.values()] }
 }
+
+/** [self-platform] Org-scoped role = a base role pointing at itself. The
+ * reliable discriminator for the I1 empty-derived-role guards (M3.1):
+ * a DERIVED role with an empty project set must grant NOTHING — do not
+ * use `projectRefs.length === 0` as the org-scoped test. */
+export function isOrgScopedRole(role: Pick<MemberRole, 'id' | 'baseRoleId'>): boolean {
+  return role.id === role.baseRoleId
+}
+
+export type MemberListRow = {
+  gotrue_id: string
+  username: string
+  primary_email: string
+  mfa_enabled: boolean
+  role_ids: number[]
+}
+
+// [self-platform] Member list for GET /organizations/{slug}/members.
+// mfa_enabled reads GoTrue's own auth.mfa_factors table — platform-auth and
+// the platform metadata schema share the platform database
+// (docker-compose.platform.yml GOTRUE_DB_DATABASE_URL). role_ids only counts
+// roles belonging to THIS org (cross-org isolation).
+export async function listMembers(orgId: number): Promise<MemberListRow[]> {
+  const { data, error } = await executePlatformQuery<MemberListRow>({
+    query: `
+      select pr.gotrue_id, pr.username, pr.primary_email,
+             exists (
+               select 1 from auth.mfa_factors f
+               where f.user_id = pr.gotrue_id and f.status = 'verified'
+             ) as mfa_enabled,
+             coalesce(
+               (select array_agg(mr.role_id order by mr.role_id)
+                  from platform.member_roles mr
+                  join platform.roles r on r.id = mr.role_id
+                 where mr.profile_id = pr.id
+                   and r.organization_id = om.organization_id),
+               '{}'
+             ) as role_ids
+      from platform.organization_members om
+      join platform.profiles pr on pr.id = om.profile_id
+      where om.organization_id = $1
+      order by pr.id
+    `,
+    parameters: [orgId],
+  })
+  if (error) throw error
+  return data ?? []
+}
+
+export type OrgMemberRow = {
+  profile_id: number
+  gotrue_id: string
+  role_ids: number[]
+}
+
+export async function getMemberInOrg(
+  orgId: number,
+  gotrueId: string
+): Promise<OrgMemberRow | null> {
+  const { data, error } = await executePlatformQuery<OrgMemberRow>({
+    query: `
+      select pr.id as profile_id, pr.gotrue_id,
+             coalesce(
+               (select array_agg(mr.role_id order by mr.role_id)
+                  from platform.member_roles mr
+                  join platform.roles r on r.id = mr.role_id
+                 where mr.profile_id = pr.id
+                   and r.organization_id = om.organization_id),
+               '{}'
+             ) as role_ids
+      from platform.organization_members om
+      join platform.profiles pr on pr.id = om.profile_id
+      where om.organization_id = $1 and pr.gotrue_id = $2
+    `,
+    parameters: [orgId, gotrueId],
+  })
+  if (error) throw error
+  return data?.[0] ?? null
+}
