@@ -31,57 +31,61 @@ beforeEach(() => {
 })
 afterEach(() => vi.unstubAllEnvs())
 
-describe('GET /platform/projects/{ref}/config/postgrest (self-platform)', () => {
-  it('returns the resolved project jwt_secret, keeping PGRST fields', async () => {
-    resolveProjectConnection.mockResolvedValueOnce({ row: { id: 2 }, jwtSecret: 'secret-b' })
-    const { handler } = await import('./postgrest')
+describe('GET /v1/projects/{ref}/api-keys (self-platform)', () => {
+  it('returns the resolved project keys', async () => {
+    resolveProjectConnection.mockResolvedValueOnce({
+      row: { id: 2 },
+      anonKey: 'anon-b',
+      serviceKey: 'service-b',
+      publishableKey: null,
+      secretKey: null,
+    })
+    const { handler } = await import('./api-keys')
     const { req, res } = createMocks({ method: 'GET', query: { ref: 'proj-b' } })
     await handler(req as any, res as any)
     expect(res._getStatusCode()).toBe(200)
     const body = res._getJSONData()
-    expect(body.jwt_secret).toBe('secret-b')
-    expect(body.db_anon_role).toBe('anon')
-    expect(body.db_schema).toBe('public,storage,graphql_public')
-    expect(body.max_rows).toBe(1000)
-  })
-
-  it('unregistered default (row null) falls through to env jwt_secret, not conn.jwtSecret', async () => {
-    vi.stubEnv('AUTH_JWT_SECRET', 'env-default-secret')
-    // A successful resolve with no registered row (the unregistered-default
-    // case). The `if (conn.row)` guard must fall through to the env default —
-    // conn.jwtSecret ('') must NOT be used.
-    resolveProjectConnection.mockResolvedValueOnce({ row: null, jwtSecret: '' })
-    const { handler } = await import('./postgrest')
-    const { req, res } = createMocks({ method: 'GET', query: { ref: 'default' } })
-    await handler(req as any, res as any)
-    expect(res._getStatusCode()).toBe(200)
-    expect(res._getJSONData().jwt_secret).toBe('env-default-secret')
+    expect(body).toHaveLength(2)
+    expect(body[0]).toMatchObject({ id: 'anon', api_key: 'anon-b' })
+    expect(body[1]).toMatchObject({ id: 'service_role', api_key: 'service-b' })
   })
 
   it('404s unknown ref', async () => {
     const { ProjectNotFound } = await import('@/lib/api/self-platform/resolve-connection')
     resolveProjectConnection.mockRejectedValueOnce(new ProjectNotFound('ghost'))
-    const { handler } = await import('./postgrest')
+    const { handler } = await import('./api-keys')
     const { req, res } = createMocks({ method: 'GET', query: { ref: 'ghost' } })
     await handler(req as any, res as any)
     expect(res._getStatusCode()).toBe(404)
     expect(res._getJSONData()).toEqual({ message: 'Project not found' })
   })
 
-  it('403s when checkPermission denies secrets:Read, without leaking jwt_secret', async () => {
-    resolveProjectConnection.mockResolvedValueOnce({ row: { id: 2 }, jwtSecret: 'secret-b' })
+  it('403s when checkPermission denies secrets:Read, without leaking keys', async () => {
+    resolveProjectConnection.mockResolvedValueOnce({
+      row: { id: 2 },
+      anonKey: 'anon-b',
+      serviceKey: 'service-b',
+      publishableKey: null,
+      secretKey: null,
+    })
     vi.mocked(checkPermission).mockResolvedValueOnce(false)
-    const { handler } = await import('./postgrest')
+    const { handler } = await import('./api-keys')
     const { req, res } = createMocks({ method: 'GET', query: { ref: 'proj-b' } })
     await handler(req as any, res as any, claimsOf('g-3'))
     expect(res._getStatusCode()).toBe(403)
     expect(res._getJSONData()).toEqual({ message: 'Forbidden' })
-    expect(res._getJSONData()).not.toHaveProperty('jwt_secret')
+    expect(JSON.stringify(res._getJSONData())).not.toContain('anon-b')
   })
 
   it('calls checkPermission with the exact secrets:Read declaration', async () => {
-    resolveProjectConnection.mockResolvedValueOnce({ row: { id: 2 }, jwtSecret: 'secret-b' })
-    const { handler } = await import('./postgrest')
+    resolveProjectConnection.mockResolvedValueOnce({
+      row: { id: 2 },
+      anonKey: 'anon-b',
+      serviceKey: 'service-b',
+      publishableKey: null,
+      secretKey: null,
+    })
+    const { handler } = await import('./api-keys')
     const { req, res } = createMocks({ method: 'GET', query: { ref: 'proj-b' } })
     await handler(req as any, res as any, claimsOf('g-1'))
     expect(res._getStatusCode()).toBe(200)
@@ -98,7 +102,7 @@ describe('GET /platform/projects/{ref}/config/postgrest (self-platform)', () => 
   it('404s before checkPermission is invoked for an unknown ref', async () => {
     const { ProjectNotFound } = await import('@/lib/api/self-platform/resolve-connection')
     resolveProjectConnection.mockRejectedValueOnce(new ProjectNotFound('ghost'))
-    const { handler } = await import('./postgrest')
+    const { handler } = await import('./api-keys')
     const { req, res } = createMocks({ method: 'GET', query: { ref: 'ghost' } })
     await handler(req as any, res as any, claimsOf('g-1'))
     expect(res._getStatusCode()).toBe(404)

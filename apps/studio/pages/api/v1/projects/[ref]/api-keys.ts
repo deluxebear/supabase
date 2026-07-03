@@ -1,3 +1,5 @@
+import { PermissionAction } from '@supabase/shared-types/out/constants'
+import type { JwtPayload } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
@@ -6,6 +8,7 @@ import {
   getNonPlatformApiKeys,
   parseRevealQuery,
 } from '@/lib/api/self-hosted/api-keys'
+import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
 import {
   ProjectNotFound,
   resolveProjectConnection,
@@ -15,19 +18,19 @@ import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 
 // [self-platform] exported for handler-level tests
-export async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function handler(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
   const { method } = req
 
   switch (method) {
     case 'GET':
-      return handleGetAll(req, res)
+      return handleGetAll(req, res, claims)
     default:
       res.setHeader('Allow', ['GET'])
       res.status(405).json({ data: null, error: { message: `Method ${method} Not Allowed` } })
   }
 }
 
-const handleGetAll = async (req: NextApiRequest, res: NextApiResponse) => {
+const handleGetAll = async (req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) => {
   const reveal = parseRevealQuery(req.query.reveal)
 
   // [self-platform] Resolve the registry project by ref so multi-project
@@ -40,6 +43,15 @@ const handleGetAll = async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     const conn = await resolveProjectConnection(String(req.query.ref))
+    // [self-platform] M3.0 Class C guard (spec §7.3): these are
+    // shared-stack-wide credentials — Owner/Administrator only. Resolver
+    // 404 above wins for unknown refs (404 before 403).
+    const canReadSecrets = await checkPermission(claims, {
+      action: PermissionAction.SECRETS_READ,
+      resource: 'projects',
+      projectRef: String(req.query.ref),
+    })
+    if (!canReadSecrets) return res.status(403).json({ message: 'Forbidden' })
     const response = getNonPlatformApiKeys(conn).map((key) => applyRevealToApiKey(key, reveal))
     return res.status(200).json(response)
   } catch (err) {

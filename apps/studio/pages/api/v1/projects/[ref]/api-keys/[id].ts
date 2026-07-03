@@ -1,7 +1,10 @@
+import { PermissionAction } from '@supabase/shared-types/out/constants'
+import type { JwtPayload } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
 import { getNonPlatformApiKeyById, parseRevealQuery } from '@/lib/api/self-hosted/api-keys'
+import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
 import {
   ProjectNotFound,
   resolveProjectConnection,
@@ -12,19 +15,20 @@ const apiKeyByIdRoute = (req: NextApiRequest, res: NextApiResponse) => apiWrappe
 
 export default apiKeyByIdRoute
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+// [self-platform] exported for handler-level tests
+export async function handler(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
   const { method } = req
 
   switch (method) {
     case 'GET':
-      return handleGet(req, res)
+      return handleGet(req, res, claims)
     default:
       res.setHeader('Allow', ['GET'])
       res.status(405).json({ data: null, error: { message: `Method ${method} Not Allowed` } })
   }
 }
 
-const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
+const handleGet = async (req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) => {
   const idParam = req.query.id
   const id = Array.isArray(idParam) ? idParam[0] : idParam
 
@@ -48,6 +52,15 @@ const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     const conn = await resolveProjectConnection(String(req.query.ref))
+    // [self-platform] M3.0 Class C guard (spec §7.3): this is a
+    // shared-stack-wide credential — Owner/Administrator only. Resolver
+    // 404 above wins for unknown refs (404 before 403).
+    const canReadSecrets = await checkPermission(claims, {
+      action: PermissionAction.SECRETS_READ,
+      resource: 'projects',
+      projectRef: String(req.query.ref),
+    })
+    if (!canReadSecrets) return res.status(403).json({ message: 'Forbidden' })
     const apiKey = getNonPlatformApiKeyById(id, reveal, conn)
 
     if (!apiKey) {

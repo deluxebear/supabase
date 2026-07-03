@@ -1,8 +1,11 @@
+import { PermissionAction } from '@supabase/shared-types/out/constants'
+import type { JwtPayload } from '@supabase/supabase-js'
 import { components } from 'api-types'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
 import { mintServiceJwt } from '@/lib/api/self-platform/mint-jwt'
+import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
 import {
   ProjectNotFound,
   resolveProjectConnection,
@@ -24,19 +27,19 @@ const MIN_EXP_SECONDS = 60
 const MAX_EXP_SECONDS = 3600
 
 // [self-platform] exported for handler-level tests
-export async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function handler(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
   const { method } = req
 
   switch (method) {
     case 'POST':
-      return handlePost(req, res)
+      return handlePost(req, res, claims)
     default:
       res.setHeader('Allow', ['POST'])
       res.status(405).json({ data: null, error: { message: `Method ${method} Not Allowed` } })
   }
 }
 
-const handlePost = async (req: NextApiRequest, res: NextApiResponse) => {
+const handlePost = async (req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) => {
   if (!IS_SELF_PLATFORM) {
     // Plain self-hosted: historical behavior, byte-identical.
     const response = {
@@ -81,6 +84,15 @@ const handlePost = async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     const conn = await resolveProjectConnection(String(req.query.ref))
+    // [self-platform] M3.0 Class C guard (spec §7.3): the minted JWT is
+    // signed with a shared-stack-wide credential — Owner/Administrator
+    // only. Resolver 404 above wins for unknown refs (404 before 403).
+    const canReadSecrets = await checkPermission(claims, {
+      action: PermissionAction.SECRETS_READ,
+      resource: 'projects',
+      projectRef: String(req.query.ref),
+    })
+    if (!canReadSecrets) return res.status(403).json({ message: 'Forbidden' })
     if (!conn.jwtSecret) {
       // Fail closed — never fall back to returning a permanent key.
       return res.status(500).json({ message: 'JWT secret is not configured for this project' })

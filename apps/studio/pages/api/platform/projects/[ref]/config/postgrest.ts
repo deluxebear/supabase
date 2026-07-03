@@ -1,7 +1,10 @@
+import { PermissionAction } from '@supabase/shared-types/out/constants'
+import type { JwtPayload } from '@supabase/supabase-js'
 import { components } from 'api-types'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
+import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
 import {
   ProjectNotFound,
   resolveProjectConnection,
@@ -10,19 +13,19 @@ import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 
-export async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function handler(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
   const { method } = req
 
   switch (method) {
     case 'GET':
-      return handleGet(req, res)
+      return handleGet(req, res, claims)
     default:
       res.setHeader('Allow', ['GET'])
       res.status(405).json({ data: null, error: { message: `Method ${method} Not Allowed` } })
   }
 }
 
-const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
+const handleGet = async (req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) => {
   // [self-platform] jwt_secret must come from the resolved project; other
   // fields are stack-level PostgREST config the registry doesn't model, so
   // they keep their historical values (mirrors getProjectSettings).
@@ -31,6 +34,15 @@ const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
   if (IS_SELF_PLATFORM) {
     try {
       const conn = await resolveProjectConnection(String(req.query.ref))
+      // [self-platform] M3.0 Class C guard (spec §7.3): jwt_secret is a
+      // shared-stack-wide credential — Owner/Administrator only. Resolver
+      // 404 above wins for unknown refs (404 before 403).
+      const canReadSecrets = await checkPermission(claims, {
+        action: PermissionAction.SECRETS_READ,
+        resource: 'projects',
+        projectRef: String(req.query.ref),
+      })
+      if (!canReadSecrets) return res.status(403).json({ message: 'Forbidden' })
       if (conn.row) jwtSecret = conn.jwtSecret
     } catch (err) {
       if (err instanceof ProjectNotFound) {

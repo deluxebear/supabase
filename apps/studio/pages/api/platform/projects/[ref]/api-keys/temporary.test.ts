@@ -1,7 +1,10 @@
+import { PermissionAction } from '@supabase/shared-types/out/constants'
+import type { JwtPayload } from '@supabase/supabase-js'
 import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { handler } from './temporary'
+import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
 import { ProjectNotFound } from '@/lib/api/self-platform/resolve-connection'
 
 vi.hoisted(() => {
@@ -19,11 +22,19 @@ vi.mock('@/lib/api/self-platform/resolve-connection', async (importOriginal) => 
   resolveProjectConnection,
 }))
 
+vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({ checkPermission: vi.fn() }))
+
+const claimsOf = (sub: string) => ({ sub }) as JwtPayload
+
 function decodePayload(token: string) {
   return JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString('utf8'))
 }
 
-beforeEach(() => resolveProjectConnection.mockReset())
+beforeEach(() => {
+  resolveProjectConnection.mockReset()
+  vi.mocked(checkPermission).mockReset()
+  vi.mocked(checkPermission).mockResolvedValue(true)
+})
 
 describe('POST /platform/projects/{ref}/api-keys/temporary (self-platform)', () => {
   it('mints a short-lived JWT with the resolved project secret', async () => {
@@ -94,5 +105,38 @@ describe('POST /platform/projects/{ref}/api-keys/temporary (self-platform)', () 
     await handler(r2 as any, s2 as any)
     expect(s2._getStatusCode()).toBe(500)
     expect(s2._getJSONData().api_key).toBeUndefined()
+  })
+
+  it('403s when checkPermission denies secrets:Read, without minting an api_key', async () => {
+    resolveProjectConnection.mockResolvedValueOnce({ row: { id: 2 }, jwtSecret: 'secret-b' })
+    vi.mocked(checkPermission).mockResolvedValueOnce(false)
+    const { req, res } = createMocks({ method: 'POST', query: { ref: 'proj-b' } })
+    await handler(req as any, res as any, claimsOf('g-3'))
+    expect(res._getStatusCode()).toBe(403)
+    expect(res._getJSONData()).toEqual({ message: 'Forbidden' })
+    expect(res._getJSONData()).not.toHaveProperty('api_key')
+  })
+
+  it('calls checkPermission with the exact secrets:Read declaration', async () => {
+    resolveProjectConnection.mockResolvedValueOnce({ row: { id: 2 }, jwtSecret: 'secret-b' })
+    const { req, res } = createMocks({ method: 'POST', query: { ref: 'proj-b' } })
+    await handler(req as any, res as any, claimsOf('g-1'))
+    expect(res._getStatusCode()).toBe(200)
+    expect(checkPermission).toHaveBeenCalledWith(
+      claimsOf('g-1'),
+      expect.objectContaining({
+        action: PermissionAction.SECRETS_READ,
+        resource: 'projects',
+        projectRef: 'proj-b',
+      })
+    )
+  })
+
+  it('404s before checkPermission is invoked for an unknown ref', async () => {
+    resolveProjectConnection.mockRejectedValueOnce(new ProjectNotFound('ghost'))
+    const { req, res } = createMocks({ method: 'POST', query: { ref: 'ghost' } })
+    await handler(req as any, res as any, claimsOf('g-1'))
+    expect(res._getStatusCode()).toBe(404)
+    expect(checkPermission).not.toHaveBeenCalled()
   })
 })
