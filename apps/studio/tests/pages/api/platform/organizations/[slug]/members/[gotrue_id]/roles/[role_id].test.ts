@@ -2,7 +2,7 @@ import type { JwtPayload } from '@supabase/supabase-js'
 import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { handler } from './[role_id]'
+import { handler } from '../../../../../../../../../pages/api/platform/organizations/[slug]/members/[gotrue_id]/roles/[role_id]'
 import { getMemberInOrg } from '@/lib/api/self-platform/members'
 import { guardOrgRoute } from '@/lib/api/self-platform/rbac/enforce'
 import {

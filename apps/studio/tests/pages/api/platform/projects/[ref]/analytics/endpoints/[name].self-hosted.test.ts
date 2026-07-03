@@ -24,7 +24,9 @@ describe('endpoints/[name] plain self-hosted (byte-exact assert path)', () => {
     // Use the default export (apiWrapper-wrapped) — the bare `assert()` throw
     // happens before the route's own try/catch, so only apiWrapper's
     // catch-all maps it to a response.
-    const route = (await import('./[name]')).default
+    const route = (
+      await import('../../../../../../../../pages/api/platform/projects/[ref]/analytics/endpoints/[name]')
+    ).default
     const { req, res } = createMocks({
       method: 'GET',
       query: { ref: ['a', 'b'], name: 'logs.all' },
@@ -40,7 +42,9 @@ describe('endpoints/[name] plain self-hosted (byte-exact assert path)', () => {
   it('missing name still throws the original AssertionError (500 { error }), not a 400', async () => {
     vi.resetModules()
     vi.stubEnv('NEXT_PUBLIC_SELF_PLATFORM', '')
-    const route = (await import('./[name]')).default
+    const route = (
+      await import('../../../../../../../../pages/api/platform/projects/[ref]/analytics/endpoints/[name]')
+    ).default
     const { req, res } = createMocks({
       method: 'GET',
       query: { ref: 'proj-b' },

@@ -4,7 +4,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 async function loadHandler(selfPlatform: string) {
   vi.resetModules()
   vi.stubEnv('NEXT_PUBLIC_SELF_PLATFORM', selfPlatform)
-  return (await import('./[role_id]')).handler
+  return (
+    await import('../../../../../../../../../pages/api/platform/organizations/[slug]/members/[gotrue_id]/roles/[role_id]')
+  ).handler
 }
 
 afterEach(() => vi.unstubAllEnvs())
