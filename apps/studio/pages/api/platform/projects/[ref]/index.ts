@@ -1,7 +1,10 @@
+import { PermissionAction } from '@supabase/shared-types/out/constants'
+import type { JwtPayload } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
 import { toProjectDetailResponse } from '@/lib/api/self-platform/projects'
+import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
 import {
   ProjectNotFound,
   resolveProjectConnection,
@@ -12,7 +15,7 @@ import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 
 // [self-platform] exported for handler-level tests
-export async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function handler(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', ['GET'])
     return res
@@ -28,6 +31,14 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
   const ref = String(req.query.ref)
   try {
     const conn = await resolveProjectConnection(ref)
+    // [self-platform] Visibility guard (spec §8): resolver 404 has already won
+    // for unknown refs; a resolvable ref the member has no read grant on is 403.
+    const canRead = await checkPermission(claims, {
+      action: PermissionAction.READ,
+      resource: 'projects',
+      projectRef: ref,
+    })
+    if (!canRead) return res.status(403).json({ message: 'Forbidden' })
     // [self-platform] conn.row is the raw registry row (Task 4's ResolvedConnection.row) — a
     // registry hit maps through toProjectDetailResponse, the 'default' global-env fallback (no
     // row) shapes as DEFAULT_PROJECT with the resolved connection/rest URL. Avoids a second

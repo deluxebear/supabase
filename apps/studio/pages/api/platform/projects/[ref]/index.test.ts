@@ -1,7 +1,10 @@
+import { PermissionAction } from '@supabase/shared-types/out/constants'
+import type { JwtPayload } from '@supabase/supabase-js'
 import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { handler } from './index'
+import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
 import {
   ProjectNotFound,
   resolveProjectConnection,
@@ -17,6 +20,9 @@ vi.mock('@/lib/api/self-platform/resolve-connection', () => {
     resolveProjectConnection: vi.fn(),
   }
 })
+vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({ checkPermission: vi.fn() }))
+
+const claimsOf = (sub: string) => ({ sub }) as JwtPayload
 
 // [self-platform] `row` mirrors Task 4's ResolvedConnection.row (PlatformProjectRow | null) — a
 // registry hit carries the raw row so index.ts can map it via toProjectDetailResponse without a
@@ -64,14 +70,22 @@ const resolved = {
     secret_key_enc: null,
   },
 }
-beforeEach(() => vi.clearAllMocks())
+beforeEach(() => {
+  vi.clearAllMocks()
+  vi.mocked(checkPermission).mockResolvedValue(true)
+})
 
 describe('GET /platform/projects/[ref] (self-platform)', () => {
   it('returns the resolved project with encrypted connectionString', async () => {
     vi.mocked(resolveProjectConnection).mockResolvedValue(resolved as any)
     const { req, res } = createMocks({ method: 'GET', query: { ref: 'proj-b' } })
-    await handler(req as any, res as any)
+    await handler(req as any, res as any, claimsOf('g-1'))
     expect(resolveProjectConnection).toHaveBeenCalledWith('proj-b')
+    expect(checkPermission).toHaveBeenCalledWith(claimsOf('g-1'), {
+      action: PermissionAction.READ,
+      resource: 'projects',
+      projectRef: 'proj-b',
+    })
     expect(res._getStatusCode()).toBe(200)
     expect(res._getJSONData()).toMatchObject({
       ref: 'proj-b',
@@ -79,11 +93,20 @@ describe('GET /platform/projects/[ref] (self-platform)', () => {
       restUrl: 'http://kong-b:8000/rest/v1/',
     })
   })
-  it('404s an unknown project', async () => {
+  it('404s an unknown project and never calls checkPermission (resolver 404 wins first)', async () => {
     vi.mocked(resolveProjectConnection).mockRejectedValue(new ProjectNotFound('ghost'))
     const { req, res } = createMocks({ method: 'GET', query: { ref: 'ghost' } })
-    await handler(req as any, res as any)
+    await handler(req as any, res as any, claimsOf('g-1'))
     expect(res._getStatusCode()).toBe(404)
     expect(res._getJSONData()).toEqual({ message: 'Project not found' })
+    expect(checkPermission).not.toHaveBeenCalled()
+  })
+  it('returns 403 Forbidden for a resolvable ref the caller has no read grant on', async () => {
+    vi.mocked(resolveProjectConnection).mockResolvedValue(resolved as any)
+    vi.mocked(checkPermission).mockResolvedValue(false)
+    const { req, res } = createMocks({ method: 'GET', query: { ref: 'proj-b' } })
+    await handler(req as any, res as any, claimsOf('g-1'))
+    expect(res._getStatusCode()).toBe(403)
+    expect(res._getJSONData()).toEqual({ message: 'Forbidden' })
   })
 })

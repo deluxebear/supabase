@@ -4,6 +4,7 @@ import { executePlatformQuery } from './db'
 import {
   getOrganizationBySlug,
   listOrganizations,
+  listOrganizationsForProfile,
   toOrganizationResponse,
   toOrganizationSlugResponse,
 } from './organizations'
@@ -11,14 +12,28 @@ import {
 vi.mock('./db', () => ({ executePlatformQuery: vi.fn() }))
 
 const row = { id: 1, slug: 'default', name: 'Default Organization' }
+const GOTRUE_ID = '11111111-2222-3333-4444-555555555555'
 
 describe('toOrganizationResponse', () => {
-  it('produces the OrganizationResponse contract with enterprise plan', () => {
-    expect(toOrganizationResponse(row)).toMatchObject({
+  it('produces the OrganizationResponse contract with enterprise plan and is_owner=true when isOwner', () => {
+    expect(toOrganizationResponse(row, true)).toMatchObject({
       id: 1,
       slug: 'default',
       name: 'Default Organization',
       is_owner: true,
+      plan: { id: 'enterprise', name: 'Enterprise' },
+      opt_in_tags: [],
+      billing_email: null,
+      restriction_status: null,
+    })
+  })
+
+  it('sets is_owner=false when isOwner is false, every other field unchanged', () => {
+    expect(toOrganizationResponse(row, false)).toMatchObject({
+      id: 1,
+      slug: 'default',
+      name: 'Default Organization',
+      is_owner: false,
       plan: { id: 'enterprise', name: 'Enterprise' },
       opt_in_tags: [],
       billing_email: null,
@@ -46,5 +61,14 @@ describe('queries', () => {
     expect(await getOrganizationBySlug('default')).toBeNull()
     const call = vi.mocked(executePlatformQuery).mock.calls.at(-1)![0]
     expect(call.parameters).toEqual(['default'])
+  })
+
+  it('listOrganizationsForProfile parameterizes the gotrue id and joins membership + profiles', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({ data: [row], error: undefined })
+    expect(await listOrganizationsForProfile(GOTRUE_ID)).toEqual([row])
+    const call = vi.mocked(executePlatformQuery).mock.calls.at(-1)![0]
+    expect(call.parameters).toEqual([GOTRUE_ID])
+    expect(call.query).toContain('platform.organization_members')
+    expect(call.query).toContain('join platform.profiles')
   })
 })

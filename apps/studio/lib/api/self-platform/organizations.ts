@@ -12,7 +12,10 @@ type OrganizationSlugResponse = components['schemas']['OrganizationSlugResponse'
 
 const ENTERPRISE_PLAN = { id: 'enterprise' as const, name: 'Enterprise' }
 
-export function toOrganizationResponse(row: PlatformOrganizationRow): OrganizationResponse {
+export function toOrganizationResponse(
+  row: PlatformOrganizationRow,
+  isOwner: boolean
+): OrganizationResponse {
   return {
     id: row.id,
     slug: row.slug,
@@ -20,7 +23,7 @@ export function toOrganizationResponse(row: PlatformOrganizationRow): Organizati
     billing_email: null,
     billing_partner: null,
     integration_source: null,
-    is_owner: true,
+    is_owner: isOwner, // [self-platform] M3.0: real Owner-role check (was hardcoded true)
     opt_in_tags: [],
     organization_missing_address: false,
     organization_missing_tax_id: false,
@@ -66,4 +69,25 @@ export async function getOrganizationBySlug(slug: string): Promise<PlatformOrgan
   })
   if (error) throw error
   return data?.[0] ?? null
+}
+
+// [self-platform] Organizations the profile is a MEMBER of (organization_members
+// is membership; roles are separate — a zero-role member still sees the org
+// shell, just with no projects/permissions).
+export async function listOrganizationsForProfile(
+  gotrueId: string
+): Promise<PlatformOrganizationRow[]> {
+  const { data, error } = await executePlatformQuery<PlatformOrganizationRow>({
+    query: `
+      select o.id, o.slug, o.name
+      from platform.organizations o
+      join platform.organization_members om on om.organization_id = o.id
+      join platform.profiles pr on pr.id = om.profile_id
+      where pr.gotrue_id = $1
+      order by o.id
+    `,
+    parameters: [gotrueId],
+  })
+  if (error) throw error
+  return data ?? []
 }
