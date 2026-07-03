@@ -594,6 +594,12 @@ entry) is only partially per-ref today:
   `projectRef` parameter but ignore it (`_projectRef`) and call
   `getLints({ headers, exposedSchemas })`, which always queries the single global-env project's
   database, regardless of which project the MCP session is conceptually scoped to.
+- `getDevelopmentOperations().getProjectUrl` and `.getPublishableKeys` are also **not** per-ref
+  (M2.2-triage finding, carried forward rather than fixed): both take a `projectRef` parameter,
+  ignore it (`_projectRef`), and read the single global-env project's URL/publishable key instead.
+  Left as-is deliberately — these are doc-only, client-side-safe values (a publishable/anon key and
+  a public project URL, never a secret), unlike the credential-bearing routes M2.1/M2.2 closed
+  above, so this is the same data-scoped-not-secret-bearing category as the advisors/lints gap.
 
 Threading `projectRef` through the advisors/lints path is deferred: `pages/api/mcp/index.ts`
 currently constructs one `createSupabaseMcpServer` per request scoped to a single
@@ -601,3 +607,116 @@ currently constructs one `createSupabaseMcpServer` per request scoped to a singl
 `getLints`'s global-DB read in isolation wouldn't make MCP usable end-to-end against a non-default
 registered project. This is tracked as follow-up work for whenever MCP is made multi-project, not
 a credential leak (lints/advisors results are data-scoped, not secret-bearing).
+
+## M3.0: Roles and RBAC
+
+M1/M2/M2.1/M2.2 answered *which project* a request may reach; they had no concept of *what a given
+dashboard member is allowed to do* once a project is reachable — every registered member behaved
+like the sole M1 admin. M3.0 adds a real role model, seeded and enforced server-side, so a
+dashboard session's permissions are looked up per member rather than assumed.
+
+### Role tables and seeding
+
+`docker/volumes/platform/migrations/04-roles.sql` adds three tables: `platform.roles` (one row per
+role, `base_role_id` self-references for the four base roles and points at the base for a
+project-scoped derived role), `platform.role_projects` (which projects a derived role is scoped
+to — empty/absent for an org-wide role), and `platform.member_roles` (which roles a
+`platform.profiles` row holds). The four base roles are seeded with **fixed** ids for the default
+organization, matched by the client-side `FIXED_ROLE_ORDER`
+(`apps/studio/data/organization-members/organization-roles-query.ts`) and the server-side
+`BASE_ROLE_ORDER`/`ROLE_MATRIX` (`apps/studio/lib/api/self-platform/rbac/matrix.ts`):
+
+| id  | Name            | Grants                                                                 |
+| --- | --------------- | ----------------------------------------------------------------------- |
+| 1   | Owner           | Full access, including organization management.                       |
+| 2   | Administrator   | Full access except organization management and granting Owner.        |
+| 3   | Developer       | Project content read/write; no settings, credentials, or member management. |
+| 4   | Read-only       | Read-only access to project content.                                   |
+
+The migration also backfills: every existing `platform.organization_members` row gets role id `1`
+(Owner). This is deliberate, not a default-to-least-privilege choice — before M3.0 every registered
+member effectively had unrestricted access (there was no role model to restrict them), so backfilling
+anything less than Owner would silently revoke access members already had. New members added after
+M3.0 get no role automatically; see "Zero-role members" below.
+
+### Enforcement subject and credential-bearing routes
+
+`apps/studio/lib/api/self-platform/rbac/enforce.ts`'s `checkPermission`/`checkPermissionWithContext`
+resolve `claims.sub` (the **platform GoTrue session**, i.e. who is logged into the dashboard) to a
+`platform.profiles` row, load that member's roles via `getMemberContext`, expand them against
+`ROLE_MATRIX`, and evaluate with the same `doPermissionsCheck` evaluator the client uses
+(`apps/studio/lib/permissions-check.ts`). The enforcement subject is **always** the dashboard
+session — never possession of a project's own data-plane credential. `guardProjectRoute` wraps this
+for `[ref]` routes and preserves the existing 404-before-403 order: an unknown `ref` still 404s
+before any permission check runs.
+
+Every credential-bearing route this fork has hardened per-ref (`api-keys/temporary.ts`,
+`config/index.ts`, `config/postgrest.ts`, `props/project/[ref]/api.ts` — see "M2.2: credential
+closure" above) additionally requires the `secrets:Read` action, which `ROLE_MATRIX` only grants to
+Owner and Administrator. This is not an arbitrary restriction: see "Shared-stack JWT secret" above
+— on the common single-stack deployment, a JWT secret or minted service JWT handed to *any* project
+is cryptographically valid for every sibling project registered on that same stack. Gating
+`secrets:Read` to Owner/Administrator means a Developer or Read-only member, who by design only has
+narrow per-project grants, can never obtain a credential that happens to unlock projects they have
+no role on.
+
+### Zero-role members
+
+A member with no `platform.member_roles` row (a fresh GoTrue signup, or an existing member who
+hasn't been assigned a role yet) has zero roles, and `checkPermission` fails closed for zero roles:
+`GET /platform/profile/permissions` returns `[]`, the project list endpoints return an empty list,
+and every `guardProjectRoute`-guarded route 403s. There is intentionally no auto-grant beyond the
+one-time Owner backfill above.
+
+M3.1 is scoped to ship an admin UI for assigning roles. Until then, grant a role by inserting
+directly into `platform.member_roles` against the running `platform-db`:
+
+```bash
+docker exec -it supabase-platform-db psql -U postgres -d platform -c \
+  "insert into platform.member_roles (profile_id, role_id) select id, 3 from platform.profiles where gotrue_id = '<gotrue-user-id>';"
+```
+
+(`role_id` `3` = Developer in the fixed seed above; substitute the base role id, or the id of a
+derived, project-scoped role created directly in `platform.roles`/`platform.role_projects`.)
+
+### Client permission cache staleness
+
+The dashboard's own gating (`usePermissionsQuery`, `apps/studio/data/permissions/permissions-query.ts`)
+caches `GET /platform/profile/permissions` with `staleTime: 5 * 60 * 1000` (5 minutes). A role
+change made via the `psql` workaround above (or, later, the M3.1 UI) can take up to 5 minutes to be
+reflected in what the dashboard's own UI shows or hides for an already-open session. This is a
+client-side staleness window only — every server-side `checkPermission`/`guardProjectRoute` call
+re-reads `platform.member_roles` on each request, so API-level enforcement is immediate regardless
+of what the client has cached.
+
+### Data-plane read-only enforcement
+
+A Read-only member's SQL Editor / query-route traffic is routed over the registry's
+`db_user_readonly`-based DSN (`resolveProjectConnection`'s `pgConnReadOnlyEncrypted`, built from
+`platform.projects.db_user_readonly`) rather than the read-write DSN. The strength of that
+guarantee is entirely the strength of **the actual Postgres role registered in that column** — on a
+standard stack that's `supabase_read_only_user` (the role the base images already provision with
+`SELECT`-only grants), but `register-project.ts` does not validate that whatever role name you pass
+via `--db-user-readonly` (or `POSTGRES_USER_READ_ONLY`) is genuinely read-only at the database
+level. Registering a project with a readonly-DSN role that actually has write privileges silently
+defeats this guarantee; that check is outside what the platform layer can enforce from here.
+
+### Upgrading an existing platform-db to M3.0
+
+`04-roles.sql` only runs automatically against an **empty** `platform-db` data directory, same as
+every prior migration in this file. Apply it by hand once against a running deployment:
+
+```bash
+docker exec -i supabase-platform-db psql -U postgres -d platform < docker/volumes/platform/migrations/04-roles.sql
+```
+
+This step is **required**, not optional, on upgrade. `getMemberContext` treats a missing
+`platform.member_roles` table as "every member has zero roles" (fail-closed, matching the
+degradation pattern `projects.ts` already uses for pre-M2.1 data dirs — see "Upgrading an existing
+M2 platform-db to M2.1" above), and logs a warn-once message
+(`[self-platform] platform.member_roles missing (pre-M3 platform-db) — treating every member as
+having ZERO roles (fail-closed). Run docker/volumes/platform/migrations/04-roles.sql to upgrade.`)
+the first time it happens. Skipping this migration after upgrading past M3.0 therefore locks every
+existing member out of every guarded route until it's applied — deliberately fail-closed rather
+than fail-open, but worth calling out explicitly since it degrades silently otherwise (one log line,
+no crash).

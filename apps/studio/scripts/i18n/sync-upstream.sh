@@ -47,6 +47,7 @@ echo "==> Verifying i18n activation glue is intact"
 glue_ok=1
 grep -q 'I18nProvider' apps/studio/pages/_app.tsx || { echo "ERROR: <I18nProvider> missing from pages/_app.tsx after merge — re-add it (import from '@/lib/i18n/I18nProvider' and wrap the app inside QueryClientProvider)."; glue_ok=0; }
 grep -q 'LanguageSwitcher' apps/studio/components/interfaces/UserDropdown.tsx || { echo "ERROR: <LanguageSwitcher/> missing from UserDropdown.tsx after merge — re-add it."; glue_ok=0; }
+grep -q 'permissions-check' apps/studio/hooks/misc/useCheckPermissions.ts || { echo "ERROR: evaluator re-import missing from useCheckPermissions.ts after merge — the pure evaluator lives in lib/permissions-check.ts (M3.0); restore the import/re-export and port any upstream evaluator changes into lib/permissions-check.ts."; glue_ok=0; }
 if [ "$glue_ok" -ne 1 ]; then
   echo "==> i18n glue check FAILED. Resolve the above before committing the merge."
   exit 1

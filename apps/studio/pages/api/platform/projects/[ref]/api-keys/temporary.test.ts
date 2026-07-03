@@ -94,6 +94,21 @@ describe('POST /platform/projects/{ref}/api-keys/temporary (self-platform)', () 
     expect(res._getStatusCode()).toBe(400)
   })
 
+  // [self-platform] M2.2 deferred Minor: `role: null` is `!== undefined` so it
+  // reaches the typeof-string check (typeof null === 'object') rather than
+  // skipping straight to the allowlist check — pins the wider-than-brief
+  // "any non-string role, including null, is an Invalid claims parameter" behavior.
+  it('400s claims with an explicit null role', async () => {
+    resolveProjectConnection.mockResolvedValue({ row: { id: 2 }, jwtSecret: 's' })
+    const { req, res } = createMocks({
+      method: 'POST',
+      query: { ref: 'proj-b', claims: JSON.stringify({ role: null }) },
+    })
+    await handler(req as any, res as any)
+    expect(res._getStatusCode()).toBe(400)
+    expect(res._getJSONData()).toEqual({ message: 'Invalid claims parameter' })
+  })
+
   it('404s unknown ref; 500s (fail closed) on empty jwt secret', async () => {
     resolveProjectConnection.mockRejectedValueOnce(new ProjectNotFound('ghost'))
     const { req: r1, res: s1 } = createMocks({ method: 'POST', query: { ref: 'ghost' } })
