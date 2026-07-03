@@ -1,17 +1,20 @@
 // [self-platform] Org-scoped project list (used by org home + project
-// selector). Registry-backed in M2; falls back to the single default
-// project when the org has nothing registered (M1 behavior).
+// selector). Registry-backed in M2; role-filtered in M3.0; falls back to
+// the single default project when the org has nothing registered and the
+// caller has org-wide visibility (M1 behavior).
+import type { JwtPayload } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
 import { listOrgProjectsV2 } from '@/lib/api/self-platform/list-user-projects'
+import { getMemberContext } from '@/lib/api/self-platform/members'
 import { parsePaginationParam } from '@/lib/api/self-platform/pagination'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export default (req: NextApiRequest, res: NextApiResponse) =>
   apiWrapper(req, res, handler, { withAuth: true })
 
-export async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function handler(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', ['GET'])
     return res
@@ -30,8 +33,15 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (limit === null || offset === null) {
     return res.status(400).json({ message: 'Invalid pagination parameters' })
   }
+
+  const gotrueId = claims?.sub
+  if (!gotrueId) {
+    return res.status(401).json({ message: 'Unauthorized: missing token claims' })
+  }
+  const ctx = await getMemberContext(gotrueId)
+
   const slug = String(req.query.slug)
-  const result = await listOrgProjectsV2(slug, limit, offset)
+  const result = await listOrgProjectsV2(ctx, slug, limit, offset)
   if (!result) return res.status(404).json({ message: 'Organization not found' })
 
   return res.status(200).json(result)

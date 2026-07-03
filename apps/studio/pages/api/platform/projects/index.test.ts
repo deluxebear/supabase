@@ -1,8 +1,10 @@
+import type { JwtPayload } from '@supabase/supabase-js'
 import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { handler } from './index'
 import { listAllProjectsV2 } from '@/lib/api/self-platform/list-user-projects'
+import { getMemberContext } from '@/lib/api/self-platform/members'
 import { DEFAULT_PROJECT } from '@/lib/constants/api'
 
 vi.hoisted(() => {
@@ -12,8 +14,30 @@ vi.hoisted(() => {
 vi.mock('@/lib/api/self-platform/list-user-projects', () => ({
   listAllProjectsV2: vi.fn(),
 }))
+vi.mock('@/lib/api/self-platform/members', () => ({ getMemberContext: vi.fn() }))
 
-beforeEach(() => vi.clearAllMocks())
+const claimsOf = (sub: string) => ({ sub }) as JwtPayload
+
+const ORG_CTX = {
+  gotrueId: 'g-1',
+  roles: [
+    {
+      id: 1,
+      baseRoleId: 1,
+      baseRoleName: 'Owner',
+      name: 'Owner',
+      orgId: 1,
+      orgSlug: 'default',
+      projectRefs: [],
+      projectIds: [],
+    },
+  ],
+}
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  vi.mocked(getMemberContext).mockResolvedValue(ORG_CTX)
+})
 
 describe('GET /platform/projects (self-platform)', () => {
   it('returns the registry-backed V2 paginated shape when Version: 2 header present', async () => {
@@ -25,8 +49,9 @@ describe('GET /platform/projects (self-platform)', () => {
       ],
     } as any)
     const { req, res } = createMocks({ method: 'GET', headers: { version: '2' } })
-    await handler(req as any, res as any)
-    expect(listAllProjectsV2).toHaveBeenCalledWith(100, 0)
+    await handler(req as any, res as any, claimsOf('g-1'))
+    expect(getMemberContext).toHaveBeenCalledWith('g-1')
+    expect(listAllProjectsV2).toHaveBeenCalledWith(ORG_CTX, 100, 0)
     expect(res._getStatusCode()).toBe(200)
     const body = res._getJSONData()
     expect(body.pagination).toEqual({ count: 2, limit: 100, offset: 0 })
@@ -36,15 +61,24 @@ describe('GET /platform/projects (self-platform)', () => {
 
   it('keeps the legacy V1 array without the header, unchanged', async () => {
     const { req, res } = createMocks({ method: 'GET' })
-    await handler(req as any, res as any)
+    await handler(req as any, res as any, claimsOf('g-1'))
     expect(res._getStatusCode()).toBe(200)
     expect(res._getJSONData()).toEqual([DEFAULT_PROJECT])
     expect(listAllProjectsV2).not.toHaveBeenCalled()
   })
 
+  it('V1 request without claims still returns 200 [DEFAULT_PROJECT] (claims-independence)', async () => {
+    const { req, res } = createMocks({ method: 'GET' })
+    await handler(req as any, res as any, undefined)
+    expect(res._getStatusCode()).toBe(200)
+    expect(res._getJSONData()).toEqual([DEFAULT_PROJECT])
+    expect(getMemberContext).not.toHaveBeenCalled()
+    expect(listAllProjectsV2).not.toHaveBeenCalled()
+  })
+
   it('returns 405 for non-GET', async () => {
     const { req, res } = createMocks({ method: 'POST' })
-    await handler(req as any, res as any)
+    await handler(req as any, res as any, claimsOf('g-1'))
     expect(res._getStatusCode()).toBe(405)
   })
 
@@ -54,9 +88,18 @@ describe('GET /platform/projects (self-platform)', () => {
       headers: { version: '2' },
       query: { limit: 'abc' },
     })
-    await handler(req as any, res as any)
+    await handler(req as any, res as any, claimsOf('g-1'))
     expect(res._getStatusCode()).toBe(400)
     expect(res._getJSONData()).toEqual({ message: 'Invalid pagination parameters' })
+    expect(listAllProjectsV2).not.toHaveBeenCalled()
+  })
+
+  it('returns 401 for the V2 path without token claims, and does not call listAllProjectsV2', async () => {
+    const { req, res } = createMocks({ method: 'GET', headers: { version: '2' } })
+    await handler(req as any, res as any, undefined)
+    expect(res._getStatusCode()).toBe(401)
+    expect(res._getJSONData()).toEqual({ message: 'Unauthorized: missing token claims' })
+    expect(getMemberContext).not.toHaveBeenCalled()
     expect(listAllProjectsV2).not.toHaveBeenCalled()
   })
 
@@ -70,8 +113,8 @@ describe('GET /platform/projects (self-platform)', () => {
       headers: { version: '2' },
       query: { limit: '1', offset: '1' },
     })
-    await handler(req as any, res as any)
-    expect(listAllProjectsV2).toHaveBeenCalledWith(1, 1)
+    await handler(req as any, res as any, claimsOf('g-1'))
+    expect(listAllProjectsV2).toHaveBeenCalledWith(ORG_CTX, 1, 1)
     expect(res._getStatusCode()).toBe(200)
   })
 
@@ -85,8 +128,8 @@ describe('GET /platform/projects (self-platform)', () => {
       headers: { version: '2' },
       query: { limit: '5000', offset: '1500' },
     })
-    await handler(req as any, res as any)
-    expect(listAllProjectsV2).toHaveBeenCalledWith(1000, 1500)
+    await handler(req as any, res as any, claimsOf('g-1'))
+    expect(listAllProjectsV2).toHaveBeenCalledWith(ORG_CTX, 1000, 1500)
     expect(res._getStatusCode()).toBe(200)
   })
 })

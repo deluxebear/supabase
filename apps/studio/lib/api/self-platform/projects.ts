@@ -125,6 +125,53 @@ export async function countAllProjects(): Promise<number> {
   return data?.[0]?.count ?? 0
 }
 
+// [self-platform] M3.0 visibility-scoped variants. `orgIds`/`ids` are always
+// server-derived from MemberContext (never user input); arrays go through
+// parameterized `= any($n)`.
+export async function listProjectsVisible(
+  orgIds: number[],
+  ids: number[],
+  limit = 100,
+  offset = 0
+): Promise<PlatformProjectRow[]> {
+  return queryProjectRows(
+    'where (organization_id = any($1) or id = any($2)) order by id limit $3 offset $4',
+    [orgIds, ids, limit, offset]
+  )
+}
+
+export async function countProjectsVisible(orgIds: number[], ids: number[]): Promise<number> {
+  const { data, error } = await executePlatformQuery<{ count: number }>({
+    query:
+      'select count(*)::int as count from platform.projects where (organization_id = any($1) or id = any($2))',
+    parameters: [orgIds, ids],
+  })
+  if (error) throw error
+  return data?.[0]?.count ?? 0
+}
+
+export async function listProjectsByOrgIdAndIds(
+  orgId: number,
+  ids: number[],
+  limit = 100,
+  offset = 0
+): Promise<PlatformProjectRow[]> {
+  return queryProjectRows(
+    'where organization_id = $1 and id = any($2) order by id limit $3 offset $4',
+    [orgId, ids, limit, offset]
+  )
+}
+
+export async function countProjectsByOrgIdAndIds(orgId: number, ids: number[]): Promise<number> {
+  const { data, error } = await executePlatformQuery<{ count: number }>({
+    query:
+      'select count(*)::int as count from platform.projects where organization_id = $1 and id = any($2)',
+    parameters: [orgId, ids],
+  })
+  if (error) throw error
+  return data?.[0]?.count ?? 0
+}
+
 export function toProjectDetailResponse(
   row: PlatformProjectRow,
   connectionStringEnc: string

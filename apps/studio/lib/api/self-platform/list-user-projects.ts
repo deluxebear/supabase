@@ -4,12 +4,15 @@
 // freshly bootstrapped deployment with nothing registered yet.
 import type { components } from 'api-types'
 
+import type { MemberContext } from './members'
 import { getOrganizationBySlug, listOrganizations } from './organizations'
 import {
-  countAllProjects,
   countProjectsByOrgId,
-  listAllProjects,
+  countProjectsByOrgIdAndIds,
+  countProjectsVisible,
   listProjectsByOrgId,
+  listProjectsByOrgIdAndIds,
+  listProjectsVisible,
   type PlatformProjectRow,
 } from './projects'
 import { DEFAULT_PROJECT } from '@/lib/constants/api'
@@ -116,10 +119,23 @@ function defaultGlobalProject(): GlobalProjectItem {
   }
 }
 
+export type ProjectVisibilityScope = 'all' | number[]
+
+// [self-platform] Which of an org's projects the caller may see (spec §8):
+// any org-scoped role -> all of them; only derived roles -> their project
+// ids; no role in the org -> none.
+export function visibleProjectScope(ctx: MemberContext, orgId: number): ProjectVisibilityScope {
+  const orgRoles = ctx.roles.filter((role) => role.orgId === orgId)
+  if (orgRoles.some((role) => role.projectRefs.length === 0)) return 'all'
+  return [...new Set(orgRoles.flatMap((role) => role.projectIds))]
+}
+
 // [self-platform] Org-scoped project list (org home + project selector).
 // Returns null when the org slug doesn't resolve — the route maps that to
-// a 404. pagination.count is the org's TOTAL project count.
+// a 404. pagination.count is the org's TOTAL project count (subject to the
+// caller's visibility scope — spec §8).
 export async function listOrgProjectsV2(
+  ctx: MemberContext,
   slug: string,
   limit = 100,
   offset = 0
@@ -127,14 +143,31 @@ export async function listOrgProjectsV2(
   const org = await getOrganizationBySlug(slug)
   if (!org) return null
 
-  const [rows, total] = await Promise.all([
-    listProjectsByOrgId(org.id, limit, offset),
-    countProjectsByOrgId(org.id),
-  ])
+  const scope = visibleProjectScope(ctx, org.id)
+  if (scope !== 'all' && scope.length === 0) {
+    // Zero-role / no role in this org: fail closed — empty page, and no
+    // default-project fallback either (spec §8).
+    return { pagination: { count: 0, limit, offset }, projects: [] }
+  }
+
+  const [rows, total] =
+    scope === 'all'
+      ? await Promise.all([
+          listProjectsByOrgId(org.id, limit, offset),
+          countProjectsByOrgId(org.id),
+        ])
+      : await Promise.all([
+          listProjectsByOrgIdAndIds(org.id, scope, limit, offset),
+          countProjectsByOrgIdAndIds(org.id, scope),
+        ])
 
   if (total === 0) {
-    // Empty registry: single default-project fallback (M1 behavior). The
-    // fallback "row" only exists on page one; count stays 1.
+    if (scope !== 'all') {
+      // Derived scope pointing at removed projects — nothing visible.
+      return { pagination: { count: 0, limit, offset }, projects: [] }
+    }
+    // Empty registry + role-holding member: single default-project fallback
+    // (M1 behavior). The fallback "row" only exists on page one; count stays 1.
     return {
       pagination: { count: 1, limit, offset },
       projects: offset === 0 ? [defaultOrgProject(org.slug)] : [],
@@ -148,18 +181,32 @@ export async function listOrgProjectsV2(
 }
 
 // [self-platform] Global project list (GET /platform/projects, V2 shape).
-// M2 lists every registered project: the M1 permissions model is a
-// wildcard over a single org, so "all registered projects" and "the
-// caller's org's projects" are equivalent for now.
-// TODO(M3): filter by the caller's profile org membership once
-// multi-org membership exists.
+// M3.0: role-filtered (spec §8) — org-scoped roles contribute whole orgs,
+// derived roles contribute explicit project ids, zero roles see nothing.
 export async function listAllProjectsV2(
+  ctx: MemberContext,
   limit = 100,
   offset = 0
 ): Promise<ListProjectsPaginatedResponse> {
+  // Fold per-org scopes into one visibility query: org-scoped roles
+  // contribute whole orgs, derived roles contribute explicit project ids.
+  const orgIds: number[] = []
+  const projectIds = new Set<number>()
+  for (const orgId of new Set(ctx.roles.map((role) => role.orgId))) {
+    const scope = visibleProjectScope(ctx, orgId)
+    if (scope === 'all') orgIds.push(orgId)
+    else scope.forEach((id) => projectIds.add(id))
+  }
+  const ids = [...projectIds]
+
+  if (orgIds.length === 0 && ids.length === 0) {
+    // Zero roles anywhere: fail closed, no default fallback (spec §8).
+    return { pagination: { count: 0, limit, offset }, projects: [] }
+  }
+
   const [rows, total, orgs] = await Promise.all([
-    listAllProjects(limit, offset),
-    countAllProjects(),
+    listProjectsVisible(orgIds, ids, limit, offset),
+    countProjectsVisible(orgIds, ids),
     listOrganizations(),
   ])
   const slugById = new Map(orgs.map((org) => [org.id, org.slug]))

@@ -1,7 +1,15 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { executePlatformQuery } from './db'
-import { getProjectByRef, listProjectsByOrgId, toProjectDetailResponse } from './projects'
+import {
+  countProjectsByOrgIdAndIds,
+  countProjectsVisible,
+  getProjectByRef,
+  listProjectsByOrgId,
+  listProjectsByOrgIdAndIds,
+  listProjectsVisible,
+  toProjectDetailResponse,
+} from './projects'
 
 vi.mock('./db', () => ({ executePlatformQuery: vi.fn() }))
 
@@ -62,5 +70,30 @@ describe('mappers', () => {
       cloud_provider: 'AWS',
       region: 'local',
     })
+  })
+})
+
+describe('visibility-scoped queries (M3.0)', () => {
+  it('listProjectsVisible parameterizes org ids and project ids', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({ data: [], error: undefined })
+    await listProjectsVisible([1], [10, 11], 50, 5)
+    const call = vi.mocked(executePlatformQuery).mock.calls.at(-1)![0]
+    expect(call.query).toContain('organization_id = any($1) or id = any($2)')
+    expect(call.parameters).toEqual([[1], [10, 11], 50, 5])
+  })
+
+  it('countProjectsVisible / countProjectsByOrgIdAndIds return int counts', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({ data: [{ count: 3 }], error: undefined })
+    expect(await countProjectsVisible([1], [])).toBe(3)
+    vi.mocked(executePlatformQuery).mockResolvedValue({ data: [{ count: 2 }], error: undefined })
+    expect(await countProjectsByOrgIdAndIds(1, [10])).toBe(2)
+  })
+
+  it('listProjectsByOrgIdAndIds constrains by org AND ids', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({ data: [], error: undefined })
+    await listProjectsByOrgIdAndIds(1, [10], 100, 0)
+    const call = vi.mocked(executePlatformQuery).mock.calls.at(-1)![0]
+    expect(call.query).toContain('organization_id = $1 and id = any($2)')
+    expect(call.parameters).toEqual([1, [10], 100, 0])
   })
 })
