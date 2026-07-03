@@ -81,6 +81,8 @@ describe('org MFA enforcement flag (M3.1)', () => {
   })
 
   it('reads the flag parameterized; missing column degrades to false with a warn', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
     vi.mocked(executePlatformQuery).mockResolvedValue({
       data: [{ enforce_mfa: true }],
       error: undefined,
@@ -88,12 +90,18 @@ describe('org MFA enforcement flag (M3.1)', () => {
     expect(await getOrgMfaEnforced(1)).toBe(true)
     expect(vi.mocked(executePlatformQuery).mock.calls[0][0].parameters).toEqual([1])
 
-    // 缺列（pre-05 库）→ false，不炸页
+    // 缺列（pre-05 库）→ false，不炸页，warn 一次
     vi.mocked(executePlatformQuery).mockResolvedValue({
       data: undefined,
       error: new Error('column "enforce_mfa" does not exist'),
     })
     expect(await getOrgMfaEnforced(1)).toBe(false)
+    expect(await getOrgMfaEnforced(1)).toBe(false)
+
+    expect(warnSpy).toHaveBeenCalledTimes(1)
+    expect(warnSpy.mock.calls[0][0]).toContain('05-mfa-enforcement.sql')
+
+    warnSpy.mockRestore()
   })
 
   it('propagates non-missing-column read errors', async () => {
