@@ -28,6 +28,13 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
       if (err instanceof AnalyticsNotConfigured) {
         return res.status(404).json({ message: 'Analytics is not configured for this project' })
       }
+      // [self-platform] Unregistered-default fallback with missing LOGFLARE_*
+      // env throws AssertionError from getAnalyticsTarget — surface the
+      // descriptive message like the plain-self-hosted branch does, not a
+      // bare error object.
+      if (err instanceof Error && err.name === 'AssertionError') {
+        return res.status(500).json({ error: { message: err.message } })
+      }
       throw err
     }
   } else {

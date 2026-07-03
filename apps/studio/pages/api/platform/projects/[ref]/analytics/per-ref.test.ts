@@ -1,3 +1,4 @@
+import assert from 'node:assert'
 import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -47,6 +48,17 @@ describe('analytics endpoints/[name] per-ref', () => {
     expect(res._getStatusCode()).toBe(404)
     expect(res._getJSONData()).toEqual({ message: 'Project not found' })
   })
+
+  it.each([
+    [{ ref: ['a', 'b'], name: 'logs.all' }, 'Invalid ref parameter'],
+    [{ ref: 'proj-b' }, 'Invalid name parameter'],
+  ])('400s malformed params on endpoints/[name]: %j', async (query, message) => {
+    const { handler } = await import('./endpoints/[name]')
+    const { req, res } = createMocks({ method: 'GET', query })
+    await handler(req as any, res as any)
+    expect(res._getStatusCode()).toBe(400)
+    expect(res._getJSONData()).toEqual({ message })
+  })
 })
 
 describe('analytics log-drains per-ref', () => {
@@ -75,6 +87,21 @@ describe('analytics log-drains per-ref', () => {
     const { req, res } = createMocks({ method: 'GET', query: { ref: 'proj-b' } })
     await handler(req as any, res as any)
     expect(res._getStatusCode()).toBe(404)
+  })
+
+  it('maps analytics-target AssertionError to a descriptive 500', async () => {
+    let assertionError: Error
+    try {
+      assert(false, 'LOGFLARE_URL is required')
+    } catch (e) {
+      assertionError = e as Error
+    }
+    getAnalyticsTarget.mockRejectedValueOnce(assertionError!)
+    const { handler } = await import('./log-drains')
+    const { req, res } = createMocks({ method: 'GET', query: { ref: 'default' } })
+    await handler(req as any, res as any)
+    expect(res._getStatusCode()).toBe(500)
+    expect(res._getJSONData()).toEqual({ error: { message: 'LOGFLARE_URL is required' } })
   })
 
   it('[uuid] delete hits the per-ref Logflare', async () => {
