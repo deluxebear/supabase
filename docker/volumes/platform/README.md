@@ -720,3 +720,156 @@ the first time it happens. Skipping this migration after upgrading past M3.0 the
 existing member out of every guarded route until it's applied — deliberately fail-closed rather
 than fail-open, but worth calling out explicitly since it degrades silently otherwise (one log line,
 no crash).
+
+## M3.1: Member and role management
+
+M3.0 built the role model and its enforcement machinery, but left role assignment as a manual
+`psql` operation (see "Zero-role members" above) and left two data-plane routes outside M3.0's
+guard sweep. M3.1 exposes that machinery through a real set of member/role-management endpoints,
+closes the two guard gaps, and adds an org-level MFA-enforcement flag that is stored but not yet
+acted on.
+
+### Endpoint inventory
+
+| Route | Method(s) | Purpose |
+| --- | --- | --- |
+| `pages/api/platform/organizations/[slug]/members/index.ts` | GET | List org members (`Member[]`), gated `read:Read` on `organizations` via `guardOrgRoute`. |
+| `pages/api/platform/organizations/[slug]/members/[gotrue_id]/index.ts` | PATCH | Assign a role — V2 body only. No `role_scoped_projects` -> org-wide base-role link; with a non-empty `role_scoped_projects` -> **implicit derived-role creation** (there is no standalone create-role endpoint — this is deliberate cloud-API parity). |
+| " | DELETE | Remove a member outright (every held role must individually clear a `checkPermission` call, then a last-Owner lockout check runs before the removal itself). |
+| `pages/api/platform/organizations/[slug]/members/[gotrue_id]/roles/[role_id].ts` | PUT | Replace an existing derived role's project set. |
+| " | DELETE | Unassign one role from one member, garbage-collecting the role row if it's now an orphaned derived role. |
+| `pages/api/platform/organizations/[slug]/roles.ts` | GET | List roles, V2 dual-layer shape: `org_scoped_roles` / `project_scoped_roles`. |
+| `pages/api/platform/organizations/[slug]/members/invitations.ts` | GET | Contract-minimal stub, always `{ invitations: [] }`. The members-list UI `Promise.all`s this alongside the members GET, so without it TeamSettings' member list fails to load at all. Real invitations are M3.2 work. |
+| `pages/api/platform/organizations/[slug]/members/mfa/enforcement.ts` | GET/PATCH | Org MFA-enforcement flag — see "MFA enforcement flag" below. |
+| `pages/api/platform/organizations/[slug]/entitlements.ts` | GET | Was an unconditional M1 stub (`{ entitlements: [] }`); self-platform mode now also lights up two feature flags, `project_scoped_roles` and `security.enforce_mfa` (both `hasAccess: true`), so TeamSettings/SecuritySettings render their M3.1 UI. Plain self-hosted (`IS_SELF_PLATFORM` false) keeps the M1 empty stub byte-identical. |
+| `pages/api/platform/organizations/[slug]/sso.ts` | GET | Stub — always `404 {"message": "Failed to find an existing SSO Provider for this organization"}`. The frontend's `sso-config-query.ts` treats that exact message as "SSO not configured" and renders normally rather than as an error. |
+
+All of these are `IS_SELF_PLATFORM`-gated (`404 {"message": "Not available on this deployment"}`
+otherwise) and require auth (`withAuth: true`). `entitlements.ts` and `sso.ts` carry no
+`guardOrgRoute`/`checkPermission` call — `entitlements.ts` is read-shaped, contract-minimal data
+with nothing to protect, and `sso.ts` is a fixed 404 stub.
+
+### Additive grants and the strongest-role rule
+
+Project-scoped derived roles are **additive**, not restrictive: holding one only ever adds
+permissions on the projects it lists — it never narrows what a member's org-wide role already
+grants elsewhere. `effectiveBaseRoleName` (`apps/studio/lib/api/self-platform/rbac/expand.ts`)
+computes, per project ref, the *strongest* base role among every role that applies to it (org-wide
+roles apply to every project; derived roles only to their listed refs), ranked by
+`BASE_ROLE_ORDER` (`rbac/matrix.ts`: Owner > Administrator > Developer > Read-only). An org-wide
+Administrator who is *also* given a derived Read-only role scoped to project X is **not** demoted
+to Read-only on X — Administrator still wins there, because the strongest applicable role is
+chosen, not the most specific one. `expandPermissions` follows the same additive shape on the
+permission-check side: every held role independently contributes its own grant templates; nothing
+subtracts a permission a stronger role already grants.
+
+This additive design is also why `secrets:Read` stays gated to Owner/Administrator only (see
+M3.0's "Enforcement subject and credential-bearing routes" above) rather than something a
+project-scoped derived role could ever be granted. Per "Shared-stack JWT secret" (M2.2, above), on
+the common single-stack deployment a JWT secret or minted service JWT handed out for one `ref` is
+cryptographically valid for every sibling project registered on that same stack. If a narrow,
+single-project derived role could carry `secrets:Read`, additive grants would turn what looks like
+a "just this one project" role into a credential that unlocks every sibling project on the stack —
+keeping `secrets:Read` entirely off the grantable-via-derived-role surface is what closes that gap.
+
+### Empty derived role = zero grants (I1)
+
+`expandPermissions` (`rbac/expand.ts`) special-cases a **derived** role (`!isOrgScopedRole(role)`,
+i.e. `role.id !== role.baseRoleId`) whose `projectRefs` list is empty: that role contributes no
+grant templates at all. This matters because every API path that creates or updates a derived
+role's project set already refuses an empty list — PATCH-assign-with-scope, PUT-replace,
+`createDerivedRoleWithAssignment`, and `replaceRoleProjects` all 400 on
+`role_scoped_projects: []` — but an operator who inserts directly into
+`platform.roles`/`platform.role_projects`/`platform.member_roles` (the documented M3.0 workaround,
+or any future ad hoc fix) can still produce a derived-role row with no linked projects. Checking
+`isOrgScopedRole` (an id-equality test) *before* checking for an empty project list, rather than
+using an empty `projectRefs` list as the org-wide signal, is what makes a hand-inserted
+empty-scope derived role grant nothing instead of silently behaving like unrestricted org-wide
+access.
+
+### Owner-protection boundary
+
+`ROLE_MATRIX['Administrator']` (`rbac/matrix.ts`) attaches a restrictive deny
+(`DENY_OWNER_ROLE_GRANTS`) on `create`/`delete` of `user_invites`/`auth.subject_roles` whenever
+`resource.role_id === OWNER_ROLE_ID` (`1`, the seeded Owner base role). Every mutating role route
+threads the relevant role id into the guard's `data: { resource: { role_id } }` so this condition
+actually evaluates:
+
+- **PATCH-assign** (`members/[gotrue_id]/index.ts`): the request body always carries a **base**
+  role id — the frontend never sends a derived id on assign. An Administrator's attempt to grant
+  org-wide Owner (`role_id: 1`, no `role_scoped_projects`) and an attempt to create a *derived*
+  Owner role (`role_id: 1` with `role_scoped_projects` — the derived role is still created from
+  base id `1`) both deny at the same `role_id === 1` check.
+- **DELETE** on `members/[gotrue_id]/roles/[role_id].ts`, and the per-held-role loop inside
+  `members/[gotrue_id]/index.ts`'s DELETE, evaluate the **path** role id instead. A derived
+  Owner-based role has its own freshly generated id (`!= 1`), so revoking it never hits the
+  `role_id === 1` deny — an Administrator **can** revoke an existing derived Owner-based role;
+  only the org-wide Owner id itself is protected. This mirrors the frontend's `rolesRemovable`
+  evaluation (`MemberActions.tsx`), which keys off the concrete role id being removed, not
+  "is this role's base Owner".
+- Independent of the matrix deny, both DELETE paths run a server-side lockout check
+  (`countOtherOrgScopedOwnerHolders`): removing a member's (or role's) **org-scoped** Owner role
+  400s with `Cannot remove the last Owner of the organization` when no other profile holds an
+  org-scoped Owner role afterward. This is a headcount check, not a role-matrix check, so it fires
+  regardless of who is making the call — including an Owner acting on another Owner.
+
+### MFA enforcement flag: stored, not yet enforced
+
+`docker/volumes/platform/migrations/05-mfa-enforcement.sql` adds
+`platform.organizations.enforce_mfa boolean not null default false`. GET/PATCH
+`.../members/mfa/enforcement` (`getOrgMfaEnforced`/`setOrgMfaEnforced`,
+`lib/api/self-platform/organizations.ts`) read and write that column; PATCH is gated
+`write:Update` on `organizations`, which the matrix restricts to Owner (Administrator carries a
+restrictive deny on `write:%`/`organizations`, same as every other org-level write). **The flag is
+only stored and surfaced today — flipping it to `true` does not block anything yet.** Actual
+enforcement (rejecting an invite/join for a member without verified MFA) is deferred to M3.2's
+invite/join flow, which does not exist yet (see the `invitations.ts` stub above).
+
+### Upgrading an existing platform-db to M3.1
+
+`05-mfa-enforcement.sql` only runs automatically against an **empty** `platform-db` data
+directory, same as every prior migration in this file. Apply it by hand once against a running
+deployment:
+
+```bash
+docker exec -i supabase-platform-db psql -U postgres -d platform < docker/volumes/platform/migrations/05-mfa-enforcement.sql
+```
+
+Unmigrated behavior differs by direction, not fail-closed everywhere: `getOrgMfaEnforced` catches
+the missing-column error and returns `false` (MFA enforcement reports as off), logging a
+warn-once message the first time it happens; `setOrgMfaEnforced`'s `UPDATE` has no such catch, so
+a PATCH against an unmigrated database propagates the raw column-missing error and the route
+returns `500` via `apiWrapper`'s catch-all, rather than silently succeeding or silently degrading.
+
+### v1 routes: functions list and TypeScript typegen now RBAC-guarded
+
+`pages/api/v1/projects/[ref]/functions/index.ts` (GET) and
+`pages/api/v1/projects/[ref]/types/typescript.ts` (GET) now call `guardProjectRoute` under
+`IS_SELF_PLATFORM` — the functions list requires `functions:Read`, typegen requires
+`tenant:Sql:Admin:Read` (the same tier as the pg-meta listing family, since typegen reads the
+tenant database's own schema). `guardProjectRoute` resolves the ref first, so an unknown ref still
+404s before any permission check runs, same order as every other guarded route.
+
+**The functions artifact store itself is still global, not per-ref**
+(`getFunctionsArtifactStore`, `lib/api/self-hosted/functions.ts`) — the new guard controls **who**
+may read the functions list for a given `ref`, it does not partition the underlying artifact
+storage by project. Every registered project's functions list currently reads from the same
+on-disk store; per-ref artifact isolation is separate, unimplemented future work.
+
+### register-project CLI: read-only DSN password alignment
+
+M3.0's "Data-plane read-only enforcement" (above) already flags that the Read-only role's
+guarantee is only as strong as the actual Postgres role registered in `db_user_readonly`. There is
+a second, easy-to-miss precondition for that DSN to authenticate at all: `resolveProjectConnection`'s
+`fromRow` (`lib/api/self-platform/resolve-connection.ts`) builds **both** the read-write and
+read-only DSNs from the **same** decrypted `db_pass` — only the username differs (`row.db_user` vs.
+`row.db_user_readonly`). `register-project.ts` never collects a separate readonly password; it only
+takes one `--db-pass`. Consequently, whatever PG role `--db-user-readonly` names (default
+`supabase_read_only_user`) must have its actual Postgres password set to the same value as the
+registered `db_pass`, or the readonly DSN simply fails to authenticate for every Read-only member.
+On a standard docker-compose stack, `supabase_read_only_user`'s password is **not**
+`POSTGRES_PASSWORD` by default — align it before registering:
+
+```bash
+docker exec supabase-db psql -U postgres -c "ALTER ROLE supabase_read_only_user PASSWORD '<POSTGRES_PASSWORD>';"
+```
