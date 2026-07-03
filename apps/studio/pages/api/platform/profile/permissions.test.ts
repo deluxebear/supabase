@@ -11,7 +11,10 @@ vi.hoisted(() => {
   process.env.NEXT_PUBLIC_IS_PLATFORM = 'true'
 })
 
-vi.mock('@/lib/api/self-platform/members', () => ({ getMemberContext: vi.fn() }))
+vi.mock('@/lib/api/self-platform/members', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  getMemberContext: vi.fn(),
+}))
 
 const claimsOf = (sub: string) => ({ sub }) as JwtPayload
 

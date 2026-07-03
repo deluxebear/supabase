@@ -14,7 +14,10 @@ vi.mock('@/lib/api/self-platform/organizations', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   listOrganizationsForProfile: vi.fn(),
 }))
-vi.mock('@/lib/api/self-platform/members', () => ({ getMemberContext: vi.fn() }))
+vi.mock('@/lib/api/self-platform/members', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  getMemberContext: vi.fn(),
+}))
 
 const claimsOf = (sub: string) => ({ sub }) as JwtPayload
 
@@ -77,6 +80,20 @@ describe('GET /platform/organizations (self-platform)', () => {
     })
     const { req, res } = createMocks({ method: 'GET' })
     await handler(req as any, res as any, claimsOf('g-3'))
+    expect(res._getStatusCode()).toBe(200)
+    expect(res._getJSONData()[0].is_owner).toBe(false)
+  })
+
+  it('is_owner stays false for an empty DERIVED Owner role (I1 guard, M3.1)', async () => {
+    vi.mocked(listOrganizationsForProfile).mockResolvedValue([ROW])
+    vi.mocked(getMemberContext).mockResolvedValue({
+      gotrueId: 'g-4',
+      // baseRoleName 'Owner' but id !== baseRoleId (derived) with an empty
+      // project set — the operator-error scenario I1 guards against.
+      roles: [roleOf({ id: 9, name: 'Owner-scoped-empty' })],
+    })
+    const { req, res } = createMocks({ method: 'GET' })
+    await handler(req as never, res as never, claimsOf('g-4'))
     expect(res._getStatusCode()).toBe(200)
     expect(res._getJSONData()[0].is_owner).toBe(false)
   })

@@ -2,7 +2,7 @@ import type { JwtPayload } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
-import { getMemberContext } from '@/lib/api/self-platform/members'
+import { getMemberContext, isOrgScopedRole } from '@/lib/api/self-platform/members'
 import {
   listOrganizationsForProfile,
   toOrganizationResponse,
@@ -29,12 +29,13 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
     listOrganizationsForProfile(gotrueId),
     getMemberContext(gotrueId),
   ])
-  // [self-platform] is_owner is real now (M3.0): true only for an org-scoped
-  // Owner base role (projectRefs empty) — a derived role with base Owner
-  // scoped to specific projects does NOT grant is_owner.
+  // [self-platform] is_owner is real (M3.0): true only for an org-scoped
+  // Owner base role. M3.1 I1 guard: the discriminator is base-role
+  // self-reference, NOT an empty project list — an empty derived Owner role
+  // must not confer is_owner.
   const ownerOrgIds = new Set(
     ctx.roles
-      .filter((role) => role.baseRoleName === 'Owner' && role.projectRefs.length === 0)
+      .filter((role) => role.baseRoleName === 'Owner' && isOrgScopedRole(role))
       .map((role) => role.orgId)
   )
   return res

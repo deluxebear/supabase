@@ -144,3 +144,24 @@ describe('effectiveBaseRoleName', () => {
     expect(effectiveBaseRoleName(ctxOf(), 'default')).toBeNull()
   })
 })
+
+describe('I1 guard: empty derived role grants nothing (M3.1)', () => {
+  const EMPTY_DERIVED_OWNER = ctxOf(
+    role({ id: 9, baseRoleId: 1, baseRoleName: 'Owner', name: 'Owner-scoped-empty' })
+    // projectRefs/projectIds 留空 —— 运维手误场景
+  )
+
+  it('expandPermissions skips an empty derived role entirely', () => {
+    expect(expandPermissions(EMPTY_DERIVED_OWNER)).toEqual([])
+  })
+
+  it('effectiveBaseRoleName does not apply an empty derived role to any ref', () => {
+    expect(effectiveBaseRoleName(EMPTY_DERIVED_OWNER, 'default')).toBeNull()
+  })
+
+  it('org-scoped roles are unaffected (regression)', () => {
+    const OWNER_CTX = ctxOf(role({}))
+    expect(expandPermissions(OWNER_CTX).length).toBeGreaterThan(0)
+    expect(effectiveBaseRoleName(OWNER_CTX, 'default')).toBe('Owner')
+  })
+})

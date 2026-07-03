@@ -12,7 +12,10 @@ import {
   guardProjectRoute,
 } from './enforce'
 
-vi.mock('../members', () => ({ getMemberContext: vi.fn() }))
+vi.mock('../members', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  getMemberContext: vi.fn(),
+}))
 vi.mock('../organizations', () => ({ listOrganizationsForProfile: vi.fn() }))
 vi.mock('../resolve-connection', async (importOriginal) => ({
   ...(await importOriginal<object>()),

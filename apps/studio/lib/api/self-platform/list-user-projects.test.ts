@@ -119,6 +119,46 @@ describe('visibleProjectScope', () => {
   })
 })
 
+describe('I1 guard: visibleProjectScope with an empty derived role (M3.1)', () => {
+  it("does NOT widen to 'all' for a derived role with an empty project set", () => {
+    const ctx: MemberContext = {
+      gotrueId: 'g-x',
+      roles: [
+        {
+          id: 9,
+          baseRoleId: 3,
+          baseRoleName: 'Developer',
+          name: 'Developer-scoped-empty',
+          orgId: 1,
+          orgSlug: 'default',
+          projectRefs: [],
+          projectIds: [],
+        },
+      ],
+    }
+    expect(visibleProjectScope(ctx, 1)).toEqual([])
+  })
+
+  it("still widens to 'all' for an org-scoped role (regression)", () => {
+    const ctx: MemberContext = {
+      gotrueId: 'g-x',
+      roles: [
+        {
+          id: 3,
+          baseRoleId: 3,
+          baseRoleName: 'Developer',
+          name: 'Developer',
+          orgId: 1,
+          orgSlug: 'default',
+          projectRefs: [],
+          projectIds: [],
+        },
+      ],
+    }
+    expect(visibleProjectScope(ctx, 1)).toBe('all')
+  })
+})
+
 describe('listOrgProjectsV2', () => {
   it('lists two registered projects for an org (org-scoped member sees everything)', async () => {
     vi.mocked(getOrganizationBySlug).mockResolvedValue(org)

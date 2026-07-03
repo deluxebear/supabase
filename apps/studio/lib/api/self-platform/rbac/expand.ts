@@ -3,7 +3,7 @@
 // roles carry their role_projects scope, using the BASE role's templates.
 import type { components } from 'api-types'
 
-import type { MemberContext } from '../members'
+import { isOrgScopedRole, type MemberContext } from '../members'
 import { BASE_ROLE_ORDER, ROLE_MATRIX } from './matrix'
 
 type AccessControlPermission = components['schemas']['AccessControlPermission']
@@ -14,6 +14,10 @@ export function expandPermissions(ctx: MemberContext): AccessControlPermission[]
     const templates = ROLE_MATRIX[role.baseRoleName]
     // Unknown base role: grant nothing (fail closed).
     if (!templates) continue
+    // [self-platform] M3.1 I1 guard: a DERIVED role with an empty project set
+    // grants NOTHING (operator-error defense; the data layer enforces
+    // non-empty role_scoped_projects on every create/update path).
+    if (!isOrgScopedRole(role) && role.projectRefs.length === 0) continue
     for (const template of templates) {
       out.push({
         actions: template.actions,
@@ -39,7 +43,7 @@ export function effectiveBaseRoleName(ctx: MemberContext, projectRef: string): s
   let best: string | null = null
   let bestIdx = BASE_ROLE_ORDER.length
   for (const role of ctx.roles) {
-    const applies = role.projectRefs.length === 0 || role.projectRefs.includes(projectRef)
+    const applies = isOrgScopedRole(role) || role.projectRefs.includes(projectRef)
     if (!applies) continue
     const idx = BASE_ROLE_ORDER.indexOf(role.baseRoleName)
     if (idx !== -1 && idx < bestIdx) {

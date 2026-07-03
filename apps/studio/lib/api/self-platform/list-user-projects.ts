@@ -4,7 +4,7 @@
 // freshly bootstrapped deployment with nothing registered yet.
 import type { components } from 'api-types'
 
-import type { MemberContext } from './members'
+import { isOrgScopedRole, type MemberContext } from './members'
 import { getOrganizationBySlug, listOrganizations } from './organizations'
 import {
   countProjectsByOrgId,
@@ -126,7 +126,9 @@ export type ProjectVisibilityScope = 'all' | number[]
 // ids; no role in the org -> none.
 export function visibleProjectScope(ctx: MemberContext, orgId: number): ProjectVisibilityScope {
   const orgRoles = ctx.roles.filter((role) => role.orgId === orgId)
-  if (orgRoles.some((role) => role.projectRefs.length === 0)) return 'all'
+  // [self-platform] M3.1 I1 guard: only a genuinely org-scoped role widens to
+  // 'all' — an empty derived role must not (it contributes zero projectIds).
+  if (orgRoles.some((role) => isOrgScopedRole(role))) return 'all'
   return [...new Set(orgRoles.flatMap((role) => role.projectIds))]
 }
 
