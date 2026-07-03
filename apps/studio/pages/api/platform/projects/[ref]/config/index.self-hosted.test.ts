@@ -21,7 +21,17 @@ describe('config (plain self-hosted, zero-break)', () => {
     const { req, res } = createMocks({ method: 'GET', query: { ref: 'default' } })
     await handler(req as any, res as any)
     expect(res._getStatusCode()).toBe(200)
-    expect(res._getJSONData().jwt_secret).toBe('env-secret')
+    // Full byte-identity: the plain self-hosted branch must return the exact
+    // historical literal, so any future edit that changes a non-secret field
+    // in this branch trips this test.
+    expect(res._getJSONData()).toEqual({
+      db_anon_role: 'anon',
+      db_extra_search_path: 'public',
+      db_schema: 'public, storage',
+      jwt_secret: 'env-secret',
+      max_rows: 100,
+      role_claim_key: '.role',
+    })
     expect(resolveProjectConnection).not.toHaveBeenCalled()
   })
 })

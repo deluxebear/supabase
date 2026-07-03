@@ -1,5 +1,5 @@
 import { createMocks } from 'node-mocks-http'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const resolveProjectConnection = vi.fn()
 
@@ -17,6 +17,7 @@ vi.mock('@/lib/api/self-platform/resolve-connection', async (importOriginal) => 
 })
 
 beforeEach(() => resolveProjectConnection.mockReset())
+afterEach(() => vi.unstubAllEnvs())
 
 describe('GET /platform/projects/{ref}/config (self-platform)', () => {
   it('returns the resolved project jwt_secret, keeping non-secret fields', async () => {
@@ -30,6 +31,19 @@ describe('GET /platform/projects/{ref}/config (self-platform)', () => {
     expect(body.db_anon_role).toBe('anon')
     expect(body.db_schema).toBe('public, storage')
     expect(body.max_rows).toBe(100)
+  })
+
+  it('unregistered default (row null) falls through to env jwt_secret, not conn.jwtSecret', async () => {
+    vi.stubEnv('AUTH_JWT_SECRET', 'env-default-secret')
+    // A successful resolve with no registered row (the unregistered-default
+    // case). The `if (conn.row)` guard must fall through to the env default —
+    // conn.jwtSecret ('') must NOT be used.
+    resolveProjectConnection.mockResolvedValueOnce({ row: null, jwtSecret: '' })
+    const { handler } = await import('./index')
+    const { req, res } = createMocks({ method: 'GET', query: { ref: 'default' } })
+    await handler(req as any, res as any)
+    expect(res._getStatusCode()).toBe(200)
+    expect(res._getJSONData().jwt_secret).toBe('env-default-secret')
   })
 
   it('404s unknown ref', async () => {
