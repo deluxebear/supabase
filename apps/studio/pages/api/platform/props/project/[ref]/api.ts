@@ -1,7 +1,10 @@
+import { PermissionAction } from '@supabase/shared-types/out/constants'
+import type { JwtPayload } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
 import { POSTGRES_PORT } from '@/lib/api/self-hosted/constants'
+import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
 import {
   ProjectNotFound,
   resolveProjectConnection,
@@ -18,12 +21,12 @@ import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 
 // [self-platform] exported for handler-level tests
-export async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function handler(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
   const { method } = req
 
   switch (method) {
     case 'GET':
-      return handleGetAll(req, res)
+      return handleGetAll(req, res, claims)
     default:
       res.setHeader('Allow', ['GET'])
       res.status(405).json({ data: null, error: { message: `Method ${method} Not Allowed` } })
@@ -98,7 +101,7 @@ function buildGlobalResponse() {
   }
 }
 
-const handleGetAll = async (req: NextApiRequest, res: NextApiResponse) => {
+const handleGetAll = async (req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) => {
   if (!IS_SELF_PLATFORM) {
     // Platform specific endpoint — plain self-hosted, byte-identical.
     return res.status(200).json(buildGlobalResponse())
@@ -108,6 +111,18 @@ const handleGetAll = async (req: NextApiRequest, res: NextApiResponse) => {
   // M2 C1 convention: bare host derived from the resolved kong URL.
   try {
     const conn = await resolveProjectConnection(String(req.query.ref))
+    // [self-platform] M3.0: visibility guard, then secrets masking (spec §7.3).
+    const canRead = await checkPermission(claims, {
+      action: PermissionAction.READ,
+      resource: 'projects',
+      projectRef: String(req.query.ref),
+    })
+    if (!canRead) return res.status(403).json({ message: 'Forbidden' })
+    const canReadSecrets = await checkPermission(claims, {
+      action: PermissionAction.SECRETS_READ,
+      resource: 'projects',
+      projectRef: String(req.query.ref),
+    })
     // [self-platform] conn.supabaseUrl is only the project's public-facing
     // kong URL for a registry hit (conn.row set). For the unregistered
     // 'default' fallback, resolveProjectConnection's fromGlobalEnv() sets
@@ -169,7 +184,7 @@ const handleGetAll = async (req: NextApiRequest, res: NextApiResponse) => {
         endpoint,
         restUrl,
         defaultApiKey: conn.anonKey,
-        serviceApiKey: conn.serviceKey,
+        serviceApiKey: canReadSecrets ? conn.serviceKey : '',
         service_api_keys: serviceApiKeys,
       },
     })
