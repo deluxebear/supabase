@@ -650,15 +650,15 @@ session — never possession of a project's own data-plane credential. `guardPro
 for `[ref]` routes and preserves the existing 404-before-403 order: an unknown `ref` still 404s
 before any permission check runs.
 
-Every credential-bearing route this fork has hardened per-ref (`api-keys/temporary.ts`,
-`config/index.ts`, `config/postgrest.ts`, `props/project/[ref]/api.ts` — see "M2.2: credential
-closure" above) additionally requires the `secrets:Read` action, which `ROLE_MATRIX` only grants to
-Owner and Administrator. This is not an arbitrary restriction: see "Shared-stack JWT secret" above
-— on the common single-stack deployment, a JWT secret or minted service JWT handed to *any* project
-is cryptographically valid for every sibling project registered on that same stack. Gating
-`secrets:Read` to Owner/Administrator means a Developer or Read-only member, who by design only has
-narrow per-project grants, can never obtain a credential that happens to unlock projects they have
-no role on.
+Credential-bearing routes that have been hardened per-ref and enforce `secrets:Read` are:
+
+**Full-block (403 when denied):** `pages/api/platform/projects/[ref]/api-keys/temporary.ts`, `pages/api/platform/projects/[ref]/config/index.ts`, `pages/api/platform/projects/[ref]/config/postgrest.ts`, `pages/api/v1/projects/[ref]/api-keys.ts`, `pages/api/v1/projects/[ref]/api-keys/[id].ts` (see "M2.2: credential closure" above).
+
+**Field-masking (200 with secrets stripped when denied):** `pages/api/platform/projects/[ref]/settings.ts` (masks `jwt_secret`, filters the `service_role` entry out of `service_api_keys`), `pages/api/platform/props/project/[ref]/api.ts` (masks `serviceApiKey`).
+
+The `secrets:Read` action is only granted to Owner and Administrator by `ROLE_MATRIX`. This is not an arbitrary restriction: see "Shared-stack JWT secret" above — on the common single-stack deployment, a JWT secret or minted service JWT handed to *any* project is cryptographically valid for every sibling project registered on that same stack. Gating `secrets:Read` to Owner/Administrator means a Developer or Read-only member, who by design only has narrow per-project grants, can never obtain a credential that happens to unlock projects they have no role on.
+
+The two data-plane proxies (`pages/api/platform/projects/[ref]/api/rest.ts`, `pages/api/platform/projects/[ref]/api/graphql.ts`) intentionally use a different, Developer-tier gate (`tenant:Sql:Admin:Write`, "Class R") rather than `secrets:Read` — they forward requests with the service key but never return the raw credential to the caller; Read-only members are still blocked.
 
 ### Zero-role members
 
@@ -673,7 +673,7 @@ directly into `platform.member_roles` against the running `platform-db`:
 
 ```bash
 docker exec -it supabase-platform-db psql -U postgres -d platform -c \
-  "insert into platform.member_roles (profile_id, role_id) select id, 3 from platform.profiles where gotrue_id = '<gotrue-user-id>';"
+  "insert into platform.member_roles (profile_id, role_id) select id, 3 from platform.profiles where gotrue_id = '<gotrue-user-id>' on conflict do nothing;"
 ```
 
 (`role_id` `3` = Developer in the fixed seed above; substitute the base role id, or the id of a
