@@ -1,6 +1,9 @@
+import { PermissionAction } from '@supabase/shared-types/out/constants'
+import type { JwtPayload } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
+import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
 import {
   ProjectNotFound,
   resolveProjectConnection,
@@ -9,12 +12,12 @@ import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 
-export async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function handler(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
   const { method } = req
 
   switch (method) {
     case 'POST':
-      return handleGet(req, res)
+      return handleGet(req, res, claims)
 
     default:
       res.setHeader('Allow', ['POST'])
@@ -22,7 +25,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
+const handleGet = async (req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) => {
   let gqlUrl = `${process.env.SUPABASE_URL}/graphql/v1`
   let apikey = process.env.SUPABASE_SERVICE_KEY!
   let anonKey = process.env.SUPABASE_ANON_KEY
@@ -32,7 +35,7 @@ const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
       if (conn.row) {
         gqlUrl = `${conn.supabaseUrl}/graphql/v1`
         apikey = conn.serviceKey
-        anonKey = conn.anonKey ?? undefined
+        anonKey = conn.anonKey
       }
     } catch (err) {
       if (err instanceof ProjectNotFound) {
@@ -40,6 +43,14 @@ const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
       }
       throw err
     }
+    // [self-platform] M3.0 Class R guard (spec §7.3): service-key proxy =
+    // data-plane WRITE channel (bypasses the read-only DSN) -> Developer+.
+    const canWrite = await checkPermission(claims, {
+      action: PermissionAction.TENANT_SQL_ADMIN_WRITE,
+      resource: 'tables',
+      projectRef: String(req.query.ref),
+    })
+    if (!canWrite) return res.status(403).json({ message: 'Forbidden' })
   }
   const authorizationHeader = req.headers['x-graphql-authorization']
   const response = await fetch(gqlUrl, {

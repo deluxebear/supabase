@@ -1,6 +1,9 @@
+import { PermissionAction } from '@supabase/shared-types/out/constants'
+import type { JwtPayload } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
+import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
 import {
   ProjectNotFound,
   resolveProjectConnection,
@@ -9,12 +12,12 @@ import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 
-export async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function handler(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
   const { method } = req
 
   switch (method) {
     case 'GET':
-      return handleGet(req, res)
+      return handleGet(req, res, claims)
     case 'HEAD':
       return handleHead(req, res)
     default:
@@ -23,7 +26,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
+const handleGet = async (req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) => {
   // [self-platform] Proxy the resolved project's REST endpoint; plain
   // self-hosted keeps the global env target byte-identically.
   let restUrl = `${process.env.SUPABASE_URL}/rest/v1/`
@@ -41,6 +44,14 @@ const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
       }
       throw err
     }
+    // [self-platform] M3.0 Class R guard (spec §7.3): service-key proxy =
+    // data-plane WRITE channel (bypasses the read-only DSN) -> Developer+.
+    const canWrite = await checkPermission(claims, {
+      action: PermissionAction.TENANT_SQL_ADMIN_WRITE,
+      resource: 'tables',
+      projectRef: String(req.query.ref),
+    })
+    if (!canWrite) return res.status(403).json({ message: 'Forbidden' })
   }
   const response = await fetch(restUrl, { method: 'GET', headers: { apikey } })
   if (response.ok) {
