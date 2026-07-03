@@ -4,12 +4,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { handler } from './index'
 import { getMemberInOrg } from '@/lib/api/self-platform/members'
-import { guardOrgRoute } from '@/lib/api/self-platform/rbac/enforce'
+import { checkPermission, guardOrgRoute } from '@/lib/api/self-platform/rbac/enforce'
 import {
   assignRoleToMember,
+  countOtherOrgScopedOwnerHolders,
   createDerivedRoleWithAssignment,
   getOrgProjectIdsByRefs,
   getRoleInOrg,
+  removeMemberWithGc,
 } from '@/lib/api/self-platform/roles'
 
 vi.hoisted(() => {
@@ -23,9 +25,11 @@ vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({
 }))
 vi.mock('@/lib/api/self-platform/roles', () => ({
   assignRoleToMember: vi.fn(),
+  countOtherOrgScopedOwnerHolders: vi.fn(),
   createDerivedRoleWithAssignment: vi.fn(),
   getOrgProjectIdsByRefs: vi.fn(),
   getRoleInOrg: vi.fn(),
+  removeMemberWithGc: vi.fn(),
 }))
 
 const claimsOf = (sub: string) => ({ sub }) as JwtPayload
@@ -159,5 +163,91 @@ describe('PATCH /platform/organizations/{slug}/members/{gotrue_id} (self-platfor
     await handler(req as never, res as never, claimsOf('g-admin'))
     expect(res._getStatusCode()).toBe(400)
     expect(res._getJSONData()).toEqual({ message: 'Invalid path parameter' })
+  })
+})
+
+describe('DELETE /platform/organizations/{slug}/members/{gotrue_id} (self-platform)', () => {
+  const delReq = () =>
+    createMocks({ method: 'DELETE', query: { slug: 'default', gotrue_id: 'g-t' } })
+
+  beforeEach(() => {
+    vi.mocked(checkPermission).mockReset().mockResolvedValue(true)
+    vi.mocked(removeMemberWithGc).mockReset()
+    vi.mocked(countOtherOrgScopedOwnerHolders).mockReset().mockResolvedValue(1)
+    vi.mocked(getMemberInOrg)
+      .mockReset()
+      .mockResolvedValue({ profile_id: 42, gotrue_id: 'g-t', role_ids: [3, 7] })
+    vi.mocked(getRoleInOrg)
+      .mockReset()
+      .mockImplementation(async (_org, id) =>
+        id === 1
+          ? { id: 1, base_role_id: 1, name: 'Owner' }
+          : id === 3
+            ? { id: 3, base_role_id: 3, name: 'Developer' }
+            : { id: 7, base_role_id: 3, name: 'Developer-scoped-x' }
+      )
+  })
+
+  it('checks DELETE auth.subject_roles per held role with condition data (every-role semantics)', async () => {
+    const { req, res } = delReq()
+    await handler(req as never, res as never, claimsOf('g-admin'))
+    // 基线 guard（无 data）
+    expect(vi.mocked(guardOrgRoute).mock.calls[0][2]).toMatchObject({
+      action: 'write:Delete',
+      resource: 'auth.subject_roles',
+    })
+    expect(vi.mocked(guardOrgRoute).mock.calls[0][2]).not.toHaveProperty('data')
+    // 逐角色 condition data
+    const perRole = vi.mocked(checkPermission).mock.calls.map(([, input]) => input)
+    expect(perRole).toEqual([
+      expect.objectContaining({
+        action: 'write:Delete',
+        resource: 'auth.subject_roles',
+        orgSlug: 'default',
+        data: { resource: { role_id: 3 } },
+      }),
+      expect.objectContaining({ data: { resource: { role_id: 7 } } }),
+    ])
+    expect(removeMemberWithGc).toHaveBeenCalledWith(1, 42)
+    expect(res._getStatusCode()).toBe(200)
+  })
+
+  it('403 when ANY held role fails the per-role check (Admin vs Owner member)', async () => {
+    vi.mocked(getMemberInOrg).mockResolvedValue({ profile_id: 42, gotrue_id: 'g-t', role_ids: [1] })
+    vi.mocked(checkPermission).mockResolvedValue(false)
+    const { req, res } = delReq()
+    await handler(req as never, res as never, claimsOf('g-admin'))
+    expect(res._getStatusCode()).toBe(403)
+    expect(res._getJSONData()).toEqual({ message: 'Forbidden' })
+    expect(removeMemberWithGc).not.toHaveBeenCalled()
+  })
+
+  it('zero-role target: baseline guard suffices, no per-role checks', async () => {
+    vi.mocked(getMemberInOrg).mockResolvedValue({ profile_id: 42, gotrue_id: 'g-t', role_ids: [] })
+    const { req, res } = delReq()
+    await handler(req as never, res as never, claimsOf('g-admin'))
+    expect(checkPermission).not.toHaveBeenCalled()
+    expect(removeMemberWithGc).toHaveBeenCalledWith(1, 42)
+    expect(res._getStatusCode()).toBe(200)
+  })
+
+  it('400 blocks removing a member who is the LAST org-scoped Owner', async () => {
+    vi.mocked(getMemberInOrg).mockResolvedValue({ profile_id: 42, gotrue_id: 'g-t', role_ids: [1] })
+    vi.mocked(countOtherOrgScopedOwnerHolders).mockResolvedValue(0)
+    const { req, res } = delReq()
+    await handler(req as never, res as never, claimsOf('g-owner'))
+    expect(res._getStatusCode()).toBe(400)
+    expect(res._getJSONData()).toEqual({
+      message: 'Cannot remove the last Owner of the organization',
+    })
+    expect(removeMemberWithGc).not.toHaveBeenCalled()
+  })
+
+  it('404 when the target is not a member', async () => {
+    vi.mocked(getMemberInOrg).mockResolvedValue(null)
+    const { req, res } = delReq()
+    await handler(req as never, res as never, claimsOf('g-admin'))
+    expect(res._getStatusCode()).toBe(404)
+    expect(res._getJSONData()).toEqual({ message: 'Member not found' })
   })
 })

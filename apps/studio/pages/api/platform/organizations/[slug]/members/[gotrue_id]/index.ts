@@ -7,7 +7,14 @@
 // both granting org-wide Owner AND creating a derived Owner (the body
 // role_id is always the base id). Version header (string '2' from the
 // frontend) is accepted in any form and not branched on.
-// DELETE (member removal) is added by Task 7.
+// DELETE removes a member: a baseline guard (no condition data) rejects
+// non-admin callers outright, then a per-held-role checkPermission call
+// (each carrying { resource: { role_id } }) mirrors the UI's every-role
+// removable semantics (MemberActions.tsx canRemoveMember) — ANY held role
+// failing the check 403s the whole removal. A zero-role target passes on
+// the baseline alone. Before removal, a last-Owner lockout check blocks
+// orphaning the org. removeMemberWithGc then deletes the membership and
+// garbage-collects any now-unreferenced derived roles (Task 7).
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import type { JwtPayload } from '@supabase/supabase-js'
 import type { components } from 'api-types'
@@ -15,12 +22,14 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
 import { getMemberInOrg } from '@/lib/api/self-platform/members'
-import { guardOrgRoute } from '@/lib/api/self-platform/rbac/enforce'
+import { checkPermission, guardOrgRoute } from '@/lib/api/self-platform/rbac/enforce'
 import {
   assignRoleToMember,
+  countOtherOrgScopedOwnerHolders,
   createDerivedRoleWithAssignment,
   getOrgProjectIdsByRefs,
   getRoleInOrg,
+  removeMemberWithGc,
 } from '@/lib/api/self-platform/roles'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
@@ -37,8 +46,10 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
   switch (req.method) {
     case 'PATCH':
       return handlePatch(req, res, claims)
+    case 'DELETE':
+      return handleDelete(req, res, claims)
     default:
-      res.setHeader('Allow', ['PATCH'])
+      res.setHeader('Allow', ['DELETE', 'PATCH'])
       return res
         .status(405)
         .json({ data: null, error: { message: `Method ${req.method} Not Allowed` } })
@@ -109,5 +120,56 @@ async function handlePatch(req: NextApiRequest, res: NextApiResponse, claims?: J
       projectIds: scoped.map((ref) => refMap.get(ref)!),
     })
   }
+  return res.status(200).json({})
+}
+
+async function handleDelete(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
+  if (Array.isArray(req.query.slug) || Array.isArray(req.query.gotrue_id)) {
+    return res.status(400).json({ message: 'Invalid path parameter' })
+  }
+  const slug = String(req.query.slug)
+  const targetGotrueId = String(req.query.gotrue_id)
+
+  // Baseline gate first (rejects Developer/Read-only/zero-role callers
+  // outright); the per-role condition checks below add the owner-protection
+  // dimension, mirroring the UI's `every`-role removable semantics
+  // (MemberActions.tsx canRemoveMember).
+  const org = await guardOrgRoute(res, claims, {
+    slug,
+    action: PermissionAction.DELETE,
+    resource: 'auth.subject_roles',
+  })
+  if (!org) return
+
+  const target = await getMemberInOrg(org.orgId, targetGotrueId)
+  if (!target) {
+    return res.status(404).json({ message: 'Member not found' })
+  }
+
+  for (const heldRoleId of target.role_ids) {
+    const can = await checkPermission(claims, {
+      action: PermissionAction.DELETE,
+      resource: 'auth.subject_roles',
+      orgSlug: org.orgSlug,
+      data: { resource: { role_id: heldRoleId } },
+    })
+    if (!can) {
+      return res.status(403).json({ message: 'Forbidden' })
+    }
+  }
+
+  // Lockout protection: if the target holds an org-scoped Owner role and no
+  // OTHER profile does, removal would orphan the org.
+  for (const heldRoleId of target.role_ids) {
+    const role = await getRoleInOrg(org.orgId, heldRoleId)
+    if (role && role.base_role_id === role.id && role.name === 'Owner') {
+      const others = await countOtherOrgScopedOwnerHolders(org.orgId, target.profile_id)
+      if (others === 0) {
+        return res.status(400).json({ message: 'Cannot remove the last Owner of the organization' })
+      }
+    }
+  }
+
+  await removeMemberWithGc(org.orgId, target.profile_id)
   return res.status(200).json({})
 }
