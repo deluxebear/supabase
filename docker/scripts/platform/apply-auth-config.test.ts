@@ -1,7 +1,12 @@
 // docker/scripts/platform/apply-auth-config.test.ts
 import { describe, expect, it } from 'vitest'
 
-import { parseArgs, renderGotrueEnv, toComposeOverrideYaml } from './apply-auth-config'
+import {
+  maskSecretValues,
+  parseArgs,
+  renderGotrueEnv,
+  toComposeOverrideYaml,
+} from './apply-auth-config'
 
 describe('parseArgs', () => {
   it('reads the ref, --target, and --dry-run', () => {
@@ -31,6 +36,27 @@ describe('renderGotrueEnv', () => {
       GOTRUE_SITE_URL: 'http://localhost:8082',
       GOTRUE_URI_ALLOW_LIST: 'http://a,http://b',
       GOTRUE_SMTP_PASS: 'plaintext-decrypted',
+    })
+  })
+})
+
+describe('maskSecretValues', () => {
+  it('masks listed keys to ****** and leaves others untouched', () => {
+    const env = {
+      GOTRUE_DISABLE_SIGNUP: 'true',
+      GOTRUE_SITE_URL: 'http://localhost:8082',
+      GOTRUE_SMTP_PASS: 'plaintext-decrypted',
+      GOTRUE_SECURITY_CAPTCHA_SECRET: 'super-secret-value',
+    }
+    const masked = maskSecretValues(
+      env,
+      new Set(['GOTRUE_SMTP_PASS', 'GOTRUE_SECURITY_CAPTCHA_SECRET'])
+    )
+    expect(masked).toEqual({
+      GOTRUE_DISABLE_SIGNUP: 'true',
+      GOTRUE_SITE_URL: 'http://localhost:8082',
+      GOTRUE_SMTP_PASS: '******',
+      GOTRUE_SECURITY_CAPTCHA_SECRET: '******',
     })
   })
 })
