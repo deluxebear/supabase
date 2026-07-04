@@ -131,6 +131,10 @@ CLAUDE.md
 !docker/supabase/.env
 !docker/supabase-traefik/.env
 
+# [self-platform] M4: apply-auth-config renders plaintext GoTrue secrets here — never commit
+docker/docker-compose.auth-override.yml
+docker/*.auth-override.yml
+
 # Supabase
 **/supabase/.branches
 **/supabase/.temp
