@@ -7,3 +7,10 @@ export const PLATFORM_POSTGRES_USER = process.env.PLATFORM_POSTGRES_USER || 'pos
 export const PLATFORM_POSTGRES_PASSWORD = process.env.PLATFORM_POSTGRES_PASSWORD || ''
 // As seen from the Studio server process (host in dev, container in docker).
 export const PLATFORM_GOTRUE_URL = process.env.PLATFORM_GOTRUE_URL || 'http://localhost:8110'
+// [self-platform] Shared platform GoTrue JWT secret (docker/.env
+// PLATFORM_JWT_SECRET) — used to mint short-lived service_role JWTs for GoTrue
+// admin calls (invitations). Empty on plain self-hosted (routes are gated off).
+export const PLATFORM_JWT_SECRET = process.env.PLATFORM_JWT_SECRET || ''
+// Public origin the invite links point back to (the /join page). Matches the
+// GoTrue GOTRUE_SITE_URL / GOTRUE_URI_ALLOW_LIST in the platform compose stack.
+export const PLATFORM_SITE_URL = process.env.PLATFORM_SITE_URL || 'http://localhost:8082'

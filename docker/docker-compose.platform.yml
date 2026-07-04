@@ -23,6 +23,17 @@ services:
       - ./volumes/platform/db/data:/var/lib/postgresql/data:Z
       - ./volumes/platform/migrations:/docker-entrypoint-initdb.d:Z
 
+  platform-mail:
+    container_name: supabase-platform-mail
+    image: axllent/mailpit:v1.20
+    restart: unless-stopped
+    ports:
+      - '${PLATFORM_MAILPIT_SMTP_HOST_PORT:-1025}:1025'
+      - '${PLATFORM_MAILPIT_UI_HOST_PORT:-8025}:8025'
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 'true'
+      MP_SMTP_AUTH_ALLOW_INSECURE: 'true'
+
   platform-auth:
     container_name: supabase-platform-auth
     image: supabase/gotrue:v2.189.0
@@ -30,6 +41,8 @@ services:
     depends_on:
       platform-db:
         condition: service_healthy
+      platform-mail:
+        condition: service_started
     healthcheck:
       test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:9999/health']
       interval: 5s
@@ -57,4 +70,30 @@ services:
 
       # M3.2: SMTP + invite-only (see Task 7 env below)
       GOTRUE_EXTERNAL_EMAIL_ENABLED: 'true'
+      # Moot under invite-only: admin-created bootstrap users are
+      # email_confirm'd directly in the DB migration; invited users always
+      # verify via the /invite link regardless of this flag.
       GOTRUE_MAILER_AUTOCONFIRM: 'true'
+
+      GOTRUE_SMTP_HOST: ${PLATFORM_SMTP_HOST:-platform-mail}
+      GOTRUE_SMTP_PORT: ${PLATFORM_SMTP_PORT:-1025}
+      # Deviation (Task 7 live spike): default USER/PASS to empty, not
+      # "mailpit"/"mailpit". GoTrue's mailer (gomail.v2) only skips SMTP AUTH
+      # when Username=="". Mailpit's plaintext listener has no STARTTLS, and
+      # Go's stdlib PlainAuth refuses to send credentials over a non-TLS
+      # connection unless the SMTP host is literally "localhost" — ours is
+      # "platform-mail" — so a non-empty user/pass here makes every send fail
+      # with "unencrypted connection" (verified: 500 on /invite, GoTrue rolls
+      # back the just-created user, see Task 7 report). Empty creds make
+      # GoTrue skip AUTH entirely, which Mailpit's ACCEPT_ANY/ALLOW_INSECURE
+      # config permits. Real providers (587/465 + real TLS) should set real
+      # PLATFORM_SMTP_USER/PASS in docker/.env — the TLS branch then makes
+      # PlainAuth's check pass legitimately.
+      GOTRUE_SMTP_USER: ${PLATFORM_SMTP_USER:-}
+      GOTRUE_SMTP_PASS: ${PLATFORM_SMTP_PASS:-}
+      GOTRUE_SMTP_ADMIN_EMAIL: ${PLATFORM_SMTP_ADMIN_EMAIL:-admin@internal.test}
+      GOTRUE_SMTP_SENDER_NAME: ${PLATFORM_SMTP_SENDER_NAME:-Supabase Platform}
+      GOTRUE_MAILER_URLPATHS_INVITE: /verify
+      GOTRUE_MAILER_URLPATHS_RECOVERY: /verify
+      GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: /verify
+      GOTRUE_MAILER_URLPATHS_CONFIRMATION: /verify
