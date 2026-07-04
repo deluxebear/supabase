@@ -54,6 +54,22 @@ describe('transformSourceFile', () => {
     expect(sf.getFullText()).toBe(once)
   })
 
+  it('collects keys from already-wrapped $t() calls without marking the file changed', () => {
+    const src = [
+      `import { t as $t } from '@/lib/i18n'`,
+      `export const C = () => (`,
+      `  <div title={$t("Couldn't fetch")}>{$t('Save changes')}</div>`,
+      `)`,
+    ].join('\n')
+    const project = new Project({ useInMemoryFileSystem: true })
+    const sf = project.createSourceFile('C6.tsx', src)
+    const { keys, changed } = transformSourceFile(sf)
+    expect(changed).toBe(false)
+    expect(keys).toContain('Save changes')
+    expect(keys).toContain("Couldn't fetch")
+    expect(sf.getFullText()).toBe(src)
+  })
+
   it('does not wrap non-translatable text', () => {
     const { text, keys } = run(`export const C = () => <div>{count}</div>`)
     expect(keys).toEqual([])

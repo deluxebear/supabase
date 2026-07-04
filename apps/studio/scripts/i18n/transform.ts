@@ -62,6 +62,18 @@ export function transformSourceFile(sf: SourceFile): { keys: string[]; changed: 
     changed = true
   }
 
+  // 0) Already-wrapped $t('...') calls: collect their keys WITHOUT marking the
+  //    file changed, so keys.json is always the full key list in use — a
+  //    re-run over an already-wrapped tree must still report every key, not
+  //    just the ones wrapped by this run.
+  sf.forEachDescendant((node) => {
+    if (!Node.isCallExpression(node)) return
+    const expr = node.getExpression()
+    if (!Node.isIdentifier(expr) || expr.getText() !== '$t') return
+    const arg = node.getArguments()[0]
+    if (arg && Node.isStringLiteral(arg)) keys.push(arg.getLiteralValue())
+  })
+
   // 1) JSX text nodes: <div>Save changes</div>
   sf.forEachDescendant((node) => {
     if (Node.isJsxText(node)) {
