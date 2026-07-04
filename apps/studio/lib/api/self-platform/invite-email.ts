@@ -1,11 +1,14 @@
 // [self-platform] Invitation email delivery (M3.2). New users get GoTrue's
 // /invite (creates + mails an invite link); existing users get a /otp magiclink
 // (create_user:false). Both carry redirect_to=<SITE_URL>/join?token&slug so the
-// verified session lands on the join page. Delivery goes through the platform
-// GoTrue SMTP config (Mailpit locally). Throws on failure so the create route
-// deletes the just-created row (invariant: a pending row means an email went
-// out). Zero new npm deps — GoTrue does the mailing, mint-jwt signs the admin
-// bearer.
+// verified session lands on the join page. GoTrue only honors redirect_to as a
+// URL query param on these endpoints — it ignores a redirect_to field in the
+// JSON body and falls back to SITE_URL (live-verified against GoTrue v2.189.0),
+// so it MUST be appended to the request URL, not the body. Delivery goes
+// through the platform GoTrue SMTP config (Mailpit locally). Throws on failure
+// so the create route deletes the just-created row (invariant: a pending row
+// means an email went out). Zero new npm deps — GoTrue does the mailing,
+// mint-jwt signs the admin bearer.
 import { PLATFORM_GOTRUE_URL, PLATFORM_JWT_SECRET, PLATFORM_SITE_URL } from './constants'
 import { mintServiceJwt } from './mint-jwt'
 
@@ -39,11 +42,14 @@ export async function sendInvitationEmail(input: {
   const redirect_to = joinUrl(input.orgSlug, input.token)
   const bearer = `Bearer ${mintServiceJwt(PLATFORM_JWT_SECRET, 'service_role', 60)}`
 
-  const inviteRes = await fetch(`${PLATFORM_GOTRUE_URL}/invite`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: bearer },
-    body: JSON.stringify({ email: input.email, data: { org_slug: input.orgSlug }, redirect_to }),
-  })
+  const inviteRes = await fetch(
+    `${PLATFORM_GOTRUE_URL}/invite?redirect_to=${encodeURIComponent(redirect_to)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: bearer },
+      body: JSON.stringify({ email: input.email, data: { org_slug: input.orgSlug } }),
+    }
+  )
   if (inviteRes.ok) return
 
   const inviteBody = await inviteRes.json().catch(() => ({}))
@@ -58,11 +64,14 @@ export async function sendInvitationEmail(input: {
   }
 
   // Existing account → magiclink that lands on /join.
-  const otpRes = await fetch(`${PLATFORM_GOTRUE_URL}/otp`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: input.email, create_user: false, redirect_to }),
-  })
+  const otpRes = await fetch(
+    `${PLATFORM_GOTRUE_URL}/otp?redirect_to=${encodeURIComponent(redirect_to)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: input.email, create_user: false }),
+    }
+  )
   if (!otpRes.ok) {
     const otpBody = await otpRes.json().catch(() => ({}))
     throw new Error(
