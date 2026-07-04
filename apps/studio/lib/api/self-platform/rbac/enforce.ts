@@ -37,6 +37,19 @@ export async function checkPermissionWithContext(
   // routes (M3.1 member management) pass the path slug explicitly. A
   // multi-org future picks the org owning input.projectRef instead.
   const organizationSlug = input.orgSlug ?? ctx.roles[0].orgSlug
+  // [self-platform] M3.2: MFA enforcement must also cover routes that call
+  // checkPermission directly (project detail, settings, credential routes), not
+  // just the guardOrg/guardProjectRoute wrappers. When the resolved org enforces
+  // MFA and the session is below aal2, deny here so every permission-gated route
+  // blocks. The guards additionally emit the explicit 'MFA required' message
+  // before reaching this point (they short-circuit), so their UX is unchanged;
+  // direct-checkPermission routes return their own 403. (Extra getOrgMfaEnforced
+  // lookup on the aal1 path — acceptable at internal scale; backlog: fold
+  // enforce_mfa into getMemberContext to drop the round trip.)
+  const mfaOrg = ctx.roles.find((r) => r.orgSlug === organizationSlug)
+  if (mfaOrg && claims?.aal !== 'aal2' && (await getOrgMfaEnforced(mfaOrg.orgId))) {
+    return { can: false, ctx }
+  }
   const can = doPermissionsCheck(
     expandPermissions(ctx),
     input.action,

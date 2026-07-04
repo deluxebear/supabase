@@ -50,6 +50,7 @@ describe('checkPermission', () => {
   beforeEach(() => {
     vi.mocked(getMemberContext).mockReset()
     vi.mocked(resolveProjectConnection).mockReset()
+    vi.mocked(getOrgMfaEnforced).mockReset()
   })
 
   it('fails closed without claims — no context fetch', async () => {
@@ -101,6 +102,39 @@ describe('checkPermission', () => {
     })
     expect(can).toBe(true)
     expect(ctx).toBe(DEV)
+  })
+
+  it('denies (MFA) for an aal1 session when the org enforces MFA — covers direct-checkPermission routes', async () => {
+    vi.mocked(getMemberContext).mockResolvedValue(OWNER) // full perms normally
+    vi.mocked(getOrgMfaEnforced).mockResolvedValue(true)
+    const can = await checkPermission({ sub: 'g-1', aal: 'aal1' } as JwtPayload, {
+      action: 'read:Read',
+      resource: 'projects',
+      projectRef: 'proj-b',
+    })
+    expect(can).toBe(false)
+  })
+
+  it('allows an aal2 session under enforce_mfa (MFA satisfied)', async () => {
+    vi.mocked(getMemberContext).mockResolvedValue(OWNER)
+    vi.mocked(getOrgMfaEnforced).mockResolvedValue(true)
+    const can = await checkPermission({ sub: 'g-1', aal: 'aal2' } as JwtPayload, {
+      action: 'read:Read',
+      resource: 'projects',
+      projectRef: 'proj-b',
+    })
+    expect(can).toBe(true)
+  })
+
+  it('does not deny when enforce_mfa is off (aal1 allowed)', async () => {
+    vi.mocked(getMemberContext).mockResolvedValue(OWNER)
+    vi.mocked(getOrgMfaEnforced).mockResolvedValue(false)
+    const can = await checkPermission({ sub: 'g-1', aal: 'aal1' } as JwtPayload, {
+      action: 'read:Read',
+      resource: 'projects',
+      projectRef: 'proj-b',
+    })
+    expect(can).toBe(true)
   })
 })
 
@@ -160,6 +194,7 @@ describe('guardProjectRoute (404 before 403)', () => {
 describe('checkPermission orgSlug override (M3.1)', () => {
   beforeEach(() => {
     vi.mocked(getMemberContext).mockReset()
+    vi.mocked(getOrgMfaEnforced).mockReset()
   })
 
   it('evaluates against the supplied orgSlug instead of the member ctx slug', async () => {
