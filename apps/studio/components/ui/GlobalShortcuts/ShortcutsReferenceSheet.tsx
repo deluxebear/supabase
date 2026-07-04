@@ -76,7 +76,7 @@ const getGroupOrder = (group: string) => {
   return index === -1 ? SHORTCUT_REFERENCE_GROUP_ORDER.length : index
 }
 
-const getGroupLabel = (group: string) => GROUP_LABELS[group] ?? group
+const getGroupLabel = (group: string) => $t(GROUP_LABELS[group] ?? group)
 
 const isScopedNavigationGroup = (group: string) =>
   group.startsWith('navigation.') && group !== SHORTCUT_REFERENCE_GROUPS.NAVIGATION_GLOBAL
@@ -133,7 +133,7 @@ const groupDefinitions = (activeShortcuts: ActiveShortcutDefinition[]): Shortcut
     .map(([group, definitions]) => {
       const label =
         group === SHORTCUT_REFERENCE_GROUPS.NAVIGATION_GLOBAL && !hasScopedNavigationGroup
-          ? 'Navigation'
+          ? $t('Navigation')
           : getGroupLabel(group)
 
       return {
@@ -172,7 +172,7 @@ const ShortcutSequence = ({ sequence }: Pick<ActiveShortcutDefinition, 'sequence
   <div className="flex items-center gap-1">
     {sequence.map((step, index) => (
       <Fragment key={`${step}-${index}`}>
-        {index > 0 && <span className="text-foreground-lighter text-[11px]">then</span>}
+        {index > 0 && <span className="text-foreground-lighter text-[11px]">{$t('then')}</span>}
         <KeyboardShortcut keys={hotkeyToKeys(step)} variant="pill" />
       </Fragment>
     ))}

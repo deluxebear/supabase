@@ -1,6 +1,7 @@
 import { Fragment } from 'react'
 import { cn, KeyboardShortcut } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
 import { hotkeyToKeys } from '@/state/shortcuts/formatShortcut'
 import { SHORTCUT_DEFINITIONS, type ShortcutId } from '@/state/shortcuts/registry'
 
@@ -36,7 +37,7 @@ export const ShortcutBadge = ({
     <span className={cn('flex items-center gap-1', className)}>
       {def.sequence.map((step, i) => (
         <Fragment key={i}>
-          {i > 0 && <span className="text-foreground-lighter text-[11px]">then</span>}
+          {i > 0 && <span className="text-foreground-lighter text-[11px]">{$t('then')}</span>}
           <KeyboardShortcut keys={hotkeyToKeys(step)} variant={variant} />
         </Fragment>
       ))}

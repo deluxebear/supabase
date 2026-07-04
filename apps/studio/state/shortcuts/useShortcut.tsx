@@ -10,6 +10,7 @@ import { useIsShortcutEnabled } from './useIsShortcutEnabled'
 import { orderShortcutCommands } from './utils'
 import { COMMAND_MENU_SECTIONS } from '@/components/interfaces/App/CommandMenu/CommandMenu.utils'
 import { useLatest } from '@/hooks/misc/useLatest'
+import { t as $t } from '@/lib/i18n'
 
 /**
  * Subscribe to a registered keyboard shortcut.
@@ -60,7 +61,7 @@ export function useShortcut(id: ShortcutId, callback: () => void, options?: Shor
   const ignoreInputs = options?.ignoreInputs ?? def.options?.ignoreInputs
   const registerInCommandMenu =
     options?.registerInCommandMenu ?? def.options?.registerInCommandMenu ?? false
-  const label = options?.label ?? def.label
+  const label = $t(options?.label ?? def.label)
   const conflictBehavior = options?.conflictBehavior ?? def.options?.conflictBehavior
 
   // Stable identity so we don't churn the registration store on every render.
@@ -105,7 +106,7 @@ export function useShortcut(id: ShortcutId, callback: () => void, options?: Shor
           <div className="flex items-center gap-1">
             {def.sequence.map((step, i) => (
               <Fragment key={i}>
-                {i > 0 && <span className="text-foreground-lighter text-[11px]">then</span>}
+                {i > 0 && <span className="text-foreground-lighter text-[11px]">{$t('then')}</span>}
                 <KeyboardShortcut keys={hotkeyToKeys(step)} />
               </Fragment>
             ))}

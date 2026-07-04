@@ -1,7 +1,7 @@
 import { Project } from 'ts-morph'
 import { describe, expect, it } from 'vitest'
 
-import { collectFromProject } from './wrap'
+import { collectDynamicLabelKeys, collectFromProject } from './wrap'
 
 describe('collectFromProject', () => {
   it('aggregates keys across multiple in-memory files', () => {
@@ -21,5 +21,26 @@ describe('collectFromProject', () => {
     )
     const { filesChanged } = collectFromProject(project)
     expect(filesChanged).toBe(0)
+  })
+})
+
+describe('collectDynamicLabelKeys', () => {
+  it('collects label properties and *_LABELS object values, nothing else', () => {
+    const project = new Project({ useInMemoryFileSystem: true })
+    project.createSourceFile(
+      'registry.ts',
+      [
+        `export const REG = {`,
+        `  'nav.home': { sequence: ['g', 'h'], label: 'Go to Project Overview' },`,
+        `  'nav.dyn': { label: someVariable },`, // non-literal initializer: skipped
+        `} as const`,
+        `export const GROUP_LABELS: Record<string, string> = {`,
+        `  'table-editor': 'Table Editor Group',`,
+        `}`,
+        `export const OTHER = { name: 'Not a label' }`,
+      ].join('\n')
+    )
+    const keys = collectDynamicLabelKeys(project).sort()
+    expect(keys).toEqual(['Go to Project Overview', 'Table Editor Group'])
   })
 })

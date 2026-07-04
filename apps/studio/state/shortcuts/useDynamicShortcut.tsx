@@ -8,6 +8,7 @@ import type { ShortcutHotkeyMeta, ShortcutOptions } from './types'
 import { orderShortcutCommands } from './utils'
 import { COMMAND_MENU_SECTIONS } from '@/components/interfaces/App/CommandMenu/CommandMenu.utils'
 import { useLatest } from '@/hooks/misc/useLatest'
+import { t as $t } from '@/lib/i18n'
 
 /**
  * Props shared by both the hook and the `<DynamicShortcut>` component.
@@ -57,7 +58,7 @@ export function useDynamicShortcut({
   conflictBehavior,
 }: DynamicShortcutProps) {
   const meta = useMemo<ShortcutHotkeyMeta>(
-    () => ({ id, name: label, referenceGroup }),
+    () => ({ id, name: $t(label), referenceGroup }),
     [id, label, referenceGroup]
   )
 
@@ -82,13 +83,13 @@ export function useDynamicShortcut({
     [
       {
         id,
-        name: label,
+        name: $t(label),
         action: stableAction,
         badge: () => (
           <div className="flex items-center gap-1">
             {sequence.map((step, i) => (
               <Fragment key={i}>
-                {i > 0 && <span className="text-foreground-lighter text-[11px]">then</span>}
+                {i > 0 && <span className="text-foreground-lighter text-[11px]">{$t('then')}</span>}
                 <KeyboardShortcut keys={hotkeyToKeys(step)} />
               </Fragment>
             ))}

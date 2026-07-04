@@ -2,6 +2,7 @@ import { TooltipContentProps } from '@ui/components/shadcn/ui/tooltip'
 import { Fragment, useState, type ReactNode } from 'react'
 import { KeyboardShortcut, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
 import { hotkeyToKeys } from '@/state/shortcuts/formatShortcut'
 import { SHORTCUT_DEFINITIONS, type ShortcutId } from '@/state/shortcuts/registry'
 
@@ -50,7 +51,7 @@ export const ShortcutTooltip = ({
   open,
 }: ShortcutTooltipProps) => {
   const def = SHORTCUT_DEFINITIONS[shortcutId]
-  const label = labelOverride ?? def.label
+  const label = $t(labelOverride ?? def.label)
 
   const [hoverOpen, setHoverOpen] = useState(false)
   const resolvedOpen = open ?? hoverOpen
@@ -68,7 +69,7 @@ export const ShortcutTooltip = ({
         <span className="flex items-center gap-1">
           {def.sequence.map((step, i) => (
             <Fragment key={i}>
-              {i > 0 && <span className="text-foreground-lighter text-[11px]">then</span>}
+              {i > 0 && <span className="text-foreground-lighter text-[11px]">{$t('then')}</span>}
               <KeyboardShortcut keys={hotkeyToKeys(step)} />
             </Fragment>
           ))}
