@@ -5,6 +5,7 @@ import { DatabaseExtension } from '@/data/database-extensions/database-extension
 import { GetIndexAdvisorResultResponse } from '@/data/database/retrieve-index-advisor-result-query'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { INTERNAL_SCHEMAS } from '@/hooks/useProtectedSchemas'
+import { t as $t } from '@/lib/i18n'
 
 /**
  * Gets the required extensions for index advisor
@@ -82,7 +83,7 @@ export async function createIndexes({
       sql: safeSql`${joinSqlFragments(indexStatements, ';\n')};`,
     })
 
-    toast.success('Successfully created index')
+    toast.success($t('Successfully created index'))
     if (onSuccess) onSuccess()
     return Promise.resolve()
   } catch (error: any) {

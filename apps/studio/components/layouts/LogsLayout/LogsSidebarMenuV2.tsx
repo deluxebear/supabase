@@ -104,19 +104,19 @@ export function LogsSidebarMenuV2() {
 
   const BASE_COLLECTIONS = [
     {
-      name: 'API Gateway',
+      name: $t('API Gateway'),
       key: 'edge-logs',
       url: `/project/${ref}/logs/edge-logs`,
       items: [],
     },
     {
-      name: 'Postgres',
+      name: $t('Postgres'),
       key: 'postgres-logs',
       url: `/project/${ref}/logs/postgres-logs`,
       items: [],
     },
     {
-      name: 'PostgREST',
+      name: $t('PostgREST'),
       key: 'postgrest-logs',
       url: `/project/${ref}/logs/postgrest-logs`,
       items: [],
@@ -131,7 +131,7 @@ export function LogsSidebarMenuV2() {
       : null,
     hasDedicatedPooler && IS_PLATFORM
       ? {
-          name: 'Dedicated Pooler',
+          name: $t('Dedicated Pooler'),
           key: 'dedicated-pooler-logs',
           url: `/project/${ref}/logs/dedicated-pooler-logs`,
           items: [],
@@ -139,7 +139,7 @@ export function LogsSidebarMenuV2() {
       : null,
     authEnabled
       ? {
-          name: 'Auth',
+          name: $t('Auth'),
           key: 'auth-logs',
           url: `/project/${ref}/logs/auth-logs`,
           items: [],
@@ -147,7 +147,7 @@ export function LogsSidebarMenuV2() {
       : null,
     storageEnabled
       ? {
-          name: 'Storage',
+          name: $t('Storage'),
           key: 'storage-logs',
           url: `/project/${ref}/logs/storage-logs`,
           items: [],
@@ -155,27 +155,27 @@ export function LogsSidebarMenuV2() {
       : null,
     realtimeEnabled
       ? {
-          name: 'Realtime',
+          name: $t('Realtime'),
           key: 'realtime-logs',
           url: `/project/${ref}/logs/realtime-logs`,
           items: [],
         }
       : null,
     {
-      name: 'Edge Functions',
+      name: $t('Edge Functions'),
       key: 'edge-functions-logs',
       url: `/project/${ref}/logs/edge-functions-logs`,
       items: [],
     },
     {
-      name: 'Cron',
+      name: $t('Cron'),
       key: 'pg_cron',
       url: `/project/${ref}/logs/pgcron-logs`,
       items: [],
     },
     showETLLogs
       ? {
-          name: 'Replication',
+          name: $t('Replication'),
           key: 'replication_logs',
           url: `/project/${ref}/logs/replication-logs`,
           items: [],
@@ -183,7 +183,7 @@ export function LogsSidebarMenuV2() {
       : null,
     showMultigresLogs
       ? {
-          name: 'Multigres',
+          name: $t('Multigres'),
           key: 'multigres-logs',
           url: `/project/${ref}/logs/multigres-logs`,
           items: [],
@@ -194,7 +194,7 @@ export function LogsSidebarMenuV2() {
   const OPERATIONAL_COLLECTIONS = IS_PLATFORM
     ? [
         {
-          name: 'Postgres Version Upgrade',
+          name: $t('Postgres Version Upgrade'),
           key: 'pg-upgrade-logs',
           url: `/project/${ref}/logs/pg-upgrade-logs`,
           items: [],

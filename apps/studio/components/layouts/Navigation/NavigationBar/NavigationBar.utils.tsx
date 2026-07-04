@@ -6,6 +6,7 @@ import type { Route } from '@/components/ui/ui.types'
 import { EditorIndexPageLink } from '@/data/prefetchers/project.$ref.editor'
 import type { Project } from '@/data/projects/project-detail-query'
 import { IS_PLATFORM, PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 interface RouteContext {
@@ -45,7 +46,7 @@ export const generateToolRoutes = (ref?: string, project?: Project): Route[] => 
   return [
     {
       key: 'editor',
-      label: 'Table Editor',
+      label: $t('Table Editor'),
       disabled: !isProjectActive,
       icon: <TableEditor size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
       link: ref && (isProjectBuilding ? buildingUrl : `/project/${ref}/editor`),
@@ -54,7 +55,7 @@ export const generateToolRoutes = (ref?: string, project?: Project): Route[] => 
     },
     {
       key: 'sql',
-      label: 'SQL Editor',
+      label: $t('SQL Editor'),
       disabled: !isProjectActive,
       icon: <SqlEditor size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
       link: ref && (isProjectBuilding ? buildingUrl : `/project/${ref}/sql`),
@@ -79,7 +80,7 @@ export const generateProductRoutes = (
   return [
     {
       key: 'database',
-      label: 'Database',
+      label: $t('Database'),
       disabled: !isProjectActive,
       icon: <Database size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
       link:
@@ -95,7 +96,7 @@ export const generateProductRoutes = (
       ? [
           {
             key: 'auth',
-            label: 'Authentication',
+            label: $t('Authentication'),
             disabled: !isProjectActive,
             icon: <Auth size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
             link:
@@ -113,7 +114,7 @@ export const generateProductRoutes = (
       ? [
           {
             key: 'storage',
-            label: 'Storage',
+            label: $t('Storage'),
             disabled: !isProjectActive,
             icon: <Storage size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
             link: ref && (isProjectBuilding ? buildingUrl : `/project/${ref}/storage/files`),
@@ -125,7 +126,7 @@ export const generateProductRoutes = (
       ? [
           {
             key: 'functions',
-            label: 'Edge Functions',
+            label: $t('Edge Functions'),
             disabled: false,
             icon: <EdgeFunctions size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
             link: ref && `/project/${ref}/functions`,
@@ -137,7 +138,7 @@ export const generateProductRoutes = (
       ? [
           {
             key: 'realtime',
-            label: 'Realtime',
+            label: $t('Realtime'),
             disabled: !isProjectActive,
             icon: <Realtime size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
             link: ref && (isProjectBuilding ? buildingUrl : `/project/${ref}/realtime/inspector`),
@@ -162,7 +163,7 @@ export const generateOtherRoutes = (
   return [
     {
       key: 'advisors',
-      label: 'Advisors',
+      label: $t('Advisors'),
       disabled: !isProjectActive,
       icon: <Lightbulb size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
       link: ref && (isProjectBuilding ? buildingUrl : `/project/${ref}/advisors/security`),
@@ -173,7 +174,7 @@ export const generateOtherRoutes = (
       ? [
           {
             key: 'observability',
-            label: 'Observability',
+            label: $t('Observability'),
             disabled: !isProjectActive,
             icon: <Telescope size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
             link: ref && (isProjectBuilding ? buildingUrl : `/project/${ref}/observability`),
@@ -185,7 +186,7 @@ export const generateOtherRoutes = (
       ? [
           {
             key: 'logs',
-            label: 'Logs',
+            label: $t('Logs'),
             disabled: false,
             icon: <List size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
             link:
@@ -197,7 +198,7 @@ export const generateOtherRoutes = (
       : []),
     {
       key: 'integrations',
-      label: 'Integrations',
+      label: $t('Integrations'),
       disabled: !isProjectActive,
       icon: <Blocks size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
       link: ref && (isProjectBuilding ? buildingUrl : `/project/${ref}/integrations`),
@@ -210,7 +211,7 @@ export const generateSettingsRoutes = (ref?: string): Route[] => {
   return [
     {
       key: 'settings',
-      label: 'Project Settings',
+      label: $t('Project Settings'),
       icon: <Settings size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
       link: ref && `/project/${ref}/settings/general`,
       disabled: false,

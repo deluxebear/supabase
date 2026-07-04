@@ -62,25 +62,25 @@ export function OrgMenuContent({ onCloseSheet }: OrgMenuContentProps) {
   const navMenuItems: OrgNavItem[] = useMemo(
     () => [
       {
-        label: 'Projects',
+        label: $t('Projects'),
         href: `/org/${organizationSlug}`,
         key: 'projects',
         icon: <Boxes size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
       },
       {
-        label: 'Team',
+        label: $t('Team'),
         href: `/org/${organizationSlug}/team`,
         key: 'team',
         icon: <Users size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
       },
       {
-        label: 'Integrations',
+        label: $t('Integrations'),
         href: `/org/${organizationSlug}/integrations`,
         key: 'integrations',
         icon: <Blocks size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
       },
       {
-        label: 'Usage',
+        label: $t('Usage'),
         href: `/org/${organizationSlug}/usage`,
         key: 'usage',
         icon: <ChartArea size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
@@ -88,7 +88,7 @@ export function OrgMenuContent({ onCloseSheet }: OrgMenuContentProps) {
       ...(showBilling
         ? [
             {
-              label: 'Billing',
+              label: $t('Billing'),
               href: `/org/${organizationSlug}/billing`,
               key: 'billing',
               icon: <Receipt size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
@@ -96,7 +96,7 @@ export function OrgMenuContent({ onCloseSheet }: OrgMenuContentProps) {
           ]
         : []),
       {
-        label: 'Organization settings',
+        label: $t('Organization settings'),
         href: `/org/${organizationSlug}/general`,
         key: 'settings',
         icon: <Settings size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,

@@ -1,6 +1,7 @@
 import type { ProductMenuGroup } from '@/components/ui/ProductMenu/ProductMenu.types'
 import type { Project } from '@/data/projects/project-detail-query'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 export const generateRealtimeMenu = (project: Project | undefined): ProductMenuGroup[] => {
@@ -9,10 +10,10 @@ export const generateRealtimeMenu = (project: Project | undefined): ProductMenuG
 
   return [
     {
-      title: 'Tools',
+      title: $t('Tools'),
       items: [
         {
-          name: 'Inspector',
+          name: $t('Inspector'),
           key: 'inspector',
           url: `/project/${ref}/realtime/inspector`,
           items: [],
@@ -21,10 +22,10 @@ export const generateRealtimeMenu = (project: Project | undefined): ProductMenuG
       ],
     },
     {
-      title: 'Configuration',
+      title: $t('Configuration'),
       items: [
         {
-          name: 'Policies',
+          name: $t('Policies'),
           key: 'policies',
           url: `/project/${ref}/realtime/policies`,
           items: [],
@@ -33,7 +34,7 @@ export const generateRealtimeMenu = (project: Project | undefined): ProductMenuG
         ...(showRealtimeSettings
           ? [
               {
-                name: 'Settings',
+                name: $t('Settings'),
                 key: 'settings',
                 url: `/project/${ref}/realtime/settings`,
                 items: [],

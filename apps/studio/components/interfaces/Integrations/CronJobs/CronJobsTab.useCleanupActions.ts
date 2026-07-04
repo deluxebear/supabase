@@ -17,6 +17,7 @@ import {
 } from '@/data/database-cron-jobs/keys'
 import { useScheduleCronJobRunDetailsCleanupMutation } from '@/data/database-cron-jobs/schedule-clean-up-mutation'
 import { useExecuteSqlMutation } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 
 // Delay between batches to allow other queries to proceed (in milliseconds)
 const BATCH_DELAY_MS = 100
@@ -66,7 +67,7 @@ export const useCronJobsCleanupActions = ({
     async (interval: string) => {
       if (!projectRef) {
         console.error('[CronJobsTab > batch deletion] Project reference is required')
-        toast.error('There was an error running the cleanup. Please try again.')
+        toast.error($t('There was an error running the cleanup. Please try again.'))
         return
       }
 
@@ -96,7 +97,7 @@ export const useCronJobsCleanupActions = ({
 
         if (totalPages === 0) {
           setCleanupState({ status: 'delete-success', totalRowsDeleted: 0 })
-          toast.success('The job_run_details table is empty.')
+          toast.success($t('The job_run_details table is empty.'))
           return
         }
 
@@ -108,7 +109,7 @@ export const useCronJobsCleanupActions = ({
           // Check for cancellation
           if (cancelledRef.current) {
             setCleanupState({ status: 'idle' })
-            toast.info('Deletion cancelled.')
+            toast.info($t('Deletion cancelled.'))
             return
           }
 
@@ -139,7 +140,7 @@ export const useCronJobsCleanupActions = ({
 
           if (cancelledRef.current) {
             setCleanupState({ status: 'idle' })
-            toast.info('Deletion cancelled.')
+            toast.info($t('Deletion cancelled.'))
             return
           }
 
@@ -156,7 +157,7 @@ export const useCronJobsCleanupActions = ({
         console.error('[CronJobs] Batch deletion failed with error: %O', error)
         const errorMessage = error instanceof Error ? error.message : 'Unknown error'
         setCleanupState({ status: 'delete-error', error: errorMessage })
-        toast.error('Running the cleanup failed. Please try again.')
+        toast.error($t('Running the cleanup failed. Please try again.'))
       }
     },
     [projectRef, connectionString, executeSql]
@@ -170,7 +171,7 @@ export const useCronJobsCleanupActions = ({
     async ({ interval, onSuccess }: { interval: string; onSuccess?: () => void }) => {
       if (!projectRef) {
         console.error('[CronJobsTab > schedule cleanup] Project reference is required')
-        toast.error('There was an error scheduling the cleanup. Please try again.')
+        toast.error($t('There was an error scheduling the cleanup. Please try again.'))
         return
       }
 
@@ -178,7 +179,7 @@ export const useCronJobsCleanupActions = ({
         { projectRef, connectionString, interval },
         {
           onSuccess: () => {
-            toast.success('Scheduled daily cleanup job.')
+            toast.success($t('Scheduled daily cleanup job.'))
             onSuccess?.()
           },
         }

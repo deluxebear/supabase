@@ -4,6 +4,7 @@ import { ArrowUpRight } from 'lucide-react'
 import { useIsAdvisorRulesEnabled } from '@/components/interfaces/App/FeaturePreview/FeaturePreviewContext'
 import type { ProductMenuGroup } from '@/components/ui/ProductMenu/ProductMenu.types'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 export const useGenerateAdvisorsMenu = (): ProductMenuGroup[] => {
@@ -12,24 +13,24 @@ export const useGenerateAdvisorsMenu = (): ProductMenuGroup[] => {
 
   return [
     {
-      title: 'Advisors',
+      title: $t('Advisors'),
       items: [
         {
-          name: 'Security Advisor',
+          name: $t('Security Advisor'),
           key: 'security',
           url: `/project/${ref}/advisors/security`,
           items: [],
           shortcutId: SHORTCUT_IDS.NAV_ADVISORS_SECURITY,
         },
         {
-          name: 'Performance Advisor',
+          name: $t('Performance Advisor'),
           key: 'performance',
           url: `/project/${ref}/advisors/performance`,
           items: [],
           shortcutId: SHORTCUT_IDS.NAV_ADVISORS_PERFORMANCE,
         },
         {
-          name: 'Query Performance',
+          name: $t('Query Performance'),
           key: 'query-performance',
           url: `/project/${ref}/observability/query-performance`,
           items: [],
@@ -40,10 +41,10 @@ export const useGenerateAdvisorsMenu = (): ProductMenuGroup[] => {
     ...(IS_PLATFORM && isAdvisorRulesEnabled
       ? [
           {
-            title: 'Configuration',
+            title: $t('Configuration'),
             items: [
               {
-                name: 'Settings',
+                name: $t('Settings'),
                 key: 'rules',
                 url: `/project/${ref}/advisors/rules/security`,
                 items: [],

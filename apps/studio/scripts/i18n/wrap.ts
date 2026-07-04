@@ -37,10 +37,12 @@ if (process.argv[1] && process.argv[1].endsWith('wrap.ts')) {
   const { filesChanged, keys } = wrapProject({
     tsConfigFilePath: join(cwd, 'tsconfig.json'),
     globs: [
-      join(cwd, 'components/**/*.tsx'),
-      join(cwd, 'pages/**/*.tsx'),
-      '!' + join(cwd, '**/*.test.tsx'),
-      '!' + join(cwd, '**/*.spec.tsx'),
+      // .ts files carry no JSX, but they do carry user-facing sonner toasts
+      // and hand-wrapped $t() menu labels that must land in keys.json.
+      join(cwd, 'components/**/*.{ts,tsx}'),
+      join(cwd, 'pages/**/*.{ts,tsx}'),
+      '!' + join(cwd, '**/*.test.{ts,tsx}'),
+      '!' + join(cwd, '**/*.spec.{ts,tsx}'),
     ],
     dryRun,
   })

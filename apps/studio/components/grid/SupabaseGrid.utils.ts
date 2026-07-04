@@ -21,6 +21,7 @@ import { isBoolColumn } from './utils/types'
 import type { Filter, SavedState } from '@/components/grid/types'
 import { Entity, isTableLike } from '@/data/table-editor/table-editor-types'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { eventMatchesAnyShortcut } from '@/state/shortcuts/matchEvent'
 import { tableEditorRegistry } from '@/state/shortcuts/registry/table-editor'
 
@@ -300,7 +301,7 @@ export const handleCellKeyDown = <TRow extends SupaRow = SupaRow>(
     event.preventDefault()
     event.preventGridDefault()
     void copyToClipboard(value, () => {
-      toast.success('Copied cell value to clipboard')
+      toast.success($t('Copied cell value to clipboard'))
     })
     return
   }

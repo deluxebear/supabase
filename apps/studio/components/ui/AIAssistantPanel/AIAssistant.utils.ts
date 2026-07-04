@@ -12,6 +12,7 @@ import { enumeratedTypesKeys } from '@/data/enumerated-types/keys'
 import { handleError } from '@/data/fetchers'
 import { tableKeys } from '@/data/tables/keys'
 import { tryParseJson } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { ResponseError } from '@/types'
 
 export type MutationCategory = 'functions' | 'rls-policies'
@@ -155,7 +156,7 @@ export const onErrorChat = (error: Error) => {
     } else if (typeof e === 'string') {
       toast.error(e)
     } else {
-      toast.error('An unknown error occurred')
+      toast.error($t('An unknown error occurred'))
     }
   }
 }

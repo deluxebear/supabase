@@ -18,6 +18,7 @@ import {
 } from '@/data/misc/parse-query-mutation'
 import { useExecuteSqlMutation } from '@/data/sql/execute-sql-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { wrapWithRoleImpersonation } from '@/lib/role-impersonation'
 import { usePostgresSandbox } from '@/state/postgres-sandbox/sandbox'
 import {
@@ -99,7 +100,7 @@ export const useTestQueryRLS = () => {
     if (valid && unchecked_sql != null) {
       onInferSQL(unchecked_sql)
     } else {
-      toast.error('Client library code provided is not valid')
+      toast.error($t('Client library code provided is not valid'))
     }
   }
 
@@ -145,7 +146,7 @@ export const useTestQueryRLS = () => {
     }
 
     if (option === 'authenticated' && !user) {
-      toast('Select which user to test as before running the query')
+      toast($t('Select which user to test as before running the query'))
       return true
     }
 

@@ -16,6 +16,7 @@ import { useTableRowCreateMutation } from '@/data/table-rows/table-row-create-mu
 import { useTableRowUpdateMutation } from '@/data/table-rows/table-row-update-mutation'
 import type { TableRowsData } from '@/data/table-rows/table-rows-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useGetImpersonatedRoleState } from '@/state/role-impersonation-state'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
 import type { Dictionary } from '@/types'
@@ -114,7 +115,7 @@ export function useTableRowOperations() {
   // Non-queue mutation for row creation
   const { mutateAsync: mutateCreateTableRow } = useTableRowCreateMutation({
     onSuccess() {
-      toast.success('Successfully created row')
+      toast.success($t('Successfully created row'))
     },
   })
 

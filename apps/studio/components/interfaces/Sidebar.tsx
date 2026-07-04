@@ -286,7 +286,7 @@ const ProjectLinks = () => {
           active={isUndefined(activeRoute) && !isUndefined(router.query.ref)}
           route={{
             key: 'HOME',
-            label: 'Project Overview',
+            label: $t('Project Overview'),
             icon: <Home size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
             link: `/project/${ref}`,
             linkElement: <ProjectIndexPageLink projectRef={ref} />,
@@ -385,28 +385,28 @@ const OrganizationLinks = () => {
 
   const navMenuItems = [
     {
-      label: 'Projects',
+      label: $t('Projects'),
       href: `/org/${organizationSlug}`,
       key: 'projects',
       icon: <Boxes size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
       shortcutId: SHORTCUT_IDS.NAV_ORG_PROJECTS,
     },
     {
-      label: 'Team',
+      label: $t('Team'),
       href: `/org/${organizationSlug}/team`,
       key: 'team',
       icon: <Users size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
       shortcutId: SHORTCUT_IDS.NAV_ORG_TEAM,
     },
     {
-      label: 'Integrations',
+      label: $t('Integrations'),
       href: `/org/${organizationSlug}/integrations`,
       key: 'integrations',
       icon: <Blocks size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
       shortcutId: SHORTCUT_IDS.NAV_ORG_INTEGRATIONS,
     },
     {
-      label: 'Usage',
+      label: $t('Usage'),
       href: `/org/${organizationSlug}/usage`,
       key: 'usage',
       icon: <ChartArea size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
@@ -415,7 +415,7 @@ const OrganizationLinks = () => {
     ...(showBilling
       ? [
           {
-            label: 'Billing',
+            label: $t('Billing'),
             href: `/org/${organizationSlug}/billing`,
             key: 'billing',
             icon: <Receipt size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
@@ -424,7 +424,7 @@ const OrganizationLinks = () => {
         ]
       : []),
     {
-      label: 'Organization Settings',
+      label: $t('Organization Settings'),
       href: `/org/${organizationSlug}/general`,
       key: 'settings',
       icon: <Settings size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,

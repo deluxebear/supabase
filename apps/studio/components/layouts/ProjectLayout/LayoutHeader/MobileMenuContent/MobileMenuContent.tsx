@@ -100,7 +100,7 @@ export function MobileMenuContent({
   const homeRoute: Route = useMemo(
     () => ({
       key: 'HOME',
-      label: 'Project Overview',
+      label: $t('Project Overview'),
       icon: <Home size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
       link: ref ? `/project/${ref}` : undefined,
     }),

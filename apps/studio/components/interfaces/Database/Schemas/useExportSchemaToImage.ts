@@ -2,6 +2,8 @@ import { toPng, toSvg } from 'html-to-image'
 import { useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
+import { t as $t } from '@/lib/i18n'
+
 export const useExportSchemaToImage = () => {
   const [isDownloading, setIsDownloading] = useState(false)
   // By doing this once and passing the result to html-to-image options, we avoid html-to-image calculating it for every node.
@@ -47,14 +49,14 @@ export const useExportSchemaToImage = () => {
           a.setAttribute('download', `supabase-schema-${projectRef}.svg`)
           a.setAttribute('href', data)
           a.click()
-          toast.success('Successfully downloaded as SVG')
+          toast.success($t('Successfully downloaded as SVG'))
         } else if (format === 'png') {
           const data = await toPng(element, options)
           const a = document.createElement('a')
           a.setAttribute('download', `supabase-schema-${projectRef}.png`)
           a.setAttribute('href', data)
           a.click()
-          toast.success('Successfully downloaded as PNG')
+          toast.success($t('Successfully downloaded as PNG'))
         }
       } catch (error) {
         console.error('Failed to download:', error)

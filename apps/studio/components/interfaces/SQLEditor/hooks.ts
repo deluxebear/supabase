@@ -13,6 +13,7 @@ import {
 } from './SQLEditor.utils'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor/sql-editor-state'
 
@@ -38,7 +39,7 @@ export const useNewQuery = () => {
     if (!profile) return console.error('Profile is required')
 
     if (!canCreateSQLSnippet) {
-      toast('Your queries will not be saved as you do not have sufficient permissions')
+      toast($t('Your queries will not be saved as you do not have sufficient permissions'))
       return undefined
     }
 

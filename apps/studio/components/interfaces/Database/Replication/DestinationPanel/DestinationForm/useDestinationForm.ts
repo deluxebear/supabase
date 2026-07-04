@@ -25,6 +25,7 @@ import {
 import { useValidatePipelineMutation } from '@/data/replication/validate-pipeline-mutation'
 import { useIcebergNamespaceCreateMutation } from '@/data/storage/iceberg-namespace-create-mutation'
 import { useS3AccessKeyCreateMutation } from '@/data/storage/s3-access-key-create-mutation'
+import { t as $t } from '@/lib/i18n'
 import {
   PipelineStatusRequestStatus,
   usePipelineRequestStatus,
@@ -243,7 +244,7 @@ export const useDestinationForm = ({ selectedType }: { selectedType: Destination
             PipelineStatusRequestStatus.RestartRequested,
             snapshot
           )
-          toast.success('Settings applied. Restarting the pipeline...')
+          toast.success($t('Settings applied. Restarting the pipeline...'))
           restartPipeline({ projectRef, pipelineId: existingDestination.pipelineId })
         } else {
           setRequestStatus(
@@ -251,7 +252,7 @@ export const useDestinationForm = ({ selectedType }: { selectedType: Destination
             PipelineStatusRequestStatus.StartRequested,
             snapshot
           )
-          toast.success('Settings applied. Starting the pipeline...')
+          toast.success($t('Settings applied. Starting the pipeline...'))
           startPipeline({ projectRef, pipelineId: existingDestination.pipelineId })
         }
         onClose()
@@ -268,7 +269,7 @@ export const useDestinationForm = ({ selectedType }: { selectedType: Destination
         )
         // Set request status only right before starting, then fire and close
         setRequestStatus(pipelineId, PipelineStatusRequestStatus.StartRequested, undefined)
-        toast.success('Pipeline created. Starting the pipeline...')
+        toast.success($t('Pipeline created. Starting the pipeline...'))
         startPipeline({ projectRef, pipelineId })
         onClose()
       }

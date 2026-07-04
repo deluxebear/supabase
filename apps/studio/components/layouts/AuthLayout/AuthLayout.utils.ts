@@ -5,6 +5,7 @@ import { createElement } from 'react'
 import type { ProductMenuGroup } from '@/components/ui/ProductMenu/ProductMenu.types'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 const ExternalLinkIcon = createElement(ArrowUpRight, { strokeWidth: 1, className: 'h-4 w-4' })
@@ -31,12 +32,12 @@ export function generateAuthMenu(options: GenerateAuthMenuOptions): ProductMenuG
 
   return [
     {
-      title: 'Manage',
+      title: $t('Manage'),
       items: [
         ...(showOverview
           ? [
               {
-                name: 'Overview',
+                name: $t('Overview'),
                 key: 'overview',
                 url: `${baseUrl}/overview`,
                 items: [],
@@ -45,7 +46,7 @@ export function generateAuthMenu(options: GenerateAuthMenuOptions): ProductMenuG
             ]
           : []),
         {
-          name: 'Users',
+          name: $t('Users'),
           key: 'users',
           url: `${baseUrl}/users`,
           items: [],
@@ -54,7 +55,7 @@ export function generateAuthMenu(options: GenerateAuthMenuOptions): ProductMenuG
         ...(isPlatform
           ? [
               {
-                name: 'OAuth Apps',
+                name: $t('OAuth Apps'),
                 key: 'oauth-apps',
                 url: `${baseUrl}/oauth-apps`,
                 items: [],
@@ -67,12 +68,12 @@ export function generateAuthMenu(options: GenerateAuthMenuOptions): ProductMenuG
     ...(features.emails && isPlatform
       ? [
           {
-            title: 'Notifications',
+            title: $t('Notifications'),
             items: [
               ...(features.emails
                 ? [
                     {
-                      name: 'Emails',
+                      name: $t('Emails'),
                       key: 'email',
                       pages: ['templates', 'smtp'],
                       url: `${baseUrl}/templates`,
@@ -86,10 +87,10 @@ export function generateAuthMenu(options: GenerateAuthMenuOptions): ProductMenuG
         ]
       : []),
     {
-      title: 'Configuration',
+      title: $t('Configuration'),
       items: [
         {
-          name: 'Policies',
+          name: $t('Policies'),
           key: 'policies',
           url: `/project/${ref}/database/policies`,
           rightIcon: ExternalLinkIcon,
@@ -101,7 +102,7 @@ export function generateAuthMenu(options: GenerateAuthMenuOptions): ProductMenuG
               ...(features.signInProviders
                 ? [
                     {
-                      name: 'Sign In / Providers',
+                      name: $t('Sign In / Providers'),
                       key: 'sign-in-up',
                       pages: ['providers', 'third-party'],
                       url: `${baseUrl}/providers`,
@@ -113,23 +114,23 @@ export function generateAuthMenu(options: GenerateAuthMenuOptions): ProductMenuG
               ...(passkeysInMenu
                 ? [
                     {
-                      name: 'Passkeys',
+                      name: $t('Passkeys'),
                       key: 'passkeys',
                       url: `${baseUrl}/passkeys`,
-                      label: 'Beta',
+                      label: $t('Beta'),
                       shortcutId: SHORTCUT_IDS.NAV_AUTH_PASSKEYS,
                     },
                   ]
                 : []),
               {
-                name: 'OAuth Server',
+                name: $t('OAuth Server'),
                 key: 'oauth-server',
                 url: `${baseUrl}/oauth-server`,
-                label: 'Beta',
+                label: $t('Beta'),
                 shortcutId: SHORTCUT_IDS.NAV_AUTH_OAUTH_SERVER,
               },
               {
-                name: 'Sessions',
+                name: $t('Sessions'),
                 key: 'sessions',
                 url: `${baseUrl}/sessions`,
                 items: [],
@@ -138,7 +139,7 @@ export function generateAuthMenu(options: GenerateAuthMenuOptions): ProductMenuG
               ...(features.rateLimits
                 ? [
                     {
-                      name: 'Rate Limits',
+                      name: $t('Rate Limits'),
                       key: 'rate-limits',
                       url: `${baseUrl}/rate-limits`,
                       items: [],
@@ -149,7 +150,7 @@ export function generateAuthMenu(options: GenerateAuthMenuOptions): ProductMenuG
               ...(features.multiFactor
                 ? [
                     {
-                      name: 'Multi-Factor',
+                      name: $t('Multi-Factor'),
                       key: 'mfa',
                       url: `${baseUrl}/mfa`,
                       items: [],
@@ -158,7 +159,7 @@ export function generateAuthMenu(options: GenerateAuthMenuOptions): ProductMenuG
                   ]
                 : []),
               {
-                name: 'URL Configuration',
+                name: $t('URL Configuration'),
                 key: 'url-configuration',
                 url: `${baseUrl}/url-configuration`,
                 items: [],
@@ -167,7 +168,7 @@ export function generateAuthMenu(options: GenerateAuthMenuOptions): ProductMenuG
               ...(features.attackProtection
                 ? [
                     {
-                      name: 'Attack Protection',
+                      name: $t('Attack Protection'),
                       key: 'protection',
                       url: `${baseUrl}/protection`,
                       items: [],
@@ -176,15 +177,15 @@ export function generateAuthMenu(options: GenerateAuthMenuOptions): ProductMenuG
                   ]
                 : []),
               {
-                name: 'Auth Hooks',
+                name: $t('Auth Hooks'),
                 key: 'hooks',
                 url: `${baseUrl}/hooks`,
                 items: [],
-                label: 'Beta',
+                label: $t('Beta'),
                 shortcutId: SHORTCUT_IDS.NAV_AUTH_HOOKS,
               },
               {
-                name: 'Audit Logs',
+                name: $t('Audit Logs'),
                 key: 'audit-logs',
                 url: `${baseUrl}/audit-logs`,
                 items: [],
@@ -193,7 +194,7 @@ export function generateAuthMenu(options: GenerateAuthMenuOptions): ProductMenuG
               ...(features.performance
                 ? [
                     {
-                      name: 'Performance',
+                      name: $t('Performance'),
                       key: 'performance',
                       url: `${baseUrl}/performance`,
                       items: [],

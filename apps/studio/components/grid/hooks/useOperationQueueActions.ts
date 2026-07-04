@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { tableRowKeys } from '@/data/table-rows/keys'
 import { useOperationQueueSaveMutation } from '@/data/table-rows/operation-queue-save-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useGetImpersonatedRoleState } from '@/state/role-impersonation-state'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
 import { QueuedOperation } from '@/state/table-editor-operation-queue.types'
@@ -31,7 +32,7 @@ export function useOperationQueueActions(options: UseOperationQueueActionsOption
       onSuccess: () => {
         snap.clearQueue()
         snap.closeSidePanel()
-        toast.success('Changes saved successfully')
+        toast.success($t('Changes saved successfully'))
         onSaveSuccess?.()
       },
       onError: (error) => {

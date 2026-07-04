@@ -10,6 +10,7 @@ import { useProjectAddonsQuery } from '@/data/subscriptions/project-addons-query
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 export const useGenerateDatabaseMenu = (): ProductMenuGroup[] => {
@@ -32,52 +33,52 @@ export const useGenerateDatabaseMenu = (): ProductMenuGroup[] => {
 
   return [
     {
-      title: 'Database Management',
+      title: $t('Database Management'),
       items: [
         {
-          name: 'Schema Visualizer',
+          name: $t('Schema Visualizer'),
           key: 'schemas',
           url: getDatabaseURL('schemas'),
           shortcutId: SHORTCUT_IDS.NAV_DATABASE_SCHEMA_VISUALIZER,
         },
         {
-          name: 'Tables',
+          name: $t('Tables'),
           key: 'tables',
           url: getDatabaseURL('tables'),
           shortcutId: SHORTCUT_IDS.NAV_DATABASE_TABLES,
         },
         {
-          name: 'Functions',
+          name: $t('Functions'),
           key: 'functions',
           url: getDatabaseURL('functions'),
           shortcutId: SHORTCUT_IDS.NAV_DATABASE_FUNCTIONS,
         },
         {
-          name: 'Triggers',
+          name: $t('Triggers'),
           key: 'triggers',
           url: getDatabaseURL('triggers/data'),
           shortcutId: SHORTCUT_IDS.NAV_DATABASE_TRIGGERS,
         },
         {
-          name: 'Enumerated Types',
+          name: $t('Enumerated Types'),
           key: 'types',
           url: getDatabaseURL('types'),
           shortcutId: SHORTCUT_IDS.NAV_DATABASE_TYPES,
         },
         {
-          name: 'Extensions',
+          name: $t('Extensions'),
           key: 'extensions',
           url: getDatabaseURL('extensions'),
           shortcutId: SHORTCUT_IDS.NAV_DATABASE_EXTENSIONS,
         },
         {
-          name: 'Indexes',
+          name: $t('Indexes'),
           key: 'indexes',
           url: getDatabaseURL('indexes'),
           shortcutId: SHORTCUT_IDS.NAV_DATABASE_INDEXES,
         },
         {
-          name: 'Publications',
+          name: $t('Publications'),
           key: 'publications',
           url: getDatabaseURL('publications'),
           shortcutId: SHORTCUT_IDS.NAV_DATABASE_PUBLICATIONS,
@@ -85,22 +86,22 @@ export const useGenerateDatabaseMenu = (): ProductMenuGroup[] => {
       ],
     },
     {
-      title: 'Access Control',
+      title: $t('Access Control'),
       items: [
         {
-          name: 'Policies',
+          name: $t('Policies'),
           key: 'policies',
           url: getDatabaseURL('policies'),
           shortcutId: SHORTCUT_IDS.NAV_DATABASE_POLICIES,
         },
         showRoles && {
-          name: 'Roles',
+          name: $t('Roles'),
           key: 'roles',
           url: getDatabaseURL('roles'),
           shortcutId: SHORTCUT_IDS.NAV_DATABASE_ROLES,
         },
         columnLevelPrivileges && {
-          name: 'Column Privileges',
+          name: $t('Column Privileges'),
           key: 'column-privileges',
           url: getDatabaseURL('column-privileges'),
           shortcutId: SHORTCUT_IDS.NAV_DATABASE_COLUMN_PRIVILEGES,
@@ -108,10 +109,10 @@ export const useGenerateDatabaseMenu = (): ProductMenuGroup[] => {
       ].filter(Boolean) as ProductMenuGroupItem[],
     },
     {
-      title: 'Configuration',
+      title: $t('Configuration'),
       items: [
         {
-          name: 'Settings',
+          name: $t('Settings'),
           key: 'settings',
           url: getDatabaseURL('settings'),
           shortcutId: SHORTCUT_IDS.NAV_DATABASE_SETTINGS,
@@ -119,24 +120,24 @@ export const useGenerateDatabaseMenu = (): ProductMenuGroup[] => {
       ].filter(Boolean) as ProductMenuGroupItem[],
     },
     {
-      title: 'Platform',
+      title: $t('Platform'),
       items: [
         IS_PLATFORM &&
           showPgReplicate && {
-            name: 'Replication',
+            name: $t('Replication'),
             key: 'replication',
             url: getDatabaseURL('replication'),
             label: enablePgReplicate ? 'New' : undefined,
             shortcutId: SHORTCUT_IDS.NAV_DATABASE_REPLICATION,
           },
         IS_PLATFORM && {
-          name: 'Backups',
+          name: $t('Backups'),
           key: 'backups',
           url: pitrEnabled ? getDatabaseURL('backups/pitr') : getDatabaseURL('backups/scheduled'),
           shortcutId: SHORTCUT_IDS.NAV_DATABASE_BACKUPS,
         },
         {
-          name: 'Migrations',
+          name: $t('Migrations'),
           key: 'migrations',
           url: getDatabaseURL('migrations'),
           shortcutId: SHORTCUT_IDS.NAV_DATABASE_MIGRATIONS,

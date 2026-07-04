@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import type { LogData } from './Messages.types'
 import { useProjectSettingsV2Query } from '@/data/config/project-settings-v2-query'
 import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { EMPTY_ARR } from '@/lib/void'
 import { useRoleImpersonationStateSnapshot } from '@/state/role-impersonation-state'
 
@@ -226,13 +227,13 @@ export const useRealtimeMessages = (
           payload,
         })
         if (res === 'error') {
-          toast.error('Failed to broadcast message')
+          toast.error($t('Failed to broadcast message'))
         } else {
-          toast.success('Successfully broadcasted message')
+          toast.success($t('Successfully broadcasted message'))
           callback()
         }
       } else {
-        toast.error('Failed to broadcast message: channel has not been set')
+        toast.error($t('Failed to broadcast message: channel has not been set'))
       }
     },
     [channel]
