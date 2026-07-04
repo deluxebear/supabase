@@ -850,6 +850,13 @@ warn-once message the first time it happens; `setOrgMfaEnforced`'s `UPDATE` has 
 a PATCH against an unmigrated database propagates the raw column-missing error and the route
 returns `500` via `apiWrapper`'s catch-all, rather than silently succeeding or silently degrading.
 
+Apply `05-invitations.sql` (M3.2 — organization invitations):
+
+```bash
+docker exec -i supabase-platform-db psql -U postgres -d platform \
+  < docker/volumes/platform/migrations/05-invitations.sql
+```
+
 ### v1 routes: functions list and TypeScript typegen now RBAC-guarded
 
 `pages/api/v1/projects/[ref]/functions/index.ts` (GET) and
