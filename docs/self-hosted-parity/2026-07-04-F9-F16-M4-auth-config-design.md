@@ -21,7 +21,7 @@ M4 builds the truth-source store + routes + an apply channel.
 | D1  | Apply channel scope  | **Store + CLI apply, both in M4** (end-to-end: store → CLI render env → restart GoTrue → live)                                                                             | Dropping apply → store-only MVP; apply becomes M4.1                                   |
 | D2  | `06` table structure | **jsonb hybrid** — `config jsonb` (non-secret) + `secrets jsonb` (encrypted map)                                                                                           | Single-blob (secrets inline) or 237 columns (rejected)                                |
 | D3  | GET seed/defaults    | **Curated defaults baseline ⊕ stored overrides**; GET returns full 237-field object                                                                                        | Lean sparse seed, or GoTrue `/settings` seed                                          |
-| D4  | Apply target model   | **Shared-stack, config-driven container** (default `supabase-auth`); stack-scoped semantics documented                                                                     | Per-project stack metadata in registry (deferred until real per-project stacks exist) |
+| D4  | Apply target model   | **Shared-stack, config-driven target** (default = compose service `auth`; container_name `supabase-auth`); stack-scoped semantics documented                               | Per-project stack metadata in registry (deferred until real per-project stacks exist) |
 | D5  | Secret read tier     | **Always-mask on GET** (no `secrets:Read` reveal tier) — UI treats every secret as write-only and never displays it, so decrypted secrets are never shipped to the browser | Two-tier `read:Read`/`secrets:Read` like the settings route                           |
 
 **Load-bearing honesty boundary (must be documented in README + surfaced in the design):**
@@ -124,7 +124,7 @@ Studio Auth pages (~18 forms)  ── enabled: IS_PLATFORM ──►
         │
    [operator]  tsx docker/scripts/platform/apply-auth-config.ts <ref>
         │   read row via docker exec psql · decrypt secrets · render GOTRUE_*=…
-        │   write compose override · docker compose up -d <PLATFORM_AUTH_CONTAINER=supabase-auth>
+        │   write compose override · docker compose up -d <service=auth>
         ▼
    supabase-auth restarts with new env  ──►  config LIVE (stack-scoped)
 ```
@@ -266,7 +266,7 @@ apply-auth-config <ref> [--target <container>] [--dry-run]
    (`docker/docker-compose.auth-override.yml`, `services.<auth>.environment`) — self-contained,
    does not edit base compose or `.env`.
 4. `docker compose -f docker-compose.yml -f docker-compose.auth-override.yml up -d <target>`
-   where `target = --target || PLATFORM_AUTH_CONTAINER || 'supabase-auth'`. Idempotent
+   where `target = --target || PLATFORM_AUTH_CONTAINER || 'auth'` (the docker-compose SERVICE KEY — `docker compose up -d`/-f merging resolve by service key; the container_name is `supabase-auth`). Idempotent
    (re-render + recreate). `--dry-run` prints the rendered override and skips the restart.
 
 **Stack-scoped semantics (documented):** the target GoTrue is shared across every project on the

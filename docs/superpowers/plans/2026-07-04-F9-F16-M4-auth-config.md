@@ -4,7 +4,7 @@
 
 **Goal:** Make the whole `/project/[ref]/auth` settings surface (~18 forms, currently 404) work by building a per-project GoTrue-config store (`GET`/`PATCH /platform/auth/{ref}/config` + `/config/hooks`) plus an operator CLI that renders the stored config into `GOTRUE_*` env and restarts GoTrue.
 
-**Architecture:** GoTrue auth config is env-driven and read at boot — there is no runtime config API — so this is a config **store + apply**, not a proxy. Studio persists config to a new `platform.auth_config` table (jsonb hybrid: non-secret `config` + encrypted `secrets`); GET returns a curated defaults baseline overlaid with stored overrides, secrets always masked; PATCH encrypts secrets and never overwrites a masked/blank secret. An operator-run CLI (`apply-auth-config`) renders `GOTRUE_${field}` into a docker-compose override file and restarts a configurable target container (default `supabase-auth`), stack-scoped.
+**Architecture:** GoTrue auth config is env-driven and read at boot — there is no runtime config API — so this is a config **store + apply**, not a proxy. Studio persists config to a new `platform.auth_config` table (jsonb hybrid: non-secret `config` + encrypted `secrets`); GET returns a curated defaults baseline overlaid with stored overrides, secrets always masked; PATCH encrypts secrets and never overwrites a masked/blank secret. An operator-run CLI (`apply-auth-config`) renders `GOTRUE_${field}` into a docker-compose override file and restarts a configurable target compose service (default `auth`; container_name `supabase-auth`), stack-scoped.
 
 **Tech Stack:** Next.js pages-router API routes (TS), vitest + node-mocks-http, platform-db via `executePlatformQuery` (pg-meta `x-connection-encrypted`), crypto-js AES (`secrets.ts` `encryptSecret`/`decryptSecret`), `tsx` CLI + `docker exec`/`docker compose`.
 
@@ -1031,7 +1031,7 @@ function loadStored(ref: string): {
 export function main(argv = process.argv.slice(2)) {
   const { ref, target, dryRun } = parseArgs(argv)
   if (!ref) throw new Error('usage: apply-auth-config <ref> [--target <container>] [--dry-run]')
-  const service = target || process.env.PLATFORM_AUTH_CONTAINER || 'supabase-auth'
+  const service = target || process.env.PLATFORM_AUTH_CONTAINER || 'auth' // docker-compose SERVICE KEY (container_name is supabase-auth)
 
   const stored = loadStored(ref)
   const decrypted: Record<string, string> = {}
@@ -1101,7 +1101,7 @@ git check-ignore docker/docker-compose.auth-override.yml && echo IGNORED
 npx tsx docker/scripts/platform/apply-auth-config.ts default --dry-run
 ```
 
-Expected: prints `IGNORED`; the dry-run prints a `services: / supabase-auth: / environment:` YAML block (may be empty of vars if `default` has no stored row yet) and a `# dry-run: would restart supabase-auth …` line; no file written, no container restarted.
+Expected: prints `IGNORED`; the dry-run prints a `services: / auth: / environment:` YAML block (may be empty of vars if `default` has no stored row yet) and a `# dry-run: would restart auth …` line; no file written, no container restarted.
 
 - [ ] **Step 7: Commit**
 
@@ -1134,7 +1134,7 @@ Append an M4 section to `docker/volumes/platform/README.md` (match the heading l
   ```bash
   npx tsx docker/scripts/platform/apply-auth-config.ts <ref> [--target <container>] [--dry-run]
   ```
-  which renders `GOTRUE_*` into `docker/docker-compose.auth-override.yml` and restarts the target GoTrue (default `supabase-auth`, overridable via `--target`/`PLATFORM_AUTH_CONTAINER`).
+  which renders `GOTRUE_*` into `docker/docker-compose.auth-override.yml` and restarts the target GoTrue compose service (default `auth` — the docker-compose service key, whose container_name is `supabase-auth`; overridable via `--target`/`PLATFORM_AUTH_CONTAINER`).
 - **⚠ Security (call out loudly):** the generated `docker-compose.auth-override.yml` contains **decrypted** provider/SMTP/hook secrets. It is gitignored and written `chmod 600` — never commit it, never share it. At-rest secrets in `platform.auth_config.secrets` are AES-encrypted (`PLATFORM_ENCRYPTION_KEY`); GET always masks them; PATCH never overwrites a stored secret with a blank/masked value.
 - **Shared-stack semantics:** one `supabase-auth` serves every project on the stack, so applying any ref's config restarts that shared GoTrue and takes effect stack-wide. True per-project isolation needs per-project stacks (future work).
 - **RBAC:** any project member can view auth config; only Owner/Admin can change it (`custom_config_gotrue`).
