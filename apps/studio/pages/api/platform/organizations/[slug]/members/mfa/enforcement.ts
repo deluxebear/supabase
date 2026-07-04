@@ -48,6 +48,10 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
     return res.status(201).json(response)
   }
 
+  // [self-platform] PATCH validates the body BEFORE the guard (the guard needs
+  // no body data here, so order is a style choice, not a security one — no info
+  // leak either way). Recorded for consistency with the member routes' ordering
+  // note (M3.1 backlog #6).
   const body = (req.body ?? {}) as Partial<ChangeMFAEnforcementStateRequest>
   if (typeof body.enforced !== 'boolean') {
     return res.status(400).json({ message: 'Invalid enforced parameter' })

@@ -149,9 +149,11 @@ in front of the existing single self-hosted project, not a general multi-tenant 
 - **Full permissions.** Every authenticated, org-member user has full access to that project
   (Table Editor, SQL Editor, Database, Auth, Storage, Logs, etc.) — no role-based access control
   or per-resource permission scoping.
-- **Registration is open.** `GOTRUE_DISABLE_SIGNUP: 'false'` — anyone who can reach `:8082` can
-  self-register and get full access to the one project. Tightening this (invite-only signup,
-  roles, project isolation) is explicitly deferred to M3.
+- **Registration was open in M1.** `GOTRUE_DISABLE_SIGNUP: 'false'` — anyone who could reach
+  `:8082` could self-register and get full access to the one project. This has since been
+  tightened: project isolation shipped in M2, role-based access control in M3.0/M3.1, and
+  invite-only signup (`GOTRUE_DISABLE_SIGNUP: 'true'`, no more open self-registration) in M3.2 —
+  see "M3.2: Invitations, SMTP, invite-only signup, and MFA enforcement" below.
 
 ## Known limitations (M1)
 
@@ -890,7 +892,142 @@ On a standard docker-compose stack, `supabase_read_only_user`'s password is **no
 docker exec supabase-db psql -U postgres -c "ALTER ROLE supabase_read_only_user PASSWORD '<POSTGRES_PASSWORD>';"
 ```
 
-## M3.2: Invite-only signup
+## M3.2: Invitations, SMTP, invite-only signup, and MFA enforcement
+
+M3.1 shipped role assignment, member management, and an org-level `enforce_mfa` flag that was only
+stored, never acted on — and left `members/invitations.ts` as a permanent `{ invitations: [] }`
+stub. M3.2 closes all three: real organization invitations (create, list, revoke, accept-by-token),
+an actual outbound email (GoTrue-mailed, Mailpit locally), invite-only signup (public
+self-registration is off), and live MFA enforcement (the M3.1 flag now actually blocks non-aal2
+sessions instead of just being readable).
+
+### Endpoints
+
+Five routes across two files. `pages/api/platform/organizations/[slug]/members/invitations.ts`
+(the collection) handles `GET` — list **pending** invitations only (`accepted_at is null`), gated
+`read:Read` on `organizations` via `guardOrgRoute` so it matches the members-list GET it feeds
+(the members UI `Promise.all`s the two together) — and `POST` — batch-create for one shared
+`role_id` (+ optional shared `role_scoped_projects`) across a list of emails, gated `write:Create`
+on `user_invites` with `data: { resource: { role_id } }` so the matrix's owner-protection deny
+fires for an Administrator trying to invite an Owner. Each email in the batch runs its own
+already-member / already-pending / send-failure pipeline independently (see the invariant below),
+so one bad email in a batch doesn't sink the rest.
+
+`pages/api/platform/organizations/[slug]/members/invitations/[id_or_token].ts` (the item route)
+handles the other three: `DELETE` (revoke by numeric id — a guarded, member-management action,
+with its own owner-protection re-check per the invite's `role_id`), `GET` (read by token — a
+capability check, not a membership check, since the invitee isn't an org member yet), and `POST`
+(accept by token — fail-closed re-check of everything the GET showed, then one atomic claim). All
+three live in one file because Next.js's file-based router gives `{id}` and `{token}` **the same
+dynamic path segment** — `[id_or_token].ts` can't coexist with a separate `[id].ts`/`[token].ts`
+pair at the same route depth, so the single handler dispatches on HTTP method instead (`DELETE`
+parses the segment as a numeric id; `GET`/`POST` treat it as an opaque token string). The by-token
+paths are deliberately info-hiding: an unknown org slug and a missing/foreign-org token both
+return `200 { token_does_not_exist: true }` — never a 404 — so a guess never reveals whether the
+org itself exists.
+
+### Invite email: GoTrue `/invite` vs `/otp`, Mailpit, and real SMTP
+
+`lib/api/self-platform/invite-email.ts`'s `sendInvitationEmail` picks one of two GoTrue admin
+endpoints depending on whether the invited address is already a GoTrue user: a brand-new address
+goes through `POST /invite` (GoTrue creates the user and mails an invite link); an address GoTrue
+already recognizes (detected from `/invite`'s 4xx response — status 422/400/409 plus an
+error code/message matching `/exist|registered/i`, verified live against GoTrue v2.189.0) falls
+back to `POST /otp` with `create_user: false` (a magiclink for an existing account). **Both calls
+pass `redirect_to` as a URL query parameter, never in the JSON body** — GoTrue only honors
+query-string `redirect_to` on these endpoints (live-verified; a body field is silently ignored and
+GoTrue falls back to `GOTRUE_SITE_URL`), so the emailed `/verify` link carries the full
+`/join?token=<invitation-token>&slug=<org-slug>` redirect only because the URL itself carries it.
+The collection `POST` handler enforces a hard invariant — **a pending invitation row implies an
+email was sent**: it inserts the row first, then calls `sendInvitationEmail`, and if that throws it
+deletes the just-inserted row and reports that email as failed, rather than leaving a row that no
+one was ever notified about. Locally, delivery goes through `platform-mail`
+(`docker-compose.platform.yml`, `axllent/mailpit:v1.20`, SMTP on `1025` / web UI on `8025`) with
+empty `GOTRUE_SMTP_USER`/`PASS` by default — Go's stdlib `PlainAuth` refuses to send credentials
+over a non-TLS connection unless the SMTP host is literally `localhost` (ours is `platform-mail`),
+so a non-empty user/pass here makes every send fail; empty credentials make GoTrue skip AUTH
+entirely, which Mailpit's `MP_SMTP_AUTH_ACCEPT_ANY`/`MP_SMTP_AUTH_ALLOW_INSECURE` config permits.
+To point at a real provider instead, override `PLATFORM_SMTP_HOST`/`PORT`/`USER`/`PASS`/
+`ADMIN_EMAIL`/`SENDER_NAME` in `docker/.env` (gitignored, never committed) — a real 587/465+TLS
+provider makes `PlainAuth`'s non-`localhost` check pass legitimately instead of needing the
+empty-credential workaround.
+
+### Invite-only signup
+
+`docker-compose.platform.yml` now sets `GOTRUE_DISABLE_SIGNUP: 'true'` — this is the real gate;
+GoTrue itself refuses to create new accounts outside the admin API's `/invite`/`/admin/users`
+paths. `pages/api/platform/signup.ts` (self-platform mode) no longer proxies to GoTrue at all; it
+unconditionally returns `403` with a purposeful message ("Signups are invite-only on this
+deployment...") instead of surfacing GoTrue's generic refusal. The sign-up page and its button
+**stay visible** to a signed-out visitor — there is no zero-fork way to hide them conditionally —
+they simply 403 on submit now. See "Bootstrapping the first admin" below for how the very first
+dashboard user gets created when public signup is off.
+
+### MFA enforcement
+
+The `enforce_mfa` flag itself (`platform.organizations.enforce_mfa`, migration
+`05-mfa-enforcement.sql`) and its GET/PATCH route shipped in M3.1 as Owner opt-in per org — PATCH
+stays gated `write:Update` on `organizations`, which the matrix restricts to Owner. M3.2 is what
+makes flipping it to `true` actually do something. Two enforcement points, both keyed off the same
+`claims.aal !== 'aal2'` check: the join flow (`invitations/[id_or_token].ts`'s `GET` and `POST`)
+returns `403 { message: 'MFA required to join this organization' }` when the target org has
+`enforce_mfa` on and the caller's session isn't `aal2`, checked *after* the accepted/consumed
+re-check so token state is never leaked ahead of the MFA check; and the session layer
+(`guardOrgRoute`/`guardProjectRoute` in `lib/api/self-platform/rbac/enforce.ts`) returns
+`403 { message: 'MFA required to access this organization' }` on **every** org- or project-scoped
+route once the caller's org has `enforce_mfa` on, placed after the 404 (membership/ref resolution)
+and before the permission check — so a non-member or an unknown ref still 404s first, and MFA
+state is never revealed to someone who isn't already established as a member. **The accepted UX
+cost**: there is no dedicated "please enroll MFA" gate screen. An existing, previously-fine,
+non-MFA member of an org whose Owner just flipped `enforce_mfa` on simply starts getting 403 toasts
+on every subsequent org/project API call, with no interstitial screen walking them to enroll — they
+have to independently find `/account/security` and enroll TOTP themselves before the org becomes
+usable again (spec §6.3). This was accepted as a scoping cut, not fixed further in M3.2.
+
+### `05-invitations.sql`
+
+`docker/volumes/platform/migrations/05-invitations.sql` (Task 1) adds `platform.invitations` plus
+the partial unique index enforcing one pending invite per `(organization_id, invited_email)`. The
+"Upgrading an existing platform-db to M3.1" section above already carries the hand-apply command
+for it (cross-referenced there rather than duplicated here) since it ships alongside the M3.1
+migration-upgrade instructions in this file.
+
+### Accepted limitations (spec §13)
+
+- **Scoped-accept is anchored on single-org membership.** Both `acceptInvitationOrgWide` and
+  `acceptInvitationScoped` (`lib/api/self-platform/invitations.ts`) grant the `member_roles` row
+  only if the accepting profile already has a `platform.organization_members` row for that org —
+  which first-login boot creates for the one default org every user lands in. This holds as long as
+  a deployment stays single-org-per-member in practice; it is not re-validated against a world where
+  a profile might belong to multiple organizations.
+- **A revoked invite can leave a passwordless, zero-role GoTrue account behind.** Revoking only
+  deletes the `platform.invitations` row. If GoTrue had already created the underlying user via
+  `/invite` (or the invitee had already verified it), that GoTrue account persists — no password, no
+  `platform.organization_members`/`member_roles` row. This is fail-closed (the account has zero
+  access anywhere) and harmless, just an orphaned GoTrue account with no cleanup path today.
+- **Zero-role legacy members can't be re-invited through the UI.** The collection `POST`'s
+  already-member check (`getExistingMemberEmails`) matches on `platform.organization_members`
+  membership, not on holding any role — so a zero-role member (a pre-M3.0 legacy account, or anyone
+  whose roles were all removed without removing them from the org) is rejected with "This user is
+  already a member of the organization." Direct role assignment via the existing M3.1 PATCH member
+  endpoint is the path to fix that; re-inviting is not.
+- **No expired-invitation-row reaper.** The 24h `expires_at` (migration default) is enforced at
+  accept time (both accept CTEs gate on `expires_at > now()`) and surfaced at GET-by-token
+  (`expired_token`), but nothing ever deletes an expired, unaccepted row — it sits until someone
+  revokes it. "Resend" is revoke-then-invite (delete + recreate), not an in-place update; there is
+  no cron/reaper cleaning up rows that simply expired unattended.
+- **Extreme-race orphaned-derived-role residue (carried from Task 8).**
+  `createDerivedRoleWithAssignment`'s role-row and `role_projects`-link inserts run unconditionally
+  inside the same atomic statement; only the final `member_roles` grant is gated on the target
+  profile's `organization_members` row still existing. If membership is removed in the narrow
+  window before this statement runs, the derived role (with its project links) is still created but
+  never assigned to anyone — an orphaned, unassigned derived role. Narrow window, internal-scale
+  exposure only, and not a security issue (an unassigned role grants nothing to anyone); accepted as
+  residue rather than fixed further.
+
+The M3.0/M3.1 shared-stack-JWT-secret boundary ("Shared-stack JWT secret" above) and the additive,
+never-narrowing grants model ("Additive grants and the strongest-role rule" above) are unchanged by
+M3.2 — nothing in invitations, SMTP, invite-only signup, or MFA enforcement weakens either.
 
 ### Bootstrapping the first admin
 
