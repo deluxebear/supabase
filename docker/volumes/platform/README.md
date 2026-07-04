@@ -21,8 +21,11 @@ stack's compose file:
   exactly as before.
 - **`platform-auth`** (`supabase-platform-auth`, `supabase/gotrue:v2.189.0` — same image tag as
   the main stack's auth service) — a dedicated GoTrue instance, not fronted by Kong, that issues
-  and validates sessions for Studio's own dashboard users. Autoconfirm is on (no SMTP in M1),
-  and signup is open (`GOTRUE_DISABLE_SIGNUP: 'false'`).
+  and validates sessions for Studio's own dashboard users. Autoconfirm was on and signup was open
+  (`GOTRUE_DISABLE_SIGNUP: 'false'`) in M1, with no SMTP configured. This has since changed: as of
+  M3.2, `platform-mail` (Mailpit) provides real outbound email and signup is invite-only
+  (`GOTRUE_DISABLE_SIGNUP: 'true'`) — see "M3.2: Invitations, SMTP, invite-only signup, and MFA
+  enforcement" below.
 
 Neither service touches the main stack's containers, volumes, or ports.
 
@@ -123,15 +126,23 @@ server — no code changes needed either direction, only the env profile.
 
 ## First admin registration
 
+**As of M3.2, public self-registration is disabled** (`GOTRUE_DISABLE_SIGNUP: 'true'`) — the
+original M1 flow of visiting `/sign-up` and registering with any email/password no longer works
+(`pages/api/platform/signup.ts` now unconditionally `403`s). To create the very first dashboard
+user today, follow "Bootstrapping the first admin" (under "M3.2: Invitations, SMTP, invite-only
+signup, and MFA enforcement" below), which uses the GoTrue admin API directly plus a one-time
+`psql` Owner grant. Every subsequent user after that first one is added via the M3.2 invitation
+flow (see the M3.2 section), not self-registration.
+
 1. Start both stacks: the main self-hosted stack (`docker compose up -d`, Kong on `:8100`) and
    this platform mini-stack (above), plus `pnpm dev:studio` (Studio dev server, `:8082`) with
    the platform env profile in place.
-2. Visit `http://localhost:8082/sign-up` and register with any email/password — GoTrue
-   autoconfirms (no SMTP configured in M1), so the account is immediately usable, no email step.
+2. Bootstrap the first admin — see "Bootstrapping the first admin" below.
 3. On first login, Studio auto-provisions a `platform.profiles` row for the new GoTrue user and
    adds them as a member of the seeded `Default Organization` (`platform.organizations`, slug
    `default`) — there is only one organization and one project in M1 (see boundary below), so
-   every registered user lands with full access to it. No invite flow, no role selection.
+   every registered user lands with full access to it, subject to the role/MFA gates added in
+   M3.0/M3.1/M3.2 (see those sections below).
 4. Verify directly against `platform-db` if needed:
    ```bash
    docker exec supabase-platform-db psql -U postgres -d platform \
@@ -169,8 +180,10 @@ in front of the existing single self-hosted project, not a general multi-tenant 
   (empty arrays/objects, `false`/`null` flags) rather than real data — there is no billing,
   branching, backups, or load-balancer management in M1. See
   `.superpowers/sdd/task-11-report.md`'s stub table for the full list and per-route rationale.
-- **No real email.** Signup autoconfirms; there is no password-reset-via-email flow either
-  (no SMTP configured).
+- **No real email (M1).** Signup autoconfirmed; there was no password-reset-via-email flow
+  either (no SMTP configured). This has since changed: `platform-mail` (Mailpit) SMTP and
+  outbound invitation email shipped in M3.2 — see "M3.2: Invitations, SMTP, invite-only signup,
+  and MFA enforcement" below.
 - **Auth settings and Storage settings config endpoints are unimplemented** (`/platform/auth/
   {ref}/config`, `/platform/projects/{ref}/config/storage`) — only reachable today via a stray
   sidebar-hover prefetch, not by visiting those settings pages, which are out of M1 scope.
@@ -728,8 +741,9 @@ no crash).
 M3.0 built the role model and its enforcement machinery, but left role assignment as a manual
 `psql` operation (see "Zero-role members" above) and left two data-plane routes outside M3.0's
 guard sweep. M3.1 exposes that machinery through a real set of member/role-management endpoints,
-closes the two guard gaps, and adds an org-level MFA-enforcement flag that is stored but not yet
-acted on.
+closes the two guard gaps, and adds an org-level MFA-enforcement flag that, as shipped in M3.1,
+was stored but not yet acted on (enforcement shipped in M3.2 — see "MFA enforcement flag: stored
+in M3.1, enforced as of M3.2" below).
 
 ### Endpoint inventory
 
@@ -741,7 +755,7 @@ acted on.
 | `pages/api/platform/organizations/[slug]/members/[gotrue_id]/roles/[role_id].ts` | PUT | Replace an existing derived role's project set. |
 | " | DELETE | Unassign one role from one member, garbage-collecting the role row if it's now an orphaned derived role. |
 | `pages/api/platform/organizations/[slug]/roles.ts` | GET | List roles, V2 dual-layer shape: `org_scoped_roles` / `project_scoped_roles`. |
-| `pages/api/platform/organizations/[slug]/members/invitations.ts` | GET | Contract-minimal stub, always `{ invitations: [] }`. The members-list UI `Promise.all`s this alongside the members GET, so without it TeamSettings' member list fails to load at all. Real invitations are M3.2 work. |
+| `pages/api/platform/organizations/[slug]/members/invitations.ts` | GET, POST | Was a contract-minimal stub in M3.1, always `{ invitations: [] }` (the members-list UI `Promise.all`s this alongside the members GET, so without it TeamSettings' member list failed to load at all). **Real as of M3.2**: GET lists pending invitations, POST batch-creates them — see "M3.2: Invitations, SMTP, invite-only signup, and MFA enforcement" below. |
 | `pages/api/platform/organizations/[slug]/members/mfa/enforcement.ts` | GET/PATCH | Org MFA-enforcement flag — see "MFA enforcement flag" below. |
 | `pages/api/platform/organizations/[slug]/entitlements.ts` | GET | Was an unconditional M1 stub (`{ entitlements: [] }`); self-platform mode now also lights up two feature flags, `project_scoped_roles` and `security.enforce_mfa` (both `hasAccess: true`), so TeamSettings/SecuritySettings render their M3.1 UI. Plain self-hosted (`IS_SELF_PLATFORM` false) keeps the M1 empty stub byte-identical. |
 | `pages/api/platform/organizations/[slug]/sso.ts` | GET | Stub — always `404 {"message": "Failed to find an existing SSO Provider for this organization"}`. The frontend's `sso-config-query.ts` treats that exact message as "SSO not configured" and renders normally rather than as an error. |
@@ -824,17 +838,20 @@ actually evaluates:
   org-scoped Owner role afterward. This is a headcount check, not a role-matrix check, so it fires
   regardless of who is making the call — including an Owner acting on another Owner.
 
-### MFA enforcement flag: stored, not yet enforced
+### MFA enforcement flag: stored in M3.1, enforced as of M3.2
 
 `docker/volumes/platform/migrations/05-mfa-enforcement.sql` adds
 `platform.organizations.enforce_mfa boolean not null default false`. GET/PATCH
 `.../members/mfa/enforcement` (`getOrgMfaEnforced`/`setOrgMfaEnforced`,
 `lib/api/self-platform/organizations.ts`) read and write that column; PATCH is gated
 `write:Update` on `organizations`, which the matrix restricts to Owner (Administrator carries a
-restrictive deny on `write:%`/`organizations`, same as every other org-level write). **The flag is
-only stored and surfaced today — flipping it to `true` does not block anything yet.** Actual
-enforcement (rejecting an invite/join for a member without verified MFA) is deferred to M3.2's
-invite/join flow, which does not exist yet (see the `invitations.ts` stub above).
+restrictive deny on `write:%`/`organizations`, same as every other org-level write). **In M3.1 the
+flag was only stored and surfaced — flipping it to `true` did not block anything.** As of M3.2,
+actual enforcement is live at two checkpoints (both keyed off `claims.aal !== 'aal2'`): the
+invite/join flow rejects a join for a member without verified MFA, and the session layer
+(`guardOrgRoute`/`guardProjectRoute`) blocks org/project API access once `enforce_mfa` is on — see
+"MFA enforcement" under "M3.2: Invitations, SMTP, invite-only signup, and MFA enforcement" below
+for the exact ordering and both checkpoints in full.
 
 ### Upgrading an existing platform-db to M3.1
 
