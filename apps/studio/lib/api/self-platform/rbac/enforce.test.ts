@@ -1,9 +1,10 @@
+import { PermissionAction } from '@supabase/shared-types/out/constants'
 import type { JwtPayload } from '@supabase/supabase-js'
 import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getMemberContext } from '../members'
-import { listOrganizationsForProfile } from '../organizations'
+import { getOrgMfaEnforced, listOrganizationsForProfile } from '../organizations'
 import { ProjectNotFound, resolveProjectConnection } from '../resolve-connection'
 import {
   checkPermission,
@@ -16,7 +17,10 @@ vi.mock('../members', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   getMemberContext: vi.fn(),
 }))
-vi.mock('../organizations', () => ({ listOrganizationsForProfile: vi.fn() }))
+vi.mock('../organizations', () => ({
+  listOrganizationsForProfile: vi.fn(),
+  getOrgMfaEnforced: vi.fn(),
+}))
 vi.mock('../resolve-connection', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   resolveProjectConnection: vi.fn(),
@@ -104,6 +108,7 @@ describe('guardProjectRoute (404 before 403)', () => {
   beforeEach(() => {
     vi.mocked(getMemberContext).mockReset()
     vi.mocked(resolveProjectConnection).mockReset()
+    vi.mocked(getOrgMfaEnforced).mockReset()
   })
 
   it('propagates ProjectNotFound before any permission work', async () => {
@@ -134,6 +139,21 @@ describe('guardProjectRoute (404 before 403)', () => {
       await guardProjectRoute(res, claimsOf('g-1'), { action: 'read:Read', projectRef: 'default' })
     ).toBe(true)
     expect(res._isEndCalled()).toBe(false)
+  })
+
+  it('guardProjectRoute 403s aal1 when the project org enforces MFA', async () => {
+    vi.mocked(resolveProjectConnection).mockResolvedValue({} as never)
+    vi.mocked(getMemberContext).mockResolvedValue(DEV) // ref's org resolved from member ctx
+    vi.mocked(getOrgMfaEnforced).mockResolvedValue(true)
+    const res = createMocks({ method: 'GET' }).res
+    const ok = await guardProjectRoute(res as never, { sub: 'g-3', aal: 'aal1' } as JwtPayload, {
+      action: PermissionAction.READ,
+      projectRef: 'proj-b',
+      resource: 'projects',
+    })
+    expect(ok).toBe(false)
+    expect(res._getStatusCode()).toBe(403)
+    expect(res._getJSONData()).toEqual({ message: 'MFA required to access this organization' })
   })
 })
 
@@ -203,6 +223,7 @@ describe('guardOrgRoute', () => {
   beforeEach(() => {
     vi.mocked(getMemberContext).mockReset()
     vi.mocked(listOrganizationsForProfile).mockReset()
+    vi.mocked(getOrgMfaEnforced).mockReset()
   })
 
   const mockRes = () => createMocks({ method: 'GET' }).res
@@ -261,5 +282,64 @@ describe('guardOrgRoute', () => {
     })
     expect(out).toEqual({ orgId: 1, orgSlug: 'default' })
     expect(res._getStatusCode()).not.toBe(403)
+  })
+
+  it('403 MFA-required when org enforce_mfa and caller is aal1', async () => {
+    vi.mocked(listOrganizationsForProfile).mockResolvedValue([
+      { id: 1, slug: 'default', name: 'Default' },
+    ])
+    vi.mocked(getOrgMfaEnforced).mockResolvedValue(true)
+    const res = mockRes()
+    const out = await guardOrgRoute(res as never, { sub: 'g-1', aal: 'aal1' } as JwtPayload, {
+      slug: 'default',
+      action: PermissionAction.READ,
+      resource: 'organizations',
+    })
+    expect(out).toBeNull()
+    expect(res._getStatusCode()).toBe(403)
+    expect(res._getJSONData()).toEqual({ message: 'MFA required to access this organization' })
+    expect(getMemberContext).not.toHaveBeenCalled() // MFA gate fires BEFORE the permission check
+  })
+
+  it('passes MFA gate at aal2 and proceeds to the permission check', async () => {
+    vi.mocked(listOrganizationsForProfile).mockResolvedValue([
+      { id: 1, slug: 'default', name: 'Default' },
+    ])
+    vi.mocked(getOrgMfaEnforced).mockResolvedValue(true)
+    vi.mocked(getMemberContext).mockResolvedValue(OWNER) // real checkPermission reads this
+    const res = mockRes()
+    const out = await guardOrgRoute(res as never, { sub: 'g-1', aal: 'aal2' } as JwtPayload, {
+      slug: 'default',
+      action: PermissionAction.READ,
+      resource: 'organizations',
+    })
+    expect(out).toEqual({ orgId: 1, orgSlug: 'default' })
+  })
+
+  it('non-member still 404s BEFORE any MFA check (info-hiding preserved)', async () => {
+    vi.mocked(listOrganizationsForProfile).mockResolvedValue([])
+    const res = mockRes()
+    await guardOrgRoute(res as never, { sub: 'g-1', aal: 'aal1' } as JwtPayload, {
+      slug: 'default',
+      action: PermissionAction.READ,
+      resource: 'organizations',
+    })
+    expect(res._getStatusCode()).toBe(404)
+    expect(getOrgMfaEnforced).not.toHaveBeenCalled()
+  })
+
+  it('no MFA check when enforce_mfa is off', async () => {
+    vi.mocked(listOrganizationsForProfile).mockResolvedValue([
+      { id: 1, slug: 'default', name: 'Default' },
+    ])
+    vi.mocked(getOrgMfaEnforced).mockResolvedValue(false)
+    vi.mocked(getMemberContext).mockResolvedValue(OWNER)
+    const res = mockRes()
+    const out = await guardOrgRoute(res as never, { sub: 'g-1', aal: 'aal1' } as JwtPayload, {
+      slug: 'default',
+      action: PermissionAction.READ,
+      resource: 'organizations',
+    })
+    expect(out).toEqual({ orgId: 1, orgSlug: 'default' })
   })
 })

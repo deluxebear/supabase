@@ -8,7 +8,7 @@ import type { JwtPayload } from '@supabase/supabase-js'
 import type { NextApiResponse } from 'next'
 
 import { getMemberContext, type MemberContext } from '../members'
-import { listOrganizationsForProfile } from '../organizations'
+import { getOrgMfaEnforced, listOrganizationsForProfile } from '../organizations'
 import { resolveProjectConnection } from '../resolve-connection'
 import { expandPermissions } from './expand'
 import { doPermissionsCheck } from '@/lib/permissions-check'
@@ -68,6 +68,19 @@ export async function guardProjectRoute(
   input: { action: string; projectRef: string; resource?: string; data?: object }
 ): Promise<boolean> {
   await resolveProjectConnection(input.projectRef)
+  // [self-platform] M3.2: MFA enforcement for project routes. Single-org: the
+  // enforcing org is the member's org. Resolve it from the member context;
+  // when the caller holds no roles the permission check below denies anyway.
+  // Note: checkPermission internally re-fetches the member context below —
+  // this is a known double round trip (backlog item, acceptable at internal scale).
+  const ctx = await getMemberContext(claims?.sub ?? '')
+  const orgId = ctx.roles[0]?.orgId
+  if (orgId !== undefined && (await getOrgMfaEnforced(orgId))) {
+    if (claims?.aal !== 'aal2') {
+      res.status(403).json({ message: 'MFA required to access this organization' })
+      return false
+    }
+  }
   const can = await checkPermission(claims, {
     action: input.action,
     resource: input.resource ?? 'projects',
@@ -107,6 +120,15 @@ export async function guardOrgRoute(
   if (!org) {
     res.status(404).json({ message: 'Organization not found' })
     return null
+  }
+  // [self-platform] M3.2: org MFA enforcement. Members without an aal2 session
+  // are blocked from every org route once the Owner enables enforce_mfa. Runs
+  // AFTER the membership 404 so non-members never learn the org's MFA state.
+  if (await getOrgMfaEnforced(org.id)) {
+    if (claims?.aal !== 'aal2') {
+      res.status(403).json({ message: 'MFA required to access this organization' })
+      return null
+    }
   }
   const can = await checkPermission(claims, {
     action: input.action,
