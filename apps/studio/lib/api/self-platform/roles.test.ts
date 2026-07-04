@@ -109,6 +109,17 @@ describe('assignRoleToMember', () => {
     expect(lastCall().parameters).toEqual([42, 3])
     expect(lastCall().query).toContain('on conflict do nothing')
   })
+
+  it('assignRoleToMember anchors the insert on the organization_members row', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({ data: [], error: undefined } as never)
+    await assignRoleToMember(5, 3)
+    const q = vi.mocked(executePlatformQuery).mock.calls[0][0].query
+    expect(q).toContain('insert into platform.member_roles')
+    expect(q).toContain('from platform.roles r') // resolve role's org
+    expect(q).toContain('join platform.organization_members om') // membership anchor
+    expect(q).toContain('om.profile_id = $1')
+    expect(vi.mocked(executePlatformQuery).mock.calls[0][0].parameters).toEqual([5, 3])
+  })
 })
 
 describe('createDerivedRoleWithAssignment', () => {
@@ -152,6 +163,22 @@ describe('createDerivedRoleWithAssignment', () => {
       })
     ).rejects.toThrow('createDerivedRoleWithAssignment requires a non-empty projectIds')
     expect(executePlatformQuery).not.toHaveBeenCalled()
+  })
+
+  it('createDerivedRoleWithAssignment anchors its member_roles insert on membership', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({
+      data: [{ role_id: 9 }],
+      error: undefined,
+    } as never)
+    await createDerivedRoleWithAssignment({
+      orgId: 1,
+      baseRoleId: 3,
+      profileId: 5,
+      projectIds: [42],
+    })
+    const q = vi.mocked(executePlatformQuery).mock.calls[0][0].query
+    expect(q).toContain('platform.organization_members om')
+    expect(q).toContain('om.profile_id = $4') // profileId param
   })
 })
 

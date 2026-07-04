@@ -104,9 +104,21 @@ export async function getOrgProjectIdsByRefs(
 }
 
 export async function assignRoleToMember(profileId: number, roleId: number): Promise<void> {
+  // [self-platform] M3.2: anchor the grant on the target's organization_members
+  // row in the role's org. If membership was concurrently removed the insert
+  // selects zero rows (closes the PATCH-assign-racing-DELETE-member orphan
+  // grant — M3.1 final-review #4). base-table snapshot rules don't bite here:
+  // organization_members is a pre-existing row, not one this statement writes.
   const { error } = await executePlatformQuery({
-    query:
-      'insert into platform.member_roles (profile_id, role_id) values ($1, $2) on conflict do nothing',
+    query: `
+      insert into platform.member_roles (profile_id, role_id)
+      select $1, r.id
+      from platform.roles r
+      join platform.organization_members om
+        on om.organization_id = r.organization_id and om.profile_id = $1
+      where r.id = $2
+      on conflict do nothing
+    `,
     parameters: [profileId, roleId],
   })
   if (error) throw error
@@ -141,6 +153,10 @@ export async function createDerivedRoleWithAssignment(input: {
       )
       insert into platform.member_roles (profile_id, role_id)
       select $4, id from new_role
+      where exists (
+        select 1 from platform.organization_members om
+        where om.organization_id = $1 and om.profile_id = $4
+      )
       returning role_id
     `,
     parameters: [orgId, baseRoleId, projectIds, profileId],
