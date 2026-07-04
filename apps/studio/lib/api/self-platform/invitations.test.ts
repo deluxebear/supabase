@@ -150,6 +150,16 @@ describe('acceptInvitationScoped', () => {
     expect(executePlatformQuery.mock.calls[0][0].parameters).toEqual(['tok', 1, 5, [42]])
     expect(out).toBe(true)
   })
+
+  it('HARD (spec §5.3, 永不落库): rejects empty projectIds without querying', async () => {
+    await expect(acceptInvitationScoped('tok', 1, 5, [])).rejects.toThrow('non-empty projectIds')
+    expect(executePlatformQuery).not.toHaveBeenCalled()
+  })
+
+  it('returns false when the claim consumed nothing', async () => {
+    executePlatformQuery.mockResolvedValue({ data: [{ claimed_count: 0 }], error: undefined })
+    expect(await acceptInvitationScoped('tok', 1, 5, [42])).toBe(false)
+  })
 })
 
 describe('error propagation', () => {

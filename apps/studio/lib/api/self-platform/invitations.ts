@@ -170,6 +170,13 @@ export async function acceptInvitationScoped(
   profileId: number,
   projectIds: number[]
 ): Promise<boolean> {
+  // Data-layer guarantee (spec §5.3 HARD, "永不落库"): a derived role with
+  // zero project links must never be created, regardless of caller. Routes
+  // already 400 on empty role_scoped_projects before reaching here — this is
+  // the belt-and-braces backstop.
+  if (projectIds.length === 0) {
+    throw new Error('acceptInvitationScoped requires a non-empty projectIds')
+  }
   const { data, error } = await executePlatformQuery<{ claimed_count: number }>({
     query: `
       with claimed as (
