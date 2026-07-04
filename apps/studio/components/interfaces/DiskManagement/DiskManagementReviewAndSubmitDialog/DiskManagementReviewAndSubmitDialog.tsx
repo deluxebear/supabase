@@ -1,5 +1,5 @@
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import { ArrowRight } from 'lucide-react'
+import { AlertTriangle, ArrowRight } from 'lucide-react'
 import { UseFormReturn } from 'react-hook-form'
 import {
   Alert,
@@ -85,6 +85,7 @@ export const DiskManagementReviewAndSubmitDialog = ({
     anyDiskAttributeChange,
     showThroughputRow,
     hasAnyBreakdownRows,
+    hasExtendedDowntimeRisk,
     oldComputeLabel,
     newComputeLabel,
   } = useDiskManagementReviewChanges(form, numReplicas)
@@ -128,7 +129,7 @@ export const DiskManagementReviewAndSubmitDialog = ({
         {(hasComputeChanges || anyBillableDiskChange) && (
           <>
             <div className="relative flex border-b">
-              <div className="flex-1 flex flex-col items-center gap-2 py-6 px-4 border-r bg-linear-to-t from-[hsl(var(--background-surface-100))] to-transparent">
+              <div className="flex-1 flex flex-col items-center gap-2 py-6 px-4 border-r bg-linear-to-t from-[var(--background-surface-100)] to-transparent">
                 <span className="text-xs uppercase tracking-widest font-mono text-foreground-lighter">
                   {$t('Before')}
                 </span>
@@ -146,7 +147,7 @@ export const DiskManagementReviewAndSubmitDialog = ({
                 <ArrowRight size={16} className="text-brand-600 relative z-10" strokeWidth={2.5} />
               </div>
 
-              <div className="flex-1 flex flex-col items-center gap-2 py-6 px-4 bg-linear-to-t from-[hsl(var(--background-surface-100))] to-transparent">
+              <div className="flex-1 flex flex-col items-center gap-2 py-6 px-4 bg-linear-to-t from-[var(--background-surface-100)] to-transparent">
                 <span className="text-xs uppercase tracking-widest font-mono text-foreground-lighter">
                   {$t('After')}
                 </span>
@@ -270,6 +271,21 @@ export const DiskManagementReviewAndSubmitDialog = ({
               </div>
             )}
           </div>
+        )}
+
+        {hasExtendedDowntimeRisk && (
+          <>
+            <DialogSectionSeparator />
+            <DialogSection>
+              <Alert variant="warning">
+                <AlertTriangle />
+                <AlertTitle>
+                  
+                                                    {$t('Resizes may require more downtime than normal on this project.')}
+                                                  </AlertTitle>
+              </Alert>
+            </DialogSection>
+          </>
         )}
 
         <DialogFooter className="px-5 py-4">

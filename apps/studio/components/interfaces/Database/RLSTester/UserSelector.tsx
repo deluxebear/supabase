@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { keepPreviousData } from '@tanstack/react-query'
 import { useDebounce } from '@uidotdev/usehooks'
 import { Check, ChevronsUpDown } from 'lucide-react'
@@ -12,6 +13,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  copyToClipboard,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -23,7 +25,6 @@ import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { User, useUsersInfiniteQuery } from '@/data/auth/users-infinite-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
 import { useRoleImpersonationStateSnapshot } from '@/state/role-impersonation-state'
 import { ResponseError } from '@/types'
 
@@ -68,7 +69,28 @@ export const UserSelector = () => {
   }
 
   return (
-    <FormItemLayout isReactForm={false} label={$t('Select which user to test as')}>
+    <FormItemLayout
+      isReactForm={false}
+      layout="horizontal"
+      label={$t('Select which user to test as')}
+      description={
+        impersonatingUser ? (
+          <p>
+            
+                              {$t('ID:')}{' '}
+            <code
+              className="text-code-inline cursor-pointer"
+              onClick={() => {
+                copyToClipboard(impersonatingUser?.id ?? '')
+                toast($t('Copied ID to clipboard'))
+              }}
+            >
+              {impersonatingUser.id}
+            </code>
+          </p>
+        ) : undefined
+      }
+    >
       <Popover open={open} onOpenChange={setOpen} modal>
         <PopoverTrigger asChild>
           <Button
@@ -95,7 +117,8 @@ export const UserSelector = () => {
 
             {isError ? (
               <Admonition showIcon={false} type="warning" className="border-0 rounded-none text-xs">
-                {$t('Failed to fetch users:')} {error.message}
+                
+                                              {$t('Failed to fetch users:')} {error.message}
               </Admonition>
             ) : (
               <CommandEmpty>{$t('No user found')}</CommandEmpty>

@@ -1,7 +1,7 @@
+import { t as $t } from '@/lib/i18n';
 import { RadioGroupStacked, RadioGroupStackedItem } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
-import { t as $t } from '@/lib/i18n'
 import { useRoleImpersonationStateSnapshot } from '@/state/role-impersonation-state'
 
 interface RoleSelectorProps {
@@ -12,7 +12,7 @@ export const RoleSelector = ({ onSelectRole }: RoleSelectorProps) => {
   const { role, setRole } = useRoleImpersonationStateSnapshot()
 
   return (
-    <FormItemLayout isReactForm={false} label={$t('Test as')}>
+    <FormItemLayout isReactForm={false} label={$t('Test query as')} layout="horizontal">
       <RadioGroupStacked defaultValue={role?.role ?? 'anon'}>
         <RadioGroupStackedItem
           value="anon"
@@ -28,7 +28,7 @@ export const RoleSelector = ({ onSelectRole }: RoleSelectorProps) => {
           value="authenticated"
           id="authenticated"
           label={$t('Authenticated user')}
-          description={$t('A specific logged in user')}
+          description={$t('A logged in user')}
           onClick={() => {
             onSelectRole('authenticated')
           }}

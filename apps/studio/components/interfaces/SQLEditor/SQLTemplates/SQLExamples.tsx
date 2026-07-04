@@ -13,7 +13,7 @@ import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { useTrack } from '@/lib/telemetry/track'
-import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
+import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor/sql-editor-state'
 
 const SQLExamples = () => {
   const router = useRouter()

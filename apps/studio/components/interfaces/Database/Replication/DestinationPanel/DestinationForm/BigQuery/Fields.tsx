@@ -1,11 +1,18 @@
+import { t as $t } from '@/lib/i18n';
 import type { UseFormReturn } from 'react-hook-form'
 import { FormControl, FormField, Input, TextArea } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
+import { STORED_SECRET_PLACEHOLDER } from '../DestinationForm.constants'
 import type { DestinationPanelSchemaType } from '../DestinationForm.schema'
-import { t as $t } from '@/lib/i18n'
 
-export const BigQueryFields = ({ form }: { form: UseFormReturn<DestinationPanelSchemaType> }) => {
+export const BigQueryFields = ({
+  form,
+  editMode,
+}: {
+  form: UseFormReturn<DestinationPanelSchemaType>
+  editMode: boolean
+}) => {
   return (
     <div className="flex flex-col gap-y-6 p-5">
       <p className="text-sm font-medium text-foreground">{$t('BigQuery settings')}</p>
@@ -49,14 +56,22 @@ export const BigQueryFields = ({ form }: { form: UseFormReturn<DestinationPanelS
             <FormItemLayout
               layout="horizontal"
               label={$t('Service Account Key')}
-              description={$t('Service account credentials JSON for authenticating with BigQuery')}
+              description={
+                editMode
+                  ? 'Stored credentials are hidden. Enter new credentials to replace them.'
+                  : 'Service account credentials JSON for authenticating with BigQuery'
+              }
             >
               <FormControl>
                 <TextArea
                   {...field}
                   rows={5}
                   maxLength={5000}
-                  placeholder={$t('{"type": "service_account", "project_id": "...", ...}')}
+                  placeholder={
+                    editMode
+                      ? STORED_SECRET_PLACEHOLDER
+                      : '{"type": "service_account", "project_id": "...", ...}'
+                  }
                   className="font-mono text-xs"
                 />
               </FormControl>

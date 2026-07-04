@@ -14,7 +14,12 @@ import {
   type ChartIntervalKey,
   type LogsBarChartDatum,
 } from './ProjectUsage.metrics'
+import { useUnifiedLogsPreview } from '@/components/interfaces/App/FeaturePreview/FeaturePreviewContext'
 import { useServiceHealthMetrics } from '@/components/interfaces/Observability/useServiceHealthMetrics'
+import {
+  buildUnifiedLogsUrl,
+  type UnifiedLogType,
+} from '@/components/interfaces/UnifiedLogs/UnifiedLogs.utils'
 import NoDataPlaceholder from '@/components/ui/Charts/NoDataPlaceholder'
 import { ChartIntervalDropdown } from '@/components/ui/Logs/ChartIntervalDropdown'
 import { CHART_INTERVALS } from '@/components/ui/Logs/logs.utils'
@@ -36,6 +41,7 @@ type ServiceEntry = {
   title: string
   href?: string
   route: string
+  logType: UnifiedLogType
   enabled: boolean
 }
 
@@ -49,6 +55,7 @@ export const ProjectUsageSectionDeltas = () => {
     'project_storage:all',
   ])
   const { isEnabled: dataApiEnabled } = useIsDataApiEnabled({ projectRef })
+  const { isEnabled: isUnifiedLogsEnabled } = useUnifiedLogsPreview()
   const { getEntitlementMax } = useCheckEntitlements('log.retention_days')
   const retentionDays = getEntitlementMax()
 
@@ -72,6 +79,7 @@ export const ProjectUsageSectionDeltas = () => {
         title: 'Postgres',
         href: `/project/${projectRef}/editor`,
         route: '/logs/postgres-logs',
+        logType: 'postgres',
         enabled: true,
       },
       {
@@ -79,6 +87,7 @@ export const ProjectUsageSectionDeltas = () => {
         title: 'Edge Functions',
         href: `/project/${projectRef}/functions`,
         route: '/logs/edge-functions-logs',
+        logType: 'edge function',
         enabled: true,
       },
       {
@@ -86,6 +95,7 @@ export const ProjectUsageSectionDeltas = () => {
         title: 'Auth',
         href: `/project/${projectRef}/auth/users`,
         route: '/logs/auth-logs',
+        logType: 'auth',
         enabled: authEnabled,
       },
       {
@@ -93,6 +103,7 @@ export const ProjectUsageSectionDeltas = () => {
         title: 'Storage',
         href: `/project/${projectRef}/storage/buckets`,
         route: '/logs/storage-logs',
+        logType: 'storage',
         enabled: storageEnabled,
       },
       {
@@ -100,6 +111,7 @@ export const ProjectUsageSectionDeltas = () => {
         title: 'Realtime',
         href: `/project/${projectRef}/realtime/inspector`,
         route: '/logs/realtime-logs',
+        logType: 'realtime',
         enabled: true,
       },
       {
@@ -107,6 +119,7 @@ export const ProjectUsageSectionDeltas = () => {
         title: 'API Gateway',
         href: `/project/${projectRef}/integrations/data_api/overview`,
         route: '/logs/edge-logs',
+        logType: 'edge',
         enabled: dataApiEnabled,
       },
     ],
@@ -128,26 +141,27 @@ export const ProjectUsageSectionDeltas = () => {
     totalErrors
   )
 
-  const handleBarClick =
-    (logRoute: string, serviceKey: HomeServiceKey) => (datum: LogsBarChartDatum) => {
-      if (!datum?.timestamp) return
+  const handleBarClick = (service: ServiceEntry) => (datum: LogsBarChartDatum) => {
+    if (!datum?.timestamp) return
 
+    const { start, end } = getBucketLogRange(datum.timestamp, interval)
+
+    if (isUnifiedLogsEnabled) {
+      router.push(
+        buildUnifiedLogsUrl({ projectRef: projectRef!, logType: service.logType, start, end })
+      )
+    } else {
       // Logs explorer reads the range from `its`/`ite` (iso_timestamp_start/end
       // only set the label).
-      const { start, end } = getBucketLogRange(datum.timestamp, interval)
-
-      const queryParams = new URLSearchParams({
-        its: start,
-        ite: end,
-      })
-
-      router.push(`/project/${projectRef}${logRoute}?${queryParams.toString()}`)
-
-      track('home_project_usage_chart_clicked', {
-        service_type: serviceKey,
-        bar_timestamp: datum.timestamp,
-      })
+      const queryParams = new URLSearchParams({ its: start, ite: end })
+      router.push(`/project/${projectRef}${service.route}?${queryParams.toString()}`)
     }
+
+    track('home_project_usage_chart_clicked', {
+      service_type: service.key,
+      bar_timestamp: datum.timestamp,
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -227,7 +241,7 @@ export const ProjectUsageSectionDeltas = () => {
                     isFullHeight
                     data={s.data}
                     DateTimeFormat={datetimeFormat}
-                    onBarClick={disabled ? undefined : handleBarClick(s.route, s.key)}
+                    onBarClick={disabled ? undefined : handleBarClick(s)}
                     hideZeroValues={true}
                     chartConfig={{
                       error_count: { label: 'Errors' },

@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import type { PGTable } from '@supabase/pg-meta'
 import { keepPreviousData } from '@tanstack/react-query'
 import { useParams } from 'common'
@@ -27,7 +28,6 @@ import {
 import { EditorTablePageLink } from '@/data/prefetchers/project.$ref.editor.$id'
 import { useTableRowsQuery } from '@/data/table-rows/table-rows-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
 
 interface ReferenceRecordPeekProps {
   table: PGTable
@@ -117,47 +117,49 @@ export const ReferenceRecordPeek = ({ table, column, value }: ReferenceRecordPee
   return (
     <>
       <p className="px-2 py-2 text-xs text-foreground-light border-b">
-        {$t('Referencing record from')}{' '}
+        
+                      {$t('Referencing record from')}{' '}
         <span className="text-foreground">
           {table.schema}.{table.name}
         </span>
         :
       </p>
-      <DataGrid
-        className="h-32 rounded-b border-0"
-        columns={columns}
-        rows={rows}
-        onSelectedCellChange={(args: {
-          column: CalculatedColumn<SupaRow, unknown>
-          rowIdx: number
-          row: SupaRow
-        }) => {
-          selectedCellRef.current = { idx: args.column.idx, rowIdx: args.rowIdx }
-        }}
-        onCellDoubleClick={(_, e) => {
-          e.preventDefault()
-          e.stopPropagation()
-        }}
-        renderers={{
-          noRowsFallback: (
-            <div className="w-96 px-2">
-              {isLoading && (
-                <div className="py-2">
-                  <ShimmeringLoader />
-                </div>
-              )}
-              {isError && (
-                <p className="text-foreground-light">
-                  {$t('Failed to find referencing row:')} {error.message}
-                </p>
-              )}
-              {isSuccess && (
-                <p className="text-foreground-light">{$t('No results were returned')}</p>
-              )}
-            </div>
-          ),
-        }}
-      />
+      <div className="h-32 overflow-hidden">
+        <DataGrid
+          className="h-full rounded-b border-0"
+          columns={columns}
+          rows={rows}
+          onSelectedCellChange={(args: {
+            column: CalculatedColumn<SupaRow, unknown>
+            rowIdx: number
+            row: SupaRow
+          }) => {
+            selectedCellRef.current = { idx: args.column.idx, rowIdx: args.rowIdx }
+          }}
+          onCellDoubleClick={(_, e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
+          renderers={{
+            noRowsFallback: (
+              <div className="w-96 px-2">
+                {isLoading && (
+                  <div className="py-2">
+                    <ShimmeringLoader />
+                  </div>
+                )}
+                {isError && (
+                  <p className="text-foreground-light">
+                    
+                                                  {$t('Failed to find referencing row:')} {error.message}
+                  </p>
+                )}
+                {isSuccess && <p className="text-foreground-light">{$t('No results were returned')}</p>}
+              </div>
+            ),
+          }}
+        />
+      </div>
       <div className="flex items-center justify-end px-2 py-1">
         <EditorTablePageLink
           href={`/project/${ref}/editor/${table.id}?schema=${table.schema}&filter=${column}%3Aeq%3A${value}`}

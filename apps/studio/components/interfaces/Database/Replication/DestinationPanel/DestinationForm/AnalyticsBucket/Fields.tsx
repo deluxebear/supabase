@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
@@ -20,7 +21,11 @@ import { Admonition } from 'ui-patterns/admonition'
 import { Input as PasswordInput } from 'ui-patterns/DataInputs/Input'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
-import { CREATE_NEW_KEY, CREATE_NEW_NAMESPACE } from '../DestinationForm.constants'
+import {
+  CREATE_NEW_KEY,
+  CREATE_NEW_NAMESPACE,
+  STORED_SECRET_PLACEHOLDER,
+} from '../DestinationForm.constants'
 import type { DestinationPanelSchemaType } from '../DestinationForm.schema'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { useAPIKeys } from '@/data/api-keys/api-keys-query'
@@ -28,7 +33,6 @@ import { useAnalyticsBucketsQuery } from '@/data/storage/analytics-buckets-query
 import { useIcebergNamespacesQuery } from '@/data/storage/iceberg-namespaces-query'
 import { useStorageCredentialsQuery } from '@/data/storage/s3-access-key-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
-import { t as $t } from '@/lib/i18n'
 
 /**
  * [Joshen] JFYI I'd foresee a possible UX friction point here regarding S3 access key IDs and secret access keys
@@ -39,12 +43,27 @@ import { t as $t } from '@/lib/i18n'
  * Ideal scenario: Just select an access key ID, we then apply the secret access key in the PATCH request, so FE has no
  * context of the secret access key at any point
  */
+const getS3AccessKeyTriggerLabel = ({
+  value,
+  editMode,
+}: {
+  value: string | undefined
+  editMode: boolean
+}) => {
+  if (value === CREATE_NEW_KEY) return 'Create a new key'
+  if (!value) return editMode ? STORED_SECRET_PLACEHOLDER : 'Select an access key ID'
+
+  return value
+}
+
 export const AnalyticsBucketFields = ({
   form,
+  editMode,
   setIsFormInteracting,
   onSelectNewBucket,
 }: {
   form: UseFormReturn<DestinationPanelSchemaType>
+  editMode: boolean
   setIsFormInteracting: (value: boolean) => void
   onSelectNewBucket: () => void
 }) => {
@@ -113,8 +132,9 @@ export const AnalyticsBucketFields = ({
                   size="small"
                   iconRight={<Loader2 className="animate-spin" />}
                 >
-                  {$t('Retrieving buckets')}
-                </Button>
+                  
+                                            {$t('Retrieving buckets')}
+                                          </Button>
               ) : isErrorBuckets ? (
                 <Button
                   disabled
@@ -123,8 +143,9 @@ export const AnalyticsBucketFields = ({
                   size="small"
                   icon={<WarningIcon />}
                 >
-                  {$t('Failed to retrieve buckets')}
-                </Button>
+                  
+                                                {$t('Failed to retrieve buckets')}
+                                              </Button>
               ) : (
                 <FormControl>
                   <Select
@@ -145,8 +166,9 @@ export const AnalyticsBucketFields = ({
                       <SelectGroup>
                         {analyticsBuckets.length === 0 ? (
                           <SelectItem value="__no_buckets__" disabled>
-                            {$t('No buckets available')}
-                          </SelectItem>
+                            
+                                                                                  {$t('No buckets available')}
+                                                                                </SelectItem>
                         ) : (
                           analyticsBuckets.map((bucket) => (
                             <SelectItem key={bucket.name} value={bucket.name}>
@@ -182,8 +204,9 @@ export const AnalyticsBucketFields = ({
                   size="small"
                   iconRight={<Loader2 className="animate-spin" />}
                 >
-                  {$t('Retrieving namespaces')}
-                </Button>
+                  
+                                            {$t('Retrieving namespaces')}
+                                          </Button>
               ) : isErrorNamespaces ? (
                 <Button
                   disabled
@@ -192,8 +215,9 @@ export const AnalyticsBucketFields = ({
                   size="small"
                   icon={<WarningIcon />}
                 >
-                  {$t('Failed to retrieve namespaces')}
-                </Button>
+                  
+                                                {$t('Failed to retrieve namespaces')}
+                                              </Button>
               ) : (
                 <FormControl>
                   <Select
@@ -215,8 +239,9 @@ export const AnalyticsBucketFields = ({
                       <SelectGroup>
                         {namespaces.length === 0 ? (
                           <SelectItem value="__no_namespaces__" disabled>
-                            {$t('No namespaces available')}
-                          </SelectItem>
+                            
+                                                                                  {$t('No namespaces available')}
+                                                                                </SelectItem>
                         ) : (
                           namespaces.map((namespace) => (
                             <SelectItem key={namespace} value={namespace}>
@@ -226,8 +251,9 @@ export const AnalyticsBucketFields = ({
                         )}
                         <SelectSeparator />
                         <SelectItem key={CREATE_NEW_NAMESPACE} value={CREATE_NEW_NAMESPACE}>
-                          {$t('Create a new namespace')}
-                        </SelectItem>
+                          
+                                                                            {$t('Create a new namespace')}
+                                                                          </SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
@@ -263,19 +289,25 @@ export const AnalyticsBucketFields = ({
               layout="horizontal"
               label={$t('Catalog Token')}
               description={
-                <>
-                  {$t("Automatically retrieved from your project's")}{' '}
-                  <InlineLink href={`/project/${projectRef}/settings/api-keys`}>
-                    {$t('service role key')}
-                  </InlineLink>
-                </>
+                editMode ? (
+                  'Stored catalog token is hidden and kept automatically.'
+                ) : (
+                  <>
+                    
+                                                  {$t('Automatically retrieved from your project\'s')}{' '}
+                    <InlineLink href={`/project/${projectRef}/settings/api-keys`}>
+                      
+                                                        {$t('service role key')}
+                                                      </InlineLink>
+                  </>
+                )
               }
             >
               <PasswordInput
                 disabled
                 value={field.value}
                 type={showCatalogToken ? 'text' : 'password'}
-                placeholder={$t('Auto-populated')}
+                placeholder={editMode ? STORED_SECRET_PLACEHOLDER : 'Auto-populated'}
                 actions={
                   serviceApiKey ? (
                     <div className="flex items-center justify-center">
@@ -303,10 +335,9 @@ export const AnalyticsBucketFields = ({
               description={
                 <div className="flex flex-col gap-y-2">
                   <p>
-                    {$t('Access keys are managed in your Storage')}{' '}
-                    <InlineLink href={`/project/${projectRef}/storage/s3`}>
-                      {$t('S3 settings')}
-                    </InlineLink>
+                    
+                                              {$t('Access keys are managed in your Storage')}{' '}
+                    <InlineLink href={`/project/${projectRef}/storage/s3`}>{$t('S3 settings')}</InlineLink>
                   </p>
 
                   {isSuccessKeys && keyNoLongerExists && (
@@ -315,12 +346,12 @@ export const AnalyticsBucketFields = ({
                       title={$t('Unable to find access key ID in project')}
                       description={
                         <>
-                          {$t(
-                            'Please select another key or create a new set, as this destination will not work otherwise. S3 access keys can be managed in your'
-                          )}{' '}
+                          
+                                                        {$t('Please select another key or create a new set, as this destination will not work otherwise. S3 access keys can be managed in your')}{' '}
                           <InlineLink href={`/project/${projectRef}/storage/files/settings`}>
-                            {$t('storage settings')}
-                          </InlineLink>
+                            
+                                                              {$t('storage settings')}
+                                                            </InlineLink>
                           .
                         </>
                       }
@@ -344,8 +375,9 @@ export const AnalyticsBucketFields = ({
                   size="small"
                   iconRight={<Loader2 className="animate-spin" />}
                 >
-                  {$t('Retrieving keys')}
-                </Button>
+                  
+                                            {$t('Retrieving keys')}
+                                          </Button>
               ) : isErrorKeys ? (
                 <Button
                   disabled
@@ -354,17 +386,14 @@ export const AnalyticsBucketFields = ({
                   size="small"
                   icon={<WarningIcon />}
                 >
-                  {$t('Failed to retrieve keys')}
-                </Button>
+                  
+                                                {$t('Failed to retrieve keys')}
+                                              </Button>
               ) : (
                 <FormControl>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger>
-                      {field.value === CREATE_NEW_KEY
-                        ? 'Create a new key'
-                        : (field.value ?? '').length === 0
-                          ? 'Select an access key ID'
-                          : field.value}
+                      {getS3AccessKeyTriggerLabel({ value: field.value, editMode })}
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
@@ -376,8 +405,9 @@ export const AnalyticsBucketFields = ({
                         ))}
                         <SelectSeparator />
                         <SelectItem key={CREATE_NEW_KEY} value={CREATE_NEW_KEY}>
-                          {$t('Create a new key')}
-                        </SelectItem>
+                          
+                                                                            {$t('Create a new key')}
+                                                                          </SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
@@ -396,14 +426,20 @@ export const AnalyticsBucketFields = ({
                 layout="horizontal"
                 label={$t('S3 Secret Access Key')}
                 className="relative"
-                description={$t('The secret key corresponding to your selected access key ID.')}
+                description={
+                  editMode
+                    ? 'Stored secret access key is hidden. Enter a new secret to replace it.'
+                    : 'The secret key corresponding to your selected access key ID.'
+                }
               >
                 <FormControl>
                   <Input
                     {...field}
                     type={showSecretAccessKey ? 'text' : 'password'}
                     value={field.value ?? ''}
-                    placeholder={$t('Provide the secret access key')}
+                    placeholder={
+                      editMode ? STORED_SECRET_PLACEHOLDER : 'Provide the secret access key'
+                    }
                   />
                 </FormControl>
                 <Button

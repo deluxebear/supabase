@@ -1,22 +1,27 @@
+import { t as $t } from '@/lib/i18n';
 import { Check, ChevronDown, Edit, X } from 'lucide-react'
 import { useMemo } from 'react'
 import { cn, Collapsible, CollapsibleContent, CollapsibleTrigger, WarningIcon } from 'ui'
 
 import type { Policy } from '@/components/interfaces/Database/Policies/PolicyTableRow/PolicyTableRow.utils'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
-import { t as $t } from '@/lib/i18n'
+import { type ParseSQLQueryOperations } from '@/data/misc/parse-query-mutation'
 
 interface RLSTableCardProps {
   table: { schema: string; name: string; isRLSEnabled: boolean }
+  operation: ParseSQLQueryOperations
   role?: string
   policies: Policy[]
+  hasError: boolean
   handleSelectEditPolicy: (policy: Policy) => void
 }
 
 export const RLSTableCard = ({
   table,
+  operation,
   role,
   policies,
+  hasError,
   handleSelectEditPolicy,
 }: RLSTableCardProps) => {
   const { schema, name, isRLSEnabled } = table
@@ -28,19 +33,22 @@ export const RLSTableCard = ({
     if (!isRLSEnabled) {
       return (
         <p>
-          {$t(
-            'RLS is disabled and all data is publicly accessible. We highly recommend enabling RLS and adding policies to restrict access.'
-          )}
-        </p>
+          
+                        {$t('RLS is disabled and all data is publicly accessible. We highly recommend enabling RLS and adding policies to restrict access.')}
+                      </p>
       )
     }
 
     if (noPolicies) {
       return (
         <p>
-          {$t('RLS is enabled but no policies exist for the')}{' '}
-          <code className="text-code-inline">{role}</code>{' '}
-          {$t('role on this table - no data will be returned.')}
+          
+                        {$t('RLS is enabled but no policies exist for the')}{' '}
+          <code className="text-code-inline">{role}</code>  {$t('role on this table -')}{' '}
+          {operation === 'SELECT'
+            ? 'no data will be returned'
+            : `no data will be ${operation?.toLowerCase()}${operation?.toLowerCase().endsWith('e') ? 'd' : 'ed'}`}
+          .
         </p>
       )
     }
@@ -49,14 +57,14 @@ export const RLSTableCard = ({
       return (
         <>
           <p>
-            {$t('The policy "')}
-            {trueOnlyPolicy.name}
-            {$t('" for the')} <code className="text-code-inline">{role}</code>{' '}
-            {$t('role on this table evaluates to')} <code className="text-code-inline">true</code>
-            {$t(', so all data from this query is accessible to this user.')}
-          </p>
+            
+                              {$t('The policy "')}{trueOnlyPolicy.name}{$t('" for the')}{' '}
+            <code className="text-code-inline">{role}</code>  {$t('role on this table evaluates to')}{' '}
+            <code className="text-code-inline">true</code>{$t(', so all data from this query is accessible to this user.')}
+                            </p>
           <TableAccessPolicySummary
             policies={policies}
+            operation={operation}
             handleSelectEditPolicy={handleSelectEditPolicy}
           />
         </>
@@ -67,14 +75,14 @@ export const RLSTableCard = ({
       return (
         <>
           <p>
-            {$t('The policy "')}
-            {falseOnlyPolicy.name}
-            {$t('" for the')} <code className="text-code-inline">{role}</code>{' '}
-            {$t('role on this table evaluates to')} <code className="text-code-inline">false</code>
-            {$t(', so no data from this query is accessible to this user.')}
-          </p>
+            
+                              {$t('The policy "')}{falseOnlyPolicy.name}{$t('" for the')}{' '}
+            <code className="text-code-inline">{role}</code>  {$t('role on this table evaluates to')}{' '}
+            <code className="text-code-inline">false</code>{$t(', so no data from this query is accessible to this user.')}
+                            </p>
           <TableAccessPolicySummary
             policies={policies}
+            operation={operation}
             handleSelectEditPolicy={handleSelectEditPolicy}
           />
         </>
@@ -84,13 +92,15 @@ export const RLSTableCard = ({
     return (
       <>
         <p>
-          {policies.length} {policies.length > 1 ? 'policies apply' : 'policy applies'}{' '}
-          {$t('for the')} <code className="text-code-inline">{role}</code>{' '}
-          {$t('role on this table. Only rows that match')}{' '}
-          {policies.length > 1 ? 'these conditions' : 'this condition'} {$t('are returned.')}
+          {policies.length} {policies.length > 1 ? 'policies apply' : 'policy applies'}  {$t('for the')}{' '}
+          <code className="text-code-inline">{role}</code>  {$t('role on this table.')}{' '}
+          {operation === 'SELECT'
+            ? `Only rows that match ${policies.length > 1 ? 'these conditions' : 'this condition'} are returned.`
+            : `The ${operation} operation will only be successful if the conditions are matched.`}
         </p>
         <TableAccessPolicySummary
           policies={policies}
+          operation={operation}
           handleSelectEditPolicy={handleSelectEditPolicy}
         />
       </>
@@ -102,6 +112,7 @@ export const RLSTableCard = ({
     falseOnlyPolicy,
     policies,
     role,
+    operation,
     handleSelectEditPolicy,
   ])
 
@@ -114,7 +125,7 @@ export const RLSTableCard = ({
           <div className="flex items-center gap-x-2">
             {!isRLSEnabled ? (
               <WarningIcon />
-            ) : noPolicies || falseOnlyPolicy ? (
+            ) : (hasError && operation === 'INSERT') || noPolicies || falseOnlyPolicy ? (
               <X size={16} className="text-destructive" />
             ) : (
               <Check size={16} className="text-brand" />
@@ -125,18 +136,20 @@ export const RLSTableCard = ({
           </div>
         </div>
         <div className="flex items-center gap-x-2">
-          <p
-            className={cn(
-              'text-xs text-foreground-light w-max',
-              !isRLSEnabled && 'text-foreground'
-            )}
-          >
-            {noPolicies || falseOnlyPolicy
-              ? 'Returns no rows'
-              : !isRLSEnabled || !!trueOnlyPolicy
-                ? 'Returns all rows'
-                : null}
-          </p>
+          {operation === 'SELECT' && (
+            <p
+              className={cn(
+                'text-xs text-foreground-light w-max',
+                !isRLSEnabled && 'text-foreground'
+              )}
+            >
+              {noPolicies || falseOnlyPolicy
+                ? 'Returns no rows'
+                : !isRLSEnabled || !!trueOnlyPolicy
+                  ? 'Returns all rows'
+                  : null}
+            </p>
+          )}
           <ChevronDown className="transition-transform duration-200" strokeWidth={1.5} size={14} />
         </div>
       </CollapsibleTrigger>
@@ -154,9 +167,11 @@ export const RLSTableCard = ({
 
 const TableAccessPolicySummary = ({
   policies,
+  operation,
   handleSelectEditPolicy,
 }: {
   policies: Policy[]
+  operation: ParseSQLQueryOperations
   handleSelectEditPolicy: (policy: Policy) => void
 }) => {
   return (
@@ -170,8 +185,11 @@ const TableAccessPolicySummary = ({
             <div>
               <p>{policy.name}</p>
               <p className="text-foreground-lighter">
-                {$t('Show rows where:')}{' '}
-                <code className="text-code-inline text-foreground">{policy.definition}</code>
+                {operation === 'SELECT' ? 'Show rows' : `Allow ${operation?.toLocaleLowerCase()}s`}{' '}
+                where:{' '}
+                <code className="text-code-inline text-foreground">
+                  {policy.definition ?? policy.check}
+                </code>
               </p>
             </div>
             <ButtonTooltip

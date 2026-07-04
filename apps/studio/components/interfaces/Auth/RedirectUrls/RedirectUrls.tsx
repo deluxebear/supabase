@@ -23,6 +23,7 @@ import {
   PageSectionTitle,
 } from 'ui-patterns/PageSection'
 
+import { parseRedirectUrls } from '../Auth.constants'
 import { AddNewURLModal } from './AddNewURLModal'
 import { RedirectUrlList } from './RedirectUrlList'
 import { ValueContainer } from './ValueContainer'
@@ -47,9 +48,7 @@ export const RedirectUrls = () => {
     useAuthConfigUpdateMutation()
 
   const URI_ALLOW_LIST_ARRAY = useMemo(() => {
-    return authConfig?.URI_ALLOW_LIST
-      ? authConfig.URI_ALLOW_LIST.split(/\s*[,]+\s*/).filter((url: string) => url)
-      : []
+    return parseRedirectUrls(authConfig?.URI_ALLOW_LIST)
   }, [authConfig?.URI_ALLOW_LIST])
 
   const [open, setOpen] = useState(false)
@@ -59,8 +58,7 @@ export const RedirectUrls = () => {
   const onConfirmDeleteUrl = async (urls?: string[]) => {
     if (!urls || urls.length === 0) return
 
-    // Remove selectedUrl from array and update
-    const payload = URI_ALLOW_LIST_ARRAY.filter((url: string) => !selectedUrls.includes(url))
+    const payload = URI_ALLOW_LIST_ARRAY.filter((url: string) => !urls.includes(url))
     const payloadString = payload.join(',')
     await updateAuthConfig(
       { projectRef: projectRef!, config: { URI_ALLOW_LIST: payloadString } },

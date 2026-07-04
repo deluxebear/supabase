@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useParams } from 'common'
 import { useRouter } from 'next/router'
@@ -35,8 +36,7 @@ import { Snippet } from '@/data/content/sql-folders-query'
 import type { SqlSnippet } from '@/data/content/sql-snippets-query'
 import { useOrgAiOptInLevel } from '@/hooks/misc/useOrgOptedIntoAi'
 import { IS_PLATFORM } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
-import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
+import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor/sql-editor-state'
 import { createTabId, useTabsStateSnapshot } from '@/state/tabs'
 
 export interface RenameQueryModalProps {
@@ -244,11 +244,13 @@ export const RenameQueryModal = ({
             </DialogSection>
             <DialogFooter>
               <Button type="reset" variant="default" onClick={handleCancel} disabled={isSubmitting}>
-                {$t('Cancel')}
-              </Button>
+                
+                                              {$t('Cancel')}
+                                            </Button>
               <Button type="submit" loading={isSubmitting} disabled={isSubmitting || !isDirty}>
-                {$t('Rename query')}
-              </Button>
+                
+                                              {$t('Rename query')}
+                                            </Button>
             </DialogFooter>
           </form>
         </Form>

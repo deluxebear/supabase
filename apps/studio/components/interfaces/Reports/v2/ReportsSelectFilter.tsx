@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { Checkbox } from '@ui/components/shadcn/ui/checkbox'
 import { CommandGroup } from '@ui/components/shadcn/ui/command'
 import { Label } from '@ui/components/shadcn/ui/label'
@@ -6,8 +7,6 @@ import { ChevronDown } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button, cn, Command, CommandEmpty, CommandInput, CommandItem, CommandList } from 'ui'
 import { z } from 'zod'
-
-import { t as $t } from '@/lib/i18n'
 
 export interface ReportSelectOption {
   label: React.ReactNode
@@ -85,7 +84,7 @@ export const ReportsSelectFilter = ({
       <PopoverContent align="start" className="p-0 w-72">
         <Command>
           {showSearch && <CommandInput placeholder={$t('Search...')} />}
-          <CommandList>
+          <CommandList className="max-h-72">
             <CommandEmpty>{$t('No options found.')}</CommandEmpty>
             <CommandGroup>
               {options.map((option) => (
@@ -123,8 +122,9 @@ export const ReportsSelectFilter = ({
 
         <div className="flex items-center justify-end gap-2 border-t border-default p-2">
           <Button size="tiny" variant="outline" onClick={handleClearAll} disabled={isLoading}>
-            {$t('Clear')}
-          </Button>
+            
+                                  {$t('Clear')}
+                                </Button>
           <Button
             loading={isLoading}
             size="tiny"
@@ -132,8 +132,9 @@ export const ReportsSelectFilter = ({
             onClick={handleApply}
             type="button"
           >
-            {$t('Apply')}
-          </Button>
+            
+                                  {$t('Apply')}
+                                </Button>
         </div>
       </PopoverContent>
     </Popover>

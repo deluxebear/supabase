@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
 import { noop } from 'lodash'
@@ -9,7 +10,6 @@ import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/L
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { EditorTablePageLink } from '@/data/prefetchers/project.$ref.editor.$id'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
-import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -57,24 +57,28 @@ export const PolicyTableRowHeader = ({
         >
           <Table strokeWidth={1.5} size={16} className="text-foreground-muted" />
           <CardTitle className="m-0 normal-case">{table.name}</CardTitle>
+        </EditorTablePageLink>
+        <div className="flex items-center gap-x-1">
           {!table.rls_enabled && (
-            <Badge variant="warning" className="shrink-0">
-              {$t('RLS Disabled')}
-            </Badge>
+            <Badge variant="warning" className="h-5">
+              
+                                        {$t('RLS Disabled')}
+                                      </Badge>
           )}
           {!isLoadingApiAccess && !hasApiAccess && (
-            <Badge variant="default" className="shrink-0">
-              {$t('API Disabled')}
+            <Badge variant="default" className="h-5">
+              
+                                        {$t('API Disabled')}
+                                      </Badge>
+          )}
+          {isTableLocked && (
+            <Badge className="h-5">
+              <span className="flex gap-x-1 items-center text-foreground-lighter">
+                <Lock size={10} />  {$t('Locked')}
+                                            </span>
             </Badge>
           )}
-        </EditorTablePageLink>
-        {isTableLocked && (
-          <Badge>
-            <span className="flex gap-2 items-center text-xs uppercase text-foreground-lighter">
-              <Lock size={12} /> {$t('Locked')}
-            </span>
-          </Badge>
-        )}
+        </div>
       </div>
       {!isTableLocked && (
         <div className="flex-1">
@@ -113,8 +117,9 @@ export const PolicyTableRowHeader = ({
                 },
               }}
             >
-              {$t('Create policy')}
-            </ButtonTooltip>
+              
+                                        {$t('Create policy')}
+                                      </ButtonTooltip>
 
             <ButtonTooltip
               variant="default"

@@ -243,7 +243,6 @@ export const TableEditor = ({
             columns,
             foreignKeyRelations: fkRelations,
             resolve,
-            generatedPolicies: [],
           })
         } else if (isDuplicating) {
           const payload: SaveTablePayloadFor<'duplicate'> = {
@@ -257,7 +256,6 @@ export const TableEditor = ({
             columns,
             foreignKeyRelations: fkRelations,
             resolve,
-            generatedPolicies: [],
           })
         } else {
           const payload: SaveTablePayloadFor<'update'> = {
@@ -272,7 +270,6 @@ export const TableEditor = ({
             columns,
             foreignKeyRelations: fkRelations,
             resolve,
-            generatedPolicies: [],
           })
         }
       } else {

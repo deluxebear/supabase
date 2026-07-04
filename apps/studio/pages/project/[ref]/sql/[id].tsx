@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { usePrevious } from '@uidotdev/usehooks'
 import { useParams } from 'common/hooks/useParams'
 import Link from 'next/link'
@@ -17,9 +18,8 @@ import { useSqlSnippetByIdQuery } from '@/data/content/content-id-query'
 import { useDashboardHistory } from '@/hooks/misc/useDashboardHistory'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
-import { useSnippets, useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
 import { wasNeverPersisted } from '@/state/sql-editor/sql-editor-lifecycle'
+import { useSnippets, useSqlEditorV2StateSnapshot } from '@/state/sql-editor/sql-editor-state'
 import { createTabId, useTabsStateSnapshot } from '@/state/tabs'
 import type { NextPageWithLayout } from '@/types'
 
@@ -117,7 +117,7 @@ const SqlEditor: NextPageWithLayout = () => {
           <Admonition
             type="default"
             title={`Unable to find snippet with ID ${id}`}
-            description={$t("This snippet doesn't exist in your project")}
+            description={$t('This snippet doesn\'t exist in your project')}
           >
             {!!tabId ? (
               <Button
@@ -132,8 +132,9 @@ const SqlEditor: NextPageWithLayout = () => {
                   })
                 }}
               >
-                {$t('Close tab')}
-              </Button>
+                
+                                            {$t('Close tab')}
+                                          </Button>
             ) : (
               <Button
                 asChild

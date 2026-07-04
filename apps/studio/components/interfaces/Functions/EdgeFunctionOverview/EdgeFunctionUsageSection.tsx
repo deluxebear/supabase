@@ -116,7 +116,7 @@ export const EdgeFunctionUsageSection = ({
                   {
                     y: averageCpuTime,
                     label: 'average',
-                    stroke: 'hsl(var(--foreground-default))',
+                    stroke: 'var(--foreground-default)',
                     strokeWidth: 1.5,
                   },
                 ]}
@@ -141,7 +141,7 @@ export const EdgeFunctionUsageSection = ({
                   {
                     y: averageMemoryUsage,
                     label: 'average',
-                    stroke: 'hsl(var(--foreground-default))',
+                    stroke: 'var(--foreground-default)',
                     strokeWidth: 1.5,
                   },
                 ]}

@@ -14,7 +14,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   singleThemes,
-  Theme,
 } from 'ui'
 
 import { ButtonTooltip } from '../ui/ButtonTooltip'
@@ -86,7 +85,7 @@ export const LocalDropdown = ({
               setTheme(value)
             }}
           >
-            {singleThemes.map((theme: Theme) => (
+            {singleThemes.map((theme) => (
               <DropdownMenuRadioItem
                 key={theme.value}
                 value={theme.value}

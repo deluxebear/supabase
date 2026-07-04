@@ -1,9 +1,10 @@
+import { t as $t } from '@/lib/i18n';
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
 import { partition } from 'lodash'
 import { MessageCircle } from 'lucide-react'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useState, type PropsWithChildren } from 'react'
 import { toast } from 'sonner'
 import { Button } from 'ui'
 
@@ -24,7 +25,6 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAppStateSnapshot } from '@/state/app-state'
 import type { NextPageWithLayout } from '@/types'
@@ -181,7 +181,8 @@ const BranchesPage: NextPageWithLayout = () => {
         }}
         text={
           <>
-            {$t('This will delete your database preview branch')}{' '}
+            
+                            {$t('This will delete your database preview branch')}{' '}
             <span className="text-bold text-foreground">{selectedBranchToDelete?.name}</span>.
           </>
         }
@@ -190,73 +191,76 @@ const BranchesPage: NextPageWithLayout = () => {
   )
 }
 
-BranchesPage.getLayout = (page) => {
-  const BranchesPageWrapper = () => {
-    const snap = useAppStateSnapshot()
-    const { can: canCreateBranches } = useAsyncCheckPermissions(
-      PermissionAction.CREATE,
-      'preview_branches',
-      {
-        resource: { is_default: false },
-      }
-    )
+// Hoisted out of `getLayout` so the TanStack route can import it
+// directly. Same shape and identical body as before — accepts the page
+// content as `children` instead of capturing it from a closure.
+export const BranchesPageWrapper = ({ children }: PropsWithChildren) => {
+  const snap = useAppStateSnapshot()
+  const { can: canCreateBranches } = useAsyncCheckPermissions(
+    PermissionAction.CREATE,
+    'preview_branches',
+    {
+      resource: { is_default: false },
+    }
+  )
 
-    const primaryActions = (
-      <ButtonTooltip
-        variant="primary"
-        disabled={!canCreateBranches}
-        onClick={() => snap.setShowCreateBranchModal(true)}
-        tooltip={{
-          content: {
-            side: 'bottom',
-            text: !canCreateBranches
-              ? 'You need additional permissions to create branches'
-              : undefined,
-          },
-        }}
+  const primaryActions = (
+    <ButtonTooltip
+      variant="primary"
+      disabled={!canCreateBranches}
+      onClick={() => snap.setShowCreateBranchModal(true)}
+      tooltip={{
+        content: {
+          side: 'bottom',
+          text: !canCreateBranches
+            ? 'You need additional permissions to create branches'
+            : undefined,
+        },
+      }}
+    >
+      
+                {$t('Create branch')}
+              </ButtonTooltip>
+  )
+
+  const secondaryActions = (
+    <div className="flex items-center gap-x-2">
+      <Button
+        asChild
+        variant="text"
+        icon={<MessageCircle className="text-muted" strokeWidth={1} />}
       >
-        {$t('Create branch')}
-      </ButtonTooltip>
-    )
-
-    const secondaryActions = (
-      <div className="flex items-center gap-x-2">
-        <Button
-          asChild
-          variant="text"
-          icon={<MessageCircle className="text-muted" strokeWidth={1} />}
+        <a
+          target="_blank"
+          rel="noreferrer"
+          href="https://github.com/orgs/supabase/discussions/18937"
         >
-          <a
-            target="_blank"
-            rel="noreferrer"
-            href="https://github.com/orgs/supabase/discussions/18937"
-          >
-            {$t('Branching feedback')}
-          </a>
-        </Button>
-        <DocsButton href={`${DOCS_URL}/guides/platform/branching`} />
-      </div>
-    )
-
-    return (
-      <PageLayout
-        title={$t('Branches')}
-        subtitle="Manage your database preview branches and deployments"
-        primaryActions={primaryActions}
-        secondaryActions={secondaryActions}
-      >
-        {page}
-      </PageLayout>
-    )
-  }
+          
+                            {$t('Branching feedback')}
+                          </a>
+      </Button>
+      <DocsButton href={`${DOCS_URL}/guides/platform/branching`} />
+    </div>
+  )
 
   return (
-    <DefaultLayout>
-      <BranchLayout>
-        <BranchesPageWrapper />
-      </BranchLayout>
-    </DefaultLayout>
+    <PageLayout
+      title={$t('Branches')}
+      subtitle="Manage your database preview branches and deployments"
+      primaryActions={primaryActions}
+      secondaryActions={secondaryActions}
+    >
+      {children}
+    </PageLayout>
   )
 }
+
+BranchesPage.getLayout = (page) => (
+  <DefaultLayout>
+    <BranchLayout>
+      <BranchesPageWrapper>{page}</BranchesPageWrapper>
+    </BranchLayout>
+  </DefaultLayout>
+)
 
 export default BranchesPage

@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
@@ -5,10 +6,16 @@ import { Button, FormControl, FormField, Input, TextArea } from 'ui'
 import { Input as PasswordInput } from 'ui-patterns/DataInputs/Input'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
+import { STORED_SECRET_PLACEHOLDER } from '../DestinationForm.constants'
 import type { DestinationPanelSchemaType } from '../DestinationForm.schema'
-import { t as $t } from '@/lib/i18n'
 
-export const SnowflakeFields = ({ form }: { form: UseFormReturn<DestinationPanelSchemaType> }) => {
+export const SnowflakeFields = ({
+  form,
+  editMode,
+}: {
+  form: UseFormReturn<DestinationPanelSchemaType>
+  editMode: boolean
+}) => {
   const [showPrivateKeyPassphrase, setShowPrivateKeyPassphrase] = useState(false)
 
   return (
@@ -18,8 +25,9 @@ export const SnowflakeFields = ({ form }: { form: UseFormReturn<DestinationPanel
       <div className="flex flex-col gap-y-1">
         <p className="text-sm font-medium text-foreground">{$t('Connection')}</p>
         <p className="text-sm text-foreground-light">
-          {$t('Configure the Snowflake account, user, and target namespace for replicated data.')}
-        </p>
+          
+                            {$t('Configure the Snowflake account, user, and target namespace for replicated data.')}
+                          </p>
       </div>
 
       <div className="flex flex-col gap-y-4">
@@ -107,8 +115,9 @@ export const SnowflakeFields = ({ form }: { form: UseFormReturn<DestinationPanel
       <div className="flex flex-col gap-y-1">
         <p className="text-sm font-medium text-foreground">{$t('Authentication')}</p>
         <p className="text-sm text-foreground-light">
-          {$t('Use the RSA private key whose public key is registered on the Snowflake user.')}
-        </p>
+          
+                            {$t('Use the RSA private key whose public key is registered on the Snowflake user.')}
+                          </p>
       </div>
 
       <div className="flex flex-col gap-y-4">
@@ -119,14 +128,22 @@ export const SnowflakeFields = ({ form }: { form: UseFormReturn<DestinationPanel
             <FormItemLayout
               layout="horizontal"
               label={$t('Private key')}
-              description={$t('RSA private key PEM contents in PKCS#8 or PKCS#1 format')}
+              description={
+                editMode
+                  ? 'Stored private key is hidden. Enter a new private key to replace it.'
+                  : 'RSA private key PEM contents in PKCS#8 or PKCS#1 format'
+              }
             >
               <FormControl>
                 <TextArea
                   {...field}
                   rows={8}
                   maxLength={10000}
-                  placeholder={'-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----'}
+                  placeholder={
+                    editMode
+                      ? STORED_SECRET_PLACEHOLDER
+                      : '-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----'
+                  }
                   value={field.value ?? ''}
                   className="font-mono text-xs"
                 />
@@ -142,13 +159,17 @@ export const SnowflakeFields = ({ form }: { form: UseFormReturn<DestinationPanel
             <FormItemLayout
               layout="horizontal"
               label={$t('Private key passphrase')}
-              description={$t('Optional passphrase for encrypted private keys')}
+              description={
+                editMode
+                  ? 'Stored passphrase setting is hidden. Enter a new passphrase to replace it.'
+                  : 'Optional passphrase for encrypted private keys'
+              }
             >
               <FormControl>
                 <PasswordInput
                   value={field.value ?? ''}
                   type={showPrivateKeyPassphrase ? 'text' : 'password'}
-                  placeholder={$t('Optional')}
+                  placeholder={editMode ? STORED_SECRET_PLACEHOLDER : 'Optional'}
                   onChange={(event) => field.onChange(event.target.value)}
                   actions={
                     <div className="flex items-center justify-center">

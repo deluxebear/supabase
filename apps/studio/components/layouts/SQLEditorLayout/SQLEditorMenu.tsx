@@ -30,7 +30,7 @@ import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { getAppStateSnapshot } from '@/state/app-state'
-import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
+import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor/sql-editor-state'
 
 export const SQLEditorMenu = () => {
   const router = useRouter()

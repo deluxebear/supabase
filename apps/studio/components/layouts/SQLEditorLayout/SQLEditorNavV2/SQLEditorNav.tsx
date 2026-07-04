@@ -39,8 +39,8 @@ import { useLocalStorage } from '@/hooks/misc/useLocalStorage'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
-import { useSnippetFolders, useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
 import { isNewFolder } from '@/state/sql-editor/sql-editor-lifecycle'
+import { useSnippetFolders, useSqlEditorV2StateSnapshot } from '@/state/sql-editor/sql-editor-state'
 import { createTabId, useTabsStateSnapshot } from '@/state/tabs'
 
 interface SQLEditorNavProps {

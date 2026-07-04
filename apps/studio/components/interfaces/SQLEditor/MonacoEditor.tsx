@@ -1,29 +1,21 @@
+import { t as $t } from '@/lib/i18n';
 import { Monaco, OnMount } from '@monaco-editor/react'
-import { useDebounce } from '@uidotdev/usehooks'
-import { LOCAL_STORAGE_KEYS, useParams } from 'common'
+import { LOCAL_STORAGE_KEYS } from 'common'
 import { noop } from 'lodash'
-import { useRouter } from 'next/router'
-import { RefObject, useEffect, useRef, useState } from 'react'
+import { RefObject, useRef } from 'react'
 import { Admonition } from 'ui-patterns/admonition'
 
 import type { IStandaloneCodeEditor } from './SQLEditor.types'
-import { createSqlSnippetSkeletonV2 } from './SQLEditor.utils'
+import { useSnippetEditor } from './useSnippetEditor'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { getEditorSelectionParts } from '@/components/ui/AIEditor/utils'
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
-import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
-import { useProfile } from '@/lib/profile'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useIsShortcutEnabled } from '@/state/shortcuts/useIsShortcutEnabled'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
-import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
-import { wasNeverPersisted } from '@/state/sql-editor/sql-editor-lifecycle'
-import { canEditSnippet } from '@/state/sql-editor/sql-editor-rules'
 import { useSqlEditorSaveCoordinator } from '@/state/sql-editor/sql-editor-save-coordinator'
-import { useTabsStateSnapshot } from '@/state/tabs'
 
 export type MonacoEditorProps = {
   id: string
@@ -64,13 +56,6 @@ export const MonacoEditor = ({
   onPrompt,
   onMount,
 }: MonacoEditorProps) => {
-  const router = useRouter()
-  const { profile } = useProfile()
-  const { ref, content } = useParams()
-  const { data: project } = useSelectedProjectQuery()
-
-  const snapV2 = useSqlEditorV2StateSnapshot()
-  const tabsSnap = useTabsStateSnapshot()
   const aiSnap = useAiAssistantStateSnapshot()
   const { openSidebar, toggleSidebar } = useSidebarManagerSnapshot()
 
@@ -79,11 +64,14 @@ export const MonacoEditor = ({
     true
   )
 
-  const [value, setValue] = useState('')
-  const debouncedValue = useDebounce(value, 1000)
+  const { snippet, disableEdit, handleEditorChange } = useSnippetEditor({ id, snippetName })
 
-  const snippet = snapV2.snippets[id]
-  const disableEdit = !!snippet && !canEditSnippet(snippet.snippet, profile?.id)
+  // The Monaco save action is registered once on mount, but `snippet` starts
+  // undefined for a new/deep-linked snippet and is only created on first edit.
+  // Read it through a ref so Cmd/Ctrl+S sees the latest value, not the stale
+  // mount-time closure.
+  const snippetRef = useRef(snippet)
+  snippetRef.current = snippet
 
   const executeExplainQueryRef = useRef(executeExplainQuery)
   executeExplainQueryRef.current = executeExplainQuery
@@ -148,7 +136,8 @@ export const MonacoEditor = ({
       contextMenuGroupId: 'operation',
       contextMenuOrder: 0,
       run: () => {
-        if (snippet) requestSaveRef.current(snippet.snippet.id)
+        const currentSnippet = snippetRef.current
+        if (currentSnippet) requestSaveRef.current(currentSnippet.snippet.id)
       },
     })
 
@@ -216,46 +205,6 @@ export const MonacoEditor = ({
     onMount?.(editor)
   }
 
-  function handleEditorChange(value: string | undefined) {
-    tabsSnap.makeActiveTabPermanent()
-    if (id && value) {
-      if (!snippet && ref && profile !== undefined && project !== undefined) {
-        const snippet = createSqlSnippetSkeletonV2({
-          idOverride: id,
-          name: snippetName,
-          sql: value,
-          owner_id: profile?.id,
-          project_id: project?.id,
-        })
-        snapV2.addSnippet({ projectRef: ref, snippet })
-        // When the editor was seeded from a `content` deep-link, replace rather
-        // than push. The caller navigated to `/sql/new?content=...` (a long,
-        // one-shot URL); replacing collapses it out of history so Back returns to
-        // the originating page instead of a wasted step that re-seeds the snippet.
-        if (router.query.content !== undefined) {
-          router.replace(`/project/${ref}/sql/${snippet.id}`, undefined, { shallow: true })
-        } else {
-          router.push(`/project/${ref}/sql/${snippet.id}`, undefined, { shallow: true })
-        }
-      }
-      setValue(value)
-    }
-  }
-
-  useEffect(() => {
-    if (debouncedValue.length > 0 && snippet) {
-      const shouldInvalidate = wasNeverPersisted(snippet.snippet.status)
-      snapV2.setSql({ id, sql: value, shouldInvalidate })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedValue])
-
-  // if an SQL query is passed by the content parameter, set the editor value to its content. This
-  // is usually used for sending the user to SQL editor from other pages with SQL.
-  useEffect(() => {
-    if (content && content.length > 0) handleEditorChange(content)
-  }, [])
-
   return (
     <>
       {disableEdit && (
@@ -263,9 +212,7 @@ export const MonacoEditor = ({
           type="default"
           className="rounded-none border-0 border-b"
           title={$t('Read-only snippet')}
-          description={$t(
-            'This snippet has been shared to the project and is only editable by the owner who created this snippet. You may duplicate this snippet into a personal copy by right clicking on the snippet and selecting “Duplicate query”.'
-          )}
+          description={$t('This snippet has been shared to the project and is only editable by the owner who created this snippet. You may duplicate this snippet into a personal copy by right clicking on the snippet and selecting “Duplicate query”.')}
         />
       )}
       <CodeEditor

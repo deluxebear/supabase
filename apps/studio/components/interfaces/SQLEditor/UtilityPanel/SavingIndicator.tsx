@@ -6,10 +6,10 @@ import { Button, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 import ReadOnlyBadge from './ReadOnlyBadge'
 import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
-import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor-v2'
 import { isSaveFailed, isSaving } from '@/state/sql-editor/sql-editor-lifecycle'
 import { isSnippetOwner } from '@/state/sql-editor/sql-editor-rules'
 import { useSqlEditorSaveCoordinator } from '@/state/sql-editor/sql-editor-save-coordinator'
+import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor/sql-editor-state'
 
 export type SavingIndicatorProps = { id: string }
 
