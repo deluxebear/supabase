@@ -129,6 +129,7 @@ describe('acceptInvitationOrgWide', () => {
     const out = await acceptInvitationOrgWide('tok', 1, 5)
     const q = executePlatformQuery.mock.calls[0][0].query
     expect(q).toContain('accepted_at is null and expires_at > now()') // claim gate
+    expect(q).toContain('token::text = $1') // malformed token -> zero rows, not a uuid-parse 500
     expect(q).toContain('from platform.organization_members om') // membership anchor
     expect(q).toContain('select count(*)::int as claimed_count from claimed') // claim-driven result
     expect(executePlatformQuery.mock.calls[0][0].parameters).toEqual(['tok', 1, 5])
@@ -146,6 +147,7 @@ describe('acceptInvitationScoped', () => {
     executePlatformQuery.mockResolvedValue({ data: [{ claimed_count: 1 }], error: undefined })
     const out = await acceptInvitationScoped('tok', 1, 5, [42])
     const q = executePlatformQuery.mock.calls[0][0].query
+    expect(q).toContain('token::text = $1') // malformed token -> zero rows, not a uuid-parse 500
     expect(q).toContain("'_scoped_'") // derived name convention
     expect(q).toContain('platform.role_projects') // project links
     expect(q).toContain('from platform.organization_members om') // membership anchor

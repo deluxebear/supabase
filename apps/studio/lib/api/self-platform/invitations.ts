@@ -142,10 +142,18 @@ export async function acceptInvitationOrgWide(
       with claimed as (
         update platform.invitations
         set accepted_at = now()
-        where token = $1 and organization_id = $2
+        where token::text = $1 and organization_id = $2
           and accepted_at is null and expires_at > now()
         returning role_id
       ),
+      -- INTENTIONALLY INERT under the single-org boot invariant: first-login
+      -- boot already creates the default-org membership before accept ever
+      -- runs. This belt-and-braces insert does NOT provide a real fallback if
+      -- boot hasn't run — grant_role's anchor subquery reads the
+      -- pre-statement snapshot, so a membership row inserted in this same
+      -- statement is invisible to it and the role grant below would be
+      -- skipped while the invite is still consumed. Accept relies on the
+      -- boot membership, not this insert.
       membership as (
         insert into platform.organization_members (organization_id, profile_id)
         select $2, $3 from claimed
@@ -186,10 +194,18 @@ export async function acceptInvitationScoped(
       with claimed as (
         update platform.invitations
         set accepted_at = now()
-        where token = $1 and organization_id = $2
+        where token::text = $1 and organization_id = $2
           and accepted_at is null and expires_at > now()
         returning role_id
       ),
+      -- INTENTIONALLY INERT under the single-org boot invariant: first-login
+      -- boot already creates the default-org membership before accept ever
+      -- runs. This belt-and-braces insert does NOT provide a real fallback if
+      -- boot hasn't run — grant_role's anchor subquery reads the
+      -- pre-statement snapshot, so a membership row inserted in this same
+      -- statement is invisible to it and the role grant below would be
+      -- skipped while the invite is still consumed. Accept relies on the
+      -- boot membership, not this insert.
       membership as (
         insert into platform.organization_members (organization_id, profile_id)
         select $2, $3 from claimed

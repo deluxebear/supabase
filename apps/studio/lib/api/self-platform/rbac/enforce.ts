@@ -88,11 +88,11 @@ export async function guardProjectRoute(
   // this is a known double round trip (backlog item, acceptable at internal scale).
   const ctx = await getMemberContext(claims?.sub ?? '')
   const orgId = ctx.roles[0]?.orgId
-  if (orgId !== undefined && (await getOrgMfaEnforced(orgId))) {
-    if (claims?.aal !== 'aal2') {
-      res.status(403).json({ message: 'MFA required to access this organization' })
-      return false
-    }
+  // Order matches the checkPermissionWithContext chokepoint: check aal FIRST
+  // so an aal2 session short-circuits before the getOrgMfaEnforced DB call.
+  if (orgId !== undefined && claims?.aal !== 'aal2' && (await getOrgMfaEnforced(orgId))) {
+    res.status(403).json({ message: 'MFA required to access this organization' })
+    return false
   }
   const can = await checkPermission(claims, {
     action: input.action,
@@ -137,11 +137,11 @@ export async function guardOrgRoute(
   // [self-platform] M3.2: org MFA enforcement. Members without an aal2 session
   // are blocked from every org route once the Owner enables enforce_mfa. Runs
   // AFTER the membership 404 so non-members never learn the org's MFA state.
-  if (await getOrgMfaEnforced(org.id)) {
-    if (claims?.aal !== 'aal2') {
-      res.status(403).json({ message: 'MFA required to access this organization' })
-      return null
-    }
+  // Check aal FIRST so an aal2 session short-circuits before the
+  // getOrgMfaEnforced DB call (matches the checkPermissionWithContext chokepoint).
+  if (claims?.aal !== 'aal2' && (await getOrgMfaEnforced(org.id))) {
+    res.status(403).json({ message: 'MFA required to access this organization' })
+    return null
   }
   const can = await checkPermission(claims, {
     action: input.action,

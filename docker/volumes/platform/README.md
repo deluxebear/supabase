@@ -969,6 +969,17 @@ To point at a real provider instead, override `PLATFORM_SMTP_HOST`/`PORT`/`USER`
 provider makes `PlainAuth`'s non-`localhost` check pass legitimately instead of needing the
 empty-credential workaround.
 
+> **Security:** Mailpit is a **local dev mail sink only** — it has no authentication of any kind.
+> Its web UI (`8025`) shows every message it has ever received in full, including every invitation
+> email, and each invitation email carries a `/join?token=<invitation-token>` link that is
+> effectively a **passwordless account-takeover link** for whoever clicks it first. Anyone who can
+> reach the Mailpit UI can therefore mint themselves org access. `docker-compose.platform.yml` binds
+> both published ports to `127.0.0.1` (`127.0.0.1:${PLATFORM_MAILPIT_SMTP_HOST_PORT:-1025}:1025` /
+> `127.0.0.1:${PLATFORM_MAILPIT_UI_HOST_PORT:-8025}:8025`) specifically so neither is reachable from
+> the LAN or the public internet — only processes on the same host can reach them. **Never use
+> Mailpit as the mail path for a shared, multi-team, or production deployment.** Configure a real
+> SMTP provider via the `PLATFORM_SMTP_*` overrides in `docker/.env` (see above) instead.
+
 ### Invite-only signup
 
 `docker-compose.platform.yml` now sets `GOTRUE_DISABLE_SIGNUP: 'true'` — this is the real gate;
@@ -1000,6 +1011,12 @@ non-MFA member of an org whose Owner just flipped `enforce_mfa` on simply starts
 on every subsequent org/project API call, with no interstitial screen walking them to enroll — they
 have to independently find `/account/security` and enroll TOTP themselves before the org becomes
 usable again (spec §6.3). This was accepted as a scoping cut, not fixed further in M3.2.
+
+**Owner self-lockout note**: an Owner who enables `enforce_mfa` while their own session is below
+aal2 immediately 403s themselves out of every org/project API too — there is no exemption for the
+org's own Owner. This is **not** a hard lockout: `/account/security` is account-level, not
+org-guarded, so the Owner can still reach it, enroll TOTP there, and get a fresh aal2 session to
+recover access.
 
 ### `05-invitations.sql`
 
