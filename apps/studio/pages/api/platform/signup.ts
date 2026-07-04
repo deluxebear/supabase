@@ -1,10 +1,10 @@
-// [self-platform] Dashboard signup: proxy to the platform GoTrue /signup.
-// Frontend body: { email, password, hcaptchaToken, redirectTo }
-// (data/misc/signup-mutation.ts). Captcha is not enforced on self-platform.
+// [self-platform] Dashboard signup: invite-only (M3.2). Public registration
+// is off — see the invite-only gate in the handler below. Frontend body was
+// { email, password, hcaptchaToken, redirectTo } (data/misc/signup-mutation.ts)
+// back when this proxied to GoTrue; that proxy is gone.
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
-import { PLATFORM_GOTRUE_URL } from '@/lib/api/self-platform/constants'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 // [self-platform] Public: called pre-login from the sign-up page, before any
@@ -24,32 +24,13 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
       .json({ data: null, error: { message: `Method ${req.method} Not Allowed` } })
   }
 
-  const { email, password } = req.body ?? {}
-  if (typeof email !== 'string' || typeof password !== 'string') {
-    return res.status(400).json({ message: 'email and password are required' })
-  }
-
-  let response: Response
-  let result: any
-  try {
-    response = await fetch(`${PLATFORM_GOTRUE_URL}/signup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
-    result = await response.json()
-  } catch {
-    return res.status(502).json({ message: 'Signup failed: platform auth service unreachable' })
-  }
-
-  if (!response.ok) {
-    const message =
-      typeof result?.msg === 'string'
-        ? result.msg
-        : typeof result?.message === 'string'
-          ? result.message
-          : 'Signup failed'
-    return res.status(response.status).json({ message })
-  }
-  return res.status(200).json(result)
+  // [self-platform] M3.2: signup is invite-only. Public registration is off
+  // (docker-compose.platform.yml GOTRUE_DISABLE_SIGNUP=true is the real gate;
+  // this returns a purposeful message instead of GoTrue's generic refusal).
+  // The sign-up page/button stays visible (no zero-fork way to hide it for
+  // signed-out users) — it now fails with this message.
+  return res.status(403).json({
+    message:
+      'Signups are invite-only on this deployment. Use your invitation email, or ask an organization admin to invite you.',
+  })
 }

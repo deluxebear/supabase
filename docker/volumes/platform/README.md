@@ -889,3 +889,31 @@ On a standard docker-compose stack, `supabase_read_only_user`'s password is **no
 ```bash
 docker exec supabase-db psql -U postgres -c "ALTER ROLE supabase_read_only_user PASSWORD '<POSTGRES_PASSWORD>';"
 ```
+
+## M3.2: Invite-only signup
+
+### Bootstrapping the first admin
+
+Public signup is disabled (`GOTRUE_DISABLE_SIGNUP=true`). Create the first
+dashboard user via the platform GoTrue admin API, using a service-role JWT
+signed with `PLATFORM_JWT_SECRET` (from `docker/.env`):
+
+```bash
+SECRET="$(grep '^PLATFORM_JWT_SECRET=' docker/.env | cut -d= -f2)"
+# Mint a 60s service_role JWT (HS256) — or reuse the studio mint-jwt helper.
+# Then:
+curl -s -X POST 'http://localhost:8110/admin/users' \
+  -H "Authorization: Bearer <service_role_jwt>" \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"admin@internal.test","password":"<pw>","email_confirm":true}'
+```
+
+Log in once as this user (first login auto-creates the platform profile +
+default-org membership), then grant Owner in the platform db:
+
+```bash
+docker exec -i supabase-platform-db psql -U postgres -d platform -c \
+  "insert into platform.member_roles (profile_id, role_id)
+   select pr.id, 1 from platform.profiles pr
+   where pr.primary_email = 'admin@internal.test' on conflict do nothing;"
+```

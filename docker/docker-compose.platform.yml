@@ -47,7 +47,7 @@ services:
 
       GOTRUE_SITE_URL: ${PLATFORM_SITE_URL:-http://localhost:8082}
       GOTRUE_URI_ALLOW_LIST: ${PLATFORM_SITE_URL:-http://localhost:8082}/**
-      GOTRUE_DISABLE_SIGNUP: 'false'
+      GOTRUE_DISABLE_SIGNUP: 'true'
 
       GOTRUE_JWT_ADMIN_ROLES: service_role
       GOTRUE_JWT_AUD: authenticated
@@ -55,6 +55,6 @@ services:
       GOTRUE_JWT_EXP: ${PLATFORM_JWT_EXPIRY:-3600}
       GOTRUE_JWT_SECRET: ${PLATFORM_JWT_SECRET}
 
-      # M1: no SMTP — email signup with autoconfirm (spec §4.1; tighten in M3)
+      # M3.2: SMTP + invite-only (see Task 7 env below)
       GOTRUE_EXTERNAL_EMAIL_ENABLED: 'true'
       GOTRUE_MAILER_AUTOCONFIRM: 'true'
