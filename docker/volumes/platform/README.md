@@ -1088,3 +1088,120 @@ docker exec -i supabase-platform-db psql -U postgres -d platform -c \
    select pr.id, 1 from platform.profiles pr
    where pr.primary_email = 'admin@internal.test' on conflict do nothing;"
 ```
+
+## M4: Project-level Auth config (store + apply)
+
+M1 through M3.2 covered login, multi-project registry, RBAC, and invitations, but the
+`/project/{ref}/auth` **settings** panel itself (provider toggles, SMTP, hooks, rate limits, and
+every other GoTrue-tunable field) was out of scope — see "Auth settings and Storage settings
+config endpoints are unimplemented" under "Known limitations (M1)" and the `auth/[ref]/config`
+line under "M2 boundary" above. M4 implements that panel end to end: a per-project desired-state
+store in `platform-db`, RBAC-gated GET/PATCH routes that back the Studio UI, and an operator CLI
+that pushes the stored config live by restarting GoTrue.
+
+### What it is
+
+Studio's Auth settings panel (`/project/{ref}/auth`) is now served by
+`GET`/`PATCH /platform/auth/{ref}/config` (the full GoTrue config contract) and
+`PATCH /platform/auth/{ref}/config/hooks` (the `HOOK_*` subset — Custom Access Token, Send Email,
+Send SMS, Before/After User Created, Password/MFA Verification Attempt hooks), both backed by one
+table, `platform.auth_config` (`docker/volumes/platform/migrations/06-auth-config.sql`): one row
+per project `ref`, a non-secret `config` jsonb column and an AES-encrypted `secrets` jsonb column.
+This is a **desired-state** store, not a live mirror of GoTrue — GoTrue itself has no runtime
+config API, it only reads `GOTRUE_*` env at container boot, so writing here never touches the
+running GoTrue process by itself (see "Stored ≠ live" below). `readAuthConfig` merges the stored
+row over a curated, TypeScript-enforced-complete `DEFAULTS` baseline
+(`apps/studio/lib/api/self-platform/auth-config.ts`) so every one of the contract's ~237 fields is
+always present in the GET response, configured or not.
+
+### Upgrading an existing platform-db to M4
+
+`06-auth-config.sql` only runs automatically against an **empty** `platform-db` data directory,
+same as every prior migration in this file. Apply it by hand once against a running deployment:
+
+```bash
+docker exec -i supabase-platform-db psql -U postgres -d platform -v ON_ERROR_STOP=1 \
+  < docker/volumes/platform/migrations/06-auth-config.sql
+```
+
+It is a plain `create table if not exists`, so it is safe to re-run.
+
+### Stored ≠ live: applying config with `apply-auth-config`
+
+Editing and saving the Auth settings panel in Studio only **persists** the change to
+`platform.auth_config` — it does not, by itself, change how the running GoTrue container behaves.
+To make a project's stored config live, an operator runs the CLI:
+
+```bash
+npx tsx docker/scripts/platform/apply-auth-config.ts <ref> [--target <container>] [--dry-run]
+```
+
+This reads the row for `<ref>` directly from `platform-db` (via `docker exec ... psql`, no new
+DB-client dependency, mirroring `register-project.ts`), decrypts its `secrets`, renders the merged
+`config`+`secrets` into `GOTRUE_*` environment variables, writes them to a generated
+`docker/docker-compose.auth-override.yml`, and runs
+`docker compose -f docker-compose.yml -f docker-compose.auth-override.yml up -d <target>` to
+restart the target GoTrue service with the override applied. `--dry-run` prints the rendered
+compose override (with secret-sourced values masked as `******`) and a summary line to stdout
+without writing the file or touching Docker at all — safe to preview before applying.
+
+**The default apply target is `auth` — the docker-compose *service key*
+(`docker/docker-compose.yml`'s `auth:` block), not the container's `container_name`
+(`supabase-auth`).** `docker compose up -d`/`-f` file-merging resolves services by their service
+key, so the override file's `services: auth: environment: ...` block only takes effect if the
+service passed to `up -d` matches that same key. Override the target with `--target <name>` or the
+`PLATFORM_AUTH_CONTAINER` environment variable if your stack names the auth service differently;
+`PLATFORM_COMPOSE_DIR` overrides where the override file is written and which directory `docker
+compose` runs from (defaults to the repo's `docker/` directory), and `PLATFORM_DB_CONTAINER`
+overrides which container `apply-auth-config` reads the stored config from (defaults to
+`supabase-platform-db`).
+
+### Security
+
+**The generated `docker/docker-compose.auth-override.yml` contains DECRYPTED secrets** — every
+provider client secret, SMTP password, and hook secret configured for that project, in plaintext,
+rendered as `GOTRUE_*_SECRET` / `GOTRUE_SMTP_PASS` / `GOTRUE_HOOK_*_SECRETS` environment values.
+`apply-auth-config` writes it `chmod 600` and it is gitignored
+(`docker/docker-compose.auth-override.yml`, `docker/*.auth-override.yml` in the repo's
+`.gitignore`) — **never commit it, never share it**, and treat any copy of it (backups, CI
+artifacts, support bundles) as containing live credentials.
+
+At rest, `platform.auth_config.secrets` stores every secret field AES-encrypted with
+`PLATFORM_ENCRYPTION_KEY` (the same key and `crypto-js` scheme `platform.projects`' `*_enc`
+columns already use — see "`PLATFORM_ENCRYPTION_KEY` — required, back it up" above; losing it is
+equally unrecoverable for this table). Two invariants hold independent of that encryption:
+
+- **`GET` always masks secret fields.** `readAuthConfig` blanks every key in `SECRET_FIELDS` (37
+  fields: every OAuth provider's client secret, `SMTP_PASS`, every `HOOK_*_SECRETS`, SMS
+  provider credentials, the CAPTCHA secret) to `''` before returning the response — the UI never
+  receives a decrypted or even ciphertext value, only "is something configured" via the
+  surrounding non-secret fields (e.g. `EXTERNAL_GITHUB_ENABLED`). Secret fields are write-only from
+  the API's perspective.
+- **`PATCH` never overwrites a stored secret with a blank/masked value.** Because the panel only
+  ever echoes back the masked `''` for a secret field the operator didn't touch, `writeAuthConfig`
+  /`writeHookConfig` silently drop any secret field whose incoming value is `''`, `null`, or
+  `undefined` rather than encrypting and storing it — saving the form again without retyping a
+  secret leaves the previously-stored ciphertext untouched.
+
+### Shared-stack semantics
+
+Same boundary as everywhere else in this file that touches the shared GoTrue instance (see
+"Shared-stack JWT secret" under M3.0 above): on the common single-stack deployment, one
+`supabase-auth` serves every registered project, so `apply-auth-config` restarting it applies
+**stack-wide**, not just to the ref you passed. Applying project A's config changes the live
+behavior every other project on that stack observes from GoTrue too (rate limits, enabled
+providers, mailer templates, everything `GOTRUE_*`-driven). Genuine per-project isolation of live
+GoTrue behavior requires a genuinely separate stack (its own GoTrue process) per project, same as
+every other "shared-stack" caveat in this document — not something M4 changes.
+
+### RBAC
+
+`custom_config_gotrue` is gated like every other resource in the `ROLE_MATRIX`
+(`apps/studio/lib/api/self-platform/rbac/matrix.ts`): `GET /platform/auth/{ref}/config` requires
+only `read:Read`, which both `Developer` and `Read-only`'s `READ_ACTIONS` grant on every resource
+(`resources: ['%']`) — any project member can view the panel. `PATCH` on either
+`/config` or `/config/hooks` requires `write:Update`, which only `Owner` and `Administrator` carry
+(their `{ actions: ['%'], resources: ['%'] }` templates) — `Developer`'s narrower
+`DEVELOPER_WRITE_ACTIONS` list does not include a generic `write:%`/`write:Update` grant, so a
+Developer can view but not change Auth config, and a Read-only member can do neither. Both routes
+route through `guardProjectRoute`, so an unknown `ref` still 404s before either check runs.
