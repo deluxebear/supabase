@@ -105,6 +105,15 @@ describe('writeAuthConfig', () => {
     expect(JSON.parse(upsert.parameters[1])).toEqual({})
     expect(JSON.parse(upsert.parameters[2])).toEqual({})
   })
+
+  it('drops unknown/injected keys before they ever reach the config-patch jsonb (M4 review C1)', async () => {
+    executePlatformQuery
+      .mockResolvedValueOnce({ data: [], error: undefined })
+      .mockResolvedValueOnce({ data: [{ config: {}, secrets: {} }], error: undefined })
+    await writeAuthConfig('default', { 'X: "1"\n    image': 'evil', DISABLE_SIGNUP: true } as any)
+    const upsert = executePlatformQuery.mock.calls[0][0]
+    expect(JSON.parse(upsert.parameters[1])).toEqual({ DISABLE_SIGNUP: true })
+  })
 })
 
 describe('writeHookConfig', () => {

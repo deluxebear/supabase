@@ -57,6 +57,7 @@ function formatValue(value: unknown): string | undefined {
   if (typeof value === 'boolean') return value ? 'true' : 'false'
   if (typeof value === 'number') return String(value)
   if (Array.isArray(value)) return value.join(',')
+  if (typeof value === 'object') return undefined // arrays handled above; skip plain objects
   return String(value)
 }
 
@@ -64,6 +65,10 @@ function formatValue(value: unknown): string | undefined {
 export function renderGotrueEnv(effective: Record<string, unknown>): Record<string, string> {
   const env: Record<string, string> = {}
   for (const [field, value] of Object.entries(effective)) {
+    // [self-platform] M4 review C1: backstop for rows written before the
+    // upsertConfig whitelist (or via manual psql) — a malicious/malformed
+    // field name could otherwise dedent out of the compose environment block.
+    if (!/^[A-Z][A-Z0-9_]*$/.test(field)) continue
     if (READONLY_FIELDS.has(field)) continue
     const formatted = formatValue(value)
     if (formatted === undefined) continue

@@ -40,6 +40,24 @@ describe('renderGotrueEnv', () => {
   })
 })
 
+describe('renderGotrueEnv — M4 review C1/I2 defense-in-depth', () => {
+  it('skips a malicious/malformed field name instead of rendering it verbatim', () => {
+    const env = renderGotrueEnv({
+      'EVIL\n    image': 'x',
+      DISABLE_SIGNUP: true,
+    })
+    expect(env).toEqual({ GOTRUE_DISABLE_SIGNUP: 'true' })
+  })
+
+  it('skips a plain-object-valued field instead of rendering "[object Object]"', () => {
+    const env = renderGotrueEnv({
+      SOME_OBJECT: { nested: 1 },
+      DISABLE_SIGNUP: true,
+    })
+    expect(env).toEqual({ GOTRUE_DISABLE_SIGNUP: 'true' })
+  })
+})
+
 describe('maskSecretValues', () => {
   it('masks listed keys to ****** and leaves others untouched', () => {
     const env = {

@@ -331,6 +331,22 @@ export const DEFAULTS: GoTrueConfigResponse = {
   WEBAUTHN_RP_ID: '',
   WEBAUTHN_RP_ORIGINS: '',
 }
+Object.freeze(DEFAULTS.MAILER_SUBJECTS_CUSTOM_CONTENTS)
+Object.freeze(DEFAULTS.MAILER_TEMPLATES_CUSTOM_CONTENTS)
+Object.freeze(DEFAULTS)
+
+// [self-platform] M4 review C1: only contract fields may be stored — an
+// unknown key could otherwise be rendered verbatim into the apply-time compose
+// override (YAML key injection). Object.keys(DEFAULTS) = the 237 response
+// fields; the 5 body-only writable fields are added explicitly.
+const BODY_ONLY_FIELDS = [
+  'EXTERNAL_WORKOS_ENABLED',
+  'EXTERNAL_X_CLIENT_ID',
+  'EXTERNAL_X_EMAIL_OPTIONAL',
+  'EXTERNAL_X_ENABLED',
+  'EXTERNAL_X_SECRET',
+] as const
+const KNOWN_FIELDS: ReadonlySet<string> = new Set([...Object.keys(DEFAULTS), ...BODY_ONLY_FIELDS])
 
 const EMPTY_ROW = { config: {}, secrets: {} }
 
@@ -370,6 +386,7 @@ async function upsertConfig(
   const configPatch: Record<string, unknown> = {}
   const secretPatch: Record<string, string> = {}
   for (const [key, value] of Object.entries(body)) {
+    if (!KNOWN_FIELDS.has(key)) continue // [self-platform] M4 review C1: drop unknown/injected keys
     if (SECRET_FIELDS.has(key)) {
       if (value === '' || value === null || value === undefined) continue // no-overwrite
       secretPatch[key] = encryptSecret(String(value))
