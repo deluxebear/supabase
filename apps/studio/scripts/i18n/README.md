@@ -35,6 +35,15 @@
   `zh-CN.json`, and the runtime i18n provider falls back to the English key
   text for them until you run `translate.ts` with the env vars configured.
 
+- **Translate without credentials (LLM-subagent path):**
+  `pnpm exec tsx scripts/i18n/batch.ts <split|check|merge>` prepares missing-key
+  batches for LLM subagents to translate (file-in/file-out), validates their
+  outputs (miscounts, hallucinated keys, invalid JSON), and defensively merges
+  valid entries into `zh-CN.json` (never deletes existing translations; ignores
+  `value === key` "kept English" entries). This is how the initial catalog was
+  produced. See the `studio-i18n-sync` skill in `.claude/skills/` for the full
+  workflow including the subagent prompt template.
+
 - **Sync upstream:** `./scripts/i18n/sync-upstream.sh upstream/master`
 
   This verifies the upstream ref exists, merges it, resolves any conflicts in
