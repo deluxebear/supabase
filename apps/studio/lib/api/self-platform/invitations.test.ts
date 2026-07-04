@@ -104,7 +104,10 @@ describe('getInvitationByToken', () => {
     await getInvitationByToken(1, 'tok')
     const call = executePlatformQuery.mock.calls[0][0]
     expect(call.query).toContain('organization_id = $1')
-    expect(call.query).toContain('token = $2')
+    // token::text (not token = $2): a malformed non-uuid token must yield zero
+    // rows, not a uuid-parse 500 (E2E-discovered; info-hiding for garbage probes).
+    expect(call.query).toContain('token::text = $2')
+    expect(call.query).not.toContain('and token = $2')
     expect(call.parameters).toEqual([1, 'tok'])
   })
 })

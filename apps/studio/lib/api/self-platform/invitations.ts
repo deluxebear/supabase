@@ -102,10 +102,14 @@ export async function getInvitationByToken(
   token: string
 ): Promise<InvitationTokenRow | null> {
   const { data, error } = await executePlatformQuery<InvitationTokenRow>({
+    // token is a uuid column; compare as text so a malformed (non-uuid) token
+    // yields zero rows instead of a "invalid input syntax for type uuid" error
+    // (the by-token route treats any non-match as token_does_not_exist / 404,
+    // never a 500 — preserves info-hiding for garbage probes).
     query: `
       select id, invited_email, role_id, role_scoped_projects, expires_at, accepted_at
       from platform.invitations
-      where organization_id = $1 and token = $2
+      where organization_id = $1 and token::text = $2
     `,
     parameters: [orgId, token],
   })
