@@ -1,0 +1,415 @@
+// [self-platform] F9+F16 M4: per-project GoTrue auth config store.
+// GoTrue reads config from env at boot (no runtime API), so this is a
+// desired-state store. Secrets are AES-encrypted at rest, ALWAYS masked on
+// read (write-only in the UI), and never overwritten by a masked/blank value.
+import type { components } from 'api-types'
+
+import { executePlatformQuery } from './db'
+import { encryptSecret } from './secrets'
+
+type GoTrueConfigResponse = components['schemas']['GoTrueConfigResponse']
+type UpdateGoTrueConfigBody = components['schemas']['UpdateGoTrueConfigBody']
+type UpdateGoTrueConfigHooksBody = components['schemas']['UpdateGoTrueConfigHooksBody']
+
+// [self-platform] Single source of truth for masking + encryption + apply-decrypt.
+// 37 credential fields (36 appear in the GET response; EXTERNAL_X_SECRET is body-only).
+// Deliberately EXCLUDES boolean/identifier lookalikes (…REQUIRE_CURRENT_PASSWORD,
+// PASSWORD_*, SMS_TWILIO_*_SID).
+export const SECRET_FIELDS: ReadonlySet<string> = new Set([
+  'EXTERNAL_APPLE_SECRET',
+  'EXTERNAL_AZURE_SECRET',
+  'EXTERNAL_BITBUCKET_SECRET',
+  'EXTERNAL_DISCORD_SECRET',
+  'EXTERNAL_FACEBOOK_SECRET',
+  'EXTERNAL_FIGMA_SECRET',
+  'EXTERNAL_GITHUB_SECRET',
+  'EXTERNAL_GITLAB_SECRET',
+  'EXTERNAL_GOOGLE_SECRET',
+  'EXTERNAL_KAKAO_SECRET',
+  'EXTERNAL_KEYCLOAK_SECRET',
+  'EXTERNAL_LINKEDIN_OIDC_SECRET',
+  'EXTERNAL_NOTION_SECRET',
+  'EXTERNAL_SLACK_OIDC_SECRET',
+  'EXTERNAL_SLACK_SECRET',
+  'EXTERNAL_SPOTIFY_SECRET',
+  'EXTERNAL_TWITCH_SECRET',
+  'EXTERNAL_TWITTER_SECRET',
+  'EXTERNAL_WORKOS_SECRET',
+  'EXTERNAL_ZOOM_SECRET',
+  'EXTERNAL_X_SECRET',
+  'HOOK_AFTER_USER_CREATED_SECRETS',
+  'HOOK_BEFORE_USER_CREATED_SECRETS',
+  'HOOK_CUSTOM_ACCESS_TOKEN_SECRETS',
+  'HOOK_MFA_VERIFICATION_ATTEMPT_SECRETS',
+  'HOOK_PASSWORD_VERIFICATION_ATTEMPT_SECRETS',
+  'HOOK_SEND_EMAIL_SECRETS',
+  'HOOK_SEND_SMS_SECRETS',
+  'SMS_MESSAGEBIRD_ACCESS_KEY',
+  'SMS_TEXTLOCAL_API_KEY',
+  'SMS_TWILIO_AUTH_TOKEN',
+  'SMS_TWILIO_VERIFY_AUTH_TOKEN',
+  'SMS_VONAGE_API_KEY',
+  'SMS_VONAGE_API_SECRET',
+  'SECURITY_CAPTCHA_SECRET',
+  'NIMBUS_OAUTH_CLIENT_SECRET',
+  'SMTP_PASS',
+])
+
+// [self-platform] Curated defaults baseline. TypeScript (`: GoTrueConfigResponse`)
+// forces every one of the 237 contract fields to be present — a missing field is a
+// tsc error, so this object is provably complete. RULE: each field is its type-zero
+// (boolean → false, string → '', number → 0, nested objects → all-false, the enum
+// DB_MAX_POOL_SIZE_UNIT → null) EXCEPT the small set of GoTrue documented non-zero
+// defaults set explicitly below. This is a desired-state baseline, NOT a live-GoTrue
+// mirror (spec §13 risk 4) — operators override via the UI; unset ⇒ type-zero.
+export const DEFAULTS: GoTrueConfigResponse = {
+  // ---- known non-zero GoTrue documented defaults (set explicitly) ----
+  JWT_EXP: 3600,
+  PASSWORD_MIN_LENGTH: 6,
+  MFA_MAX_ENROLLED_FACTORS: 10,
+  MAILER_OTP_LENGTH: 6,
+  SMS_OTP_LENGTH: 6,
+  DB_MAX_POOL_SIZE_UNIT: null,
+  // ---- all remaining fields: type-zero (boolean -> false, string -> '', number -> 0) ----
+  API_MAX_REQUEST_DURATION: 0,
+  AUDIT_LOG_DISABLE_POSTGRES: false,
+  CUSTOM_OAUTH_ENABLED: false,
+  CUSTOM_OAUTH_MAX_PROVIDERS: 0,
+  DB_MAX_POOL_SIZE: 0,
+  DISABLE_SIGNUP: false,
+  EXTERNAL_ANONYMOUS_USERS_ENABLED: false,
+  EXTERNAL_APPLE_ADDITIONAL_CLIENT_IDS: '',
+  EXTERNAL_APPLE_CLIENT_ID: '',
+  EXTERNAL_APPLE_EMAIL_OPTIONAL: false,
+  EXTERNAL_APPLE_ENABLED: false,
+  EXTERNAL_APPLE_SECRET: '',
+  EXTERNAL_AZURE_CLIENT_ID: '',
+  EXTERNAL_AZURE_EMAIL_OPTIONAL: false,
+  EXTERNAL_AZURE_ENABLED: false,
+  EXTERNAL_AZURE_SECRET: '',
+  EXTERNAL_AZURE_URL: '',
+  EXTERNAL_BITBUCKET_CLIENT_ID: '',
+  EXTERNAL_BITBUCKET_EMAIL_OPTIONAL: false,
+  EXTERNAL_BITBUCKET_ENABLED: false,
+  EXTERNAL_BITBUCKET_SECRET: '',
+  EXTERNAL_DISCORD_CLIENT_ID: '',
+  EXTERNAL_DISCORD_EMAIL_OPTIONAL: false,
+  EXTERNAL_DISCORD_ENABLED: false,
+  EXTERNAL_DISCORD_SECRET: '',
+  EXTERNAL_EMAIL_ENABLED: false,
+  EXTERNAL_FACEBOOK_CLIENT_ID: '',
+  EXTERNAL_FACEBOOK_EMAIL_OPTIONAL: false,
+  EXTERNAL_FACEBOOK_ENABLED: false,
+  EXTERNAL_FACEBOOK_SECRET: '',
+  EXTERNAL_FIGMA_CLIENT_ID: '',
+  EXTERNAL_FIGMA_EMAIL_OPTIONAL: false,
+  EXTERNAL_FIGMA_ENABLED: false,
+  EXTERNAL_FIGMA_SECRET: '',
+  EXTERNAL_GITHUB_CLIENT_ID: '',
+  EXTERNAL_GITHUB_EMAIL_OPTIONAL: false,
+  EXTERNAL_GITHUB_ENABLED: false,
+  EXTERNAL_GITHUB_SECRET: '',
+  EXTERNAL_GITLAB_CLIENT_ID: '',
+  EXTERNAL_GITLAB_EMAIL_OPTIONAL: false,
+  EXTERNAL_GITLAB_ENABLED: false,
+  EXTERNAL_GITLAB_SECRET: '',
+  EXTERNAL_GITLAB_URL: '',
+  EXTERNAL_GOOGLE_ADDITIONAL_CLIENT_IDS: '',
+  EXTERNAL_GOOGLE_CLIENT_ID: '',
+  EXTERNAL_GOOGLE_EMAIL_OPTIONAL: false,
+  EXTERNAL_GOOGLE_ENABLED: false,
+  EXTERNAL_GOOGLE_SECRET: '',
+  EXTERNAL_GOOGLE_SKIP_NONCE_CHECK: false,
+  EXTERNAL_KAKAO_CLIENT_ID: '',
+  EXTERNAL_KAKAO_EMAIL_OPTIONAL: false,
+  EXTERNAL_KAKAO_ENABLED: false,
+  EXTERNAL_KAKAO_SECRET: '',
+  EXTERNAL_KEYCLOAK_CLIENT_ID: '',
+  EXTERNAL_KEYCLOAK_EMAIL_OPTIONAL: false,
+  EXTERNAL_KEYCLOAK_ENABLED: false,
+  EXTERNAL_KEYCLOAK_SECRET: '',
+  EXTERNAL_KEYCLOAK_URL: '',
+  EXTERNAL_LINKEDIN_OIDC_CLIENT_ID: '',
+  EXTERNAL_LINKEDIN_OIDC_EMAIL_OPTIONAL: false,
+  EXTERNAL_LINKEDIN_OIDC_ENABLED: false,
+  EXTERNAL_LINKEDIN_OIDC_SECRET: '',
+  EXTERNAL_NOTION_CLIENT_ID: '',
+  EXTERNAL_NOTION_EMAIL_OPTIONAL: false,
+  EXTERNAL_NOTION_ENABLED: false,
+  EXTERNAL_NOTION_SECRET: '',
+  EXTERNAL_PHONE_ENABLED: false,
+  EXTERNAL_SLACK_CLIENT_ID: '',
+  EXTERNAL_SLACK_EMAIL_OPTIONAL: false,
+  EXTERNAL_SLACK_ENABLED: false,
+  EXTERNAL_SLACK_OIDC_CLIENT_ID: '',
+  EXTERNAL_SLACK_OIDC_EMAIL_OPTIONAL: false,
+  EXTERNAL_SLACK_OIDC_ENABLED: false,
+  EXTERNAL_SLACK_OIDC_SECRET: '',
+  EXTERNAL_SLACK_SECRET: '',
+  EXTERNAL_SPOTIFY_CLIENT_ID: '',
+  EXTERNAL_SPOTIFY_EMAIL_OPTIONAL: false,
+  EXTERNAL_SPOTIFY_ENABLED: false,
+  EXTERNAL_SPOTIFY_SECRET: '',
+  EXTERNAL_TWITCH_CLIENT_ID: '',
+  EXTERNAL_TWITCH_EMAIL_OPTIONAL: false,
+  EXTERNAL_TWITCH_ENABLED: false,
+  EXTERNAL_TWITCH_SECRET: '',
+  EXTERNAL_TWITTER_CLIENT_ID: '',
+  EXTERNAL_TWITTER_EMAIL_OPTIONAL: false,
+  EXTERNAL_TWITTER_ENABLED: false,
+  EXTERNAL_TWITTER_SECRET: '',
+  EXTERNAL_WEB3_ETHEREUM_ENABLED: false,
+  EXTERNAL_WEB3_SOLANA_ENABLED: false,
+  EXTERNAL_WORKOS_CLIENT_ID: '',
+  EXTERNAL_WORKOS_SECRET: '',
+  EXTERNAL_WORKOS_URL: '',
+  EXTERNAL_ZOOM_CLIENT_ID: '',
+  EXTERNAL_ZOOM_EMAIL_OPTIONAL: false,
+  EXTERNAL_ZOOM_ENABLED: false,
+  EXTERNAL_ZOOM_SECRET: '',
+  HOOK_AFTER_USER_CREATED_ENABLED: false,
+  HOOK_AFTER_USER_CREATED_SECRETS: '',
+  HOOK_AFTER_USER_CREATED_URI: '',
+  HOOK_BEFORE_USER_CREATED_ENABLED: false,
+  HOOK_BEFORE_USER_CREATED_SECRETS: '',
+  HOOK_BEFORE_USER_CREATED_URI: '',
+  HOOK_CUSTOM_ACCESS_TOKEN_ENABLED: false,
+  HOOK_CUSTOM_ACCESS_TOKEN_SECRETS: '',
+  HOOK_CUSTOM_ACCESS_TOKEN_URI: '',
+  HOOK_MFA_VERIFICATION_ATTEMPT_ENABLED: false,
+  HOOK_MFA_VERIFICATION_ATTEMPT_SECRETS: '',
+  HOOK_MFA_VERIFICATION_ATTEMPT_URI: '',
+  HOOK_PASSWORD_VERIFICATION_ATTEMPT_ENABLED: false,
+  HOOK_PASSWORD_VERIFICATION_ATTEMPT_SECRETS: '',
+  HOOK_PASSWORD_VERIFICATION_ATTEMPT_URI: '',
+  HOOK_SEND_EMAIL_ENABLED: false,
+  HOOK_SEND_EMAIL_SECRETS: '',
+  HOOK_SEND_EMAIL_URI: '',
+  HOOK_SEND_SMS_ENABLED: false,
+  HOOK_SEND_SMS_SECRETS: '',
+  HOOK_SEND_SMS_URI: '',
+  INDEX_WORKER_ENSURE_USER_SEARCH_INDEXES_EXIST: false,
+  MAILER_ALLOW_UNVERIFIED_EMAIL_SIGN_INS: false,
+  MAILER_AUTOCONFIRM: false,
+  MAILER_NOTIFICATIONS_EMAIL_CHANGED_ENABLED: false,
+  MAILER_NOTIFICATIONS_IDENTITY_LINKED_ENABLED: false,
+  MAILER_NOTIFICATIONS_IDENTITY_UNLINKED_ENABLED: false,
+  MAILER_NOTIFICATIONS_MFA_FACTOR_ENROLLED_ENABLED: false,
+  MAILER_NOTIFICATIONS_MFA_FACTOR_UNENROLLED_ENABLED: false,
+  MAILER_NOTIFICATIONS_PASSWORD_CHANGED_ENABLED: false,
+  MAILER_NOTIFICATIONS_PHONE_CHANGED_ENABLED: false,
+  MAILER_OTP_EXP: 0,
+  MAILER_SECURE_EMAIL_CHANGE_ENABLED: false,
+  MAILER_SUBJECTS_CONFIRMATION: '',
+  MAILER_SUBJECTS_CUSTOM_CONTENTS: {
+    MAILER_SUBJECTS_CONFIRMATION: false,
+    MAILER_SUBJECTS_EMAIL_CHANGE: false,
+    MAILER_SUBJECTS_EMAIL_CHANGED_NOTIFICATION: false,
+    MAILER_SUBJECTS_IDENTITY_LINKED_NOTIFICATION: false,
+    MAILER_SUBJECTS_IDENTITY_UNLINKED_NOTIFICATION: false,
+    MAILER_SUBJECTS_INVITE: false,
+    MAILER_SUBJECTS_MAGIC_LINK: false,
+    MAILER_SUBJECTS_MFA_FACTOR_ENROLLED_NOTIFICATION: false,
+    MAILER_SUBJECTS_MFA_FACTOR_UNENROLLED_NOTIFICATION: false,
+    MAILER_SUBJECTS_PASSWORD_CHANGED_NOTIFICATION: false,
+    MAILER_SUBJECTS_PHONE_CHANGED_NOTIFICATION: false,
+    MAILER_SUBJECTS_REAUTHENTICATION: false,
+    MAILER_SUBJECTS_RECOVERY: false,
+  },
+  MAILER_SUBJECTS_EMAIL_CHANGE: '',
+  MAILER_SUBJECTS_EMAIL_CHANGED_NOTIFICATION: '',
+  MAILER_SUBJECTS_IDENTITY_LINKED_NOTIFICATION: '',
+  MAILER_SUBJECTS_IDENTITY_UNLINKED_NOTIFICATION: '',
+  MAILER_SUBJECTS_INVITE: '',
+  MAILER_SUBJECTS_MAGIC_LINK: '',
+  MAILER_SUBJECTS_MFA_FACTOR_ENROLLED_NOTIFICATION: '',
+  MAILER_SUBJECTS_MFA_FACTOR_UNENROLLED_NOTIFICATION: '',
+  MAILER_SUBJECTS_PASSWORD_CHANGED_NOTIFICATION: '',
+  MAILER_SUBJECTS_PHONE_CHANGED_NOTIFICATION: '',
+  MAILER_SUBJECTS_REAUTHENTICATION: '',
+  MAILER_SUBJECTS_RECOVERY: '',
+  MAILER_TEMPLATES_CONFIRMATION_CONTENT: '',
+  MAILER_TEMPLATES_CUSTOM_CONTENTS: {
+    MAILER_TEMPLATES_CONFIRMATION_CONTENT: false,
+    MAILER_TEMPLATES_EMAIL_CHANGE_CONTENT: false,
+    MAILER_TEMPLATES_EMAIL_CHANGED_NOTIFICATION_CONTENT: false,
+    MAILER_TEMPLATES_IDENTITY_LINKED_NOTIFICATION_CONTENT: false,
+    MAILER_TEMPLATES_IDENTITY_UNLINKED_NOTIFICATION_CONTENT: false,
+    MAILER_TEMPLATES_INVITE_CONTENT: false,
+    MAILER_TEMPLATES_MAGIC_LINK_CONTENT: false,
+    MAILER_TEMPLATES_MFA_FACTOR_ENROLLED_NOTIFICATION_CONTENT: false,
+    MAILER_TEMPLATES_MFA_FACTOR_UNENROLLED_NOTIFICATION_CONTENT: false,
+    MAILER_TEMPLATES_PASSWORD_CHANGED_NOTIFICATION_CONTENT: false,
+    MAILER_TEMPLATES_PHONE_CHANGED_NOTIFICATION_CONTENT: false,
+    MAILER_TEMPLATES_REAUTHENTICATION_CONTENT: false,
+    MAILER_TEMPLATES_RECOVERY_CONTENT: false,
+  },
+  MAILER_TEMPLATES_EMAIL_CHANGE_CONTENT: '',
+  MAILER_TEMPLATES_EMAIL_CHANGED_NOTIFICATION_CONTENT: '',
+  MAILER_TEMPLATES_IDENTITY_LINKED_NOTIFICATION_CONTENT: '',
+  MAILER_TEMPLATES_IDENTITY_UNLINKED_NOTIFICATION_CONTENT: '',
+  MAILER_TEMPLATES_INVITE_CONTENT: '',
+  MAILER_TEMPLATES_MAGIC_LINK_CONTENT: '',
+  MAILER_TEMPLATES_MFA_FACTOR_ENROLLED_NOTIFICATION_CONTENT: '',
+  MAILER_TEMPLATES_MFA_FACTOR_UNENROLLED_NOTIFICATION_CONTENT: '',
+  MAILER_TEMPLATES_PASSWORD_CHANGED_NOTIFICATION_CONTENT: '',
+  MAILER_TEMPLATES_PHONE_CHANGED_NOTIFICATION_CONTENT: '',
+  MAILER_TEMPLATES_REAUTHENTICATION_CONTENT: '',
+  MAILER_TEMPLATES_RECOVERY_CONTENT: '',
+  MFA_ALLOW_LOW_AAL: false,
+  MFA_PHONE_ENROLL_ENABLED: false,
+  MFA_PHONE_MAX_FREQUENCY: 0,
+  MFA_PHONE_OTP_LENGTH: 0,
+  MFA_PHONE_TEMPLATE: '',
+  MFA_PHONE_VERIFY_ENABLED: false,
+  MFA_TOTP_ENROLL_ENABLED: false,
+  MFA_TOTP_VERIFY_ENABLED: false,
+  MFA_WEB_AUTHN_ENROLL_ENABLED: false,
+  MFA_WEB_AUTHN_VERIFY_ENABLED: false,
+  NIMBUS_OAUTH_CLIENT_ID: '',
+  NIMBUS_OAUTH_CLIENT_SECRET: '',
+  OAUTH_SERVER_ALLOW_DYNAMIC_REGISTRATION: false,
+  OAUTH_SERVER_AUTHORIZATION_PATH: '',
+  OAUTH_SERVER_ENABLED: false,
+  PASSKEY_ENABLED: false,
+  PASSWORD_HIBP_ENABLED: false,
+  PASSWORD_REQUIRED_CHARACTERS: '',
+  RATE_LIMIT_ANONYMOUS_USERS: 0,
+  RATE_LIMIT_EMAIL_SENT: 0,
+  RATE_LIMIT_OTP: 0,
+  RATE_LIMIT_SMS_SENT: 0,
+  RATE_LIMIT_TOKEN_REFRESH: 0,
+  RATE_LIMIT_VERIFY: 0,
+  RATE_LIMIT_WEB3: 0,
+  REFRESH_TOKEN_ROTATION_ENABLED: false,
+  SAML_ALLOW_ENCRYPTED_ASSERTIONS: false,
+  SAML_ENABLED: false,
+  SAML_EXTERNAL_URL: '',
+  SECURITY_CAPTCHA_ENABLED: false,
+  SECURITY_CAPTCHA_PROVIDER: '',
+  SECURITY_CAPTCHA_SECRET: '',
+  SECURITY_MANUAL_LINKING_ENABLED: false,
+  SECURITY_REFRESH_TOKEN_REUSE_INTERVAL: 0,
+  SECURITY_SB_FORWARDED_FOR_ENABLED: false,
+  SECURITY_UPDATE_PASSWORD_REQUIRE_CURRENT_PASSWORD: false,
+  SECURITY_UPDATE_PASSWORD_REQUIRE_REAUTHENTICATION: false,
+  SESSIONS_INACTIVITY_TIMEOUT: 0,
+  SESSIONS_SINGLE_PER_USER: false,
+  SESSIONS_TAGS: '',
+  SESSIONS_TIMEBOX: 0,
+  SITE_URL: '',
+  SMS_AUTOCONFIRM: false,
+  SMS_MAX_FREQUENCY: 0,
+  SMS_MESSAGEBIRD_ACCESS_KEY: '',
+  SMS_MESSAGEBIRD_ORIGINATOR: '',
+  SMS_OTP_EXP: 0,
+  SMS_PROVIDER: '',
+  SMS_TEMPLATE: '',
+  SMS_TEST_OTP: '',
+  SMS_TEST_OTP_VALID_UNTIL: '',
+  SMS_TEXTLOCAL_API_KEY: '',
+  SMS_TEXTLOCAL_SENDER: '',
+  SMS_TWILIO_ACCOUNT_SID: '',
+  SMS_TWILIO_AUTH_TOKEN: '',
+  SMS_TWILIO_CONTENT_SID: '',
+  SMS_TWILIO_MESSAGE_SERVICE_SID: '',
+  SMS_TWILIO_VERIFY_ACCOUNT_SID: '',
+  SMS_TWILIO_VERIFY_AUTH_TOKEN: '',
+  SMS_TWILIO_VERIFY_MESSAGE_SERVICE_SID: '',
+  SMS_VONAGE_API_KEY: '',
+  SMS_VONAGE_API_SECRET: '',
+  SMS_VONAGE_FROM: '',
+  SMTP_ADMIN_EMAIL: '',
+  SMTP_HOST: '',
+  SMTP_MAX_FREQUENCY: 0,
+  SMTP_PASS: '',
+  SMTP_PORT: '',
+  SMTP_SENDER_NAME: '',
+  SMTP_USER: '',
+  URI_ALLOW_LIST: '',
+  WEBAUTHN_RP_DISPLAY_NAME: '',
+  WEBAUTHN_RP_ID: '',
+  WEBAUTHN_RP_ORIGINS: '',
+}
+
+const EMPTY_ROW = { config: {}, secrets: {} }
+
+type StoredRow = { config: Record<string, unknown>; secrets: Record<string, string> }
+
+async function loadRow(projectRef: string): Promise<StoredRow> {
+  const { data, error } = await executePlatformQuery<StoredRow>({
+    query: 'select config, secrets from platform.auth_config where project_ref = $1',
+    parameters: [projectRef],
+  })
+  if (error) throw error
+  return data?.[0] ?? EMPTY_ROW
+}
+
+export async function readAuthConfig(projectRef: string): Promise<GoTrueConfigResponse> {
+  const row = await loadRow(projectRef)
+  const merged: Record<string, unknown> = {
+    ...(DEFAULTS as Record<string, unknown>),
+    ...row.config,
+  }
+  // Always-mask: never decrypt for the API. Mask only keys already present so the
+  // body-only EXTERNAL_X_SECRET is not added as an off-contract extra field.
+  for (const key of SECRET_FIELDS) {
+    if (key in merged) merged[key] = ''
+  }
+  return merged as GoTrueConfigResponse
+}
+
+// [self-platform] Shared write path for both the full config PATCH and the hooks
+// PATCH. Partitions incoming keys into secret vs non-secret, encrypts secrets,
+// drops masked/blank secrets (no-overwrite), and upserts via jsonb `||` merge.
+async function upsertConfig(
+  projectRef: string,
+  body: Record<string, unknown>,
+  updatedBy?: string
+): Promise<GoTrueConfigResponse> {
+  const configPatch: Record<string, unknown> = {}
+  const secretPatch: Record<string, string> = {}
+  for (const [key, value] of Object.entries(body)) {
+    if (SECRET_FIELDS.has(key)) {
+      if (value === '' || value === null || value === undefined) continue // no-overwrite
+      secretPatch[key] = encryptSecret(String(value))
+    } else {
+      configPatch[key] = value
+    }
+  }
+  const { error } = await executePlatformQuery({
+    query: `
+      insert into platform.auth_config (project_ref, config, secrets, updated_by)
+      values ($1, $2::jsonb, $3::jsonb, $4)
+      on conflict (project_ref) do update set
+        config = platform.auth_config.config || excluded.config,
+        secrets = platform.auth_config.secrets || excluded.secrets,
+        updated_at = now(),
+        updated_by = excluded.updated_by
+    `,
+    parameters: [
+      projectRef,
+      JSON.stringify(configPatch),
+      JSON.stringify(secretPatch),
+      updatedBy ?? null,
+    ],
+  })
+  if (error) throw error
+  return readAuthConfig(projectRef)
+}
+
+export function writeAuthConfig(
+  projectRef: string,
+  body: Partial<UpdateGoTrueConfigBody>,
+  updatedBy?: string
+): Promise<GoTrueConfigResponse> {
+  return upsertConfig(projectRef, body as Record<string, unknown>, updatedBy)
+}
+
+export function writeHookConfig(
+  projectRef: string,
+  body: Partial<UpdateGoTrueConfigHooksBody>,
+  updatedBy?: string
+): Promise<GoTrueConfigResponse> {
+  return upsertConfig(projectRef, body as Record<string, unknown>, updatedBy)
+}
