@@ -12,6 +12,7 @@ import type { JwtPayload } from '@supabase/supabase-js'
 import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { probeStackHealth, writeThroughStatus } from '@/lib/api/self-platform/health'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 
 const claimsOf = (sub: string) => ({ sub }) as JwtPayload
@@ -26,6 +27,15 @@ const { resolveProjectConnection } = vi.hoisted(() => ({ resolveProjectConnectio
 vi.mock('@/lib/api/self-platform/resolve-connection', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   resolveProjectConnection,
+}))
+
+// M6.0: health is probed for real now — databases-statuses.ts calls
+// probeStackHealth/writeThroughStatus after the guard passes, so the
+// "allows through" case below needs this module mocked (the fixture above
+// has no supabaseUrl/anonKey; a real probe would throw).
+vi.mock('@/lib/api/self-platform/health', () => ({
+  probeStackHealth: vi.fn(),
+  writeThroughStatus: vi.fn(),
 }))
 
 const resolved = {
@@ -45,6 +55,15 @@ const resolved = {
 beforeEach(() => {
   vi.mocked(guardProjectRoute).mockReset()
   resolveProjectConnection.mockReset().mockResolvedValue(resolved)
+  // M6.0: health is probed for real now — default to a healthy, non-fresh
+  // probe so the guard-pass path doesn't also assert on write-through.
+  vi.mocked(probeStackHealth)
+    .mockReset()
+    .mockResolvedValue({
+      results: [{ name: 'db', status: 'ACTIVE_HEALTHY', healthy: true }],
+      fresh: false,
+    } as never)
+  vi.mocked(writeThroughStatus).mockReset().mockResolvedValue(undefined)
 })
 
 describe('databases.ts GET guard', () => {
