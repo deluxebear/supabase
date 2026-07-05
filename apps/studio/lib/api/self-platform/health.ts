@@ -24,23 +24,22 @@ export const CACHE_TTL_MS = 20_000
 
 // Health paths pinned by the T1 live spike (keep in sync with README M6.0).
 // SPIKE NOTE (2026-07-05, against supabase/realtime:v2.102.3 behind the
-// standard docker/volumes/api/kong.yml): neither candidate 200s — both
-// /realtime/v1/api/health and /realtime/v1/health return a bare 404 "Not
-// Found" from the realtime container itself (not a Kong no-route body). The
-// service's actual working health endpoint (/api/tenants/<tenant>/health,
-// verified 200 with a real health payload when hit directly on the
-// container) is deliberately blocked at the gateway by the
-// "realtime-v1-rest-tenants" route (403 "Access is forbidden") — unrelated
-// to M6.0, pre-existing kong.yml hardening. Net effect: realtime probes
-// degrade to UNHEALTHY ("HTTP 404") honestly on this stack version/gateway
-// pairing rather than reporting fake-green (spec §10 risk 1/5 accepted
-// degradation). Kept the spec's primary candidate pending a gateway-side
-// fix (tracked as a T1 concern, not a T1 blocker — see task-1-report.md).
+// standard docker/volumes/api/kong.yml): realtime's readiness API is NOT
+// gateway-exposed on stock self-hosted Kong — both spec candidates
+// (/realtime/v1/api/health, /realtime/v1/health) 404 from the container
+// itself, and the working tenant endpoint (/api/tenants/<tenant>/health) is
+// Kong-blocked with a constant 403 regardless of whether the service is up
+// (controller-verified via a live stop/start cycle — zero signal). The
+// websocket route DOES discriminate: 403 when realtime is UP, 503 when
+// DOWN. So realtime is a LIVENESS check via the websocket route — any HTTP
+// response (even 403) proves the service is reachable behind the gateway;
+// only 5xx/timeout/network mean down (see the realtime override in
+// probeHttp).
 export const SERVICE_HEALTH_PATHS: Record<Exclude<ProbeService, 'db'>, string> = {
   auth: '/auth/v1/health',
   rest: '/rest/v1/',
   storage: '/storage/v1/status',
-  realtime: '/realtime/v1/api/health',
+  realtime: '/realtime/v1/websocket',
 }
 
 // Kong's no-route body marker → the service is not deployed behind this
@@ -82,6 +81,15 @@ async function probeHttp(
       signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
     })
     const text = await response.text()
+    // Realtime override: LIVENESS semantics (see SERVICE_HEALTH_PATHS note).
+    // The websocket route answers 403 while the service is up and 5xx when it
+    // is down, so any sub-5xx response — ok or not — proves reachability.
+    // 5xx falls through to the shared UNHEALTHY mapping below; the Kong
+    // no-route→DISABLED branch never applies (a 404 here is still sub-5xx
+    // proof of a reachable gateway+service pair).
+    if (name === 'realtime' && response.status < 500) {
+      return { name, status: 'ACTIVE_HEALTHY', healthy: true }
+    }
     if (response.ok) {
       let info: unknown
       try {

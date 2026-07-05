@@ -89,6 +89,38 @@ describe('probeStackHealth mapping', () => {
 
   it('5xx → UNHEALTHY with HTTP code + message; other services unaffected', async () => {
     vi.mocked(fetch).mockImplementation(async (url) =>
+      String(url).includes('/rest/')
+        ? (errResponse(503, { message: 'upstream down' }) as never)
+        : (okResponse() as never)
+    )
+    const { results } = await probeStackHealth('proj-x')
+    const rest = results.find((r) => r.name === 'rest')!
+    expect(rest.status).toBe('UNHEALTHY')
+    expect(rest.error).toMatch(/HTTP 503/)
+    expect(rest.error).toMatch(/upstream down/)
+    expect(results.filter((r) => r.status === 'ACTIVE_HEALTHY')).toHaveLength(4)
+  })
+
+  // Realtime is a LIVENESS probe via the websocket route: the readiness API is
+  // not gateway-exposed on stock self-hosted Kong, so ANY HTTP response (even
+  // 403) proves the service is reachable behind the gateway; only 5xx/timeout/
+  // network mean down (controller adjudication, live stop/start-verified).
+  it('realtime 403 (websocket route, service up) → ACTIVE_HEALTHY, no info', async () => {
+    vi.mocked(fetch).mockImplementation(async (url) =>
+      String(url).includes('/realtime/')
+        ? (errResponse(403, { message: 'forbidden' }) as never)
+        : (okResponse() as never)
+    )
+    const { results } = await probeStackHealth('proj-x')
+    const realtime = results.find((r) => r.name === 'realtime')!
+    expect(realtime.status).toBe('ACTIVE_HEALTHY')
+    expect(realtime.healthy).toBe(true)
+    expect(realtime.error).toBeUndefined()
+    expect(realtime.info).toBeUndefined()
+  })
+
+  it('realtime 503 (gateway up, service down) → UNHEALTHY with HTTP code', async () => {
+    vi.mocked(fetch).mockImplementation(async (url) =>
       String(url).includes('/realtime/')
         ? (errResponse(503, { message: 'upstream down' }) as never)
         : (okResponse() as never)
@@ -97,8 +129,18 @@ describe('probeStackHealth mapping', () => {
     const realtime = results.find((r) => r.name === 'realtime')!
     expect(realtime.status).toBe('UNHEALTHY')
     expect(realtime.error).toMatch(/HTTP 503/)
-    expect(realtime.error).toMatch(/upstream down/)
     expect(results.filter((r) => r.status === 'ACTIVE_HEALTHY')).toHaveLength(4)
+  })
+
+  it('realtime network error → UNHEALTHY with the message', async () => {
+    vi.mocked(fetch).mockImplementation(async (url) => {
+      if (String(url).includes('/realtime/')) throw new Error('connect ECONNREFUSED 10.0.0.9:8000')
+      return okResponse() as never
+    })
+    const { results } = await probeStackHealth('proj-x')
+    const realtime = results.find((r) => r.name === 'realtime')!
+    expect(realtime.status).toBe('UNHEALTHY')
+    expect(realtime.error).toMatch(/ECONNREFUSED/)
   })
 
   it('network error → UNHEALTHY with the message, no credentials in error', async () => {
