@@ -17,6 +17,7 @@ import {
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 
 const SERVICE_STATUS_THRESHOLD = 5 // minutes
@@ -235,7 +236,8 @@ export const ServiceStatus = () => {
           },
         ]
       : []),
-    ...(edgeFunctionsEnabled
+    // [self-platform] M6.0: hide the row entirely since the underlying cloud health check is gated off
+    ...(edgeFunctionsEnabled && !IS_SELF_PLATFORM
       ? [
           {
             name: 'Edge Functions',

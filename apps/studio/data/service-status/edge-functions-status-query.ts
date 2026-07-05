@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { serviceStatusKeys } from './keys'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import type { ResponseError, UseCustomQueryOptions } from '@/types'
 
 export type EdgeFunctionServiceStatusVariables = {
@@ -37,6 +38,7 @@ export const useEdgeFunctionServiceStatusQuery = <TData = EdgeFunctionServiceSta
   useQuery<EdgeFunctionServiceStatusData, EdgeFunctionServiceStatusError, TData>({
     queryKey: serviceStatusKeys.edgeFunctions(projectRef),
     queryFn: ({ signal }) => getEdgeFunctionServiceStatus(signal),
-    enabled: enabled && typeof projectRef !== 'undefined',
+    // [self-platform] M6.0: the hardcoded cloud health-check URL is meaningless for attached stacks; real edge-functions probing lands with M6.2.
+    enabled: enabled && !IS_SELF_PLATFORM && typeof projectRef !== 'undefined',
     ...options,
   })
