@@ -76,8 +76,9 @@ describe('GET /platform/projects (self-platform)', () => {
     expect(listAllProjectsV2).not.toHaveBeenCalled()
   })
 
+  // M5.0: POST is a real method now — 405 coverage moved to PUT
   it('returns 405 for non-GET', async () => {
-    const { req, res } = createMocks({ method: 'POST' })
+    const { req, res } = createMocks({ method: 'PUT' })
     await handler(req as any, res as any, claimsOf('g-1'))
     expect(res._getStatusCode()).toBe(405)
   })
