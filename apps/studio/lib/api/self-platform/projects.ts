@@ -227,3 +227,18 @@ export function toProjectDetailResponse(
     updated_at: '2021-08-02T06:40:40.646Z',
   }
 }
+
+// [self-platform] M6.1: refs of shared-db rows cloned from this host — GET
+// detail exposes them so the edit panel can warn before a propagating save
+// (spec §5). Pre-M5.0 platform-dbs lack stack columns; the caller degrades
+// on MISSING_STACK_COLUMN like queryProjectRows does.
+export async function listSharedDbChildRefs(hostRef: string): Promise<string[]> {
+  const { data, error } = await executePlatformQuery<{ ref: string }>({
+    query: `select ref from platform.projects
+      where stack_kind = 'shared-db' and stack_meta->>'host_ref' = $1
+      order by ref`,
+    parameters: [hostRef],
+  })
+  if (error) throw error
+  return (data ?? []).map((r) => r.ref)
+}

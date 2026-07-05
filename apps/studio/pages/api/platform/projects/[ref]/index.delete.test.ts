@@ -72,6 +72,7 @@ describe('DELETE /platform/projects/[ref] (self-platform)', () => {
     const { req, res } = createMocks({ method: 'PUT', query: { ref: 'x' } })
     await handler(req as never, res as never, claimsOf('g-1'))
     expect(res._getStatusCode()).toBe(405)
-    expect(res._getHeaders().allow).toEqual(['GET', 'DELETE'])
+    // M6.1 added PATCH to the self-platform method set.
+    expect(res._getHeaders().allow).toEqual(['GET', 'PATCH', 'DELETE'])
   })
 })
