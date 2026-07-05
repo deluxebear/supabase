@@ -1355,11 +1355,16 @@ slow/unreachable service doesn't delay the others.
 
 ### Status mapping (and one exception)
 
-For **db, auth, rest, storage**: a 2xx response maps to `ACTIVE_HEALTHY`; a Kong response whose
-body contains `no Route matched` maps to `DISABLED` (the service isn't deployed behind that
-gateway — not an error); anything else — a non-2xx status, a timeout, or a network error — maps to
-`UNHEALTHY` with the HTTP code and, where the body is JSON, its message attached as `error`. `auth`
-additionally attaches GoTrue's health-check JSON body as `info` on success.
+**db** never goes through Kong — it's a direct pg-meta query — so it only ever reports
+`ACTIVE_HEALTHY` (the `select 1` succeeded) or `UNHEALTHY` (it didn't, with the underlying error
+message); there is no `DISABLED` state for `db`.
+
+For the four gateway-fronted services, **auth, rest, storage, realtime**: a 2xx response maps to
+`ACTIVE_HEALTHY`; a Kong response whose body contains `no Route matched` maps to `DISABLED` (the
+service isn't deployed behind that gateway — not an error); anything else — a non-2xx status, a
+timeout, or a network error — maps to `UNHEALTHY` with the HTTP code and, where the body is JSON,
+its message attached as `error`. `auth` additionally attaches GoTrue's health-check JSON body as
+`info` on success.
 
 **`realtime` is the one exception, and it is intentional, not an oversight.** A live spike against
 the stock self-hosted stack (`supabase/realtime` behind the standard
@@ -1408,8 +1413,12 @@ this document.
 The Edge Functions row on the project home's ServiceStatus panel, and its underlying query, are
 both gated off (`!IS_SELF_PLATFORM`) rather than reused: upstream's check calls a hardcoded
 Supabase cloud health-check URL that means nothing for a self-hosted stack. Real edge-functions
-probing is deferred to M6.2. Plain self-hosted keeps the M1 always-healthy stub for both routes
-completely unchanged — this milestone only touches self-platform mode.
+probing is deferred to M6.2.
+
+Plain self-hosted mode is untouched by all of the above: `/api/v1/projects/{ref}/health` and
+`/api/platform/projects/{ref}/databases-statuses` keep the M1 always-healthy stub
+byte-identically, and the Edge Functions row keeps rendering as before — this milestone's
+probing, write-through, and gating changes only take effect in self-platform mode.
 
 ### Upgrading an existing platform-db to M6.0
 
