@@ -1205,3 +1205,110 @@ only `read:Read`, which both `Developer` and `Read-only`'s `READ_ACTIONS` grant 
 `DEVELOPER_WRITE_ACTIONS` list does not include a generic `write:%`/`write:Update` grant, so a
 Developer can view but not change Auth config, and a Read-only member can do neither. Both routes
 route through `guardProjectRoute`, so an unknown `ref` still 404s before either check runs.
+
+## M5.0: Dual-track provisioning (UI create/delete + stack metadata)
+
+M1 through M4 assumed a project's registry row was created out of band — by the
+`register-project` CLI, or the `--from-current-env` bootstrap for `default` — there was no way to
+create or remove a project from inside Studio itself. M5.0 adds that: a two-mode create form on
+`/new/{org-slug}` (replacing the cloud wizard in self-platform mode), a deregister-only delete
+panel, and two new columns on `platform.projects` that record how each project's underlying
+infrastructure was provisioned.
+
+### Creating a project
+
+`POST /platform/projects` (`pages/api/platform/projects/index.ts`) accepts a `mode` field, one of
+two values:
+
+- **`shared-db`** ("Quick create" in the UI) — creates a brand-new database on an
+  already-registered **external** host stack's Postgres server, over the same pg-meta channel the
+  dashboard already uses for query execution (the same trick as "Registering a second project
+  without a second stack" under M2 above, automated). The new row clones the host's gateway URL,
+  API keys, and JWT secret verbatim — same ciphertext, same stack, so the shared-stack JWT-secret
+  caveat from M2.2/M3.0 applies to it too. **Analytics columns are not cloned** —
+  `logflare_url`/`logflare_token_enc` are always `NULL` on a quick-created row, so per-project
+  analytics stays honestly "not configured" until you separately register Logflare details for it.
+  The write path is insert-first: the row lands as `COMING_UP`, then
+  `create database "<ref, hyphens replaced with underscores>"` runs against the host, then the row
+  flips to `ACTIVE_HEALTHY`. If the `CREATE DATABASE` statement itself fails (e.g. the name already
+  exists on that host), the inserted row is deleted and the request fails with the underlying error
+  message; a process crash between a successful `CREATE DATABASE` and the status flip instead
+  leaves a visible `COMING_UP` row, removable like any other project via delete.
+- **`external`** ("Attach existing stack" in the UI) — the register CLI's flags as a form: the
+  connection is probed with a `select 1` through pg-meta *before* the row is inserted, and secrets
+  are AES-encrypted at rest with `PLATFORM_ENCRYPTION_KEY`, exactly like `register-project.ts`.
+
+`ref` is validated against the same pattern in two places — once at the route, before any DB work
+runs, and again inside the data layer immediately before the value is interpolated into the
+`CREATE DATABASE` identifier (a second, in-module guard added during review, since the route-level
+check alone left a theoretical gap between the two layers).
+
+Creating a project requires `write:Create` on `projects`, which both `Owner` and `Administrator`'s
+wildcard grant (`actions: ['%']`) carries.
+
+### Deleting a project
+
+**Delete is deregister-only.** `DELETE /platform/projects/{ref}` removes the registry row — the
+real database is never dropped. Two foreign keys cascade off it automatically
+(`role_projects.project_id` and `auth_config.ref`, both `on delete cascade`); a second statement
+then garbage-collects any derived role left scoped to zero projects by that cascade (this has to be
+a separate statement — a CTE attached to the same `delete` would see the pre-cascade snapshot, not
+the result of the cascade). `ref='default'` is refused with `400`. Check order: an unknown `ref`
+still 404s first (the connection resolver runs before any permission check), then `403` for anyone
+without the required grant, then the `400` default-refusal, then the delete itself.
+
+RBAC is stricter than creation: deletion requires `write:Delete` on `projects`, and
+`Administrator`'s otherwise-full wildcard grant is carved out by a restrictive deny specific to
+that action/resource pair (`apps/studio/lib/api/self-platform/rbac/matrix.ts`) — only `Owner` can
+deregister a project.
+
+### UI
+
+Self-platform mode swaps two upstream cloud-only surfaces:
+
+- `/new/{org-slug}` renders a two-tab form (Quick create / Attach existing stack) instead of the
+  cloud creation wizard.
+- Settings → General renders a "Remove project from platform" panel instead of the upstream delete
+  panel — its copy is explicit that the database is preserved, and it disables the button for the
+  `default` ref and for anyone without `write:Delete`, the same gates the API enforces.
+  Confirmation is the same type-the-ref `TextConfirmModal` pattern used by several delete flows
+  elsewhere in Studio (including the upstream delete-project panel it replaces).
+
+### Stack metadata
+
+`platform.projects` gains two columns (`docker/volumes/platform/migrations/07-stack-metadata.sql`):
+`stack_kind` (`external` | `shared-db` | `k8s` — the last reserved for M5.1) and `stack_meta`
+(jsonb; a `shared-db` row stores `{"host_ref": "<ref>"}`, an `external` row stays `{}`). Both are
+purely informational in M5.0 — `resolveProjectConnection` reads neither column, so every row stays
+fully self-contained regardless of how it's labeled. Existing rows backfill to `external` via the
+column default. Relabel a pre-M5.0 shared-database row (e.g. `proj-b`, registered by hand under
+M2's "second database, same stack" pattern) for display accuracy with:
+
+```sql
+update platform.projects
+set
+  stack_kind = 'shared-db',
+  stack_meta = '{"host_ref": "default"}'
+where ref = 'proj-b';
+```
+
+The register CLI stays fully supported and remains the bootstrap path for the first project; it
+gained a `--stack-kind` flag (default `external`, validated against the same three values) so a
+manually-registered row can be labeled correctly too.
+
+### Upgrading an existing platform-db to M5.0
+
+`07-stack-metadata.sql` only runs automatically against an **empty** `platform-db` data directory,
+same as every prior migration in this file. Apply it by hand once (safe to re-run — `add column if
+not exists`):
+
+```bash
+docker exec -i supabase-platform-db psql -U postgres -d platform -v ON_ERROR_STOP=1 \
+  < docker/volumes/platform/migrations/07-stack-metadata.sql
+```
+
+A pre-M5.0 platform-db degrades gracefully: `apps/studio/lib/api/self-platform/projects.ts`
+detects the missing columns and logs, once,
+`[self-platform] platform.projects has no stack columns (pre-M5.0 platform-db). Run
+docker/volumes/platform/migrations/07-stack-metadata.sql to upgrade.`, then treats every row as
+`external` until the migration is applied.
