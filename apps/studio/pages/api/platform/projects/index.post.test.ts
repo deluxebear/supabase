@@ -7,6 +7,7 @@ import {
   attachExternalProject,
   createSharedDbProject,
   DuplicateRef,
+  InvalidHostStack,
   ProbeFailed,
 } from '@/lib/api/self-platform/projects-admin'
 import { guardOrgRoute } from '@/lib/api/self-platform/rbac/enforce'
@@ -131,6 +132,18 @@ describe('POST /platform/projects (self-platform)', () => {
     await handler(req as never, res as never, claimsOf('g-owner'))
     expect(res._getStatusCode()).toBe(409)
     expect(res._getJSONData()).toEqual({ message: 'A project with this ref already exists' })
+  })
+
+  it('InvalidHostStack → 400 with the thrown message', async () => {
+    vi.mocked(createSharedDbProject).mockRejectedValue(
+      new InvalidHostStack('Host stack "proj-b" is not a registered external stack')
+    )
+    const { req, res } = post({ ...SHARED_BODY, host_ref: 'proj-b' })
+    await handler(req as never, res as never, claimsOf('g-owner'))
+    expect(res._getStatusCode()).toBe(400)
+    expect(res._getJSONData()).toEqual({
+      message: 'Host stack "proj-b" is not a registered external stack',
+    })
   })
 
   it('ProbeFailed → 400 with the cause', async () => {
