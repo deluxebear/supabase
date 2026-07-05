@@ -1328,3 +1328,96 @@ detects the missing columns and logs, once,
 `[self-platform] platform.projects has no stack columns (pre-M5.0 platform-db). Run
 docker/volumes/platform/migrations/07-stack-metadata.sql to upgrade.`, then treats every row as
 `external` until the migration is applied.
+
+## M6.0: Real health probing
+
+Since M1 (see "Service-health endpoints always report healthy" under "Known limitations (M1)"
+above), `/api/v1/projects/{ref}/health` and `/api/platform/projects/{ref}/databases-statuses` were
+contract-minimal stubs that echoed `ACTIVE_HEALTHY`/`healthy: true` unconditionally — the
+ServiceStatus dots on a project's home page and the project-list badges were fake-green regardless
+of what was actually running. M6.0 replaces both routes' status source, in self-platform mode,
+with a real probe engine (`apps/studio/lib/api/self-platform/health.ts`) that checks each
+registered project's own stack directly. This is still zero-agent: nothing runs on the stack side,
+Studio just calls it over the network the dashboard already uses.
+
+### How a probe works
+
+- **db** — `select 1` through the same pg-meta channel the dashboard uses for query execution
+  (`POST ${PG_META_URL}/query` with `x-connection-encrypted` set to the project's decrypted,
+  re-encrypted read-write DSN — the same connection the dashboard's own queries depend on, not the
+  read-only one, so a read-replica-only outage doesn't falsely report the project dead).
+- **auth / rest / storage / realtime** — a GET request against the project's own gateway
+  (`kong_url`) with its anon key (`apikey` + `Authorization: Bearer` headers):
+  `/auth/v1/health`, `/rest/v1/`, `/storage/v1/status`, `/realtime/v1/websocket`.
+
+Each probe has its own 5-second timeout (`AbortSignal.timeout`); all five run in parallel, so one
+slow/unreachable service doesn't delay the others.
+
+### Status mapping (and one exception)
+
+For **db, auth, rest, storage**: a 2xx response maps to `ACTIVE_HEALTHY`; a Kong response whose
+body contains `no Route matched` maps to `DISABLED` (the service isn't deployed behind that
+gateway — not an error); anything else — a non-2xx status, a timeout, or a network error — maps to
+`UNHEALTHY` with the HTTP code and, where the body is JSON, its message attached as `error`. `auth`
+additionally attaches GoTrue's health-check JSON body as `info` on success.
+
+**`realtime` is the one exception, and it is intentional, not an oversight.** A live spike against
+the stock self-hosted stack (`supabase/realtime` behind the standard
+`docker/volumes/api/kong.yml`) found that realtime's actual readiness API is **not exposed through
+Kong** on a stock deployment — both candidate readiness paths 404 straight from the container, and
+the one endpoint that does report real up/down state (the per-tenant `/api/tenants/<tenant>/health`
+route) is Kong-blocked with a constant `403` regardless of whether realtime is actually running.
+The websocket route (`/realtime/v1/websocket`) is the only path that discriminates at all: it
+answers `403` while realtime is up and `503` once it's down. So realtime is probed as a
+**liveness** check, not a readiness one — *any* sub-500 HTTP response (`403` included) is treated
+as `ACTIVE_HEALTHY` proof the service is reachable through the gateway; only a `5xx` or a
+timeout/network error maps to `UNHEALTHY`. This is a materially weaker guarantee than the other
+four services get — it can't distinguish "realtime is healthy" from "realtime is up but otherwise
+broken" — but it is honest about what a stock Kong config can actually tell you.
+
+**The Kong `DISABLED` mapping has a gateway-shaped caveat, too.** It fires when Kong's own
+router returns a 404 whose body says `no Route matched`. On the stock
+`docker/volumes/api/kong.yml`, the `dashboard` route is a catch-all (`paths: ["/"]`) that matches
+every otherwise-unmapped path ahead of Kong's router-level 404 — so a genuinely unmapped path on
+*that* gateway hits the dashboard route's basic-auth plugin and comes back `401` instead. In
+practice this means `DISABLED` may never trigger against the stock docker-compose gateway; the
+mapping stays meaningful for attached stacks running a minimal or non-catch-all Kong config.
+
+### Cache and write-through
+
+Probes are on-demand, not scheduled: a request to either route triggers a probe only on a cache
+miss. All five results for a project are cached together for **20 seconds**
+(`CACHE_TTL_MS`) — repeated dashboard polling within that window is served from cache, not
+re-probed. On a cache miss (a *fresh* probe), the result is written back to the registry: the
+project's `status` column is set to `ACTIVE_HEALTHY` or `UNHEALTHY` **derived from the db probe
+only** — an unhealthy `auth`/`rest`/`storage`/`realtime` shows up in the ServiceStatus dots but
+does not flip the project's overall status — and `last_health_at` is set to `now()`. The write
+itself only fires when the computed status differs from the stored one or the last write is more
+than 60 seconds old, bounding write volume under repeated polling; a failed write is logged
+(`console.warn`) and never surfaces to the caller, since a probe's job is to observe, not to
+persist. The project list badges therefore show whatever was last observed, updated passively
+whenever anyone views that project; a `NULL` `last_health_at` means the row has never been probed.
+
+`/api/v1/projects/{ref}/health` also gained a permission guard it didn't have before —
+`guardProjectRoute(read:Read, 'projects')` — so besides returning real data it now 404s an unknown
+`ref` and 403s a caller with no role on the project, the same as every other per-project route in
+this document.
+
+### Edge Functions indicator hidden
+
+The Edge Functions row on the project home's ServiceStatus panel, and its underlying query, are
+both gated off (`!IS_SELF_PLATFORM`) rather than reused: upstream's check calls a hardcoded
+Supabase cloud health-check URL that means nothing for a self-hosted stack. Real edge-functions
+probing is deferred to M6.2. Plain self-hosted keeps the M1 always-healthy stub for both routes
+completely unchanged — this milestone only touches self-platform mode.
+
+### Upgrading an existing platform-db to M6.0
+
+`08-health.sql` only runs automatically against an **empty** platform-db data directory, same as
+every prior migration in this file. Apply it by hand once (safe to re-run — `add column if not
+exists`):
+
+```bash
+docker exec -i supabase-platform-db psql -U postgres -d platform -v ON_ERROR_STOP=1 \
+  < docker/volumes/platform/migrations/08-health.sql
+```
