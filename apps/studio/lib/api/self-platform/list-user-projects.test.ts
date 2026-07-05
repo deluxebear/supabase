@@ -375,3 +375,48 @@ describe('listAllProjectsV2', () => {
     expect(listOrganizations).not.toHaveBeenCalled()
   })
 })
+
+describe('M5.0: stack_kind on V2 list items', () => {
+  it('M5.0: org + global items carry stack_kind from the row', async () => {
+    // Org-scoped list: reuse the two-registered-projects happy path.
+    vi.mocked(getOrganizationBySlug).mockResolvedValue(org)
+    vi.mocked(listProjectsByOrgId).mockResolvedValue([rowA, { ...rowB, organization_id: 1 }])
+    vi.mocked(countProjectsByOrgId).mockResolvedValue(2)
+
+    const orgResult = await listOrgProjectsV2(ORG_CTX, 'acme')
+    const orgItem = orgResult?.projects[0] as unknown as { stack_kind: string }
+    expect(orgItem.stack_kind).toBe('external')
+
+    // Global list: reuse the org-scoped-member happy path.
+    vi.mocked(listProjectsVisible).mockResolvedValue([rowA, rowB])
+    vi.mocked(countProjectsVisible).mockResolvedValue(2)
+    vi.mocked(listOrganizations).mockResolvedValue([
+      { id: 1, slug: 'acme', name: 'Acme' },
+      { id: 2, slug: 'other', name: 'Other' },
+    ])
+
+    const globalResult = await listAllProjectsV2(ORG_CTX)
+    const globalItem = globalResult.projects[0] as unknown as { stack_kind: string }
+    expect(globalItem.stack_kind).toBe('external')
+  })
+
+  it('M5.0: DEFAULT_PROJECT fallbacks report stack_kind external', async () => {
+    // Org-scoped fallback: reuse the empty-registry arrangement.
+    vi.mocked(getOrganizationBySlug).mockResolvedValue(org)
+    vi.mocked(listProjectsByOrgId).mockResolvedValue([])
+    vi.mocked(countProjectsByOrgId).mockResolvedValue(0)
+
+    const orgFallback = await listOrgProjectsV2(ORG_CTX, 'acme')
+    const orgFallbackItem = orgFallback?.projects[0] as unknown as { stack_kind: string }
+    expect(orgFallbackItem.stack_kind).toBe('external')
+
+    // Global fallback: reuse the empty-registry arrangement.
+    vi.mocked(listProjectsVisible).mockResolvedValue([])
+    vi.mocked(countProjectsVisible).mockResolvedValue(0)
+    vi.mocked(listOrganizations).mockResolvedValue([])
+
+    const globalFallback = await listAllProjectsV2(ORG_CTX)
+    const globalFallbackItem = globalFallback.projects[0] as unknown as { stack_kind: string }
+    expect(globalFallbackItem.stack_kind).toBe('external')
+  })
+})

@@ -33,6 +33,7 @@ import { ProjectCreationFooter } from '@/components/interfaces/ProjectCreation/P
 import { ProjectNameInput } from '@/components/interfaces/ProjectCreation/ProjectNameInput'
 import { RegionSelector } from '@/components/interfaces/ProjectCreation/RegionSelector'
 import { SecurityOptions } from '@/components/interfaces/ProjectCreation/SecurityOptions'
+import { SelfPlatformProjectCreate } from '@/components/interfaces/SelfPlatform/SelfPlatformProjectCreate'
 import {
   GitHubRepositoryField,
   useGitHubRepositoryOptions,
@@ -69,6 +70,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { withAuth } from '@/hooks/misc/withAuth'
 import { usePHFlag } from '@/hooks/ui/useFlag'
 import { DOCS_URL, PROJECT_STATUS, PROVIDERS, useDefaultProvider } from '@/lib/constants'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 import { buildStudioPageTitle } from '@/lib/page-title'
 import { useProfile } from '@/lib/profile'
@@ -716,10 +718,17 @@ const PageLayout = withAuth(({ children }: PropsWithChildren) => {
   return <WizardLayoutWithoutAuth>{children}</WizardLayoutWithoutAuth>
 })
 
-Wizard.getLayout = (page) => (
+// [self-platform] M5.0: the cloud wizard is billing/region-coupled; in
+// self-platform mode the whole page swaps for the registry-backed create
+// form. Wrapper keeps Wizard's hooks unconditional (rules-of-hooks) — an
+// early return above Wizard's own hooks would violate them.
+const NewProjectPage: NextPageWithLayout = () =>
+  IS_SELF_PLATFORM ? <SelfPlatformProjectCreate /> : <Wizard dehydratedState={{}} />
+
+NewProjectPage.getLayout = (page) => (
   <DefaultLayout hideMobileMenu headerTitle="New project">
     <PageLayout>{page}</PageLayout>
   </DefaultLayout>
 )
 
-export default Wizard
+export default NewProjectPage

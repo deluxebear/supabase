@@ -32,7 +32,12 @@ type OrgProjectItemCompat = OrgProjectItem & {
   organization_id: number
   organization_slug: string
   preview_branch_refs: string[]
+  stack_kind: string // M5.0: informational provenance for the create form's host dropdown
 }
+
+// M5.0: same compat-extra pattern as OrgProjectItemCompat above, applied to
+// the global list shape.
+type GlobalProjectItemCompat = GlobalProjectItem & { stack_kind: string }
 
 // Registry rows have no inserted_at column; mirror the fixed placeholder
 // used by the other self-platform mappers (projects.ts).
@@ -61,6 +66,7 @@ function toOrgProjectItem(row: PlatformProjectRow, orgSlug: string): OrgProjectI
         type: 'PRIMARY',
       },
     ],
+    stack_kind: row.stack_kind,
   }
 }
 
@@ -87,10 +93,11 @@ function defaultOrgProject(orgSlug: string): OrgProjectItemCompat {
         type: 'PRIMARY',
       },
     ],
+    stack_kind: 'external',
   }
 }
 
-function toGlobalProjectItem(row: PlatformProjectRow, orgSlug: string): GlobalProjectItem {
+function toGlobalProjectItem(row: PlatformProjectRow, orgSlug: string): GlobalProjectItemCompat {
   return {
     id: row.id,
     ref: row.ref,
@@ -105,10 +112,11 @@ function toGlobalProjectItem(row: PlatformProjectRow, orgSlug: string): GlobalPr
     is_physical_backups_enabled: null,
     preview_branch_refs: [],
     subscription_id: null,
+    stack_kind: row.stack_kind,
   }
 }
 
-function defaultGlobalProject(): GlobalProjectItem {
+function defaultGlobalProject(): GlobalProjectItemCompat {
   return {
     ...DEFAULT_PROJECT,
     organization_slug: 'default',
@@ -116,6 +124,7 @@ function defaultGlobalProject(): GlobalProjectItem {
     is_physical_backups_enabled: null,
     preview_branch_refs: [],
     subscription_id: null,
+    stack_kind: 'external',
   }
 }
 
