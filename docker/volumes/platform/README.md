@@ -457,7 +457,9 @@ snippets (`SNIPPETS_MANAGEMENT_FOLDER`, on-disk) are a single shared folder read
 - **No re-encryption/key-rotation tooling** for `PLATFORM_ENCRYPTION_KEY` (see above).
 - **The CLI has no `update`-only or `rotate-secret` command** — re-running `register` with the
   same `--ref` upserts (all columns overwritten), which is fine for re-registering but has no
-  narrower "just change one field" affordance.
+  narrower "just change one field" affordance. Superseded in M6.1: connection details, secrets,
+  and Logflare settings are editable from Studio (Settings → General → Connection configuration)
+  or via `PATCH /api/platform/projects/{ref}`; the CLI itself still has no update command.
 
 ## M2.1: per-ref hardening
 
@@ -1430,3 +1432,55 @@ exists`):
 docker exec -i supabase-platform-db psql -U postgres -d platform -v ON_ERROR_STOP=1 \
   < docker/volumes/platform/migrations/08-health.sql
 ```
+
+## M6.1: Connection-config edit
+
+Registry rows were write-once from Studio's point of view: created by the register CLI or the
+M5.0 create form, then only editable with manual SQL on the platform-db. M6.1 adds
+`PATCH /api/platform/projects/{ref}` and a "Connection configuration" panel under
+Settings → General (self-platform mode) — rename, repoint connection fields, rotate secrets,
+and register per-project Logflare details (the data entry point for M6.2's analytics
+pipeline). There is no schema migration: M6.1 writes only columns that already exist.
+
+### What can change, and what cannot
+
+- `ref`, `stack_kind`, and `stack_meta` are immutable — a PATCH naming any of them is refused
+  with `400` naming the field. Relabeling a row stays on the manual-SQL path documented under
+  M5.0's "Stack metadata".
+- A `shared-db` row (quick-created on a host stack) only accepts `name` and Logflare changes.
+  Its connection fields are a clone of its host and are refused with `400`; edit the host
+  project instead (the panel replaces the connection form with a pointer to the host).
+- Editing the connection fields of an **external row that has shared-db children** re-syncs the
+  full cloned field set (host, port, users, gateway/REST URLs, and all key ciphertexts — never
+  `db_name`, `name`, or Logflare columns) onto every row whose `stack_meta.host_ref` points at
+  it, and reports the affected refs in the response (`propagated_children`) and in a
+  confirmation dialog before saving. The two statements are sequential, not transactional: a
+  crash in between leaves the children stale, and re-sending the same PATCH heals them.
+- Secrets are write-only: the API returns only configured/not-configured booleans
+  (`secrets_set`), never plaintext or ciphertext. Submitting an empty value keeps the stored
+  secret (the same mask round-trip as M4's auth config); submitting a new value re-encrypts
+  and overwrites. The four nullable fields (`publishable key`, `secret key`, Logflare URL and
+  token) can be cleared back to "not configured" by sending an explicit JSON `null` — in the
+  panel, via their "Clear" checkboxes. The four required secrets (database password, anon,
+  service-role, JWT) cannot be cleared, only replaced.
+
+### Probe before save
+
+Any PATCH that touches connection fields must pass a connectivity probe first: Studio runs
+`select 1` through pg-meta against the merged candidate DSN (new values where provided, the
+stored ones — password decrypted server-side — everywhere else). A failed probe returns
+`400 Could not connect to database: <cause>` and writes nothing. Changes limited to `name` or
+Logflare settings skip the probe. The probe covers the database channel only — a wrong gateway
+URL or API key still saves, and shows up within one cache TTL as red service dots (M6.0's
+health probing is the backstop). After a successful connection change the health cache entry
+for the project (and for every propagated child) is dropped, so the next dashboard poll probes
+the new stack immediately instead of serving up to 20 s of the old stack's results.
+
+### RBAC
+
+Updating requires `write:Update` on `projects` — the same action the upstream rename form
+checks — which the role matrix grants to `Owner` and `Administrator` (deliberately one notch
+wider than the Owner-only deregister). The upstream "rename project" form on the same settings
+page uses this exact route and method, so it works in self-platform mode as of M6.1. Plain
+self-hosted mode is untouched: `PATCH` answers `404 Not available on this deployment` and the
+`GET` response carries no `self_platform` block.
