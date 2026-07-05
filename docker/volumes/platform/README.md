@@ -172,7 +172,7 @@ in front of the existing single self-hosted project, not a general multi-tenant 
   `/api/platform/projects/{ref}/databases-statuses` are contract-minimal stubs that echo back
   `ACTIVE_HEALTHY`/`healthy: true` unconditionally — there is no real probing of the underlying
   Postgres/pg-meta/storage/etc. processes. A genuinely unhealthy project still reports healthy
-  in the UI.
+  in the UI. Superseded in M6.0: both routes now probe the stack for real in self-platform mode — see the M6.0 section below. (Plain self-hosted keeps the static stub.)
 - **Several `/api/platform/*` and `/api/v1/*` routes are contract-minimal stubs, not real
   implementations.** Notifications, telemetry feature flags, Stripe overdue invoices,
   entitlements, usage, OAuth apps, resource warnings, network bans, branches, backups, load
