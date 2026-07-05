@@ -4,9 +4,8 @@
 //
 // Data access: databases.ts calls resolveProjectConnection
 // (@/lib/api/self-platform/resolve-connection) for the response fields.
-// databases-statuses.ts is a contract-minimal stub with NO data access at
-// all (M1 single-database fleet) — its deny row only asserts the status
-// code.
+// databases-statuses.ts probes real stack health since M6.0 — mocked in this
+// suite because the guard is the subject under test.
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import type { JwtPayload } from '@supabase/supabase-js'
 import { createMocks } from 'node-mocks-http'

@@ -185,16 +185,22 @@ export async function writeThroughStatus(
   const db = results.find((r) => r.name === 'db')
   if (!db) return
   const status = db.status === 'ACTIVE_HEALTHY' ? 'ACTIVE_HEALTHY' : 'UNHEALTHY'
-  const { error } = await executePlatformQuery({
-    query: `update platform.projects
-      set status = $2, last_health_at = now()
-      where ref = $1
-        and (status is distinct from $2
-             or last_health_at is null
-             or last_health_at < now() - interval '60 seconds')`,
-    parameters: [ref, status],
-  })
-  if (error) {
-    console.warn(`[self-platform] health write-through failed for "${ref}": ${error.message}`)
+  try {
+    const { error } = await executePlatformQuery({
+      query: `update platform.projects
+        set status = $2, last_health_at = now()
+        where ref = $1
+          and (status is distinct from $2
+               or last_health_at is null
+               or last_health_at < now() - interval '60 seconds')`,
+      parameters: [ref, status],
+    })
+    if (error) {
+      console.warn(`[self-platform] health write-through failed for "${ref}": ${error.message}`)
+    }
+  } catch (err) {
+    console.warn(
+      `[self-platform] health write-through failed for "${ref}": ${err instanceof Error ? err.message : String(err)}`
+    )
   }
 }

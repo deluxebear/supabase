@@ -224,4 +224,15 @@ describe('writeThroughStatus', () => {
     expect(warn.mock.calls[0][0]).toMatch(/write-through failed/)
     warn.mockRestore()
   })
+
+  it('transport-level rejection warns and does not throw (spec §8)', async () => {
+    vi.mocked(executePlatformQuery).mockRejectedValue(new Error('fetch failed'))
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    await expect(
+      writeThroughStatus('proj-x', resultsWithDb('ACTIVE_HEALTHY'))
+    ).resolves.toBeUndefined()
+    expect(warn).toHaveBeenCalledOnce()
+    expect(warn.mock.calls[0][0]).toMatch(/write-through failed/)
+    warn.mockRestore()
+  })
 })
