@@ -171,6 +171,29 @@ describe('createSharedDbProject', () => {
     expect(cleanup.parameters).toEqual(['team-a'])
   })
 
+  it('warns (but still throws CreateDatabaseFailed) when the compensating cleanup delete itself fails', async () => {
+    vi.mocked(executeQuery).mockResolvedValue({
+      data: undefined,
+      error: new Error('permission denied to create database'),
+    } as never)
+    vi.mocked(executePlatformQuery)
+      .mockReset()
+      .mockResolvedValueOnce({ data: [{ id: 7 }], error: undefined }) // insert
+      .mockResolvedValueOnce({ data: undefined, error: new Error('cleanup boom') }) // cleanup delete
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    await expect(createSharedDbProject(input)).rejects.toBeInstanceOf(CreateDatabaseFailed)
+    expect(warnSpy).toHaveBeenCalledTimes(1)
+    expect(warnSpy.mock.calls[0][0]).toMatch(/failed to clean up/)
+    warnSpy.mockRestore()
+  })
+
+  it('rejects a host stack that belongs to a different organization', async () => {
+    vi.mocked(getProjectByRef).mockResolvedValue({ ...HOST_ROW, organization_id: 2 } as never)
+    await expect(createSharedDbProject(input)).rejects.toBeInstanceOf(InvalidHostStack)
+    await expect(createSharedDbProject(input)).rejects.toThrow(/different organization/)
+    expect(executePlatformQuery).not.toHaveBeenCalled()
+  })
+
   it('re-validates ref in-module before any lookup or statement', async () => {
     await expect(createSharedDbProject({ ...input, ref: 'Bad"Ref' })).rejects.toThrow(
       /invalid project ref/
@@ -265,5 +288,10 @@ describe('deleteProjectByRef', () => {
     vi.mocked(executePlatformQuery).mockResolvedValue({ data: [], error: undefined })
     expect(await deleteProjectByRef('ghost')).toBe(false)
     expect(vi.mocked(executePlatformQuery).mock.calls).toHaveLength(1)
+  })
+
+  it('refuses to deregister a reserved ref without querying the db', async () => {
+    await expect(deleteProjectByRef('default')).rejects.toThrow(/reserved ref/)
+    expect(executePlatformQuery).not.toHaveBeenCalled()
   })
 })

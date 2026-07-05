@@ -146,6 +146,11 @@ export async function createSharedDbProject(input: {
   if (!host || host.stack_kind !== 'external') {
     throw new InvalidHostStack(`Host stack "${input.hostRef}" is not a registered external stack`)
   }
+  // [self-platform] M5.0 final review: host must belong to the caller's org —
+  // cross-org hosting would clone another org's gateway/key ciphertexts.
+  if (host.organization_id !== input.organizationId) {
+    throw new InvalidHostStack(`Host stack "${input.hostRef}" belongs to a different organization`)
+  }
   const dbName = refToDbName(input.ref)
 
   // Insert-first (spec §4): the ref UNIQUE constraint is the race-free
@@ -198,10 +203,15 @@ export async function createSharedDbProject(input: {
     projectRef: input.hostRef,
   })
   if (ddl.error) {
-    await executePlatformQuery({
+    const cleanup = await executePlatformQuery({
       query: 'delete from platform.projects where ref = $1',
       parameters: [input.ref],
     })
+    if (cleanup.error) {
+      console.warn(
+        `[self-platform] failed to clean up COMING_UP row for "${input.ref}" after CREATE DATABASE failure: ${cleanup.error.message} — remove it via DELETE /platform/projects/${input.ref}`
+      )
+    }
     throw new CreateDatabaseFailed(`CREATE DATABASE failed: ${ddl.error.message}`)
   }
 
@@ -260,6 +270,10 @@ export async function attachExternalProject(input: {
 }
 
 export async function deleteProjectByRef(ref: string): Promise<boolean> {
+  if (RESERVED_REFS.has(ref)) {
+    throw new Error(`refusing to deregister reserved ref "${ref}"`)
+  }
+
   const del = await executePlatformQuery<{ id: number }>({
     query: 'delete from platform.projects where ref = $1 returning id',
     parameters: [ref],

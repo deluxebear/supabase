@@ -1233,7 +1233,10 @@ two values:
   flips to `ACTIVE_HEALTHY`. If the `CREATE DATABASE` statement itself fails (e.g. the name already
   exists on that host), the inserted row is deleted and the request fails with the underlying error
   message; a process crash between a successful `CREATE DATABASE` and the status flip instead
-  leaves a visible `COMING_UP` row, removable like any other project via delete.
+  leaves a visible `COMING_UP` row, removable like any other project via delete. The chosen host
+  stack must belong to the same organization as the new project — cross-org hosting is refused
+  (`InvalidHostStack`), since it would otherwise clone another org's gateway URL and key
+  ciphertexts onto a project outside that org.
 - **`external`** ("Attach existing stack" in the UI) — the register CLI's flags as a form: the
   connection is probed with a `select 1` through pg-meta *before* the row is inserted, and secrets
   are AES-encrypted at rest with `PLATFORM_ENCRYPTION_KEY`, exactly like `register-project.ts`.
