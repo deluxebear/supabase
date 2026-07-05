@@ -9,7 +9,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
 import { probeStackHealth, writeThroughStatus } from '@/lib/api/self-platform/health'
-import type { ProbeService } from '@/lib/api/self-platform/health'
+import type { ServiceProbeResult } from '@/lib/api/self-platform/health'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
@@ -56,9 +56,9 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
   const { results, fresh } = await probeStackHealth(ref)
   if (fresh) await writeThroughStatus(ref, results)
 
-  const byName = new Map(results.map((r) => [r.name as string, r]))
+  const byName = new Map<string, ServiceProbeResult>(results.map((r) => [r.name, r]))
   const response: HealthResponse = requested
-    .filter((name) => byName.has(name as ProbeService))
+    .filter((name) => byName.has(name))
     .map((name) => {
       const r = byName.get(name)!
       return {
@@ -67,6 +67,9 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
         status: r.status,
         ...(r.error !== undefined ? { error: r.error } : {}),
         ...(r.info !== undefined ? { info: r.info } : {}),
+        // upstream V1ServiceHealthResponse.name lags (no 'edge_function'
+        // literal) and status lacks DISABLED — same api-types type-lag class
+        // as M6.0; ServiceStatus.tsx pre-widens on the client.
       } as HealthResponse[number]
     })
   return res.status(200).json(response)

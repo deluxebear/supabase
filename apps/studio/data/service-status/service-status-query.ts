@@ -3,7 +3,17 @@ import { components } from 'api-types'
 
 import { serviceStatusKeys } from './keys'
 import { get, handleError } from '@/data/fetchers'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import type { ResponseError, UseCustomQueryOptions } from '@/types'
+
+// [self-platform] M6.2: edge_function is probed by the self-platform engine.
+// Upstream api-types' service-name enum has no 'edge_function' literal —
+// cast, same type-lag class as the DISABLED widening in ServiceStatus.tsx.
+const REQUESTED_SERVICES = (
+  IS_SELF_PLATFORM
+    ? ['auth', 'realtime', 'rest', 'storage', 'db', 'edge_function']
+    : ['auth', 'realtime', 'rest', 'storage', 'db']
+) as ('auth' | 'realtime' | 'rest' | 'storage' | 'db')[]
 
 export type ProjectServiceStatusVariables = {
   projectRef?: string
@@ -26,7 +36,7 @@ export async function getProjectServiceStatus(
     params: {
       path: { ref: projectRef },
       query: {
-        services: ['auth', 'realtime', 'rest', 'storage', 'db'],
+        services: REQUESTED_SERVICES,
       },
     },
     signal,

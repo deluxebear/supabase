@@ -83,4 +83,19 @@ describe('GET /v1/projects/[ref]/health (self-platform)', () => {
     await handler(req as never, res as never, claimsOf('g-1'))
     expect(res._getJSONData()).toEqual([{ name: 'db', healthy: true, status: 'ACTIVE_HEALTHY' }])
   })
+
+  it('edge_function passes the services filter in self-platform mode (M6.2)', async () => {
+    vi.mocked(probeStackHealth)
+      .mockReset()
+      .mockResolvedValue({
+        results: [...RESULTS, { name: 'edge_function', status: 'ACTIVE_HEALTHY', healthy: true }],
+        fresh: false,
+      } as never)
+    const { req, res } = get({ ref: 'proj-x', services: 'db,edge_function' })
+    await handler(req as never, res as never, claimsOf('g-1'))
+    expect(res._getJSONData()).toEqual([
+      { name: 'db', healthy: true, status: 'ACTIVE_HEALTHY' },
+      { name: 'edge_function', healthy: true, status: 'ACTIVE_HEALTHY' },
+    ])
+  })
 })

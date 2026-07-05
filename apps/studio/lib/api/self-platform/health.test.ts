@@ -55,10 +55,10 @@ afterEach(() => {
 })
 
 describe('probeStackHealth mapping', () => {
-  it('all healthy → five ACTIVE_HEALTHY results, auth carries info', async () => {
+  it('all healthy → six ACTIVE_HEALTHY results, auth carries info', async () => {
     const { results, fresh } = await probeStackHealth('proj-x')
     expect(fresh).toBe(true)
-    expect(results).toHaveLength(5)
+    expect(results).toHaveLength(6)
     expect(results.every((r) => r.status === 'ACTIVE_HEALTHY' && r.healthy)).toBe(true)
     const auth = results.find((r) => r.name === 'auth')!
     expect(auth.info).toMatchObject({ name: 'GoTrue' })
@@ -66,7 +66,7 @@ describe('probeStackHealth mapping', () => {
     const calls = vi
       .mocked(fetch)
       .mock.calls.filter(([u]) => String(u).startsWith(CONN_SUPABASE_URL))
-    expect(calls).toHaveLength(4)
+    expect(calls).toHaveLength(5)
     for (const [, init] of calls) {
       expect((init as RequestInit).headers).toMatchObject({
         apikey: 'anon-key-x',
@@ -98,7 +98,7 @@ describe('probeStackHealth mapping', () => {
     expect(rest.status).toBe('UNHEALTHY')
     expect(rest.error).toMatch(/HTTP 503/)
     expect(rest.error).toMatch(/upstream down/)
-    expect(results.filter((r) => r.status === 'ACTIVE_HEALTHY')).toHaveLength(4)
+    expect(results.filter((r) => r.status === 'ACTIVE_HEALTHY')).toHaveLength(5)
   })
 
   // Realtime is a LIVENESS probe via the websocket route: the readiness API is
@@ -129,7 +129,7 @@ describe('probeStackHealth mapping', () => {
     const realtime = results.find((r) => r.name === 'realtime')!
     expect(realtime.status).toBe('UNHEALTHY')
     expect(realtime.error).toMatch(/HTTP 503/)
-    expect(results.filter((r) => r.status === 'ACTIVE_HEALTHY')).toHaveLength(4)
+    expect(results.filter((r) => r.status === 'ACTIVE_HEALTHY')).toHaveLength(5)
   })
 
   it('realtime network error → UNHEALTHY with the message', async () => {
@@ -163,6 +163,103 @@ describe('probeStackHealth mapping', () => {
       'x-connection-encrypted': 'enc-dsn',
     })
     expect((dbCall[1] as RequestInit).body).toBe(JSON.stringify({ query: 'select 1' }))
+  })
+})
+
+describe('edge_function probe (M6.2)', () => {
+  it('400 missing-function-name from the main worker → ACTIVE_HEALTHY (liveness+)', async () => {
+    vi.mocked(fetch).mockImplementation(async (url) =>
+      String(url).includes('/functions/')
+        ? (errResponse(400, { msg: 'missing function name in request' }) as never)
+        : (okResponse() as never)
+    )
+    const { results } = await probeStackHealth('proj-x')
+    const fn = results.find((r) => r.name === 'edge_function')!
+    expect(fn.status).toBe('ACTIVE_HEALTHY')
+    expect(fn.healthy).toBe(true)
+    expect(fn.error).toBeUndefined()
+  })
+
+  it('401 from the worker (VERIFY_JWT stack, missing key) → ACTIVE_HEALTHY', async () => {
+    vi.mocked(fetch).mockImplementation(async (url) =>
+      String(url).includes('/functions/')
+        ? (errResponse(401, { msg: 'Missing authorization header' }) as never)
+        : (okResponse() as never)
+    )
+    const { results } = await probeStackHealth('proj-x')
+    expect(results.find((r) => r.name === 'edge_function')!.status).toBe('ACTIVE_HEALTHY')
+  })
+
+  it('kong no-route 404 → DISABLED (functions not deployed behind this gateway)', async () => {
+    vi.mocked(fetch).mockImplementation(async (url) =>
+      String(url).includes('/functions/')
+        ? (errResponse(404, { message: 'no Route matched with those values' }) as never)
+        : (okResponse() as never)
+    )
+    const { results } = await probeStackHealth('proj-x')
+    const fn = results.find((r) => r.name === 'edge_function')!
+    expect(fn.status).toBe('DISABLED')
+    expect(fn.error).toBeUndefined()
+  })
+
+  it('plain 404 WITHOUT the no-route marker → ACTIVE_HEALTHY (sub-5xx liveness)', async () => {
+    vi.mocked(fetch).mockImplementation(async (url) =>
+      String(url).includes('/functions/')
+        ? (errResponse(404, { msg: 'not found' }) as never)
+        : (okResponse() as never)
+    )
+    const { results } = await probeStackHealth('proj-x')
+    expect(results.find((r) => r.name === 'edge_function')!.status).toBe('ACTIVE_HEALTHY')
+  })
+
+  it('503 → UNHEALTHY with HTTP code', async () => {
+    vi.mocked(fetch).mockImplementation(async (url) =>
+      String(url).includes('/functions/')
+        ? (errResponse(503, { message: 'upstream down' }) as never)
+        : (okResponse() as never)
+    )
+    const { results } = await probeStackHealth('proj-x')
+    const fn = results.find((r) => r.name === 'edge_function')!
+    expect(fn.status).toBe('UNHEALTHY')
+    expect(fn.error).toMatch(/HTTP 503/)
+    expect(results.filter((r) => r.status === 'ACTIVE_HEALTHY')).toHaveLength(5)
+  })
+
+  it('network error → UNHEALTHY with message', async () => {
+    vi.mocked(fetch).mockImplementation(async (url) => {
+      if (String(url).includes('/functions/')) throw new Error('connect ECONNREFUSED 10.0.0.9:8000')
+      return okResponse() as never
+    })
+    const { results } = await probeStackHealth('proj-x')
+    expect(results.find((r) => r.name === 'edge_function')!.error).toMatch(/ECONNREFUSED/)
+  })
+
+  it('probes GET {base}/functions/v1/ (bare path — a named path would 500 on missing functions)', async () => {
+    await probeStackHealth('proj-x')
+    const call = vi.mocked(fetch).mock.calls.find(([u]) => String(u).includes('/functions/'))!
+    expect(String(call[0])).toBe(`${CONN_SUPABASE_URL}/functions/v1/`)
+    expect((call[1] as RequestInit).headers).toMatchObject({
+      apikey: 'anon-key-x',
+      Authorization: 'Bearer anon-key-x',
+    })
+  })
+
+  it('realtime sub-5xx fast path does not read the response body (M6.0 minor)', async () => {
+    vi.mocked(fetch).mockImplementation(async (url) => {
+      if (String(url).includes('/realtime/')) {
+        return {
+          ok: false,
+          status: 403,
+          text: async () => {
+            throw new Error('body must not be read on the liveness fast path')
+          },
+          json: async () => ({}),
+        } as never
+      }
+      return okResponse() as never
+    })
+    const { results } = await probeStackHealth('proj-x')
+    expect(results.find((r) => r.name === 'realtime')!.status).toBe('ACTIVE_HEALTHY')
   })
 })
 

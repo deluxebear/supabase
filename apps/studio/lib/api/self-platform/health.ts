@@ -8,7 +8,7 @@ import { resolveProjectConnection } from './resolve-connection'
 import { constructHeaders } from '@/lib/api/apiHelpers'
 import { PG_META_URL } from '@/lib/constants'
 
-export type ProbeService = 'db' | 'auth' | 'rest' | 'storage' | 'realtime'
+export type ProbeService = 'db' | 'auth' | 'rest' | 'storage' | 'realtime' | 'edge_function'
 export type ProbeStatus = 'ACTIVE_HEALTHY' | 'UNHEALTHY' | 'DISABLED'
 
 export interface ServiceProbeResult {
@@ -40,6 +40,13 @@ export const SERVICE_HEALTH_PATHS: Record<Exclude<ProbeService, 'db'>, string> =
   rest: '/rest/v1/',
   storage: '/storage/v1/status',
   realtime: '/realtime/v1/websocket',
+  // M6.2 SPIKE NOTE (2026-07-06, edge-runtime v1.74.0 behind stock kong.yml):
+  // the BARE path is the only safe probe — the main worker answers 400
+  // "missing function name in request" (executed Deno code = liveness+ proof);
+  // any NAMED path spawns a worker for that function and 500s when it does
+  // not exist. VERIFY_JWT=true stacks answer 401 without a key, 400 with a
+  // valid anon key — all sub-5xx, all liveness proof.
+  edge_function: '/functions/v1/',
 }
 
 // Kong's no-route body marker → the service is not deployed behind this
@@ -87,16 +94,25 @@ async function probeHttp(
       headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
       signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
     })
-    const text = await response.text()
-    // Realtime override: LIVENESS semantics (see SERVICE_HEALTH_PATHS note).
-    // The websocket route answers 403 while the service is up and 5xx when it
-    // is down, so any sub-5xx response — ok or not — proves reachability.
-    // 5xx falls through to the shared UNHEALTHY mapping below; the Kong
-    // no-route→DISABLED branch never applies (a 404 here is still sub-5xx
-    // proof of a reachable gateway+service pair).
+    // Liveness services: any sub-5xx response proves the service is reachable
+    // and executing behind the gateway. realtime: M6.0 ratified semantics
+    // unchanged (no body read at all on the fast path — M6.0 deferred minor).
+    // edge_function additionally honors the Kong no-route marker FIRST
+    // (spec D4): a 404 whose body says the gateway has no such route means
+    // "not deployed" → DISABLED, not fake-alive.
     if (name === 'realtime' && response.status < 500) {
       return { name, status: 'ACTIVE_HEALTHY', healthy: true }
     }
+    if (name === 'edge_function' && response.status < 500) {
+      if (response.status === 404) {
+        const body = await response.text()
+        if (body.includes(KONG_NO_ROUTE_MARKER)) {
+          return { name, status: 'DISABLED', healthy: false }
+        }
+      }
+      return { name, status: 'ACTIVE_HEALTHY', healthy: true }
+    }
+    const text = await response.text()
     if (response.ok) {
       let info: unknown
       try {
@@ -154,7 +170,7 @@ async function probeDb(pgConnEncrypted: string): Promise<ServiceProbeResult> {
 }
 
 /**
- * Probe all five services of a registered stack. `fresh` is true when this
+ * Probe all six services of a registered stack. `fresh` is true when this
  * call actually probed (cache miss) — callers write through only then.
  * Ghost refs throw ProjectNotFound (apiWrapper maps to 404).
  */
@@ -168,7 +184,7 @@ export async function probeStackHealth(
   }
   const conn = await resolveProjectConnection(ref)
   const base = conn.supabaseUrl.replace(/\/$/, '')
-  const httpServices = ['auth', 'rest', 'storage', 'realtime'] as const
+  const httpServices = ['auth', 'rest', 'storage', 'realtime', 'edge_function'] as const
   const results = await Promise.all([
     probeDb(conn.pgConnEncrypted),
     ...httpServices.map((name) =>

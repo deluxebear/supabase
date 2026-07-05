@@ -162,6 +162,11 @@ export const ServiceStatus = () => {
   const realtimeStatus = status?.find((service) => service.name === 'realtime')
   const storageStatus = status?.find((service) => service.name === 'storage')
   const dbStatus = status?.find((service) => service.name === 'db')
+  // [self-platform] M6.2: probe-backed edge-functions row (name not in the
+  // api-types enum — string compare).
+  const edgeFunctionsProbeStatus = status?.find(
+    (service) => (service.name as string) === 'edge_function'
+  )
 
   const isMigrationLoading =
     project?.status === 'COMING_UP' ||
@@ -236,24 +241,38 @@ export const ServiceStatus = () => {
           },
         ]
       : []),
-    // [self-platform] M6.0: hide the row entirely since the underlying cloud health check is gated off
-    ...(edgeFunctionsEnabled && !IS_SELF_PLATFORM
-      ? [
-          {
-            name: 'Edge Functions',
-            error: undefined,
-            docsUrl: `${DOCS_URL}/guides/functions/troubleshooting`,
-            isLoading,
-            status: edgeFunctionsStatus?.healthy
-              ? ('ACTIVE_HEALTHY' as const)
-              : isLoading
-                ? ('COMING_UP' as const)
-                : ('UNHEALTHY' as const),
-            logsUrl: isUnifiedLogsEnabled
-              ? '/logs?filter=log_type:eq:edge+function'
-              : '/logs/edge-functions-logs',
-          },
-        ]
+    ...(edgeFunctionsEnabled
+      ? IS_SELF_PLATFORM
+        ? [
+            // [self-platform] M6.2: fed by the 6th probe service (spec D4);
+            // the upstream cloud health-check query stays gated off.
+            {
+              name: 'Edge Functions',
+              error: edgeFunctionsProbeStatus?.error,
+              docsUrl: `${DOCS_URL}/guides/functions/troubleshooting`,
+              isLoading,
+              status: (edgeFunctionsProbeStatus?.status ?? 'UNHEALTHY') as ProjectServiceStatus,
+              logsUrl: isUnifiedLogsEnabled
+                ? '/logs?filter=log_type:eq:edge+function'
+                : '/logs/edge-functions-logs',
+            },
+          ]
+        : [
+            {
+              name: 'Edge Functions',
+              error: undefined,
+              docsUrl: `${DOCS_URL}/guides/functions/troubleshooting`,
+              isLoading,
+              status: edgeFunctionsStatus?.healthy
+                ? ('ACTIVE_HEALTHY' as const)
+                : isLoading
+                  ? ('COMING_UP' as const)
+                  : ('UNHEALTHY' as const),
+              logsUrl: isUnifiedLogsEnabled
+                ? '/logs?filter=log_type:eq:edge+function'
+                : '/logs/edge-functions-logs',
+            },
+          ]
       : []),
     ...(isBranch
       ? [
