@@ -29,6 +29,8 @@ export interface PlatformProjectRow {
   secret_key_enc: string | null
   logflare_url: string | null
   logflare_token_enc: string | null
+  stack_kind: string
+  stack_meta: Record<string, unknown>
 }
 
 type ProjectDetailResponse = components['schemas']['ProjectDetailResponse']
@@ -37,8 +39,20 @@ export const PROJECT_SELECT_COLUMNS = `
   id, ref, organization_id, name, status, cloud_provider, region,
   db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
   db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc,
+  publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc,
+  stack_kind, stack_meta
+`
+
+// [self-platform] M2.1-era list (analytics, no stack columns) — degradation
+// tier for a platform-db that has 03-analytics.sql but not
+// 07-stack-metadata.sql applied.
+export const M21_SELECT_COLUMNS = `
+  id, ref, organization_id, name, status, cloud_provider, region,
+  db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
+  db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc,
   publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc
 `
+export const MISSING_STACK_COLUMN = 'column "stack_kind" does not exist'
 
 // [self-platform] Pre-M2.1 platform-db data dirs lack the analytics columns
 // (03-analytics.sql applied manually on upgrades). Retry without them and
@@ -52,35 +66,52 @@ const LEGACY_SELECT_COLUMNS = `
 `
 const MISSING_ANALYTICS_COLUMN = 'column "logflare_url" does not exist'
 
+let warnedMissingStackColumns = false
 let warnedMissingAnalyticsColumns = false
 
 async function queryProjectRows(
   suffix: string,
   parameters?: unknown[]
 ): Promise<PlatformProjectRow[]> {
-  const { data, error } = await executePlatformQuery<PlatformProjectRow>({
-    query: `select ${PROJECT_SELECT_COLUMNS} from platform.projects ${suffix}`,
-    parameters,
-  })
-  if (!error) return data ?? []
-  if (!error.message.includes(MISSING_ANALYTICS_COLUMN)) throw error
-  if (!warnedMissingAnalyticsColumns) {
-    warnedMissingAnalyticsColumns = true
-    console.warn(
-      '[self-platform] platform.projects has no analytics columns (pre-M2.1 platform-db) — treating logflare_url/logflare_token_enc as NULL. Run docker/volumes/platform/migrations/03-analytics.sql to upgrade.'
-    )
+  const attempt = (columns: string) =>
+    executePlatformQuery<PlatformProjectRow>({
+      query: `select ${columns} from platform.projects ${suffix}`,
+      parameters,
+    })
+
+  let result = await attempt(PROJECT_SELECT_COLUMNS)
+  if (result.error?.message.includes(MISSING_STACK_COLUMN)) {
+    if (!warnedMissingStackColumns) {
+      warnedMissingStackColumns = true
+      console.warn(
+        '[self-platform] platform.projects has no stack columns (pre-M5.0 platform-db). ' +
+          'Run docker/volumes/platform/migrations/07-stack-metadata.sql to upgrade.'
+      )
+    }
+    result = await attempt(M21_SELECT_COLUMNS)
   }
-  const legacy = await executePlatformQuery<
-    Omit<PlatformProjectRow, 'logflare_url' | 'logflare_token_enc'>
-  >({
-    query: `select ${LEGACY_SELECT_COLUMNS} from platform.projects ${suffix}`,
-    parameters,
-  })
-  if (legacy.error) throw legacy.error
-  return (legacy.data ?? []).map((row) => ({
-    ...row,
-    logflare_url: null,
-    logflare_token_enc: null,
+  if (result.error?.message.includes(MISSING_ANALYTICS_COLUMN)) {
+    if (!warnedMissingAnalyticsColumns) {
+      warnedMissingAnalyticsColumns = true
+      console.warn(
+        '[self-platform] platform.projects has no analytics columns (pre-M2.1 platform-db) — treating logflare_url/logflare_token_enc as NULL. Run docker/volumes/platform/migrations/03-analytics.sql to upgrade.'
+      )
+    }
+    result = await attempt(LEGACY_SELECT_COLUMNS)
+  }
+  if (result.error) throw result.error
+  // Degraded tiers lack the newer columns — normalize so consumers always
+  // see the full row shape. `r` is typed as the full PlatformProjectRow
+  // regardless of tier, so a defaults-then-spread literal would trip
+  // TS2783 (the spread would silently clobber the literal default);
+  // spread first and fall back per-field instead — same effect, since a
+  // degraded row simply lacks the key (accessing it yields `undefined`).
+  return (result.data ?? []).map((r) => ({
+    ...r,
+    logflare_url: r.logflare_url ?? null,
+    logflare_token_enc: r.logflare_token_enc ?? null,
+    stack_kind: r.stack_kind ?? 'external',
+    stack_meta: r.stack_meta ?? ({} as Record<string, unknown>),
   }))
 }
 

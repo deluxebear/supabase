@@ -32,6 +32,8 @@ const row = {
   jwt_secret_enc: 'JWTENC',
   publishable_key_enc: null,
   secret_key_enc: null,
+  stack_kind: 'external',
+  stack_meta: {},
 }
 
 afterEach(() => vi.clearAllMocks())

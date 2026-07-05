@@ -34,6 +34,8 @@ const row = {
   secret_key_enc: null,
   logflare_url: 'http://localhost:8100/analytics',
   logflare_token_enc: 'lt',
+  stack_kind: 'external',
+  stack_meta: {},
 }
 
 beforeEach(() => vi.mocked(getProjectByRef).mockReset())
