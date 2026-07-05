@@ -145,6 +145,20 @@ describe('effectiveBaseRoleName', () => {
   })
 })
 
+describe('M5.0: project deletion is Owner-only', () => {
+  it('Owner can, Administrator/Developer/Read-only cannot', () => {
+    expect(can(OWNER, 'write:Delete', 'projects')).toBe(true)
+    expect(can(ADMIN, 'write:Delete', 'projects')).toBe(false)
+    expect(can(DEV, 'write:Delete', 'projects')).toBe(false)
+    expect(can(READONLY, 'write:Delete', 'projects')).toBe(false)
+  })
+
+  it('the deny is delete-scoped — Admin keeps other project writes', () => {
+    expect(can(ADMIN, 'write:Update', 'projects')).toBe(true)
+    expect(can(ADMIN, 'write:Create', 'projects')).toBe(true)
+  })
+})
+
 describe('I1 guard: empty derived role grants nothing (M3.1)', () => {
   const EMPTY_DERIVED_OWNER = ctxOf(
     role({ id: 9, baseRoleId: 1, baseRoleName: 'Owner', name: 'Owner-scoped-empty' })

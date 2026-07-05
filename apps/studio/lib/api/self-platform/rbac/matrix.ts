@@ -68,6 +68,13 @@ export const ROLE_MATRIX: Record<string, GrantTemplate[]> = {
     { actions: ['%'], resources: ['%'], condition: null },
     // Organization-level writes stay Owner-only.
     { actions: ['write:%'], resources: ['organizations'], condition: null, restrictive: true },
+    // [self-platform] M5.0: project deletion (deregister) stays Owner-only.
+    {
+      actions: [PermissionAction.DELETE],
+      resources: ['projects'],
+      condition: null,
+      restrictive: true,
+    },
     DENY_OWNER_ROLE_GRANTS,
   ],
   Developer: [
