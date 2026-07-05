@@ -168,6 +168,18 @@ describe('createSharedDbProject', () => {
     expect(cleanup.query).toContain('delete from platform.projects where ref = $1')
     expect(cleanup.parameters).toEqual(['team-a'])
   })
+
+  it('re-validates ref in-module before any lookup or statement', async () => {
+    await expect(createSharedDbProject({ ...input, ref: 'Bad"Ref' })).rejects.toThrow(
+      /invalid project ref/
+    )
+    await expect(createSharedDbProject({ ...input, ref: 'default' })).rejects.toThrow(
+      /invalid project ref/
+    )
+    expect(getProjectByRef).not.toHaveBeenCalled()
+    expect(executePlatformQuery).not.toHaveBeenCalled()
+    expect(executeQuery).not.toHaveBeenCalled()
+  })
 })
 
 describe('probeConnection / attachExternalProject', () => {

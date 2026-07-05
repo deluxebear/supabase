@@ -137,6 +137,10 @@ export async function createSharedDbProject(input: {
   hostRef: string
   organizationId: number
 }): Promise<{ id: number }> {
+  if (!REF_PATTERN.test(input.ref) || RESERVED_REFS.has(input.ref)) {
+    throw new Error(`invalid project ref "${input.ref}"`)
+  }
+
   const host = await getProjectByRef(input.hostRef)
   if (!host || host.stack_kind !== 'external') {
     throw new InvalidHostStack(`Host stack "${input.hostRef}" is not a registered external stack`)
@@ -186,7 +190,8 @@ export async function createSharedDbProject(input: {
   // CREATE DATABASE runs as a single autocommit statement through the host
   // project's pg-meta connection (Task 2 spike). The identifier cannot be
   // parameterized — REF_PATTERN validation + hyphen→underscore mapping is
-  // the injection barrier; double quotes pin the identifier.
+  // the injection barrier. The guard is enforced in-module at the top of this
+  // function AND at the route layer; double quotes pin the identifier.
   const ddl = await executeQuery({
     query: `create database "${dbName}"`,
     projectRef: input.hostRef,
