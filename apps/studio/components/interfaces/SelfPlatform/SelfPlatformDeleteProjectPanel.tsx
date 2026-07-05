@@ -2,7 +2,7 @@ import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Alert, AlertDescription, AlertTitle, CriticalIcon } from 'ui'
+import { Alert, AlertDescription, CriticalIcon } from 'ui'
 import {
   PageSection,
   PageSectionContent,
@@ -59,7 +59,6 @@ export const SelfPlatformDeleteProjectPanel = () => {
       <PageSectionContent>
         <Alert variant="destructive">
           <CriticalIcon />
-          <AlertTitle>{$t('Remove project from platform')}</AlertTitle>
           <AlertDescription>
             {$t(
               'Removing a project deletes its registry entry only. The underlying database and stack keep running and can be re-attached later; drop the database manually if you no longer need it.'
