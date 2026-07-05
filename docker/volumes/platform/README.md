@@ -1261,13 +1261,14 @@ If you no longer need the underlying database, drop it manually on the host
 stack:
 
 ```bash
-docker exec supabase-db psql -U postgres -c 'drop database "<db_name>";'
+docker exec supabase-db psql -U supabase_admin -c 'drop database "<db_name>";'
 ```
 
-Note that re-creating a project with the same ref via quick-create fails
-while the old database still exists — `CREATE DATABASE` errors with
-"already exists". That error is the signal to run the manual drop above (or
-pick a different ref).
+Note that quick-created databases are owned by `supabase_admin` (the user
+pg-meta connects as), so the drop command must run as that role. Re-creating a
+project with the same ref via quick-create fails while the old database still
+exists — `CREATE DATABASE` errors with "already exists". That error is the
+signal to run the manual drop above (or pick a different ref).
 
 RBAC is stricter than creation: deletion requires `write:Delete` on `projects`, and
 `Administrator`'s otherwise-full wildcard grant is carved out by a restrictive deny specific to

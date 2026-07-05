@@ -8,6 +8,7 @@ import { getMemberContext } from '@/lib/api/self-platform/members'
 import { parsePaginationParam } from '@/lib/api/self-platform/pagination'
 import {
   attachExternalProject,
+  CreateDatabaseFailed,
   createSharedDbProject,
   DuplicateRef,
   InvalidHostStack,
@@ -132,6 +133,9 @@ async function handleCreate(req: NextApiRequest, res: NextApiResponse, claims?: 
     }
     if (err instanceof ProbeFailed) {
       return res.status(400).json({ message: `Could not connect to database: ${err.message}` })
+    }
+    if (err instanceof CreateDatabaseFailed) {
+      return res.status(500).json({ message: err.message })
     }
     throw err
   }

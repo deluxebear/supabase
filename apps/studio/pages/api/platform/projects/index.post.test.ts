@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { handler } from './index'
 import {
   attachExternalProject,
+  CreateDatabaseFailed,
   createSharedDbProject,
   DuplicateRef,
   InvalidHostStack,
@@ -166,6 +167,18 @@ describe('POST /platform/projects (self-platform)', () => {
     expect(res._getStatusCode()).toBe(400)
     expect(res._getJSONData()).toEqual({
       message: 'Could not connect to database: connect ECONNREFUSED',
+    })
+  })
+
+  it('CreateDatabaseFailed → 500 with the descriptive message', async () => {
+    vi.mocked(createSharedDbProject).mockRejectedValue(
+      new CreateDatabaseFailed('CREATE DATABASE failed: database "e2e_m50" already exists')
+    )
+    const { req, res } = post(SHARED_BODY)
+    await handler(req as never, res as never, claimsOf('g-owner'))
+    expect(res._getStatusCode()).toBe(500)
+    expect(res._getJSONData()).toEqual({
+      message: 'CREATE DATABASE failed: database "e2e_m50" already exists',
     })
   })
 

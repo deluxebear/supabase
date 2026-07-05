@@ -21,6 +21,7 @@ export function refToDbName(ref: string): string {
 export class DuplicateRef extends Error {}
 export class InvalidHostStack extends Error {}
 export class ProbeFailed extends Error {}
+export class CreateDatabaseFailed extends Error {}
 
 export interface ExternalConnectionInput {
   dbHost: string
@@ -201,7 +202,7 @@ export async function createSharedDbProject(input: {
       query: 'delete from platform.projects where ref = $1',
       parameters: [input.ref],
     })
-    throw new Error(`CREATE DATABASE failed: ${ddl.error.message}`)
+    throw new CreateDatabaseFailed(`CREATE DATABASE failed: ${ddl.error.message}`)
   }
 
   const flip = await executePlatformQuery({

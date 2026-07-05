@@ -4,6 +4,7 @@ import { executePlatformQuery } from './db'
 import { getProjectByRef } from './projects'
 import {
   attachExternalProject,
+  CreateDatabaseFailed,
   createSharedDbProject,
   deleteProjectByRef,
   DuplicateRef,
@@ -163,6 +164,7 @@ describe('createSharedDbProject', () => {
       data: undefined,
       error: new Error('permission denied to create database'),
     } as never)
+    await expect(createSharedDbProject(input)).rejects.toBeInstanceOf(CreateDatabaseFailed)
     await expect(createSharedDbProject(input)).rejects.toThrow(/CREATE DATABASE failed/)
     const cleanup = vi.mocked(executePlatformQuery).mock.calls.at(-1)![0]
     expect(cleanup.query).toContain('delete from platform.projects where ref = $1')
