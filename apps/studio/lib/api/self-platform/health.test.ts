@@ -236,3 +236,24 @@ describe('writeThroughStatus', () => {
     warn.mockRestore()
   })
 })
+
+describe('clearHealthCache per-ref (M6.1)', () => {
+  it('clearing one ref forces a re-probe for it but keeps other refs cached', async () => {
+    await probeStackHealth('proj-x')
+    await probeStackHealth('proj-y')
+    expect(resolveProjectConnection).toHaveBeenCalledTimes(2)
+    clearHealthCache('proj-y')
+    const untouched = await probeStackHealth('proj-x')
+    expect(untouched.fresh).toBe(false)
+    const invalidated = await probeStackHealth('proj-y')
+    expect(invalidated.fresh).toBe(true)
+    expect(resolveProjectConnection).toHaveBeenCalledTimes(3)
+  })
+
+  it('no-arg call still clears everything (backward compatible)', async () => {
+    await probeStackHealth('proj-x')
+    clearHealthCache()
+    const { fresh } = await probeStackHealth('proj-x')
+    expect(fresh).toBe(true)
+  })
+})

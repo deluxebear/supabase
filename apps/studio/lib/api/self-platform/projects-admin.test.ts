@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { executePlatformQuery } from './db'
 import { getProjectByRef } from './projects'
@@ -10,17 +10,24 @@ import {
   DuplicateRef,
   InvalidHostStack,
   parseExternalConnectionInput,
+  parseProjectPatchInput,
   probeConnection,
   ProbeFailed,
+  ProjectRowMissing,
   REF_PATTERN,
   refToDbName,
   RESERVED_REFS,
+  SharedDbLocked,
+  updateProjectConnection,
 } from './projects-admin'
 import { executeQuery } from '@/lib/api/self-hosted/query'
 
 vi.mock('./db', () => ({ executePlatformQuery: vi.fn() }))
 vi.mock('./projects', () => ({ getProjectByRef: vi.fn() }))
-vi.mock('./secrets', () => ({ encryptSecret: vi.fn((s: string) => `enc(${s})`) }))
+vi.mock('./secrets', () => ({
+  encryptSecret: vi.fn((s: string) => `enc(${s})`),
+  decryptSecret: vi.fn((s: string) => `dec(${s})`),
+}))
 vi.mock('@/lib/api/self-hosted/query', () => ({ executeQuery: vi.fn() }))
 vi.mock('@/lib/api/self-hosted/util', () => ({ encryptString: vi.fn(() => 'enc-dsn') }))
 vi.mock('@/lib/api/apiHelpers', () => ({
@@ -292,6 +299,217 @@ describe('deleteProjectByRef', () => {
 
   it('refuses to deregister a reserved ref without querying the db', async () => {
     await expect(deleteProjectByRef('default')).rejects.toThrow(/reserved ref/)
+    expect(executePlatformQuery).not.toHaveBeenCalled()
+  })
+})
+
+describe('parseProjectPatchInput (M6.1)', () => {
+  it.each(['ref', 'stack_kind', 'stack_meta'])('rejects immutable field %s by name', (field) => {
+    expect(parseProjectPatchInput({ [field]: 'x', name: 'ok' })).toEqual({
+      error: `Field "${field}" cannot be changed`,
+    })
+  })
+
+  it('rejects immutable fields nested inside connection too', () => {
+    expect(parseProjectPatchInput({ connection: { ref: 'x', dbHost: 'h' } })).toEqual({
+      error: 'Field "ref" cannot be changed',
+    })
+  })
+
+  it('required secrets: "" and absent mean keep, null is refused, a value passes trimmed', () => {
+    expect(parseProjectPatchInput({ connection: { dbPass: null } })).toEqual({
+      error: 'Field "dbPass" cannot be cleared',
+    })
+    // an all-mask connection block collapses away entirely
+    expect(parseProjectPatchInput({ name: 'n', connection: { dbPass: '', anonKey: '' } })).toEqual({
+      value: { name: 'n' },
+    })
+    expect(parseProjectPatchInput({ connection: { jwtSecret: ' s3cret ' } })).toEqual({
+      value: { connection: { jwtSecret: 's3cret' } },
+    })
+  })
+
+  it('nullable fields: null clears, "" keeps', () => {
+    expect(
+      parseProjectPatchInput({
+        connection: { publishableKey: null, secretKey: '' },
+        logflare: { url: null, token: '' },
+      })
+    ).toEqual({ value: { connection: { publishableKey: null }, logflareUrl: null } })
+  })
+
+  it('non-secret connection strings must be non-empty', () => {
+    expect(parseProjectPatchInput({ connection: { dbHost: '' } })).toEqual({
+      error: 'Invalid dbHost: must be a non-empty string',
+    })
+  })
+
+  it('validates dbPort like the attach parser (integer 1-65535, numeric strings accepted)', () => {
+    expect(parseProjectPatchInput({ connection: { dbPort: 70000 } })).toEqual({
+      error: 'Invalid dbPort',
+    })
+    expect(parseProjectPatchInput({ connection: { dbPort: '6543' } })).toEqual({
+      value: { connection: { dbPort: 6543 } },
+    })
+  })
+
+  it('validates name (non-empty, ≤64)', () => {
+    expect(parseProjectPatchInput({ name: '' })).toMatchObject({
+      error: expect.stringContaining('Invalid name'),
+    })
+    expect(parseProjectPatchInput({ name: 'x'.repeat(65) })).toMatchObject({
+      error: expect.stringContaining('Invalid name'),
+    })
+  })
+
+  it('ignores unknown keys (upstream rename payload safety) but requires ≥1 editable field', () => {
+    expect(
+      parseProjectPatchInput({ name: 'New name', status: 'HACKED', last_health_at: 'x' })
+    ).toEqual({ value: { name: 'New name' } })
+    expect(parseProjectPatchInput({ status: 'HACKED' })).toEqual({
+      error: 'No editable fields in request body',
+    })
+    expect(parseProjectPatchInput({})).toEqual({ error: 'No editable fields in request body' })
+    expect(parseProjectPatchInput(null)).toEqual({ error: 'Request body must be a JSON object' })
+  })
+})
+
+describe('updateProjectConnection (M6.1)', () => {
+  const EXTERNAL_ROW = HOST_ROW // ref 'default', stack_kind 'external'
+  const SHARED_ROW = {
+    ...HOST_ROW,
+    id: 9,
+    ref: 'child-a',
+    stack_kind: 'shared-db',
+    stack_meta: { host_ref: 'default' },
+  }
+  const okProbe = () =>
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => [] }))
+
+  beforeEach(() => {
+    vi.mocked(executePlatformQuery)
+      .mockReset()
+      .mockResolvedValue({ data: [], error: undefined } as never)
+    vi.mocked(getProjectByRef)
+      .mockReset()
+      .mockResolvedValue(EXTERNAL_ROW as never)
+    okProbe()
+  })
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('shared-db row with a connection block → SharedDbLocked, zero writes', async () => {
+    vi.mocked(getProjectByRef).mockResolvedValue(SHARED_ROW as never)
+    await expect(
+      updateProjectConnection('child-a', { connection: { kongUrl: 'http://new:8000' } })
+    ).rejects.toBeInstanceOf(SharedDbLocked)
+    expect(executePlatformQuery).not.toHaveBeenCalled()
+  })
+
+  it('shared-db name+logflare patch is allowed, single statement, no propagation', async () => {
+    vi.mocked(getProjectByRef).mockResolvedValue(SHARED_ROW as never)
+    const out = await updateProjectConnection('child-a', {
+      name: 'Renamed',
+      logflareUrl: 'http://lf:4000',
+    })
+    expect(out).toEqual({ propagatedChildren: [] })
+    expect(executePlatformQuery).toHaveBeenCalledTimes(1)
+    const call = vi.mocked(executePlatformQuery).mock.calls[0][0]
+    expect(call.query).toContain('name = $2')
+    expect(call.query).toContain('logflare_url = $3')
+    expect(call.query).toContain('updated_at = now()')
+    expect(call.parameters).toEqual(['child-a', 'Renamed', 'http://lf:4000'])
+  })
+
+  it('probes the merged DSN — patched values where present, decrypted stored password otherwise', async () => {
+    const { encryptString } = await import('@/lib/api/self-hosted/util')
+    vi.mocked(encryptString).mockClear()
+    await updateProjectConnection('default', { connection: { dbHost: '10.9.9.9' } })
+    expect(vi.mocked(encryptString)).toHaveBeenCalledWith(
+      'postgresql://supabase_admin:dec(PASS_ENC)@10.9.9.9:5432/postgres'
+    )
+  })
+
+  it('probe failure → ProbeFailed, zero writes', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({ message: 'connection refused' }),
+      })
+    )
+    await expect(
+      updateProjectConnection('default', { connection: { dbHost: '10.255.255.1' } })
+    ).rejects.toBeInstanceOf(ProbeFailed)
+    expect(executePlatformQuery).not.toHaveBeenCalled()
+  })
+
+  it('name/logflare-only patch does not probe', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    await updateProjectConnection('default', { name: 'n2' })
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('secrets: new values re-encrypted, null clears; immutable columns unreachable in SET', async () => {
+    await updateProjectConnection('default', {
+      connection: { anonKey: 'new-anon', publishableKey: null },
+    })
+    const call = vi.mocked(executePlatformQuery).mock.calls[0][0]
+    expect(call.query.startsWith('update platform.projects set ')).toBe(true)
+    expect(call.query).toContain('anon_key_enc = $2')
+    expect(call.query).toContain('publishable_key_enc = $3')
+    expect(call.parameters).toEqual(['default', 'enc(new-anon)', null])
+    const setClause = call.query.split(' where ')[0]
+    expect(setClause).not.toMatch(/stack_kind|stack_meta|\bref\b|status|last_health_at/)
+  })
+
+  it('external host + cloned field → full-set re-sync statement, children refs returned', async () => {
+    vi.mocked(executePlatformQuery)
+      .mockResolvedValueOnce({ data: [], error: undefined } as never)
+      .mockResolvedValueOnce({
+        data: [{ ref: 'child-a' }, { ref: 'child-b' }],
+        error: undefined,
+      } as never)
+    const out = await updateProjectConnection('default', {
+      connection: { kongUrl: 'http://kong2:8000' },
+    })
+    expect(out).toEqual({ propagatedChildren: ['child-a', 'child-b'] })
+    expect(executePlatformQuery).toHaveBeenCalledTimes(2)
+    const prop = vi.mocked(executePlatformQuery).mock.calls[1][0]
+    expect(prop.parameters).toEqual(['default'])
+    expect(prop.query).toContain(`c.stack_meta->>'host_ref' = $1`)
+    expect(prop.query).toContain(`c.stack_kind = 'shared-db'`)
+    for (const col of [
+      'db_host',
+      'db_port',
+      'db_user',
+      'db_user_readonly',
+      'kong_url',
+      'rest_url',
+      'db_pass_enc',
+      'service_key_enc',
+      'anon_key_enc',
+      'jwt_secret_enc',
+      'publishable_key_enc',
+      'secret_key_enc',
+    ]) {
+      expect(prop.query).toContain(`${col} = h.${col}`)
+    }
+    // per-row fields NEVER propagate
+    expect(prop.query).not.toMatch(/db_name\s*=|c\.name\s*=|logflare/)
+  })
+
+  it('dbName-only connection change probes but does not propagate (db_name is per-row)', async () => {
+    await updateProjectConnection('default', { connection: { dbName: 'otherdb' } })
+    expect(executePlatformQuery).toHaveBeenCalledTimes(1)
+  })
+
+  it('no registry row → ProjectRowMissing, zero writes (env-fallback default is not editable)', async () => {
+    vi.mocked(getProjectByRef).mockResolvedValue(null as never)
+    await expect(updateProjectConnection('ghost-ish', { name: 'x' })).rejects.toBeInstanceOf(
+      ProjectRowMissing
+    )
     expect(executePlatformQuery).not.toHaveBeenCalled()
   })
 })

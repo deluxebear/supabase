@@ -5,7 +5,7 @@
 // mutations. Spec: docs/self-hosted-parity/2026-07-05-F9-F16-M5.0-provisioning-design.md
 import { executePlatformQuery } from './db'
 import { getProjectByRef } from './projects'
-import { encryptSecret } from './secrets'
+import { decryptSecret, encryptSecret } from './secrets'
 import { constructHeaders } from '@/lib/api/apiHelpers'
 import { executeQuery } from '@/lib/api/self-hosted/query'
 import { encryptString } from '@/lib/api/self-hosted/util'
@@ -295,4 +295,277 @@ export async function deleteProjectByRef(ref: string): Promise<boolean> {
   })
   if (gc.error) throw gc.error
   return true
+}
+
+// ————————————————————————————————————————————————————————————————————————
+// [self-platform] M6.1: connection-config edit (spec §3/§4).
+// Spec: docs/self-hosted-parity/2026-07-05-M6.1-connection-config-design.md
+
+export class SharedDbLocked extends Error {}
+export class ProjectRowMissing extends Error {}
+
+export interface ConnectionPatch {
+  dbHost?: string
+  dbPort?: number
+  dbName?: string
+  dbUser?: string
+  dbUserReadonly?: string
+  kongUrl?: string
+  restUrl?: string
+  dbPass?: string
+  anonKey?: string
+  serviceKey?: string
+  jwtSecret?: string
+  publishableKey?: string | null
+  secretKey?: string | null
+}
+
+export interface ProjectPatch {
+  name?: string
+  connection?: ConnectionPatch
+  logflareUrl?: string | null
+  logflareToken?: string | null
+}
+
+const IMMUTABLE_FIELDS = ['ref', 'stack_kind', 'stack_meta'] as const
+const NON_SECRET_CONNECTION_FIELDS = [
+  'dbHost',
+  'dbName',
+  'dbUser',
+  'dbUserReadonly',
+  'kongUrl',
+  'restUrl',
+] as const
+const REQUIRED_SECRET_FIELDS = ['dbPass', 'anonKey', 'serviceKey', 'jwtSecret'] as const
+const NULLABLE_SECRET_FIELDS = ['publishableKey', 'secretKey'] as const
+
+// Semantics (spec D2/D5): immutable trio → error BY NAME; unknown keys are
+// dropped (auth-config whitelist precedent — the upstream rename form may
+// send cloud-only fields); secrets ''/absent = keep (M4 mask round-trip),
+// null = clear (nullable fields only); everything trimmed (attach-parser
+// parity). Values are normalized so downstream code only ever sees
+// effective operations.
+export function parseProjectPatchInput(raw: unknown): { value: ProjectPatch } | { error: string } {
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
+    return { error: 'Request body must be a JSON object' }
+  }
+  const obj = raw as Record<string, unknown>
+  for (const field of IMMUTABLE_FIELDS) {
+    if (field in obj) return { error: `Field "${field}" cannot be changed` }
+  }
+
+  const value: ProjectPatch = {}
+
+  if (obj.name !== undefined) {
+    if (typeof obj.name !== 'string' || obj.name.trim() === '' || obj.name.trim().length > 64) {
+      return { error: 'Invalid name: must be a non-empty string of at most 64 characters' }
+    }
+    value.name = obj.name.trim()
+  }
+
+  if (obj.connection !== undefined) {
+    if (
+      obj.connection === null ||
+      typeof obj.connection !== 'object' ||
+      Array.isArray(obj.connection)
+    ) {
+      return { error: 'Invalid connection: must be an object' }
+    }
+    const c = obj.connection as Record<string, unknown>
+    for (const field of IMMUTABLE_FIELDS) {
+      if (field in c) return { error: `Field "${field}" cannot be changed` }
+    }
+    const conn: ConnectionPatch = {}
+    for (const key of NON_SECRET_CONNECTION_FIELDS) {
+      const v = c[key]
+      if (v === undefined) continue
+      if (typeof v !== 'string' || v.trim() === '') {
+        return { error: `Invalid ${key}: must be a non-empty string` }
+      }
+      conn[key] = v.trim()
+    }
+    if (c.dbPort !== undefined) {
+      const port = Number(c.dbPort)
+      if (!Number.isInteger(port) || port < 1 || port > 65535) return { error: 'Invalid dbPort' }
+      conn.dbPort = port
+    }
+    for (const key of REQUIRED_SECRET_FIELDS) {
+      const v = c[key]
+      if (v === undefined) continue
+      if (v === null) return { error: `Field "${key}" cannot be cleared` }
+      if (typeof v !== 'string') return { error: `Invalid ${key}` }
+      if (v.trim() === '') continue // mask round-trip: keep stored value
+      conn[key] = v.trim()
+    }
+    for (const key of NULLABLE_SECRET_FIELDS) {
+      const v = c[key]
+      if (v === undefined) continue
+      if (v === null) {
+        conn[key] = null
+        continue
+      }
+      if (typeof v !== 'string') return { error: `Invalid ${key}` }
+      if (v.trim() === '') continue // keep
+      conn[key] = v.trim()
+    }
+    if (Object.keys(conn).length > 0) value.connection = conn
+  }
+
+  if (obj.logflare !== undefined) {
+    if (obj.logflare === null || typeof obj.logflare !== 'object' || Array.isArray(obj.logflare)) {
+      return { error: 'Invalid logflare: must be an object' }
+    }
+    const lf = obj.logflare as Record<string, unknown>
+    for (const [key, prop] of [
+      ['url', 'logflareUrl'],
+      ['token', 'logflareToken'],
+    ] as const) {
+      const v = lf[key]
+      if (v === undefined) continue
+      if (v === null) {
+        value[prop] = null
+        continue
+      }
+      if (typeof v !== 'string') return { error: `Invalid logflare.${key}` }
+      if (v.trim() === '') continue // keep
+      value[prop] = v.trim()
+    }
+  }
+
+  if (
+    value.name === undefined &&
+    value.connection === undefined &&
+    value.logflareUrl === undefined &&
+    value.logflareToken === undefined
+  ) {
+    return { error: 'No editable fields in request body' }
+  }
+  return { value }
+}
+
+// Cloned-field set (spec D7): everything a quick-create clones from its host
+// EXCEPT db_name (each child connects to its own database). name/logflare are
+// per-row and never propagate either.
+const PROPAGATED_CONNECTION_KEYS: ReadonlyArray<keyof ConnectionPatch> = [
+  'dbHost',
+  'dbPort',
+  'dbUser',
+  'dbUserReadonly',
+  'kongUrl',
+  'restUrl',
+  'dbPass',
+  'anonKey',
+  'serviceKey',
+  'jwtSecret',
+  'publishableKey',
+  'secretKey',
+]
+
+export async function updateProjectConnection(
+  ref: string,
+  patch: ProjectPatch
+): Promise<{ propagatedChildren: string[] }> {
+  const row = await getProjectByRef(ref)
+  if (!row) {
+    // The route guard 404s ghosts before this runs; this branch covers the
+    // env-fallback 'default' (resolvable, but no registry row to edit).
+    throw new ProjectRowMissing(ref)
+  }
+  const conn = patch.connection
+  if (conn && row.stack_kind === 'shared-db') {
+    const hostRef = (row.stack_meta as Record<string, unknown> | null)?.host_ref
+    throw new SharedDbLocked(
+      `Connection fields of a shared-db project are managed by its host stack${typeof hostRef === 'string' ? ` "${hostRef}"` : ''}`
+    )
+  }
+
+  // Probe-before-save (spec D3): presence-based — any effective connection
+  // field requires the merged candidate DSN to answer `select 1` first.
+  if (conn) {
+    const probe = await probeConnection({
+      dbHost: conn.dbHost ?? row.db_host,
+      dbPort: conn.dbPort ?? row.db_port,
+      dbName: conn.dbName ?? row.db_name,
+      dbUser: conn.dbUser ?? row.db_user,
+      dbPass: conn.dbPass ?? decryptSecret(row.db_pass_enc),
+    })
+    if (!probe.ok) throw new ProbeFailed(probe.error)
+  }
+
+  // SET clause: column names only ever come from the literals below —
+  // values are fully parameterized (M5.0 injection-barrier class).
+  const sets: string[] = []
+  const parameters: unknown[] = [ref]
+  const set = (column: string, v: unknown) => {
+    parameters.push(v)
+    sets.push(`${column} = $${parameters.length}`)
+  }
+  if (patch.name !== undefined) set('name', patch.name)
+  if (conn) {
+    if (conn.dbHost !== undefined) set('db_host', conn.dbHost)
+    if (conn.dbPort !== undefined) set('db_port', conn.dbPort)
+    if (conn.dbName !== undefined) set('db_name', conn.dbName)
+    if (conn.dbUser !== undefined) set('db_user', conn.dbUser)
+    if (conn.dbUserReadonly !== undefined) set('db_user_readonly', conn.dbUserReadonly)
+    if (conn.kongUrl !== undefined) set('kong_url', conn.kongUrl)
+    if (conn.restUrl !== undefined) set('rest_url', conn.restUrl)
+    if (conn.dbPass !== undefined) set('db_pass_enc', encryptSecret(conn.dbPass))
+    if (conn.anonKey !== undefined) set('anon_key_enc', encryptSecret(conn.anonKey))
+    if (conn.serviceKey !== undefined) set('service_key_enc', encryptSecret(conn.serviceKey))
+    if (conn.jwtSecret !== undefined) set('jwt_secret_enc', encryptSecret(conn.jwtSecret))
+    if (conn.publishableKey !== undefined) {
+      set(
+        'publishable_key_enc',
+        conn.publishableKey === null ? null : encryptSecret(conn.publishableKey)
+      )
+    }
+    if (conn.secretKey !== undefined) {
+      set('secret_key_enc', conn.secretKey === null ? null : encryptSecret(conn.secretKey))
+    }
+  }
+  if (patch.logflareUrl !== undefined) set('logflare_url', patch.logflareUrl)
+  if (patch.logflareToken !== undefined) {
+    set(
+      'logflare_token_enc',
+      patch.logflareToken === null ? null : encryptSecret(patch.logflareToken)
+    )
+  }
+  if (sets.length === 0) throw new Error('empty project patch') // parse guarantees ≥1 — defense only
+
+  const update = await executePlatformQuery({
+    query: `update platform.projects set ${sets.join(', ')}, updated_at = now() where ref = $1`,
+    parameters,
+  })
+  if (update.error) throw update.error
+
+  // Propagation (spec D7): FULL cloned-set re-sync from the host row's
+  // post-update values — children become exact clones again (heals any
+  // historical drift), maximally idempotent. Second sequential statement,
+  // no transaction wrapper (M5.0 delete+GC precedent on this channel); a
+  // crash between the two leaves stale children and re-sending the same
+  // PATCH heals them (README records the window).
+  let propagatedChildren: string[] = []
+  const touchedCloned =
+    conn !== undefined && PROPAGATED_CONNECTION_KEYS.some((k) => conn[k] !== undefined)
+  if (row.stack_kind === 'external' && touchedCloned) {
+    const prop = await executePlatformQuery<{ ref: string }>({
+      query: `update platform.projects c set
+          db_host = h.db_host, db_port = h.db_port,
+          db_user = h.db_user, db_user_readonly = h.db_user_readonly,
+          kong_url = h.kong_url, rest_url = h.rest_url,
+          db_pass_enc = h.db_pass_enc, service_key_enc = h.service_key_enc,
+          anon_key_enc = h.anon_key_enc, jwt_secret_enc = h.jwt_secret_enc,
+          publishable_key_enc = h.publishable_key_enc, secret_key_enc = h.secret_key_enc,
+          updated_at = now()
+        from platform.projects h
+        where h.ref = $1
+          and c.stack_kind = 'shared-db'
+          and c.stack_meta->>'host_ref' = $1
+        returning c.ref`,
+      parameters: [ref],
+    })
+    if (prop.error) throw prop.error
+    propagatedChildren = (prop.data ?? []).map((r) => r.ref)
+  }
+  return { propagatedChildren }
 }

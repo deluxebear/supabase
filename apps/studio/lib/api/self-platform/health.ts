@@ -61,8 +61,15 @@ interface CacheEntry {
 }
 const cache = new Map<string, CacheEntry>()
 
-export function clearHealthCache(): void {
-  cache.clear()
+// [self-platform] M6.1: optional per-ref invalidation — a connection-config
+// PATCH must not leave 20s of the OLD stack's probe results on screen
+// (spec D4). No-arg keeps the clear-all semantics (test/bootstrap callers).
+export function clearHealthCache(ref?: string): void {
+  if (ref === undefined) {
+    cache.clear()
+  } else {
+    cache.delete(ref)
+  }
 }
 
 function errorMessage(err: unknown): string {
