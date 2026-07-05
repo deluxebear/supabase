@@ -512,4 +512,26 @@ describe('updateProjectConnection (M6.1)', () => {
     )
     expect(executePlatformQuery).not.toHaveBeenCalled()
   })
+
+  it('pre-M5.0 platform-db: missing-stack-column propagation error degrades to zero children', async () => {
+    vi.mocked(executePlatformQuery)
+      .mockResolvedValueOnce({ data: [], error: undefined } as never)
+      .mockResolvedValueOnce({
+        data: undefined,
+        error: new Error('column c.stack_kind does not exist'),
+      } as never)
+    const out = await updateProjectConnection('default', {
+      connection: { kongUrl: 'http://kong2:8000' },
+    })
+    expect(out).toEqual({ propagatedChildren: [] })
+  })
+
+  it('any other propagation error still rethrows', async () => {
+    vi.mocked(executePlatformQuery)
+      .mockResolvedValueOnce({ data: [], error: undefined } as never)
+      .mockResolvedValueOnce({ data: undefined, error: new Error('deadlock detected') } as never)
+    await expect(
+      updateProjectConnection('default', { connection: { kongUrl: 'http://kong2:8000' } })
+    ).rejects.toThrow('deadlock detected')
+  })
 })

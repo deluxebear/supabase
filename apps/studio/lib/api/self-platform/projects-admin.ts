@@ -564,7 +564,18 @@ export async function updateProjectConnection(
         returning c.ref`,
       parameters: [ref],
     })
-    if (prop.error) throw prop.error
+    if (prop.error) {
+      // Pre-M5.0 platform-db (no 07-stack-metadata.sql): stack columns are
+      // absent, so there can be no shared-db children to re-sync — degrade
+      // to zero children like the GET side (buildSelfPlatformBlock) instead
+      // of failing the request after the host row is already written. PG
+      // renders the qualified column as `c.stack_kind` (unquoted), so match
+      // loosely rather than via MISSING_STACK_COLUMN.
+      if (/stack_kind.* does not exist/.test(prop.error.message)) {
+        return { propagatedChildren: [] }
+      }
+      throw prop.error
+    }
     propagatedChildren = (prop.data ?? []).map((r) => r.ref)
   }
   return { propagatedChildren }
