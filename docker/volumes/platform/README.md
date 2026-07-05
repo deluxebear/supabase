@@ -1257,6 +1257,18 @@ the result of the cascade). `ref='default'` is refused with `400`. Check order: 
 still 404s first (the connection resolver runs before any permission check), then `403` for anyone
 without the required grant, then the `400` default-refusal, then the delete itself.
 
+If you no longer need the underlying database, drop it manually on the host
+stack:
+
+```bash
+docker exec supabase-db psql -U postgres -c 'drop database "<db_name>";'
+```
+
+Note that re-creating a project with the same ref via quick-create fails
+while the old database still exists — `CREATE DATABASE` errors with
+"already exists". That error is the signal to run the manual drop above (or
+pick a different ref).
+
 RBAC is stricter than creation: deletion requires `write:Delete` on `projects`, and
 `Administrator`'s otherwise-full wildcard grant is carved out by a restrictive deny specific to
 that action/resource pair (`apps/studio/lib/api/self-platform/rbac/matrix.ts`) — only `Owner` can
