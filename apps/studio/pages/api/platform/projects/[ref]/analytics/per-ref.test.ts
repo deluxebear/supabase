@@ -220,3 +220,32 @@ describe('M6.2 endpoints/[name] substitution routing', () => {
     expect(res._getJSONData()).toEqual({ message: 'Invalid interval' })
   })
 })
+
+describe('M6.2 log-drains/[uuid] single-response on fetch failure', () => {
+  it.each([['PUT'], ['DELETE']])(
+    '%s sends exactly one 500 when the Logflare fetch rejects',
+    async (method) => {
+      getAnalyticsTarget.mockResolvedValueOnce({
+        baseUrl: 'http://lf:4000',
+        token: 't',
+        projectParam: 'default',
+      })
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockRejectedValue(Object.assign(new Error('timeout'), { name: 'AbortError' }))
+      )
+      const { handler } = await import('./log-drains/[uuid]')
+      const { req, res } = createMocks({
+        method: method as any,
+        query: { ref: 'proj-b', uuid: 'u-1' },
+        body: {},
+      })
+      await handler(req as any, res as any)
+      expect(res._getStatusCode()).toBe(500)
+      expect(res._getJSONData()).toEqual({
+        error: { message: `Error ${method === 'PUT' ? 'updating' : 'deleting'} log drain` },
+      })
+      vi.unstubAllGlobals()
+    }
+  )
+})

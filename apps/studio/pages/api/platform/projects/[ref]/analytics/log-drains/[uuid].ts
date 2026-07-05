@@ -93,46 +93,50 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
       }).then((r) => r.json())
 
       return res.status(200).json(result)
-    case 'PUT':
+    case 'PUT': {
       // create the log drain
       const putUrl = new URL(baseUrl)
       putUrl.pathname = `/api/backends/${uuid}`
       delete req.body['metadata']
-      const putResult = await fetch(putUrl, {
-        body: JSON.stringify(req.body),
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        signal: AbortSignal.timeout(ANALYTICS_TIMEOUT_MS),
-      })
-        .then(async (r) => await r.json())
-        .catch((err) => {
-          console.error('error updating log drain', err)
-          return res.status(500).json({ error: { message: 'Error updating log drain' } })
-        })
-      return res.status(200).json(putResult)
+      try {
+        const putResult = await fetch(putUrl, {
+          body: JSON.stringify(req.body),
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          signal: AbortSignal.timeout(ANALYTICS_TIMEOUT_MS),
+        }).then(async (r) => await r.json())
+        return res.status(200).json(putResult)
+      } catch (err) {
+        console.error('error updating log drain', err)
+        return res.status(500).json({ error: { message: 'Error updating log drain' } })
+      }
+    }
 
-    case 'DELETE':
+    case 'DELETE': {
       // create the log drain
       const deleteUrl = new URL(baseUrl)
       deleteUrl.pathname = `/api/backends/${uuid}`
 
-      await fetch(deleteUrl, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        method: 'DELETE',
-        signal: AbortSignal.timeout(ANALYTICS_TIMEOUT_MS),
-      }).catch((err) => {
+      try {
+        await fetch(deleteUrl, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          method: 'DELETE',
+          signal: AbortSignal.timeout(ANALYTICS_TIMEOUT_MS),
+        })
+        return res.status(204).json({ error: null })
+      } catch (err) {
         console.error('error deleting log drain', err)
         return res.status(500).json({ error: { message: 'Error deleting log drain' } })
-      })
-      return res.status(204).json({ error: null })
+      }
+    }
     default:
       res.setHeader('Allow', ['GET', 'POST'])
       res.status(405).json({ data: null, error: { message: `Method ${method} Not Allowed` } })
