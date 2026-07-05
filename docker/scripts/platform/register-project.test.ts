@@ -2,11 +2,30 @@ import { describe, expect, it } from 'vitest'
 
 import {
   assertRequiredInput,
+  assertValidStackKind,
   buildRowParams,
   buildUpsertSql,
   parseArgs,
   resolveInputFromEnv,
 } from './register-project'
+
+function baseInput() {
+  return {
+    ref: 'r',
+    org: 'o',
+    name: 'n',
+    dbHost: 'db',
+    dbPort: 5432,
+    dbName: 'postgres',
+    dbUser: 'u',
+    kongUrl: 'http://k',
+    restUrl: 'http://k/rest/v1/',
+    dbPass: 'p',
+    serviceKey: 's',
+    anonKey: 'a',
+    jwtSecret: 'j',
+  }
+}
 
 describe('parseArgs', () => {
   it('parses register with flags', () => {
@@ -198,12 +217,14 @@ describe('analytics fields (M2.1)', () => {
       { ...base, logflareUrl: 'http://lf', logflareToken: 'tok' } as any,
       enc
     )
-    expect(withAnalytics).toHaveLength(21)
+    expect(withAnalytics).toHaveLength(22)
     expect(withAnalytics[19]).toBe('http://lf')
     expect(withAnalytics[20]).toBe('enc(tok)')
+    expect(withAnalytics[21]).toBe('external')
     const without = buildRowParams(base as any, enc)
     expect(without[19]).toBeNull()
     expect(without[20]).toBeNull()
+    expect(without[21]).toBe('external')
   })
 
   it('resolveInputFromEnv picks up LOGFLARE_URL and LOGFLARE_PRIVATE_ACCESS_TOKEN', () => {
@@ -236,5 +257,34 @@ describe('analytics fields (M2.1)', () => {
     )
     expect(input.logflareUrl).toBeNull()
     expect(() => assertRequiredInput(input)).not.toThrow()
+  })
+})
+
+describe('stack_kind (M5.0)', () => {
+  it('upsert SQL carries stack_kind as $22 and updates it on conflict', () => {
+    const { query } = buildUpsertSql()
+    expect(query).toContain('stack_kind')
+    expect(query).toContain('$22')
+    expect(query).toContain('stack_kind=excluded.stack_kind')
+  })
+
+  it('buildRowParams appends stackKind, defaulting to external', () => {
+    const params = buildRowParams(baseInput(), (s) => `enc(${s})`)
+    expect(params).toHaveLength(22)
+    expect(params[21]).toBe('external')
+    const explicit = buildRowParams({ ...baseInput(), stackKind: 'shared-db' }, (s) => `enc(${s})`)
+    expect(explicit[21]).toBe('shared-db')
+  })
+
+  it('parseArgs picks up --stack-kind', () => {
+    const { flags } = parseArgs(['register', '--ref', 'x', '--stack-kind', 'k8s'])
+    expect(flags['stack-kind']).toBe('k8s')
+  })
+
+  it('assertValidStackKind accepts the three kinds and rejects garbage', () => {
+    for (const k of ['external', 'shared-db', 'k8s']) {
+      expect(() => assertValidStackKind(k)).not.toThrow()
+    }
+    expect(() => assertValidStackKind('compose')).toThrow(/invalid --stack-kind/)
   })
 })

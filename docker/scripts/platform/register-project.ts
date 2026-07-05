@@ -27,6 +27,7 @@ export interface RegisterInput {
   secretKey?: string | null
   logflareUrl?: string | null
   logflareToken?: string | null
+  stackKind?: string
 }
 
 export function parseArgs(argv: string[]) {
@@ -55,14 +56,24 @@ export function encryptSecret(
   return crypto.AES.encrypt(plaintext, key).toString()
 }
 
+export const VALID_STACK_KINDS = ['external', 'shared-db', 'k8s'] as const
+
+export function assertValidStackKind(kind: string): void {
+  if (!(VALID_STACK_KINDS as readonly string[]).includes(kind)) {
+    throw new Error(
+      `invalid --stack-kind "${kind}" (expected one of: ${VALID_STACK_KINDS.join(', ')})`
+    )
+  }
+}
+
 export function buildUpsertSql(): { query: string } {
   return {
     query: `insert into platform.projects
       (ref, organization_id, name, status, cloud_provider, region,
        db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
-       db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc, publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc)
+       db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc, publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc, stack_kind)
       values ($1,(select id from platform.organizations where slug=$2),$3,$4,$5,$6,
-              $7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
+              $7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
       on conflict (ref) do update set
         name=excluded.name, status=excluded.status, cloud_provider=excluded.cloud_provider,
         region=excluded.region, db_host=excluded.db_host, db_port=excluded.db_port,
@@ -72,6 +83,7 @@ export function buildUpsertSql(): { query: string } {
         anon_key_enc=excluded.anon_key_enc, jwt_secret_enc=excluded.jwt_secret_enc,
         publishable_key_enc=excluded.publishable_key_enc, secret_key_enc=excluded.secret_key_enc,
         logflare_url=excluded.logflare_url, logflare_token_enc=excluded.logflare_token_enc,
+        stack_kind=excluded.stack_kind,
         updated_at=now()`,
   }
 }
@@ -99,6 +111,7 @@ export function buildRowParams(input: RegisterInput, encrypt: (s: string) => str
     input.secretKey ? encrypt(input.secretKey) : null,
     input.logflareUrl ?? null,
     input.logflareToken ? encrypt(input.logflareToken) : null,
+    input.stackKind ?? 'external',
   ]
 }
 
@@ -219,45 +232,50 @@ export function main(argv = process.argv.slice(2)) {
     return
   }
   // register
-  const input = fromCurrentEnv
-    ? resolveInputFromEnv(process.env, {
-        ref: flags.ref || 'default',
-        org: flags.org || 'default',
-        name: flags.name || process.env.DEFAULT_PROJECT_NAME || 'Default Project',
-      })
-    : (() => {
-        required(flags, [
-          'ref',
-          'org',
-          'name',
-          'db-host',
-          'kong-url',
-          'db-pass',
-          'service-key',
-          'anon-key',
-          'jwt-secret',
-        ])
-        return {
-          ref: flags.ref,
-          org: flags.org,
-          name: flags.name,
-          dbHost: flags['db-host'],
-          dbPort: parseInt(flags['db-port'] || '5432', 10),
-          dbName: flags['db-name'] || 'postgres',
-          dbUser: flags['db-user'] || 'supabase_admin',
-          dbUserReadonly: flags['db-user-readonly'] || 'supabase_read_only_user',
-          kongUrl: flags['kong-url'],
-          restUrl: flags['rest-url'] || flags['kong-url'].replace(/\/$/, '') + '/rest/v1/',
-          dbPass: flags['db-pass'],
-          serviceKey: flags['service-key'],
-          anonKey: flags['anon-key'],
-          jwtSecret: flags['jwt-secret'],
-          publishableKey: flags['publishable-key'] || null,
-          secretKey: flags['secret-key'] || null,
-          logflareUrl: flags['logflare-url'] || null,
-          logflareToken: flags['logflare-token'] || null,
-        } as RegisterInput
-      })()
+  const stackKind = flags['stack-kind'] || 'external'
+  assertValidStackKind(stackKind)
+  const input: RegisterInput = {
+    ...(fromCurrentEnv
+      ? resolveInputFromEnv(process.env, {
+          ref: flags.ref || 'default',
+          org: flags.org || 'default',
+          name: flags.name || process.env.DEFAULT_PROJECT_NAME || 'Default Project',
+        })
+      : (() => {
+          required(flags, [
+            'ref',
+            'org',
+            'name',
+            'db-host',
+            'kong-url',
+            'db-pass',
+            'service-key',
+            'anon-key',
+            'jwt-secret',
+          ])
+          return {
+            ref: flags.ref,
+            org: flags.org,
+            name: flags.name,
+            dbHost: flags['db-host'],
+            dbPort: parseInt(flags['db-port'] || '5432', 10),
+            dbName: flags['db-name'] || 'postgres',
+            dbUser: flags['db-user'] || 'supabase_admin',
+            dbUserReadonly: flags['db-user-readonly'] || 'supabase_read_only_user',
+            kongUrl: flags['kong-url'],
+            restUrl: flags['rest-url'] || flags['kong-url'].replace(/\/$/, '') + '/rest/v1/',
+            dbPass: flags['db-pass'],
+            serviceKey: flags['service-key'],
+            anonKey: flags['anon-key'],
+            jwtSecret: flags['jwt-secret'],
+            publishableKey: flags['publishable-key'] || null,
+            secretKey: flags['secret-key'] || null,
+            logflareUrl: flags['logflare-url'] || null,
+            logflareToken: flags['logflare-token'] || null,
+          } as RegisterInput
+        })()),
+    stackKind,
+  }
   // Belt-and-suspenders: required(flags, [...]) above only checks the
   // explicit-flags branch. This also catches a misconfigured
   // --from-current-env (resolveInputFromEnv defaults missing vars to '')
