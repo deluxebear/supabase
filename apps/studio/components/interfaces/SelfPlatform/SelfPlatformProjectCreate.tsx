@@ -44,36 +44,45 @@ export function refSuggestion(name: string): string {
   return /^[a-z]/.test(slug) ? slug : `p-${slug}`.slice(0, 30)
 }
 
-const refSchema = z
-  .string()
-  .regex(REF_REGEX, 'Lowercase letters, digits and hyphens; 3-30 chars; starts with a letter')
-  .refine((r) => r !== 'default', '"default" is reserved')
+function buildRefSchema() {
+  return z
+    .string()
+    .regex(REF_REGEX, $t('Lowercase letters, digits and hyphens; 3-30 chars; starts with a letter'))
+    .refine((r) => r !== 'default', $t('"default" is reserved'))
+}
 
-const quickSchema = z.object({
-  name: z.string().min(1, 'Project name is required').max(64),
-  ref: refSchema,
-  hostRef: z.string().min(1),
-})
+function buildQuickSchema() {
+  return z.object({
+    name: z.string().min(1, $t('Project name is required')).max(64),
+    ref: buildRefSchema(),
+    hostRef: z.string().min(1),
+  })
+}
 
-const attachSchema = z.object({
-  name: z.string().min(1, 'Project name is required').max(64),
-  ref: refSchema,
-  dbHost: z.string().min(1, 'Database host is required'),
-  dbPort: z.coerce.number().int().min(1).max(65535).default(5432),
-  dbName: z.string().default('postgres'),
-  dbUser: z.string().default('supabase_admin'),
-  dbUserReadonly: z.string().default('supabase_read_only_user'),
-  dbPass: z.string().min(1, 'Database password is required'),
-  kongUrl: z.string().url('Must be a URL (the browser-facing gateway)'),
-  restUrl: z.string().optional(),
-  anonKey: z.string().min(1, 'Required'),
-  serviceKey: z.string().min(1, 'Required'),
-  jwtSecret: z.string().min(1, 'Required'),
-  publishableKey: z.string().optional(),
-  secretKey: z.string().optional(),
-  logflareUrl: z.string().optional(),
-  logflareToken: z.string().optional(),
-})
+function buildAttachSchema() {
+  return z.object({
+    name: z.string().min(1, $t('Project name is required')).max(64),
+    ref: buildRefSchema(),
+    dbHost: z.string().min(1, $t('Database host is required')),
+    dbPort: z.coerce.number().int().min(1).max(65535).default(5432),
+    dbName: z.string().default('postgres'),
+    dbUser: z.string().default('supabase_admin'),
+    dbUserReadonly: z.string().default('supabase_read_only_user'),
+    dbPass: z.string().min(1, $t('Database password is required')),
+    kongUrl: z.string().url($t('Must be a URL (the browser-facing gateway)')),
+    restUrl: z.string().optional(),
+    anonKey: z.string().min(1, $t('Required')),
+    serviceKey: z.string().min(1, $t('Required')),
+    jwtSecret: z.string().min(1, $t('Required')),
+    publishableKey: z.string().optional(),
+    secretKey: z.string().optional(),
+    logflareUrl: z.string().optional(),
+    logflareToken: z.string().optional(),
+  })
+}
+
+type QuickFormValues = z.infer<ReturnType<typeof buildQuickSchema>>
+type AttachFormValues = z.infer<ReturnType<typeof buildAttachSchema>>
 
 export const SelfPlatformProjectCreate = () => {
   const router = useRouter()
@@ -94,11 +103,14 @@ export const SelfPlatformProjectCreate = () => {
     },
   })
 
-  const quickForm = useForm<z.infer<typeof quickSchema>>({
+  const quickSchema = useMemo(() => buildQuickSchema(), [])
+  const attachSchema = useMemo(() => buildAttachSchema(), [])
+
+  const quickForm = useForm<QuickFormValues>({
     resolver: zodResolver(quickSchema),
     defaultValues: { name: '', ref: '', hostRef: 'default' },
   })
-  const attachForm = useForm<z.infer<typeof attachSchema>>({
+  const attachForm = useForm<AttachFormValues>({
     resolver: zodResolver(attachSchema),
     defaultValues: {
       name: '',
