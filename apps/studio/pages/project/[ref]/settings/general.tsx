@@ -9,6 +9,7 @@ import {
 } from 'ui-patterns/PageHeader'
 
 import { subscriptionHasHipaaAddon } from '@/components/interfaces/Billing/Subscription/Subscription.utils'
+import { SelfPlatformConnectionPanel } from '@/components/interfaces/SelfPlatform/SelfPlatformConnectionPanel'
 import { SelfPlatformDeleteProjectPanel } from '@/components/interfaces/SelfPlatform/SelfPlatformDeleteProjectPanel'
 import { ComplianceConfig } from '@/components/interfaces/Settings/General/ComplianceConfig/ProjectComplianceMode'
 import { CustomDomainConfig } from '@/components/interfaces/Settings/General/CustomDomainConfig/CustomDomainConfig'
@@ -61,6 +62,7 @@ const ProjectSettings: NextPageWithLayout = () => {
             {!isBranch && hasHipaaAddon && <ComplianceConfig />}
             {projectSettingsCustomDomains && <CustomDomainConfig />}
             {!isBranch && projectTransferEnabled && <TransferProjectPanel />}
+            {!isBranch && IS_SELF_PLATFORM && <SelfPlatformConnectionPanel />}
             {!isBranch &&
               (IS_SELF_PLATFORM ? <SelfPlatformDeleteProjectPanel /> : <DeleteProjectPanel />)}
           </>
