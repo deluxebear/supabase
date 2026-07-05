@@ -3,7 +3,11 @@ import type { JwtPayload } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
-import { AnalyticsNotConfigured, getAnalyticsTarget } from '@/lib/api/self-hosted/logs'
+import {
+  ANALYTICS_TIMEOUT_MS,
+  AnalyticsNotConfigured,
+  getAnalyticsTarget,
+} from '@/lib/api/self-hosted/logs'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { ProjectNotFound } from '@/lib/api/self-platform/resolve-connection'
 import { PROJECT_ANALYTICS_URL } from '@/lib/constants/api'
@@ -85,6 +89,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
+        signal: AbortSignal.timeout(ANALYTICS_TIMEOUT_MS),
       }).then((r) => r.json())
 
       return res.status(200).json(result)
@@ -101,6 +106,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
+        signal: AbortSignal.timeout(ANALYTICS_TIMEOUT_MS),
       })
         .then(async (r) => await r.json())
         .catch((err) => {
@@ -121,6 +127,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
           Accept: 'application/json',
         },
         method: 'DELETE',
+        signal: AbortSignal.timeout(ANALYTICS_TIMEOUT_MS),
       }).catch((err) => {
         console.error('error deleting log drain', err)
         return res.status(500).json({ error: { message: 'Error deleting log drain' } })

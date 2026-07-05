@@ -127,3 +127,96 @@ describe('analytics log-drains per-ref', () => {
     vi.unstubAllGlobals()
   })
 })
+
+describe('M6.2 Logflare timeouts', () => {
+  it('log-drains list fetch carries an AbortSignal', async () => {
+    getAnalyticsTarget.mockResolvedValueOnce({
+      baseUrl: 'http://lf:4000',
+      token: 't',
+      projectParam: 'default',
+    })
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => [] })
+    vi.stubGlobal('fetch', fetchMock)
+    const { handler } = await import('./log-drains')
+    const { req, res } = createMocks({ method: 'GET', query: { ref: 'proj-b' } })
+    await handler(req as any, res as any)
+    expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal)
+    vi.unstubAllGlobals()
+  })
+})
+
+// [self-platform] mechanical fix: the brief's InvalidAnalyticsParams hoisted
+// binding is unused (tsc noUnusedLocals) — the 400-mapping test below
+// exercises the REAL class via vi.importActual (as `Real`) instead. Dropped
+// from the destructure/factory; no test semantics change.
+const { isSubstitutedEndpoint, retrieveSubstitutedAnalyticsData } = vi.hoisted(() => ({
+  isSubstitutedEndpoint: vi.fn(),
+  retrieveSubstitutedAnalyticsData: vi.fn(),
+}))
+vi.mock('@/lib/api/self-hosted/analytics-substitutes', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  isSubstitutedEndpoint,
+  retrieveSubstitutedAnalyticsData,
+}))
+
+describe('M6.2 endpoints/[name] substitution routing', () => {
+  // [self-platform] mock-reset gap fix (mechanical, not a semantic change):
+  // without this, call history for these two hoisted mocks bleeds across
+  // `it()` blocks in this file (no global clearMocks/restoreMocks config),
+  // so "not.toHaveBeenCalled()" assertions here would see stale calls from
+  // earlier tests. Same reset pattern as this file's top-level beforeEach.
+  beforeEach(() => {
+    isSubstitutedEndpoint.mockReset()
+    retrieveSubstitutedAnalyticsData.mockReset()
+  })
+
+  it('substituted name goes through the substitute, not the verbatim forwarder', async () => {
+    isSubstitutedEndpoint.mockReturnValue(true)
+    retrieveSubstitutedAnalyticsData.mockResolvedValueOnce({
+      data: { result: [] },
+      error: undefined,
+    })
+    const { handler } = await import('./endpoints/[name]')
+    const { req, res } = createMocks({
+      method: 'GET',
+      query: { ref: 'default', name: 'usage.api-counts', interval: '1hr' },
+    })
+    await handler(req as any, res as any)
+    expect(res._getStatusCode()).toBe(200)
+    expect(retrieveSubstitutedAnalyticsData).toHaveBeenCalledWith({
+      name: 'usage.api-counts',
+      params: { interval: '1hr' },
+      projectRef: 'default',
+    })
+    expect(retrieveAnalyticsData).not.toHaveBeenCalled()
+  })
+
+  it('logs.all still forwards verbatim', async () => {
+    isSubstitutedEndpoint.mockReturnValue(false)
+    retrieveAnalyticsData.mockResolvedValueOnce({ data: { result: [] }, error: undefined })
+    const { handler } = await import('./endpoints/[name]')
+    const { req, res } = createMocks({
+      method: 'GET',
+      query: { ref: 'default', name: 'logs.all', sql: 'select 1' },
+    })
+    await handler(req as any, res as any)
+    expect(retrieveAnalyticsData).toHaveBeenCalled()
+    expect(retrieveSubstitutedAnalyticsData).not.toHaveBeenCalled()
+  })
+
+  it('InvalidAnalyticsParams → 400 with the message', async () => {
+    isSubstitutedEndpoint.mockReturnValue(true)
+    const { InvalidAnalyticsParams: Real } = await vi.importActual<any>(
+      '@/lib/api/self-hosted/analytics-substitutes'
+    )
+    retrieveSubstitutedAnalyticsData.mockRejectedValueOnce(new Real('Invalid interval'))
+    const { handler } = await import('./endpoints/[name]')
+    const { req, res } = createMocks({
+      method: 'GET',
+      query: { ref: 'default', name: 'usage.api-counts', interval: 'wat' },
+    })
+    await handler(req as any, res as any)
+    expect(res._getStatusCode()).toBe(400)
+    expect(res._getJSONData()).toEqual({ message: 'Invalid interval' })
+  })
+})

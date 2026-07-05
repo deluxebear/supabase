@@ -3,7 +3,11 @@ import type { JwtPayload } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
-import { AnalyticsNotConfigured, getAnalyticsTarget } from '@/lib/api/self-hosted/logs'
+import {
+  ANALYTICS_TIMEOUT_MS,
+  AnalyticsNotConfigured,
+  getAnalyticsTarget,
+} from '@/lib/api/self-hosted/logs'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { ProjectNotFound } from '@/lib/api/self-platform/resolve-connection'
 import { PROJECT_ANALYTICS_URL } from '@/lib/constants/api'
@@ -86,6 +90,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
+        signal: AbortSignal.timeout(ANALYTICS_TIMEOUT_MS),
       })
 
       if (!upstream.ok) {
@@ -121,6 +126,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
+        signal: AbortSignal.timeout(ANALYTICS_TIMEOUT_MS),
       }).then(async (r) => await r.json())
 
       const sourcesGetUrl = new URL(baseUrl)
@@ -132,6 +138,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
+        signal: AbortSignal.timeout(ANALYTICS_TIMEOUT_MS),
       }).then((r) => r.json())
 
       const params = sources
@@ -163,6 +170,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
               'Content-Type': 'application/json',
               Accept: 'application/json',
             },
+            signal: AbortSignal.timeout(ANALYTICS_TIMEOUT_MS),
           })
         )
       )

@@ -58,3 +58,22 @@ describe('log-drains plain self-hosted (byte-exact env-check message)', () => {
     })
   })
 })
+
+describe('M6.2: substitution applies in plain self-hosted too (sanctioned non-cloud fix)', () => {
+  it('usage.api-counts substitutes in plain mode', async () => {
+    vi.resetModules()
+    vi.stubEnv('NEXT_PUBLIC_SELF_PLATFORM', '')
+    const substitutes = await import('@/lib/api/self-hosted/analytics-substitutes')
+    const spy = vi
+      .spyOn(substitutes, 'retrieveSubstitutedAnalyticsData')
+      .mockResolvedValue({ data: { result: [] }, error: undefined })
+    const { handler } = await import('./endpoints/[name]')
+    const { req, res } = createMocks({
+      method: 'GET',
+      query: { ref: 'default', name: 'usage.api-counts', interval: '1hr' },
+    })
+    await handler(req as any, res as any)
+    expect(spy).toHaveBeenCalled()
+    spy.mockRestore()
+  })
+})

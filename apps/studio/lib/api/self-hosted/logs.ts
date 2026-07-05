@@ -14,6 +14,11 @@ export type RetrieveAnalyticsDataOptions = {
   params: Record<string, string | undefined>
 }
 
+// [self-platform] M6.2 D6: every server-side Logflare fetch (this module +
+// both log-drain routes) carries this timeout — a down/hung Logflare must
+// not leave a panel/chart stuck in infinite loading.
+export const ANALYTICS_TIMEOUT_MS = 15_000
+
 export type AnalyticsResult = {
   result?: any[]
   error?: {
@@ -108,6 +113,7 @@ export async function retrieveAnalyticsData({
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
+      signal: AbortSignal.timeout(ANALYTICS_TIMEOUT_MS),
     })
 
     const result = await response.json()

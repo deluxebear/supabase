@@ -4,6 +4,11 @@ import type { JwtPayload } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
+import {
+  InvalidAnalyticsParams,
+  isSubstitutedEndpoint,
+  retrieveSubstitutedAnalyticsData,
+} from '@/lib/api/self-hosted/analytics-substitutes'
 import { AnalyticsNotConfigured, retrieveAnalyticsData } from '@/lib/api/self-hosted/logs'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { ProjectNotFound } from '@/lib/api/self-platform/resolve-connection'
@@ -57,13 +62,22 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
       }
 
       try {
-        const { data, error } = await retrieveAnalyticsData({ name, params, projectRef: ref })
+        // [self-platform] M6.2: four named endpoints are rewritten onto
+        // logs.all sandbox SQL (spec §4) — a stock Logflare PG backend cannot
+        // serve them natively. Applies in BOTH self-hosted modes (these
+        // routes never run on cloud); logs.all/others forward verbatim.
+        const { data, error } = isSubstitutedEndpoint(name)
+          ? await retrieveSubstitutedAnalyticsData({ name, params, projectRef: ref })
+          : await retrieveAnalyticsData({ name, params, projectRef: ref })
         if (data) {
           return res.status(200).json(data)
         } else {
           return res.status(500).json({ error: { message: error.message } })
         }
       } catch (err) {
+        if (err instanceof InvalidAnalyticsParams) {
+          return res.status(400).json({ message: err.message })
+        }
         // [self-platform] Registry miss / unconfigured analytics → 404.
         if (err instanceof ProjectNotFound) {
           return res.status(404).json({ message: 'Project not found' })
