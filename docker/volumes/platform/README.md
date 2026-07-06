@@ -1415,7 +1415,11 @@ this document.
 The Edge Functions row on the project home's ServiceStatus panel, and its underlying query, are
 both gated off (`!IS_SELF_PLATFORM`) rather than reused: upstream's check calls a hardcoded
 Supabase cloud health-check URL that means nothing for a self-hosted stack. Real edge-functions
-probing is deferred to M6.2.
+probing is deferred to M6.2. Superseded in M6.2: a 6th probe service, `edge_function`, targets
+`GET {kong_url}/functions/v1/` with liveness-only semantics — Kong no-route means DISABLED, any
+response under 500 means ACTIVE_HEALTHY, and ≥5xx or a timeout means UNHEALTHY. The ServiceStatus
+panel row is restored in self-platform mode, now probe-backed instead of gated off; the upstream
+cloud-URL check remains disabled.
 
 Plain self-hosted mode is untouched by all of the above: `/api/v1/projects/{ref}/health` and
 `/api/platform/projects/{ref}/databases-statuses` keep the M1 always-healthy stub
@@ -1639,8 +1643,9 @@ stack changes nothing about that invariant.
   never populates.
 - **`functions.combined-stats` and the edge functions list page's last-hour stats are both
   broken on self-hosted for the same underlying reason, but in different ways.** Neither can
-  work because the self-hosted vector pipeline's `deno-relay-logs` transform
-  (`docker/volumes/logs/vector.yml`) never attaches a `function_id` to function log events in the
+  work because the self-hosted vector pipeline's `functions_logs` transform
+  (`docker/volumes/logs/vector.yml`, lines 130-134 — shipped to the `logflare_functions` sink's
+  `deno-relay-logs` Logflare source) never attaches a `function_id` to function log events in the
   first place. The substituted `functions.combined-stats` endpoint (above) filters on
   `function_id` inside an unnested `metadata` field, which is valid SQL that simply never
   matches any row — it returns a correctly-shaped, honestly empty result, and the same substitute
