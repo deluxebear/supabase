@@ -16,7 +16,7 @@ import {
 import type { Filters, LogData, LogsEndpointParams, QueryType } from './Logs.types'
 import { convertResultsToCSV } from '@/components/interfaces/SQLEditor/UtilityPanel/Results.utils'
 import BackwardIterator from '@/components/ui/CodeEditor/Providers/BackwardIterator'
-import { pickDialect } from '@/data/logs/logflare-dialect'
+import { pickDialect, USE_LOGFLARE_PG_SQL } from '@/data/logs/logflare-dialect'
 import {
   analyticsLiteral,
   joinSqlFragments,
@@ -165,7 +165,11 @@ export const genDefaultQuery = (
 
   switch (table) {
     case 'edge_logs':
-      if (!IS_PLATFORM) {
+      // [self-platform] M6.2: the platform branch selects the cloud-only
+      // identifier column, absent from self-hosted Logflare CTEs — PG-backed
+      // deployments (self-platform sets both IS_PLATFORM and
+      // IS_SELF_PLATFORM) take the identifier-free shape below instead.
+      if (USE_LOGFLARE_PG_SQL) {
         return safeSql`
 -- local dev edge_logs query
 select id, edge_logs.timestamp, event_message, request.method, request.path, request.search, response.status_code
@@ -185,7 +189,11 @@ limit ${limitLit};
   `
 
     case 'postgres_logs':
-      if (!IS_PLATFORM) {
+      // [self-platform] M6.2: the platform branch selects the cloud-only
+      // identifier column, absent from self-hosted Logflare CTEs — PG-backed
+      // deployments (self-platform sets both IS_PLATFORM and
+      // IS_SELF_PLATFORM) take the identifier-free shape below instead.
+      if (USE_LOGFLARE_PG_SQL) {
         return safeSql`
 select postgres_logs.timestamp, id, event_message, parsed.error_severity, parsed.detail, parsed.hint
 from postgres_logs
