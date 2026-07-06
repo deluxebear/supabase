@@ -41,9 +41,9 @@ host_cpu_seconds_total{cpu="0",mode="idle"} 900
 host_cpu_seconds_total{cpu="0",mode="system"} 40
 host_cpu_seconds_total{cpu="0",mode="user"} 50
 host_cpu_seconds_total{cpu="0",mode="nice"} 0
-host_cpu_seconds_total{cpu="0",mode="iowait"} 5
+host_cpu_seconds_total{cpu="0",mode="io_wait"} 5
 host_cpu_seconds_total{cpu="0",mode="irq"} 2
-host_cpu_seconds_total{cpu="0",mode="softirq"} 3
+host_cpu_seconds_total{cpu="0",mode="soft_irq"} 3
 host_memory_total_bytes 1000
 host_memory_free_bytes 300
 host_memory_cached_bytes 150
@@ -67,9 +67,9 @@ host_cpu_seconds_total{cpu="0",mode="idle"} 930
 host_cpu_seconds_total{cpu="0",mode="system"} 52
 host_cpu_seconds_total{cpu="0",mode="user"} 62
 host_cpu_seconds_total{cpu="0",mode="nice"} 0
-host_cpu_seconds_total{cpu="0",mode="iowait"} 8
+host_cpu_seconds_total{cpu="0",mode="io_wait"} 8
 host_cpu_seconds_total{cpu="0",mode="irq"} 3.8
-host_cpu_seconds_total{cpu="0",mode="softirq"} 4.2
+host_cpu_seconds_total{cpu="0",mode="soft_irq"} 4.2
 host_memory_total_bytes 1000
 host_memory_free_bytes 300
 host_memory_cached_bytes 150
@@ -128,6 +128,7 @@ describe('computeScrapeAttributes', () => {
     expect(out.disk_fs_size).toBe(5000)
     expect(out.disk_fs_used).toBe(2000)
     expect(out.realtime_sum_connections_connected).toBe(7)
+    expect(out.realtime_connections_connected).toBe(7)
     expect(out.avg_cpu_usage).toBeUndefined()
     expect(out.network_receive_bytes).toBeUndefined()
   })
@@ -229,7 +230,7 @@ describe('sampleProject', () => {
     expect(opts.parameters![i + 1]).toBe(1000) // 2000 - 900 - 100
     expect(attrs.every((a) => (a as string) in ATTRIBUTE_META || a === 'proj-x')).toBe(true)
   })
-  it('L1 failure drops only its attributes; L2 still written', async () => {
+  it('both L1 statements failing drops all L1 attributes; L2 still written', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockImplementation(async (url: unknown) => {
@@ -244,6 +245,33 @@ describe('sampleProject', () => {
     const attrs = insert[0].parameters!.filter((p) => typeof p === 'string' && p !== 'proj-x')
     expect(attrs).toContain('ram_usage')
     expect(attrs).not.toContain('pg_stat_database_num_backends')
+  })
+  it('WAL-only L1 failure: main-query attributes still written, WAL attribute dropped', async () => {
+    // Distinguishes per-statement isolation from a merged try/catch: if the
+    // two L1 queries were awaited inside a single try block and only
+    // `collect()`-ed after both settled, a WAL-only failure would also drop
+    // the main-query attributes (the throw happens before either collect()
+    // call runs). The real code calls collect() right after each await
+    // succeeds, in its own try/catch, so main attributes survive here.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(async (url: unknown, init?: { body?: string }) => {
+        if (String(url).includes('/query')) {
+          const isWal = String(init?.body ?? '').includes('pg_ls_waldir')
+          if (isWal) throw new Error('wal query down')
+          return { ok: true, status: 200, json: async () => [L1_ROW], text: async () => '' }
+        }
+        return { ok: true, status: 200, text: async () => PROM_T0, json: async () => [] }
+      })
+    )
+    await sampleProject('proj-x')
+    const insert = vi
+      .mocked(executePlatformQuery)
+      .mock.calls.find(([opts]) => opts.query.includes('insert into'))!
+    const attrs = insert[0].parameters!.filter((p) => typeof p === 'string' && p !== 'proj-x')
+    expect(attrs).toContain('pg_stat_database_num_backends')
+    expect(attrs).toContain('pg_database_size')
+    expect(attrs).not.toContain('disk_fs_used_wal')
   })
   it('metricsUrl null → no scrape fetch, L1-only insert', async () => {
     vi.mocked(resolveProjectConnection).mockResolvedValue({ ...CONN, metricsUrl: null } as never)

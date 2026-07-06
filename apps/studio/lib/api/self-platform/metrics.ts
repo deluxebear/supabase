@@ -174,11 +174,17 @@ function counterDelta(
   return d < 0 ? undefined : d // counter reset → skip this cycle (designed gap)
 }
 
+// Vector's Linux cpu collector emits underscore-spelled mode labels
+// (`io_wait`, `soft_irq`), not the no-underscore spellings some other
+// exporters use. The committed T1 fixture proves `io_wait` directly
+// (non-zero even at idle); it has no irq samples to cross-check, but
+// `soft_irq` follows the same underscore convention vector uses for
+// `io_wait` — so it's a same-class fixture-backed correction, not a guess.
 const CPU_MODE_GROUPS: Record<string, string[]> = {
   cpu_usage_busy_system: ['system'],
   cpu_usage_busy_user: ['user', 'nice'],
-  cpu_usage_busy_iowait: ['iowait'],
-  cpu_usage_busy_irqs: ['irq', 'softirq'],
+  cpu_usage_busy_iowait: ['io_wait'],
+  cpu_usage_busy_irqs: ['irq', 'soft_irq'],
 }
 
 export function computeScrapeAttributes(
