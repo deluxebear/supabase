@@ -89,6 +89,24 @@ const HOST = {
   diskWrites: 'host_disk_writes_completed_total',
 } as const
 
+// [self-platform] M6.4: cAdvisor container_* names (via vector on :9598). The
+// container dialect (see computeContainerAttributes). Names are the binding
+// fixture __fixtures__/cadvisor-scrape.prom — fixture wins over this comment.
+const CONTAINER = {
+  cpuUsage: 'container_cpu_usage_seconds_total',
+  cpuUser: 'container_cpu_user_seconds_total',
+  cpuSystem: 'container_cpu_system_seconds_total',
+  memWorkingSet: 'container_memory_working_set_bytes',
+  memCache: 'container_memory_cache',
+  memSwap: 'container_memory_swap',
+  specMemLimit: 'container_spec_memory_limit_bytes',
+  specCpuQuota: 'container_spec_cpu_quota',
+  specCpuPeriod: 'container_spec_cpu_period',
+  netRx: 'container_network_receive_bytes_total',
+  netTx: 'container_network_transmit_bytes_total',
+} as const
+const MACHINE = { cpuCores: 'machine_cpu_cores', memBytes: 'machine_memory_bytes' } as const
+
 // Fixture-present service series only (T1 spike pins 2-3).
 //
 // T1-pin correction: the global gauge (`realtime_connections_global_connected`)
@@ -143,13 +161,16 @@ export function parsePrometheusText(text: string): PromSample[] {
   return out
 }
 
-interface Snapshot {
+export interface Snapshot {
   at: number
   samples: PromSample[]
 }
 const lastScrape = new Map<string, Snapshot>()
 
 type LabelPred = (labels: Record<string, string>) => boolean
+
+// Shared by both dialects: percentages are clamped to [0, 100].
+const clamp = (v: number) => Math.min(100, Math.max(0, v))
 
 function sumSeries(samples: PromSample[], name: string, pred?: LabelPred): number | undefined {
   let total: number | undefined
@@ -187,12 +208,78 @@ const CPU_MODE_GROUPS: Record<string, string[]> = {
   cpu_usage_busy_irqs: ['irq', 'soft_irq'],
 }
 
+// Host-level disk (filesystem size/used + disk-IO rates) — shared by the host
+// and container dialects (disk is not container-meaningful; spec §5). Verbatim
+// move of the fs + disk-rate blocks from computeScrapeAttributes.
+function computeHostDisk(prev: Snapshot | undefined, curr: Snapshot): Record<string, number> {
+  const out: Record<string, number> = {}
+  const S = curr.samples
+
+  // Filesystem: root mount, falling back to the largest filesystem.
+  let mount = '/'
+  if (sumSeries(S, HOST.fsTotal, (l) => l.mountpoint === mount) === undefined) {
+    let bestVal = -1
+    for (const s of S) {
+      if (s.name === HOST.fsTotal && s.value > bestVal && s.labels.mountpoint !== undefined) {
+        bestVal = s.value
+        mount = s.labels.mountpoint
+      }
+    }
+  }
+  const onMount: LabelPred = (l) => l.mountpoint === mount
+  const fsSize = sumSeries(S, HOST.fsTotal, onMount)
+  const fsUsed = sumSeries(S, HOST.fsUsed, onMount)
+  if (fsSize !== undefined) out.disk_fs_size = fsSize
+  if (fsUsed !== undefined) out.disk_fs_used = fsUsed
+
+  if (prev !== undefined) {
+    const elapsed = (curr.at - prev.at) / 1000
+    if (elapsed > 0) {
+      const rate = (name: string, pred?: LabelPred): number | undefined => {
+        const d = counterDelta(prev, curr, name, pred)
+        return d === undefined ? undefined : d / elapsed
+      }
+      const pairs: Array<[string, number | undefined]> = [
+        ['disk_bytes_read', rate(HOST.diskReadBytes)],
+        ['disk_bytes_written', rate(HOST.diskWrittenBytes)],
+        ['disk_iops_read', rate(HOST.diskReads)],
+        ['disk_iops_write', rate(HOST.diskWrites)],
+      ]
+      for (const [attr, v] of pairs) if (v !== undefined) out[attr] = v
+    }
+  }
+  return out
+}
+
+// realtime/supavisor gauges + channel counters — shared by both dialects.
+// Verbatim move of the SERVICE_GAUGES + SERVICE_COUNTERS blocks.
+function computeServiceAttributes(
+  prev: Snapshot | undefined,
+  curr: Snapshot
+): Record<string, number> {
+  const out: Record<string, number> = {}
+  const S = curr.samples
+  for (const { source, attribute } of SERVICE_GAUGES) {
+    const v = sumSeries(S, source)
+    if (v !== undefined) out[attribute] = v
+  }
+  if (prev !== undefined) {
+    const elapsed = (curr.at - prev.at) / 1000
+    if (elapsed > 0) {
+      for (const { source, attribute } of SERVICE_COUNTERS) {
+        const d = counterDelta(prev, curr, source)
+        if (d !== undefined) out[attribute] = d / elapsed
+      }
+    }
+  }
+  return out
+}
+
 export function computeScrapeAttributes(
   prev: Snapshot | undefined,
   curr: Snapshot
 ): Record<string, number> {
   const out: Record<string, number> = {}
-  const clamp = (v: number) => Math.min(100, Math.max(0, v))
   const S = curr.samples
 
   const memTotal = sumSeries(S, HOST.memTotal)
@@ -214,27 +301,9 @@ export function computeScrapeAttributes(
     out.swap_usage = clamp((swapUsed / swapTotal) * 100)
   }
 
-  // Filesystem: root mount, falling back to the largest filesystem.
-  let mount = '/'
-  if (sumSeries(S, HOST.fsTotal, (l) => l.mountpoint === mount) === undefined) {
-    let bestVal = -1
-    for (const s of S) {
-      if (s.name === HOST.fsTotal && s.value > bestVal && s.labels.mountpoint !== undefined) {
-        bestVal = s.value
-        mount = s.labels.mountpoint
-      }
-    }
-  }
-  const onMount: LabelPred = (l) => l.mountpoint === mount
-  const fsSize = sumSeries(S, HOST.fsTotal, onMount)
-  const fsUsed = sumSeries(S, HOST.fsUsed, onMount)
-  if (fsSize !== undefined) out.disk_fs_size = fsSize
-  if (fsUsed !== undefined) out.disk_fs_used = fsUsed
-
-  for (const { source, attribute } of SERVICE_GAUGES) {
-    const v = sumSeries(S, source)
-    if (v !== undefined) out[attribute] = v
-  }
+  // Shared, host-level (disk fs/IO + realtime/supavisor services).
+  Object.assign(out, computeHostDisk(prev, curr))
+  Object.assign(out, computeServiceAttributes(prev, curr))
 
   if (prev !== undefined) {
     const elapsed = (curr.at - prev.at) / 1000
@@ -247,16 +316,8 @@ export function computeScrapeAttributes(
       const pairs: Array<[string, number | undefined]> = [
         ['network_receive_bytes', rate(HOST.netRx, notLo)],
         ['network_transmit_bytes', rate(HOST.netTx, notLo)],
-        ['disk_bytes_read', rate(HOST.diskReadBytes)],
-        ['disk_bytes_written', rate(HOST.diskWrittenBytes)],
-        ['disk_iops_read', rate(HOST.diskReads)],
-        ['disk_iops_write', rate(HOST.diskWrites)],
       ]
       for (const [attr, v] of pairs) if (v !== undefined) out[attr] = v
-      for (const { source, attribute } of SERVICE_COUNTERS) {
-        const v = rate(source)
-        if (v !== undefined) out[attribute] = v
-      }
 
       const totalCpu = counterDelta(prev, curr, HOST.cpuSeconds)
       if (totalCpu !== undefined && totalCpu > 0) {
@@ -285,6 +346,86 @@ export function computeScrapeAttributes(
     }
   }
   return out
+}
+
+export function computeContainerAttributes(
+  prev: Snapshot | undefined,
+  curr: Snapshot,
+  containerName: string
+): Record<string, number> {
+  const out: Record<string, number> = {}
+  const S = curr.samples
+  const mine: LabelPred = (l) => l.name === containerName
+
+  // --- Memory (absolute + % vs limit-or-machine) ---
+  const used = sumSeries(S, CONTAINER.memWorkingSet, mine)
+  if (used !== undefined) {
+    out.ram_usage_used = used
+    const machineMem = sumSeries(S, MACHINE.memBytes)
+    const limit = sumSeries(S, CONTAINER.specMemLimit, mine)
+    // cAdvisor reports limit=0 (or >= machine) when unlimited → fall back to machine.
+    const total =
+      limit !== undefined && limit > 0 && (machineMem === undefined || limit < machineMem)
+        ? limit
+        : machineMem
+    if (total !== undefined && total > 0) {
+      out.ram_usage_total = total
+      out.ram_usage = clamp((used / total) * 100)
+      out.ram_usage_free = Math.max(0, total - used)
+    }
+    const cache = sumSeries(S, CONTAINER.memCache, mine)
+    if (cache !== undefined) out.ram_usage_cache_and_buffers = cache
+    const swap = sumSeries(S, CONTAINER.memSwap, mine)
+    if (swap !== undefined) out.ram_usage_swap = swap
+  }
+
+  // --- Shared, host-level (disk fs/IO + realtime/supavisor services) ---
+  Object.assign(out, computeHostDisk(prev, curr))
+  Object.assign(out, computeServiceAttributes(prev, curr))
+
+  if (prev === undefined) return out
+  const elapsed = (curr.at - prev.at) / 1000
+  if (elapsed <= 0) return out
+
+  // --- CPU (% of machine cores, or of the cpu quota when set) ---
+  const cores = cpuDenominatorCores(S, mine)
+  const totalDelta = counterDelta(prev, curr, CONTAINER.cpuUsage, mine)
+  if (cores !== undefined && cores > 0 && totalDelta !== undefined && totalDelta >= 0) {
+    const pct = clamp((totalDelta / elapsed / cores) * 100)
+    out.avg_cpu_usage = pct
+    out.max_cpu_usage = pct // single-container grain: no spread to max over
+    let accounted = 0
+    const userDelta = counterDelta(prev, curr, CONTAINER.cpuUser, mine)
+    if (userDelta !== undefined) {
+      out.cpu_usage_busy_user = clamp((userDelta / elapsed / cores) * 100)
+      accounted += out.cpu_usage_busy_user
+    }
+    const sysDelta = counterDelta(prev, curr, CONTAINER.cpuSystem, mine)
+    if (sysDelta !== undefined) {
+      out.cpu_usage_busy_system = clamp((sysDelta / elapsed / cores) * 100)
+      accounted += out.cpu_usage_busy_system
+    }
+    out.cpu_usage_busy_other = clamp(pct - accounted)
+    // iowait/irqs intentionally omitted — cgroup cpu.stat has no such modes.
+  }
+
+  // --- Network (per-container rate, excluding loopback) ---
+  const notLo: LabelPred = (l) => l.name === containerName && l.interface !== 'lo'
+  const netRx = counterDelta(prev, curr, CONTAINER.netRx, notLo)
+  if (netRx !== undefined) out.network_receive_bytes = netRx / elapsed
+  const netTx = counterDelta(prev, curr, CONTAINER.netTx, notLo)
+  if (netTx !== undefined) out.network_transmit_bytes = netTx / elapsed
+
+  return out
+}
+
+// Prefer an explicit cpu quota (quota/period cores) when the operator set one;
+// else the machine's core count (docker-stats semantics, spec R1).
+function cpuDenominatorCores(S: PromSample[], mine: LabelPred): number | undefined {
+  const quota = sumSeries(S, CONTAINER.specCpuQuota, mine)
+  const period = sumSeries(S, CONTAINER.specCpuPeriod, mine)
+  if (quota !== undefined && quota > 0 && period !== undefined && period > 0) return quota / period
+  return sumSeries(S, MACHINE.cpuCores)
 }
 
 const L1_MAIN_SQL = `
@@ -356,7 +497,13 @@ export async function sampleProject(ref: string): Promise<void> {
       })
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
       const curr: Snapshot = { at: Date.now(), samples: parsePrometheusText(await resp.text()) }
-      Object.assign(values, computeScrapeAttributes(lastScrape.get(ref), curr))
+      // Container dialect when the row is pinned to a container (Task 2), else
+      // the host-level dialect (M6.3 behavior). Both emit ATTRIBUTE_META keys.
+      const scraped =
+        conn.containerName != null && conn.containerName !== ''
+          ? computeContainerAttributes(lastScrape.get(ref), curr, conn.containerName)
+          : computeScrapeAttributes(lastScrape.get(ref), curr)
+      Object.assign(values, scraped)
       lastScrape.set(ref, curr)
     } catch (err) {
       warn(ref, 'L2 scrape', err)

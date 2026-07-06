@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { executePlatformQuery } from './db'
 import {
   ATTRIBUTE_META,
+  computeContainerAttributes,
   computeScrapeAttributes,
   METRICS_RETENTION_DAYS,
   parsePrometheusText,
@@ -15,6 +16,7 @@ import {
   SWEEP_MIN_INTERVAL_MS,
   sweepIfDue,
   type PromSample,
+  type Snapshot,
 } from './metrics'
 import { resolveProjectConnection } from './resolve-connection'
 
@@ -187,6 +189,144 @@ describe('fixture (T1 name pins are binding)', () => {
   })
 })
 
+describe('cadvisor fixture binds CONTAINER/MACHINE names', () => {
+  const fixture = readFileSync(join(__dirname, '__fixtures__', 'cadvisor-scrape.prom'), 'utf8')
+  const names = new Set(parsePrometheusText(fixture).map((s) => s.name))
+  for (const n of [
+    'container_cpu_usage_seconds_total',
+    'container_cpu_user_seconds_total',
+    'container_cpu_system_seconds_total',
+    'container_memory_working_set_bytes',
+    'container_network_receive_bytes_total',
+    'container_network_transmit_bytes_total',
+    'container_spec_memory_limit_bytes',
+    'machine_cpu_cores',
+    'machine_memory_bytes',
+  ]) {
+    it(`fixture has ${n}`, () => expect(names.has(n)).toBe(true))
+  }
+  it('the supabase-db container is identifiable by name label', () => {
+    const s = parsePrometheusText(fixture).find(
+      (x) => x.name === 'container_memory_working_set_bytes'
+    )
+    expect(s?.labels.name).toBe('supabase-db')
+  })
+})
+
+describe('computeContainerAttributes', () => {
+  const cont = (name: string, value: number, labels: Record<string, string> = {}) => ({
+    name,
+    labels: { name: 'supabase-db', ...labels },
+    value,
+  })
+  const machine = [
+    { name: 'machine_cpu_cores', labels: {}, value: 10 },
+    { name: 'machine_memory_bytes', labels: {}, value: 1_000 },
+  ]
+
+  it('container CPU% uses machine cores as denominator', () => {
+    const t0: Snapshot = {
+      at: 0,
+      samples: [
+        cont('container_cpu_usage_seconds_total', 0),
+        cont('container_cpu_user_seconds_total', 0),
+        cont('container_cpu_system_seconds_total', 0),
+        ...machine,
+      ],
+    }
+    // 5 CPU-seconds used over 10s on a 10-core machine => 0.5 cores => 5%
+    const t1: Snapshot = {
+      at: 10_000,
+      samples: [
+        cont('container_cpu_usage_seconds_total', 5),
+        cont('container_cpu_user_seconds_total', 3),
+        cont('container_cpu_system_seconds_total', 2),
+        ...machine,
+      ],
+    }
+    const out = computeContainerAttributes(t0, t1, 'supabase-db')
+    expect(out.avg_cpu_usage).toBeCloseTo(5)
+    expect(out.max_cpu_usage).toBeCloseTo(5)
+    expect(out.cpu_usage_busy_user).toBeCloseTo(3) // 3s/10s/10cores*100
+    expect(out.cpu_usage_busy_system).toBeCloseTo(2)
+    expect(out.cpu_usage_busy_other).toBeCloseTo(0)
+    expect(out.cpu_usage_busy_iowait).toBeUndefined() // honest: cgroup has none
+    expect(out.cpu_usage_busy_irqs).toBeUndefined()
+  })
+
+  it('container RAM% uses machine memory when no limit (limit=0)', () => {
+    const s = [
+      cont('container_memory_working_set_bytes', 200),
+      cont('container_spec_memory_limit_bytes', 0),
+      cont('container_memory_cache', 50),
+      ...machine,
+    ]
+    const out = computeContainerAttributes(undefined, { at: 0, samples: s }, 'supabase-db')
+    expect(out.ram_usage_used).toBe(200)
+    expect(out.ram_usage_total).toBe(1_000) // machine_memory
+    expect(out.ram_usage).toBeCloseTo(20)
+    expect(out.ram_usage_free).toBe(800)
+    expect(out.ram_usage_cache_and_buffers).toBe(50)
+  })
+
+  it('container RAM% uses the container limit when set below machine', () => {
+    const s = [
+      cont('container_memory_working_set_bytes', 200),
+      cont('container_spec_memory_limit_bytes', 400),
+      ...machine,
+    ]
+    const out = computeContainerAttributes(undefined, { at: 0, samples: s }, 'supabase-db')
+    expect(out.ram_usage_total).toBe(400)
+    expect(out.ram_usage).toBeCloseTo(50)
+  })
+
+  it('container network is a per-container rate', () => {
+    const t0: Snapshot = {
+      at: 0,
+      samples: [
+        cont('container_network_receive_bytes_total', 0),
+        cont('container_network_transmit_bytes_total', 0),
+        ...machine,
+      ],
+    }
+    const t1: Snapshot = {
+      at: 10_000,
+      samples: [
+        cont('container_network_receive_bytes_total', 1000),
+        cont('container_network_transmit_bytes_total', 500),
+        ...machine,
+      ],
+    }
+    const out = computeContainerAttributes(t0, t1, 'supabase-db')
+    expect(out.network_receive_bytes).toBeCloseTo(100)
+    expect(out.network_transmit_bytes).toBeCloseTo(50)
+  })
+
+  it('filters to the named container (ignores other containers)', () => {
+    const s = [
+      cont('container_memory_working_set_bytes', 200, { name: 'supabase-db' }),
+      { name: 'container_memory_working_set_bytes', labels: { name: 'supabase-kong' }, value: 999 },
+      ...machine,
+    ]
+    const out = computeContainerAttributes(undefined, { at: 0, samples: s }, 'supabase-db')
+    expect(out.ram_usage_used).toBe(200) // not 200+999
+  })
+
+  it('does not emit container disk-IO (honest: rootfs != data volume)', () => {
+    const t0: Snapshot = {
+      at: 0,
+      samples: [cont('container_cpu_usage_seconds_total', 0), ...machine],
+    }
+    const t1: Snapshot = {
+      at: 10_000,
+      samples: [cont('container_cpu_usage_seconds_total', 1), ...machine],
+    }
+    const out = computeContainerAttributes(t0, t1, 'supabase-db')
+    expect(out.disk_bytes_read).toBeUndefined()
+    expect(out.disk_iops_read).toBeUndefined()
+  })
+})
+
 describe('sampleProject', () => {
   const L1_ROW = {
     pg_stat_database_num_backends: 3,
@@ -297,6 +437,72 @@ describe('sampleProject', () => {
     expect((scrape[1] as { headers: Record<string, string> }).headers.Authorization).toBe(
       'Bearer mtok'
     )
+  })
+})
+
+describe('sampleProject — container dialect branch', () => {
+  const CADVISOR = readFileSync(join(__dirname, '__fixtures__', 'cadvisor-scrape.prom'), 'utf8')
+  const lastInsertAttrs = () => {
+    const insert = vi
+      .mocked(executePlatformQuery)
+      .mock.calls.filter(([opts]) => opts.query.includes('insert into platform.metrics_samples'))
+      .pop()!
+    expect(insert).toBeTruthy()
+    return insert[0].parameters!
+  }
+
+  it('containerName set → container_* dialect (machine-denominator RAM/CPU from cAdvisor)', async () => {
+    vi.mocked(resolveProjectConnection).mockResolvedValue({
+      ...CONN,
+      containerName: 'supabase-db',
+    } as never)
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(async (url: unknown) => {
+        if (String(url).includes('/query')) {
+          return { ok: true, status: 200, json: async () => [{}], text: async () => '' }
+        }
+        return { ok: true, status: 200, text: async () => CADVISOR, json: async () => [] }
+      })
+    )
+    const nowSpy = vi.spyOn(Date, 'now')
+    nowSpy.mockReturnValue(1_000_000)
+    await sampleProject('proj-x') // first cycle: seeds lastScrape (prev)
+    nowSpy.mockReturnValue(1_060_000) // +60s
+    await sampleProject('proj-x') // second cycle: CPU/network rates now available
+    const params = lastInsertAttrs()
+    const attrs = params.filter((p) => typeof p === 'string' && p !== 'proj-x')
+    expect(attrs).toContain('ram_usage') // container memory %
+    expect(attrs).toContain('ram_usage_used')
+    expect(attrs).toContain('avg_cpu_usage') // container CPU rate (needs prev)
+    // ram_usage_used is the container working-set, not any host-memory value.
+    const i = params.indexOf('ram_usage_used')
+    expect(params[i + 1]).toBe(164704256)
+    // Only ATTRIBUTE_META keys are ever inserted (injection-barrier invariant).
+    expect(attrs.every((a) => (a as string) in ATTRIBUTE_META)).toBe(true)
+    nowSpy.mockRestore()
+  })
+
+  it('containerName null → host dialect (existing computeScrapeAttributes path)', async () => {
+    vi.mocked(resolveProjectConnection).mockResolvedValue({
+      ...CONN,
+      containerName: null,
+    } as never)
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(async (url: unknown) => {
+        if (String(url).includes('/query')) {
+          return { ok: true, status: 200, json: async () => [{}], text: async () => '' }
+        }
+        return { ok: true, status: 200, text: async () => PROM_T0, json: async () => [] }
+      })
+    )
+    await sampleProject('proj-x')
+    const params = lastInsertAttrs()
+    const attrs = params.filter((p) => typeof p === 'string' && p !== 'proj-x')
+    expect(attrs).toContain('ram_usage')
+    const i = params.indexOf('ram_usage_used')
+    expect(params[i + 1]).toBe(500) // host math: 1000-300-150-50, NOT a container value
   })
 })
 
