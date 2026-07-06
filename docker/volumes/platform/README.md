@@ -1780,3 +1780,118 @@ compose file:
   `:9598` itself. The per-project Metrics token field exists for an operator who fronts vector
   with their own authenticating proxy; treat network exposure of `:9598` the same as any other
   unauthenticated stack-internal port.
+
+## M6.4: Container-granular infra metrics
+
+M6.3's host-level metrics chart the whole machine — real numbers, but on a shared or
+multi-tenant stack every project registered against the same `metrics_url` sees identical host
+CPU/RAM/network. M6.4 adds an optional per-container layer on top: when a project's registry row
+names the Postgres container behind it, the sampler switches that row from host-level series to
+cAdvisor's per-container `container_*` series, giving isolated CPU/RAM/network per project on a
+shared stack. This is purely additive — a row with no container name keeps getting exactly the
+M6.3 host-level behavior documented above, which **stays valid as the fallback, not superseded**.
+
+### Operator runbook: enabling container-granular metrics
+
+1. Bring up the new `cadvisor` service alongside the existing overlay chain (no new compose
+   file — it lives in `docker-compose.logs.yml`, same as `vector`/`analytics`):
+
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.logs.yml up -d cadvisor
+   ```
+
+   `cadvisor` runs with lean flags on purpose:
+   `--disable_metrics=sched,percpu,memory_numa,cpuLoad,diskIO,disk,tcp,advtcp,udp,app,process,hugetlb,perf_event,referenced_memory,cpu_topology,resctrl`
+   plus `--store_container_labels=false`. Container filesystem/blkio metrics are deliberately
+   dropped: a container's rootfs is not the Postgres data volume, so a container-level disk-IO
+   or disk-size number would misrepresent the database's actual disk usage. Disk stays
+   host-level (or per-database via the existing L1 SQL layer) — never per-container. CPU,
+   memory, and network cgroup series, plus the `machine_cpu_cores`/`machine_memory_bytes`
+   denominators, are kept.
+
+2. **Recreate `vector`, don't just `up -d` it — this is the operator gotcha to know.**
+   `vector.yml` is a bind-mounted config file; `docker compose up -d` alone does not notice it
+   changed and will silently keep running the old scrape/filter config, even on a stack that
+   already has M6.3's overlay running:
+
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.logs.yml up -d --force-recreate vector
+   ```
+
+3. Verify vector re-exports container series on the **same, unchanged** `:9598` endpoint — no
+   new `metrics_url`, no new port:
+
+   ```bash
+   curl -s http://<host>:9598/metrics | grep -c '^container_'
+   ```
+
+   returns a positive count once at least one Postgres container has been scraped. Vector
+   filters this source down to `machine_cpu_cores`/`machine_memory_bytes` plus `container_*`
+   series labeled with the compose service `db` — other containers on the host (Kong, GoTrue,
+   Studio itself, `cadvisor` included) are scraped by cAdvisor but dropped by this filter, never
+   exported.
+
+4. Register a container identity for a project — three ways, mirroring how `metrics_url` itself
+   is registered (M6.3 section above):
+   - The panel: Settings → General → Connection configuration → **Postgres container name**
+     (its own "Clear the stored container name" checkbox unsets it).
+   - `register-project.ts --container supabase-db` (alongside `--metrics-url`); `--from-current-env`
+     also picks up a `METRICS_CONTAINER` env var, mirroring `METRICS_URL`.
+   - `PATCH /api/platform/projects/{ref}` with `{ "container": "supabase-db" }`. `null` clears it
+     back to host-level; an empty string is a no-op (keeps whatever was already stored) — the
+     same convention the Metrics URL/token PATCH fields already use.
+
+### The additive model
+
+- **No container name registered** → the sampler stays on `computeScrapeAttributes`, exactly the
+  M6.3 host-level path: CPU/RAM/network/disk identical across every project pointed at the same
+  `metrics_url`.
+- **Container name registered** → the sampler switches that row to `computeContainerAttributes`:
+  CPU/RAM/network become genuinely per-project, scoped to that one container; disk stays
+  host-level (see the table below) and per-database disk usage keeps coming from the existing L1
+  SQL path either way.
+
+### Honest degradation: container mode vs. host mode
+
+| Attribute | Container mode (name registered) | Host mode (M6.3, still the fallback) |
+| --- | --- | --- |
+| CPU breakdown | User + System only (`cpu_usage_busy_user`/`_system`) — **no iowait, no irqs**: cgroup `cpu.stat` has no such modes | User / System / iowait / irqs / other, from `/proc/stat` |
+| CPU % denominator | The container's `cpu.quota`/`cpu.period` if the operator set one, else `machine_cpu_cores` | `machine_cpu_cores`, always |
+| RAM % | Working-set bytes vs. the container's memory limit if set and sane, else `machine_memory_bytes` | Used bytes vs. the host's total memory |
+| Network | Per-container `container_network_{receive,transmit}_bytes_total`, loopback excluded | Host-wide totals, loopback excluded |
+| Disk IO / disk size | **Not container-scoped** — stays host-level (`disk_bytes_read/written`, `disk_iops_*`, `disk_fs_size`, `disk_fs_used`) | Same host-level series (unchanged from M6.3) |
+| Disk usage (per project) | Unaffected by container mode — still `pg_database_size`/WAL size from the L1 SQL layer | Same |
+| `ram_commit_used` / `ram_commit_limit` | Absent — unimplemented in this milestone; the chart stays hidden self-hosted regardless of mode | Absent, same reason |
+| Swap | Raw `ram_usage_swap` byte count only, from cgroup memory.swap — no `swap_usage` percentage | `swap_usage` percentage available (host `/proc/meminfo` has a swap total to divide by) |
+
+Everything not in this table — connection counts, database size, WAL size, the resource-warnings
+thresholds — is unaffected by M6.4; see the M6.3 section's own "what lights up" list.
+
+### Shared-db note
+
+A shared-db project's registry row clones its host stack's connection details (M6.2's shared-db
+hint, M6.1's propagation rules) — it does not get a Postgres container of its own. Point each
+child's container name at the **same** name as its host (typically `supabase-db`) to get
+container-scoped CPU/RAM/network on a shared-db setup; leaving it unset falls back to host-level
+metrics, identical to every other unregistered row on that stack. Either way, every child sharing
+one container reports the same CPU/RAM/network numbers — that is the shared container's actual
+resource usage, not a per-logical-database slice (the panel shows this exact caveat inline:
+"Shared-db projects report the shared Postgres container — CPU/RAM/network are the container's,
+not per logical database").
+
+### Upgrading an existing platform-db to M6.4
+
+`10-container.sql` only runs automatically against an **empty** platform-db data directory, same
+as every prior migration in this file. Apply it by hand once (safe to re-run — `add column if not
+exists`):
+
+```bash
+docker exec -i supabase-platform-db psql -U postgres -d platform -v ON_ERROR_STOP=1 \
+  < docker/volumes/platform/migrations/10-container.sql
+```
+
+A platform-db that hasn't been upgraded yet degrades honestly rather than erroring: every row's
+`container_name` is treated as `NULL` (logged once — `platform.projects has no container_name
+column (pre-M6.4 platform-db)`), and every project's sampler simply stays on M6.3's host-level
+path, the same degradation-tier pattern M6.0's `08-health.sql` and M6.3's own env-fallback
+columns already established above.
