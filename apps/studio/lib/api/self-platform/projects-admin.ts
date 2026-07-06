@@ -416,6 +416,9 @@ export function parseProjectPatchInput(raw: unknown): { value: ProjectPatch } | 
       return { error: 'Invalid logflare: must be an object' }
     }
     const lf = obj.logflare as Record<string, unknown>
+    for (const field of IMMUTABLE_FIELDS) {
+      if (field in lf) return { error: `Field "${field}" cannot be changed` }
+    }
     for (const [key, prop] of [
       ['url', 'logflareUrl'],
       ['token', 'logflareToken'],

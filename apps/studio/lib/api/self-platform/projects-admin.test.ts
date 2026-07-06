@@ -372,6 +372,13 @@ describe('parseProjectPatchInput (M6.1)', () => {
     expect(parseProjectPatchInput({})).toEqual({ error: 'No editable fields in request body' })
     expect(parseProjectPatchInput(null)).toEqual({ error: 'Request body must be a JSON object' })
   })
+
+  it('immutable trio nested under logflare → 400 naming the field (M6.1 deferred fold-in)', () => {
+    for (const field of ['ref', 'stack_kind', 'stack_meta']) {
+      const out = parseProjectPatchInput({ logflare: { url: 'http://lf:4000', [field]: 'x' } })
+      expect(out).toEqual({ error: `Field "${field}" cannot be changed` })
+    }
+  })
 })
 
 describe('updateProjectConnection (M6.1)', () => {

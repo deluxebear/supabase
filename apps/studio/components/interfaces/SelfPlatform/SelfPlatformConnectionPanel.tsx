@@ -109,7 +109,10 @@ export const SelfPlatformConnectionPanel = () => {
     defaultValues: selfPlatform ? buildDefaults(selfPlatform) : undefined,
   })
   useEffect(() => {
-    if (selfPlatform) form.reset(buildDefaults(selfPlatform))
+    // Dirty-gated: a background refetch (window refocus, 5s COMING_UP poll)
+    // must not wipe in-progress edits; post-save the submit handler resets
+    // dirty state first, so fresh server values land here.
+    if (selfPlatform && !form.formState.isDirty) form.reset(buildDefaults(selfPlatform))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selfPlatform])
 
@@ -117,6 +120,7 @@ export const SelfPlatformConnectionPanel = () => {
     onSuccess: () => {
       setServerError(undefined)
       setPendingPayload(undefined)
+      form.reset(form.getValues())
       toast.success($t('Connection configuration saved'))
     },
     onError: (err) => {
@@ -335,6 +339,15 @@ export const SelfPlatformConnectionPanel = () => {
               </>
             )}
 
+            {isSharedDb && (
+              <Alert>
+                <AlertDescription>
+                  {$t(
+                    'Analytics configured here reads the host stack log stream — logs are stack-scoped and cannot be filtered per project.'
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
             {textField('logflareUrl', $t('Logflare URL'))}
             {clearCheckbox('logflareUrlClear', $t('Clear the stored Logflare URL'))}
             {secretField(

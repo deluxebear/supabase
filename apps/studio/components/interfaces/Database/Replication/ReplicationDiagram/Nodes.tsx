@@ -65,7 +65,7 @@ export const PrimaryDatabaseNode = () => {
         <p className="text-foreground-light">{region?.displayName}</p>
         <p className="text-foreground-light">{region?.code}</p>
       </div>
-      {!!project && (
+      {!!project && Object.values(AWS_REGIONS).some((r) => r.code === project?.region) && (
         <img
           alt={$t('region icon')}
           className="w-8 rounded-xs mt-0.5"

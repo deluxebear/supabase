@@ -488,6 +488,7 @@
   "Analytics Bucket settings": "分析存储桶设置",
   "Analytics Config": "分析配置",
   "Analytics and Marketing": "分析和营销",
+  "Analytics configured here reads the host stack log stream — logs are stack-scoped and cannot be filtered per project.": "此处配置的分析服务读取的是宿主栈的日志流——日志按栈汇聚，无法按项目区分。",
   "Analytics tables stored in this bucket": "存储在此存储桶中的分析表",
   "Anon key": "Anon 密钥",
   "Anonymous": "匿名",

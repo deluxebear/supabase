@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import { Database, DatabaseBackup, HelpCircle, Loader2, MoreVertical } from 'lucide-react'
 import Link from 'next/link'
 import { parseAsBoolean, parseAsString, useQueryStates } from 'nuqs'
+import { AWS_REGIONS } from 'shared-data'
 import { toast } from 'sonner'
 import {
   Badge,
@@ -158,11 +159,13 @@ export const PrimaryNode = ({ data }: NodeProps<Node<PrimaryNodeData>>) => {
               </p>
             </div>
           </div>
-          <img
-            alt={$t('region icon')}
-            className="w-8 rounded-xs mt-0.5"
-            src={`${BASE_PATH}/img/regions/${region.region}.svg`}
-          />
+          {Object.values(AWS_REGIONS).some((r) => r.code === region.region) && (
+            <img
+              alt={$t('region icon')}
+              className="w-8 rounded-xs mt-0.5"
+              src={`${BASE_PATH}/img/regions/${region.region}.svg`}
+            />
+          )}
         </div>
         {numReplicas > 0 && (
           <div className="border-t p-3 py-2">
@@ -446,11 +449,13 @@ export const RegionNode = ({ data }: any) => {
       style={{ width: regionNodeWidth, height: REGION_NODE_HEIGHT }}
     >
       <div className="absolute bottom-2 flex items-center justify-between gap-x-2">
-        <img
-          alt={$t('region icon')}
-          className="w-5 rounded-xs"
-          src={`${BASE_PATH}/img/regions/${region.region}.svg`}
-        />
+        {Object.values(AWS_REGIONS).some((r) => r.code === region.region) && (
+          <img
+            alt={$t('region icon')}
+            className="w-5 rounded-xs"
+            src={`${BASE_PATH}/img/regions/${region.region}.svg`}
+          />
+        )}
         <p className="text-sm">{region.name}</p>
       </div>
     </div>
