@@ -7,6 +7,39 @@ sources:
     type: docker_logs
     exclude_containers:
       - supabase-vector
+  # [self-platform] M6.3: host-level metrics (CPU/RAM/disk/filesystem/network).
+  # Reads the host's /proc and /sys via the mounts + PROCFS_ROOT/SYSFS_ROOT env
+  # set in docker-compose.logs.yml. On Docker Desktop/OrbStack this is the
+  # Linux VM, not the Mac host (documented boundary).
+  host_stats:
+    type: host_metrics
+    collectors:
+      - cpu
+      - memory
+      - disk
+      - filesystem
+      - network
+      - load
+    scrape_interval_secs: 15
+  # [self-platform] M6.3: re-scrape the Elixir services' own Prometheus
+  # endpoints (container-network only, never kong-routed) so Studio needs a
+  # single registered endpoint. Bearer = any JWT signed with the stack's
+  # METRICS_JWT_SECRET (the stock compose sets it from the stack JWT secret,
+  # so ANON_KEY works).
+  # NOTE (M6.3 T1 spike): the brief's assumed hostname `pooler` does not
+  # resolve on the compose network — the supavisor service's compose network
+  # alias is `supavisor` (its container_name `supabase-pooler` also resolves,
+  # but the service-name alias is what's used here). `realtime` resolves as
+  # named. Verified live via `docker exec supabase-vector getent hosts <name>`.
+  service_stats:
+    type: prometheus_scrape
+    endpoints:
+      - http://realtime:4000/metrics
+      - http://supavisor:4000/metrics
+    scrape_interval_secs: 15
+    auth:
+      strategy: bearer
+      token: ${METRICS_SCRAPE_TOKEN?METRICS_SCRAPE_TOKEN is required}
 
 transforms:
   project_logs:
@@ -266,3 +299,12 @@ sinks:
       headers:
         x-api-key: ${LOGFLARE_PUBLIC_ACCESS_TOKEN?LOGFLARE_PUBLIC_ACCESS_TOKEN is required}
     uri: 'http://analytics:4000/api/logs?source_name=cloudflare.logs.prod'
+  # [self-platform] M6.3: single aggregated Prometheus endpoint consumed by
+  # the Studio metrics sampler (registered per project as metrics_url).
+  prometheus_metrics:
+    type: prometheus_exporter
+    inputs:
+      - host_stats
+      - service_stats
+    address: 0.0.0.0:9598
+    flush_period_secs: 60

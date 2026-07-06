@@ -73,9 +73,13 @@ services:
     container_name: supabase-vector
     image: timberio/vector:0.53.0-alpine
     restart: unless-stopped
+    ports:
+      - 9598:9598
     volumes:
       - ./volumes/logs/vector.yml:/etc/vector/vector.yml:ro,z
       - ${DOCKER_SOCKET_LOCATION}:/var/run/docker.sock:ro,z
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
     healthcheck:
       test:
         [
@@ -90,6 +94,9 @@ services:
         condition: service_healthy
     environment:
       LOGFLARE_PUBLIC_ACCESS_TOKEN: ${LOGFLARE_PUBLIC_ACCESS_TOKEN}
+      PROCFS_ROOT: /host/proc
+      SYSFS_ROOT: /host/sys
+      METRICS_SCRAPE_TOKEN: ${ANON_KEY}
     command:
       [
         "--config",

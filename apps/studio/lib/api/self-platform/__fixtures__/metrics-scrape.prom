@@ -1,0 +1,555 @@
+# HELP host_cpu_seconds_total cpu_seconds_total
+# TYPE host_cpu_seconds_total counter
+host_cpu_seconds_total{collector="cpu",cpu="0",host="b5f35edf9006",mode="idle"} 397780.67 1783323469304
+host_cpu_seconds_total{collector="cpu",cpu="0",host="b5f35edf9006",mode="io_wait"} 470.39 1783323469304
+host_cpu_seconds_total{collector="cpu",cpu="0",host="b5f35edf9006",mode="nice"} 0 1783323469304
+host_cpu_seconds_total{collector="cpu",cpu="0",host="b5f35edf9006",mode="system"} 5289.99 1783323469304
+host_cpu_seconds_total{collector="cpu",cpu="0",host="b5f35edf9006",mode="user"} 11087.87 1783323469304
+host_cpu_seconds_total{collector="cpu",cpu="1",host="b5f35edf9006",mode="idle"} 402905.6 1783323469304
+host_cpu_seconds_total{collector="cpu",cpu="1",host="b5f35edf9006",mode="io_wait"} 420.8 1783323469304
+host_cpu_seconds_total{collector="cpu",cpu="1",host="b5f35edf9006",mode="nice"} 0 1783323469304
+host_cpu_seconds_total{collector="cpu",cpu="1",host="b5f35edf9006",mode="system"} 4515.59 1783323469304
+host_cpu_seconds_total{collector="cpu",cpu="1",host="b5f35edf9006",mode="user"} 10278.19 1783323469304
+# HELP host_disk_read_bytes_total disk_read_bytes_total
+# TYPE host_disk_read_bytes_total counter
+host_disk_read_bytes_total{collector="disk",device="vda",host="b5f35edf9006"} 212171325440 1783323469304
+# HELP host_disk_reads_completed_total disk_reads_completed_total
+# TYPE host_disk_reads_completed_total counter
+host_disk_reads_completed_total{collector="disk",device="vda",host="b5f35edf9006"} 4378444 1783323469304
+# HELP host_disk_writes_completed_total disk_writes_completed_total
+# TYPE host_disk_writes_completed_total counter
+host_disk_writes_completed_total{collector="disk",device="vda",host="b5f35edf9006"} 0 1783323469304
+# HELP host_disk_written_bytes_total disk_written_bytes_total
+# TYPE host_disk_written_bytes_total counter
+host_disk_written_bytes_total{collector="disk",device="vda",host="b5f35edf9006"} 0 1783323469304
+# HELP host_filesystem_free_bytes filesystem_free_bytes
+# TYPE host_filesystem_free_bytes gauge
+host_filesystem_free_bytes{collector="filesystem",device="overlay",filesystem="overlay",host="b5f35edf9006",mountpoint="/"} 220889235456 1783323469304
+# HELP host_filesystem_total_bytes filesystem_total_bytes
+# TYPE host_filesystem_total_bytes gauge
+host_filesystem_total_bytes{collector="filesystem",device="overlay",filesystem="overlay",host="b5f35edf9006",mountpoint="/"} 287913308160 1783323469304
+# HELP host_filesystem_used_bytes filesystem_used_bytes
+# TYPE host_filesystem_used_bytes gauge
+host_filesystem_used_bytes{collector="filesystem",device="overlay",filesystem="overlay",host="b5f35edf9006",mountpoint="/"} 67024072704 1783323469304
+# HELP host_filesystem_used_ratio filesystem_used_ratio
+# TYPE host_filesystem_used_ratio gauge
+host_filesystem_used_ratio{collector="filesystem",device="overlay",filesystem="overlay",host="b5f35edf9006",mountpoint="/"} 0.23279254138469696 1783323469304
+# HELP host_load1 load1
+# TYPE host_load1 gauge
+host_load1{collector="load",host="b5f35edf9006"} 0.71875 1783323469304
+# HELP host_load15 load15
+# TYPE host_load15 gauge
+host_load15{collector="load",host="b5f35edf9006"} 1.10791015625 1783323469304
+# HELP host_load5 load5
+# TYPE host_load5 gauge
+host_load5{collector="load",host="b5f35edf9006"} 1.02734375 1783323469304
+# HELP host_logical_cpus logical_cpus
+# TYPE host_logical_cpus gauge
+host_logical_cpus{collector="cpu",host="b5f35edf9006"} 12 1783323469304
+# HELP host_memory_active_bytes memory_active_bytes
+# TYPE host_memory_active_bytes gauge
+host_memory_active_bytes{collector="memory",host="b5f35edf9006"} 5821956000 1783323469304
+# HELP host_memory_available_bytes memory_available_bytes
+# TYPE host_memory_available_bytes gauge
+host_memory_available_bytes{collector="memory",host="b5f35edf9006"} 7515628000 1783323469304
+# HELP host_memory_buffers_bytes memory_buffers_bytes
+# TYPE host_memory_buffers_bytes gauge
+host_memory_buffers_bytes{collector="memory",host="b5f35edf9006"} 148000 1783323469304
+# HELP host_memory_cached_bytes memory_cached_bytes
+# TYPE host_memory_cached_bytes gauge
+host_memory_cached_bytes{collector="memory",host="b5f35edf9006"} 1602004000 1783323469304
+# HELP host_memory_free_bytes memory_free_bytes
+# TYPE host_memory_free_bytes gauge
+host_memory_free_bytes{collector="memory",host="b5f35edf9006"} 4897576000 1783323469304
+# HELP host_memory_shared_bytes memory_shared_bytes
+# TYPE host_memory_shared_bytes gauge
+host_memory_shared_bytes{collector="memory",host="b5f35edf9006"} 0 1783323469304
+# HELP host_memory_swap_free_bytes memory_swap_free_bytes
+# TYPE host_memory_swap_free_bytes gauge
+host_memory_swap_free_bytes{collector="memory",host="b5f35edf9006"} 17444872000 1783323469304
+# HELP host_memory_swap_total_bytes memory_swap_total_bytes
+# TYPE host_memory_swap_total_bytes gauge
+host_memory_swap_total_bytes{collector="memory",host="b5f35edf9006"} 17474496000 1783323469304
+# HELP host_memory_swap_used_bytes memory_swap_used_bytes
+# TYPE host_memory_swap_used_bytes gauge
+host_memory_swap_used_bytes{collector="memory",host="b5f35edf9006"} 29624000 1783323469304
+# HELP host_memory_swapped_in_bytes_total memory_swapped_in_bytes_total
+# TYPE host_memory_swapped_in_bytes_total counter
+host_memory_swapped_in_bytes_total{collector="memory",host="b5f35edf9006"} 25457448000 1783323469304
+# HELP host_memory_swapped_out_bytes_total memory_swapped_out_bytes_total
+# TYPE host_memory_swapped_out_bytes_total counter
+host_memory_swapped_out_bytes_total{collector="memory",host="b5f35edf9006"} 50967244000 1783323469304
+# HELP host_memory_total_bytes memory_total_bytes
+# TYPE host_memory_total_bytes gauge
+host_memory_total_bytes{collector="memory",host="b5f35edf9006"} 16425928000 1783323469304
+# HELP host_memory_used_bytes memory_used_bytes
+# TYPE host_memory_used_bytes gauge
+host_memory_used_bytes{collector="memory",host="b5f35edf9006"} 9926200000 1783323469304
+# HELP host_network_receive_bytes_total network_receive_bytes_total
+# TYPE host_network_receive_bytes_total counter
+host_network_receive_bytes_total{collector="network",device="eth0",host="b5f35edf9006"} 1842772 1783323469304
+# HELP host_network_receive_errs_total network_receive_errs_total
+# TYPE host_network_receive_errs_total counter
+host_network_receive_errs_total{collector="network",device="eth0",host="b5f35edf9006"} 0 1783323469304
+# HELP host_network_receive_packets_total network_receive_packets_total
+# TYPE host_network_receive_packets_total counter
+host_network_receive_packets_total{collector="network",device="eth0",host="b5f35edf9006"} 198 1783323469304
+# HELP host_network_transmit_bytes_total network_transmit_bytes_total
+# TYPE host_network_transmit_bytes_total counter
+host_network_transmit_bytes_total{collector="network",device="eth0",host="b5f35edf9006"} 2086321 1783323469304
+# HELP host_network_transmit_errs_total network_transmit_errs_total
+# TYPE host_network_transmit_errs_total counter
+host_network_transmit_errs_total{collector="network",device="eth0",host="b5f35edf9006"} 0 1783323469304
+# HELP host_network_transmit_packets_drop_total network_transmit_packets_drop_total
+# TYPE host_network_transmit_packets_drop_total counter
+host_network_transmit_packets_drop_total{collector="network",device="eth0",host="b5f35edf9006"} 0 1783323469304
+# HELP host_network_transmit_packets_total network_transmit_packets_total
+# TYPE host_network_transmit_packets_total counter
+host_network_transmit_packets_total{collector="network",device="eth0",host="b5f35edf9006"} 192 1783323469304
+# HELP host_physical_cpus physical_cpus
+# TYPE host_physical_cpus gauge
+host_physical_cpus{collector="cpu",host="b5f35edf9006"} 12 1783323469304
+# HELP realtime_channel_db_events realtime_channel_db_events
+# TYPE realtime_channel_db_events counter
+realtime_channel_db_events{host="127.0.0.1",id="realtime@127.0.0.1",region="nil",tenant="realtime-dev"} 1 1783323469367
+# HELP realtime_channel_events realtime_channel_events
+# TYPE realtime_channel_events counter
+realtime_channel_events{host="127.0.0.1",id="realtime@127.0.0.1",region="nil",tenant="realtime-dev"} 2 1783323469367
+# HELP realtime_channel_global_db_events realtime_channel_global_db_events
+# TYPE realtime_channel_global_db_events counter
+realtime_channel_global_db_events{host="127.0.0.1",id="realtime@127.0.0.1",region="nil"} 1 1783323469367
+# HELP realtime_channel_global_events realtime_channel_global_events
+# TYPE realtime_channel_global_events counter
+realtime_channel_global_events{host="127.0.0.1",id="realtime@127.0.0.1",region="nil"} 2 1783323469367
+# HELP realtime_channel_global_joins realtime_channel_global_joins
+# TYPE realtime_channel_global_joins counter
+realtime_channel_global_joins{host="127.0.0.1",id="realtime@127.0.0.1",region="nil"} 2 1783323469367
+# HELP realtime_channel_global_presence_events realtime_channel_global_presence_events
+# TYPE realtime_channel_global_presence_events counter
+realtime_channel_global_presence_events{host="127.0.0.1",id="realtime@127.0.0.1",region="nil"} 2 1783323469367
+# HELP realtime_channel_joins realtime_channel_joins
+# TYPE realtime_channel_joins counter
+realtime_channel_joins{host="127.0.0.1",id="realtime@127.0.0.1",region="nil",tenant="realtime-dev"} 2 1783323469367
+# HELP realtime_channel_presence_events realtime_channel_presence_events
+# TYPE realtime_channel_presence_events counter
+realtime_channel_presence_events{host="127.0.0.1",id="realtime@127.0.0.1",region="nil",tenant="realtime-dev"} 2 1783323469367
+# HELP realtime_connections_connected realtime_connections_connected
+# TYPE realtime_connections_connected gauge
+realtime_connections_connected{host="127.0.0.1",id="realtime@127.0.0.1",region="nil",tenant="realtime-dev"} 1 1783323469367
+# HELP realtime_connections_connected_cluster realtime_connections_connected_cluster
+# TYPE realtime_connections_connected_cluster gauge
+realtime_connections_connected_cluster{host="127.0.0.1",id="realtime@127.0.0.1",region="nil",tenant="realtime-dev"} 1 1783323469367
+# HELP realtime_connections_global_connected realtime_connections_global_connected
+# TYPE realtime_connections_global_connected gauge
+realtime_connections_global_connected{host="127.0.0.1",id="realtime@127.0.0.1",region="nil"} 0 1783323469367
+# HELP realtime_connections_global_connected_cluster realtime_connections_global_connected_cluster
+# TYPE realtime_connections_global_connected_cluster gauge
+realtime_connections_global_connected_cluster{host="127.0.0.1",id="realtime@127.0.0.1",region="nil"} 0 1783323469367
+# HELP realtime_global_rpc realtime_global_rpc
+# TYPE realtime_global_rpc histogram
+realtime_global_rpc_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="10",mechanism="erpc",region="nil",success="true"} 0 1783323469367
+realtime_global_rpc_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="250",mechanism="erpc",region="nil",success="true"} 1 1783323469367
+realtime_global_rpc_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="5000",mechanism="erpc",region="nil",success="true"} 1 1783323469367
+realtime_global_rpc_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="15000",mechanism="erpc",region="nil",success="true"} 1 1783323469367
+realtime_global_rpc_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="+Inf",mechanism="erpc",region="nil",success="true"} 1 1783323469367
+realtime_global_rpc_sum{host="127.0.0.1",id="realtime@127.0.0.1",mechanism="erpc",region="nil",success="true"} 58 1783323469367
+realtime_global_rpc_count{host="127.0.0.1",id="realtime@127.0.0.1",mechanism="erpc",region="nil",success="true"} 1 1783323469367
+# HELP realtime_payload_size realtime_payload_size
+# TYPE realtime_payload_size histogram
+realtime_payload_size_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="250",message_type="broadcast",region="nil"} 1 1783323469367
+realtime_payload_size_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="1000",message_type="broadcast",region="nil"} 1 1783323469367
+realtime_payload_size_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="5000",message_type="broadcast",region="nil"} 1 1783323469367
+realtime_payload_size_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="25000",message_type="broadcast",region="nil"} 1 1783323469367
+realtime_payload_size_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="500000",message_type="broadcast",region="nil"} 1 1783323469367
+realtime_payload_size_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="3000000",message_type="broadcast",region="nil"} 1 1783323469367
+realtime_payload_size_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="+Inf",message_type="broadcast",region="nil"} 1 1783323469367
+realtime_payload_size_sum{host="127.0.0.1",id="realtime@127.0.0.1",message_type="broadcast",region="nil"} 154 1783323469367
+realtime_payload_size_count{host="127.0.0.1",id="realtime@127.0.0.1",message_type="broadcast",region="nil"} 1 1783323469367
+# HELP realtime_prom_ex_prom_ex_status_info realtime_prom_ex_prom_ex_status_info
+# TYPE realtime_prom_ex_prom_ex_status_info gauge
+realtime_prom_ex_prom_ex_status_info{host="127.0.0.1",id="realtime@127.0.0.1",region="nil"} 1 1783323469367
+# HELP realtime_replication_poller_query_duration realtime_replication_poller_query_duration
+# TYPE realtime_replication_poller_query_duration histogram
+realtime_replication_poller_query_duration_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="250",region="nil",tenant="realtime-dev"} 272 1783323469367
+realtime_replication_poller_query_duration_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="1000",region="nil",tenant="realtime-dev"} 272 1783323469367
+realtime_replication_poller_query_duration_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="5000",region="nil",tenant="realtime-dev"} 272 1783323469367
+realtime_replication_poller_query_duration_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="25000",region="nil",tenant="realtime-dev"} 272 1783323469367
+realtime_replication_poller_query_duration_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="500000",region="nil",tenant="realtime-dev"} 272 1783323469367
+realtime_replication_poller_query_duration_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="3000000",region="nil",tenant="realtime-dev"} 272 1783323469367
+realtime_replication_poller_query_duration_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="+Inf",region="nil",tenant="realtime-dev"} 272 1783323469367
+realtime_replication_poller_query_duration_sum{host="127.0.0.1",id="realtime@127.0.0.1",region="nil",tenant="realtime-dev"} 2971 1783323469367
+realtime_replication_poller_query_duration_count{host="127.0.0.1",id="realtime@127.0.0.1",region="nil",tenant="realtime-dev"} 272 1783323469367
+# HELP realtime_tenants_connected realtime_tenants_connected
+# TYPE realtime_tenants_connected gauge
+realtime_tenants_connected{host="127.0.0.1",id="realtime@127.0.0.1",region="nil"} 1 1783323469367
+# HELP realtime_tenants_payload_size realtime_tenants_payload_size
+# TYPE realtime_tenants_payload_size histogram
+realtime_tenants_payload_size_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="250",message_type="broadcast",region="nil",tenant="realtime-dev"} 1 1783323469367
+realtime_tenants_payload_size_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="1000",message_type="broadcast",region="nil",tenant="realtime-dev"} 1 1783323469367
+realtime_tenants_payload_size_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="5000",message_type="broadcast",region="nil",tenant="realtime-dev"} 1 1783323469367
+realtime_tenants_payload_size_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="25000",message_type="broadcast",region="nil",tenant="realtime-dev"} 1 1783323469367
+realtime_tenants_payload_size_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="500000",message_type="broadcast",region="nil",tenant="realtime-dev"} 1 1783323469367
+realtime_tenants_payload_size_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="3000000",message_type="broadcast",region="nil",tenant="realtime-dev"} 1 1783323469367
+realtime_tenants_payload_size_bucket{host="127.0.0.1",id="realtime@127.0.0.1",le="+Inf",message_type="broadcast",region="nil",tenant="realtime-dev"} 1 1783323469367
+realtime_tenants_payload_size_sum{host="127.0.0.1",id="realtime@127.0.0.1",message_type="broadcast",region="nil",tenant="realtime-dev"} 154 1783323469367
+realtime_tenants_payload_size_count{host="127.0.0.1",id="realtime@127.0.0.1",message_type="broadcast",region="nil",tenant="realtime-dev"} 1 1783323469367
+# HELP supavisor_client_connection_duration supavisor_client_connection_duration
+# TYPE supavisor_client_connection_duration histogram
+supavisor_client_connection_duration_bucket{az="nil",db_name="postgres",instance_id="nil",le="1",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 0 1783323469366
+supavisor_client_connection_duration_bucket{az="nil",db_name="postgres",instance_id="nil",le="10",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 0 1783323469366
+supavisor_client_connection_duration_bucket{az="nil",db_name="postgres",instance_id="nil",le="500",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 6 1783323469366
+supavisor_client_connection_duration_bucket{az="nil",db_name="postgres",instance_id="nil",le="2500",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 6 1783323469366
+supavisor_client_connection_duration_bucket{az="nil",db_name="postgres",instance_id="nil",le="10000",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 6 1783323469366
+supavisor_client_connection_duration_bucket{az="nil",db_name="postgres",instance_id="nil",le="+Inf",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 6 1783323469366
+supavisor_client_connection_duration_sum{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 646 1783323469366
+supavisor_client_connection_duration_count{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 6 1783323469366
+# HELP supavisor_client_connection_lifetime_ms supavisor_client_connection_lifetime_ms
+# TYPE supavisor_client_connection_lifetime_ms histogram
+supavisor_client_connection_lifetime_ms_bucket{az="nil",db_name="postgres",instance_id="nil",le="500",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 0 1783323469366
+supavisor_client_connection_lifetime_ms_bucket{az="nil",db_name="postgres",instance_id="nil",le="5000",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 1 1783323469366
+supavisor_client_connection_lifetime_ms_bucket{az="nil",db_name="postgres",instance_id="nil",le="60000",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 1 1783323469366
+supavisor_client_connection_lifetime_ms_bucket{az="nil",db_name="postgres",instance_id="nil",le="1800000",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 1 1783323469366
+supavisor_client_connection_lifetime_ms_bucket{az="nil",db_name="postgres",instance_id="nil",le="28800000",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 1 1783323469366
+supavisor_client_connection_lifetime_ms_bucket{az="nil",db_name="postgres",instance_id="nil",le="259200000",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 1 1783323469366
+supavisor_client_connection_lifetime_ms_bucket{az="nil",db_name="postgres",instance_id="nil",le="2592000000",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 1 1783323469366
+supavisor_client_connection_lifetime_ms_bucket{az="nil",db_name="postgres",instance_id="nil",le="+Inf",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 1 1783323469366
+supavisor_client_connection_lifetime_ms_sum{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 4934 1783323469366
+supavisor_client_connection_lifetime_ms_count{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 1 1783323469366
+# HELP supavisor_client_handler_state_duration supavisor_client_handler_state_duration
+# TYPE supavisor_client_handler_state_duration histogram
+supavisor_client_handler_state_duration_bucket{az="nil",from_state="auth_scram_first_wait",instance_id="nil",le="1",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil",tenant="your-tenant-id",to_state="auth_scram_final_wait"} 0 1783323469366
+supavisor_client_handler_state_duration_bucket{az="nil",from_state="auth_scram_first_wait",instance_id="nil",le="10",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil",tenant="your-tenant-id",to_state="auth_scram_final_wait"} 3 1783323469366
+supavisor_client_handler_state_duration_bucket{az="nil",from_state="auth_scram_first_wait",instance_id="nil",le="500",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil",tenant="your-tenant-id",to_state="auth_scram_final_wait"} 6 1783323469366
+supavisor_client_handler_state_duration_bucket{az="nil",from_state="auth_scram_first_wait",instance_id="nil",le="2500",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil",tenant="your-tenant-id",to_state="auth_scram_final_wait"} 6 1783323469366
+supavisor_client_handler_state_duration_bucket{az="nil",from_state="auth_scram_first_wait",instance_id="nil",le="10000",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil",tenant="your-tenant-id",to_state="auth_scram_final_wait"} 6 1783323469366
+supavisor_client_handler_state_duration_bucket{az="nil",from_state="auth_scram_first_wait",instance_id="nil",le="+Inf",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil",tenant="your-tenant-id",to_state="auth_scram_final_wait"} 6 1783323469366
+supavisor_client_handler_state_duration_sum{az="nil",from_state="auth_scram_first_wait",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil",tenant="your-tenant-id",to_state="auth_scram_final_wait"} 151 1783323469366
+supavisor_client_handler_state_duration_count{az="nil",from_state="auth_scram_first_wait",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil",tenant="your-tenant-id",to_state="auth_scram_final_wait"} 6 1783323469366
+# HELP supavisor_client_joins_ok supavisor_client_joins_ok
+# TYPE supavisor_client_joins_ok counter
+supavisor_client_joins_ok{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 6 1783323469366
+# HELP supavisor_client_network_recv supavisor_client_network_recv
+# TYPE supavisor_client_network_recv counter
+supavisor_client_network_recv{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 2647 1783323469366
+# HELP supavisor_client_network_send supavisor_client_network_send
+# TYPE supavisor_client_network_send counter
+supavisor_client_network_send{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 4207 1783323469366
+# HELP supavisor_client_queries_count supavisor_client_queries_count
+# TYPE supavisor_client_queries_count counter
+supavisor_client_queries_count{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",proxy="false",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 8 1783323469366
+# HELP supavisor_client_query_duration supavisor_client_query_duration
+# TYPE supavisor_client_query_duration histogram
+supavisor_client_query_duration_bucket{az="nil",db_name="postgres",instance_id="nil",le="1",location="local",mode="transaction",nodehost="223ed92e003b",proxy="false",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 0 1783323469366
+supavisor_client_query_duration_bucket{az="nil",db_name="postgres",instance_id="nil",le="10",location="local",mode="transaction",nodehost="223ed92e003b",proxy="false",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 4 1783323469366
+supavisor_client_query_duration_bucket{az="nil",db_name="postgres",instance_id="nil",le="500",location="local",mode="transaction",nodehost="223ed92e003b",proxy="false",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 7 1783323469366
+supavisor_client_query_duration_bucket{az="nil",db_name="postgres",instance_id="nil",le="2500",location="local",mode="transaction",nodehost="223ed92e003b",proxy="false",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 7 1783323469366
+supavisor_client_query_duration_bucket{az="nil",db_name="postgres",instance_id="nil",le="10000",location="local",mode="transaction",nodehost="223ed92e003b",proxy="false",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 7 1783323469366
+supavisor_client_query_duration_bucket{az="nil",db_name="postgres",instance_id="nil",le="+Inf",location="local",mode="transaction",nodehost="223ed92e003b",proxy="false",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 8 1783323469366
+supavisor_client_query_duration_sum{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",proxy="false",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 15369 1783323469366
+supavisor_client_query_duration_count{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",proxy="false",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 8 1783323469366
+# HELP supavisor_connections_active supavisor_connections_active
+# TYPE supavisor_connections_active gauge
+supavisor_connections_active{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 1 1783323469366
+# HELP supavisor_db_handler_db_connection_count supavisor_db_handler_db_connection_count
+# TYPE supavisor_db_handler_db_connection_count counter
+supavisor_db_handler_db_connection_count{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 1 1783323469366
+# HELP supavisor_db_handler_started_count supavisor_db_handler_started_count
+# TYPE supavisor_db_handler_started_count counter
+supavisor_db_handler_started_count{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 1 1783323469366
+# HELP supavisor_db_network_recv supavisor_db_network_recv
+# TYPE supavisor_db_network_recv counter
+supavisor_db_network_recv{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 1004 1783323469366
+# HELP supavisor_db_network_send supavisor_db_network_send
+# TYPE supavisor_db_network_send counter
+supavisor_db_network_send{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 1299 1783323469366
+# HELP supavisor_pool_checkout_duration_local supavisor_pool_checkout_duration_local
+# TYPE supavisor_pool_checkout_duration_local histogram
+supavisor_pool_checkout_duration_local_bucket{az="nil",db_name="postgres",instance_id="nil",le="1",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 8 1783323469366
+supavisor_pool_checkout_duration_local_bucket{az="nil",db_name="postgres",instance_id="nil",le="10",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 8 1783323469366
+supavisor_pool_checkout_duration_local_bucket{az="nil",db_name="postgres",instance_id="nil",le="500",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 8 1783323469366
+supavisor_pool_checkout_duration_local_bucket{az="nil",db_name="postgres",instance_id="nil",le="2500",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 8 1783323469366
+supavisor_pool_checkout_duration_local_bucket{az="nil",db_name="postgres",instance_id="nil",le="10000",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 8 1783323469366
+supavisor_pool_checkout_duration_local_bucket{az="nil",db_name="postgres",instance_id="nil",le="+Inf",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 8 1783323469366
+supavisor_pool_checkout_duration_local_sum{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 0 1783323469366
+supavisor_pool_checkout_duration_local_count{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 8 1783323469366
+# HELP supavisor_pool_connections_checked_out supavisor_pool_connections_checked_out
+# TYPE supavisor_pool_connections_checked_out gauge
+supavisor_pool_connections_checked_out{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 0 1783323469366
+# HELP supavisor_pool_connections_idle supavisor_pool_connections_idle
+# TYPE supavisor_pool_connections_idle gauge
+supavisor_pool_connections_idle{az="nil",db_name="postgres",instance_id="nil",location="local",mode="transaction",nodehost="223ed92e003b",region="local",search_path="nil",short_node_id="nil",tenant="your-tenant-id",type="single",user="postgres"} 1 1783323469366
+# HELP supavisor_prom_ex_application_dependency_info supavisor_prom_ex_application_dependency_info
+# TYPE supavisor_prom_ex_application_dependency_info gauge
+supavisor_prom_ex_application_dependency_info{az="nil",instance_id="nil",location="local",modules="101",name="kernel",nodehost="223ed92e003b",region="local",short_node_id="nil",version="10.2.1"} 1 1783323469366
+# HELP supavisor_prom_ex_application_git_author_info supavisor_prom_ex_application_git_author_info
+# TYPE supavisor_prom_ex_application_git_author_info gauge
+supavisor_prom_ex_application_git_author_info{author="Git author not available",az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 1 1783323469366
+# HELP supavisor_prom_ex_application_git_sha_info supavisor_prom_ex_application_git_sha_info
+# TYPE supavisor_prom_ex_application_git_sha_info gauge
+supavisor_prom_ex_application_git_sha_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",sha="Git SHA not available",short_node_id="nil"} 1 1783323469366
+# HELP supavisor_prom_ex_application_primary_info supavisor_prom_ex_application_primary_info
+# TYPE supavisor_prom_ex_application_primary_info gauge
+supavisor_prom_ex_application_primary_info{az="nil",instance_id="nil",location="local",modules="192",name="supavisor",nodehost="223ed92e003b",region="local",short_node_id="nil",version="2.9.5"} 1 1783323469366
+# HELP supavisor_prom_ex_application_uptime_milliseconds_count supavisor_prom_ex_application_uptime_milliseconds_count
+# TYPE supavisor_prom_ex_application_uptime_milliseconds_count gauge
+supavisor_prom_ex_application_uptime_milliseconds_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 33715547 1783323469366
+# HELP supavisor_prom_ex_beam_memory_allocated_bytes supavisor_prom_ex_beam_memory_allocated_bytes
+# TYPE supavisor_prom_ex_beam_memory_allocated_bytes gauge
+supavisor_prom_ex_beam_memory_allocated_bytes{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 128602836 1783323469366
+# HELP supavisor_prom_ex_beam_memory_atom_total_bytes supavisor_prom_ex_beam_memory_atom_total_bytes
+# TYPE supavisor_prom_ex_beam_memory_atom_total_bytes gauge
+supavisor_prom_ex_beam_memory_atom_total_bytes{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 1868137 1783323469366
+# HELP supavisor_prom_ex_beam_memory_binary_total_bytes supavisor_prom_ex_beam_memory_binary_total_bytes
+# TYPE supavisor_prom_ex_beam_memory_binary_total_bytes gauge
+supavisor_prom_ex_beam_memory_binary_total_bytes{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 5139840 1783323469366
+# HELP supavisor_prom_ex_beam_memory_code_total_bytes supavisor_prom_ex_beam_memory_code_total_bytes
+# TYPE supavisor_prom_ex_beam_memory_code_total_bytes gauge
+supavisor_prom_ex_beam_memory_code_total_bytes{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 44215986 1783323469366
+# HELP supavisor_prom_ex_beam_memory_ets_total_bytes supavisor_prom_ex_beam_memory_ets_total_bytes
+# TYPE supavisor_prom_ex_beam_memory_ets_total_bytes gauge
+supavisor_prom_ex_beam_memory_ets_total_bytes{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 5569288 1783323469366
+# HELP supavisor_prom_ex_beam_memory_persistent_term_total_bytes supavisor_prom_ex_beam_memory_persistent_term_total_bytes
+# TYPE supavisor_prom_ex_beam_memory_persistent_term_total_bytes gauge
+supavisor_prom_ex_beam_memory_persistent_term_total_bytes{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 100432 1783323469366
+# HELP supavisor_prom_ex_beam_memory_processes_total_bytes supavisor_prom_ex_beam_memory_processes_total_bytes
+# TYPE supavisor_prom_ex_beam_memory_processes_total_bytes gauge
+supavisor_prom_ex_beam_memory_processes_total_bytes{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 36725552 1783323469366
+# HELP supavisor_prom_ex_beam_stats_active_task_count supavisor_prom_ex_beam_stats_active_task_count
+# TYPE supavisor_prom_ex_beam_stats_active_task_count gauge
+supavisor_prom_ex_beam_stats_active_task_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil",type="normal"} 1 1783323469366
+supavisor_prom_ex_beam_stats_active_task_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil",type="dirty"} 0 1783323469366
+# HELP supavisor_prom_ex_beam_stats_atom_count supavisor_prom_ex_beam_stats_atom_count
+# TYPE supavisor_prom_ex_beam_stats_atom_count gauge
+supavisor_prom_ex_beam_stats_atom_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 53206 1783323469366
+# HELP supavisor_prom_ex_beam_stats_context_switch_count supavisor_prom_ex_beam_stats_context_switch_count
+# TYPE supavisor_prom_ex_beam_stats_context_switch_count gauge
+supavisor_prom_ex_beam_stats_context_switch_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 4978119 1783323469366
+# HELP supavisor_prom_ex_beam_stats_ets_count supavisor_prom_ex_beam_stats_ets_count
+# TYPE supavisor_prom_ex_beam_stats_ets_count gauge
+supavisor_prom_ex_beam_stats_ets_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 195 1783323469366
+# HELP supavisor_prom_ex_beam_stats_gc_count supavisor_prom_ex_beam_stats_gc_count
+# TYPE supavisor_prom_ex_beam_stats_gc_count gauge
+supavisor_prom_ex_beam_stats_gc_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 468200 1783323469366
+# HELP supavisor_prom_ex_beam_stats_gc_reclaimed_bytes supavisor_prom_ex_beam_stats_gc_reclaimed_bytes
+# TYPE supavisor_prom_ex_beam_stats_gc_reclaimed_bytes gauge
+supavisor_prom_ex_beam_stats_gc_reclaimed_bytes{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 2141114976 1783323469366
+# HELP supavisor_prom_ex_beam_stats_port_count supavisor_prom_ex_beam_stats_port_count
+# TYPE supavisor_prom_ex_beam_stats_port_count gauge
+supavisor_prom_ex_beam_stats_port_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 29 1783323469366
+# HELP supavisor_prom_ex_beam_stats_port_io_byte_count supavisor_prom_ex_beam_stats_port_io_byte_count
+# TYPE supavisor_prom_ex_beam_stats_port_io_byte_count gauge
+supavisor_prom_ex_beam_stats_port_io_byte_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil",type="input"} 4310665 1783323469366
+supavisor_prom_ex_beam_stats_port_io_byte_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil",type="output"} 9365794 1783323469366
+# HELP supavisor_prom_ex_beam_stats_process_count supavisor_prom_ex_beam_stats_process_count
+# TYPE supavisor_prom_ex_beam_stats_process_count gauge
+supavisor_prom_ex_beam_stats_process_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 2843 1783323469366
+# HELP supavisor_prom_ex_beam_stats_reduction_count supavisor_prom_ex_beam_stats_reduction_count
+# TYPE supavisor_prom_ex_beam_stats_reduction_count gauge
+supavisor_prom_ex_beam_stats_reduction_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 198686018 1783323469366
+# HELP supavisor_prom_ex_beam_stats_run_queue_count supavisor_prom_ex_beam_stats_run_queue_count
+# TYPE supavisor_prom_ex_beam_stats_run_queue_count gauge
+supavisor_prom_ex_beam_stats_run_queue_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil",type="normal"} 0 1783323469366
+supavisor_prom_ex_beam_stats_run_queue_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil",type="dirty"} 0 1783323469366
+# HELP supavisor_prom_ex_beam_stats_uptime_milliseconds_count supavisor_prom_ex_beam_stats_uptime_milliseconds_count
+# TYPE supavisor_prom_ex_beam_stats_uptime_milliseconds_count gauge
+supavisor_prom_ex_beam_stats_uptime_milliseconds_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 33715554 1783323469366
+# HELP supavisor_prom_ex_beam_system_atom_limit_info supavisor_prom_ex_beam_system_atom_limit_info
+# TYPE supavisor_prom_ex_beam_system_atom_limit_info gauge
+supavisor_prom_ex_beam_system_atom_limit_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 1048576 1783323469366
+# HELP supavisor_prom_ex_beam_system_dirty_cpu_schedulers_info supavisor_prom_ex_beam_system_dirty_cpu_schedulers_info
+# TYPE supavisor_prom_ex_beam_system_dirty_cpu_schedulers_info gauge
+supavisor_prom_ex_beam_system_dirty_cpu_schedulers_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 12 1783323469366
+# HELP supavisor_prom_ex_beam_system_dirty_cpu_schedulers_online_info supavisor_prom_ex_beam_system_dirty_cpu_schedulers_online_info
+# TYPE supavisor_prom_ex_beam_system_dirty_cpu_schedulers_online_info gauge
+supavisor_prom_ex_beam_system_dirty_cpu_schedulers_online_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 12 1783323469366
+# HELP supavisor_prom_ex_beam_system_dirty_io_schedulers_info supavisor_prom_ex_beam_system_dirty_io_schedulers_info
+# TYPE supavisor_prom_ex_beam_system_dirty_io_schedulers_info gauge
+supavisor_prom_ex_beam_system_dirty_io_schedulers_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 10 1783323469366
+# HELP supavisor_prom_ex_beam_system_ets_limit_info supavisor_prom_ex_beam_system_ets_limit_info
+# TYPE supavisor_prom_ex_beam_system_ets_limit_info gauge
+supavisor_prom_ex_beam_system_ets_limit_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 65536 1783323469366
+# HELP supavisor_prom_ex_beam_system_jit_support_info supavisor_prom_ex_beam_system_jit_support_info
+# TYPE supavisor_prom_ex_beam_system_jit_support_info gauge
+supavisor_prom_ex_beam_system_jit_support_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 1 1783323469366
+# HELP supavisor_prom_ex_beam_system_logical_processors_available_info supavisor_prom_ex_beam_system_logical_processors_available_info
+# TYPE supavisor_prom_ex_beam_system_logical_processors_available_info gauge
+supavisor_prom_ex_beam_system_logical_processors_available_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 12 1783323469366
+# HELP supavisor_prom_ex_beam_system_logical_processors_info supavisor_prom_ex_beam_system_logical_processors_info
+# TYPE supavisor_prom_ex_beam_system_logical_processors_info gauge
+supavisor_prom_ex_beam_system_logical_processors_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 12 1783323469366
+# HELP supavisor_prom_ex_beam_system_logical_processors_online_info supavisor_prom_ex_beam_system_logical_processors_online_info
+# TYPE supavisor_prom_ex_beam_system_logical_processors_online_info gauge
+supavisor_prom_ex_beam_system_logical_processors_online_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 12 1783323469366
+# HELP supavisor_prom_ex_beam_system_port_limit_info supavisor_prom_ex_beam_system_port_limit_info
+# TYPE supavisor_prom_ex_beam_system_port_limit_info gauge
+supavisor_prom_ex_beam_system_port_limit_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 131072 1783323469366
+# HELP supavisor_prom_ex_beam_system_process_limit_info supavisor_prom_ex_beam_system_process_limit_info
+# TYPE supavisor_prom_ex_beam_system_process_limit_info gauge
+supavisor_prom_ex_beam_system_process_limit_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 1048576 1783323469366
+# HELP supavisor_prom_ex_beam_system_schedulers_info supavisor_prom_ex_beam_system_schedulers_info
+# TYPE supavisor_prom_ex_beam_system_schedulers_info gauge
+supavisor_prom_ex_beam_system_schedulers_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 12 1783323469366
+# HELP supavisor_prom_ex_beam_system_schedulers_online_info supavisor_prom_ex_beam_system_schedulers_online_info
+# TYPE supavisor_prom_ex_beam_system_schedulers_online_info gauge
+supavisor_prom_ex_beam_system_schedulers_online_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 12 1783323469366
+# HELP supavisor_prom_ex_beam_system_smp_support_info supavisor_prom_ex_beam_system_smp_support_info
+# TYPE supavisor_prom_ex_beam_system_smp_support_info gauge
+supavisor_prom_ex_beam_system_smp_support_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 1 1783323469366
+# HELP supavisor_prom_ex_beam_system_thread_pool_size_info supavisor_prom_ex_beam_system_thread_pool_size_info
+# TYPE supavisor_prom_ex_beam_system_thread_pool_size_info gauge
+supavisor_prom_ex_beam_system_thread_pool_size_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 1 1783323469366
+# HELP supavisor_prom_ex_beam_system_thread_support_info supavisor_prom_ex_beam_system_thread_support_info
+# TYPE supavisor_prom_ex_beam_system_thread_support_info gauge
+supavisor_prom_ex_beam_system_thread_support_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 1 1783323469366
+# HELP supavisor_prom_ex_beam_system_time_correction_support_info supavisor_prom_ex_beam_system_time_correction_support_info
+# TYPE supavisor_prom_ex_beam_system_time_correction_support_info gauge
+supavisor_prom_ex_beam_system_time_correction_support_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 1 1783323469366
+# HELP supavisor_prom_ex_beam_system_version_info supavisor_prom_ex_beam_system_version_info
+# TYPE supavisor_prom_ex_beam_system_version_info gauge
+supavisor_prom_ex_beam_system_version_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 27 1783323469366
+# HELP supavisor_prom_ex_beam_system_word_size_bytes_info supavisor_prom_ex_beam_system_word_size_bytes_info
+# TYPE supavisor_prom_ex_beam_system_word_size_bytes_info gauge
+supavisor_prom_ex_beam_system_word_size_bytes_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 8 1783323469366
+# HELP supavisor_prom_ex_cluster_erpc_ping_duration_ms supavisor_prom_ex_cluster_erpc_ping_duration_ms
+# TYPE supavisor_prom_ex_cluster_erpc_ping_duration_ms histogram
+supavisor_prom_ex_cluster_erpc_ping_duration_ms_bucket{az="nil",instance_id="nil",le="1",location="local",nodehost="223ed92e003b",region="local",result="success",short_node_id="nil",target_node="supavisor@223ed92e003b"} 2242 1783323469366
+supavisor_prom_ex_cluster_erpc_ping_duration_ms_bucket{az="nil",instance_id="nil",le="67.632227",location="local",nodehost="223ed92e003b",region="local",result="success",short_node_id="nil",target_node="supavisor@223ed92e003b"} 2247 1783323469366
+supavisor_prom_ex_cluster_erpc_ping_duration_ms_bucket{az="nil",instance_id="nil",le="4574.11817",location="local",nodehost="223ed92e003b",region="local",result="success",short_node_id="nil",target_node="supavisor@223ed92e003b"} 2247 1783323469366
+supavisor_prom_ex_cluster_erpc_ping_duration_ms_bucket{az="nil",instance_id="nil",le="309357.799788",location="local",nodehost="223ed92e003b",region="local",result="success",short_node_id="nil",target_node="supavisor@223ed92e003b"} 2247 1783323469366
+supavisor_prom_ex_cluster_erpc_ping_duration_ms_bucket{az="nil",instance_id="nil",le="20922557.03338",location="local",nodehost="223ed92e003b",region="local",result="success",short_node_id="nil",target_node="supavisor@223ed92e003b"} 2247 1783323469366
+supavisor_prom_ex_cluster_erpc_ping_duration_ms_bucket{az="nil",instance_id="nil",le="+Inf",location="local",nodehost="223ed92e003b",region="local",result="success",short_node_id="nil",target_node="supavisor@223ed92e003b"} 2247 1783323469366
+supavisor_prom_ex_cluster_erpc_ping_duration_ms_sum{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",result="success",short_node_id="nil",target_node="supavisor@223ed92e003b"} 31 1783323469366
+supavisor_prom_ex_cluster_erpc_ping_duration_ms_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",result="success",short_node_id="nil",target_node="supavisor@223ed92e003b"} 2247 1783323469366
+# HELP supavisor_prom_ex_cluster_size supavisor_prom_ex_cluster_size
+# TYPE supavisor_prom_ex_cluster_size gauge
+supavisor_prom_ex_cluster_size{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 1 1783323469366
+# HELP supavisor_prom_ex_ecto_repo_query_decode_time_milliseconds supavisor_prom_ex_ecto_repo_query_decode_time_milliseconds
+# TYPE supavisor_prom_ex_ecto_repo_query_decode_time_milliseconds histogram
+supavisor_prom_ex_ecto_repo_query_decode_time_milliseconds_bucket{az="nil",instance_id="nil",le="1",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+supavisor_prom_ex_ecto_repo_query_decode_time_milliseconds_bucket{az="nil",instance_id="nil",le="67.632227",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+supavisor_prom_ex_ecto_repo_query_decode_time_milliseconds_bucket{az="nil",instance_id="nil",le="4574.11817",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+supavisor_prom_ex_ecto_repo_query_decode_time_milliseconds_bucket{az="nil",instance_id="nil",le="309357.799788",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+supavisor_prom_ex_ecto_repo_query_decode_time_milliseconds_bucket{az="nil",instance_id="nil",le="20922557.03338",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+supavisor_prom_ex_ecto_repo_query_decode_time_milliseconds_bucket{az="nil",instance_id="nil",le="+Inf",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+supavisor_prom_ex_ecto_repo_query_decode_time_milliseconds_sum{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 0 1783323469366
+supavisor_prom_ex_ecto_repo_query_decode_time_milliseconds_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+# HELP supavisor_prom_ex_ecto_repo_query_execution_time_milliseconds supavisor_prom_ex_ecto_repo_query_execution_time_milliseconds
+# TYPE supavisor_prom_ex_ecto_repo_query_execution_time_milliseconds histogram
+supavisor_prom_ex_ecto_repo_query_execution_time_milliseconds_bucket{az="nil",command="select",instance_id="nil",le="1",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3211 1783323469366
+supavisor_prom_ex_ecto_repo_query_execution_time_milliseconds_bucket{az="nil",command="select",instance_id="nil",le="67.632227",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+supavisor_prom_ex_ecto_repo_query_execution_time_milliseconds_bucket{az="nil",command="select",instance_id="nil",le="4574.11817",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+supavisor_prom_ex_ecto_repo_query_execution_time_milliseconds_bucket{az="nil",command="select",instance_id="nil",le="309357.799788",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+supavisor_prom_ex_ecto_repo_query_execution_time_milliseconds_bucket{az="nil",command="select",instance_id="nil",le="20922557.03338",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+supavisor_prom_ex_ecto_repo_query_execution_time_milliseconds_bucket{az="nil",command="select",instance_id="nil",le="+Inf",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+supavisor_prom_ex_ecto_repo_query_execution_time_milliseconds_sum{az="nil",command="select",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 875 1783323469366
+supavisor_prom_ex_ecto_repo_query_execution_time_milliseconds_count{az="nil",command="select",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+# HELP supavisor_prom_ex_ecto_repo_query_idle_time_milliseconds supavisor_prom_ex_ecto_repo_query_idle_time_milliseconds
+# TYPE supavisor_prom_ex_ecto_repo_query_idle_time_milliseconds histogram
+supavisor_prom_ex_ecto_repo_query_idle_time_milliseconds_bucket{az="nil",instance_id="nil",le="1",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 0 1783323469366
+supavisor_prom_ex_ecto_repo_query_idle_time_milliseconds_bucket{az="nil",instance_id="nil",le="67.632227",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 7 1783323469366
+supavisor_prom_ex_ecto_repo_query_idle_time_milliseconds_bucket{az="nil",instance_id="nil",le="4574.11817",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+supavisor_prom_ex_ecto_repo_query_idle_time_milliseconds_bucket{az="nil",instance_id="nil",le="309357.799788",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+supavisor_prom_ex_ecto_repo_query_idle_time_milliseconds_bucket{az="nil",instance_id="nil",le="20922557.03338",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+supavisor_prom_ex_ecto_repo_query_idle_time_milliseconds_bucket{az="nil",instance_id="nil",le="+Inf",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+supavisor_prom_ex_ecto_repo_query_idle_time_milliseconds_sum{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 2754007 1783323469366
+supavisor_prom_ex_ecto_repo_query_idle_time_milliseconds_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+# HELP supavisor_prom_ex_ecto_repo_query_queue_time_milliseconds supavisor_prom_ex_ecto_repo_query_queue_time_milliseconds
+# TYPE supavisor_prom_ex_ecto_repo_query_queue_time_milliseconds histogram
+supavisor_prom_ex_ecto_repo_query_queue_time_milliseconds_bucket{az="nil",instance_id="nil",le="1",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3143 1783323469366
+supavisor_prom_ex_ecto_repo_query_queue_time_milliseconds_bucket{az="nil",instance_id="nil",le="67.632227",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+supavisor_prom_ex_ecto_repo_query_queue_time_milliseconds_bucket{az="nil",instance_id="nil",le="4574.11817",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+supavisor_prom_ex_ecto_repo_query_queue_time_milliseconds_bucket{az="nil",instance_id="nil",le="309357.799788",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+supavisor_prom_ex_ecto_repo_query_queue_time_milliseconds_bucket{az="nil",instance_id="nil",le="20922557.03338",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+supavisor_prom_ex_ecto_repo_query_queue_time_milliseconds_bucket{az="nil",instance_id="nil",le="+Inf",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+supavisor_prom_ex_ecto_repo_query_queue_time_milliseconds_sum{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 1656 1783323469366
+supavisor_prom_ex_ecto_repo_query_queue_time_milliseconds_count{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil"} 3360 1783323469366
+# HELP supavisor_prom_ex_ecto_repo_query_results_returned supavisor_prom_ex_ecto_repo_query_results_returned
+# TYPE supavisor_prom_ex_ecto_repo_query_results_returned histogram
+supavisor_prom_ex_ecto_repo_query_results_returned_bucket{az="nil",command="select",instance_id="nil",le="1",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+supavisor_prom_ex_ecto_repo_query_results_returned_bucket{az="nil",command="select",instance_id="nil",le="67.632227",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+supavisor_prom_ex_ecto_repo_query_results_returned_bucket{az="nil",command="select",instance_id="nil",le="4574.11817",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+supavisor_prom_ex_ecto_repo_query_results_returned_bucket{az="nil",command="select",instance_id="nil",le="309357.799788",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+supavisor_prom_ex_ecto_repo_query_results_returned_bucket{az="nil",command="select",instance_id="nil",le="20922557.03338",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+supavisor_prom_ex_ecto_repo_query_results_returned_bucket{az="nil",command="select",instance_id="nil",le="+Inf",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+supavisor_prom_ex_ecto_repo_query_results_returned_sum{az="nil",command="select",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+supavisor_prom_ex_ecto_repo_query_results_returned_count{az="nil",command="select",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+# HELP supavisor_prom_ex_ecto_repo_query_total_time_milliseconds supavisor_prom_ex_ecto_repo_query_total_time_milliseconds
+# TYPE supavisor_prom_ex_ecto_repo_query_total_time_milliseconds histogram
+supavisor_prom_ex_ecto_repo_query_total_time_milliseconds_bucket{az="nil",command="select",instance_id="nil",le="1",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 2187 1783323469366
+supavisor_prom_ex_ecto_repo_query_total_time_milliseconds_bucket{az="nil",command="select",instance_id="nil",le="67.632227",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+supavisor_prom_ex_ecto_repo_query_total_time_milliseconds_bucket{az="nil",command="select",instance_id="nil",le="4574.11817",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+supavisor_prom_ex_ecto_repo_query_total_time_milliseconds_bucket{az="nil",command="select",instance_id="nil",le="309357.799788",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+supavisor_prom_ex_ecto_repo_query_total_time_milliseconds_bucket{az="nil",command="select",instance_id="nil",le="20922557.03338",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+supavisor_prom_ex_ecto_repo_query_total_time_milliseconds_bucket{az="nil",command="select",instance_id="nil",le="+Inf",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+supavisor_prom_ex_ecto_repo_query_total_time_milliseconds_sum{az="nil",command="select",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3596 1783323469366
+supavisor_prom_ex_ecto_repo_query_total_time_milliseconds_count{az="nil",command="select",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",repo="Supavisor.Repo",short_node_id="nil",source="source_unavailable"} 3356 1783323469366
+# HELP supavisor_prom_ex_osmon_cpu_avg1 supavisor_prom_ex_osmon_cpu_avg1
+# TYPE supavisor_prom_ex_osmon_cpu_avg1 gauge
+supavisor_prom_ex_osmon_cpu_avg1{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 0.76171875 1783323469366
+# HELP supavisor_prom_ex_osmon_cpu_avg15 supavisor_prom_ex_osmon_cpu_avg15
+# TYPE supavisor_prom_ex_osmon_cpu_avg15 gauge
+supavisor_prom_ex_osmon_cpu_avg15{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 1.12109375 1783323469366
+# HELP supavisor_prom_ex_osmon_cpu_avg5 supavisor_prom_ex_osmon_cpu_avg5
+# TYPE supavisor_prom_ex_osmon_cpu_avg5 gauge
+supavisor_prom_ex_osmon_cpu_avg5{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 1.05078125 1783323469366
+# HELP supavisor_prom_ex_osmon_cpu_util supavisor_prom_ex_osmon_cpu_util
+# TYPE supavisor_prom_ex_osmon_cpu_util gauge
+supavisor_prom_ex_osmon_cpu_util{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 4.631188952509262 1783323469366
+# HELP supavisor_prom_ex_osmon_memory_available supavisor_prom_ex_osmon_memory_available
+# TYPE supavisor_prom_ex_osmon_memory_available gauge
+supavisor_prom_ex_osmon_memory_available{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 7700230144 1783323469366
+# HELP supavisor_prom_ex_osmon_memory_buffered supavisor_prom_ex_osmon_memory_buffered
+# TYPE supavisor_prom_ex_osmon_memory_buffered gauge
+supavisor_prom_ex_osmon_memory_buffered{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 151552 1783323469366
+# HELP supavisor_prom_ex_osmon_memory_cached supavisor_prom_ex_osmon_memory_cached
+# TYPE supavisor_prom_ex_osmon_memory_cached gauge
+supavisor_prom_ex_osmon_memory_cached{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 3151265792 1783323469366
+# HELP supavisor_prom_ex_osmon_memory_free supavisor_prom_ex_osmon_memory_free
+# TYPE supavisor_prom_ex_osmon_memory_free gauge
+supavisor_prom_ex_osmon_memory_free{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 5067317248 1783323469366
+# HELP supavisor_prom_ex_osmon_memory_system_total supavisor_prom_ex_osmon_memory_system_total
+# TYPE supavisor_prom_ex_osmon_memory_system_total gauge
+supavisor_prom_ex_osmon_memory_system_total{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 16820150272 1783323469366
+# HELP supavisor_prom_ex_osmon_memory_total supavisor_prom_ex_osmon_memory_total
+# TYPE supavisor_prom_ex_osmon_memory_total gauge
+supavisor_prom_ex_osmon_memory_total{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 16820150272 1783323469366
+# HELP supavisor_prom_ex_osmon_ram_usage supavisor_prom_ex_osmon_ram_usage
+# TYPE supavisor_prom_ex_osmon_ram_usage gauge
+supavisor_prom_ex_osmon_ram_usage{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 69.87353165069274 1783323469366
+# HELP supavisor_prom_ex_phoenix_http_request_duration_milliseconds supavisor_prom_ex_phoenix_http_request_duration_milliseconds
+# TYPE supavisor_prom_ex_phoenix_http_request_duration_milliseconds histogram
+supavisor_prom_ex_phoenix_http_request_duration_milliseconds_bucket{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",le="10",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 6 1783323469366
+supavisor_prom_ex_phoenix_http_request_duration_milliseconds_bucket{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",le="100",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 11 1783323469366
+supavisor_prom_ex_phoenix_http_request_duration_milliseconds_bucket{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",le="500",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 11 1783323469366
+supavisor_prom_ex_phoenix_http_request_duration_milliseconds_bucket{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",le="1000",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 11 1783323469366
+supavisor_prom_ex_phoenix_http_request_duration_milliseconds_bucket{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",le="5000",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 11 1783323469366
+supavisor_prom_ex_phoenix_http_request_duration_milliseconds_bucket{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",le="10000",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 11 1783323469366
+supavisor_prom_ex_phoenix_http_request_duration_milliseconds_bucket{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",le="30000",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 11 1783323469366
+supavisor_prom_ex_phoenix_http_request_duration_milliseconds_bucket{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",le="+Inf",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 11 1783323469366
+supavisor_prom_ex_phoenix_http_request_duration_milliseconds_sum{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 192 1783323469366
+supavisor_prom_ex_phoenix_http_request_duration_milliseconds_count{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 11 1783323469366
+# HELP supavisor_prom_ex_phoenix_http_requests_total supavisor_prom_ex_phoenix_http_requests_total
+# TYPE supavisor_prom_ex_phoenix_http_requests_total counter
+supavisor_prom_ex_phoenix_http_requests_total{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 11 1783323469366
+supavisor_prom_ex_phoenix_http_requests_total{action="health",az="nil",controller="SupavisorWeb.TenantController",instance_id="nil",location="local",method="GET",nodehost="223ed92e003b",path="/api/health",region="local",short_node_id="nil",status="204"} 3356 1783323469366
+supavisor_prom_ex_phoenix_http_requests_total{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="403"} 1 1783323469366
+supavisor_prom_ex_phoenix_http_requests_total{action="tenant",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",location="local",method="GET",nodehost="223ed92e003b",path="/metrics/:external_id",region="local",short_node_id="nil",status="200"} 1 1783323469366
+# HELP supavisor_prom_ex_phoenix_http_response_size_bytes supavisor_prom_ex_phoenix_http_response_size_bytes
+# TYPE supavisor_prom_ex_phoenix_http_response_size_bytes histogram
+supavisor_prom_ex_phoenix_http_response_size_bytes_bucket{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",le="64",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 0 1783323469366
+supavisor_prom_ex_phoenix_http_response_size_bytes_bucket{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",le="512",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 0 1783323469366
+supavisor_prom_ex_phoenix_http_response_size_bytes_bucket{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",le="4096",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 0 1783323469366
+supavisor_prom_ex_phoenix_http_response_size_bytes_bucket{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",le="65536",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 0 1783323469366
+supavisor_prom_ex_phoenix_http_response_size_bytes_bucket{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",le="262144",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 5 1783323469366
+supavisor_prom_ex_phoenix_http_response_size_bytes_bucket{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",le="1048576",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 11 1783323469366
+supavisor_prom_ex_phoenix_http_response_size_bytes_bucket{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",le="4194304",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 11 1783323469366
+supavisor_prom_ex_phoenix_http_response_size_bytes_bucket{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",le="16777216",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 11 1783323469366
+supavisor_prom_ex_phoenix_http_response_size_bytes_bucket{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",le="+Inf",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 11 1783323469366
+supavisor_prom_ex_phoenix_http_response_size_bytes_sum{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 3646637 1783323469366
+supavisor_prom_ex_phoenix_http_response_size_bytes_count{action="index",az="nil",controller="SupavisorWeb.MetricsController",instance_id="nil",location="local",method="GET",nodehost="223ed92e003b",path="/metrics",region="local",short_node_id="nil",status="200"} 11 1783323469366
+# HELP supavisor_prom_ex_prom_ex_status_info supavisor_prom_ex_prom_ex_status_info
+# TYPE supavisor_prom_ex_prom_ex_status_info gauge
+supavisor_prom_ex_prom_ex_status_info{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 1 1783323469366
+# HELP supavisor_tenants_active supavisor_tenants_active
+# TYPE supavisor_tenants_active gauge
+supavisor_tenants_active{az="nil",instance_id="nil",location="local",nodehost="223ed92e003b",region="local",short_node_id="nil"} 1 1783323469366
