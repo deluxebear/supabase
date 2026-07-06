@@ -28,6 +28,7 @@ export type SelfPlatformProjectUpdateVariables = {
   name?: string
   connection?: SelfPlatformConnectionPatch
   logflare?: { url?: string | null; token?: string | null }
+  metrics?: { url?: string | null; token?: string | null }
 }
 
 export type SelfPlatformProjectUpdateResponse = {
@@ -52,6 +53,7 @@ export type SelfPlatformProjectBlock = {
   kong_url: string
   rest_url: string
   logflare_url: string | null
+  metrics_url: string | null
   secrets_set: {
     db_pass: boolean
     anon_key: boolean
@@ -60,6 +62,7 @@ export type SelfPlatformProjectBlock = {
     publishable_key: boolean
     secret_key: boolean
     logflare_token: boolean
+    metrics_token: boolean
   }
   shared_children: string[]
 }

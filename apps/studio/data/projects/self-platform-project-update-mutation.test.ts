@@ -39,4 +39,18 @@ describe('updateSelfPlatformProject (M6.1)', () => {
     const [, options] = vi.mocked(patch).mock.calls[1] as [string, unknown]
     expect((options as { body: unknown }).body).toEqual({ name: 'Renamed' })
   })
+
+  it('passes the metrics block through the PATCH body (M6.3)', async () => {
+    await updateSelfPlatformProject({
+      ref: 'proj-b',
+      metrics: { url: 'http://h:9598/metrics', token: null },
+    })
+    // [self-platform] mirrors the two cases above (positional index + cast) —
+    // `.mock.calls.at(-1)` types as `T | undefined` and can't cast to a tuple
+    // directly, so index by position like the rest of this file does.
+    const [, options] = vi.mocked(patch).mock.calls[2] as [string, unknown]
+    expect((options as { body: unknown }).body).toEqual({
+      metrics: { url: 'http://h:9598/metrics', token: null },
+    })
+  })
 })

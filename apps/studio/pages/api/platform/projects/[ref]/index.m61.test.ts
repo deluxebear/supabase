@@ -67,6 +67,8 @@ const ROW = {
   secret_key_enc: 'SECRETKEY_ENC',
   logflare_url: null,
   logflare_token_enc: null,
+  metrics_url: 'http://h:9598/metrics',
+  metrics_token_enc: 'METRICS_ENC',
   stack_kind: 'external',
   stack_meta: {},
 }
@@ -200,6 +202,7 @@ describe('GET self_platform block (M6.1)', () => {
       kong_url: 'http://kong-b:8000',
       rest_url: 'http://kong-b:8000/rest/v1/',
       logflare_url: null,
+      metrics_url: 'http://h:9598/metrics',
       secrets_set: {
         db_pass: true,
         anon_key: true,
@@ -208,11 +211,19 @@ describe('GET self_platform block (M6.1)', () => {
         publishable_key: false,
         secret_key: true,
         logflare_token: false,
+        metrics_token: true,
       },
       shared_children: ['child-a', 'child-b'],
     })
     const raw = JSON.stringify(res._getJSONData())
-    for (const ciphertext of ['PASS_ENC', 'SVC_ENC', 'ANON_ENC', 'JWT_ENC', 'SECRETKEY_ENC']) {
+    for (const ciphertext of [
+      'PASS_ENC',
+      'SVC_ENC',
+      'ANON_ENC',
+      'JWT_ENC',
+      'SECRETKEY_ENC',
+      'METRICS_ENC',
+    ]) {
       expect(raw).not.toContain(ciphertext)
     }
   })
@@ -223,6 +234,8 @@ describe('GET self_platform block (M6.1)', () => {
       ref: 'child-a',
       stack_kind: 'shared-db',
       stack_meta: { host_ref: 'proj-b' },
+      metrics_url: null,
+      metrics_token_enc: null,
     }
     vi.mocked(resolveProjectConnection).mockResolvedValue({
       ...resolved,
@@ -235,6 +248,8 @@ describe('GET self_platform block (M6.1)', () => {
       stack_kind: 'shared-db',
       host_ref: 'proj-b',
       shared_children: [],
+      metrics_url: null,
+      secrets_set: { metrics_token: false },
     })
   })
 

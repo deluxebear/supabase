@@ -65,6 +65,10 @@ function buildConnectionEditSchema() {
     logflareUrlClear: z.boolean(),
     logflareToken: z.string(),
     logflareTokenClear: z.boolean(),
+    metricsUrl: z.union([z.literal(''), z.string().trim().url($t('Must be a URL'))]),
+    metricsUrlClear: z.boolean(),
+    metricsToken: z.string(),
+    metricsTokenClear: z.boolean(),
   })
 }
 type FormValues = z.infer<ReturnType<typeof buildConnectionEditSchema>>
@@ -90,6 +94,10 @@ function buildDefaults(sp: SelfPlatformProjectBlock): FormValues {
     logflareUrlClear: false,
     logflareToken: '',
     logflareTokenClear: false,
+    metricsUrl: sp.metrics_url ?? '',
+    metricsUrlClear: false,
+    metricsToken: '',
+    metricsTokenClear: false,
   }
 }
 
@@ -110,8 +118,8 @@ export const SelfPlatformConnectionPanel = () => {
   })
   useEffect(() => {
     // Dirty-gated: a background refetch (window refocus, 5s COMING_UP poll)
-    // must not wipe in-progress edits; post-save the submit handler resets
-    // dirty state first, so fresh server values land here.
+    // must not wipe in-progress edits; post-save the mutation's onSuccess
+    // resets dirty state first, so fresh server values land here.
     if (selfPlatform && !form.formState.isDirty) form.reset(buildDefaults(selfPlatform))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selfPlatform])
@@ -160,10 +168,22 @@ export const SelfPlatformConnectionPanel = () => {
     if (values.logflareTokenClear) logflare.token = null
     else if (values.logflareToken !== '') logflare.token = values.logflareToken
 
+    const metrics: { url?: string | null; token?: string | null } = {}
+    if (values.metricsUrlClear) metrics.url = null
+    else if (dirty.metricsUrl && values.metricsUrl !== '') metrics.url = values.metricsUrl
+    if (values.metricsTokenClear) metrics.token = null
+    else if (values.metricsToken !== '') metrics.token = values.metricsToken
+
     const payload: SelfPlatformProjectUpdateVariables = { ref: project.ref }
     if (!isSharedDb && Object.keys(connection).length > 0) payload.connection = connection
     if (Object.keys(logflare).length > 0) payload.logflare = logflare
-    if (payload.connection === undefined && payload.logflare === undefined) return undefined
+    if (Object.keys(metrics).length > 0) payload.metrics = metrics
+    if (
+      payload.connection === undefined &&
+      payload.logflare === undefined &&
+      payload.metrics === undefined
+    )
+      return undefined
     return payload
   }
 
@@ -356,6 +376,24 @@ export const SelfPlatformConnectionPanel = () => {
               selfPlatform.secrets_set.logflare_token
             )}
             {clearCheckbox('logflareTokenClear', $t('Clear the stored Logflare token'))}
+
+            {isSharedDb && (
+              <Alert>
+                <AlertDescription>
+                  {$t(
+                    'Host metrics configured here read the host stack — CPU/RAM/Disk are stack-scoped, not per project.'
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
+            {textField('metricsUrl', $t('Metrics URL'))}
+            {clearCheckbox('metricsUrlClear', $t('Clear the stored metrics URL'))}
+            {secretField(
+              'metricsToken',
+              $t('Metrics token'),
+              selfPlatform.secrets_set.metrics_token
+            )}
+            {clearCheckbox('metricsTokenClear', $t('Clear the stored metrics token'))}
 
             <div>
               <Button type="submit" loading={isPending} disabled={!canUpdate}>

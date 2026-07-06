@@ -127,6 +127,7 @@ async function buildSelfPlatformBlock(row: PlatformProjectRow) {
     kong_url: row.kong_url,
     rest_url: row.rest_url,
     logflare_url: row.logflare_url ?? null,
+    metrics_url: row.metrics_url ?? null,
     secrets_set: {
       db_pass: true,
       anon_key: true,
@@ -135,6 +136,7 @@ async function buildSelfPlatformBlock(row: PlatformProjectRow) {
       publishable_key: row.publishable_key_enc != null,
       secret_key: row.secret_key_enc != null,
       logflare_token: row.logflare_token_enc != null,
+      metrics_token: row.metrics_token_enc != null,
     },
     shared_children: sharedChildren,
   }
