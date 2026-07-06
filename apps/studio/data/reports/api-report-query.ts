@@ -6,6 +6,7 @@ import { PRESET_CONFIG } from '@/components/interfaces/Reports/Reports.constants
 import { ReportFilterItem } from '@/components/interfaces/Reports/Reports.types'
 import { getLogsSql, queriesFactory } from '@/components/interfaces/Reports/Reports.utils'
 import type { LogsEndpointParams } from '@/components/interfaces/Settings/Logs/Logs.types'
+import { mergeDatabaseIdentifierFilter } from '@/data/reports/report-filters'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 
 export const useApiReport = () => {
@@ -63,12 +64,7 @@ export const useApiReport = () => {
   }
 
   // [Joshen] Keeping database selector separate from filter state, and merging them here for simplicity
-  const formattedFilters: ReportFilterItem[] = [
-    ...filters,
-    ...(identifier !== undefined
-      ? [{ key: 'identifier', value: identifier, compare: 'is' } as ReportFilterItem]
-      : []),
-  ]
+  const formattedFilters = mergeDatabaseIdentifierFilter(filters, identifier)
 
   useEffect(() => {
     // update sql for each query
