@@ -1484,3 +1484,183 @@ wider than the Owner-only deregister). The upstream "rename project" form on the
 page uses this exact route and method, so it works in self-platform mode as of M6.1. Plain
 self-hosted mode is untouched: `PATCH` answers `404 Not available on this deployment` and the
 `GET` response carries no `self_platform` block.
+
+### Env-fallback `default` isn't editable
+
+A `default` project with no `platform.projects` row still resolves — via the M1 global-env
+fallback in `resolveProjectConnection` (see "M2: multi-project registry" above) — but that
+fallback has no row for a `PATCH` to update. The `write:Update` RBAC guard passes normally for
+it (the guard only checks the caller's role, it doesn't know whether a row exists), but
+`updateProjectConnection` (`apps/studio/lib/api/self-platform/projects-admin.ts`) throws
+`ProjectRowMissing` once it finds nothing to update, and the route maps that to the same
+`404 {"message": "Project not found"}` any other unknown ref gets. In practice this means both
+the upstream rename form and the M6.1 Connection configuration panel fail with a 404 against an
+unregistered `default` project, even though its dashboard otherwise works fine end to end.
+Register the row first (`register-project register`, see "`register-project` CLI" above) to
+make it editable.
+
+## M6.2: Logflare pipeline
+
+Since M2.1 the per-project analytics plumbing has existed on paper — `logflare_url`/
+`logflare_token_enc` on `platform.projects`, the no-fallback `getAnalyticsTarget` resolver, and
+the three analytics routes (see "Analytics (M2.1)" above) — but the stack-side half,
+`docker-compose.logs.yml`'s Logflare + vector add-on, had never actually been deployed against
+it, and the data path had never been live-verified end to end. M6.2 closes that gap and lights
+up the Studio surfaces that depend on it — the home page's four usage charts, the six
+observability tabs, and the per-service logs pages — for any project with a registered Logflare
+(the M6.1 Connection configuration panel, or the `register-project` CLI's
+`--logflare-url`/`--logflare-token` flags; see "Registering the target per project" below).
+
+Standing the stack up turned out to be the easy part; a stock Logflare's postgres backend was
+the hard part. Out of the box, `LOGFLARE_SUPABASE_MODE` seeds only two endpoints: `logs.all` (a
+general-purpose sandbox-SQL endpoint) and `usage.api-counts` — and `usage.api-counts` itself
+doesn't work against a postgres backend: its built-in BigQuery SQL fails BigQuery→Postgres
+translation upstream (`cannot subscript type text`), the same failure a stock upstream
+self-hosted deployment hits. The three other named endpoints Studio's observability tabs call —
+`service-health`, `auth.metrics`, `functions.combined-stats` — were never seeded at all; an
+unrecognized endpoint name gets Logflare's `401 Unauthorized`, not a 404. Rather than wait on an
+upstream fix, `pages/api/platform/projects/[ref]/analytics/endpoints/[name].ts` now rewrites
+exactly those four names, server-side, onto hand-written `logs.all` sandbox SQL
+(`apps/studio/lib/api/self-hosted/analytics-substitutes.ts`) that queries the same underlying
+service tables directly and reshapes the rows into whatever response shape each frontend hook
+already expects. The rewrite applies in both self-hosted modes — these Next.js API routes never
+run on cloud Studio, so cloud is untouched by construction — and only for those four names;
+`logs.all` and every other endpoint name keep forwarding verbatim.
+
+The report-chart SQL definitions that ship BigQuery dialect by default — the shared API report's
+request/error/traffic/response-speed charts, the auth report's sign-in/sign-up stat charts, the
+edge-functions report — gained PG-compatible variants, picked at request time by
+`apps/studio/data/logs/logflare-dialect.ts`'s `pickDialect` gate
+(`USE_LOGFLARE_PG_SQL = IS_SELF_PLATFORM || !IS_PLATFORM`): any real self-hosted deployment —
+self-platform or plain — gets the PG-safe text, which avoids `cast(... as datetime)` (unsupported
+by the translator) and uses ordinal `group by`/`order by` only, never a named alias (an alias
+that happens to shadow a real column is silently mis-grouped by the translator instead of
+erroring, which is why ordinals are non-negotiable here, not just a style choice). Cloud Studio
+keeps the original BigQuery text byte-for-byte, unconditionally. The auth report's percentile
+charts are the one exception with no PG variant at all — see "Boundaries" below.
+
+Finally, every server-side Logflare call — the two log-retrieval helpers in
+`apps/studio/lib/api/self-hosted/logs.ts` plus both log-drain routes — now carries a 15-second
+`AbortSignal.timeout` (`ANALYTICS_TIMEOUT_MS`). Before M6.2 there was no timeout anywhere in this
+path, so a hung Logflare left a chart or panel spinning forever; now it fails the same honest way
+a *down* Logflare already did — the existing `{error:{message}}` shape — just up to 15 seconds
+later instead of the ~150ms a connection refusal takes.
+
+### Operator runbook — deploying the analytics stack
+
+Prerequisites:
+
+- `docker/.env` ships `LOGFLARE_PUBLIC_ACCESS_TOKEN` and `LOGFLARE_PRIVATE_ACCESS_TOKEN` with
+  placeholder values (`your-super-secret-and-long-logflare-key-public`/`-private`). **Change
+  them** before this port reaches anything beyond localhost — they're shared-secret bearer
+  tokens (the private one is the API key every Studio request, and the verification `curl`
+  below, authenticates with), not per-user credentials.
+- The `_supabase` database and its `_analytics` schema — where the postgres backend stores
+  everything Logflare ingests — are created automatically by the stock db init scripts
+  (`docker/volumes/db/_supabase.sql`, `docker/volumes/db/logs.sql`); there is nothing to apply
+  by hand.
+- `DOCKER_SOCKET_LOCATION` (already set in `docker/.env`, default `/var/run/docker.sock`) must
+  point at a real docker socket — `vector` mounts it read-only to tail every other container's
+  logs by name.
+
+Bring analytics and vector up with a targeted `up` — it only touches those two services, the
+rest of a running stack is undisturbed:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.platform.yml -f docker-compose.logs.yml up -d analytics vector
+```
+
+Drop the `-f docker-compose.platform.yml` on any stack that doesn't run the control plane.
+
+`analytics`'s `4000:4000` port publish is this file's default as of M6.2 (it shipped commented
+out before). Publishing it is required whenever Studio reaches Logflare from *outside* the
+compose network — a host-process dev server, or any Studio that isn't itself a container on this
+compose project. A Studio container running inside the same compose network can instead register
+`http://analytics:4000` as the project's Logflare URL and skip the port publish entirely.
+
+Verify the stack is actually answering:
+
+```bash
+curl -s http://localhost:4000/health
+PRIV=$(grep -E '^LOGFLARE_PRIVATE_ACCESS_TOKEN=' docker/.env | cut -d= -f2)
+curl -s -H "Authorization: Bearer $PRIV" "http://localhost:4000/api/endpoints/query/logs.all?project=default" | head -c 300
+```
+
+The first command should return `200`. The second authenticates the same way Studio's own
+requests do and should return a JSON body with a `result` array — real rows once traffic has
+flowed through Kong, an empty array on a freshly-started stack (that's expected, not an error).
+
+### Registering the target per project
+
+A deployed analytics stack doesn't light anything up on its own — Studio only ever queries the
+Logflare target registered on a project's own row (`logflare_url`/`logflare_token_enc`; see
+"Analytics (M2.1)" above for the columns and the hard NULL-means-not-configured invariant, which
+M6.2 leaves unchanged). Point a project at the stack you just brought up one of two ways:
+
+- The M6.1 panel: Settings → General → Connection configuration → Logflare URL / Logflare token
+  (see "M6.1: Connection-config edit" above).
+- The `register-project` CLI's `--logflare-url`/`--logflare-token` flags at register time (see
+  "`register-project` CLI" above).
+
+Either path is subject to the same `?project=default` assumption M2.1 established: Studio always
+queries the target with the literal `?project=default`, never the row's own `ref`, because a
+registered analytics backend is assumed to be a vanilla single-project self-hosted Logflare, and
+every such instance self-identifies as `default` internally regardless of what Studio calls it.
+A row with either analytics column left `NULL` still gets an honest
+`404 Analytics is not configured for this project` from every analytics route — configuring the
+stack changes nothing about that invariant.
+
+### Boundaries
+
+- **Log streams are stack-scoped, not database-scoped.** `vector` routes events by container
+  name and tags every event with a single `project` value; Kong, GoTrue, and Storage events
+  carry no database dimension at all. A shared-db project ("Quick create" — see "Creating a
+  project" under M5.0 above) that has its own Logflare configured sees its **host stack's entire
+  log stream**, not a filtered slice — there is no way to separate it further. This is exactly
+  what the Connection configuration panel's shared-db hint already says ("Analytics configured
+  here reads the host stack log stream — logs are stack-scoped and cannot be filtered per
+  project"); M6.2 doesn't change M6.1's decision to let shared-db rows set Logflare fields
+  anyway, it just documents what configuring them actually gets you.
+- **Per-service ingestion depends on what each service writes to stdout, not on whether the
+  pipeline is working.** PostgREST, for instance, logs nothing per-request by default — its logs
+  tab renders empty even on a fully healthy, actively-queried stack. An empty tab over a quiet
+  service is the honest result, not a broken one; check the service's own log verbosity before
+  assuming the analytics pipeline is at fault.
+- **Percentile and certain latency-ranking charts stay BigQuery-only and surface an honest chart
+  error, not a flatline.** The auth report's sign-in/sign-up processing-time percentile charts
+  use `approx_quantiles`, which 500s on the Logflare postgres translator with no PG equivalent
+  implemented — same for the API report's "top slow routes" widget, whose entire purpose is
+  ranking routes by `response.origin_time`; flatlining either would produce a fake,
+  arbitrarily-ordered result, which is worse than an honest error state. Where a broken field
+  only feeds a single value-over-time line instead of a ranking — the API report's
+  response-speed chart, which also depends on `origin_time` — that line is zero-filled instead of
+  erroring, same honest-empty precedent as the rest of this document, just a flatline instead of
+  an error because nothing is actually broken about the request, only about a field the pipeline
+  never populates.
+- **`functions.combined-stats` and the edge functions list page's last-hour stats are both
+  broken on self-hosted for the same underlying reason, but in different ways.** Neither can
+  work because the self-hosted vector pipeline's `deno-relay-logs` transform
+  (`docker/volumes/logs/vector.yml`) never attaches a `function_id` to function log events in the
+  first place. The substituted `functions.combined-stats` endpoint (above) filters on
+  `function_id` inside an unnested `metadata` field, which is valid SQL that simply never
+  matches any row — it returns a correctly-shaped, honestly empty result, and the same substitute
+  omits the `execution_time_ms` aggregates for the identical reason (zero-filled client-side, same
+  precedent as elsewhere). The edge functions list page's own last-hour-stats query
+  (`apps/studio/data/edge-functions/edge-functions-last-hour-stats-query.ts`) references a bare,
+  un-nested `function_id` column in its `WHERE` and per-function `GROUP BY` instead, which is not
+  merely empty but 500s categorically on the Logflare postgres translator — that page surfaces
+  the existing chart error state, not an empty one. Neither is a SQL-dialect problem this
+  milestone's rewrites can fix; a real fix needs vector to populate `function_id` at ingestion, or
+  a server-side substitution mirroring `functions.combined-stats`'s own pattern — left as a
+  follow-up, out of scope for M6.2.
+- **The Unified Logs feature preview requires a BigQuery-backed Logflare and will not work
+  against this stack.** Its queries lean on `UNION ALL` across service tables, which is
+  categorically broken on the Logflare postgres translator (the same reason the `service-health`
+  substitute above runs one query per service table instead of a single `UNION ALL` query). The
+  feature is opt-in and off by default in self-hosted Studio; the per-service logs pages (Edge
+  Logs, Postgres Logs, Auth Logs, and so on) are the supported, fully-working surface and are
+  unaffected by any of the above.
+- **Log retention and storage volume on the postgres backend are the operator's concern**, the
+  same as every other piece of this stack's data (the platform-db, the project databases
+  themselves): M6.2 doesn't add or change any retention policy, and running a stack indefinitely
+  without pruning the `_analytics` schema will grow it indefinitely.
