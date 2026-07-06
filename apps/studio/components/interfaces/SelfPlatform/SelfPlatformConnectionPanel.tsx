@@ -43,7 +43,8 @@ import { t as $t } from '@/lib/i18n'
 // [self-platform] M6.1 T3: connection-config edit panel (spec §7). Secrets
 // are write-only: inputs always start empty; leave blank to keep the stored
 // value. Nullable fields clear via explicit checkboxes, never by emptying an
-// input (spec D5). shared-db rows only expose the logflare section (D1).
+// input (spec D5). shared-db rows only expose the logflare and metrics
+// sections, not the connection block (D1).
 function buildConnectionEditSchema() {
   return z.object({
     dbHost: z.string().trim().min(1, $t('Database host is required')),
