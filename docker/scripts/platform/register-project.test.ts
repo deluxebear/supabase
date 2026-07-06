@@ -340,7 +340,7 @@ describe('stack_kind (M5.0)', () => {
 
 describe('container_name (M6.4)', () => {
   it('registers container_name as $25', () => {
-    const params = buildRowParams({ ...baseInput(), container: 'supabase-db' }, (s) => s)
+    const params = buildRowParams({ ...baseInput(), containerName: 'supabase-db' }, (s) => s)
     expect(params).toHaveLength(25)
     expect(params[24]).toBe('supabase-db')
     expect(buildUpsertSql().query).toContain('container_name=excluded.container_name')
@@ -363,6 +363,6 @@ describe('container_name (M6.4)', () => {
       } as any,
       { ref: 'r', org: 'o', name: 'n' }
     )
-    expect(input.container).toBe('supabase-db')
+    expect(input.containerName).toBe('supabase-db')
   })
 })

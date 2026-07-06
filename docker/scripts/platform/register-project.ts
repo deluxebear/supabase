@@ -30,7 +30,7 @@ export interface RegisterInput {
   metricsUrl?: string | null
   metricsToken?: string | null
   stackKind?: string
-  container?: string | null
+  containerName?: string | null
 }
 
 export function parseArgs(argv: string[]) {
@@ -119,7 +119,7 @@ export function buildRowParams(input: RegisterInput, encrypt: (s: string) => str
     input.metricsUrl ?? null,
     input.metricsToken ? encrypt(input.metricsToken) : null,
     input.stackKind ?? 'external',
-    input.container ?? null,
+    input.containerName ?? null,
   ]
 }
 
@@ -160,7 +160,7 @@ export function resolveInputFromEnv(
     logflareToken: env.LOGFLARE_PRIVATE_ACCESS_TOKEN || null,
     metricsUrl: env.METRICS_URL || null,
     metricsToken: null,
-    container: env.METRICS_CONTAINER || null,
+    containerName: env.METRICS_CONTAINER || null,
   }
 }
 
@@ -285,7 +285,7 @@ export function main(argv = process.argv.slice(2)) {
             logflareToken: flags['logflare-token'] || null,
             metricsUrl: flags['metrics-url'] || null,
             metricsToken: flags['metrics-token'] || null,
-            container: flags['container'] || null,
+            containerName: flags['container'] || null,
           } as RegisterInput
         })()),
     stackKind,
