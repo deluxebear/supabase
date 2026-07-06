@@ -36,6 +36,8 @@ const row = {
   secret_key_enc: null,
   logflare_url: null,
   logflare_token_enc: null,
+  metrics_url: null,
+  metrics_token_enc: null,
   stack_kind: 'external',
   stack_meta: {},
 }

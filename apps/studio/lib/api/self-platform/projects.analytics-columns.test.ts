@@ -61,7 +61,13 @@ describe('projects.ts analytics columns', () => {
     const row = await getProjectByRef('proj-b')
     expect(mockQuery).toHaveBeenCalledTimes(2)
     expect(mockQuery.mock.calls[1][0].query).not.toContain('logflare_url')
-    expect(row).toEqual({ ...legacyRow, logflare_url: null, logflare_token_enc: null })
+    expect(row).toEqual({
+      ...legacyRow,
+      logflare_url: null,
+      logflare_token_enc: null,
+      metrics_url: null,
+      metrics_token_enc: null,
+    })
   })
 
   it('propagates other errors without retrying', async () => {

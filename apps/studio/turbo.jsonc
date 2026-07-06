@@ -87,6 +87,9 @@
         "LOGFLARE_PUBLIC_ACCESS_TOKEN",
         "LOGFLARE_PRIVATE_ACCESS_TOKEN",
         "LOGFLARE_URL",
+        // [self-platform] M6.3: per-project infra-metrics scrape target
+        // global-env fallback (resolve-connection.ts fromGlobalEnv).
+        "METRICS_URL",
         "SENTRY_ORG",
         "SENTRY_PROJECT",
         "SENTRY_AUTH_TOKEN",

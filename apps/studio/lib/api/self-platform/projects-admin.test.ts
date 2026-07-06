@@ -381,6 +381,32 @@ describe('parseProjectPatchInput (M6.1)', () => {
   })
 })
 
+describe('metrics block (M6.3, D5 semantics)', () => {
+  it('accepts url+token strings', () => {
+    const r = parseProjectPatchInput({ metrics: { url: 'http://h:9598/metrics', token: 'tok' } })
+    expect(r).toEqual({ value: { metricsUrl: 'http://h:9598/metrics', metricsToken: 'tok' } })
+  })
+  it('explicit null clears; empty string keeps', () => {
+    const r = parseProjectPatchInput({ metrics: { url: null, token: '' } })
+    expect(r).toEqual({ value: { metricsUrl: null } })
+  })
+  it('non-string rejects', () => {
+    expect(parseProjectPatchInput({ metrics: { url: 5 } })).toEqual({
+      error: 'Invalid metrics.url',
+    })
+  })
+  it('immutable trio inside metrics block rejects by name', () => {
+    expect(parseProjectPatchInput({ metrics: { ref: 'x' } })).toEqual({
+      error: 'Field "ref" cannot be changed',
+    })
+  })
+  it('metrics-only patch is not an empty patch', () => {
+    expect('value' in parseProjectPatchInput({ metrics: { url: 'http://h:9598/metrics' } })).toBe(
+      true
+    )
+  })
+})
+
 describe('updateProjectConnection (M6.1)', () => {
   const EXTERNAL_ROW = HOST_ROW // ref 'default', stack_kind 'external'
   const SHARED_ROW = {

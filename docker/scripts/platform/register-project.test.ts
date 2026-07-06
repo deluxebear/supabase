@@ -217,14 +217,16 @@ describe('analytics fields (M2.1)', () => {
       { ...base, logflareUrl: 'http://lf', logflareToken: 'tok' } as any,
       enc
     )
-    expect(withAnalytics).toHaveLength(22)
+    // M6.3: length 22->24 and stack_kind index 21->23 — metrics_url/token
+    // (M6.3) are inserted between logflare_token_enc and stack_kind.
+    expect(withAnalytics).toHaveLength(24)
     expect(withAnalytics[19]).toBe('http://lf')
     expect(withAnalytics[20]).toBe('enc(tok)')
-    expect(withAnalytics[21]).toBe('external')
+    expect(withAnalytics[23]).toBe('external')
     const without = buildRowParams(base as any, enc)
     expect(without[19]).toBeNull()
     expect(without[20]).toBeNull()
-    expect(without[21]).toBe('external')
+    expect(without[23]).toBe('external')
   })
 
   it('resolveInputFromEnv picks up LOGFLARE_URL and LOGFLARE_PRIVATE_ACCESS_TOKEN', () => {
@@ -260,6 +262,48 @@ describe('analytics fields (M2.1)', () => {
   })
 })
 
+describe('metrics fields (M6.3)', () => {
+  const ENV_BASE = {
+    POSTGRES_PASSWORD: 'p',
+    SERVICE_ROLE_KEY: 's',
+    ANON_KEY: 'a',
+    JWT_SECRET: 'j',
+    API_EXTERNAL_URL: 'http://k',
+  }
+
+  it('passes metrics url through and encrypts metrics token (M6.3)', () => {
+    const BASE_INPUT = baseInput()
+    const params = buildRowParams(
+      { ...BASE_INPUT, metricsUrl: 'http://h:9598/metrics', metricsToken: 'mtok' },
+      (s) => `enc(${s})`
+    )
+    expect(params[21]).toBe('http://h:9598/metrics') // metrics_url ($22)
+    expect(params[22]).toBe('enc(mtok)') // metrics_token_enc ($23)
+    expect(params[23]).toBe((BASE_INPUT as any).stackKind ?? 'external') // stack_kind shifted to $24
+  })
+
+  it('metrics fields default to null and are optional', () => {
+    const params = buildRowParams(baseInput(), (s) => s)
+    expect(params[21]).toBeNull()
+    expect(params[22]).toBeNull()
+  })
+
+  it('upsert SQL carries the metrics columns', () => {
+    const { query } = buildUpsertSql()
+    expect(query).toContain('metrics_url')
+    expect(query).toContain('metrics_token_enc=excluded.metrics_token_enc')
+  })
+
+  it('resolveInputFromEnv reads METRICS_URL and leaves token null', () => {
+    const input = resolveInputFromEnv(
+      { ...ENV_BASE, METRICS_URL: 'http://h:9598/metrics' } as any,
+      { ref: 'r', org: 'o', name: 'n' }
+    )
+    expect(input.metricsUrl).toBe('http://h:9598/metrics')
+    expect(input.metricsToken).toBeNull()
+  })
+})
+
 describe('stack_kind (M5.0)', () => {
   it('upsert SQL carries stack_kind as $22 and updates it on conflict', () => {
     const { query } = buildUpsertSql()
@@ -269,11 +313,13 @@ describe('stack_kind (M5.0)', () => {
   })
 
   it('buildRowParams appends stackKind, defaulting to external', () => {
+    // M6.3: length 22->24 and index 21->23 — metrics_url/token inserted
+    // between logflare_token_enc and stack_kind (see 'metrics fields (M6.3)').
     const params = buildRowParams(baseInput(), (s) => `enc(${s})`)
-    expect(params).toHaveLength(22)
-    expect(params[21]).toBe('external')
+    expect(params).toHaveLength(24)
+    expect(params[23]).toBe('external')
     const explicit = buildRowParams({ ...baseInput(), stackKind: 'shared-db' }, (s) => `enc(${s})`)
-    expect(explicit[21]).toBe('shared-db')
+    expect(explicit[23]).toBe('shared-db')
   })
 
   it('parseArgs picks up --stack-kind', () => {

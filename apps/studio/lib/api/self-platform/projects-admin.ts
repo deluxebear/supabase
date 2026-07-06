@@ -325,6 +325,8 @@ export interface ProjectPatch {
   connection?: ConnectionPatch
   logflareUrl?: string | null
   logflareToken?: string | null
+  metricsUrl?: string | null
+  metricsToken?: string | null
 }
 
 const IMMUTABLE_FIELDS = ['ref', 'stack_kind', 'stack_meta'] as const
@@ -435,11 +437,37 @@ export function parseProjectPatchInput(raw: unknown): { value: ProjectPatch } | 
     }
   }
 
+  if (obj.metrics !== undefined) {
+    if (obj.metrics === null || typeof obj.metrics !== 'object' || Array.isArray(obj.metrics)) {
+      return { error: 'Invalid metrics: must be an object' }
+    }
+    const mt = obj.metrics as Record<string, unknown>
+    for (const field of IMMUTABLE_FIELDS) {
+      if (field in mt) return { error: `Field "${field}" cannot be changed` }
+    }
+    for (const [key, prop] of [
+      ['url', 'metricsUrl'],
+      ['token', 'metricsToken'],
+    ] as const) {
+      const v = mt[key]
+      if (v === undefined) continue
+      if (v === null) {
+        value[prop] = null
+        continue
+      }
+      if (typeof v !== 'string') return { error: `Invalid metrics.${key}` }
+      if (v.trim() === '') continue // keep
+      value[prop] = v.trim()
+    }
+  }
+
   if (
     value.name === undefined &&
     value.connection === undefined &&
     value.logflareUrl === undefined &&
-    value.logflareToken === undefined
+    value.logflareToken === undefined &&
+    value.metricsUrl === undefined &&
+    value.metricsToken === undefined
   ) {
     return { error: 'No editable fields in request body' }
   }
@@ -532,6 +560,10 @@ export async function updateProjectConnection(
       'logflare_token_enc',
       patch.logflareToken === null ? null : encryptSecret(patch.logflareToken)
     )
+  }
+  if (patch.metricsUrl !== undefined) set('metrics_url', patch.metricsUrl)
+  if (patch.metricsToken !== undefined) {
+    set('metrics_token_enc', patch.metricsToken === null ? null : encryptSecret(patch.metricsToken))
   }
   if (sets.length === 0) throw new Error('empty project patch') // parse guarantees ≥1 — defense only
 

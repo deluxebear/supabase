@@ -29,6 +29,8 @@ export interface PlatformProjectRow {
   secret_key_enc: string | null
   logflare_url: string | null
   logflare_token_enc: string | null
+  metrics_url: string | null
+  metrics_token_enc: string | null
   stack_kind: string
   stack_meta: Record<string, unknown>
 }
@@ -40,7 +42,7 @@ export const PROJECT_SELECT_COLUMNS = `
   db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
   db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc,
   publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc,
-  stack_kind, stack_meta
+  metrics_url, metrics_token_enc, stack_kind, stack_meta
 `
 
 // [self-platform] M2.1-era list (analytics, no stack columns) — degradation
@@ -110,6 +112,8 @@ async function queryProjectRows(
     ...r,
     logflare_url: r.logflare_url ?? null,
     logflare_token_enc: r.logflare_token_enc ?? null,
+    metrics_url: r.metrics_url ?? null,
+    metrics_token_enc: r.metrics_token_enc ?? null,
     stack_kind: r.stack_kind ?? 'external',
     stack_meta: r.stack_meta ?? ({} as Record<string, unknown>),
   }))

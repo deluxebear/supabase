@@ -39,6 +39,11 @@ export interface ResolvedConnection {
   // configured for this project — routes 404, NEVER fall back to global.
   logflareUrl: string | null
   logflareToken: string | null
+  // [self-platform] M6.3: per-project infra-metrics scrape target. NULL =
+  // host metrics not configured — the sampler skips L2 for this row (L1 SQL
+  // attributes still flow; no 404 wall, unlike logflare).
+  metricsUrl: string | null
+  metricsToken: string | null
   // [self-platform] Raw registry row for a hit, null for the global-env
   // fallback. Lets callers (e.g. Task 6) map from the row without a second
   // getProjectByRef lookup.
@@ -71,6 +76,8 @@ function fromRow(row: PlatformProjectRow): ResolvedConnection {
     secretKey: row.secret_key_enc ? decryptSecret(row.secret_key_enc) : null,
     logflareUrl: row.logflare_url,
     logflareToken: row.logflare_token_enc ? decryptSecret(row.logflare_token_enc) : null,
+    metricsUrl: row.metrics_url,
+    metricsToken: row.metrics_token_enc ? decryptSecret(row.metrics_token_enc) : null,
     row,
   }
 }
@@ -99,6 +106,8 @@ function fromGlobalEnv(): ResolvedConnection {
     secretKey: process.env.SUPABASE_SECRET_KEY || null,
     logflareUrl: process.env.LOGFLARE_URL || null,
     logflareToken: process.env.LOGFLARE_PRIVATE_ACCESS_TOKEN || null,
+    metricsUrl: process.env.METRICS_URL || null,
+    metricsToken: null,
     row: null,
   }
 }
