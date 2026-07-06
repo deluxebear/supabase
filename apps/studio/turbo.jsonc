@@ -89,6 +89,7 @@
         "LOGFLARE_URL",
         // [self-platform] M6.3: per-project infra-metrics scrape target
         // global-env fallback (resolve-connection.ts fromGlobalEnv).
+        "METRICS_CONTAINER",
         "METRICS_URL",
         "SENTRY_ORG",
         "SENTRY_PROJECT",
