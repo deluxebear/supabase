@@ -66,6 +66,23 @@ describe('GET projects-resource-warnings (self-platform)', () => {
       need_pitr: null,
     })
   })
+  it('pins the exact 90/80 boundary thresholds for cpu_exhaustion', async () => {
+    const cases: Array<[number, 'critical' | 'warning' | null]> = [
+      [79, null],
+      [80, 'warning'],
+      [89, 'warning'],
+      [90, 'critical'],
+    ]
+    for (const [value, expected] of cases) {
+      vi.mocked(executePlatformQuery).mockResolvedValue({
+        data: [sample('proj-a', 'avg_cpu_usage', value)] as never,
+        error: undefined,
+      })
+      const res = await run()
+      const a = res._getJSONData().find((r: { project: string }) => r.project === 'proj-a')
+      expect(a.cpu_exhaustion).toBe(expected)
+    }
+  })
   it('disk percent derives from disk_fs_used / disk_fs_size', async () => {
     vi.mocked(executePlatformQuery).mockResolvedValue({
       data: [sample('proj-a', 'disk_fs_used', 95), sample('proj-a', 'disk_fs_size', 100)] as never,

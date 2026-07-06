@@ -70,6 +70,9 @@ describe('GET infra-monitoring (self-platform)', () => {
       CLAIMS,
       expect.objectContaining({ projectRef: 'proj-x', action: 'analytics:Read' })
     )
+    const [, , guardArg] = vi.mocked(guardProjectRoute).mock.calls[0]
+    expect(guardArg).not.toHaveProperty('resource')
+    expect(guardArg).toEqual({ action: 'analytics:Read', projectRef: 'proj-x' })
   })
   it('assembles the multi shape: buckets → data[].values, series metadata per attribute', async () => {
     vi.mocked(executePlatformQuery).mockResolvedValue({
@@ -128,6 +131,15 @@ describe('GET infra-monitoring (self-platform)', () => {
     const [opts] = vi.mocked(executePlatformQuery).mock.calls[0]
     expect(opts.parameters).toContain('avg_cpu_usage')
     expect(opts.parameters!.join('|')).not.toContain('made_up_attr')
+  })
+  it('all-unknown attributes: SQL is skipped entirely, still 200s with zeroed series', async () => {
+    const res = await run({ ...BASE_QUERY, attributes: 'made_up_a,made_up_b' })
+    expect(res._getStatusCode()).toBe(200)
+    const body = res._getJSONData()
+    expect(vi.mocked(executePlatformQuery)).not.toHaveBeenCalled()
+    expect(body.data).toEqual([])
+    expect(body.series.made_up_a).toEqual({ format: '', yAxisLimit: 0, total: 0, totalAverage: 0 })
+    expect(body.series.made_up_b).toEqual({ format: '', yAxisLimit: 0, total: 0, totalAverage: 0 })
   })
   it('bucket seconds follow the interval map; databaseIdentifier is ignored', async () => {
     await run({ ...BASE_QUERY, interval: '30m', databaseIdentifier: 'replica-1' })
