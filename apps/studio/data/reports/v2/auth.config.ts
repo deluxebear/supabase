@@ -10,6 +10,7 @@ import {
 } from '@/components/interfaces/Reports/Reports.utils'
 import { NumericFilter } from '@/components/interfaces/Reports/v2/ReportsNumericFilter'
 import type { AnalyticsInterval } from '@/data/analytics/constants'
+import { pickDialect } from '@/data/logs/logflare-dialect'
 import {
   analyticsLiteral,
   joinSqlFragments,
@@ -49,10 +50,24 @@ type AuthReportFilters = {
 }
 
 // Static SELECT-clause fragment for the `auth_logs` table.
-const PROVIDER_SELECT_FRAGMENT = safeSql`COALESCE(JSON_VALUE(event_message, "$.provider"), 'unknown') as provider,`
+//
+// [self-platform] M6.2 T3 live-verification finding (beyond the Step 1
+// pins): the Logflare PG translator parses a DOUBLE-quoted JSON_VALUE path
+// argument as a quoted PG *identifier*, not a string literal (standard SQL:
+// `"..."` = identifier, `'...'` = string) — so `"$.provider"` 500s while
+// `'$.provider'` succeeds. `json_value` the function is fine (T2's pin
+// holds); the double-quote convention BigQuery also happens to accept is
+// the actual break. PG branch uses single quotes; BQ text is untouched.
+const PROVIDER_SELECT_FRAGMENT = pickDialect(
+  safeSql`COALESCE(JSON_VALUE(event_message, '$.provider'), 'unknown') as provider,`,
+  safeSql`COALESCE(JSON_VALUE(event_message, "$.provider"), 'unknown') as provider,`
+)
 
 // Static SELECT-clause fragment for the aliased `auth_logs f` form.
-const PROVIDER_SELECT_FRAGMENT_F_ALIAS = safeSql`COALESCE(JSON_VALUE(f.event_message, "$.provider"), 'unknown') as provider,`
+const PROVIDER_SELECT_FRAGMENT_F_ALIAS = pickDialect(
+  safeSql`COALESCE(JSON_VALUE(f.event_message, '$.provider'), 'unknown') as provider,`,
+  safeSql`COALESCE(JSON_VALUE(f.event_message, "$.provider"), 'unknown') as provider,`
+)
 
 const PROVIDER_GROUP_BY_FRAGMENT = safeSql`, provider`
 const EMPTY = safeSql``
@@ -64,6 +79,32 @@ function providerSelectFragment(groupByProvider: boolean, aliased: boolean): Saf
 
 function providerGroupBy(groupByProvider: boolean): SafeLogSqlFragment {
   return groupByProvider ? PROVIDER_GROUP_BY_FRAGMENT : EMPTY
+}
+
+/**
+ * [self-platform] M6.2 T3 — ordinal tail for the PG-dialect variants of the
+ * auth-usage templates. `timestamp_trunc(timestamp, …) as timestamp` shadows
+ * the raw `timestamp` column, and the Logflare PG translator silently groups
+ * by the RAW column when a `GROUP BY`/`ORDER BY` names a shadowed alias —
+ * ordinals are mandatory (see logflare-dialect.ts).
+ *
+ * Returns the comma-prefixed ordinal tail that follows the `1` (timestamp)
+ * in both the `GROUP BY` and `ORDER BY` clauses of these templates — those
+ * two clauses append the exact same trailing column list in the original
+ * BigQuery text (`${providerGroupBy(groupByProvider)}`, optionally preceded
+ * by `extra`, e.g. `login_type_provider` for SignInAttempts), so one helper
+ * serves both call sites. `extra` are ordinal positions already adjusted by
+ * the caller for whether `groupByProvider` shifts them (e.g. SignInAttempts'
+ * `login_type_provider` is position 2 without a provider column, 3 with
+ * one — the caller passes the correct value per flag).
+ */
+function pgOrdinals(groupByProvider: boolean, extra: number[] = []): SafeLogSqlFragment {
+  const tail = [...extra, ...(groupByProvider ? [2] : [])]
+  if (tail.length === 0) return EMPTY
+  return safeSql`, ${joinSqlFragments(
+    tail.map((n) => analyticsLiteral(n)),
+    ', '
+  )}`
 }
 
 /**
@@ -83,7 +124,14 @@ function authFiltersToAndPredicates(filters?: AuthReportFilters): SafeLogSqlFrag
 
   if (filters?.provider && filters.provider.length > 0) {
     const list = joinSqlFragments(filters.provider.map(analyticsLiteral), ', ')
-    predicates.push(safeSql`JSON_VALUE(event_message, "$.provider") IN (${list})`)
+    // [self-platform] M6.2 T3: double-quoted JSON_VALUE path parses as a PG
+    // identifier on the Logflare translator — see PROVIDER_SELECT_FRAGMENT.
+    predicates.push(
+      pickDialect(
+        safeSql`JSON_VALUE(event_message, '$.provider') IN (${list})`,
+        safeSql`JSON_VALUE(event_message, "$.provider") IN (${list})`
+      )
+    )
   }
 
   if (predicates.length === 0) return EMPTY
@@ -107,7 +155,9 @@ function edgeLogsFiltersToAndPredicates(filters?: AuthReportFilters): SafeLogSql
   return safeSql`AND ${joinSqlFragments(predicates, ' AND ')}`
 }
 
-const AUTH_REPORT_SQL: Record<
+// Exported (not just internal) so the M6.2 T3 dialect variants can be
+// snapshot-tested directly against their PG/BQ twins.
+export const AUTH_REPORT_SQL: Record<
   MetricKey,
   (interval: AnalyticsInterval, filters?: AuthReportFilters) => SafeLogSqlFragment
 > = {
@@ -115,7 +165,23 @@ const AUTH_REPORT_SQL: Record<
     const granularity = SAFE_GRANULARITY_SQL[analyticsIntervalToGranularity(interval)]
     const andPredicates = authFiltersToAndPredicates(filters)
     const groupByProvider = Boolean(filters?.provider && filters.provider.length > 0)
-    return safeSql`
+    return pickDialect(
+      safeSql`
+        --active-users
+        select
+          timestamp_trunc(timestamp, ${granularity}) as timestamp,
+          ${providerSelectFragment(groupByProvider, true)}
+          count(distinct json_value(f.event_message, '$.auth_event.actor_id')) as count
+        from auth_logs f
+        where json_value(f.event_message, '$.auth_event.action') in (
+          'login', 'user_signedup', 'token_refreshed', 'user_modified',
+          'user_recovery_requested', 'user_reauthenticate_requested'
+        )
+        ${andPredicates}
+        group by 1${pgOrdinals(groupByProvider)}
+        order by 1 desc${pgOrdinals(groupByProvider)}
+      `,
+      safeSql`
         --active-users
         select
           timestamp_trunc(timestamp, ${granularity}) as timestamp,
@@ -130,12 +196,46 @@ const AUTH_REPORT_SQL: Record<
         group by timestamp${providerGroupBy(groupByProvider)}
         order by timestamp desc${providerGroupBy(groupByProvider)}
       `
+    )
   },
   SignInAttempts: (interval, filters) => {
     const granularity = SAFE_GRANULARITY_SQL[analyticsIntervalToGranularity(interval)]
     const andPredicates = authFiltersToAndPredicates(filters)
     const groupByProvider = Boolean(filters?.provider && filters.provider.length > 0)
-    return safeSql`
+    // login_type_provider sits at select position 2 without a provider
+    // column, 3 with one (the provider column, when present, is inserted
+    // right after timestamp — see providerSelectFragment).
+    const loginTypeProviderPosition = groupByProvider ? [3] : [2]
+    return pickDialect(
+      safeSql`
+        --sign-in-attempts
+        SELECT
+          timestamp_trunc(timestamp, ${granularity}) as timestamp,
+          ${providerSelectFragment(groupByProvider, false)}
+          CASE
+            WHEN JSON_VALUE(event_message, '$.provider') IS NOT NULL
+                AND JSON_VALUE(event_message, '$.provider') != ''
+            THEN CONCAT(
+              JSON_VALUE(event_message, '$.login_method'),
+              ' (',
+              JSON_VALUE(event_message, '$.provider'),
+              ')'
+            )
+            ELSE JSON_VALUE(event_message, '$.login_method')
+          END as login_type_provider,
+          COUNT(*) as count
+        FROM
+          auth_logs
+        WHERE
+          JSON_VALUE(event_message, '$.action') = 'login'
+          AND JSON_VALUE(event_message, '$.metering') = 'true'
+          ${andPredicates}
+        GROUP BY
+          1${pgOrdinals(groupByProvider, loginTypeProviderPosition)}
+        ORDER BY
+          1 desc${pgOrdinals(groupByProvider, loginTypeProviderPosition)}
+      `,
+      safeSql`
         --sign-in-attempts
         SELECT
           timestamp_trunc(timestamp, ${granularity}) as timestamp,
@@ -163,12 +263,26 @@ const AUTH_REPORT_SQL: Record<
         ORDER BY
           timestamp desc, login_type_provider${providerGroupBy(groupByProvider)}
       `
+    )
   },
   PasswordResetRequests: (interval, filters) => {
     const granularity = SAFE_GRANULARITY_SQL[analyticsIntervalToGranularity(interval)]
     const andPredicates = authFiltersToAndPredicates(filters)
     const groupByProvider = Boolean(filters?.provider && filters.provider.length > 0)
-    return safeSql`
+    return pickDialect(
+      safeSql`
+        --password-reset-requests
+        select
+          timestamp_trunc(timestamp, ${granularity}) as timestamp,
+          ${providerSelectFragment(groupByProvider, true)}
+          count(*) as count
+        from auth_logs f
+        where json_value(f.event_message, '$.auth_event.action') = 'user_recovery_requested'
+        ${andPredicates}
+        group by 1${pgOrdinals(groupByProvider)}
+        order by 1 desc${pgOrdinals(groupByProvider)}
+      `,
+      safeSql`
         --password-reset-requests
         select
           timestamp_trunc(timestamp, ${granularity}) as timestamp,
@@ -180,12 +294,26 @@ const AUTH_REPORT_SQL: Record<
         group by timestamp${providerGroupBy(groupByProvider)}
         order by timestamp desc${providerGroupBy(groupByProvider)}
       `
+    )
   },
   TotalSignUps: (interval, filters) => {
     const granularity = SAFE_GRANULARITY_SQL[analyticsIntervalToGranularity(interval)]
     const andPredicates = authFiltersToAndPredicates(filters)
     const groupByProvider = Boolean(filters?.provider && filters.provider.length > 0)
-    return safeSql`
+    return pickDialect(
+      safeSql`
+        --total-signups
+        select
+          timestamp_trunc(timestamp, ${granularity}) as timestamp,
+          ${providerSelectFragment(groupByProvider, false)}
+          count(*) as count
+        from auth_logs
+        where json_value(event_message, '$.auth_event.action') = 'user_signedup'
+        ${andPredicates}
+        group by 1${pgOrdinals(groupByProvider)}
+        order by 1 desc${pgOrdinals(groupByProvider)}
+      `,
+      safeSql`
         --total-signups
         select
           timestamp_trunc(timestamp, ${granularity}) as timestamp,
@@ -197,12 +325,29 @@ const AUTH_REPORT_SQL: Record<
         group by timestamp${providerGroupBy(groupByProvider)}
         order by timestamp desc${providerGroupBy(groupByProvider)}
       `
+    )
   },
   SignInProcessingTimeBasic: (interval, filters) => {
     const granularity = SAFE_GRANULARITY_SQL[analyticsIntervalToGranularity(interval)]
     const andPredicates = authFiltersToAndPredicates(filters)
     const groupByProvider = Boolean(filters?.provider && filters.provider.length > 0)
-    return safeSql`
+    return pickDialect(
+      safeSql`
+        --signin-processing-time-basic
+        select
+          timestamp_trunc(timestamp, ${granularity}) as timestamp,
+          ${providerSelectFragment(groupByProvider, false)}
+          count(*) as count,
+          round(avg(cast(json_value(event_message, '$.duration') as int64)) / 1000000, 2) as avg_processing_time_ms,
+          round(min(cast(json_value(event_message, '$.duration') as int64)) / 1000000, 2) as min_processing_time_ms,
+          round(max(cast(json_value(event_message, '$.duration') as int64)) / 1000000, 2) as max_processing_time_ms
+        from auth_logs
+        where json_value(event_message, '$.auth_event.action') = 'login'
+        ${andPredicates}
+        group by 1${pgOrdinals(groupByProvider)}
+        order by 1 desc${pgOrdinals(groupByProvider)}
+      `,
+      safeSql`
         --signin-processing-time-basic
         select
           timestamp_trunc(timestamp, ${granularity}) as timestamp,
@@ -217,7 +362,13 @@ const AUTH_REPORT_SQL: Record<
         group by timestamp${providerGroupBy(groupByProvider)}
         order by timestamp desc${providerGroupBy(groupByProvider)}
       `
+    )
   },
+  // [self-platform] M6.2 T3 Step 1 pin: `approx_quantiles(...)[offset(n)]`
+  // 500s on the Logflare PG translator. No PG variant is implemented here —
+  // per the brief's decision rule, this template keeps the BQ text in BOTH
+  // branches (no pickDialect gate) and surfaces the existing chart error
+  // state on a stock Logflare PG backend; documented as a known limitation.
   SignInProcessingTimePercentiles: (interval, filters) => {
     const granularity = SAFE_GRANULARITY_SQL[analyticsIntervalToGranularity(interval)]
     const andPredicates = authFiltersToAndPredicates(filters)
@@ -242,7 +393,23 @@ const AUTH_REPORT_SQL: Record<
     const granularity = SAFE_GRANULARITY_SQL[analyticsIntervalToGranularity(interval)]
     const andPredicates = authFiltersToAndPredicates(filters)
     const groupByProvider = Boolean(filters?.provider && filters.provider.length > 0)
-    return safeSql`
+    return pickDialect(
+      safeSql`
+        --signup-processing-time-basic
+        select
+          timestamp_trunc(timestamp, ${granularity}) as timestamp,
+          ${providerSelectFragment(groupByProvider, false)}
+          count(*) as count,
+          round(avg(cast(json_value(event_message, '$.duration') as int64)) / 1000000, 2) as avg_processing_time_ms,
+          round(min(cast(json_value(event_message, '$.duration') as int64)) / 1000000, 2) as min_processing_time_ms,
+          round(max(cast(json_value(event_message, '$.duration') as int64)) / 1000000, 2) as max_processing_time_ms
+        from auth_logs
+        where json_value(event_message, '$.auth_event.action') = 'user_signedup'
+        ${andPredicates}
+        group by 1${pgOrdinals(groupByProvider)}
+        order by 1 desc${pgOrdinals(groupByProvider)}
+      `,
+      safeSql`
         --signup-processing-time-basic
         select
           timestamp_trunc(timestamp, ${granularity}) as timestamp,
@@ -257,7 +424,13 @@ const AUTH_REPORT_SQL: Record<
         group by timestamp${providerGroupBy(groupByProvider)}
         order by timestamp desc${providerGroupBy(groupByProvider)}
       `
+    )
   },
+  // [self-platform] M6.2 T3 Step 1 pin: `approx_quantiles(...)[offset(n)]`
+  // 500s on the Logflare PG translator. No PG variant is implemented here —
+  // per the brief's decision rule, this template keeps the BQ text in BOTH
+  // branches (no pickDialect gate) and surfaces the existing chart error
+  // state on a stock Logflare PG backend; documented as a known limitation.
   SignUpProcessingTimePercentiles: (interval, filters) => {
     const granularity = SAFE_GRANULARITY_SQL[analyticsIntervalToGranularity(interval)]
     const andPredicates = authFiltersToAndPredicates(filters)
@@ -278,10 +451,36 @@ const AUTH_REPORT_SQL: Record<
         order by timestamp desc${providerGroupBy(groupByProvider)}
       `
   },
+  // [self-platform] M6.2 T3 live-verification finding (beyond the Step 1
+  // pins): the bare top-level `path` column 500s on `edge_logs` (categorical
+  // — same root cause as `function_id` on `function_edge_logs`: self-hosted's
+  // kong_logs vector transform only ever sets `.metadata.request.path`, so
+  // the top-level convenience alias real BigQuery has has no type on file
+  // here). Swapped for the already-unnested `request.path` — same predicate,
+  // populated field; every other template in this task already uses
+  // `request.path`, never bare `path`.
   ErrorsByStatus: (interval, filters) => {
     const granularity = SAFE_GRANULARITY_SQL[analyticsIntervalToGranularity(interval)]
     const andPredicates = edgeLogsFiltersToAndPredicates(filters)
-    return safeSql`
+    return pickDialect(
+      safeSql`
+        --auth-errors-by-status
+  select
+    timestamp_trunc(timestamp, ${granularity}) as timestamp,
+    count(*) as count,
+    response.status_code
+  from edge_logs
+    cross join unnest(metadata) as m
+    cross join unnest(m.request) as request
+    cross join unnest(m.response) as response
+    cross join unnest(response.headers) as h
+  where request.path like '%auth/v1%'
+    and response.status_code >= 400 and response.status_code <= 599
+    ${andPredicates}
+  group by 1, 3
+  order by 1 desc
+      `,
+      safeSql`
         --auth-errors-by-status
   select
     timestamp_trunc(timestamp, ${granularity}) as timestamp,
@@ -298,11 +497,33 @@ const AUTH_REPORT_SQL: Record<
   group by timestamp, status_code
   order by timestamp desc
       `
+    )
   },
+  // [self-platform] M6.2 T3 live-verification finding (beyond the Step 1
+  // pins): same bare `path` issue as ErrorsByStatus — swapped for
+  // `request.path`.
   ErrorsByAuthCode: (interval, filters) => {
     const granularity = SAFE_GRANULARITY_SQL[analyticsIntervalToGranularity(interval)]
     const andPredicates = edgeLogsFiltersToAndPredicates(filters)
-    return safeSql`
+    return pickDialect(
+      safeSql`
+        --auth-errors-by-code
+  select
+    timestamp_trunc(timestamp, ${granularity}) as timestamp,
+    count(*) as count,
+    h.x_sb_error_code as error_code
+  from edge_logs
+    cross join unnest(metadata) as m
+    cross join unnest(m.request) as request
+    cross join unnest(m.response) as response
+    cross join unnest(response.headers) as h
+  where request.path like '%auth/v1%'
+    and response.status_code >= 400 and response.status_code <= 599
+    ${andPredicates}
+  group by 1, 3
+  order by 1 desc
+      `,
+      safeSql`
         --auth-errors-by-code
   select
     timestamp_trunc(timestamp, ${granularity}) as timestamp,
@@ -319,6 +540,7 @@ const AUTH_REPORT_SQL: Record<
   group by timestamp, error_code
   order by timestamp desc
       `
+    )
   },
 }
 

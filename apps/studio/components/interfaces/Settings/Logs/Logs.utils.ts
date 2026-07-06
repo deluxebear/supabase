@@ -16,6 +16,7 @@ import {
 import type { Filters, LogData, LogsEndpointParams, QueryType } from './Logs.types'
 import { convertResultsToCSV } from '@/components/interfaces/SQLEditor/UtilityPanel/Results.utils'
 import BackwardIterator from '@/components/ui/CodeEditor/Providers/BackwardIterator'
+import { pickDialect } from '@/data/logs/logflare-dialect'
 import {
   analyticsLiteral,
   joinSqlFragments,
@@ -436,10 +437,13 @@ FROM
   ${LOG_TABLE_SQL[table]} t
   ${joins}
   ${whereFragment}
-GROUP BY
+${pickDialect(
+  safeSql`GROUP BY 1 ORDER BY 1 ASC`,
+  safeSql`GROUP BY
 timestamp
 ORDER BY
-  timestamp ASC
+  timestamp ASC`
+)}
   `
 }
 

@@ -23,6 +23,31 @@ export type EdgeFunctionLastHourStats = {
 
 export type EdgeFunctionsLastHourStatsResponse = Record<string, EdgeFunctionLastHourStats>
 
+// [self-platform] M6.2 T3 Step 1 pin: `count(distinct case when …)` returned
+// 200 (real data) on the Logflare PG translator — not broken. Per the
+// brief's decision rule ("if the pin shows count(distinct case when) works,
+// keep the BQ text in both branches instead"), no PG variant/pickDialect
+// gate is added here; this template's own aggregates are unchanged from
+// pre-M6.2.
+//
+// Live-verification finding (Step 5, beyond the Step 1 pin): this whole
+// query is nonetheless non-functional on self-hosted — bare `function_id`
+// (used in both the WHERE and the GROUP BY, which is this query's entire
+// per-function keying) 500s categorically on `function_edge_logs`
+// (docker/volumes/logs/vector.yml's `functions_logs` transform never
+// populates it; same root cause T2 traced for `m.execution_time_ms`/
+// `m.function_id` avg/max, generalized here to ANY reference). Unlike the
+// SQL-dialect issues this task's rewrite list addresses, this is a
+// data-availability gap with no SQL-only fix: the query's entire purpose is
+// a per-`functionId` breakdown (`EdgeFunctionsLastHourStatsResponse` is
+// keyed by it), and there is no self-hosted-populated substitute identifier
+// (`m.execution_id`/`m.deployment_id` are equally never-populated, per T2's
+// recon). Left as a known limitation surfacing the existing error state —
+// same category as the two approx_quantiles-blocked auth percentile
+// templates — rather than force-fitting an architecture change outside
+// this task's SQL-variant scope. Flagged for reviewer sign-off / follow-up
+// (likely a server-side substitution, mirroring T2's analytics-substitutes
+// pattern, in a later milestone).
 function getEdgeFunctionsLastHourStatsSql(functionIds: string[]): SafeLogSqlFragment {
   const functionIdFilter: SafeLogSqlFragment =
     functionIds.length > 0

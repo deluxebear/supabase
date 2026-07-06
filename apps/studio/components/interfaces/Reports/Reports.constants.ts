@@ -3,6 +3,7 @@ import dayjs from 'dayjs'
 
 import type { DatetimeHelper } from '../Settings/Logs/Logs.types'
 import { PresetConfig, Presets, ReportFilterItem } from './Reports.types'
+import { pickDialect } from '@/data/logs/logflare-dialect'
 import {
   analyticsLiteral,
   joinSqlFragments,
@@ -149,7 +150,22 @@ export const PRESET_CONFIG: Record<Presets, PresetConfig> = {
     queries: {
       totalRequests: {
         queryType: 'logs',
-        safeSql: (filters) => safeLogSql`
+        safeSql: (filters) =>
+          pickDialect(
+            safeLogSql`
+        -- reports-api-total-requests
+        select
+          timestamp_trunc(t.timestamp, hour) as timestamp,
+          count(t.id) as count
+        FROM edge_logs t
+          cross join unnest(metadata) as m
+          cross join unnest(m.response) as response
+          cross join unnest(m.request) as request
+          cross join unnest(request.headers) as headers
+          ${generateRegexpWhereSafe(filters)}
+        GROUP BY 1
+        ORDER BY 1 ASC`,
+            safeLogSql`
         -- reports-api-total-requests
         select
           cast(timestamp_trunc(t.timestamp, hour) as datetime) as timestamp,
@@ -163,11 +179,32 @@ export const PRESET_CONFIG: Record<Presets, PresetConfig> = {
         GROUP BY
           timestamp
         ORDER BY
-          timestamp ASC`,
+          timestamp ASC`
+          ),
       },
       topRoutes: {
         queryType: 'logs',
-        safeSql: (filters) => safeLogSql`
+        safeSql: (filters) =>
+          pickDialect(
+            safeLogSql`
+        -- reports-api-top-routes
+        select
+          request.path as path,
+          request.method as method,
+          request.search as search,
+          response.status_code as status_code,
+          count(t.id) as count
+        from edge_logs t
+          cross join unnest(metadata) as m
+          cross join unnest(m.response) as response
+          cross join unnest(m.request) as request
+          cross join unnest(request.headers) as headers
+          ${generateRegexpWhereSafe(filters)}
+        group by 1, 2, 3, 4
+        order by 5 desc
+        limit 10
+        `,
+            safeLogSql`
         -- reports-api-top-routes
         select
           request.path as path,
@@ -186,11 +223,30 @@ export const PRESET_CONFIG: Record<Presets, PresetConfig> = {
         order by
           count desc
         limit 10
-        `,
+        `
+          ),
       },
       errorCounts: {
         queryType: 'logs',
-        safeSql: (filters) => safeLogSql`
+        safeSql: (filters) =>
+          pickDialect(
+            safeLogSql`
+        -- reports-api-error-counts
+        select
+          timestamp_trunc(t.timestamp, hour) as timestamp,
+          count(t.id) as count
+        FROM edge_logs t
+          cross join unnest(metadata) as m
+          cross join unnest(m.response) as response
+          cross join unnest(m.request) as request
+          cross join unnest(request.headers) as headers
+        WHERE
+          response.status_code >= 400
+        ${generateRegexpWhereSafe(filters, false)}
+        GROUP BY 1
+        ORDER BY 1 ASC
+        `,
+            safeLogSql`
         -- reports-api-error-counts
         select
           cast(timestamp_trunc(t.timestamp, hour) as datetime) as timestamp,
@@ -207,11 +263,34 @@ export const PRESET_CONFIG: Record<Presets, PresetConfig> = {
           timestamp
         ORDER BY
           timestamp ASC
-        `,
+        `
+          ),
       },
       topErrorRoutes: {
         queryType: 'logs',
-        safeSql: (filters) => safeLogSql`
+        safeSql: (filters) =>
+          pickDialect(
+            safeLogSql`
+        -- reports-api-top-error-routes
+        select
+          request.path as path,
+          request.method as method,
+          request.search as search,
+          response.status_code as status_code,
+          count(t.id) as count
+        from edge_logs t
+          cross join unnest(metadata) as m
+          cross join unnest(m.response) as response
+          cross join unnest(m.request) as request
+          cross join unnest(request.headers) as headers
+        where
+          response.status_code >= 400
+        ${generateRegexpWhereSafe(filters, false)}
+        group by 1, 2, 3, 4
+        order by 5 desc
+        limit 10
+        `,
+            safeLogSql`
         -- reports-api-top-error-routes
         select
           request.path as path,
@@ -232,11 +311,34 @@ export const PRESET_CONFIG: Record<Presets, PresetConfig> = {
         order by
           count desc
         limit 10
-        `,
+        `
+          ),
       },
       responseSpeed: {
         queryType: 'logs',
-        safeSql: (filters) => safeLogSql`
+        safeSql: (filters) =>
+          pickDialect(
+            // [self-platform] M6.2 T3 live-verification finding (beyond the
+            // Step 1 pins): `avg(response.origin_time)` 500s — same root
+            // cause as networkTraffic's content_length (self-hosted's
+            // kong_logs vector transform never sets `origin_time`). Honest
+            // 0-flatline, same precedent.
+            safeLogSql`
+        -- reports-api-response-speed
+        select
+          timestamp_trunc(t.timestamp, hour) as timestamp,
+          0 as avg
+        FROM
+          edge_logs t
+          cross join unnest(metadata) as m
+          cross join unnest(m.response) as response
+          cross join unnest(m.request) as request
+          cross join unnest(request.headers) as headers
+          ${generateRegexpWhereSafe(filters)}
+        GROUP BY 1
+        ORDER BY 1 ASC
+      `,
+            safeLogSql`
         -- reports-api-response-speed
         select
           cast(timestamp_trunc(t.timestamp, hour) as datetime) as timestamp,
@@ -252,8 +354,17 @@ export const PRESET_CONFIG: Record<Presets, PresetConfig> = {
           timestamp
         ORDER BY
           timestamp ASC
-      `,
+      `
+          ),
       },
+      // [self-platform] M6.2 T3 live-verification finding (beyond the Step
+      // 1 pins): `avg(response.origin_time)` 500s (see responseSpeed) —
+      // but this widget's entire purpose is ranking routes BY that average;
+      // flatlining would produce a fake, arbitrarily-ordered "top 10 slow
+      // routes" with a false 0ms reading. No PG variant: kept as the
+      // original BQ text in both branches, surfacing the existing chart
+      // error state (same category as the approx_quantiles-blocked auth
+      // percentile templates).
       topSlowRoutes: {
         queryType: 'logs',
         safeSql: (filters) => safeLogSql`
@@ -280,7 +391,31 @@ export const PRESET_CONFIG: Record<Presets, PresetConfig> = {
       },
       networkTraffic: {
         queryType: 'logs',
-        safeSql: (filters) => safeLogSql`
+        safeSql: (filters) =>
+          pickDialect(
+            // [self-platform] M6.2 T3 Step 1 pin: `safe_divide` 500s on the
+            // Logflare PG translator; `content_length` is never populated on
+            // self-hosted request/response headers (0/102 sampled rows), so
+            // the real formula would flatline to 0 anyway — an honest static
+            // flatline avoids depending on a broken builtin for no gain.
+            safeLogSql`
+        -- reports-api-network-traffic
+        select
+          timestamp_trunc(t.timestamp, hour) as timestamp,
+          0 as ingress_mb,
+          0 as egress_mb
+        FROM
+          edge_logs t
+          cross join unnest(metadata) as m
+          cross join unnest(m.response) as response
+          cross join unnest(m.request) as request
+          cross join unnest(request.headers) as headers
+          cross join unnest(response.headers) as resp_headers
+          ${generateRegexpWhereSafe(filters)}
+        GROUP BY 1
+        ORDER BY 1 ASC
+        `,
+            safeLogSql`
         -- reports-api-network-traffic
         select
           cast(timestamp_trunc(t.timestamp, hour) as datetime) as timestamp,
@@ -314,11 +449,30 @@ export const PRESET_CONFIG: Record<Presets, PresetConfig> = {
           timestamp
         ORDER BY
           timestamp ASC
-        `,
+        `
+          ),
       },
       requestsByCountry: {
         queryType: 'logs',
-        safeSql: (filters) => safeLogSql`
+        safeSql: (filters) =>
+          pickDialect(
+            safeLogSql`
+        -- reports-api-requests-by-country
+        select
+          cf.country as country,
+          count(t.id) as count
+        from edge_logs t
+          cross join unnest(metadata) as m
+          cross join unnest(m.response) as response
+          cross join unnest(m.request) as request
+          cross join unnest(request.headers) as headers
+          cross join unnest(request.cf) as cf
+        where
+          cf.country is not null
+        ${generateRegexpWhereSafe(filters, false)}
+        group by 1
+        `,
+            safeLogSql`
         -- reports-api-requests-by-country
         select
           cf.country as country,
@@ -334,7 +488,8 @@ export const PRESET_CONFIG: Record<Presets, PresetConfig> = {
         ${generateRegexpWhereSafe(filters, false)}
         group by
           cf.country
-        `,
+        `
+          ),
       },
     },
   },
@@ -348,7 +503,28 @@ export const PRESET_CONFIG: Record<Presets, PresetConfig> = {
       cacheHitRate: {
         queryType: 'logs',
         // storage report does not perform any filtering
-        safeSql: (filters) => safeLogSql`
+        safeSql: (filters) =>
+          pickDialect(
+            // [self-platform] M6.2 T3 Step 1 pin: `starts_with` 500s on the
+            // Logflare PG translator — replaced with an equivalent
+            // `regexp_contains` anchored prefix match.
+            safeLogSql`
+        -- reports-storage-cache-hit-rate
+SELECT
+  timestamp_trunc(timestamp, hour) as timestamp,
+  countif( h.cf_cache_status in ('HIT', 'STALE', 'REVALIDATED', 'UPDATING') ) as hit_count,
+  countif( h.cf_cache_status in ('MISS', 'NONE/UNKNOWN', 'EXPIRED', 'BYPASS', 'DYNAMIC') ) as miss_count
+from edge_logs f
+  cross join unnest(f.metadata) as m
+  cross join unnest(m.request) as r
+  cross join unnest(m.response) as res
+  cross join unnest(res.headers) as h
+where regexp_contains(r.path, '^/storage/v1/object') and r.method = 'GET'
+  ${generateRegexpWhereSafe(filters, false)}
+group by 1
+order by 1 desc
+`,
+            safeLogSql`
         -- reports-storage-cache-hit-rate
 SELECT
   timestamp_trunc(timestamp, hour) as timestamp,
@@ -363,12 +539,34 @@ where starts_with(r.path, '/storage/v1/object') and r.method = 'GET'
   ${generateRegexpWhereSafe(filters, false)}
 group by timestamp
 order by timestamp desc
-`,
+`
+          ),
       },
       topCacheMisses: {
         queryType: 'logs',
         // storage report does not perform any filtering
-        safeSql: (filters) => safeLogSql`
+        safeSql: (filters) =>
+          pickDialect(
+            safeLogSql`
+        -- reports-storage-top-cache-misses
+SELECT
+  r.path as path,
+  r.search as search,
+  count(id) as count
+from edge_logs f
+  cross join unnest(f.metadata) as m
+  cross join unnest(m.request) as r
+  cross join unnest(m.response) as res
+  cross join unnest(res.headers) as h
+where regexp_contains(r.path, '^/storage/v1/object')
+  and r.method = 'GET'
+  and h.cf_cache_status in ('MISS', 'NONE/UNKNOWN', 'EXPIRED', 'BYPASS', 'DYNAMIC')
+  ${generateRegexpWhereSafe(filters, false)}
+group by 1, 2
+order by 3 desc
+limit 12
+    `,
+            safeLogSql`
         -- reports-storage-top-cache-misses
 SELECT
   r.path as path,
@@ -386,7 +584,8 @@ where starts_with(r.path, '/storage/v1/object')
 group by path, search
 order by count desc
 limit 12
-    `,
+    `
+          ),
       },
     },
   },

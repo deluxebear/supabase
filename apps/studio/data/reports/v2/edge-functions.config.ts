@@ -13,6 +13,7 @@ import {
   unixMicroToIsoTimestamp,
 } from '@/components/interfaces/Settings/Logs/Logs.utils'
 import type { AnalyticsInterval } from '@/data/analytics/constants'
+import { pickDialect } from '@/data/logs/logflare-dialect'
 import {
   analyticsLiteral,
   joinSqlFragments,
@@ -64,14 +65,44 @@ export function filterToWhereClause(filters?: EdgeFunctionReportFilters): SafeLo
   return safeSql`WHERE ${joinSqlFragments(whereClauses, ' AND ')}`
 }
 
-const METRIC_SQL: Record<
+// Exported (not just internal) so the M6.2 T3 dialect variants can be
+// snapshot-tested directly against their PG/BQ twins.
+export const METRIC_SQL: Record<
   string,
   (interval: AnalyticsInterval, filters?: EdgeFunctionReportFilters) => SafeLogSqlFragment
 > = {
   TotalInvocations: (interval, filters) => {
     const granularity = SAFE_GRANULARITY_SQL[analyticsIntervalToGranularity(interval)]
     const whereClause = filterToWhereClause(filters)
-    return safeSql`
+    return pickDialect(
+      // [self-platform] M6.2 T3 live-verification finding (beyond the Step 1
+      // pins): bare `function_id` 500s on `function_edge_logs` here —
+      // categorical, not incidental (docker/volumes/logs/vector.yml's
+      // `functions_logs` transform only ever sets `.metadata.project_ref`;
+      // self-hosted never populates function_id at all, so the PG
+      // translator's per-source dynamic schema has no type on file for it —
+      // same root cause T2 traced for `m.execution_time_ms`/`m.function_id`
+      // avg/max). Omitted per the same "omit non-derivable field" precedent:
+      // this report's own consumer (`aggregateInvocationsByTimestamp` in
+      // this file) discards the function_id-derived `function_name` and
+      // re-aggregates to timestamp-only totals anyway, so dropping the
+      // grouping dimension here produces byte-identical final chart data.
+      safeSql`
+--edgefn-report-invocations
+select
+  timestamp_trunc(timestamp, ${granularity}) as timestamp,
+  count(*) as count
+from
+  function_edge_logs
+  CROSS JOIN UNNEST(metadata) AS m
+  CROSS JOIN UNNEST(m.request) AS request
+  CROSS JOIN UNNEST(m.response) AS response
+  CROSS JOIN UNNEST(response.headers) AS h
+  ${whereClause}
+group by 1
+order by 1 desc;
+`,
+      safeSql`
 --edgefn-report-invocations
 select
   timestamp_trunc(timestamp, ${granularity}) as timestamp,
@@ -90,11 +121,28 @@ group by
 order by
   timestamp desc;
 `
+    )
   },
   ExecutionStatusCodes: (interval, filters) => {
     const granularity = SAFE_GRANULARITY_SQL[analyticsIntervalToGranularity(interval)]
     const whereClause = filterToWhereClause(filters)
-    return safeSql`
+    return pickDialect(
+      safeSql`
+--edgefn-report-execution-status-codes
+select
+  timestamp_trunc(timestamp, ${granularity}) as timestamp,
+  response.status_code as status_code,
+  count(response.status_code) as count
+from
+  function_edge_logs
+  cross join unnest(metadata) as m
+  cross join unnest(m.response) as response
+  cross join unnest(response.headers) as h
+  ${whereClause}
+group by 1, 2
+order by 1 desc
+`,
+      safeSql`
 --edgefn-report-execution-status-codes
 select
   timestamp_trunc(timestamp, ${granularity}) as timestamp,
@@ -112,6 +160,7 @@ group by
 order by
   timestamp desc
 `
+    )
   },
   InvocationsByRegion: (interval, filters) => {
     const granularity = SAFE_GRANULARITY_SQL[analyticsIntervalToGranularity(interval)]
@@ -121,7 +170,24 @@ order by
         ? safeSql`AND h.x_sb_edge_region is not null`
         : safeSql`WHERE h.x_sb_edge_region is not null`
 
-    return safeSql`
+    return pickDialect(
+      safeSql`
+--edgefn-report-invocations-by-region
+select
+  timestamp_trunc(timestamp, ${granularity}) as timestamp,
+  h.x_sb_edge_region as region,
+  count(*) as count
+from
+  function_edge_logs
+  cross join unnest(metadata) as m
+  cross join unnest(m.response) as r
+  cross join unnest(r.headers) as h
+  ${whereClause}
+  ${regionCondition}
+group by 1, 2
+order by 1 desc
+`,
+      safeSql`
 --edgefn-report-invocations-by-region
 select
   timestamp_trunc(timestamp, ${granularity}) as timestamp,
@@ -140,12 +206,40 @@ group by
 order by
   timestamp desc
 `
+    )
   },
   ExecutionTime: (interval, filters) => {
     const granularity = SAFE_GRANULARITY_SQL[analyticsIntervalToGranularity(interval)]
     const whereClause = filterToWhereClause(filters)
 
-    return safeSql`
+    return pickDialect(
+      // [self-platform] M6.2 T3 live-verification finding (beyond the Step 1
+      // pins): `avg(m.execution_time_ms)` 500s — this is T2's EXACT
+      // already-documented root cause (self-hosted's vector.yml never
+      // populates execution_time_ms on function_edge_logs, so the PG
+      // translator has no numeric type on file for it) resurfacing in a
+      // second report. `function_id` (bare) is ALSO categorically 500 here
+      // (same root cause — never populated) and is dropped for the same
+      // reason as TotalInvocations (the consumer's own reduce in this file
+      // discards `function_name` either way). Honest 0-flatline for the
+      // metric itself, matching the networkTraffic precedent (uncomputable
+      // self-hosted metric, not worth heroics).
+      safeSql`
+--edgefn-report-execution-time
+select
+  timestamp_trunc(timestamp, ${granularity}) as timestamp,
+  0 as avg_execution_time
+from
+  function_edge_logs
+  cross join unnest(metadata) as m
+  cross join unnest(m.request) as request
+  cross join unnest(m.response) as response
+  cross join unnest(response.headers) as h
+  ${whereClause}
+group by 1
+order by 1 desc
+`,
+      safeSql`
 --edgefn-report-execution-time
 select
   timestamp_trunc(timestamp, ${granularity}) as timestamp,
@@ -164,6 +258,7 @@ group by
 order by
   timestamp desc
 `
+    )
   },
 }
 
