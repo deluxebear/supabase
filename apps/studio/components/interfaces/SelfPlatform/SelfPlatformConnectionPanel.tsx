@@ -70,6 +70,8 @@ function buildConnectionEditSchema() {
     metricsUrlClear: z.boolean(),
     metricsToken: z.string(),
     metricsTokenClear: z.boolean(),
+    container: z.string(),
+    containerClear: z.boolean(),
   })
 }
 type FormValues = z.infer<ReturnType<typeof buildConnectionEditSchema>>
@@ -99,6 +101,8 @@ function buildDefaults(sp: SelfPlatformProjectBlock): FormValues {
     metricsUrlClear: false,
     metricsToken: '',
     metricsTokenClear: false,
+    container: sp.container_name ?? '',
+    containerClear: false,
   }
 }
 
@@ -175,14 +179,20 @@ export const SelfPlatformConnectionPanel = () => {
     if (values.metricsTokenClear) metrics.token = null
     else if (values.metricsToken !== '') metrics.token = values.metricsToken
 
+    let container: string | null | undefined
+    if (values.containerClear) container = null
+    else if (dirty.container && values.container !== '') container = values.container
+
     const payload: SelfPlatformProjectUpdateVariables = { ref: project.ref }
     if (!isSharedDb && Object.keys(connection).length > 0) payload.connection = connection
     if (Object.keys(logflare).length > 0) payload.logflare = logflare
     if (Object.keys(metrics).length > 0) payload.metrics = metrics
+    if (container !== undefined) payload.container = container
     if (
       payload.connection === undefined &&
       payload.logflare === undefined &&
-      payload.metrics === undefined
+      payload.metrics === undefined &&
+      payload.container === undefined
     )
       return undefined
     return payload
@@ -395,6 +405,17 @@ export const SelfPlatformConnectionPanel = () => {
               selfPlatform.secrets_set.metrics_token
             )}
             {clearCheckbox('metricsTokenClear', $t('Clear the stored metrics token'))}
+            {textField('container', $t('Postgres container name'))}
+            {clearCheckbox('containerClear', $t('Clear the stored container name'))}
+            {isSharedDb && (
+              <Alert>
+                <AlertDescription>
+                  {$t(
+                    "Shared-db projects report the shared Postgres container — CPU/RAM/network are the container's, not per logical database."
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
 
             <div>
               <Button type="submit" loading={isPending} disabled={!canUpdate}>

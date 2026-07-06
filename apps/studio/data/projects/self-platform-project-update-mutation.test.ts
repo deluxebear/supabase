@@ -53,4 +53,24 @@ describe('updateSelfPlatformProject (M6.1)', () => {
       metrics: { url: 'http://h:9598/metrics', token: null },
     })
   })
+
+  it('sends container when edited (M6.4)', async () => {
+    await updateSelfPlatformProject({ ref: 'proj-b', container: 'supabase-db' })
+    const [, options] = vi.mocked(patch).mock.calls[3] as [string, unknown]
+    expect((options as { body: unknown }).body).toEqual({ container: 'supabase-db' })
+  })
+
+  it('sends container:null when cleared (M6.4)', async () => {
+    await updateSelfPlatformProject({ ref: 'proj-b', container: null })
+    const [, options] = vi.mocked(patch).mock.calls[4] as [string, unknown]
+    expect((options as { body: unknown }).body).toEqual({ container: null })
+  })
+
+  it('omits container when untouched (M6.4)', async () => {
+    await updateSelfPlatformProject({ ref: 'proj-b', name: 'Renamed' })
+    const [, options] = vi.mocked(patch).mock.calls[5] as [string, unknown]
+    const body = (options as { body: unknown }).body as Record<string, unknown>
+    expect(body).toEqual({ name: 'Renamed' })
+    expect('container' in body).toBe(false)
+  })
 })

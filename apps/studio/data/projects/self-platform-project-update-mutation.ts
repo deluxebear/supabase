@@ -29,6 +29,7 @@ export type SelfPlatformProjectUpdateVariables = {
   connection?: SelfPlatformConnectionPatch
   logflare?: { url?: string | null; token?: string | null }
   metrics?: { url?: string | null; token?: string | null }
+  container?: string | null
 }
 
 export type SelfPlatformProjectUpdateResponse = {
@@ -54,6 +55,7 @@ export type SelfPlatformProjectBlock = {
   rest_url: string
   logflare_url: string | null
   metrics_url: string | null
+  container_name: string | null
   secrets_set: {
     db_pass: boolean
     anon_key: boolean
