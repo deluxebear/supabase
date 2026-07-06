@@ -290,7 +290,7 @@ describe('metrics fields (M6.3)', () => {
 
   it('upsert SQL carries the metrics columns', () => {
     const { query } = buildUpsertSql()
-    expect(query).toContain('metrics_url')
+    expect(query).toContain('metrics_url=excluded.metrics_url')
     expect(query).toContain('metrics_token_enc=excluded.metrics_token_enc')
   })
 
@@ -305,10 +305,10 @@ describe('metrics fields (M6.3)', () => {
 })
 
 describe('stack_kind (M5.0)', () => {
-  it('upsert SQL carries stack_kind as $22 and updates it on conflict', () => {
+  it('upsert SQL carries stack_kind as $24 and updates it on conflict', () => {
     const { query } = buildUpsertSql()
     expect(query).toContain('stack_kind')
-    expect(query).toContain('$22')
+    expect(query).toContain('$24')
     expect(query).toContain('stack_kind=excluded.stack_kind')
   })
 

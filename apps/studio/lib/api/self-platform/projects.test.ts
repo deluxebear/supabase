@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { executePlatformQuery } from './db'
 import {
@@ -128,5 +128,70 @@ describe('stack columns degradation (M5.0)', () => {
     const call = vi.mocked(executePlatformQuery).mock.calls[0][0]
     expect(call.query).toContain('stack_kind')
     expect(call.query).toContain('stack_meta')
+  })
+})
+
+describe('metrics columns degradation (M6.3)', () => {
+  // [self-platform] mock.calls accumulate across tests in this file (no
+  // global clearMocks), and the cascade test below asserts an absolute call
+  // count — reset before each test in this block so that count is scoped to
+  // just that test, mirroring projects.analytics-columns.test.ts's
+  // beforeEach(() => mockQuery.mockReset()).
+  beforeEach(() => vi.mocked(executePlatformQuery).mockReset())
+
+  it('retries without metrics columns on missing metrics_url and defaults the fields', async () => {
+    const { metrics_url: _mu, metrics_token_enc: _mt, ...rowWithoutMetrics } = row
+    vi.mocked(executePlatformQuery)
+      .mockResolvedValueOnce({
+        data: undefined,
+        error: new Error('column "metrics_url" does not exist'),
+      })
+      .mockResolvedValueOnce({ data: [rowWithoutMetrics], error: undefined })
+    const result = await getProjectByRef('default')
+    expect(result?.metrics_url).toBeNull()
+    expect(result?.metrics_token_enc).toBeNull()
+    // Pre-09 (M6.3) db still has stack columns (07) — the retry tier keeps them.
+    expect(result?.stack_kind).toBe('external')
+    expect(result?.stack_meta).toEqual({})
+    const retry = vi.mocked(executePlatformQuery).mock.calls.at(-1)![0]
+    expect(retry.query).not.toContain('metrics_url')
+    expect(retry.query).toContain('stack_kind')
+  })
+
+  it('cascades through the metrics tier into the stack tier for a pre-07 platform-db', async () => {
+    const {
+      metrics_url: _mu,
+      metrics_token_enc: _mt,
+      stack_kind: _sk,
+      stack_meta: _sm,
+      ...preStackRow
+    } = row
+    vi.mocked(executePlatformQuery)
+      .mockResolvedValueOnce({
+        data: undefined,
+        error: new Error('column "metrics_url" does not exist'),
+      })
+      .mockResolvedValueOnce({
+        data: undefined,
+        error: new Error('column "stack_kind" does not exist'),
+      })
+      .mockResolvedValueOnce({ data: [preStackRow], error: undefined })
+    const result = await getProjectByRef('default')
+    expect(result?.metrics_url).toBeNull()
+    expect(result?.metrics_token_enc).toBeNull()
+    expect(result?.stack_kind).toBe('external')
+    expect(result?.stack_meta).toEqual({})
+    expect(executePlatformQuery).toHaveBeenCalledTimes(3)
+    const finalRetry = vi.mocked(executePlatformQuery).mock.calls.at(-1)![0]
+    expect(finalRetry.query).not.toContain('metrics_url')
+    expect(finalRetry.query).not.toContain('stack_kind')
+  })
+
+  it('selects metrics_url and metrics_token_enc in the primary column list', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({ data: [], error: undefined })
+    await getProjectByRef('x')
+    const call = vi.mocked(executePlatformQuery).mock.calls[0][0]
+    expect(call.query).toContain('metrics_url')
+    expect(call.query).toContain('metrics_token_enc')
   })
 })

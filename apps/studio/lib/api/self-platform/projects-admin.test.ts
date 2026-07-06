@@ -396,9 +396,10 @@ describe('metrics block (M6.3, D5 semantics)', () => {
     })
   })
   it('immutable trio inside metrics block rejects by name', () => {
-    expect(parseProjectPatchInput({ metrics: { ref: 'x' } })).toEqual({
-      error: 'Field "ref" cannot be changed',
-    })
+    for (const field of ['ref', 'stack_kind', 'stack_meta']) {
+      const out = parseProjectPatchInput({ metrics: { [field]: 'x' } })
+      expect(out).toEqual({ error: `Field "${field}" cannot be changed` })
+    }
   })
   it('metrics-only patch is not an empty patch', () => {
     expect('value' in parseProjectPatchInput({ metrics: { url: 'http://h:9598/metrics' } })).toBe(

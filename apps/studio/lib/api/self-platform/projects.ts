@@ -45,6 +45,19 @@ export const PROJECT_SELECT_COLUMNS = `
   metrics_url, metrics_token_enc, stack_kind, stack_meta
 `
 
+// [self-platform] M6.2-era list (stack + analytics, no metrics columns) —
+// degradation tier for a platform-db that has 07-stack-metadata.sql (and
+// 03-analytics.sql) applied but not 09-metrics.sql, i.e. everything through
+// M6.2 but not M6.3 T2's metrics columns.
+export const M62_SELECT_COLUMNS = `
+  id, ref, organization_id, name, status, cloud_provider, region,
+  db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
+  db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc,
+  publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc,
+  stack_kind, stack_meta
+`
+export const MISSING_METRICS_COLUMN = 'column "metrics_url" does not exist'
+
 // [self-platform] M2.1-era list (analytics, no stack columns) — degradation
 // tier for a platform-db that has 03-analytics.sql but not
 // 07-stack-metadata.sql applied.
@@ -68,6 +81,7 @@ const LEGACY_SELECT_COLUMNS = `
 `
 const MISSING_ANALYTICS_COLUMN = 'column "logflare_url" does not exist'
 
+let warnedMissingMetricsColumns = false
 let warnedMissingStackColumns = false
 let warnedMissingAnalyticsColumns = false
 
@@ -81,7 +95,25 @@ async function queryProjectRows(
       parameters,
     })
 
+  // [self-platform] Tier order matters. metrics_url precedes stack_kind in
+  // PROJECT_SELECT_COLUMNS, so Postgres reports the metrics column first
+  // when both are missing — this check must run first so a pre-09 (but
+  // post-07) db is caught here. Its retry (M62_SELECT_COLUMNS) still selects
+  // stack_kind/stack_meta, so a pre-07 db fails that retry with
+  // MISSING_STACK_COLUMN and falls through to the next tier below, which in
+  // turn still selects logflare_url/logflare_token_enc, so a pre-M2.1 db
+  // fails that with MISSING_ANALYTICS_COLUMN and falls through to
+  // LEGACY_SELECT_COLUMNS. Every vintage lands on the right tier.
   let result = await attempt(PROJECT_SELECT_COLUMNS)
+  if (result.error?.message.includes(MISSING_METRICS_COLUMN)) {
+    if (!warnedMissingMetricsColumns) {
+      warnedMissingMetricsColumns = true
+      console.warn(
+        '[self-platform] platform.projects has no metrics columns (pre-M6.3 platform-db) — treating metrics_url/metrics_token_enc as NULL. Run docker/volumes/platform/migrations/09-metrics.sql to upgrade.'
+      )
+    }
+    result = await attempt(M62_SELECT_COLUMNS)
+  }
   if (result.error?.message.includes(MISSING_STACK_COLUMN)) {
     if (!warnedMissingStackColumns) {
       warnedMissingStackColumns = true
