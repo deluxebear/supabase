@@ -5,7 +5,10 @@ import {
   InvalidAnalyticsParams,
   isSubstitutedEndpoint,
   retrieveSubstitutedAnalyticsData,
+  SUBSTITUTE_CACHE_TTL_MS,
+  substituteCacheSizeForTest,
 } from './analytics-substitutes'
+import type { RetrieveAnalyticsDataOptions } from './logs'
 
 // [self-platform] vi.hoisted required here (not a plain top-level const):
 // vi.mock's factory runs before this file's own top-level statements
@@ -27,12 +30,13 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers())
 
 describe('isSubstitutedEndpoint', () => {
-  it('matches exactly the four names', () => {
+  it('matches exactly the five names', () => {
     for (const n of [
       'usage.api-counts',
       'service-health',
       'auth.metrics',
       'functions.combined-stats',
+      'functions.last-hour-stats',
     ])
       expect(isSubstitutedEndpoint(n)).toBe(true)
     for (const n of ['logs.all', 'logs.all.otel', 'usage.api-counts2', ''])
@@ -115,10 +119,10 @@ describe('usage.api-counts substitute', () => {
 
 describe('service-health substitute', () => {
   it('runs one classified query per service table (UNION ALL is broken on the PG translator) and merges into nested rows', async () => {
-    retrieveAnalyticsData.mockImplementation(async ({ params }: any) => {
-      if (params.sql.includes('from edge_logs'))
+    retrieveAnalyticsData.mockImplementation(async ({ params }: RetrieveAnalyticsDataOptions) => {
+      if (params.sql?.includes('from edge_logs'))
         return ok([{ timestamp: 1783263600000000, error: 1, warning: 2, total: 10 }])
-      if (params.sql.includes('from auth_logs'))
+      if (params.sql?.includes('from auth_logs'))
         return ok([{ timestamp: 1783263600000000, error: 0, warning: 0, total: 3 }])
       return ok([])
     })
@@ -133,7 +137,9 @@ describe('service-health substitute', () => {
     })
     // 7 tables probed: edge, function_edge, auth, postgres (classified) + storage, realtime, postgrest (total-only)
     expect(retrieveAnalyticsData).toHaveBeenCalledTimes(7)
-    for (const [{ params }] of retrieveAnalyticsData.mock.calls.map((c: any) => c)) {
+    for (const [{ params }] of retrieveAnalyticsData.mock.calls as [
+      RetrieveAnalyticsDataOptions,
+    ][]) {
       expect(params.iso_timestamp_start).toBe('2026-07-06T09:00:00.000Z')
       expect(params.iso_timestamp_end).toBe('2026-07-06T10:00:00.000Z')
       expect(params.sql).toMatch(/group by 1\b/)
@@ -141,10 +147,16 @@ describe('service-health substitute', () => {
     }
     const row = data?.result?.[0]
     expect(row.timestamp).toBe('2026-07-05T15:00:00.000Z')
+    // M6.3 fold-in rider ②: pin all 7/7 service-health table keys (was 3/7)
+    // — mirrors buildServiceHealth's own CLASSIFIED_TABLES + TOTAL_ONLY_TABLES.
     expect(row.edge_logs).toEqual({ ok: 7, warning: 2, error: 1, total: 10 })
     expect(row.auth_logs).toEqual({ ok: 3, warning: 0, error: 0, total: 3 })
     // tables with no rows in this bucket → zeroed object (consumer optional-chains anyway)
     expect(row.storage_logs).toEqual({ ok: 0, warning: 0, error: 0, total: 0 })
+    expect(row.function_edge_logs).toEqual({ ok: 0, warning: 0, error: 0, total: 0 })
+    expect(row.postgres_logs).toEqual({ ok: 0, warning: 0, error: 0, total: 0 })
+    expect(row.realtime_logs).toEqual({ ok: 0, warning: 0, error: 0, total: 0 })
+    expect(row.postgrest_logs).toEqual({ ok: 0, warning: 0, error: 0, total: 0 })
   })
 
   it('invalid granularity → InvalidAnalyticsParams; ok never negative (clamped)', async () => {
@@ -202,6 +214,20 @@ describe('promise-TTL cache', () => {
   })
 })
 
+// [self-platform] M6.3 fold-in rider ③: merged auth.metrics row shape
+// (buildAuthMetrics' returned rows), used to type-index by key below instead
+// of an `any[]` cast.
+interface AuthMetricsRow {
+  period: string
+  active_users: number
+  sign_up_count: number
+  password_reset_requests: number
+  auth_total_errors: number
+  auth_total_requests: number
+  api_error_requests: number
+  api_total_requests: number
+}
+
 describe('auth.metrics substitute', () => {
   it('produces current+previous rows matching RawAuthMetricsRowSchema keys', async () => {
     vi.useFakeTimers().setSystemTime(new Date('2026-07-06T10:00:00.000Z'))
@@ -223,7 +249,7 @@ describe('auth.metrics substitute', () => {
       projectRef: 'default',
       params: { interval: '1day' },
     })
-    const rows = data?.result as any[]
+    const rows = (data?.result ?? []) as AuthMetricsRow[]
     expect(rows.map((r) => r.period)).toEqual(['current', 'previous'])
     for (const r of rows)
       for (const k of [
@@ -234,11 +260,13 @@ describe('auth.metrics substitute', () => {
         'auth_total_requests',
         'password_reset_requests',
         'sign_up_count',
-      ])
+      ] as const)
         expect(typeof r[k]).toBe('number')
     // 2 windows × 2 tables (auth_logs + edge_logs)
     expect(retrieveAnalyticsData).toHaveBeenCalledTimes(4)
-    const starts = retrieveAnalyticsData.mock.calls.map((c: any) => c[0].params.iso_timestamp_start)
+    const starts = (retrieveAnalyticsData.mock.calls as [RetrieveAnalyticsDataOptions][]).map(
+      ([{ params }]) => params.iso_timestamp_start
+    )
     expect(starts).toContain('2026-07-05T10:00:00.000Z') // current window start
     expect(starts).toContain('2026-07-04T10:00:00.000Z') // previous window start
   })
@@ -256,8 +284,8 @@ describe('functions.combined-stats substitute', () => {
     expect(retrieveAnalyticsData).not.toHaveBeenCalled()
   })
   it('two queries (function_edge_logs + function_logs) merged by bucket; missing metrics omitted (frontend zero-fills)', async () => {
-    retrieveAnalyticsData.mockImplementation(async ({ params }: any) =>
-      params.sql.includes('from function_edge_logs')
+    retrieveAnalyticsData.mockImplementation(async ({ params }: RetrieveAnalyticsDataOptions) =>
+      params.sql?.includes('from function_edge_logs')
         ? ok([
             {
               timestamp: 1783263600000000,
@@ -286,12 +314,58 @@ describe('functions.combined-stats substitute', () => {
       params: { function_id: 'fn-uuid-1', interval: '1hr' },
     })
     expect(retrieveAnalyticsData).toHaveBeenCalledTimes(2)
-    for (const [{ params }] of retrieveAnalyticsData.mock.calls.map((c: any) => c))
+    for (const [{ params }] of retrieveAnalyticsData.mock.calls as [RetrieveAnalyticsDataOptions][])
       expect(params.sql).toContain("'fn-uuid-1'")
     const row = data?.result?.[0]
     expect(row.timestamp).toBe('2026-07-05T15:00:00.000Z')
     expect(row.requests_count).toBe(4)
     expect(row.log_count).toBe(6)
     expect(row.avg_cpu_time_used).toBeUndefined() // not derivable self-hosted; useFillTimeseriesSorted defaults 0
+  })
+})
+
+describe('functions.last-hour-stats (M6.3 fold-in)', () => {
+  it('is substituted and returns an honest empty result without any Logflare call', async () => {
+    expect(isSubstitutedEndpoint('functions.last-hour-stats')).toBe(true)
+    const { data, error } = await retrieveSubstitutedAnalyticsData({
+      name: 'functions.last-hour-stats',
+      projectRef: 'proj-x',
+      params: { function_ids: 'a1b2,c3d4' },
+    })
+    expect(error).toBeUndefined()
+    expect(data).toEqual({ result: [] })
+    expect(vi.mocked(retrieveAnalyticsData)).not.toHaveBeenCalled()
+  })
+  it('rejects malformed function_ids before caching', async () => {
+    await expect(
+      retrieveSubstitutedAnalyticsData({
+        name: 'functions.last-hour-stats',
+        projectRef: 'proj-x',
+        params: { function_ids: "x'); drop table--" },
+      })
+    ).rejects.toBeInstanceOf(InvalidAnalyticsParams)
+  })
+})
+
+describe('cache sweep-on-insert (M6.2 backlog)', () => {
+  it('expired entries are evicted when a new entry is inserted', async () => {
+    // [self-platform] usage.api-counts' builder validates `interval`
+    // synchronously (resolveInterval) before returning its thunk — an empty
+    // `params` would reject before ever touching the cache, so a valid
+    // interval is used here; only `projectRef` varies between the two calls
+    // to keep their cache keys distinct.
+    vi.useFakeTimers().setSystemTime(1_000_000)
+    await retrieveSubstitutedAnalyticsData({
+      name: 'usage.api-counts',
+      projectRef: 'p1',
+      params: { interval: '1hr' },
+    })
+    vi.setSystemTime(1_000_000 + SUBSTITUTE_CACHE_TTL_MS + 1)
+    await retrieveSubstitutedAnalyticsData({
+      name: 'usage.api-counts',
+      projectRef: 'p2',
+      params: { interval: '1hr' },
+    })
+    expect(substituteCacheSizeForTest()).toBe(1) // p1's expired entry swept on p2's insert
   })
 })

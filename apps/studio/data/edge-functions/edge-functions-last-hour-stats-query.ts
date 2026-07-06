@@ -2,8 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 
 import { edgeFunctionsKeys } from './keys'
-import { handleError } from '@/data/fetchers'
+import { get, handleError } from '@/data/fetchers'
 import { executeAnalyticsSql } from '@/data/logs/execute-analytics-sql'
+import { USE_LOGFLARE_PG_SQL } from '@/data/logs/logflare-dialect'
 import {
   analyticsLiteral,
   joinSqlFragments,
@@ -48,6 +49,12 @@ export type EdgeFunctionsLastHourStatsResponse = Record<string, EdgeFunctionLast
 // this task's SQL-variant scope. Flagged for reviewer sign-off / follow-up
 // (likely a server-side substitution, mirroring T2's analytics-substitutes
 // pattern, in a later milestone).
+//
+// [self-platform] M6.3 fold-in: the flagged follow-up above landed —
+// `getEdgeFunctionsLastHourStats` now short-circuits through the
+// `functions.last-hour-stats` substitute endpoint (analytics-substitutes.ts)
+// when `USE_LOGFLARE_PG_SQL`, before this SQL is ever built. This function
+// and its BQ text are unchanged and only reachable on cloud.
 function getEdgeFunctionsLastHourStatsSql(functionIds: string[]): SafeLogSqlFragment {
   const functionIdFilter: SafeLogSqlFragment =
     functionIds.length > 0
@@ -71,35 +78,19 @@ ${functionIdFilter}group by
 `
 }
 
-export async function getEdgeFunctionsLastHourStats(
-  { projectRef, functionIds = [] }: EdgeFunctionsLastHourStatsVariables,
-  signal?: AbortSignal
-) {
-  if (!projectRef) throw new Error('projectRef is required')
-  if (functionIds.length === 0) return {}
+type LastHourStatsRow = {
+  function_id: string
+  requests_count: number | string
+  server_err_count: number | string
+}
 
-  const endDate = dayjs().toISOString()
-  const startDate = dayjs().subtract(1, 'hour').toISOString()
-
-  const data = await executeAnalyticsSql({
-    projectRef,
-    endpoint: '/platform/projects/{ref}/analytics/endpoints/logs.all',
-    sql: getEdgeFunctionsLastHourStatsSql(functionIds),
-    iso_timestamp_start: startDate,
-    iso_timestamp_end: endDate,
-    key: 'last-hour-stats',
-    signal,
-  })
-
-  if (data?.error) handleError(data.error)
-
-  const result = (data?.result ?? []) as {
-    function_id: string
-    requests_count: number | string
-    server_err_count: number | string
-  }[]
-
-  return result.reduce<EdgeFunctionsLastHourStatsResponse>((acc, row) => {
+// [self-platform] M6.3 fold-in: shared by both the cloud (BQ logs.all) and
+// self-hosted (functions.last-hour-stats substitute, always zero rows) code
+// paths below — factored out so the substitute's honest-empty result folds
+// through the exact same shape derivation as the cloud path, rather than
+// duplicating it.
+function toLastHourStatsResponse(rows: LastHourStatsRow[]): EdgeFunctionsLastHourStatsResponse {
+  return rows.reduce<EdgeFunctionsLastHourStatsResponse>((acc, row) => {
     const toSafeNumber = (v: number | string | undefined) => {
       const n = Number(v ?? 0)
       return Number.isFinite(n) ? n : 0
@@ -116,6 +107,67 @@ export async function getEdgeFunctionsLastHourStats(
 
     return acc
   }, {})
+}
+
+// [self-platform] M6.3 fold-in: `functions.last-hour-stats` is a
+// self-hosted-only substitute endpoint (analytics-substitutes.ts) — it has
+// no entry in the generated `paths` type (api-types), so `get` (typed
+// against that generated schema) can't be called against it directly.
+// Narrowed via `unknown` rather than `any` to keep the call itself typed.
+type SelfHostedSubstituteGet = (
+  path: string,
+  init: {
+    params: { path: { ref: string }; query: Record<string, string> }
+    signal?: AbortSignal
+  }
+) => Promise<{ data?: { result?: LastHourStatsRow[] }; error?: unknown }>
+
+export async function getEdgeFunctionsLastHourStats(
+  { projectRef, functionIds = [] }: EdgeFunctionsLastHourStatsVariables,
+  signal?: AbortSignal
+) {
+  if (!projectRef) throw new Error('projectRef is required')
+  if (functionIds.length === 0) return {}
+
+  if (USE_LOGFLARE_PG_SQL) {
+    // [self-platform] M6.3: per-function stats are structurally underivable
+    // self-hosted (function_id never populated — see the M6.2 pin above).
+    // Route through the named substitute endpoint: honest empty result, no
+    // categorical 500.
+    const { data, error } = await (get as unknown as SelfHostedSubstituteGet)(
+      '/platform/projects/{ref}/analytics/endpoints/functions.last-hour-stats',
+      {
+        params: {
+          path: { ref: projectRef },
+          query: { function_ids: functionIds.join(',') },
+        },
+        signal,
+      }
+    )
+
+    if (error) handleError(error)
+
+    return toLastHourStatsResponse(data?.result ?? [])
+  }
+
+  const endDate = dayjs().toISOString()
+  const startDate = dayjs().subtract(1, 'hour').toISOString()
+
+  const data = await executeAnalyticsSql({
+    projectRef,
+    endpoint: '/platform/projects/{ref}/analytics/endpoints/logs.all',
+    sql: getEdgeFunctionsLastHourStatsSql(functionIds),
+    iso_timestamp_start: startDate,
+    iso_timestamp_end: endDate,
+    key: 'last-hour-stats',
+    signal,
+  })
+
+  if (data?.error) handleError(data.error)
+
+  const result = (data?.result ?? []) as LastHourStatsRow[]
+
+  return toLastHourStatsResponse(result)
 }
 
 export type EdgeFunctionsLastHourStatsData = Awaited<

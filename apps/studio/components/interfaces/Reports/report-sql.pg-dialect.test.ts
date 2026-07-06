@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+// [self-platform] M6.3 fold-in rider ③: every query entry indexed below
+// (SharedAPIReport's own map, and both PRESET_CONFIG query maps) exposes the
+// same shape for this file's purposes — a `safeSql(filters, src?)` producing
+// a (branded, string-compatible) SQL fragment. Used in place of `as any` at
+// each dynamic-key index below.
+type QueryWithSafeSql = { safeSql: (filters: unknown[], src?: string) => string }
+
 // [self-platform] M6.2 T3 — dialect gate coverage for every report-SQL
 // surface touched by this task: SharedAPIReport + PRESET_CONFIG (this file's
 // primary scope) plus Logs.utils' genChartQuery (folded in here rather than
@@ -107,7 +114,7 @@ describe('SharedAPIReport dialect', () => {
   it('cloud: BQ text is byte-identical to the pre-M6.2 snapshot', async () => {
     const mod = await loadShared(...CLOUD)
     for (const [key, expected] of Object.entries(SHARED_BQ_SNAPSHOT)) {
-      const actual = (mod.SHARED_API_REPORT_SQL as any)[key].safeSql([], 'edge_logs')
+      const actual = (mod.SHARED_API_REPORT_SQL as Record<string, QueryWithSafeSql>)[key].safeSql([], 'edge_logs')
       expect(actual).toBe(expected)
     }
   })
@@ -115,7 +122,7 @@ describe('SharedAPIReport dialect', () => {
   it('pg: no datetime casts, no shadowing-alias group/order-bys', async () => {
     const mod = await loadShared(...PG_SELF_PLATFORM)
     for (const key of Object.keys(SHARED_BQ_SNAPSHOT)) {
-      const sql: string = (mod.SHARED_API_REPORT_SQL as any)[key].safeSql([], 'edge_logs')
+      const sql: string = (mod.SHARED_API_REPORT_SQL as Record<string, QueryWithSafeSql>)[key].safeSql([], 'edge_logs')
       expect(sql).not.toMatch(/as datetime/i)
       // shadowing-alias trap tripwire: `timestamp_trunc(t.timestamp, hour) as
       // timestamp` shadows the raw `timestamp` column — `group/order by
@@ -129,7 +136,7 @@ describe('SharedAPIReport dialect', () => {
   it('pg: totalRequests/errorCounts/responseSpeed use GROUP BY 1 / ORDER BY 1 ASC', async () => {
     const mod = await loadShared(...PG_SELF_PLATFORM)
     for (const key of ['totalRequests', 'errorCounts', 'responseSpeed']) {
-      const sql: string = (mod.SHARED_API_REPORT_SQL as any)[key].safeSql([], 'edge_logs')
+      const sql: string = (mod.SHARED_API_REPORT_SQL as Record<string, QueryWithSafeSql>)[key].safeSql([], 'edge_logs')
       expect(sql).toMatch(/group by 1\b/i)
       expect(sql).toMatch(/order by 1 asc/i)
     }
@@ -138,7 +145,7 @@ describe('SharedAPIReport dialect', () => {
   it('pg: topRoutes/topErrorRoutes group by 1,2,3,4 order by 5 desc', async () => {
     const mod = await loadShared(...PG_SELF_PLATFORM)
     for (const key of ['topRoutes', 'topErrorRoutes']) {
-      const sql: string = (mod.SHARED_API_REPORT_SQL as any)[key].safeSql([], 'edge_logs')
+      const sql: string = (mod.SHARED_API_REPORT_SQL as Record<string, QueryWithSafeSql>)[key].safeSql([], 'edge_logs')
       expect(sql).toMatch(/group by 1, 2, 3, 4/i)
       expect(sql).toMatch(/order by 5 desc/i)
     }
@@ -146,7 +153,7 @@ describe('SharedAPIReport dialect', () => {
 
   it('pg: responseSpeed is an honest 0-flatline (avg(response.origin_time) pinned broken)', async () => {
     const mod = await loadShared(...PG_SELF_PLATFORM)
-    const sql: string = (mod.SHARED_API_REPORT_SQL as any).responseSpeed.safeSql([], 'edge_logs')
+    const sql: string = (mod.SHARED_API_REPORT_SQL as Record<string, QueryWithSafeSql>).responseSpeed.safeSql([], 'edge_logs')
     expect(sql).not.toMatch(/avg\(/i)
     expect(sql).toMatch(/0 as avg/i)
     expect(sql).toMatch(/group by 1\b/i)
@@ -155,9 +162,9 @@ describe('SharedAPIReport dialect', () => {
 
   it('pg: topSlowRoutes keeps the BQ text unchanged (avg(response.origin_time) pinned broken; flatlining would fake the ranking)', async () => {
     const mod = await loadShared(...CLOUD)
-    const bqSql: string = (mod.SHARED_API_REPORT_SQL as any).topSlowRoutes.safeSql([], 'edge_logs')
+    const bqSql: string = (mod.SHARED_API_REPORT_SQL as Record<string, QueryWithSafeSql>).topSlowRoutes.safeSql([], 'edge_logs')
     const pgMod = await loadShared(...PG_SELF_PLATFORM)
-    const pgSql: string = (pgMod.SHARED_API_REPORT_SQL as any).topSlowRoutes.safeSql(
+    const pgSql: string = (pgMod.SHARED_API_REPORT_SQL as Record<string, QueryWithSafeSql>).topSlowRoutes.safeSql(
       [],
       'edge_logs'
     )
@@ -167,7 +174,7 @@ describe('SharedAPIReport dialect', () => {
 
   it('pg: networkTraffic is an honest 0-flatline (safe_divide/int64 pinned broken)', async () => {
     const mod = await loadShared(...PG_SELF_PLATFORM)
-    const sql: string = (mod.SHARED_API_REPORT_SQL as any).networkTraffic.safeSql([], 'edge_logs')
+    const sql: string = (mod.SHARED_API_REPORT_SQL as Record<string, QueryWithSafeSql>).networkTraffic.safeSql([], 'edge_logs')
     expect(sql).not.toMatch(/safe_divide/i)
     expect(sql).toMatch(/0 as ingress_mb/i)
     expect(sql).toMatch(/0 as egress_mb/i)
@@ -180,7 +187,7 @@ describe('PRESET_CONFIG (api) dialect', () => {
   it('cloud: BQ text is byte-identical to the pre-M6.2 snapshot', async () => {
     const { PRESET_CONFIG, Presets } = await loadPreset(...CLOUD)
     for (const [key, expected] of Object.entries(PRESET_API_BQ_SNAPSHOT)) {
-      const actual = (PRESET_CONFIG[Presets.API].queries as any)[key].safeSql([])
+      const actual = (PRESET_CONFIG[Presets.API].queries as Record<string, QueryWithSafeSql>)[key].safeSql([])
       expect(actual).toBe(expected)
     }
   })
@@ -188,7 +195,7 @@ describe('PRESET_CONFIG (api) dialect', () => {
   it('pg: no datetime casts, no shadowing-alias group/order-bys', async () => {
     const { PRESET_CONFIG, Presets } = await loadPreset(...PG_SELF_PLATFORM)
     for (const key of Object.keys(PRESET_API_BQ_SNAPSHOT)) {
-      const sql: string = (PRESET_CONFIG[Presets.API].queries as any)[key].safeSql([])
+      const sql: string = (PRESET_CONFIG[Presets.API].queries as Record<string, QueryWithSafeSql>)[key].safeSql([])
       expect(sql).not.toMatch(/as datetime/i)
       expect(sql).not.toMatch(/group by\s+timestamp\b/i)
       expect(sql).not.toMatch(/order by\s+timestamp\b/i)
@@ -197,7 +204,7 @@ describe('PRESET_CONFIG (api) dialect', () => {
 
   it('pg: requestsByCountry groups by 1 only — no new order-by added', async () => {
     const { PRESET_CONFIG, Presets } = await loadPreset(...PG_SELF_PLATFORM)
-    const sql: string = (PRESET_CONFIG[Presets.API].queries as any).requestsByCountry.safeSql([])
+    const sql: string = (PRESET_CONFIG[Presets.API].queries as Record<string, QueryWithSafeSql>).requestsByCountry.safeSql([])
     expect(sql).toMatch(/group by 1\b/i)
     expect(sql).not.toMatch(/order by/i)
   })
@@ -207,14 +214,14 @@ describe('PRESET_CONFIG (storage) dialect', () => {
   it('cloud: BQ text is byte-identical to the pre-M6.2 snapshot', async () => {
     const { PRESET_CONFIG, Presets } = await loadPreset(...CLOUD)
     for (const [key, expected] of Object.entries(PRESET_STORAGE_BQ_SNAPSHOT)) {
-      const actual = (PRESET_CONFIG[Presets.STORAGE].queries as any)[key].safeSql([])
+      const actual = (PRESET_CONFIG[Presets.STORAGE].queries as Record<string, QueryWithSafeSql>)[key].safeSql([])
       expect(actual).toBe(expected)
     }
   })
 
   it('pg: cacheHitRate uses regexp_contains (starts_with pinned broken) and ordinal group/order', async () => {
     const { PRESET_CONFIG, Presets } = await loadPreset(...PG_SELF_PLATFORM)
-    const sql: string = (PRESET_CONFIG[Presets.STORAGE].queries as any).cacheHitRate.safeSql([])
+    const sql: string = (PRESET_CONFIG[Presets.STORAGE].queries as Record<string, QueryWithSafeSql>).cacheHitRate.safeSql([])
     expect(sql).not.toMatch(/starts_with/i)
     expect(sql).toMatch(/regexp_contains\(r\.path, '\^\/storage\/v1\/object'\)/i)
     expect(sql).toMatch(/group by 1\b/i)
@@ -223,7 +230,7 @@ describe('PRESET_CONFIG (storage) dialect', () => {
 
   it('pg: topCacheMisses uses regexp_contains and groups by 1,2 orders by 3 desc', async () => {
     const { PRESET_CONFIG, Presets } = await loadPreset(...PG_SELF_PLATFORM)
-    const sql: string = (PRESET_CONFIG[Presets.STORAGE].queries as any).topCacheMisses.safeSql([])
+    const sql: string = (PRESET_CONFIG[Presets.STORAGE].queries as Record<string, QueryWithSafeSql>).topCacheMisses.safeSql([])
     expect(sql).not.toMatch(/starts_with/i)
     expect(sql).toMatch(/regexp_contains\(r\.path, '\^\/storage\/v1\/object'\)/i)
     expect(sql).toMatch(/group by 1, 2\b/i)

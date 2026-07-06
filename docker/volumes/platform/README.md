@@ -1657,7 +1657,9 @@ stack changes nothing about that invariant.
   the existing chart error state, not an empty one. Neither is a SQL-dialect problem this
   milestone's rewrites can fix; a real fix needs vector to populate `function_id` at ingestion, or
   a server-side substitution mirroring `functions.combined-stats`'s own pattern — left as a
-  follow-up, out of scope for M6.2.
+  follow-up, out of scope for M6.2. **Superseded in M6.3:** the edge-functions list last-hour
+  stats now route through a server-side substitute (honest empty — function_id is structurally
+  never populated self-hosted).
 - **The Unified Logs feature preview requires a BigQuery-backed Logflare and will not work
   against this stack.** Its queries lean on `UNION ALL` across service tables, which is
   categorically broken on the Logflare postgres translator (the same reason the `service-health`
@@ -1669,3 +1671,112 @@ stack changes nothing about that invariant.
   same as every other piece of this stack's data (the platform-db, the project databases
   themselves): M6.2 doesn't add or change any retention policy, and running a stack indefinitely
   without pruning the `_analytics` schema will grow it indefinitely.
+
+## M6.3: Infra metrics (sampler + vector metrics pipeline)
+
+The Database Observability tab, the project home instance diagram's CPU/Disk/RAM/connections
+rows, the realtime tab's infra half, and the resource-warnings surfaces (project cards, the
+usage banner, the compute badge) were all live stubs before M6.3 — `infra-monitoring` returned an
+empty series unconditionally and `projects-resource-warnings` always returned `[]` (the M6.0 D1
+poller slot this milestone finally fills). M6.3 adds a resident sampler inside the Studio server
+process — a 60-second loop, started from `instrumentation.ts` in self-platform mode, that walks
+every registered project row regardless of its probed health status — and a matching stack-side
+metrics pipeline so there is something real for it to read.
+
+### Operator runbook: enabling host/service metrics
+
+Metrics ride the same analytics (logs) overlay M6.2 introduced — no new containers, no new
+compose file:
+
+1. Bring the stack up with the full overlay chain (mirrors the M6.2 section above — note
+   `docker-compose.platform.yml` is part of this chain on any stack running the control plane):
+
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.platform.yml -f docker-compose.logs.yml up -d analytics vector
+   ```
+
+   M6.3 adds to `vector`: read-only mounts of the host's `/proc` and `/sys`
+   (`PROCFS_ROOT`/`SYSFS_ROOT` point vector's `host_metrics` source at them), a `9598:9598` port
+   publish for its Prometheus exporter, and `METRICS_SCRAPE_TOKEN` in the compose env (defaults
+   to `${ANON_KEY}` in `docker-compose.logs.yml`) — vector uses this Bearer token itself, to
+   re-scrape Realtime's and Supavisor's own `/metrics` endpoints over the compose network (any
+   JWT signed with the stack's JWT secret works; `ANON_KEY` already is one). The exporter vector
+   itself serves on `:9598` has no authentication of its own — see the token note below.
+
+2. Recreate vector after upgrading an existing stack onto this compose revision:
+
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.platform.yml -f docker-compose.logs.yml up -d --force-recreate vector
+   ```
+
+3. Verify: `curl -s http://<host>:9598/metrics | grep -c '^host_'` returns a positive count
+   (host CPU/memory/disk/filesystem/network series), and `realtime_`/`supavisor_` series appear
+   once those services have actually handled traffic — both are activity-gated, so an idle
+   service's counters simply haven't been emitted yet, not broken.
+
+4. Register the endpoint per project: Settings → General → Connection configuration → Metrics
+   URL (and the optional Metrics token), or the `register-project.ts` CLI's
+   `--metrics-url`/`--metrics-token` flags (`METRICS_URL` env + `--from-current-env` also works,
+   mirroring the Logflare pair). There is no auto-derived URL — point it at wherever `:9598` is
+   actually reachable from the Studio process: `http://<host>:9598/metrics` for a host-network
+   dev server, or `http://vector:9598/metrics` for a Studio container on the same compose network
+   (the same inside/outside-network distinction the M6.2 analytics port already established). The
+   Metrics token, if set, is sent as a Bearer header when Studio's own sampler scrapes that URL —
+   it exists for fronting proxies an operator might put in front of vector; the stock exporter
+   itself is unauthenticated on the operator's network.
+
+### What lights up, and what honestly does not
+
+- Database Observability tab: CPU / memory / network / disk-IO / disk-size / client-connections
+  charts render from real sampled data (60-second grain, ~7-day retention — the sampler sweeps
+  older rows out of `platform.metrics_samples` on an hourly-rate-limited pass). Gaps are honest:
+  Studio downtime, a service's first sampling cycle, and scrape failures all leave a visible gap,
+  never an interpolated or backfilled value.
+- The project home instance diagram's CPU/Disk/RAM/connections rows, the realtime tab's infra
+  half, and the Supavisor connections chart all read from the same sampled data (subject to
+  whatever series the underlying service actually exports — see boundaries below).
+- Resource warnings (project cards, the usage banner, the compute badge): cpu/memory/disk-space
+  exhaustion keys are derived from each project's most recent sample (must be within the last 5
+  minutes; a stale or missing sample yields an all-null warning row for that project) — `>= 90`
+  is `critical`, `>= 80` is `warning`, otherwise `null`. Every other warning key
+  (`disk_io_exhaustion`, the auth email/rate-limit keys, `need_pitr`) stays `null` — there is no
+  usage/quota system to derive them from, and M6.3 doesn't invent one.
+- Rows with no `metrics_url` registered still chart connection counts, database size, and WAL
+  size — that slice comes from the platform-db's own SQL layer (`pg-meta`), which needs no
+  stack-side deployment at all. Only the host-level series (CPU, memory, disk-IO, network) stay
+  empty for such a row. Requesting an attribute the sampler doesn't know about returns an
+  honestly-empty zeroed series, not a 404 — there is deliberately no 404 wall here, unlike the
+  per-project analytics endpoints in the M6.2 section above.
+- `daily-stats` remains absent — there is no route for it (billing semantics, no honest
+  self-hosted source) — and any custom report block that depends on it keeps failing honestly,
+  the same as before M6.3.
+
+### Boundaries
+
+- **Host metrics are stack-scoped, not database-scoped.** One running stack produces one host
+  metrics series; every project registered against that stack's `metrics_url` — including
+  shared-db children (see the M6.2 shared-db hint) — sees the identical CPU/memory/disk/network
+  numbers, while its connection counts and database size stay genuinely per-database (they come
+  from the SQL layer, not the scrape). On Docker Desktop and OrbStack, "the host" `host_metrics`
+  actually reads is the Linux VM those tools run under, not the physical Mac — the sampler and
+  vector are working correctly, they just aren't measuring what a macOS user might expect.
+  **This runbook and the sampler's live verification were only exercised against that
+  macOS Docker Desktop/OrbStack setup; a real Linux production host and a CI smoke-test path for
+  any of the above are unexercised by this milestone.**
+- **The sampler is a single Studio-server process, not a locked/coordinated one.** Running two
+  Studio instances against the same platform-db would double-sample every row (harmless
+  duplicate rows that bucket-averaging smooths back out, but wasted work) — dedup/locking is
+  backlog, not a correctness bug in a single-instance deployment.
+- **`max_cpu_usage` equals `avg_cpu_usage`** at this milestone's single-host sample grain
+  (upstream's cloud chart distinguishes them across a multi-node fleet); this is documented
+  behavior, not a bug masked as a flatline.
+- **Realtime and Supavisor connection/channel series depend on what those services actually
+  export, and are activity-gated** — a channel or connection counter genuinely reads zero until
+  something has exercised it at least once since vector started scraping, same honest-empty
+  precedent as the rest of this document.
+- **The metrics exporter vector serves on `:9598` is plain, unauthenticated HTTP on the
+  operator's own network.** `METRICS_SCRAPE_TOKEN` (defaults to `ANON_KEY`) is what vector uses
+  to authenticate its own outbound scrapes of Realtime/Supavisor — it is not a gate in front of
+  `:9598` itself. The per-project Metrics token field exists for an operator who fronts vector
+  with their own authenticating proxy; treat network exposure of `:9598` the same as any other
+  unauthenticated stack-internal port.
