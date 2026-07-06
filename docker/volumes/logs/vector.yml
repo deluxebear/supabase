@@ -40,6 +40,13 @@ sources:
     auth:
       strategy: bearer
       token: ${METRICS_SCRAPE_TOKEN?METRICS_SCRAPE_TOKEN is required}
+  # [self-platform] M6.4: cAdvisor per-container metrics (unauthenticated,
+  # container-network only). Filtered to Postgres containers below.
+  container_stats:
+    type: prometheus_scrape
+    endpoints:
+      - http://cadvisor:8080/metrics
+    scrape_interval_secs: 15
 
 transforms:
   project_logs:
@@ -203,6 +210,18 @@ transforms:
           .metadata.parsed.error_severity = "log"
       }
       .metadata.parsed.error_severity = upcase!(.metadata.parsed.error_severity)
+  # [self-platform] M6.4: keep only the Postgres containers' container_* series
+  # (compose service "db") plus machine_cpu_cores/machine_memory_bytes (the
+  # %-of-machine denominators). Everything else from cAdvisor is dropped.
+  container_metrics_filtered:
+    type: filter
+    inputs:
+      - container_stats
+    condition: |-
+      .name == "machine_cpu_cores" ||
+      .name == "machine_memory_bytes" ||
+      (starts_with(string!(.name), "container_") &&
+        .tags.container_label_com_docker_compose_service == "db")
 
 sinks:
   logflare_auth:
@@ -306,5 +325,6 @@ sinks:
     inputs:
       - host_stats
       - service_stats
+      - container_metrics_filtered
     address: 0.0.0.0:9598
     flush_period_secs: 60

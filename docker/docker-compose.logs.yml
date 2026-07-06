@@ -104,3 +104,21 @@ services:
       ]
     security_opt:
       - "label=disable"
+
+  cadvisor:
+    container_name: supabase-cadvisor
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    restart: unless-stopped
+    privileged: true
+    # [self-platform] M6.4: per-container (Postgres) CPU/RAM/network via cgroups.
+    # Lean flags: drop container_fs_*/blkio (rootfs, not the PG data volume —
+    # misleading) + label noise; keep cpu/memory/network + machine_* denominators.
+    command:
+      - --store_container_labels=false
+      - --whitelisted_container_labels=com.docker.compose.service,com.docker.compose.project
+      - --disable_metrics=sched,percpu,memory_numa,cpuLoad,diskIO,disk,tcp,advtcp,udp,app,process,hugetlb,perf_event,referenced_memory,cpu_topology,resctrl
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
