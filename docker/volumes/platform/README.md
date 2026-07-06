@@ -1893,5 +1893,5 @@ docker exec -i supabase-platform-db psql -U postgres -d platform -v ON_ERROR_STO
 A platform-db that hasn't been upgraded yet degrades honestly rather than erroring: every row's
 `container_name` is treated as `NULL` (logged once — `platform.projects has no container_name
 column (pre-M6.4 platform-db)`), and every project's sampler simply stays on M6.3's host-level
-path, the same degradation-tier pattern M6.0's `08-health.sql` and M6.3's own env-fallback
-columns already established above.
+path — the same missing-column-degrades-to-null retry tier already used for `metrics_url` itself
+(pre-M6.3 platform-dbs missing `09-metrics.sql`) and every earlier column addition back to M2.1.
