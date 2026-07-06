@@ -67,6 +67,7 @@ describe('projects.ts analytics columns', () => {
       logflare_token_enc: null,
       metrics_url: null,
       metrics_token_enc: null,
+      container_name: null,
     })
   })
 

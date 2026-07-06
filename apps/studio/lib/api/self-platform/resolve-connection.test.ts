@@ -100,4 +100,16 @@ describe('resolveProjectConnection', () => {
     const fallback = await resolveProjectConnection('default')
     expect(fallback.row).toBeNull()
   })
+
+  it('surfaces container_name from the row (M6.4)', async () => {
+    vi.mocked(getProjectByRef).mockResolvedValue({ ...row, container_name: 'supabase-db' } as any)
+    const conn = await resolveProjectConnection('proj-b')
+    expect(conn.containerName).toBe('supabase-db')
+  })
+
+  it('container_name is null in the global-env fallback (M6.4)', async () => {
+    vi.mocked(getProjectByRef).mockResolvedValue(null)
+    const conn = await resolveProjectConnection('default')
+    expect(conn.containerName).toBeNull()
+  })
 })

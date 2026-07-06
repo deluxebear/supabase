@@ -31,6 +31,7 @@ export interface PlatformProjectRow {
   logflare_token_enc: string | null
   metrics_url: string | null
   metrics_token_enc: string | null
+  container_name: string | null
   stack_kind: string
   stack_meta: Record<string, unknown>
 }
@@ -42,8 +43,20 @@ export const PROJECT_SELECT_COLUMNS = `
   db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
   db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc,
   publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc,
+  metrics_url, metrics_token_enc, stack_kind, stack_meta, container_name
+`
+
+// [self-platform] M6.3-era list (metrics + stack, no container_name) — used
+// when the platform db predates 10-container.sql. Checked before the metrics
+// tier so a 01-09-but-not-10 db degrades container_name → null, not 500.
+export const M63_SELECT_COLUMNS = `
+  id, ref, organization_id, name, status, cloud_provider, region,
+  db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
+  db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc,
+  publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc,
   metrics_url, metrics_token_enc, stack_kind, stack_meta
 `
+export const MISSING_CONTAINER_COLUMN = 'column "container_name" does not exist'
 
 // [self-platform] M6.2-era list (stack + analytics, no metrics columns) —
 // degradation tier for a platform-db that has 07-stack-metadata.sql (and
@@ -81,6 +94,7 @@ const LEGACY_SELECT_COLUMNS = `
 `
 const MISSING_ANALYTICS_COLUMN = 'column "logflare_url" does not exist'
 
+let warnedMissingContainerColumn = false
 let warnedMissingMetricsColumns = false
 let warnedMissingStackColumns = false
 let warnedMissingAnalyticsColumns = false
@@ -95,16 +109,28 @@ async function queryProjectRows(
       parameters,
     })
 
-  // [self-platform] Tier order matters. metrics_url precedes stack_kind in
-  // PROJECT_SELECT_COLUMNS, so Postgres reports the metrics column first
-  // when both are missing — this check must run first so a pre-09 (but
-  // post-07) db is caught here. Its retry (M62_SELECT_COLUMNS) still selects
-  // stack_kind/stack_meta, so a pre-07 db fails that retry with
+  // [self-platform] Tier order matters. container_name is the newest column
+  // (10-container.sql), so this check must run FIRST — a pre-M6.4 (but
+  // post-M6.3) db degrades container_name → null via the M63 retry below
+  // rather than falling through the metrics/stack/analytics tiers. metrics_url
+  // precedes stack_kind in PROJECT_SELECT_COLUMNS, so Postgres reports the
+  // metrics column first when both are missing — that check runs next so a
+  // pre-09 (but post-07) db is caught there. Its retry (M62_SELECT_COLUMNS)
+  // still selects stack_kind/stack_meta, so a pre-07 db fails that retry with
   // MISSING_STACK_COLUMN and falls through to the next tier below, which in
   // turn still selects logflare_url/logflare_token_enc, so a pre-M2.1 db
   // fails that with MISSING_ANALYTICS_COLUMN and falls through to
   // LEGACY_SELECT_COLUMNS. Every vintage lands on the right tier.
   let result = await attempt(PROJECT_SELECT_COLUMNS)
+  if (result.error?.message.includes(MISSING_CONTAINER_COLUMN)) {
+    if (!warnedMissingContainerColumn) {
+      warnedMissingContainerColumn = true
+      console.warn(
+        '[self-platform] platform.projects has no container_name column (pre-M6.4 platform-db) — treating container_name as NULL. Run docker/volumes/platform/migrations/10-container.sql to upgrade.'
+      )
+    }
+    result = await attempt(M63_SELECT_COLUMNS)
+  }
   if (result.error?.message.includes(MISSING_METRICS_COLUMN)) {
     if (!warnedMissingMetricsColumns) {
       warnedMissingMetricsColumns = true
@@ -146,6 +172,7 @@ async function queryProjectRows(
     logflare_token_enc: r.logflare_token_enc ?? null,
     metrics_url: r.metrics_url ?? null,
     metrics_token_enc: r.metrics_token_enc ?? null,
+    container_name: r.container_name ?? null,
     stack_kind: r.stack_kind ?? 'external',
     stack_meta: r.stack_meta ?? ({} as Record<string, unknown>),
   }))

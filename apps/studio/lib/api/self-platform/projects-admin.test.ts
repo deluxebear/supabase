@@ -137,6 +137,7 @@ describe('createSharedDbProject', () => {
       null,
       null,
       JSON.stringify({ host_ref: 'default' }),
+      null, // container_name (M6.4) — not set on this input, defaults null
     ])
     const ddl = vi.mocked(executeQuery).mock.calls[0][0]
     expect(ddl.query).toBe('create database "team_a"')
@@ -405,6 +406,31 @@ describe('metrics block (M6.3, D5 semantics)', () => {
     expect('value' in parseProjectPatchInput({ metrics: { url: 'http://h:9598/metrics' } })).toBe(
       true
     )
+  })
+})
+
+describe('container (M6.4)', () => {
+  it('parses a top-level container string', () => {
+    const r = parseProjectPatchInput({ container: 'supabase-db' })
+    expect('value' in r && r.value.containerName).toBe('supabase-db')
+  })
+  it('parses container:null as clear', () => {
+    const r = parseProjectPatchInput({ container: null })
+    expect('value' in r && r.value.containerName).toBeNull()
+  })
+  it('rejects non-string container', () => {
+    const r = parseProjectPatchInput({ container: 5 })
+    expect('error' in r && r.error).toMatch(/container/i)
+  })
+  it('a container-only patch is not empty', () => {
+    const r = parseProjectPatchInput({ container: 'supabase-db' })
+    expect('error' in r).toBe(false)
+  })
+  it('updateProjectConnection writes container_name raw (no encryption)', async () => {
+    await updateProjectConnection('default', { containerName: 'supabase-db' })
+    const call = vi.mocked(executePlatformQuery).mock.calls[0][0]
+    expect(call.query).toContain('container_name')
+    expect(call.parameters).toContain('supabase-db')
   })
 })
 

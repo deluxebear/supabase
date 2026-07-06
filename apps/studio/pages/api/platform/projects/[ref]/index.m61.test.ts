@@ -69,6 +69,7 @@ const ROW = {
   logflare_token_enc: null,
   metrics_url: 'http://h:9598/metrics',
   metrics_token_enc: 'METRICS_ENC',
+  container_name: 'supabase-db',
   stack_kind: 'external',
   stack_meta: {},
 }
@@ -203,6 +204,7 @@ describe('GET self_platform block (M6.1)', () => {
       rest_url: 'http://kong-b:8000/rest/v1/',
       logflare_url: null,
       metrics_url: 'http://h:9598/metrics',
+      container_name: 'supabase-db',
       secrets_set: {
         db_pass: true,
         anon_key: true,
@@ -236,6 +238,7 @@ describe('GET self_platform block (M6.1)', () => {
       stack_meta: { host_ref: 'proj-b' },
       metrics_url: null,
       metrics_token_enc: null,
+      container_name: null,
     }
     vi.mocked(resolveProjectConnection).mockResolvedValue({
       ...resolved,
@@ -249,6 +252,7 @@ describe('GET self_platform block (M6.1)', () => {
       host_ref: 'proj-b',
       shared_children: [],
       metrics_url: null,
+      container_name: null,
       secrets_set: { metrics_token: false },
     })
   })

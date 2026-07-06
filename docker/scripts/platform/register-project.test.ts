@@ -219,7 +219,8 @@ describe('analytics fields (M2.1)', () => {
     )
     // M6.3: length 22->24 and stack_kind index 21->23 — metrics_url/token
     // (M6.3) are inserted between logflare_token_enc and stack_kind.
-    expect(withAnalytics).toHaveLength(24)
+    // M6.4: length 24->25 — container_name appended trailing (index unaffected).
+    expect(withAnalytics).toHaveLength(25)
     expect(withAnalytics[19]).toBe('http://lf')
     expect(withAnalytics[20]).toBe('enc(tok)')
     expect(withAnalytics[23]).toBe('external')
@@ -315,8 +316,10 @@ describe('stack_kind (M5.0)', () => {
   it('buildRowParams appends stackKind, defaulting to external', () => {
     // M6.3: length 22->24 and index 21->23 — metrics_url/token inserted
     // between logflare_token_enc and stack_kind (see 'metrics fields (M6.3)').
+    // M6.4: length is now 25 (container_name trailing) but stack_kind stays
+    // at index 23 — container_name is appended AFTER it (see below).
     const params = buildRowParams(baseInput(), (s) => `enc(${s})`)
-    expect(params).toHaveLength(24)
+    expect(params).toHaveLength(25)
     expect(params[23]).toBe('external')
     const explicit = buildRowParams({ ...baseInput(), stackKind: 'shared-db' }, (s) => `enc(${s})`)
     expect(explicit[23]).toBe('shared-db')
@@ -332,5 +335,34 @@ describe('stack_kind (M5.0)', () => {
       expect(() => assertValidStackKind(k)).not.toThrow()
     }
     expect(() => assertValidStackKind('compose')).toThrow(/invalid --stack-kind/)
+  })
+})
+
+describe('container_name (M6.4)', () => {
+  it('registers container_name as $25', () => {
+    const params = buildRowParams({ ...baseInput(), container: 'supabase-db' }, (s) => s)
+    expect(params).toHaveLength(25)
+    expect(params[24]).toBe('supabase-db')
+    expect(buildUpsertSql().query).toContain('container_name=excluded.container_name')
+  })
+
+  it('defaults to null when absent', () => {
+    const params = buildRowParams(baseInput(), (s) => s)
+    expect(params[24]).toBeNull()
+  })
+
+  it('resolveInputFromEnv reads METRICS_CONTAINER', () => {
+    const input = resolveInputFromEnv(
+      {
+        POSTGRES_PASSWORD: 'p',
+        SERVICE_ROLE_KEY: 's',
+        ANON_KEY: 'a',
+        JWT_SECRET: 'j',
+        API_EXTERNAL_URL: 'http://k',
+        METRICS_CONTAINER: 'supabase-db',
+      } as any,
+      { ref: 'r', org: 'o', name: 'n' }
+    )
+    expect(input.container).toBe('supabase-db')
   })
 })

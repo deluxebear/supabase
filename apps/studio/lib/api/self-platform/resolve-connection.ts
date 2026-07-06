@@ -44,6 +44,9 @@ export interface ResolvedConnection {
   // attributes still flow; no 404 wall, unlike logflare).
   metricsUrl: string | null
   metricsToken: string | null
+  // [self-platform] M6.4: Postgres container name for container-granular
+  // metrics. null → sampler uses host-level metrics (M6.3 fallback).
+  containerName: string | null
   // [self-platform] Raw registry row for a hit, null for the global-env
   // fallback. Lets callers (e.g. Task 6) map from the row without a second
   // getProjectByRef lookup.
@@ -78,6 +81,7 @@ function fromRow(row: PlatformProjectRow): ResolvedConnection {
     logflareToken: row.logflare_token_enc ? decryptSecret(row.logflare_token_enc) : null,
     metricsUrl: row.metrics_url,
     metricsToken: row.metrics_token_enc ? decryptSecret(row.metrics_token_enc) : null,
+    containerName: row.container_name,
     row,
   }
 }
@@ -108,6 +112,7 @@ function fromGlobalEnv(): ResolvedConnection {
     logflareToken: process.env.LOGFLARE_PRIVATE_ACCESS_TOKEN || null,
     metricsUrl: process.env.METRICS_URL || null,
     metricsToken: null,
+    containerName: process.env.METRICS_CONTAINER || null,
     row: null,
   }
 }

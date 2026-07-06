@@ -38,6 +38,7 @@ const row = {
   logflare_token_enc: null,
   metrics_url: null,
   metrics_token_enc: null,
+  container_name: null,
   stack_kind: 'external',
   stack_meta: {},
 }
@@ -193,5 +194,31 @@ describe('metrics columns degradation (M6.3)', () => {
     const call = vi.mocked(executePlatformQuery).mock.calls[0][0]
     expect(call.query).toContain('metrics_url')
     expect(call.query).toContain('metrics_token_enc')
+  })
+})
+
+describe('container_name column degradation (M6.4)', () => {
+  beforeEach(() => vi.mocked(executePlatformQuery).mockReset())
+
+  it('selects container_name in the primary column list', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValueOnce({ data: [], error: undefined })
+    await getProjectByRef('x')
+    const call = vi.mocked(executePlatformQuery).mock.calls[0][0]
+    expect(call.query).toContain('container_name')
+  })
+
+  it('retries without container_name on missing-container-column error', async () => {
+    const { container_name: _cn, ...rowWithoutContainer } = row
+    vi.mocked(executePlatformQuery)
+      .mockResolvedValueOnce({
+        data: undefined,
+        error: new Error('column "container_name" does not exist'),
+      })
+      .mockResolvedValueOnce({ data: [rowWithoutContainer], error: undefined })
+    const result = await getProjectByRef('x')
+    // second attempt is the M6.3-era list (no container_name), row normalizes it to null
+    const retry = vi.mocked(executePlatformQuery).mock.calls.at(-1)![0]
+    expect(retry.query).not.toContain('container_name')
+    expect(result?.container_name).toBeNull()
   })
 })

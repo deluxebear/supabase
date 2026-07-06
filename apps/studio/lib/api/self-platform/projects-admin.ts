@@ -126,7 +126,7 @@ const INSERT_COLUMNS = `ref, organization_id, name, status, cloud_provider, regi
    db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
    db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc,
    publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc,
-   stack_kind, stack_meta`
+   stack_kind, stack_meta, container_name`
 
 function isDuplicateKey(error: Error): boolean {
   return error.message.includes('duplicate key value violates unique constraint')
@@ -137,6 +137,10 @@ export async function createSharedDbProject(input: {
   name: string
   hostRef: string
   organizationId: number
+  // [self-platform] M6.4: optional explicit container override for the
+  // child row; defaults null (shared-db children run inside the same
+  // Postgres container as their host stack — the CLI/host can set it).
+  containerName?: string | null
 }): Promise<{ id: number }> {
   if (!REF_PATTERN.test(input.ref) || RESERVED_REFS.has(input.ref)) {
     throw new Error(`invalid project ref "${input.ref}"`)
@@ -162,7 +166,7 @@ export async function createSharedDbProject(input: {
     query: `insert into platform.projects
       (${INSERT_COLUMNS})
       values ($1,$2,$3,'COMING_UP',$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,
-              null, null, 'shared-db', $19::jsonb)
+              null, null, 'shared-db', $19::jsonb, $20)
       returning id`,
     parameters: [
       input.ref,
@@ -184,6 +188,7 @@ export async function createSharedDbProject(input: {
       host.publishable_key_enc,
       host.secret_key_enc,
       JSON.stringify({ host_ref: input.hostRef }),
+      input.containerName ?? null,
     ],
   })
   if (insert.error) {
@@ -228,6 +233,9 @@ export async function attachExternalProject(input: {
   name: string
   organizationId: number
   connection: ExternalConnectionInput
+  // [self-platform] M6.4: optional Postgres container name for
+  // container-granular metrics; defaults null (host-level metrics fallback).
+  containerName?: string | null
 }): Promise<{ id: number }> {
   const c = input.connection
   const probe = await probeConnection(c)
@@ -237,7 +245,7 @@ export async function attachExternalProject(input: {
     query: `insert into platform.projects
       (${INSERT_COLUMNS})
       values ($1,$2,$3,'ACTIVE_HEALTHY','AWS','local',$4,$5,$6,$7,$8,$9,$10,
-              $11,$12,$13,$14,$15,$16,$17,$18,'external','{}'::jsonb)
+              $11,$12,$13,$14,$15,$16,$17,$18,'external','{}'::jsonb,$19)
       returning id`,
     parameters: [
       input.ref,
@@ -258,6 +266,7 @@ export async function attachExternalProject(input: {
       c.secretKey ? encryptSecret(c.secretKey) : null,
       c.logflareUrl ?? null,
       c.logflareToken ? encryptSecret(c.logflareToken) : null,
+      input.containerName ?? null,
     ],
   })
   if (insert.error) {
@@ -327,6 +336,7 @@ export interface ProjectPatch {
   logflareToken?: string | null
   metricsUrl?: string | null
   metricsToken?: string | null
+  containerName?: string | null
 }
 
 const IMMUTABLE_FIELDS = ['ref', 'stack_kind', 'stack_meta'] as const
@@ -461,13 +471,23 @@ export function parseProjectPatchInput(raw: unknown): { value: ProjectPatch } | 
     }
   }
 
+  // [self-platform] M6.4: top-level plain string, like `name` — not nested
+  // like logflare/metrics, since a container name is a single scalar field.
+  if (obj.container !== undefined) {
+    if (obj.container === null) value.containerName = null
+    else if (typeof obj.container !== 'string')
+      return { error: 'Invalid container: must be a string' }
+    else if (obj.container.trim() !== '') value.containerName = obj.container.trim()
+  }
+
   if (
     value.name === undefined &&
     value.connection === undefined &&
     value.logflareUrl === undefined &&
     value.logflareToken === undefined &&
     value.metricsUrl === undefined &&
-    value.metricsToken === undefined
+    value.metricsToken === undefined &&
+    value.containerName === undefined
   ) {
     return { error: 'No editable fields in request body' }
   }
@@ -565,6 +585,8 @@ export async function updateProjectConnection(
   if (patch.metricsToken !== undefined) {
     set('metrics_token_enc', patch.metricsToken === null ? null : encryptSecret(patch.metricsToken))
   }
+  // [self-platform] M6.4: plaintext, no encryptSecret — mirrors metrics_url.
+  if (patch.containerName !== undefined) set('container_name', patch.containerName)
   if (sets.length === 0) throw new Error('empty project patch') // parse guarantees ≥1 — defense only
 
   const update = await executePlatformQuery({

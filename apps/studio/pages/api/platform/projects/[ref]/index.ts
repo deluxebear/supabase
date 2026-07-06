@@ -128,6 +128,7 @@ async function buildSelfPlatformBlock(row: PlatformProjectRow) {
     rest_url: row.rest_url,
     logflare_url: row.logflare_url ?? null,
     metrics_url: row.metrics_url ?? null,
+    container_name: row.container_name ?? null,
     secrets_set: {
       db_pass: true,
       anon_key: true,

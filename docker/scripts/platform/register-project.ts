@@ -30,6 +30,7 @@ export interface RegisterInput {
   metricsUrl?: string | null
   metricsToken?: string | null
   stackKind?: string
+  container?: string | null
 }
 
 export function parseArgs(argv: string[]) {
@@ -73,9 +74,9 @@ export function buildUpsertSql(): { query: string } {
     query: `insert into platform.projects
       (ref, organization_id, name, status, cloud_provider, region,
        db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
-       db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc, publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc, metrics_url, metrics_token_enc, stack_kind)
+       db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc, publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc, metrics_url, metrics_token_enc, stack_kind, container_name)
       values ($1,(select id from platform.organizations where slug=$2),$3,$4,$5,$6,
-              $7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)
+              $7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25)
       on conflict (ref) do update set
         name=excluded.name, status=excluded.status, cloud_provider=excluded.cloud_provider,
         region=excluded.region, db_host=excluded.db_host, db_port=excluded.db_port,
@@ -87,6 +88,7 @@ export function buildUpsertSql(): { query: string } {
         logflare_url=excluded.logflare_url, logflare_token_enc=excluded.logflare_token_enc,
         metrics_url=excluded.metrics_url, metrics_token_enc=excluded.metrics_token_enc,
         stack_kind=excluded.stack_kind,
+        container_name=excluded.container_name,
         updated_at=now()`,
   }
 }
@@ -117,6 +119,7 @@ export function buildRowParams(input: RegisterInput, encrypt: (s: string) => str
     input.metricsUrl ?? null,
     input.metricsToken ? encrypt(input.metricsToken) : null,
     input.stackKind ?? 'external',
+    input.container ?? null,
   ]
 }
 
@@ -157,6 +160,7 @@ export function resolveInputFromEnv(
     logflareToken: env.LOGFLARE_PRIVATE_ACCESS_TOKEN || null,
     metricsUrl: env.METRICS_URL || null,
     metricsToken: null,
+    container: env.METRICS_CONTAINER || null,
   }
 }
 
@@ -281,6 +285,7 @@ export function main(argv = process.argv.slice(2)) {
             logflareToken: flags['logflare-token'] || null,
             metricsUrl: flags['metrics-url'] || null,
             metricsToken: flags['metrics-token'] || null,
+            container: flags['container'] || null,
           } as RegisterInput
         })()),
     stackKind,
