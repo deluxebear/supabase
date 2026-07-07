@@ -10,6 +10,7 @@ import { FormPanel } from '@/components/ui/Forms/FormPanel'
 import { useBackupsQuery } from '@/data/database/backups-query'
 import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 
 interface PITRStatusProps {
@@ -60,16 +61,20 @@ const PITRStatus = ({
               </span>
             </div>
             <ButtonTooltip
-              disabled={hasReadReplicas || !canTriggerPhysicalBackup}
+              disabled={IS_SELF_PLATFORM || hasReadReplicas || !canTriggerPhysicalBackup}
               onClick={() => onSetConfiguration()}
               tooltip={{
                 content: {
                   side: 'left',
-                  text: hasReadReplicas
-                    ? 'You will need to remove all read replicas first to trigger a PITR recovery'
-                    : !canTriggerPhysicalBackup
-                      ? 'You need additional permissions to trigger a PITR recovery'
-                      : undefined,
+                  text: IS_SELF_PLATFORM
+                    ? $t(
+                        'PITR restore from Studio is not available on self-hosted. Restore using the pgBackRest CLI runbook.'
+                      )
+                    : hasReadReplicas
+                      ? 'You will need to remove all read replicas first to trigger a PITR recovery'
+                      : !canTriggerPhysicalBackup
+                        ? 'You need additional permissions to trigger a PITR recovery'
+                        : undefined,
                 },
               }}
             >

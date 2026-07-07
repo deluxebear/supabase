@@ -9,6 +9,7 @@ import { InlineLink } from '@/components/ui/InlineLink'
 import { useBackupDownloadMutation } from '@/data/database/backup-download-mutation'
 import type { DatabaseBackup } from '@/data/database/backups-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 
 interface BackupItemProps {
@@ -44,16 +45,20 @@ export const BackupItem = ({ index, isHealthy, backup, onSelectBackup }: BackupI
         <div className="flex space-x-4">
           <ButtonTooltip
             variant="default"
-            disabled={!isHealthy || !canTriggerScheduledBackups}
+            disabled={IS_SELF_PLATFORM || !isHealthy || !canTriggerScheduledBackups}
             onClick={onSelectBackup}
             tooltip={{
               content: {
                 side: 'bottom',
-                text: !isHealthy
-                  ? 'Cannot be restored as project is not active'
-                  : !canTriggerScheduledBackups
-                    ? 'You need additional permissions to trigger a restore'
-                    : undefined,
+                text: IS_SELF_PLATFORM
+                  ? $t(
+                      'Restore from Studio is not available on self-hosted. Restore using the pgBackRest CLI runbook.'
+                    )
+                  : !isHealthy
+                    ? 'Cannot be restored as project is not active'
+                    : !canTriggerScheduledBackups
+                      ? 'You need additional permissions to trigger a restore'
+                      : undefined,
               },
             }}
           >

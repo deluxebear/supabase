@@ -30,6 +30,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useHighAvailability } from '@/hooks/misc/useHighAvailability'
 import { useIsOrioleDbInAws, useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL, PROJECT_STATUS } from '@/lib/constants'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
@@ -49,6 +50,15 @@ const DatabasePhysicalBackups: NextPageWithLayout = () => {
       <PageContainer>
         <PageSection>
           <PageSectionContent>
+            {IS_SELF_PLATFORM && (
+              <Admonition
+                type="default"
+                title={$t('Observing operator-managed physical backups')}
+                description={$t(
+                  'This page reflects the pgBackRest state your operator publishes. Physical backups and PITR cover the entire database instance (not a single logical database). Restores run via the pgBackRest CLI runbook, not from Studio.'
+                )}
+              />
+            )}
             <div className="space-y-8">
               <PITR />
             </div>
