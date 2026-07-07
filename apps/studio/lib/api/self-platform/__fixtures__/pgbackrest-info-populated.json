@@ -1,0 +1,121 @@
+[
+    {
+        "archive": [
+            {
+                "database": {
+                    "id": 1,
+                    "repo-key": 1
+                },
+                "id": "17-1",
+                "max": "000000010000000000000012",
+                "min": "000000010000000000000010"
+            }
+        ],
+        "backup": [
+            {
+                "archive": {
+                    "start": "000000010000000000000010",
+                    "stop": "000000010000000000000010"
+                },
+                "backrest": {
+                    "format": 5,
+                    "version": "2.58.0"
+                },
+                "database": {
+                    "id": 1,
+                    "repo-key": 1
+                },
+                "error": false,
+                "info": {
+                    "delta": 24138842,
+                    "repository": {
+                        "delta": 3167963,
+                        "size": 3167963
+                    },
+                    "size": 24138842
+                },
+                "label": "20260707-100000F",
+                "lsn": {
+                    "start": "0/10000028",
+                    "stop": "0/10000138"
+                },
+                "prior": null,
+                "reference": null,
+                "timestamp": {
+                    "start": 1783418400,
+                    "stop": 1783418405
+                },
+                "type": "full"
+            },
+            {
+                "archive": {
+                    "start": "000000010000000000000012",
+                    "stop": "000000010000000000000012"
+                },
+                "backrest": {
+                    "format": 5,
+                    "version": "2.58.0"
+                },
+                "database": {
+                    "id": 1,
+                    "repo-key": 1
+                },
+                "error": false,
+                "info": {
+                    "delta": 1048576,
+                    "repository": {
+                        "delta": 210531,
+                        "size": 3200194
+                    },
+                    "size": 24138842
+                },
+                "label": "20260707-100000F_20260707-110000I",
+                "lsn": {
+                    "start": "0/12000028",
+                    "stop": "0/12000138"
+                },
+                "prior": "20260707-100000F",
+                "reference": [
+                    "20260707-100000F"
+                ],
+                "timestamp": {
+                    "start": 1783422000,
+                    "stop": 1783422004
+                },
+                "type": "incr"
+            }
+        ],
+        "cipher": "none",
+        "db": [
+            {
+                "id": 1,
+                "repo-key": 1,
+                "system-id": 7657512427479515170,
+                "version": "17"
+            }
+        ],
+        "name": "supabase",
+        "repo": [
+            {
+                "cipher": "none",
+                "key": 1,
+                "status": {
+                    "code": 0,
+                    "message": "ok"
+                }
+            }
+        ],
+        "status": {
+            "code": 0,
+            "lock": {
+                "backup": {
+                    "held": false
+                },
+                "restore": {
+                    "held": false
+                }
+            },
+            "message": "ok"
+        }
+    }
+]
