@@ -371,6 +371,11 @@ export function computeContainerAttributes(
     if (total !== undefined && total > 0) {
       out.ram_usage_total = total
       out.ram_usage = clamp((used / total) * 100)
+      // NOTE: "free" here is machine-relative in container mode — total is the
+      // machine memory (or the container limit when set), so ram_usage_free is
+      // the machine/limit headroom, NOT the container's own free memory (a
+      // container has no fixed size without a limit). Consistent with R1's
+      // machine-as-denominator model (used + free = total).
       out.ram_usage_free = Math.max(0, total - used)
     }
     const cache = sumSeries(S, CONTAINER.memCache, mine)

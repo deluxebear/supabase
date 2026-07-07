@@ -219,12 +219,12 @@ export const SelfPlatformConnectionPanel = () => {
       <Badge variant="warning">{$t('Not configured')}</Badge>
     )
 
-  const textField = (name: keyof FormValues, label: string) => (
+  const textField = (name: keyof FormValues, label: string, description?: string) => (
     <FormField
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItemLayout name={name} layout="vertical" label={label}>
+        <FormItemLayout name={name} layout="vertical" label={label} description={description}>
           <FormControl>
             <Input {...field} value={String(field.value ?? '')} disabled={!canUpdate} />
           </FormControl>
@@ -405,7 +405,13 @@ export const SelfPlatformConnectionPanel = () => {
               selfPlatform.secrets_set.metrics_token
             )}
             {clearCheckbox('metricsTokenClear', $t('Clear the stored metrics token'))}
-            {textField('container', $t('Postgres container name'))}
+            {textField(
+              'container',
+              $t('Postgres container name'),
+              $t(
+                'Must match the container name reported by cAdvisor (e.g. supabase-db). Leave blank to use host-level metrics.'
+              )
+            )}
             {clearCheckbox('containerClear', $t('Clear the stored container name'))}
             {isSharedDb && (
               <Alert>

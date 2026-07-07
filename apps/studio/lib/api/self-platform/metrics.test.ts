@@ -302,6 +302,28 @@ describe('computeContainerAttributes', () => {
     expect(out.network_transmit_bytes).toBeCloseTo(50)
   })
 
+  it('excludes the loopback interface from container network rate', () => {
+    const t0: Snapshot = {
+      at: 0,
+      samples: [
+        cont('container_network_receive_bytes_total', 0, { interface: 'eth0' }),
+        cont('container_network_receive_bytes_total', 0, { interface: 'lo' }),
+        ...machine,
+      ],
+    }
+    const t1: Snapshot = {
+      at: 10_000,
+      samples: [
+        cont('container_network_receive_bytes_total', 1000, { interface: 'eth0' }),
+        cont('container_network_receive_bytes_total', 9999, { interface: 'lo' }),
+        ...machine,
+      ],
+    }
+    const out = computeContainerAttributes(t0, t1, 'supabase-db')
+    // eth0 alone: 1000/10s = 100; the lo delta (9999) must be dropped, not summed.
+    expect(out.network_receive_bytes).toBeCloseTo(100)
+  })
+
   it('filters to the named container (ignores other containers)', () => {
     const s = [
       cont('container_memory_working_set_bytes', 200, { name: 'supabase-db' }),
@@ -478,6 +500,10 @@ describe('sampleProject — container dialect branch', () => {
     // ram_usage_used is the container working-set, not any host-memory value.
     const i = params.indexOf('ram_usage_used')
     expect(params[i + 1]).toBe(164704256)
+    // Value (not just presence): identical consecutive scrapes → zero CPU delta →
+    // the container path honestly writes avg_cpu_usage = 0 (not a host busy%).
+    const c = params.indexOf('avg_cpu_usage')
+    expect(params[c + 1]).toBe(0)
     // Only ATTRIBUTE_META keys are ever inserted (injection-barrier invariant).
     expect(attrs.every((a) => (a as string) in ATTRIBUTE_META)).toBe(true)
     nowSpy.mockRestore()

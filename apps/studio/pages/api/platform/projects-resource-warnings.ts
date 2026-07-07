@@ -45,7 +45,10 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
     return res.status(401).json({ message: 'Unauthorized: missing token claims' })
   }
   const ctx = await getMemberContext(gotrueId)
-  const visible = await listAllProjectsV2(ctx)
+  // Warnings must cover EVERY visible project, not one page — pass a high limit
+  // so the default 100-row page never silently truncates the fleet (an internal
+  // multi-team platform can exceed 100 registered projects).
+  const visible = await listAllProjectsV2(ctx, 10_000)
   let refs = visible.projects.map((p) => p.ref)
   const refFilter = typeof req.query.ref === 'string' ? req.query.ref : undefined
   if (refFilter !== undefined) refs = refs.filter((r) => r === refFilter)

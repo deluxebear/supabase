@@ -1879,6 +1879,27 @@ resource usage, not a per-logical-database slice (the panel shows this exact cav
 "Shared-db projects report the shared Postgres container — CPU/RAM/network are the container's,
 not per logical database").
 
+### Boundaries
+
+What M6.4 deliberately does **not** cover (all honest gaps, not bugs):
+
+- **Only the project's Postgres container** is measured. kong/auth/storage/realtime keep their
+  M6.3 D4 service-level signals; M6.4 is about the project's Postgres resource footprint.
+- **k8s is an extension point, not implemented.** The per-`stack_kind` dialect structure exists,
+  but the k8s branch is unbound — it needs a live cluster to capture a binding cAdvisor/kubelet
+  `container_*` fixture first. Compose is the only wired path today.
+- **No per-container disk IO or volume capacity.** cAdvisor's `container_fs_*`/blkio measure the
+  container rootfs, not the Postgres data volume, so charting them would mislead. Disk **usage**
+  stays per-database (L1 SQL: `pg_database_size` + WAL); disk **size/IO** stay host-level.
+- **`ram_commit_*` (Memory-commitment chart) is absent** — there is no commitment concept at the
+  cgroup/container level, and vector's host metrics don't emit it either.
+- **CPU%/RAM% are machine-relative** unless the operator sets a container CPU quota / memory limit
+  (then the limit is the denominator). Without a limit they read as the share of the whole machine
+  (docker-stats semantics), not of a fixed container size.
+- **Requires cAdvisor running + the exact container name registered.** A mistyped or unregistered
+  `container_name` silently falls back to host-level metrics (no error) — CPU/RAM/network for that
+  project will look host-scoped until the name is corrected.
+
 ### Upgrading an existing platform-db to M6.4
 
 `10-container.sql` only runs automatically against an **empty** platform-db data directory, same

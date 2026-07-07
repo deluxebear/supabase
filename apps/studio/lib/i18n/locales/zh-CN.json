@@ -3137,6 +3137,7 @@
   "Must be between 3–63 characters. Only lowercase letters, numbers, and hyphens are allowed": "必须是 3-63 个字符。仅允许小写字母、数字和连字符",
   "Must be between 3–63 characters. Valid characters are a-z, 0-9, hyphens, and periods.": "必须是 3-63 个字符。有效字符是 a-z、0-9、连字符和句号。",
   "Must be installed in the": "必须安装在",
+  "Must match the container name reported by cAdvisor (e.g. supabase-db). Leave blank to use host-level metrics.": "必须与 cAdvisor 上报的容器名一致（例如 supabase-db）。留空则使用宿主级指标。",
   "My Destination": "我的目标",
   "My OAuth App": "我的 OAuth 应用",
   "My destination": "我的目标",
