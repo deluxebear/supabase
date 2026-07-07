@@ -58,8 +58,9 @@ export function mapPgbackrestInfo(info: unknown): BackupsResponse {
   let hasArchive = false
 
   for (const stanza of stanzas) {
+    if (!stanza || typeof stanza !== 'object') continue
     if (Array.isArray(stanza.archive) && stanza.archive.length > 0) hasArchive = true
-    for (const b of stanza.backup ?? []) {
+    for (const b of Array.isArray(stanza?.backup) ? stanza.backup : []) {
       const stop = b?.timestamp?.stop
       const start = b?.timestamp?.start
       if (typeof stop !== 'number') continue
@@ -98,7 +99,7 @@ export async function getProjectBackups(ref: string): Promise<BackupsResponse> {
     return mapPgbackrestInfo(parsed)
   } catch (err) {
     if (err instanceof ProjectNotFound) throw err // route surfaces this as 404
-    console.log(
+    console.warn(
       `[self-platform] backups observe degraded for "${ref}": ${
         err instanceof Error ? err.message : String(err)
       }`

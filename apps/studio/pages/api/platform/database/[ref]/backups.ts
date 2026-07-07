@@ -27,12 +27,13 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
   }
 
   if (IS_SELF_PLATFORM) {
+    const ref = String(req.query.ref)
     const ok = await guardProjectRoute(res, claims, {
       action: PermissionAction.READ,
-      projectRef: String(req.query.ref),
+      projectRef: ref,
     })
     if (!ok) return
-    const response = await getProjectBackups(String(req.query.ref))
+    const response = await getProjectBackups(ref)
     return res.status(200).json(response)
   }
 

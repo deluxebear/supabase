@@ -77,6 +77,12 @@ describe('mapPgbackrestInfo', () => {
     expect(mapPgbackrestInfo(null).backups).toEqual([])
     expect(mapPgbackrestInfo({ nope: 1 }).backups).toEqual([])
   })
+
+  it('nested garbage inside an array → honest-empty response, no throw', () => {
+    expect(mapPgbackrestInfo([null]).backups).toEqual([])
+    expect(mapPgbackrestInfo([{ backup: 5 }]).backups).toEqual([])
+    expect(mapPgbackrestInfo([{ archive: 'x' }]).backups).toEqual([])
+  })
 })
 
 describe('getProjectBackups', () => {

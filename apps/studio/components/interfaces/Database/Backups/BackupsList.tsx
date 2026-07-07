@@ -19,6 +19,7 @@ import { useSetProjectStatus } from '@/data/projects/project-detail-query'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 
 export const BackupsList = () => {
@@ -57,7 +58,7 @@ export const BackupsList = () => {
   )
   const isPitrEnabled = backups?.pitr_enabled
 
-  if (!hasAccessToBackups) {
+  if (!IS_SELF_PLATFORM && !hasAccessToBackups) {
     return (
       <UpgradeToPro
         addon="pitr"

@@ -140,21 +140,31 @@ const PITR = () => {
       {isSuccess && (
         <>
           {!isEnabled ? (
-            <UpgradeToPro
-              addon={hasAccessToPitr ? 'pitr' : undefined}
-              source="pitr"
-              featureProposition="enable Point-in-Time Recovery"
-              primaryText={
-                hasAccessToPitr
-                  ? 'Point in Time Recovery is available as an add-on'
-                  : 'Point in Time Recovery is a Pro Plan add-on'
-              }
-              secondaryText={
-                !hasAccessToPitr
-                  ? 'Roll back your database to a specific second. Starts at $100/month. Pro Plan already includes daily backups at no extra cost.'
-                  : 'Enable the add-on to add point-in-time recovery to your project.'
-              }
-            />
+            IS_SELF_PLATFORM ? (
+              <Admonition
+                type="default"
+                title={$t('Point-in-time recovery is not configured')}
+                description={$t(
+                  'Ask your operator to enable pgBackRest WAL archiving to expose a recovery window here.'
+                )}
+              />
+            ) : (
+              <UpgradeToPro
+                addon={hasAccessToPitr ? 'pitr' : undefined}
+                source="pitr"
+                featureProposition="enable Point-in-Time Recovery"
+                primaryText={
+                  hasAccessToPitr
+                    ? 'Point in Time Recovery is available as an add-on'
+                    : 'Point in Time Recovery is a Pro Plan add-on'
+                }
+                secondaryText={
+                  !hasAccessToPitr
+                    ? 'Roll back your database to a specific second. Starts at $100/month. Pro Plan already includes daily backups at no extra cost.'
+                    : 'Enable the add-on to add point-in-time recovery to your project.'
+                }
+              />
+            )
           ) : !isActiveHealthy ? (
             <Alert>
               <AlertCircle />
