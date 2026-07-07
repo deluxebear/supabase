@@ -73,30 +73,29 @@ Studio Backups 路由（self-platform）  │ SELECT（按需，无 sampler）
 ```sql
 create schema if not exists _supabase_platform;
 create table if not exists _supabase_platform.pgbackrest_info (
-  stanza      text primary key,
-  info        jsonb       not null,      -- pgbackrest info --output=json 原样
+  id          int         primary key default 1 check (id = 1),  -- 单行(整实例)
+  info        jsonb       not null,      -- pgbackrest info --output=json 原样(全 stanza 数组)
   updated_at  timestamptz not null default now()
 );
 ```
 
-operator 备份 cron 末尾一行（localhost，与 pgbackrest 同宿，零网络依赖）：
+operator 备份 cron 末尾一行（localhost，与 pgbackrest 同宿，零网络依赖），写**全 stanza 数组**（不加 `--stanza` 过滤）：
 
 ```sh
-pgbackrest --stanza=default info --output=json \
-  | psql -v ON_ERROR_STOP=1 -c "insert into _supabase_platform.pgbackrest_info(stanza, info, updated_at)
-        values ('default', \$stdin\$$(cat)\$stdin\$::jsonb, now())
-        on conflict (stanza) do update set info = excluded.info, updated_at = now();"
+pgbackrest info --output=json \
+  | psql -v ON_ERROR_STOP=1 ...  -- upsert 进单行 id=1
 ```
 
 - DDL + cron 片段作为 **operator 契约文档**交付（`docs/self-hosted-parity/` runbook）。**Studio 不建表、不写表**——建表即 operator 的 opt-in 动作。
 - 精确的注入语法在 writing-plans 里钉死（避免 shell 引号坑；可能改用文件中转 + `\gset` 或 `COPY ... FROM stdin`）。本 spec 只定契约形态。
+- **stanza-agnostic（spike 修正）**：实测全 stanza `pgbackrest info --output=json` = `[]`（本栈未配置）；fork 配置注释里真实运营 stanza 名是 `supabase`（由镜像烤进的 `supabase-admin-agent` 在 enable 时写入 `conf.d/`——**该 agent 不在我们管理平面世界**，operator 自己 enable+cron）。故写入与解析**都不硬编码 stanza 名**：cron 写全数组，parser 迭代数组（0..N stanza）跨 stanza 汇总 backups，`[]` → 诚实降级。
 
 ### 5.2 `lib/api/self-platform/backups.ts`（新模块：读表 + 映射）
 
 单一职责：给 `ref`，返回 `BackupsResponse`。
 
 - `resolveProjectConnection(ref)` → 连接项目 DB。
-- `select info, updated_at from _supabase_platform.pgbackrest_info where stanza = $1`（默认 stanza='default'；多 stanza / 多项目前瞻留后续 milestone）。
+- `select info, updated_at from _supabase_platform.pgbackrest_info where id = 1`（单行整数组）；parser 迭代 `info`（0..N stanza）跨 stanza 汇总 backups，stanza-agnostic。
 - 解析 `info`（pgbackrest info JSON，见下）→ 映射 `BackupsResponse`：
 
 | BackupsResponse 字段                                | 来源                                                                                                                                                                                                                   |
@@ -179,12 +178,13 @@ pgbackrest --stanza=default info --output=json \
 
 ## 10. 风险与 plan-time pins
 
-1. **pgbackrest info JSON 形态**：采真实 fixture 前不对形态臆测（parser 对 fixture 编程）。空态 vs 有备份态字段差异要覆盖。
-2. **状态表注入语法**：cron 里把 JSON 灌进 psql 的引号/转义坑；writing-plans 钉死安全写法（文件中转 / `COPY FROM stdin`）。
-3. **id 派生稳定性**：number 型 id 由 label 派生须稳定且不碰撞（观测态仅用于展示，风险可控）。
-4. **gating recon**：Backups nav / 页面在自托管的现有 gate（`IS_PLATFORM` / feature flag）——writing-plans 钉死当前值再改，避免误判"已点亮/未点亮"。
-5. **前端 restore/enable 隐藏点**：这些组件同时服务 cloud；改动要用自托管分支/开关，不破坏 cloud 路径（照 M6.x honest-degradation 隔离）。
-6. **archive_mode 重启（plan-time spike）**：采有备份态 fixture 需临时开归档 + 重启 db；采样后回退，避免污染基线栈。
+1. **pgbackrest info JSON 形态**：采真实 fixture 前不对形态臆测（parser 对 fixture 编程）。空态 vs 有备份态字段差异要覆盖。实测空态（全 stanza 无过滤）= `[]`；有 stanza 时每项 `{name,status,backup[],archive[],db[],repo[],cipher}`。
+2. **stanza-agnostic**：真实运营 stanza 名是 `supabase`（fork config，`supabase-admin-agent` 于 enable 时写入；该 agent 不在我们世界）——parser 迭代 stanza 数组、不硬编码名字；cron 写全数组不加 `--stanza`。
+3. **状态表注入语法**：cron 里把 JSON 灌进 psql 的引号/转义坑；writing-plans 钉死安全写法（文件中转 / `COPY FROM stdin`）。
+4. **id 派生稳定性**：number 型 id 由 label 派生须稳定且不碰撞（观测态仅用于展示，风险可控）。
+5. **gating recon**：Backups nav / 页面在自托管的现有 gate（`IS_PLATFORM` / feature flag）——writing-plans 钉死当前值再改，避免误判"已点亮/未点亮"。
+6. **前端 restore/enable 隐藏点**：这些组件同时服务 cloud；改动要用自托管分支/开关，不破坏 cloud 路径（照 M6.x honest-degradation 隔离）。
+7. **archive_mode 重启（plan-time spike）**：采有备份态 fixture 需临时开归档 + 重启 db；采样后回退，避免污染基线栈。
 
 ---
 
