@@ -1,18 +1,11 @@
+import { t as $t } from '@/lib/i18n';
 import { useEscapeKeydown } from '@radix-ui/react-use-escape-keydown'
 import { useParams } from 'common'
 import dayjs from 'dayjs'
 import { isNil } from 'lodash'
 import { Archive, Clock12, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
-import {
-  Button,
-  ResizablePanel,
-  Separator,
-  Tabs_Shadcn_,
-  TabsContent_Shadcn_,
-  TabsList_Shadcn_,
-  TabsTrigger_Shadcn_,
-} from 'ui'
+import { Button, ResizablePanel, Separator, Tabs, TabsContent, TabsList, TabsTrigger } from 'ui'
 
 import { RowAction, RowData } from '@/components/interfaces/Auth/Users/UserOverview'
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
@@ -22,7 +15,6 @@ import { PostgresQueueMessage } from '@/data/database-queues/database-queue-mess
 import { useDatabaseQueueMessageReadMutation } from '@/data/database-queues/database-queue-messages-read-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { prettifyJSON } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
 
 export const DATE_FORMAT = 'DD MMM, YYYY HH:mm'
 
@@ -96,22 +88,23 @@ export const MessageDetailsPanel = ({
         onClick={() => setSelectedMessage(null)}
       />
 
-      <Tabs_Shadcn_
+      <Tabs
         value={view}
         className="flex flex-col h-full"
         onValueChange={(value: any) => {
           setView(value)
         }}
       >
-        <TabsList_Shadcn_ className="px-5 flex gap-x-4 min-h-[46px]">
-          <TabsTrigger_Shadcn_
+        <TabsList className="px-5 flex gap-x-4 min-h-[46px]">
+          <TabsTrigger
             value="details"
             className="px-0 pb-0 h-full text-xs  data-[state=active]:bg-transparent shadow-none!"
           >
-            {$t('Overview')}
-          </TabsTrigger_Shadcn_>
-        </TabsList_Shadcn_>
-        <TabsContent_Shadcn_ value="details" className="w-full mt-0 overflow-y-auto grow">
+            
+                                  {$t('Overview')}
+                                </TabsTrigger>
+        </TabsList>
+        <TabsContent value="details" className="w-full mt-0 overflow-y-auto grow">
           <div className="flex flex-col px-4 py-4 text-sm">
             <RowData property="Message ID" value={`${selectedMessage.msg_id}`} />
             <RowData
@@ -142,9 +135,7 @@ export const MessageDetailsPanel = ({
               <>
                 <RowAction
                   title={$t('Postpone message')}
-                  description={$t(
-                    "The message will be postponed and won't show up in reads for 60 seconds."
-                  )}
+                  description={$t('The message will be postponed and won\'t show up in reads for 60 seconds.')}
                   button={{
                     icon: <Clock12 />,
                     text: 'Postpone',
@@ -170,9 +161,7 @@ export const MessageDetailsPanel = ({
                 />
                 <RowAction
                   title={$t('Archive message')}
-                  description={$t(
-                    'The message will be marked as archived and hidden from future reads by consumers. You can still access the message later.'
-                  )}
+                  description={$t('The message will be marked as archived and hidden from future reads by consumers. You can still access the message later.')}
                   button={{
                     icon: <Archive />,
                     text: 'Archive',
@@ -225,8 +214,8 @@ export const MessageDetailsPanel = ({
               </>
             ) : null}
           </div>
-        </TabsContent_Shadcn_>
-      </Tabs_Shadcn_>
+        </TabsContent>
+      </Tabs>
     </ResizablePanel>
   )
 }

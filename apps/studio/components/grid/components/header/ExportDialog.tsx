@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { useParams } from 'common'
 import { useState } from 'react'
 import {
@@ -10,10 +11,10 @@ import {
   DialogSection,
   DialogSectionSeparator,
   DialogTitle,
-  Tabs_Shadcn_,
-  TabsContent_Shadcn_,
-  TabsList_Shadcn_,
-  TabsTrigger_Shadcn_,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from 'ui'
 import { Admonition } from 'ui-patterns/admonition'
 import { CodeBlock } from 'ui-patterns/CodeBlock'
@@ -23,7 +24,6 @@ import { getConnectionStrings } from '@/components/interfaces/Connect/DatabaseSe
 import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { getAllTableRowsSql } from '@/data/table-rows/table-rows-query'
 import { pluckObjectFields } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
 import { RoleImpersonationState, wrapWithRoleImpersonation } from '@/lib/role-impersonation'
 import { useRoleImpersonationStateSnapshot } from '@/state/role-impersonation-state'
 
@@ -96,19 +96,16 @@ pg_dump -h ${db_host} -p ${db_port} -d ${db_name} -U ${db_user} --table="${table
 
         <DialogSection className="flex flex-col gap-y-4">
           <p className="text-sm">
-            {$t('We highly recommend using')}{' '}
-            <code>{selectedTab === 'csv' ? 'psql' : 'pg_dump'}</code>{' '}
-            {$t(
-              'to export your table data, in particular if your table is relatively large. This can be done via the following command that you can run in your terminal:'
-            )}
-          </p>
+            
+                                  {$t('We highly recommend using')} <code>{selectedTab === 'csv' ? 'psql' : 'pg_dump'}</code>  {$t('to export your table data, in particular if your table is relatively large. This can be done via the following command that you can run in your terminal:')}
+                                </p>
 
-          <Tabs_Shadcn_ value={selectedTab} onValueChange={setSelectedTab}>
-            <TabsList_Shadcn_ className="gap-x-3">
-              <TabsTrigger_Shadcn_ value="csv">{$t('As CSV')}</TabsTrigger_Shadcn_>
-              <TabsTrigger_Shadcn_ value="sql">{$t('As SQL')}</TabsTrigger_Shadcn_>
-            </TabsList_Shadcn_>
-            <TabsContent_Shadcn_ value="csv">
+          <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+            <TabsList className="gap-x-3">
+              <TabsTrigger value="csv">{$t('As CSV')}</TabsTrigger>
+              <TabsTrigger value="sql">{$t('As SQL')}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="csv">
               <CodeBlock
                 hideLineNumbers
                 wrapperClassName={cn('[&_pre]:px-4 [&_pre]:py-3')}
@@ -116,8 +113,8 @@ pg_dump -h ${db_host} -p ${db_port} -d ${db_name} -U ${db_user} --table="${table
                 value={csvExportCommand}
                 className="[&_code]:text-[12px] [&_code]:text-foreground"
               />
-            </TabsContent_Shadcn_>
-            <TabsContent_Shadcn_ value="sql">
+            </TabsContent>
+            <TabsContent value="sql">
               <CodeBlock
                 hideLineNumbers
                 wrapperClassName={cn('[&_pre]:px-4 [&_pre]:py-3')}
@@ -129,35 +126,35 @@ pg_dump -h ${db_host} -p ${db_port} -d ${db_name} -U ${db_user} --table="${table
                 type="note"
                 className="mt-2"
                 title={$t('Filters are not supported when exporting as SQL via pg_dump')}
-                description={$t(
-                  "If you'd like to export as SQL, we recommend creating a view first then exporting the data from there via pg_dump instead"
-                )}
+                description={$t('If you\'d like to export as SQL, we recommend creating a view first then exporting the data from there via pg_dump instead')}
               />
-            </TabsContent_Shadcn_>
-          </Tabs_Shadcn_>
+            </TabsContent>
+          </Tabs>
 
           <p className="text-sm">
-            {$t('You will be prompted for your database password, and the output file')}{' '}
+            
+                                  {$t('You will be prompted for your database password, and the output file')}{' '}
             <code>
               {outputName}.{selectedTab}
             </code>{' '}
-            {$t('will be saved in the current directory that your terminal is in.')}
-          </p>
+            
+                                  {$t('will be saved in the current directory that your terminal is in.')}
+                                </p>
 
           {selectedTab === 'sql' && (
             <p className="text-sm text-foreground-light">
-              {$t('Note:')} <code>pg_dump</code>{' '}
-              {$t(
-                "needs to match your project's Postgres version. If you run into a server version mismatch error, you will need to update"
-              )}{' '}
-              <code>pg_dump</code> {$t('before running the command.')}
-            </p>
+              
+                                        {$t('Note:')} <code>pg_dump</code>  {$t('needs to match your project\'s Postgres version. If you run into a server version mismatch error, you will need to update')} <code>pg_dump</code>{' '}
+              
+                                        {$t('before running the command.')}
+                                      </p>
           )}
         </DialogSection>
         <DialogFooter>
           <Button variant="default" onClick={() => onOpenChange(false)}>
-            {$t('Close')}
-          </Button>
+            
+                                  {$t('Close')}
+                                </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

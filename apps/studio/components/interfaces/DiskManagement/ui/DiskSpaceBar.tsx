@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import MotionNumber from '@number-flow/react'
 import { useParams } from 'common'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -14,7 +15,6 @@ import { useDiskUtilizationQuery } from '@/data/config/disk-utilization-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { GB } from '@/lib/constants'
 import { formatBytes } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
 
 interface DiskSpaceBarProps {
   form: UseFormReturn<DiskStorageSchemaType>
@@ -185,20 +185,19 @@ export const DiskSpaceBar = ({ form }: DiskSpaceBarProps) => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="absolute right-full bottom-0 border mr-2 px-2 py-1 bg-surface-400 rounded-sm text-xs text-foreground-light whitespace-nowrap flex items-center gap-x-1">
-                      {$t('Autoscaling')} <Info size={12} />
+                      
+                                                                {$t('Autoscaling')} <Info size={12} />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="w-[310px] flex flex-col gap-y-1">
                     <p>
-                      {$t(
-                        'Supabase expands your disk storage automatically when the database reached 90% of the disk size. However, any disk modifications, including auto-scaling, can only take place once every 4 hours.'
-                      )}
-                    </p>
+                      
+                                                                {$t('Supabase expands your disk storage automatically when the database reaches 90% of the disk size. However, disk modifications, including auto-scaling, are limited to 4 within a rolling 24-hour window.')}
+                                                              </p>
                     <p>
-                      {$t('If within those 4 hours you reach 95% of the disk space, your project')}{' '}
-                      <span className="text-destructive-600">
-                        {$t('will enter read-only mode.')}
-                      </span>
+                      
+                                                                {$t('If you exhaust these modifications and reach 95% of the disk space, your project')}{' '}
+                      <span className="text-destructive-600">{$t('will enter read-only mode.')}</span>
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -214,9 +213,7 @@ export const DiskSpaceBar = ({ form }: DiskSpaceBarProps) => {
             name="Database"
             size={diskBreakdownBytes.dbSizeBytes}
             color="bg-foreground"
-            description={$t(
-              'Total space on disk used by your database (tables, indexes, data, ...).'
-            )}
+            description={$t('Total space on disk used by your database (tables, indexes, data, ...).')}
           />
           <LegendItem
             name="WAL"
@@ -229,9 +226,7 @@ export const DiskSpaceBar = ({ form }: DiskSpaceBarProps) => {
             name="System"
             size={diskBreakdownBytes.systemBytes}
             color="bg-destructive-500"
-            description={$t(
-              'Reserved space for the system to ensure your database runs smoothly. You cannot modify this.'
-            )}
+            description={$t('Reserved space for the system to ensure your database runs smoothly. You cannot modify this.')}
           />
 
           <LegendItem
@@ -243,17 +238,10 @@ export const DiskSpaceBar = ({ form }: DiskSpaceBarProps) => {
         </div>
       )}
       <p className="text-xs text-foreground-lighter my-4">
-        <span className="font-semibold">{$t('Note:')}</span>{' '}
-        {$t(
-          'Disk Size refers to the total space your project occupies on disk, including the database itself (currently'
-        )}{' '}
-        <span>{formatBytes(diskBreakdownBytes?.dbSizeBytes, 2, 'GB')}</span>
-        {$t('), additional files like the write-ahead log (currently')}{' '}
-        <span>{formatBytes(diskBreakdownBytes?.walSizeBytes, 2, 'GB')}</span>
-        {$t('), and other system resources (currently')}{' '}
-        <span>{formatBytes(diskBreakdownBytes?.systemBytes, 2, 'GB')}</span>
-        {$t('). Data can take 5 minutes to refresh.')}
-      </p>
+        <span className="font-semibold">{$t('Note:')}</span>  {$t('Disk Size refers to the total space your project occupies on disk, including the database itself (currently')}{' '}
+        <span>{formatBytes(diskBreakdownBytes?.dbSizeBytes, 2, 'GB')}</span>{$t('), additional files like the write-ahead log (currently')}{' '}
+        <span>{formatBytes(diskBreakdownBytes?.walSizeBytes, 2, 'GB')}</span>{$t('), and other system resources (currently')} <span>{formatBytes(diskBreakdownBytes?.systemBytes, 2, 'GB')}</span>{$t('). Data can take 5 minutes to refresh.')}
+                    </p>
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { keepPreviousData } from '@tanstack/react-query'
 import { useDebounce } from '@uidotdev/usehooks'
 import { LOCAL_STORAGE_KEYS, useParams } from 'common'
@@ -18,10 +19,10 @@ import {
   InputGroupInput,
   ScrollArea,
   Switch,
-  Tabs_Shadcn_,
-  TabsContent_Shadcn_,
-  TabsList_Shadcn_,
-  TabsTrigger_Shadcn_,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { InfoTooltip } from 'ui-patterns/info-tooltip'
@@ -34,7 +35,6 @@ import { useCustomAccessTokenHookDetails } from '@/hooks/misc/useCustomAccessTok
 import { useLocalStorage } from '@/hooks/misc/useLocalStorage'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
 import { useRoleImpersonationStateSnapshot } from '@/state/role-impersonation-state'
 import type { ResponseError } from '@/types'
 
@@ -110,9 +110,7 @@ export const UserImpersonationSelector = () => {
 
     if (customAccessTokenHookDetails?.type === 'https') {
       toast.info(
-        $t(
-          'Please note that HTTPS custom access token hooks are not yet supported in the dashboard.'
-        )
+        $t('Please note that HTTPS custom access token hooks are not yet supported in the dashboard.')
       )
     }
 
@@ -221,20 +219,20 @@ export const UserImpersonationSelector = () => {
         )}
 
         {!impersonatingUser && !isExternalAuthImpersonating && (
-          <Tabs_Shadcn_ value={selectedTab} onValueChange={(value: any) => setSelectedTab(value)}>
-            <TabsList_Shadcn_ className="gap-x-3">
-              <TabsTrigger_Shadcn_ value="user">{$t('Project user')}</TabsTrigger_Shadcn_>
-              <TabsTrigger_Shadcn_ value="external" className="gap-x-1.5">
-                {$t('External user')}
-                <InfoTooltip side="bottom" className="flex flex-col gap-1 max-w-96">
-                  {$t(
-                    'Test RLS policies with external auth providers like Clerk or Auth0 by providing a user ID and optional claims.'
-                  )}
-                </InfoTooltip>
-              </TabsTrigger_Shadcn_>
-            </TabsList_Shadcn_>
+          <Tabs value={selectedTab} onValueChange={(value: any) => setSelectedTab(value)}>
+            <TabsList className="gap-x-3">
+              <TabsTrigger value="user">{$t('Project user')}</TabsTrigger>
+              <TabsTrigger value="external" className="gap-x-1.5">
+                
+                                              {$t('External user')}
+                                              <InfoTooltip side="bottom" className="flex flex-col gap-1 max-w-96">
+                  
+                                                    {$t('Test RLS policies with external auth providers like Clerk or Auth0 by providing a user ID and optional claims.')}
+                                                  </InfoTooltip>
+              </TabsTrigger>
+            </TabsList>
 
-            <TabsContent_Shadcn_ value="user">
+            <TabsContent value="user">
               <div className="flex flex-col gap-y-2">
                 <InputGroup>
                   <InputGroupInput
@@ -295,8 +293,9 @@ export const UserImpersonationSelector = () => {
                   ) : (
                     <div className="flex flex-col gap-2 items-center justify-center h-24">
                       <p className="text-foreground-light text-xs" role="status">
-                        {$t('No users found')}
-                      </p>
+                        
+                                                                      {$t('No users found')}
+                                                                    </p>
                     </div>
                   ))}
 
@@ -309,8 +308,9 @@ export const UserImpersonationSelector = () => {
                             <CollapsibleTrigger className="group font-normal p-0 [&[data-state=open]>div>svg]:-rotate-180!">
                               <div className="flex items-center gap-x-1 w-full">
                                 <p className="text-xs text-foreground-light group-hover:text-foreground transition">
-                                  {$t('Recents')}
-                                </p>
+                                  
+                                                                                                    {$t('Recents')}
+                                                                                                  </p>
                                 <ChevronDown
                                   className="transition-transform duration-200"
                                   strokeWidth={1.5}
@@ -344,16 +344,17 @@ export const UserImpersonationSelector = () => {
                         </>
                       ) : (
                         <div className="p-4 text-center text-muted-foreground">
-                          {$t('No recent searches')}
-                        </div>
+                          
+                                                                                {$t('No recent searches')}
+                                                                              </div>
                       )}
                     </div>
                   )}
                 </>
               </div>
-            </TabsContent_Shadcn_>
+            </TabsContent>
 
-            <TabsContent_Shadcn_ value="external">
+            <TabsContent value="external">
               <div className="flex flex-col gap-y-4">
                 <FormItemLayout
                   layout="horizontal"
@@ -387,12 +388,13 @@ export const UserImpersonationSelector = () => {
                     disabled={!externalUserId}
                     onClick={impersonateExternalUser}
                   >
-                    {$t('Impersonate')}
-                  </Button>
+                    
+                                                          {$t('Impersonate')}
+                                                        </Button>
                 </div>
               </div>
-            </TabsContent_Shadcn_>
-          </Tabs_Shadcn_>
+            </TabsContent>
+          </Tabs>
         )}
       </div>
 
@@ -405,8 +407,9 @@ export const UserImpersonationSelector = () => {
               <CollapsibleTrigger className="group font-normal p-0 [&[data-state=open]>div>svg]:-rotate-180!">
                 <div className="flex items-center gap-x-1 w-full">
                   <p className="text-xs text-foreground-light group-hover:text-foreground transition">
-                    {$t('Advanced options')}
-                  </p>
+                    
+                                                          {$t('Advanced options')}
+                                                        </p>
                   <ChevronDown
                     className="transition-transform duration-200"
                     strokeWidth={1.5}
@@ -419,9 +422,8 @@ export const UserImpersonationSelector = () => {
                   <div className="flex items-center gap-x-1">
                     <h3>{$t('MFA assurance level')}</h3>
                     <InfoTooltip side="top" className="max-w-96">
-                      {$t(
-                        "AAL1 verifies users via standard login methods, while AAL2 adds a second authentication factor. If you're not using MFA, you can leave this on AAL1. Learn more about MFA"
-                      )}{' '}
+                      
+                                                                {$t('AAL1 verifies users via standard login methods, while AAL2 adds a second authentication factor. If you\'re not using MFA, you can leave this on AAL1. Learn more about MFA')}{' '}
                       <InlineLink href={`${DOCS_URL}/guides/auth/auth-mfa`}>here</InlineLink>.
                     </InfoTooltip>
                   </div>

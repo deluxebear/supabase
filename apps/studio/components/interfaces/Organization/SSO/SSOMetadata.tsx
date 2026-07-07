@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { Upload } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -8,15 +9,14 @@ import {
   FormItem,
   FormMessage,
   Input,
-  Tabs_Shadcn_,
-  TabsContent_Shadcn_,
-  TabsList_Shadcn_,
-  TabsTrigger_Shadcn_,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { SSOConfigFormSchema } from './SSOConfig'
-import { t as $t } from '@/lib/i18n'
 
 export const SSOMetadata = ({
   form,
@@ -66,20 +66,21 @@ export const SSOMetadata = ({
       className="gap-1"
     >
       <div className=" w-96">
-        <Tabs_Shadcn_
+        <Tabs
           value={tab}
           onValueChange={(value: string) => setTab(value as 'url' | 'file')}
           className="max-w-2xl"
         >
-          <TabsList_Shadcn_ className="mx-auto gap-5 w-auto">
-            <TabsTrigger_Shadcn_ className=" " value="url">
+          <TabsList className="mx-auto gap-5 w-auto">
+            <TabsTrigger className=" " value="url">
               URL
-            </TabsTrigger_Shadcn_>
-            <TabsTrigger_Shadcn_ className=" " value="file">
-              {$t('Upload file')}
-            </TabsTrigger_Shadcn_>
-          </TabsList_Shadcn_>
-          <TabsContent_Shadcn_ value="url">
+            </TabsTrigger>
+            <TabsTrigger className=" " value="file">
+              
+                                        {$t('Upload file')}
+                                      </TabsTrigger>
+          </TabsList>
+          <TabsContent value="url">
             <FormField
               name="metadataXmlUrl"
               render={({ field }) => (
@@ -95,8 +96,8 @@ export const SSOMetadata = ({
                 </FormItem>
               )}
             />
-          </TabsContent_Shadcn_>
-          <TabsContent_Shadcn_ value="file">
+          </TabsContent>
+          <TabsContent value="file">
             <FormField
               name="metadataXmlUrl"
               render={() => (
@@ -114,16 +115,17 @@ export const SSOMetadata = ({
                       icon={<Upload className="w-4 h-4" />}
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      {$t('Upload XML')}
-                    </Button>
+                      
+                                                    {$t('Upload XML')}
+                                                  </Button>
                     {fileName && <span className="text-xs text-foreground-light">{fileName}</span>}
                   </div>
                   <FormMessage />
                 </div>
               )}
             />
-          </TabsContent_Shadcn_>
-        </Tabs_Shadcn_>
+          </TabsContent>
+        </Tabs>
       </div>
     </FormItemLayout>
   )

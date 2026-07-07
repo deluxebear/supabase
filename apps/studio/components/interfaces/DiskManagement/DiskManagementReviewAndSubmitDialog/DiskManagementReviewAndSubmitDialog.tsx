@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { AlertTriangle, ArrowRight } from 'lucide-react'
 import { UseFormReturn } from 'react-hook-form'
@@ -32,7 +33,6 @@ import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { formatCurrency } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
 
 interface DiskManagementReviewAndSubmitDialogProps {
   loading: boolean
@@ -114,15 +114,14 @@ export const DiskManagementReviewAndSubmitDialog = ({
             },
           }}
         >
-          {$t('Review changes')}
-        </ButtonTooltip>
+          
+                            {$t('Review changes')}
+                          </ButtonTooltip>
       </DialogTrigger>
       <DialogContent className="min-w-[560px] p-0 gap-0 overflow-hidden">
         <DialogHeader className="px-5 py-4">
           <DialogTitle>{$t('Review changes')}</DialogTitle>
-          <DialogDescription>
-            {$t('Changes will be applied shortly after confirmation.')}
-          </DialogDescription>
+          <DialogDescription>{$t('Changes will be applied shortly after confirmation.')}</DialogDescription>
         </DialogHeader>
         <DialogSectionSeparator />
 
@@ -131,14 +130,16 @@ export const DiskManagementReviewAndSubmitDialog = ({
             <div className="relative flex border-b">
               <div className="flex-1 flex flex-col items-center gap-2 py-6 px-4 border-r bg-linear-to-t from-[var(--background-surface-100)] to-transparent">
                 <span className="text-xs uppercase tracking-widest font-mono text-foreground-lighter">
-                  {$t('Before')}
-                </span>
+                  
+                                                    {$t('Before')}
+                                                  </span>
                 <span className="text-3xl text-foreground-light tabular-nums" translate="no">
                   {formatCurrency(totalBeforePrice)}
                 </span>
                 <span className="text-xs uppercase tracking-widest font-mono text-foreground-lighter">
-                  {$t('per month')}
-                </span>
+                  
+                                                    {$t('per month')}
+                                                  </span>
               </div>
 
               <div className="animate-badge-pulse absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-dash-sidebar border border-brand-500 flex items-center justify-center z-10 overflow-hidden">
@@ -149,14 +150,16 @@ export const DiskManagementReviewAndSubmitDialog = ({
 
               <div className="flex-1 flex flex-col items-center gap-2 py-6 px-4 bg-linear-to-t from-[var(--background-surface-100)] to-transparent">
                 <span className="text-xs uppercase tracking-widest font-mono text-foreground-lighter">
-                  {$t('After')}
-                </span>
+                  
+                                                    {$t('After')}
+                                                  </span>
                 <span className="text-3xl text-foreground tabular-nums" translate="no">
                   {formatCurrency(totalAfterPrice)}
                 </span>
                 <span className="text-xs uppercase tracking-widest font-mono text-foreground-lighter">
-                  {$t('per month')}
-                </span>
+                  
+                                                    {$t('per month')}
+                                                  </span>
               </div>
             </div>
             <TaxDisclaimer className="px-5 py-2 text-center border-b" />
@@ -191,7 +194,7 @@ export const DiskManagementReviewAndSubmitDialog = ({
                 label="IOPS"
                 description={
                   anyDiskAttributeChange && !hasTotalSizeChanges && !hasStorageTypeChanges
-                    ? 'Disk attributes, including IOPS and disk size, may only be modified 4 times in any 24-hour window, starting from the first modification.'
+                    ? 'Disk attributes, including IOPS and disk size, may only be modified 4 times within a rolling 24-hour window. A new modification can be started as soon as the previous one completes.'
                     : undefined
                 }
               >
@@ -220,9 +223,7 @@ export const DiskManagementReviewAndSubmitDialog = ({
             {(hasTotalSizeChanges || hasStorageTypeChanges) && (
               <BreakdownRow
                 label={$t('Disk size')}
-                description={$t(
-                  'For 4 hours after changes you will not be able to modify disk attributes.'
-                )}
+                description={$t('You can modify disk attributes up to 4 times within a rolling 24-hour window.')}
               >
                 <div className="flex flex-col items-end gap-0.5">
                   <ValueChange
@@ -266,7 +267,8 @@ export const DiskManagementReviewAndSubmitDialog = ({
             )}
             {numReplicas > 0 && (
               <div className="py-2 text-xs text-foreground-muted">
-                {$t('Price change includes primary database and')} {numReplicas} replica
+                
+                                              {$t('Price change includes primary database and')} {numReplicas} replica
                 {numReplicas > 1 ? 's' : ''}
               </div>
             )}
@@ -290,8 +292,9 @@ export const DiskManagementReviewAndSubmitDialog = ({
 
         <DialogFooter className="px-5 py-4">
           <Button block size="large" variant="default" onClick={() => setIsDialogOpen(false)}>
-            {$t('Cancel')}
-          </Button>
+            
+                                  {$t('Cancel')}
+                                </Button>
           <Button
             block
             variant="primary"
@@ -302,8 +305,9 @@ export const DiskManagementReviewAndSubmitDialog = ({
               await onSubmit(form.getValues())
             }}
           >
-            {$t('Confirm changes')}
-          </Button>
+            
+                                  {$t('Confirm changes')}
+                                </Button>
         </DialogFooter>
         {message && (
           <>

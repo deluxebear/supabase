@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { Loader2 } from 'lucide-react'
 import {
   AiIconAnimation,
@@ -6,10 +7,10 @@ import {
   SheetContent,
   SheetDescription,
   SheetTitle,
-  Tabs_Shadcn_,
-  TabsContent_Shadcn_,
-  TabsList_Shadcn_,
-  TabsTrigger_Shadcn_,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from 'ui'
 
 import { QueryDetail } from '../../QueryPerformance/QueryDetail'
@@ -19,7 +20,6 @@ import type { ClassifiedQuery } from '../QueryInsightsHealth/QueryInsightsHealth
 import { ExplainVisualizer } from '@/components/interfaces/ExplainVisualizer/ExplainVisualizer'
 import type { QueryPlanRow } from '@/components/interfaces/ExplainVisualizer/ExplainVisualizer.types'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
-import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -54,9 +54,7 @@ export const QueryInsightsDetailSheet = ({
   return (
     <Sheet open={open} onOpenChange={onOpenChange} modal={false}>
       <SheetTitle className="sr-only">{$t('Query details')}</SheetTitle>
-      <SheetDescription className="sr-only">
-        {$t('Query Insights Details &amp; Indexes')}
-      </SheetDescription>
+      <SheetDescription className="sr-only">{$t('Query Insights Details &amp; Indexes')}</SheetDescription>
       <SheetContent
         side="right"
         className="flex flex-col h-full bg-studio border-l lg:w-[calc(100vw-802px)]! max-w-[700px] w-full"
@@ -70,36 +68,39 @@ export const QueryInsightsDetailSheet = ({
           }
         }}
       >
-        <Tabs_Shadcn_
+        <Tabs
           value={sheetView}
           className="flex flex-col h-full"
           onValueChange={(v) => onSheetViewChange(v as 'details' | 'indexes' | 'explain')}
         >
           <div className="px-5 border-b">
-            <TabsList_Shadcn_ className="px-0 flex gap-x-4 min-h-[46px] border-b-0 [&>button]:h-[47px]">
-              <TabsTrigger_Shadcn_
+            <TabsList className="px-0 flex gap-x-4 min-h-[46px] border-b-0 [&>button]:h-[47px]">
+              <TabsTrigger
                 value="details"
                 className="px-0 pb-0 data-[state=active]:bg-transparent shadow-none!"
               >
-                {$t('Query details')}
-              </TabsTrigger_Shadcn_>
-              <TabsTrigger_Shadcn_
+                
+                                              {$t('Query details')}
+                                            </TabsTrigger>
+              <TabsTrigger
                 value="indexes"
                 className="px-0 pb-0 data-[state=active]:bg-transparent shadow-none!"
               >
-                {$t('Indexes')}
-              </TabsTrigger_Shadcn_>
+                
+                                              {$t('Indexes')}
+                                            </TabsTrigger>
               {activeSheetRow?.issueType !== 'error' && (
-                <TabsTrigger_Shadcn_
+                <TabsTrigger
                   value="explain"
                   className="px-0 pb-0 data-[state=active]:bg-transparent shadow-none!"
                 >
-                  {$t('Explain')}
-                </TabsTrigger_Shadcn_>
+                  
+                                                    {$t('Explain')}
+                                                  </TabsTrigger>
               )}
-            </TabsList_Shadcn_>
+            </TabsList>
           </div>
-          <TabsContent_Shadcn_ value="details" className="mt-0 grow min-h-0 overflow-y-auto">
+          <TabsContent value="details" className="mt-0 grow min-h-0 overflow-y-auto">
             {activeSheetRow && (
               <QueryDetail
                 selectedRow={activeSheetRow}
@@ -107,18 +108,15 @@ export const QueryInsightsDetailSheet = ({
                 onClose={onClose}
               />
             )}
-          </TabsContent_Shadcn_>
-          <TabsContent_Shadcn_ value="indexes" className="mt-0 grow min-h-0 overflow-y-auto">
+          </TabsContent>
+          <TabsContent value="indexes" className="mt-0 grow min-h-0 overflow-y-auto">
             {activeSheetRow && <QueryIndexes selectedRow={activeSheetRow} />}
-          </TabsContent_Shadcn_>
-          <TabsContent_Shadcn_
-            value="explain"
-            className="mt-0 grow min-h-0 flex flex-col overflow-hidden"
-          >
+          </TabsContent>
+          <TabsContent value="explain" className="mt-0 grow min-h-0 flex flex-col overflow-hidden">
             {explainLoadingQuery ? (
               <div className="px-6 py-4 flex items-center gap-2 text-sm text-foreground-light">
-                <Loader2 size={14} className="animate-spin" /> {$t('Running EXPLAIN ANALYZE...')}
-              </div>
+                <Loader2 size={14} className="animate-spin" />  {$t('Running EXPLAIN ANALYZE...')}
+                                            </div>
             ) : activeSheetRow && explainResults[activeSheetRow.query]?.length > 0 ? (
               <>
                 <div className="flex items-center justify-between px-5 py-2 border-b shrink-0">
@@ -145,8 +143,9 @@ export const QueryInsightsDetailSheet = ({
                       })
                     }}
                   >
-                    {$t('Optimize with AI')}
-                  </Button>
+                    
+                                                              {$t('Optimize with AI')}
+                                                            </Button>
                 </div>
                 <div className="flex-1 min-h-0 overflow-y-auto">
                   <ExplainVisualizer rows={explainResults[activeSheetRow.query]} />
@@ -154,11 +153,12 @@ export const QueryInsightsDetailSheet = ({
               </>
             ) : (
               <div className="px-6 py-4 text-sm text-foreground-lighter">
-                {$t('No explain results available.')}
-              </div>
+                
+                                                      {$t('No explain results available.')}
+                                                    </div>
             )}
-          </TabsContent_Shadcn_>
-        </Tabs_Shadcn_>
+          </TabsContent>
+        </Tabs>
       </SheetContent>
     </Sheet>
   )

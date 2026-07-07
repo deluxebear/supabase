@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { useParams } from 'common'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
@@ -8,7 +9,6 @@ import CountdownTimerRadial from '@/components/ui/CountdownTimer/CountdownTimerR
 import CountdownTimerSpan from '@/components/ui/CountdownTimer/CountdownTimerSpan'
 import { useRemainingDurationForDiskAttributeUpdate } from '@/data/config/disk-attributes-query'
 import { COOLDOWN_DURATION } from '@/data/config/disk-attributes-update-mutation'
-import { t as $t } from '@/lib/i18n'
 
 export function DiskCountdownRadial() {
   const { ref } = useParams()
@@ -52,14 +52,11 @@ export function DiskCountdownRadial() {
               <CountdownTimerRadial progress={progressPercentage} />
               <div className="flex flex-col gap-2">
                 <div>
-                  <p className="text-foreground text-sm p-0">
-                    {$t('4-hour cooldown period is in progress')}
-                  </p>
+                  <p className="text-foreground text-sm p-0">{$t('Disk modification limit reached')}</p>
                   <p className="text-foreground-lighter text-sm p-0">
-                    {$t(
-                      "You can't modify your disk configuration again until the 4-hour cool down period ends."
-                    )}
-                  </p>
+                    
+                                                          {$t('You can modify disk attributes up to 4 times within a rolling 24-hour window. You\'ll be able to make changes again once the window allows it.')}
+                                                        </p>
                 </div>
                 <CountdownTimerSpan seconds={remainingTime} />
               </div>

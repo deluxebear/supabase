@@ -2,7 +2,7 @@ import type { FetchPreviousPageOptions } from '@tanstack/react-query'
 import { CirclePause, CirclePlay } from 'lucide-react'
 import { useQueryStates } from 'nuqs'
 import { useEffect } from 'react'
-import { Button, cn } from 'ui'
+import { Button } from 'ui'
 
 import { useDataTable } from './providers/DataTableProvider'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
@@ -67,7 +67,6 @@ export function LiveButton({ fetchPreviousPage, searchParamsParser }: LiveButton
       side="bottom"
     >
       <Button
-        className={cn(live && 'border-info text-info hover:text-info')}
         onClick={handleClick}
         variant={live ? 'primary' : 'default'}
         size="tiny"

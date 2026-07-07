@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Monaco } from '@monaco-editor/react'
 import {
@@ -26,10 +27,10 @@ import {
   Sheet,
   SheetContent,
   SheetFooter,
-  Tabs_Shadcn_,
-  TabsContent_Shadcn_,
-  TabsList_Shadcn_,
-  TabsTrigger_Shadcn_,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from 'ui'
 import * as z from 'zod'
 
@@ -51,7 +52,6 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useLatest } from '@/hooks/misc/useLatest'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
-import { t as $t } from '@/lib/i18n'
 
 interface PolicyEditorPanelProps {
   visible: boolean
@@ -331,7 +331,7 @@ export const PolicyEditorPanel = memo(function ({
               showClose={false}
               size={showTools ? 'lg' : 'default'}
               className={cn(
-                'bg-surface-200 p-0 flex flex-row gap-0',
+                'bg-popover p-0 flex flex-row gap-0',
                 showTools ? 'min-w-screen! lg:min-w-[1000px]!' : 'min-w-screen! lg:min-w-[600px]!'
               )}
             >
@@ -441,9 +441,7 @@ export const PolicyEditorPanel = memo(function ({
                           <RLSCodeEditor
                             readOnly={!canUpdatePolicies}
                             id="rls-exp-two-editor"
-                            placeholder={$t(
-                              '-- Provide a SQL expression for the with check statement'
-                            )}
+                            placeholder={$t('-- Provide a SQL expression for the with check statement')}
                             defaultValue={check}
                             value={check}
                             editorRef={editorTwoRef}
@@ -509,8 +507,9 @@ export const PolicyEditorPanel = memo(function ({
                           }}
                         />
                         <Label className="text-xs cursor-pointer" htmlFor="use-check">
-                          {$t('Use check expression')}
-                        </Label>
+                          
+                                                                            {$t('Use check expression')}
+                                                                          </Label>
                       </div>
                     )}
                   </div>
@@ -525,8 +524,9 @@ export const PolicyEditorPanel = memo(function ({
                         disabled={isExecuting || isUpdating}
                         onClick={confirmOnClose}
                       >
-                        {$t('Cancel')}
-                      </Button>
+                        
+                                                                      {$t('Cancel')}
+                                                                    </Button>
 
                       <ButtonTooltip
                         form={FORM_ID}
@@ -542,8 +542,9 @@ export const PolicyEditorPanel = memo(function ({
                           },
                         }}
                       >
-                        {$t('Save policy')}
-                      </ButtonTooltip>
+                        
+                                                                      {$t('Save policy')}
+                                                                    </ButtonTooltip>
                     </SheetFooter>
                   </div>
                 </div>
@@ -556,18 +557,19 @@ export const PolicyEditorPanel = memo(function ({
                     'bg-studio overflow-auto'
                   )}
                 >
-                  <Tabs_Shadcn_ defaultValue="templates" className="flex flex-col h-full w-full">
-                    <TabsList_Shadcn_ className="flex gap-4 px-content pt-2">
-                      <TabsTrigger_Shadcn_
+                  <Tabs defaultValue="templates" className="flex flex-col h-full w-full">
+                    <TabsList className="flex gap-4 px-content pt-2">
+                      <TabsTrigger
                         key="templates"
                         value="templates"
                         className="px-0 data-[state=active]:bg-transparent"
                       >
-                        {$t('Templates')}
-                      </TabsTrigger_Shadcn_>
-                    </TabsList_Shadcn_>
+                        
+                                                                      {$t('Templates')}
+                                                                    </TabsTrigger>
+                    </TabsList>
 
-                    <TabsContent_Shadcn_
+                    <TabsContent
                       value="templates"
                       className={cn(
                         'mt-0! overflow-y-auto',
@@ -617,8 +619,8 @@ export const PolicyEditorPanel = memo(function ({
                           }}
                         />
                       </ScrollArea>
-                    </TabsContent_Shadcn_>
-                  </Tabs_Shadcn_>
+                    </TabsContent>
+                  </Tabs>
                 </div>
               )}
             </SheetContent>
@@ -628,9 +630,7 @@ export const PolicyEditorPanel = memo(function ({
 
       <DiscardChangesConfirmationDialog
         {...modalProps}
-        description={$t(
-          'Are you sure you want to close the editor? Any unsaved changes on your policy and conversations with the Assistant will be lost.'
-        )}
+        description={$t('Are you sure you want to close the editor? Any unsaved changes on your policy and conversations with the Assistant will be lost.')}
       />
     </>
   )

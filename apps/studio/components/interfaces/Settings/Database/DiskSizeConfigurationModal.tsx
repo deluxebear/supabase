@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { zodResolver } from '@hookform/resolvers/zod'
 import { SupportCategories } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
@@ -34,13 +35,13 @@ import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 import * as z from 'zod'
 
 import { SupportLink } from '@/components/interfaces/Support/SupportLink'
+import { COOLDOWN_DURATION } from '@/data/config/disk-attributes-update-mutation'
 import { useProjectDiskResizeMutation } from '@/data/config/project-disk-resize-mutation'
 import { useOrgSubscriptionQuery } from '@/data/subscriptions/org-subscription-query'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
 
 export interface DiskSizeConfigurationProps {
   visible: boolean
@@ -69,8 +70,12 @@ const DiskSizeConfigurationModal = ({
 
   const isLoading = isLoadingProject || isLoadingSubscription || isLoadingDiskEntitlement
 
+  // COOLDOWN_DURATION is in seconds; convert to minutes to match the diff unit below.
+  const cooldownMinutes = COOLDOWN_DURATION / 60
   const timeTillNextAvailableDatabaseResize =
-    lastDatabaseResizeAt === null ? 0 : 6 * 60 - dayjs().diff(lastDatabaseResizeAt, 'minutes')
+    lastDatabaseResizeAt == null
+      ? 0
+      : Math.max(0, cooldownMinutes - dayjs().diff(lastDatabaseResizeAt, 'minutes'))
   const isAbleToResizeDatabase = timeTillNextAvailableDatabaseResize <= 0
   const formattedTimeTillNextAvailableResize =
     timeTillNextAvailableDatabaseResize < 60
@@ -155,9 +160,9 @@ const DiskSizeConfigurationModal = ({
                 <AlertTitle>{$t('Maximum manual disk size increase reached')}</AlertTitle>
                 <AlertDescription>
                   <p>
-                    {$t('You cannot manually expand the disk size any more than')} {maxDiskSize}
-                    {$t('GB. If you need more than this, contact us via support for help.')}
-                  </p>
+                    
+                                                                  {$t('You cannot manually expand the disk size any more than')} {maxDiskSize}{$t('GB. If you need more than this, contact us via support for help.')}
+                                                                </p>
                   <Button asChild variant="default" className="mt-3">
                     <SupportLink
                       queryParams={{
@@ -166,8 +171,9 @@ const DiskSizeConfigurationModal = ({
                         subject: 'Increase disk size beyond 200GB',
                       }}
                     >
-                      {$t('Contact support')}
-                    </SupportLink>
+                      
+                                                                        {$t('Contact support')}
+                                                                      </SupportLink>
                   </Button>
                 </AlertDescription>
               </Alert>
@@ -176,21 +182,23 @@ const DiskSizeConfigurationModal = ({
                 <DialogSection className="w-full space-y-4">
                   <Alert variant={isAbleToResizeDatabase ? 'default' : 'warning'}>
                     <Info size={16} />
-                    <AlertTitle>{$t('This operation is only possible every 4 hours')}</AlertTitle>
+                    <AlertTitle>
+                      
+                                                                            {$t('Disk modifications are limited to 4 per rolling 24-hour window')}
+                                                                          </AlertTitle>
                     <AlertDescription>
                       <div className="mb-4">
                         {isAbleToResizeDatabase
-                          ? `Upon updating your disk size, the next disk size update will only be available from ${dayjs().format(
-                              'DD MMM YYYY, HH:mm (ZZ)'
-                            )}`
+                          ? `You can modify disk attributes up to 4 times within a rolling 24-hour window. A new modification can be started as soon as the previous one completes.`
                           : `Your database was last resized at ${dayjs(lastDatabaseResizeAt).format(
                               'DD MMM YYYY, HH:mm (ZZ)'
-                            )}. You can resize your database again in approximately ${formattedTimeTillNextAvailableResize}`}
+                            )}. You've reached the disk modification limit for now — you can resize again in approximately ${formattedTimeTillNextAvailableResize}.`}
                       </div>
                       <Button asChild variant="default" iconRight={<ExternalLink size={14} />}>
                         <Link href={`${DOCS_URL}/guides/platform/database-size#disk-management`}>
-                          {$t('Read more about disk management')}
-                        </Link>
+                          
+                                                                                        {$t('Read more about disk management')}
+                                                                                      </Link>
                       </Button>
                     </AlertDescription>
                   </Alert>
@@ -222,8 +230,9 @@ const DiskSizeConfigurationModal = ({
                 </DialogSection>
                 <DialogFooter>
                   <Button variant="default" onClick={() => hideModal(false)}>
-                    {$t('Cancel')}
-                  </Button>
+                    
+                                                                      {$t('Cancel')}
+                                                                    </Button>
                   <Button
                     form={formId}
                     type="submit"
@@ -231,8 +240,9 @@ const DiskSizeConfigurationModal = ({
                     disabled={!isAbleToResizeDatabase || isUpdatingDiskSize || !isDirty || loading}
                     loading={isUpdatingDiskSize || loading}
                   >
-                    {$t('Update disk size')}
-                  </Button>
+                    
+                                                                      {$t('Update disk size')}
+                                                                    </Button>
                 </DialogFooter>
               </>
             )}
@@ -248,16 +258,14 @@ const DiskSizeConfigurationModal = ({
             <AlertDescription>
               {hasAccessToDiskModifications === false ? (
                 <p>
-                  {$t(
-                    'If you are intending to use more than 500MB of disk space, then you will need to upgrade to at least the Pro Plan.'
-                  )}
-                </p>
+                  
+                                                            {$t('If you are intending to use more than 500MB of disk space, then you will need to upgrade to at least the Pro Plan.')}
+                                                          </p>
               ) : (
                 <p>
-                  {$t(
-                    'If you are intending to use more than 8GB of disk space, then you will need to disable your spend cap.'
-                  )}
-                </p>
+                  
+                                                                {$t('If you are intending to use more than 8GB of disk space, then you will need to disable your spend cap.')}
+                                                              </p>
               )}
               <Button asChild variant="default" className="mt-3">
                 <Link

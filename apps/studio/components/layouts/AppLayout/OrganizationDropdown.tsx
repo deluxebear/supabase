@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { useParams } from 'common'
 import { Boxes } from 'lucide-react'
 import { useRouter } from 'next/router'
@@ -5,7 +6,11 @@ import { useState } from 'react'
 import { Badge, cn } from 'ui'
 import { GenericSkeletonLoader, ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 
-import { AppLayoutDropdownError, AppLayoutDropdownWithPopover } from './AppLayoutDropdown'
+import {
+  AppLayoutDropdownError,
+  AppLayoutDropdownTriggerButton,
+  AppLayoutDropdownWithPopover,
+} from './AppLayoutDropdown'
 import { OrganizationDropdownCommandContent } from './OrganizationDropdownCommandContent'
 import { useEmbeddedCloseHandler } from './useEmbeddedCloseHandler'
 import PartnerIcon from '@/components/ui/PartnerIcon'
@@ -92,6 +97,7 @@ export const OrganizationDropdown = ({
       commandContent={commandContent}
       open={open}
       onOpenChange={handleOpenChange}
+      triggerButton={<AppLayoutDropdownTriggerButton aria-label={$t('Show organizations')} />}
     />
   )
 }

@@ -1,13 +1,13 @@
+import { t as $t } from '@/lib/i18n';
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { cn } from 'ui'
+import { cn, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useLastVisitedOrganization } from '@/hooks/misc/useLastVisitedOrganization'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { IS_PLATFORM } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export const HomeIcon = ({ className }: { className?: string }) => {
@@ -30,16 +30,22 @@ export const HomeIcon = ({ className }: { className?: string }) => {
   const href = IS_PLATFORM ? getDefaultOrgRedirect() : '/project/default'
 
   return (
-    <Link
-      href={href}
-      onClick={() => track('header_home_logo_clicked')}
-      className={cn('items-center justify-center shrink-0 flex', className)}
-    >
-      <img
-        alt={$t('Supabase')}
-        src={`${router.basePath}/img/supabase-logo.svg`}
-        className={largeLogo ? 'h-[20px]' : 'h-[18px]'}
-      />
-    </Link>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Link
+          href={href}
+          onClick={() => track('header_home_logo_clicked')}
+          className={cn('items-center justify-center shrink-0 flex', className)}
+        >
+          <img
+            alt={$t('Supabase')}
+            src={`${router.basePath}/img/supabase-logo.svg`}
+            className={largeLogo ? 'h-[20px]' : 'h-[18px]'}
+          />
+          <span className="sr-only">{$t('Back to organization home')}</span>
+        </Link>
+      </TooltipTrigger>
+      <TooltipContent aria-hidden>{$t('Back to organization home')}</TooltipContent>
+    </Tooltip>
   )
 }

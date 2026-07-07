@@ -37,6 +37,7 @@ export const MarketplaceDetail = () => {
     isAvailableLoading,
     isInstalledLoading,
     isIntegrationStatusLoading,
+    oauthIntegrationData,
     Component,
   } = useIntegrationDetail()
 
@@ -76,7 +77,13 @@ export const MarketplaceDetail = () => {
   const renderInstallAction = () => {
     switch (installActionType) {
       case 'oauth':
-        return <InstallOAuthIntegrationButton integration={integration} />
+        return (
+          <InstallOAuthIntegrationButton
+            integration={integration}
+            data={oauthIntegrationData}
+            isLoading={isIntegrationStatusLoading}
+          />
+        )
       case 'add-wrapper':
         return (
           <AddWrapperButton

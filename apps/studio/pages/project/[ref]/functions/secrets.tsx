@@ -1,3 +1,5 @@
+import { t as $t } from '@/lib/i18n';
+import type { PropsWithChildren } from 'react'
 import { Admonition } from 'ui-patterns/admonition'
 import { PageContainer } from 'ui-patterns/PageContainer'
 import {
@@ -17,7 +19,6 @@ import EdgeFunctionsLayout from '@/components/layouts/EdgeFunctionsLayout/EdgeFu
 import { DocsButton } from '@/components/ui/DocsButton'
 import { useDeploymentMode } from '@/hooks/misc/useDeploymentMode'
 import { DOCS_URL, IS_PLATFORM } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const SecretsPage: NextPageWithLayout = () => {
@@ -34,9 +35,10 @@ const SecretsPage: NextPageWithLayout = () => {
                 title={$t('Local development with the Supabase CLI')}
                 description={
                   <p>
-                    {$t('Add custom secrets to')}{' '}
-                    <code className="text-code-inline">supabase/functions/.env</code>
-                    {$t(', or pass')} <code className="text-code-inline">--env-file</code> to{' '}
+                    
+                                            {$t('Add custom secrets to')}{' '}
+                    <code className="text-code-inline">supabase/functions/.env</code>{$t(', or pass')}{' '}
+                    <code className="text-code-inline">--env-file</code> to{' '}
                     <code className="text-code-inline">{$t('supabase functions serve')}</code>.
                   </p>
                 }
@@ -60,8 +62,9 @@ const SecretsPage: NextPageWithLayout = () => {
                 <div className="space-y-1">
                   <h3 className="text-foreground text-base">{$t('Default secrets')}</h3>
                   <p className="text-sm text-foreground-light">
-                    {$t('Reserved secrets available in every project')}
-                  </p>
+                    
+                                                        {$t('Reserved secrets available in every project')}
+                                                      </p>
                 </div>
                 <DocsButton
                   href={
@@ -92,27 +95,29 @@ const SecretsPage: NextPageWithLayout = () => {
   )
 }
 
-SecretsPage.getLayout = (page) => {
-  return (
-    <DefaultLayout>
-      <EdgeFunctionsLayout title={$t('Secrets')}>
-        <div className="w-full min-h-full flex flex-col items-stretch">
-          <PageHeader size="large">
-            <PageHeaderMeta>
-              <PageHeaderSummary>
-                <PageHeaderTitle>{$t('Edge Function Secrets')}</PageHeaderTitle>
-                <PageHeaderDescription>
-                  {$t('Manage encrypted values for your functions')}
-                </PageHeaderDescription>
-              </PageHeaderSummary>
-            </PageHeaderMeta>
-          </PageHeader>
+// Hoisted out of `getLayout` so the TanStack route can import it
+// directly. Same body — accepts the page content as `children`.
+export const SecretsPageWrapper = ({ children }: PropsWithChildren) => (
+  <div className="w-full min-h-full flex flex-col items-stretch">
+    <PageHeader size="large">
+      <PageHeaderMeta>
+        <PageHeaderSummary>
+          <PageHeaderTitle>{$t('Edge Function Secrets')}</PageHeaderTitle>
+          <PageHeaderDescription>{$t('Manage encrypted values for your functions')}</PageHeaderDescription>
+        </PageHeaderSummary>
+      </PageHeaderMeta>
+    </PageHeader>
 
-          {page}
-        </div>
-      </EdgeFunctionsLayout>
-    </DefaultLayout>
-  )
-}
+    {children}
+  </div>
+)
+
+SecretsPage.getLayout = (page) => (
+  <DefaultLayout>
+    <EdgeFunctionsLayout title={$t('Secrets')}>
+      <SecretsPageWrapper>{page}</SecretsPageWrapper>
+    </EdgeFunctionsLayout>
+  </DefaultLayout>
+)
 
 export default SecretsPage

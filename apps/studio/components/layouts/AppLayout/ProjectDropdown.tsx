@@ -112,7 +112,12 @@ function ProjectDropdownPlatformView({
 
       <OrganizationProjectSelector
         {...selectorProps}
-        renderTrigger={() => <AppLayoutDropdownTriggerButton className="shrink-0" />}
+        renderTrigger={() => (
+          <AppLayoutDropdownTriggerButton
+            className="shrink-0"
+            aria-label={$t('Show organization projects')}
+          />
+        )}
       />
     </div>
   )

@@ -1,12 +1,5 @@
 import { t as $t } from '@/lib/i18n';
-import {
-  Badge,
-  cn,
-  Tabs_Shadcn_,
-  TabsContent_Shadcn_,
-  TabsList_Shadcn_,
-  TabsTrigger_Shadcn_,
-} from 'ui'
+import { Badge, cn, Tabs, TabsContent, TabsList, TabsTrigger } from 'ui'
 import { Admonition } from 'ui-patterns/admonition'
 
 import { Results } from '../../SQLEditor/UtilityPanel/Results'
@@ -57,17 +50,17 @@ export const RLSTesterResults = ({
         )}
       </div>
 
-      <Tabs_Shadcn_ defaultValue="policies">
-        <TabsList_Shadcn_ className="gap-x-3">
-          <TabsTrigger_Shadcn_ value="policies" className="px-2">
+      <Tabs defaultValue="policies">
+        <TabsList className="gap-x-3">
+          <TabsTrigger value="policies" className="px-2">
             
                                   {$t('Policies applied')}
-                                </TabsTrigger_Shadcn_>
-          <TabsTrigger_Shadcn_ value="data" className="px-2" disabled={operation !== 'SELECT'}>
+                                </TabsTrigger>
+          <TabsTrigger value="data" className="px-2" disabled={operation !== 'SELECT'}>
             
                                   {$t('Data preview')}
-                                </TabsTrigger_Shadcn_>
-        </TabsList_Shadcn_>
+                                </TabsTrigger>
+        </TabsList>
 
         {!!parseQueryResults && (
           <div className="border rounded-sm flex items-center justify-between px-3 py-1.5 mt-3">
@@ -91,7 +84,7 @@ export const RLSTesterResults = ({
           </div>
         )}
 
-        <TabsContent_Shadcn_ value="policies" className="mt-0">
+        <TabsContent value="policies" className="mt-0">
           {!isServiceRole &&
             (!!tableWithRLSEnabledButNoPolicies ? (
               <Admonition showIcon={false} type="default" className="rounded-sm mt-2">
@@ -195,8 +188,8 @@ export const RLSTesterResults = ({
               </div>
             )}
           </div>
-        </TabsContent_Shadcn_>
-        <TabsContent_Shadcn_ value="data" className="mt-2">
+        </TabsContent>
+        <TabsContent value="data" className="mt-2">
           <div
             className={cn(
               'grow flex flex-col border overflow-hidden',
@@ -211,8 +204,8 @@ export const RLSTesterResults = ({
               {autoLimit && results.length >= limit && ` (Limited to only ${limit} rows)`}
             </p>
           )}
-        </TabsContent_Shadcn_>
-      </Tabs_Shadcn_>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

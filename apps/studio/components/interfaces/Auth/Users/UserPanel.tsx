@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { X } from 'lucide-react'
 import { parseAsString, useQueryState } from 'nuqs'
 import { useState } from 'react'
@@ -7,10 +8,10 @@ import {
   Input,
   ResizableHandle,
   ResizablePanel,
-  Tabs_Shadcn_,
-  TabsContent_Shadcn_,
-  TabsList_Shadcn_,
-  TabsTrigger_Shadcn_,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from 'ui'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 import { SimpleCodeBlock } from 'ui-patterns/SimpleCodeBlock'
@@ -21,7 +22,6 @@ import { PANEL_PADDING } from './Users.constants'
 import { useUserQuery } from '@/data/auth/user-query'
 import { User } from '@/data/auth/users-infinite-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
 
 export const UserPanel = () => {
   const { data: project } = useSelectedProjectQuery()
@@ -65,7 +65,7 @@ export const UserPanel = () => {
           icon={<X />}
           onClick={() => setSelectedId(null)}
         />
-        <Tabs_Shadcn_
+        <Tabs
           value={view}
           className="flex flex-col h-full"
           onValueChange={(value) => setView(value as 'overview' | 'raw' | 'logs')}
@@ -79,39 +79,39 @@ export const UserPanel = () => {
             </div>
           ) : !!selectedUser ? (
             <>
-              <TabsList_Shadcn_ className="px-5 flex gap-x-4 min-h-[46px]">
-                <TabsTrigger_Shadcn_
+              <TabsList className="px-5 flex gap-x-4 min-h-[46px]">
+                <TabsTrigger
                   value="overview"
                   className="px-0 pb-0 h-full text-xs  data-[state=active]:bg-transparent shadow-none!"
                 >
-                  {$t('Overview')}
-                </TabsTrigger_Shadcn_>
-                <TabsTrigger_Shadcn_
+                  
+                                                        {$t('Overview')}
+                                                      </TabsTrigger>
+                <TabsTrigger
                   value="logs"
                   className="px-0 pb-0 h-full text-xs data-[state=active]:bg-transparent shadow-none!"
                 >
-                  {$t('Logs')}
-                </TabsTrigger_Shadcn_>
-                <TabsTrigger_Shadcn_
+                  
+                                                        {$t('Logs')}
+                                                      </TabsTrigger>
+                <TabsTrigger
                   value="raw"
                   className="px-0 pb-0 h-full text-xs data-[state=active]:bg-transparent shadow-none!"
                 >
-                  {$t('Raw JSON')}
-                </TabsTrigger_Shadcn_>
-              </TabsList_Shadcn_>
+                  
+                                                        {$t('Raw JSON')}
+                                                      </TabsTrigger>
+              </TabsList>
 
-              <TabsContent_Shadcn_
-                value="overview"
-                className={cn('mt-0 grow min-h-0 overflow-y-auto')}
-              >
+              <TabsContent value="overview" className={cn('mt-0 grow min-h-0 overflow-y-auto')}>
                 {selectedUser && (
                   <UserOverview user={selectedUser} onDeleteSuccess={() => setSelectedId(null)} />
                 )}
-              </TabsContent_Shadcn_>
-              <TabsContent_Shadcn_ value="logs" className={cn('mt-0 grow min-h-0 overflow-y-auto')}>
+              </TabsContent>
+              <TabsContent value="logs" className={cn('mt-0 grow min-h-0 overflow-y-auto')}>
                 {selectedUser && <UserLogs user={selectedUser} />}
-              </TabsContent_Shadcn_>
-              <TabsContent_Shadcn_
+              </TabsContent>
+              <TabsContent
                 value="raw"
                 className={cn('mt-0 grow min-h-0 overflow-y-auto', PANEL_PADDING)}
               >
@@ -130,25 +130,25 @@ export const UserPanel = () => {
                     onClick={() => setSearchQuery('')}
                     className="text-xs"
                   >
-                    {$t('Clear')}
-                  </Button>
+                    
+                                                              {$t('Clear')}
+                                                            </Button>
                 </div>
                 <SimpleCodeBlock className="javascript" parentClassName="[&>*>span]:text-xs">
                   {JSON.stringify(filteredProperties, null, 2)}
                 </SimpleCodeBlock>
-              </TabsContent_Shadcn_>
+              </TabsContent>
             </>
           ) : (
             <div className="flex items-center justify-center w-full h-full flex-col gap-y-2">
               <p className="text-foreground-light text-sm">
-                {$t('Unable to find user with the following ID in project')}
-              </p>
-              <p className="text-foreground-lighter text-xs">
-                {$t('ID:')} {selectedId}
-              </p>
+                
+                                                      {$t('Unable to find user with the following ID in project')}
+                                                    </p>
+              <p className="text-foreground-lighter text-xs">{$t('ID:')} {selectedId}</p>
             </div>
           )}
-        </Tabs_Shadcn_>
+        </Tabs>
       </ResizablePanel>
     </>
   )

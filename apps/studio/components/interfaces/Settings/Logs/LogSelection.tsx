@@ -1,14 +1,7 @@
+import { t as $t } from '@/lib/i18n';
 import { Check, Copy, MousePointerClick, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import {
-  Button,
-  cn,
-  copyToClipboard,
-  Tabs_Shadcn_,
-  TabsContent_Shadcn_,
-  TabsList_Shadcn_,
-  TabsTrigger_Shadcn_,
-} from 'ui'
+import { Button, cn, copyToClipboard, Tabs, TabsContent, TabsList, TabsTrigger } from 'ui'
 import { CodeBlock } from 'ui-patterns/CodeBlock'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
@@ -16,7 +9,6 @@ import type { LogData, PreviewLogData, QueryType } from './Logs.types'
 import { apiKey, role as extractRole, jwtAPIKey, parseMultigresEventMessage } from './Logs.utils'
 import DefaultPreviewSelectionRenderer from './LogSelectionRenderers/DefaultPreviewSelectionRenderer'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
-import { t as $t } from '@/lib/i18n'
 
 export interface LogSelectionProps {
   log?: LogData
@@ -100,14 +92,16 @@ const LogSelection = ({ log, onClose, queryType, isLoading, error }: LogSelectio
   return (
     <div className="relative flex h-full grow flex-col overflow-y-scroll bg-surface-100 border-t">
       <div className="relative grow flex flex-col h-full">
-        <Tabs_Shadcn_ defaultValue="details" className="flex flex-col h-full">
-          <TabsList_Shadcn_ className="px-2 pt-2 relative">
-            <TabsTrigger_Shadcn_ className="px-3" value="details">
-              {$t('Details')}
-            </TabsTrigger_Shadcn_>
-            <TabsTrigger_Shadcn_ disabled={!log} className="px-3" value="raw">
-              {$t('Raw')}
-            </TabsTrigger_Shadcn_>
+        <Tabs defaultValue="details" className="flex flex-col h-full">
+          <TabsList className="px-2 pt-2 relative">
+            <TabsTrigger className="px-3" value="details">
+              
+                                        {$t('Details')}
+                                      </TabsTrigger>
+            <TabsTrigger disabled={!log} className="px-3" value="raw">
+              
+                                        {$t('Raw')}
+                                      </TabsTrigger>
 
             <div className="*:px-1.5 *:text-foreground-lighter ml-auto flex gap-1 absolute right-2 top-2">
               <ButtonTooltip
@@ -130,7 +124,7 @@ const LogSelection = ({ log, onClose, queryType, isLoading, error }: LogSelectio
                 <X size={14} strokeWidth={2} />
               </Button>
             </div>
-          </TabsList_Shadcn_>
+          </TabsList>
           <div className="flex-1 h-full">
             {isLoading ? (
               <div className="p-4">
@@ -138,10 +132,10 @@ const LogSelection = ({ log, onClose, queryType, isLoading, error }: LogSelectio
               </div>
             ) : (
               <>
-                <TabsContent_Shadcn_ className="space-y-6 h-full" value="details">
+                <TabsContent className="space-y-6 h-full" value="details">
                   <LogDetails />
-                </TabsContent_Shadcn_>
-                <TabsContent_Shadcn_ value="raw">
+                </TabsContent>
+                <TabsContent value="raw">
                   <CodeBlock
                     hideLineNumbers
                     language="json"
@@ -149,11 +143,11 @@ const LogSelection = ({ log, onClose, queryType, isLoading, error }: LogSelectio
                   >
                     {JSON.stringify(log, null, 2)}
                   </CodeBlock>
-                </TabsContent_Shadcn_>
+                </TabsContent>
               </>
             )}
           </div>
-        </Tabs_Shadcn_>
+        </Tabs>
       </div>
     </div>
   )

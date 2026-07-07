@@ -17,10 +17,10 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Tabs_Shadcn_,
-  TabsContent_Shadcn_,
-  TabsList_Shadcn_,
-  TabsTrigger_Shadcn_,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import * as z from 'zod'
@@ -204,13 +204,13 @@ export const SelfPlatformProjectCreate = () => {
           {$t('Projects are registered in the platform registry and served by your own stacks.')}
         </p>
       </div>
-      <Tabs_Shadcn_ value={tab} onValueChange={(v) => setTab(v as 'quick' | 'attach')}>
-        <TabsList_Shadcn_>
-          <TabsTrigger_Shadcn_ value="quick">{$t('Quick create')}</TabsTrigger_Shadcn_>
-          <TabsTrigger_Shadcn_ value="attach">{$t('Attach existing stack')}</TabsTrigger_Shadcn_>
-        </TabsList_Shadcn_>
+      <Tabs value={tab} onValueChange={(v) => setTab(v as 'quick' | 'attach')}>
+        <TabsList>
+          <TabsTrigger value="quick">{$t('Quick create')}</TabsTrigger>
+          <TabsTrigger value="attach">{$t('Attach existing stack')}</TabsTrigger>
+        </TabsList>
 
-        <TabsContent_Shadcn_ value="quick">
+        <TabsContent value="quick">
           <Form {...quickForm}>
             <form onSubmit={onQuickSubmit} noValidate className="flex flex-col gap-4 pt-4">
               <p className="text-sm text-foreground-light">
@@ -248,9 +248,9 @@ export const SelfPlatformProjectCreate = () => {
               </div>
             </form>
           </Form>
-        </TabsContent_Shadcn_>
+        </TabsContent>
 
-        <TabsContent_Shadcn_ value="attach">
+        <TabsContent value="attach">
           <Form {...attachForm}>
             <form onSubmit={onAttachSubmit} noValidate className="flex flex-col gap-4 pt-4">
               <p className="text-sm text-foreground-light">
@@ -324,8 +324,8 @@ export const SelfPlatformProjectCreate = () => {
               </div>
             </form>
           </Form>
-        </TabsContent_Shadcn_>
-      </Tabs_Shadcn_>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { useParams } from 'common'
 import { sortBy } from 'lodash'
 import { AlertCircle, Search, Trash } from 'lucide-react'
@@ -14,6 +15,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from 'ui'
 import { Input } from 'ui-patterns/DataInputs/Input'
 import { ConfirmationModal } from 'ui-patterns/Dialogs/ConfirmationModal'
@@ -31,7 +35,6 @@ import { useSchemasQuery } from '@/data/database/schemas-query'
 import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useIsProtectedSchema } from '@/hooks/useProtectedSchemas'
-import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -200,8 +203,9 @@ export const Indexes = () => {
                   onClick={() => setShowCreateIndex(true)}
                   disabled={!isSuccessSchemas}
                 >
-                  {$t('Create index')}
-                </Button>
+                  
+                                                    {$t('Create index')}
+                                                  </Button>
               </Shortcut>
             )}
           </div>
@@ -232,8 +236,8 @@ export const Indexes = () => {
                         <TableCell colSpan={4}>
                           <p className="text-sm text-foreground">{$t('No indexes created yet')}</p>
                           <p className="text-sm text-foreground-light">
-                            {$t('There are no indexes found in the schema "')}
-                            {selectedSchema}"
+                            
+                                                                                  {$t('There are no indexes found in the schema "')}{selectedSchema}"
                           </p>
                         </TableCell>
                       </TableRow>
@@ -243,10 +247,9 @@ export const Indexes = () => {
                         <TableCell colSpan={4}>
                           <p className="text-sm text-foreground">{$t('No results found')}</p>
                           <p className="text-sm text-foreground-light">
-                            {$t('Your search for "')}
-                            {search}
-                            {$t('" did not return any results')}
-                          </p>
+                            
+                                                                                  {$t('Your search for "')}{search}{$t('" did not return any results')}
+                                                                                </p>
                         </TableCell>
                       </TableRow>
                     )}
@@ -265,16 +268,22 @@ export const Indexes = () => {
                           <TableCell>
                             <div className="flex justify-end items-center space-x-2">
                               <Button variant="default" onClick={() => setEditIndexId(index.name)}>
-                                {$t('View definition')}
-                              </Button>
+                                
+                                                                          {$t('View definition')}
+                                                                        </Button>
                               {!isSchemaLocked && (
-                                <Button
-                                  aria-label={$t('Delete index')}
-                                  variant="text"
-                                  className="px-1"
-                                  icon={<Trash />}
-                                  onClick={() => setDeleteIndexId(index.name)}
-                                />
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      aria-label={$t('Delete index')}
+                                      variant="text"
+                                      className="px-1"
+                                      icon={<Trash />}
+                                      onClick={() => setDeleteIndexId(index.name)}
+                                    />
+                                  </TooltipTrigger>
+                                  <TooltipContent side="bottom">{$t('Delete index')}</TooltipContent>
+                                </Tooltip>
                               )}
                             </div>
                           </TableCell>
@@ -320,7 +329,8 @@ export const Indexes = () => {
         visible={!!selectedIndexToDelete}
         title={
           <>
-            {$t('Confirm to delete index')}{' '}
+            
+                            {$t('Confirm to delete index')}{' '}
             <code className="text-code-inline">{selectedIndexToDelete?.name}</code>
           </>
         }
@@ -344,10 +354,9 @@ export const Indexes = () => {
               <ul className="space-y-2 mt-2 text-sm text-foreground-light">
                 <li className="list-disc ml-6">{$t('This index is no longer in use')}</li>
                 <li className="list-disc ml-6">
-                  {$t(
-                    'The table which the index is on is not currently in use, as dropping an index requires a short exclusive access lock on the table.'
-                  )}
-                </li>
+                  
+                                                    {$t('The table which the index is on is not currently in use, as dropping an index requires a short exclusive access lock on the table.')}
+                                                  </li>
               </ul>
             </div>
           </li>

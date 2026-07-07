@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { parseAsArrayOf, parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs'
 import { useEffect, useRef } from 'react'
-import { Button, ToggleGroup, ToggleGroupItem } from 'ui'
+import { Button, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 import { Input } from 'ui-patterns/DataInputs/Input'
 
 import { FilterPopover } from '../ui/FilterPopover'
@@ -99,6 +99,7 @@ export const HomePageActions = ({ slug: _slug, hideNewProject = false }: HomePag
                 icon={<X />}
                 onClick={() => setSearch('')}
                 className="p-0 h-5 w-5"
+                aria-label={$t('Clear')}
               />
             ),
           ]}
@@ -139,12 +140,28 @@ export const HomePageActions = ({ slug: _slug, hideNewProject = false }: HomePag
             value={viewMode}
             onValueChange={(value) => value && setViewMode(value as 'grid' | 'table')}
           >
-            <ToggleGroupItem value="grid" size="sm" className="h-[26px] w-[26px] p-0">
-              <Grid size={14} strokeWidth={1.5} />
-            </ToggleGroupItem>
-            <ToggleGroupItem value="table" size="sm" className="h-[26px] w-[26px] p-0">
-              <List size={14} strokeWidth={1.5} />
-            </ToggleGroupItem>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ToggleGroupItem value="grid" className="h-[26px] w-[26px] p-0">
+                  <Grid size={14} strokeWidth={1.5} />
+                  <span className="sr-only">{$t('Toggle grid view')}</span>
+                </ToggleGroupItem>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>{$t('Toggle grid view')}</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ToggleGroupItem value="table" className="h-[26px] w-[26px] p-0">
+                  <List size={14} strokeWidth={1.5} />
+                  <span className="sr-only">{$t('Toggle list view')}</span>
+                </ToggleGroupItem>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>{$t('Toggle list view')}</p>
+              </TooltipContent>
+            </Tooltip>
           </ToggleGroup>
         )}
 

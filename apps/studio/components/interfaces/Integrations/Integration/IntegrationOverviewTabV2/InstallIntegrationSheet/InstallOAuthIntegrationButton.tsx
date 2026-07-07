@@ -3,19 +3,23 @@ import { useMemo } from 'react'
 import { toast } from 'sonner'
 import { Button } from 'ui'
 
-import { isOAuthInstalled, useProjectOAuthIntegrationData } from '../../../Landing/Landing.utils'
+import { isOAuthInstalled, type ProjectOAuthIntegrationData } from '../../../Landing/Landing.utils'
 import type { IntegrationDefinition } from '@/components/interfaces/Integrations/Landing/Integrations.constants'
 import { useInstallOAuthIntegrationMutation } from '@/data/marketplace/install-oauth-integration-mutation'
 import { t as $t } from '@/lib/i18n'
 
 interface InstallOAuthIntegrationButtonProps {
   integration: IntegrationDefinition
+  data: ProjectOAuthIntegrationData
+  isLoading: boolean
 }
 
-export function InstallOAuthIntegrationButton({ integration }: InstallOAuthIntegrationButtonProps) {
+export function InstallOAuthIntegrationButton({
+  integration,
+  data,
+  isLoading,
+}: InstallOAuthIntegrationButtonProps) {
   const { ref: projectRef } = useParams()
-
-  const { data, isLoading } = useProjectOAuthIntegrationData(projectRef)
 
   const { mutate: installOAuthIntegration, isPending: isInstalling } =
     useInstallOAuthIntegrationMutation({

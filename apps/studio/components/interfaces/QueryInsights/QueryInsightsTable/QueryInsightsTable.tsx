@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { safeSql, type SafeSqlFragment } from '@supabase/pg-meta'
 import { wrapWithRollback } from '@supabase/pg-meta/src/query'
 import { useParams } from 'common'
@@ -6,7 +7,7 @@ import { useRouter } from 'next/router'
 import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import DataGrid, { DataGridHandle, Row } from 'react-data-grid'
-import { Button, cn, Tabs_Shadcn_, TabsList_Shadcn_, TabsTrigger_Shadcn_ } from 'ui'
+import { Button, cn, Tabs, TabsList, TabsTrigger } from 'ui'
 import { Input } from 'ui-patterns/DataInputs/Input'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
@@ -30,7 +31,6 @@ import { FilterPopover } from '@/components/ui/FilterPopover'
 import { TwoOptionToggle } from '@/components/ui/TwoOptionToggle'
 import { useExecuteSqlMutation } from '@/data/sql/execute-sql-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -365,38 +365,26 @@ export const QueryInsightsTable = ({
 
           <div className="flex items-center">
             {mode === 'triage' ? (
-              <Tabs_Shadcn_ value={filter} onValueChange={(v) => setFilter(v as IssueFilter)}>
-                <TabsList_Shadcn_ className="flex gap-x-4 rounded-none mt-0! pt-0 border-none!">
-                  <TabsTrigger_Shadcn_
-                    value="all"
-                    className="text-xs py-3 border-b font-mono uppercase"
-                  >
-                    {$t('All')}
-                    {triageItems.length > 0 && ` (${triageItems.length})`}
-                  </TabsTrigger_Shadcn_>
-                  <TabsTrigger_Shadcn_
-                    value="error"
-                    className="text-xs py-3 border-b font-mono uppercase"
-                  >
-                    {$t('Errors')}
-                    {errorCount > 0 && ` (${errorCount})`}
-                  </TabsTrigger_Shadcn_>
-                  <TabsTrigger_Shadcn_
-                    value="index"
-                    className="text-xs py-3 border-b font-mono uppercase"
-                  >
-                    {$t('Index')}
-                    {indexCount > 0 && ` (${indexCount})`}
-                  </TabsTrigger_Shadcn_>
-                  <TabsTrigger_Shadcn_
-                    value="slow"
-                    className="text-xs py-3 border-b font-mono uppercase"
-                  >
-                    {$t('Slow')}
-                    {slowCount > 0 && ` (${slowCount})`}
-                  </TabsTrigger_Shadcn_>
-                </TabsList_Shadcn_>
-              </Tabs_Shadcn_>
+              <Tabs value={filter} onValueChange={(v) => setFilter(v as IssueFilter)}>
+                <TabsList className="flex gap-x-4 rounded-none mt-0! pt-0 border-none!">
+                  <TabsTrigger value="all" className="text-xs py-3 border-b font-mono uppercase">
+                    
+                                                          {$t('All')}{triageItems.length > 0 && ` (${triageItems.length})`}
+                  </TabsTrigger>
+                  <TabsTrigger value="error" className="text-xs py-3 border-b font-mono uppercase">
+                    
+                                                          {$t('Errors')}{errorCount > 0 && ` (${errorCount})`}
+                  </TabsTrigger>
+                  <TabsTrigger value="index" className="text-xs py-3 border-b font-mono uppercase">
+                    
+                                                          {$t('Index')}{indexCount > 0 && ` (${indexCount})`}
+                  </TabsTrigger>
+                  <TabsTrigger value="slow" className="text-xs py-3 border-b font-mono uppercase">
+                    
+                                                          {$t('Slow')}{slowCount > 0 && ` (${slowCount})`}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             ) : (
               <Input
                 size="tiny"
@@ -445,8 +433,9 @@ export const QueryInsightsTable = ({
             className="rounded-full shadow-md"
             onClick={() => onCurrentSelectQuery?.(null)}
           >
-            {$t('Clear query')}
-          </Button>
+            
+                                  {$t('Clear query')}
+                                </Button>
         </div>
         {isLoading ? (
           <div className="px-6 py-4">

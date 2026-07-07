@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { useParams } from 'common'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -16,7 +17,6 @@ import {
 import { Admonition } from 'ui-patterns/admonition'
 
 import { useAPIKeyCreateMutation } from '@/data/api-keys/api-key-create-mutation'
-import { t as $t } from '@/lib/i18n'
 
 export const CreateNewAPIKeysButton = () => {
   const { ref: projectRef } = useParams()
@@ -65,25 +65,21 @@ export const CreateNewAPIKeysButton = () => {
         <AlertDialogHeader>
           <AlertDialogTitle>{$t('Create new API keys')}</AlertDialogTitle>
           <AlertDialogDescription>
-            {$t('This will create a default publishable key and a default secret key both named')}{' '}
-            <code className="break-keep! text-code-inline">default</code>
-            {$t('. These keys are required to connect your application to your Supabase project.')}
-          </AlertDialogDescription>
+            
+                                  {$t('This will create a default publishable key and a default secret key both named')}{' '}
+            <code className="break-keep! text-code-inline">default</code>{$t('. These keys are required to connect your application to your Supabase project. Your existing legacy API keys (')}
+                                  <code className="break-keep! text-code-inline">anon</code> and{' '}
+            <code className="break-keep! text-code-inline">service_role</code>{$t(') are not affected and remain valid until you disable them in a separate step.')}
+                                </AlertDialogDescription>
         </AlertDialogHeader>
         {error && (
           <AlertDialogBody>
-            <Admonition
-              type="destructive"
-              title={$t('Unable to create API keys')}
-              description={error}
-            />
+            <Admonition type="destructive" title={$t('Unable to create API keys')} description={error} />
           </AlertDialogBody>
         )}
         <AlertDialogFooter>
           <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
-          <AlertDialogAction onClick={handleCreateNewApiKeys}>
-            {$t('Create keys')}
-          </AlertDialogAction>
+          <AlertDialogAction onClick={handleCreateNewApiKeys}>{$t('Create keys')}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
