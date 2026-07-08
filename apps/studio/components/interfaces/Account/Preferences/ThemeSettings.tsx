@@ -63,7 +63,7 @@ export const ThemeSettings = () => {
             className="p-3 w-full"
             key={theme.value}
             value={theme.value}
-            label={theme.name}
+            label={$t(theme.name)}
           >
             <SVG src={`${BASE_PATH}/img/themes/${theme.value}.svg?v=2`} />
           </RadioGroupLargeItem>

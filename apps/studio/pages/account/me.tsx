@@ -42,7 +42,7 @@ const User: NextPageWithLayout = () => {
 
 User.getLayout = (page) => (
   <AppLayout>
-    <DefaultLayout headerTitle={IS_PLATFORM ? 'Account' : 'Preferences'}>
+    <DefaultLayout headerTitle={IS_PLATFORM ? $t('Account') : $t('Preferences')}>
       <AccountLayout title={$t('Preferences')}>{page}</AccountLayout>
     </DefaultLayout>
   </AppLayout>

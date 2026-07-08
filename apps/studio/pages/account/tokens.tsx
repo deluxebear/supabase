@@ -67,7 +67,7 @@ const UserAccessTokens: NextPageWithLayout = () => {
 
 UserAccessTokens.getLayout = (page) => (
   <AppLayout>
-    <DefaultLayout headerTitle="Account">
+    <DefaultLayout headerTitle={$t('Account')}>
       <AccountLayout title={$t('Access Tokens')}>{page}</AccountLayout>
     </DefaultLayout>
   </AppLayout>

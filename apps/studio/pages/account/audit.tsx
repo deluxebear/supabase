@@ -33,7 +33,7 @@ const Audit: NextPageWithLayout = () => {
 
 Audit.getLayout = (page) => (
   <AppLayout>
-    <DefaultLayout headerTitle="Account">
+    <DefaultLayout headerTitle={$t('Account')}>
       <AccountLayout title={$t('Audit Logs')}>{page}</AccountLayout>
     </DefaultLayout>
   </AppLayout>

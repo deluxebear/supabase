@@ -12,6 +12,7 @@ import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useLastVisitedOrganization } from '@/hooks/misc/useLastVisitedOrganization'
 import { withAuth } from '@/hooks/misc/withAuth'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { buildStudioPageTitle } from '@/lib/page-title'
 import { useAppStateSnapshot } from '@/state/app-state'
 
@@ -30,7 +31,7 @@ const AccountLayout = ({ children, title }: PropsWithChildren<AccountLayoutProps
 
   const { appTitle } = useCustomContent(['app:title'])
   const brandTitle = appTitle || 'Supabase'
-  const surfaceLabel = IS_PLATFORM ? 'Account' : 'Preferences'
+  const surfaceLabel = IS_PLATFORM ? $t('Account') : $t('Preferences')
 
   const backToDashboardURL =
     appSnap.lastRouteBeforeVisitingAccountPage.length > 0
@@ -56,7 +57,7 @@ const AccountLayout = ({ children, title }: PropsWithChildren<AccountLayoutProps
               links: [
                 {
                   key: 'preferences',
-                  label: 'Preferences',
+                  label: $t('Preferences'),
                   href: '/account/me',
                   isActive: currentPath === '/account/me',
                 },
@@ -66,17 +67,17 @@ const AccountLayout = ({ children, title }: PropsWithChildren<AccountLayoutProps
         : [
             {
               key: 'account-settings',
-              heading: 'Account Settings',
+              heading: $t('Account Settings'),
               links: [
                 {
                   key: 'preferences',
-                  label: 'Preferences',
+                  label: $t('Preferences'),
                   href: '/account/me',
                   isActive: currentPath === '/account/me',
                 },
                 {
                   key: 'access-tokens',
-                  label: 'Access Tokens',
+                  label: $t('Access Tokens'),
                   href: '/account/tokens',
                   isActive:
                     currentPath === '/account/tokens' || currentPath === '/account/tokens/scoped',
@@ -85,7 +86,7 @@ const AccountLayout = ({ children, title }: PropsWithChildren<AccountLayoutProps
                   ? [
                       {
                         key: 'security',
-                        label: 'Security',
+                        label: $t('Security'),
                         href: '/account/security',
                         isActive: currentPath === '/account/security',
                       },
@@ -95,11 +96,11 @@ const AccountLayout = ({ children, title }: PropsWithChildren<AccountLayoutProps
             },
             {
               key: 'logs',
-              heading: 'Logs',
+              heading: $t('Logs'),
               links: [
                 {
                   key: 'audit-logs',
-                  label: 'Audit Logs',
+                  label: $t('Audit Logs'),
                   href: '/account/audit',
                   isActive: currentPath === '/account/audit',
                 },

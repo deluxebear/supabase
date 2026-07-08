@@ -77,7 +77,7 @@ const Security: NextPageWithLayout = () => {
 
 Security.getLayout = (page) => (
   <AppLayout>
-    <DefaultLayout headerTitle="Account">
+    <DefaultLayout headerTitle={$t('Account')}>
       <AccountLayout title={$t('Security')}>{page}</AccountLayout>
     </DefaultLayout>
   </AppLayout>
