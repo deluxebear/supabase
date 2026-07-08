@@ -8,6 +8,8 @@ import {
   composeSelector,
   computeContainerAttributes,
   computeScrapeAttributes,
+  containerSelector,
+  k8sSelector,
   METRICS_RETENTION_DAYS,
   parsePrometheusText,
   resetMetricsSamplerForTest,
@@ -372,6 +374,67 @@ describe('computeContainerAttributes', () => {
     expect(viaSelector.ram_usage_used).toBeGreaterThan(0)
     expect(viaSelector.avg_cpu_usage).toBeGreaterThanOrEqual(0)
     expect(viaSelector.network_receive_bytes).toBeGreaterThanOrEqual(0)
+  })
+})
+
+describe('k8s dialect (cadvisor-k8s-scrape.prom fixture is binding)', () => {
+  const k8sText = readFileSync(join(__dirname, '__fixtures__/cadvisor-k8s-scrape.prom'), 'utf8')
+  const k8sSamples = parsePrometheusText(k8sText)
+  const k8sPrev: Snapshot = { at: 1000, samples: k8sSamples }
+  // curr: 10s later, cpu/net counters advanced. Rebuild by nudging counters so
+  // the delta is deterministic and positive.
+  const bump = (samples: PromSample[], name: string, add: number): PromSample[] =>
+    samples.map((s) => (s.name === name ? { ...s, value: s.value + add } : s))
+  let currSamples = k8sSamples
+  for (const [n, d] of [
+    ['container_cpu_usage_seconds_total', 2],
+    ['container_cpu_user_seconds_total', 1.2],
+    ['container_cpu_system_seconds_total', 0.6],
+    ['container_network_receive_bytes_total', 4096],
+    ['container_network_transmit_bytes_total', 2048],
+  ] as const) {
+    currSamples = bump(currSamples, n, d)
+  }
+  const k8sCurr: Snapshot = { at: 11000, samples: currSamples }
+  const SEL = k8sSelector('supabase', 'supabase-db-0', 'postgres')
+
+  it('k8s: RAM% uses the pod memory limit (1 GiB) as denominator', () => {
+    const out = computeContainerAttributes(k8sPrev, k8sCurr, SEL)
+    expect(out.ram_usage_total).toBe(1073741824)
+    expect(out.ram_usage_used).toBeGreaterThan(0)
+    expect(out.ram_usage).toBeGreaterThan(0)
+    expect(out.ram_usage).toBeLessThanOrEqual(100)
+  })
+
+  it('k8s: CPU% derives from the postgres container, not the pause sandbox', () => {
+    const out = computeContainerAttributes(k8sPrev, k8sCurr, SEL)
+    // 2 cpu-seconds over 10s over 8 machine cores = 2.5%.
+    expect(out.avg_cpu_usage).toBeCloseTo(2.5, 1)
+    expect(out.cpu_usage_busy_user).toBeGreaterThan(0)
+  })
+
+  it('k8s: network comes from the pod sandbox (container_name=""), not postgres', () => {
+    const out = computeContainerAttributes(k8sPrev, k8sCurr, SEL)
+    expect(out.network_receive_bytes).toBeCloseTo(409.6, 1)
+    expect(out.network_transmit_bytes).toBeCloseTo(204.8, 1)
+  })
+
+  it('containerSelector: k8s row → k8s selector, container-only → compose, bare → null', () => {
+    const base = {
+      stackKind: 'external',
+      k8sNamespace: null,
+      k8sPodSelector: null,
+      containerName: null,
+    } as any
+    expect(containerSelector(base)).toBeNull()
+    expect(containerSelector({ ...base, containerName: 'supabase-db' })).not.toBeNull()
+    const k8s = containerSelector({
+      stackKind: 'k8s',
+      k8sNamespace: 'supabase',
+      k8sPodSelector: 'supabase-db-0',
+      containerName: 'postgres',
+    } as any)
+    expect(k8s).not.toBeNull()
   })
 })
 

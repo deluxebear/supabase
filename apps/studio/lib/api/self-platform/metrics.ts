@@ -364,6 +364,54 @@ export function composeSelector(containerName: string): ContainerSelector {
   }
 }
 
+// k8s dialect (cAdvisor on containerd). Identity is the io.kubernetes labels;
+// cAdvisor's `name=` is a containerd task hex (useless). CPU/mem live on the
+// workload container; NETWORK lives on the pod sandbox (container_name=""), and
+// a second sandbox series per pod must be excluded from cpu/mem. Binds
+// __fixtures__/cadvisor-k8s-scrape.prom.
+export function k8sSelector(
+  namespace: string,
+  podSelector: string,
+  container: string
+): ContainerSelector {
+  const pod: LabelPred = (l) =>
+    l.container_label_io_kubernetes_pod_namespace === namespace &&
+    l.container_label_io_kubernetes_pod_name === podSelector
+  const workload: LabelPred = (l) =>
+    pod(l) && l.container_label_io_kubernetes_container_name === container
+  return {
+    cpuMem: workload,
+    cpuDenom: workload,
+    net: (l) =>
+      pod(l) && l.container_label_io_kubernetes_container_name === '' && l.interface !== 'lo',
+  }
+}
+
+// Dialect choice for a resolved row: k8s identity → k8s; else container_name →
+// compose; else null (host dialect, M6.3 behavior).
+export function containerSelector(conn: {
+  stackKind: string
+  k8sNamespace: string | null
+  k8sPodSelector: string | null
+  containerName: string | null
+}): ContainerSelector | null {
+  if (
+    conn.stackKind === 'k8s' &&
+    conn.k8sNamespace != null &&
+    conn.k8sNamespace !== '' &&
+    conn.k8sPodSelector != null &&
+    conn.k8sPodSelector !== '' &&
+    conn.containerName != null &&
+    conn.containerName !== ''
+  ) {
+    return k8sSelector(conn.k8sNamespace, conn.k8sPodSelector, conn.containerName)
+  }
+  if (conn.containerName != null && conn.containerName !== '') {
+    return composeSelector(conn.containerName)
+  }
+  return null
+}
+
 export function computeContainerAttributes(
   prev: Snapshot | undefined,
   curr: Snapshot,
@@ -517,12 +565,10 @@ export async function sampleProject(ref: string): Promise<void> {
       })
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
       const curr: Snapshot = { at: Date.now(), samples: parsePrometheusText(await resp.text()) }
-      // Container dialect when the row is pinned to a container (Task 2), else
-      // the host-level dialect (M6.3 behavior). Both emit ATTRIBUTE_META keys.
-      const sel =
-        conn.containerName != null && conn.containerName !== ''
-          ? composeSelector(conn.containerName)
-          : null
+      // Container dialect when the row is pinned to a container (Task 2/D3),
+      // else the host-level dialect (M6.3 behavior). Both emit ATTRIBUTE_META
+      // keys. containerSelector picks k8s vs compose vs null (host fallback).
+      const sel = containerSelector(conn)
       const scraped = sel
         ? computeContainerAttributes(lastScrape.get(ref), curr, sel)
         : computeScrapeAttributes(lastScrape.get(ref), curr)
