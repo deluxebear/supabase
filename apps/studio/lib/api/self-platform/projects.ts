@@ -125,12 +125,15 @@ async function queryProjectRows(
     })
 
   // [self-platform] Tier order matters. k8s_namespace/k8s_pod_selector are the
-  // newest columns (11-k8s-identity.sql), so this check must run FIRST — a
-  // pre-D3 (but post-M6.4) db degrades the k8s columns → null via the M64
-  // retry below rather than falling through the container/metrics/stack/
-  // analytics tiers. container_name is next-newest (10-container.sql); its
-  // retry (M63_SELECT_COLUMNS) still selects it, so a pre-M6.4 db fails that
-  // retry with MISSING_CONTAINER_COLUMN and falls through. metrics_url
+  // newest columns (11-k8s-identity.sql) and last in PROJECT_SELECT_COLUMNS,
+  // so this check runs FIRST — but it only fires when container_name is
+  // present and the k8s columns are missing (post-M6.4/pre-11), because
+  // Postgres reports the leftmost missing column and container_name precedes
+  // the k8s columns in the select list. A pre-M6.4 db is missing both:
+  // container_name is reported first, so the container check below fires
+  // directly on the initial attempt (the k8s check above never fires), and
+  // its retry (M63_SELECT_COLUMNS, which excludes container_name and the k8s
+  // columns) succeeds without ever invoking M64_SELECT_COLUMNS. metrics_url
   // precedes stack_kind in PROJECT_SELECT_COLUMNS, so Postgres reports the
   // metrics column first when both are missing — that check runs next so a
   // pre-09 (but post-07) db is caught there. Its retry (M62_SELECT_COLUMNS)
