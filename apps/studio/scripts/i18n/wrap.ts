@@ -15,12 +15,14 @@ export function collectFromProject(project: Project): { filesChanged: number; ke
   return { filesChanged, keys: [...keys] }
 }
 
-// Shortcut registry labels are module-scope constants, so they can't carry
-// $t() at the definition site (it would evaluate before the locale is set) —
-// they are translated at render time instead ($t(def.label) in useShortcut /
-// ShortcutTooltip / ShortcutsReferenceSheet). Collect them here so keys.json
-// stays the full key list: `label: '...'` properties, plus the string values
-// of *_LABELS lookup objects (reference-sheet group names).
+// Some UI text lives in module-scope constant/schema objects (shortcut registry
+// labels, the ConnectSheet mode/field/step schema, chart-interval labels), so it
+// can't carry $t() at the definition site — it would evaluate before the locale
+// is set. Those are translated at render time instead ($t(def.label) /
+// $t(step.title) / $t(field.description), etc.). Collect the string values here
+// so keys.json stays the full key list: `label:`/`title:`/`description:`
+// properties, plus the string values of *_LABELS lookup objects.
+const DYNAMIC_TEXT_PROPS = new Set(['label', 'title', 'description'])
 export function collectDynamicLabelKeys(project: Project): string[] {
   const keys = new Set<string>()
   for (const sf of project.getSourceFiles()) {
@@ -28,11 +30,11 @@ export function collectDynamicLabelKeys(project: Project): string[] {
       if (!Node.isPropertyAssignment(node)) return
       const init = node.getInitializer()
       if (!init || !Node.isStringLiteral(init)) return
-      const isLabelProp = node.getNameNode().getText() === 'label'
+      const isTextProp = DYNAMIC_TEXT_PROPS.has(node.getNameNode().getText())
       const labelsObject = node.getFirstAncestor(
         (a) => Node.isVariableDeclaration(a) && /LABELS$/.test(a.getName())
       )
-      if (isLabelProp || labelsObject) keys.add(init.getLiteralValue())
+      if (isTextProp || labelsObject) keys.add(init.getLiteralValue())
     })
   }
   return [...keys]
@@ -80,6 +82,10 @@ if (process.argv[1] && process.argv[1].endsWith('wrap.ts')) {
     // translated at render via $t(i.label) in ChartIntervalDropdown, so their
     // `label:` keys must be collected here too.
     join(cwd, 'components/ui/Logs/logs.utils.ts'),
+    // ConnectSheet mode/field/step schema + connection-method constants are
+    // rendered via $t(field.label)/$t(step.title)/$t(option.description) etc.
+    join(cwd, 'components/interfaces/ConnectSheet/connect.schema.ts'),
+    join(cwd, 'components/interfaces/ConnectSheet/Connect.constants.ts'),
     '!' + join(cwd, '**/*.test.{ts,tsx}'),
   ])
   const dynamicKeys = collectDynamicLabelKeys(dynamicProject)

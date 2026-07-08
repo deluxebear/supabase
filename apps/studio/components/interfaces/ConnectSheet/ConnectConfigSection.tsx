@@ -66,7 +66,7 @@ export function ConnectConfigSection({
                 key={field.id}
                 isReactForm={false}
                 layout="horizontal"
-                label={field.label}
+                label={$t(field.label)}
               >
                 <RadioGroupStacked
                   value={String(value ?? '')}
@@ -83,7 +83,7 @@ export function ConnectConfigSection({
                     >
                       <div className="flex items-center gap-2">
                         {option.icon && <ConnectionIcon supportsDarkMode icon={option.icon} />}
-                        <span className="text-sm">{option.label}</span>
+                        <span className="text-sm">{$t(option.label)}</span>
                       </div>
                     </RadioGroupStackedItem>
                   ))}
@@ -97,7 +97,7 @@ export function ConnectConfigSection({
                 key={field.id}
                 isReactForm={false}
                 layout="horizontal"
-                label={field.label}
+                label={$t(field.label)}
               >
                 <RadioGroupStacked
                   value={String(value ?? '')}
@@ -114,11 +114,11 @@ export function ConnectConfigSection({
                       <div className="flex flex-col gap-0.5">
                         <div className="flex items-center gap-2">
                           {option.icon && <ConnectionIcon icon={option.icon} />}
-                          <span className="text-sm">{option.label}</span>
+                          <span className="text-sm">{$t(option.label)}</span>
                         </div>
                         {option.description && (
                           <span className="text-sm text-foreground-lighter">
-                            {option.description}
+                            {$t(option.description)}
                           </span>
                         )}
                       </div>
@@ -134,8 +134,8 @@ export function ConnectConfigSection({
                 key={field.id}
                 isReactForm={false}
                 layout="horizontal"
-                label={field.label}
-                description={field.description}
+                label={$t(field.label)}
+                description={field.description ? $t(field.description) : undefined}
               >
                 <Select
                   value={String(value ?? '')}
@@ -161,7 +161,7 @@ export function ConnectConfigSection({
                         {field.id === 'framework' && option.icon && (
                           <ConnectionIcon icon={option.icon} />
                         )}
-                        {option.label}
+                        {$t(option.label)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -175,8 +175,8 @@ export function ConnectConfigSection({
                 key={field.id}
                 isReactForm={false}
                 layout="horizontal"
-                label={field.label}
-                description={field.description}
+                label={$t(field.label)}
+                description={field.description ? $t(field.description) : undefined}
                 className="[&>div>label>span]:break-keep! [&>div>label>span]:text-balance"
               >
                 <Switch
@@ -193,8 +193,8 @@ export function ConnectConfigSection({
                 key={field.id}
                 isReactForm={false}
                 layout="horizontal"
-                label={field.label}
-                description={field.description}
+                label={$t(field.label)}
+                description={field.description ? $t(field.description) : undefined}
               >
                 <MultiSelector
                   values={Array.isArray(value) ? value : []}
@@ -215,10 +215,10 @@ export function ConnectConfigSection({
                           className="items-start"
                         >
                           <div className="flex flex-col ml-2 gap-y-0.5">
-                            <span className="font-medium">{option.label}</span>
+                            <span className="font-medium">{$t(option.label)}</span>
                             {option.description && (
                               <span className="text-xs text-foreground-light">
-                                {option.description}
+                                {$t(option.description)}
                               </span>
                             )}
                           </div>
@@ -264,8 +264,8 @@ export function ModeSelector({ modes, selected, onChange }: ModeSelectorProps) {
         >
           <span className="text-foreground-light">{MODE_ICONS[mode.id]}</span>
           <div>
-            <p className="heading-default text-center">{mode.label}</p>
-            <p className="text-sm text-foreground-lighter text-center">{mode.description}</p>
+            <p className="heading-default text-center">{$t(mode.label)}</p>
+            <p className="text-sm text-foreground-lighter text-center">{$t(mode.description)}</p>
           </div>
         </button>
       ))}

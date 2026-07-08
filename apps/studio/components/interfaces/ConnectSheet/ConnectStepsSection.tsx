@@ -260,7 +260,9 @@ export function ConnectStepsSection({ steps, state, projectKeys }: ConnectStepsS
             type="warning"
             layout="responsive"
             title={$t('Database access requires the Data API')}
-            description={$t('Client library database queries will not work until the Data API is enabled.')}
+            description={$t(
+              'Client library database queries will not work until the Data API is enabled.'
+            )}
             actions={[
               <Button asChild key="enable" variant="default">
                 <Link href={`/project/${ref}/integrations/data_api`}>{$t('Enable Data API')}</Link>
@@ -272,7 +274,11 @@ export function ConnectStepsSection({ steps, state, projectKeys }: ConnectStepsS
         {showIpv4AddonNotice && (
           <Admonition
             type="default"
-            title={`${state.connectionMethod === 'direct' ? 'Direct connections use' : 'Transaction pooler uses'} IPv6 by default`}
+            title={
+              state.connectionMethod === 'direct'
+                ? $t('Direct connections use IPv6 by default')
+                : $t('Transaction pooler uses IPv6 by default')
+            }
             description={$t(
               'Enable the dedicated IPv4 address add-on to connect from IPv4-only networks'
             )}
@@ -320,8 +326,8 @@ export function ConnectStepsSection({ steps, state, projectKeys }: ConnectStepsS
             <ConnectSheetStep
               key={step.id}
               number={index + 1}
-              title={step.title}
-              description={step.description}
+              title={$t(step.title)}
+              description={$t(step.description)}
             >
               <StepContent
                 contentId={step.content}

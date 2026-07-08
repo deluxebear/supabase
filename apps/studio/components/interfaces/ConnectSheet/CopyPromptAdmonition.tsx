@@ -140,7 +140,7 @@ export function CopyPromptAdmonition({
       showIcon={false}
       layout="horizontal"
       actions={
-        <CopyButton variant="default" copyLabel="Copy prompt" asyncText={handleCopyPrompt} />
+        <CopyButton variant="default" copyLabel={$t('Copy prompt')} asyncText={handleCopyPrompt} />
       }
     >
       <div className="absolute -inset-16 z-0 opacity-50">
