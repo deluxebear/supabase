@@ -47,6 +47,11 @@ export interface ResolvedConnection {
   // [self-platform] M6.4: Postgres container name for container-granular
   // metrics. null → sampler uses host-level metrics (M6.3 fallback).
   containerName: string | null
+  // [self-platform] M6.4 D3: k8s Pod identity. When stackKind==='k8s' and these
+  // + containerName are set, the sampler uses the k8s container dialect.
+  stackKind: string
+  k8sNamespace: string | null
+  k8sPodSelector: string | null
   // [self-platform] Raw registry row for a hit, null for the global-env
   // fallback. Lets callers (e.g. Task 6) map from the row without a second
   // getProjectByRef lookup.
@@ -82,6 +87,9 @@ function fromRow(row: PlatformProjectRow): ResolvedConnection {
     metricsUrl: row.metrics_url,
     metricsToken: row.metrics_token_enc ? decryptSecret(row.metrics_token_enc) : null,
     containerName: row.container_name,
+    stackKind: row.stack_kind,
+    k8sNamespace: row.k8s_namespace,
+    k8sPodSelector: row.k8s_pod_selector,
     row,
   }
 }
@@ -113,6 +121,9 @@ function fromGlobalEnv(): ResolvedConnection {
     metricsUrl: process.env.METRICS_URL || null,
     metricsToken: null,
     containerName: process.env.METRICS_CONTAINER || null,
+    stackKind: 'external',
+    k8sNamespace: null,
+    k8sPodSelector: null,
     row: null,
   }
 }

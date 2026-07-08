@@ -112,4 +112,19 @@ describe('resolveProjectConnection', () => {
     const conn = await resolveProjectConnection('default')
     expect(conn.containerName).toBeNull()
   })
+
+  it('threads k8s identity + stackKind from the row', async () => {
+    vi.mocked(getProjectByRef).mockResolvedValue({
+      ...row,
+      stack_kind: 'k8s',
+      container_name: 'postgres',
+      k8s_namespace: 'supabase',
+      k8s_pod_selector: 'supabase-db-0',
+    } as any)
+    const conn = await resolveProjectConnection('proj-k8s')
+    expect(conn.stackKind).toBe('k8s')
+    expect(conn.k8sNamespace).toBe('supabase')
+    expect(conn.k8sPodSelector).toBe('supabase-db-0')
+    expect(conn.containerName).toBe('postgres')
+  })
 })
