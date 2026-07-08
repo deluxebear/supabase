@@ -160,7 +160,7 @@ export function UserDropdown({
                 value={theme.value}
                 className="cursor-pointer"
               >
-                {theme.name}
+                {$t(theme.name)}
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>
@@ -169,9 +169,7 @@ export function UserDropdown({
         <DropdownMenuSeparator />
 
         <DropdownMenuGroup>
-          <div className="px-2 py-1.5">
-            <LanguageSwitcher />
-          </div>
+          <LanguageSwitcher />
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator />
