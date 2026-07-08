@@ -7,6 +7,7 @@ import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 import { LINT_TABS, LINTER_LEVELS } from '@/components/interfaces/Linter/Linter.constants'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { Lint } from '@/data/lint/lint-query'
+import { t as $t } from '@/lib/i18n'
 
 interface LintPageTabsProps {
   currentTab: string
@@ -23,20 +24,20 @@ const LintPageTabs = ({ currentTab, setCurrentTab, isLoading, activeLints }: Lin
 
   const LintCountLabel = ({ tab }: { tab: (typeof LINT_TABS)[number] }) => {
     let count = 0
-    let label = ''
+    let noun = ''
     if (tab.id === LINTER_LEVELS.ERROR) {
       count = errorLintsCount
-      label = 'errors'
+      noun = $t('errors')
     }
 
     if (tab.id === LINTER_LEVELS.WARN) {
       count = warnLintsCount
-      label = 'warnings'
+      noun = $t('warnings')
     }
 
     if (tab.id === LINTER_LEVELS.INFO) {
       count = infoLintsCount
-      label = 'suggestions'
+      noun = $t('suggestions')
     }
 
     return (
@@ -44,9 +45,7 @@ const LintPageTabs = ({ currentTab, setCurrentTab, isLoading, activeLints }: Lin
         {isLoading ? (
           <ShimmeringLoader className="w-20 pt-1" />
         ) : (
-          <>
-            {count} {label}
-          </>
+          <>{$t('{{count}} {{noun}}', { count, noun })}</>
         )}
       </span>
     )
@@ -66,7 +65,7 @@ const LintPageTabs = ({ currentTab, setCurrentTab, isLoading, activeLints }: Lin
           <ShortcutTooltip
             key={tab.id}
             shortcutId={tab.shortcutId}
-            label={`Switch to ${tab.label}`}
+            label={$t('Switch to {{tab}}', { tab: $t(tab.label) })}
             side="top"
             align="start"
           >
@@ -99,12 +98,12 @@ const LintPageTabs = ({ currentTab, setCurrentTab, isLoading, activeLints }: Lin
                   <MessageSquareMore size={14} fill="currentColor" strokeWidth={0} />
                 </span>
 
-                <span className="">{tab.label}</span>
+                <span className="">{$t(tab.label)}</span>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <InformationCircleIcon className="transition text-foreground-muted w-3 h-3 data-[state=delayed-open]:text-foreground-light" />
                   </TooltipTrigger>
-                  <TooltipContent side="top">{tab.description}</TooltipContent>
+                  <TooltipContent side="top">{$t(tab.description)}</TooltipContent>
                 </Tooltip>
               </div>
               <LintCountLabel tab={tab} />

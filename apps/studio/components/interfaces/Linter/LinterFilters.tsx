@@ -51,7 +51,7 @@ const LinterFilters = ({
       {LINT_TABS.map((tab) => (
         <div key={tab.id} className={tab.id === currentTab ? '' : 'hidden'}>
           <FilterPopover
-            name="Filter"
+            name={$t('Filter')}
             className="w-52"
             options={filterOptions}
             disabled={activeLints.filter((x) => x.level === tab.id).length === 0}

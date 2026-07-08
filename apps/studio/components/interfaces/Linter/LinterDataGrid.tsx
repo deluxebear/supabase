@@ -18,6 +18,7 @@ import {
 } from '@/components/interfaces/Linter/Linter.utils'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { Lint } from '@/data/lint/lint-query'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -92,8 +93,8 @@ export const LinterDataGrid = ({
         return (
           <div className="flex items-center justify-between font-mono font-normal text-xs w-full">
             <div className="flex items-center gap-x-2">
-              <p className="text-foreground!">{col.name}</p>
-              {col.description && <p className="text-foreground-lighter">{col.description}</p>}
+              <p className="text-foreground!">{$t(col.name)}</p>
+              {col.description && <p className="text-foreground-lighter">{$t(col.description)}</p>}
             </div>
           </div>
         )
@@ -191,7 +192,8 @@ export const LinterDataGrid = ({
             <div className="flex items-center justify-between w-full border-b py-3 px-6">
               <div className="flex items-center gap-2">
                 <h3 className="text-sm m-0">
-                  {lintInfoMap.find((item) => item.name === selectedLint.name)?.title ?? 'Unknown'}
+                  {lintInfoMap.find((item) => item.name === selectedLint.name)?.title ??
+                    $t('Unknown')}
                 </h3>
                 <LintCategoryBadge category={selectedLint.categories[0]} />
               </div>

@@ -452,16 +452,14 @@ export const LintCategoryBadge = ({ category }: { category: string }) => {
 }
 
 export const NoIssuesFound = ({ level }: { level: string }) => {
-  const noun = level === LINTER_LEVELS.ERROR ? 'errors' : 'warnings'
+  const noun = level === LINTER_LEVELS.ERROR ? $t('errors') : $t('warnings')
   return (
     <div className="absolute top-28 px-6 flex flex-col items-center justify-center w-full gap-y-2">
       <TextSearch className="text-foreground-muted" strokeWidth={1} />
       <div className="text-center">
-        <p className="text-foreground">
-          {$t('No')} {noun} detected
-        </p>
+        <p className="text-foreground">{$t('No {{noun}} detected', { noun })}</p>
         <p className="text-foreground-light">
-          {$t('Congrats! There are no')} {noun} {$t('detected for this database')}
+          {$t('Congrats! There are no {{noun}} detected for this database', { noun })}
         </p>
       </div>
     </div>

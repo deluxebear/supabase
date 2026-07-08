@@ -135,7 +135,7 @@ export const DownloadResultsButton = ({
           disabled={results.length === 0}
           className={iconOnly ? 'w-7' : ''}
         >
-          {!iconOnly && text}
+          {!iconOnly && $t(text)}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align={align} className="w-60">
