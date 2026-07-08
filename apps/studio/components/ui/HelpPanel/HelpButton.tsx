@@ -25,7 +25,7 @@ export const HelpButton = () => {
           track('help_button_clicked')
         }
       }}
-      tooltip={{ content: { text: 'Help' } }}
+      tooltip={{ content: { text: $t('Help') } }}
     >
       <HelpCircle
         size={16}

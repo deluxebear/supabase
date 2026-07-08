@@ -49,7 +49,7 @@ export const HelpPanel = ({
               className="h-7 w-7"
               onClick={() => setView('home')}
               icon={<ChevronLeft strokeWidth={1.5} />}
-              tooltip={{ content: { side: 'bottom', text: 'Back' } }}
+              tooltip={{ content: { side: 'bottom', text: $t('Back') } }}
             />
           )}
           <span className="truncate">{isSupportView ? 'Contact support' : 'Help & Support'}</span>
@@ -61,7 +61,7 @@ export const HelpPanel = ({
             className="w-7 h-7"
             onClick={() => closeSidebar(SIDEBAR_KEYS.HELP_PANEL)}
             icon={<X strokeWidth={1.5} />}
-            tooltip={{ content: { side: 'bottom', text: 'Close' } }}
+            tooltip={{ content: { side: 'bottom', text: $t('Close') } }}
           />
         </div>
       </div>

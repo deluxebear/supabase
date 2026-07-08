@@ -71,7 +71,7 @@ export const ConnectButton = ({
       tooltip={{
         content: {
           side: 'bottom',
-          text: 'Project is currently not active and cannot be connected',
+          text: $t('Project is currently not active and cannot be connected'),
         },
       }}
     >

@@ -44,7 +44,7 @@ export const BranchingPITRNotice = () => {
             tooltip={{
               content: {
                 side: 'bottom',
-                text: 'You need additional permissions to amend subscriptions',
+                text: $t('You need additional permissions to amend subscriptions'),
               },
             }}
           >

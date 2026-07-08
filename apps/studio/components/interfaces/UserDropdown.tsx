@@ -68,7 +68,7 @@ export function UserDropdown({
         <ButtonTooltip
           variant="default"
           className="[&>span]:flex px-0 py-0 rounded-full overflow-hidden h-8 w-8"
-          tooltip={{ content: { text: 'Account settings' } }}
+          tooltip={{ content: { text: $t('Account settings') } }}
         >
           {isLoading ? (
             <div className="w-full h-full flex items-center justify-center">
