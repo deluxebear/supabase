@@ -64,7 +64,7 @@ const SecretRow = ({ secret }: { secret: DefaultEdgeFunctionSecret }) => {
         </div>
       </TableCell>
       <TableCell>
-        <p className="text-sm text-foreground-light">{secret.description}</p>
+        <p className="text-sm text-foreground-light">{$t(secret.description)}</p>
       </TableCell>
     </TableRow>
   )
