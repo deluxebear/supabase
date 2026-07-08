@@ -159,14 +159,17 @@ export const ExtensionRow = ({ extension }: ExtensionRowProps) => {
               <Loader2 className="animate-spin" size={16} />
             ) : (
               <Tooltip>
-                <TooltipTrigger>
-                  <Switch
-                    disabled={disabled}
-                    checked={isOn}
-                    onCheckedChange={() =>
-                      isOn ? setIsDisableModalOpen(true) : setShowConfirmEnableModal(true)
-                    }
-                  />
+                <TooltipTrigger asChild>
+                  <div>
+                    <Switch
+                      aria-label={$t('Toggle extension')}
+                      disabled={disabled}
+                      checked={isOn}
+                      onCheckedChange={() =>
+                        isOn ? setIsDisableModalOpen(true) : setShowConfirmEnableModal(true)
+                      }
+                    />
+                  </div>
                 </TooltipTrigger>
                 {disabled && (
                   <TooltipContent side="bottom">

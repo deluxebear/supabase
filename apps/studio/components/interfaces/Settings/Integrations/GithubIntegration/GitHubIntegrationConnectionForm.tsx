@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -41,7 +42,6 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
 
 interface GitHubIntegrationConnectionFormProps {
   connection?: GitHubConnection
@@ -103,7 +103,7 @@ export const GitHubIntegrationConnectionForm = ({
   const { mutate: createConnection, isPending: isCreatingConnection } =
     useGitHubConnectionCreateMutation({
       onSuccess: () => {
-        toast.success($t('GitHub integration successfully updated'))
+        toast.success($t('GitHub connection updated'))
       },
       onError: (error) => {
         // Don't show error toast when connection already exists - the branch
@@ -117,7 +117,7 @@ export const GitHubIntegrationConnectionForm = ({
   const { mutateAsync: deleteConnection, isPending: isDeletingConnection } =
     useGitHubConnectionDeleteMutation({
       onSuccess: () => {
-        toast.success($t('Successfully removed GitHub integration'))
+        toast.success($t('GitHub connection removed'))
       },
     })
 
@@ -392,7 +392,7 @@ export const GitHubIntegrationConnectionForm = ({
               <GitHubRepositoryField
                 form={githubSettingsForm}
                 name="repositoryId"
-                label={$t('GitHub Repository')}
+                label={$t('GitHub repository')}
                 layout="flex-row-reverse"
                 description={
                   connection
@@ -432,14 +432,16 @@ export const GitHubIntegrationConnectionForm = ({
                           label={$t('Working directory')}
                           description={
                             <>
-                              {$t('Relative path to the directory containing your')}{' '}
+                              
+                                                                {$t('Relative path to the directory containing your')}{' '}
                               <code className="text-code-inline whitespace-nowrap">supabase/</code>{' '}
                               folder.{' '}
                               <InlineLink
                                 href={`${DOCS_URL}/guides/deployment/branching/github-integration#set-the-working-directory`}
                               >
-                                {$t('Learn more')}
-                              </InlineLink>
+                                
+                                                                      {$t('Learn more')}
+                                                                    </InlineLink>
                             </>
                           }
                         >
@@ -465,9 +467,7 @@ export const GitHubIntegrationConnectionForm = ({
                           <FormItemLayout
                             layout="flex-row-reverse"
                             label={$t('Deploy to production')}
-                            description={$t(
-                              'Apply changes to your production database when you merge into your configured production GitHub branch'
-                            )}
+                            description={$t('Apply changes to your production database when you merge into your configured production GitHub branch')}
                           >
                             <FormControl>
                               <Switch
@@ -493,9 +493,7 @@ export const GitHubIntegrationConnectionForm = ({
                             <FormItemLayout
                               layout="flex-row-reverse"
                               label={$t('Production branch name')}
-                              description={$t(
-                                'The GitHub branch to sync with your production database (e.g., main, master)'
-                              )}
+                              description={$t('The GitHub branch to sync with your production database (e.g., main, master)')}
                             >
                               <div className="relative w-full">
                                 <FormControl>
@@ -519,19 +517,15 @@ export const GitHubIntegrationConnectionForm = ({
                   </CardContent>
                   <CardContent>
                     {hasAccessToBranching ? (
-                      <Admonition
-                        type="warning"
-                        title={$t('Branching and billing')}
-                        className="mb-4"
-                      >
-                        {$t(
-                          'Branching Compute is not covered by your organization&apos;s Spend Cap. Costs should be closely monitored, as they may be incurred.'
-                        )}{' '}
+                      <Admonition type="warning" title={$t('Branching and billing')} className="mb-4">
+                        
+                                                                      {$t('Branching Compute is not covered by your organization&apos;s Spend Cap. Costs should be closely monitored, as they may be incurred.')}{' '}
                         <InlineLink
                           href={`${DOCS_URL}/guides/platform/cost-control#usage-items-not-covered-by-the-spend-cap`}
                         >
-                          {$t('Learn more')}
-                        </InlineLink>
+                          
+                                                                            {$t('Learn more')}
+                                                                          </InlineLink>
                       </Admonition>
                     ) : (
                       <UpgradeToPro
@@ -637,8 +631,9 @@ export const GitHubIntegrationConnectionForm = ({
                           disabled={isDeletingConnection || isCheckingBranch}
                           loading={isDeletingConnection}
                         >
-                          {$t('Disable integration')}
-                        </Button>
+                          
+                                                                            {$t('Disable integration')}
+                                                                          </Button>
                       )}
                     </div>
                     <div className="flex space-x-2">
@@ -648,8 +643,9 @@ export const GitHubIntegrationConnectionForm = ({
                           onClick={() => githubSettingsForm.reset()}
                           disabled={!canUpdateGitHubConnection || isCheckingBranch}
                         >
-                          {$t('Cancel')}
-                        </Button>
+                          
+                                                                            {$t('Cancel')}
+                                                                          </Button>
                       )}
                       <Button
                         variant="primary"
@@ -687,10 +683,9 @@ export const GitHubIntegrationConnectionForm = ({
         loading={isUpdatingConnection}
       >
         <p className="text-sm text-foreground-light">
-          {$t(
-            'Open pull requests will only update your Supabase project on merge if the git base branch matches this new production git branch.'
-          )}
-        </p>
+          
+                            {$t('Open pull requests will only update your Supabase project on merge if the git base branch matches this new production git branch.')}
+                          </p>
       </ConfirmationModal>
 
       <ConfirmationModal
@@ -705,10 +700,9 @@ export const GitHubIntegrationConnectionForm = ({
       >
         <div className="space-y-3">
           <p className="text-sm text-foreground-light">
-            {$t(
-              'This will disconnect your current repository and create a new connection with the selected repository. All existing Supabase branches that are connected to the old repository will no longer be synced.'
-            )}
-          </p>
+            
+                                  {$t('This will disconnect your current repository and create a new connection with the selected repository. All existing Supabase branches that are connected to the old repository will no longer be synced.')}
+                                </p>
         </div>
       </ConfirmationModal>
     </>

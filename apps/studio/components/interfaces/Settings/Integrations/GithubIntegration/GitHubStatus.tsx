@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { useParams } from 'common'
 import { AlertCircle, ArrowUpRight, CheckCircle2 } from 'lucide-react'
 import Image from 'next/image'
@@ -9,7 +10,6 @@ import { useGitHubConnectionsQuery } from '@/data/integrations/github-connection
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
 
 export const GitHubStatus = () => {
   const { ref: projectRef } = useParams()
@@ -45,7 +45,7 @@ export const GitHubStatus = () => {
           className="block w-full transition truncate text-sm text-foreground-light hover:text-foreground"
         >
           <div className="w-full flex items-center justify-between">
-            <h3 className="text-sm">{$t('GitHub Integration')}</h3>
+            <h3 className="text-sm">{$t('GitHub connection')}</h3>
             <ArrowUpRight strokeWidth={1} className="h-4 w-4" />
           </div>
           <p className="mt-0.5 text-xs text-foreground-lighter flex items-center gap-2">

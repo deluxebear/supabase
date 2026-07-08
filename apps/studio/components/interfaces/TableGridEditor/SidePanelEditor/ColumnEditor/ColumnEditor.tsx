@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { safeSql } from '@supabase/pg-meta'
 import { useParams } from 'common'
 import { isEmpty, noop } from 'lodash'
@@ -65,7 +66,6 @@ import type { RetrieveTableResult } from '@/data/tables/table-retrieve-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useProtectedSchemas } from '@/hooks/useProtectedSchemas'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
 import type { SafePostgresColumn } from '@/lib/postgres-types'
 import type { DeepReadonly } from '@/lib/type-helpers'
 
@@ -263,9 +263,8 @@ export const ColumnEditor = ({
                 label={$t('Name')}
                 description={
                   <>
-                    {$t(
-                      'Recommended to use lowercase and use an underscore to separate words e.g.'
-                    )}{' '}
+                    
+                                            {$t('Recommended to use lowercase and use an underscore to separate words e.g.')}{' '}
                     <code className="text-code-inline">column_name</code>
                   </>
                 }
@@ -309,8 +308,9 @@ export const ColumnEditor = ({
                         rel="noreferrer"
                         href={`/project/${ref}/database/types`}
                       >
-                        {$t('Create enum types')}
-                      </Link>
+                        
+                                                        {$t('Create enum types')}
+                                                      </Link>
                     </Button>
                     <Button asChild variant="default" icon={<ExternalLink />}>
                       <Link
@@ -318,14 +318,16 @@ export const ColumnEditor = ({
                         rel="noreferrer"
                         href={`${DOCS_URL}/guides/database/tables#data-types`}
                       >
-                        {$t('About data types')}
-                      </Link>
+                        
+                                                        {$t('About data types')}
+                                                      </Link>
                     </Button>
                   </div>
                 }
               >
-                {$t('Data Type')}
-              </FormSectionLabel>
+                
+                                              {$t('Data Type')}
+                                            </FormSectionLabel>
             }
           >
             <FormSectionContent loading={false} className="lg:col-span-8!">
@@ -356,9 +358,7 @@ export const ColumnEditor = ({
                       layout="flex"
                       label={$t('Is Identity')}
                       id="isIdentity"
-                      description={$t(
-                        'Automatically assign a sequential unique number to the column'
-                      )}
+                      description={$t('Automatically assign a sequential unique number to the column')}
                     >
                       <Checkbox
                         id="isIdentity"
@@ -377,9 +377,7 @@ export const ColumnEditor = ({
                       layout="flex"
                       id="isArray"
                       label={$t('Define as Array')}
-                      description={$t(
-                        'Allow column to be defined as variable-length multidimensional arrays'
-                      )}
+                      description={$t('Allow column to be defined as variable-length multidimensional arrays')}
                     >
                       <Checkbox
                         id="isArray"
@@ -405,9 +403,7 @@ export const ColumnEditor = ({
           <SidePanel.Separator />
 
           <FormSection
-            header={
-              <FormSectionLabel className="lg:col-span-4!">{$t('Foreign Keys')}</FormSectionLabel>
-            }
+            header={<FormSectionLabel className="lg:col-span-4!">{$t('Foreign Keys')}</FormSectionLabel>}
           >
             <FormSectionContent loading={false} className="lg:col-span-8!">
               <ColumnForeignKey
@@ -431,9 +427,7 @@ export const ColumnEditor = ({
           </FormSection>
           <SidePanel.Separator />
           <FormSection
-            header={
-              <FormSectionLabel className="lg:col-span-4!">{$t('Constraints')}</FormSectionLabel>
-            }
+            header={<FormSectionLabel className="lg:col-span-4!">{$t('Constraints')}</FormSectionLabel>}
           >
             <FormSectionContent loading={false} className="lg:col-span-8!">
               <FormItemLayout
@@ -441,12 +435,11 @@ export const ColumnEditor = ({
                 layout="flex"
                 id="isPrimaryKey"
                 label={$t('Is Primary Key')}
-                description={$t(
-                  'A primary key indicates that a column or group of columns can be used as a unique identifier for rows in the table'
-                )}
+                description={$t('A primary key indicates that a column or group of columns can be used as a unique identifier for rows in the table')}
               >
                 <Switch
                   id="isPrimaryKey"
+                  aria-label={$t('Toggle primary key')}
                   checked={columnFields?.isPrimaryKey ?? false}
                   onCheckedChange={() =>
                     onUpdateField({
@@ -459,62 +452,66 @@ export const ColumnEditor = ({
               </FormItemLayout>
 
               <Tooltip>
-                <TooltipTrigger>
-                  <FormItemLayout
-                    isReactForm={false}
-                    layout="flex"
-                    id="isNullable"
-                    label={$t('Allow Nullable')}
-                    description={$t(
-                      'Allow the column to assume a NULL value if no value is provided'
-                    )}
-                  >
-                    <Switch
+                <TooltipTrigger asChild>
+                  {/* Wrapped in a div as the Switch is a button itself and cannot be nested within the trigger button */}
+                  <div>
+                    <FormItemLayout
+                      isReactForm={false}
+                      layout="flex"
                       id="isNullable"
-                      disabled={columnFields.isPrimaryKey}
-                      checked={columnFields.isNullable}
-                      onCheckedChange={() =>
-                        onUpdateField({ isNullable: !columnFields.isNullable })
-                      }
-                    />
-                  </FormItemLayout>
+                      label={$t('Allow Nullable')}
+                      description={$t('Allow the column to assume a NULL value if no value is provided')}
+                    >
+                      <Switch
+                        id="isNullable"
+                        aria-label={$t('Toggle is nullable')}
+                        disabled={columnFields.isPrimaryKey}
+                        checked={columnFields.isNullable}
+                        onCheckedChange={() =>
+                          onUpdateField({ isNullable: !columnFields.isNullable })
+                        }
+                      />
+                    </FormItemLayout>
+                  </div>
                 </TooltipTrigger>
                 {columnFields.isPrimaryKey && (
                   <TooltipContent side="left" align="start">
-                    {$t('Column is a primary key and hence cannot be NULL')}
-                  </TooltipContent>
+                    
+                                                          {$t('Column is a primary key and hence cannot be NULL')}
+                                                        </TooltipContent>
                 )}
               </Tooltip>
 
               <Tooltip>
-                <TooltipTrigger>
-                  <FormItemLayout
-                    isReactForm={false}
-                    layout="flex"
-                    id="isUnique"
-                    label={$t('Is Unique')}
-                    description={$t('Enforce values in the column to be unique across rows')}
-                  >
-                    <Switch
+                <TooltipTrigger asChild>
+                  {/* Wrapped in a div as the Switch is a button itself and cannot be nested within the trigger button */}
+                  <div>
+                    <FormItemLayout
+                      isReactForm={false}
+                      layout="flex"
                       id="isUnique"
-                      disabled={columnFields.isPrimaryKey}
-                      checked={columnFields.isUnique}
-                      onCheckedChange={() => onUpdateField({ isUnique: !columnFields.isUnique })}
-                    />
-                  </FormItemLayout>
+                      label={$t('Is Unique')}
+                      description={$t('Enforce values in the column to be unique across rows')}
+                    >
+                      <Switch
+                        id="isUnique"
+                        aria-label={$t('Toggle is unique')}
+                        disabled={columnFields.isPrimaryKey}
+                        checked={columnFields.isUnique}
+                        onCheckedChange={() => onUpdateField({ isUnique: !columnFields.isUnique })}
+                      />
+                    </FormItemLayout>
+                  </div>
                 </TooltipTrigger>
                 {columnFields.isPrimaryKey && (
                   <TooltipContent side="left" align="start">
-                    {$t('Column is a primary key and hence already unique')}
-                  </TooltipContent>
+                    
+                                                          {$t('Column is a primary key and hence already unique')}
+                                                        </TooltipContent>
                 )}
               </Tooltip>
 
-              <FormItemLayout
-                isReactForm={false}
-                label={$t('CHECK constraint')}
-                labelOptional="Optional"
-              >
+              <FormItemLayout isReactForm={false} label={$t('CHECK constraint')} labelOptional="Optional">
                 <SafeSqlInput
                   type="text"
                   placeholder={placeholder}
@@ -537,13 +534,20 @@ export const ColumnEditor = ({
           >
             {isNewRecord && (
               <div className="flex items-center gap-x-2">
-                <Switch checked={createMore} onCheckedChange={() => setCreateMore(!createMore)} />
+                <Switch
+                  id="toggle-create-more"
+                  aria-label={$t('Toggle create more')}
+                  checked={createMore}
+                  onCheckedChange={() => setCreateMore(!createMore)}
+                />
                 <label
+                  htmlFor="toggle-create-more"
                   className="text-foreground-light text-sm cursor-pointer select-none"
                   onClick={() => setCreateMore(!createMore)}
                 >
-                  {$t('Create more')}
-                </label>
+                  
+                                                    {$t('Create more')}
+                                                  </label>
               </div>
             )}
           </ActionBar>
