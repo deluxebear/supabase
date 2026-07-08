@@ -3173,6 +3173,7 @@
   "Manage hook": "管理钩子",
   "Manage how the dashboard looks and behaves on this browser and device.": "管理仪表板在此浏览器和设备上的外观和行为。",
   "Manage member access, allowed roles, and expiry settings.": "管理成员访问、允许的角色和过期设置。",
+  "Manage project keys": "管理项目密钥",
   "Manage queue permissions on": "管理队列权限",
   "Manage queues settings": "管理队列设置",
   "Manage read replicas": "管理读副本",
