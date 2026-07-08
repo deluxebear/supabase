@@ -31,6 +31,8 @@ export interface RegisterInput {
   metricsToken?: string | null
   stackKind?: string
   containerName?: string | null
+  k8sNamespace?: string | null
+  k8sPodSelector?: string | null
 }
 
 export function parseArgs(argv: string[]) {
@@ -74,9 +76,9 @@ export function buildUpsertSql(): { query: string } {
     query: `insert into platform.projects
       (ref, organization_id, name, status, cloud_provider, region,
        db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
-       db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc, publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc, metrics_url, metrics_token_enc, stack_kind, container_name)
+       db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc, publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc, metrics_url, metrics_token_enc, stack_kind, container_name, k8s_namespace, k8s_pod_selector)
       values ($1,(select id from platform.organizations where slug=$2),$3,$4,$5,$6,
-              $7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25)
+              $7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27)
       on conflict (ref) do update set
         name=excluded.name, status=excluded.status, cloud_provider=excluded.cloud_provider,
         region=excluded.region, db_host=excluded.db_host, db_port=excluded.db_port,
@@ -89,6 +91,8 @@ export function buildUpsertSql(): { query: string } {
         metrics_url=excluded.metrics_url, metrics_token_enc=excluded.metrics_token_enc,
         stack_kind=excluded.stack_kind,
         container_name=excluded.container_name,
+        k8s_namespace=excluded.k8s_namespace,
+        k8s_pod_selector=excluded.k8s_pod_selector,
         updated_at=now()`,
   }
 }
@@ -120,6 +124,8 @@ export function buildRowParams(input: RegisterInput, encrypt: (s: string) => str
     input.metricsToken ? encrypt(input.metricsToken) : null,
     input.stackKind ?? 'external',
     input.containerName ?? null,
+    input.k8sNamespace ?? null,
+    input.k8sPodSelector ?? null,
   ]
 }
 
@@ -286,6 +292,8 @@ export function main(argv = process.argv.slice(2)) {
             metricsUrl: flags['metrics-url'] || null,
             metricsToken: flags['metrics-token'] || null,
             containerName: flags['container'] || null,
+            k8sNamespace: flags['k8s-namespace'] || null,
+            k8sPodSelector: flags['k8s-pod-selector'] || null,
           } as RegisterInput
         })()),
     stackKind,

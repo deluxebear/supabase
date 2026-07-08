@@ -434,6 +434,48 @@ describe('container (M6.4)', () => {
   })
 })
 
+describe('k8s identity (M6.4 D3 T5)', () => {
+  it('parses a k8s identity object in the PATCH body', () => {
+    const { value } = parseProjectPatchInput({
+      k8s: { namespace: 'supabase', pod_selector: 'supabase-db-0' },
+    }) as any
+    expect(value.k8sNamespace).toBe('supabase')
+    expect(value.k8sPodSelector).toBe('supabase-db-0')
+  })
+  it('clears k8s identity with null', () => {
+    const { value } = parseProjectPatchInput({ k8s: null }) as any
+    expect(value.k8sNamespace).toBeNull()
+    expect(value.k8sPodSelector).toBeNull()
+  })
+  it('rejects a non-object, non-null k8s value', () => {
+    const r = parseProjectPatchInput({ k8s: 'supabase' })
+    expect('error' in r && r.error).toMatch(/Invalid k8s/i)
+  })
+  it('rejects non-string namespace/pod_selector', () => {
+    expect(parseProjectPatchInput({ k8s: { namespace: 5 } })).toEqual({
+      error: 'Invalid k8s.namespace',
+    })
+    expect(parseProjectPatchInput({ k8s: { pod_selector: 5 } })).toEqual({
+      error: 'Invalid k8s.pod_selector',
+    })
+  })
+  it('a k8s-only patch is not empty', () => {
+    const r = parseProjectPatchInput({ k8s: { namespace: 'supabase' } })
+    expect('error' in r).toBe(false)
+  })
+  it('updateProjectConnection writes k8s_namespace/k8s_pod_selector raw (no encryption)', async () => {
+    await updateProjectConnection('default', {
+      k8sNamespace: 'supabase',
+      k8sPodSelector: 'supabase-db-0',
+    })
+    const call = vi.mocked(executePlatformQuery).mock.calls[0][0]
+    expect(call.query).toContain('k8s_namespace')
+    expect(call.query).toContain('k8s_pod_selector')
+    expect(call.parameters).toContain('supabase')
+    expect(call.parameters).toContain('supabase-db-0')
+  })
+})
+
 describe('updateProjectConnection (M6.1)', () => {
   const EXTERNAL_ROW = HOST_ROW // ref 'default', stack_kind 'external'
   const SHARED_ROW = {

@@ -337,6 +337,8 @@ export interface ProjectPatch {
   metricsUrl?: string | null
   metricsToken?: string | null
   containerName?: string | null
+  k8sNamespace?: string | null
+  k8sPodSelector?: string | null
 }
 
 const IMMUTABLE_FIELDS = ['ref', 'stack_kind', 'stack_meta'] as const
@@ -480,6 +482,29 @@ export function parseProjectPatchInput(raw: unknown): { value: ProjectPatch } | 
     else if (obj.container.trim() !== '') value.containerName = obj.container.trim()
   }
 
+  // [self-platform] M6.4 D3: nested like logflare/metrics — a k8s identity is
+  // two related fields (namespace + pod selector), not a single scalar.
+  if (obj.k8s !== undefined) {
+    if (obj.k8s === null) {
+      value.k8sNamespace = null
+      value.k8sPodSelector = null
+    } else if (typeof obj.k8s !== 'object' || Array.isArray(obj.k8s)) {
+      return { error: 'Invalid k8s: must be an object or null' }
+    } else {
+      const k = obj.k8s as Record<string, unknown>
+      if (k.namespace !== undefined) {
+        if (k.namespace === null) value.k8sNamespace = null
+        else if (typeof k.namespace !== 'string') return { error: 'Invalid k8s.namespace' }
+        else if (k.namespace.trim() !== '') value.k8sNamespace = k.namespace.trim()
+      }
+      if (k.pod_selector !== undefined) {
+        if (k.pod_selector === null) value.k8sPodSelector = null
+        else if (typeof k.pod_selector !== 'string') return { error: 'Invalid k8s.pod_selector' }
+        else if (k.pod_selector.trim() !== '') value.k8sPodSelector = k.pod_selector.trim()
+      }
+    }
+  }
+
   if (
     value.name === undefined &&
     value.connection === undefined &&
@@ -487,7 +512,9 @@ export function parseProjectPatchInput(raw: unknown): { value: ProjectPatch } | 
     value.logflareToken === undefined &&
     value.metricsUrl === undefined &&
     value.metricsToken === undefined &&
-    value.containerName === undefined
+    value.containerName === undefined &&
+    value.k8sNamespace === undefined &&
+    value.k8sPodSelector === undefined
   ) {
     return { error: 'No editable fields in request body' }
   }
@@ -587,6 +614,9 @@ export async function updateProjectConnection(
   }
   // [self-platform] M6.4: plaintext, no encryptSecret — mirrors metrics_url.
   if (patch.containerName !== undefined) set('container_name', patch.containerName)
+  // [self-platform] M6.4 D3: k8s identity is non-secret, same as container_name.
+  if (patch.k8sNamespace !== undefined) set('k8s_namespace', patch.k8sNamespace)
+  if (patch.k8sPodSelector !== undefined) set('k8s_pod_selector', patch.k8sPodSelector)
   if (sets.length === 0) throw new Error('empty project patch') // parse guarantees ≥1 — defense only
 
   const update = await executePlatformQuery({

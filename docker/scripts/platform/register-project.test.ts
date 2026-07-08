@@ -220,7 +220,9 @@ describe('analytics fields (M2.1)', () => {
     // M6.3: length 22->24 and stack_kind index 21->23 — metrics_url/token
     // (M6.3) are inserted between logflare_token_enc and stack_kind.
     // M6.4: length 24->25 — container_name appended trailing (index unaffected).
-    expect(withAnalytics).toHaveLength(25)
+    // M6.4 D3 T5: length 25->27 — k8s_namespace/k8s_pod_selector appended
+    // trailing after container_name (index unaffected).
+    expect(withAnalytics).toHaveLength(27)
     expect(withAnalytics[19]).toBe('http://lf')
     expect(withAnalytics[20]).toBe('enc(tok)')
     expect(withAnalytics[23]).toBe('external')
@@ -318,8 +320,10 @@ describe('stack_kind (M5.0)', () => {
     // between logflare_token_enc and stack_kind (see 'metrics fields (M6.3)').
     // M6.4: length is now 25 (container_name trailing) but stack_kind stays
     // at index 23 — container_name is appended AFTER it (see below).
+    // M6.4 D3 T5: length is now 27 (k8s_namespace/k8s_pod_selector trailing)
+    // but stack_kind stays at index 23.
     const params = buildRowParams(baseInput(), (s) => `enc(${s})`)
-    expect(params).toHaveLength(25)
+    expect(params).toHaveLength(27)
     expect(params[23]).toBe('external')
     const explicit = buildRowParams({ ...baseInput(), stackKind: 'shared-db' }, (s) => `enc(${s})`)
     expect(explicit[23]).toBe('shared-db')
@@ -341,7 +345,7 @@ describe('stack_kind (M5.0)', () => {
 describe('container_name (M6.4)', () => {
   it('registers container_name as $25', () => {
     const params = buildRowParams({ ...baseInput(), containerName: 'supabase-db' }, (s) => s)
-    expect(params).toHaveLength(25)
+    expect(params).toHaveLength(27) // M6.4 D3 T5: k8s_namespace/k8s_pod_selector appended trailing
     expect(params[24]).toBe('supabase-db')
     expect(buildUpsertSql().query).toContain('container_name=excluded.container_name')
   })
@@ -364,5 +368,25 @@ describe('container_name (M6.4)', () => {
       { ref: 'r', org: 'o', name: 'n' }
     )
     expect(input.containerName).toBe('supabase-db')
+  })
+})
+
+describe('k8s identity (M6.4 D3 T5)', () => {
+  it('registers k8s_namespace/k8s_pod_selector as $26/$27', () => {
+    const params = buildRowParams(
+      { ...baseInput(), k8sNamespace: 'supabase', k8sPodSelector: 'supabase-db-0' },
+      (s) => s
+    )
+    expect(params).toHaveLength(27)
+    expect(params[25]).toBe('supabase')
+    expect(params[26]).toBe('supabase-db-0')
+    expect(buildUpsertSql().query).toContain('k8s_namespace=excluded.k8s_namespace')
+    expect(buildUpsertSql().query).toContain('k8s_pod_selector=excluded.k8s_pod_selector')
+  })
+
+  it('defaults to null when absent', () => {
+    const params = buildRowParams(baseInput(), (s) => s)
+    expect(params[25]).toBeNull()
+    expect(params[26]).toBeNull()
   })
 })

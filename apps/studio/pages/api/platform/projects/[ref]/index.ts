@@ -129,6 +129,8 @@ async function buildSelfPlatformBlock(row: PlatformProjectRow) {
     logflare_url: row.logflare_url ?? null,
     metrics_url: row.metrics_url ?? null,
     container_name: row.container_name ?? null,
+    k8s_namespace: row.k8s_namespace ?? null,
+    k8s_pod_selector: row.k8s_pod_selector ?? null,
     secrets_set: {
       db_pass: true,
       anon_key: true,

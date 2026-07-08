@@ -70,6 +70,8 @@ const ROW = {
   metrics_url: 'http://h:9598/metrics',
   metrics_token_enc: 'METRICS_ENC',
   container_name: 'supabase-db',
+  k8s_namespace: 'supabase',
+  k8s_pod_selector: 'supabase-db-0',
   stack_kind: 'external',
   stack_meta: {},
 }
@@ -205,6 +207,8 @@ describe('GET self_platform block (M6.1)', () => {
       logflare_url: null,
       metrics_url: 'http://h:9598/metrics',
       container_name: 'supabase-db',
+      k8s_namespace: 'supabase',
+      k8s_pod_selector: 'supabase-db-0',
       secrets_set: {
         db_pass: true,
         anon_key: true,
