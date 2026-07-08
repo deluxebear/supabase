@@ -1,0 +1,168 @@
+# Build & publish two self-hosted Studio images to Docker Hub:
+#   deluxebear/supabase-studio       — plain self-hosted (IS_PLATFORM off)
+#   deluxebear/supabase-plt-studio   — platform mode (IS_PLATFORM/SELF_PLATFORM on)
+#
+# Both are multi-arch (linux/amd64 + linux/arm64), built natively on GitHub's
+# amd64 and arm64 hosted runners (no QEMU), then merged into a single manifest
+# tagged `<YYYY.MM.DD>-sha-<shortsha>` and `latest`.
+#
+# Modelled on .github/workflows/publish_image.yml (the upstream publish flow).
+#
+# Required repository secrets: DOCKER_USERNAME, DOCKER_PASSWORD.
+# Platform build bakes NEXT_PUBLIC_* at build time (Next.js inlines them):
+#   - workflow_dispatch inputs override per-run;
+#   - otherwise repo variables PLATFORM_API_URL / PLATFORM_GOTRUE_URL are used;
+#   - PLATFORM_API_URL defaults to "/api" (same-origin, portable).
+#   NEXT_PUBLIC_GOTRUE_URL is the browser-reachable platform GoTrue (login) URL —
+#   deployment-specific; set it or the platform image's login won't reach GoTrue.
+name: Publish Self-hosted Studio Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform_api_url:
+        description: 'Platform NEXT_PUBLIC_API_URL (relative "/api" is portable)'
+        required: false
+        default: '/api'
+      platform_gotrue_url:
+        description: 'Platform NEXT_PUBLIC_GOTRUE_URL (browser-reachable platform GoTrue / login URL)'
+        required: false
+        default: ''
+      update_latest:
+        description: 'Also update the :latest tag'
+        required: false
+        default: 'true'
+  push:
+    tags:
+      - 'studio-v*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  settings:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - id: meta
+        uses: docker/metadata-action@818d4b7b91585d195f67373fd9cb0332e31a7175 # v4.6.0
+        with:
+          images: deluxebear/supabase-studio
+          tags: |
+            type=sha,prefix={{date 'YYYY.MM.DD'}}-sha-
+
+  build:
+    needs: settings
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {
+              variant: studio,
+              image: deluxebear/supabase-studio,
+              platform: 'false',
+              arch: amd64,
+              runner: ubuntu-24.04,
+            }
+          - {
+              variant: studio,
+              image: deluxebear/supabase-studio,
+              platform: 'false',
+              arch: arm64,
+              runner: ubuntu-24.04-arm,
+            }
+          - {
+              variant: plt-studio,
+              image: deluxebear/supabase-plt-studio,
+              platform: 'true',
+              arch: amd64,
+              runner: ubuntu-24.04,
+            }
+          - {
+              variant: plt-studio,
+              image: deluxebear/supabase-plt-studio,
+              platform: 'true',
+              arch: arm64,
+              runner: ubuntu-24.04-arm,
+            }
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+
+      - uses: docker/setup-buildx-action@885d1462b80bc1c1c7f0b00334ad271f09369c55 # v2.10.0
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2.2.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push ${{ matrix.image }} (${{ matrix.arch }})
+        uses: docker/build-push-action@1104d471370f9806843c095c1db02b5a90c5f8b6 # v3.3.1
+        with:
+          push: true
+          context: .
+          file: apps/studio/Dockerfile
+          target: production
+          platforms: linux/${{ matrix.arch }}
+          tags: ${{ matrix.image }}:${{ needs.settings.outputs.version }}-${{ matrix.arch }}
+          # Platform variant bakes the NEXT_PUBLIC_* flags; the plain variant
+          # gets IS_PLATFORM/SELF_PLATFORM=false and empty (unused) URLs.
+          build-args: |
+            NEXT_PUBLIC_IS_PLATFORM=${{ matrix.platform }}
+            NEXT_PUBLIC_SELF_PLATFORM=${{ matrix.platform }}
+            NEXT_PUBLIC_API_URL=${{ matrix.platform == 'true' && (inputs.platform_api_url || vars.PLATFORM_API_URL || '/api') || '' }}
+            NEXT_PUBLIC_GOTRUE_URL=${{ matrix.platform == 'true' && (inputs.platform_gotrue_url || vars.PLATFORM_GOTRUE_URL || '') || '' }}
+          cache-from: type=gha,scope=${{ matrix.variant }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.variant }}-${{ matrix.arch }}
+
+  merge:
+    needs:
+      - settings
+      - build
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        image:
+          - deluxebear/supabase-studio
+          - deluxebear/supabase-plt-studio
+    steps:
+      - uses: docker/setup-buildx-action@885d1462b80bc1c1c7f0b00334ad271f09369c55 # v2.10.0
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2.2.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Merge multi-arch manifest for ${{ matrix.image }}
+        env:
+          IMAGE: ${{ matrix.image }}
+          VERSION: ${{ needs.settings.outputs.version }}
+          UPDATE_LATEST: ${{ inputs.update_latest || 'true' }}
+        run: |
+          set -euo pipefail
+          docker buildx imagetools create -t "${IMAGE}:${VERSION}" \
+            "${IMAGE}:${VERSION}-amd64" \
+            "${IMAGE}:${VERSION}-arm64"
+          if [ "${UPDATE_LATEST}" = "true" ]; then
+            docker buildx imagetools create -t "${IMAGE}:latest" \
+              "${IMAGE}:${VERSION}-amd64" \
+              "${IMAGE}:${VERSION}-arm64"
+          fi
+          {
+            echo "### Published \`${IMAGE}\`"
+            echo ""
+            echo "| Tag | |"
+            echo "|-----|--|"
+            echo "| \`${IMAGE}:${VERSION}\` | multi-arch (amd64 + arm64) |"
+            [ "${UPDATE_LATEST}" = "true" ] && echo "| \`${IMAGE}:latest\` | multi-arch (amd64 + arm64) |"
+          } >> "$GITHUB_STEP_SUMMARY"

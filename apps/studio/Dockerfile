@@ -52,6 +52,29 @@ CMD ["pnpm", "dev:studio"]
 # Compile Next.js
 FROM dev AS builder
 
+# Self-hosted-platform build flags. Next.js inlines NEXT_PUBLIC_* at build time,
+# so the platform variant of the image must be compiled with these set. Left
+# unset (the default) the image builds as plain self-hosted Studio — identical
+# to the upstream supabase/studio image.
+#   NEXT_PUBLIC_IS_PLATFORM      "true" enables platform (control-plane) mode
+#   NEXT_PUBLIC_SELF_PLATFORM    "true" enables the in-repo platform API
+#   NEXT_PUBLIC_API_URL          platform API base (relative "/api" is portable)
+#   NEXT_PUBLIC_GOTRUE_URL       browser-reachable platform GoTrue (login) URL
+#   NEXT_PUBLIC_SITE_URL         dashboard site URL (optional)
+#   NEXT_PUBLIC_STUDIO_AUTH_MODE studio auth mode (optional)
+ARG NEXT_PUBLIC_IS_PLATFORM
+ARG NEXT_PUBLIC_SELF_PLATFORM
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_GOTRUE_URL
+ARG NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_STUDIO_AUTH_MODE
+ENV NEXT_PUBLIC_IS_PLATFORM=${NEXT_PUBLIC_IS_PLATFORM} \
+    NEXT_PUBLIC_SELF_PLATFORM=${NEXT_PUBLIC_SELF_PLATFORM} \
+    NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
+    NEXT_PUBLIC_GOTRUE_URL=${NEXT_PUBLIC_GOTRUE_URL} \
+    NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL} \
+    NEXT_PUBLIC_STUDIO_AUTH_MODE=${NEXT_PUBLIC_STUDIO_AUTH_MODE}
+
 RUN pnpm --filter studio exec next build
 
 # Copy only compiled code and dependencies
