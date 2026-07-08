@@ -1,3 +1,7 @@
+import dayjs from 'dayjs'
+
+import 'dayjs/locale/zh-cn'
+
 import i18next from 'i18next'
 import { initReactI18next } from 'react-i18next'
 
@@ -7,6 +11,10 @@ export const LOCALES = ['en', 'zh-CN'] as const
 export type Locale = (typeof LOCALES)[number]
 export const DEFAULT_LOCALE: Locale = 'en'
 export const LOCALE_STORAGE_KEY = 'studio.locale'
+
+// dayjs uses lowercase BCP-47-ish ids; map our app locales to its locale names
+// so relative times (fromNow) and formatted dates render in the active language.
+const DAYJS_LOCALE: Record<Locale, string> = { en: 'en', 'zh-CN': 'zh-cn' }
 
 export const i18n = i18next.createInstance()
 
@@ -43,6 +51,8 @@ export function getInitialLocale(): Locale {
 
 export async function applyLocale(locale: Locale): Promise<void> {
   await i18n.changeLanguage(locale)
+  // Keep dayjs in sync so timestamps/relative times localize with the UI.
+  dayjs.locale(DAYJS_LOCALE[locale])
   if (typeof window !== 'undefined') {
     window.localStorage.setItem(LOCALE_STORAGE_KEY, locale)
   }
