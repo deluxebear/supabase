@@ -245,7 +245,7 @@ export const CreateFunction = ({
                         defaultValue={field.value}
                       >
                         <SelectTrigger className="col-span-8">
-                          {field.value === 'function' ? 'Function' : 'Stored procedure'}
+                          {field.value === 'function' ? $t('Function') : $t('Stored procedure')}
                         </SelectTrigger>
                         <SelectContent align="end">
                           <SelectItem value="function">

@@ -2,6 +2,7 @@ import { Maximize2, Minimize2 } from 'lucide-react'
 import { Button, cn, FormControl, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
+import { t as $t } from '@/lib/i18n'
 
 export const FunctionEditor = ({
   field,
@@ -47,7 +48,7 @@ export const FunctionEditor = ({
             />
           </TooltipTrigger>
           <TooltipContent side="bottom">
-            {focused ? 'Minimize editor' : 'Maximize editor'}
+            {focused ? $t('Minimize editor') : $t('Maximize editor')}
           </TooltipContent>
         </Tooltip>
       </div>

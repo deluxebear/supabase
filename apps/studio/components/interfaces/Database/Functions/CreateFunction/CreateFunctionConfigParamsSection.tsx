@@ -21,8 +21,8 @@ export const CreateFunctionConfigParamsSection = () => {
         createEmptyRow={() => ({ name: '', value: '' })}
         keyPlaceholder="parameter_name"
         valuePlaceholder="parameter_value"
-        addLabel="Add a new config"
-        removeLabel="Remove configuration parameter"
+        addLabel={$t('Add a new config')}
+        removeLabel={$t('Remove configuration parameter')}
         rowsClassName="space-y-2 pt-4"
       />
     </>

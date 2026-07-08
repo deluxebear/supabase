@@ -320,8 +320,8 @@ export const FunctionsList = () => {
                     content: {
                       side: 'bottom',
                       text: !canCreateFunctions
-                        ? 'You need additional permissions to create functions'
-                        : 'Create with Supabase Assistant',
+                        ? $t('You need additional permissions to create functions')
+                        : $t('Create with Supabase Assistant'),
                     },
                   }}
                 />
@@ -459,7 +459,7 @@ const CreateFunctionButton = ({
         tooltip={{
           content: {
             side: 'bottom',
-            text: 'You need additional permissions to create functions',
+            text: $t('You need additional permissions to create functions'),
           },
         }}
       >

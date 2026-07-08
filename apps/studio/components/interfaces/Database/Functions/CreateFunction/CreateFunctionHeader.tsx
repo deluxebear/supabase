@@ -27,7 +27,7 @@ export const CreateFunctionHeader = ({
               </>
             )
           ) : (
-            'Add a new function'
+            $t('Add a new function')
           )}
         </SheetTitle>
       </div>
