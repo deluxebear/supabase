@@ -1,13 +1,20 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL
-  ? new URL(process.env.NEXT_PUBLIC_API_URL).origin
-  : ''
-const SUPABASE_URL = process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).origin : ''
-const GOTRUE_URL = process.env.NEXT_PUBLIC_GOTRUE_URL
-  ? new URL(process.env.NEXT_PUBLIC_GOTRUE_URL).origin
-  : ''
-const MARKETPLACE_API_URL = process.env.NEXT_PUBLIC_MARKETPLACE_API_URL
-  ? new URL(process.env.NEXT_PUBLIC_MARKETPLACE_API_URL).origin
-  : ''
+// Extract the origin for CSP connect-src. A relative or otherwise non-absolute
+// value (e.g. a same-origin "/api") has no distinct origin to allow — it's
+// already covered by 'self' — so it contributes nothing rather than throwing.
+// (Keeps the platform image portable: NEXT_PUBLIC_API_URL can be "/api".)
+const toOrigin = (value: string | undefined): string => {
+  if (!value) return ''
+  try {
+    return new URL(value).origin
+  } catch {
+    return ''
+  }
+}
+
+const API_URL = toOrigin(process.env.NEXT_PUBLIC_API_URL)
+const SUPABASE_URL = toOrigin(process.env.SUPABASE_URL)
+const GOTRUE_URL = toOrigin(process.env.NEXT_PUBLIC_GOTRUE_URL)
+const MARKETPLACE_API_URL = toOrigin(process.env.NEXT_PUBLIC_MARKETPLACE_API_URL)
 
 const SUPABASE_PROJECTS_URL = 'https://*.supabase.co https://*.storage.supabase.co'
 const SUPABASE_PROJECTS_URL_WS = 'wss://*.supabase.co'
@@ -21,14 +28,10 @@ if (SUPABASE_URL) {
 }
 
 // Needed to test docs search in local dev
-const SUPABASE_DOCS_PROJECT_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin
-  : ''
+const SUPABASE_DOCS_PROJECT_URL = toOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL)
 
 // Needed to test docs content API in local dev
-const SUPABASE_CONTENT_API_URL = process.env.NEXT_PUBLIC_CONTENT_API_URL
-  ? new URL(process.env.NEXT_PUBLIC_CONTENT_API_URL).origin
-  : ''
+const SUPABASE_CONTENT_API_URL = toOrigin(process.env.NEXT_PUBLIC_CONTENT_API_URL)
 
 const isDevOrStaging =
   process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview' ||

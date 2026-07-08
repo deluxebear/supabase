@@ -58,7 +58,10 @@ FROM dev AS builder
 # to the upstream supabase/studio image.
 #   NEXT_PUBLIC_IS_PLATFORM      "true" enables platform (control-plane) mode
 #   NEXT_PUBLIC_SELF_PLATFORM    "true" enables the in-repo platform API
-#   NEXT_PUBLIC_API_URL          platform API base (relative "/api" is portable)
+#   NEXT_PUBLIC_API_URL          platform API base — must be ABSOLUTE
+#                                (e.g. https://studio.example.com/api); the build
+#                                statically prerenders pages, so a relative "/api"
+#                                throws "Invalid URL" during SSR.
 #   NEXT_PUBLIC_GOTRUE_URL       browser-reachable platform GoTrue (login) URL
 #   NEXT_PUBLIC_SITE_URL         dashboard site URL (optional)
 #   NEXT_PUBLIC_STUDIO_AUTH_MODE studio auth mode (optional)

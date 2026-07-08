@@ -9,23 +9,25 @@
 # Modelled on .github/workflows/publish_image.yml (the upstream publish flow).
 #
 # Required repository secrets: DOCKER_USERNAME, DOCKER_PASSWORD.
-# Platform build bakes NEXT_PUBLIC_* at build time (Next.js inlines them):
-#   - workflow_dispatch inputs override per-run;
-#   - otherwise repo variables PLATFORM_API_URL / PLATFORM_GOTRUE_URL are used;
-#   - PLATFORM_API_URL defaults to "/api" (same-origin, portable).
-#   NEXT_PUBLIC_GOTRUE_URL is the browser-reachable platform GoTrue (login) URL —
-#   deployment-specific; set it or the platform image's login won't reach GoTrue.
+# The platform variant bakes NEXT_PUBLIC_* at build time (Next.js inlines them,
+# and the build statically prerenders pages, so these MUST be absolute URLs — a
+# relative "/api" throws "Invalid URL" during SSR). Provide them via
+# workflow_dispatch inputs, or repo variables PLATFORM_API_URL / PLATFORM_GOTRUE_URL
+# for tag builds. They are deployment-specific (the browser-reachable Studio +
+# platform GoTrue origins), so a platform image is built for a specific deploy.
+# Backend config (PLATFORM_PG_META_URL, PLATFORM_POSTGRES_*, server-side
+# PLATFORM_GOTRUE_URL) stays runtime env — not baked.
 name: Publish Self-hosted Studio Images
 
 on:
   workflow_dispatch:
     inputs:
       platform_api_url:
-        description: 'Platform NEXT_PUBLIC_API_URL (relative "/api" is portable)'
+        description: 'Platform NEXT_PUBLIC_API_URL — REQUIRED absolute URL, e.g. https://studio.example.com/api'
         required: false
-        default: '/api'
+        default: ''
       platform_gotrue_url:
-        description: 'Platform NEXT_PUBLIC_GOTRUE_URL (browser-reachable platform GoTrue / login URL)'
+        description: 'Platform NEXT_PUBLIC_GOTRUE_URL — absolute platform GoTrue (login) URL, e.g. https://studio.example.com/auth/v1'
         required: false
         default: ''
       update_latest:
@@ -93,6 +95,25 @@ jobs:
             }
     runs-on: ${{ matrix.runner }}
     steps:
+      # The platform build statically prerenders pages, so NEXT_PUBLIC_API_URL /
+      # NEXT_PUBLIC_GOTRUE_URL must be absolute — a relative "/api" throws
+      # "Invalid URL" during SSR. Fail fast with a clear message.
+      - name: Validate platform build inputs
+        if: matrix.platform == 'true'
+        env:
+          API_URL: ${{ inputs.platform_api_url || vars.PLATFORM_API_URL }}
+          GOTRUE_URL: ${{ inputs.platform_gotrue_url || vars.PLATFORM_GOTRUE_URL }}
+        run: |
+          fail=0
+          case "$API_URL" in
+            http://*|https://*) ;;
+            *) echo "::error::Platform image needs an absolute NEXT_PUBLIC_API_URL (http(s)://…, e.g. https://studio.example.com/api). Set the 'platform_api_url' input or the PLATFORM_API_URL repo variable. Got: '${API_URL}'"; fail=1 ;;
+          esac
+          if [ -z "$GOTRUE_URL" ]; then
+            echo "::warning::NEXT_PUBLIC_GOTRUE_URL is empty — the platform image's login page will not reach GoTrue. Set 'platform_gotrue_url' or PLATFORM_GOTRUE_URL."
+          fi
+          exit $fail
+
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
@@ -119,8 +140,8 @@ jobs:
           build-args: |
             NEXT_PUBLIC_IS_PLATFORM=${{ matrix.platform }}
             NEXT_PUBLIC_SELF_PLATFORM=${{ matrix.platform }}
-            NEXT_PUBLIC_API_URL=${{ matrix.platform == 'true' && (inputs.platform_api_url || vars.PLATFORM_API_URL || '/api') || '' }}
-            NEXT_PUBLIC_GOTRUE_URL=${{ matrix.platform == 'true' && (inputs.platform_gotrue_url || vars.PLATFORM_GOTRUE_URL || '') || '' }}
+            NEXT_PUBLIC_API_URL=${{ matrix.platform == 'true' && (inputs.platform_api_url || vars.PLATFORM_API_URL) || '' }}
+            NEXT_PUBLIC_GOTRUE_URL=${{ matrix.platform == 'true' && (inputs.platform_gotrue_url || vars.PLATFORM_GOTRUE_URL) || '' }}
           cache-from: type=gha,scope=${{ matrix.variant }}-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=${{ matrix.variant }}-${{ matrix.arch }}
 
