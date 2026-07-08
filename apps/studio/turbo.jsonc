@@ -80,6 +80,8 @@
         "DEFAULT_PROJECT_NAME",
         "DEFAULT_ORGANIZATION_NAME",
         "OPENAI_API_KEY",
+        "OPENAI_BASE_URL",
+        "OPENAI_ASSISTANT_MODEL",
         "BRAINTRUST_API_KEY",
         "BRAINTRUST_PROJECT_ID",
         // Gates the dashboard assistant between the remote MCP server and the

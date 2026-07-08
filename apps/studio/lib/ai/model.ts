@@ -1,4 +1,4 @@
-import { openai } from '@ai-sdk/openai'
+import { createOpenAI, openai } from '@ai-sdk/openai'
 import { LanguageModel } from 'ai'
 
 import { checkAwsCredentials, createRoutedBedrock } from './bedrock'
@@ -87,16 +87,39 @@ export async function getModel(params: GetModelParams): Promise<ModelResponse> {
     if (!process.env.OPENAI_API_KEY) {
       return { error: new Error('OPENAI_API_KEY not available') }
     }
+
+    // Self-hosting hooks (all optional — unset ⇒ identical to the built-in
+    // OpenAI behavior). Let operators point the OpenAI-compatible client at a
+    // private endpoint and/or force a specific model id via env, so non-OpenAI
+    // LLMs (Azure OpenAI, LiteLLM, vLLM, Ollama, …) work without code changes:
+    //   OPENAI_BASE_URL         custom OpenAI-compatible endpoint, e.g. https://gateway/v1
+    //   OPENAI_ASSISTANT_MODEL  model id to send, e.g. gpt-4o / qwen2.5-coder
+    const customBaseURL = process.env.OPENAI_BASE_URL
+    const customModelId = process.env.OPENAI_ASSISTANT_MODEL
+    const isCustomEndpoint = !!customBaseURL || !!customModelId
+
+    const openaiProvider = customBaseURL
+      ? createOpenAI({ apiKey: process.env.OPENAI_API_KEY, baseURL: customBaseURL })
+      : openai
+    const resolvedModelId = customModelId ?? (chosenModelId as OpenAIModelId)
+
+    // reasoningEffort + `store` are OpenAI-reasoning-model specifics; custom
+    // endpoints/models frequently reject unknown request fields, so omit them.
     const baseProviderOptions = providerRegistry.providerOptions?.openai ?? {}
-    const openaiProviderOptions = modelEntry?.reasoningEffort
-      ? { ...baseProviderOptions, reasoningEffort: modelEntry.reasoningEffort }
-      : baseProviderOptions
+    const openaiProviderOptions = isCustomEndpoint
+      ? {}
+      : modelEntry?.reasoningEffort
+        ? { ...baseProviderOptions, reasoningEffort: modelEntry.reasoningEffort }
+        : baseProviderOptions
+
     return {
       modelParams: {
-        model: openai(chosenModelId as OpenAIModelId),
+        model: openaiProvider(resolvedModelId),
         providerOptions: { openai: openaiProviderOptions },
       },
-      systemProviderOptions: models[chosenModelId as OpenAIModelId]?.systemProviderOptions,
+      systemProviderOptions: isCustomEndpoint
+        ? undefined
+        : models[chosenModelId as OpenAIModelId]?.systemProviderOptions,
     }
   }
 
