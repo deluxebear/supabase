@@ -5,6 +5,7 @@ import { forwardRef, useCallback, useEffect, useRef, useState } from 'react'
 import type React from 'react'
 import { cn, CommandInput } from 'ui'
 
+import { uiT } from '../../lib/i18n'
 import { useQuery, useSetQuery } from './hooks/queryHooks'
 import { useCommandMenuTelemetryContext } from './hooks/useCommandMenuTelemetryContext'
 
@@ -120,7 +121,7 @@ const CommandMenuInput = forwardRef<
         ref={inputRef}
         value={inputValue}
         onValueChange={handleValueChange}
-        placeholder="Run a command or search..."
+        placeholder={uiT('Run a command or search...')}
         onCompositionStart={() => setImeComposing(true)}
         onCompositionEnd={() => setImeComposing(false)}
         className={cn(

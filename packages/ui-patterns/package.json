@@ -714,6 +714,10 @@
       "import": "./src/info-tooltip.tsx",
       "types": "./src/info-tooltip.tsx"
     },
+    "./lib/i18n": {
+      "import": "./src/lib/i18n.ts",
+      "types": "./src/lib/i18n.ts"
+    },
     "./multi-select": {
       "import": "./src/multi-select/index.tsx",
       "types": "./src/multi-select/index.tsx"

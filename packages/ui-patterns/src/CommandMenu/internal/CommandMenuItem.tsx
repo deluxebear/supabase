@@ -3,6 +3,7 @@
 import { forwardRef, type PropsWithChildren } from 'react'
 import { cn, CommandItem } from 'ui'
 
+import { uiT } from '../../lib/i18n'
 import { useQuery } from '../api/hooks/queryHooks'
 import { useCommandMenuTelemetryContext } from '../api/hooks/useCommandMenuTelemetryContext'
 import { useCrossCompatRouter } from '../api/hooks/useCrossCompatRouter'
@@ -98,7 +99,9 @@ const CommandMenuItem = forwardRef<
     <CommandItem
       ref={ref}
       onSelect={handleCommandSelect}
-      value={command.value ?? command.name}
+      // Include the translated name so the cmdk fuzzy filter matches queries in
+      // the active locale as well as the original English value.
+      value={`${command.value ?? command.name} ${uiT(command.name)}`}
       forceMount={command.forceMount}
       className={cn(
         generateCommandClassNames(isRouteCommand(command)),

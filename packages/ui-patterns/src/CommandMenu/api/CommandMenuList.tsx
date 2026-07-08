@@ -3,6 +3,7 @@
 import { forwardRef, useRef } from 'react'
 import { cn, CommandList } from 'ui'
 
+import { uiT } from '../../lib/i18n'
 import { CommandMenuEmpty } from '../internal/CommandMenuEmpty'
 import { CommandMenuGroup } from '../internal/CommandMenuGroup'
 import { CommandMenuItem } from '../internal/CommandMenuItem'
@@ -31,17 +32,21 @@ const CommandMenuList = forwardRef<
       className={cn('max-h-[initial] overflow-y-auto overflow-x-hidden bg-transparent', className)}
       {...props}
     >
-      <CommandMenuEmpty listRef={innerRef}>No results found.</CommandMenuEmpty>
+      <CommandMenuEmpty listRef={innerRef}>{uiT('No results found.')}</CommandMenuEmpty>
       {commandSections.map((section) => {
         if (section.commands.every((command) => command.defaultHidden) && !query) return null
 
         return (
-          <CommandMenuGroup key={section.id} heading={section.name} forceMount={section.forceMount}>
+          <CommandMenuGroup
+            key={section.id}
+            heading={uiT(section.name)}
+            forceMount={section.forceMount}
+          >
             {section.commands
               .filter((command) => !command.defaultHidden || query)
               .map((command) => (
                 <CommandMenuItem key={command.id} command={command}>
-                  <TextHighlighter>{command.name}</TextHighlighter>
+                  <TextHighlighter>{uiT(command.name)}</TextHighlighter>
                 </CommandMenuItem>
               ))}
           </CommandMenuGroup>

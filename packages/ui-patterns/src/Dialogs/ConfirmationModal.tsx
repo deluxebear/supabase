@@ -16,6 +16,7 @@ import {
 } from 'ui'
 import { DialogDescription, DialogHeader } from 'ui/src/components/shadcn/ui/dialog'
 
+import { uiT } from '../lib/i18n'
 import { Admonition } from './../admonition'
 
 export interface ConfirmationModalProps {
@@ -52,8 +53,8 @@ export const ConfirmationModal = forwardRef<
       onCancel,
       onConfirm,
       loading: loading_,
-      cancelLabel = 'Cancel',
-      confirmLabel = 'Submit',
+      cancelLabel = uiT('Cancel'),
+      confirmLabel = uiT('Submit'),
       confirmLabelLoading,
       alert = undefined,
       children,

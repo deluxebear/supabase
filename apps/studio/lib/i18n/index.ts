@@ -4,6 +4,7 @@ import 'dayjs/locale/zh-cn'
 
 import i18next from 'i18next'
 import { initReactI18next } from 'react-i18next'
+import { setUiTranslator } from 'ui-patterns/lib/i18n'
 
 import zhCN from './locales/zh-CN.json'
 
@@ -35,6 +36,12 @@ i18n.use(initReactI18next).init({
 })
 
 export const t = i18n.t.bind(i18n) as (key: string, vars?: Record<string, unknown>) => string
+
+// Bridge the studio translator into ui-patterns so its cross-package components
+// (CommandMenu, ConfirmationModal, …) localize their hard-coded strings and
+// host-provided labels. `t` reads the live i18n instance, so this survives
+// locale changes without re-injection.
+setUiTranslator((key) => t(key))
 
 function isLocale(value: string | null): value is Locale {
   return value !== null && (LOCALES as readonly string[]).includes(value)
