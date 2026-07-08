@@ -1,6 +1,8 @@
 import { PropsWithChildren } from 'react'
 import { cn } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface ProductMenuBarProps {
   title: string
   className?: string
@@ -19,7 +21,7 @@ const ProductMenuBar = ({ title, children, className }: PropsWithChildren<Produc
       )}
     >
       <div className="border-default flex min-h-(--header-height) items-center border-b px-6">
-        <h4 className="text-lg">{title}</h4>
+        <h4 className="text-lg">{$t(title)}</h4>
       </div>
       <div className={cn('grow overflow-y-auto', className)}>{children}</div>
     </div>

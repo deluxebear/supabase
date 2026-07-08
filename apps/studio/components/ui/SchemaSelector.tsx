@@ -49,7 +49,7 @@ export const SchemaSelector = forwardRef<HTMLDivElement, SchemaSelectorProps>(
       size = 'tiny',
       showError = true,
       selectedSchemaName,
-      placeholderLabel = 'Choose a schema...',
+      placeholderLabel = $t('Choose a schema...'),
       supportSelectAll = false,
       excludedSchemas = [],
       stopScrollPropagation = false,
@@ -134,7 +134,7 @@ export const SchemaSelector = forwardRef<HTMLDivElement, SchemaSelectorProps>(
               >
                 {selectedSchemaName ? (
                   <div className="w-full flex gap-1">
-                    <p className="text-foreground-lighter">schema</p>
+                    <p className="text-foreground-lighter">{$t('schema')}</p>
                     <p className="text-foreground">
                       {selectedSchemaName === '*' ? 'All schemas' : selectedSchemaName}
                     </p>

@@ -33,8 +33,8 @@ export function NewTab() {
     : [
         {
           icon: <Table2 className="h-4 w-4 text-foreground" strokeWidth={1.5} />,
-          title: 'Create a table',
-          description: 'Design and create a new database table',
+          title: $t('Create a table'),
+          description: $t('Design and create a new database table'),
           bgColor: 'bg-blue-500',
           isBeta: false,
           onClick: () => snap.onAddTable(),
