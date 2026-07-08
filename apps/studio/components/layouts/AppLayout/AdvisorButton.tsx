@@ -58,7 +58,7 @@ export const AdvisorButton = ({ projectRef }: { projectRef?: string }) => {
         onClick={handleClick}
         tooltip={{
           content: {
-            text: 'Advisor Center',
+            text: $t('Advisor Center'),
           },
         }}
       >

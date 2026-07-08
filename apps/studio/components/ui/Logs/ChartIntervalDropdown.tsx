@@ -50,7 +50,7 @@ export const ChartIntervalDropdown = ({
     <DropdownMenu open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button variant="default" iconRight={<ChevronDown size={14} />}>
-          <span>{selectedInterval.label}</span>
+          <span>{$t(selectedInterval.label)}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent side="bottom" align={dropdownAlign} className="w-40">
@@ -64,7 +64,7 @@ export const ChartIntervalDropdown = ({
                 <Tooltip key={i.key}>
                   <TooltipTrigger asChild>
                     <DropdownMenuRadioItem disabled value={i.key} className="pointer-events-auto!">
-                      {i.label}
+                      {$t(i.label)}
                     </DropdownMenuRadioItem>
                   </TooltipTrigger>
                   <TooltipContent side={tooltipSide}>
@@ -83,7 +83,7 @@ export const ChartIntervalDropdown = ({
                             {$t('Upgrade your plan')}
                           </InlineLink>{' '}
                           {$t('to increase log retention and view statistics for the')}{' '}
-                          {i.label.toLowerCase()}
+                          {$t(i.label).toLowerCase()}
                         </>
                       ) : (
                         `Upgrade your plan to increase log retention and view statistics for the ${i.label.toLowerCase()}`
@@ -95,7 +95,7 @@ export const ChartIntervalDropdown = ({
             } else {
               return (
                 <DropdownMenuRadioItem key={i.key} value={i.key}>
-                  {i.label}
+                  {$t(i.label)}
                 </DropdownMenuRadioItem>
               )
             }

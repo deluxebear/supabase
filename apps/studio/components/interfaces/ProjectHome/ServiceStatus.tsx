@@ -61,15 +61,15 @@ const StatusMessage = ({
   isProjectNew: boolean
   status?: ProjectServiceStatus
 }) => {
-  if (isLoading) return 'Checking status'
-  if (status === 'DISABLED') return 'Disabled'
-  if (status === 'UNHEALTHY') return 'Unhealthy'
-  if (status === 'COMING_UP') return 'Coming up...'
-  if (status === 'ACTIVE_HEALTHY') return 'Healthy'
+  if (isLoading) return $t('Checking status')
+  if (status === 'DISABLED') return $t('Disabled')
+  if (status === 'UNHEALTHY') return $t('Unhealthy')
+  if (status === 'COMING_UP') return $t('Coming up...')
+  if (status === 'ACTIVE_HEALTHY') return $t('Healthy')
   // isProjectNew has to be after all other statuses
-  if (isProjectNew) return 'Coming up...'
+  if (isProjectNew) return $t('Coming up...')
   if (status) return status
-  return 'Unable to connect'
+  return $t('Unable to connect')
 }
 
 /*
@@ -319,10 +319,10 @@ export const ServiceStatus = () => {
     isProjectComingUp || services.some((service) => service.status === 'COMING_UP')
 
   const getOverallStatusLabel = (): string => {
-    if (isLoadingChecks) return 'Checking...'
-    if (anyComingUp) return 'Coming up...'
-    if (anyUnhealthy) return 'Unhealthy'
-    return 'Healthy'
+    if (isLoadingChecks) return $t('Checking...')
+    if (anyComingUp) return $t('Coming up...')
+    if (anyUnhealthy) return $t('Unhealthy')
+    return $t('Healthy')
   }
 
   const overallStatusLabel = getOverallStatusLabel()

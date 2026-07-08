@@ -11,6 +11,7 @@ import {
   severityLabels,
 } from './AdvisorPanel.utils'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 
 interface AdvisorPanelHeaderProps {
   selectedItem: AdvisorItem | undefined
@@ -32,7 +33,7 @@ export const AdvisorPanelHeader = ({ selectedItem, onBack, onClose }: AdvisorPan
         className="w-7 h-7 p-0 flex justify-center items-center"
         icon={<ChevronLeft size={16} strokeWidth={1.5} aria-hidden={true} />}
         onClick={onBack}
-        tooltip={{ content: { side: 'bottom', text: 'Back to list' } }}
+        tooltip={{ content: { side: 'bottom', text: $t('Back to list') } }}
       />
       <div className="flex items-center gap-2 overflow-hidden flex-1">
         <div className="flex-1 flex flex-col">
@@ -62,7 +63,7 @@ export const AdvisorPanelHeader = ({ selectedItem, onBack, onClose }: AdvisorPan
         className="w-7 h-7 p-0"
         icon={<X strokeWidth={1.5} />}
         onClick={onClose}
-        tooltip={{ content: { side: 'bottom', text: 'Close Advisor Center' } }}
+        tooltip={{ content: { side: 'bottom', text: $t('Close Advisor Center') } }}
       />
     </div>
   )

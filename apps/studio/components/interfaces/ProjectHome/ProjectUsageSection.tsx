@@ -121,7 +121,7 @@ export const ProjectUsageSection = () => {
     () => [
       {
         key: 'db',
-        title: 'Database requests',
+        title: $t('Database requests'),
         href: `/project/${projectRef}/editor`,
         route: '/logs/postgres-logs',
         logType: 'postgres',
@@ -129,7 +129,7 @@ export const ProjectUsageSection = () => {
       },
       {
         key: 'auth',
-        title: 'Auth requests',
+        title: $t('Auth requests'),
         href: `/project/${projectRef}/auth/users`,
         route: '/logs/auth-logs',
         logType: 'auth',
@@ -137,7 +137,7 @@ export const ProjectUsageSection = () => {
       },
       {
         key: 'storage',
-        title: 'Storage requests',
+        title: $t('Storage requests'),
         href: `/project/${projectRef}/storage/buckets`,
         route: '/logs/storage-logs',
         logType: 'storage',
@@ -145,7 +145,7 @@ export const ProjectUsageSection = () => {
       },
       {
         key: 'realtime',
-        title: 'Realtime requests',
+        title: $t('Realtime requests'),
         href: `/project/${projectRef}/realtime/inspector`,
         route: '/logs/realtime-logs',
         logType: 'realtime',
@@ -272,13 +272,13 @@ export const ProjectUsageSection = () => {
                   hideZeroValues={true}
                   chartConfig={{
                     error_count: {
-                      label: 'Errors',
+                      label: $t('Errors'),
                     },
                     warning_count: {
-                      label: 'Warnings',
+                      label: $t('Warnings'),
                     },
                     ok_count: {
-                      label: 'Requests',
+                      label: $t('Requests'),
                     },
                   }}
                   ErrorState={
@@ -291,7 +291,7 @@ export const ProjectUsageSection = () => {
                   EmptyState={
                     <NoDataPlaceholder
                       size="small"
-                      message="No data for selected period"
+                      message={$t('No data for selected period')}
                       isFullHeight
                     />
                   }

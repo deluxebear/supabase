@@ -12,32 +12,32 @@ interface EmptyAdvisorProps {
 
 export const EmptyAdvisor = ({ activeTab, hasFilters, onClearFilters }: EmptyAdvisorProps) => {
   const getHeading = () => {
-    if (hasFilters) return 'No items found'
+    if (hasFilters) return $t('No items found')
 
     switch (activeTab) {
       case 'security':
-        return 'No security issues detected'
+        return $t('No security issues detected')
       case 'performance':
-        return 'No performance issues detected'
+        return $t('No performance issues detected')
       case 'messages':
-        return 'No messages'
+        return $t('No messages')
       default:
-        return 'No issues detected'
+        return $t('No issues detected')
     }
   }
 
   const getMessage = () => {
-    if (hasFilters) return 'No advisor items match your current filters'
+    if (hasFilters) return $t('No advisor items match your current filters')
 
     switch (activeTab) {
       case 'security':
-        return 'Congrats! There are no security issues detected for this project'
+        return $t('Congrats! There are no security issues detected for this project')
       case 'performance':
-        return 'Congrats! There are no performance issues detected for this project'
+        return $t('Congrats! There are no performance issues detected for this project')
       case 'messages':
-        return 'Messages alert you of upcoming changes or potential issues with your project'
+        return $t('Messages alert you of upcoming changes or potential issues with your project')
       default:
-        return 'Congrats! There are no issues detected'
+        return $t('Congrats! There are no issues detected')
     }
   }
 

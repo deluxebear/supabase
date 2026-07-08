@@ -76,6 +76,10 @@ if (process.argv[1] && process.argv[1].endsWith('wrap.ts')) {
   dynamicProject.addSourceFilesAtPaths([
     join(cwd, 'state/shortcuts/**/*.{ts,tsx}'),
     join(cwd, 'components/ui/GlobalShortcuts/ShortcutsReferenceSheet.tsx'),
+    // CHART_INTERVALS labels ('Last 24 hours', …) are module-scope constants
+    // translated at render via $t(i.label) in ChartIntervalDropdown, so their
+    // `label:` keys must be collected here too.
+    join(cwd, 'components/ui/Logs/logs.utils.ts'),
     '!' + join(cwd, '**/*.test.{ts,tsx}'),
   ])
   const dynamicKeys = collectDynamicLabelKeys(dynamicProject)

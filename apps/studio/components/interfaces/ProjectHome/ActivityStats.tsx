@@ -58,7 +58,7 @@ export const ActivityStats = () => {
     [migrationsData]
   )
   const migrationLabelText =
-    migrationsData.length === 0 ? 'No migrations' : (latestMigration?.name ?? 'Unknown')
+    migrationsData.length === 0 ? $t('No migrations') : (latestMigration?.name ?? $t('Unknown'))
 
   const { data: backupsData, isPending: isLoadingBackups } = useBackupsQuery({
     projectRef: project?.ref,
@@ -83,8 +83,8 @@ export const ActivityStats = () => {
   const githubLabelText = githubConnection?.repository.name
     ? githubConnection.repository.name
     : isProjectComingUp
-      ? 'Waiting for project...'
-      : 'No repository connected'
+      ? $t('Waiting for project...')
+      : $t('No repository connected')
   const integrationsPath = parentProjectRef
     ? `/project/${parentProjectRef}/settings/integrations`
     : undefined
@@ -136,7 +136,7 @@ export const ActivityStats = () => {
         <SingleStat
           href={`/project/${ref}/branches`}
           icon={<GitBranch size={18} strokeWidth={1.5} className="text-foreground" />}
-          label={<span>{isDefaultProject ? 'Recent branch' : 'Branch Created'}</span>}
+          label={<span>{isDefaultProject ? $t('Recent branch') : $t('Branch Created')}</span>}
           trackingProperties={{
             stat_type: 'branches',
             stat_value: branchesData?.length ?? 0,
@@ -150,9 +150,9 @@ export const ActivityStats = () => {
                   'truncate min-w-0',
                   !latestNonDefaultBranch && 'text-foreground-lighter'
                 )}
-                title={latestNonDefaultBranch?.name ?? 'No branches'}
+                title={latestNonDefaultBranch?.name ?? $t('No branches')}
               >
-                {latestNonDefaultBranch?.name ?? 'No branches'}
+                {latestNonDefaultBranch?.name ?? $t('No branches')}
               </p>
             ) : currentBranch?.created_at ? (
               <TimestampInfo
