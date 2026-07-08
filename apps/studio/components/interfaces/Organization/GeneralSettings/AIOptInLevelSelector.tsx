@@ -118,8 +118,8 @@ export const AIOptInLevelSelector = ({
                     htmlFor={`ai-opt-in-${item.value}`}
                     className="cursor-pointer flex flex-col"
                   >
-                    <span className="text-sm font-medium text-foreground">{item.title}</span>
-                    <span className="text-sm text-foreground-light">{item.description}</span>
+                    <span className="text-sm font-medium text-foreground">{$t(item.title)}</span>
+                    <span className="text-sm text-foreground-light">{$t(item.description)}</span>
                   </label>
                 </div>
               ))}
