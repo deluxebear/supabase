@@ -68,6 +68,8 @@ describe('projects.ts analytics columns', () => {
       metrics_url: null,
       metrics_token_enc: null,
       container_name: null,
+      k8s_namespace: null,
+      k8s_pod_selector: null,
     })
   })
 

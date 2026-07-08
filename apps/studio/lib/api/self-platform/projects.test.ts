@@ -39,6 +39,8 @@ const row = {
   metrics_url: null,
   metrics_token_enc: null,
   container_name: null,
+  k8s_namespace: null,
+  k8s_pod_selector: null,
   stack_kind: 'external',
   stack_meta: {},
 }
@@ -220,5 +222,23 @@ describe('container_name column degradation (M6.4)', () => {
     const retry = vi.mocked(executePlatformQuery).mock.calls.at(-1)![0]
     expect(retry.query).not.toContain('container_name')
     expect(result?.container_name).toBeNull()
+  })
+})
+
+describe('k8s identity columns degradation (M6.4 D3)', () => {
+  beforeEach(() => vi.mocked(executePlatformQuery).mockReset())
+
+  it('degrades k8s columns to null on a pre-11 platform-db (no 500)', async () => {
+    // First attempt (PROJECT_SELECT_COLUMNS, with k8s cols) fails; the M64 retry succeeds.
+    vi.mocked(executePlatformQuery)
+      .mockResolvedValueOnce({
+        data: undefined,
+        error: new Error('column "k8s_namespace" does not exist'),
+      })
+      .mockResolvedValueOnce({ data: [row], error: undefined })
+    const result = await getProjectByRef('default')
+    expect(result?.k8s_namespace).toBeNull()
+    expect(result?.k8s_pod_selector).toBeNull()
+    expect(executePlatformQuery).toHaveBeenCalledTimes(2)
   })
 })

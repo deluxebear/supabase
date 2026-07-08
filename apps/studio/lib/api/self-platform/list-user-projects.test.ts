@@ -53,6 +53,8 @@ const rowA = {
   metrics_url: null,
   metrics_token_enc: null,
   container_name: null,
+  k8s_namespace: null,
+  k8s_pod_selector: null,
   stack_kind: 'external',
   stack_meta: {},
 }

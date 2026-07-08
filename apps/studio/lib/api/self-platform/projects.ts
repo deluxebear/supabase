@@ -32,6 +32,8 @@ export interface PlatformProjectRow {
   metrics_url: string | null
   metrics_token_enc: string | null
   container_name: string | null
+  k8s_namespace: string | null
+  k8s_pod_selector: string | null
   stack_kind: string
   stack_meta: Record<string, unknown>
 }
@@ -43,8 +45,20 @@ export const PROJECT_SELECT_COLUMNS = `
   db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
   db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc,
   publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc,
+  metrics_url, metrics_token_enc, stack_kind, stack_meta, container_name,
+  k8s_namespace, k8s_pod_selector
+`
+
+// [self-platform] M6.4-era list (container_name, no k8s identity) — retry tier
+// for a platform-db that has 10-container.sql but not 11-k8s-identity.sql.
+export const M64_SELECT_COLUMNS = `
+  id, ref, organization_id, name, status, cloud_provider, region,
+  db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
+  db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc,
+  publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc,
   metrics_url, metrics_token_enc, stack_kind, stack_meta, container_name
 `
+export const MISSING_K8S_COLUMN = 'column "k8s_namespace" does not exist'
 
 // [self-platform] M6.3-era list (metrics + stack, no container_name) — used
 // when the platform db predates 10-container.sql. Checked before the metrics
@@ -94,6 +108,7 @@ const LEGACY_SELECT_COLUMNS = `
 `
 const MISSING_ANALYTICS_COLUMN = 'column "logflare_url" does not exist'
 
+let warnedMissingK8sColumns = false
 let warnedMissingContainerColumn = false
 let warnedMissingMetricsColumns = false
 let warnedMissingStackColumns = false
@@ -109,10 +124,13 @@ async function queryProjectRows(
       parameters,
     })
 
-  // [self-platform] Tier order matters. container_name is the newest column
-  // (10-container.sql), so this check must run FIRST — a pre-M6.4 (but
-  // post-M6.3) db degrades container_name → null via the M63 retry below
-  // rather than falling through the metrics/stack/analytics tiers. metrics_url
+  // [self-platform] Tier order matters. k8s_namespace/k8s_pod_selector are the
+  // newest columns (11-k8s-identity.sql), so this check must run FIRST — a
+  // pre-D3 (but post-M6.4) db degrades the k8s columns → null via the M64
+  // retry below rather than falling through the container/metrics/stack/
+  // analytics tiers. container_name is next-newest (10-container.sql); its
+  // retry (M63_SELECT_COLUMNS) still selects it, so a pre-M6.4 db fails that
+  // retry with MISSING_CONTAINER_COLUMN and falls through. metrics_url
   // precedes stack_kind in PROJECT_SELECT_COLUMNS, so Postgres reports the
   // metrics column first when both are missing — that check runs next so a
   // pre-09 (but post-07) db is caught there. Its retry (M62_SELECT_COLUMNS)
@@ -122,6 +140,15 @@ async function queryProjectRows(
   // fails that with MISSING_ANALYTICS_COLUMN and falls through to
   // LEGACY_SELECT_COLUMNS. Every vintage lands on the right tier.
   let result = await attempt(PROJECT_SELECT_COLUMNS)
+  if (result.error?.message.includes(MISSING_K8S_COLUMN)) {
+    if (!warnedMissingK8sColumns) {
+      warnedMissingK8sColumns = true
+      console.warn(
+        '[self-platform] platform.projects has no k8s identity columns (pre-11 platform-db) — treating k8s_namespace/k8s_pod_selector as NULL. Run docker/volumes/platform/migrations/11-k8s-identity.sql to upgrade.'
+      )
+    }
+    result = await attempt(M64_SELECT_COLUMNS)
+  }
   if (result.error?.message.includes(MISSING_CONTAINER_COLUMN)) {
     if (!warnedMissingContainerColumn) {
       warnedMissingContainerColumn = true
@@ -173,6 +200,8 @@ async function queryProjectRows(
     metrics_url: r.metrics_url ?? null,
     metrics_token_enc: r.metrics_token_enc ?? null,
     container_name: r.container_name ?? null,
+    k8s_namespace: r.k8s_namespace ?? null,
+    k8s_pod_selector: r.k8s_pod_selector ?? null,
     stack_kind: r.stack_kind ?? 'external',
     stack_meta: r.stack_meta ?? ({} as Record<string, unknown>),
   }))
