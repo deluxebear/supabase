@@ -107,6 +107,55 @@ container_label_io_kubernetes_container_name="postgres"
 CPU/memory are on the `postgres` container; **network is on the pod sandbox**
 (`container_name=""`); `machine_cpu_cores`/`machine_memory_bytes` are present. A trimmed
 binding scrape is committed at
-`apps/studio/lib/api/self-platform/__fixtures__/cadvisor-k8s-scrape.prom` for the
-Studio k8s metrics-dialect work (M6.4 D3 extension point). See
-`docs/self-hosted-parity/2026-07-08-k8s-single-project-deployment.md`.
+`apps/studio/lib/api/self-platform/__fixtures__/cadvisor-k8s-scrape.prom`. See
+`docs/self-hosted-parity/2026-07-08-k8s-single-project-deployment.md` (deployment) and
+`docs/self-hosted-parity/2026-07-08-M6.4-D3-k8s-metrics-dialect-design.md` (dialect).
+
+### Register this project for k8s container metrics (management plane)
+
+The Studio k8s metrics dialect is **implemented** (M6.4 D3). To make the management-plane
+Studio report this pod's per-project CPU/RAM/network:
+
+1. **Apply the migration** to the management platform-db (once):
+
+   ```bash
+   docker exec -i supabase-platform-db psql -U postgres -d platform \
+     < docker/volumes/platform/migrations/11-k8s-identity.sql
+   ```
+
+2. **Expose cAdvisor as a scrape URL** reachable by the Studio sampler. A NodePort is the
+   simplest (the sampler then fetches the full node scrape and filters to this pod):
+
+   ```bash
+   kubectl -n supabase expose ds cadvisor --type=NodePort --name=cadvisor-nodeport \
+     --port=8080 --target-port=8080
+   # → metrics_url = http://<node-ip>:<nodePort>/metrics
+   ```
+
+   Security note: cAdvisor's `/metrics` is unauthenticated and exposes every container's
+   metrics on the node — keep the NodePort on a trusted network, or front it with an
+   authenticated vector re-export (the M6.3/M6.4 compose pattern).
+
+3. **Register the project** with `stack_kind=k8s` and the identity, plus that `metrics_url`.
+   Via the register CLI:
+
+   ```bash
+   node docker/scripts/platform/register-project.ts <ref> \
+     --stack-kind k8s --container postgres \
+     --k8s-namespace supabase --k8s-pod-selector supabase-db-0 \
+     --metrics-url http://<node-ip>:<nodePort>/metrics   # + the usual connection flags
+   ```
+
+   or, on an already-registered project, PATCH it from Settings → General → the
+   self-platform connection panel (the k8s fields appear when `stack_kind=k8s`):
+   `{ "container": "postgres", "k8s": { "namespace": "supabase", "pod_selector": "supabase-db-0" } }`.
+
+4. **Verify:** the project's Database → observability tab reports the pod's CPU/RAM
+   (RAM% against the pod `resources.limits.memory` when set) and network. A compose or
+   unregistered project is unaffected (host-level fallback).
+
+> **Live-verified 2026-07-08** against this k3s stack: migration applies cleanly; the real
+> adapter, replayed on a fresh live cAdvisor scrape, computed RAM% off the 1 GiB pod limit,
+> CPU from the `postgres` container, and network from the pod sandbox; the k8s identity
+> round-trips through the live platform-db registry columns. The final UI chart-drive needs
+> the management Studio running on this build.
