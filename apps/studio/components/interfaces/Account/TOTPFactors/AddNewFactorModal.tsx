@@ -62,7 +62,7 @@ interface FirstStepProps {
 
 const FirstStep = ({ visible, isEnrolling, enroll, onClose }: FirstStepProps) => {
   const FormSchema = z.object({
-    name: z.string().min(1, 'Please provide a name to identify this app'),
+    name: z.string().min(1, $t('Please provide a name to identify this app')),
   })
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -86,8 +86,9 @@ const FirstStep = ({ visible, isEnrolling, enroll, onClose }: FirstStepProps) =>
       size="medium"
       visible={visible}
       title={$t('Add a new authenticator app as a factor')}
-      confirmLabel="Generate QR"
-      confirmLabelLoading="Generating QR"
+      cancelLabel={$t('Cancel')}
+      confirmLabel={$t('Generate QR')}
+      confirmLabelLoading={$t('Generating QR')}
       loading={isEnrolling}
       onCancel={onClose}
       onConfirm={form.handleSubmit(onSubmit)}
@@ -143,7 +144,7 @@ const SecondStep = ({
   const { lastVisitedOrganization } = useLastVisitedOrganization()
 
   const FormSchema = z.object({
-    code: z.string().min(1, 'Please provide a code from your authenticator app'),
+    code: z.string().min(1, $t('Please provide a code from your authenticator app')),
   })
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -156,7 +157,7 @@ const SecondStep = ({
   const { mutate: unenroll } = useMfaUnenrollMutation({ onSuccess: () => onClose() })
   const { mutate: challengeAndVerify, isPending: isVerifying } = useMfaChallengeAndVerifyMutation({
     onError: (error) => {
-      toast.error(`Failed to add a second factor authentication:  ${error?.message}`)
+      toast.error(`${$t('Failed to add a second factor authentication')}:  ${error?.message}`)
     },
     onSuccess: async () => {
       if (lastVisitedOrganization) {
@@ -164,7 +165,7 @@ const SecondStep = ({
           queryKey: organizationKeys.members(lastVisitedOrganization),
         })
       }
-      toast.success(`Successfully added a second factor authentication`)
+      toast.success($t('Successfully added a second factor authentication'))
       onClose()
     },
   })
@@ -189,9 +190,10 @@ const SecondStep = ({
       size="medium"
       visible={visible}
       className="py-5"
-      title={`Verify new factor ${factorName}`}
-      confirmLabel="Confirm"
-      confirmLabelLoading="Confirming"
+      title={`${$t('Verify new factor')} ${factorName}`}
+      cancelLabel={$t('Cancel')}
+      confirmLabel={$t('Confirm')}
+      confirmLabelLoading={$t('Confirming')}
       loading={isVerifying}
       onCancel={() => {
         // If a factor has been created (but not verified), unenroll it. This will be run as a
