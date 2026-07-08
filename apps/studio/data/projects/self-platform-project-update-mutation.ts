@@ -30,6 +30,7 @@ export type SelfPlatformProjectUpdateVariables = {
   logflare?: { url?: string | null; token?: string | null }
   metrics?: { url?: string | null; token?: string | null }
   container?: string | null
+  k8s?: { namespace: string | null; pod_selector: string | null } | null
 }
 
 export type SelfPlatformProjectUpdateResponse = {
@@ -56,6 +57,8 @@ export type SelfPlatformProjectBlock = {
   logflare_url: string | null
   metrics_url: string | null
   container_name: string | null
+  k8s_namespace: string | null
+  k8s_pod_selector: string | null
   secrets_set: {
     db_pass: boolean
     anon_key: boolean

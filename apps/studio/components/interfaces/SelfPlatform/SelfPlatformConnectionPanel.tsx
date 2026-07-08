@@ -72,6 +72,9 @@ function buildConnectionEditSchema() {
     metricsTokenClear: z.boolean(),
     container: z.string(),
     containerClear: z.boolean(),
+    k8sNamespace: z.string(),
+    k8sPodSelector: z.string(),
+    k8sClear: z.boolean(),
   })
 }
 type FormValues = z.infer<ReturnType<typeof buildConnectionEditSchema>>
@@ -103,6 +106,9 @@ function buildDefaults(sp: SelfPlatformProjectBlock): FormValues {
     metricsTokenClear: false,
     container: sp.container_name ?? '',
     containerClear: false,
+    k8sNamespace: sp.k8s_namespace ?? '',
+    k8sPodSelector: sp.k8s_pod_selector ?? '',
+    k8sClear: false,
   }
 }
 
@@ -183,16 +189,27 @@ export const SelfPlatformConnectionPanel = () => {
     if (values.containerClear) container = null
     else if (dirty.container && values.container !== '') container = values.container
 
+    let k8s: { namespace: string | null; pod_selector: string | null } | null | undefined
+    if (values.k8sClear) k8s = null
+    else if (dirty.k8sNamespace || dirty.k8sPodSelector) {
+      k8s = {
+        namespace: values.k8sNamespace !== '' ? values.k8sNamespace : null,
+        pod_selector: values.k8sPodSelector !== '' ? values.k8sPodSelector : null,
+      }
+    }
+
     const payload: SelfPlatformProjectUpdateVariables = { ref: project.ref }
     if (!isSharedDb && Object.keys(connection).length > 0) payload.connection = connection
     if (Object.keys(logflare).length > 0) payload.logflare = logflare
     if (Object.keys(metrics).length > 0) payload.metrics = metrics
     if (container !== undefined) payload.container = container
+    if (k8s !== undefined) payload.k8s = k8s
     if (
       payload.connection === undefined &&
       payload.logflare === undefined &&
       payload.metrics === undefined &&
-      payload.container === undefined
+      payload.container === undefined &&
+      payload.k8s === undefined
     )
       return undefined
     return payload
@@ -413,6 +430,23 @@ export const SelfPlatformConnectionPanel = () => {
               )
             )}
             {clearCheckbox('containerClear', $t('Clear the stored container name'))}
+            {selfPlatform.stack_kind === 'k8s' && (
+              <>
+                {textField(
+                  'k8sNamespace',
+                  $t('Pod namespace'),
+                  $t('The Kubernetes namespace of the Postgres pod (e.g. supabase).')
+                )}
+                {textField(
+                  'k8sPodSelector',
+                  $t('Pod name'),
+                  $t(
+                    'Exact Postgres pod name (e.g. supabase-db-0). Network is read from the pod sandbox; CPU/RAM from the container above.'
+                  )
+                )}
+                {clearCheckbox('k8sClear', $t('Clear the stored k8s identity'))}
+              </>
+            )}
             {isSharedDb && (
               <Alert>
                 <AlertDescription>
