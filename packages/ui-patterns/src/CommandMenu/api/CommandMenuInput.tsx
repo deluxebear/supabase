@@ -45,7 +45,7 @@ function useFocusInputOnWiderScreens(ref: React.ForwardedRef<HTMLInputElement>) 
 const CommandMenuInput = forwardRef<
   React.ElementRef<typeof CommandInput>,
   React.ComponentPropsWithoutRef<typeof CommandInput>
->(({ className, ...props }, ref) => {
+>(({ className, placeholder, ...props }, ref) => {
   const inputRef = useFocusInputOnWiderScreens(ref)
 
   const query = useQuery()
@@ -121,7 +121,7 @@ const CommandMenuInput = forwardRef<
         ref={inputRef}
         value={inputValue}
         onValueChange={handleValueChange}
-        placeholder={uiT('Run a command or search...')}
+        placeholder={uiT(placeholder != null ? String(placeholder) : 'Run a command or search...')}
         onCompositionStart={() => setImeComposing(true)}
         onCompositionEnd={() => setImeComposing(false)}
         className={cn(
