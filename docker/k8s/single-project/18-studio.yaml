@@ -1,0 +1,59 @@
+# Studio (per-project dashboard, stock upstream image per compose). Talks to meta:8080
+# and kong:8000. snippets/edge-functions folders are emptyDir (management-only).
+apiVersion: v1
+kind: Service
+metadata: { name: studio, namespace: supabase, labels: { app: studio } }
+spec:
+  selector: { app: studio }
+  ports: [{ name: http, port: 3000, targetPort: 3000 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: studio, namespace: supabase, labels: { app: studio } }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: studio } }
+  template:
+    metadata: { labels: { app: studio } }
+    spec:
+      containers:
+        - name: studio
+          image: supabase/studio:2026.06.03-sha-0bca601
+          imagePullPolicy: IfNotPresent
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: HOSTNAME, value: "0.0.0.0" }
+            - { name: STUDIO_PG_META_URL, value: "http://meta:8080" }
+            - { name: POSTGRES_HOST, value: db }
+            - { name: POSTGRES_PORT, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PORT } } }
+            - { name: POSTGRES_DB, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_DB } } }
+            - { name: POSTGRES_PASSWORD, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PASSWORD } } }
+            - { name: POSTGRES_USER_READ_WRITE, value: postgres }
+            - { name: PG_META_CRYPTO_KEY, valueFrom: { secretKeyRef: { name: supabase-env, key: PG_META_CRYPTO_KEY } } }
+            - { name: PGRST_DB_SCHEMAS, valueFrom: { secretKeyRef: { name: supabase-env, key: PGRST_DB_SCHEMAS } } }
+            - { name: PGRST_DB_MAX_ROWS, value: "1000" }
+            - { name: PGRST_DB_EXTRA_SEARCH_PATH, value: public }
+            - { name: DEFAULT_ORGANIZATION_NAME, valueFrom: { secretKeyRef: { name: supabase-env, key: STUDIO_DEFAULT_ORGANIZATION } } }
+            - { name: DEFAULT_PROJECT_NAME, valueFrom: { secretKeyRef: { name: supabase-env, key: STUDIO_DEFAULT_PROJECT } } }
+            - { name: OPENAI_API_KEY, valueFrom: { secretKeyRef: { name: supabase-env, key: OPENAI_API_KEY, optional: true } } }
+            - { name: SUPABASE_URL, value: "http://kong:8000" }
+            - { name: SUPABASE_PUBLIC_URL, valueFrom: { secretKeyRef: { name: supabase-env, key: SUPABASE_PUBLIC_URL } } }
+            - { name: SUPABASE_ANON_KEY, valueFrom: { secretKeyRef: { name: supabase-env, key: ANON_KEY } } }
+            - { name: SUPABASE_SERVICE_KEY, valueFrom: { secretKeyRef: { name: supabase-env, key: SERVICE_ROLE_KEY } } }
+            - { name: AUTH_JWT_SECRET, valueFrom: { secretKeyRef: { name: supabase-env, key: JWT_SECRET } } }
+            - { name: SUPABASE_PUBLISHABLE_KEY, valueFrom: { secretKeyRef: { name: supabase-env, key: SUPABASE_PUBLISHABLE_KEY, optional: true } } }
+            - { name: SUPABASE_SECRET_KEY, valueFrom: { secretKeyRef: { name: supabase-env, key: SUPABASE_SECRET_KEY, optional: true } } }
+            - { name: ENABLED_FEATURES_LOGS_ALL, value: "false" }
+            - { name: SNIPPETS_MANAGEMENT_FOLDER, value: /app/snippets }
+            - { name: EDGE_FUNCTIONS_MANAGEMENT_FOLDER, value: /app/edge-functions }
+          readinessProbe:
+            httpGet: { path: /api/platform/profile, port: 3000 }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 12
+          volumeMounts:
+            - { name: snippets, mountPath: /app/snippets }
+            - { name: edge-functions, mountPath: /app/edge-functions }
+      volumes:
+        - { name: snippets, emptyDir: {} }
+        - { name: edge-functions, emptyDir: {} }

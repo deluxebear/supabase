@@ -1,0 +1,99 @@
+# cAdvisor DaemonSet — container_* + machine_* source for the k8s metrics dialect.
+# Tuned for k3s/containerd: socket at /run/k3s/containerd/containerd.sock (not the
+# standard /run/containerd path), lean flags to control scrape cardinality, and the
+# k8s identity labels whitelisted (io.kubernetes.pod.name/namespace/container.name →
+# container_label_io_kubernetes_* in the scrape = the binding fixture identity).
+apiVersion: v1
+kind: Service
+metadata:
+  name: cadvisor
+  namespace: supabase
+  labels:
+    app: cadvisor
+spec:
+  clusterIP: None
+  selector:
+    app: cadvisor
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cadvisor
+  namespace: supabase
+  labels:
+    app: cadvisor
+spec:
+  selector:
+    matchLabels:
+      app: cadvisor
+  template:
+    metadata:
+      labels:
+        app: cadvisor
+    spec:
+      hostNetwork: false
+      # cAdvisor never calls the k8s API; disabling the SA token projection avoids
+      # the projected mount landing under the read-only /var/run hostPath mount
+      # (mkdirat /var/run/secrets: read-only file system → RunContainerError).
+      automountServiceAccountToken: false
+      containers:
+        - name: cadvisor
+          image: gcr.io/cadvisor/cadvisor:v0.49.1
+          imagePullPolicy: IfNotPresent
+          args:
+            - --containerd=/run/k3s/containerd/containerd.sock
+            - --store_container_labels=false
+            - --whitelisted_container_labels=io.kubernetes.pod.name,io.kubernetes.pod.namespace,io.kubernetes.container.name,io.kubernetes.pod.uid
+            - --disable_metrics=percpu,sched,process,hugetlb,referenced_memory,cpu_topology,resctrl,tcp,advtcp,udp
+            - --housekeeping_interval=10s
+            - --port=8080
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 50m
+              memory: 100Mi
+            limits:
+              memory: 300Mi
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: rootfs
+              mountPath: /rootfs
+              readOnly: true
+            - name: var-run
+              mountPath: /var/run
+              readOnly: true
+            - name: sys
+              mountPath: /sys
+              readOnly: true
+            - name: containerd
+              mountPath: /run/k3s/containerd
+              readOnly: true
+            - name: disk
+              mountPath: /dev/disk
+              readOnly: true
+      volumes:
+        - name: rootfs
+          hostPath:
+            path: /
+        - name: var-run
+          hostPath:
+            path: /var/run
+        - name: sys
+          hostPath:
+            path: /sys
+        - name: containerd
+          hostPath:
+            path: /run/k3s/containerd
+        - name: disk
+          hostPath:
+            path: /dev/disk
+      tolerations:
+        - operator: Exists

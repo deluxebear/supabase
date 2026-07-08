@@ -1,0 +1,60 @@
+# Kong API gateway (dbless/declarative). Custom entrypoint envsubst's kong.yml →
+# /usr/local/kong/kong.yml then starts kong. Exposed via k3s ServiceLB (LoadBalancer)
+# on the node IP:8000. Routes to analytics:4000 503 at request time (logs overlay not
+# deployed) — kong still boots (KONG_DNS_NOT_FOUND_TTL=1).
+apiVersion: v1
+kind: Service
+metadata: { name: kong, namespace: supabase, labels: { app: kong } }
+spec:
+  type: LoadBalancer
+  selector: { app: kong }
+  ports:
+    - { name: proxy, port: 8000, targetPort: 8000 }
+    - { name: proxy-ssl, port: 8443, targetPort: 8443 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: kong, namespace: supabase, labels: { app: kong } }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: kong } }
+  template:
+    metadata: { labels: { app: kong } }
+    spec:
+      containers:
+        - name: kong
+          image: kong/kong:3.9.1
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "/home/kong/kong-entrypoint.sh"]
+          ports:
+            - { name: proxy, containerPort: 8000 }
+            - { name: proxy-ssl, containerPort: 8443 }
+          env:
+            - { name: KONG_DATABASE, value: "off" }
+            - { name: KONG_DECLARATIVE_CONFIG, value: /usr/local/kong/kong.yml }
+            - { name: KONG_ROUTER_FLAVOR, value: expressions }
+            - { name: KONG_DNS_ORDER, value: "LAST,A,CNAME" }
+            - { name: KONG_DNS_NOT_FOUND_TTL, value: "1" }
+            - { name: KONG_PLUGINS, value: "request-transformer,cors,key-auth,acl,basic-auth,request-termination,ip-restriction,post-function" }
+            - { name: KONG_NGINX_PROXY_PROXY_BUFFER_SIZE, value: "160k" }
+            - { name: KONG_NGINX_PROXY_PROXY_BUFFERS, value: "64 160k" }
+            - { name: KONG_PROXY_ACCESS_LOG, value: "/dev/stdout combined" }
+            - { name: SUPABASE_ANON_KEY, valueFrom: { secretKeyRef: { name: supabase-env, key: ANON_KEY } } }
+            - { name: SUPABASE_SERVICE_KEY, valueFrom: { secretKeyRef: { name: supabase-env, key: SERVICE_ROLE_KEY } } }
+            - { name: DASHBOARD_USERNAME, valueFrom: { secretKeyRef: { name: supabase-env, key: DASHBOARD_USERNAME } } }
+            - { name: DASHBOARD_PASSWORD, valueFrom: { secretKeyRef: { name: supabase-env, key: DASHBOARD_PASSWORD } } }
+            - { name: SUPABASE_PUBLISHABLE_KEY, valueFrom: { secretKeyRef: { name: supabase-env, key: SUPABASE_PUBLISHABLE_KEY, optional: true } } }
+            - { name: SUPABASE_SECRET_KEY, valueFrom: { secretKeyRef: { name: supabase-env, key: SUPABASE_SECRET_KEY, optional: true } } }
+            - { name: ANON_KEY_ASYMMETRIC, valueFrom: { secretKeyRef: { name: supabase-env, key: ANON_KEY_ASYMMETRIC, optional: true } } }
+            - { name: SERVICE_ROLE_KEY_ASYMMETRIC, valueFrom: { secretKeyRef: { name: supabase-env, key: SERVICE_ROLE_KEY_ASYMMETRIC, optional: true } } }
+          readinessProbe:
+            exec: { command: ["kong", "health"] }
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 6
+          volumeMounts:
+            - { name: kong-config, mountPath: /home/kong/temp.yml, subPath: kong.yml }
+            - { name: kong-config, mountPath: /home/kong/kong-entrypoint.sh, subPath: kong-entrypoint.sh }
+      volumes:
+        - name: kong-config
+          configMap: { name: kong-config }

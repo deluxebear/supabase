@@ -1,0 +1,53 @@
+# Edge Functions (Deno edge-runtime). main function from functions-main ConfigMap;
+# deno cache is emptyDir. Opaque keys empty in .env → *_KEYS = {"default":""}.
+apiVersion: v1
+kind: Service
+metadata: { name: functions, namespace: supabase, labels: { app: functions } }
+spec:
+  selector: { app: functions }
+  ports: [{ name: http, port: 9000, targetPort: 9000 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: functions, namespace: supabase, labels: { app: functions } }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: functions } }
+  template:
+    metadata: { labels: { app: functions } }
+    spec:
+      containers:
+        - name: functions
+          image: supabase/edge-runtime:v1.74.0
+          imagePullPolicy: IfNotPresent
+          ports: [{ name: http, containerPort: 9000 }]
+          # edge-runtime image ENTRYPOINT=[edge-runtime]; these are ARGS, not a
+          # command override (k8s command: replaces ENTRYPOINT → "start" not found).
+          args: ["start", "--main-service", "/home/deno/functions/main"]
+          env:
+            - { name: POSTGRES_PASSWORD, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PASSWORD } } }
+            - { name: POSTGRES_PORT, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PORT } } }
+            - { name: POSTGRES_DB, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_DB } } }
+            - { name: JWT_SECRET, valueFrom: { secretKeyRef: { name: supabase-env, key: JWT_SECRET } } }
+            - { name: SUPABASE_URL, value: "http://kong:8000" }
+            - { name: SUPABASE_PUBLIC_URL, valueFrom: { secretKeyRef: { name: supabase-env, key: SUPABASE_PUBLIC_URL } } }
+            - { name: SUPABASE_ANON_KEY, valueFrom: { secretKeyRef: { name: supabase-env, key: ANON_KEY } } }
+            - { name: SUPABASE_SERVICE_ROLE_KEY, valueFrom: { secretKeyRef: { name: supabase-env, key: SERVICE_ROLE_KEY } } }
+            - { name: SUPABASE_PUBLISHABLE_KEYS, value: '{"default":""}' }
+            - { name: SUPABASE_SECRET_KEYS, value: '{"default":""}' }
+            - { name: SUPABASE_DB_URL, value: "postgresql://postgres:$(POSTGRES_PASSWORD)@db:$(POSTGRES_PORT)/$(POSTGRES_DB)" }
+            - { name: VERIFY_JWT, valueFrom: { secretKeyRef: { name: supabase-env, key: FUNCTIONS_VERIFY_JWT } } }
+          readinessProbe:
+            tcpSocket: { port: 9000 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 6
+          volumeMounts:
+            # subPath → a real file, not the ConfigMap symlink (index.ts → ..data/index.ts);
+            # edge-runtime copies the main dir to a temp compile path and does not follow
+            # the symlink → "Module not found: .../main/index.ts".
+            - { name: functions-main, mountPath: /home/deno/functions/main/index.ts, subPath: index.ts }
+            - { name: deno-cache, mountPath: /root/.cache/deno }
+      volumes:
+        - { name: functions-main, configMap: { name: functions-main } }
+        - { name: deno-cache, emptyDir: {} }

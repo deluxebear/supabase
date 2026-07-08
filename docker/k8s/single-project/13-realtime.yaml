@@ -1,0 +1,46 @@
+# Realtime (Elixir). SEED_SELF_HOST seeds the 'realtime-dev' tenant on boot.
+apiVersion: v1
+kind: Service
+metadata: { name: realtime, namespace: supabase, labels: { app: realtime } }
+spec:
+  selector: { app: realtime }
+  ports: [{ name: http, port: 4000, targetPort: 4000 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: realtime, namespace: supabase, labels: { app: realtime } }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: realtime } }
+  template:
+    metadata: { labels: { app: realtime } }
+    spec:
+      containers:
+        - name: realtime
+          image: supabase/realtime:v2.102.3
+          imagePullPolicy: IfNotPresent
+          ports: [{ name: http, containerPort: 4000 }]
+          env:
+            - { name: PORT, value: "4000" }
+            - { name: DB_HOST, value: db }
+            - { name: DB_USER, value: supabase_admin }
+            - { name: DB_PORT, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PORT } } }
+            - { name: DB_PASSWORD, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PASSWORD } } }
+            - { name: DB_NAME, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_DB } } }
+            - { name: DB_AFTER_CONNECT_QUERY, value: "SET search_path TO _realtime" }
+            - { name: DB_ENC_KEY, value: "supabaserealtime" }
+            - { name: API_JWT_SECRET, valueFrom: { secretKeyRef: { name: supabase-env, key: JWT_SECRET } } }
+            - { name: SECRET_KEY_BASE, valueFrom: { secretKeyRef: { name: supabase-env, key: SECRET_KEY_BASE } } }
+            - { name: METRICS_JWT_SECRET, valueFrom: { secretKeyRef: { name: supabase-env, key: JWT_SECRET } } }
+            - { name: ERL_AFLAGS, value: "-proto_dist inet_tcp" }
+            - { name: DNS_NODES, value: "''" }
+            - { name: RLIMIT_NOFILE, value: "10000" }
+            - { name: APP_NAME, value: realtime }
+            - { name: SEED_SELF_HOST, value: "true" }
+            - { name: RUN_JANITOR, value: "true" }
+            - { name: DISABLE_HEALTHCHECK_LOGGING, value: "true" }
+          readinessProbe:
+            tcpSocket: { port: 4000 }
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 6

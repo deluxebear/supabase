@@ -1,0 +1,62 @@
+# Supavisor connection pooler (Elixir). Boots via migrate → eval pooler.exs → server.
+# Exposes api(4000), session pooler(5432), transaction pooler(6543).
+apiVersion: v1
+kind: Service
+metadata: { name: supavisor, namespace: supabase, labels: { app: supavisor } }
+spec:
+  selector: { app: supavisor }
+  ports:
+    - { name: api, port: 4000, targetPort: 4000 }
+    - { name: session, port: 5432, targetPort: 5432 }
+    - { name: transaction, port: 6543, targetPort: 6543 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: supavisor, namespace: supabase, labels: { app: supavisor } }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: supavisor } }
+  template:
+    metadata: { labels: { app: supavisor } }
+    spec:
+      containers:
+        - name: supavisor
+          image: supabase/supavisor:2.9.5
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - '/app/bin/migrate && /app/bin/supavisor eval "$$(cat /etc/pooler/pooler.exs)" && /app/bin/server'
+          ports:
+            - { name: api, containerPort: 4000 }
+            - { name: session, containerPort: 5432 }
+            - { name: transaction, containerPort: 6543 }
+          env:
+            - { name: PORT, value: "4000" }
+            - { name: POSTGRES_HOST, value: db }
+            - { name: POSTGRES_PORT, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PORT } } }
+            - { name: POSTGRES_DB, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_DB } } }
+            - { name: POSTGRES_PASSWORD, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PASSWORD } } }
+            - { name: DATABASE_URL, value: "ecto://supabase_admin:$(POSTGRES_PASSWORD)@db:$(POSTGRES_PORT)/_supabase" }
+            - { name: CLUSTER_POSTGRES, value: "true" }
+            - { name: SECRET_KEY_BASE, valueFrom: { secretKeyRef: { name: supabase-env, key: SECRET_KEY_BASE } } }
+            - { name: VAULT_ENC_KEY, valueFrom: { secretKeyRef: { name: supabase-env, key: VAULT_ENC_KEY } } }
+            - { name: API_JWT_SECRET, valueFrom: { secretKeyRef: { name: supabase-env, key: JWT_SECRET } } }
+            - { name: METRICS_JWT_SECRET, valueFrom: { secretKeyRef: { name: supabase-env, key: JWT_SECRET } } }
+            - { name: REGION, value: local }
+            - { name: ERL_AFLAGS, value: "-proto_dist inet_tcp" }
+            - { name: POOLER_TENANT_ID, valueFrom: { secretKeyRef: { name: supabase-env, key: POOLER_TENANT_ID } } }
+            - { name: POOLER_DEFAULT_POOL_SIZE, valueFrom: { secretKeyRef: { name: supabase-env, key: POOLER_DEFAULT_POOL_SIZE } } }
+            - { name: POOLER_MAX_CLIENT_CONN, valueFrom: { secretKeyRef: { name: supabase-env, key: POOLER_MAX_CLIENT_CONN } } }
+            - { name: POOLER_POOL_MODE, value: transaction }
+            - { name: DB_POOL_SIZE, valueFrom: { secretKeyRef: { name: supabase-env, key: POOLER_DB_POOL_SIZE } } }
+          readinessProbe:
+            httpGet: { path: /api/health, port: 4000 }
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 12
+          volumeMounts:
+            - { name: pooler-config, mountPath: /etc/pooler/pooler.exs, subPath: pooler.exs }
+      volumes:
+        - name: pooler-config
+          configMap: { name: pooler-config }

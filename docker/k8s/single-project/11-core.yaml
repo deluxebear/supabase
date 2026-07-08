@@ -1,0 +1,143 @@
+# Core data-plane tier: meta, rest, auth. Each connects to the db StatefulSet
+# (Service `db`, POSTGRES_HOST=db). Secrets come from the supabase-env Secret via
+# secretKeyRef; composed DSNs use k8s $(VAR) interpolation (VARs declared inline).
+# ---------------------------------------------------------------- meta
+apiVersion: v1
+kind: Service
+metadata: { name: meta, namespace: supabase, labels: { app: meta } }
+spec:
+  selector: { app: meta }
+  ports: [{ name: http, port: 8080, targetPort: 8080 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: meta, namespace: supabase, labels: { app: meta } }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: meta } }
+  template:
+    metadata: { labels: { app: meta } }
+    spec:
+      containers:
+        - name: meta
+          image: supabase/postgres-meta:v0.96.6
+          imagePullPolicy: IfNotPresent
+          ports: [{ name: http, containerPort: 8080 }]
+          env:
+            - { name: PG_META_PORT, value: "8080" }
+            - { name: PG_META_DB_HOST, value: db }
+            - { name: PG_META_DB_USER, value: postgres }
+            - { name: PG_META_DB_PORT, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PORT } } }
+            - { name: PG_META_DB_NAME, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_DB } } }
+            - { name: PG_META_DB_PASSWORD, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PASSWORD } } }
+            - { name: CRYPTO_KEY, valueFrom: { secretKeyRef: { name: supabase-env, key: PG_META_CRYPTO_KEY } } }
+          readinessProbe:
+            tcpSocket: { port: 8080 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 6
+---
+# ---------------------------------------------------------------- rest (PostgREST)
+apiVersion: v1
+kind: Service
+metadata: { name: rest, namespace: supabase, labels: { app: rest } }
+spec:
+  selector: { app: rest }
+  ports: [{ name: http, port: 3000, targetPort: 3000 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: rest, namespace: supabase, labels: { app: rest } }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: rest } }
+  template:
+    metadata: { labels: { app: rest } }
+    spec:
+      containers:
+        - name: rest
+          image: postgrest/postgrest:v14.12
+          imagePullPolicy: IfNotPresent
+          ports:
+            - { name: http, containerPort: 3000 }
+            - { name: admin, containerPort: 3001 }
+          command: ["postgrest"]
+          env:
+            - { name: POSTGRES_PASSWORD, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PASSWORD } } }
+            - { name: POSTGRES_PORT, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PORT } } }
+            - { name: POSTGRES_DB, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_DB } } }
+            - { name: PGRST_DB_URI, value: "postgres://authenticator:$(POSTGRES_PASSWORD)@db:$(POSTGRES_PORT)/$(POSTGRES_DB)" }
+            - { name: PGRST_DB_SCHEMAS, valueFrom: { secretKeyRef: { name: supabase-env, key: PGRST_DB_SCHEMAS } } }
+            - { name: PGRST_DB_ANON_ROLE, value: anon }
+            - { name: PGRST_ADMIN_SERVER_PORT, value: "3001" }
+            - { name: PGRST_ADMIN_SERVER_HOST, value: localhost }
+            - { name: PGRST_JWT_SECRET, valueFrom: { secretKeyRef: { name: supabase-env, key: JWT_SECRET } } }
+            - { name: PGRST_DB_USE_LEGACY_GUCS, value: "false" }
+            - { name: PGRST_APP_SETTINGS_JWT_SECRET, valueFrom: { secretKeyRef: { name: supabase-env, key: JWT_SECRET } } }
+            - { name: PGRST_APP_SETTINGS_JWT_EXP, valueFrom: { secretKeyRef: { name: supabase-env, key: JWT_EXPIRY } } }
+          readinessProbe:
+            exec: { command: ["postgrest", "--ready"] }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 6
+---
+# ---------------------------------------------------------------- auth (GoTrue)
+apiVersion: v1
+kind: Service
+metadata: { name: auth, namespace: supabase, labels: { app: auth } }
+spec:
+  selector: { app: auth }
+  ports: [{ name: http, port: 9999, targetPort: 9999 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: auth, namespace: supabase, labels: { app: auth } }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: auth } }
+  template:
+    metadata: { labels: { app: auth } }
+    spec:
+      containers:
+        - name: auth
+          image: supabase/gotrue:v2.189.0
+          imagePullPolicy: IfNotPresent
+          ports: [{ name: http, containerPort: 9999 }]
+          env:
+            - { name: POSTGRES_PASSWORD, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PASSWORD } } }
+            - { name: POSTGRES_PORT, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PORT } } }
+            - { name: POSTGRES_DB, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_DB } } }
+            - { name: GOTRUE_API_HOST, value: "0.0.0.0" }
+            - { name: GOTRUE_API_PORT, value: "9999" }
+            - { name: API_EXTERNAL_URL, valueFrom: { secretKeyRef: { name: supabase-env, key: API_EXTERNAL_URL } } }
+            - { name: GOTRUE_DB_DRIVER, value: postgres }
+            - { name: GOTRUE_DB_DATABASE_URL, value: "postgres://supabase_auth_admin:$(POSTGRES_PASSWORD)@db:$(POSTGRES_PORT)/$(POSTGRES_DB)" }
+            - { name: GOTRUE_SITE_URL, valueFrom: { secretKeyRef: { name: supabase-env, key: SITE_URL } } }
+            - { name: GOTRUE_URI_ALLOW_LIST, valueFrom: { secretKeyRef: { name: supabase-env, key: ADDITIONAL_REDIRECT_URLS } } }
+            - { name: GOTRUE_DISABLE_SIGNUP, valueFrom: { secretKeyRef: { name: supabase-env, key: DISABLE_SIGNUP } } }
+            - { name: GOTRUE_JWT_ADMIN_ROLES, value: service_role }
+            - { name: GOTRUE_JWT_AUD, value: authenticated }
+            - { name: GOTRUE_JWT_DEFAULT_GROUP_NAME, value: authenticated }
+            - { name: GOTRUE_JWT_EXP, valueFrom: { secretKeyRef: { name: supabase-env, key: JWT_EXPIRY } } }
+            - { name: GOTRUE_JWT_SECRET, valueFrom: { secretKeyRef: { name: supabase-env, key: JWT_SECRET } } }
+            - { name: GOTRUE_JWT_ISSUER, valueFrom: { secretKeyRef: { name: supabase-env, key: API_EXTERNAL_URL } } }
+            - { name: GOTRUE_EXTERNAL_EMAIL_ENABLED, valueFrom: { secretKeyRef: { name: supabase-env, key: ENABLE_EMAIL_SIGNUP } } }
+            - { name: GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED, valueFrom: { secretKeyRef: { name: supabase-env, key: ENABLE_ANONYMOUS_USERS } } }
+            - { name: GOTRUE_MAILER_AUTOCONFIRM, valueFrom: { secretKeyRef: { name: supabase-env, key: ENABLE_EMAIL_AUTOCONFIRM } } }
+            - { name: GOTRUE_SMTP_ADMIN_EMAIL, valueFrom: { secretKeyRef: { name: supabase-env, key: SMTP_ADMIN_EMAIL } } }
+            - { name: GOTRUE_SMTP_HOST, valueFrom: { secretKeyRef: { name: supabase-env, key: SMTP_HOST } } }
+            - { name: GOTRUE_SMTP_PORT, valueFrom: { secretKeyRef: { name: supabase-env, key: SMTP_PORT } } }
+            - { name: GOTRUE_SMTP_USER, valueFrom: { secretKeyRef: { name: supabase-env, key: SMTP_USER } } }
+            - { name: GOTRUE_SMTP_PASS, valueFrom: { secretKeyRef: { name: supabase-env, key: SMTP_PASS } } }
+            - { name: GOTRUE_SMTP_SENDER_NAME, valueFrom: { secretKeyRef: { name: supabase-env, key: SMTP_SENDER_NAME } } }
+            - { name: GOTRUE_MAILER_URLPATHS_INVITE, valueFrom: { secretKeyRef: { name: supabase-env, key: MAILER_URLPATHS_INVITE } } }
+            - { name: GOTRUE_MAILER_URLPATHS_CONFIRMATION, valueFrom: { secretKeyRef: { name: supabase-env, key: MAILER_URLPATHS_CONFIRMATION } } }
+            - { name: GOTRUE_MAILER_URLPATHS_RECOVERY, valueFrom: { secretKeyRef: { name: supabase-env, key: MAILER_URLPATHS_RECOVERY } } }
+            - { name: GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE, valueFrom: { secretKeyRef: { name: supabase-env, key: MAILER_URLPATHS_EMAIL_CHANGE } } }
+            - { name: GOTRUE_EXTERNAL_PHONE_ENABLED, valueFrom: { secretKeyRef: { name: supabase-env, key: ENABLE_PHONE_SIGNUP } } }
+            - { name: GOTRUE_SMS_AUTOCONFIRM, valueFrom: { secretKeyRef: { name: supabase-env, key: ENABLE_PHONE_AUTOCONFIRM } } }
+          readinessProbe:
+            httpGet: { path: /health, port: 9999 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 6

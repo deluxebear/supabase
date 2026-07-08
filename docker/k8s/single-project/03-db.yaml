@@ -1,0 +1,127 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  namespace: supabase
+  labels:
+    app: supabase-db
+spec:
+  clusterIP: None
+  selector:
+    app: supabase-db
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: supabase-db
+  namespace: supabase
+  labels:
+    app: supabase-db
+spec:
+  serviceName: db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: supabase-db
+  template:
+    metadata:
+      labels:
+        app: supabase-db
+    spec:
+      containers:
+        - name: postgres
+          image: deluxebear/postgres:17
+          imagePullPolicy: IfNotPresent
+          args:
+            - postgres
+            - -c
+            - config_file=/etc/postgresql/postgresql.conf
+            - -c
+            - log_min_messages=fatal
+          ports:
+            - name: postgres
+              containerPort: 5432
+          env:
+            - name: POSTGRES_HOST
+              value: /var/run/postgresql
+            - name: PGPORT
+              valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PORT } }
+            - name: POSTGRES_PORT
+              valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PORT } }
+            - name: PGPASSWORD
+              valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PASSWORD } }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PASSWORD } }
+            - name: PGDATABASE
+              valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_DB } }
+            - name: POSTGRES_DB
+              valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_DB } }
+            - name: JWT_SECRET
+              valueFrom: { secretKeyRef: { name: supabase-env, key: JWT_SECRET } }
+            - name: JWT_EXP
+              valueFrom: { secretKeyRef: { name: supabase-env, key: JWT_EXPIRY } }
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+          startupProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-h", "localhost"]
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-h", "localhost"]
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-h", "localhost"]
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 6
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: db-init
+              mountPath: /docker-entrypoint-initdb.d/migrations/99-realtime.sql
+              subPath: 99-realtime.sql
+            - name: db-init
+              mountPath: /docker-entrypoint-initdb.d/migrations/97-_supabase.sql
+              subPath: 97-_supabase.sql
+            - name: db-init
+              mountPath: /docker-entrypoint-initdb.d/migrations/99-logs.sql
+              subPath: 99-logs.sql
+            - name: db-init
+              mountPath: /docker-entrypoint-initdb.d/migrations/99-pooler.sql
+              subPath: 99-pooler.sql
+            - name: db-init
+              mountPath: /docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql
+              subPath: 98-webhooks.sql
+            - name: db-init
+              mountPath: /docker-entrypoint-initdb.d/init-scripts/99-roles.sql
+              subPath: 99-roles.sql
+            - name: db-init
+              mountPath: /docker-entrypoint-initdb.d/init-scripts/99-jwt.sql
+              subPath: 99-jwt.sql
+      volumes:
+        - name: db-init
+          configMap:
+            name: db-init
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 5Gi

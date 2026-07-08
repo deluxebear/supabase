@@ -1,0 +1,104 @@
+# Storage tier: imgproxy + storage-api, sharing one RWO PVC for /var/lib/storage
+# (single-node k3s → both pods co-locate on ubuntu24vm, so RWO multi-mount is fine).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: { name: storage-data, namespace: supabase }
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: local-path
+  resources: { requests: { storage: 5Gi } }
+---
+# ---------------------------------------------------------------- imgproxy
+apiVersion: v1
+kind: Service
+metadata: { name: imgproxy, namespace: supabase, labels: { app: imgproxy } }
+spec:
+  selector: { app: imgproxy }
+  ports: [{ name: http, port: 5001, targetPort: 5001 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: imgproxy, namespace: supabase, labels: { app: imgproxy } }
+spec:
+  replicas: 1
+  strategy: { type: Recreate }
+  selector: { matchLabels: { app: imgproxy } }
+  template:
+    metadata: { labels: { app: imgproxy } }
+    spec:
+      containers:
+        - name: imgproxy
+          image: darthsim/imgproxy:v3.30.1
+          imagePullPolicy: IfNotPresent
+          ports: [{ name: http, containerPort: 5001 }]
+          env:
+            - { name: IMGPROXY_BIND, value: ":5001" }
+            - { name: IMGPROXY_LOCAL_FILESYSTEM_ROOT, value: "/" }
+            - { name: IMGPROXY_USE_ETAG, value: "true" }
+            - { name: IMGPROXY_AUTO_WEBP, valueFrom: { secretKeyRef: { name: supabase-env, key: IMGPROXY_AUTO_WEBP } } }
+            - { name: IMGPROXY_MAX_SRC_RESOLUTION, value: "16.8" }
+          readinessProbe:
+            exec: { command: ["imgproxy", "health"] }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 6
+          volumeMounts:
+            - { name: storage-data, mountPath: /var/lib/storage }
+      volumes:
+        - name: storage-data
+          persistentVolumeClaim: { claimName: storage-data }
+---
+# ---------------------------------------------------------------- storage-api
+apiVersion: v1
+kind: Service
+metadata: { name: storage, namespace: supabase, labels: { app: storage } }
+spec:
+  selector: { app: storage }
+  ports: [{ name: http, port: 5000, targetPort: 5000 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: storage, namespace: supabase, labels: { app: storage } }
+spec:
+  replicas: 1
+  strategy: { type: Recreate }
+  selector: { matchLabels: { app: storage } }
+  template:
+    metadata: { labels: { app: storage } }
+    spec:
+      containers:
+        - name: storage
+          image: supabase/storage-api:v1.60.4
+          imagePullPolicy: IfNotPresent
+          ports: [{ name: http, containerPort: 5000 }]
+          env:
+            - { name: POSTGRES_PASSWORD, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PASSWORD } } }
+            - { name: POSTGRES_PORT, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PORT } } }
+            - { name: POSTGRES_DB, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_DB } } }
+            - { name: ANON_KEY, valueFrom: { secretKeyRef: { name: supabase-env, key: ANON_KEY } } }
+            - { name: SERVICE_KEY, valueFrom: { secretKeyRef: { name: supabase-env, key: SERVICE_ROLE_KEY } } }
+            - { name: POSTGREST_URL, value: "http://rest:3000" }
+            - { name: AUTH_JWT_SECRET, valueFrom: { secretKeyRef: { name: supabase-env, key: JWT_SECRET } } }
+            - { name: DATABASE_URL, value: "postgres://supabase_storage_admin:$(POSTGRES_PASSWORD)@db:$(POSTGRES_PORT)/$(POSTGRES_DB)" }
+            - { name: STORAGE_PUBLIC_URL, valueFrom: { secretKeyRef: { name: supabase-env, key: SUPABASE_PUBLIC_URL } } }
+            - { name: REQUEST_ALLOW_X_FORWARDED_PATH, value: "true" }
+            - { name: FILE_SIZE_LIMIT, value: "52428800" }
+            - { name: STORAGE_BACKEND, value: file }
+            - { name: GLOBAL_S3_BUCKET, valueFrom: { secretKeyRef: { name: supabase-env, key: GLOBAL_S3_BUCKET } } }
+            - { name: FILE_STORAGE_BACKEND_PATH, value: /var/lib/storage }
+            - { name: TENANT_ID, valueFrom: { secretKeyRef: { name: supabase-env, key: STORAGE_TENANT_ID } } }
+            - { name: REGION, valueFrom: { secretKeyRef: { name: supabase-env, key: REGION } } }
+            - { name: ENABLE_IMAGE_TRANSFORMATION, value: "true" }
+            - { name: IMGPROXY_URL, value: "http://imgproxy:5001" }
+            - { name: S3_PROTOCOL_ACCESS_KEY_ID, valueFrom: { secretKeyRef: { name: supabase-env, key: S3_PROTOCOL_ACCESS_KEY_ID } } }
+            - { name: S3_PROTOCOL_ACCESS_KEY_SECRET, valueFrom: { secretKeyRef: { name: supabase-env, key: S3_PROTOCOL_ACCESS_KEY_SECRET } } }
+          readinessProbe:
+            httpGet: { path: /status, port: 5000 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 6
+          volumeMounts:
+            - { name: storage-data, mountPath: /var/lib/storage }
+      volumes:
+        - name: storage-data
+          persistentVolumeClaim: { claimName: storage-data }
