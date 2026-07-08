@@ -72,11 +72,11 @@ export const AIOnboarding = ({
                       <FileText strokeWidth={1.5} size={14} className="text-foreground-light" />
                     }
                     onClick={() => {
-                      onValueChange(item.prompt)
+                      onValueChange($t(item.prompt))
                       onFocusInput?.()
                     }}
                   >
-                    {item.title}
+                    {$t(item.title)}
                   </Button>
                 </motion.div>
               ))}

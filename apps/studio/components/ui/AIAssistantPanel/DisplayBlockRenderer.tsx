@@ -16,6 +16,7 @@ import { usePrimaryDatabase } from '@/data/read-replicas/replicas-query'
 import { useExecuteSqlMutation } from '@/data/sql/execute-sql-mutation'
 import { useChangedSync } from '@/hooks/misc/useChanged'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { useTrack } from '@/lib/telemetry/track'
 
@@ -250,10 +251,10 @@ export const DisplayBlockRenderer = ({
       {shouldShowConfirmFooter && (
         <div className="mx-4">
           <ConfirmFooter
-            message="Assistant wants to run this query"
-            cancelLabel="Skip"
-            confirmLabel="Run Query"
-            confirmLabelLoading="Running..."
+            message={$t('Assistant wants to run this query')}
+            cancelLabel={$t('Skip')}
+            confirmLabel={$t('Run Query')}
+            confirmLabelLoading={$t('Running...')}
             isLoading={isApprovalResponded || executeSqlLoading}
             onCancel={isApprovalRequested ? onDeny : undefined}
             onConfirm={isApprovalRequested ? onApprove : undefined}

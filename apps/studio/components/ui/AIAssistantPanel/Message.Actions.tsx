@@ -56,7 +56,7 @@ function MessageActionsDelete({ onClick }: { onClick: () => void }) {
     <ButtonTooltip
       variant="text"
       icon={<Trash2 size={14} strokeWidth={1.5} />}
-      tooltip={{ content: { side: 'bottom', text: 'Delete message' } }}
+      tooltip={{ content: { side: 'bottom', text: $t('Delete message') } }}
       onClick={onClick}
       className="text-foreground-light hover:text-foreground p-1 rounded-sm"
       title={$t('Delete message')}

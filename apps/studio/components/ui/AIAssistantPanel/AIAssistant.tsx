@@ -398,7 +398,7 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
 
   return (
     <ErrorBoundary
-      message="Something went wrong with the AI Assistant"
+      message={$t('Something went wrong with the AI Assistant')}
       sentryContext={{
         component: 'AIAssistant',
         feature: 'AI Assistant Panel',
@@ -407,7 +407,7 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
       }}
       actions={[
         {
-          label: 'Clear messages and refresh',
+          label: $t('Clear messages and refresh'),
           onClick: () => {
             handleClearMessages()
             window.location.reload()
@@ -469,7 +469,7 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
                               onClick={handleClearMessages}
                               className="w-7 h-7"
                               icon={<Eraser />}
-                              tooltip={{ content: { side: 'bottom', text: 'Clear messages' } }}
+                              tooltip={{ content: { side: 'bottom', text: $t('Clear messages') } }}
                             />
                           </>
                         )}
@@ -582,10 +582,10 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
             disabled={isChatInputDisabled}
             placeholder={
               hasMessages
-                ? 'Ask a follow up question...'
+                ? $t('Ask a follow up question...')
                 : (snap.sqlSnippets ?? [])?.length > 0
-                  ? 'Ask a question or make a change...'
-                  : 'Chat to Postgres...'
+                  ? $t('Ask a question or make a change...')
+                  : $t('Chat to Postgres...')
             }
             value={value}
             onValueChange={(e) => setValue(e.target.value)}

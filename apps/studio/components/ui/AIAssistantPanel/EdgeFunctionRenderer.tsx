@@ -5,6 +5,7 @@ import { EdgeFunctionBlock } from '../EdgeFunctionBlock/EdgeFunctionBlock'
 import { ConfirmFooter } from './ConfirmFooter'
 import { useProjectSettingsV2Query } from '@/data/config/project-settings-v2-query'
 import { useEdgeFunctionQuery } from '@/data/edge-functions/edge-function-query'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 interface EdgeFunctionRendererProps {
@@ -102,10 +103,10 @@ export const EdgeFunctionRenderer = ({
       {showConfirmFooter && (
         <div className="mx-4">
           <ConfirmFooter
-            message="Assistant wants to deploy this Edge Function"
-            cancelLabel="Skip"
-            confirmLabel="Deploy"
-            confirmLabelLoading="Deploying..."
+            message={$t('Assistant wants to deploy this Edge Function')}
+            cancelLabel={$t('Skip')}
+            confirmLabel={$t('Deploy')}
+            confirmLabelLoading={$t('Deploying...')}
             isLoading={isDeploying}
             onCancel={() => onDeny?.()}
             onConfirm={handleDeploy}

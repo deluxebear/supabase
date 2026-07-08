@@ -312,8 +312,13 @@ export const FunctionsList = () => {
                   onClick={() => {
                     openSidebar(SIDEBAR_KEYS.AI_ASSISTANT)
                     aiSnap.newChat({
-                      name: 'Create new function',
-                      initialInput: `Create a new function for the schema ${selectedSchema} that does ...`,
+                      name: $t('Create new function'),
+                      initialInput: $t(
+                        'Create a new function for the schema {{schema}} that does ...',
+                        {
+                          schema: selectedSchema,
+                        }
+                      ),
                     })
                   }}
                   tooltip={{
