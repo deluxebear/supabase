@@ -9,6 +9,7 @@ import {
   INTEGRATIONS,
 } from '@/components/interfaces/Integrations/Landing/Integrations.constants'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { t as $t } from '@/lib/i18n'
 
 export function useIntegrationsGotoCommands(options?: CommandOptions) {
   let { ref } = useParams()
@@ -23,13 +24,17 @@ export function useIntegrationsGotoCommands(options?: CommandOptions) {
   const getName = (integration: IntegrationDefinition) => {
     switch (integration.id) {
       case 'cron':
-        return 'View and manage your Cron Jobs'
+        return $t('View and manage your Cron Jobs')
       case 'graphiql':
-        return 'Query database using GraphQL'
+        return $t('Query database using GraphQL')
       case 'vault':
-        return 'View and manage your keys and secrets via Vault'
+        return $t('View and manage your keys and secrets via Vault')
       default:
-        return `View and manage your ${integration.name}${integration.type === 'wrapper' ? 's' : ''}`
+        // Interpolate the product name (kept in its own language) into a
+        // translatable template; the "s" plural only applies to wrapper names.
+        return integration.type === 'wrapper'
+          ? $t('View and manage your {{name}}s', { name: integration.name })
+          : $t('View and manage your {{name}}', { name: integration.name })
     }
   }
 
