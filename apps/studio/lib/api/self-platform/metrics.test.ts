@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { executePlatformQuery } from './db'
 import {
   ATTRIBUTE_META,
+  composeSelector,
   computeContainerAttributes,
   computeScrapeAttributes,
   METRICS_RETENTION_DAYS,
@@ -244,7 +245,7 @@ describe('computeContainerAttributes', () => {
         ...machine,
       ],
     }
-    const out = computeContainerAttributes(t0, t1, 'supabase-db')
+    const out = computeContainerAttributes(t0, t1, composeSelector('supabase-db'))
     expect(out.avg_cpu_usage).toBeCloseTo(5)
     expect(out.max_cpu_usage).toBeCloseTo(5)
     expect(out.cpu_usage_busy_user).toBeCloseTo(3) // 3s/10s/10cores*100
@@ -261,7 +262,11 @@ describe('computeContainerAttributes', () => {
       cont('container_memory_cache', 50),
       ...machine,
     ]
-    const out = computeContainerAttributes(undefined, { at: 0, samples: s }, 'supabase-db')
+    const out = computeContainerAttributes(
+      undefined,
+      { at: 0, samples: s },
+      composeSelector('supabase-db')
+    )
     expect(out.ram_usage_used).toBe(200)
     expect(out.ram_usage_total).toBe(1_000) // machine_memory
     expect(out.ram_usage).toBeCloseTo(20)
@@ -275,7 +280,11 @@ describe('computeContainerAttributes', () => {
       cont('container_spec_memory_limit_bytes', 400),
       ...machine,
     ]
-    const out = computeContainerAttributes(undefined, { at: 0, samples: s }, 'supabase-db')
+    const out = computeContainerAttributes(
+      undefined,
+      { at: 0, samples: s },
+      composeSelector('supabase-db')
+    )
     expect(out.ram_usage_total).toBe(400)
     expect(out.ram_usage).toBeCloseTo(50)
   })
@@ -297,7 +306,7 @@ describe('computeContainerAttributes', () => {
         ...machine,
       ],
     }
-    const out = computeContainerAttributes(t0, t1, 'supabase-db')
+    const out = computeContainerAttributes(t0, t1, composeSelector('supabase-db'))
     expect(out.network_receive_bytes).toBeCloseTo(100)
     expect(out.network_transmit_bytes).toBeCloseTo(50)
   })
@@ -319,7 +328,7 @@ describe('computeContainerAttributes', () => {
         ...machine,
       ],
     }
-    const out = computeContainerAttributes(t0, t1, 'supabase-db')
+    const out = computeContainerAttributes(t0, t1, composeSelector('supabase-db'))
     // eth0 alone: 1000/10s = 100; the lo delta (9999) must be dropped, not summed.
     expect(out.network_receive_bytes).toBeCloseTo(100)
   })
@@ -330,7 +339,11 @@ describe('computeContainerAttributes', () => {
       { name: 'container_memory_working_set_bytes', labels: { name: 'supabase-kong' }, value: 999 },
       ...machine,
     ]
-    const out = computeContainerAttributes(undefined, { at: 0, samples: s }, 'supabase-db')
+    const out = computeContainerAttributes(
+      undefined,
+      { at: 0, samples: s },
+      composeSelector('supabase-db')
+    )
     expect(out.ram_usage_used).toBe(200) // not 200+999
   })
 
@@ -343,9 +356,22 @@ describe('computeContainerAttributes', () => {
       at: 10_000,
       samples: [cont('container_cpu_usage_seconds_total', 1), ...machine],
     }
-    const out = computeContainerAttributes(t0, t1, 'supabase-db')
+    const out = computeContainerAttributes(t0, t1, composeSelector('supabase-db'))
     expect(out.disk_bytes_read).toBeUndefined()
     expect(out.disk_iops_read).toBeUndefined()
+  })
+
+  it('composeSelector reproduces the old name-based container output', () => {
+    // prev/curr are the same two snapshots the existing compose container test
+    // builds (the cadvisor-scrape.prom fixture, scraped twice — see the
+    // "sampleProject — container dialect branch" describe below).
+    const fixture = readFileSync(join(__dirname, '__fixtures__', 'cadvisor-scrape.prom'), 'utf8')
+    const prev = snap(1_000_000, fixture)
+    const curr = snap(1_060_000, fixture)
+    const viaSelector = computeContainerAttributes(prev, curr, composeSelector('supabase-db'))
+    expect(viaSelector.ram_usage_used).toBeGreaterThan(0)
+    expect(viaSelector.avg_cpu_usage).toBeGreaterThanOrEqual(0)
+    expect(viaSelector.network_receive_bytes).toBeGreaterThanOrEqual(0)
   })
 })
 

@@ -348,14 +348,30 @@ export function computeScrapeAttributes(
   return out
 }
 
+export interface ContainerSelector {
+  cpuMem: LabelPred // selects the workload container's cpu/mem/spec series
+  net: LabelPred // selects the network series (already excludes lo)
+  cpuDenom: LabelPred // selects the container's spec cpu quota/period series
+}
+
+// Compose dialect: cAdvisor tags the Postgres container by its friendly `name`.
+export function composeSelector(containerName: string): ContainerSelector {
+  const mine: LabelPred = (l) => l.name === containerName
+  return {
+    cpuMem: mine,
+    cpuDenom: mine,
+    net: (l) => l.name === containerName && l.interface !== 'lo',
+  }
+}
+
 export function computeContainerAttributes(
   prev: Snapshot | undefined,
   curr: Snapshot,
-  containerName: string
+  selector: ContainerSelector
 ): Record<string, number> {
   const out: Record<string, number> = {}
   const S = curr.samples
-  const mine: LabelPred = (l) => l.name === containerName
+  const mine = selector.cpuMem
 
   // --- Memory (absolute + % vs limit-or-machine) ---
   const used = sumSeries(S, CONTAINER.memWorkingSet, mine)
@@ -393,7 +409,7 @@ export function computeContainerAttributes(
   if (elapsed <= 0) return out
 
   // --- CPU (% of machine cores, or of the cpu quota when set) ---
-  const cores = cpuDenominatorCores(S, mine)
+  const cores = cpuDenominatorCores(S, selector.cpuDenom)
   const totalDelta = counterDelta(prev, curr, CONTAINER.cpuUsage, mine)
   if (cores !== undefined && cores > 0 && totalDelta !== undefined && totalDelta >= 0) {
     const pct = clamp((totalDelta / elapsed / cores) * 100)
@@ -415,10 +431,9 @@ export function computeContainerAttributes(
   }
 
   // --- Network (per-container rate, excluding loopback) ---
-  const notLo: LabelPred = (l) => l.name === containerName && l.interface !== 'lo'
-  const netRx = counterDelta(prev, curr, CONTAINER.netRx, notLo)
+  const netRx = counterDelta(prev, curr, CONTAINER.netRx, selector.net)
   if (netRx !== undefined) out.network_receive_bytes = netRx / elapsed
-  const netTx = counterDelta(prev, curr, CONTAINER.netTx, notLo)
+  const netTx = counterDelta(prev, curr, CONTAINER.netTx, selector.net)
   if (netTx !== undefined) out.network_transmit_bytes = netTx / elapsed
 
   return out
@@ -504,10 +519,13 @@ export async function sampleProject(ref: string): Promise<void> {
       const curr: Snapshot = { at: Date.now(), samples: parsePrometheusText(await resp.text()) }
       // Container dialect when the row is pinned to a container (Task 2), else
       // the host-level dialect (M6.3 behavior). Both emit ATTRIBUTE_META keys.
-      const scraped =
+      const sel =
         conn.containerName != null && conn.containerName !== ''
-          ? computeContainerAttributes(lastScrape.get(ref), curr, conn.containerName)
-          : computeScrapeAttributes(lastScrape.get(ref), curr)
+          ? composeSelector(conn.containerName)
+          : null
+      const scraped = sel
+        ? computeContainerAttributes(lastScrape.get(ref), curr, sel)
+        : computeScrapeAttributes(lastScrape.get(ref), curr)
       Object.assign(values, scraped)
       lastScrape.set(ref, curr)
     } catch (err) {
