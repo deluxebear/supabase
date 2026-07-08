@@ -3,6 +3,7 @@ import { EmptyStatePresentational } from 'ui-patterns/EmptyStatePresentational'
 
 import { CreateBucketButton } from './NewBucketButton'
 import { BUCKET_TYPES } from './Storage.constants'
+import { t as $t } from '@/lib/i18n'
 
 interface EmptyBucketStateProps {
   bucketType: keyof typeof BUCKET_TYPES
@@ -20,8 +21,8 @@ export const EmptyBucketState = ({
   return (
     <EmptyStatePresentational
       icon={BucketPlus}
-      title={`Create ${config.article} ${config.singularName} bucket`}
-      description={config.valueProp}
+      title={$t('Create a {{type}} bucket', { type: $t(config.singularName) })}
+      description={$t(config.valueProp)}
       className={className}
     >
       <CreateBucketButton onClick={onCreateBucket} />

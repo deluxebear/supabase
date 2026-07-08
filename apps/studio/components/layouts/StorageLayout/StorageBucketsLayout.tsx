@@ -16,6 +16,7 @@ import {
 import { BUCKET_TYPES } from '@/components/interfaces/Storage/Storage.constants'
 import { useStorageV2Page } from '@/components/interfaces/Storage/Storage.utils'
 import { DocsButton } from '@/components/ui/DocsButton'
+import { t as $t } from '@/lib/i18n'
 
 export const StorageBucketsLayout = ({
   title,
@@ -54,10 +55,10 @@ export const StorageBucketsLayout = ({
       <PageHeader>
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>{title || (config?.displayName ?? 'Storage')}</PageHeaderTitle>
+            <PageHeaderTitle>{$t(title || config?.displayName || 'Storage')}</PageHeaderTitle>
             {!hideSubtitle && (
               <PageHeaderDescription>
-                {config?.description || 'Manage your storage buckets and files.'}
+                {$t(config?.description || 'Manage your storage buckets and files.')}
               </PageHeaderDescription>
             )}
           </PageHeaderSummary>
@@ -72,7 +73,7 @@ export const StorageBucketsLayout = ({
             <NavMenu>
               {navigationItems.map((item) => (
                 <NavMenuItem key={item.label} active={pathname === item.href}>
-                  <Link href={item.href}>{item.label}</Link>
+                  <Link href={item.href}>{$t(item.label)}</Link>
                 </NavMenuItem>
               ))}
             </NavMenu>
