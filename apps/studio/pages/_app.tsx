@@ -162,6 +162,29 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
     if (!IS_PLATFORM) checkCliEnvironment()
   }, [])
 
+  // Monaco throws a benign "Canceled" promise rejection when the editor is
+  // disposed while a setModel op is still in flight — e.g. the keyed remount on
+  // every SQL snippet switch (see @monaco-editor/react disposeEditor). It doesn't
+  // break anything, but Next.js's dev error overlay catches the unhandled
+  // rejection and throws up a full-screen "Runtime Canceled" crash. Swallow just
+  // that one so it doesn't block the editor. No-op in production (no overlay).
+  useEffect(() => {
+    const isMonacoCanceled = (reason: unknown) => {
+      if (reason === 'Canceled') return true
+      const message = (reason as { message?: string } | null)?.message
+      return message === 'Canceled'
+    }
+    const onRejection = (event: PromiseRejectionEvent) => {
+      if (!isMonacoCanceled(event.reason)) return
+      // Intercept in the capture phase and stop the event before Next.js's dev
+      // overlay listener sees it, so preventDefault alone isn't relied on.
+      event.preventDefault()
+      event.stopImmediatePropagation()
+    }
+    window.addEventListener('unhandledrejection', onRejection, { capture: true })
+    return () => window.removeEventListener('unhandledrejection', onRejection, { capture: true })
+  }, [])
+
   return (
     <QueryClientProvider client={queryClient}>
       <I18nProvider>
