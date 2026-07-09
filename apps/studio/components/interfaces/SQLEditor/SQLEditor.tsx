@@ -966,7 +966,7 @@ export const SQLEditor = () => {
                       )}
                     </div>
                   )}
-                  <div key={id} className="w-full h-full relative">
+                  <div className="w-full h-full relative">
                     <MonacoEditor
                       autoFocus
                       placeholder={
