@@ -26,7 +26,7 @@ export const BuiltBySection = forwardRef<ElementRef<'div'>, BuiltBySectionProps>
       >
         {status && (
           <div>
-            <div className="text-foreground-lighter font-mono text-xs mb-1">STATUS</div>
+            <div className="text-foreground-lighter font-mono text-xs mb-1">{$t('STATUS')}</div>
             <div>{status}</div>
           </div>
         )}
@@ -38,7 +38,7 @@ export const BuiltBySection = forwardRef<ElementRef<'div'>, BuiltBySectionProps>
         )}
         {docsUrl && (
           <div>
-            <div className="text-foreground-lighter font-mono text-xs mb-1">DOCS</div>
+            <div className="text-foreground-lighter font-mono text-xs mb-1">{$t('DOCS')}</div>
             <Link
               href={docsUrl}
               target="_blank"
@@ -47,16 +47,16 @@ export const BuiltBySection = forwardRef<ElementRef<'div'>, BuiltBySectionProps>
             >
               <Book size={16} />
               {docsUrl.includes('supabase.com/docs')
-                ? 'Supabase Docs'
+                ? $t('Supabase Docs')
                 : docsUrl.includes('github.com')
-                  ? 'GitHub Docs'
-                  : 'Documentation'}
+                  ? $t('GitHub Docs')
+                  : $t('Documentation')}
             </Link>
           </div>
         )}
         {websiteUrl && (
           <div>
-            <div className="text-foreground-lighter font-mono text-xs mb-1">WEBSITE</div>
+            <div className="text-foreground-lighter font-mono text-xs mb-1">{$t('WEBSITE')}</div>
             <Link
               href={websiteUrl}
               target="_blank"

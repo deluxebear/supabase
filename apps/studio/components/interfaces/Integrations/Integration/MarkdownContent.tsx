@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { cn } from 'ui'
 
 import { Markdown } from '@/components/interfaces/Markdown'
+import { t as $t } from '@/lib/i18n'
 import { loadIntegrationOverview } from '@/static-data/integrations/overviews'
 
 const CHAR_LIMIT = 500 // Adjust this number as needed
@@ -61,7 +62,7 @@ export const MarkdownContent = ({
               className="text-foreground-light hover:text-foreground underline text-sm"
               onClick={() => setIsExpanded(!isExpanded)}
             >
-              {isExpanded ? 'Show less' : 'Read more'}
+              {isExpanded ? $t('Show less') : $t('Read more')}
             </button>
           </div>
         )}

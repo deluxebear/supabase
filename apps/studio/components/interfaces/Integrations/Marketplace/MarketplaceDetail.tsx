@@ -112,7 +112,7 @@ export const MarketplaceDetail = () => {
     <>
       <IntegrationDetailTabShortcuts tabs={tabs} />
       <MarketplaceDetailBreadrumbs
-        title={integration.name}
+        title={$t(integration.name)}
         isInstalled={isInstalled}
         actions={
           <>

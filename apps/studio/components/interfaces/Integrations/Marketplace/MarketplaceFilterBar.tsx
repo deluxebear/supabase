@@ -75,7 +75,7 @@ export const MarketplaceFilterBar = ({
   const typeLabel = type ? (INTEGRATION_TYPES.find((t) => t.key === type)?.label ?? type) : 'All'
   const sourceLabel = source
     ? (MARKETPLACE_SOURCES.find((s) => s.key === source)?.label ?? source)
-    : 'All'
+    : $t('All')
 
   return (
     <div

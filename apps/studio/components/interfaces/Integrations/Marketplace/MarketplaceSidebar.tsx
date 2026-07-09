@@ -104,7 +104,7 @@ export const MarketplaceSidebar = () => {
                 <span className="relative flex h-[18px] w-[18px] shrink-0 items-center justify-center overflow-hidden rounded-[4px] border bg-white">
                   {integration.icon({ className: 'p-0.5' })}
                 </span>
-                <span className="truncate">{integration.name}</span>
+                <span className="truncate">{$t(integration.name)}</span>
               </Link>
             )
           })}

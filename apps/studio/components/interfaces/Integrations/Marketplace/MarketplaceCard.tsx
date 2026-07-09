@@ -27,10 +27,10 @@ export const MarketplaceCard = ({ integration, isInstalled }: MarketplaceCardPro
           {isInstalled && <Badge variant="success">{$t('Installed')}</Badge>}
         </div>
         <div>
-          <div className="mb-1 text-sm font-medium">{integration.name}</div>
+          <div className="mb-1 text-sm font-medium">{$t(integration.name)}</div>
           {integration.description && (
             <p className="line-clamp-2 text-xs leading-snug text-foreground-light">
-              {integration.description}
+              {$t(integration.description)}
             </p>
           )}
         </div>

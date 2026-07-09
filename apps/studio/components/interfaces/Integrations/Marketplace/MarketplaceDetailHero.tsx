@@ -14,6 +14,7 @@ import {
 import { getMarketplaceSource, MarketplaceSourceBadge } from './Marketplace.constants'
 import { IntegrationLogo } from '@/components/interfaces/Integrations/Integration/IntegrationLogo'
 import type { IntegrationDefinition } from '@/components/interfaces/Integrations/Landing/Integrations.constants'
+import { t as $t } from '@/lib/i18n'
 
 interface MarketplaceDetailHeroProps {
   integration: IntegrationDefinition
@@ -72,7 +73,7 @@ export const MarketplaceDetailHero = ({
           <NavMenu>
             {tabs.map((tab) => (
               <NavMenuItem key={tab.href} active={tab.active}>
-                <Link href={tab.href}>{tab.label}</Link>
+                <Link href={tab.href}>{$t(tab.label)}</Link>
               </NavMenuItem>
             ))}
           </NavMenu>

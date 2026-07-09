@@ -15,6 +15,7 @@ import { useIsMarketplaceEnabled } from '@/components/interfaces/App/FeaturePrev
 import { useDatabaseExtensionsQuery } from '@/data/database-extensions/database-extensions-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export type IntegrationTab = {
   label: string
@@ -115,9 +116,10 @@ export const useIntegrationDetail = () => {
   const isReady = !!router?.isReady
   const isWrapperBlocked = !integrationsWrappers && !!id?.endsWith('_wrapper')
 
-  const pageTitle = integration?.name ?? 'Integration not found'
-  const pageSubTitle =
+  const pageTitle = $t(integration?.name ?? 'Integration not found')
+  const pageSubTitle = $t(
     integration?.description ?? 'If you think this is an error, please contact support'
+  )
 
   useEffect(() => {
     if (

@@ -40,7 +40,7 @@ export const MarketplaceListRow = ({ integration, isInstalled }: MarketplaceList
         >
           <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
             <div className="relative z-10 text-sm font-medium @lg:text-sm after:absolute after:-inset-y-2 after:left-0 after:right-[calc(100%+6px)] after:content-[''] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground">
-              {integration.name}
+              {$t(integration.name)}
             </div>
             <div className="relative z-10">
               <MarketplaceSourceBadge source={source} />
@@ -49,7 +49,7 @@ export const MarketplaceListRow = ({ integration, isInstalled }: MarketplaceList
           </div>
           {integration.description && (
             <p className="mt-0.5 line-clamp-1 max-w-[600px] text-xs text-foreground-light">
-              {integration.description}
+              {$t(integration.description)}
             </p>
           )}
         </Link>
