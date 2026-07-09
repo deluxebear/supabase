@@ -32,19 +32,19 @@ export const StorageBucketsLayout = ({
     page === 'files'
       ? [
           {
-            label: 'Buckets',
+            label: $t('Buckets'),
             href: `/project/${ref}/storage/files`,
           },
           ...(IS_PLATFORM
             ? [
                 {
-                  label: 'Settings',
+                  label: $t('Settings'),
                   href: `/project/${ref}/storage/files/settings`,
                 },
               ]
             : []),
           {
-            label: 'Policies',
+            label: $t('Policies'),
             href: `/project/${ref}/storage/files/policies`,
           },
         ]

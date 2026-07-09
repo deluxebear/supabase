@@ -5475,6 +5475,7 @@
   "Supabase AI utilizes third-party AI providers designed with a strong focus on data privacy and security.": "Supabase AI 利用第三方 AI 提供商，这些提供商侧重于数据隐私和安全性。",
   "Supabase APIs are generated from your database, which means that we can use database introspection to generate type-safe API definitions.": "Supabase API 从您的数据库生成，这意味着我们可以使用数据库内省来生成类型安全的 API 定义。",
   "Supabase Assistant Opt-in Level": "Supabase 助手选择级别",
+  "Supabase Auth": "Supabase 身份验证",
   "Supabase Auth will send a HTTPS POST request to this URL each time the hook is triggered.": "Supabase Auth 每次触发钩子时都会向此 URL 发送 HTTPS POST 请求。",
   "Supabase CLI releases follows a two-week schedule, with stable updates available through the": "Supabase CLI 发布遵循两周的日程安排，稳定更新可通过以下方式获得",
   "Supabase Logo": "Supabase 徽标",

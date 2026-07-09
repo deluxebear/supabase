@@ -120,7 +120,7 @@ const EdgeFunctionDetailsLayout = ({
 
   const breadcrumbItems = [
     {
-      label: 'Edge Functions',
+      label: $t('Edge Functions'),
       href: `/project/${ref}/functions`,
     },
     {
@@ -134,25 +134,25 @@ const EdgeFunctionDetailsLayout = ({
         ...(IS_PLATFORM
           ? [
               {
-                label: 'Overview',
+                label: $t('Overview'),
                 href: `/project/${ref}/functions/${functionSlug}`,
               },
               {
-                label: 'Invocations',
+                label: $t('Invocations'),
                 href: `/project/${ref}/functions/${functionSlug}/invocations`,
               },
               {
-                label: 'Logs',
+                label: $t('Logs'),
                 href: `/project/${ref}/functions/${functionSlug}/logs`,
               },
             ]
           : []),
         {
-          label: 'Code',
+          label: $t('Code'),
           href: `/project/${ref}/functions/${functionSlug}/code`,
         },
         {
-          label: 'Settings',
+          label: $t('Settings'),
           href: `/project/${ref}/functions/${functionSlug}/details`,
         },
       ]

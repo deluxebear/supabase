@@ -19,11 +19,11 @@ export const DatabaseTriggersLayout = ({ children }: DatabaseTriggersLayoutProps
 
   const navigationItems = [
     {
-      label: 'Data',
+      label: $t('Data'),
       href: `/project/${ref}/database/triggers/data`,
     },
     {
-      label: 'Event',
+      label: $t('Event'),
       href: `/project/${ref}/database/triggers/event`,
     },
   ]

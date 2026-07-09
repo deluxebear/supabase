@@ -26,11 +26,11 @@ export const AdvisorRulesLayout = ({ children }: PropsWithChildren<{}>) => {
           subtitle={$t('Disable specific advisor categories or rules')}
           navigationItems={[
             {
-              label: 'Security',
+              label: $t('Security'),
               href: `/project/${ref}/advisors/rules/security`,
             },
             {
-              label: 'Performance',
+              label: $t('Performance'),
               href: `/project/${ref}/advisors/rules/performance`,
             },
           ]}

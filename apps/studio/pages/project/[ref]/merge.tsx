@@ -266,7 +266,7 @@ const MergePage: NextPageWithLayout = () => {
   const breadcrumbs = useMemo(
     () => [
       {
-        label: 'Merge requests',
+        label: $t('Merge requests'),
         href: `/project/${project?.ref}/branches/merge-requests`,
       },
     ],
@@ -285,12 +285,12 @@ const MergePage: NextPageWithLayout = () => {
 
     return [
       {
-        label: 'Database',
+        label: $t('Database'),
         href: buildHref('database'),
         active: currentTab === 'database',
       },
       {
-        label: 'Edge Functions',
+        label: $t('Edge Functions'),
         href: buildHref('edge-functions'),
         active: currentTab === 'edge-functions',
       },

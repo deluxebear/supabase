@@ -12,12 +12,12 @@ const ApiKeysLayout = ({ children }: PropsWithChildren) => {
 
   const navigationItems = [
     {
-      label: 'Publishable and secret API keys',
+      label: $t('Publishable and secret API keys'),
       href: `/project/${projectRef}/settings/api-keys`,
       id: 'new-keys',
     },
     {
-      label: 'Legacy anon, service_role API keys',
+      label: $t('Legacy anon, service_role API keys'),
       href: `/project/${projectRef}/settings/api-keys/legacy`,
       id: 'legacy-keys',
     },

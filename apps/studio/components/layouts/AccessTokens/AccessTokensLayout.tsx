@@ -21,14 +21,14 @@ export const AccessTokensLayout = ({ children }: PropsWithChildren) => {
 
   const navigationItems = [
     {
-      label: 'Classic Tokens',
+      label: $t('Classic Tokens'),
       href: `/account/tokens`,
       id: 'classic-tokens',
     },
     ...(scopedTokensEnabled
       ? [
           {
-            label: 'Scoped Tokens',
+            label: $t('Scoped Tokens'),
             href: `/account/tokens/scoped`,
             id: 'scoped-tokens',
           },
