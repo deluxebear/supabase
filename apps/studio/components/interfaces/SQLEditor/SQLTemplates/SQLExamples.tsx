@@ -71,8 +71,8 @@ const SQLExamples = () => {
         <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
           {quickStart.map((x, i) => (
             <ActionCard
-              title={$t(x.title)}
-              description={$t(x.description)}
+              title={x.title}
+              description={x.description}
               bgColor="bg-alternative border"
               key={`action-card-${i}`}
               icon={<SQL_ICON className={cn('fill-foreground', 'w-4 h-4')} strokeWidth={1.5} />}

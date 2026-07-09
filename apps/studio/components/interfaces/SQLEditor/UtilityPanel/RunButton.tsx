@@ -1,8 +1,6 @@
 import { Loader2 } from 'lucide-react'
 import { Button, KeyboardShortcut } from 'ui'
 
-import { t as $t } from '@/lib/i18n'
-
 interface SqlRunButtonProps {
   isDisabled?: boolean
   isExecuting?: boolean
@@ -34,7 +32,7 @@ export const SqlRunButton = ({
       }
       className={className}
     >
-      {hasSelection ? $t('Run selected') : $t('Run')}
+      {hasSelection ? 'Run selected' : 'Run'}
     </Button>
   )
 }

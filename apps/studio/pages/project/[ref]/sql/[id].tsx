@@ -1,3 +1,5 @@
+import { t as $t } from '@/lib/i18n';
+import { usePrevious } from '@uidotdev/usehooks'
 import { useParams } from 'common/hooks/useParams'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -17,7 +19,6 @@ import { useSqlSnippetByIdQuery } from '@/data/content/content-id-query'
 import { useDashboardHistory } from '@/hooks/misc/useDashboardHistory'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
 import { wasNeverPersisted } from '@/state/sql-editor/sql-editor-lifecycle'
 import { useSnippets, useSqlEditorV2StateSnapshot } from '@/state/sql-editor/sql-editor-state'
 import { createTabId, useTabsStateSnapshot } from '@/state/tabs'
@@ -26,6 +27,7 @@ import type { NextPageWithLayout } from '@/types'
 const SqlEditor: NextPageWithLayout = () => {
   const router = useRouter()
   const { id, ref, content, skip } = useParams()
+  const previousRoute = usePrevious(id)
   const { data: project } = useSelectedProjectQuery()
 
   const editor = useEditorType()
@@ -46,14 +48,7 @@ const SqlEditor: NextPageWithLayout = () => {
   const { data, error, isError } = useSqlSnippetByIdQuery(
     { projectRef: ref, id },
     {
-      // A snippet created locally (e.g. from a Template/Example card) is persisted
-      // asynchronously. Right after it's marked saved, the content GET can 404
-      // briefly because of replication lag before the write is readable. Retry
-      // 404s a few times so a freshly-created snippet isn't mistaken for a deleted
-      // one and bounced back to /new. A genuinely deleted snippet keeps 404-ing and
-      // surfaces after the retries are exhausted.
-      retry: (failureCount, err) => (err as { code?: number })?.code === 404 && failureCount < 3,
-      retryDelay: (attempt) => Math.min(500 * 2 ** attempt, 3000),
+      retry: false,
       enabled: canFetchContentBasedOnId,
     }
   )
@@ -62,15 +57,15 @@ const SqlEditor: NextPageWithLayout = () => {
     isError && error.code === 404 && error.message.includes('Content not found')
   const invalidId = isError && error.code === 400 && error.message.includes('Invalid uuid')
 
-  // Only treat a content 404 as a real deletion when the snippet is NOT in our
-  // local store. If it IS present (the Private/Shared list, or one freshly created
-  // from a Template/Examples card), render it from local state instead of nuking it
-  // and bouncing to /new. Content GETs can 404 — transiently from replication lag,
-  // or persistently on some self-hosted/platform deployments — but a snippet we
-  // already hold locally is not "deleted", and redirecting loses the user's work
-  // (and tears down the Monaco editor mid-flight → "Canceled" errors).
-  // Original context: https://github.com/supabase/supabase/pull/39389
-  const isSnippetDeleted = snippetMissing && !snippet
+  // [Joshen] Atm we suspect that replication lag is causing this to happen whereby a newly created snippet
+  // shows the "Unable to find snippet" error which blocks the whole UI
+  // Am opting to silently swallow this error, since the saves are still going through and we're scoping this behaviour
+  // behaviour down to a very specific use case too with all these conditionals
+  // More details: https://github.com/supabase/supabase/pull/39389
+  const snippetMissingImmediatelyAfterCreating =
+    !!snippet && snippetMissing && previousRoute === 'new' && wasNeverPersisted(snippet.status)
+
+  const isSnippetDeleted = snippetMissing && !snippetMissingImmediatelyAfterCreating
 
   useEffect(() => {
     if (ref && data && project) {
@@ -147,7 +142,7 @@ const SqlEditor: NextPageWithLayout = () => {
           <Admonition
             type="default"
             title={`Unable to find snippet with ID ${id}`}
-            description={$t("This snippet doesn't exist in your project")}
+            description={$t('This snippet doesn\'t exist in your project')}
           >
             {!!tabId ? (
               <Button
@@ -162,8 +157,9 @@ const SqlEditor: NextPageWithLayout = () => {
                   })
                 }}
               >
-                {$t('Close tab')}
-              </Button>
+                
+                                            {$t('Close tab')}
+                                          </Button>
             ) : (
               <Button
                 asChild
