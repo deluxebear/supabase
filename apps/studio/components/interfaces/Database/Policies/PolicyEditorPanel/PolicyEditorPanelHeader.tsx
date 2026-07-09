@@ -45,8 +45,8 @@ export const PolicyEditorPanelHeader = ({
         <div>
           <SheetTitle className="truncate">
             {selectedPolicy !== undefined
-              ? `Update policy: ${selectedPolicy.name}`
-              : 'Create a new Row Level Security policy'}
+              ? $t('Update policy: {{name}}', { name: selectedPolicy.name })
+              : $t('Create a new Row Level Security policy')}
           </SheetTitle>
           {selectedPolicy !== undefined && (
             <Collapsible

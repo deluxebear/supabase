@@ -65,8 +65,8 @@ export const PolicyRoles = ({ selectedRoles, onUpdateSelectedRoles }: PolicyRole
               mode="inline-combobox"
               label={
                 selectedRoles.length === 0
-                  ? 'Defaults to all (public) roles if none selected'
-                  : 'Search for a role'
+                  ? $t('Defaults to all (public) roles if none selected')
+                  : $t('Search for a role')
               }
               deletableBadge
               badgeLimit="wrap"

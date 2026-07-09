@@ -34,7 +34,7 @@ export const LockedCreateQuerySection = ({
       <div className="flex items-start" style={{ fontSize: '14px' }}>
         <p className="px-6 font-mono text-sm text-foreground-light select-none">1</p>
         <p className="font-mono tracking-tighter">
-          <span className="text-[#569cd6]">{isEditing ? 'alter' : 'create'}</span> {$t('policy "')}
+          <span className="text-[#569cd6]">{isEditing ? 'alter' : 'create'}</span> {'policy "'}
           {isRenamingPolicy ? selectedPolicy?.name : name.length === 0 ? 'policy_name' : name}"
         </p>
       </div>
@@ -100,7 +100,7 @@ export const LockedRenameQuerySection = ({
           </p>
         </div>
         <p className="font-mono tracking-tighter">
-          <span className="text-[#569cd6]">alter</span> {$t('policy "')}
+          <span className="text-[#569cd6]">alter</span> {'policy "'}
           {oldName}"
         </p>
       </div>
@@ -121,7 +121,7 @@ export const LockedRenameQuerySection = ({
           </p>
         </div>
         <p className="font-mono tracking-tighter">
-          <span className="text-[#569cd6]">rename</span> {$t('to "')}
+          <span className="text-[#569cd6]">rename</span> {'to "'}
           {newName}";
         </p>
       </div>

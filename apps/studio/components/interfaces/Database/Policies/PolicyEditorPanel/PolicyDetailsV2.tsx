@@ -336,8 +336,8 @@ export const PolicyDetailsV2 = ({
                       mode="inline-combobox"
                       label={
                         field.value.length === 0
-                          ? 'Defaults to all (public) roles if none selected'
-                          : 'Search for a role'
+                          ? $t('Defaults to all (public) roles if none selected')
+                          : $t('Search for a role')
                       }
                       badgeLimit="wrap"
                       showIcon={false}

@@ -88,7 +88,7 @@ export const PolicyTemplates = ({
             <HoverCard key={template.id} openDelay={100} closeDelay={100}>
               <HoverCardTrigger>
                 <CardButton
-                  title={template.name}
+                  title={$t(template.name)}
                   titleClass="text-sm"
                   className={cn(
                     'transition w-full',
@@ -126,7 +126,7 @@ export const PolicyTemplates = ({
                     </div>
                   }
                 >
-                  <Markdown content={template.description} className="[&>p]:m-0 space-y-2" />
+                  <Markdown content={$t(template.description)} className="[&>p]:m-0 space-y-2" />
                 </CardButton>
               </HoverCardTrigger>
               <HoverCardContent
