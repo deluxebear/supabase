@@ -53,7 +53,7 @@ export function ReferenceSnippetsSection() {
               className="capitalize"
             >
               <BookText size={16} className="text-foreground-muted" />
-              {pageId}
+              {pageId === 'templates' ? $t('Templates') : $t('Examples')}
             </InnerSideMenuDataItem>
           )
         })}

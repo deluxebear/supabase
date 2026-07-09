@@ -971,9 +971,9 @@ export const SQLEditor = () => {
                       autoFocus
                       placeholder={
                         !promptState.isOpen && !editorRef.current?.getValue()
-                          ? 'Hit ' +
-                            (os === 'macos' ? 'CMD+SHIFT+K' : `CTRL+SHIFT+K`) +
-                            ' to generate query or just start typing'
+                          ? $t('Hit {{shortcut}} to generate query or just start typing', {
+                              shortcut: os === 'macos' ? 'CMD+SHIFT+K' : 'CTRL+SHIFT+K',
+                            })
                           : ''
                       }
                       id={id}
