@@ -72,8 +72,8 @@ const SQLTemplates = () => {
           {sql.map((x, i) => (
             <ActionCard
               key={`action-card-${i}`}
-              title={x.title}
-              description={x.description}
+              title={$t(x.title)}
+              description={$t(x.description)}
               bgColor="bg-alternative border"
               icon={<SQL_ICON className={cn('fill-foreground', 'w-4 h-4')} strokeWidth={1.5} />}
               onClick={() => {

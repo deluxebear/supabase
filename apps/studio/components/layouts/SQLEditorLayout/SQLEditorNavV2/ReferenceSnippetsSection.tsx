@@ -46,14 +46,14 @@ export function ReferenceSnippetsSection() {
           return (
             <InnerSideMenuDataItem
               key={pageId}
-              title={pageId === 'templates' ? 'Templates' : 'Examples'}
+              title={pageId === 'templates' ? $t('Templates') : $t('Examples')}
               isActive={active}
               isOpened={false}
               href={`/project/${ref}/sql/${pageId}`}
               className="capitalize"
             >
               <BookText size={16} className="text-foreground-muted" />
-              {pageId}
+              {pageId === 'templates' ? $t('Templates') : $t('Examples')}
             </InnerSideMenuDataItem>
           )
         })}
