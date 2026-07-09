@@ -98,22 +98,22 @@ export const TriggerSheet = ({
   const { mutate: createDatabaseTrigger, isPending: isCreating } = useDatabaseTriggerCreateMutation(
     {
       onSuccess: () => {
-        toast.success(`Successfully created trigger`)
+        toast.success($t('Successfully created trigger'))
         onClose()
       },
       onError: (error) => {
-        toast.error(`Failed to create trigger: ${error.message}`)
+        toast.error($t('Failed to create trigger: {{error}}', { error: error.message }))
       },
     }
   )
   const { mutate: updateDatabaseTrigger, isPending: isUpdating } = useDatabaseTriggerUpdateMutation(
     {
       onSuccess: () => {
-        toast.success(`Successfully updated trigger`)
+        toast.success($t('Successfully updated trigger'))
         onClose()
       },
       onError: (error) => {
-        toast.error(`Failed to update trigger: ${error.message}`)
+        toast.error($t('Failed to update trigger: {{error}}', { error: error.message }))
       },
     }
   )
@@ -198,10 +198,10 @@ export const TriggerSheet = ({
           <SheetHeader>
             <SheetTitle>
               {isDuplicatingTrigger
-                ? 'Duplicate trigger'
+                ? $t('Duplicate trigger')
                 : isEditing
-                  ? `Edit database trigger: ${selectedTrigger.name}`
-                  : 'Create a new database trigger'}
+                  ? $t('Edit database trigger: {{name}}', { name: selectedTrigger.name })
+                  : $t('Create a new database trigger')}
             </SheetTitle>
           </SheetHeader>
 
@@ -244,16 +244,16 @@ export const TriggerSheet = ({
                       <FormControl>
                         <Select defaultValue={field.value} onValueChange={field.onChange}>
                           <SelectTrigger className="col-span-8">
-                            {
+                            {$t(
                               TRIGGER_ENABLED_MODES.find((option) => option.value === field.value)
-                                ?.label
-                            }
+                                ?.label ?? ''
+                            )}
                           </SelectTrigger>
                           <SelectContent>
                             {TRIGGER_ENABLED_MODES.map((option) => (
                               <SelectItem key={option.value} value={option.value}>
-                                <p className="text-foreground">{option.label}</p>
-                                <p className="text-foreground-lighter">{option.description}</p>
+                                <p className="text-foreground">{$t(option.label)}</p>
+                                <p className="text-foreground-lighter">{$t(option.description)}</p>
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -327,8 +327,8 @@ export const TriggerSheet = ({
                               <FormItemLayout
                                 hideMessage
                                 layout="flex"
-                                label={event.label}
-                                description={event.description}
+                                label={$t(event.label)}
+                                description={$t(event.description)}
                               >
                                 <FormControl>
                                   <Checkbox
@@ -364,13 +364,18 @@ export const TriggerSheet = ({
                         <FormControl>
                           <Select defaultValue={field.value} onValueChange={field.onChange}>
                             <SelectTrigger className="col-span-8">
-                              {TRIGGER_TYPES.find((option) => option.value === field.value)?.label}
+                              {$t(
+                                TRIGGER_TYPES.find((option) => option.value === field.value)
+                                  ?.label ?? ''
+                              )}
                             </SelectTrigger>
                             <SelectContent>
                               {TRIGGER_TYPES.map((option) => (
                                 <SelectItem key={option.value} value={option.value}>
-                                  <p className="text-foreground">{option.label}</p>
-                                  <p className="text-foreground-lighter">{option.description}</p>
+                                  <p className="text-foreground">{$t(option.label)}</p>
+                                  <p className="text-foreground-lighter">
+                                    {$t(option.description)}
+                                  </p>
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -395,16 +400,18 @@ export const TriggerSheet = ({
                         <FormControl>
                           <Select defaultValue={field.value} onValueChange={field.onChange}>
                             <SelectTrigger className="col-span-8">
-                              {
+                              {$t(
                                 TRIGGER_ORIENTATIONS.find((option) => option.value === field.value)
-                                  ?.label
-                              }
+                                  ?.label ?? ''
+                              )}
                             </SelectTrigger>
                             <SelectContent>
                               {TRIGGER_ORIENTATIONS.map((option) => (
                                 <SelectItem key={option.value} value={option.value}>
-                                  <p className="text-foreground">{option.label}</p>
-                                  <p className="text-foreground-lighter">{option.description}</p>
+                                  <p className="text-foreground">{$t(option.label)}</p>
+                                  <p className="text-foreground-lighter">
+                                    {$t(option.description)}
+                                  </p>
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -436,7 +443,7 @@ export const TriggerSheet = ({
                               >
                                 <FormBoxEmpty
                                   icon={<Terminal size={14} strokeWidth={2} />}
-                                  text="Choose a function to trigger"
+                                  text={$t('Choose a function to trigger')}
                                 />
                               </button>
                             ) : (
@@ -487,7 +494,7 @@ export const TriggerSheet = ({
               {$t('Cancel')}
             </Button>
             <Button form={formId} type="submit" loading={isCreating || isUpdating}>
-              {isEditing ? 'Save' : 'Create'} trigger
+              {isEditing ? $t('Save trigger') : $t('Create trigger')}
             </Button>
           </SheetFooter>
 
