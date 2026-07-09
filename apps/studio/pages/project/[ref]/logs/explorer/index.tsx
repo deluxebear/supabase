@@ -92,16 +92,16 @@ const MISSING_LIMIT_ERROR: LogQueryError = {
 
 export const LogsExplorerPage: NextPageWithLayout = () => {
   useEditorHints()
+  const track = useTrack()
   const monaco = useMonaco()
   const router = useRouter()
   const { profile } = useProfile()
+  const { ref: projectRef, q, queryId } = useParams()
+  const useOtelEndpoint = useFlag('otelLegacyLogs')
+  const { logsShowMetadataIpTemplate } = useIsFeatureEnabled(['logs:show_metadata_ip_template'])
+
   const { data: project } = useSelectedProjectQuery()
   const { data: organization } = useSelectedOrganizationQuery()
-  const { ref, q, queryId } = useParams()
-  const track = useTrack()
-  const projectRef = ref as string
-  const { logsShowMetadataIpTemplate } = useIsFeatureEnabled(['logs:show_metadata_ip_template'])
-  const useOtelEndpoint = useFlag('otelLegacyLogs')
 
   const allTemplates = useMemo(() => {
     const templates = getLogsTemplates(useOtelEndpoint)
@@ -159,10 +159,7 @@ export const LogsExplorerPage: NextPageWithLayout = () => {
   const { getEntitlementNumericValue } = useCheckEntitlements('log.retention_days')
   const entitledToAuditLogDays = getEntitlementNumericValue()
 
-  const { data: content } = useContentQuery({
-    projectRef: ref,
-    type: 'log_sql',
-  })
+  const { data: content } = useContentQuery({ projectRef, type: 'log_sql' })
   const query = content?.content.find((x) => x.id === queryId)
 
   const resolvedRange = useMemo(() => {
@@ -181,15 +178,15 @@ export const LogsExplorerPage: NextPageWithLayout = () => {
     error,
     isLoading: logsLoading,
     setParams,
-  } = useLogsQuery(
+  } = useLogsQuery({
     projectRef,
-    {
+    initialParams: {
       iso_timestamp_start: resolvedRange.from,
       iso_timestamp_end: resolvedRange.to,
     },
-    true,
-    { useOtel: useOtelEndpoint }
-  )
+    enabled: true,
+    options: { useOtel: useOtelEndpoint },
+  })
 
   const results = logData
   const isLoading = logsLoading
@@ -259,11 +256,11 @@ export const LogsExplorerPage: NextPageWithLayout = () => {
       const headerData = await constructHeaders()
       const source = detectLogSource(currentSql)
       const availableKeys = source
-        ? await fetchOtelLogKeys({ projectRef, source }).catch(() => undefined)
+        ? await fetchOtelLogKeys({ projectRef: projectRef!, source }).catch(() => undefined)
         : undefined
       const rewritten = await rewriteLogsSqlWithAI({
         sql: currentSql,
-        projectRef,
+        projectRef: projectRef!,
         connectionString: project?.connectionString,
         orgSlug: organization?.slug,
         authorizationHeader: headerData.get('Authorization'),
@@ -567,7 +564,7 @@ export const LogsExplorerPage: NextPageWithLayout = () => {
               hasEditorValue={Boolean(editorValue)}
               data={showMissingLimitError ? [] : results}
               error={showMissingLimitError ? MISSING_LIMIT_ERROR : error}
-              projectRef={projectRef}
+              projectRef={projectRef!}
               onSelectedLogChange={setSelectedLog}
               selectedLog={selectedLog || undefined}
               sqlQuery={editorValue}

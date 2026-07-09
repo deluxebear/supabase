@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import type { UIMessage as MessageType } from '@ai-sdk/react'
 import { useChat } from '@ai-sdk/react'
 import { lastAssistantMessageIsCompleteWithApprovalResponses } from 'ai'
@@ -48,7 +49,6 @@ import {
 } from '@/lib/ai/model.utils'
 import { IS_PLATFORM } from '@/lib/constants'
 import { uuidv4 } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import type { AssistantModel } from '@/state/ai-assistant-state'
 import { useAiAssistantState, useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
@@ -178,7 +178,13 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
 
   const isChatLoading = chatStatus === 'submitted' || chatStatus === 'streaming'
   const hasPendingApproval = hasPendingToolApproval(chatMessages)
-  const isChatInputDisabled = !isApiKeySet || disablePrompts || isLoadingOrganization
+  const supportMetadata = snap.activeChat?.supportMetadata
+  const isSupportChat = !!supportMetadata?.isSupportChat
+  const isSupportChatClosed = isSupportChat && supportMetadata.lifecycleStatus !== 'bot_active'
+  const activeChatId = snap.activeChatId
+  const supportConversationId = supportMetadata?.frontConversationId
+  const isChatInputDisabled =
+    !isApiKeySet || disablePrompts || isLoadingOrganization || isSupportChatClosed
 
   const deleteMessageFromHere = useCallback(
     (messageId: string) => {
@@ -398,7 +404,7 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
 
   return (
     <ErrorBoundary
-      message={$t('Something went wrong with the AI Assistant')}
+      message="Something went wrong with the AI Assistant"
       sentryContext={{
         component: 'AIAssistant',
         feature: 'AI Assistant Panel',
@@ -407,7 +413,7 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
       }}
       actions={[
         {
-          label: $t('Clear messages and refresh'),
+          label: 'Clear messages and refresh',
           onClick: () => {
             handleClearMessages()
             window.location.reload()
@@ -451,8 +457,9 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
                             onClick={() => snap.newChat()}
                             className="text-xs"
                           >
-                            {$t('New chat')}
-                          </Button>
+                            
+                                                                {$t('New chat')}
+                                                              </Button>
                         ) : (
                           <>
                             <Button
@@ -461,15 +468,16 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
                               onClick={() => regenerate()}
                               className="text-xs"
                             >
-                              {$t('Retry')}
-                            </Button>
+                              
+                                                                          {$t('Retry')}
+                                                                        </Button>
                             <ButtonTooltip
                               variant="default"
                               size="tiny"
                               onClick={handleClearMessages}
                               className="w-7 h-7"
                               icon={<Eraser />}
-                              tooltip={{ content: { side: 'bottom', text: $t('Clear messages') } }}
+                              tooltip={{ content: { side: 'bottom', text: 'Clear messages' } }}
                             />
                           </>
                         )}
@@ -486,8 +494,9 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
                 />
               )}
               <p className="text-center text-xs text-foreground-muted mt-6">
-                {$t('Supabase AI may not always produce correct answers. Double check responses.')}
-              </p>
+                
+                                              {$t('Supabase AI may not always produce correct answers. Double check responses.')}
+                                            </p>
             </ConversationContent>
             <ConversationScrollButton />
           </Conversation>
@@ -549,12 +558,41 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
         </AnimatePresence>
 
         <div className="px-3 pb-3 z-20 relative">
+          {isSupportChat && !isSupportChatClosed && (
+            <div className="mb-3">
+              <div className="mb-3 border-t" />
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="tiny"
+                  disabled={!activeChatId || !supportConversationId}
+                  onClick={() =>
+                    activeChatId && state.setSupportLifecycleStatus(activeChatId, 'escalated')
+                  }
+                >
+                  
+                                                    {$t('Escalate to human')}
+                                                  </Button>
+                <Button
+                  variant="outline"
+                  size="tiny"
+                  disabled={!activeChatId || !supportConversationId}
+                  onClick={() =>
+                    activeChatId && state.setSupportLifecycleStatus(activeChatId, 'user_resolved')
+                  }
+                >
+                  
+                                                    {$t('Resolve')}
+                                                  </Button>
+              </div>
+            </div>
+          )}
           {disablePrompts && (
             <Admonition
               showIcon={false}
               type="default"
               title={$t('Assistant has been temporarily disabled')}
-              description={$t("We're currently looking into getting it back online")}
+              description={$t('We\'re currently looking into getting it back online')}
             />
           )}
 
@@ -582,10 +620,14 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
             disabled={isChatInputDisabled}
             placeholder={
               hasMessages
-                ? $t('Ask a follow up question...')
+                ? isSupportChat
+                  ? 'Share details so the assistant can help with your support request...'
+                  : 'Ask a follow up question...'
                 : (snap.sqlSnippets ?? [])?.length > 0
-                  ? $t('Ask a question or make a change...')
-                  : $t('Chat to Postgres...')
+                  ? 'Ask a question or make a change...'
+                  : isSupportChat
+                    ? 'Describe your support issue...'
+                    : 'Chat to Postgres...'
             }
             value={value}
             onValueChange={(e) => setValue(e.target.value)}

@@ -71,6 +71,7 @@ export const ProjectCard = ({
     <>
       <li className="list-none h-min">
         <CardButton
+          tabIndex={0}
           linkHref={rewriteHref ? rewriteHref : `/project/${projectRef}`}
           className="h-44 px-0! group pt-5 pb-0 overflow-hidden relative"
           hideChevron

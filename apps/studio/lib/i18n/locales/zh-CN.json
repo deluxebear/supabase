@@ -1328,6 +1328,7 @@
   "Copied replica region": "已复制副本地区",
   "Copied row to clipboard": "已将行复制到剪贴板",
   "Copied rows to clipboard": "已将行复制到剪贴板",
+  "Copied sensitive data to clipboard": "已复制敏感数据到剪贴板",
   "Copied signing secret": "已复制签名密钥",
   "Copied to clipboard": "已复制到剪贴板",
   "Copied to clipboard as environment variables": "已作为环境变量复制到剪贴板",

@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
+import { useFlag } from 'common'
 import dayjs from 'dayjs'
 
 import { edgeFunctionsKeys } from './keys'
 import { get, handleError } from '@/data/fetchers'
 import { executeAnalyticsSql } from '@/data/logs/execute-analytics-sql'
 import { USE_LOGFLARE_PG_SQL } from '@/data/logs/logflare-dialect'
+import { logsAllEndpointUrl } from '@/data/logs/logs-endpoint'
 import {
   analyticsLiteral,
   joinSqlFragments,
@@ -13,7 +15,11 @@ import {
 } from '@/data/logs/safe-analytics-sql'
 import type { ResponseError, UseCustomQueryOptions } from '@/types'
 
-export type EdgeFunctionsLastHourStatsVariables = { projectRef?: string; functionIds?: string[] }
+export type EdgeFunctionsLastHourStatsVariables = {
+  projectRef?: string
+  functionIds?: string[]
+  useOtel?: boolean
+}
 
 export type EdgeFunctionLastHourStats = {
   functionId: string
@@ -53,9 +59,9 @@ export type EdgeFunctionsLastHourStatsResponse = Record<string, EdgeFunctionLast
 // [self-platform] M6.3 fold-in: the flagged follow-up above landed —
 // `getEdgeFunctionsLastHourStats` now short-circuits through the
 // `functions.last-hour-stats` substitute endpoint (analytics-substitutes.ts)
-// when `USE_LOGFLARE_PG_SQL`, before this SQL is ever built. This function
-// and its BQ text are unchanged and only reachable on cloud.
-function getEdgeFunctionsLastHourStatsSql(functionIds: string[]): SafeLogSqlFragment {
+// when `USE_LOGFLARE_PG_SQL`, before this SQL is ever built. The cloud SQL
+// builders below (BQ + upstream's OTEL variant) are only reachable on cloud.
+function getEdgeFunctionsLastHourStatsSqlBq(functionIds: string[]): SafeLogSqlFragment {
   const functionIdFilter: SafeLogSqlFragment =
     functionIds.length > 0
       ? safeSql`  and function_id in (${joinSqlFragments(functionIds.map(analyticsLiteral), ', ')})\n`
@@ -78,13 +84,43 @@ ${functionIdFilter}group by
 `
 }
 
+function getEdgeFunctionsLastHourStatsSqlOtel(functionIds: string[]): SafeLogSqlFragment {
+  const functionIdFilter: SafeLogSqlFragment =
+    functionIds.length > 0
+      ? safeSql`  and log_attributes['function_id'] in (${joinSqlFragments(functionIds.map(analyticsLiteral), ', ')})\n`
+      : safeSql``
+
+  return safeSql`
+-- edge-functions-last-hour-stats
+select
+  log_attributes['function_id'] as function_id,
+  count(distinct id) as requests_count,
+  count(distinct case when toInt32OrZero(log_attributes['response.status_code']) >= 500 then id end) as server_err_count
+from logs
+where
+  source = 'function_edge_logs'
+  and log_attributes['function_id'] != ''
+${functionIdFilter}group by
+  function_id
+`
+}
+
+function getEdgeFunctionsLastHourStatsSql(
+  functionIds: string[],
+  useOtel: boolean
+): SafeLogSqlFragment {
+  return useOtel
+    ? getEdgeFunctionsLastHourStatsSqlOtel(functionIds)
+    : getEdgeFunctionsLastHourStatsSqlBq(functionIds)
+}
+
 type LastHourStatsRow = {
   function_id: string
   requests_count: number | string
   server_err_count: number | string
 }
 
-// [self-platform] M6.3 fold-in: shared by both the cloud (BQ logs.all) and
+// [self-platform] M6.3 fold-in: shared by both the cloud (BQ/OTEL logs.all) and
 // self-hosted (functions.last-hour-stats substitute, always zero rows) code
 // paths below — factored out so the substitute's honest-empty result folds
 // through the exact same shape derivation as the cloud path, rather than
@@ -123,7 +159,7 @@ type SelfHostedSubstituteGet = (
 ) => Promise<{ data?: { result?: LastHourStatsRow[] }; error?: unknown }>
 
 export async function getEdgeFunctionsLastHourStats(
-  { projectRef, functionIds = [] }: EdgeFunctionsLastHourStatsVariables,
+  { projectRef, functionIds = [], useOtel = false }: EdgeFunctionsLastHourStatsVariables,
   signal?: AbortSignal
 ) {
   if (!projectRef) throw new Error('projectRef is required')
@@ -133,7 +169,7 @@ export async function getEdgeFunctionsLastHourStats(
     // [self-platform] M6.3: per-function stats are structurally underivable
     // self-hosted (function_id never populated — see the M6.2 pin above).
     // Route through the named substitute endpoint: honest empty result, no
-    // categorical 500.
+    // categorical 500. OTEL is a cloud-only flag, so it does not apply here.
     const { data, error } = await (get as unknown as SelfHostedSubstituteGet)(
       '/platform/projects/{ref}/analytics/endpoints/functions.last-hour-stats',
       {
@@ -155,8 +191,8 @@ export async function getEdgeFunctionsLastHourStats(
 
   const data = await executeAnalyticsSql({
     projectRef,
-    endpoint: '/platform/projects/{ref}/analytics/endpoints/logs.all',
-    sql: getEdgeFunctionsLastHourStatsSql(functionIds),
+    endpoint: logsAllEndpointUrl(useOtel),
+    sql: getEdgeFunctionsLastHourStatsSql(functionIds, useOtel),
     iso_timestamp_start: startDate,
     iso_timestamp_end: endDate,
     key: 'last-hour-stats',
@@ -185,12 +221,16 @@ export const useEdgeFunctionsLastHourStatsQuery = <TData = EdgeFunctionsLastHour
     EdgeFunctionsLastHourStatsError,
     TData
   > = {}
-) =>
-  useQuery<EdgeFunctionsLastHourStatsData, EdgeFunctionsLastHourStatsError, TData>({
-    queryKey: edgeFunctionsKeys.lastHourStats(projectRef, functionIds),
-    queryFn: ({ signal }) => getEdgeFunctionsLastHourStats({ projectRef, functionIds }, signal),
+) => {
+  const useOtel = useFlag('otelLegacyLogs')
+
+  return useQuery<EdgeFunctionsLastHourStatsData, EdgeFunctionsLastHourStatsError, TData>({
+    queryKey: edgeFunctionsKeys.lastHourStats(projectRef, functionIds, useOtel),
+    queryFn: ({ signal }) =>
+      getEdgeFunctionsLastHourStats({ projectRef, functionIds, useOtel }, signal),
     enabled: enabled && typeof projectRef !== 'undefined' && functionIds.length > 0,
     staleTime: 60 * 1000,
     retry: false,
     ...options,
   })
+}

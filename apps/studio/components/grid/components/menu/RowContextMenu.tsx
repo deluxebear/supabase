@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { Copy, Edit, ListFilter, Trash } from 'lucide-react'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
@@ -7,7 +8,6 @@ import { useTableRowOperations } from '../../hooks/useTableRowOperations'
 import { formatClipboardValue } from '../../utils/common'
 import { buildFilterFromCellValue, isComplexValue } from '../header/filter/FilterPopoverNew.utils'
 import type { SupaRow } from '@/components/grid/types'
-import { t as $t } from '@/lib/i18n'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
 import { useTableEditorTableStateSnapshot } from '@/state/table-editor-table'
 
@@ -45,17 +45,30 @@ export const RowContextMenuContent = ({
 
     const value = row[column.key]
     const text = formatClipboardValue(value)
+    const isSensitive = snap.sensitiveDataColumns.has(column.key as string)
 
     void copyToClipboard(text, () => {
-      toast.success($t('Copied cell value to clipboard'))
+      if (isSensitive) {
+        toast.warning($t('Copied sensitive data to clipboard'))
+      } else {
+        toast.success($t('Copied cell value to clipboard'))
+      }
     })
-  }, [activeCellPosition, row, snap.gridColumns])
+  }, [activeCellPosition, row, snap.gridColumns, snap.sensitiveDataColumns])
 
   const onCopyRowContent = useCallback(() => {
+    const hasSensitiveColumns = snap.gridColumns.some((col) =>
+      snap.sensitiveDataColumns.has(col.key as string)
+    )
+
     void copyToClipboard(JSON.stringify(row), () => {
-      toast.success($t('Copied row to clipboard'))
+      if (hasSensitiveColumns) {
+        toast.warning($t('Copied row containing sensitive data to clipboard'))
+      } else {
+        toast.success($t('Copied row to clipboard'))
+      }
     })
-  }, [row])
+  }, [row, snap.gridColumns, snap.sensitiveDataColumns])
 
   const getRowAndColumn = useCallback(() => {
     if (!activeCellPosition) return null

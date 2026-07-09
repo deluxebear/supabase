@@ -23,7 +23,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { t as $t } from '@/lib/i18n'
 
 const schema = z.object({
-  SITE_URL: z.string().min(1, 'Must have a Site URL'),
+  SITE_URL: z.string().trim().min(1, 'Must have a Site URL'),
 })
 
 const SiteUrl = () => {
