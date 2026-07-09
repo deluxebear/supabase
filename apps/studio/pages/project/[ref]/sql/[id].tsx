@@ -46,7 +46,14 @@ const SqlEditor: NextPageWithLayout = () => {
   const { data, error, isError } = useSqlSnippetByIdQuery(
     { projectRef: ref, id },
     {
-      retry: false,
+      // A snippet created locally (e.g. from a Template/Example card) is persisted
+      // asynchronously. Right after it's marked saved, the content GET can 404
+      // briefly because of replication lag before the write is readable. Retry
+      // 404s a few times so a freshly-created snippet isn't mistaken for a deleted
+      // one and bounced back to /new. A genuinely deleted snippet keeps 404-ing and
+      // surfaces after the retries are exhausted.
+      retry: (failureCount, err) => (err as { code?: number })?.code === 404 && failureCount < 3,
+      retryDelay: (attempt) => Math.min(500 * 2 ** attempt, 3000),
       enabled: canFetchContentBasedOnId,
     }
   )
