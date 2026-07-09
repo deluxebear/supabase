@@ -24,7 +24,7 @@ const JWTKeysLayout = ({ children }: PropsWithChildren) => {
   return (
     <PageLayout
       title={$t('JWT Keys')}
-      subtitle="Control the keys used to sign JSON Web Tokens for your project"
+      subtitle={$t('Control the keys used to sign JSON Web Tokens for your project')}
       navigationItems={navigationItems}
     >
       <ScaffoldContainer className="flex flex-col py-8 gap-8" bottomPadding>

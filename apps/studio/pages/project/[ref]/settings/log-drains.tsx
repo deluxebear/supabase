@@ -201,7 +201,7 @@ const LogDrainsSettings: NextPageWithLayout = () => {
     return (
       <PageLayout
         title={$t('Log Drains')}
-        subtitle="Send your project logs to third party destinations"
+        subtitle={$t('Send your project logs to third party destinations')}
         primaryActions={
           <>
             {!(logDrains?.length === 0) && (

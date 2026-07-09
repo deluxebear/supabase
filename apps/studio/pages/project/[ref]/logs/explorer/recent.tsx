@@ -23,7 +23,7 @@ export const LogsSavedPage: NextPageWithLayout = () => {
 
   return (
     <div className="mx-auto w-full px-5 py-6 h-full">
-      <LogsExplorerHeader subtitle="Recent Queries" />
+      <LogsExplorerHeader subtitle={$t('Recent Queries')} />
       {recent.length > 0 && (
         <Table
           head={

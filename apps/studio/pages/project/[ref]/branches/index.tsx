@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
 import { partition } from 'lodash'
@@ -25,6 +24,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAppStateSnapshot } from '@/state/app-state'
 import type { NextPageWithLayout } from '@/types'
@@ -181,8 +181,7 @@ const BranchesPage: NextPageWithLayout = () => {
         }}
         text={
           <>
-            
-                            {$t('This will delete your database preview branch')}{' '}
+            {$t('This will delete your database preview branch')}{' '}
             <span className="text-bold text-foreground">{selectedBranchToDelete?.name}</span>.
           </>
         }
@@ -218,9 +217,8 @@ export const BranchesPageWrapper = ({ children }: PropsWithChildren) => {
         },
       }}
     >
-      
-                {$t('Create branch')}
-              </ButtonTooltip>
+      {$t('Create branch')}
+    </ButtonTooltip>
   )
 
   const secondaryActions = (
@@ -235,9 +233,8 @@ export const BranchesPageWrapper = ({ children }: PropsWithChildren) => {
           rel="noreferrer"
           href="https://github.com/orgs/supabase/discussions/18937"
         >
-          
-                            {$t('Branching feedback')}
-                          </a>
+          {$t('Branching feedback')}
+        </a>
       </Button>
       <DocsButton href={`${DOCS_URL}/guides/platform/branching`} />
     </div>
@@ -246,7 +243,7 @@ export const BranchesPageWrapper = ({ children }: PropsWithChildren) => {
   return (
     <PageLayout
       title={$t('Branches')}
-      subtitle="Manage your database preview branches and deployments"
+      subtitle={$t('Manage your database preview branches and deployments')}
       primaryActions={primaryActions}
       secondaryActions={secondaryActions}
     >

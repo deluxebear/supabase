@@ -23,7 +23,7 @@ export const AdvisorRulesLayout = ({ children }: PropsWithChildren<{}>) => {
               )}
             </span>
           }
-          subtitle="Disable specific advisor categories or rules"
+          subtitle={$t('Disable specific advisor categories or rules')}
           navigationItems={[
             {
               label: 'Security',

@@ -26,7 +26,7 @@ const ApiKeysLayout = ({ children }: PropsWithChildren) => {
   return (
     <PageLayout
       title={$t('API Keys')}
-      subtitle="Configure API keys to securely control access to your project"
+      subtitle={$t('Configure API keys to securely control access to your project')}
       navigationItems={navigationItems}
       secondaryActions={<DocsButton href={`${DOCS_URL}/guides/api/api-keys`} />}
     >

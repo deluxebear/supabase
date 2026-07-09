@@ -31,7 +31,7 @@ export const LogsTemplatesPage: NextPageWithLayout = () => {
 
   return (
     <div className="mx-auto h-full w-full px-5 py-6">
-      <LogsExplorerHeader subtitle="Templates" />
+      <LogsExplorerHeader subtitle={$t('Templates')} />
       <div className="grid lg:grid-cols-3 gap-6 mt-4 pb-24">
         {allTemplates
           .sort((a, b) => a.label!.localeCompare(b.label!))

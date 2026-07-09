@@ -35,7 +35,7 @@ export const DatabaseTriggersLayout = ({ children }: DatabaseTriggersLayoutProps
       ) : (
         <PageLayout
           title={$t('Database Triggers')}
-          subtitle="Execute actions automatically when database events occur"
+          subtitle={$t('Execute actions automatically when database events occur')}
           navigationItems={navigationItems}
           size="large"
         >

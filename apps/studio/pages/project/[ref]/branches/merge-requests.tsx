@@ -355,7 +355,7 @@ export const MergeRequestsPageWrapper = ({ children }: PropsWithChildren<{}>) =>
   return (
     <PageLayout
       title={$t('Merge requests')}
-      subtitle="Review and merge changes from one branch into another"
+      subtitle={$t('Review and merge changes from one branch into another')}
       primaryActions={
         <BranchSelector
           branches={previewBranches}

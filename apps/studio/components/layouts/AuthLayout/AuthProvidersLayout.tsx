@@ -34,7 +34,7 @@ export const AuthProvidersLayout = ({ children }: PropsWithChildren<{}>) => {
       {authenticationSignInProviders ? (
         <PageLayout
           title={$t('Sign In / Providers')}
-          subtitle="Configure authentication providers and login methods for your users"
+          subtitle={$t('Configure authentication providers and login methods for your users')}
           navigationItems={navItems}
         >
           {children}

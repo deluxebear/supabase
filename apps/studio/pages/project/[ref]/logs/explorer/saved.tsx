@@ -30,7 +30,7 @@ export const LogsSavedPage: NextPageWithLayout = () => {
 
   return (
     <div className="mx-auto w-full px-5 py-6 h-full">
-      <LogsExplorerHeader subtitle="Saved Queries" />
+      <LogsExplorerHeader subtitle={$t('Saved Queries')} />
       {saved.length > 0 && (
         <div className="flex flex-col gap-3 py-6">
           <Table
