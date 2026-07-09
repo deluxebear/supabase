@@ -2,13 +2,24 @@ import { IS_PLATFORM } from 'common'
 import { compact } from 'lodash'
 import { v4 as uuidv4 } from 'uuid'
 
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
+
 /**
- * Generates a UUID v4. If the platform is self-hosted, it will generate a deterministic UUID v4 from the inputs.
+ * Generates a UUID v4. When snippets are stored on the filesystem — plain
+ * self-hosted OR self-hosted platform — it generates a DETERMINISTIC UUID from
+ * the inputs so the id matches the one the file-based store derives from
+ * [folder, `${name}.sql`] (see snippets.utils.ts). Cloud platform is DB-backed
+ * and uses a random UUID.
+ *
+ * [self-platform] IS_PLATFORM is true here too, but snippets still live as .sql
+ * files, so it must mint deterministic ids like plain self-hosted — otherwise the
+ * content GET by a random id 404s and the SQL editor bounces to /new.
  */
 export const generateUuid = (inputs: (string | undefined | null)[] = []) => {
   const cleaned = compact(inputs)
-  if (!IS_PLATFORM && cleaned.length === 0) return uuidv4()
-  return IS_PLATFORM ? uuidv4() : generateDeterministicUuid(cleaned)
+  const usesFilesystemStorage = !IS_PLATFORM || IS_SELF_PLATFORM
+  if (!usesFilesystemStorage || cleaned.length === 0) return uuidv4()
+  return generateDeterministicUuid(cleaned)
 }
 
 /**
