@@ -62,18 +62,15 @@ const SqlEditor: NextPageWithLayout = () => {
     isError && error.code === 404 && error.message.includes('Content not found')
   const invalidId = isError && error.code === 400 && error.message.includes('Invalid uuid')
 
-  // A snippet that only exists locally and was never persisted (freshly created via
-  // /new OR from a Templates/Examples card) is EXPECTED to 404 on the server — it
-  // hasn't been saved yet. Swallow that so navigation doesn't bounce back to a new
-  // query. Scope this to the snippet's actual persistence status rather than the
-  // navigation origin: the previous `previousRoute === 'new'` check missed snippets
-  // created from Templates/Examples (which navigate from /sql/templates|examples),
-  // making them flash then redirect with a false "no longer exists" toast.
+  // Only treat a content 404 as a real deletion when the snippet is NOT in our
+  // local store. If it IS present (the Private/Shared list, or one freshly created
+  // from a Template/Examples card), render it from local state instead of nuking it
+  // and bouncing to /new. Content GETs can 404 — transiently from replication lag,
+  // or persistently on some self-hosted/platform deployments — but a snippet we
+  // already hold locally is not "deleted", and redirecting loses the user's work
+  // (and tears down the Monaco editor mid-flight → "Canceled" errors).
   // Original context: https://github.com/supabase/supabase/pull/39389
-  const snippetMissingImmediatelyAfterCreating =
-    !!snippet && snippetMissing && wasNeverPersisted(snippet.status)
-
-  const isSnippetDeleted = snippetMissing && !snippetMissingImmediatelyAfterCreating
+  const isSnippetDeleted = snippetMissing && !snippet
 
   useEffect(() => {
     if (ref && data && project) {
