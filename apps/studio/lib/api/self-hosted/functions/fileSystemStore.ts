@@ -9,7 +9,15 @@ export class FileSystemFunctionsArtifactStore {
   constructor(private folderPath: string) {}
 
   async getFunctions(): Promise<FunctionArtifact[]> {
-    const dirEntries = await readdir(this.folderPath, { withFileTypes: true })
+    let dirEntries: Dirent[]
+    try {
+      dirEntries = await readdir(this.folderPath, { withFileTypes: true })
+    } catch (err) {
+      // No functions folder yet (e.g. an empty or not-yet-mounted volume) —
+      // treat as "no functions deployed" instead of surfacing a raw 500.
+      if ((err as NodeJS.ErrnoException).code === 'ENOENT') return []
+      throw err
+    }
 
     const functionsFolders = dirEntries.filter((dir) => dir.isDirectory() && dir.name !== 'main')
     const functionsArtifacts = await Promise.all(
