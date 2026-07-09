@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { usePrevious } from '@uidotdev/usehooks'
 import { useParams } from 'common/hooks/useParams'
 import Link from 'next/link'
@@ -19,6 +18,8 @@ import { useSqlSnippetByIdQuery } from '@/data/content/content-id-query'
 import { useDashboardHistory } from '@/hooks/misc/useDashboardHistory'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
+import { t as $t } from '@/lib/i18n'
 import { wasNeverPersisted } from '@/state/sql-editor/sql-editor-lifecycle'
 import { useSnippets, useSqlEditorV2StateSnapshot } from '@/state/sql-editor/sql-editor-state'
 import { createTabId, useTabsStateSnapshot } from '@/state/tabs'
@@ -70,7 +71,12 @@ const SqlEditor: NextPageWithLayout = () => {
   useEffect(() => {
     if (ref && data && project) {
       // [Joshen] Check if snippet belongs to the current project
-      if (!IS_PLATFORM || data.project_id === project.id) {
+      // [self-platform] File-based snippets hardcode project_id=1 (see
+      // snippets.utils.ts), which never matches the platform DB's auto-assigned
+      // project.id (e.g. 10). Self-platform is single-project, so the ownership
+      // guard is meaningless here — skipping it stops every snippet click from
+      // bouncing to /sql/new with an empty editor.
+      if (!IS_PLATFORM || IS_SELF_PLATFORM || data.project_id === project.id) {
         snapV2.setSnippet(ref, data)
       } else {
         setLastVisitedSnippet(undefined)
@@ -142,7 +148,7 @@ const SqlEditor: NextPageWithLayout = () => {
           <Admonition
             type="default"
             title={`Unable to find snippet with ID ${id}`}
-            description={$t('This snippet doesn\'t exist in your project')}
+            description={$t("This snippet doesn't exist in your project")}
           >
             {!!tabId ? (
               <Button
@@ -157,9 +163,8 @@ const SqlEditor: NextPageWithLayout = () => {
                   })
                 }}
               >
-                
-                                            {$t('Close tab')}
-                                          </Button>
+                {$t('Close tab')}
+              </Button>
             ) : (
               <Button
                 asChild
