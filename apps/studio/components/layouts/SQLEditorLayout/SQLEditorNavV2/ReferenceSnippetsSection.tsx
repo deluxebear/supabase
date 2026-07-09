@@ -46,7 +46,7 @@ export function ReferenceSnippetsSection() {
           return (
             <InnerSideMenuDataItem
               key={pageId}
-              title={pageId === 'templates' ? 'Templates' : 'Examples'}
+              title={pageId === 'templates' ? $t('Templates') : $t('Examples')}
               isActive={active}
               isOpened={false}
               href={`/project/${ref}/sql/${pageId}`}
