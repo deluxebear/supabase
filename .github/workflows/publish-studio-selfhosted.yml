@@ -6,6 +6,12 @@
 # amd64 and arm64 hosted runners (no QEMU), then merged into a single manifest
 # tagged `<YYYY.MM.DD>-sha-<shortsha>` and `latest`.
 #
+# After the images are published, a GitHub release is cut (the `release` job)
+# that documents both image names and their purpose. On a `studio-v*` tag push
+# the release attaches to that tag; on manual dispatch it is tagged with the
+# build version (which does NOT match `studio-v*`, so it won't re-trigger this
+# workflow).
+#
 # Modelled on .github/workflows/publish_image.yml (the upstream publish flow).
 #
 # Required repository secrets: DOCKER_USERNAME, DOCKER_PASSWORD.
@@ -160,3 +166,75 @@ jobs:
             echo "| \`${IMAGE}:${VERSION}\` | multi-arch (amd64 + arm64) |"
             [ "${UPDATE_LATEST}" = "true" ] && echo "| \`${IMAGE}:latest\` | multi-arch (amd64 + arm64) |"
           } >> "$GITHUB_STEP_SUMMARY"
+
+  # Cut a GitHub release documenting the two images and what each is for.
+  release:
+    needs:
+      - settings
+      - merge
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Publish a GitHub release documenting the images
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.settings.outputs.version }}
+          REPO: ${{ github.repository }}
+          NOTES: |
+            Self-hosted Supabase **Studio** images published to Docker Hub by this build.
+            Both are multi-arch (`linux/amd64` + `linux/arm64`), built from commit `${{ github.sha }}`.
+
+            ## Images
+
+            ### `deluxebear/supabase-studio` — plain self-hosted
+            The Studio UI for a standard self-hosted Supabase stack (what
+            `docker/docker-compose.yml` runs). Built with `IS_PLATFORM` **off** and no
+            baked API/GoTrue URLs.
+
+            ```bash
+            docker pull deluxebear/supabase-studio:${{ needs.settings.outputs.version }}
+            ```
+
+            ### `deluxebear/supabase-plt-studio` — platform / management-plane mode
+            Studio in self-hosted **platform** mode (`IS_PLATFORM` + `SELF_PLATFORM` on):
+            the multi-team management plane — health probing, connection-config editing,
+            container/host infra metrics, backups observe, and the zh-CN localized UI.
+            `NEXT_PUBLIC_API_URL` / `NEXT_PUBLIC_GOTRUE_URL` are placeholders baked at
+            build time and **rewritten at container start** from runtime env, so one
+            image serves any deployment:
+
+            ```bash
+            docker run \
+              -e NEXT_PUBLIC_API_URL=https://api.example.com \
+              -e NEXT_PUBLIC_GOTRUE_URL=https://api.example.com/auth/v1 \
+              deluxebear/supabase-plt-studio:${{ needs.settings.outputs.version }}
+            ```
+
+            ## Tags
+            Each image is pushed as:
+            - `:${{ needs.settings.outputs.version }}` — immutable, this exact build (date + commit sha)
+            - `:latest` — ${{ (inputs.update_latest || 'true') == 'true' && 'moving tag, repointed to this build' || 'left unchanged by this build' }}
+        run: |
+          set -euo pipefail
+
+          # A release needs a tag. On a studio-v* tag push, attach to that tag.
+          # On manual dispatch there is none, so tag with the build version — which
+          # does not match studio-v*, so creating it won't re-trigger this workflow.
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            TAG="${GITHUB_REF_NAME}"
+          else
+            TAG="${VERSION}"
+          fi
+
+          printf '%s' "$NOTES" > release-notes.md
+          TITLE="Self-hosted Studio ${VERSION}"
+
+          if gh release view "${TAG}" --repo "${REPO}" >/dev/null 2>&1; then
+            gh release edit "${TAG}" --repo "${REPO}" --title "${TITLE}" --notes-file release-notes.md
+          else
+            gh release create "${TAG}" --repo "${REPO}" --target "${GITHUB_SHA}" \
+              --title "${TITLE}" --notes-file release-notes.md
+          fi
+
+          echo "Released **${TAG}** (\`${VERSION}\`)" >> "$GITHUB_STEP_SUMMARY"
