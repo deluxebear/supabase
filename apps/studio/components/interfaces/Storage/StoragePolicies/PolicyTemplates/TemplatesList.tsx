@@ -2,6 +2,7 @@ import { noop } from 'lodash'
 import { Menu } from 'ui'
 
 import { type PolicyTemplate } from '@/components/interfaces/Database/Policies/Policies.constants'
+import { t as $t } from '@/lib/i18n'
 
 interface TemplatesListProps {
   templates: PolicyTemplate[]
@@ -36,7 +37,7 @@ const TemplatesList = ({
                 active={active}
                 onClick={() => setSelectedTemplate(template)}
               >
-                <div className="truncate py-2">{template.templateName}</div>
+                <div className="truncate py-2">{$t(template.templateName)}</div>
               </Menu.Item>
             </div>
           )
@@ -45,7 +46,7 @@ const TemplatesList = ({
     </div>
     {templatesNote && (
       <div className="px-4 py-2">
-        <p className="text-xs text-foreground-lighter">{templatesNote}</p>
+        <p className="text-xs text-foreground-lighter">{$t(templatesNote)}</p>
       </div>
     )}
   </div>

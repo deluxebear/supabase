@@ -19,10 +19,10 @@ export const StoragePolicyEditorModalTitle = ({
 }) => {
   const getTitle = () => {
     if (view === POLICY_MODAL_VIEWS.EDITOR || view === POLICY_MODAL_VIEWS.SELECTION) {
-      return `Adding new policy to ${bucketName}`
+      return $t('Adding new policy to {{bucketName}}', { bucketName })
     }
     if (view === POLICY_MODAL_VIEWS.REVIEW) {
-      return `Reviewing policies to be created for ${bucketName}`
+      return $t('Reviewing policies to be created for {{bucketName}}', { bucketName })
     }
   }
   if (view === POLICY_MODAL_VIEWS.TEMPLATES) {

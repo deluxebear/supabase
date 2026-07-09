@@ -78,7 +78,7 @@ export const StorageMenuV2 = () => {
               <Link href={`/project/${ref}/storage/${type}`}>
                 <Menu.Item rounded active={isSelected}>
                   <div className="flex items-center justify-between">
-                    <p className="truncate">{config.displayName}</p>
+                    <p className="truncate">{$t(config.displayName)}</p>
                     {isAlphaEnabled && <Badge variant="success">{$t('New')}</Badge>}
                   </div>
                 </Menu.Item>

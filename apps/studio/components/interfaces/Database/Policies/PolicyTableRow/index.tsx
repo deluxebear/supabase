@@ -132,7 +132,7 @@ const PolicyTableRowComponent = ({
           type={isPubliclyReadable ? 'warning' : 'default'}
           className="border-0 border-y rounded-none min-h-12 flex items-center"
         >
-          <p>{admonitionMessage}</p>
+          <p>{$t(admonitionMessage)}</p>
         </Admonition>
       )}
 

@@ -681,7 +681,7 @@ export const UsersV2 = () => {
                 <div className="border-r border-strong h-6" />
 
                 <FilterPopover
-                  name={selectedColumns.length === 0 ? 'All columns' : 'Columns'}
+                  name={selectedColumns.length === 0 ? $t('All columns') : $t('Columns')}
                   title={$t('Select columns to show')}
                   buttonType={selectedColumns.length === 0 ? 'dashed' : 'default'}
                   options={userTableColumns.slice(1)} // Ignore user image column
@@ -689,7 +689,7 @@ export const UsersV2 = () => {
                   valueKey="id"
                   labelClass="text-xs"
                   maxHeightClass="h-[190px]"
-                  clearButtonText="Reset"
+                  clearButtonText={$t('Reset')}
                   activeOptions={selectedColumns}
                   onSaveFilters={(value) => {
                     // When adding back hidden columns:
@@ -757,7 +757,7 @@ export const UsersV2 = () => {
                   className="w-7"
                   loading={isRefetching && !isFetchingNextPage}
                   onClick={handleRefresh}
-                  tooltip={{ content: { side: 'bottom', text: 'Refresh' } }}
+                  tooltip={{ content: { side: 'bottom', text: $t('Refresh') } }}
                   aria-label={$t('Refresh')}
                 />
                 <AddUserDropdown />

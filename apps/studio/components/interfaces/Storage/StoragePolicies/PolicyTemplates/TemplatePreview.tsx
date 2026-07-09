@@ -17,8 +17,8 @@ const TemplatePreview = ({ selectedTemplate }: TemplatePreviewProps) => {
           <div className="my-5 h-full space-y-6 px-6">
             <div className="space-y-2">
               <div className="flex flex-col space-y-2">
-                <h3>{templateName}</h3>
-                <p className="text-foreground-light text-sm">{description}</p>
+                <h3>{$t(templateName)}</h3>
+                <p className="text-foreground-light text-sm">{$t(description)}</p>
               </div>
             </div>
             <div className="space-y-2">

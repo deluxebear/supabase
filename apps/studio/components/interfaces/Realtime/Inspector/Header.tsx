@@ -12,6 +12,7 @@ import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { getTemporaryAPIKey } from '@/data/api-keys/temp-api-keys-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -71,7 +72,7 @@ export const Header = ({
       icon={config.enabled ? <StopCircle size="16" /> : <PlayCircle size="16" />}
       onClick={handleToggleListening}
     >
-      {config.enabled ? `Stop listening` : `Start listening`}
+      {config.enabled ? $t('Stop listening') : $t('Start listening')}
     </Button>
   )
 
@@ -101,14 +102,14 @@ export const Header = ({
               content: {
                 side: 'bottom',
                 text: !canReadAPIKeys
-                  ? 'You need additional permissions to use the realtime inspector'
+                  ? $t('You need additional permissions to use the realtime inspector')
                   : config.channelName.length === 0
-                    ? 'You need to join a channel first'
+                    ? $t('You need to join a channel first')
                     : undefined,
               },
             }}
           >
-            {config.enabled ? `Stop listening` : `Start listening`}
+            {config.enabled ? $t('Stop listening') : $t('Start listening')}
           </ButtonTooltip>
         )}
       </div>

@@ -61,7 +61,7 @@ export function RLSToggleDialog({
             loading={isSubmitting}
             onClick={() => onConfirm()}
           >
-            {isEnabled ? 'Disable RLS' : 'Enable RLS'}
+            {isEnabled ? $t('Disable RLS') : $t('Enable RLS')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

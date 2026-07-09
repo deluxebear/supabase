@@ -2,6 +2,7 @@ import { noop } from 'lodash'
 import { PropsWithChildren, useCallback, useState } from 'react'
 import { Button, KeyboardShortcut } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -64,7 +65,7 @@ export const ActionBar = ({
           onClick={closePanel}
           disabled={isRunning || loading}
         >
-          {backButtonLabel}
+          {$t(backButtonLabel)}
         </Button>
 
         {applyFunction !== undefined ? (
@@ -79,7 +80,7 @@ export const ActionBar = ({
               )
             }
           >
-            {applyButtonLabel}
+            {$t(applyButtonLabel)}
           </Button>
         ) : !hideApply ? (
           // New solution, when using the Form component, loading is handled by the Form itself
@@ -94,7 +95,7 @@ export const ActionBar = ({
               loading ? undefined : <KeyboardShortcut keys={['Meta', 'Enter']} variant="inline" />
             }
           >
-            {applyButtonLabel}
+            {$t(applyButtonLabel)}
           </Button>
         ) : (
           <div />

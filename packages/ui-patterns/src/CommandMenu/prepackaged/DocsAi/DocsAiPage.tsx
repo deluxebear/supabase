@@ -20,6 +20,7 @@ import {
   useSetCommandMenuSize,
   useSetQuery,
 } from '../..'
+import { uiT } from '../../../lib/i18n'
 import { AiWarning, Message, MessageRole, MessageStatus, useAiChat } from '../ai'
 
 const questions = [
@@ -160,7 +161,9 @@ function PromptInput({
         className
       )}
       placeholder={
-        isLoading || isResponding ? 'Waiting on an answer...' : 'Ask Supabase AI a question...'
+        isLoading || isResponding
+          ? uiT('Waiting on an answer...')
+          : uiT('Ask Supabase AI a question...')
       }
       value={inputValue}
       onValueChange={setInputValue}
@@ -212,7 +215,7 @@ function AiMessages({ messages }: { messages: Array<Message> }) {
                       <User strokeWidth={1.5} size={16} />
                     </div>
                     <span className="font-mono text-sm text-foreground-muted uppercase tracking-widest md:hidden">
-                      You
+                      {uiT('You')}
                     </span>
                   </div>
                   <div className="prose text-foreground-lighter">{message.content}</div>
@@ -251,7 +254,7 @@ function AiMessages({ messages }: { messages: Array<Message> }) {
                     </div>
                     {message.sources && message.sources.length > 0 && (
                       <div className="mt-4 pt-4 border-t border-border-muted">
-                        <p className="text-sm text-foreground-muted mb-2">Sources:</p>
+                        <p className="text-sm text-foreground-muted mb-2">{uiT('Sources:')}</p>
                         <ul className="space-y-1">
                           {message.sources.map((source, idx) => (
                             <li key={idx}>
@@ -284,7 +287,7 @@ function EmptyState({ handleSubmit }: { handleSubmit: (message: string) => void 
   return (
     <CommandList className="max-h-[unset]">
       <CommandGroup
-        heading="Examples"
+        heading={uiT('Examples')}
         className={cn(
           'text-border-strong',
           '**:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:pb-1.5',
@@ -304,7 +307,7 @@ function EmptyState({ handleSubmit }: { handleSubmit: (message: string) => void 
               key={key}
             >
               <AiIconAnimation />
-              {question}
+              {uiT(question)}
             </CommandItem>
           )
         })}
@@ -318,11 +321,13 @@ function ErrorState({ handleReset }: { handleReset: () => void }) {
     <div className="p-6 flex flex-col items-center gap-2 mt-4">
       <StatusIcon variant="warning" />
       <p className="text-sm text-foreground text-center">
-        Sorry, looks like Supabase AI is having a hard time!
+        {uiT('Sorry, looks like Supabase AI is having a hard time!')}
       </p>
-      <p className="text-sm text-foreground-lighter text-center">Please try again in a bit.</p>
+      <p className="text-sm text-foreground-lighter text-center">
+        {uiT('Please try again in a bit.')}
+      </p>
       <Button size="tiny" variant="default" onClick={handleReset}>
-        Try again?
+        {uiT('Try again?')}
       </Button>
     </div>
   )

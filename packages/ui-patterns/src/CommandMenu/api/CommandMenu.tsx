@@ -18,6 +18,7 @@ import {
   KeyboardShortcut,
 } from 'ui'
 
+import { uiT } from '../../lib/i18n'
 import { useCurrentPage, usePageComponent, usePopPage } from './hooks/pagesHooks'
 import { useQuery, useSetQuery } from './hooks/queryHooks'
 import { useCommandMenuTelemetryContext } from './hooks/useCommandMenuTelemetryContext'
@@ -44,7 +45,7 @@ function Breadcrumb({ className }: { className?: string }) {
       onClick={popPage}
     >
       <ArrowLeft width={12} height={12} />
-      {currPage.name}
+      {uiT(currPage.name)}
     </button>
   )
 }
@@ -82,11 +83,11 @@ function CommandError({ resetErrorBoundary }: { resetErrorBoundary: () => void }
       <div className="p-10 flex flex-col items-center gap-6 mt-4">
         <AlertTriangle strokeWidth={1.5} size={40} />
         <p className="text-lg text-center">
-          Sorry, looks like we&apos;re having some issues with the command menu!
+          {uiT("Sorry, looks like we're having some issues with the command menu!")}
         </p>
-        <p className="text-sm text-center">Please try again in a bit.</p>
+        <p className="text-sm text-center">{uiT('Please try again in a bit.')}</p>
         <Button size="tiny" variant="secondary" onClick={resetErrorBoundary}>
-          Try again?
+          {uiT('Try again?')}
         </Button>
       </div>
     </div>

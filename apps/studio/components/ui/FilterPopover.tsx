@@ -101,7 +101,7 @@ export const FilterPopover = <T extends Record<string, any>>({
         {icon && (
           <img src={icon} alt={option[labelKey]} className={cn('w-4 h-4', option.iconClass)} />
         )}
-        <span>{option[labelKey]}</span>
+        <span>{$t(option[labelKey])}</span>
       </Label>
     )
 
@@ -148,7 +148,7 @@ export const FilterPopover = <T extends Record<string, any>>({
     if (!base || !base[labelKey]) {
       return ''
     }
-    return base[labelKey]
+    return $t(base[labelKey])
   })
 
   useEffect(() => {
@@ -279,7 +279,7 @@ export const FilterPopover = <T extends Record<string, any>>({
               setOpen(false)
             }}
           >
-            {clearButtonText}
+            {$t(clearButtonText)}
           </Button>
           <Button
             variant="primary"

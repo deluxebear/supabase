@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
 import { noop } from 'lodash'
@@ -10,6 +9,7 @@ import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/L
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { EditorTablePageLink } from '@/data/prefetchers/project.$ref.editor.$id'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -61,21 +61,19 @@ export const PolicyTableRowHeader = ({
         <div className="flex items-center gap-x-1">
           {!table.rls_enabled && (
             <Badge variant="warning" className="h-5">
-              
-                                        {$t('RLS Disabled')}
-                                      </Badge>
+              {$t('RLS Disabled')}
+            </Badge>
           )}
           {!isLoadingApiAccess && !hasApiAccess && (
             <Badge variant="default" className="h-5">
-              
-                                        {$t('API Disabled')}
-                                      </Badge>
+              {$t('API Disabled')}
+            </Badge>
           )}
           {isTableLocked && (
             <Badge className="h-5">
               <span className="flex gap-x-1 items-center text-foreground-lighter">
-                <Lock size={10} />  {$t('Locked')}
-                                            </span>
+                <Lock size={10} /> {$t('Locked')}
+              </span>
             </Badge>
           )}
         </div>
@@ -98,7 +96,7 @@ export const PolicyTableRowHeader = ({
                   },
                 }}
               >
-                {table.rls_enabled ? 'Disable RLS' : 'Enable RLS'}
+                {table.rls_enabled ? $t('Disable RLS') : $t('Enable RLS')}
               </ButtonTooltip>
             )}
             <ButtonTooltip
@@ -117,9 +115,8 @@ export const PolicyTableRowHeader = ({
                 },
               }}
             >
-              
-                                        {$t('Create policy')}
-                                      </ButtonTooltip>
+              {$t('Create policy')}
+            </ButtonTooltip>
 
             <ButtonTooltip
               variant="default"

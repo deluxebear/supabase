@@ -149,7 +149,7 @@ export const BucketTableRow = ({
         >
           {bucket.file_size_limit
             ? formatBytes(bucket.file_size_limit)
-            : `Unset (${formattedGlobalUploadLimit})`}
+            : `${$t('Unset')} (${formattedGlobalUploadLimit})`}
         </p>
       </BucketTableCell>
 
@@ -157,7 +157,7 @@ export const BucketTableRow = ({
         <p
           className={bucket.allowed_mime_types ? 'text-foreground-light' : 'text-foreground-muted'}
         >
-          {bucket.allowed_mime_types ? bucket.allowed_mime_types.join(', ') : 'Any'}
+          {bucket.allowed_mime_types ? bucket.allowed_mime_types.join(', ') : $t('Any')}
         </p>
       </BucketTableCell>
 

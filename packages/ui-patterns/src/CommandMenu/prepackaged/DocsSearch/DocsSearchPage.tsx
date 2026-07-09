@@ -25,6 +25,7 @@ import {
   useSetCommandMenuOpen,
   useSetQuery,
 } from '../..'
+import { uiT } from '../../../lib/i18n'
 import { BASE_PATH } from '../shared/constants'
 
 const questions = [
@@ -191,7 +192,7 @@ const DocsSearchPage = () => {
     <CommandWrapper>
       <CommandHeader>
         <Breadcrumb />
-        <CommandMenuInput placeholder="Search..." ref={inputRef} />
+        <CommandMenuInput placeholder={uiT('Search...')} ref={inputRef} />
       </CommandHeader>
       <CommandList className="max-h-[initial]">
         {hasResults &&
@@ -286,7 +287,7 @@ const DocsSearchPage = () => {
                   key={key}
                 >
                   <Search />
-                  {question}
+                  {uiT(question)}
                 </CommandItem>
               )
             })}
@@ -295,15 +296,17 @@ const DocsSearchPage = () => {
         {state.status === 'loading' && state.staleResults.length === 0 && (
           <div className="flex items-center gap-3 my-4 justify-center">
             <Loader2 className="animate animate-spin text-foreground-muted" size={14} />
-            <p className="text-sm text-foreground-muted text-center">Searching for results</p>
+            <p className="text-sm text-foreground-muted text-center">
+              {uiT('Searching for results')}
+            </p>
           </div>
         )}
         {state.status === 'noResults' && (
           <div className="p-6 flex flex-col items-center gap-6 mt-4 text-foreground-light">
             <StatusIcon variant="default" />
-            <p className="text-sm text-foreground-light text-center">No results found.</p>
+            <p className="text-sm text-foreground-light text-center">{uiT('No results found.')}</p>
             <Button size="tiny" variant="default" onClick={handleResetPrompt}>
-              Try again?
+              {uiT('Try again?')}
             </Button>
           </div>
         )}
@@ -311,11 +314,11 @@ const DocsSearchPage = () => {
           <div className="p-6 flex flex-col items-center gap-6 mt-4">
             <StatusIcon variant="warning" />
             <p className="text-lg text-foreground-light">
-              Sorry, looks like we&apos;re having some issues with search!
+              {uiT("Sorry, looks like we're having some issues with search!")}
             </p>
-            <p className="text-sm text-foreground-lighter">Please try again in a bit.</p>
+            <p className="text-sm text-foreground-lighter">{uiT('Please try again in a bit.')}</p>
             <Button size="tiny" variant="default" onClick={handleResetPrompt}>
-              Try again?
+              {uiT('Try again?')}
             </Button>
           </div>
         )}

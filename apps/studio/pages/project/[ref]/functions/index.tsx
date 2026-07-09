@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { useFlag, useParams } from 'common'
 import { ExternalLink, RefreshCw, Search, X } from 'lucide-react'
 import { useRouter } from 'next/router'
@@ -39,6 +38,7 @@ import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useEdgeFunctionsQuery } from '@/data/edge-functions/edge-functions-query'
 import { useIsProjectActive } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL, IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import type { NextPageWithLayout } from '@/types'
@@ -117,9 +117,10 @@ const EdgeFunctionsPage: NextPageWithLayout = () => {
               ) : (
                 <Admonition type="warning" title={$t('Failed to retrieve edge functions')}>
                   <p className="prose [&>code]:text-xs text-sm">
-                    
-                                                          {$t('Edge functions could not be read from disk. The functions directory may be missing, not mounted into Studio, or unreadable.')}
-                                                        </p>
+                    {$t(
+                      'Edge functions could not be read from disk. The functions directory may be missing, not mounted into Studio, or unreadable.'
+                    )}
+                  </p>
                 </Admonition>
               ))}
             {isSuccess && (
@@ -172,14 +173,18 @@ const EdgeFunctionsPage: NextPageWithLayout = () => {
                           loading={isFetching}
                           onClick={() => refetch()}
                         >
-                          
-                                                                            {$t('Refresh')}
-                                                                          </Button>
+                          {$t('Refresh')}
+                        </Button>
                       </ShortcutTooltip>
                       <span className="border-l border-default pl-2 text-xs text-foreground-light">
                         {search && filteredFunctions.length !== functions.length
-                          ? `Viewing ${filteredFunctions.length} of ${functions.length} functions in total`
-                          : `Viewing ${functions.length} ${functions.length === 1 ? 'function' : 'functions'} in total`}
+                          ? $t('Viewing {{count}} of {{total}} functions in total', {
+                              count: filteredFunctions.length,
+                              total: functions.length,
+                            })
+                          : $t('Viewing {{count}} functions in total', {
+                              count: functions.length,
+                            })}
                       </span>
                     </div>
                     <Card>
@@ -192,11 +197,17 @@ const EdgeFunctionsPage: NextPageWithLayout = () => {
                             <TableHead className="lg:table-cell">{$t('Updated')}</TableHead>
                             {showLastHourStats && (
                               <>
-                                <TableHead className="lg:table-cell">{$t('Total requests (1h)')}</TableHead>
-                                <TableHead className="lg:table-cell">{$t('5xx error rate (1h)')}</TableHead>
+                                <TableHead className="lg:table-cell">
+                                  {$t('Total requests (1h)')}
+                                </TableHead>
+                                <TableHead className="lg:table-cell">
+                                  {$t('5xx error rate (1h)')}
+                                </TableHead>
                               </>
                             )}
-                            <TableHead className="hidden 2xl:table-cell">{$t('Deployments')}</TableHead>
+                            <TableHead className="hidden 2xl:table-cell">
+                              {$t('Deployments')}
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
 
@@ -209,11 +220,14 @@ const EdgeFunctionsPage: NextPageWithLayout = () => {
                             ) : (
                               <TableRow>
                                 <TableCell colSpan={showLastHourStats ? 8 : 6}>
-                                  <p className="text-sm text-foreground">{$t('No results found')}</p>
+                                  <p className="text-sm text-foreground">
+                                    {$t('No results found')}
+                                  </p>
                                   <p className="text-sm text-foreground-light">
-                                    
-                                                                                                              {$t('Your search for "')}{search}{$t('" did not return any results')}
-                                                                                                            </p>
+                                    {$t('Your search for "')}
+                                    {search}
+                                    {$t('" did not return any results')}
+                                  </p>
                                 </TableCell>
                               </TableRow>
                             )}
@@ -243,7 +257,9 @@ export const EdgeFunctionsIndexPageWrapper = ({ children }: PropsWithChildren) =
         <PageHeaderMeta>
           <PageHeaderSummary>
             <PageHeaderTitle>{$t('Edge Functions')}</PageHeaderTitle>
-            <PageHeaderDescription>{$t('Run server-side logic close to your users')}</PageHeaderDescription>
+            <PageHeaderDescription>
+              {$t('Run server-side logic close to your users')}
+            </PageHeaderDescription>
           </PageHeaderSummary>
           <PageHeaderAside>
             <DocsButton href={`${DOCS_URL}/guides/functions`} />
@@ -253,9 +269,8 @@ export const EdgeFunctionsIndexPageWrapper = ({ children }: PropsWithChildren) =
                 rel="noreferrer"
                 href="https://github.com/supabase/supabase/tree/master/examples/edge-functions/supabase/functions"
               >
-                
-                                                {$t('Examples')}
-                                              </a>
+                {$t('Examples')}
+              </a>
             </Button>
             {IS_PLATFORM && <DeployEdgeFunctionButton />}
           </PageHeaderAside>

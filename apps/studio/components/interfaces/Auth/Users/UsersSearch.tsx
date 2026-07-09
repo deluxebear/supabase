@@ -160,7 +160,7 @@ export const UsersSearch = forwardRef<HTMLInputElement, UsersSearchProps>(functi
           searchInvalid ? 'text-red-900 dark:border-red-900' : '',
           search.length > 1 && 'pr-6'
         )}
-        placeholder={getSearchPlaceholder(specificFilterColumn)}
+        placeholder={$t(getSearchPlaceholder(specificFilterColumn))}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         onKeyDown={(e) => {
