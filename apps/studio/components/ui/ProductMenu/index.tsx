@@ -23,7 +23,7 @@ export const ProductMenu = ({ page, menu, onItemClick }: ProductMenuProps) => {
                   title={
                     group.title ? (
                       <div className="flex flex-col space-y-2 uppercase font-mono">
-                        <span>{group.title}</span>
+                        <span>{$t(group.title)}</span>
                         {group.isPreview && (
                           <Badge variant="warning">{$t('Not production ready')}</Badge>
                         )}

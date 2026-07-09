@@ -13,6 +13,8 @@ import {
   PageHeaderTitle,
 } from 'ui-patterns/PageHeader'
 
+import { t as $t } from '@/lib/i18n'
+
 export const AccessTokensLayout = ({ children }: PropsWithChildren) => {
   const router = useRouter()
   const scopedTokensEnabled = useFlag('scopedPAT')
@@ -53,7 +55,7 @@ export const AccessTokensLayout = ({ children }: PropsWithChildren) => {
                 const isActive = router.asPath.split('?')[0] === item.href
                 return (
                   <NavMenuItem key={item.label} active={isActive}>
-                    <Link href={item.href}>{item.label}</Link>
+                    <Link href={item.href}>{$t(item.label)}</Link>
                   </NavMenuItem>
                 )
               })}

@@ -479,7 +479,7 @@ export const SQLEditorNav = ({ sort = 'inserted_at' }: SQLEditorNavProps) => {
             }}
           >
             <InnerSideMenuCollapsibleTrigger
-              title={`Shared ${numProjectSnippets > 0 ? ` (${numProjectSnippets})` : ''}`}
+              title={`${$t('Shared')}${numProjectSnippets > 0 ? ` (${numProjectSnippets})` : ''}`}
             />
             <InnerSideMenuCollapsibleContent className="group-data-open:pt-2">
               {isLoadingSharedSqlSnippets ? (
@@ -555,7 +555,7 @@ export const SQLEditorNav = ({ sort = 'inserted_at' }: SQLEditorNavProps) => {
             }}
           >
             <InnerSideMenuCollapsibleTrigger
-              title={`Favorites ${numFavoriteSnippets > 0 ? ` (${numFavoriteSnippets})` : ''}`}
+              title={`${$t('Favorites')}${numFavoriteSnippets > 0 ? ` (${numFavoriteSnippets})` : ''}`}
             />
             <InnerSideMenuCollapsibleContent className="group-data-open:pt-2">
               {isLoadingFavoriteSqlSnippets ? (
@@ -636,8 +636,7 @@ export const SQLEditorNav = ({ sort = 'inserted_at' }: SQLEditorNavProps) => {
         className="px-0"
       >
         <InnerSideMenuCollapsibleTrigger
-          title={`PRIVATE
-            ${numPrivateSnippets > 0 ? ` (${numPrivateSnippets})` : ''}`}
+          title={`${$t('PRIVATE')}${numPrivateSnippets > 0 ? ` (${numPrivateSnippets})` : ''}`}
         />
         <InnerSideMenuCollapsibleContent className="group-data-open:pt-2">
           {isLoading ? (

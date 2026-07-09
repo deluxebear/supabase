@@ -3,6 +3,7 @@ import { Badge, Button, Menu } from 'ui'
 
 import { ProductMenuGroupItem } from './ProductMenu.types'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
+import { t as $t } from '@/lib/i18n'
 
 interface ProductMenuItemProps {
   item: ProductMenuGroupItem
@@ -40,7 +41,9 @@ export const ProductMenuItem = ({
             shortcutId ? undefined : hoverText ? hoverText : typeof name === 'string' ? name : ''
           }
         >
-          <span className="truncate flex-1 min-w-0">{name}</span>
+          <span className="truncate flex-1 min-w-0">
+            {typeof name === 'string' ? $t(name) : name}
+          </span>
           {label !== undefined && (
             <Badge
               className="shrink-0"
