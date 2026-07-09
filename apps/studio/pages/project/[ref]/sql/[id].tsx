@@ -1,5 +1,3 @@
-import { t as $t } from '@/lib/i18n';
-import { usePrevious } from '@uidotdev/usehooks'
 import { useParams } from 'common/hooks/useParams'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -19,6 +17,7 @@ import { useSqlSnippetByIdQuery } from '@/data/content/content-id-query'
 import { useDashboardHistory } from '@/hooks/misc/useDashboardHistory'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { wasNeverPersisted } from '@/state/sql-editor/sql-editor-lifecycle'
 import { useSnippets, useSqlEditorV2StateSnapshot } from '@/state/sql-editor/sql-editor-state'
 import { createTabId, useTabsStateSnapshot } from '@/state/tabs'
@@ -27,7 +26,6 @@ import type { NextPageWithLayout } from '@/types'
 const SqlEditor: NextPageWithLayout = () => {
   const router = useRouter()
   const { id, ref, content, skip } = useParams()
-  const previousRoute = usePrevious(id)
   const { data: project } = useSelectedProjectQuery()
 
   const editor = useEditorType()
@@ -57,13 +55,16 @@ const SqlEditor: NextPageWithLayout = () => {
     isError && error.code === 404 && error.message.includes('Content not found')
   const invalidId = isError && error.code === 400 && error.message.includes('Invalid uuid')
 
-  // [Joshen] Atm we suspect that replication lag is causing this to happen whereby a newly created snippet
-  // shows the "Unable to find snippet" error which blocks the whole UI
-  // Am opting to silently swallow this error, since the saves are still going through and we're scoping this behaviour
-  // behaviour down to a very specific use case too with all these conditionals
-  // More details: https://github.com/supabase/supabase/pull/39389
+  // A snippet that only exists locally and was never persisted (freshly created via
+  // /new OR from a Templates/Examples card) is EXPECTED to 404 on the server — it
+  // hasn't been saved yet. Swallow that so navigation doesn't bounce back to a new
+  // query. Scope this to the snippet's actual persistence status rather than the
+  // navigation origin: the previous `previousRoute === 'new'` check missed snippets
+  // created from Templates/Examples (which navigate from /sql/templates|examples),
+  // making them flash then redirect with a false "no longer exists" toast.
+  // Original context: https://github.com/supabase/supabase/pull/39389
   const snippetMissingImmediatelyAfterCreating =
-    !!snippet && snippetMissing && previousRoute === 'new' && wasNeverPersisted(snippet.status)
+    !!snippet && snippetMissing && wasNeverPersisted(snippet.status)
 
   const isSnippetDeleted = snippetMissing && !snippetMissingImmediatelyAfterCreating
 
@@ -142,7 +143,7 @@ const SqlEditor: NextPageWithLayout = () => {
           <Admonition
             type="default"
             title={`Unable to find snippet with ID ${id}`}
-            description={$t('This snippet doesn\'t exist in your project')}
+            description={$t("This snippet doesn't exist in your project")}
           >
             {!!tabId ? (
               <Button
@@ -157,9 +158,8 @@ const SqlEditor: NextPageWithLayout = () => {
                   })
                 }}
               >
-                
-                                            {$t('Close tab')}
-                                          </Button>
+                {$t('Close tab')}
+              </Button>
             ) : (
               <Button
                 asChild
