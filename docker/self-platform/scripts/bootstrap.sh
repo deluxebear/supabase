@@ -10,7 +10,7 @@ cd "$(dirname "$0")/.."
 
 [ -f .env ] || { echo "ERROR: missing .env (cp .env.example .env first)" >&2; exit 1; }
 # .env values may contain unquoted spaces (upstream style) — never `source` it.
-envval() { grep -E "^$1=" .env | head -1 | cut -d= -f2-; }
+envval() { grep -E "^$1=" .env | head -1 | cut -d= -f2- | tr -d '\r'; }
 
 POSTGRES_PASSWORD="$(envval POSTGRES_PASSWORD)"
 POSTGRES_PORT="$(envval POSTGRES_PORT)"
@@ -30,7 +30,8 @@ LOGFLARE_PRIVATE_ACCESS_TOKEN="$(envval LOGFLARE_PRIVATE_ACCESS_TOKEN)"
 ENABLED_FEATURES_LOGS_ALL="$(envval ENABLED_FEATURES_LOGS_ALL)"
 PROJECT_NAME="$(envval STUDIO_DEFAULT_PROJECT)"; PROJECT_NAME="${PROJECT_NAME:-Default Project}"
 
-for v in POSTGRES_PASSWORD SUPABASE_PUBLIC_URL PLATFORM_POSTGRES_PASSWORD \
+for v in POSTGRES_PASSWORD POSTGRES_PORT POSTGRES_DB SUPABASE_PUBLIC_URL \
+         PLATFORM_POSTGRES_PASSWORD \
          PLATFORM_JWT_SECRET PLATFORM_ENCRYPTION_KEY PLATFORM_ADMIN_EMAIL \
          PLATFORM_ADMIN_PASSWORD SERVICE_ROLE_KEY ANON_KEY JWT_SECRET; do
   [ -n "$(eval "printf '%s' \"\$$v\"")" ] || { echo "ERROR: $v is empty in .env" >&2; exit 1; }
@@ -52,28 +53,55 @@ if ! PSQL -tAc "select 1 from pg_database where datname='_platform'" | grep -q 1
 fi
 PSQL -c "alter role platform_admin in database _platform set search_path = public, auth"
 if ! PSQL -d _platform -tAc "select 1 from information_schema.tables where table_schema='platform' and table_name='projects'" | grep -q 1; then
+  # [self-platform] Mirror volumes/db/platform-migrations.sql: 01-schema.sql
+  # alters the postgres role's cluster-wide search_path. Capture it first,
+  # elevate platform_admin for the window, and ALWAYS revoke + restore —
+  # even if a migration file fails mid-loop.
+  saved_sp=$(PSQL -tAc "select coalesce((select regexp_replace(cfg, '^search_path=', '') from unnest((select setconfig from pg_db_role_setting where setrole = 'postgres'::regrole and setdatabase = 0)) as u(cfg) where cfg like 'search_path=%'), '')")
+  PSQL -c "alter role platform_admin createrole"
+  PSQL -c "grant postgres to platform_admin with admin option"
+  mig_rc=0
   for f in ../volumes/platform/migrations/*.sql; do
     echo "applying $(basename "$f")"
-    { echo "set role platform_admin;"; cat "$f"; } | PSQL -d _platform
+    if ! { echo "set role platform_admin;"; cat "$f"; } | PSQL -d _platform; then
+      mig_rc=1
+      break
+    fi
   done
+  PSQL -c "revoke postgres from platform_admin"
+  PSQL -c "alter role platform_admin nocreaterole"
+  if [ -n "$saved_sp" ]; then
+    # Unquoted splice on purpose: the value is postgres' own catalog content;
+    # a quoted literal would collapse the list into one element (see the
+    # initdb wrapper's comment).
+    PSQL -c "alter role postgres set search_path = $saved_sp"
+  else
+    PSQL -c "alter role postgres reset search_path"
+  fi
+  [ "$mig_rc" -eq 0 ] || { echo "ERROR: platform migration failed — elevation revoked and search_path restored; fix the cause and re-run" >&2; exit 1; }
 else
   echo "platform schema present — skipping migrations (apply newer files manually; see README)"
 fi
 
 echo "== Phase 2: first admin =="
+GOTRUE="$SUPABASE_PUBLIC_URL/platform-auth/v1"
+
+echo "waiting for studio through kong..."
+studio_ready=0
+for _ in $(seq 1 60); do
+  if curl -fsS -o /dev/null "$SUPABASE_PUBLIC_URL/api/platform/telemetry/feature-flags"; then studio_ready=1; break; fi
+  sleep 2
+done
+[ "$studio_ready" -eq 1 ] || { echo "ERROR: timed out waiting for studio at $SUPABASE_PUBLIC_URL (docker compose ps / logs studio)" >&2; exit 1; }
+
+# Mint the short-lived service_role JWT only AFTER the stack is reachable —
+# the wait loop above can take up to 120s, longer than the 60s token lifetime.
 b64url() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
 now=$(date +%s); exp=$((now + 60))
 hdr=$(printf '{"alg":"HS256","typ":"JWT"}' | b64url)
 pay=$(printf '{"role":"service_role","iat":%d,"exp":%d}' "$now" "$exp" | b64url)
 sig=$(printf '%s.%s' "$hdr" "$pay" | openssl dgst -binary -sha256 -hmac "$PLATFORM_JWT_SECRET" | b64url)
 SVC_JWT="$hdr.$pay.$sig"
-GOTRUE="$SUPABASE_PUBLIC_URL/platform-auth/v1"
-
-echo "waiting for studio through kong..."
-for _ in $(seq 1 60); do
-  curl -fsS -o /dev/null "$SUPABASE_PUBLIC_URL/api/platform/telemetry/feature-flags" && break
-  sleep 2
-done
 
 # Create the admin (idempotent: 422 "already registered" tolerated).
 curl -sS -o /tmp/plt-admin-create.json -X POST "$GOTRUE/admin/users" \
@@ -121,6 +149,9 @@ values
    '$(sqlq "$(enc "$ANON_KEY")")', '$(sqlq "$(enc "$JWT_SECRET")")',
    $PUB_SQL, $SEC_SQL, $LOGFLARE_URL_SQL, $LOGFLARE_TOKEN_SQL,
    $METRICS_URL_SQL, NULL, 'external', 'supabase-db', NULL, NULL)
+-- Intentionally narrower than register-project.ts buildUpsertSql():
+-- k8s_namespace/k8s_pod_selector/metrics_token_enc are panel/CLI-owned
+-- and must survive bootstrap re-runs.
 on conflict (ref) do update set
   name=excluded.name, status=excluded.status,
   db_host=excluded.db_host, db_port=excluded.db_port, db_name=excluded.db_name,
