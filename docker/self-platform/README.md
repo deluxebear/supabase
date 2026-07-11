@@ -1,0 +1,306 @@
+# Self-platform: all-in-one compose
+
+This directory runs the full default Supabase stack **and** the self-hosted management
+control plane in a single `docker compose` project. It is the merged-stack successor to
+running the plain `docker/` stack side by side with the `docker-compose.platform.yml`
+mini-stack: everything lives in one `docker compose up -d`, one `.env`, one Postgres
+cluster.
+
+For the design rationale and the full list of decisions behind this layout, see
+[`docs/self-hosted-parity/2026-07-10-self-platform-compose-design.md`](../../docs/self-hosted-parity/2026-07-10-self-platform-compose-design.md).
+For everything about the control plane's data model, RBAC, invitations, and the
+`register-project` CLI (which this stack also uses), see
+[`docker/volumes/platform/README.md`](../volumes/platform/README.md) — that document
+covers the mini-stack's internals in depth and almost everything in it (schema, roles,
+registry columns, encryption) applies here unchanged; this README only covers what's
+different about running it as one merged stack.
+
+## 1. What this is
+
+`docker/self-platform/docker-compose.yml` (compose project `supabase-plt`) stands up the
+same 11 services as the plain `docker/` stack — `db`, `kong`, `auth`, `rest`, `realtime`,
+`storage`, `imgproxy`, `meta`, `functions`, `supavisor`, `studio` — plus the management
+control plane: `platform-auth` (a dedicated GoTrue instance) and `platform-mail`
+(Mailpit, for invite/recovery email in development). An optional `obs` profile adds
+`analytics` (Logflare), `vector`, and `cadvisor` for logs and infra metrics.
+
+The control plane's metadata — organizations, profiles, roles, project registry — lives
+in a `_platform` database inside the same `supabase-db` Postgres cluster that holds the
+project's own `postgres` database, mirroring the existing `_supabase` (`_analytics`/
+`_supavisor`) pattern. There is no separate `platform-db` container in this stack.
+
+Dashboard access control is **multi-account login**, not Kong basic-auth: the `kong`
+service's dashboard route (`/`) has no `basic-auth` plugin (see
+`volumes/api/kong-plt.yml`), and access is instead gated by the Studio image's own login
+page — real sign-up/sign-in against `platform-auth` (invite-only registration, RBAC,
+optional per-organization MFA enforcement) plus a default-deny `/api/platform/*` surface.
+This is the same login gate the `docker-compose.platform.yml` mini-stack introduced;
+this compose just runs it against the shared cluster instead of a standalone
+`platform-db`/`platform-auth` pair.
+
+The `studio` service runs `deluxebear/supabase-plt-studio:latest` (the platform-flavored
+Studio image, `NEXT_PUBLIC_SELF_PLATFORM: 'true'`), not the plain `deluxebear/supabase-studio`
+image the `docker/` stack uses.
+
+## 2. Quickstart
+
+Run every command below from this directory (`docker/self-platform/`).
+
+1. **Copy the env file:**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Rotate every secret before the first boot.** `.env.example` ships the same inherited
+   upstream demo values the plain `docker/` stack ships (`POSTGRES_PASSWORD`, `JWT_SECRET`,
+   `ANON_KEY`/`SERVICE_ROLE_KEY`, `SECRET_KEY_BASE`, `VAULT_ENC_KEY`, `PG_META_CRYPTO_KEY`,
+   the `LOGFLARE_*` tokens, the `S3_PROTOCOL_*` keys) — these are public, well-known values
+   from the upstream template and must be replaced. In addition, rotate the entire
+   **`PLATFORM_*` block** at the bottom of `.env.example`: `PLATFORM_POSTGRES_PASSWORD`,
+   `PLATFORM_JWT_SECRET` (at least 32 characters), `PLATFORM_ENCRYPTION_KEY`, and
+   `PLATFORM_ADMIN_PASSWORD`. A generic generator for any of these is:
+
+   ```bash
+   openssl rand -base64 32
+   ```
+
+   **`PLATFORM_ADMIN_PASSWORD` must not contain a double-quote character** —
+   `scripts/bootstrap.sh` embeds it verbatim inside a JSON payload when it creates the
+   first admin account, and an unescaped `"` will break that request.
+
+3. **Populate the edge functions volume.** `./volumes/functions` is local, gitignored
+   runtime state (see `.gitignore` in this directory) and starts out empty on a fresh
+   checkout — the `functions` container's `--main-service` command point
+   (`/home/deno/functions/main`) needs at least a `main` function to boot cleanly. Copy the
+   repo's sample functions in before the first `docker compose up`:
+
+   ```bash
+   cp -r ../volumes/functions/. ./volumes/functions/
+   ```
+
+4. **Start the stack:**
+
+   ```bash
+   docker compose up -d
+   ```
+
+5. **Bootstrap the control plane:**
+
+   ```bash
+   ./scripts/bootstrap.sh
+   ```
+
+   This is required exactly once against any given `./volumes/db/data` volume — it
+   initializes `_platform` (on pre-existing volumes; a brand-new volume already gets it
+   from `docker-entrypoint-initdb.d`), creates the first dashboard admin from
+   `PLATFORM_ADMIN_EMAIL`/`PLATFORM_ADMIN_PASSWORD` and grants it the Owner role, and
+   registers the default project in `platform.projects`. The script is idempotent — safe
+   to re-run — and re-running it is also how you pick up newer platform migrations or
+   refresh the default project's registration after config changes (see "Applying future
+   platform migrations" and "Observability profile" below).
+
+6. **Log in.** Open `${SUPABASE_PUBLIC_URL}` (`http://localhost:8000` by default) in a
+   browser and sign in with `PLATFORM_ADMIN_EMAIL` / `PLATFORM_ADMIN_PASSWORD`.
+
+## 3. Inviting more operators
+
+Public self-registration is disabled (`GOTRUE_DISABLE_SIGNUP: 'true'` on `platform-auth`).
+Add every operator after the first admin from inside the dashboard: the organization's
+Members/Team settings page sends an invitation email through `platform-auth`; the invitee
+follows the link to set a password and gets a role assigned from there (or via the same
+UI, subject to the RBAC rules in `docker/volumes/platform/README.md`).
+
+By default, invitation and recovery email is delivered through the bundled `platform-mail`
+service (Mailpit) — a real SMTP sink meant for development, not delivery. Its web UI is
+at **`http://localhost:8025`** (`PLATFORM_MAILPIT_UI_HOST_PORT`, bound to
+`127.0.0.1` only); open it to read invite links instead of configuring a real mail
+provider.
+
+For real outbound email, set `PLATFORM_SMTP_HOST`, `PLATFORM_SMTP_PORT`,
+`PLATFORM_SMTP_USER`, `PLATFORM_SMTP_PASS`, `PLATFORM_SMTP_ADMIN_EMAIL`, and
+`PLATFORM_SMTP_SENDER_NAME` in `.env` and restart `platform-auth`. One caveat carried over
+from the mini-stack: GoTrue's mailer only skips SMTP AUTH when the configured username is
+empty, and Go's `PlainAuth` refuses to send credentials over a non-TLS connection to any
+host other than `localhost` — which is exactly Mailpit's situation (empty
+`PLATFORM_SMTP_USER`/`PLATFORM_SMTP_PASS` by default, host `platform-mail`). A real SMTP
+provider normally supports TLS and requires real credentials, so setting
+`PLATFORM_SMTP_USER`/`PLATFORM_SMTP_PASS` to that provider's actual credentials is what
+makes AUTH work — leaving them blank against a real (non-`localhost`) host will fail.
+
+## 4. Observability profile
+
+Logs and infra metrics (`analytics`/Logflare, `vector`, `cadvisor`) are an opt-in
+`docker compose` profile, not part of the base stack:
+
+1. Set `ENABLED_FEATURES_LOGS_ALL=true` in `.env`.
+2. Start the profile's services:
+
+   ```bash
+   docker compose --profile obs up -d
+   ```
+
+3. Re-run bootstrap so the default project's registry row picks up the Logflare and
+   metrics URLs:
+
+   ```bash
+   ./scripts/bootstrap.sh
+   ```
+
+   Phase 3 of the script only fills in `logflare_url`/`logflare_token_enc`/`metrics_url`
+   when `ENABLED_FEATURES_LOGS_ALL=true` at the time it runs, so this re-run is what
+   actually lights up Log Explorer and the infra metrics charts — starting the `obs`
+   profile alone is not enough. Without the profile (or before this re-run), Logs and
+   metrics degrade honestly to empty, by design.
+
+## 5. Migrating from the mini-stack
+
+If you're moving an existing `docker-compose.platform.yml` mini-stack (`platform-db` +
+`platform-auth` + `platform-mail`, see `docker/volumes/platform/README.md`) to this
+all-in-one compose, bring the metadata over with a dump/restore rather than
+re-registering everything by hand:
+
+1. **Dump the mini-stack's `platform` database** (the mini-stack container is
+   `supabase-platform-db`, superuser `postgres`):
+
+   ```bash
+   docker exec supabase-platform-db pg_dump -U postgres -d platform --no-owner > platform-dump.sql
+   ```
+
+2. **Restore it into `_platform`** on this stack's shared cluster (this stack's `db`
+   container is also named `supabase-db`, using the cluster-admin role
+   `supabase_admin`):
+
+   ```bash
+   docker exec -i supabase-db psql -U supabase_admin -d _platform < platform-dump.sql
+   ```
+
+   Verify **both** the hand-rolled `platform.*` schema (organizations, profiles, roles,
+   projects) and GoTrue's own `auth.*` schema arrived — the mini-stack's `platform`
+   database holds both in one place, and a partial dump/restore (e.g. `--schema=platform`
+   only) will leave dashboard accounts unable to log in even though the registry looks
+   fine.
+
+3. **Decommission the mini-stack** once the restore is verified — this stack reuses the
+   same container names (`supabase-platform-auth`, `supabase-platform-mail`) and the same
+   default host ports (Mailpit's `1025`/`8025`) as the mini-stack, so the two cannot run
+   at the same time regardless:
+
+   ```bash
+   docker compose -f ../docker-compose.yml -f ../docker-compose.platform.yml \
+     stop platform-db platform-auth platform-mail
+   docker compose -f ../docker-compose.yml -f ../docker-compose.platform.yml \
+     rm -f platform-db platform-auth platform-mail
+   ```
+
+**Re-encryption is not needed** if `PLATFORM_ENCRYPTION_KEY` in this stack's `.env` is
+carried over byte-identical from the mini-stack's `docker/.env` — the registry's
+AES-encrypted secret columns (`db_pass_enc`, `service_key_enc`, etc.) decrypt exactly as
+they did before. A mismatched or missing key makes every encrypted column undecryptable
+(see `docker/volumes/platform/README.md`'s `PLATFORM_ENCRYPTION_KEY` section) — there is
+no recovery for that short of re-registering every project.
+
+## 6. Applying future platform migrations
+
+New files added to `docker/volumes/platform/migrations/` after your `./volumes/db/data`
+volume was first initialized are **not** applied automatically — `docker-entrypoint-initdb.d`
+(and this stack's `98-platform-migrations.sql` wrapper) only runs once, against a
+genuinely empty `PGDATA`. Apply a new migration by hand against the running stack:
+
+```bash
+docker exec -i supabase-db psql -U supabase_admin -d _platform -v ON_ERROR_STOP=1 \
+  < ../volumes/platform/migrations/NN-new.sql
+```
+
+`scripts/bootstrap.sh` prints `platform schema present — skipping migrations (apply newer
+files manually; see README)` on every re-run once `platform.projects` already exists —
+that message is this instruction.
+
+**If a migration fails partway through:**
+
+- **Fresh-volume (initdb) path** — a failure inside `98-platform-migrations.sql` during
+  the very first `docker-entrypoint-initdb.d` run leaves `PGDATA` **half-initialized**:
+  some platform migrations applied, others not, and — because that script's elevation
+  cleanup (`revoke postgres from platform_admin`, restoring the `postgres` role's
+  `search_path`) sits *after* the migration sequence — a failure can also skip that
+  cleanup. Since `docker-entrypoint-initdb.d` never re-runs against a non-empty data
+  directory, this state does not self-heal, and `bootstrap.sh`'s own "already
+  initialized" check (does `platform.projects` exist?) can be satisfied by a partial run,
+  masking the problem. The safe recovery is to wipe the volume and start clean:
+
+  ```bash
+  docker compose down
+  rm -rf ./volumes/db/data
+  docker compose up -d
+  ```
+
+- **Existing-volume (`bootstrap.sh` phase 1) path** — this path is written to always
+  revoke `platform_admin`'s temporary elevation and restore the `postgres` role's
+  `search_path`, **even when a migration file fails partway through the loop** (see the
+  `mig_rc` handling in `scripts/bootstrap.sh`). A failure here does not leave the cluster
+  in an elevated or corrupted state — just fix whatever the migration file's error was
+  and re-run `./scripts/bootstrap.sh`.
+
+## 7. Mutual exclusivity & ports
+
+This stack reuses the plain `docker/` stack's container names byte-for-byte
+(`supabase-db`, `supabase-kong`, `supabase-auth`, `supabase-studio`, `supabase-pooler`,
+and so on) and the same default host ports (`KONG_HTTP_PORT=8000`,
+`KONG_HTTPS_PORT=8443`, `POSTGRES_PORT=5432`, `POOLER_PROXY_PORT_TRANSACTION=6543`).
+**The two stacks cannot run at the same time on one host.** Stop one (`docker compose
+down`, run from its own directory) before starting the other.
+
+## 8. TLS
+
+There is no TLS termination in this stack by default — plan for one of:
+
+- **Terminate at Kong.** Set `KONG_SSL_CERT`/`KONG_SSL_CERT_KEY` on the `kong` service
+  (mount your certificate/key files and point the two env vars at them, the same pattern
+  the plain `docker/docker-compose.yml` documents in its commented-out `kong.environment`
+  block) and switch clients to `KONG_HTTPS_PORT` (`8443` by default, already published).
+- **Terminate at an outer reverse proxy** in front of Kong (for example the parent
+  directory's `docker-compose.caddy.yml`/`docker-compose.nginx.yml` overlays). If you
+  reuse those overlays as-is, note that both `docker/volumes/proxy/caddy/Caddyfile` and
+  `docker/volumes/proxy/nginx/supabase-nginx.conf.tpl` put HTTP basic-auth in front of the
+  dashboard route — reintroducing exactly the basic-auth gate this stack's login page
+  replaces. Strip that `basic_auth`/`auth_basic` block (or write a proxy config specific
+  to this stack) if you want the dashboard reachable only through its own login page.
+
+Either way, a single origin serves the dashboard, platform GoTrue (`/platform-auth/v1`),
+and the project's data plane (`/auth/v1`, `/rest/v1`, `/storage/v1`, `/realtime/v1`,
+`/functions/v1`), so one certificate covers all of it. Once you terminate TLS,
+`SUPABASE_PUBLIC_URL` (and `API_EXTERNAL_URL`) must be updated to the `https://` origin —
+`platform-auth`'s `GOTRUE_SITE_URL`/`GOTRUE_URI_ALLOW_LIST` and the Studio image's runtime
+`NEXT_PUBLIC_API_URL`/`NEXT_PUBLIC_GOTRUE_URL` placeholders are all derived from it.
+
+## 9. Registry CLI against this stack
+
+`docker/scripts/platform/register-project.ts` (documented in depth in
+`docker/volumes/platform/README.md`) talks to the control-plane database via `docker exec
+... psql`, defaulting to the mini-stack's container/user/database
+(`supabase-platform-db` / `postgres` / `platform`). Point it at this stack's shared
+cluster instead with three environment overrides:
+
+```bash
+PLATFORM_DB_CONTAINER=supabase-db PLATFORM_DB_USER=supabase_admin PLATFORM_DB_NAME=_platform \
+  pnpm tsx docker/scripts/platform/register-project.ts list
+```
+
+(Run from the repo root, since the script path is repo-root-relative.) Register or
+deregister additional external stacks the same way — add the three `PLATFORM_DB_*`
+overrides in front of any `register`/`deregister`/`list` invocation documented in
+`docker/volumes/platform/README.md`'s "`register-project` CLI" section.
+
+## 10. Blast radius note
+
+The control plane is no longer an isolated side-car — it shares the same Postgres
+cluster and the same Kong/Studio front door as the project itself. Two consequences
+worth being deliberate about:
+
+- **If `supabase-db` is down, dashboard login is down too.** `platform-auth` and Studio's
+  control-plane reads both depend on the same cluster the project's own data lives in;
+  there is no independent metadata store to fail over to.
+- **Cluster-wide backups now include `_platform`.** Whole-cluster backup tooling (for
+  example pgBackRest) that backs up the `supabase-db` data directory captures `_platform`
+  along with `postgres` and `_supabase` — the operator registry, roles, and invitations
+  are restored together with the project data, with no separate backup step required.
