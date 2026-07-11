@@ -218,12 +218,16 @@ function sqlLiteral(value: unknown): string {
 
 function psql(sql: string, params: unknown[] = []): string {
   const container = process.env.PLATFORM_DB_CONTAINER || 'supabase-platform-db'
+  // [self-platform] Merged-stack override: the all-in-one compose keeps the
+  // control plane in supabase-db/_platform (see docker/self-platform/).
+  const dbUser = process.env.PLATFORM_DB_USER || 'postgres'
+  const dbName = process.env.PLATFORM_DB_NAME || 'platform'
   const prepared = params.length
     ? `PREPARE stmt AS ${sql}; EXECUTE stmt(${params.map((p) => sqlLiteral(p)).join(',')}); DEALLOCATE stmt;`
     : sql
   return execFileSync(
     'docker',
-    ['exec', '-i', container, 'psql', '-U', 'postgres', '-d', 'platform', '-v', 'ON_ERROR_STOP=1'],
+    ['exec', '-i', container, 'psql', '-U', dbUser, '-d', dbName, '-v', 'ON_ERROR_STOP=1'],
     { input: prepared + '\n', encoding: 'utf8' }
   )
 }
