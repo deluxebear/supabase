@@ -452,7 +452,7 @@ services:
       - name: platform-auth-v1-all
         strip_path: true
         paths:
-          - /platform-auth/v1
+          - /platform-auth/v1/
     plugins:
       - name: cors
 

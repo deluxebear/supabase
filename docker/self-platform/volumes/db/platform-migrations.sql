@@ -26,6 +26,11 @@ alter role platform_admin createrole;
 grant postgres to platform_admin with admin option;
 
 set role platform_admin;
+-- [self-platform] MAINTENANCE: this list is a hand-maintained mirror of
+-- ../volumes/platform/migrations/*.sql (bootstrap.sh phase 1 globs that
+-- dir; this wrapper cannot, since \i targets are static). When adding a
+-- migration NN-*.sql, append a matching \i line here — fresh-volume
+-- initdb will otherwise silently skip it.
 \i /platform-migrations/01-schema.sql
 \i /platform-migrations/02-projects.sql
 \i /platform-migrations/03-analytics.sql

@@ -887,7 +887,7 @@ git commit -m "docs(self-platform): all-in-one compose operator README"
 
 ### Task 7: E2E acceptance (controller-run, live stack)
 
-**Files:** none (evidence in task report). Run from `docker/self-platform/` with a REAL `.env` (rotated secrets, `SUPABASE_PUBLIC_URL=http://localhost:8000`, `KONG_HTTP_PORT=8000` — adjust if occupied).
+**Files:** none (evidence in task report). Run from `docker/self-platform/` with a REAL `.env` (rotated secrets, `SUPABASE_PUBLIC_URL=http://192.168.1.100:8000` (must be container-reachable — never localhost; see README §2), `KONG_HTTP_PORT=8000` — adjust if occupied).
 
 - [ ] **G1 — fresh boot**: wipe `volumes/db/data`, `docker compose up -d`, wait; `docker compose ps` shows every service healthy/running; `docker exec supabase-db psql -U supabase_admin -d _platform -c "\dt platform.*"` lists the tables from all 11 migrations (spot-check `projects`, `member_roles`, `metrics_samples`, `auth_config`).
 - [ ] **G2 — bootstrap + login, twice**: `./scripts/bootstrap.sh` → success; run it AGAIN → success with "skipping"/no-op messages and no duplicate rows (`select count(*) from platform.member_roles` unchanged). Browser (or curl) to `http://localhost:8000/` → studio sign-in page, **no `WWW-Authenticate` header**; log in as the admin → default org visible.

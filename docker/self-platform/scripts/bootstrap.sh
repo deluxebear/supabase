@@ -19,6 +19,7 @@ JWT_SECRET="$(envval JWT_SECRET)"
 ANON_KEY="$(envval ANON_KEY)"
 SERVICE_ROLE_KEY="$(envval SERVICE_ROLE_KEY)"
 SUPABASE_PUBLIC_URL="$(envval SUPABASE_PUBLIC_URL)"; SUPABASE_PUBLIC_URL="${SUPABASE_PUBLIC_URL%/}"
+API_EXTERNAL_URL="$(envval API_EXTERNAL_URL)"
 SUPABASE_PUBLISHABLE_KEY="$(envval SUPABASE_PUBLISHABLE_KEY)"
 SUPABASE_SECRET_KEY="$(envval SUPABASE_SECRET_KEY)"
 PLATFORM_POSTGRES_PASSWORD="$(envval PLATFORM_POSTGRES_PASSWORD)"
@@ -37,14 +38,52 @@ for v in POSTGRES_PASSWORD POSTGRES_PORT POSTGRES_DB SUPABASE_PUBLIC_URL \
   [ -n "$(eval "printf '%s' \"\$$v\"")" ] || { echo "ERROR: $v is empty in .env" >&2; exit 1; }
 done
 
+case "$POSTGRES_PORT" in
+  ''|*[!0-9]*) echo "ERROR: POSTGRES_PORT ('$POSTGRES_PORT') is not numeric" >&2; exit 1 ;;
+esac
+
+# [self-platform] Container-reachable-origin invariant. Studio's server-side
+# session verification dials NEXT_PUBLIC_GOTRUE_URL
+# (${SUPABASE_PUBLIC_URL}/platform-auth/v1), and per-ref data-plane calls
+# dial the registry's kong_url (${SUPABASE_PUBLIC_URL}) — both FROM INSIDE
+# the studio container. A loopback SUPABASE_PUBLIC_URL makes both hairpin
+# back to the container itself instead of reaching kong, and every
+# authenticated dashboard API call then fails with 401. See README.md
+# section 2 for the full explanation.
+is_loopback_url() {
+  # Extract the host from scheme://host[:port][/path...] and test it.
+  local host="${1#*://}"; host="${host%%/*}"; host="${host%%:*}"
+  case "$host" in
+    localhost|127.*|::1|\[::1\]) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+if is_loopback_url "$SUPABASE_PUBLIC_URL"; then
+  echo "ERROR: SUPABASE_PUBLIC_URL ($SUPABASE_PUBLIC_URL) is a loopback address." >&2
+  echo "       It must be an origin reachable FROM INSIDE the containers — a LAN" >&2
+  echo "       IP (e.g. http://192.168.1.100:8000) or a real FQDN — never" >&2
+  echo "       localhost/127.0.0.1. Fix .env and re-run. See README.md section 2." >&2
+  exit 1
+fi
+if [ -n "$API_EXTERNAL_URL" ] && is_loopback_url "$API_EXTERNAL_URL"; then
+  echo "WARNING: API_EXTERNAL_URL ($API_EXTERNAL_URL) is a loopback address." >&2
+  echo "         This only feeds OAuth/SAML callback links and the GOTRUE_JWT_ISSUER" >&2
+  echo "         claim (not a container-to-container dial), so it is not fatal — but" >&2
+  echo "         those links won't be clickable from outside this host." >&2
+fi
+
 DB_CONTAINER="${DB_CONTAINER:-supabase-db}"
 PSQL() { docker exec -i "$DB_CONTAINER" psql -U supabase_admin -v ON_ERROR_STOP=1 -q "$@"; }
 sqlq() { printf '%s' "$1" | sed "s/'/''/g"; }   # SQL single-quote escaping
 enc()  { printf '%s' "$1" | openssl enc -aes-256-cbc -md md5 -base64 -A -pass pass:"$PLATFORM_ENCRYPTION_KEY"; }
+# [self-platform] Escape \ and " for embedding a value into a curl -K
+# double-quoted config line (see the no-argv-secrets calls in Phase 2).
+cfg_escape() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
 
 echo "== Phase 1: _platform database =="
 if ! PSQL -tAc "select 1 from pg_roles where rolname='platform_admin'" | grep -q 1; then
-  PSQL -c "create role platform_admin login password '$(sqlq "$PLATFORM_POSTGRES_PASSWORD")'"
+  # [self-platform] Password sent over stdin, not -c argv (visible via `ps`).
+  printf '%s\n' "create role platform_admin login password '$(sqlq "$PLATFORM_POSTGRES_PASSWORD")'" | PSQL
   echo "created role platform_admin"
 fi
 if ! PSQL -tAc "select 1 from pg_database where datname='_platform'" | grep -q 1; then
@@ -103,19 +142,40 @@ pay=$(printf '{"role":"service_role","iat":%d,"exp":%d}' "$now" "$exp" | b64url)
 sig=$(printf '%s.%s' "$hdr" "$pay" | openssl dgst -binary -sha256 -hmac "$PLATFORM_JWT_SECRET" | b64url)
 SVC_JWT="$hdr.$pay.$sig"
 
+# [self-platform] Secrets never touch curl's own argv (visible via `ps`):
+# headers and JSON bodies below are fed to curl's -K config parser over
+# stdin instead of -H/-d. cfg_escape() escapes \ and " per curl's
+# double-quoted config-value syntax.
+
 # Create the admin (idempotent: 422 "already registered" tolerated).
-curl -sS -o /tmp/plt-admin-create.json -X POST "$GOTRUE/admin/users" \
-  -H "Authorization: Bearer $SVC_JWT" -H 'Content-Type: application/json' \
-  -d "{\"email\":\"$PLATFORM_ADMIN_EMAIL\",\"password\":\"$PLATFORM_ADMIN_PASSWORD\",\"email_confirm\":true}" \
+admin_body="{\"email\":\"$PLATFORM_ADMIN_EMAIL\",\"password\":\"$PLATFORM_ADMIN_PASSWORD\",\"email_confirm\":true}"
+{
+  printf 'header = "Authorization: Bearer %s"\n' "$(cfg_escape "$SVC_JWT")"
+  printf 'header = "Content-Type: application/json"\n'
+  printf 'data = "%s"\n' "$(cfg_escape "$admin_body")"
+} | curl -sS -K - -X POST -o /dev/null "$GOTRUE/admin/users" \
   || { echo "ERROR: platform GoTrue unreachable at $GOTRUE" >&2; exit 1; }
 
-TOKEN=$(curl -fsS -X POST "$GOTRUE/token?grant_type=password" -H 'Content-Type: application/json' \
-  -d "{\"email\":\"$PLATFORM_ADMIN_EMAIL\",\"password\":\"$PLATFORM_ADMIN_PASSWORD\"}" \
-  | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
+# No -f here (see below): we need the response body even on 4xx so the
+# empty-TOKEN check can print the specific "wrong password?" diagnostic
+# instead of curl aborting the script early on the bare HTTP error.
+login_body="{\"email\":\"$PLATFORM_ADMIN_EMAIL\",\"password\":\"$PLATFORM_ADMIN_PASSWORD\"}"
+token_json=$(
+  {
+    printf 'header = "Content-Type: application/json"\n'
+    printf 'data = "%s"\n' "$(cfg_escape "$login_body")"
+  } | curl -sS -K - -X POST "$GOTRUE/token?grant_type=password"
+) || { echo "ERROR: platform GoTrue unreachable at $GOTRUE" >&2; exit 1; }
+TOKEN=$(printf '%s' "$token_json" | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
 [ -n "$TOKEN" ] || { echo "ERROR: admin login failed (wrong PLATFORM_ADMIN_PASSWORD for an existing user?)" >&2; exit 1; }
 
-# First profile fetch auto-creates platform.profiles + default-org membership (M1).
-curl -fsS -o /dev/null "$SUPABASE_PUBLIC_URL/api/platform/profile" -H "Authorization: Bearer $TOKEN"
+# [self-platform] Must be POST, not GET: the route 404s on GET until a
+# profile row exists, and creation only happens in the POST branch
+# (createProfileWithDefaultMembership — idempotent: on conflict do update /
+# membership on conflict do nothing). This mirrors the client's own
+# first-login mutation and also creates the default-org membership (M1).
+printf 'header = "Authorization: Bearer %s"\n' "$(cfg_escape "$TOKEN")" \
+  | curl -fsS -K - -X POST -o /dev/null "$SUPABASE_PUBLIC_URL/api/platform/profile"
 PSQL -d _platform -c "insert into platform.member_roles (profile_id, role_id)
   select pr.id, 1 from platform.profiles pr
   where pr.primary_email = '$(sqlq "$PLATFORM_ADMIN_EMAIL")'

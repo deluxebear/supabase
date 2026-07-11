@@ -65,9 +65,26 @@ Run every command below from this directory (`docker/self-platform/`).
    openssl rand -base64 32
    ```
 
-   **`PLATFORM_ADMIN_PASSWORD` must not contain a double-quote character** —
-   `scripts/bootstrap.sh` embeds it verbatim inside a JSON payload when it creates the
-   first admin account, and an unescaped `"` will break that request.
+   **`PLATFORM_ADMIN_PASSWORD` must not contain a double-quote or backslash character** —
+   `scripts/bootstrap.sh` embeds it verbatim inside a JSON payload (and again inside a
+   curl config value) when it creates the first admin account, and an unescaped `"` or
+   `\` will break those requests.
+
+   > **`SUPABASE_PUBLIC_URL` must be an origin reachable FROM INSIDE the containers** —
+   > a LAN IP (for example `http://192.168.1.100:8000`) or a real FQDN. **Never**
+   > `http://localhost:8000` or `http://127.0.0.1:8000`, even though that's what
+   > `.env.example` ships (kept for parity with upstream's convention). Two things break
+   > with a loopback value: (1) Studio's server-side session verification dials
+   > `NEXT_PUBLIC_GOTRUE_URL` (`${SUPABASE_PUBLIC_URL}/platform-auth/v1`) from inside its
+   > own container, so a loopback address makes it hairpin back to itself instead of
+   > reaching `platform-auth`. (2) Per-project data-plane calls dial the registry's
+   > `kong_url` (also `${SUPABASE_PUBLIC_URL}`) the same way, so every REST/Auth/Storage
+   > call the dashboard makes on your behalf fails too. Either way, the visible symptom
+   > is every authenticated dashboard API request returning 401.
+   > `scripts/bootstrap.sh` fails fast with this same warning if it detects a loopback
+   > `SUPABASE_PUBLIC_URL`; the same check on `API_EXTERNAL_URL` is a non-fatal warning,
+   > since that variable only feeds OAuth/SAML/email links and `GOTRUE_JWT_ISSUER`, not a
+   > container-to-container dial.
 
 3. **Populate the edge functions volume.** `./volumes/functions` is local, gitignored
    runtime state (see `.gitignore` in this directory) and starts out empty on a fresh
@@ -241,7 +258,11 @@ as-is.
 New files added to `docker/volumes/platform/migrations/` after your `./volumes/db/data`
 volume was first initialized are **not** applied automatically — `docker-entrypoint-initdb.d`
 (and this stack's `98-platform-migrations.sql` wrapper) only runs once, against a
-genuinely empty `PGDATA`. Apply a new migration by hand against the running stack,
+genuinely empty `PGDATA`. New migrations must **also** be appended to
+`volumes/db/platform-migrations.sql`'s hand-maintained `\i` list — it cannot glob the
+migrations directory the way `scripts/bootstrap.sh` phase 1 does, so a forgotten line
+means every future fresh volume silently skips that migration at initdb time. Apply a new
+migration by hand against the running stack,
 mirroring the replay pattern `scripts/bootstrap.sh` phase 1 uses — `set role
 platform_admin` first, so the new objects are owned by `platform_admin`, the role Studio
 and platform GoTrue connect as:
@@ -310,6 +331,12 @@ There is no TLS termination in this stack by default — plan for one of:
   dashboard route — reintroducing exactly the basic-auth gate this stack's login page
   replaces. Strip that `basic_auth`/`auth_basic` block (or write a proxy config specific
   to this stack) if you want the dashboard reachable only through its own login page.
+  Also note those overlays' volume mounts are relative (`./volumes/proxy/...`), which
+  resolve against the compose project directory you invoke `docker compose` from — laying
+  `-f ../docker-compose.caddy.yml` on top of this stack's compose file from
+  `docker/self-platform/` resolves `./volumes/proxy/...` **here**, where it doesn't exist.
+  Copy or adapt the overlay file (and the proxy config it mounts) into this directory
+  rather than including the parent one directly.
 
 Either way, a single origin serves the dashboard, platform GoTrue (`/platform-auth/v1`),
 and the project's data plane (`/auth/v1`, `/rest/v1`, `/storage/v1`, `/realtime/v1`,
