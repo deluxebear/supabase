@@ -25,6 +25,7 @@ SUPABASE_SECRET_KEY="$(envval SUPABASE_SECRET_KEY)"
 PLATFORM_POSTGRES_PASSWORD="$(envval PLATFORM_POSTGRES_PASSWORD)"
 PLATFORM_JWT_SECRET="$(envval PLATFORM_JWT_SECRET)"
 PLATFORM_ENCRYPTION_KEY="$(envval PLATFORM_ENCRYPTION_KEY)"
+export PLATFORM_ENCRYPTION_KEY
 PLATFORM_ADMIN_EMAIL="$(envval PLATFORM_ADMIN_EMAIL)"
 PLATFORM_ADMIN_PASSWORD="$(envval PLATFORM_ADMIN_PASSWORD)"
 LOGFLARE_PRIVATE_ACCESS_TOKEN="$(envval LOGFLARE_PRIVATE_ACCESS_TOKEN)"
@@ -51,10 +52,27 @@ esac
 # authenticated dashboard API call then fails with 401. See README.md
 # section 2 for the full explanation.
 is_loopback_url() {
-  # Extract the host from scheme://host[:port][/path...] and test it.
-  local host="${1#*://}"; host="${host%%/*}"; host="${host%%:*}"
+  local url host
+  # Lowercase the URL for case-insensitive matching.
+  url="$(printf '%s\n' "$1" | tr '[:upper:]' '[:lower:]')"
+  # Strip scheme (scheme://).
+  url="${url#*://}"
+  # Strip userinfo (user[:pass]@host).
+  url="${url##*@}"
+  # Extract host: handle [ipv6]:port or host:port or host/path.
+  # Check if URL starts with [ (IPv6 in brackets).
+  if [ "${url#[}" != "$url" ]; then
+    # IPv6 in brackets: extract content between [ and ].
+    host="${url#[}"        # remove leading [
+    host="${host%%]*}"     # remove trailing ] and everything after
+  else
+    # IPv4 or hostname: extract host by removing :port and /path.
+    host="${url%%:*}"
+    host="${host%%/*}"
+  fi
+  # Match against loopback addresses.
   case "$host" in
-    localhost|127.*|::1|\[::1\]) return 0 ;;
+    localhost|127.*|::1|0.0.0.0) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -75,7 +93,7 @@ fi
 DB_CONTAINER="${DB_CONTAINER:-supabase-db}"
 PSQL() { docker exec -i "$DB_CONTAINER" psql -U supabase_admin -v ON_ERROR_STOP=1 -q "$@"; }
 sqlq() { printf '%s' "$1" | sed "s/'/''/g"; }   # SQL single-quote escaping
-enc()  { printf '%s' "$1" | openssl enc -aes-256-cbc -md md5 -base64 -A -pass pass:"$PLATFORM_ENCRYPTION_KEY"; }
+enc()  { printf '%s' "$1" | openssl enc -aes-256-cbc -md md5 -base64 -A -pass env:PLATFORM_ENCRYPTION_KEY; }
 # [self-platform] Escape \ and " for embedding a value into a curl -K
 # double-quoted config line (see the no-argv-secrets calls in Phase 2).
 cfg_escape() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
@@ -139,6 +157,7 @@ b64url() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
 now=$(date +%s); exp=$((now + 60))
 hdr=$(printf '{"alg":"HS256","typ":"JWT"}' | b64url)
 pay=$(printf '{"role":"service_role","iat":%d,"exp":%d}' "$now" "$exp" | b64url)
+# -hmac puts the secret in argv for a sub-second window (ps-visible); openssl dgst has no env/stdin key option — accepted.
 sig=$(printf '%s.%s' "$hdr" "$pay" | openssl dgst -binary -sha256 -hmac "$PLATFORM_JWT_SECRET" | b64url)
 SVC_JWT="$hdr.$pay.$sig"
 

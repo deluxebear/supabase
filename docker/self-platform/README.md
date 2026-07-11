@@ -120,7 +120,7 @@ Run every command below from this directory (`docker/self-platform/`).
    schema exists, the script skips the migration step entirely, so new migration files
    always require the manual step in "Applying future platform migrations" below.
 
-6. **Log in.** Open `${SUPABASE_PUBLIC_URL}` (`http://localhost:8000` by default) in a
+6. **Log in.** Open `${SUPABASE_PUBLIC_URL}` (e.g. `http://192.168.1.100:8000` — the container-reachable origin you set in `.env`) in a
    browser and sign in with `PLATFORM_ADMIN_EMAIL` / `PLATFORM_ADMIN_PASSWORD`.
 
 ## 3. Inviting more operators
