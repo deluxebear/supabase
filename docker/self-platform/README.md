@@ -96,9 +96,12 @@ Run every command below from this directory (`docker/self-platform/`).
    from `docker-entrypoint-initdb.d`), creates the first dashboard admin from
    `PLATFORM_ADMIN_EMAIL`/`PLATFORM_ADMIN_PASSWORD` and grants it the Owner role, and
    registers the default project in `platform.projects`. The script is idempotent — safe
-   to re-run — and re-running it is also how you pick up newer platform migrations or
-   refresh the default project's registration after config changes (see "Applying future
-   platform migrations" and "Observability profile" below).
+   to re-run — but a re-run only re-asserts the admin and refreshes the default
+   project's registration (for example, to pick up the Logflare/metrics URLs after
+   enabling the `obs` profile — see "Observability profile" below). It does **not**
+   apply platform migrations added after the volume was initialized: once the platform
+   schema exists, the script skips the migration step entirely, so new migration files
+   always require the manual step in "Applying future platform migrations" below.
 
 6. **Log in.** Open `${SUPABASE_PUBLIC_URL}` (`http://localhost:8000` by default) in a
    browser and sign in with `PLATFORM_ADMIN_EMAIL` / `PLATFORM_ADMIN_PASSWORD`.
@@ -158,22 +161,60 @@ Logs and infra metrics (`analytics`/Logflare, `vector`, `cadvisor`) are an opt-i
 If you're moving an existing `docker-compose.platform.yml` mini-stack (`platform-db` +
 `platform-auth` + `platform-mail`, see `docker/volumes/platform/README.md`) to this
 all-in-one compose, bring the metadata over with a dump/restore rather than
-re-registering everything by hand:
+re-registering everything by hand. The old and the new stack cannot run at the same time
+(shared container names and host ports — see "Mutual exclusivity & ports" below), so the
+sequence is: dump from the old stack first, decommission it, boot this stack, then
+restore. All commands below run from this directory (`docker/self-platform/`);
+`docker exec` targets a container by name regardless of the current directory.
 
-1. **Dump the mini-stack's `platform` database** (the mini-stack container is
-   `supabase-platform-db`, superuser `postgres`):
+1. **Dump the mini-stack's `platform` database** while the OLD stack is still running
+   (its control-plane container is `supabase-platform-db`, superuser `postgres`):
 
    ```bash
    docker exec supabase-platform-db pg_dump -U postgres -d platform --no-owner > platform-dump.sql
    ```
 
-2. **Restore it into `_platform`** on this stack's shared cluster (this stack's `db`
-   container is also named `supabase-db`, using the cluster-admin role
-   `supabase_admin`):
+2. **Decommission the old stack.** Stop and remove the mini-stack services, and bring
+   the plain `docker/` stack down too — its container names and host ports collide with
+   this stack's:
 
    ```bash
-   docker exec -i supabase-db psql -U supabase_admin -d _platform < platform-dump.sql
+   docker compose -f ../docker-compose.yml -f ../docker-compose.platform.yml \
+     stop platform-db platform-auth platform-mail
+   docker compose -f ../docker-compose.yml -f ../docker-compose.platform.yml \
+     rm -f platform-db platform-auth platform-mail
+   docker compose -f ../docker-compose.yml down
    ```
+
+3. **Boot this stack** (Quickstart steps 1–4 above), carrying `PLATFORM_ENCRYPTION_KEY`
+   over **byte-identical** from the mini-stack's `docker/.env` into this stack's `.env`.
+   Note that the first `docker compose up -d` runs initdb, which already creates
+   `_platform` fully populated (schema, seed rows) — which is exactly why the next step
+   drops it rather than restoring on top: restoring a full dump over the seeded schema
+   aborts on "already exists" errors and unique violations.
+
+4. **Drop, recreate, and restore `_platform`**, with the control-plane consumers
+   stopped. Restore **as `platform_admin`** — ownership matters, because both Studio and
+   platform GoTrue connect as `platform_admin`. The drop also removes the
+   role-in-database `search_path` setting that `volumes/db/_platform.sql` established,
+   so the recreate step re-applies it (GoTrue's unqualified lookups depend on it):
+
+   ```bash
+   docker compose stop studio platform-auth
+
+   docker exec supabase-db psql -U supabase_admin -d postgres -v ON_ERROR_STOP=1 \
+     -c "drop database _platform with (force)" \
+     -c "create database _platform owner platform_admin" \
+     -c "alter role platform_admin in database _platform set search_path = public, auth"
+   docker exec -i supabase-db psql -h 127.0.0.1 -U platform_admin -d _platform \
+     -v ON_ERROR_STOP=1 < platform-dump.sql
+
+   docker compose start platform-auth studio
+   ```
+
+   (The `-h 127.0.0.1` on the restore is required: inside the `supabase-db` container,
+   Unix-socket connections for roles other than `supabase_admin` use peer
+   authentication, which fails for `platform_admin`; loopback TCP is trusted.)
 
    Verify **both** the hand-rolled `platform.*` schema (organizations, profiles, roles,
    projects) and GoTrue's own `auth.*` schema arrived — the mini-stack's `platform`
@@ -181,36 +222,40 @@ re-registering everything by hand:
    only) will leave dashboard accounts unable to log in even though the registry looks
    fine.
 
-3. **Decommission the mini-stack** once the restore is verified — this stack reuses the
-   same container names (`supabase-platform-auth`, `supabase-platform-mail`) and the same
-   default host ports (Mailpit's `1025`/`8025`) as the mini-stack, so the two cannot run
-   at the same time regardless:
-
-   ```bash
-   docker compose -f ../docker-compose.yml -f ../docker-compose.platform.yml \
-     stop platform-db platform-auth platform-mail
-   docker compose -f ../docker-compose.yml -f ../docker-compose.platform.yml \
-     rm -f platform-db platform-auth platform-mail
-   ```
-
 **Re-encryption is not needed** if `PLATFORM_ENCRYPTION_KEY` in this stack's `.env` is
-carried over byte-identical from the mini-stack's `docker/.env` — the registry's
+carried over byte-identical from the mini-stack's `docker/.env` (step 3) — the registry's
 AES-encrypted secret columns (`db_pass_enc`, `service_key_enc`, etc.) decrypt exactly as
 they did before. A mismatched or missing key makes every encrypted column undecryptable
 (see `docker/volumes/platform/README.md`'s `PLATFORM_ENCRYPTION_KEY` section) — there is
 no recovery for that short of re-registering every project.
+
+**After the restore, do not re-run `./scripts/bootstrap.sh` unless you want the
+`default` project row refreshed to this stack's `.env` values** — phase 3's upsert
+overwrites the restored row's connection coordinates and encrypted secrets with what
+`.env` currently says. That refresh is often what you want after moving stacks (new
+`SUPABASE_PUBLIC_URL`, this stack's `db` host); skip it if the restored row should stand
+as-is.
 
 ## 6. Applying future platform migrations
 
 New files added to `docker/volumes/platform/migrations/` after your `./volumes/db/data`
 volume was first initialized are **not** applied automatically — `docker-entrypoint-initdb.d`
 (and this stack's `98-platform-migrations.sql` wrapper) only runs once, against a
-genuinely empty `PGDATA`. Apply a new migration by hand against the running stack:
+genuinely empty `PGDATA`. Apply a new migration by hand against the running stack,
+mirroring the replay pattern `scripts/bootstrap.sh` phase 1 uses — `set role
+platform_admin` first, so the new objects are owned by `platform_admin`, the role Studio
+and platform GoTrue connect as:
 
 ```bash
-docker exec -i supabase-db psql -U supabase_admin -d _platform -v ON_ERROR_STOP=1 \
-  < ../volumes/platform/migrations/NN-new.sql
+{ echo "set role platform_admin;"; cat ../volumes/platform/migrations/NN-new.sql; } | \
+  docker exec -i supabase-db psql -U supabase_admin -d _platform -v ON_ERROR_STOP=1
 ```
+
+Plain DDL migrations need nothing more. If a future migration ever needs cluster-level
+rights beyond what `platform_admin` holds (the way `01-schema.sql` runs `alter role
+postgres set search_path ...`), use `scripts/bootstrap.sh` phase 1's elevation bracket
+— grant `createrole` and `postgres ... with admin option` before, revoke and restore the
+`search_path` after, even on failure — as the reference.
 
 `scripts/bootstrap.sh` prints `platform schema present — skipping migrations (apply newer
 files manually; see README)` on every re-run once `platform.projects` already exists —
