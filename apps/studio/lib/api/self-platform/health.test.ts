@@ -27,6 +27,7 @@ const CONN = {
   ref: 'proj-x',
   supabaseUrl: CONN_SUPABASE_URL,
   anonKey: 'anon-key-x',
+  serviceKey: 'service-key-x',
   pgConnEncrypted: 'enc-dsn',
 } as never
 
@@ -62,17 +63,32 @@ describe('probeStackHealth mapping', () => {
     expect(results.every((r) => r.status === 'ACTIVE_HEALTHY' && r.healthy)).toBe(true)
     const auth = results.find((r) => r.name === 'auth')!
     expect(auth.info).toMatchObject({ name: 'GoTrue' })
-    // headers carry the anon key on HTTP probes
+    // headers: rest probes with the service key (its gateway path is
+    // admin-only, see SERVICE_HEALTH_PATHS), every other probe stays anon
     const calls = vi
       .mocked(fetch)
       .mock.calls.filter(([u]) => String(u).startsWith(CONN_SUPABASE_URL))
     expect(calls).toHaveLength(5)
-    for (const [, init] of calls) {
+    for (const [url, init] of calls) {
+      const key = String(url).includes('/rest/') ? 'service-key-x' : 'anon-key-x'
       expect((init as RequestInit).headers).toMatchObject({
-        apikey: 'anon-key-x',
-        Authorization: 'Bearer anon-key-x',
+        apikey: key,
+        Authorization: `Bearer ${key}`,
       })
     }
+  })
+
+  it('rest probe falls back to the anon key when the registry row has no service key', async () => {
+    vi.mocked(resolveProjectConnection).mockResolvedValue({
+      ...(CONN as object),
+      serviceKey: '',
+    } as never)
+    await probeStackHealth('proj-x')
+    const restCall = vi.mocked(fetch).mock.calls.find(([u]) => String(u).includes('/rest/'))!
+    expect((restCall[1] as RequestInit).headers).toMatchObject({
+      apikey: 'anon-key-x',
+      Authorization: 'Bearer anon-key-x',
+    })
   })
 
   it('kong no-route 404 → DISABLED (service not deployed)', async () => {

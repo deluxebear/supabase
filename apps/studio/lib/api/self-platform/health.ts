@@ -37,6 +37,12 @@ export const CACHE_TTL_MS = 20_000
 // probeHttp).
 export const SERVICE_HEALTH_PATHS: Record<Exclude<ProbeService, 'db'>, string> = {
   auth: '/auth/v1/health',
+  // rest is probed with the SERVICE key, not anon: upstream kong.yml now
+  // routes the exact path /rest/v1/ (OpenAPI root) through an admin-only ACL
+  // (github.com/orgs/supabase/discussions/42949, post-dates the T1 spike that
+  // pinned this path) — an anon probe gets a gateway-generated 403 that
+  // proves nothing about PostgREST, live-verified 2026-07-12 on the merged
+  // stack: anon → 403 "You cannot consume this service", service key → 200.
   rest: '/rest/v1/',
   storage: '/storage/v1/status',
   realtime: '/realtime/v1/websocket',
@@ -86,12 +92,12 @@ function errorMessage(err: unknown): string {
 async function probeHttp(
   name: Exclude<ProbeService, 'db'>,
   url: string,
-  anonKey: string
+  apiKey: string
 ): Promise<ServiceProbeResult> {
   try {
     const response = await fetch(url, {
       method: 'GET',
-      headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
+      headers: { apikey: apiKey, Authorization: `Bearer ${apiKey}` },
       signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
     })
     // Liveness services: any sub-5xx response proves the service is reachable
@@ -188,7 +194,15 @@ export async function probeStackHealth(
   const results = await Promise.all([
     probeDb(conn.pgConnEncrypted),
     ...httpServices.map((name) =>
-      probeHttp(name, `${base}${SERVICE_HEALTH_PATHS[name]}`, conn.anonKey)
+      probeHttp(
+        name,
+        `${base}${SERVICE_HEALTH_PATHS[name]}`,
+        // rest's probe path is admin-only at the gateway (see
+        // SERVICE_HEALTH_PATHS); every other service keeps least-privilege
+        // anon. Registry rows without a service key fall back to anon rather
+        // than probing with an empty header pair.
+        name === 'rest' ? conn.serviceKey || conn.anonKey : conn.anonKey
+      )
     ),
   ])
   cache.set(ref, { at: now, results })
