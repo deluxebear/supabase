@@ -1,13 +1,18 @@
-import { describe, expect, it } from 'vitest'
+import { execFileSync } from 'node:child_process'
+
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   assertRequiredInput,
   assertValidStackKind,
   buildRowParams,
   buildUpsertSql,
+  main,
   parseArgs,
   resolveInputFromEnv,
 } from './register-project'
+
+vi.mock('node:child_process')
 
 function baseInput() {
   return {
@@ -388,5 +393,70 @@ describe('k8s identity (M6.4 D3 T5)', () => {
     const params = buildRowParams(baseInput(), (s) => s)
     expect(params[25]).toBeNull()
     expect(params[26]).toBeNull()
+  })
+})
+
+describe('psql env overrides', () => {
+  // [self-platform] PLATFORM_DB_CONTAINER/USER/NAME let the register CLI
+  // target the merged all-in-one stack (supabase-db/_platform) instead of
+  // the mini-stack's dedicated platform-db container; save/restore so these
+  // process.env mutations never leak into other test files run in the same
+  // worker.
+  const ORIGINAL_ENV = {
+    PLATFORM_DB_CONTAINER: process.env.PLATFORM_DB_CONTAINER,
+    PLATFORM_DB_USER: process.env.PLATFORM_DB_USER,
+    PLATFORM_DB_NAME: process.env.PLATFORM_DB_NAME,
+  }
+
+  beforeEach(() => {
+    vi.mocked(execFileSync).mockReturnValue('')
+  })
+
+  afterEach(() => {
+    vi.mocked(execFileSync).mockReset()
+    for (const [key, value] of Object.entries(ORIGINAL_ENV)) {
+      if (value === undefined) delete process.env[key]
+      else process.env[key] = value
+    }
+  })
+
+  it('defaults to the mini-stack container/user/db', () => {
+    delete process.env.PLATFORM_DB_CONTAINER
+    delete process.env.PLATFORM_DB_USER
+    delete process.env.PLATFORM_DB_NAME
+    main(['list'])
+    const argv = vi.mocked(execFileSync).mock.calls.at(-1)![1] as string[]
+    expect(argv).toEqual([
+      'exec',
+      '-i',
+      'supabase-platform-db',
+      'psql',
+      '-U',
+      'postgres',
+      '-d',
+      'platform',
+      '-v',
+      'ON_ERROR_STOP=1',
+    ])
+  })
+
+  it('honors PLATFORM_DB_CONTAINER/USER/NAME for the merged stack', () => {
+    process.env.PLATFORM_DB_CONTAINER = 'supabase-db'
+    process.env.PLATFORM_DB_USER = 'supabase_admin'
+    process.env.PLATFORM_DB_NAME = '_platform'
+    main(['list'])
+    const argv = vi.mocked(execFileSync).mock.calls.at(-1)![1] as string[]
+    expect(argv).toEqual([
+      'exec',
+      '-i',
+      'supabase-db',
+      'psql',
+      '-U',
+      'supabase_admin',
+      '-d',
+      '_platform',
+      '-v',
+      'ON_ERROR_STOP=1',
+    ])
   })
 })

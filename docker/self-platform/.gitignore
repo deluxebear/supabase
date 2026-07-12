@@ -1,0 +1,6 @@
+# [self-platform] Local runtime state — never commit.
+.env
+volumes/db/data/
+volumes/storage/
+volumes/functions/
+volumes/snippets/
