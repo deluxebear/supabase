@@ -9,6 +9,15 @@ import type {
 } from '@/data/entitlements/entitlements-query'
 import { useEntitlementsQuery } from '@/data/entitlements/entitlements-query'
 import { IS_PLATFORM } from '@/lib/constants'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
+
+// [self-platform] Feature gating is entitlement-based, but self-platform's
+// entitlements endpoint is a contract-minimal stub (only a couple of keys),
+// so most `useCheckEntitlements('...')` calls would resolve to hasAccess=false
+// and show a nonsensical "Upgrade to Pro" on an operator-owned stack. Treat
+// self-platform like plain self-hosted here: you own the infrastructure, so
+// every feature is granted (same permissive branch as IS_PLATFORM=false).
+const CHECK_ENTITLEMENTS = IS_PLATFORM && !IS_SELF_PLATFORM
 
 function isNumericConfig(
   _config: EntitlementConfig,
@@ -68,7 +77,7 @@ export function useHasEntitlementAccess(organizationSlug?: string) {
 
   return useCallback(
     (key: string) =>
-      IS_PLATFORM
+      CHECK_ENTITLEMENTS
         ? (entitlementsData?.entitlements?.find((e) => e.feature.key === key)?.hasAccess ?? false)
         : true,
     [entitlementsData]
@@ -124,9 +133,9 @@ export function useCheckEntitlements(
     : isSuccessEntitlements
 
   return {
-    hasAccess: IS_PLATFORM ? (entitlement?.hasAccess ?? false) : true,
-    isLoading: IS_PLATFORM ? isLoading : false,
-    isSuccess: IS_PLATFORM ? isSuccess : true,
+    hasAccess: CHECK_ENTITLEMENTS ? (entitlement?.hasAccess ?? false) : true,
+    isLoading: CHECK_ENTITLEMENTS ? isLoading : false,
+    isSuccess: CHECK_ENTITLEMENTS ? isSuccess : true,
     getEntitlementNumericValue: () => getEntitlementNumericValue(entitlement),
     isEntitlementUnlimited: () => isEntitlementUnlimited(entitlement),
     getEntitlementSetValues: () => getEntitlementSetValues(entitlement),
