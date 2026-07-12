@@ -147,6 +147,8 @@ const PITRSidePanel = () => {
       visible={visible}
       onCancel={closePanel}
       onConfirm={onConfirm}
+      cancelText={$t('Cancel')}
+      confirmText={$t('Confirm')}
       loading={isLoading || isSubmitting}
       disabled={
         !hasAccessToPitrVariants ||
@@ -226,7 +228,7 @@ const PITRSidePanel = () => {
                         isSelected ? 'text-foreground' : 'text-foreground-light'
                       )}
                     >
-                      {option.name}
+                      {$t(option.name)}
                     </p>
                   </div>
                 )
@@ -278,8 +280,10 @@ const PITRSidePanel = () => {
                 <UpgradeToPro
                   className="mb-4"
                   addon="computeSize"
-                  primaryText="Project needs to be at least on a Small compute size to enable PITR"
-                  secondaryText="This ensures enough resources to execute PITR successfully."
+                  primaryText={$t(
+                    'Project needs to be at least on a Small compute size to enable PITR'
+                  )}
+                  secondaryText={$t('This ensures enough resources to execute PITR successfully.')}
                   featureProposition="enable PITR"
                 />
               ) : null}
