@@ -6,4 +6,4 @@ resources:
   - kustomize/operator.yaml
 images:
   - name: ghcr.io/supabase/backup-operator
-    newTag: v0.1.0
+    newTag: v0.1.1
