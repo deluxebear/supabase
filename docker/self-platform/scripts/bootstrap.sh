@@ -172,7 +172,7 @@ admin_body="{\"email\":\"$PLATFORM_ADMIN_EMAIL\",\"password\":\"$PLATFORM_ADMIN_
   printf 'header = "Authorization: Bearer %s"\n' "$(cfg_escape "$SVC_JWT")"
   printf 'header = "Content-Type: application/json"\n'
   printf 'data = "%s"\n' "$(cfg_escape "$admin_body")"
-} | curl -sS -K - -X POST -o /dev/null "$GOTRUE/admin/users" \
+} | curl -sS --retry 5 --retry-all-errors -K - -X POST -o /dev/null "$GOTRUE/admin/users" \
   || { echo "ERROR: platform GoTrue unreachable at $GOTRUE" >&2; exit 1; }
 
 # No -f here (see below): we need the response body even on 4xx so the
@@ -183,7 +183,7 @@ token_json=$(
   {
     printf 'header = "Content-Type: application/json"\n'
     printf 'data = "%s"\n' "$(cfg_escape "$login_body")"
-  } | curl -sS -K - -X POST "$GOTRUE/token?grant_type=password"
+  } | curl -sS --retry 5 --retry-all-errors -K - -X POST "$GOTRUE/token?grant_type=password"
 ) || { echo "ERROR: platform GoTrue unreachable at $GOTRUE" >&2; exit 1; }
 TOKEN=$(printf '%s' "$token_json" | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
 [ -n "$TOKEN" ] || { echo "ERROR: admin login failed (wrong PLATFORM_ADMIN_PASSWORD for an existing user?)" >&2; exit 1; }
@@ -193,8 +193,12 @@ TOKEN=$(printf '%s' "$token_json" | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/
 # (createProfileWithDefaultMembership — idempotent: on conflict do update /
 # membership on conflict do nothing). This mirrors the client's own
 # first-login mutation and also creates the default-org membership (M1).
+# --retry: kong serves intermittent 502s for a while after the studio
+# container is recreated (stale DNS cache, see README "Observability
+# profile") — one probe success above does not guarantee the next request
+# lands, so every post-wait call retries transient errors.
 printf 'header = "Authorization: Bearer %s"\n' "$(cfg_escape "$TOKEN")" \
-  | curl -fsS -K - -X POST -o /dev/null "$SUPABASE_PUBLIC_URL/api/platform/profile"
+  | curl -fsS --retry 5 --retry-all-errors -K - -X POST -o /dev/null "$SUPABASE_PUBLIC_URL/api/platform/profile"
 PSQL -d _platform -c "insert into platform.member_roles (profile_id, role_id)
   select pr.id, 1 from platform.profiles pr
   where pr.primary_email = '$(sqlq "$PLATFORM_ADMIN_EMAIL")'
@@ -206,7 +210,7 @@ LOGFLARE_URL_SQL="NULL"; LOGFLARE_TOKEN_SQL="NULL"; METRICS_URL_SQL="NULL"
 if [ "$ENABLED_FEATURES_LOGS_ALL" = "true" ]; then
   LOGFLARE_URL_SQL="'http://analytics:4000'"
   [ -n "$LOGFLARE_PRIVATE_ACCESS_TOKEN" ] && LOGFLARE_TOKEN_SQL="'$(sqlq "$(enc "$LOGFLARE_PRIVATE_ACCESS_TOKEN")")'"
-  METRICS_URL_SQL="'http://vector:9598'"
+  METRICS_URL_SQL="'http://vector:9598/metrics'"
 fi
 PUB_SQL="NULL"; SEC_SQL="NULL"
 [ -n "$SUPABASE_PUBLISHABLE_KEY" ] && PUB_SQL="'$(sqlq "$(enc "$SUPABASE_PUBLISHABLE_KEY")")'"

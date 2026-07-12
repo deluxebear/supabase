@@ -160,6 +160,16 @@ Logs and infra metrics (`analytics`/Logflare, `vector`, `cadvisor`) are an opt-i
    docker compose --profile obs up -d
    ```
 
+   This also **recreates the `studio` container** (its `ENABLED_FEATURES_LOGS_ALL`
+   env changed), and Kong keeps the old container IP in its DNS cache for a
+   while — expect intermittent `502` "invalid response from the upstream
+   server" errors on dashboard requests for up to ~10 minutes. Restart Kong to
+   flush the cache immediately:
+
+   ```bash
+   docker restart supabase-kong
+   ```
+
 3. Re-run bootstrap so the default project's registry row picks up the Logflare and
    metrics URLs:
 
