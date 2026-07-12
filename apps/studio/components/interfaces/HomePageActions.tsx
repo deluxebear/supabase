@@ -107,11 +107,11 @@ export const HomePageActions = ({ slug: _slug, hideNewProject = false }: HomePag
 
         <div className="flex items-center gap-2">
           <FilterPopover
-            name="Status"
+            name={$t('Status')}
             title={$t('Filter projects by status')}
             options={[
-              { key: PROJECT_STATUS.ACTIVE_HEALTHY, label: 'Active' },
-              { key: PROJECT_STATUS.INACTIVE, label: 'Paused' },
+              { key: PROJECT_STATUS.ACTIVE_HEALTHY, label: $t('Active') },
+              { key: PROJECT_STATUS.INACTIVE, label: $t('Paused') },
             ]}
             activeOptions={filterStatus}
             valueKey="key"
@@ -121,8 +121,8 @@ export const HomePageActions = ({ slug: _slug, hideNewProject = false }: HomePag
 
           <SortDropdown
             options={[
-              { label: 'name', value: 'name' },
-              { label: 'creation date', value: 'created' },
+              { label: $t('name'), value: 'name' },
+              { label: $t('creation date'), value: 'created' },
             ]}
             value={sort}
             setValue={(val) => setSortStorage(val as ProjectListSort)}

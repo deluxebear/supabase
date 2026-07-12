@@ -25,6 +25,7 @@ import { getComputeSize, OrgProject } from '@/data/projects/org-projects-infinit
 import type { ResourceWarning } from '@/data/usage/resource-warnings-query'
 import { BASE_PATH } from '@/lib/constants'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 import { createNavigationHandler } from '@/lib/navigation'
 import type { Organization } from '@/types'
@@ -156,7 +157,10 @@ export const ProjectTableRow = ({
         </TableCell>
         <TableCell>
           <span className="lowercase text-sm text-foreground-light">
-            {project.cloud_provider} | {project.region || 'N/A'}
+            {/* [self-platform] placeholder cloud_provider ('AWS') would
+                misattribute a self-hosted stack to a cloud vendor */}
+            {IS_SELF_PLATFORM ? $t('Self-hosted') : project.cloud_provider} |{' '}
+            {project.region || 'N/A'}
           </span>
         </TableCell>
         <TableCell>

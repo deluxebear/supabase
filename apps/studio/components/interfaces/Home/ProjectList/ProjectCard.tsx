@@ -24,6 +24,7 @@ import type { ResourceWarning } from '@/data/usage/resource-warnings-query'
 import { useCustomContent } from '@/hooks/custom-content/useCustomContent'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { BASE_PATH } from '@/lib/constants'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 import type { Organization } from '@/types'
 
@@ -49,8 +50,14 @@ export const ProjectCard = ({
   const { name, ref: projectRef } = project
 
   const { infraAwsNimbusLabel } = useCustomContent(['infra:aws_nimbus_label'])
-  const providerLabel =
-    project.cloud_provider === 'AWS_NIMBUS' ? infraAwsNimbusLabel : project.cloud_provider
+  // [self-platform] registry rows carry a placeholder cloud_provider ('AWS')
+  // only to satisfy the upstream type — showing it would misattribute a
+  // self-hosted stack to a cloud vendor.
+  const providerLabel = IS_SELF_PLATFORM
+    ? $t('Self-hosted')
+    : project.cloud_provider === 'AWS_NIMBUS'
+      ? infraAwsNimbusLabel
+      : project.cloud_provider
 
   const desc = `${providerLabel} | ${project.region}`
 
