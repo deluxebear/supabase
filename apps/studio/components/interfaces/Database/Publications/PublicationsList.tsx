@@ -225,8 +225,8 @@ export const PublicationsList = () => {
                         >
                           <Link href={`/project/${ref}/database/publications/${x.id}`}>
                             {x.tables === null
-                              ? 'All tables'
-                              : `${x.tables.length} ${x.tables.length === 1 ? 'table' : 'tables'}`}
+                              ? $t('All tables')
+                              : $t('{{count}} tables', { count: x.tables.length })}
                           </Link>
                         </Button>
                       </div>

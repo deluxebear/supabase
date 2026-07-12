@@ -393,8 +393,12 @@ export const SessionsAuthSettingsForm = () => {
                     fullWidth
                     source="authSessions"
                     featureProposition="configure user sessions"
-                    primaryText="Configuring user sessions is only available on the Pro Plan and above"
-                    secondaryText="Upgrade to Pro Plan to configure settings for user sessions."
+                    primaryText={$t(
+                      'Configuring user sessions is only available on the Pro Plan and above'
+                    )}
+                    secondaryText={$t(
+                      'Upgrade to Pro Plan to configure settings for user sessions.'
+                    )}
                   />
                 )}
 

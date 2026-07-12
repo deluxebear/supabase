@@ -293,7 +293,7 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
                     description={
                       isSelectEntityDisabled &&
                       !isLoadingEntities &&
-                      'Create a table in this schema via the Table or SQL editor first'
+                      $t('Create a table in this schema via the Table or SQL editor first')
                     }
                   >
                     <FormControl className="col-span-6">
@@ -325,8 +325,8 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
                             {field.value
                               ? field.value
                               : isSelectEntityDisabled
-                                ? 'No tables available in schema'
-                                : 'Choose a table'}
+                                ? $t('No tables available in schema')
+                                : $t('Choose a table')}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent

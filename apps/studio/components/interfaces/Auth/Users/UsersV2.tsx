@@ -854,13 +854,13 @@ export const UsersV2 = () => {
                       <div className="text-center">
                         <p className="text-foreground">
                           {filterUserType !== 'all' || filterKeywords.length > 0
-                            ? 'No users found'
-                            : 'No users in your project'}
+                            ? $t('No users found')
+                            : $t('No users in your project')}
                         </p>
                         <p className="text-foreground-light">
                           {filterUserType !== 'all' || filterKeywords.length > 0
-                            ? 'There are currently no users based on the filters applied'
-                            : 'There are currently no users who signed up to your project'}
+                            ? $t('There are currently no users based on the filters applied')
+                            : $t('There are currently no users who signed up to your project')}
                         </p>
                       </div>
                     </div>

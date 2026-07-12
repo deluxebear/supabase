@@ -268,7 +268,7 @@ export const OAuthAppsList = () => {
               </InputGroupAddon>
             </InputGroup>
             <FilterPopover
-              name="Registration Type"
+              name={$t('Registration Type')}
               options={OAUTH_APP_REGISTRATION_TYPE_OPTIONS}
               labelKey="name"
               valueKey="value"
@@ -280,7 +280,7 @@ export const OAuthAppsList = () => {
               onSaveFilters={setFilteredRegistrationTypes}
             />
             <FilterPopover
-              name="Client Type"
+              name={$t('Client Type')}
               options={OAUTH_APP_CLIENT_TYPE_OPTIONS}
               labelKey="name"
               valueKey="value"

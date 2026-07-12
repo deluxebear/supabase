@@ -211,8 +211,10 @@ export const PerformanceSettingsForm = () => {
           <UpgradeToPro
             source="authPerformance"
             featureProposition="configure advanced Auth server settings"
-            primaryText="Only available on the Pro Plan and above"
-            secondaryText="Upgrade to the Pro Plan to configure Auth server performance settings."
+            primaryText={$t('Only available on the Pro Plan and above')}
+            secondaryText={$t(
+              'Upgrade to the Pro Plan to configure Auth server performance settings.'
+            )}
           />
         )}
       </ScaffoldSection>
@@ -251,7 +253,7 @@ export const PerformanceSettingsForm = () => {
                                 disabled={!canUpdateConfig || promptUpgrade}
                               />
                               <InputGroupAddon align="inline-end">
-                                <InputGroupText>seconds</InputGroupText>
+                                <InputGroupText>{$t('seconds')}</InputGroupText>
                               </InputGroupAddon>
                             </InputGroup>
                           </FormControl>
@@ -344,7 +346,7 @@ export const PerformanceSettingsForm = () => {
                         >
                           <SelectTrigger size="small" disabled={!canUpdateConfig || promptUpgrade}>
                             <SelectValue>
-                              {field.value === 'percent' ? 'Percentage' : 'Absolute'}
+                              {field.value === 'percent' ? $t('Percentage') : $t('Absolute')}
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent align="end">
@@ -392,7 +394,7 @@ export const PerformanceSettingsForm = () => {
                               />
                               <InputGroupAddon align="inline-end">
                                 <InputGroupText>
-                                  {chosenUnit === 'percent' ? '%' : 'connections'}
+                                  {chosenUnit === 'percent' ? '%' : $t('connections')}
                                 </InputGroupText>
                               </InputGroupAddon>
                             </InputGroup>

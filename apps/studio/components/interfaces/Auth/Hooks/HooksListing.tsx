@@ -58,7 +58,7 @@ export const HooksListing = () => {
   useShortcut(
     SHORTCUT_IDS.LIST_PAGE_NEW_ITEM,
     () => (hasValidHooks ? setAddHookAsideOpen(true) : setAddHookEmptyOpen(true)),
-    { label: 'Add hook' }
+    { label: $t('Add hook') }
   )
 
   const selectedHook = hooks.find((h) => h.id === hook)
@@ -121,7 +121,7 @@ export const HooksListing = () => {
             <AddHookDropdown
               variant="default"
               align="center"
-              buttonText="Add a new hook"
+              buttonText={$t('Add a new hook')}
               open={addHookEmptyOpen}
               onOpenChange={setAddHookEmptyOpen}
               onSelectHook={(title) => {

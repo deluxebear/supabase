@@ -32,7 +32,7 @@ interface AddHookDropdownProps {
 }
 
 export const AddHookDropdown = ({
-  buttonText = 'Add hook',
+  buttonText = $t('Add hook'),
   align = 'end',
   variant = 'primary',
   open,
@@ -98,7 +98,7 @@ export const AddHookDropdown = ({
           )}
           {availableHooks.map((h) => (
             <DropdownMenuItem key={h.title} onClick={() => onSelectHook(h.title)}>
-              {h.title}
+              {$t(h.title)}
             </DropdownMenuItem>
           ))}
         </div>
@@ -119,7 +119,7 @@ export const AddHookDropdown = ({
 
             {nonAvailableHooks.map((h) => (
               <DropdownMenuItem key={h.title} disabled={true}>
-                {h.title}
+                {$t(h.title)}
               </DropdownMenuItem>
             ))}
           </>

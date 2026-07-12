@@ -163,7 +163,7 @@ export const AIOnboarding = ({
                           onFocusInput?.()
                         }}
                       >
-                        {item.title}
+                        {$t(item.title)}
                       </Button>
                     ))}
                   </div>

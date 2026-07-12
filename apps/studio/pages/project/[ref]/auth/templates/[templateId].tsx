@@ -202,15 +202,15 @@ const RedirectToTemplates = () => {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>{template.title}</BreadcrumbPage>
+              <BreadcrumbPage>{$t(template.title)}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </PageHeaderBreadcrumb>
         <PageHeaderMeta>
           <PageHeaderSummary>
-            <PageHeaderTitle>{template.title}</PageHeaderTitle>
+            <PageHeaderTitle>{$t(template.title)}</PageHeaderTitle>
             <PageHeaderDescription>
-              {template.purpose || 'Configure and customize email templates.'}
+              {$t(template.purpose || 'Configure and customize email templates.')}
             </PageHeaderDescription>
           </PageHeaderSummary>
           <PageHeaderAside>

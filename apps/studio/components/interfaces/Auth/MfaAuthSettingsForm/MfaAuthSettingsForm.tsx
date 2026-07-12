@@ -565,8 +565,8 @@ export const MfaAuthSettingsForm = () => {
                     fullWidth
                     source="authSmsMfa"
                     featureProposition="configure settings for SMS MFA"
-                    primaryText="SMS MFA is only available on the Pro Plan and above"
-                    secondaryText="Upgrade to the Pro plan to configure settings for SMS MFA."
+                    primaryText={$t('SMS MFA is only available on the Pro Plan and above')}
+                    secondaryText={$t('Upgrade to the Pro plan to configure settings for SMS MFA.')}
                   />
                 )}
 
@@ -658,9 +658,11 @@ export const MfaAuthSettingsForm = () => {
                     fullWidth
                     source="authEnhancedSecurity"
                     featureProposition="configure settings for Enhanced MFA Security"
-                    primaryText="Enhanced MFA Security is not available on your plan"
-                    secondaryText="Upgrade your plan to configure settings for Enhanced MFA Security"
-                    buttonText="Upgrade"
+                    primaryText={$t('Enhanced MFA Security is not available on your plan')}
+                    secondaryText={$t(
+                      'Upgrade your plan to configure settings for Enhanced MFA Security'
+                    )}
+                    buttonText={$t('Upgrade')}
                   />
                 )}
                 <CardFooter className="justify-end space-x-2">

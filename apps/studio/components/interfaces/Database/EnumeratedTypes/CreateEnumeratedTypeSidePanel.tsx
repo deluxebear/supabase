@@ -138,8 +138,8 @@ const CreateEnumeratedTypeSidePanel = ({
       disabled={!isDirty}
       visible={visible}
       onCancel={closePanel}
-      header="Create a new enumerated type"
-      confirmText="Create type"
+      header={$t('Create a new enumerated type')}
+      confirmText={$t('Create type')}
       onConfirm={() => {
         if (submitRef.current) submitRef.current.click()
       }}

@@ -402,19 +402,20 @@ export const TableList = ({
                           <>
                             <p className="text-sm text-foreground">{$t('No tables created yet')}</p>
                             <p className="text-sm text-foreground-light">
-                              {$t('There are no')}{' '}
-                              {visibleTypes.length === 5
-                                ? 'tables'
-                                : visibleTypes.length === 1
-                                  ? `${formatTooltipText(visibleTypes[0])}s`
-                                  : `${visibleTypes
-                                      .slice(0, -1)
-                                      .map((x) => `${formatTooltipText(x)}s`)
-                                      .join(
-                                        ', '
-                                      )}, and ${formatTooltipText(visibleTypes[visibleTypes.length - 1])}s`}{' '}
-                              {$t('found in the schema "')}
-                              {selectedSchema}"
+                              {$t('There are no {{types}} found in the schema "{{schema}}"', {
+                                types:
+                                  visibleTypes.length === 5
+                                    ? 'tables'
+                                    : visibleTypes.length === 1
+                                      ? `${formatTooltipText(visibleTypes[0])}s`
+                                      : `${visibleTypes
+                                          .slice(0, -1)
+                                          .map((x) => `${formatTooltipText(x)}s`)
+                                          .join(
+                                            ', '
+                                          )}, and ${formatTooltipText(visibleTypes[visibleTypes.length - 1])}s`,
+                                schema: selectedSchema,
+                              })}
                             </p>
                           </>
                         )}
@@ -530,7 +531,9 @@ export const TableList = ({
                                       />
                                     </DropdownMenuTrigger>
                                   </TooltipTrigger>
-                                  <TooltipContent side="bottom">{$t('More options')}</TooltipContent>
+                                  <TooltipContent side="bottom">
+                                    {$t('More options')}
+                                  </TooltipContent>
                                 </Tooltip>
                                 <DropdownMenuContent side="bottom" align="end" className="w-40">
                                   <DropdownMenuItem
@@ -624,10 +627,10 @@ export const TableList = ({
                 <TableRow ref={sentinelRef} className="border-b-0">
                   <TableCell colSpan={7} className="text-foreground-muted hover:bg-inherit">
                     {isFetchingNextTablesPage
-                      ? 'Loading more tables…'
-                      : `${footerCount} ${footerCount === 1 ? 'table' : 'tables'}${
-                          hasNextTablesPage ? ' loaded' : ''
-                        }`}
+                      ? $t('Loading more tables…')
+                      : hasNextTablesPage
+                        ? $t('{{count}} tables loaded', { count: footerCount })
+                        : $t('{{count}} tables', { count: footerCount })}
                   </TableCell>
                 </TableRow>
               </TableFooter>

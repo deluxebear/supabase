@@ -32,7 +32,7 @@ export const HookCard = ({ hook, onSelectEdit, onSelectDelete }: HookCardProps) 
         <Webhook size={21} strokeWidth="1" />
       </div>
       <div className="flex flex-col grow overflow-y-auto w-full">
-        <span className="text-sm text-foreground">{hook.title}</span>
+        <span className="text-sm text-foreground">{$t(hook.title)}</span>
         <span className="text-sm text-foreground-lighter">{hook.subtitle}</span>
         <div className="text-sm flex flex-row space-x-5 py-4">
           {hook.method.type === 'postgres' ? (

@@ -471,7 +471,7 @@ export const TableEditor = ({
                   'You need to create an access policy before you can query data from this table. Without a policy, querying this table will return an'
                 )}{' '}
                 <u className="text-foreground">{$t('empty array')}</u> {$t('of results.')}{' '}
-                {isNewRecord ? 'You can create policies after saving this table.' : ''}
+                {isNewRecord ? $t('You can create policies after saving this table.') : ''}
               </>
             }
           >

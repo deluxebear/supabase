@@ -200,9 +200,11 @@ export const EmailTemplates = () => {
                         className="flex items-center justify-between hover:bg-surface-200 transition-colors py-4 px-6 w-full h-full"
                       >
                         <div className="flex flex-col">
-                          <h3 className="text-sm text-foreground">{template.title}</h3>
+                          <h3 className="text-sm text-foreground">{$t(template.title)}</h3>
                           {template.purpose && (
-                            <p className="text-sm text-foreground-lighter">{template.purpose}</p>
+                            <p className="text-sm text-foreground-lighter">
+                              {$t(template.purpose)}
+                            </p>
                           )}
                         </div>
 
@@ -242,10 +244,10 @@ export const EmailTemplates = () => {
                               href={`/project/${projectRef}/auth/templates/${templateSlug}`}
                               className="flex flex-col flex-1 py-4 px-6"
                             >
-                              <h3 className="text-sm text-foreground">{template.title}</h3>
+                              <h3 className="text-sm text-foreground">{$t(template.title)}</h3>
                               {template.purpose && (
                                 <p className="text-sm text-foreground-lighter">
-                                  {template.purpose}
+                                  {$t(template.purpose)}
                                 </p>
                               )}
                             </Link>
