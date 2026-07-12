@@ -1,0 +1,30 @@
+bootstrap:
+  dcs:
+    loop_wait: 5
+    retry_timeout: 5
+    synchronous_mode: true
+    synchronous_mode_strict: true
+    synchronous_node_count: 2
+    ttl: 30
+    postgresql:
+      parameters:
+        archive_command: "pgbackrest --stanza=spike archive-push %p"
+        archive_mode: "on"
+        wal_log_hints: "on"
+      use_pg_rewind: true
+      use_slots: true
+  initdb:
+    - encoding: UTF8
+    - data-checksums
+  pg_hba:
+    - host replication replicator 0.0.0.0/0 scram-sha-256
+    - host all all 0.0.0.0/0 scram-sha-256
+
+postgresql:
+  authentication:
+    replication:
+      password: patroni-spike-only
+      username: replicator
+    superuser:
+      password: patroni-spike-only
+      username: postgres

@@ -1,4 +1,5 @@
 import { SupportCategories } from '@supabase/shared-types/out/constants'
+import { useQuery } from '@tanstack/react-query'
 import { useFlag, useParams } from 'common'
 import { Lock } from 'lucide-react'
 import { useTheme } from 'next-themes'
@@ -38,6 +39,7 @@ import { ResourceItem } from '@/components/ui/Resource/ResourceItem'
 import { ResourceList } from '@/components/ui/Resource/ResourceList'
 import { HorizontalShimmerWithIcon } from '@/components/ui/Shimmers'
 import { useProjectSettingsV2Query } from '@/data/config/project-settings-v2-query'
+import { backupOperatorStatusQueryOptions } from '@/data/database/backup-operator-status-query'
 import { useOrgSubscriptionQuery } from '@/data/subscriptions/org-subscription-query'
 import { useProjectAddonsQuery } from '@/data/subscriptions/project-addons-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
@@ -49,6 +51,7 @@ import {
   useSelectedProjectQuery,
 } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH, DOCS_URL } from '@/lib/constants'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { getDatabaseMajorVersion, getSemanticVersion } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
 import { useAddonsPagePanel } from '@/state/addons-page'
@@ -90,6 +93,9 @@ export const Addons = () => {
     isError,
     isSuccess,
   } = useProjectAddonsQuery({ projectRef })
+  const { data: backupOperatorStatus, isPending: isBackupOperatorStatusLoading } = useQuery(
+    backupOperatorStatusQueryOptions({ projectRef })
+  )
 
   const selectedAddons = addons?.selected_addons ?? []
   const { pitr, customDomain, ipv4 } = getAddons(selectedAddons)
@@ -97,17 +103,20 @@ export const Addons = () => {
   const canUpdateIPv4 = settings?.db_ip_addr_config === 'ipv6'
 
   const ipv4Enabled = ipv4 !== undefined
-  const pitrEnabled = pitr !== undefined
+  const pitrEnabled = IS_SELF_PLATFORM
+    ? backupOperatorStatus?.policy.enabled === true
+    : pitr !== undefined
   const customDomainEnabled = customDomain !== undefined
 
   const canOpenIPv4 =
     isAws && isProjectActive && !projectUpdateDisabled && (canUpdateIPv4 || ipv4Enabled)
-  const canOpenPITR =
-    isProjectActive &&
-    !projectUpdateDisabled &&
-    sufficientPgVersion &&
-    !hasHipaaAddon &&
-    !isOrioleDbInAws
+  const canOpenPITR = IS_SELF_PLATFORM
+    ? true
+    : isProjectActive &&
+      !projectUpdateDisabled &&
+      sufficientPgVersion &&
+      !hasHipaaAddon &&
+      !isOrioleDbInAws
   const canOpenCustomDomain = isProjectActive && !projectUpdateDisabled
 
   const ipv4DisabledReason = getIPv4DisabledReason({
@@ -118,23 +127,27 @@ export const Addons = () => {
     ipv4Enabled,
   })
 
-  const pitrDisabledReason = getPitrDisabledReason({
-    isProjectActive,
-    projectUpdateDisabled,
-    hasHipaaAddon,
-    sufficientPgVersion,
-    isOrioleDbInAws,
-  })
+  const pitrDisabledReason = IS_SELF_PLATFORM
+    ? backupOperatorStatus?.capabilities.blockers[0]
+    : getPitrDisabledReason({
+        isProjectActive,
+        projectUpdateDisabled,
+        hasHipaaAddon,
+        sufficientPgVersion,
+        isOrioleDbInAws,
+      })
 
   const customDomainDisabledReason = getCustomDomainDisabledReason({
     isProjectActive,
     projectUpdateDisabled,
   })
-  const pitrAlertState = getPitrAlertState({
-    hasHipaaAddon,
-    sufficientPgVersion,
-    isOrioleDbInAws,
-  })
+  const pitrAlertState = IS_SELF_PLATFORM
+    ? undefined
+    : getPitrAlertState({
+        hasHipaaAddon,
+        sufficientPgVersion,
+        isOrioleDbInAws,
+      })
 
   const listTopSpacing = isBranch ? 'mt-6' : undefined
   const resourceItemClassName =
@@ -299,10 +312,16 @@ export const Addons = () => {
               }
               meta={
                 <div className="flex items-center gap-4">
-                  {pitrEnabled ? (
+                  {isBackupOperatorStatusLoading && IS_SELF_PLATFORM ? (
+                    <Badge variant="default">{$t('Loading')}</Badge>
+                  ) : pitrEnabled ? (
                     <Badge variant="success">{$t('Enabled')}</Badge>
+                  ) : IS_SELF_PLATFORM && backupOperatorStatus?.configured ? (
+                    <Badge variant="warning">{$t('Blocked')}</Badge>
                   ) : (
-                    <Badge variant="default">{$t('Disabled')}</Badge>
+                    <Badge variant="default">
+                      {$t(IS_SELF_PLATFORM ? 'Not configured' : 'Disabled')}
+                    </Badge>
                   )}
                   {!canOpenPITR && pitrDisabledReason && (
                     <Tooltip>
@@ -318,7 +337,11 @@ export const Addons = () => {
               <div className="space-y-1">
                 <div>{$t('Point in time recovery')}</div>
                 <p className="m-0 text-foreground-light text-sm">
-                  {$t('Restore your database to a specific moment in the past.')}
+                  {$t(
+                    IS_SELF_PLATFORM
+                      ? 'Physical backups and WAL archiving managed by your Backup Operator.'
+                      : 'Restore your database to a specific moment in the past.'
+                  )}
                 </p>
                 <InlineLink
                   href={`${DOCS_URL}/guides/platform/backups#point-in-time-recovery`}

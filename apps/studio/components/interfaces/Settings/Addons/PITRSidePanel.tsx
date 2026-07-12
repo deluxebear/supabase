@@ -15,6 +15,7 @@ import {
   SidePanel,
 } from 'ui'
 
+import { SelfHostedPITRSidePanel } from './SelfHostedPITRSidePanel'
 import { subscriptionHasHipaaAddon } from '@/components/interfaces/Billing/Subscription/Subscription.utils'
 import { TaxDisclaimer } from '@/components/interfaces/Billing/TaxDisclaimer'
 import { SupportLink } from '@/components/interfaces/Support/SupportLink'
@@ -31,6 +32,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH, DOCS_URL } from '@/lib/constants'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { formatCurrency } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
 import { useAddonsPagePanel } from '@/state/addons-page'
@@ -55,7 +57,7 @@ const PITR_CATEGORY_OPTIONS: {
   },
 ]
 
-const PITRSidePanel = () => {
+const CloudPITRSidePanel = () => {
   const { ref: projectRef } = useParams()
   const { resolvedTheme } = useTheme()
   const { data: project } = useSelectedProjectQuery()
@@ -342,5 +344,8 @@ const PITRSidePanel = () => {
     </SidePanel>
   )
 }
+
+const PITRSidePanel = () =>
+  IS_SELF_PLATFORM ? <SelfHostedPITRSidePanel /> : <CloudPITRSidePanel />
 
 export default PITRSidePanel

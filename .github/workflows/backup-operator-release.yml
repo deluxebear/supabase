@@ -1,0 +1,87 @@
+name: Backup Operator release
+
+on:
+  push:
+    tags: ['backup-operator/v*']
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/backup-operator
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/backup-operator/go.mod
+          cache-dependency-path: apps/backup-operator/go.sum
+      - name: Resolve release version
+        id: version
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#backup-operator/}"
+          if [[ ! "$version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "invalid backup-operator release tag: $GITHUB_REF_NAME" >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Test
+        run: go test -race ./...
+      - name: Build Linux binaries
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          mkdir -p dist
+          ldflags="-s -w -X github.com/supabase/supabase/apps/backup-operator/internal/version.Version=${VERSION} -X github.com/supabase/supabase/apps/backup-operator/internal/version.Commit=${GITHUB_SHA}"
+          for arch in amd64 arm64; do
+            CGO_ENABLED=0 GOOS=linux GOARCH="$arch" go build -trimpath -ldflags="$ldflags" -o "dist/backup-operator-linux-$arch" ./cmd/backup-operator
+            CGO_ENABLED=0 GOOS=linux GOARCH="$arch" go build -trimpath -ldflags="$ldflags" -o "dist/backupctl-linux-$arch" ./cmd/backupctl
+          done
+          sha256sum dist/* > dist/SHA256SUMS
+      - uses: anchore/sbom-action@v0
+        with:
+          path: apps/backup-operator
+          output-file: apps/backup-operator/dist/source.spdx.json
+      - uses: sigstore/cosign-installer@v3
+      - name: Sign checksums with keyless OIDC
+        run: cosign sign-blob --yes --bundle dist/SHA256SUMS.sigstore.json dist/SHA256SUMS
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push multi-architecture image
+        id: image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/backup-operator
+          file: apps/backup-operator/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/backup-operator:${{ steps.version.outputs.version }}
+            ghcr.io/${{ github.repository_owner }}/backup-operator:latest
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
+            COMMIT=${{ github.sha }}
+          provenance: mode=max
+          sbom: true
+      - name: Sign OCI image
+        working-directory: .
+        run: cosign sign --yes "ghcr.io/${GITHUB_REPOSITORY_OWNER}/backup-operator@${{ steps.image.outputs.digest }}"
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: apps/backup-operator/dist/*
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: Backup Operator ${{ steps.version.outputs.version }}
+          files: apps/backup-operator/dist/*
+          generate_release_notes: true

@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backup-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: backup-operator}
+  template:
+    metadata:
+      labels: {app: backup-operator}
+    spec:
+      serviceAccountName: backup-operator
+      containers:
+        - name: operator
+          image: ghcr.io/supabase/backup-operator
+          args: ["--mode=operator"]
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: ["ALL"]}

@@ -21,6 +21,8 @@ export const databaseKeys = {
     ['projects', projectRef, 'view-definition', id, includeCreateStatement ?? false] as const,
   backups: (projectRef: string | undefined) =>
     ['projects', projectRef, 'database', 'backups'] as const,
+  backupOperatorStatus: (projectRef: string | undefined) =>
+    ['projects', projectRef, 'database', 'backup-operator-status'] as const,
   poolingConfiguration: (projectRef: string | undefined) =>
     ['projects', projectRef, 'database', 'pooling-configuration'] as const,
   indexesFromQuery: (projectRef: string | undefined, query: string) =>

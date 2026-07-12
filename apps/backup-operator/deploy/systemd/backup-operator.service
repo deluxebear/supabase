@@ -1,0 +1,20 @@
+[Unit]
+Description=Supabase Backup Operator
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=backup-operator
+Group=backup-operator
+ExecStart=/usr/local/bin/backup-operator --mode=operator
+EnvironmentFile=/etc/backup-operator/operator.env
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/backup-operator
+
+[Install]
+WantedBy=multi-user.target

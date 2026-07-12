@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package supabase.backup.agent.v1;
+
+option go_package = "github.com/supabase/supabase/apps/backup-operator/gen/proto/v1;agentv1";
+
+service AgentControlService {
+  rpc Connect(stream ConnectRequest) returns (stream ConnectResponse);
+}
+
+message ConnectRequest {
+  oneof payload {
+    AgentHello hello = 1;
+    TaskProgress progress = 2;
+    TaskResult result = 3;
+    Heartbeat heartbeat = 4;
+  }
+}
+
+message ConnectResponse {
+  oneof payload {
+    Task task = 1;
+    Acknowledgement acknowledgement = 2;
+  }
+}
+
+message AgentHello {
+  string agent_id = 1;
+  string protocol_version = 2;
+  repeated string capabilities = 3;
+}
+
+message Task {
+  string task_id = 1;
+  string operation_id = 2;
+  string capability = 3;
+  string idempotency_key = 4;
+  bytes typed_input = 5;
+}
+
+message TaskProgress {
+  string task_id = 1;
+  uint32 percent = 2;
+  string phase = 3;
+}
+
+message TaskResult {
+  string task_id = 1;
+  bool succeeded = 2;
+  bytes typed_evidence = 3;
+  string error_code = 4;
+}
+
+message Heartbeat {
+  int64 unix_milliseconds = 1;
+}
+
+message Acknowledgement {
+  string task_id = 1;
+}

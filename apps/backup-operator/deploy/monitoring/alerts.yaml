@@ -1,0 +1,27 @@
+groups:
+  - name: backup-operator
+    rules:
+      - alert: BackupOperatorLogBackpressure
+        expr: increase(backup_operator_log_dropped_total[5m]) > 0
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: Backup Operator is dropping bounded progress logs
+      - alert: BackupOperatorRestoreManualIntervention
+        expr: backup_operator_jobs{operation="restore",result="manual"} > 0
+        for: 1m
+        labels: {severity: critical}
+        annotations:
+          summary: A restore requires manual intervention; keep the write fence engaged
+      - alert: BackupOperatorRepositoryCheckFailed
+        expr: backup_operator_repository_check{result="failed"} > 0
+        for: 10m
+        labels: {severity: critical}
+        annotations:
+          summary: pgBackRest repository or archive check is failing
+      - alert: BackupOperatorAgentDisconnected
+        expr: backup_operator_agent_connected{result="connected"} == 0
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: A host Agent is disconnected

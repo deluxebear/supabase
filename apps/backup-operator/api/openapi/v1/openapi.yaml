@@ -1,0 +1,64 @@
+openapi: 3.0.3
+info:
+  title: Supabase Backup Operator API
+  version: 1.0.0
+paths:
+  /healthz:
+    get:
+      operationId: health
+      responses:
+        "200":
+          description: Process is alive
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Health"}
+  /v1/capabilities:
+    get:
+      operationId: listCapabilities
+      responses:
+        "200":
+          description: Observed server capabilities
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: "#/components/schemas/Capability"}
+  /v1/operations/{operationId}:
+    get:
+      operationId: getOperation
+      parameters:
+        - name: operationId
+          in: path
+          required: true
+          schema: {type: string, minLength: 1}
+      responses:
+        "200":
+          description: Durable operation state
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Operation"}
+        "404": {description: Operation not found}
+components:
+  schemas:
+    Health:
+      type: object
+      required: [status, version]
+      properties:
+        status: {type: string, enum: [ok]}
+        version: {type: string}
+    Capability:
+      type: object
+      required: [name, supported]
+      properties:
+        name: {type: string}
+        supported: {type: boolean}
+        blocker: {type: string}
+    Operation:
+      type: object
+      required: [id, type, state, createdAt]
+      properties:
+        id: {type: string}
+        type: {type: string}
+        state: {type: string}
+        createdAt: {type: string, format: date-time}
+        errorCode: {type: string}

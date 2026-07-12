@@ -1,0 +1,26 @@
+services:
+  backup-operator:
+    image: ghcr.io/supabase/backup-operator:${BACKUP_OPERATOR_VERSION:?set BACKUP_OPERATOR_VERSION}
+    command: ["--mode=operator"]
+    read_only: true
+    user: "65532:65532"
+    volumes:
+      - operator-state:/var/lib/backup-operator
+      - ./secrets:/run/secrets:ro
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+  backup-agent:
+    image: ghcr.io/supabase/backup-operator:${BACKUP_OPERATOR_VERSION:?set BACKUP_OPERATOR_VERSION}
+    command: ["--mode=agent"]
+    read_only: true
+    network_mode: host
+    volumes:
+      - agent-state:/var/lib/backup-agent
+      - /var/lib/postgresql:/var/lib/postgresql
+      - /etc/pgbackrest:/etc/pgbackrest
+      - ./secrets:/run/secrets:ro
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+volumes:
+  operator-state:
+  agent-state:
