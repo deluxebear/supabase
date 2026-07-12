@@ -206,6 +206,11 @@ PSQL -d _platform -c "insert into platform.member_roles (profile_id, role_id)
 echo "admin $PLATFORM_ADMIN_EMAIL ready (Owner)"
 
 echo "== Phase 3: register default project =="
+# The registry contract (resolve-connection.ts) dials db_user_readonly with
+# the SAME password as db_user, but the image's supabase_read_only_user role
+# ships without one (upstream roles.sql only covers the five service admins)
+# — without this, every Read-only member query fails password auth.
+printf '%s\n' "alter role supabase_read_only_user with login password '$(sqlq "$POSTGRES_PASSWORD")'" | PSQL
 LOGFLARE_URL_SQL="NULL"; LOGFLARE_TOKEN_SQL="NULL"; METRICS_URL_SQL="NULL"
 if [ "$ENABLED_FEATURES_LOGS_ALL" = "true" ]; then
   LOGFLARE_URL_SQL="'http://analytics:4000'"
