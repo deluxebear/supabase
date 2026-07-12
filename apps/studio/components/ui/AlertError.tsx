@@ -50,7 +50,9 @@ export const ContactSupportButton = ({
 export const AlertError = ({
   projectRef,
   subject,
-  description = 'Try refreshing your browser, but if the issue persists for more than a few minutes, please reach out to us via support.',
+  description = $t(
+    'Try refreshing your browser, but if the issue persists for more than a few minutes, please reach out to us via support.'
+  ),
   error,
   className,
   showIcon = true,

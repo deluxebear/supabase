@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
 import { useRouter } from 'next/router'
@@ -33,6 +32,7 @@ import {
   GITHUB_INTEGRATION_INSTALLATION_URL,
   GITHUB_INTEGRATION_REVOKE_AUTHORIZATION_URL,
 } from '@/lib/github'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -99,8 +99,12 @@ export const GitHubSection = ({ isProjectScoped }: { isProjectScoped: boolean })
   })
 
   const description = isProjectScoped
-    ? 'Connect this Supabase project to a GitHub repository. Supabase applies database changes when you merge into your production branch. If branching is enabled, each pull request gets its own preview database.'
-    : 'Connect GitHub repositories to Supabase projects in this organization. The Supabase GitHub app watches file, branch, and pull request activity in each connected repository.'
+    ? $t(
+        'Connect this Supabase project to a GitHub repository. Supabase applies database changes when you merge into your production branch. If branching is enabled, each pull request gets its own preview database.'
+      )
+    : $t(
+        'Connect GitHub repositories to Supabase projects in this organization. The Supabase GitHub app watches file, branch, and pull request activity in each connected repository.'
+      )
 
   const onDeleteGitHubConnection = useCallback(
     async (connection: IntegrationProjectConnection) => {
@@ -155,25 +159,20 @@ export const GitHubSection = ({ isProjectScoped }: { isProjectScoped: boolean })
                 showNode={false}
                 disabled={!canCreateGitHubConnection}
               >
-                
-                                                          {$t('Add new project connection')}
-                                                        </EmptyIntegrationConnection>
+                {$t('Add new project connection')}
+              </EmptyIntegrationConnection>
             </div>
 
             {gitHubAuthorization && (
               <p className="text-sm text-foreground-light">
-                
-                                                          {$t('You are authorized with the Supabase GitHub app. You can configure your')}{' '}
+                {$t('You are authorized with the Supabase GitHub app. You can configure your')}{' '}
                 <InlineLink href={GITHUB_INTEGRATION_INSTALLATION_URL}>
-                  
-                                                                {$t('GitHub App installations and repository access')}
-                                                              </InlineLink>
-                
-                                                          {$t(', or')}{' '}
+                  {$t('GitHub App installations and repository access')}
+                </InlineLink>
+                {$t(', or')}{' '}
                 <InlineLink href={GITHUB_INTEGRATION_REVOKE_AUTHORIZATION_URL}>
-                  
-                                                                {$t('revoke your authorization')}
-                                                              </InlineLink>
+                  {$t('revoke your authorization')}
+                </InlineLink>
                 .
               </p>
             )}

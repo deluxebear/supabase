@@ -71,17 +71,18 @@ const Compute = ({ orgDailyStats, isLoadingOrgDailyStats }: ComputeProps) => {
     <div id="compute" className="scroll-my-12">
       <SectionContent
         section={{
-          name: 'Compute Hours',
-          description:
-            'Amount of hours your projects were active. Each project is a dedicated server and database.\nPaid plans come with $10 in Compute Credits to cover one project running on Micro Compute or parts of any compute add-on.\nBilling is based on the sum of Compute Hours used. Paused projects do not count towards usage.',
+          name: $t('Compute Hours'),
+          description: $t(
+            'Amount of hours your projects were active. Each project is a dedicated server and database.\nPaid plans come with $10 in Compute Credits to cover one project running on Micro Compute or parts of any compute add-on.\nBilling is based on the sum of Compute Hours used. Paused projects do not count towards usage.'
+          ),
           links: billingAll
             ? [
                 {
-                  name: 'Compute Add-ons',
+                  name: $t('Compute Add-ons'),
                   url: `${DOCS_URL}/guides/platform/compute-add-ons`,
                 },
                 {
-                  name: 'Usage-billing for Compute',
+                  name: $t('Usage-billing for Compute'),
                   url: `${DOCS_URL}/guides/platform/manage-your-usage/compute`,
                 },
               ]

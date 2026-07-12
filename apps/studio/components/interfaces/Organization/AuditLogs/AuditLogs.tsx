@@ -155,8 +155,10 @@ export const AuditLogs = () => {
           <UpgradeToPro
             plan="Team"
             source="organizationAuditLogs"
-            primaryText="Organization Audit Logs are not available on Free or Pro plans"
-            secondaryText="Upgrade to Team or Enterprise to view up to 62 days of Audit Logs for your organization."
+            primaryText={$t('Organization Audit Logs are not available on Free or Pro plans')}
+            secondaryText={$t(
+              'Upgrade to Team or Enterprise to view up to 62 days of Audit Logs for your organization.'
+            )}
             featureProposition="enable audit logs"
           />
         </ScaffoldSection>

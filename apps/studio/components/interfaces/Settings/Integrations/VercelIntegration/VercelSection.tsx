@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { ExternalLink } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
@@ -36,6 +35,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { pluralize } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { getIntegrationConfigurationUrl } from '@/lib/integration-utils'
 import { useSidePanelsStateSnapshot } from '@/state/side-panels'
 
@@ -140,8 +140,12 @@ export const VercelSection = ({ isProjectScoped }: { isProjectScoped: boolean })
     'connection'
   )} `
   const description = isProjectScoped
-    ? 'Connect Vercel projects to this Supabase project. Supabase keeps environment variables up to date in each connected Vercel project.'
-    : 'Connect your Vercel teams to this Supabase organization. Supabase keeps environment variables up to date in each connected project. You can also link multiple Vercel projects to the same Supabase project.'
+    ? $t(
+        'Connect Vercel projects to this Supabase project. Supabase keeps environment variables up to date in each connected Vercel project.'
+      )
+    : $t(
+        'Connect your Vercel teams to this Supabase organization. Supabase keeps environment variables up to date in each connected project. You can also link multiple Vercel projects to the same Supabase project.'
+      )
 
   return (
     <PageSection>
@@ -212,9 +216,8 @@ export const VercelSection = ({ isProjectScoped }: { isProjectScoped: boolean })
                     disabled={isBranch || !canCreateVercelConnection}
                     onClick={() => onAddVercelConnection(vercelIntegration.id)}
                   >
-                    
-                                                                  {$t('Add new project connection')}
-                                                                </EmptyIntegrationConnection>
+                    {$t('Add new project connection')}
+                  </EmptyIntegrationConnection>
                 </div>
               ) : (
                 <EmptyIntegrationConnection
@@ -224,19 +227,19 @@ export const VercelSection = ({ isProjectScoped }: { isProjectScoped: boolean })
                   icon={<ExternalLink />}
                   disabledTooltip="Install the Vercel integration on your project's main branch"
                 >
-                  
-                                                                {$t('Install Vercel integration')}
-                                                              </EmptyIntegrationConnection>
+                  {$t('Install Vercel integration')}
+                </EmptyIntegrationConnection>
               )}
             </div>
             {vercelProjectCount > 0 && vercelIntegration !== undefined && (
               <p className="text-sm text-foreground-light">
-                
-                                                      {$t('Your Vercel connection can access')} {vercelProjectCount}  {$t('Vercel projects. To change which projects Supabase may use, open your organization’s')}{' '}
+                {$t('Your Vercel connection can access')} {vercelProjectCount}{' '}
+                {$t(
+                  'Vercel projects. To change which projects Supabase may use, open your organization’s'
+                )}{' '}
                 <InlineLink href={getIntegrationConfigurationUrl(vercelIntegration)}>
-                  
-                                                            {$t('Vercel integration settings')}
-                                                          </InlineLink>
+                  {$t('Vercel integration settings')}
+                </InlineLink>
                 .
               </p>
             )}

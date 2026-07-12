@@ -13,6 +13,7 @@ import {
 } from 'ui'
 
 import { DATE_FORMAT } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 /**
  * There's timestamp rounding that kicks in if there are more than 50 data points
@@ -228,7 +229,7 @@ export const DateRangePicker = ({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="default" iconRight={<ChevronDown />}>
-          <span>{timePeriod && options.find((x) => x.key === timePeriod)?.label}</span>
+          <span>{timePeriod && $t(options.find((x) => x.key === timePeriod)?.label ?? '')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent side="bottom" align="start" className={cn(!footer && 'w-36', className)}>
@@ -236,7 +237,7 @@ export const DateRangePicker = ({
           {options.map((option) => {
             return (
               <DropdownMenuRadioItem value={option.key} key={option.key}>
-                {option.label}
+                {$t(option.label)}
               </DropdownMenuRadioItem>
             )
           })}

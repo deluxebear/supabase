@@ -176,7 +176,7 @@ export const Usage = () => {
                           className="justify-between w-[180px]"
                           iconRight={<ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />}
                         >
-                          {!selectedProject ? 'All projects' : selectedProject?.name}
+                          {!selectedProject ? $t('All projects') : selectedProject?.name}
                         </Button>
                       )
                     }}
@@ -250,7 +250,7 @@ export const Usage = () => {
           <ScaffoldSection isFullWidth className="pb-0">
             <AlertError
               error={orgDailyStatsError}
-              subject="Failed to retrieve usage statistics for organization"
+              subject={$t('Failed to retrieve usage statistics for organization')}
             />
           </ScaffoldSection>
         </ScaffoldContainer>

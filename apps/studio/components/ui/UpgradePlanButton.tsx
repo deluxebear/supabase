@@ -10,6 +10,7 @@ import { SupportLink } from '@/components/interfaces/Support/SupportLink'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { t as $t } from '@/lib/i18n'
 
 export const PLAN_REQUEST_EMPTY_PLACEHOLDER =
   '<Specify which plan to upgrade to: Pro | Team | Enterprise>'
@@ -79,9 +80,9 @@ export const UpgradePlanButton = ({
     children ||
     (isOnPaidPlanAndRequestingToPurchaseAddon
       ? addon === 'computeSize'
-        ? 'Change compute size'
-        : 'Enable add-on'
-      : `Upgrade to ${plan}`)
+        ? $t('Change compute size')
+        : $t('Enable add-on')
+      : $t(`Upgrade to ${plan}`))
   const link = billingAll ? (
     <Link href={href}>{linkChildren}</Link>
   ) : (

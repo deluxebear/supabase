@@ -128,18 +128,22 @@ export const TotalUsage = ({
     <div id="summary">
       <SectionContent
         section={{
-          name: 'Usage Summary',
+          name: $t('Usage Summary'),
           description: isUsageBillingEnabled
-            ? `Your plan includes a limited amount of usage. If exceeded, you will be charged for the overages. It may take up to 1 hour to refresh.`
-            : `Your plan includes a limited amount of usage. If exceeded, you may experience restrictions, as you are currently not billed for overages. It may take up to 1 hour to refresh.`,
+            ? $t(
+                'Your plan includes a limited amount of usage. If exceeded, you will be charged for the overages. It may take up to 1 hour to refresh.'
+              )
+            : $t(
+                'Your plan includes a limited amount of usage. If exceeded, you may experience restrictions, as you are currently not billed for overages. It may take up to 1 hour to refresh.'
+              ),
           links: billingAll
             ? [
                 {
-                  name: 'How billing works',
+                  name: $t('How billing works'),
                   url: `${DOCS_URL}/guides/platform/billing-on-supabase`,
                 },
                 {
-                  name: 'Supabase Plans',
+                  name: $t('Supabase Plans'),
                   url: 'https://supabase.com/pricing',
                 },
               ]
@@ -154,7 +158,9 @@ export const TotalUsage = ({
           </div>
         )}
 
-        {isErrorUsage && <AlertError subject="Failed to retrieve usage data" error={usageError} />}
+        {isErrorUsage && (
+          <AlertError subject={$t('Failed to retrieve usage data')} error={usageError} />
+        )}
 
         {isSuccessUsage && subscription && (
           <div>
