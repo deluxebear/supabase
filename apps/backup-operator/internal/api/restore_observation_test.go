@@ -19,7 +19,7 @@ func (m observedManifests) ListBackupManifests(context.Context, string) ([]contr
 }
 
 func TestProviderRestoreSourceBuildsPlanFromNormalizedManifest(t *testing.T) {
-	now := time.Date(2026, 7, 13, 12, 0, 0, 0, time.UTC)
+	now := time.Now().UTC()
 	target := now.Add(-time.Hour)
 	repo := recoverability.RepositoryIdentity{Fingerprint: "fp", Revision: "rev"}
 	completed := target.Add(-time.Minute)

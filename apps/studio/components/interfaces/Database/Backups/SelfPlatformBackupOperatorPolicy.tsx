@@ -27,12 +27,13 @@ import {
 } from '@/data/backup-operator/backup-operator-mutations'
 import { operatorPITRQueryOptions } from '@/data/backup-operator/backup-operator-query'
 import type { backupPolicySchema } from '@/lib/api/self-platform/backup-operator-client'
+import { t as $t } from '@/lib/i18n'
 
 const policyFormSchema = z
   .object({
-    repositoryId: z.string().min(1, 'Repository ID is required'),
+    repositoryId: z.string().min(1, $t('Repository ID is required')),
     retentionDays: z.coerce.number().int().min(1).max(365),
-    fullSchedule: z.string().min(1, 'A full backup schedule is required'),
+    fullSchedule: z.string().min(1, $t('A full backup schedule is required')),
     diffSchedule: z.string(),
     incrSchedule: z.string(),
     backupFrom: z.enum(['primary', 'standby']),
@@ -44,7 +45,7 @@ const policyFormSchema = z
       context.addIssue({
         code: 'custom',
         path: ['designatedStandby'],
-        message: 'A designated standby is required',
+        message: $t('A designated standby is required'),
       })
     }
   })
@@ -74,7 +75,16 @@ export function SelfPlatformBackupOperatorPolicy({
     defaultValues: policyToFormValues(policy),
   })
 
-  useEffect(() => form.reset(policyToFormValues(policy)), [form, policy])
+  useEffect(() => {
+    const nextValues = policyToFormValues(policy)
+    const currentValues = form.getValues()
+
+    // Query refreshes may return a new policy object while the user is editing.
+    // Preserve unsaved changes, but reset after the server reflects the submitted values.
+    if (!form.formState.isDirty || policyFormValuesEqual(currentValues, nextValues)) {
+      form.reset(nextValues)
+    }
+  }, [form, form.formState.isDirty, policy])
 
   const handleSubmit = (values: PolicyFormValues) => {
     if (!projectRef) return
@@ -127,9 +137,9 @@ export function SelfPlatformBackupOperatorPolicy({
       <form onSubmit={form.handleSubmit(handleSubmit)}>
         <Card>
           <CardContent>
-            <p className="text-sm font-medium">Backup policy</p>
+            <p className="text-sm font-medium">{$t('Backup policy')}</p>
             <p className="text-sm text-foreground-light">
-              Configure schedules, retention, repository, and the preferred backup node.
+              {$t('Configure schedules, retention, repository, and the preferred backup node.')}
             </p>
           </CardContent>
           {(
@@ -148,7 +158,7 @@ export function SelfPlatformBackupOperatorPolicy({
                 control={form.control}
                 name={name}
                 render={({ field }) => (
-                  <FormItemLayout layout="flex-row-reverse" label={label}>
+                  <FormItemLayout layout="flex-row-reverse" label={$t(label)}>
                     <FormControl>
                       <Input
                         {...field}
@@ -169,7 +179,7 @@ export function SelfPlatformBackupOperatorPolicy({
               control={form.control}
               name="backupFrom"
               render={({ field }) => (
-                <FormItemLayout layout="flex-row-reverse" label="Backup source">
+                <FormItemLayout layout="flex-row-reverse" label={$t('Backup source')}>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger>
@@ -177,8 +187,8 @@ export function SelfPlatformBackupOperatorPolicy({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="primary">Primary</SelectItem>
-                      <SelectItem value="standby">Designated standby</SelectItem>
+                      <SelectItem value="primary">{$t('Primary')}</SelectItem>
+                      <SelectItem value="standby">{$t('Designated standby')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormItemLayout>
@@ -191,13 +201,13 @@ export function SelfPlatformBackupOperatorPolicy({
               loading={policyMutation.isPending}
               disabled={!form.formState.isDirty}
             >
-              Save policy
+              {$t('Save policy')}
             </Button>
             <Button type="button" disabled={isObservationStale} onClick={handleTogglePolicy}>
-              {policy.enabled ? 'Disable future backups' : 'Enable backup policy'}
+              {policy.enabled ? $t('Disable future backups') : $t('Enable backup policy')}
             </Button>
             <Button type="button" loading={pitrMutation.isPending} onClick={handleTogglePITR}>
-              {pitrQuery.data?.enabled ? 'Disable PITR' : 'Enable PITR'}
+              {pitrQuery.data?.enabled ? $t('Disable PITR') : $t('Enable PITR')}
             </Button>
             <Button
               type="button"
@@ -207,7 +217,7 @@ export function SelfPlatformBackupOperatorPolicy({
                 projectRef && manualBackupMutation.mutate({ projectRef, type: 'full' })
               }
             >
-              Start full backup
+              {$t('Start full backup')}
             </Button>
           </CardFooter>
         </Card>
@@ -227,4 +237,8 @@ function policyToFormValues(policy: Policy): PolicyFormValues {
     designatedStandby: policy.designatedStandby ?? '',
     maxStandbyLagBytes: policy.maxStandbyLagBytes,
   }
+}
+
+function policyFormValuesEqual(left: PolicyFormValues, right: PolicyFormValues) {
+  return (Object.keys(left) as (keyof PolicyFormValues)[]).every((key) => left[key] === right[key])
 }

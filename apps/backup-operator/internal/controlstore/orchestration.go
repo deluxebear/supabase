@@ -82,11 +82,12 @@ VALUES($1, $2, $3, $4, 'queued', $5, $6, $7::jsonb, $8, $9) ON CONFLICT(project_
 	created := rows == 1
 	if created {
 		taskID := input.ID + "/" + input.StepName
-		if destructiveCapability(input.Capability) {
-			input.FencingToken, err = s.allocateTaskFencingToken(ctx, tx, taskID, input.TargetID, input.TargetNodeID)
-			if err != nil {
-				return JobRecord{}, false, err
-			}
+		// Every Agent task participates in the same monotonic recovery-domain
+		// sequence. Otherwise a non-destructive task emitted with token zero is
+		// rejected as stale after the Agent has observed any destructive task.
+		input.FencingToken, err = s.allocateTaskFencingToken(ctx, tx, taskID, input.TargetID, input.TargetNodeID)
+		if err != nil {
+			return JobRecord{}, false, err
 		}
 		stepQuery := "INSERT INTO job_steps(job_id, name, state, fencing_token, updated_at_ms) VALUES(?, ?, 'queued', ?, ?)"
 		outboxQuery := `INSERT INTO task_outbox(task_id, job_id, step_name, capability, target_node_id, idempotency_key, payload, created_at_ms)

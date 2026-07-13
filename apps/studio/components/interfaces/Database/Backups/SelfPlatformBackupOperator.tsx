@@ -10,6 +10,7 @@ import { canExecuteRestore, canRollbackRestore } from './SelfPlatformBackupOpera
 import { SelfPlatformBackupOperatorPolicy } from './SelfPlatformBackupOperatorPolicy'
 import { SelfPlatformBackupOperatorStatus } from './SelfPlatformBackupOperatorStatus'
 import { AlertError } from '@/components/ui/AlertError'
+import { isActiveBackupOperatorJob } from '@/data/backup-operator/backup-operator-job.utils'
 import {
   OperatorMutationError,
   useJobResolutionMutation,
@@ -24,6 +25,7 @@ import {
   restorePlanQueryOptions,
 } from '@/data/backup-operator/backup-operator-query'
 import { useBackupOperatorEvents } from '@/data/backup-operator/use-backup-operator-events'
+import { t as $t } from '@/lib/i18n'
 
 interface SelfPlatformBackupOperatorProps {
   projectRef?: string
@@ -43,7 +45,11 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
   const backupsQuery = useQuery(operatorBackupsQueryOptions({ projectRef }))
   const jobQuery = useQuery(operatorJobQueryOptions({ projectRef, jobId }))
   const planQuery = useQuery(restorePlanQueryOptions({ projectRef, planId }))
-  const { events, error: eventsError } = useBackupOperatorEvents({ projectRef, jobId })
+  const { events, error: eventsError } = useBackupOperatorEvents({
+    projectRef,
+    jobId,
+    jobState: jobQuery.data?.state,
+  })
   const planMutation = useRestorePlanCreateMutation({
     onSuccess: (plan) => updateSelection({ backupPlan: plan.id, backupJob: undefined }),
   })
@@ -73,10 +79,10 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
 
   if (policyQuery.isPending || backupsQuery.isPending) return <GenericSkeletonLoader />
   if (policyQuery.isError) {
-    return <AlertError error={policyQuery.error} subject="Failed to load the backup policy" />
+    return <AlertError error={policyQuery.error} subject={$t('Failed to load the backup policy')} />
   }
   if (backupsQuery.isError) {
-    return <AlertError error={backupsQuery.error} subject="Failed to load operator backups" />
+    return <AlertError error={backupsQuery.error} subject={$t('Failed to load operator backups')} />
   }
 
   const policy = policyQuery.data
@@ -85,7 +91,9 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
   const canExecute = canExecuteRestore(restorePlan, confirmationHash)
   const canRollback = canRollbackRestore(jobQuery.data, new Date())
   const isJobStale =
-    jobQuery.data !== undefined && Date.now() - new Date(jobQuery.data.updatedAt).getTime() > 60_000
+    jobQuery.data !== undefined &&
+    isActiveBackupOperatorJob(jobQuery.data.state) &&
+    Date.now() - new Date(jobQuery.data.updatedAt).getTime() > 60_000
 
   const handleCreatePlan = () => {
     if (!projectRef || !recoveryTarget) return
@@ -109,15 +117,17 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
       {backupState.isStale && (
         <Admonition
           type="warning"
-          title="Backup observations are stale"
-          description="The Operator has not published a recent repository observation. Restore planning remains blocked until fresh evidence is available."
+          title={$t('Backup observations are stale')}
+          description={$t(
+            'The Operator has not published a recent repository observation. Restore planning remains blocked until fresh evidence is available.'
+          )}
         />
       )}
       {backupState.blockers.length > 0 && (
         <Admonition
           type="warning"
-          title="Backup operations are blocked"
-          description={backupState.blockers.join(' ')}
+          title={$t('Backup operations are blocked')}
+          description={backupState.blockers.map((blocker) => $t(blocker)).join(' ')}
         />
       )}
 
@@ -132,24 +142,28 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
       {requiresAAL2 && (
         <Admonition
           type="warning"
-          title="Additional authentication required"
-          description="Upgrade this session to AAL2, then return and confirm the unchanged restore plan."
+          title={$t('Additional authentication required')}
+          description={$t(
+            'Upgrade this session to AAL2, then return and confirm the unchanged restore plan.'
+          )}
         >
           <Button type="button" onClick={() => window.location.assign('/sign-in-mfa')}>
-            Upgrade to AAL2
+            {$t('Upgrade to AAL2')}
           </Button>
         </Admonition>
       )}
 
       <Card>
         <CardContent className="py-4">
-          <p className="text-sm font-medium">Available physical backups</p>
+          <p className="text-sm font-medium">{$t('Available physical backups')}</p>
           <p className="text-sm text-foreground-light">
-            Recovery confidence: {backupState.confidence}
+            {$t('Recovery confidence:')} {$t(backupState.confidence)}
           </p>
           {backupState.backups.length === 0 ? (
             <p className="mt-4 text-sm text-foreground-light">
-              No backups have been observed yet. The first full backup must complete before restore.
+              {$t(
+                'No backups have been observed yet. The first full backup must complete before restore.'
+              )}
             </p>
           ) : (
             <ul className="mt-4 divide-y">
@@ -157,7 +171,7 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
                 <li className="flex items-center justify-between py-2 text-sm" key={backup.id}>
                   <span>{new Date(backup.startedAt).toLocaleString()}</span>
                   <span className="text-foreground-light">
-                    {backup.type} · {backup.status}
+                    {$t(backup.type)} · {$t(backup.status)}
                   </span>
                 </li>
               ))}
@@ -169,20 +183,20 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
       <Card>
         <CardContent className="flex items-center justify-between gap-4 py-4">
           <div>
-            <p className="text-sm font-medium">Isolated restore drill</p>
+            <p className="text-sm font-medium">{$t('Isolated restore drill')}</p>
             {backupState.drill === null ? (
               <p className="text-sm text-foreground-light">
-                No isolated restore drill evidence has been published yet.
+                {$t('No isolated restore drill evidence has been published yet.')}
               </p>
             ) : (
               <p className="text-sm text-foreground-light">
-                Last completed {new Date(backupState.drill.completedAt).toLocaleString()} · target{' '}
-                {new Date(backupState.drill.targetTime).toLocaleString()}
+                {$t('Last completed')} {new Date(backupState.drill.completedAt).toLocaleString()}{' '}
+                {$t('· target')} {new Date(backupState.drill.targetTime).toLocaleString()}
               </p>
             )}
           </div>
           <Badge variant={backupState.drill?.passed ? 'success' : 'warning'}>
-            {backupState.drill?.passed ? 'Verified' : 'Not verified'}
+            {backupState.drill?.passed ? $t('Verified') : $t('Not verified')}
           </Badge>
         </CardContent>
         {backupState.drill?.evidenceDigest && (
@@ -197,15 +211,16 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
       <Card>
         <CardContent className="flex flex-col gap-4 py-4">
           <div>
-            <p className="text-sm font-medium">Point-in-time restore</p>
+            <p className="text-sm font-medium">{$t('Point-in-time restore')}</p>
             <p className="text-sm text-foreground-light">
-              Restore is destructive and requires a recent AAL2 session plus confirmation of the
-              exact plan hash.
+              {$t(
+                'Restore is destructive and requires a recent AAL2 session plus confirmation of the exact plan hash.'
+              )}
             </p>
           </div>
           <Input
             type="datetime-local"
-            aria-label="Recovery target"
+            aria-label={$t('Recovery target')}
             value={recoveryTarget}
             onChange={(event) => setRecoveryTarget(event.target.value)}
           />
@@ -215,29 +230,29 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
             disabled={!recoveryTarget || backupState.isStale || backupState.blockers.length > 0}
             onClick={handleCreatePlan}
           >
-            Preview restore impact
+            {$t('Preview restore impact')}
           </Button>
 
           {restorePlan && (
             <div className="flex flex-col gap-3 rounded-md border p-4">
               <div className="flex items-center gap-2 text-sm font-medium">
-                <AlertTriangle size={16} /> Confirm destructive restore
+                <AlertTriangle size={16} /> {$t('Confirm destructive restore')}
               </div>
               <p className="text-sm text-foreground-light">
-                {restorePlan.impact.serviceInterruption} Affected nodes:{' '}
+                {$t(restorePlan.impact.serviceInterruption)} {$t('Affected nodes:')}{' '}
                 {restorePlan.impact.affectedNodes.join(', ')}.
               </p>
               {restorePlan.blockers.length > 0 && (
                 <Admonition
                   type="warning"
-                  title="Restore plan is blocked"
-                  description={restorePlan.blockers.join(' ')}
+                  title={$t('Restore plan is blocked')}
+                  description={restorePlan.blockers.map((blocker) => $t(blocker)).join(' ')}
                 />
               )}
               <p className="break-all font-mono text-xs">{restorePlan.hash}</p>
               <Input
-                aria-label="Exact restore plan hash"
-                placeholder="Paste the exact plan hash"
+                aria-label={$t('Exact restore plan hash')}
+                placeholder={$t('Paste the exact plan hash')}
                 value={confirmationHash}
                 onChange={(event) => setConfirmationHash(event.target.value)}
               />
@@ -248,40 +263,41 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
                 disabled={!canExecute}
                 onClick={handleExecute}
               >
-                Confirm and execute restore
+                {$t('Confirm and execute restore')}
               </Button>
             </div>
           )}
 
           {jobQuery.isPending && jobId && <GenericSkeletonLoader />}
           {jobQuery.isError && (
-            <AlertError error={jobQuery.error} subject="Failed to load restore progress" />
+            <AlertError error={jobQuery.error} subject={$t('Failed to load restore progress')} />
           )}
           {jobQuery.data && (
             <div className="flex flex-col gap-3 rounded-md border p-4">
               <div className="flex items-center justify-between text-sm">
                 <span>
-                  {jobQuery.data.type === 'restore' ? 'Restore' : 'Backup'} job {jobQuery.data.id}
+                  {$t(jobQuery.data.type === 'restore' ? 'Restore job' : 'Backup job')}{' '}
+                  {jobQuery.data.id}
                 </span>
-                <Badge>{jobQuery.data.state}</Badge>
+                <Badge>{$t(jobQuery.data.state)}</Badge>
               </div>
               <Progress value={jobQuery.data.progress} />
               <p className="text-xs text-foreground-light">
-                {events.length} retained event{events.length === 1 ? '' : 's'} received
+                {$t('{{count}} retained events received', { count: events.length })}
               </p>
               {eventsError && (
-                <p className="text-sm text-warning">Job event stream is reconnecting.</p>
+                <p className="text-sm text-warning">{$t('Job event stream is reconnecting.')}</p>
               )}
               {isJobStale && (
                 <p className="text-sm text-warning">
-                  Progress is stale. Verify the Operator connection.
+                  {$t('Progress is stale. Verify the Operator connection.')}
                 </p>
               )}
               {jobQuery.data.manualIntervention && (
                 <Admonition
                   type="warning"
-                  title={jobQuery.data.manualIntervention.summary}
-                  description={jobQuery.data.manualIntervention.safeAction}
+                  title={$t(jobQuery.data.manualIntervention.summary)}
+                  description={$t(jobQuery.data.manualIntervention.safeAction)}
                 />
               )}
               {(jobQuery.data.state === 'orphaned' ||
@@ -296,7 +312,7 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
                         resolutionMutation.mutate({ projectRef, jobId, action: 'retry' })
                       }
                     >
-                      Retry safely
+                      {$t('Retry safely')}
                     </Button>
                     <Button
                       type="button"
@@ -306,7 +322,7 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
                         resolutionMutation.mutate({ projectRef, jobId, action: 'cancel' })
                       }
                     >
-                      Cancel job
+                      {$t('Cancel job')}
                     </Button>
                   </div>
                 )}
@@ -318,7 +334,7 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
                   disabled={!canRollback}
                   onClick={handleRollback}
                 >
-                  Roll back restore
+                  {$t('Roll back restore')}
                 </Button>
               )}
             </div>

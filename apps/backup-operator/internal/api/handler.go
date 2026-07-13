@@ -455,14 +455,15 @@ func (h *Handler) manualBackup(w http.ResponseWriter, r *http.Request) {
 	}
 	payload, _ := json.Marshal(map[string]string{"policyId": policy.ID, "repositoryId": policy.RepositoryID, "source": "manual"})
 	capability := "backup." + request.Type
+	targetNodeID := target.TargetID
 	if resolver, ok := h.discovery.(BackupCapabilitySource); ok {
-		capability, err = resolver.BackupCapability(target, request.Type)
+		capability, targetNodeID, err = resolver.BackupCapability(target, request.Type)
 		if err != nil {
 			writeError(w, 409, "backup_provider_unavailable", err.Error())
 			return
 		}
 	}
-	job, created, err := h.store.CreateJob(r.Context(), controlstore.CreateJobInput{ID: newID(), ProjectID: target.ProjectID, TargetID: target.TargetID, Type: "backup", IdempotencyKey: idempotencyKey, PlanHash: "manual-backup/" + request.Type, StepName: "execute", Capability: capability, TargetNodeID: target.TargetID, Payload: payload})
+	job, created, err := h.store.CreateJob(r.Context(), controlstore.CreateJobInput{ID: newID(), ProjectID: target.ProjectID, TargetID: target.TargetID, Type: "backup", IdempotencyKey: idempotencyKey, PlanHash: "manual-backup/" + request.Type, StepName: "execute", Capability: capability, TargetNodeID: targetNodeID, Payload: payload})
 	if err != nil {
 		writeError(w, 409, "manual_backup_failed", err.Error())
 		return
@@ -869,16 +870,17 @@ func (h *Handler) runMaintenance(w http.ResponseWriter, r *http.Request) {
 	}
 	idempotencyKey := strings.TrimSpace(r.Header.Get("Idempotency-Key"))
 	capability := "maintenance." + request.Kind
+	targetNodeID := target.TargetID
 	if resolver, ok := h.discovery.(MaintenanceCapabilitySource); ok {
 		var err error
-		capability, err = resolver.MaintenanceCapability(target, request.Kind)
+		capability, targetNodeID, err = resolver.MaintenanceCapability(target, request.Kind)
 		if err != nil {
 			writeError(w, 409, "maintenance_provider_unavailable", err.Error())
 			return
 		}
 	}
 	payload, _ := json.Marshal(map[string]string{"kind": request.Kind})
-	job, created, err := h.store.CreateJob(r.Context(), controlstore.CreateJobInput{ID: newID(), ProjectID: target.ProjectID, TargetID: target.TargetID, Type: "maintenance", IdempotencyKey: idempotencyKey, PlanHash: "maintenance/" + request.Kind, StepName: "execute", Capability: capability, TargetNodeID: target.TargetID, Payload: payload})
+	job, created, err := h.store.CreateJob(r.Context(), controlstore.CreateJobInput{ID: newID(), ProjectID: target.ProjectID, TargetID: target.TargetID, Type: "maintenance", IdempotencyKey: idempotencyKey, PlanHash: "maintenance/" + request.Kind, StepName: "execute", Capability: capability, TargetNodeID: targetNodeID, Payload: payload})
 	if err != nil {
 		writeError(w, 409, "maintenance_failed", err.Error())
 		return

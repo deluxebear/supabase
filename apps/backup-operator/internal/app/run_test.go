@@ -323,7 +323,7 @@ func TestRunWithDependenciesConfiguresManagementSources(t *testing.T) {
 			return nil, nil, errors.New("not controlstore")
 		}
 		router := operatorapi.NewManagementRouter(control)
-		err := router.Register(operatorapi.ManagementRegistration{ProjectID: "project", TargetID: "cluster", Provider: "kubernetes", BackupCapabilityPrefix: "kubernetes.backup.", Discover: func(context.Context, controlstore.TargetRecord) (operatorapi.ClusterDiscovery, error) {
+		err := router.Register(operatorapi.ManagementRegistration{ProjectID: "project", TargetID: "cluster", TargetNodeID: "db-0", Provider: "kubernetes", BackupCapabilityPrefix: "kubernetes.backup.", Discover: func(context.Context, controlstore.TargetRecord) (operatorapi.ClusterDiscovery, error) {
 			return operatorapi.ClusterDiscovery{Topology: "kubernetes-self-managed", Primary: "db-0"}, nil
 		}})
 		return router, router, err

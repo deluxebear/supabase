@@ -10,6 +10,8 @@ import {
   restorePlanSchema,
 } from '@/lib/api/self-platform/backup-operator-client'
 import { BASE_PATH } from '@/lib/constants'
+import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export class OperatorMutationError extends Error {
   constructor(
@@ -28,10 +30,14 @@ async function mutateOperator(
   projectRef: string,
   path: string,
   method: 'POST' | 'PUT',
-  body: unknown
+  body: unknown,
+  idempotencyKey?: string
 ) {
   if (!projectRef) throw new Error('Project ref is required')
-  const headers = await constructHeaders({ 'Content-Type': 'application/json' })
+  const headers = await constructHeaders({
+    'Content-Type': 'application/json',
+    ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
+  })
   const response = await fetch(
     `${BASE_PATH}/api/platform/database/${encodeURIComponent(projectRef)}/backup-operator/${path}`,
     { method, headers, body: JSON.stringify(body) }
@@ -91,6 +97,10 @@ export const useClusterDiscoverMutation = (
       queryClient.setQueryData(backupOperatorKeys.cluster(variables.projectRef), data)
       await options.onSuccess?.(data, variables, context)
     },
+    onError(error, variables, context) {
+      if (options.onError) options.onError(error, variables, context)
+      else toast.error($t('Failed to refresh discovery: {{message}}', { message: error.message }))
+    },
   })
 }
 
@@ -108,13 +118,19 @@ export const useManualBackupMutation = (
   return useMutation({
     ...options,
     mutationFn: async ({ projectRef, type }) =>
-      operatorJobSchema.parse(await mutateOperator(projectRef, 'backups', 'POST', { type })),
+      operatorJobSchema.parse(
+        await mutateOperator(projectRef, 'backups', 'POST', { type }, uuidv4())
+      ),
     async onSuccess(data, variables, context) {
       queryClient.setQueryData(backupOperatorKeys.job(variables.projectRef, data.id), data)
       await queryClient.invalidateQueries({
         queryKey: backupOperatorKeys.backups(variables.projectRef),
       })
       await options.onSuccess?.(data, variables, context)
+    },
+    onError(error, variables, context) {
+      if (options.onError) options.onError(error, variables, context)
+      else toast.error($t('Failed to start backup: {{message}}', { message: error.message }))
     },
   })
 }
@@ -148,6 +164,10 @@ export const usePITRMutation = (
       ])
       await options.onSuccess?.(data, variables, context)
     },
+    onError(error, variables, context) {
+      if (options.onError) options.onError(error, variables, context)
+      else toast.error($t('Failed to update PITR: {{message}}', { message: error.message }))
+    },
   })
 }
 
@@ -171,6 +191,10 @@ export const useJobResolutionMutation = (
     async onSuccess(data, variables, context) {
       queryClient.setQueryData(backupOperatorKeys.job(variables.projectRef, variables.jobId), data)
       await options.onSuccess?.(data, variables, context)
+    },
+    onError(error, variables, context) {
+      if (options.onError) options.onError(error, variables, context)
+      else toast.error($t('Failed to update job: {{message}}', { message: error.message }))
     },
   })
 }
@@ -197,7 +221,8 @@ export const useBackupPolicyUpdateMutation = (
     },
     onError(error, variables, context) {
       if (options.onError) options.onError(error, variables, context)
-      else toast.error(`Failed to update backup policy: ${error.message}`)
+      else
+        toast.error($t('Failed to update backup policy: {{message}}', { message: error.message }))
     },
   })
 }
@@ -226,7 +251,7 @@ export const useRestorePlanCreateMutation = (
     },
     onError(error, variables, context) {
       if (options.onError) options.onError(error, variables, context)
-      else toast.error(`Failed to create restore plan: ${error.message}`)
+      else toast.error($t('Failed to create restore plan: {{message}}', { message: error.message }))
     },
   })
 }
@@ -256,7 +281,7 @@ export const useRestoreExecuteMutation = (
     },
     onError(error, variables, context) {
       if (options.onError) options.onError(error, variables, context)
-      else toast.error(`Failed to start restore: ${error.message}`)
+      else toast.error($t('Failed to start restore: {{message}}', { message: error.message }))
     },
   })
 
@@ -279,6 +304,6 @@ export const useRestoreRollbackMutation = (
       ),
     onError(error, variables, context) {
       if (options.onError) options.onError(error, variables, context)
-      else toast.error(`Failed to start rollback: ${error.message}`)
+      else toast.error($t('Failed to start rollback: {{message}}', { message: error.message }))
     },
   })

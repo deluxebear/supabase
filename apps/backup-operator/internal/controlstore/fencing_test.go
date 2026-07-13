@@ -71,6 +71,16 @@ func TestDestructiveCapabilitiesSharePersistentMonotonicAgentCounter(t *testing.
 	}
 }
 
+func TestBackupTaskAdvancesAgentCounterAfterDestructiveTask(t *testing.T) {
+	store := openOrchestrationStore(t, filepath.Join(t.TempDir(), "control.db"))
+	if token := createDestructiveTestJob(t, store, "restore", "single-primary-pgbackrest.restore.execute"); token != 1 {
+		t.Fatalf("restore token=%d want=1", token)
+	}
+	if token := createDestructiveTestJob(t, store, "backup", "single-primary-pgbackrest.backup.full"); token != 2 {
+		t.Fatalf("backup token=%d want=2", token)
+	}
+}
+
 func TestConcurrentDestructiveTasksReceiveUniqueIncreasingTokens(t *testing.T) {
 	store := openOrchestrationStore(t, filepath.Join(t.TempDir(), "control.db"))
 	const count = 12

@@ -22,7 +22,7 @@ func TestManagementRouterMapsTargetDiscoveryPITRAndBackupTasks(t *testing.T) {
 		t.Fatal(err)
 	}
 	router := NewManagementRouter(store)
-	if err := router.Register(ManagementRegistration{ProjectID: "project", TargetID: "db", Provider: "kubernetes", BackupCapabilityPrefix: "kubernetes.backup.", PITREnableCapability: "kubernetes.pitr.enable", PITRDisableCapability: "kubernetes.pitr.disable", Discover: func(context.Context, controlstore.TargetRecord) (ClusterDiscovery, error) {
+	if err := router.Register(ManagementRegistration{ProjectID: "project", TargetID: "db", TargetNodeID: "db-0", Provider: "kubernetes", BackupCapabilityPrefix: "kubernetes.backup.", PITREnableCapability: "kubernetes.pitr.enable", PITRDisableCapability: "kubernetes.pitr.disable", Discover: func(context.Context, controlstore.TargetRecord) (ClusterDiscovery, error) {
 		return ClusterDiscovery{Topology: "kubernetes-self-managed", Primary: "db-0"}, nil
 	}}); err != nil {
 		t.Fatal(err)
@@ -31,16 +31,16 @@ func TestManagementRouterMapsTargetDiscoveryPITRAndBackupTasks(t *testing.T) {
 	if err != nil || discovery.Provider != "kubernetes" || discovery.ObservedAt.IsZero() {
 		t.Fatalf("discovery=%+v err=%v", discovery, err)
 	}
-	capability, err := router.BackupCapability(target, "full")
-	if err != nil || capability != "kubernetes.backup.full" {
-		t.Fatalf("capability=%q err=%v", capability, err)
+	capability, targetNodeID, err := router.BackupCapability(target, "full")
+	if err != nil || capability != "kubernetes.backup.full" || targetNodeID != "db-0" {
+		t.Fatalf("capability=%q targetNodeID=%q err=%v", capability, targetNodeID, err)
 	}
 	status, err := router.Enable(withManagementIdempotency(ctx, "enable-once"), target, "repo")
 	if err != nil || !status.Enabled || status.Healthy {
 		t.Fatalf("status=%+v err=%v", status, err)
 	}
 	tasks, err := store.ClaimOutbox(ctx, "test", 10, time.Minute)
-	if err != nil || len(tasks) != 1 || tasks[0].Capability != "kubernetes.pitr.enable" || tasks[0].ProjectID != "project" || tasks[0].TargetID != "db" || tasks[0].ClusterID != "db" {
+	if err != nil || len(tasks) != 1 || tasks[0].Capability != "kubernetes.pitr.enable" || tasks[0].ProjectID != "project" || tasks[0].TargetID != "db" || tasks[0].ClusterID != "db" || tasks[0].NodeID != "db-0" {
 		t.Fatalf("tasks=%+v err=%v", tasks, err)
 	}
 	if _, err := router.Enable(withManagementIdempotency(ctx, "enable-once"), target, "repo"); err != nil {
@@ -56,17 +56,17 @@ func TestManagementRouterExactCapabilitiesDoNotExposeUnconfiguredDrill(t *testin
 	router := NewManagementRouter(nil)
 	if err := router.Register(ManagementRegistration{ProjectID: "project", TargetID: "db", Provider: "single", Discover: func(context.Context, controlstore.TargetRecord) (ClusterDiscovery, error) {
 		return ClusterDiscovery{}, nil
-	}, BackupCapabilities: map[string]string{"full": "single.backup.full"}, MaintenanceCapabilities: map[string]string{"repository-check": "single.maintenance.repository-check"}}); err != nil {
+	}, TargetNodeID: "node-a", BackupCapabilities: map[string]string{"full": "single.backup.full"}, MaintenanceCapabilities: map[string]string{"repository-check": "single.maintenance.repository-check"}}); err != nil {
 		t.Fatal(err)
 	}
 	target := controlstore.TargetRecord{ProjectID: "project", TargetID: "db"}
-	if capability, err := router.BackupCapability(target, "full"); err != nil || capability != "single.backup.full" {
-		t.Fatalf("backup capability = %q, %v", capability, err)
+	if capability, nodeID, err := router.BackupCapability(target, "full"); err != nil || capability != "single.backup.full" || nodeID != "node-a" {
+		t.Fatalf("backup capability = %q, node = %q, %v", capability, nodeID, err)
 	}
-	if _, err := router.BackupCapability(target, "diff"); err == nil {
+	if _, _, err := router.BackupCapability(target, "diff"); err == nil {
 		t.Fatal("unconfigured backup capability was exposed")
 	}
-	if _, err := router.MaintenanceCapability(target, "restore-drill"); err == nil {
+	if _, _, err := router.MaintenanceCapability(target, "restore-drill"); err == nil {
 		t.Fatal("unconfigured restore drill was exposed")
 	}
 }

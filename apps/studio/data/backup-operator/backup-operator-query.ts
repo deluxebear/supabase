@@ -1,5 +1,6 @@
 import { queryOptions } from '@tanstack/react-query'
 
+import { isActiveBackupOperatorJob } from './backup-operator-job.utils'
 import { backupOperatorKeys } from './keys'
 import { constructHeaders } from '@/data/fetchers'
 import {
@@ -100,7 +101,7 @@ export const operatorJobQueryOptions = ({ projectRef, jobId }: BackupOperatorJob
     queryKey: backupOperatorKeys.job(projectRef, jobId),
     queryFn: ({ signal }) => getOperatorJob({ projectRef, jobId }, signal),
     enabled: IS_SELF_PLATFORM && typeof projectRef !== 'undefined' && typeof jobId !== 'undefined',
-    refetchInterval: 2_000,
+    refetchInterval: ({ state }) => (isActiveBackupOperatorJob(state.data?.state) ? 2_000 : false),
   })
 
 async function getRestorePlan(

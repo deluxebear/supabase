@@ -84,6 +84,20 @@ describe('self-platform Backup Operator proxy', () => {
     )
   })
 
+  it('forwards a caller-provided idempotency key for manual backups', async () => {
+    const response = responseRecorder()
+    const req = request('POST', ['backups'], { type: 'full' })
+    req.headers['idempotency-key'] = 'manual-backup-click-a'
+
+    await handler(req, response, claims())
+
+    expect(requestBackupOperator).toHaveBeenCalledWith(
+      'project-a',
+      '/backups',
+      expect.objectContaining({ idempotencyKey: 'manual-backup-click-a' })
+    )
+  })
+
   it.each([
     ['GET', ['cluster'], ''],
     ['POST', ['discover'], '/discover'],
@@ -159,6 +173,7 @@ describe('self-platform Backup Operator proxy', () => {
     )
     expect(response.statusCode).toBe(200)
     expect(response.body).toContain('id: 1')
+    expect(response.setHeader).toHaveBeenCalledWith('Cache-Control', 'no-store')
   })
 
   it('maps typed Operator errors and rejects paths outside the allowlist', async () => {

@@ -103,6 +103,24 @@ describe('Backup Operator self-platform client', () => {
     expect(keys[1]).toBe(keys[0])
   })
 
+  it('uses a caller-provided idempotency key for a distinct user operation', async () => {
+    let key = ''
+    mswServer.use(
+      http.post('http://operator.test/v1/clusters/cluster-a/backups', ({ request }) => {
+        key = request.headers.get('idempotency-key') ?? ''
+        return HttpResponse.json({ id: 'job-a' })
+      })
+    )
+
+    await requestBackupOperator('project-a', '/backups', {
+      method: 'POST',
+      body: { type: 'full' },
+      idempotencyKey: 'manual-backup-click-a',
+    })
+
+    expect(key).toBe('manual-backup-click-a')
+  })
+
   it('signs trusted AAL2 context while keeping the confirmation body free of identity claims', async () => {
     let authorization = ''
     let requestBody: unknown

@@ -2,23 +2,32 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 
 import { reconnectOperatorEvents, type OperatorEvent } from './backup-operator-events'
-import { operatorJobQueryOptions } from './backup-operator-query'
+import { isActiveBackupOperatorJob } from './backup-operator-job.utils'
+import { operatorJobQueryOptions, type OperatorJobData } from './backup-operator-query'
 
 const reconnectDelay = 2_000
 
 export function useBackupOperatorEvents({
   projectRef,
   jobId,
+  jobState,
 }: {
   projectRef?: string
   jobId?: string
+  jobState?: OperatorJobData['state']
 }) {
   const queryClient = useQueryClient()
   const [events, setEvents] = useState<OperatorEvent[]>([])
   const [error, setError] = useState<Error>()
 
   useEffect(() => {
-    if (!projectRef || !jobId) return
+    setEvents([])
+    setError(undefined)
+  }, [jobId, projectRef])
+
+  useEffect(() => {
+    setError(undefined)
+    if (!projectRef || !jobId || !isActiveBackupOperatorJob(jobState)) return
     const controller = new AbortController()
     const storageKey = `backup-operator:${projectRef}:${jobId}:cursor`
     let cursor = Number(globalThis.sessionStorage?.getItem(storageKey) ?? 0)
@@ -59,7 +68,7 @@ export function useBackupOperatorEvents({
       controller.abort()
       if (timer !== undefined) clearTimeout(timer)
     }
-  }, [jobId, projectRef, queryClient])
+  }, [jobId, jobState, projectRef, queryClient])
 
   return { events, error }
 }

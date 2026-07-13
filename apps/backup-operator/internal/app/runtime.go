@@ -39,8 +39,8 @@ type RuntimeProviders struct {
 	DrillFactory func(*controlstore.Store) (Worker, error)
 	// BackupCapability maps scheduled jobs to the provider selected for a
 	// project/target instead of emitting an ambiguous generic capability.
-	BackupCapability      func(projectID, targetID, backupType string) (string, error)
-	MaintenanceCapability func(projectID, targetID, kind string) (string, error)
+	BackupCapability      func(projectID, targetID, backupType string) (string, string, error)
+	MaintenanceCapability func(projectID, targetID, kind string) (string, string, error)
 }
 
 func (p RuntimeProviders) complete(mode Mode) bool {
@@ -170,29 +170,30 @@ func (w *periodicWorker) Run(ctx context.Context) error {
 
 type backupJobSink struct {
 	store       *controlstore.Store
-	capability  func(string, string, string) (string, error)
-	maintenance func(string, string, string) (string, error)
+	capability  func(string, string, string) (string, string, error)
+	maintenance func(string, string, string) (string, string, error)
 }
 
 func (s backupJobSink) EnsureRetentionJob(ctx context.Context, request scheduler.BackupJobRequest, retentionDays int) (bool, error) {
 	if s.maintenance == nil {
 		return false, errors.New("retention maintenance capability is not configured")
 	}
-	capability, err := s.maintenance(request.ProjectID, request.TargetID, "expire")
+	capability, targetNodeID, err := s.maintenance(request.ProjectID, request.TargetID, "expire")
 	if err != nil {
 		return false, err
 	}
 	payload, _ := json.Marshal(map[string]any{"kind": "expire", "repositoryId": request.RepositoryID, "retentionDays": retentionDays})
 	key := request.IdempotencyKey + "/retention"
-	_, created, err := s.store.CreateJob(ctx, controlstore.CreateJobInput{ID: key, ProjectID: request.ProjectID, TargetID: request.TargetID, Type: "maintenance", IdempotencyKey: key, PlanHash: "retention/expire", StepName: "execute", Capability: capability, TargetNodeID: request.TargetID, Payload: payload})
+	_, created, err := s.store.CreateJob(ctx, controlstore.CreateJobInput{ID: key, ProjectID: request.ProjectID, TargetID: request.TargetID, Type: "maintenance", IdempotencyKey: key, PlanHash: "retention/expire", StepName: "execute", Capability: capability, TargetNodeID: targetNodeID, Payload: payload})
 	return created, err
 }
 
 func (s backupJobSink) EnsureBackupJob(ctx context.Context, request scheduler.BackupJobRequest) (bool, error) {
 	capability := "backup." + request.BackupType
+	targetNodeID := request.TargetID
 	if s.capability != nil {
 		var err error
-		capability, err = s.capability(request.ProjectID, request.TargetID, request.BackupType)
+		capability, targetNodeID, err = s.capability(request.ProjectID, request.TargetID, request.BackupType)
 		if err != nil {
 			return false, err
 		}
@@ -202,7 +203,7 @@ func (s backupJobSink) EnsureBackupJob(ctx context.Context, request scheduler.Ba
 		ID: request.IdempotencyKey, ProjectID: request.ProjectID, TargetID: request.TargetID,
 		Type: "backup", IdempotencyKey: request.IdempotencyKey, PlanHash: request.PolicyID,
 		StepName: "execute", Capability: capability,
-		TargetNodeID: request.TargetID, Payload: payload,
+		TargetNodeID: targetNodeID, Payload: payload,
 	})
 	return created, err
 }

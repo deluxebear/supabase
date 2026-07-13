@@ -97,6 +97,10 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
         typeof req.headers['x-correlation-id'] === 'string'
           ? req.headers['x-correlation-id']
           : undefined,
+      idempotencyKey:
+        route.method !== 'GET' && typeof req.headers['idempotency-key'] === 'string'
+          ? req.headers['idempotency-key']
+          : undefined,
       onResponse: (metadata: { correlationId?: string }) => {
         correlationId = metadata.correlationId
       },
@@ -116,6 +120,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
         commonInit
       )
       if (correlationId) res.setHeader('X-Correlation-ID', correlationId)
+      res.setHeader('Cache-Control', 'no-store')
       res.setHeader('Content-Type', events.contentType)
       return res.status(200).send(events.body)
     }

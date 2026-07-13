@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { Badge, NavMenu, NavMenuItem } from 'ui'
 
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
@@ -11,21 +12,23 @@ type Props = {
 }
 
 function DatabaseBackupsNav({ active }: Props) {
+  const router = useRouter()
   const { ref, cloud_provider } = useSelectedProjectQuery()?.data || {}
+  const projectRef = ref ?? (typeof router.query.ref === 'string' ? router.query.ref : undefined)
   const { databaseRestoreToNewProject } = useIsFeatureEnabled(['database:restore_to_new_project'])
 
   const navMenuItems = [
     {
       enabled: true,
       id: 'scheduled',
-      label: 'Scheduled backups',
-      href: `/project/${ref}/database/backups/scheduled`,
+      label: $t('Scheduled backups'),
+      href: projectRef ? `/project/${projectRef}/database/backups/scheduled` : router.asPath,
     },
     {
       enabled: true,
       id: 'pitr',
-      label: 'Point in time',
-      href: `/project/${ref}/database/backups/pitr`,
+      label: $t('Point in time'),
+      href: projectRef ? `/project/${projectRef}/database/backups/pitr` : router.asPath,
     },
     {
       enabled: databaseRestoreToNewProject && cloud_provider !== 'FLY' && !IS_SELF_PLATFORM,
@@ -35,7 +38,9 @@ function DatabaseBackupsNav({ active }: Props) {
           {$t('Restore to new project')} <Badge variant="warning">{$t('Beta')}</Badge>
         </div>
       ),
-      href: `/project/${ref}/database/backups/restore-to-new-project`,
+      href: projectRef
+        ? `/project/${projectRef}/database/backups/restore-to-new-project`
+        : router.asPath,
     },
   ] as const
 

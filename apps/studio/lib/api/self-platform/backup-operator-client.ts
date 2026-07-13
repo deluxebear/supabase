@@ -214,6 +214,7 @@ export async function requestBackupOperator(
     aal?: string
     aalAuthenticatedAt?: number
     correlationId?: string
+    idempotencyKey?: string
     onResponse?: (metadata: { correlationId?: string }) => void
   } = {}
 ) {
@@ -252,9 +253,11 @@ export async function requestBackupOperator(
       'X-Audit-Context': JSON.stringify({ actor, aal: init.aal ?? 'unknown', source: 'studio' }),
       ...(init.method && init.method !== 'GET'
         ? {
-            'Idempotency-Key': createHash('sha256')
-              .update(`${projectRef}\n${path}\n${JSON.stringify(init.body ?? null)}`)
-              .digest('hex'),
+            'Idempotency-Key':
+              init.idempotencyKey ??
+              createHash('sha256')
+                .update(`${projectRef}\n${path}\n${JSON.stringify(init.body ?? null)}`)
+                .digest('hex'),
           }
         : {}),
     },

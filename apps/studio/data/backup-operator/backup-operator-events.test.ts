@@ -2,6 +2,12 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { reconnectOperatorEvents } from './backup-operator-events'
 
+vi.mock('@/data/fetchers', () => ({
+  constructHeaders: vi.fn((headers?: HeadersInit) =>
+    Promise.resolve(new Headers({ ...headers, Authorization: 'Bearer studio-session' }))
+  ),
+}))
+
 describe('reconnectOperatorEvents', () => {
   it('continues from the latest SSE event id', async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
@@ -25,6 +31,10 @@ describe('reconnectOperatorEvents', () => {
       events: [{ id: 8, type: 'progress', data: { progress: 50 } }],
     })
     expect(fetcher).toHaveBeenCalledWith(expect.stringContaining('cursor=7'), expect.any(Object))
+    const requestHeaders = fetcher.mock.calls[0]?.[1]?.headers
+    expect(fetcher.mock.calls[0]?.[1]?.cache).toBe('no-store')
+    expect(new Headers(requestHeaders).get('Accept')).toBe('text/event-stream')
+    expect(new Headers(requestHeaders).get('Authorization')).toBe('Bearer studio-session')
   })
 
   it('refreshes the job snapshot and reconnects from zero after cursor expiry', async () => {

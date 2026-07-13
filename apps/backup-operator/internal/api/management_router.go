@@ -21,7 +21,7 @@ func withManagementIdempotency(ctx context.Context, key string) context.Context 
 }
 
 type ManagementRegistration struct {
-	ProjectID, TargetID                         string
+	ProjectID, TargetID, TargetNodeID           string
 	Provider, ProviderVersion                   string
 	Discover                                    DiscoveryFunc
 	PITRCheck                                   PITRCheckFunc
@@ -47,6 +47,10 @@ func managementKey(project, target string) string { return project + "\x00" + ta
 func (r *ManagementRouter) Register(in ManagementRegistration) error {
 	if in.ProjectID == "" || in.TargetID == "" || in.Provider == "" || in.Discover == nil {
 		return errors.New("management target, provider, and discovery are required")
+	}
+	hasTasks := in.PITREnableCapability != "" || in.PITRDisableCapability != "" || in.BackupCapabilityPrefix != "" || in.MaintenanceCapabilityPrefix != "" || len(in.BackupCapabilities) > 0 || len(in.MaintenanceCapabilities) > 0
+	if hasTasks && in.TargetNodeID == "" {
+		return errors.New("management task target node is required")
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -121,39 +125,39 @@ func (r *ManagementRouter) Check(ctx context.Context, target controlstore.Target
 	}
 	return in.PITRCheck(ctx, target)
 }
-func (r *ManagementRouter) BackupCapability(target controlstore.TargetRecord, backupType string) (string, error) {
+func (r *ManagementRouter) BackupCapability(target controlstore.TargetRecord, backupType string) (string, string, error) {
 	in, e := r.registration(target)
 	if e != nil {
-		return "", e
+		return "", "", e
 	}
 	if in.BackupCapabilities != nil {
 		capability := in.BackupCapabilities[backupType]
 		if capability == "" {
-			return "", fmt.Errorf("backup type %s is unsupported for this target", backupType)
+			return "", "", fmt.Errorf("backup type %s is unsupported for this target", backupType)
 		}
-		return capability, nil
+		return capability, in.TargetNodeID, nil
 	}
 	if in.BackupCapabilityPrefix == "" {
-		return "", errors.New("backup tasks are unsupported for this target")
+		return "", "", errors.New("backup tasks are unsupported for this target")
 	}
-	return in.BackupCapabilityPrefix + backupType, nil
+	return in.BackupCapabilityPrefix + backupType, in.TargetNodeID, nil
 }
-func (r *ManagementRouter) MaintenanceCapability(target controlstore.TargetRecord, kind string) (string, error) {
+func (r *ManagementRouter) MaintenanceCapability(target controlstore.TargetRecord, kind string) (string, string, error) {
 	in, e := r.registration(target)
 	if e != nil {
-		return "", e
+		return "", "", e
 	}
 	if in.MaintenanceCapabilities != nil {
 		capability := in.MaintenanceCapabilities[kind]
 		if capability == "" {
-			return "", fmt.Errorf("maintenance kind %s is unsupported for this target", kind)
+			return "", "", fmt.Errorf("maintenance kind %s is unsupported for this target", kind)
 		}
-		return capability, nil
+		return capability, in.TargetNodeID, nil
 	}
 	if in.MaintenanceCapabilityPrefix == "" {
-		return "", errors.New("maintenance tasks are unsupported for this target")
+		return "", "", errors.New("maintenance tasks are unsupported for this target")
 	}
-	return in.MaintenanceCapabilityPrefix + kind, nil
+	return in.MaintenanceCapabilityPrefix + kind, in.TargetNodeID, nil
 }
 func (r *ManagementRouter) enqueue(ctx context.Context, target controlstore.TargetRecord, kind, capability string, payload map[string]string) error {
 	if r.Store == nil {
@@ -164,15 +168,19 @@ func (r *ManagementRouter) enqueue(ctx context.Context, target controlstore.Targ
 	if idempotencyKey == "" {
 		return errors.New("management idempotency key is required")
 	}
+	in, err := r.registration(target)
+	if err != nil {
+		return err
+	}
 	id := newID()
-	_, _, e := r.Store.CreateJob(ctx, controlstore.CreateJobInput{ID: id, ProjectID: target.ProjectID, TargetID: target.TargetID, Type: kind, IdempotencyKey: kind + "/" + idempotencyKey, PlanHash: kind + "/" + capability, StepName: "execute", Capability: capability, TargetNodeID: target.TargetID, Payload: encoded})
+	_, _, e := r.Store.CreateJob(ctx, controlstore.CreateJobInput{ID: id, ProjectID: target.ProjectID, TargetID: target.TargetID, Type: kind, IdempotencyKey: kind + "/" + idempotencyKey, PlanHash: kind + "/" + capability, StepName: "execute", Capability: capability, TargetNodeID: in.TargetNodeID, Payload: encoded})
 	return e
 }
 
 type BackupCapabilitySource interface {
-	BackupCapability(controlstore.TargetRecord, string) (string, error)
+	BackupCapability(controlstore.TargetRecord, string) (string, string, error)
 }
 
 type MaintenanceCapabilitySource interface {
-	MaintenanceCapability(controlstore.TargetRecord, string) (string, error)
+	MaintenanceCapability(controlstore.TargetRecord, string) (string, string, error)
 }

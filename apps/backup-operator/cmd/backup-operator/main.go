@@ -196,7 +196,7 @@ func main() {
 		if *drillEnable {
 			maintenanceCapabilities["restore-drill"] = app.CapabilitySinglePrimary + ".maintenance.restore-drill"
 		}
-		managementRegistrations = append(managementRegistrations, operatorapi.ManagementRegistration{ProjectID: *spProject, TargetID: *spTarget, Provider: app.CapabilitySinglePrimary, BackupCapabilities: map[string]string{"full": app.CapabilitySinglePrimary + ".backup.full", "diff": app.CapabilitySinglePrimary + ".backup.diff", "incr": app.CapabilitySinglePrimary + ".backup.incr"}, MaintenanceCapabilities: maintenanceCapabilities, PITREnableCapability: app.CapabilitySinglePrimary + ".pitr.enable", PITRDisableCapability: app.CapabilitySinglePrimary + ".pitr.disable", Discover: func(ctx context.Context, _ controlstore.TargetRecord) (operatorapi.ClusterDiscovery, error) {
+		managementRegistrations = append(managementRegistrations, operatorapi.ManagementRegistration{ProjectID: *spProject, TargetID: *spTarget, TargetNodeID: *spNode, Provider: app.CapabilitySinglePrimary, BackupCapabilities: map[string]string{"full": app.CapabilitySinglePrimary + ".backup.full", "diff": app.CapabilitySinglePrimary + ".backup.diff", "incr": app.CapabilitySinglePrimary + ".backup.incr"}, MaintenanceCapabilities: maintenanceCapabilities, PITREnableCapability: app.CapabilitySinglePrimary + ".pitr.enable", PITRDisableCapability: app.CapabilitySinglePrimary + ".pitr.disable", Discover: func(ctx context.Context, _ controlstore.TargetRecord) (operatorapi.ClusterDiscovery, error) {
 			if err := probe.ProbePostgres(ctx, localCfg); err != nil {
 				return operatorapi.ClusterDiscovery{}, err
 			}
@@ -623,25 +623,25 @@ func main() {
 		}
 	}
 	if len(managementRegistrations) > 0 {
-		providers.BackupCapability = func(projectID, targetID, backupType string) (string, error) {
+		providers.BackupCapability = func(projectID, targetID, backupType string) (string, string, error) {
 			for _, registration := range managementRegistrations {
 				if registration.ProjectID == projectID && registration.TargetID == targetID {
 					if registration.BackupCapabilities != nil {
 						capability := registration.BackupCapabilities[backupType]
 						if capability == "" {
-							return "", fmt.Errorf("backup type %s is unsupported for target %s/%s", backupType, projectID, targetID)
+							return "", "", fmt.Errorf("backup type %s is unsupported for target %s/%s", backupType, projectID, targetID)
 						}
-						return capability, nil
+						return capability, registration.TargetNodeID, nil
 					}
 					if registration.BackupCapabilityPrefix == "" {
-						return "", errors.New("backup provider is not configured")
+						return "", "", errors.New("backup provider is not configured")
 					}
-					return registration.BackupCapabilityPrefix + backupType, nil
+					return registration.BackupCapabilityPrefix + backupType, registration.TargetNodeID, nil
 				}
 			}
-			return "", fmt.Errorf("target %s/%s has no configured backup provider", projectID, targetID)
+			return "", "", fmt.Errorf("target %s/%s has no configured backup provider", projectID, targetID)
 		}
-		providers.MaintenanceCapability = func(projectID, targetID, kind string) (string, error) {
+		providers.MaintenanceCapability = func(projectID, targetID, kind string) (string, string, error) {
 			for _, registration := range managementRegistrations {
 				if registration.ProjectID != projectID || registration.TargetID != targetID {
 					continue
@@ -649,16 +649,16 @@ func main() {
 				if registration.MaintenanceCapabilities != nil {
 					capability := registration.MaintenanceCapabilities[kind]
 					if capability == "" {
-						return "", fmt.Errorf("maintenance kind %s is unsupported for target %s/%s", kind, projectID, targetID)
+						return "", "", fmt.Errorf("maintenance kind %s is unsupported for target %s/%s", kind, projectID, targetID)
 					}
-					return capability, nil
+					return capability, registration.TargetNodeID, nil
 				}
 				if registration.MaintenanceCapabilityPrefix != "" {
-					return registration.MaintenanceCapabilityPrefix + kind, nil
+					return registration.MaintenanceCapabilityPrefix + kind, registration.TargetNodeID, nil
 				}
-				return "", errors.New("maintenance provider is not configured")
+				return "", "", errors.New("maintenance provider is not configured")
 			}
-			return "", fmt.Errorf("target %s/%s has no configured maintenance provider", projectID, targetID)
+			return "", "", fmt.Errorf("target %s/%s has no configured maintenance provider", projectID, targetID)
 		}
 		// DefaultDependencies captures RuntimeProviders by value, so construct it
 		// after all provider-specific task mappings have been registered.

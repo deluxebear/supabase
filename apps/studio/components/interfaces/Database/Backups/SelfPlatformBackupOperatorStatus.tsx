@@ -6,6 +6,7 @@ import {
   operatorClusterQueryOptions,
   operatorPITRQueryOptions,
 } from '@/data/backup-operator/backup-operator-query'
+import { t as $t } from '@/lib/i18n'
 
 export function SelfPlatformBackupOperatorStatus({ projectRef }: { projectRef?: string }) {
   const clusterQuery = useQuery(operatorClusterQueryOptions({ projectRef }))
@@ -17,36 +18,36 @@ export function SelfPlatformBackupOperatorStatus({ projectRef }: { projectRef?: 
     <Card>
       <CardContent className="grid gap-4 py-4 md:grid-cols-4">
         <div>
-          <p className="text-sm font-medium">Provider</p>
+          <p className="text-sm font-medium">{$t('Provider')}</p>
           <p className="text-sm text-foreground-light">
-            {discovery?.provider ?? 'Not discovered'}
+            {discovery?.provider ?? $t('Not discovered')}
             {discovery?.providerVersion ? ` ${discovery.providerVersion}` : ''}
           </p>
         </div>
         <div>
-          <p className="text-sm font-medium">Topology</p>
+          <p className="text-sm font-medium">{$t('Topology')}</p>
           <p className="text-sm text-foreground-light">
-            {discovery?.topology ?? 'Unknown'}
+            {discovery?.topology ?? $t('Unknown')}
             {discovery?.primary ? ` · ${discovery.primary}` : ''}
           </p>
         </div>
         <div>
-          <p className="text-sm font-medium">Repository</p>
+          <p className="text-sm font-medium">{$t('Repository')}</p>
           <p className="break-all text-sm text-foreground-light">
-            {discovery?.repositoryType ?? 'Unknown'} ·{' '}
-            {discovery?.repositoryLocation ?? discovery?.repositoryId ?? 'Not configured'}
+            {discovery?.repositoryType ?? $t('Unknown')} ·{' '}
+            {discovery?.repositoryLocation ?? discovery?.repositoryId ?? $t('Not configured')}
           </p>
         </div>
         <div>
-          <p className="text-sm font-medium">Point-in-time recovery</p>
+          <p className="text-sm font-medium">{$t('Point-in-time recovery')}</p>
           <Badge
             variant={pitrQuery.data?.enabled && pitrQuery.data.healthy ? 'success' : 'warning'}
           >
             {pitrQuery.data?.enabled
               ? pitrQuery.data.healthy
-                ? 'Healthy'
-                : 'Blocked'
-              : 'Disabled'}
+                ? $t('Healthy')
+                : $t('Blocked')
+              : $t('Disabled')}
           </Badge>
         </div>
       </CardContent>
@@ -57,7 +58,7 @@ export function SelfPlatformBackupOperatorStatus({ projectRef }: { projectRef?: 
           disabled={!projectRef}
           onClick={() => projectRef && discoverMutation.mutate({ projectRef })}
         >
-          Refresh discovery
+          {$t('Refresh discovery')}
         </Button>
       </CardFooter>
     </Card>
