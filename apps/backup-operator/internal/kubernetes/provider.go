@@ -51,6 +51,9 @@ type Workload struct {
 	PVCs              []PVC
 	Services          []Service
 	AvailableBytes    int64
+	PGSodiumSecret    string
+	PGSodiumSecretUID string
+	PGSodiumSecretRV  string
 }
 
 type Discoverer interface {
@@ -91,7 +94,7 @@ func (p Provider) Assess(ctx context.Context, target contracts.TargetRef) (Asses
 	assessment := Assessment{Workload: workload, Compatibility: checkCompatibility(workload)}
 	assessment.Topology = contracts.TopologySnapshot{
 		Kind: contracts.TopologyKubernetesSelfOwned, Authority: workload.StatefulSet, ControllerOwner: workload.OwnerKind,
-		Evidence: contracts.Evidence{ProviderID: p.ProviderID, ObservationID: workload.Namespace + "/" + workload.StatefulSet, ObservedAt: now, ValidUntil: now.Add(30 * time.Second), Facts: map[string]string{
+		Evidence: contracts.Evidence{ProviderID: p.ProviderID, ObservationID: workload.Namespace + "/" + workload.StatefulSet + "/secret-" + workload.PGSodiumSecretUID + "@" + workload.PGSodiumSecretRV, ObservedAt: now, ValidUntil: now.Add(30 * time.Second), Facts: map[string]string{
 			"image": workload.Image, "pgbackrest_version": workload.PgBackRestVersion,
 		}},
 	}

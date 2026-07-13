@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "scenario": "release-candidate",
+  "status": "passed",
+  "exit_code": 0,
+  "observed_at": "2026-07-13T08:02:20Z",
+  "facts": {
+    "version": "v0.1.1-rc.local",
+    "commit": "c8dcb8ed7cfbcda07704f3eee883dfd3ae40dc3c",
+    "workspace_dirty": true,
+    "binaries": {
+      "operator": [
+        "linux/amd64",
+        "linux/arm64"
+      ],
+      "agent": [
+        "linux/amd64",
+        "linux/arm64"
+      ],
+      "backupctl": [
+        "linux/amd64",
+        "linux/arm64"
+      ]
+    },
+    "agent_binary_note": "backup-agent assets are byte-identical aliases of backup-operator; runtime role is selected with --mode=agent",
+    "oci_multiarch": "passed: local OCI layout contains amd64 and arm64 manifests",
+    "sbom": [
+      "SPDX-2.3",
+      "CycloneDX-1.5"
+    ],
+    "checksums": "verified",
+    "provenance": "offline subject digests verified",
+    "deployments": "compose, Helm and Kustomize validated locally; systemd validation reused passed Linux-container evidence from failure-observability matrix",
+    "upgrade_matrix": "SQLite migration reopen and protocol rolling compatibility passed; incompatible destructive build is blocked",
+    "output_directory": "dist/release-candidate",
+    "external_step_requiring_user_authorization": "publish_and_sign: push multiarch OCI, upload release assets, create external release, and perform external keyless signing/transparency-log entry",
+    "external_actions_performed": false,
+    "RESULT": "PASS"
+  }
+}

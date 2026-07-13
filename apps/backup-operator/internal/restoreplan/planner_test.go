@@ -17,9 +17,9 @@ func TestBuildSelectsLatestBackupBeforeTargetAndHashesSafetyInputs(t *testing.T)
 	request := Request{
 		PlanID: "plan-1", JobID: "job-1", Target: contracts.TargetRef{ProjectID: "p", TargetID: "db"}, RestoreTarget: target,
 		Candidates: []BackupCandidate{
-			{ID: "too-new", StoppedAt: target.Add(time.Minute)},
-			{ID: "selected", StoppedAt: target.Add(-time.Minute), RecoverableUntil: &coverage, LastDrillAt: &drill, Identity: backupIdentity()},
-			{ID: "older", StoppedAt: target.Add(-time.Hour), RecoverableUntil: &coverage, Identity: backupIdentity()},
+			{ID: "too-new", Label: "20260713-020000F", StoppedAt: target.Add(time.Minute)},
+			{ID: "selected", Label: "20260713-010000F", StoppedAt: target.Add(-time.Minute), RecoverableUntil: &coverage, LastDrillAt: &drill, Identity: backupIdentity()},
+			{ID: "older", Label: "20260713-000000F", StoppedAt: target.Add(-time.Hour), RecoverableUntil: &coverage, Identity: backupIdentity()},
 		},
 		Topology: topology, FenceProvider: "supabase-fence", BackupProvider: "pgbackrest", RepositoryRevision: "rev-1",
 		Capacity: CapacityImpact{RequiredBytes: 10, AvailableBytes: 20, Destination: "/data"}, TTL: 10 * time.Minute, Now: now,
@@ -28,11 +28,22 @@ func TestBuildSelectsLatestBackupBeforeTargetAndHashesSafetyInputs(t *testing.T)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if plan.Candidate.ID != "selected" || plan.Recovery != EvidenceDrillVerified || len(plan.Hash) != 64 {
+	if plan.Candidate.ID != "selected" || plan.SafetyInputs.BackupLabel != "20260713-010000F" || plan.Recovery != EvidenceDrillVerified || len(plan.Hash) != 64 {
 		t.Fatalf("unexpected plan: %#v", plan)
+	}
+	if !plan.ExpiresAt.Equal(topology.Evidence.ValidUntil) {
+		t.Fatalf("plan lifetime must be capped by topology evidence: got %s want %s", plan.ExpiresAt, topology.Evidence.ValidUntil)
 	}
 	if err := ValidateUnchanged(plan, plan.SafetyInputs, now); err != nil {
 		t.Fatal(err)
+	}
+	refreshed := plan.SafetyInputs
+	refreshed.TopologyValidUntil = now.Add(2 * time.Minute)
+	if err := ValidateUnchanged(plan, refreshed, now.Add(time.Second)); err != nil {
+		t.Fatalf("fresh evidence with unchanged topology identity was rejected: %v", err)
+	}
+	if err := ValidateUnchanged(plan, refreshed, topology.Evidence.ValidUntil); !errors.Is(err, contracts.ErrEvidenceExpired) {
+		t.Fatalf("plan outlived the evidence used at confirmation: %v", err)
 	}
 	changed := plan.SafetyInputs
 	changed.RepositoryRevision = "rev-2"
@@ -46,7 +57,7 @@ func TestBuildFailsClosedOnUnknownCoverageOrCapacity(t *testing.T) {
 	target := now.Add(-time.Hour)
 	request := Request{
 		PlanID: "plan", JobID: "job", Target: contracts.TargetRef{ProjectID: "p", TargetID: "db"}, RestoreTarget: target,
-		Candidates: []BackupCandidate{{ID: "backup", StoppedAt: target.Add(-time.Minute), Identity: backupIdentity()}},
+		Candidates: []BackupCandidate{{ID: "backup", Label: "20260713-010000F", StoppedAt: target.Add(-time.Minute), Identity: backupIdentity()}},
 		Topology:   safeTopology(now), FenceProvider: "fence", BackupProvider: "pgbackrest", RepositoryRevision: "rev",
 		Capacity: CapacityImpact{RequiredBytes: 10, AvailableBytes: 20, Destination: "/data"}, TTL: time.Minute, Now: now,
 	}

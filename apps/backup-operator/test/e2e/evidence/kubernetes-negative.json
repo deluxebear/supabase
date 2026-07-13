@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "scenario": "kubernetes-negative",
+  "status": "passed",
+  "exit_code": 0,
+  "observed_at": "2026-07-13T05:49:36Z",
+  "facts": {
+    "capacity_pending": "true",
+    "rwo_cross_node_blocked": "true",
+    "api_conflict_rejected": "true",
+    "cutover_response_lost_but_committed": "true",
+    "kind_node_image": "sha256:26ad49adcb6923b3faa00ee6654943de9bdda7cfcb1c42a9b9cef334a48dfb33",
+    "kubernetes_version": "v1.36.1",
+    "RESULT": "PASS"
+  }
+}

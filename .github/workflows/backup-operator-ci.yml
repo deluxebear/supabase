@@ -4,11 +4,23 @@ on:
   pull_request:
     paths:
       - apps/backup-operator/**
+      - apps/studio/components/interfaces/Database/Backups/**
+      - apps/studio/data/backup-operator/**
+      - apps/studio/lib/api/self-platform/backup-operator-client*
+      - apps/studio/pages/api/platform/database/**/backup-operator/**
+      - apps/studio/pages/project/**/database/backups/**
+      - e2e/studio/features/backup-operator.spec.ts
       - .github/workflows/backup-operator-ci.yml
   push:
     branches: [master, main, custom/main]
     paths:
       - apps/backup-operator/**
+      - apps/studio/components/interfaces/Database/Backups/**
+      - apps/studio/data/backup-operator/**
+      - apps/studio/lib/api/self-platform/backup-operator-client*
+      - apps/studio/pages/api/platform/database/**/backup-operator/**
+      - apps/studio/pages/project/**/database/backups/**
+      - e2e/studio/features/backup-operator.spec.ts
       - .github/workflows/backup-operator-ci.yml
 
 permissions:
@@ -32,3 +44,30 @@ jobs:
       - run: go build ./cmd/backup-operator ./cmd/backupctl
       - run: go run github.com/bufbuild/buf/cmd/buf@v1.50.0 lint
       - run: ./scripts/check-generated.sh
+      - name: Validate deployment manifests
+        run: ./scripts/validate-deployments.sh
+      - name: Validate release snapshot and checksums
+        env:
+          VERSION: v0.0.0-ci
+          COMMIT: ${{ github.sha }}
+        run: ./scripts/build-release.sh
+
+  studio-e2e:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SELF_PLATFORM: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.24.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+        working-directory: e2e/studio
+      - run: pnpm e2e:setup:cli
+      - run: pnpm run e2e -- features/backup-operator.spec.ts
+        working-directory: e2e/studio

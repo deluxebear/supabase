@@ -71,6 +71,28 @@ const (
 	DuplicateDone    StartDisposition = "duplicate-completed"
 )
 
+type Execution struct {
+	TaskID         string
+	IdempotencyKey string
+	State          string
+	ResultJSON     string
+}
+
+// Lookup returns the durable execution associated with either identifier. It is
+// used to replay terminal results after an Agent reconnects.
+func (j *Journal) Lookup(ctx context.Context, taskID, idempotencyKey string) (Execution, error) {
+	var execution Execution
+	var result sql.NullString
+	err := j.db.QueryRowContext(ctx, `SELECT task_id,idempotency_key,state,result_json
+FROM executions WHERE task_id=? OR idempotency_key=? LIMIT 1`, taskID, idempotencyKey).
+		Scan(&execution.TaskID, &execution.IdempotencyKey, &execution.State, &result)
+	if err != nil {
+		return Execution{}, err
+	}
+	execution.ResultJSON = result.String
+	return execution, nil
+}
+
 func (j *Journal) Begin(ctx context.Context, taskID, idempotencyKey string, fencingToken int64, destructive bool) (StartDisposition, error) {
 	tx, err := j.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -95,7 +117,7 @@ func (j *Journal) Begin(ctx context.Context, taskID, idempotencyKey string, fenc
 	if err := tx.QueryRowContext(ctx, "SELECT max_fencing_token FROM execution_meta WHERE singleton=1").Scan(&maxToken); err != nil {
 		return "", err
 	}
-	if fencingToken < maxToken {
+	if fencingToken < maxToken || destructive && fencingToken <= maxToken {
 		return "", ErrStaleFencing
 	}
 	if destructive {

@@ -91,6 +91,14 @@ func (s *Store) migrate(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("migration %s: %w", entry.Name(), err)
 		}
+		var applied int
+		check := "SELECT COUNT(*) FROM schema_migrations WHERE version=?"
+		if s.dialect == Postgres {
+			check = "SELECT COUNT(*) FROM schema_migrations WHERE version=$1"
+		}
+		if err := s.db.QueryRowContext(ctx, check, version).Scan(&applied); err == nil && applied > 0 {
+			continue
+		}
 		content, err := migrations.ReadFile(dir + "/" + entry.Name())
 		if err != nil {
 			return err

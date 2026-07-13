@@ -76,7 +76,7 @@ func TestReplacementRegistryFailureRevertsService(t *testing.T) {
 }
 
 func TestBuildTaskJobIsRestrictedAndCapabilityAllowlisted(t *testing.T) {
-	job, err := BuildTaskJob(TaskRequest{Name: "restore-1", Namespace: "supabase", Capability: "restore", Image: PG17Image, PVC: "recovered-data", ConfigMap: "pgbackrest"})
+	job, err := BuildTaskJob(TaskRequest{Name: "restore-1", Namespace: "supabase", Capability: "restore", Image: PG17Image, PVC: "recovered-data", RepositoryPVC: "repository", ConfigMap: "pgbackrest", Stanza: "main", BackupSet: "20260713-010203F", RecoveryTime: time.Unix(1_700_000_000, 0)})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,6 +86,37 @@ func TestBuildTaskJobIsRestrictedAndCapabilityAllowlisted(t *testing.T) {
 	}
 	if _, err := BuildTaskJob(TaskRequest{Name: "bad", Namespace: "supabase", Capability: "shell", Image: PG17Image, PVC: "data", ConfigMap: "config"}); err == nil {
 		t.Fatal("expected arbitrary capability rejection")
+	}
+	if _, err := BuildTaskJob(TaskRequest{Name: "bad-label", Namespace: "supabase", Capability: "restore", Image: PG17Image, PVC: "data", RepositoryPVC: "repository", ConfigMap: "config", Stanza: "main", BackupSet: "20260713-010203F;touch /tmp/pwned", RecoveryTime: time.Unix(1_700_000_000, 0)}); err == nil {
+		t.Fatal("backup label injection was accepted")
+	}
+	if _, err := BuildTaskJob(TaskRequest{Name: "dual-target", Namespace: "supabase", Capability: "restore", Image: PG17Image, PVC: "data", RepositoryPVC: "repository", ConfigMap: "config", Stanza: "main", BackupSet: "20260713-010203F", RecoveryName: "point", RecoveryTime: time.Unix(1_700_000_000, 0)}); err == nil {
+		t.Fatal("simultaneous name/time recovery target was accepted")
+	}
+}
+
+func TestReplacementPVCWaitForFirstConsumerAndBoundPostconditions(t *testing.T) {
+	meta := ObjectMeta{Name: "restore-data", UID: "uid", ResourceVersion: "7", PlanID: "plan"}
+	pending := PVCResource{Meta: meta, AccessMode: "ReadWriteOnce", StorageClass: "standard", RequestedBytes: 2 << 30}
+	if err := validateReplacementPVC(pending, "plan", "standard", 2<<30); err != nil {
+		t.Fatalf("valid WaitForFirstConsumer claim rejected: %v", err)
+	}
+	wrongClass := pending
+	wrongClass.StorageClass = "untrusted"
+	if err := validateReplacementPVC(wrongClass, "plan", "standard", 2<<30); err == nil {
+		t.Fatal("non-allowlisted storage class accepted")
+	}
+	insufficient := pending
+	insufficient.Bound = true
+	insufficient.CapacityBytes = 1 << 30
+	insufficient.AttachedPods = []string{"restore-pod"}
+	if err := validateBoundReplacementPVC(insufficient, "plan", "standard", 2<<30); err == nil {
+		t.Fatal("bound PVC with insufficient status capacity accepted")
+	}
+	sufficient := insufficient
+	sufficient.CapacityBytes = 2 << 30
+	if err := validateBoundReplacementPVC(sufficient, "plan", "standard", 2<<30); err != nil {
+		t.Fatalf("valid bound PVC postcondition rejected: %v", err)
 	}
 }
 
@@ -100,8 +131,9 @@ func compatibleWorkload() Workload {
 		Namespace: "supabase", StatefulSet: "postgres", Image: PG17Image,
 		PgBackRestBinary: "/usr/lib/pgbackrest/bin/pgbackrest.real", PgBackRestVersion: "2.55", PgBackRestConfig: "/etc/pgbackrest",
 		Pods:     []Pod{{Name: "postgres-0", Role: contracts.RolePrimary, Ready: true, SystemIdentifier: "sys", Timeline: 1, PVCs: []string{"data"}}},
-		PVCs:     []PVC{{Name: "data", UID: "old-pvc", AccessModes: []string{"ReadWriteOnce"}, CapacityBytes: 1 << 30, AttachedPod: "postgres-0"}},
+		PVCs:     []PVC{{Name: "data", UID: "old-pvc", AccessModes: []string{"ReadWriteOnce"}, CapacityBytes: 1 << 30, AttachedPod: "postgres-0"}, {Name: "repository", UID: "repository-pvc", AccessModes: []string{"ReadWriteOnce"}, CapacityBytes: 1 << 30, AttachedPod: "postgres-0"}},
 		Services: []Service{{Name: "postgres", Selector: map[string]string{"app": "postgres"}}}, AvailableBytes: 2 << 30,
+		PGSodiumSecret: "pgsodium", PGSodiumSecretUID: "secret-uid", PGSodiumSecretRV: "7",
 	}
 }
 
@@ -110,7 +142,7 @@ func replacementPlan(now time.Time) ReplacementPlan {
 		ID: "plan", Target: contracts.TargetRef{ProjectID: "p", TargetID: "db"}, Namespace: "supabase",
 		OldStatefulSet: "postgres", NewStatefulSet: "postgres-recovered", OldPVCUIDs: []string{"old-pvc"}, NewPVCNames: []string{"recovered-data"},
 		StableService: "postgres", IsolatedService: "postgres-recovered-validation", OldSelector: map[string]string{"app": "postgres"}, NewSelector: map[string]string{"app": "postgres-recovered"},
-		Image: PG17Image, Stanza: "supabase-recovered", ArchiveIdentity: "history-2", Recovery: contracts.RestoreTarget{Time: now.Add(-time.Hour)}, ExpiresAt: now.Add(time.Hour),
+		Image: PG17Image, Stanza: "supabase-recovered", BackupLabel: "20260713-010203F", ArchiveIdentity: "history-2", RepositoryPVC: "repository", PGSodiumSecret: "pgsodium", StorageClass: "standard", Recovery: contracts.RestoreTarget{Time: now.Add(-time.Hour)}, ExpiresAt: now.Add(time.Hour),
 	}
 }
 

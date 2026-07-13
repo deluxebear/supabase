@@ -34,16 +34,16 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Test
         run: go test -race ./...
+      - name: Validate generated contracts and deployments
+        run: |
+          ./scripts/check-generated.sh
+          ./scripts/validate-deployments.sh
       - name: Build Linux binaries
         env:
           VERSION: ${{ steps.version.outputs.version }}
+          COMMIT: ${{ github.sha }}
         run: |
-          mkdir -p dist
-          ldflags="-s -w -X github.com/supabase/supabase/apps/backup-operator/internal/version.Version=${VERSION} -X github.com/supabase/supabase/apps/backup-operator/internal/version.Commit=${GITHUB_SHA}"
-          for arch in amd64 arm64; do
-            CGO_ENABLED=0 GOOS=linux GOARCH="$arch" go build -trimpath -ldflags="$ldflags" -o "dist/backup-operator-linux-$arch" ./cmd/backup-operator
-            CGO_ENABLED=0 GOOS=linux GOARCH="$arch" go build -trimpath -ldflags="$ldflags" -o "dist/backupctl-linux-$arch" ./cmd/backupctl
-          done
+          ./scripts/build-release.sh
       - uses: anchore/sbom-action@v0
         with:
           path: apps/backup-operator
@@ -51,7 +51,8 @@ jobs:
       - name: Generate portable checksums
         run: |
           cd dist
-          sha256sum backup-operator-linux-* backupctl-linux-* source.spdx.json > SHA256SUMS
+          sha256sum backup-operator-linux-* backup-agent-linux-* backupctl-linux-* source.spdx.json > SHA256SUMS
+          sha256sum --check SHA256SUMS
       - uses: sigstore/cosign-installer@v3
       - name: Sign checksums with keyless OIDC
         run: cosign sign-blob --yes --bundle dist/SHA256SUMS.sigstore.json dist/SHA256SUMS
@@ -75,6 +76,7 @@ jobs:
           build-args: |
             VERSION=${{ steps.version.outputs.version }}
             COMMIT=${{ github.sha }}
+            BUILD_DATE=${{ github.event.repository.updated_at }}
           provenance: mode=max
           sbom: true
       - name: Sign OCI image

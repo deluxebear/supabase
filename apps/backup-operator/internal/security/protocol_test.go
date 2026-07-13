@@ -8,6 +8,15 @@ import (
 	"time"
 )
 
+func signTestJWT(t *testing.T, key []byte, claims string) string {
+	t.Helper()
+	header := base64.RawURLEncoding.EncodeToString([]byte(`{"alg":"HS256","typ":"JWT"}`))
+	payload := base64.RawURLEncoding.EncodeToString([]byte(claims))
+	mac := hmac.New(sha256.New, key)
+	_, _ = mac.Write([]byte(header + "." + payload))
+	return header + "." + payload + "." + base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
+}
+
 func TestNegotiationAndDestructiveVersionPin(t *testing.T) {
 	operator := Version{ProtocolMajor: 1, ProtocolMinor: 3, Build: "operator-2", Capabilities: []string{"inspect", "restore"}}
 	agent := Version{ProtocolMajor: 1, ProtocolMinor: 2, Build: "agent-2", Capabilities: []string{"restore", "inspect"}}

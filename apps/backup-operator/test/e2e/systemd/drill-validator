@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+exec 2>>/var/lib/backup-agent/drill-validator.log
+
+pgdata= target_time= expected_system_id= expected_history_id=
+require_read_only=false
+require_target_data=false
+network=
+while (($#)); do
+  case "$1" in
+    --pgdata) pgdata="$2"; shift 2 ;;
+    --target-time) target_time="$2"; shift 2 ;;
+    --expected-system-id) expected_system_id="$2"; shift 2 ;;
+    --expected-history-id) expected_history_id="$2"; shift 2 ;;
+    --require-read-only) require_read_only=true; shift ;;
+    --require-target-data) require_target_data=true; shift ;;
+    --network=disabled) network=disabled; shift ;;
+    *) exit 64 ;;
+  esac
+done
+test -d "$pgdata"
+test -n "$target_time"
+test -n "$expected_system_id"
+test -n "$expected_history_id"
+test "$require_read_only" = true
+test "$require_target_data" = true
+test "$network" = disabled
+
+control="$(/usr/lib/postgresql/17/bin/pg_controldata "$pgdata")"
+system_id="$(sed -n 's/^Database system identifier:[[:space:]]*//p' <<<"$control")"
+timeline="$(sed -n "s/^Latest checkpoint's TimeLineID:[[:space:]]*//p" <<<"$control")"
+test "$system_id" = "$expected_system_id"
+test -n "$timeline"
+printf 'system_id=%s expected_system_id=%s history=%s timeline=%s target=%s\n' "$system_id" "$expected_system_id" "$expected_history_id" "$timeline" "$target_time" >>/var/lib/backup-agent/drill-validator.log
+
+socket="/var/lib/backup-agent/drill-socket-$$"
+install -d -o postgres -g postgres -m 0700 "$socket"
+chown -R postgres:postgres "$pgdata"
+cleanup() {
+  cp "$pgdata/drill-postgres.log" /var/lib/backup-agent/drill-postgres.log >/dev/null 2>&1 || true
+  runuser -u postgres -- /usr/lib/postgresql/17/bin/pg_ctl -D "$pgdata" -m immediate stop >/dev/null 2>&1 || true
+  rm -rf "$socket"
+}
+trap cleanup EXIT INT TERM
+runuser -u postgres -- /usr/lib/postgresql/17/bin/pg_ctl -D "$pgdata" -w -t 30 \
+  -l "$pgdata/drill-postgres.log" \
+  -o "-c listen_addresses='' -c port=55433 -c unix_socket_directories='$socket' -c archive_mode=off -c default_transaction_read_only=on" start >/dev/null
+read_only="$(runuser -u postgres -- psql -h "$socket" -p 55433 -Atqc 'show transaction_read_only')"
+fixture="$(runuser -u postgres -- psql -h "$socket" -p 55433 -Atqc "select string_agg(value, ', ' order by id) from systemd_fixture")"
+printf 'read_only=%s fixture=%s\n' "$read_only" "$fixture" >>/var/lib/backup-agent/drill-validator.log
+test "$read_only" = on
+test "$fixture" = "before-backup"
+runuser -u postgres -- /usr/lib/postgresql/17/bin/pg_ctl -D "$pgdata" -m fast -w stop >/dev/null
+
+evidence="$(jq -nc \
+  --arg system "$system_id" --arg history "$expected_history_id" --argjson timeline "$timeline" \
+  --arg target "$target_time" \
+  '{databaseSystemId:$system,databaseHistoryId:$history,timeline:$timeline,readOnly:true,targetDataVerified:true,observedTargetTime:$target,startupMode:"isolated",networkExposure:"disabled"}')"
+printf 'evidence=%s\n' "$evidence" >>/var/lib/backup-agent/drill-validator.log
+printf '%s\n' "$evidence"

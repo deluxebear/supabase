@@ -6,7 +6,7 @@ metadata:
 rules:
   - apiGroups: ["postgresql.cnpg.io"]
     resources: ["clusters", "backups"]
-    verbs: ["get", "list", "watch", "create", "delete"]
+    verbs: ["get", "list", "watch", "create", "patch", "delete"]
   - apiGroups: ["barmancloud.cnpg.io"]
     resources: ["objectstores"]
     verbs: ["get", "list", "watch"]
@@ -30,3 +30,30 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: backup-operator-cloudnativepg
+---
+# Read-only prerequisite discovery is cluster-scoped because CNPG,
+# cert-manager, and the plugin may run outside the database namespace.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: backup-operator-cloudnativepg-discovery
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list"]
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: backup-operator-cloudnativepg-discovery
+subjects:
+  - kind: ServiceAccount
+    name: backup-operator
+    namespace: supabase
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: backup-operator-cloudnativepg-discovery

@@ -1,0 +1,17 @@
+[Unit]
+Description=Systemd E2E PostgreSQL
+After=local-fs.target
+
+[Service]
+Type=notify
+User=postgres
+Group=postgres
+RuntimeDirectory=postgresql
+ExecStart=/usr/lib/postgresql/17/bin/postgres -D /var/lib/postgresql/systemd-data -c listen_addresses= -c unix_socket_directories=/var/run/postgresql
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+KillSignal=SIGINT
+TimeoutStopSec=60
+
+[Install]
+WantedBy=multi-user.target

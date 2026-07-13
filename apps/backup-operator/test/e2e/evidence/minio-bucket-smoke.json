@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "scenario": "minio-bucket-smoke",
+  "status": "passed",
+  "reason": "full service FQDN resolved and HTTPS MinIO bucket creation/readiness/stat completed",
+  "exit_code": 0,
+  "observed_at": "2026-07-13T04:32:04Z",
+  "facts": {
+    "minio_deployment": "Available 1/1",
+    "bucket_job": "Complete 1/1",
+    "dns_query": "minio.minio-smoke.svc.cluster.local",
+    "dns_result": "10.96.204.42",
+    "https_ready": "true",
+    "bucket_created": "e2e/backups",
+    "bucket_stat": "objects=0,size=0B",
+    "RESULT": "PASS"
+  }
+}

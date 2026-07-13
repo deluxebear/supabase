@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "result": "FAIL",
+  "pitrMode": "name",
+  "strictPatroniLifecycle": true,
+  "manualPgCtlUsed": false,
+  "failedPhase": "start-restored-primary-under-patroni",
+  "failure": "Patroni remained paused after PITR. With PostgreSQL stopped, Patroni intentionally removed the stale leader lock and repeatedly reported 'PAUSE: postgres is not running'; therefore /primary never became healthy within 120 seconds.",
+  "rootCause": "The recovery sequence starts the restored primary while Patroni pause is still true. Pause prevents Patroni from starting or promoting the stopped restored PostgreSQL instance. DCS history/leader ownership must be reconciled and Patroni resumed at the correct handback point before waiting for /primary, while the external write fence remains engaged.",
+  "lastObserved": {
+    "leaderLock": "none",
+    "postgresql": "not running",
+    "patroni": "paused",
+    "repeatedLog": "PAUSE: postgres is not running"
+  },
+  "earlierChecksCompleted": [
+    "three-node Patroni cluster healthy",
+    "pgBackRest full backup",
+    "async mode exercised",
+    "strict synchronous mode restored",
+    "paused manual switchover",
+    "DCS outage primary SQL availability",
+    "dual writable primary fail-closed detection",
+    "named pgBackRest restore"
+  ]
+}

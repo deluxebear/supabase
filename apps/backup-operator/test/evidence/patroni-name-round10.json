@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "result": "FAIL",
+  "pitrMode": "name",
+  "phase": "observing-dcs-before-handback",
+  "error": {
+    "exitCode": 127,
+    "line": 71,
+    "command": "docker exec \"$etcd\" env ETCDCTL_API=3 etcdctl get \"$path\" -w json",
+    "message": "The etcd container image does not expose an env executable; failure-evidence serialization then also failed because the outer ERR trap received an empty JSON response."
+  },
+  "expectedRecoveredLeader": null,
+  "dcsObserved": {
+    "leaderDecoded": null,
+    "leaderResponse": null,
+    "historyDecoded": null,
+    "historyResponse": null,
+    "collectionFailure": "The read command failed before either /service/spike/leader or /service/spike/history could be observed."
+  },
+  "runPolicy": {
+    "strictNamedRunsAttempted": 1,
+    "rerunPerformed": false
+  }
+}

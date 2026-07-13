@@ -118,11 +118,16 @@ func (r *CertificateRotation) Activate(requiredAgents []string) error {
 }
 
 type ServiceClaims struct {
-	Issuer    string `json:"iss"`
-	Subject   string `json:"sub"`
-	Audience  string `json:"aud"`
-	Expires   int64  `json:"exp"`
-	NotBefore int64  `json:"nbf"`
+	Issuer             string   `json:"iss"`
+	Subject            string   `json:"sub"`
+	Audience           string   `json:"aud"`
+	Expires            int64    `json:"exp"`
+	NotBefore          int64    `json:"nbf"`
+	Scopes             []string `json:"scopes,omitempty"`
+	Roles              []string `json:"roles,omitempty"`
+	Projects           []string `json:"projects,omitempty"`
+	AAL                string   `json:"aal,omitempty"`
+	AALAuthenticatedAt int64    `json:"aal_authenticated_at,omitempty"`
 }
 
 func ValidateServiceJWT(token string, key []byte, issuer, audience string, now time.Time) (ServiceClaims, error) {
@@ -158,18 +163,8 @@ func ValidateServiceJWT(token string, key []byte, issuer, audience string, now t
 }
 
 func Redact(fields map[string]any) map[string]any {
-	redacted := make(map[string]any, len(fields))
-	for key, value := range fields {
-		lower := strings.ToLower(key)
-		if strings.Contains(lower, "password") || strings.Contains(lower, "secret") || strings.Contains(lower, "token") || strings.Contains(lower, "credential") || strings.Contains(lower, "private_key") {
-			redacted[key] = "[REDACTED]"
-			continue
-		}
-		if nested, ok := value.(map[string]any); ok {
-			redacted[key] = Redact(nested)
-		} else {
-			redacted[key] = value
-		}
+	if redacted, ok := RedactValue(fields).(map[string]any); ok {
+		return redacted
 	}
-	return redacted
+	return map[string]any{}
 }

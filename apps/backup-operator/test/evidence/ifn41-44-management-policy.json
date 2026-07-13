@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "contract": "IFN-41/44",
+  "status": "passed",
+  "observed_at": "2026-07-13T05:53:03Z",
+  "checks": {
+    "cluster_register_get_discover": true,
+    "pitr_enable_disable_check": true,
+    "manual_backup": true,
+    "standard_policy": {
+      "retention_days": 14,
+      "full_schedule": "0 2 * * *",
+      "diff_schedule": "0 2 * * 1-6",
+      "incr_schedule": "0 * * * *"
+    },
+    "walg_conflict": {
+      "real_postgres17": true,
+      "observed_archive_command": "wal-g wal-push %p",
+      "failed_closed_before_side_effect": true
+    }
+  },
+  "RESULT": "PASS"
+}

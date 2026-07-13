@@ -1,4 +1,4 @@
-.PHONY: build test generate check-generated
+.PHONY: build test generate check-generated release-snapshot validate-deployments
 
 build:
 	go build ./cmd/backup-operator ./cmd/backupctl
@@ -11,3 +11,9 @@ generate:
 
 check-generated:
 	./scripts/check-generated.sh
+
+release-snapshot:
+	VERSION=$${VERSION:-dev} COMMIT=$${COMMIT:-$$(git rev-parse HEAD)} ./scripts/build-release.sh
+
+validate-deployments:
+	./scripts/validate-deployments.sh

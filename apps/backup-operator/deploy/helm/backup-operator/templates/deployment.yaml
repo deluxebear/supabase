@@ -11,12 +11,41 @@ spec:
       labels: {app: backup-operator}
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
+      securityContext:
+        fsGroup: 65532
+        fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: operator
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}{{- if .Values.image.digest }}@{{ .Values.image.digest }}{{- end }}"
-          args: ["--mode=operator"]
+          args: ["--mode=operator", "--listen=0.0.0.0:8080"]
+          env:
+            - name: BACKUP_OPERATOR_SERVICE_ASSERTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "serviceAssertion.existingSecret is required" .Values.serviceAssertion.existingSecret }}
+                  key: {{ .Values.serviceAssertion.key }}
+            - name: BACKUP_OPERATOR_CONTROL_STORE_DRIVER
+              value: sqlite
+            - name: BACKUP_OPERATOR_CONTROL_STORE_DSN
+              value: /var/lib/backup-operator/control.db
+            - name: BACKUP_OPERATOR_RUNTIME_ENABLED
+              value: "true"
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet: {path: /readyz, port: http}
+          livenessProbe:
+            httpGet: {path: /healthz, port: http}
+          volumeMounts:
+            - name: state
+              mountPath: /var/lib/backup-operator
           securityContext:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             capabilities: {drop: ["ALL"]}
+      volumes:
+        - name: state
+          persistentVolumeClaim:
+            claimName: {{ default (printf "%s-backup-operator-state" .Release.Name) .Values.persistence.existingClaim }}

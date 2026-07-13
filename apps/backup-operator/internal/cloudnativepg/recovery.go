@@ -23,6 +23,7 @@ type RecoveryPlan struct {
 	SourceServerName   string
 	OutputObjectStore  string
 	OutputServerName   string
+	SuperuserSecret    string
 	BackupID           string
 	Recovery           contracts.RestoreTarget
 	StableService      string
@@ -43,7 +44,7 @@ func BuildRecoveryCluster(plan RecoveryPlan, now time.Time) (ClusterManifest, er
 	if plan.ID == "" || !dnsName.MatchString(plan.Namespace) || !dnsName.MatchString(plan.SourceCluster) || !dnsName.MatchString(plan.ReplacementCluster) ||
 		plan.SourceCluster == plan.ReplacementCluster || plan.Instances < 1 || plan.StorageSize == "" || plan.SourceObjectStore == "" ||
 		plan.SourceServerName == "" || plan.OutputObjectStore == "" || plan.OutputServerName == "" || plan.SourceServerName == plan.OutputServerName ||
-		len(plan.OriginalPVCUIDs) == 0 || !now.Before(plan.ExpiresAt) {
+		len(plan.OriginalPVCUIDs) == 0 || plan.SuperuserSecret == "" || !now.Before(plan.ExpiresAt) {
 		return ClusterManifest{}, errors.New("valid replacement Cluster, storage, object stores, unique server names, original PVC evidence, and future expiry are required")
 	}
 	recoveryTarget := map[string]any{}
@@ -71,6 +72,7 @@ func BuildRecoveryCluster(plan RecoveryPlan, now time.Time) (ClusterManifest, er
 		},
 		Spec: map[string]any{
 			"instances": plan.Instances, "imageName": plan.Image, "storage": storage,
+			"enableSuperuserAccess": true, "superuserSecret": map[string]any{"name": plan.SuperuserSecret},
 			"bootstrap": map[string]any{"recovery": map[string]any{"source": "origin", "recoveryTarget": recoveryTarget}},
 			"externalClusters": []any{map[string]any{
 				"name": "origin", "plugin": map[string]any{"name": BarmanPluginName, "parameters": map[string]string{"barmanObjectName": plan.SourceObjectStore, "serverName": plan.SourceServerName}},

@@ -13,7 +13,7 @@ import (
 func TestCapabilityDisabledUnlessOwnershipAndOptionalDependenciesArePositive(t *testing.T) {
 	now := time.Unix(1_700_000_000, 0)
 	cluster := healthyCluster()
-	provider := Provider{Discoverer: fakeDiscoverer{cluster: cluster}, Now: func() time.Time { return now }}
+	provider := Provider{FeatureGate: true, Discoverer: fakeDiscoverer{cluster: cluster}, Now: func() time.Time { return now }}
 	capability, err := provider.Capabilities(context.Background(), contracts.TargetRef{})
 	if err != nil || !capability.Enabled {
 		t.Fatalf("capability: %#v %v", capability, err)
@@ -30,6 +30,13 @@ func TestCapabilityDisabledUnlessOwnershipAndOptionalDependenciesArePositive(t *
 	capability, _ = provider.Capabilities(context.Background(), contracts.TargetRef{})
 	if capability.Enabled {
 		t.Fatal("missing optional plugin must disable only this adapter")
+	}
+}
+
+func TestCapabilityFeatureGateDefaultsOff(t *testing.T) {
+	capability, err := (Provider{Discoverer: fakeDiscoverer{cluster: healthyCluster()}}).Capabilities(context.Background(), contracts.TargetRef{})
+	if err != nil || capability.Enabled || len(capability.Blockers) == 0 {
+		t.Fatalf("optional capability unexpectedly enabled: %+v %v", capability, err)
 	}
 }
 
@@ -101,7 +108,8 @@ func healthyCluster() ClusterObservation {
 		ControllerOwner: "cloudnative-pg", Image: "deluxebear/postgres:17", Instances: 3, ReadyInstances: 3,
 		CurrentPrimary: "database-1", SystemIdentifier: "system", Timeline: 4, Phase: "Cluster in healthy state",
 		PVCUIDs: []string{"pvc-1", "pvc-2", "pvc-3"}, ObjectStore: "database-backup", ServerName: "database",
-		Prerequisites: Prerequisites{CNPGVersion: TestedCNPG, BarmanPluginVersion: TestedBarman, CertManagerReady: true, PluginReady: true},
+		SuperuserSecret: "database-superuser", SecretUID: "secret-uid", SecretRevision: "7", SuperuserAccess: true,
+		Prerequisites: Prerequisites{CNPGVersion: TestedCNPG, BarmanPluginVersion: TestedBarman, CertManagerReady: true, PluginReady: true, ControllerUID: "controller-uid", CertManagerUID: "cert-uid", PluginUID: "plugin-uid", ObjectStoreUID: "store-uid", ImageValidated: true},
 	}
 }
 
@@ -110,7 +118,7 @@ func recoveryPlan(now time.Time) RecoveryPlan {
 		ID: "plan", Target: contracts.TargetRef{ProjectID: "p", TargetID: "db"}, Namespace: "supabase",
 		SourceCluster: "database", ReplacementCluster: "database-recovered", Image: "deluxebear/postgres:17", Instances: 3,
 		StorageSize: "20Gi", StorageClass: "fast-rwo", SourceObjectStore: "database-backup", SourceServerName: "database",
-		OutputObjectStore: "database-recovered-backup", OutputServerName: "database-recovered", BackupID: "20260713T010000",
+		OutputObjectStore: "database-recovered-backup", OutputServerName: "database-recovered", SuperuserSecret: "database-superuser", BackupID: "20260713T010000",
 		Recovery: contracts.RestoreTarget{Time: now.Add(-time.Hour)}, StableService: "postgres",
 		OldSelector: map[string]string{"cnpg.io/cluster": "database"}, NewSelector: map[string]string{"cnpg.io/cluster": "database-recovered"},
 		OriginalPVCUIDs: []string{"pvc-1", "pvc-2", "pvc-3"}, ExpiresAt: now.Add(time.Hour),

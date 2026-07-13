@@ -222,6 +222,9 @@ type AgentHello struct {
 	AgentId         string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
 	ProtocolVersion string                 `protobuf:"bytes,2,opt,name=protocol_version,json=protocolVersion,proto3" json:"protocol_version,omitempty"`
 	Capabilities    []string               `protobuf:"bytes,3,rep,name=capabilities,proto3" json:"capabilities,omitempty"`
+	Build           string                 `protobuf:"bytes,4,opt,name=build,proto3" json:"build,omitempty"`
+	ClusterId       string                 `protobuf:"bytes,5,opt,name=cluster_id,json=clusterId,proto3" json:"cluster_id,omitempty"`
+	NodeId          string                 `protobuf:"bytes,6,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -277,15 +280,42 @@ func (x *AgentHello) GetCapabilities() []string {
 	return nil
 }
 
+func (x *AgentHello) GetBuild() string {
+	if x != nil {
+		return x.Build
+	}
+	return ""
+}
+
+func (x *AgentHello) GetClusterId() string {
+	if x != nil {
+		return x.ClusterId
+	}
+	return ""
+}
+
+func (x *AgentHello) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
 type Task struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	TaskId         string                 `protobuf:"bytes,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
-	OperationId    string                 `protobuf:"bytes,2,opt,name=operation_id,json=operationId,proto3" json:"operation_id,omitempty"`
-	Capability     string                 `protobuf:"bytes,3,opt,name=capability,proto3" json:"capability,omitempty"`
-	IdempotencyKey string                 `protobuf:"bytes,4,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"`
-	TypedInput     []byte                 `protobuf:"bytes,5,opt,name=typed_input,json=typedInput,proto3" json:"typed_input,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state                     protoimpl.MessageState `protogen:"open.v1"`
+	TaskId                    string                 `protobuf:"bytes,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	OperationId               string                 `protobuf:"bytes,2,opt,name=operation_id,json=operationId,proto3" json:"operation_id,omitempty"`
+	Capability                string                 `protobuf:"bytes,3,opt,name=capability,proto3" json:"capability,omitempty"`
+	IdempotencyKey            string                 `protobuf:"bytes,4,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"`
+	TypedInput                []byte                 `protobuf:"bytes,5,opt,name=typed_input,json=typedInput,proto3" json:"typed_input,omitempty"`
+	ExpiresAtUnixMilliseconds int64                  `protobuf:"varint,6,opt,name=expires_at_unix_milliseconds,json=expiresAtUnixMilliseconds,proto3" json:"expires_at_unix_milliseconds,omitempty"`
+	FencingToken              int64                  `protobuf:"varint,7,opt,name=fencing_token,json=fencingToken,proto3" json:"fencing_token,omitempty"`
+	Destructive               bool                   `protobuf:"varint,8,opt,name=destructive,proto3" json:"destructive,omitempty"`
+	ClusterId                 string                 `protobuf:"bytes,9,opt,name=cluster_id,json=clusterId,proto3" json:"cluster_id,omitempty"`
+	NodeId                    string                 `protobuf:"bytes,10,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	AgentId                   string                 `protobuf:"bytes,11,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	unknownFields             protoimpl.UnknownFields
+	sizeCache                 protoimpl.SizeCache
 }
 
 func (x *Task) Reset() {
@@ -351,6 +381,48 @@ func (x *Task) GetTypedInput() []byte {
 		return x.TypedInput
 	}
 	return nil
+}
+
+func (x *Task) GetExpiresAtUnixMilliseconds() int64 {
+	if x != nil {
+		return x.ExpiresAtUnixMilliseconds
+	}
+	return 0
+}
+
+func (x *Task) GetFencingToken() int64 {
+	if x != nil {
+		return x.FencingToken
+	}
+	return 0
+}
+
+func (x *Task) GetDestructive() bool {
+	if x != nil {
+		return x.Destructive
+	}
+	return false
+}
+
+func (x *Task) GetClusterId() string {
+	if x != nil {
+		return x.ClusterId
+	}
+	return ""
+}
+
+func (x *Task) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
+func (x *Task) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
 }
 
 type TaskProgress struct {
@@ -583,12 +655,16 @@ const file_supabase_backup_agent_v1_agent_proto_rawDesc = "" +
 	"\x0fConnectResponse\x124\n" +
 	"\x04task\x18\x01 \x01(\v2\x1e.supabase.backup.agent.v1.TaskH\x00R\x04task\x12U\n" +
 	"\x0facknowledgement\x18\x02 \x01(\v2).supabase.backup.agent.v1.AcknowledgementH\x00R\x0facknowledgementB\t\n" +
-	"\apayload\"v\n" +
+	"\apayload\"\xc4\x01\n" +
 	"\n" +
 	"AgentHello\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12)\n" +
 	"\x10protocol_version\x18\x02 \x01(\tR\x0fprotocolVersion\x12\"\n" +
-	"\fcapabilities\x18\x03 \x03(\tR\fcapabilities\"\xac\x01\n" +
+	"\fcapabilities\x18\x03 \x03(\tR\fcapabilities\x12\x14\n" +
+	"\x05build\x18\x04 \x01(\tR\x05build\x12\x1d\n" +
+	"\n" +
+	"cluster_id\x18\x05 \x01(\tR\tclusterId\x12\x17\n" +
+	"\anode_id\x18\x06 \x01(\tR\x06nodeId\"\x87\x03\n" +
 	"\x04Task\x12\x17\n" +
 	"\atask_id\x18\x01 \x01(\tR\x06taskId\x12!\n" +
 	"\foperation_id\x18\x02 \x01(\tR\voperationId\x12\x1e\n" +
@@ -597,7 +673,15 @@ const file_supabase_backup_agent_v1_agent_proto_rawDesc = "" +
 	"capability\x12'\n" +
 	"\x0fidempotency_key\x18\x04 \x01(\tR\x0eidempotencyKey\x12\x1f\n" +
 	"\vtyped_input\x18\x05 \x01(\fR\n" +
-	"typedInput\"W\n" +
+	"typedInput\x12?\n" +
+	"\x1cexpires_at_unix_milliseconds\x18\x06 \x01(\x03R\x19expiresAtUnixMilliseconds\x12#\n" +
+	"\rfencing_token\x18\a \x01(\x03R\ffencingToken\x12 \n" +
+	"\vdestructive\x18\b \x01(\bR\vdestructive\x12\x1d\n" +
+	"\n" +
+	"cluster_id\x18\t \x01(\tR\tclusterId\x12\x17\n" +
+	"\anode_id\x18\n" +
+	" \x01(\tR\x06nodeId\x12\x19\n" +
+	"\bagent_id\x18\v \x01(\tR\aagentId\"W\n" +
 	"\fTaskProgress\x12\x17\n" +
 	"\atask_id\x18\x01 \x01(\tR\x06taskId\x12\x18\n" +
 	"\apercent\x18\x02 \x01(\rR\apercent\x12\x14\n" +

@@ -44,6 +44,7 @@ type DCSState struct {
 
 type DCS interface {
 	Observe(context.Context) (DCSState, error)
+	WaitLeaderLockExpired(context.Context) error
 	Reconcile(context.Context, string, uint64) error
 }
 

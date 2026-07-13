@@ -42,6 +42,32 @@ FROM recovery_executions WHERE plan_id=$1`
 	return execution, nil
 }
 
+// AdvanceRecoveryFencingToken transfers an existing recovery execution to a
+// newer destructive task (for example, an operator-approved rollback). Equal
+// tokens are idempotent; older tokens are rejected so a delayed task cannot
+// take control back from the current owner.
+func (s *Store) AdvanceRecoveryFencingToken(ctx context.Context, planID string, token int64) (recoveryexec.Execution, error) {
+	if planID == "" || token <= 0 {
+		return recoveryexec.Execution{}, errors.New("plan and positive fencing token are required")
+	}
+	query := `UPDATE recovery_executions SET fencing_token=?, updated_at_ms=? WHERE plan_id=? AND fencing_token<?`
+	args := []any{token, s.now().UnixMilli(), planID, token}
+	if s.dialect == Postgres {
+		query = `UPDATE recovery_executions SET fencing_token=$1, updated_at_ms=$2 WHERE plan_id=$3 AND fencing_token<$4`
+	}
+	if _, err := s.db.ExecContext(ctx, query, args...); err != nil {
+		return recoveryexec.Execution{}, err
+	}
+	execution, err := s.Load(ctx, planID)
+	if err != nil {
+		return recoveryexec.Execution{}, err
+	}
+	if execution.FencingToken != token {
+		return recoveryexec.Execution{}, errors.New("stale recovery fencing token")
+	}
+	return execution, nil
+}
+
 func (s *Store) Transition(ctx context.Context, planID string, from, to recoveryexec.State, mutate func(*recoveryexec.Execution)) error {
 	if mutate == nil {
 		return errors.New("recovery transition mutator is required")

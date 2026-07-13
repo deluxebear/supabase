@@ -22,13 +22,36 @@ func (s *Store) RegisterQuarantine(ctx context.Context, quarantine Quarantine) e
 	}
 	now := s.now().UnixMilli()
 	query := `INSERT INTO quarantines(id, plan_id, resource_type, resource_ref, rollback_until_ms, manual_lock, created_at_ms, updated_at_ms)
-VALUES(?, ?, ?, ?, ?, ?, ?, ?)`
+VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING`
 	if s.dialect == Postgres {
 		query = `INSERT INTO quarantines(id, plan_id, resource_type, resource_ref, rollback_until_ms, manual_lock, created_at_ms, updated_at_ms)
-VALUES($1, $2, $3, $4, $5, $6, $7, $8)`
+VALUES($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT(id) DO NOTHING`
 	}
-	_, err := s.db.ExecContext(ctx, query, quarantine.ID, quarantine.PlanID, quarantine.ResourceType, quarantine.ResourceRef, quarantine.RollbackUntil.UnixMilli(), quarantine.ManualLock, now, now)
-	return err
+	if _, err := s.db.ExecContext(ctx, query, quarantine.ID, quarantine.PlanID, quarantine.ResourceType, quarantine.ResourceRef, quarantine.RollbackUntil.UnixMilli(), quarantine.ManualLock, now, now); err != nil {
+		return err
+	}
+	persisted, err := s.GetQuarantine(ctx, quarantine.ID)
+	if err != nil {
+		return err
+	}
+	if persisted.PlanID != quarantine.PlanID || persisted.ResourceType != quarantine.ResourceType || persisted.ResourceRef != quarantine.ResourceRef || persisted.RollbackUntil.UnixMilli() != quarantine.RollbackUntil.UnixMilli() || persisted.ManualLock != quarantine.ManualLock {
+		return errors.New("quarantine identity already exists with different immutable values")
+	}
+	return nil
+}
+
+func (s *Store) GetQuarantine(ctx context.Context, id string) (Quarantine, error) {
+	query := "SELECT id, plan_id, resource_type, resource_ref, rollback_until_ms, manual_lock FROM quarantines WHERE id=?"
+	if s.dialect == Postgres {
+		query = "SELECT id, plan_id, resource_type, resource_ref, rollback_until_ms, manual_lock FROM quarantines WHERE id=$1"
+	}
+	var item Quarantine
+	var rollbackUntil int64
+	if err := s.db.QueryRowContext(ctx, query, id).Scan(&item.ID, &item.PlanID, &item.ResourceType, &item.ResourceRef, &rollbackUntil, &item.ManualLock); err != nil {
+		return Quarantine{}, err
+	}
+	item.RollbackUntil = time.UnixMilli(rollbackUntil)
+	return item, nil
 }
 
 func (s *Store) ClaimQuarantineCleanup(ctx context.Context, actor string, limit int) ([]Quarantine, error) {

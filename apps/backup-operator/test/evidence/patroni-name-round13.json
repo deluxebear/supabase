@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "result": "FAIL",
+  "pitrMode": "name",
+  "phase": "building-test-environment",
+  "error": {
+    "exitCode": 1,
+    "line": 328,
+    "command": "test \"$post_switchover_leader\" = \"node2\"",
+    "message": ""
+  },
+  "expectedRecoveredLeader": "node1",
+  "restorePreflight": {
+    "recoverySignalVerified": false,
+    "targetActionPromoteVerified": false,
+    "targetSelectorVerified": false,
+    "standbyResidueAbsent": false,
+    "targetLSN": "0/7000090",
+    "targetWALSegment": "000000010000000000000007",
+    "configuredRestoreCommand": "",
+    "archiveGet": {
+      "exitCode": "",
+      "bytes": "",
+      "diagnostic": ""
+    },
+    "patroniRestartHTTP": ""
+  },
+  "dcsObserved": {
+    "beforeHandback": {
+      "leaderDecoded": "",
+      "leaderResponse": {
+        "count": 0,
+        "kvs": []
+      },
+      "historyDecoded": "",
+      "historyResponse": {
+        "count": 0,
+        "kvs": []
+      }
+    },
+    "afterHandback": {
+      "leaderDecoded": "",
+      "leaderResponse": {
+        "count": 0,
+        "kvs": []
+      },
+      "historyDecoded": "",
+      "historyResponse": {
+        "count": 0,
+        "kvs": []
+      }
+    }
+  }
+}

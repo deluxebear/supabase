@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "scenario": "kubernetes-orioledb17",
+  "status": "passed",
+  "exit_code": 0,
+  "observed_at": "2026-07-13T10:32:41Z",
+  "facts": {
+    "variant": "orioledb17",
+    "provider": "custom-image-pgBackRest-2.58.0",
+    "plan_id": "8aa0a7bd7f45e98c31494b1885826ad2",
+    "job_id": "3287894301720fe9dd95b20636fd2b2f",
+    "product_chain": "signed-plan-confirm-execute-outbox-taskrouter",
+    "source_pvc_uid": "5abb1f11-b570-4690-a59e-0859d2a47ebd",
+    "recovered_pvc_uid": "4d8f9f2b-63e4-42fa-a4b9-a38b95674756",
+    "switched_wal": "000000010000000000000004",
+    "last_archived_wal": "000000010000000000000005",
+    "system_identifier": "7661958368231112749",
+    "isolated_validation": "before-target",
+    "cutover_validation": "before-target",
+    "rollback_validation": "before-target,after-target",
+    "RESULT": "PASS"
+  }
+}

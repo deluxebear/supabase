@@ -26,11 +26,38 @@ type Commands interface {
 type EnableRequest struct {
 	Config         Config
 	ArchiveCommand string
+	// CurrentArchiveCommand is observed from PostgreSQL before mutation. A
+	// command owned by another archiver must never be overwritten implicitly.
+	CurrentArchiveCommand string
 }
 
 type EnableResult struct {
 	CompletedSteps []string
 	FirstBackup    bool
+}
+
+type DisableResult struct {
+	CompletedSteps      []string
+	RepositoryPreserved bool
+}
+
+// Disable stops future WAL archival and restarts PostgreSQL. It deliberately
+// does not expire, delete, or otherwise mutate repository data.
+func Disable(ctx context.Context, runtime Runtime) (DisableResult, error) {
+	var result DisableResult
+	if runtime == nil {
+		return result, errors.New("disablement runtime is required")
+	}
+	if err := runtime.SetArchiveSettings(ctx, false, ""); err != nil {
+		return result, fmt.Errorf("disable archive settings: %w", err)
+	}
+	result.CompletedSteps = append(result.CompletedSteps, "archive-settings-off")
+	if err := runtime.RestartPostgres(ctx); err != nil {
+		return result, fmt.Errorf("restart PostgreSQL after disabling archive: %w", err)
+	}
+	result.CompletedSteps = append(result.CompletedSteps, "restart")
+	result.RepositoryPreserved = true
+	return result, nil
 }
 
 func Enable(ctx context.Context, store ConfigStore, runtime Runtime, commands Commands, request EnableRequest) (result EnableResult, err error) {
@@ -39,6 +66,9 @@ func Enable(ctx context.Context, store ConfigStore, runtime Runtime, commands Co
 	}
 	if request.ArchiveCommand != "/usr/lib/pgbackrest/bin/pgbackrest.real --stanza="+request.Config.Stanza+" archive-push %p" {
 		return result, errors.New("archive command does not match the managed binary and stanza")
+	}
+	if err := ValidateArchiveCommandOwnership(request.CurrentArchiveCommand, request.ArchiveCommand); err != nil {
+		return result, err
 	}
 	configuration, err := request.Config.Render()
 	if err != nil {
@@ -87,4 +117,11 @@ func Enable(ctx context.Context, store ConfigStore, runtime Runtime, commands Co
 	result.CompletedSteps = append(result.CompletedSteps, "first-full-backup")
 	result.FirstBackup = true
 	return result, nil
+}
+
+func ValidateArchiveCommandOwnership(current, managed string) error {
+	if current == "" || current == "(disabled)" || current == managed {
+		return nil
+	}
+	return fmt.Errorf("archive_command is already owned by another archiver: %q", current)
 }

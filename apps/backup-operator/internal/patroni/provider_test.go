@@ -103,13 +103,24 @@ func (a *fakeAPI) SetPaused(_ context.Context, paused bool) error {
 	a.config.Paused = paused
 	return nil
 }
+func (a *fakeAPI) SetSynchronousMode(_ context.Context, enabled, strict bool) error {
+	a.config.SynchronousMode = enabled
+	a.config.SynchronousModeStrict = strict
+	return nil
+}
 
 type fakeDCS struct {
-	state      DCSState
-	reconciled bool
+	state       DCSState
+	reconciled  bool
+	lockExpired bool
 }
 
 func (d *fakeDCS) Observe(context.Context) (DCSState, error) { return d.state, nil }
+func (d *fakeDCS) WaitLeaderLockExpired(context.Context) error {
+	d.state.Leader = ""
+	d.lockExpired = true
+	return nil
+}
 func (d *fakeDCS) Reconcile(_ context.Context, leader string, _ uint64) error {
 	d.state.Leader = leader
 	d.state.Revision = "43"

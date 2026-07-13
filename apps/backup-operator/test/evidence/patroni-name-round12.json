@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "result": "FAIL",
+  "pitrMode": "name",
+  "phase": "resuming-patroni-handback",
+  "error": {
+    "exitCode": 1,
+    "line": 423,
+    "command": "return 1",
+    "message": ""
+  },
+  "expectedRecoveredLeader": "node2",
+  "restorePreflight": {
+    "recoverySignalVerified": true,
+    "targetActionPromoteVerified": true,
+    "targetSelectorVerified": true,
+    "standbyResidueAbsent": true
+  },
+  "dcsObserved": {
+    "beforeHandback": {
+      "leaderDecoded": "",
+      "leaderResponse": {
+        "header": {
+          "cluster_id": 14841639068965178418,
+          "member_id": 10276657743932975437,
+          "revision": 78,
+          "raft_term": 3
+        }
+      },
+      "historyDecoded": "[[1,167772320,\"no recovery target specified\",\"2026-07-13T04:28:27.725813+00:00\",\"node2\"]]",
+      "historyResponse": {
+        "header": {
+          "cluster_id": 14841639068965178418,
+          "member_id": 10276657743932975437,
+          "revision": 75,
+          "raft_term": 3
+        },
+        "kvs": [
+          {
+            "key": "L3NlcnZpY2Uvc3Bpa2UvaGlzdG9yeQ==",
+            "create_revision": 59,
+            "mod_revision": 59,
+            "version": 1,
+            "value": "W1sxLDE2Nzc3MjMyMCwibm8gcmVjb3ZlcnkgdGFyZ2V0IHNwZWNpZmllZCIsIjIwMjYtMDctMTNUMDQ6Mjg6MjcuNzI1ODEzKzAwOjAwIiwibm9kZTIiXV0="
+          }
+        ],
+        "count": 1
+      }
+    },
+    "afterHandback": {
+      "leaderDecoded": "",
+      "leaderResponse": {
+        "count": 0,
+        "kvs": []
+      },
+      "historyDecoded": "",
+      "historyResponse": {
+        "count": 0,
+        "kvs": []
+      }
+    }
+  }
+}

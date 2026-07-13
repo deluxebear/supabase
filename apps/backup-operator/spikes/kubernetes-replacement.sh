@@ -4,10 +4,22 @@ set -euo pipefail
 # Destructive M0 spike. It creates one uniquely named Kind cluster and accepts
 # no caller-controlled SQL, Kubernetes resource names, credentials, or paths.
 # The optional variant is resolved through a closed image allowlist.
-cluster="supabase-pitr-spike-$$"
+cluster="supabase-pitr-spike-$(date +%s)-$$"
 namespace="pitr-spike"
 password="supabase-spike-only"
 variant="${1:-pg17}"
+tmp="$(mktemp -d)"
+operator_pid=""
+control_pid=""
+kind_lock="${TMPDIR:-/tmp}/supabase-backup-operator-kind-e2e.lock"
+cluster_created=0
+
+if ! mkdir "$kind_lock" 2>/dev/null; then
+  printf 'CAPABILITY_BLOCKER=another backup-operator Kind E2E owns %s\n' "$kind_lock" >&2
+  [ ! -f "$kind_lock/owner" ] || { printf 'current owner: ' >&2; cat "$kind_lock/owner" >&2; }
+  exit 75
+fi
+printf 'pid=%s cluster=%s script=%s\n' "$$" "$cluster" "${BASH_SOURCE[0]}" >"$kind_lock/owner"
 
 case "$variant" in
   pg17) image="deluxebear/postgres:17" ;;
@@ -22,7 +34,13 @@ if ! pgbackrest_version="$(docker run --rm --entrypoint sh "$image" -c \
 fi
 
 cleanup() {
-  kind delete cluster --name "$cluster" >/dev/null 2>&1 || true
+  [ -z "$operator_pid" ] || kill "$operator_pid" >/dev/null 2>&1 || true
+  [ -z "$control_pid" ] || kill "$control_pid" >/dev/null 2>&1 || true
+  if [ "$cluster_created" = 1 ] && kind get clusters 2>/dev/null | grep -Fqx "$cluster"; then
+    kind delete cluster --name "$cluster" >/dev/null 2>&1 || true
+  fi
+  rm -rf "$tmp"
+  rm -rf "$kind_lock"
 }
 trap cleanup EXIT
 
@@ -32,12 +50,27 @@ wait_pod() {
     -l "$selector" --timeout=240s >/dev/null
 }
 
-query_service() {
-  local service="$1"
-  local expected="$2"
-  local result
+query_service_from_pod() {
+  local pod="$1"
+  local service="$2"
+  local expected="$3"
+  local result pod_uid selector_json selector_matches endpoint_ready
   for _ in $(seq 1 60); do
-    if result="$(kubectl -n "$namespace" exec source-0 -- env PGPASSWORD="$password" \
+    pod_uid="$(kubectl -n "$namespace" get pod "$pod" -o jsonpath='{.metadata.uid}' 2>/dev/null || true)"
+    selector_json="$(kubectl -n "$namespace" get service "$service" -o json 2>/dev/null | jq -c '.spec.selector // {}' || true)"
+    selector_matches=false
+    if [ -n "$pod_uid" ] && [ -n "$selector_json" ]; then
+      selector_matches="$(kubectl -n "$namespace" get pod "$pod" -o json 2>/dev/null | jq -r --argjson selector "$selector_json" \
+        '(.metadata.labels // {}) as $labels | all($selector | to_entries[]; $labels[.key] == .value)' || true)"
+    fi
+    endpoint_ready=false
+    if [ -n "$pod_uid" ]; then
+      endpoint_ready="$(kubectl -n "$namespace" get endpointslice \
+        -l "kubernetes.io/service-name=$service" -o json 2>/dev/null | jq -r --arg uid "$pod_uid" \
+        'any(.items[].endpoints[]?; .targetRef.uid == $uid and .conditions.ready == true)' || true)"
+    fi
+    if [ "$selector_matches" = true ] && [ "$endpoint_ready" = true ] && \
+      result="$(kubectl -n "$namespace" exec "$pod" -- env PGPASSWORD="$password" \
       psql -h "$service" -U postgres -d postgres -Atqc \
       "select string_agg(value, ',' order by id) from recovery_markers" 2>/dev/null)"; then
       if [ "$result" = "$expected" ]; then
@@ -48,16 +81,40 @@ query_service() {
     sleep 1
   done
   kubectl -n "$namespace" get service "$service" -o wide >&2
-  kubectl -n "$namespace" get endpoints "$service" -o yaml >&2
+  kubectl -n "$namespace" get endpointslice -l "kubernetes.io/service-name=$service" -o yaml >&2
   return 1
 }
 
+query_service() {
+  query_service_from_pod source-0 "$1" "$2"
+}
+
 kind create cluster --name "$cluster" --wait 120s >/dev/null
+cluster_created=1
+kind get kubeconfig --name "$cluster" >"$tmp/kubeconfig"
+export KUBECONFIG="$tmp/kubeconfig"
 kind load docker-image --name "$cluster" "$image" >/dev/null
 kubectl create namespace "$namespace" >/dev/null
 
+kubectl -n "$namespace" apply -f - >/dev/null <<'YAML'
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backup-operator
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: replacement-storage
+spec:
+  hard:
+    requests.storage: 10Gi
+YAML
+
 kubectl -n "$namespace" create secret generic postgres-password \
   --from-literal="password=$password" >/dev/null
+kubectl -n "$namespace" create secret generic pgsodium-root \
+  --from-literal='pgsodium_root.key=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef' >/dev/null
 
 kubectl -n "$namespace" apply -f - >/dev/null <<YAML
 apiVersion: v1
@@ -108,6 +165,9 @@ spec:
     metadata:
       labels: {app: source}
     spec:
+      securityContext:
+        fsGroup: 101
+        fsGroupChangePolicy: OnRootMismatch
       initContainers:
         - name: repository-permissions
           image: ${image}
@@ -141,10 +201,13 @@ spec:
             - {name: data, mountPath: /var/lib/postgresql/data}
             - {name: repository, mountPath: /var/lib/pgbackrest/repo}
             - {name: config, mountPath: /etc/pgbackrest/conf.d/spike.conf, subPath: spike.conf, readOnly: true}
+            - {name: pgsodium, mountPath: /etc/postgresql-custom/pgsodium_root.key, subPath: pgsodium_root.key, readOnly: true}
       volumes:
         - {name: data, persistentVolumeClaim: {claimName: source-data}}
         - {name: repository, persistentVolumeClaim: {claimName: backup-repository}}
         - {name: config, configMap: {name: pgbackrest-spike}}
+        - name: pgsodium
+          secret: {secretName: pgsodium-root, defaultMode: 256}
 ---
 apiVersion: v1
 kind: Service
@@ -181,10 +244,37 @@ kubectl -n "$namespace" exec source-0 -- psql -v ON_ERROR_STOP=1 -U postgres -d 
   "create table recovery_markers(id bigint primary key, value text not null); insert into recovery_markers values (1, 'before-target');" >/dev/null
 kubectl -n "$namespace" exec source-0 -- \
   su-exec postgres /usr/lib/pgbackrest/bin/pgbackrest.real --stanza=k8s-spike --type=full backup >/dev/null
+backup_info="$(kubectl -n "$namespace" exec source-0 -- \
+  su-exec postgres /usr/lib/pgbackrest/bin/pgbackrest.real --stanza=k8s-spike --output=json info)"
+backup_id="$(jq -er '.[0].backup[-1].label' <<<"$backup_info")"
+backup_completed_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+recovery_target="$(kubectl -n "$namespace" exec source-0 -- psql -U postgres -Atqc \
+  "SELECT to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"')")"
+sleep 1
 kubectl -n "$namespace" exec source-0 -- psql -v ON_ERROR_STOP=1 -U postgres -d postgres -c \
-  "select pg_create_restore_point('k8s_spike_target'); insert into recovery_markers values (2, 'after-target'); select pg_switch_wal();" >/dev/null
+  "insert into recovery_markers values (2, 'after-target');" >/dev/null
+switched_wal="$(kubectl -n "$namespace" exec source-0 -- psql -U postgres -Atqc \
+  'SELECT pg_walfile_name(pg_switch_wal())')"
 kubectl -n "$namespace" exec source-0 -- \
   su-exec postgres /usr/lib/pgbackrest/bin/pgbackrest.real --stanza=k8s-spike check >/dev/null
+last_archived_wal=""
+for _ in $(seq 1 120); do
+  last_archived_wal="$(kubectl -n "$namespace" exec source-0 -- psql -U postgres -Atqc \
+    "SELECT COALESCE(last_archived_wal, '') FROM pg_stat_archiver")"
+  if [ -n "$last_archived_wal" ] && [[ "$last_archived_wal" > "$switched_wal" || "$last_archived_wal" = "$switched_wal" ]]; then break; fi
+  sleep 1
+done
+[ -n "$last_archived_wal" ] && [[ "$last_archived_wal" > "$switched_wal" || "$last_archived_wal" = "$switched_wal" ]] || {
+  printf 'CAPABILITY_BLOCKER=pgBackRest WAL coverage incomplete (switched=%s last_archived=%s)\n' "$switched_wal" "$last_archived_wal" >&2
+  exit 69
+}
+recoverable_until="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+# The production-chain E2E reuses this real pgBackRest fixture and takes over
+# before any direct replacement resource is created.
+if [ "${BACKUP_OPERATOR_SETUP_ONLY:-}" = 1 ]; then
+  return 0
+fi
 
 source_pvc_uid="$(kubectl -n "$namespace" get pvc source-data -o jsonpath='{.metadata.uid}')"
 source_pv_name="$(kubectl -n "$namespace" get pvc source-data -o jsonpath='{.spec.volumeName}')"

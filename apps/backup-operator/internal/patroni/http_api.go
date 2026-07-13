@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -14,8 +15,40 @@ import (
 )
 
 type HTTPAPI struct {
-	BaseURL string
-	Client  *http.Client
+	BaseURL  string
+	Client   *http.Client
+	Username string
+	Password string
+}
+
+type HTTPNodeInspector struct {
+	URLs     map[string]string
+	Client   *http.Client
+	Username string
+	Password string
+}
+
+func (i HTTPNodeInspector) Identity(ctx context.Context, node string) (NodeIdentity, error) {
+	baseURL := strings.TrimSpace(i.URLs[node])
+	if baseURL == "" {
+		return NodeIdentity{}, fmt.Errorf("Patroni node %q has no configured REST URL", node)
+	}
+	var status struct {
+		State                    string `json:"state"`
+		DatabaseSystemIdentifier string `json:"database_system_identifier"`
+		Watchdog                 struct {
+			Healthy bool `json:"healthy"`
+		} `json:"watchdog"`
+	}
+	api := HTTPAPI{BaseURL: baseURL, Client: i.Client, Username: i.Username, Password: i.Password}
+	if err := api.request(ctx, http.MethodGet, "/patroni", nil, &status); err != nil {
+		return NodeIdentity{}, err
+	}
+	return NodeIdentity{
+		SystemIdentifier: status.DatabaseSystemIdentifier,
+		Reachable:        status.State == "running",
+		WatchdogHealthy:  status.Watchdog.Healthy,
+	}, nil
 }
 
 func (a HTTPAPI) Cluster(ctx context.Context) (Cluster, error) {
@@ -58,10 +91,24 @@ func (a HTTPAPI) SetPaused(ctx context.Context, paused bool) error {
 	return a.request(ctx, http.MethodPatch, "/config", payload, nil)
 }
 
+func (a HTTPAPI) SetSynchronousMode(ctx context.Context, enabled, strict bool) error {
+	payload, err := json.Marshal(map[string]bool{"synchronous_mode": enabled, "synchronous_mode_strict": strict})
+	if err != nil {
+		return err
+	}
+	return a.request(ctx, http.MethodPatch, "/config", payload, nil)
+}
+
 func (a HTTPAPI) request(ctx context.Context, method, path string, payload []byte, output any) error {
 	base, err := url.Parse(a.BaseURL)
 	if err != nil || (base.Scheme != "http" && base.Scheme != "https") || base.Host == "" || base.RawQuery != "" || base.Fragment != "" {
 		return errors.New("valid Patroni HTTP(S) base URL is required")
+	}
+	if base.Scheme == "http" {
+		ip := net.ParseIP(base.Hostname())
+		if base.Hostname() != "localhost" && (ip == nil || !ip.IsLoopback()) {
+			return errors.New("unencrypted Patroni HTTP is allowed only on loopback")
+		}
 	}
 	base.Path = strings.TrimRight(base.Path, "/") + path
 	request, err := http.NewRequestWithContext(ctx, method, base.String(), bytes.NewReader(payload))
@@ -69,6 +116,12 @@ func (a HTTPAPI) request(ctx context.Context, method, path string, payload []byt
 		return err
 	}
 	request.Header.Set("Accept", "application/json")
+	if (a.Username == "") != (a.Password == "") {
+		return errors.New("Patroni basic-auth username and password must be configured together")
+	}
+	if a.Username != "" {
+		request.SetBasicAuth(a.Username, a.Password)
+	}
 	if payload != nil {
 		request.Header.Set("Content-Type", "application/json")
 	}

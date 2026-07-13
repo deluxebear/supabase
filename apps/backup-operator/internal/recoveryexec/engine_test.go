@@ -46,6 +46,19 @@ func TestExecuteStopsOnLeaseLossBeforeNextDestructiveStep(t *testing.T) {
 	}
 }
 
+func TestVerifyFenceStableRetriesIncompleteEvidenceWithinBound(t *testing.T) {
+	now := time.Now()
+	fence := &stabilizingFence{now: now, incomplete: 2}
+	handle := contracts.FenceHandle{ID: "fence", Expires: now.Add(time.Minute)}
+	evidence, err := verifyFenceStable(context.Background(), fence, handle)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fence.calls != 3 || !evidence.ControlChannelHealthy {
+		t.Fatalf("fence did not stabilize deterministically: calls=%d evidence=%+v", fence.calls, evidence)
+	}
+}
+
 func TestSeparateRollbackRestoresQuarantinedOriginal(t *testing.T) {
 	now := time.Unix(1_700_000_000, 0)
 	plan, handle := safePlan(now)
@@ -149,6 +162,27 @@ func (b *fakeBackup) Restore(_ context.Context, request contracts.RestoreRequest
 type fakeFence struct {
 	now time.Time
 	err error
+}
+
+type stabilizingFence struct {
+	now        time.Time
+	incomplete int
+	calls      int
+}
+
+func (f *stabilizingFence) ID() string { return "fence" }
+func (f *stabilizingFence) Engage(context.Context, contracts.TargetRef, contracts.TopologySnapshot) (contracts.FenceHandle, error) {
+	return contracts.FenceHandle{}, nil
+}
+func (f *stabilizingFence) Verify(_ context.Context, handle contracts.FenceHandle) (contracts.FenceEvidence, error) {
+	f.calls++
+	if f.calls <= f.incomplete {
+		return contracts.FenceEvidence{}, contracts.ErrFenceIncomplete
+	}
+	return contracts.FenceEvidence{Evidence: contracts.Evidence{ProviderID: "fence", ObservationID: handle.ID, ObservedAt: f.now, ValidUntil: f.now.Add(time.Minute)}, DataPlaneBlocked: true, PoolersBlocked: true, DirectLoginBlocked: true, ControlChannelHealthy: true}, nil
+}
+func (f *stabilizingFence) Release(context.Context, contracts.FenceHandle) (contracts.Evidence, error) {
+	return contracts.Evidence{}, nil
 }
 
 func (f fakeFence) ID() string { return "fence" }

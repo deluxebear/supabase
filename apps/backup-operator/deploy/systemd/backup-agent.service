@@ -12,7 +12,9 @@ RestartSec=5s
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
-ReadWritePaths=/var/lib/backup-agent /var/lib/postgresql /etc/pgbackrest
+# Mount /var/lib/backup-agent/drill-workspace as a dedicated filesystem before
+# enabling restore drills; the Agent rejects a workspace on the PGDATA device.
+ReadWritePaths=/var/lib/backup-agent /var/lib/backup-agent/drill-workspace /var/lib/postgresql /var/lib/pgbackrest /etc/pgbackrest
 
 [Install]
 WantedBy=multi-user.target

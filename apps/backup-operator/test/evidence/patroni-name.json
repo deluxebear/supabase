@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "result": "FAIL",
+  "failure": "final Patroni leader role remained state=stopped; the previous wait_cluster check did not require leader state=running and manual pg_ctl start bypassed Patroni lifecycle ownership",
+  "pitrMode": "name",
+  "initialLeader": "node1",
+  "postSwitchoverLeader": "node2",
+  "pauseObserved": true,
+  "pausedSwitchoverHTTP": "200",
+  "dcsOutagePrimarySQL": "1",
+  "dualPrimary": {
+    "writablePrimaries": 2,
+    "failClosed": true
+  },
+  "replication": {
+    "asyncModeExercised": true,
+    "syncModeRestored": true,
+    "synchronousStandbyNames": "2 (node2,node3)"
+  },
+  "recovery": {
+    "targetTime": "2026-07-13 03:53:17.853622+00",
+    "rows": "before-target",
+    "rebuiltReplicas": 2,
+    "timeline": 3,
+    "archive": "healthy"
+  },
+  "cluster": {
+    "members": [
+      {
+        "name": "node1",
+        "role": "replica",
+        "state": "streaming",
+        "api_url": "http://node1:8008/patroni",
+        "host": "node1",
+        "port": 5432,
+        "timeline": 3,
+        "receive_lag": 7936,
+        "receive_lsn": "0/A000000",
+        "replay_lag": 7936,
+        "replay_lsn": "0/A000000",
+        "lag": 7936,
+        "lsn": "0/A000000"
+      },
+      {
+        "name": "node2",
+        "role": "leader",
+        "state": "stopped",
+        "api_url": "http://node2:8008/patroni",
+        "host": "node2",
+        "port": 5432
+      },
+      {
+        "name": "node3",
+        "role": "replica",
+        "state": "streaming",
+        "api_url": "http://node3:8008/patroni",
+        "host": "node3",
+        "port": 5432,
+        "timeline": 3,
+        "receive_lag": 0,
+        "receive_lsn": "0/B000000",
+        "replay_lag": 0,
+        "replay_lsn": "0/B000000",
+        "lag": 0,
+        "lsn": "0/B000000"
+      }
+    ],
+    "scope": "spike"
+  }
+}

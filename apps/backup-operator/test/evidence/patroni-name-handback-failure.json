@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "result": "FAIL",
+  "pitrMode": "name",
+  "strictPatroniLifecycle": true,
+  "manualPgCtlUsed": false,
+  "failedPhase": "pre-handback-dcs-leader-ownership-assertion",
+  "exitCode": 1,
+  "failure": "After the named restore and before starting the recovered Patroni process, the strict assertion requiring the DCS leader key to be empty or equal to the recovered primary failed.",
+  "rootCause": "The paused switchover, DCS-outage dual-primary injection, and container stop sequence left DCS leader ownership in a state that did not satisfy the handback precondition. The script's ERR trap did not persist the rejected key value before cleanup, so the exact stale owner value is unavailable and must not be guessed.",
+  "evidenceGap": "The failed assertion ran before evidence JSON generation and the ERR trap reported line=0. Future diagnostics must persist phase and observed DCS values before each assertion; no further run was performed in this round.",
+  "handbackAttempted": false,
+  "externalWriteFenceReleased": false
+}

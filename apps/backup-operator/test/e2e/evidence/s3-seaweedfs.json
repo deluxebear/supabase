@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "scenario": "s3-seaweedfs",
+  "status": "passed",
+  "exit_code": 0,
+  "observed_at": "2026-07-13T05:45:05Z",
+  "facts": {
+    "implementation": "seaweedfs",
+    "seaweedfs_version": "3.89",
+    "seaweedfs_image_id": "sha256:34e98a22f7fc82cb8461f5b534142f420ef367645531a83d66e6547c39ec4cd5",
+    "postgres_image_id": "sha256:edb4564ea720f2643e5886c66427a53dbd824b11d68562262967ca1b45cc4f26",
+    "backup_label": "20260713-054443F",
+    "restore_fixture": "seaweedfs-restored",
+    "RESULT": "PASS"
+  }
+}

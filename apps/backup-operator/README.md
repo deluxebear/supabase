@@ -25,6 +25,35 @@ go run ./cmd/backupctl --endpoint http://127.0.0.1:8080 capabilities
   while retaining the same interfaces.
 - `backupctl`: typed administrative API client, not an arbitrary shell wrapper.
 
+## Docker Compose deployment
+
+The default Compose manifest runs only the Operator control plane. Copy
+`deploy/compose.env.example` to a protected environment file, replace the
+service assertion key, load it into the shell, and start the Operator:
+
+```bash
+set -a
+. deploy/compose.env
+set +a
+docker compose -f deploy/compose.yaml up -d
+```
+
+Install `deploy/systemd/backup-agent.service` on every PostgreSQL host. The
+Agent must retain host-level access to PostgreSQL, pgBackRest, and the recovery
+filesystem when the database container is stopped or replaced. The project
+does not claim support for running that Agent from the default Compose image;
+a future containerized Agent requires a dedicated restore image and a
+policy-limited container-runtime proxy.
+
+The Helm and Kustomize manifests expect an existing Secret named
+`backup-operator-secrets` with a `service-assertion-key` entry containing at
+least 32 random bytes. They provision a single-replica SQLite control-store PVC
+by default. Set `persistence.existingClaim` in Helm, or replace the Kustomize
+PVC, when the platform owns durable storage. PostgreSQL control-store
+deployments should override the driver and DSN from a protected Secret.
+The bundled Helm values are intentionally restricted to one replica because
+the default control store is SQLite on a `ReadWriteOnce` volume.
+
 ## Contracts
 
 - OpenAPI source: `api/openapi/v1/openapi.yaml`

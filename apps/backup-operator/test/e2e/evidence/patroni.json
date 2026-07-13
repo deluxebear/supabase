@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "scenario": "patroni",
+  "status": "passed",
+  "exit_code": 0,
+  "observed_at": "2026-07-13T10:48:40Z",
+  "facts": {
+    "initial_leader": "node1",
+    "post_switchover_leader": "node2",
+    "pause_state": "true",
+    "paused_switchover_http": "200",
+    "dcs_outage_primary_sql": "1",
+    "dual_primary_writable_count": "2",
+    "dual_primary_fail_closed": "true",
+    "synchronous_standby_names": "2 (node2,node3)",
+    "asynchronous_mode_exercised": "true",
+    "synchronous_mode_restored": "true",
+    "target_after_pitr": "before-target",
+    "rebuilt_replicas": "2",
+    "restored_timeline": "4",
+    "evidence": "/Volumes/data/projects/supabase/apps/backup-operator/patroni-name-evidence.json",
+    "RESULT": "PASS"
+  }
+}

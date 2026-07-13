@@ -10,23 +10,32 @@ import (
 )
 
 type ReplacementPlan struct {
-	ID              string
-	Target          contracts.TargetRef
-	Namespace       string
-	OldStatefulSet  string
-	NewStatefulSet  string
-	OldPVCUIDs      []string
-	NewPVCNames     []string
-	StableService   string
-	IsolatedService string
-	OldSelector     map[string]string
-	NewSelector     map[string]string
-	Image           string
-	Stanza          string
-	ArchiveIdentity string
-	Backup          contracts.BackupIdentity
-	Recovery        contracts.RestoreTarget
-	ExpiresAt       time.Time
+	ID                    string
+	Target                contracts.TargetRef
+	Namespace             string
+	OldStatefulSet        string
+	NewStatefulSet        string
+	OldPVCUIDs            []string
+	OldPVCNames           []string
+	NewPVCNames           []string
+	StableService         string
+	IsolatedService       string
+	OldSelector           map[string]string
+	NewSelector           map[string]string
+	Image                 string
+	Stanza                string
+	ArchiveIdentity       string
+	Backup                contracts.BackupIdentity
+	BackupLabel           string
+	Recovery              contracts.RestoreTarget
+	ExpiresAt             time.Time
+	RequiredCapacityBytes int64
+	AccessMode            string
+	StorageClass          string
+	ConfigMap             string
+	RepositoryPVC         string
+	PGSodiumSecret        string
+	ServiceAccount        string
 }
 
 type ReplacementRuntime interface {

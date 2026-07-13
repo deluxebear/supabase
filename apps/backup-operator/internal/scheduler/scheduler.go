@@ -14,6 +14,7 @@ import (
 var (
 	ErrStandbyUnavailable = errors.New("designated standby is unavailable")
 	ErrStandbyLag         = errors.New("designated standby exceeds lag threshold")
+	ErrPrimaryUnavailable = errors.New("primary is unavailable")
 )
 
 func Next(schedule string, after time.Time) (time.Time, error) {
@@ -35,6 +36,16 @@ func SelectExecutionNode(policy controlstore.BackupPolicyRecord, topology contra
 	}
 	if policy.BackupFrom != "standby" || policy.DesignatedStandby == "" {
 		return contracts.NodeObservation{}, errors.New("backup target policy is invalid")
+	}
+	primaryReachable := false
+	for _, node := range topology.Nodes {
+		if node.Role == contracts.RolePrimary && node.Reachable {
+			primaryReachable = true
+			break
+		}
+	}
+	if !primaryReachable {
+		return contracts.NodeObservation{}, ErrPrimaryUnavailable
 	}
 	for _, node := range topology.Nodes {
 		if node.NodeID != policy.DesignatedStandby {

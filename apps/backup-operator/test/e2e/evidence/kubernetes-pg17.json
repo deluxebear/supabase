@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "scenario": "kubernetes-pg17",
+  "status": "passed",
+  "exit_code": 0,
+  "observed_at": "2026-07-13T10:37:00Z",
+  "facts": {
+    "variant": "pg17",
+    "provider": "custom-image-pgBackRest-2.58.0",
+    "plan_id": "958411421f7d2fbbc6ba2e847eae2be0",
+    "job_id": "4c01f3afc8d75b9b43d323c0b7a358a8",
+    "product_chain": "signed-plan-confirm-execute-outbox-taskrouter",
+    "source_pvc_uid": "4abac130-4a7f-434c-b29b-5961e0cf8822",
+    "recovered_pvc_uid": "97c1bf63-70e3-4388-8779-fee082a35f5f",
+    "switched_wal": "000000010000000000000004",
+    "last_archived_wal": "000000010000000000000005",
+    "system_identifier": "7661959478537363502",
+    "isolated_validation": "before-target",
+    "cutover_validation": "before-target",
+    "rollback_validation": "before-target,after-target",
+    "RESULT": "PASS"
+  }
+}

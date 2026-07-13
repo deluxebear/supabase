@@ -19,8 +19,7 @@ func (p PostgresDatabaseFence) DrainWriters(ctx context.Context) error {
 	_, err := p.DB.ExecContext(ctx, `SELECT pg_terminate_backend(pid)
 FROM pg_stat_activity
 WHERE pid <> pg_backend_pid()
-  AND backend_type = 'client backend'
-  AND (xact_start IS NOT NULL OR state IS DISTINCT FROM 'idle')`)
+  AND backend_type = 'client backend'`)
 	return err
 }
 
@@ -28,15 +27,14 @@ func (p PostgresDatabaseFence) ResolvePreparedTransactions(ctx context.Context) 
 	if p.DB == nil {
 		return errors.New("database is required")
 	}
-	_, err := p.DB.ExecContext(ctx, `DO $fence$
-DECLARE prepared record;
-BEGIN
-  FOR prepared IN SELECT gid FROM pg_prepared_xacts LOOP
-    EXECUTE format('ROLLBACK PREPARED %L', prepared.gid);
-  END LOOP;
-END
-$fence$`)
-	return err
+	count, err := p.PreparedTransactions(ctx)
+	if err != nil {
+		return err
+	}
+	if count != 0 {
+		return errors.New("prepared transactions must be resolved by an operator before destructive recovery")
+	}
+	return nil
 }
 
 func (p PostgresDatabaseFence) ActiveWriters(ctx context.Context) (int, error) {

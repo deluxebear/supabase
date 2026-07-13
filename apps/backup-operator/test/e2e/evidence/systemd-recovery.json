@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "scenario": "systemd-recovery",
+  "status": "passed",
+  "exit_code": 0,
+  "observed_at": "2026-07-13T09:25:51Z",
+  "facts": {
+    "drill_job_id": "drill-systemd-e2e-1783934672",
+    "wal_gap_blocked": "true",
+    "operator_version": "ifn-systemd-e2e+c8dcb8ed7cfbcda07704f3eee883dfd3ae40dc3c",
+    "git_commit": "c8dcb8ed7cfbcda07704f3eee883dfd3ae40dc3c",
+    "binary_sha256": "eae443efaa3bfd287bead240841151558cb4a455ff0f8f1fc11c2ac1cd0e47c7",
+    "systemd_image_id": "sha256:c958ba22eb628ba479422d9699cd3a9c63019cce4f58ccd15a13713bb7d883cb",
+    "api_restore_plan_id": "d6f8c0b7ac0e1b16afe8137c046db47f",
+    "confirmed_plan_hash": "01be1605f220fe693e84508cf4594adf571ef7352a77c4bad9cec03c37e4f384",
+    "durable_job_id": "bd1e2299c995f305179ef046f86316a0",
+    "drill_evidence_digest": "sha256:0702981955f82712b27dbd1687cf8bd0a70e478391e22d1c175134f8636f1883",
+    "drill_read_only": "true",
+    "drill_target_data": "before-backup",
+    "drill_workspace_cleanup": "true",
+    "wal_gap_missing_segment": "000000010000000000000007",
+    "agent_main_pid": "337",
+    "transport": "mtls-grpc-bidirectional",
+    "execution_chain": "api-outbox-grpc-journal-recovery-engine",
+    "agent_journal_state": "completed",
+    "recovery_engine_state": "cut-over",
+    "postgres_restore_fixture": "before-backup",
+    "quarantine_preserved": "true",
+    "exec_reload_bypass": "false",
+    "RESULT": "PASS",
+    "preserved_container": "backup-systemd-e2e-7565-host"
+  }
+}

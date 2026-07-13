@@ -45,3 +45,22 @@ func TestHTTPAPIRejectsInvalidBaseURL(t *testing.T) {
 		t.Fatal("expected invalid scheme rejection")
 	}
 }
+
+func TestHTTPNodeInspectorReadsIdentityAndWatchdog(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/patroni" {
+			http.NotFound(w, r)
+			return
+		}
+		_, _ = w.Write([]byte(`{"state":"running","database_system_identifier":"sys-42","watchdog":{"healthy":true}}`))
+	}))
+	defer server.Close()
+
+	identity, err := (HTTPNodeInspector{URLs: map[string]string{"primary": server.URL}}).Identity(context.Background(), "primary")
+	if err != nil || !identity.Reachable || !identity.WatchdogHealthy || identity.SystemIdentifier != "sys-42" {
+		t.Fatalf("identity=%+v err=%v", identity, err)
+	}
+	if _, err := (HTTPNodeInspector{}).Identity(context.Background(), "missing"); err == nil {
+		t.Fatal("missing node URL was accepted")
+	}
+}

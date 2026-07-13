@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-operator-cloudnativepg-feature
+  namespace: supabase
+data:
+  # This ConfigMap is intentionally outside every core deployment manifest.
+  # The Operator must also be explicitly configured to read this gate.
+  cloudnativepg.enabled: "true"

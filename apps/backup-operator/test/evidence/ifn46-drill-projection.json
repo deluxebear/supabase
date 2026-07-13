@@ -1,0 +1,74 @@
+{
+  "contract": "IFN-46",
+  "result": "PASS",
+  "coordinator": {
+    "serverObservationTarget": true,
+    "walGapBlocksBeforeCapability": true,
+    "utcTargets": true,
+    "durableIdempotentJobs": true,
+    "sharedAgentDestructiveFencingCounter": "agent/<cluster>/<node>",
+    "businessLeasesIndependent": true
+  },
+  "agent": {
+    "typedEvidenceTransport": "TaskRouter->TaskResult->controlstore",
+    "systemdHandler": true,
+    "allModeInProcessHandler": true,
+    "journalReplay": true
+  },
+  "isolation": {
+    "repositoryReadOnlyRequired": true,
+    "workspaceIndependentFilesystem": true,
+    "workspaceRootAllowlist": true,
+    "capacityChecked": true,
+    "cleanupAlways": true,
+    "validatorBinaryAllowlist": true,
+    "checks": [
+      "databaseSystemId",
+      "databaseHistoryId",
+      "timeline",
+      "readOnly",
+      "targetDataVerified",
+      "observedTargetTime",
+      "startupMode",
+      "networkExposure"
+    ]
+  },
+  "projection": {
+    "durableTaskEvidence": true,
+    "lineagePinned": true,
+    "repositoryRevisionPinned": true,
+    "api": true,
+    "studio": true,
+    "confidence": "drill-verified",
+    "alerts": [
+      "BackupOperatorRestoreDrillFailed",
+      "BackupOperatorRestoreDrillStale"
+    ]
+  },
+  "productionSystemdPgBackRest": {
+    "result": "PASS",
+    "observedAt": "2026-07-13T09:25:51Z",
+    "jobId": "drill-systemd-e2e-1783934672",
+    "evidenceDigest": "sha256:0702981955f82712b27dbd1687cf8bd0a70e478391e22d1c175134f8636f1883",
+    "readOnly": true,
+    "targetData": "before-backup",
+    "workspaceCleanup": true,
+    "walGapMissingSegment": "000000010000000000000007",
+    "walGapBlocked": true,
+    "subsequentDestructiveRestore": "cut-over",
+    "fencingTokens": {
+      "restoreDrill": 1,
+      "restoreExecute": 2
+    }
+  },
+  "verification": {
+    "goTestAll": "PASS",
+    "raceCriticalPackages": "PASS",
+    "goVetAll": "PASS",
+    "generatedContractDiff": "PASS",
+    "typedEvidenceIntegration": "PASS",
+    "walGapBlocked": "PASS",
+    "validatorContract": "PASS",
+    "systemdRecoveryEvidence": "test/e2e/evidence/systemd-recovery.json"
+  }
+}

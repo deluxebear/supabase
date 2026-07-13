@@ -1,9 +1,12 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   title: Supabase Backup Operator API
   version: 1.0.0
+security:
+  - serviceAssertion: []
 paths:
   /healthz:
+    security: []
     get:
       operationId: health
       responses:
@@ -23,6 +26,46 @@ paths:
               schema:
                 type: array
                 items: {$ref: "#/components/schemas/Capability"}
+  /v1/clusters:
+    get:
+      operationId: listClusters
+      parameters:
+        - {name: projectId, in: query, required: true, schema: {type: string, minLength: 1}}
+      responses:
+        "200": {description: Registered clusters for the project}
+    post:
+      operationId: registerCluster
+      parameters: [{$ref: "#/components/parameters/IdempotencyKey"}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [projectId, targetId, systemIdentifier, dataDomain]
+              properties:
+                projectId: {type: string}
+                targetId: {type: string}
+                systemIdentifier: {type: string}
+                dataDomain: {type: string}
+      responses:
+        "201": {description: Cluster registered outside its recovery domain}
+  /v1/clusters/{clusterId}:
+    get:
+      operationId: getCluster
+      parameters: [{$ref: "#/components/parameters/ClusterId"}]
+      responses:
+        "200": {description: Registered identity and latest discovery}
+        "404": {description: Cluster not found}
+  /v1/clusters/{clusterId}/discover:
+    post:
+      operationId: discoverCluster
+      parameters:
+        - {$ref: "#/components/parameters/ClusterId"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      responses:
+        "200": {description: Fresh provider, topology, and repository discovery}
+        "409": {description: Discovery is unavailable or unsafe}
   /v1/operations/{operationId}:
     get:
       operationId: getOperation
@@ -38,7 +81,309 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/Operation"}
         "404": {description: Operation not found}
+  /v1/operations:
+    post:
+      operationId: createOperation
+      parameters: [{$ref: "#/components/parameters/IdempotencyKey"}]
+      description: Creates an operation, its first step, and durable outbox task atomically. Reusing the same target and idempotency key returns the existing operation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/CreateOperation"}
+      responses:
+        "201":
+          description: Operation created
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Operation"}
+        "200":
+          description: Existing idempotent operation
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Operation"}
+        "400": {description: Invalid operation input}
+  /v1/operations/{operationId}/cancel:
+    post:
+      operationId: cancelOperation
+      parameters:
+        - {$ref: "#/components/parameters/OperationId"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      responses:
+        "200": {description: Operation cancelled}
+        "404": {description: Operation not found}
+        "409": {description: Operation is already terminal}
+  /v1/operations/{operationId}/retry:
+    post:
+      operationId: retryOperation
+      parameters:
+        - {$ref: "#/components/parameters/OperationId"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      responses:
+        "200": {description: Failed operation queued again}
+        "404": {description: Operation not found}
+        "409": {description: Operation is not retryable}
+  /v1/operations/{operationId}/events:
+    get:
+      operationId: replayOperationEvents
+      description: Returns a bounded SSE page after the query cursor or Last-Event-ID.
+      parameters:
+        - {$ref: "#/components/parameters/OperationId"}
+        - {name: cursor, in: query, schema: {type: integer, format: int64, minimum: 0}}
+        - {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 1000, default: 100}}
+      responses:
+        "200":
+          description: Resumable operation event stream page
+          content:
+            text/event-stream:
+              schema: {type: string}
+  /v1/clusters/{clusterId}/backup-policy:
+    get:
+      operationId: getClusterBackupPolicy
+      parameters: [{$ref: "#/components/parameters/ClusterId"}]
+      responses:
+        "200":
+          description: Persisted backup policy
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/BackupPolicy"}
+        "404": {description: Backup policy is not configured}
+    put:
+      operationId: putClusterBackupPolicy
+      parameters:
+        - {$ref: "#/components/parameters/ClusterId"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/BackupPolicyInput"}
+      responses:
+        "200":
+          description: Persisted backup policy
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/BackupPolicy"}
+        "400": {description: Invalid policy or unknown repository}
+  /v1/clusters/{clusterId}/backups:
+    get:
+      operationId: listClusterBackups
+      parameters: [{$ref: "#/components/parameters/ClusterId"}]
+      responses:
+        "200":
+          description: Observed durable backup manifests, inferred WAL window, and isolated restore drill evidence
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/BackupRecoverability"}
+    post:
+      operationId: createManualBackup
+      parameters:
+        - {$ref: "#/components/parameters/ClusterId"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {type: {type: string, enum: [full, diff, incr], default: full}}
+      responses:
+        "202": {description: Manual backup job accepted}
+        "409": {description: Backup policy or provider is unavailable}
+  /v1/clusters/{clusterId}/pitr:
+    get:
+      operationId: checkClusterPITR
+      parameters: [{$ref: "#/components/parameters/ClusterId"}]
+      responses:
+        "200": {description: Observed PITR and archive health}
+  /v1/clusters/{clusterId}/pitr/enable:
+    post:
+      operationId: enableClusterPITR
+      parameters:
+        - {$ref: "#/components/parameters/ClusterId"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [repositoryId]
+              properties:
+                repositoryId: {type: string, minLength: 1}
+      responses:
+        "200": {description: PITR enabled with the standard 14-day policy}
+        "409": {description: Existing archive ownership or repository checks blocked enablement}
+  /v1/clusters/{clusterId}/pitr/disable:
+    post:
+      operationId: disableClusterPITR
+      parameters:
+        - {$ref: "#/components/parameters/ClusterId"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      responses:
+        "200": {description: Future archiving disabled while repository data is preserved}
+  /v1/clusters/{clusterId}/jobs/{jobId}:
+    get:
+      operationId: getClusterJob
+      parameters:
+        - {$ref: "#/components/parameters/ClusterId"}
+        - {$ref: "#/components/parameters/JobId"}
+      responses:
+        "200": {description: Durable cluster job state}
+        "404": {description: Job not found in cluster}
+  /v1/clusters/{clusterId}/restore-plans:
+    post:
+      operationId: createClusterRestorePlan
+      parameters:
+        - {$ref: "#/components/parameters/ClusterId"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      responses:
+        "201": {description: Durable restore plan created from current safety evidence}
+        "409": {description: Required recovery or safety evidence is unavailable}
+  /v1/clusters/{clusterId}/restore-plans/{planId}:
+    get:
+      operationId: getClusterRestorePlan
+      parameters:
+        - {$ref: "#/components/parameters/ClusterId"}
+        - {$ref: "#/components/parameters/PlanId"}
+      responses:
+        "200": {description: Persisted restore plan and exact confirmation hash}
+        "404": {description: Restore plan not found in cluster}
+  /v1/clusters/{clusterId}/restore-plans/{planId}/confirm:
+    post:
+      operationId: confirmClusterRestorePlan
+      parameters:
+        - {$ref: "#/components/parameters/ClusterId"}
+        - {$ref: "#/components/parameters/PlanId"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [planHash]
+              properties:
+                planHash: {type: string, minLength: 1}
+      responses:
+        "200": {description: Restore plan confirmed with fresh AAL2}
+        "409": {description: Plan is stale, unavailable, or not confirmable}
+  /v1/clusters/{clusterId}/restore-plans/{planId}/execute:
+    post:
+      operationId: executeClusterRestorePlan
+      parameters:
+        - {$ref: "#/components/parameters/ClusterId"}
+        - {$ref: "#/components/parameters/PlanId"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [planHash]
+              properties: {planHash: {type: string, minLength: 1}}
+      responses:
+        "202": {description: Confirmed restore job accepted}
+        "409": {description: No fresh confirmed plan is available}
+  /v1/clusters/{clusterId}/jobs/{jobId}/rollback:
+    post:
+      operationId: rollbackClusterJob
+      parameters:
+        - {$ref: "#/components/parameters/ClusterId"}
+        - {$ref: "#/components/parameters/JobId"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [planHash]
+              properties: {planHash: {type: string, minLength: 1}}
+      responses:
+        "202": {description: Durable rollback job accepted}
+        "409": {description: Rollback is not authorized or available}
+  /v1/clusters/{clusterId}/maintenance:
+    post:
+      operationId: runClusterMaintenance
+      parameters:
+        - {$ref: "#/components/parameters/ClusterId"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [kind]
+              properties:
+                kind: {type: string, enum: [repository-check, expire, restore-drill]}
+      responses:
+        "202": {description: Durable maintenance job accepted}
+        "409": {description: Maintenance provider is unavailable}
+  /v1/audit:
+    get:
+      operationId: exportAuditEvents
+      parameters:
+        - {name: after, in: query, schema: {type: integer, format: int64, minimum: 0, default: 0}}
+        - {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 10000, default: 1000}}
+      responses:
+        "200": {description: Bounded ordered audit event page and next cursor}
+        "403": {description: Global backup.read access is required}
+  /v1/clusters/{clusterId}/jobs/{jobId}/retry:
+    post:
+      operationId: retryClusterJob
+      parameters:
+        - {$ref: "#/components/parameters/ClusterId"}
+        - {$ref: "#/components/parameters/JobId"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      responses:
+        "200": {description: Failed, orphaned, or manual job queued safely}
+        "409": {description: Job is not retryable}
+  /v1/clusters/{clusterId}/jobs/{jobId}/cancel:
+    post:
+      operationId: cancelClusterJob
+      parameters:
+        - {$ref: "#/components/parameters/ClusterId"}
+        - {$ref: "#/components/parameters/JobId"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      responses:
+        "200": {description: Job cancelled}
+        "409": {description: Job is already terminal}
 components:
+  securitySchemes:
+    serviceAssertion:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Stable caller-generated key reused for every retry of the same mutation.
+      schema: {type: string, minLength: 1, maxLength: 255}
+    ClusterId:
+      name: clusterId
+      in: path
+      required: true
+      schema: {type: string, minLength: 1}
+    JobId:
+      name: jobId
+      in: path
+      required: true
+      schema: {type: string, minLength: 1}
+    PlanId:
+      name: planId
+      in: path
+      required: true
+      schema: {type: string, minLength: 1}
+    OperationId:
+      name: operationId
+      in: path
+      required: true
+      schema: {type: string, minLength: 1}
   schemas:
     Health:
       type: object
@@ -62,3 +407,93 @@ components:
         state: {type: string}
         createdAt: {type: string, format: date-time}
         errorCode: {type: string}
+        projectId: {type: string}
+        targetId: {type: string}
+        planHash: {type: string}
+        updatedAt: {type: string, format: date-time}
+        steps:
+          type: array
+          items: {$ref: "#/components/schemas/OperationStep"}
+    OperationStep:
+      type: object
+      required: [name, state, attempt, updatedAt]
+      properties:
+        name: {type: string}
+        state: {type: string, enum: [queued, running, succeeded, failed, cancelled, orphaned]}
+        attempt: {type: integer, minimum: 0}
+        updatedAt: {type: string, format: date-time}
+    CreateOperation:
+      type: object
+      required: [projectId, targetId, type, idempotencyKey, planHash, stepName, capability, targetNodeId]
+      properties:
+        id: {type: string}
+        projectId: {type: string, minLength: 1}
+        targetId: {type: string, minLength: 1}
+        type: {type: string, minLength: 1}
+        idempotencyKey: {type: string, minLength: 1}
+        planHash: {type: string, minLength: 1}
+        stepName: {type: string, minLength: 1}
+        capability: {type: string, minLength: 1}
+        targetNodeId: {type: string, minLength: 1}
+        payload: {type: object, additionalProperties: true}
+    BackupPolicyInput:
+      type: object
+      required: [enabled, repositoryId, retentionDays, fullSchedule, backupFrom]
+      properties:
+        enabled: {type: boolean}
+        repositoryId: {type: string, minLength: 1}
+        retentionDays: {type: integer, minimum: 1, maximum: 365}
+        fullSchedule: {type: string, minLength: 1}
+        diffSchedule: {type: string}
+        incrSchedule: {type: string}
+        backupFrom: {type: string, enum: [primary, standby]}
+        designatedStandby: {type: string}
+        maxStandbyLagBytes: {type: integer, format: int64, minimum: 0}
+    BackupPolicy:
+      allOf:
+        - {$ref: "#/components/schemas/BackupPolicyInput"}
+        - type: object
+          required: [id, nextRunAt, updatedAt]
+          properties:
+            id: {type: string}
+            nextRunAt: {type: string, format: date-time}
+            updatedAt: {type: string, format: date-time}
+    BackupRecoverability:
+      type: object
+      required: [backups, recoveryWindow, confidence, isStale, blockers, drill]
+      properties:
+        backups:
+          type: array
+          items: {$ref: "#/components/schemas/ObservedBackup"}
+        recoveryWindow:
+          type: object
+          required: [earliest, latest]
+          properties:
+            earliest: {type: string, format: date-time, nullable: true}
+            latest: {type: string, format: date-time, nullable: true}
+        confidence: {type: string, enum: [unknown, inferred, drill-verified]}
+        isStale: {type: boolean}
+        blockers: {type: array, items: {type: string}}
+        drill:
+          allOf:
+            - {$ref: "#/components/schemas/RestoreDrill"}
+          nullable: true
+    ObservedBackup:
+      type: object
+      required: [id, type, status, startedAt, completedAt, recoverableUntil]
+      properties:
+        id: {type: string}
+        type: {type: string, enum: [full, diff, incr]}
+        status: {type: string, enum: [running, completed, failed]}
+        startedAt: {type: string, format: date-time}
+        completedAt: {type: string, format: date-time, nullable: true}
+        recoverableUntil: {type: string, format: date-time, nullable: true}
+    RestoreDrill:
+      type: object
+      required: [id, targetTime, completedAt, passed, evidenceDigest]
+      properties:
+        id: {type: string}
+        targetTime: {type: string, format: date-time}
+        completedAt: {type: string, format: date-time}
+        passed: {type: boolean}
+        evidenceDigest: {type: string, nullable: true}

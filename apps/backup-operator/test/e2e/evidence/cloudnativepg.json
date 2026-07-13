@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "scenario": "cloudnativepg",
+  "status": "passed",
+  "exit_code": 0,
+  "observed_at": "2026-07-13T10:30:09Z",
+  "facts": {
+    "cnpg_version": "1.29.1",
+    "cert_manager_version": "1.17.0",
+    "barman_plugin_version": "0.13.0",
+    "source_cluster_uid": "9b88e0e3-29d7-40f9-820b-3cedfd75cef6",
+    "source_primary": "source-1",
+    "source_pvc_uid": "c720e42f-3f44-4e2b-ae31-d7d5aaba192f",
+    "backup_phase": "completed",
+    "backup_id": "20260713T102814",
+    "object_count": "7",
+    "wal_archiving": "True",
+    "switched_wal": "000000010000000000000004",
+    "last_archived_wal": "000000010000000000000004",
+    "recovery_target": "2026-07-13T10:28:24.344Z",
+    "replacement_cluster_uid": "18dadeee-aa0a-4dae-bba0-9de1bed49268",
+    "replacement_primary": "source-restore-ec66e57ed52f-1",
+    "replacement_pvc_uid": "7ba4a3cb-71ca-42bf-ba3e-102a1e9d7cbc",
+    "replacement_markers": "before-target",
+    "operator_plan_id": "ec66e57ed52ffdc59317c3c4cfb0eaa6",
+    "operator_job_id": "35c487439741b2f7bb2da250525d752b",
+    "product_chain": "api-controlstore-outbox-taskrouter-cnpg",
+    "cutover_source_count": "2",
+    "cutover_replacement_count": "1",
+    "rollback_source_count": "2",
+    "RESULT": "PASS"
+  }
+}

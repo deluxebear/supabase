@@ -2,6 +2,8 @@ package writefence
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -10,11 +12,16 @@ import (
 
 func TestCommandGateUsesArgumentVectorWithoutTargetInterpolation(t *testing.T) {
 	runner := &recordingRunner{output: []byte("blocked\n")}
+	binary := filepath.Join(t.TempDir(), "systemctl")
+	if err := os.WriteFile(binary, []byte("#!/bin/sh\n"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	block := Command{Binary: binary, Args: []string{"stop", "supabase-api"}}
+	status := Command{Binary: binary, Args: []string{"status", "data-plane"}}
+	unblock := Command{Binary: binary, Args: []string{"start", "supabase-api"}}
 	gate := CommandGate{
-		Runner:  runner,
-		Block:   Command{Binary: "systemctl", Args: []string{"stop", "supabase-api"}},
-		Status:  Command{Binary: "/usr/local/bin/gate-status", Args: []string{"data-plane"}},
-		Unblock: Command{Binary: "systemctl", Args: []string{"start", "supabase-api"}},
+		Runner: runner, AllowedBinaries: []string{binary}, AllowedCommands: []Command{block, status, unblock},
+		Block: block, Status: status, Unblock: unblock,
 	}.AsGate()
 	target := contracts.TargetRef{ProjectID: "untrusted; rm -rf /", TargetID: "$(bad)"}
 	if err := gate.Block(context.Background(), target); err != nil {
@@ -24,7 +31,7 @@ func TestCommandGateUsesArgumentVectorWithoutTargetInterpolation(t *testing.T) {
 	if err != nil || !blocked {
 		t.Fatalf("status: %v %v", blocked, err)
 	}
-	if want := []string{"systemctl", "stop", "supabase-api", "/usr/local/bin/gate-status", "data-plane"}; !reflect.DeepEqual(runner.calls, want) {
+	if want := []string{binary, "stop", "supabase-api", binary, "status", "data-plane"}; !reflect.DeepEqual(runner.calls, want) {
 		t.Fatalf("unexpected argv calls: %#v", runner.calls)
 	}
 }

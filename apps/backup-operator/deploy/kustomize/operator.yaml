@@ -11,12 +11,62 @@ spec:
       labels: {app: backup-operator}
     spec:
       serviceAccountName: backup-operator
+      securityContext:
+        fsGroup: 65532
+        fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: operator
           image: ghcr.io/supabase/backup-operator
-          args: ["--mode=operator"]
+          args: ["--mode=operator", "--listen=0.0.0.0:8080"]
+          env:
+            - name: BACKUP_OPERATOR_SERVICE_ASSERTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backup-operator-secrets
+                  key: service-assertion-key
+            - name: BACKUP_OPERATOR_CONTROL_STORE_DRIVER
+              value: sqlite
+            - name: BACKUP_OPERATOR_CONTROL_STORE_DSN
+              value: /var/lib/backup-operator/control.db
+            - name: BACKUP_OPERATOR_RUNTIME_ENABLED
+              value: "true"
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet: {path: /readyz, port: http}
+          livenessProbe:
+            httpGet: {path: /healthz, port: http}
+          volumeMounts:
+            - name: state
+              mountPath: /var/lib/backup-operator
           securityContext:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             capabilities: {drop: ["ALL"]}
+      volumes:
+        - name: state
+          persistentVolumeClaim:
+            claimName: backup-operator-state
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backup-operator-state
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backup-operator
+spec:
+  selector: {app: backup-operator}
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

@@ -7,21 +7,67 @@ groups:
         labels: {severity: warning}
         annotations:
           summary: Backup Operator is dropping bounded progress logs
+          runbook_url: https://github.com/supabase/supabase/blob/master/apps/backup-operator/docs/production-runbook.md#log-backpressure
       - alert: BackupOperatorRestoreManualIntervention
         expr: backup_operator_jobs{operation="restore",result="manual"} > 0
         for: 1m
         labels: {severity: critical}
         annotations:
           summary: A restore requires manual intervention; keep the write fence engaged
+          runbook_url: https://github.com/supabase/supabase/blob/master/apps/backup-operator/docs/production-runbook.md#manual-intervention
       - alert: BackupOperatorRepositoryCheckFailed
         expr: backup_operator_repository_check{result="failed"} > 0
         for: 10m
         labels: {severity: critical}
         annotations:
           summary: pgBackRest repository or archive check is failing
+          runbook_url: https://github.com/supabase/supabase/blob/master/apps/backup-operator/docs/production-runbook.md#repository-and-wal-health
       - alert: BackupOperatorAgentDisconnected
         expr: backup_operator_agent_connected{result="connected"} == 0
         for: 5m
         labels: {severity: warning}
         annotations:
           summary: A host Agent is disconnected
+          runbook_url: https://github.com/supabase/supabase/blob/master/apps/backup-operator/docs/production-runbook.md#agent-disconnection
+      - alert: BackupOperatorWALContinuityRegressed
+        expr: backup_operator_wal_continuity{result="gap"} > 0
+        for: 1m
+        labels: {severity: critical}
+        annotations:
+          summary: The observed PITR recovery window contains a WAL continuity gap
+          runbook_url: https://github.com/supabase/supabase/blob/master/apps/backup-operator/docs/production-runbook.md#repository-and-wal-health
+      - alert: BackupOperatorRestoreDrillFailed
+        expr: increase(backup_operator_restore_drills_total{result="failed"}[1h]) > 0
+        for: 1m
+        labels: {severity: critical}
+        annotations:
+          summary: An isolated restore drill failed validation or cleanup
+          runbook_url: https://github.com/supabase/supabase/blob/master/apps/backup-operator/docs/production-runbook.md#isolated-restore-drills
+      - alert: BackupOperatorRestoreDrillStale
+        expr: time() - backup_operator_restore_drill_last_success_timestamp_seconds > 604800
+        for: 30m
+        labels: {severity: warning}
+        annotations:
+          summary: No successful isolated restore drill has been recorded in seven days
+          runbook_url: https://github.com/supabase/supabase/blob/master/apps/backup-operator/docs/production-runbook.md#isolated-restore-drills
+      - alert: BackupOperatorFenceReleaseFailed
+        expr: backup_operator_write_fence{operation="release",result="failed"} > 0
+        for: 1m
+        labels: {severity: critical}
+        annotations:
+          summary: A write fence could not be released safely; verify every ingress remains blocked
+          runbook_url: https://github.com/supabase/supabase/blob/master/apps/backup-operator/docs/production-runbook.md#write-fence-release-failure
+      - alert: BackupOperatorRetentionFailed
+        expr: increase(backup_operator_retention_runs_total{result="failed"}[15m]) > 0
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: Event or audit retention failed before archive completion
+          runbook_url: https://github.com/supabase/supabase/blob/master/apps/backup-operator/docs/production-runbook.md#event-and-audit-retention
+      - alert: BackupOperatorSSEBacklog
+        expr: backup_operator_sse_backlog{result="queued"} > 1000
+        for: 10m
+        labels: {severity: warning}
+        annotations:
+          summary: Job event consumers are not keeping up with the bounded SSE replay window
+          runbook_url: https://github.com/supabase/supabase/blob/master/apps/backup-operator/docs/production-runbook.md#sse-cursor-expiry

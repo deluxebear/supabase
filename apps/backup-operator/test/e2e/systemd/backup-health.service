@@ -1,0 +1,9 @@
+[Unit]
+Description=Typed data-plane health fixture
+
+[Service]
+ExecStart=/usr/bin/busybox httpd -f -p 18080 -h /var/lib/backup-health
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

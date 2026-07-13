@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -103,5 +104,28 @@ func TestConfigRejectsInjectedValues(t *testing.T) {
 	request.ArchiveCommand = "sh -c evil"
 	if _, err := Enable(context.Background(), &fakeEnablement{}, &fakeEnablement{}, &fakeEnablement{}, request); err == nil {
 		t.Fatal("unmanaged archive command accepted")
+	}
+}
+
+func TestEnablementFailsClosedWhenWALGOwnsArchiveCommand(t *testing.T) {
+	fake := &fakeEnablement{}
+	request := validRequest()
+	request.CurrentArchiveCommand = "wal-g wal-push %p"
+	if _, err := Enable(context.Background(), fake, fake, fake, request); err == nil || !strings.Contains(err.Error(), "already owned") {
+		t.Fatalf("expected WAL-G conflict rejection, got %v", err)
+	}
+	if len(fake.steps) != 0 {
+		t.Fatalf("archive conflict mutated the target: %#v", fake.steps)
+	}
+}
+
+func TestDisableStopsArchivingWithoutRepositoryCommand(t *testing.T) {
+	fake := &fakeEnablement{}
+	result, err := Disable(context.Background(), fake)
+	if err != nil || !result.RepositoryPreserved {
+		t.Fatalf("disable: %#v %v", result, err)
+	}
+	if !reflect.DeepEqual(fake.steps, []string{"archive-off", "restart"}) {
+		t.Fatalf("disable invoked unexpected repository work: %#v", fake.steps)
 	}
 }

@@ -29,6 +29,7 @@ const (
 
 type BackupCandidate struct {
 	ID               string
+	Label            string
 	Identity         contracts.BackupIdentity
 	StartedAt        time.Time
 	StoppedAt        time.Time
@@ -43,18 +44,25 @@ type CapacityImpact struct {
 }
 
 type SafetyInputs struct {
-	Target              contracts.TargetRef `json:"target"`
-	RestoreTarget       time.Time           `json:"restoreTarget"`
-	BackupID            string              `json:"backupId"`
-	BackupSystemID      string              `json:"backupSystemId"`
-	TopologyProvider    string              `json:"topologyProvider"`
-	TopologyObservation string              `json:"topologyObservation"`
-	TopologyValidUntil  time.Time           `json:"topologyValidUntil"`
-	FenceProvider       string              `json:"fenceProvider"`
-	BackupProvider      string              `json:"backupProvider"`
-	RepositoryID        string              `json:"repositoryId"`
-	RepositoryRevision  string              `json:"repositoryRevision"`
-	Capacity            CapacityImpact      `json:"capacity"`
+	Target                contracts.TargetRef `json:"target"`
+	TargetNodeID          string              `json:"targetNodeId"`
+	RestoreTarget         time.Time           `json:"restoreTarget"`
+	BackupID              string              `json:"backupId"`
+	BackupLabel           string              `json:"backupLabel"`
+	BackupSystemID        string              `json:"backupSystemId"`
+	BackupStanza          string              `json:"backupStanza"`
+	BackupDatabaseHistory string              `json:"backupDatabaseHistory"`
+	TopologyProvider      string              `json:"topologyProvider"`
+	TopologyObservation   string              `json:"topologyObservation"`
+	TopologyValidUntil    time.Time           `json:"topologyValidUntil"`
+	FenceProvider         string              `json:"fenceProvider"`
+	FenceObservation      string              `json:"fenceObservation"`
+	FenceRevision         string              `json:"fenceRevision"`
+	FenceEntryPoints      map[string]string   `json:"fenceEntryPoints"`
+	BackupProvider        string              `json:"backupProvider"`
+	RepositoryID          string              `json:"repositoryId"`
+	RepositoryRevision    string              `json:"repositoryRevision"`
+	Capacity              CapacityImpact      `json:"capacity"`
 }
 
 type Impact struct {
@@ -79,18 +87,22 @@ type Plan struct {
 }
 
 type Request struct {
-	PlanID             string
-	JobID              string
-	Target             contracts.TargetRef
-	RestoreTarget      time.Time
-	Candidates         []BackupCandidate
-	Topology           contracts.TopologySnapshot
-	FenceProvider      string
-	BackupProvider     string
-	RepositoryRevision string
-	Capacity           CapacityImpact
-	TTL                time.Duration
-	Now                time.Time
+	PlanID                string
+	JobID                 string
+	Target                contracts.TargetRef
+	RestoreTarget         time.Time
+	Candidates            []BackupCandidate
+	Topology              contracts.TopologySnapshot
+	FenceProvider         string
+	FenceObservation      string
+	FenceRevision         string
+	FenceEntryPoints      map[string]string
+	BackupProvider        string
+	RepositoryRevision    string
+	RepositoryFingerprint string
+	Capacity              CapacityImpact
+	TTL                   time.Duration
+	Now                   time.Time
 }
 
 func Build(request Request) (Plan, error) {
@@ -107,6 +119,9 @@ func Build(request Request) (Plan, error) {
 	if err != nil {
 		return Plan{}, err
 	}
+	if candidate.Label == "" {
+		return Plan{}, errors.New("typed backup label is required")
+	}
 	level, reason := recoverability(candidate, request.RestoreTarget)
 	if level == EvidenceUnknown {
 		return Plan{}, fmt.Errorf("%w: %s", ErrUnknownRecovery, reason)
@@ -114,29 +129,56 @@ func Build(request Request) (Plan, error) {
 	if request.Capacity.RequiredBytes <= 0 || request.Capacity.AvailableBytes < request.Capacity.RequiredBytes || request.Capacity.Destination == "" {
 		return Plan{}, errors.New("restore destination capacity is insufficient or unverified")
 	}
+	targetNodeID := ""
+	for _, node := range request.Topology.Nodes {
+		if node.Role == contracts.RolePrimary {
+			targetNodeID = node.NodeID
+			break
+		}
+	}
+	if targetNodeID == "" {
+		return Plan{}, errors.New("restore topology has no routable primary node")
+	}
 	safety := SafetyInputs{
-		Target:              request.Target,
-		RestoreTarget:       request.RestoreTarget.UTC(),
-		BackupID:            candidate.ID,
-		BackupSystemID:      candidate.Identity.SystemIdentifier,
-		TopologyProvider:    request.Topology.Evidence.ProviderID,
-		TopologyObservation: request.Topology.Evidence.ObservationID,
-		TopologyValidUntil:  request.Topology.Evidence.ValidUntil.UTC(),
-		FenceProvider:       request.FenceProvider,
-		BackupProvider:      request.BackupProvider,
-		RepositoryID:        candidate.Identity.RepositoryID,
-		RepositoryRevision:  request.RepositoryRevision,
-		Capacity:            request.Capacity,
+		Target:                request.Target,
+		TargetNodeID:          targetNodeID,
+		RestoreTarget:         request.RestoreTarget.UTC(),
+		BackupID:              candidate.ID,
+		BackupLabel:           candidate.Label,
+		BackupSystemID:        candidate.Identity.SystemIdentifier,
+		BackupStanza:          candidate.Identity.Stanza,
+		BackupDatabaseHistory: candidate.Identity.DatabaseHistory,
+		TopologyProvider:      request.Topology.Evidence.ProviderID,
+		TopologyObservation:   request.Topology.Evidence.ObservationID,
+		TopologyValidUntil:    request.Topology.Evidence.ValidUntil.UTC(),
+		FenceProvider:         request.FenceProvider,
+		FenceObservation:      request.FenceObservation,
+		FenceRevision:         request.FenceRevision,
+		FenceEntryPoints:      request.FenceEntryPoints,
+		BackupProvider:        request.BackupProvider,
+		RepositoryID:          candidate.Identity.RepositoryID,
+		RepositoryRevision:    request.RepositoryRevision,
+		Capacity:              request.Capacity,
+	}
+	if safety.FenceObservation == "" {
+		safety.FenceObservation = "write-fence-" + request.FenceProvider
+	}
+	if safety.FenceRevision == "" {
+		safety.FenceRevision = "legacy/" + request.FenceProvider
 	}
 	safetyJSON, hash, err := HashSafetyInputs(safety)
 	if err != nil {
 		return Plan{}, err
 	}
+	expiresAt := request.Now.Add(request.TTL)
+	if request.Topology.Evidence.ValidUntil.Before(expiresAt) {
+		expiresAt = request.Topology.Evidence.ValidUntil.UTC()
+	}
 	return Plan{
 		ID: request.PlanID, JobID: request.JobID, Candidate: candidate,
 		Recovery: level, RecoveryReason: reason, SafetyInputs: safety, SafetyJSON: safetyJSON, Hash: hash,
 		Impact:    Impact{TopologyKind: request.Topology.Kind, NodeCount: len(request.Topology.Nodes), WriteFence: request.FenceProvider, Provider: request.BackupProvider, Capacity: request.Capacity},
-		ExpiresAt: request.Now.Add(request.TTL),
+		ExpiresAt: expiresAt,
 	}, nil
 }
 
@@ -171,9 +213,15 @@ func HashSafetyInputs(inputs SafetyInputs) (string, string, error) {
 }
 
 func ValidateUnchanged(plan Plan, current SafetyInputs, now time.Time) error {
-	if !now.Before(plan.ExpiresAt) {
+	if !now.Before(plan.ExpiresAt) || !now.Before(plan.SafetyInputs.TopologyValidUntil) || !now.Before(current.TopologyValidUntil) {
 		return contracts.ErrEvidenceExpired
 	}
+	// ValidUntil is freshness metadata, not topology identity. The observation
+	// source must refresh it before execution, while the confirmed plan remains
+	// bounded by its original evidence deadline. Compare the stable safety facts
+	// using the confirmed deadline so a healthy refresh does not manufacture
+	// plan drift.
+	current.TopologyValidUntil = plan.SafetyInputs.TopologyValidUntil
 	_, hash, err := HashSafetyInputs(current)
 	if err != nil {
 		return err

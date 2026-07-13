@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "replicaCount": {
+      "type": "integer",
+      "const": 1,
+      "description": "The bundled SQLite control store supports exactly one Operator replica."
+    },
+    "serviceAssertion": {
+      "type": "object",
+      "required": ["existingSecret", "key"],
+      "properties": {
+        "existingSecret": { "type": "string", "minLength": 1 },
+        "key": { "type": "string", "minLength": 1 }
+      }
+    },
+    "persistence": {
+      "type": "object",
+      "required": ["create", "existingClaim", "size"],
+      "properties": {
+        "create": { "type": "boolean" },
+        "existingClaim": { "type": "string" },
+        "storageClass": { "type": "string" },
+        "size": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

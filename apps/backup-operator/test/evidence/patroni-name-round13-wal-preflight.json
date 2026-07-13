@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "result": "PASS_DIAGNOSTIC",
+  "pitrMode": "name",
+  "targetLSN": "0/7000090",
+  "targetWALSegment": "000000010000000000000007",
+  "configuredRestoreCommand": "pgbackrest --stanza=spike archive-get %f \"%p\"",
+  "archiveGet": {
+    "exitCode": 0,
+    "bytes": 16777216,
+    "diagnostic": "16777216"
+  }
+}

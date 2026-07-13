@@ -99,8 +99,15 @@ func TestSQLiteLeaseEnrollmentPlanClaimAndRetention(t *testing.T) {
 		t.Fatalf("expired lease takeover: %#v %v %v", lease, acquired, err)
 	}
 
-	if err := store.EnrollAgent(ctx, Enrollment{AgentID: "agent", NodeID: "node", CertificateFingerprint: "sha256:one", Capabilities: []string{"inspect"}}); err != nil {
+	if err := store.EnrollAgent(ctx, Enrollment{AgentID: "agent", ClusterID: "project", NodeID: "node", CertificateFingerprint: "sha256:one", Capabilities: []string{"inspect"}}); err != nil {
 		t.Fatal(err)
+	}
+	enrollment, err := store.GetAgentEnrollment(ctx, "agent")
+	if err != nil || enrollment.ClusterID != "project" || enrollment.NodeID != "node" || enrollment.Revoked {
+		t.Fatalf("enrollment binding: %+v %v", enrollment, err)
+	}
+	if err := store.EnrollAgent(ctx, Enrollment{AgentID: "agent", ClusterID: "other-project", NodeID: "node", CertificateFingerprint: "sha256:two", Capabilities: []string{"inspect"}}); err == nil {
+		t.Fatal("enrollment changed immutable cluster binding")
 	}
 	target := contracts.TargetRef{ProjectID: "project", TargetID: "target"}
 	if err := store.RegisterTarget(ctx, target, contracts.RecoveryDomain{SystemIdentifier: "managed", DataDomain: "managed"}); err != nil {

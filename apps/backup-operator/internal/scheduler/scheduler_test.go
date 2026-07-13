@@ -24,6 +24,17 @@ func TestSelectStandbyNeverFallsBackToPrimary(t *testing.T) {
 	}
 }
 
+func TestSelectStandbyRequiresReachablePrimary(t *testing.T) {
+	policy := controlstore.BackupPolicyRecord{BackupFrom: "standby", DesignatedStandby: "standby-1", MaxStandbyLagBytes: 100}
+	topology := contracts.TopologySnapshot{Nodes: []contracts.NodeObservation{
+		{NodeID: "primary", Role: contracts.RolePrimary, Reachable: false},
+		{NodeID: "standby-1", Role: contracts.RoleStandby, Reachable: true},
+	}}
+	if _, err := SelectExecutionNode(policy, topology); !errors.Is(err, ErrPrimaryUnavailable) {
+		t.Fatalf("expected primary reachability gate, got %v", err)
+	}
+}
+
 func TestScheduleUsesUTC(t *testing.T) {
 	after := time.Date(2026, 7, 12, 10, 30, 0, 0, time.FixedZone("local", 8*60*60))
 	next, err := Next("0 * * * *", after)

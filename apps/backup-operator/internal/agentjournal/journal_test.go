@@ -90,3 +90,24 @@ func TestRestartMarksDestructiveExecutionOrphaned(t *testing.T) {
 		t.Fatalf("restart allowed takeover: %v", err)
 	}
 }
+
+func TestCompletedDestructiveFencingTokenCannotBeReused(t *testing.T) {
+	ctx := context.Background()
+	journal, err := Open(ctx, filepath.Join(t.TempDir(), "journal.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer journal.Close()
+	if _, err := journal.Begin(ctx, "first", "first", 5, true); err != nil {
+		t.Fatal(err)
+	}
+	if err := journal.Complete(ctx, "first", `{}`, true); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := journal.Begin(ctx, "second", "second", 5, true); !errors.Is(err, ErrStaleFencing) {
+		t.Fatalf("reused destructive fencing token: %v", err)
+	}
+	if _, err := journal.Begin(ctx, "second", "second", 6, true); err != nil {
+		t.Fatalf("new destructive fencing token rejected: %v", err)
+	}
+}

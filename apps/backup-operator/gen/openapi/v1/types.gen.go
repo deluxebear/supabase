@@ -7,16 +7,142 @@ import (
 	"time"
 )
 
+const (
+	ServiceAssertionScopes = "serviceAssertion.Scopes"
+)
+
+// Defines values for BackupPolicyBackupFrom.
+const (
+	BackupPolicyBackupFromPrimary BackupPolicyBackupFrom = "primary"
+	BackupPolicyBackupFromStandby BackupPolicyBackupFrom = "standby"
+)
+
+// Defines values for BackupPolicyInputBackupFrom.
+const (
+	BackupPolicyInputBackupFromPrimary BackupPolicyInputBackupFrom = "primary"
+	BackupPolicyInputBackupFromStandby BackupPolicyInputBackupFrom = "standby"
+)
+
+// Defines values for BackupRecoverabilityConfidence.
+const (
+	DrillVerified BackupRecoverabilityConfidence = "drill-verified"
+	Inferred      BackupRecoverabilityConfidence = "inferred"
+	Unknown       BackupRecoverabilityConfidence = "unknown"
+)
+
 // Defines values for HealthStatus.
 const (
 	Ok HealthStatus = "ok"
 )
+
+// Defines values for ObservedBackupStatus.
+const (
+	ObservedBackupStatusCompleted ObservedBackupStatus = "completed"
+	ObservedBackupStatusFailed    ObservedBackupStatus = "failed"
+	ObservedBackupStatusRunning   ObservedBackupStatus = "running"
+)
+
+// Defines values for ObservedBackupType.
+const (
+	ObservedBackupTypeDiff ObservedBackupType = "diff"
+	ObservedBackupTypeFull ObservedBackupType = "full"
+	ObservedBackupTypeIncr ObservedBackupType = "incr"
+)
+
+// Defines values for OperationStepState.
+const (
+	OperationStepStateCancelled OperationStepState = "cancelled"
+	OperationStepStateFailed    OperationStepState = "failed"
+	OperationStepStateOrphaned  OperationStepState = "orphaned"
+	OperationStepStateQueued    OperationStepState = "queued"
+	OperationStepStateRunning   OperationStepState = "running"
+	OperationStepStateSucceeded OperationStepState = "succeeded"
+)
+
+// Defines values for CreateManualBackupJSONBodyType.
+const (
+	CreateManualBackupJSONBodyTypeDiff CreateManualBackupJSONBodyType = "diff"
+	CreateManualBackupJSONBodyTypeFull CreateManualBackupJSONBodyType = "full"
+	CreateManualBackupJSONBodyTypeIncr CreateManualBackupJSONBodyType = "incr"
+)
+
+// Defines values for RunClusterMaintenanceJSONBodyKind.
+const (
+	RunClusterMaintenanceJSONBodyKindExpire          RunClusterMaintenanceJSONBodyKind = "expire"
+	RunClusterMaintenanceJSONBodyKindRepositoryCheck RunClusterMaintenanceJSONBodyKind = "repository-check"
+	RunClusterMaintenanceJSONBodyKindRestoreDrill    RunClusterMaintenanceJSONBodyKind = "restore-drill"
+)
+
+// BackupPolicy defines model for BackupPolicy.
+type BackupPolicy struct {
+	BackupFrom         BackupPolicyBackupFrom `json:"backupFrom"`
+	DesignatedStandby  *string                `json:"designatedStandby,omitempty"`
+	DiffSchedule       *string                `json:"diffSchedule,omitempty"`
+	Enabled            bool                   `json:"enabled"`
+	FullSchedule       string                 `json:"fullSchedule"`
+	Id                 string                 `json:"id"`
+	IncrSchedule       *string                `json:"incrSchedule,omitempty"`
+	MaxStandbyLagBytes *int64                 `json:"maxStandbyLagBytes,omitempty"`
+	NextRunAt          time.Time              `json:"nextRunAt"`
+	RepositoryId       string                 `json:"repositoryId"`
+	RetentionDays      int                    `json:"retentionDays"`
+	UpdatedAt          time.Time              `json:"updatedAt"`
+}
+
+// BackupPolicyBackupFrom defines model for BackupPolicy.BackupFrom.
+type BackupPolicyBackupFrom string
+
+// BackupPolicyInput defines model for BackupPolicyInput.
+type BackupPolicyInput struct {
+	BackupFrom         BackupPolicyInputBackupFrom `json:"backupFrom"`
+	DesignatedStandby  *string                     `json:"designatedStandby,omitempty"`
+	DiffSchedule       *string                     `json:"diffSchedule,omitempty"`
+	Enabled            bool                        `json:"enabled"`
+	FullSchedule       string                      `json:"fullSchedule"`
+	IncrSchedule       *string                     `json:"incrSchedule,omitempty"`
+	MaxStandbyLagBytes *int64                      `json:"maxStandbyLagBytes,omitempty"`
+	RepositoryId       string                      `json:"repositoryId"`
+	RetentionDays      int                         `json:"retentionDays"`
+}
+
+// BackupPolicyInputBackupFrom defines model for BackupPolicyInput.BackupFrom.
+type BackupPolicyInputBackupFrom string
+
+// BackupRecoverability defines model for BackupRecoverability.
+type BackupRecoverability struct {
+	Backups        []ObservedBackup               `json:"backups"`
+	Blockers       []string                       `json:"blockers"`
+	Confidence     BackupRecoverabilityConfidence `json:"confidence"`
+	Drill          *RestoreDrill                  `json:"drill"`
+	IsStale        bool                           `json:"isStale"`
+	RecoveryWindow struct {
+		Earliest *time.Time `json:"earliest"`
+		Latest   *time.Time `json:"latest"`
+	} `json:"recoveryWindow"`
+}
+
+// BackupRecoverabilityConfidence defines model for BackupRecoverability.Confidence.
+type BackupRecoverabilityConfidence string
 
 // Capability defines model for Capability.
 type Capability struct {
 	Blocker   *string `json:"blocker,omitempty"`
 	Name      string  `json:"name"`
 	Supported bool    `json:"supported"`
+}
+
+// CreateOperation defines model for CreateOperation.
+type CreateOperation struct {
+	Capability     string                  `json:"capability"`
+	Id             *string                 `json:"id,omitempty"`
+	IdempotencyKey string                  `json:"idempotencyKey"`
+	Payload        *map[string]interface{} `json:"payload,omitempty"`
+	PlanHash       string                  `json:"planHash"`
+	ProjectId      string                  `json:"projectId"`
+	StepName       string                  `json:"stepName"`
+	TargetId       string                  `json:"targetId"`
+	TargetNodeId   string                  `json:"targetNodeId"`
+	Type           string                  `json:"type"`
 }
 
 // Health defines model for Health.
@@ -28,11 +154,251 @@ type Health struct {
 // HealthStatus defines model for Health.Status.
 type HealthStatus string
 
+// ObservedBackup defines model for ObservedBackup.
+type ObservedBackup struct {
+	CompletedAt      *time.Time           `json:"completedAt"`
+	Id               string               `json:"id"`
+	RecoverableUntil *time.Time           `json:"recoverableUntil"`
+	StartedAt        time.Time            `json:"startedAt"`
+	Status           ObservedBackupStatus `json:"status"`
+	Type             ObservedBackupType   `json:"type"`
+}
+
+// ObservedBackupStatus defines model for ObservedBackup.Status.
+type ObservedBackupStatus string
+
+// ObservedBackupType defines model for ObservedBackup.Type.
+type ObservedBackupType string
+
 // Operation defines model for Operation.
 type Operation struct {
-	CreatedAt time.Time `json:"createdAt"`
-	ErrorCode *string   `json:"errorCode,omitempty"`
-	Id        string    `json:"id"`
-	State     string    `json:"state"`
-	Type      string    `json:"type"`
+	CreatedAt time.Time        `json:"createdAt"`
+	ErrorCode *string          `json:"errorCode,omitempty"`
+	Id        string           `json:"id"`
+	PlanHash  *string          `json:"planHash,omitempty"`
+	ProjectId *string          `json:"projectId,omitempty"`
+	State     string           `json:"state"`
+	Steps     *[]OperationStep `json:"steps,omitempty"`
+	TargetId  *string          `json:"targetId,omitempty"`
+	Type      string           `json:"type"`
+	UpdatedAt *time.Time       `json:"updatedAt,omitempty"`
 }
+
+// OperationStep defines model for OperationStep.
+type OperationStep struct {
+	Attempt   int                `json:"attempt"`
+	Name      string             `json:"name"`
+	State     OperationStepState `json:"state"`
+	UpdatedAt time.Time          `json:"updatedAt"`
+}
+
+// OperationStepState defines model for OperationStep.State.
+type OperationStepState string
+
+// RestoreDrill defines model for RestoreDrill.
+type RestoreDrill struct {
+	CompletedAt    time.Time `json:"completedAt"`
+	EvidenceDigest *string   `json:"evidenceDigest"`
+	Id             string    `json:"id"`
+	Passed         bool      `json:"passed"`
+	TargetTime     time.Time `json:"targetTime"`
+}
+
+// ClusterId defines model for ClusterId.
+type ClusterId = string
+
+// IdempotencyKey defines model for IdempotencyKey.
+type IdempotencyKey = string
+
+// JobId defines model for JobId.
+type JobId = string
+
+// OperationId defines model for OperationId.
+type OperationId = string
+
+// PlanId defines model for PlanId.
+type PlanId = string
+
+// ExportAuditEventsParams defines parameters for ExportAuditEvents.
+type ExportAuditEventsParams struct {
+	After *int64 `form:"after,omitempty" json:"after,omitempty"`
+	Limit *int   `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// ListClustersParams defines parameters for ListClusters.
+type ListClustersParams struct {
+	ProjectId string `form:"projectId" json:"projectId"`
+}
+
+// RegisterClusterJSONBody defines parameters for RegisterCluster.
+type RegisterClusterJSONBody struct {
+	DataDomain       string `json:"dataDomain"`
+	ProjectId        string `json:"projectId"`
+	SystemIdentifier string `json:"systemIdentifier"`
+	TargetId         string `json:"targetId"`
+}
+
+// RegisterClusterParams defines parameters for RegisterCluster.
+type RegisterClusterParams struct {
+	// IdempotencyKey Stable caller-generated key reused for every retry of the same mutation.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// PutClusterBackupPolicyParams defines parameters for PutClusterBackupPolicy.
+type PutClusterBackupPolicyParams struct {
+	// IdempotencyKey Stable caller-generated key reused for every retry of the same mutation.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// CreateManualBackupJSONBody defines parameters for CreateManualBackup.
+type CreateManualBackupJSONBody struct {
+	Type *CreateManualBackupJSONBodyType `json:"type,omitempty"`
+}
+
+// CreateManualBackupParams defines parameters for CreateManualBackup.
+type CreateManualBackupParams struct {
+	// IdempotencyKey Stable caller-generated key reused for every retry of the same mutation.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// CreateManualBackupJSONBodyType defines parameters for CreateManualBackup.
+type CreateManualBackupJSONBodyType string
+
+// DiscoverClusterParams defines parameters for DiscoverCluster.
+type DiscoverClusterParams struct {
+	// IdempotencyKey Stable caller-generated key reused for every retry of the same mutation.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// CancelClusterJobParams defines parameters for CancelClusterJob.
+type CancelClusterJobParams struct {
+	// IdempotencyKey Stable caller-generated key reused for every retry of the same mutation.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// RetryClusterJobParams defines parameters for RetryClusterJob.
+type RetryClusterJobParams struct {
+	// IdempotencyKey Stable caller-generated key reused for every retry of the same mutation.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// RollbackClusterJobJSONBody defines parameters for RollbackClusterJob.
+type RollbackClusterJobJSONBody struct {
+	PlanHash string `json:"planHash"`
+}
+
+// RollbackClusterJobParams defines parameters for RollbackClusterJob.
+type RollbackClusterJobParams struct {
+	// IdempotencyKey Stable caller-generated key reused for every retry of the same mutation.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// RunClusterMaintenanceJSONBody defines parameters for RunClusterMaintenance.
+type RunClusterMaintenanceJSONBody struct {
+	Kind RunClusterMaintenanceJSONBodyKind `json:"kind"`
+}
+
+// RunClusterMaintenanceParams defines parameters for RunClusterMaintenance.
+type RunClusterMaintenanceParams struct {
+	// IdempotencyKey Stable caller-generated key reused for every retry of the same mutation.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// RunClusterMaintenanceJSONBodyKind defines parameters for RunClusterMaintenance.
+type RunClusterMaintenanceJSONBodyKind string
+
+// DisableClusterPITRParams defines parameters for DisableClusterPITR.
+type DisableClusterPITRParams struct {
+	// IdempotencyKey Stable caller-generated key reused for every retry of the same mutation.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// EnableClusterPITRJSONBody defines parameters for EnableClusterPITR.
+type EnableClusterPITRJSONBody struct {
+	RepositoryId string `json:"repositoryId"`
+}
+
+// EnableClusterPITRParams defines parameters for EnableClusterPITR.
+type EnableClusterPITRParams struct {
+	// IdempotencyKey Stable caller-generated key reused for every retry of the same mutation.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// CreateClusterRestorePlanParams defines parameters for CreateClusterRestorePlan.
+type CreateClusterRestorePlanParams struct {
+	// IdempotencyKey Stable caller-generated key reused for every retry of the same mutation.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// ConfirmClusterRestorePlanJSONBody defines parameters for ConfirmClusterRestorePlan.
+type ConfirmClusterRestorePlanJSONBody struct {
+	PlanHash string `json:"planHash"`
+}
+
+// ConfirmClusterRestorePlanParams defines parameters for ConfirmClusterRestorePlan.
+type ConfirmClusterRestorePlanParams struct {
+	// IdempotencyKey Stable caller-generated key reused for every retry of the same mutation.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// ExecuteClusterRestorePlanJSONBody defines parameters for ExecuteClusterRestorePlan.
+type ExecuteClusterRestorePlanJSONBody struct {
+	PlanHash string `json:"planHash"`
+}
+
+// ExecuteClusterRestorePlanParams defines parameters for ExecuteClusterRestorePlan.
+type ExecuteClusterRestorePlanParams struct {
+	// IdempotencyKey Stable caller-generated key reused for every retry of the same mutation.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// CreateOperationParams defines parameters for CreateOperation.
+type CreateOperationParams struct {
+	// IdempotencyKey Stable caller-generated key reused for every retry of the same mutation.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// CancelOperationParams defines parameters for CancelOperation.
+type CancelOperationParams struct {
+	// IdempotencyKey Stable caller-generated key reused for every retry of the same mutation.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// ReplayOperationEventsParams defines parameters for ReplayOperationEvents.
+type ReplayOperationEventsParams struct {
+	Cursor *int64 `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Limit  *int   `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// RetryOperationParams defines parameters for RetryOperation.
+type RetryOperationParams struct {
+	// IdempotencyKey Stable caller-generated key reused for every retry of the same mutation.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// RegisterClusterJSONRequestBody defines body for RegisterCluster for application/json ContentType.
+type RegisterClusterJSONRequestBody RegisterClusterJSONBody
+
+// PutClusterBackupPolicyJSONRequestBody defines body for PutClusterBackupPolicy for application/json ContentType.
+type PutClusterBackupPolicyJSONRequestBody = BackupPolicyInput
+
+// CreateManualBackupJSONRequestBody defines body for CreateManualBackup for application/json ContentType.
+type CreateManualBackupJSONRequestBody CreateManualBackupJSONBody
+
+// RollbackClusterJobJSONRequestBody defines body for RollbackClusterJob for application/json ContentType.
+type RollbackClusterJobJSONRequestBody RollbackClusterJobJSONBody
+
+// RunClusterMaintenanceJSONRequestBody defines body for RunClusterMaintenance for application/json ContentType.
+type RunClusterMaintenanceJSONRequestBody RunClusterMaintenanceJSONBody
+
+// EnableClusterPITRJSONRequestBody defines body for EnableClusterPITR for application/json ContentType.
+type EnableClusterPITRJSONRequestBody EnableClusterPITRJSONBody
+
+// ConfirmClusterRestorePlanJSONRequestBody defines body for ConfirmClusterRestorePlan for application/json ContentType.
+type ConfirmClusterRestorePlanJSONRequestBody ConfirmClusterRestorePlanJSONBody
+
+// ExecuteClusterRestorePlanJSONRequestBody defines body for ExecuteClusterRestorePlan for application/json ContentType.
+type ExecuteClusterRestorePlanJSONRequestBody ExecuteClusterRestorePlanJSONBody
+
+// CreateOperationJSONRequestBody defines body for CreateOperation for application/json ContentType.
+type CreateOperationJSONRequestBody = CreateOperation

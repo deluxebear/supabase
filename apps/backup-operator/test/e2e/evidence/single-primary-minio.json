@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "scenario": "single-primary-minio",
+  "status": "passed",
+  "exit_code": 0,
+  "observed_at": "2026-07-13T11:01:25Z",
+  "facts": {
+    "repository": "minio-s3",
+    "operator_version": "ifn-compose-e2e+c8dcb8ed7cfbcda07704f3eee883dfd3ae40dc3c+c8dcb8ed7cfbcda07704f3eee883dfd3ae40dc3c",
+    "git_commit": "c8dcb8ed7cfbcda07704f3eee883dfd3ae40dc3c",
+    "binary_sha256": "d9ce7f89dcc0be50a027e3b94f88309825fb984a9282456cc6b77c2377aa1f55",
+    "image_digest": "sha256:c958ba22eb628ba479422d9699cd3a9c63019cce4f58ccd15a13713bb7d883cb",
+    "api_restore_plan_id": "dbe7e2f10d90c95e300c4c9617d99145",
+    "durable_job_id": "9116efcc392fb2fe5625ba23f245a516",
+    "rollback_job_id": "9116efcc392fb2fe5625ba23f245a516-rollback",
+    "execution_chain": "api-controlstore-outbox-mtls-agent-journal-recovery-engine",
+    "restore_target_utc": "2026-07-13T10:59:31Z",
+    "utc_target_rows": "before-target",
+    "rollback_rows": "before-target,after-target",
+    "rollback_window_enforced": "true",
+    "original_pgdata_preserved_until_rollback": "true",
+    "point_of_no_auto_rollback": "cut-over",
+    "side_effect_idempotency": "stable-idempotency-key-plus-durable-postconditions",
+    "side_effect_crash_idempotency": "docker-304-and-filesystem-postconditions-tested",
+    "operator_container": "backup-compose-e2e-23343-control",
+    "source_container": "backup-compose-e2e-23343-source",
+    "validation_container": "backup-compose-e2e-23343-validation",
+    "minio_container": "backup-compose-e2e-23343-minio",
+    "work_directory": "/var/folders/sh/dj3swbhx26qgjzppkcfvqqs80000gn/T/tmp.mNDmpnSuPE",
+    "operator_network_url": "http://backup-operator:8080",
+    "RESULT": "PASS"
+  }
+}

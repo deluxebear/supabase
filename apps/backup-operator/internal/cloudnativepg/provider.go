@@ -28,6 +28,11 @@ type Prerequisites struct {
 	BarmanPluginVersion string
 	CertManagerReady    bool
 	PluginReady         bool
+	ControllerUID       string
+	CertManagerUID      string
+	PluginUID           string
+	ObjectStoreUID      string
+	ImageValidated      bool
 }
 
 type ClusterObservation struct {
@@ -47,6 +52,10 @@ type ClusterObservation struct {
 	PVCUIDs          []string
 	ObjectStore      string
 	ServerName       string
+	SuperuserSecret  string
+	SecretUID        string
+	SecretRevision   string
+	SuperuserAccess  bool
 	Prerequisites    Prerequisites
 }
 
@@ -62,13 +71,17 @@ type Capability struct {
 }
 
 type Provider struct {
-	Discoverer Discoverer
-	Now        func() time.Time
+	FeatureGate bool
+	Discoverer  Discoverer
+	Now         func() time.Time
 }
 
 func (p Provider) ID() string { return "cloudnativepg-cnpg-i" }
 
 func (p Provider) Capabilities(ctx context.Context, target contracts.TargetRef) (Capability, error) {
+	if !p.FeatureGate {
+		return Capability{Blockers: []string{"optional CloudNativePG feature gate is disabled"}}, nil
+	}
 	if p.Discoverer == nil {
 		return Capability{}, errors.New("CloudNativePG discoverer is required")
 	}
@@ -80,8 +93,8 @@ func (p Provider) Capabilities(ctx context.Context, target contracts.TargetRef) 
 	capability := Capability{
 		Cluster: cluster,
 		Evidence: contracts.Evidence{
-			ProviderID: p.ID(), ObservationID: cluster.UID, ObservedAt: now, ValidUntil: now.Add(30 * time.Second),
-			Facts: map[string]string{"cluster": cluster.Namespace + "/" + cluster.Name, "cnpg_version": cluster.Prerequisites.CNPGVersion, "plugin_version": cluster.Prerequisites.BarmanPluginVersion},
+			ProviderID: p.ID(), ObservationID: cluster.UID + "/secret-" + cluster.SecretUID + "@" + cluster.SecretRevision, ObservedAt: now, ValidUntil: now.Add(30 * time.Second),
+			Facts: map[string]string{"cluster": cluster.Namespace + "/" + cluster.Name, "cnpg_version": cluster.Prerequisites.CNPGVersion, "plugin_version": cluster.Prerequisites.BarmanPluginVersion, "superuser_secret_uid": cluster.SecretUID, "superuser_secret_revision": cluster.SecretRevision},
 		},
 	}
 	if cluster.APIVersion != ClusterAPIVersion || cluster.Kind != ClusterKind || cluster.ControllerOwner != "cloudnative-pg" || cluster.UID == "" {
@@ -93,8 +106,17 @@ func (p Provider) Capabilities(ctx context.Context, target contracts.TargetRef) 
 	if !cluster.Prerequisites.CertManagerReady || !cluster.Prerequisites.PluginReady || cluster.Prerequisites.BarmanPluginVersion == "" {
 		capability.Blockers = append(capability.Blockers, "cert-manager and the Barman Cloud CNPG-I plugin must be installed independently and ready")
 	}
+	if cluster.Prerequisites.ControllerUID == "" || cluster.Prerequisites.CertManagerUID == "" || cluster.Prerequisites.PluginUID == "" || cluster.Prerequisites.ObjectStoreUID == "" {
+		capability.Blockers = append(capability.Blockers, "controller, certificate, plugin, and ObjectStore UIDs must be positively observed")
+	}
+	if !cluster.Prerequisites.ImageValidated {
+		capability.Blockers = append(capability.Blockers, "database image compatibility with the observed CloudNativePG version is not validated")
+	}
 	if cluster.ObjectStore == "" || cluster.ServerName == "" {
 		capability.Blockers = append(capability.Blockers, "a Barman Cloud ObjectStore and source serverName are required")
+	}
+	if !cluster.SuperuserAccess || cluster.SuperuserSecret == "" || cluster.SecretUID == "" || cluster.SecretRevision == "" {
+		capability.Blockers = append(capability.Blockers, "an observed versioned superuser Secret is required for stable client continuity")
 	}
 	if cluster.Instances < 1 || cluster.ReadyInstances != cluster.Instances || cluster.CurrentPrimary == "" || cluster.SystemIdentifier == "" || cluster.Phase != "Cluster in healthy state" {
 		capability.Blockers = append(capability.Blockers, "CloudNativePG cluster topology or identity is not healthy and complete")

@@ -28,6 +28,9 @@ message AgentHello {
   string agent_id = 1;
   string protocol_version = 2;
   repeated string capabilities = 3;
+  string build = 4;
+  string cluster_id = 5;
+  string node_id = 6;
 }
 
 message Task {
@@ -36,6 +39,12 @@ message Task {
   string capability = 3;
   string idempotency_key = 4;
   bytes typed_input = 5;
+  int64 expires_at_unix_milliseconds = 6;
+  int64 fencing_token = 7;
+  bool destructive = 8;
+  string cluster_id = 9;
+  string node_id = 10;
+  string agent_id = 11;
 }
 
 message TaskProgress {

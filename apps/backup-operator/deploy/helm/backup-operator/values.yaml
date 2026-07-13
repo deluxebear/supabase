@@ -6,3 +6,13 @@ replicaCount: 1
 serviceAccount:
   create: true
   name: backup-operator
+service:
+  port: 8080
+serviceAssertion:
+  existingSecret: backup-operator-secrets
+  key: service-assertion-key
+persistence:
+  create: true
+  existingClaim: ""
+  storageClass: ""
+  size: 10Gi

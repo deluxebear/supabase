@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+kind="${1:-}"
+action="${2:-}"
+case "$kind" in kong-data-plane|supavisor|auth|storage|realtime|background-jobs|direct-postgres) ;; *) exit 64 ;; esac
+state="/var/lib/backup-agent/fences/$kind"
+case "$action" in
+  block) install -d -m 0700 /var/lib/backup-agent/fences; : >"$state" ;;
+  status) if test -f "$state"; then printf 'blocked\n'; else printf 'open\n'; fi ;;
+  unblock) rm -f "$state" ;;
+  *) exit 64 ;;
+esac

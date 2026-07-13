@@ -4,6 +4,11 @@ This directory documents the optional CloudNativePG adapter. It is not part of
 the default customized Supabase PostgreSQL deployment and does not install
 CloudNativePG, cert-manager, or the Barman Cloud plugin.
 
+Apply this directory separately only after installing and validating those
+dependencies. The in-process provider feature gate also defaults to disabled;
+RBAC or this ConfigMap alone cannot enable it. No core Kustomize, Helm, Compose,
+or systemd manifest references this directory.
+
 ## Tested compatibility
 
 - CloudNativePG: `1.29.1`
@@ -21,6 +26,12 @@ the following are observed:
 3. the source `ObjectStore`, source `serverName`, Cluster identity, primary,
    instance count, and every ready instance are observable;
 4. the source database image has been validated with the selected CNPG version.
+5. the optional namespaced RBAC and read-only prerequisite-discovery RBAC pass
+   the adapter's access review.
+
+```bash
+kubectl apply -k deploy/optional/cloudnativepg
+```
 
 Recovery always creates a new CloudNativePG `Cluster`, which causes the
 operator to allocate a new PVC set. The generated manifest uses

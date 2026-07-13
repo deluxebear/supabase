@@ -1,0 +1,12 @@
+[Unit]
+Description=Isolated PostgreSQL restore validation
+
+[Service]
+Type=notify
+User=postgres
+Group=postgres
+RuntimeDirectory=backup-validation
+ExecStart=/usr/lib/postgresql/17/bin/postgres -D /var/lib/postgresql/systemd-data -c listen_addresses= -c port=55432 -c unix_socket_directories=/run/backup-validation -c archive_mode=off
+KillMode=mixed
+KillSignal=SIGINT
+TimeoutStopSec=60
