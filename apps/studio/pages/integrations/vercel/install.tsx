@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { useParams } from 'common'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -19,19 +18,18 @@ import {
 import { Admonition } from 'ui-patterns/admonition'
 import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 
-import { getHasInstalledObject } from '@/components/layouts/IntegrationsLayout/Integrations.utils'
 import {
-  InterstitialAccountRow,
-  InterstitialLayout,
-  LogoPair,
-  PartnerLogo,
-  SupabaseLogo,
-} from '@/components/layouts/InterstitialLayout'
+  VercelIntegrationFooter,
+  VercelIntegrationInterstitialErrorState,
+  VercelIntegrationLogo,
+} from '@/components/interfaces/Integrations/Vercel/VercelIntegrationInterstitial'
+import { getHasInstalledObject } from '@/components/layouts/IntegrationsLayout/Integrations.utils'
+import { InterstitialAccountRow, InterstitialLayout } from '@/components/layouts/InterstitialLayout'
 import { useIntegrationsQuery } from '@/data/integrations/integrations-query'
 import { useVercelIntegrationCreateMutation } from '@/data/integrations/vercel-integration-create-mutation'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { withAuth } from '@/hooks/misc/withAuth'
-import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import {
   buildVercelInstallRouteQuery,
   getErrorMessage,
@@ -39,6 +37,7 @@ import {
 } from '@/lib/integrations/vercel-install.utils'
 import { buildStudioPageTitle } from '@/lib/page-title'
 import { useProfileNameAndPicture } from '@/lib/profile'
+import { useTrack } from '@/lib/telemetry/track'
 import { useIntegrationInstallationSnapshot } from '@/state/integration-installation'
 import type { NextPageWithLayout, Organization } from '@/types'
 
@@ -62,6 +61,7 @@ const VercelIntegration: NextPageWithLayout = () => {
   const { code, configurationId, currentProjectId, externalId, next, teamId, source } = useParams()
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null)
   const { username, primaryEmail, avatarUrl } = useProfileNameAndPicture()
+  const track = useTrack()
 
   const snapshot = useIntegrationInstallationSnapshot()
   const displayName = primaryEmail ?? username ?? ''
@@ -198,6 +198,11 @@ const VercelIntegration: NextPageWithLayout = () => {
      * Only install if integration hasn't already been installed
      */
     if (!isIntegrationInstalled) {
+      track(
+        'integration_install_submitted',
+        { integrationName: 'Vercel', method: source },
+        { organization: orgSlug }
+      )
       mutate({
         code,
         configurationId,
@@ -244,7 +249,6 @@ const VercelIntegration: NextPageWithLayout = () => {
     !selectedOrg ||
     missingParams.length > 0 ||
     isError
-
   return (
     <>
       <Head>
@@ -252,27 +256,19 @@ const VercelIntegration: NextPageWithLayout = () => {
       </Head>
 
       <InterstitialLayout
-        logo={
-          <LogoPair
-            left={
-              <PartnerLogo
-                src={`${BASE_PATH}/img/icons/vercel-icon.svg`}
-                alt={$t('Vercel')}
-                className="bg-surface-75"
-                imageClassName="size-7 object-contain dark:invert"
-              />
-            }
-            right={<SupabaseLogo />}
-          />
-        }
-        title={$t('Install Vercel integration')}
-        description={$t('Choose an organization to connect to Vercel')}
+        logo={<VercelIntegrationLogo />}
+        title={$t('Install Vercel Integration')}
+        description={$t('Choose the Supabase organization Vercel can connect to')}
+        footer={<VercelIntegrationFooter />}
       >
         <div className="px-6 pb-6">
           {showLoadingState ? (
             <InstallationLoadingState />
           ) : isError ? (
-            <InstallationErrorState errorMessage={errorMessage} />
+            <VercelIntegrationInterstitialErrorState
+              title={$t('Unable to load installation')}
+              errorMessage={errorMessage}
+            />
           ) : (
             <div className="flex flex-col gap-5">
               <InterstitialAccountRow avatarUrl={avatarUrl} displayName={displayName} />
@@ -299,7 +295,9 @@ const VercelIntegration: NextPageWithLayout = () => {
                 <Admonition
                   type="warning"
                   title={$t('Vercel integration is already installed')}
-                  description={$t('Choose another organization to install this marketplace integration.')}
+                  description={$t(
+                    'Choose another organization to install this marketplace integration.'
+                  )}
                 />
               )}
 
@@ -309,8 +307,9 @@ const VercelIntegration: NextPageWithLayout = () => {
                   title={$t('No Supabase organizations found')}
                   description={
                     <>
-                      
-                                                {$t('Create a Supabase organization before installing the Vercel integration. You can create a new organization')}{' '}
+                      {$t(
+                        'Create a Supabase organization before installing the Vercel integration. You can create a new organization'
+                      )}{' '}
                       <Link href="https://supabase.com/dashboard/new" target="_blank">
                         here
                       </Link>
@@ -328,9 +327,8 @@ const VercelIntegration: NextPageWithLayout = () => {
                   loading={dataLoading}
                   onClick={onInstall}
                 >
-                  
-                                                            {$t('Install integration')}
-                                                          </Button>
+                  {$t('Install integration')}
+                </Button>
               </div>
             </div>
           )}
@@ -359,27 +357,6 @@ const InstallationLoadingState = () => (
   </div>
 )
 
-const InstallationErrorState = ({ errorMessage }: { errorMessage?: string }) => (
-  <div className="flex flex-col gap-3">
-    <Admonition
-      type="warning"
-      title={$t('Unable to load installation')}
-      description={
-        <>
-          
-                        {$t('Retry the installation request from Vercel.')}
-                        {errorMessage && (
-            <span className="mt-1 block text-foreground-lighter">{$t('Error:')} {errorMessage}</span>
-          )}
-        </>
-      }
-    />
-    <Button variant="default" block asChild>
-      <Link href="/">{$t('Back to dashboard')}</Link>
-    </Button>
-  </div>
-)
-
 interface OrganizationSelectProps {
   organizations: Organization[]
   selectedOrg: Organization | null
@@ -398,9 +375,8 @@ function OrganizationSelect({
   return (
     <section className="space-y-2" aria-label={$t('Organization')}>
       <p className="text-xs font-medium uppercase tracking-wider text-foreground-light">
-        
-                      {$t('Organization')}
-                    </p>
+        {$t('Organization')}
+      </p>
       <Select
         value={selectedOrg?.slug ?? ''}
         disabled={disabled}

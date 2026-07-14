@@ -97,6 +97,8 @@ const AssistantChatFormComponent = forwardRef<HTMLFormElement, FormProps>(
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault()
         handleSubmit()
+      } else if (event.key === 'Escape') {
+        event.currentTarget.blur()
       }
     }
 

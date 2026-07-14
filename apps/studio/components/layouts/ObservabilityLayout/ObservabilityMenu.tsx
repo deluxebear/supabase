@@ -29,7 +29,7 @@ import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 import type { Dashboards } from '@/types'
 
-const ObservabilityMenu = () => {
+export const ObservabilityMenu = () => {
   const router = useRouter()
   const { profile } = useProfile()
   const { ref, id } = useParams()
@@ -298,5 +298,3 @@ const ObservabilityMenu = () => {
     </div>
   )
 }
-
-export default ObservabilityMenu

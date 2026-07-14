@@ -3,7 +3,7 @@ import type { JwtPayload } from '@supabase/supabase-js'
 import type { components } from 'api-types'
 import { type NextApiRequest, type NextApiResponse } from 'next'
 
-import apiWrapper from '@/lib/api/apiWrapper'
+import { apiWrapper } from '@/lib/api/apiWrapper'
 import { getFunctionsArtifactStore } from '@/lib/api/self-hosted/functions'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'

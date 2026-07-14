@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
@@ -56,6 +55,7 @@ import { useReplicationPublicationsQuery } from '@/data/replication/publications
 import { useReplicationSourcesQuery } from '@/data/replication/sources-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { BASE_PATH, IS_STAGING_OR_LOCAL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 const formId = 'destination-editor'
 
@@ -84,7 +84,6 @@ export const DestinationForm = ({
   const etlEnableSnowflake = useIsETLSnowflakePrivateAlpha()
   const { can: canReadAPIKeys } = useAsyncCheckPermissions(PermissionAction.SECRETS_READ, '*')
 
-  const [isFormInteracting, setIsFormInteracting] = useState(false)
   const [showValidationWarningsDialog, setShowValidationWarningsDialog] = useState(false)
   const [publicationPanelVisible, setPublicationPanelVisible] = useState(false)
   const [newBucketSheetVisible, setNewBucketSheetVisible] = useState(false)
@@ -302,16 +301,8 @@ export const DestinationForm = ({
   }
 
   useEffect(() => {
-    if (editMode && destinationData && pipelineData && !isFormInteracting) {
+    if (visible && !form.formState.isDirty) {
       form.reset(defaultValues)
-    }
-  }, [destinationData, pipelineData, editMode, defaultValues, form, isFormInteracting])
-
-  // Ensure the form always reflects the freshest data whenever the panel opens
-  useEffect(() => {
-    if (visible) {
-      form.reset(defaultValues)
-      setIsFormInteracting(false)
       resetValidation()
     }
   }, [visible, defaultValues, form, resetValidation])
@@ -382,7 +373,6 @@ export const DestinationForm = ({
                 <AnalyticsBucketFields
                   form={form}
                   editMode={editMode}
-                  setIsFormInteracting={setIsFormInteracting}
                   onSelectNewBucket={() => setNewBucketSheetVisible(true)}
                 />
               ) : selectedType === 'DuckLake' && etlEnableDucklake ? (
@@ -439,9 +429,8 @@ export const DestinationForm = ({
         </AnimatePresence>
         <div className="flex items-center gap-x-2">
           <Button disabled={isSaving} variant="default" onClick={onClose}>
-            
-                                  {$t('Cancel')}
-                                </Button>
+            {$t('Cancel')}
+          </Button>
           <Button disabled={isSubmitDisabled} loading={isSaving} form={formId} type="submit">
             {getSubmitButtonText()}
           </Button>

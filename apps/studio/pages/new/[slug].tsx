@@ -33,7 +33,6 @@ import { ProjectCreationFooter } from '@/components/interfaces/ProjectCreation/P
 import { ProjectNameInput } from '@/components/interfaces/ProjectCreation/ProjectNameInput'
 import { RegionSelector } from '@/components/interfaces/ProjectCreation/RegionSelector'
 import { SecurityOptions } from '@/components/interfaces/ProjectCreation/SecurityOptions'
-import { SelfPlatformProjectCreate } from '@/components/interfaces/SelfPlatform/SelfPlatformProjectCreate'
 import {
   GitHubRepositoryField,
   useGitHubRepositoryOptions,
@@ -70,7 +69,6 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { withAuth } from '@/hooks/misc/withAuth'
 import { usePHFlag } from '@/hooks/ui/useFlag'
 import { DOCS_URL, PROJECT_STATUS, PROVIDERS, useDefaultProvider } from '@/lib/constants'
-import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 import { buildStudioPageTitle } from '@/lib/page-title'
 import { useProfile } from '@/lib/profile'
@@ -325,8 +323,13 @@ const Wizard: NextPageWithLayout = () => {
       router.push(`/project/${res.ref}`)
     },
     onError: (error) => {
-      toast.error(`Failed to create new project: ${error.message}`)
-      trackFunnelError('project_creation', classifyApiError('project_creation', error), 'toast')
+      const toastId = toast.error(`Failed to create new project: ${error.message}`)
+      trackFunnelError(
+        'project_creation',
+        classifyApiError('project_creation', error),
+        'toast',
+        toastId
+      )
     },
   })
 
@@ -367,12 +370,16 @@ const Wizard: NextPageWithLayout = () => {
     } = values
 
     if (useOrioleDb && !availableOrioleVersion) {
+      const toastId = toast.error(
+        $t('No available OrioleDB image found, only Postgres is available')
+      )
       trackFunnelError(
         'project_creation',
         { errorCategory: 'validation', errorReason: 'oriole_unavailable' },
-        'toast'
+        'toast',
+        toastId
       )
-      return toast.error($t('No available OrioleDB image found, only Postgres is available'))
+      return
     }
 
     const { postgresEngine, releaseChannel } =
@@ -718,17 +725,10 @@ const PageLayout = withAuth(({ children }: PropsWithChildren) => {
   return <WizardLayoutWithoutAuth>{children}</WizardLayoutWithoutAuth>
 })
 
-// [self-platform] M5.0: the cloud wizard is billing/region-coupled; in
-// self-platform mode the whole page swaps for the registry-backed create
-// form. Wrapper keeps Wizard's hooks unconditional (rules-of-hooks) — an
-// early return above Wizard's own hooks would violate them.
-const NewProjectPage: NextPageWithLayout = () =>
-  IS_SELF_PLATFORM ? <SelfPlatformProjectCreate /> : <Wizard dehydratedState={{}} />
-
-NewProjectPage.getLayout = (page) => (
+Wizard.getLayout = (page) => (
   <DefaultLayout hideMobileMenu headerTitle="New project">
     <PageLayout>{page}</PageLayout>
   </DefaultLayout>
 )
 
-export default NewProjectPage
+export default Wizard

@@ -78,6 +78,7 @@ import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { NuqsAdapter } from '@/lib/nuqs-tanstack-adapter'
 import { ProfileProvider } from '@/lib/profile'
 import { Telemetry } from '@/lib/telemetry'
+import { ToastErrorTracker } from '@/lib/toast-errors'
 import { Toaster } from '@/lib/toaster'
 import Error404 from '@/pages/404'
 import Error500 from '@/pages/500'
@@ -122,6 +123,14 @@ const ResourceWarningsTab = IS_DEV_TOOLBAR_ENABLED
     )
   : () => null
 
+const ProjectStatusTab = IS_DEV_TOOLBAR_ENABLED
+  ? lazy(() =>
+      import('@/components/ui/DevToolbar/ProjectStatusTab').then((m) => ({
+        default: m.ProjectStatusTab,
+      }))
+    )
+  : () => null
+
 const devToolbarExtraTabs: ExtraTab[] = IS_DEV_TOOLBAR_ENABLED
   ? [
       {
@@ -130,6 +139,15 @@ const devToolbarExtraTabs: ExtraTab[] = IS_DEV_TOOLBAR_ENABLED
         content: (
           <Suspense fallback={null}>
             <ResourceWarningsTab />
+          </Suspense>
+        ),
+      },
+      {
+        id: 'project-status',
+        label: 'Project Status',
+        content: (
+          <Suspense fallback={null}>
+            <ProjectStatusTab />
           </Suspense>
         ),
       },
@@ -341,6 +359,7 @@ function RootComponent() {
                             </FeaturePreviewContextProvider>
                           </BannerStackProvider>
                           <Toaster />
+                          <ToastErrorTracker />
                           <MonacoThemeProvider />
                         </CommandProvider>
                       </AiAssistantStateContextProvider>

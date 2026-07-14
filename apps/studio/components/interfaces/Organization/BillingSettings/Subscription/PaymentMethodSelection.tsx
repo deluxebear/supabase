@@ -14,7 +14,7 @@ import {
   useState,
 } from 'react'
 import { toast } from 'sonner'
-import { Checkbox, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'ui'
+import { Button, Checkbox, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 
@@ -33,6 +33,7 @@ import { SetupIntentResponse } from '@/data/stripe/setup-intent-mutation'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { BASE_PATH, STRIPE_PUBLIC_KEY } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
+import { useOrgSettingsPageStateSnapshot } from '@/state/organization-settings'
 
 const stripePromise = loadStripe(STRIPE_PUBLIC_KEY)
 
@@ -45,6 +46,7 @@ export interface PaymentMethodSelectionProps {
   onTaxIdChange?: (taxId: CustomerTaxId | null) => void
   useAsDefaultBillingAddress: boolean
   onUseAsDefaultBillingAddressChange: (useAsDefault: boolean) => void
+  onClose?: () => void
 }
 
 const PaymentMethodSelection = forwardRef(function PaymentMethodSelection(
@@ -57,10 +59,12 @@ const PaymentMethodSelection = forwardRef(function PaymentMethodSelection(
     onTaxIdChange,
     useAsDefaultBillingAddress,
     onUseAsDefaultBillingAddressChange,
+    onClose,
   }: PaymentMethodSelectionProps,
   ref
 ) {
   const { slug } = useParams()
+  const snap = useOrgSettingsPageStateSnapshot()
   const { data: selectedOrganization } = useSelectedOrganizationQuery()
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const [captchaRef, setCaptchaRef] = useState<HCaptcha | null>(null)
@@ -224,7 +228,34 @@ const PaymentMethodSelection = forwardRef(function PaymentMethodSelection(
         dry_run: true,
       })
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to validate billing profile')
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to validate billing profile'
+      if (errorMessage.includes('The tax ID type does not match the billing address country')) {
+        toast.error(
+          <div>
+            <p>
+              {errorMessage}{' '}
+              {$t('Update your billing address or tax ID before upgrading your plan.')}
+            </p>
+            <Button
+              variant="default"
+              className="mt-2"
+              onClick={() => {
+                if (onClose) {
+                  onClose()
+                  snap.setPanelKey(undefined)
+                  const el = document.getElementById('address')
+                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                }
+              }}
+            >
+              {$t('Update tax ID')}
+            </Button>
+          </div>
+        )
+      } else {
+        toast.error(errorMessage)
+      }
       return false
     }
 

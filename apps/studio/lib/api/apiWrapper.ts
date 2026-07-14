@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs'
 import type { JwtPayload } from '@supabase/supabase-js'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
@@ -69,6 +70,7 @@ async function apiWrapper(
     if (error instanceof ProjectNotFound) {
       return res.status(404).json({ message: 'Project not found' })
     }
+    Sentry.captureException(error)
     return res.status(500).json({ error })
   }
 }

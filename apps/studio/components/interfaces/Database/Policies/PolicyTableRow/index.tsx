@@ -22,7 +22,6 @@ import type { Policy } from './PolicyTableRow.utils'
 import { getTableAdmonitionMessage, getTableDataApiStatus } from './PolicyTableRow.utils'
 import { PolicyTableRowHeader } from './PolicyTableRowHeader'
 import { AlertError } from '@/components/ui/AlertError'
-import { InlineLink } from '@/components/ui/InlineLink'
 import { useTableApiAccessQuery } from '@/data/privileges/table-api-access-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { t as $t } from '@/lib/i18n'
@@ -46,7 +45,7 @@ const PolicyTableRowComponent = ({
 }: PolicyTableRowProps) => {
   const { ref } = useParams()
   const { data: project } = useSelectedProjectQuery()
-  const { getPoliciesForTable, isPoliciesLoading, isPoliciesError, policiesError, exposedSchemas } =
+  const { getPoliciesForTable, isPoliciesLoading, isPoliciesError, policiesError } =
     usePoliciesData()
 
   const policies = useMemo(
@@ -73,12 +72,11 @@ const PolicyTableRowComponent = ({
   const status = useMemo(
     () =>
       getTableDataApiStatus({
-        isSchemaExposed: exposedSchemas.has(table.schema),
         apiAccessData: apiAccessMap?.[table.name],
         isRLSEnabled: table.rls_enabled,
         policiesCount: policies.length,
       }),
-    [exposedSchemas, apiAccessMap, table.schema, table.name, table.rls_enabled, policies.length]
+    [apiAccessMap, table.name, table.rls_enabled, policies.length]
   )
 
   const hasApiAccess =
@@ -91,7 +89,7 @@ const PolicyTableRowComponent = ({
 
   const showPolicies = !isPoliciesLoading && !isPoliciesError && !isLoadingRolesAccess
 
-  const admonitionMessage = useMemo(() => getTableAdmonitionMessage(status), [status])
+  const admonitionMessage = useMemo(() => getTableAdmonitionMessage({ status, ref }), [status, ref])
 
   return (
     <Card className={cn(isPubliclyReadable && 'border-warning-500')}>
@@ -108,31 +106,13 @@ const PolicyTableRowComponent = ({
         />
       </CardHeader>
 
-      {!isLoadingRolesAccess && !isRolesAccessError && status === 'schema-not-exposed' && (
-        <Admonition
-          showIcon={false}
-          type="warning"
-          className="border-0 border-y rounded-none min-h-12 flex items-center"
-        >
-          <p className="text-foreground-light">
-            {$t(
-              'No data will be selectable via Supabase APIs as this schema is not exposed. You may configure this in your project’s'
-            )}{' '}
-            <InlineLink href={`/project/${ref}/integrations/data_api/settings`}>
-              {$t('API settings')}
-            </InlineLink>
-            .
-          </p>
-        </Admonition>
-      )}
-
       {!isLoadingRolesAccess && !isRolesAccessError && admonitionMessage !== null && (
         <Admonition
           showIcon={false}
           type={isPubliclyReadable ? 'warning' : 'default'}
           className="border-0 border-y rounded-none min-h-12 flex items-center"
         >
-          <p>{$t(admonitionMessage)}</p>
+          {admonitionMessage}
         </Admonition>
       )}
 

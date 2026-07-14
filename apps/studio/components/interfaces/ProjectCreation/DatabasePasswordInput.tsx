@@ -50,6 +50,7 @@ export const DatabasePasswordInput = ({ form }: DatabasePasswordInputProps) => {
         render={({ field }) => {
           return (
             <FormItemLayout
+              id="dbPass"
               label={$t('Database password')}
               layout="horizontal"
               description={
@@ -67,6 +68,7 @@ export const DatabasePasswordInput = ({ form }: DatabasePasswordInputProps) => {
                   type="password"
                   placeholder={$t('Type in a strong password')}
                   {...field}
+                  id="dbPass"
                   autoComplete="off"
                   onChange={async (event) => {
                     const newValue = event.target.value

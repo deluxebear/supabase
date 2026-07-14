@@ -12,7 +12,7 @@ vi.mock('@/lib/gotrue', () => ({
 describe('useMfaListFactorsQuery', () => {
   beforeEach(() => {
     vi.mocked(auth.mfa.listFactors).mockResolvedValue({
-      data: { all: [], totp: [], phone: [] },
+      data: { all: [], totp: [], phone: [], webauthn: [] },
       error: null,
     })
   })

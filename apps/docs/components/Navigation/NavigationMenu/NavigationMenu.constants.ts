@@ -2921,6 +2921,10 @@ export const platform: NavMenuConstant = {
               name: 'Log Drains',
               url: '/guides/platform/manage-your-usage/log-drains' as `/${string}`,
             },
+            {
+              name: 'Pipelines',
+              url: '/guides/platform/manage-your-usage/pipelines' as `/${string}`,
+            },
           ],
         },
         {
@@ -2987,6 +2991,10 @@ export const telemetry: NavMenuConstant = {
         {
           name: 'Logging',
           url: '/guides/telemetry/logs' as `/${string}`,
+        },
+        {
+          name: 'Debugging',
+          url: '/guides/telemetry/debugging' as `/${string}`,
         },
         {
           name: 'Advanced log filtering',

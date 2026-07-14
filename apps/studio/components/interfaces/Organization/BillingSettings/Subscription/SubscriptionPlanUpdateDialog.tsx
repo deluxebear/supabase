@@ -362,6 +362,7 @@ export const SubscriptionPlanUpdateDialog = ({
                         onTaxIdChange={onTaxIdChange}
                         useAsDefaultBillingAddress={useAsDefaultBillingAddress}
                         onUseAsDefaultBillingAddressChange={onUseAsDefaultBillingAddressChange}
+                        onClose={onClose}
                       />
                     </div>
                   )}

@@ -52,7 +52,7 @@ export const QueueTab = () => {
   const { data: policies } = useDatabasePoliciesQuery({
     projectRef: project?.ref,
     connectionString: project?.connectionString,
-    schema: 'pgmq',
+    schemas: ['pgmq'],
   })
   const queuePolicies = (policies ?? []).filter((policy) => policy.table === queueRelname)
 

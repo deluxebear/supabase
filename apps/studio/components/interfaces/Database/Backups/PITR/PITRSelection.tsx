@@ -46,6 +46,7 @@ export const PITRSelection = () => {
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [selectedTimezone, setSelectedTimezone] = useState<Timezone>(getClientTimezone())
   const [selectedRecoveryPoint, setSelectedRecoveryPoint] = useState<{
+    selectedTimezone: Timezone
     recoveryTimeTargetUnix: number
     recoveryTimeString: string
     recoveryTimeStringUtc: string
@@ -103,10 +104,9 @@ export const PITRSelection = () => {
                 )}
               </AlertDescription>
               <div className="flex items-center gap-x-2 mt-2">
-                {/* [Joshen] Ideally we have some links to a docs to explain why so */}
-                <Button variant="default">
-                  <Link href={`/project/${ref}/settings/infrastructure`}>
-                    {$t('Infrastructure settings')}
+                <Button asChild variant="default">
+                  <Link href={`/project/${ref}/database/replication`}>
+                    {$t('Manage read replicas')}
                   </Link>
                 </Button>
               </div>
@@ -142,7 +142,9 @@ export const PITRSelection = () => {
                 </p>
                 <div className="py-2 flex flex-col gap-3">
                   <div>
-                    <p className="text-sm font-mono text-foreground-lighter">{$t('Local Time')}</p>
+                    <p className="text-sm font-mono text-foreground-lighter">
+                      {selectedRecoveryPoint?.selectedTimezone.text}
+                    </p>
                     <p className="text-2xl">{selectedRecoveryPoint?.recoveryTimeString}</p>
                   </div>
                   <div>

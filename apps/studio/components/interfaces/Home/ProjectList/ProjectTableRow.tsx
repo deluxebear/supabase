@@ -12,6 +12,9 @@ import {
   DropdownMenuTrigger,
   TableCell,
   TableRow,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from 'ui'
 import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 
@@ -25,7 +28,6 @@ import { getComputeSize, OrgProject } from '@/data/projects/org-projects-infinit
 import type { ResourceWarning } from '@/data/usage/resource-warnings-query'
 import { BASE_PATH } from '@/lib/constants'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
-import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 import { createNavigationHandler } from '@/lib/navigation'
 import type { Organization } from '@/types'
@@ -83,29 +85,34 @@ export const ProjectTableRow = ({
         <TableCell>
           <div className="flex flex-col gap-y-2">
             <div>
-              <h5 className="text-sm">{name}</h5>
-              <button
-                tabIndex={0}
-                onClick={handleCopyProjectRef}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    handleCopyProjectRef(e)
-                  }
-                }}
-                className="inline-flex items-center gap-x-1 cursor-pointer border border-transparent border-dashed rounded-sm transition-colors hover:bg-surface-100 hover:border hover:border-strong group font-mono text-xs text-foreground-lighter hover:text-foreground-light px-1 -ml-1"
-              >
-                {projectRef}
-                {isCopied ? (
-                  <Check size={12} strokeWidth={1.25} className="text-brand" />
-                ) : (
-                  <Copy
-                    size={12}
-                    strokeWidth={1.25}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                  />
-                )}
-              </button>
+              <h2 className="text-sm">{name}</h2>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    tabIndex={0}
+                    onClick={handleCopyProjectRef}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        handleCopyProjectRef(e)
+                      }
+                    }}
+                    className="inline-flex items-center gap-x-1 cursor-pointer border border-transparent border-dashed rounded-sm transition-colors hover:bg-surface-100 hover:border hover:border-strong group font-mono text-xs text-foreground-lighter hover:text-foreground-light px-1 -ml-1"
+                  >
+                    {projectRef}
+                    {isCopied ? (
+                      <Check size={12} strokeWidth={1.25} className="text-brand" />
+                    ) : (
+                      <Copy
+                        size={12}
+                        strokeWidth={1.25}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      />
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>{$t('Copy project reference')}</TooltipContent>
+              </Tooltip>
             </div>
             {(isGithubIntegrated || isVercelIntegrated || hasPartnerIcon) && (
               <div className="flex items-center gap-x-1.5">
@@ -157,10 +164,7 @@ export const ProjectTableRow = ({
         </TableCell>
         <TableCell>
           <span className="lowercase text-sm text-foreground-light">
-            {/* [self-platform] placeholder cloud_provider ('AWS') would
-                misattribute a self-hosted stack to a cloud vendor */}
-            {IS_SELF_PLATFORM ? $t('Self-hosted') : project.cloud_provider} |{' '}
-            {project.region || 'N/A'}
+            {project.cloud_provider} | {project.region || 'N/A'}
           </span>
         </TableCell>
         <TableCell>
@@ -180,7 +184,7 @@ export const ProjectTableRow = ({
                 <Button
                   variant="default"
                   icon={<MoreVertical />}
-                  aria-label={$t('More actions')}
+                  aria-label={`Project ${name} actions`}
                   className="w-7"
                   onClick={(e) => e.stopPropagation()}
                 />

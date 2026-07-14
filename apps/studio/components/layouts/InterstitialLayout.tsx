@@ -168,11 +168,13 @@ export const InterstitialAccountRow = ({
   displayName,
   action,
   className,
+  detail,
 }: {
   avatarUrl?: string
   displayName?: string
   action?: ReactNode
   className?: string
+  detail?: string
 }) => (
   <Card className={cn('shadow-none', !action && 'border-muted bg-surface-200/50', className)}>
     <CardContent
@@ -191,6 +193,7 @@ export const InterstitialAccountRow = ({
         <p className="truncate text-sm text-foreground">
           {displayName || <span className="invisible">{$t('Loading account')}</span>}
         </p>
+        {detail && <p className="mt-1 truncate text-xs text-foreground-light">{detail}</p>}
       </div>
       {action}
     </CardContent>

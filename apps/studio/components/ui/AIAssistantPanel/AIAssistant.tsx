@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import type { UIMessage as MessageType } from '@ai-sdk/react'
 import { useChat } from '@ai-sdk/react'
 import { lastAssistantMessageIsCompleteWithApprovalResponses } from 'ai'
@@ -49,6 +48,7 @@ import {
 } from '@/lib/ai/model.utils'
 import { IS_PLATFORM } from '@/lib/constants'
 import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import type { AssistantModel } from '@/state/ai-assistant-state'
 import { useAiAssistantState, useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
@@ -72,6 +72,7 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
     useSelectedOrganizationQuery()
 
   useShortcut(SHORTCUT_IDS.AI_ASSISTANT_CANCEL_EDIT, () => cancelEdit())
+  useShortcut(SHORTCUT_IDS.AI_ASSISTANT_NEW_CHAT, () => snap.newChat())
 
   const disablePrompts = useFlag('disableAssistantPrompts')
   const { snippets } = useSqlEditorV2StateSnapshot()
@@ -457,9 +458,8 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
                             onClick={() => snap.newChat()}
                             className="text-xs"
                           >
-                            
-                                                                {$t('New chat')}
-                                                              </Button>
+                            {$t('New chat')}
+                          </Button>
                         ) : (
                           <>
                             <Button
@@ -468,9 +468,8 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
                               onClick={() => regenerate()}
                               className="text-xs"
                             >
-                              
-                                                                          {$t('Retry')}
-                                                                        </Button>
+                              {$t('Retry')}
+                            </Button>
                             <ButtonTooltip
                               variant="default"
                               size="tiny"
@@ -494,14 +493,14 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
                 />
               )}
               <p className="text-center text-xs text-foreground-muted mt-6">
-                
-                                              {$t('Supabase AI may not always produce correct answers. Double check responses.')}
-                                            </p>
+                {$t('Supabase AI may not always produce correct answers. Double check responses.')}
+              </p>
             </ConversationContent>
             <ConversationScrollButton />
           </Conversation>
         ) : (
           <AIOnboarding
+            key={snap.activeChatId}
             sqlSnippets={snap.sqlSnippets as SqlSnippet[] | undefined}
             suggestions={
               snap.suggestions as
@@ -570,9 +569,8 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
                     activeChatId && state.setSupportLifecycleStatus(activeChatId, 'escalated')
                   }
                 >
-                  
-                                                    {$t('Escalate to human')}
-                                                  </Button>
+                  {$t('Escalate to human')}
+                </Button>
                 <Button
                   variant="outline"
                   size="tiny"
@@ -581,9 +579,8 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
                     activeChatId && state.setSupportLifecycleStatus(activeChatId, 'user_resolved')
                   }
                 >
-                  
-                                                    {$t('Resolve')}
-                                                  </Button>
+                  {$t('Resolve')}
+                </Button>
               </div>
             </div>
           )}
@@ -592,7 +589,7 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
               showIcon={false}
               type="default"
               title={$t('Assistant has been temporarily disabled')}
-              description={$t('We\'re currently looking into getting it back online')}
+              description={$t("We're currently looking into getting it back online")}
             />
           )}
 

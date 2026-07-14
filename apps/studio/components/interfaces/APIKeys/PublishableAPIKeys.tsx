@@ -138,7 +138,6 @@ export const PublishableAPIKeys = () => {
               )}
               {publishableApiKeys.map((apiKey) => (
                 <APIKeyRow
-                  showLastSeen={false}
                   key={apiKey.id}
                   apiKey={apiKey}
                   isDeleting={apiKeyToDelete?.id === apiKey.id && isDeletingAPIKey}

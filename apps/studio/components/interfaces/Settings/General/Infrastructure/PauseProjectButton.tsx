@@ -24,7 +24,7 @@ import { useIsProjectActive, useSelectedProjectQuery } from '@/hooks/misc/useSel
 import { PROJECT_STATUS } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 
-const PauseProjectButton = () => {
+export const PauseProjectButton = () => {
   const router = useRouter()
   const { data: project } = useSelectedProjectQuery()
   const { data: organization } = useSelectedOrganizationQuery()
@@ -43,6 +43,7 @@ const PauseProjectButton = () => {
 
   const isFreePlan = organization?.plan.id === 'free'
   const isBranch = Boolean(project?.parent_project_ref)
+  const entityLabel = isBranch ? 'branch' : 'project'
   const { hasAccess: projectPausingAllowedInOrg } = useCheckEntitlements(
     'project_pausing',
     organization?.slug
@@ -58,7 +59,7 @@ const PauseProjectButton = () => {
 
   const requestPauseProject = () => {
     if (!canPauseProject) {
-      return toast.error($t('You do not have the required permissions to pause this project'))
+      return toast.error(`You do not have the required permissions to pause this ${entityLabel}`)
     }
     pauseProject({ ref: projectRef })
   }
@@ -71,14 +72,19 @@ const PauseProjectButton = () => {
     !isProjectActive
 
   function getTooltipText() {
-    if (isPaused) return 'Your project is already paused'
-    if (!canPauseProject) return 'You need additional permissions to pause this project'
-    if (isProjectUnhealthy)
-      return 'Your project is unhealthy — restart it instead to restore normal operation'
-    if (!isProjectActive) return 'Unable to pause project as project is not active'
-    if (!isBranch && !projectPausingAllowedInOrg && !isFreePlan)
+    if (isPaused) {
+      return `Your ${entityLabel} is already paused`
+    } else if (!canPauseProject) {
+      return `You need additional permissions to pause this ${entityLabel}`
+    } else if (isProjectUnhealthy) {
+      return `Your ${entityLabel} is unhealthy — restart it instead to restore normal operation`
+    } else if (!isProjectActive) {
+      return `Unable to pause ${entityLabel} as ${entityLabel} is not active`
+    } else if (!isBranch && !projectPausingAllowedInOrg && !isFreePlan) {
       return 'Projects on a paid plan will always be running'
-    return undefined
+    } else {
+      return undefined
+    }
   }
 
   return (
@@ -96,23 +102,25 @@ const PauseProjectButton = () => {
           },
         }}
       >
-        {$t('Pause project')}
+        {$t('Pause')} {entityLabel}
       </ButtonTooltip>
 
       <AlertDialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{$t('Pause project?')}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {$t('Pause')} {entityLabel}?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {$t(
-                'This project will be unavailable while paused. Paused projects can be resumed for 90 days. After that, backups remain available to download.'
-              )}
+              {$t('This')} {entityLabel} {$t('will be unavailable while paused. Paused')}{' '}
+              {entityLabel}{' '}
+              {$t('can be resumed for 90 days. After that, backups remain available to download.')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isPausing}>{$t('Cancel')}</AlertDialogCancel>
             <AlertDialogAction disabled={isPausing} onClick={requestPauseProject} variant="danger">
-              {isPausing ? 'Pausing project...' : 'Pause project'}
+              {isPausing ? `Pausing ${entityLabel}...` : `Pause ${entityLabel}`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -120,5 +128,3 @@ const PauseProjectButton = () => {
     </>
   )
 }
-
-export default PauseProjectButton

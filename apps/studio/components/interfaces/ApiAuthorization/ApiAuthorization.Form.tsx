@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import Link from 'next/link'
 import { type ReactNode } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
 import {
@@ -199,6 +200,12 @@ function OrganizationsEmptyState(): ReactNode {
       type="warning"
       title={$t('No organizations found')}
       description={$t('Create an organization before authorizing this request.')}
+      actions={[
+        // [Joshen] JFYI this is a short term solution to guide users with creating an org from here
+        <Button asChild key="new-org" variant="default">
+          <Link href="/new">{$t('Create an organization')}</Link>
+        </Button>,
+      ]}
     />
   )
 }

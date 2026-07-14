@@ -3,7 +3,7 @@ import { HelpCircle } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Calendar, cn } from 'ui'
 
-import { Timezone } from './PITR.types'
+import { type Timezone } from './PITR.types'
 import {
   constrainDateToRange,
   formatNumberToTwoDigits,
@@ -19,6 +19,7 @@ import { t as $t } from '@/lib/i18n'
 
 type Props = {
   onSubmit: (data: {
+    selectedTimezone: Timezone
     recoveryTimeTargetUnix: number
     recoveryTimeString: string
     recoveryTimeStringUtc: string
@@ -94,6 +95,7 @@ export function PITRForm({
 
   const handleSubmit = () => {
     onSubmit({
+      selectedTimezone,
       recoveryTimeTargetUnix,
       recoveryTimeString,
       recoveryTimeStringUtc,
@@ -125,8 +127,9 @@ export function PITRForm({
           </div>
         }
       >
-        <div className="flex justify-between px-4 md:px-10 py-6 space-x-10">
-          <div className="w-1/3 space-y-2">
+        <div className="flex flex-col gap-y-6 lg:flex-row lg:gap-y-0 justify-between px-4 md:px-10 py-6 lg:space-x-10">
+          <div className="w-full lg:w-1/3 space-y-2 py-2">
+            <p className="text-sm text-foreground">{$t('Select a date to restore to')}</p>
             <Calendar
               mode="single"
               required={true}
@@ -140,10 +143,12 @@ export function PITRForm({
                 { after: latestAvailableBackupAsDate },
               ]}
               classNames={{
+                root: 'w-min px-0',
                 day: cn(
                   '[&:not(:has(:disabled))]:border [&:not(:has(:disabled))]:border-stronger not-last:border-r-0 [&:not(:has(:disabled))]:bg-overlay-hover',
                   'rounded-none'
                 ),
+                day_button: 'w-full rounded-none',
                 selected: 'bg-brand-500!',
               }}
             />
@@ -157,7 +162,7 @@ export function PITRForm({
             )}
           </div>
 
-          <div className="w-2/3">
+          <div className="w-full lg:w-2/3">
             {!selectedDate ? (
               <div className="h-full flex items-center justify-center">
                 <div className="mx-2">
@@ -171,18 +176,8 @@ export function PITRForm({
               </div>
             ) : (
               <div className="space-y-8 py-2">
-                <div className="space-y-1">
-                  <p className="text-sm text-foreground-light">{$t('Date to restore to')}</p>
-                  <p className="text-3xl">
-                    <span>{dayjs(selectedDate).format('DD MMM YYYY')}</span>
-                    <span>
-                      , {formatNumberToTwoDigits(selectedTime.h)}:
-                      {formatNumberToTwoDigits(selectedTime.m)}:
-                      {formatNumberToTwoDigits(selectedTime.s)}
-                    </span>
-                  </p>
-                </div>
-                <div className="space-y-2">
+                <div className="flex flex-col gap-y-4">
+                  <p className="text-sm text-foreground">{$t('Enter a time to restore to')}</p>
                   <div className="space-y-1">
                     <p className="text-sm text-foreground-light">{$t('Time zone')}</p>
                     <div className="w-[350px]">
@@ -195,6 +190,18 @@ export function PITRForm({
                   <div>
                     <div className="space-y-1">
                       <p className="text-sm text-foreground-light">{$t('Recovery time')}</p>
+                      {isSelectedOnEarliestDay && (
+                        <p className="text-sm text-foreground-lighter">
+                          <strong>{$t('Earliest backup available for this date')}</strong>:{' '}
+                          {earliestAvailableBackup.format('HH:mm:ss')}
+                        </p>
+                      )}
+                      {isSelectedOnLatestDay && (
+                        <p className="text-sm text-foreground-lighter">
+                          <strong>{$t('Latest backup available for this date')}</strong>:{' '}
+                          {latestAvailableBackup.format('HH:mm:ss')}
+                        </p>
+                      )}
                       <TimeInput
                         defaultTime={selectedTime}
                         minimumTime={
@@ -211,29 +218,27 @@ export function PITRForm({
                         }}
                       />
                     </div>
+                  </div>
+                </div>
 
-                    <p className="text-sm text-foreground-light mt-8">
-                      {$t('Enter a time within the available range to restore from.')} <br />{' '}
-                      {$t(
-                        "Backups are captured every 2 minutes, allowing you to enter a time and restore your database to the closest backup point. We'll match the time you enter to the closest backup within the 2-minute window"
-                      )}
-                    </p>
-                  </div>
-                  <div className="mt-4! space-y-1">
-                    <h3 className="text-sm text-foreground-light"></h3>
-                    {isSelectedOnEarliestDay && (
-                      <p className="text-sm text-foreground-light">
-                        <strong>{$t('Earliest backup available for this date')}</strong>:{' '}
-                        {earliestAvailableBackup.format('HH:mm:ss')}
-                      </p>
+                <div className="space-y-1">
+                  <p className="text-sm text-foreground-light">
+                    {$t('Database will be restored to:')}
+                  </p>
+                  <p className="text-3xl">
+                    <span>{dayjs(selectedDate).format('DD MMM YYYY')}</span>
+                    <span>
+                      , {formatNumberToTwoDigits(selectedTime.h)}:
+                      {formatNumberToTwoDigits(selectedTime.m)}:
+                      {formatNumberToTwoDigits(selectedTime.s)}
+                    </span>
+                  </p>
+
+                  <p className="text-sm text-foreground-lighter mt-4 text-balance">
+                    {$t(
+                      "Backups are captured every 2 minutes, allowing you to enter a time and restore your database to the closest backup point. We'll match the time you enter to the closest backup within the 2-minute window"
                     )}
-                    {isSelectedOnLatestDay && (
-                      <p className="text-sm text-foreground-light">
-                        <strong>{$t('Latest backup available for this date')}</strong>:{' '}
-                        {latestAvailableBackup.format('HH:mm:ss')}
-                      </p>
-                    )}
-                  </div>
+                  </p>
                 </div>
               </div>
             )}
