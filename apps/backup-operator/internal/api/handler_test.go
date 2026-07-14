@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -74,10 +75,57 @@ func TestOperationAPIIdempotencyAndSSECursor(t *testing.T) {
 type staticRecoverability struct {
 	window recoverability.Window
 	drill  *recoverability.DrillRecord
+	err    error
 }
 
 func (s staticRecoverability) ObserveRecoverability(context.Context, string) (recoverability.Window, *recoverability.DrillRecord, error) {
-	return s.window, s.drill, nil
+	return s.window, s.drill, s.err
+}
+
+func TestBackupsAPIKeepsDurableInventoryWhenLiveRecoveryProjectionFails(t *testing.T) {
+	store, err := controlstore.OpenSQLite(context.Background(), filepath.Join(t.TempDir(), "control.db"), contracts.RecoveryDomain{SystemIdentifier: "control", DataDomain: "operator-state"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = store.Close() })
+	target := controlstore.TargetRecord{ProjectID: "project", TargetID: "cluster-1", SystemIdentifier: "42", DataDomain: "database"}
+	if err := store.RegisterCluster(context.Background(), target); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.RegisterRepository(context.Background(), controlstore.RepositoryRecord{ID: "repo", Fingerprint: "sha256:repo", Type: "s3", Endpoint: "https://backup.invalid", EncryptedCredentials: []byte("ciphertext"), KeyID: "key"}); err != nil {
+		t.Fatal(err)
+	}
+	policy := controlstore.StandardBackupPolicy(target.ProjectID, target.TargetID, "repo", time.Now().UTC())
+	if err := store.UpsertBackupPolicy(context.Background(), policy); err != nil {
+		t.Fatal(err)
+	}
+	completedAt := time.Date(2026, 7, 14, 8, 0, 0, 0, time.UTC)
+	if err := store.RecordBackupManifest(context.Background(), controlstore.BackupManifestRecord{ProviderJobID: "backup-1", PolicyID: policy.ID, RepositoryID: "repo", BackupLabel: "20260714-080000F", BackupType: "full", CompletedAt: completedAt, ManifestJSON: `{}`}); err != nil {
+		t.Fatal(err)
+	}
+	handler, err := NewHandlerWithSources(store, nil, staticRecoverability{err: errors.New("PostgreSQL is intentionally offline during restore")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	mux := http.NewServeMux()
+	handler.Register(mux)
+	response := httptest.NewRecorder()
+	mux.ServeHTTP(response, authorizedRequest(http.MethodGet, "/v1/clusters/cluster-1/backups", nil))
+	if response.Code != http.StatusOK {
+		t.Fatalf("durable backup inventory must survive a live projection failure: status=%d body=%s", response.Code, response.Body.String())
+	}
+	var payload struct {
+		Backups    []map[string]any `json:"backups"`
+		Confidence string           `json:"confidence"`
+		IsStale    bool             `json:"isStale"`
+		Blockers   []string         `json:"blockers"`
+	}
+	if err := json.Unmarshal(response.Body.Bytes(), &payload); err != nil {
+		t.Fatal(err)
+	}
+	if len(payload.Backups) != 1 || payload.Confidence != string(recoverability.Unknown) || !payload.IsStale || len(payload.Blockers) != 1 || payload.Blockers[0] != "WAL recovery coverage has not been observed" {
+		t.Fatalf("unexpected degraded backup response: %s", response.Body.String())
+	}
 }
 
 func TestBackupsAPIProjectsRestoreDrillEvidence(t *testing.T) {

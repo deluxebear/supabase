@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/supabase/supabase/apps/backup-operator/internal/contracts"
 )
@@ -133,6 +134,20 @@ func TestQuarantineCrashPostconditionAndRollback(t *testing.T) {
 	}
 	if err := host.RestoreQuarantinedPGDATA(context.Background(), quarantine, "/data/pg"); err != nil {
 		t.Fatalf("rollback postcondition was not idempotent: %v", err)
+	}
+}
+
+func TestPostgresTargetValidatorAllowsPhysicalRecoveryTime(t *testing.T) {
+	validator := postgresTargetValidator{}
+	if validator.validationTimeout() != 10*time.Minute {
+		t.Fatalf("default validation timeout = %s, want 10m", validator.validationTimeout())
+	}
+	if validator.validationDelay() != 250*time.Millisecond {
+		t.Fatalf("default validation delay = %s, want 250ms", validator.validationDelay())
+	}
+	configured := postgresTargetValidator{timeout: 2 * time.Minute, delay: 10 * time.Millisecond}
+	if configured.validationTimeout() != 2*time.Minute || configured.validationDelay() != 10*time.Millisecond {
+		t.Fatalf("configured validation timing was ignored: timeout=%s delay=%s", configured.validationTimeout(), configured.validationDelay())
 	}
 }
 

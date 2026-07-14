@@ -486,10 +486,33 @@ func (r fixedSystemdRuntime) Start(ctx context.Context, _ string) error {
 }
 func (r fixedSystemdRuntime) Stop(ctx context.Context) error { return r.controller.Stop(ctx, r.unit) }
 
-type postgresTargetValidator struct{ database *sql.DB }
+const (
+	defaultPostgresTargetValidationTimeout = 10 * time.Minute
+	defaultPostgresTargetValidationDelay   = 250 * time.Millisecond
+)
+
+type postgresTargetValidator struct {
+	database *sql.DB
+	timeout  time.Duration
+	delay    time.Duration
+}
+
+func (v postgresTargetValidator) validationTimeout() time.Duration {
+	if v.timeout > 0 {
+		return v.timeout
+	}
+	return defaultPostgresTargetValidationTimeout
+}
+
+func (v postgresTargetValidator) validationDelay() time.Duration {
+	if v.delay > 0 {
+		return v.delay
+	}
+	return defaultPostgresTargetValidationDelay
+}
 
 func (v postgresTargetValidator) Validate(ctx context.Context, _ string, identity contracts.BackupIdentity, _ contracts.RestoreTarget) error {
-	deadline := time.Now().Add(30 * time.Second)
+	deadline := time.Now().Add(v.validationTimeout())
 	for {
 		var observed string
 		err := v.database.QueryRowContext(ctx, "SELECT system_identifier::text FROM pg_control_system()").Scan(&observed)
@@ -505,7 +528,7 @@ func (v postgresTargetValidator) Validate(ctx context.Context, _ string, identit
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case <-time.After(250 * time.Millisecond):
+		case <-time.After(v.validationDelay()):
 		}
 	}
 }

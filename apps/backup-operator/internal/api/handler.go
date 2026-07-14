@@ -565,11 +565,16 @@ func (h *Handler) listBackups(w http.ResponseWriter, r *http.Request) {
 	}
 	window := recoverability.Window{Confidence: recoverability.Unknown, Reasons: []string{"WAL recovery coverage has not been observed"}}
 	var drill *recoverability.DrillRecord
+	isStale := false
 	if h.recoverability != nil {
-		window, drill, err = h.recoverability.ObserveRecoverability(r.Context(), clusterID)
-		if err != nil {
-			writeError(w, 503, "recoverability_unavailable", err.Error())
-			return
+		observedWindow, observedDrill, observationErr := h.recoverability.ObserveRecoverability(r.Context(), clusterID)
+		if observationErr != nil {
+			// The durable backup inventory remains useful while a destructive
+			// restore intentionally stops PostgreSQL. Degrade only the live WAL
+			// projection so Studio can keep showing backups and the active job.
+			isStale = true
+		} else {
+			window, drill = observedWindow, observedDrill
 		}
 	}
 	var earliest, latest any
@@ -587,7 +592,7 @@ func (h *Handler) listBackups(w http.ResponseWriter, r *http.Request) {
 	if blockers == nil {
 		blockers = []string{}
 	}
-	writeJSON(w, 200, map[string]any{"backups": backups, "recoveryWindow": map[string]any{"earliest": earliest, "latest": latest}, "confidence": window.Confidence, "isStale": false, "blockers": blockers, "drill": drillResponse})
+	writeJSON(w, 200, map[string]any{"backups": backups, "recoveryWindow": map[string]any{"earliest": earliest, "latest": latest}, "confidence": window.Confidence, "isStale": isStale, "blockers": blockers, "drill": drillResponse})
 }
 func (h *Handler) getClusterJob(w http.ResponseWriter, r *http.Request) {
 	target, ok := h.authorizedTarget(w, r, "backup.read")
