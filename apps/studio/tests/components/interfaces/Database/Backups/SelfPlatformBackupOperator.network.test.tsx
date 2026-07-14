@@ -23,6 +23,9 @@ vi.mock('common', async (importOriginal) => ({
 vi.mock('@/components/ui/AlertError', () => ({
   AlertError: ({ subject }: { subject: string }) => <div>{subject}</div>,
 }))
+vi.mock('@/data/profile/mfa-list-factors-query', () => ({
+  useMfaListFactorsQuery: () => ({ data: { totp: [] }, isPending: false }),
+}))
 
 const policy = {
   enabled: true,
@@ -349,7 +352,11 @@ describe('SelfPlatformBackupOperator', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Confirm and execute restore' }))
     await waitFor(() => expect(executeRequests).toBe(0))
     expect(await screen.findByText('Additional authentication required')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Upgrade to AAL2' })).toBeInTheDocument()
+    const setupMfa = screen.getByRole('button', { name: 'Set up MFA' })
+    expect(screen.getByRole('button', { name: 'Confirm and execute restore' })).toBeDisabled()
+    await userEvent.click(setupMfa)
+    expect(routerMock.pathname).toBe('/account/security')
+    expect(routerMock.query.returnTo).toContain('/project/project-a/database/backups/scheduled')
   })
 
   it('renders an orphaned job as a non-terminal takeover warning state', async () => {

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   canExecuteRestore,
   canRollbackRestore,
+  getAAL2UpgradePath,
 } from '@/components/interfaces/Database/Backups/SelfPlatformBackupOperator.utils'
 
 const plan = {
@@ -13,6 +14,13 @@ const plan = {
   impact: { serviceInterruption: 'Writes stop', affectedNodes: ['primary'], requiredBytes: 1 },
   blockers: [] as string[],
 }
+
+describe('getAAL2UpgradePath', () => {
+  it('uses setup without a factor and verification with an existing factor', () => {
+    expect(getAAL2UpgradePath(false)).toBe('/account/security')
+    expect(getAAL2UpgradePath(true)).toBe('/sign-in-mfa')
+  })
+})
 
 describe('canExecuteRestore', () => {
   it('requires the exact plan hash and no blockers', () => {

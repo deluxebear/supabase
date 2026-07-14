@@ -6,7 +6,11 @@ import { Badge, Button, Card, CardContent, CardFooter, Input, Progress } from 'u
 import { Admonition } from 'ui-patterns/admonition'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
-import { canExecuteRestore, canRollbackRestore } from './SelfPlatformBackupOperator.utils'
+import {
+  canExecuteRestore,
+  canRollbackRestore,
+  getAAL2UpgradePath,
+} from './SelfPlatformBackupOperator.utils'
 import { SelfPlatformBackupOperatorPolicy } from './SelfPlatformBackupOperatorPolicy'
 import { SelfPlatformBackupOperatorStatus } from './SelfPlatformBackupOperatorStatus'
 import { AlertError } from '@/components/ui/AlertError'
@@ -25,6 +29,7 @@ import {
   restorePlanQueryOptions,
 } from '@/data/backup-operator/backup-operator-query'
 import { useBackupOperatorEvents } from '@/data/backup-operator/use-backup-operator-events'
+import { useMfaListFactorsQuery } from '@/data/profile/mfa-list-factors-query'
 import { t as $t } from '@/lib/i18n'
 
 interface SelfPlatformBackupOperatorProps {
@@ -60,6 +65,8 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
   })
   const rollbackMutation = useRestoreRollbackMutation()
   const resolutionMutation = useJobResolutionMutation()
+  const factorsQuery = useMfaListFactorsQuery({ enabled: requiresAAL2 })
+  const hasMfaFactor = (factorsQuery.data?.totp.length ?? 0) > 0
 
   const updateSelection = ({
     backupPlan,
@@ -111,6 +118,13 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
     rollbackMutation.mutate({ projectRef, jobId })
   }
 
+  const handleUpgradeAAL2 = () => {
+    void router.push({
+      pathname: getAAL2UpgradePath(hasMfaFactor),
+      query: { returnTo: router.asPath },
+    })
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <SelfPlatformBackupOperatorStatus projectRef={projectRef} />
@@ -144,11 +158,13 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
           type="warning"
           title={$t('Additional authentication required')}
           description={$t(
-            'Upgrade this session to AAL2, then return and confirm the unchanged restore plan.'
+            hasMfaFactor
+              ? 'Upgrade this session to AAL2, then return and confirm the unchanged restore plan.'
+              : 'Enable MFA on your account first'
           )}
         >
-          <Button type="button" onClick={() => window.location.assign('/sign-in-mfa')}>
-            {$t('Upgrade to AAL2')}
+          <Button type="button" loading={factorsQuery.isPending} onClick={handleUpgradeAAL2}>
+            {$t(hasMfaFactor ? 'Upgrade to AAL2' : 'Set up MFA')}
           </Button>
         </Admonition>
       )}
@@ -260,7 +276,7 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
                 type="button"
                 variant="danger"
                 loading={executeMutation.isPending}
-                disabled={!canExecute}
+                disabled={!canExecute || requiresAAL2}
                 onClick={handleExecute}
               >
                 {$t('Confirm and execute restore')}

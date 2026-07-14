@@ -24,6 +24,7 @@ export const useMfaListFactorsQuery = <TData = CustomMFAListFactorsData>({
     queryKey: profileKeys.mfaFactors(),
     queryFn: () => getMfaListFactors(),
     staleTime: 1000 * 60 * 30,
+    enabled,
     ...options,
   })
 }

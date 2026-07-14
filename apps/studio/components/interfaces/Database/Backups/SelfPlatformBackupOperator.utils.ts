@@ -16,3 +16,7 @@ export function canRollbackRestore(job: OperatorJob | undefined, now: Date) {
   if (!job?.rollbackUntil || job.state !== 'rollback-available') return false
   return now.getTime() < new Date(job.rollbackUntil).getTime()
 }
+
+export function getAAL2UpgradePath(hasMfaFactor: boolean) {
+  return hasMfaFactor ? '/sign-in-mfa' : '/account/security'
+}
