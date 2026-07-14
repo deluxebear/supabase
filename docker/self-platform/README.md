@@ -38,9 +38,10 @@ This is the same login gate the `docker-compose.platform.yml` mini-stack introdu
 this compose just runs it against the shared cluster instead of a standalone
 `platform-db`/`platform-auth` pair.
 
-The `studio` service runs `deluxebear/supabase-plt-studio:latest` (the platform-flavored
-Studio image, `NEXT_PUBLIC_SELF_PLATFORM: 'true'`), not the plain `deluxebear/supabase-studio`
-image the `docker/` stack uses.
+The `studio` service runs `deluxebear/supabase-plt-studio:latest` (the build-time `fleet`
+profile, with the legacy platform flags retained for compatibility), not the plain
+`deluxebear/supabase-studio` Embedded image that the `docker/` stack uses. The profile is
+compiled into the image and cannot be changed by setting a container environment variable.
 
 ## 2. Quickstart
 

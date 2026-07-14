@@ -66,6 +66,7 @@ services:
 
       # --- [self-platform] control-plane wiring ---
       NEXT_PUBLIC_SELF_PLATFORM: 'true'
+      NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE: 'fleet'
       PLATFORM_POSTGRES_HOST: db
       PLATFORM_POSTGRES_PORT: ${POSTGRES_PORT}
       PLATFORM_POSTGRES_DB: _platform

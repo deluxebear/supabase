@@ -1,6 +1,6 @@
 # Build & publish two self-hosted Studio images to Docker Hub:
-#   deluxebear/supabase-studio       — plain self-hosted (IS_PLATFORM off)
-#   deluxebear/supabase-plt-studio   — platform mode (IS_PLATFORM/SELF_PLATFORM on)
+#   deluxebear/supabase-studio       — Embedded profile
+#   deluxebear/supabase-plt-studio   — Fleet profile
 #
 # Both are multi-arch (linux/amd64 + linux/arm64), built natively on GitHub's
 # amd64 and arm64 hosted runners (no QEMU), then merged into a single manifest
@@ -64,28 +64,36 @@ jobs:
           - {
               variant: studio,
               image: deluxebear/supabase-studio,
-              platform: 'false',
+              profile: embedded,
+              is_platform: 'false',
+              is_self_platform: 'false',
               arch: amd64,
               runner: ubuntu-24.04,
             }
           - {
               variant: studio,
               image: deluxebear/supabase-studio,
-              platform: 'false',
+              profile: embedded,
+              is_platform: 'false',
+              is_self_platform: 'false',
               arch: arm64,
               runner: ubuntu-24.04-arm,
             }
           - {
               variant: plt-studio,
               image: deluxebear/supabase-plt-studio,
-              platform: 'true',
+              profile: fleet,
+              is_platform: 'true',
+              is_self_platform: 'true',
               arch: amd64,
               runner: ubuntu-24.04,
             }
           - {
               variant: plt-studio,
               image: deluxebear/supabase-plt-studio,
-              platform: 'true',
+              profile: fleet,
+              is_platform: 'true',
+              is_self_platform: 'true',
               arch: arm64,
               runner: ubuntu-24.04-arm,
             }
@@ -112,15 +120,16 @@ jobs:
           target: production
           platforms: linux/${{ matrix.arch }}
           tags: ${{ matrix.image }}:${{ needs.settings.outputs.version }}-${{ matrix.arch }}
-          # Platform variant: only the platform flags; the URLs use the
-          # Dockerfile's placeholder defaults (rewritten at container start from
-          # runtime env). Plain variant: flags off + empty URLs (override the
-          # placeholders so the plain image carries none).
+          # Each image is compiled with an explicit canonical profile. Legacy
+          # flags stay present during migration and the build rejects conflicts.
           build-args: |
-            NEXT_PUBLIC_IS_PLATFORM=${{ matrix.platform }}
-            NEXT_PUBLIC_SELF_PLATFORM=${{ matrix.platform }}
-            ${{ matrix.platform == 'false' && 'NEXT_PUBLIC_API_URL=' || '' }}
-            ${{ matrix.platform == 'false' && 'NEXT_PUBLIC_GOTRUE_URL=' || '' }}
+            NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE=${{ matrix.profile }}
+            NEXT_PUBLIC_IS_PLATFORM=${{ matrix.is_platform }}
+            NEXT_PUBLIC_SELF_PLATFORM=${{ matrix.is_self_platform }}
+            STUDIO_BUILD_REVISION=${{ github.sha }}
+            STUDIO_BUILD_CREATED=${{ github.event.repository.updated_at }}
+            ${{ matrix.profile == 'embedded' && 'NEXT_PUBLIC_API_URL=' || '' }}
+            ${{ matrix.profile == 'embedded' && 'NEXT_PUBLIC_GOTRUE_URL=' || '' }}
           cache-from: type=gha,scope=${{ matrix.variant }}-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=${{ matrix.variant }}-${{ matrix.arch }}
 
@@ -189,7 +198,8 @@ jobs:
 
             ### `deluxebear/supabase-studio` — plain self-hosted
             The Studio UI for a standard self-hosted Supabase stack (what
-            `docker/docker-compose.yml` runs). Built with `IS_PLATFORM` **off** and no
+            `docker/docker-compose.yml` runs). Built with the canonical `embedded`
+            profile (`IS_PLATFORM` off) and no
             baked API/GoTrue URLs.
 
             ```bash
@@ -197,7 +207,8 @@ jobs:
             ```
 
             ### `deluxebear/supabase-plt-studio` — platform / management-plane mode
-            Studio in self-hosted **platform** mode (`IS_PLATFORM` + `SELF_PLATFORM` on):
+            Studio in the canonical `fleet` profile (legacy `IS_PLATFORM` +
+            `SELF_PLATFORM` remain on during transition):
             the multi-team management plane — health probing, connection-config editing,
             container/host infra metrics, backups observe, and the zh-CN localized UI.
             `NEXT_PUBLIC_API_URL` / `NEXT_PUBLIC_GOTRUE_URL` are placeholders baked at

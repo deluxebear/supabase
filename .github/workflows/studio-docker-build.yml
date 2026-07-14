@@ -15,8 +15,18 @@ permissions:
 
 jobs:
   build:
-    name: 'Studio Docker Build'
+    name: 'Studio Docker Build (${{ matrix.profile }})'
     runs-on: blacksmith-4vcpu-ubuntu-2404
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: embedded
+            is_platform: 'false'
+            is_self_platform: 'false'
+          - profile: fleet
+            is_platform: 'true'
+            is_self_platform: 'true'
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
@@ -33,6 +43,37 @@ jobs:
               - 'e2e/studio/**'
               - 'pnpm-lock.yaml'
               - '.github/workflows/studio-e2e-test.yml'
-      - name: Build
+              - '.github/workflows/studio-docker-build.yml'
+      - name: Build ${{ matrix.profile }} image
         if: steps.filter.outputs.studio == 'true'
-        run: docker build . -f apps/studio/Dockerfile --target production -t supabase-studio:local --build-arg NEXT_PUBLIC_STUDIO_AUTH_MODE=supabase --no-cache
+        run: |
+          docker build . -f apps/studio/Dockerfile --target production \
+            -t supabase-studio:${{ matrix.profile }} \
+            --build-arg NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE=${{ matrix.profile }} \
+            --build-arg NEXT_PUBLIC_IS_PLATFORM=${{ matrix.is_platform }} \
+            --build-arg NEXT_PUBLIC_SELF_PLATFORM=${{ matrix.is_self_platform }} \
+            --build-arg NEXT_PUBLIC_STUDIO_AUTH_MODE=supabase \
+            --build-arg STUDIO_BUILD_REVISION=${{ github.sha }} \
+            --no-cache
+
+      - name: Smoke test ${{ matrix.profile }} image
+        if: steps.filter.outputs.studio == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          image="supabase-studio:${{ matrix.profile }}"
+          test "$(docker image inspect "${image}" --format '{{ index .Config.Labels "io.supabase.studio.deployment-profile" }}')" = "${{ matrix.profile }}"
+          container="$(docker run -d -p 3000:3000 "${image}")"
+          trap 'docker rm -f "${container}"' EXIT
+          for _ in $(seq 1 60); do
+            status="$(curl --silent --output /dev/null --write-out '%{http_code}' http://localhost:3000/api/get-utc-time || true)"
+            [ "${status}" = "200" ] && break
+            sleep 2
+          done
+          test "${status}" = "200"
+          profile_status="$(curl --silent --output /dev/null --write-out '%{http_code}' http://localhost:3000/api/platform/profile)"
+          if [ "${{ matrix.profile }}" = "embedded" ]; then
+            test "${profile_status}" = "200"
+          else
+            test "${profile_status}" = "401"
+          fi

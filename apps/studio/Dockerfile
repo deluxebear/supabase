@@ -52,12 +52,13 @@ CMD ["pnpm", "dev:studio"]
 # Compile Next.js
 FROM dev AS builder
 
-# Self-hosted-platform build flags. Next.js inlines NEXT_PUBLIC_* at build time,
-# so the platform variant must be compiled with the platform flags set. Left
-# unset (the default) the image builds as plain self-hosted Studio — identical
-# to the upstream supabase/studio image.
-#   NEXT_PUBLIC_IS_PLATFORM      "true" enables platform (control-plane) mode
-#   NEXT_PUBLIC_SELF_PLATFORM    "true" enables the in-repo platform API
+# Studio profile is a build-time contract. Next.js inlines NEXT_PUBLIC_* values,
+# so an already-built image cannot switch profiles at container startup. Legacy
+# flags remain compatibility inputs and are validated against the canonical
+# profile by next.config.ts.
+#   NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE  cloud | embedded | fleet | cli
+#   NEXT_PUBLIC_IS_PLATFORM                legacy compatibility input
+#   NEXT_PUBLIC_SELF_PLATFORM              legacy compatibility input
 #   NEXT_PUBLIC_STUDIO_AUTH_MODE studio auth mode (optional)
 #
 # The platform URLs are DEPLOY-TIME config: they default to absolute placeholder
@@ -69,13 +70,15 @@ FROM dev AS builder
 #   NEXT_PUBLIC_API_URL          platform API base   (runtime env at deploy)
 #   NEXT_PUBLIC_GOTRUE_URL       platform login GoTrue (runtime env at deploy)
 #   NEXT_PUBLIC_SITE_URL         dashboard site URL  (optional)
+ARG NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE=embedded
 ARG NEXT_PUBLIC_IS_PLATFORM
 ARG NEXT_PUBLIC_SELF_PLATFORM
 ARG NEXT_PUBLIC_API_URL=https://studio-runtime-origin.invalid/api
 ARG NEXT_PUBLIC_GOTRUE_URL=https://gotrue-runtime-origin.invalid
 ARG NEXT_PUBLIC_SITE_URL
 ARG NEXT_PUBLIC_STUDIO_AUTH_MODE
-ENV NEXT_PUBLIC_IS_PLATFORM=${NEXT_PUBLIC_IS_PLATFORM} \
+ENV NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE=${NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE} \
+    NEXT_PUBLIC_IS_PLATFORM=${NEXT_PUBLIC_IS_PLATFORM} \
     NEXT_PUBLIC_SELF_PLATFORM=${NEXT_PUBLIC_SELF_PLATFORM} \
     NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
     NEXT_PUBLIC_GOTRUE_URL=${NEXT_PUBLIC_GOTRUE_URL} \
@@ -86,6 +89,12 @@ RUN pnpm --filter studio exec next build
 
 # Copy only compiled code and dependencies
 FROM base AS production
+ARG NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE=embedded
+ARG STUDIO_BUILD_REVISION=unknown
+ARG STUDIO_BUILD_CREATED=unknown
+LABEL org.opencontainers.image.revision=${STUDIO_BUILD_REVISION} \
+      org.opencontainers.image.created=${STUDIO_BUILD_CREATED} \
+      io.supabase.studio.deployment-profile=${NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE}
 COPY --from=builder /app/apps/studio/public ./apps/studio/public
 COPY --from=builder /app/apps/studio/.next/standalone ./
 COPY --from=builder /app/apps/studio/.next/static ./apps/studio/.next/static
@@ -97,5 +106,5 @@ COPY --from=builder /app/apps/studio/.next/static ./apps/studio/.next/static
 COPY --chmod=0755 apps/studio/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 EXPOSE 3000
 ENTRYPOINT ["docker-entrypoint.sh"]
-HEALTHCHECK --interval=5s --timeout=5s --retries=3 CMD node -e "fetch('http://localhost:3000/api/platform/profile').then((r) => {if (r.status !== 200) throw new Error(r.status)})"
+HEALTHCHECK --interval=5s --timeout=5s --retries=3 CMD node -e "fetch('http://localhost:3000/api/get-utc-time').then((r) => {if (r.status !== 200) throw new Error(r.status)})"
 CMD ["node", "apps/studio/server.js"]
