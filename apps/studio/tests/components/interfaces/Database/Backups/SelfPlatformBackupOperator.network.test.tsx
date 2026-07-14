@@ -359,17 +359,42 @@ describe('SelfPlatformBackupOperator', () => {
 
   it('disables execution and explains when the restore plan has expired', async () => {
     const expiredPlan = { ...restorePlan, expiresAt: '2026-07-13T12:00:00Z' }
+    const freshPlan = {
+      ...restorePlan,
+      id: 'plan-2',
+      hash: 'fresh-plan-hash',
+      expiresAt: '2099-07-13T12:00:00Z',
+    }
+    const createRequests: Array<{ recoveryTarget: string }> = []
     mswServer.use(
-      http.post(operatorURL('restore-plans'), () => HttpResponse.json(expiredPlan)),
-      http.get(operatorURL('restore-plans/plan-1'), () => HttpResponse.json(expiredPlan))
+      http.post(operatorURL('restore-plans'), async ({ request }) => {
+        createRequests.push((await request.json()) as { recoveryTarget: string })
+        return HttpResponse.json(createRequests.length === 1 ? expiredPlan : freshPlan)
+      }),
+      http.get(operatorURL('restore-plans/plan-1'), () => HttpResponse.json(expiredPlan)),
+      http.get(operatorURL('restore-plans/plan-2'), () => HttpResponse.json(freshPlan))
     )
     customRender(<SelfPlatformBackupOperator projectRef="project-a" />)
     await screen.findByText('Backup policy')
-    await createPlan()
-    await userEvent.type(screen.getByLabelText('Exact restore plan hash'), 'exact-plan-hash')
+    fireEvent.change(screen.getByLabelText('Recovery target'), {
+      target: { value: '2026-07-13T09:30' },
+    })
+    await userEvent.click(screen.getByRole('button', { name: 'Preview restore impact' }))
 
-    expect(screen.getByText('Restore plan expired')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Confirm and execute restore' })).toBeDisabled()
+    expect(await screen.findByText('Restore plan expired')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Exact restore plan hash')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Confirm and execute restore' })
+    ).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Regenerate restore plan' }))
+
+    expect(await screen.findByText('fresh-plan-hash')).toBeInTheDocument()
+    expect(screen.getByLabelText('Exact restore plan hash')).toBeInTheDocument()
+    expect(createRequests).toHaveLength(2)
+    expect(createRequests.at(-1)).toEqual({
+      recoveryTarget: new Date(expiredPlan.recoveryTarget).toISOString(),
+    })
   })
 
   it('surfaces a non-AAL2 confirmation failure and stops before execute', async () => {

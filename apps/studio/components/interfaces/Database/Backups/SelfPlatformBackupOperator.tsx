@@ -116,12 +116,19 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
     isActiveBackupOperatorJob(jobQuery.data.state) &&
     Date.now() - new Date(jobQuery.data.updatedAt).getTime() > 60_000
 
-  const handleCreatePlan = () => {
-    if (!projectRef || !recoveryTarget) return
+  const createRestorePlan = (target: string) => {
+    if (!projectRef || !target) return
     setConfirmationHash('')
     setRequiresAAL2(false)
     executeMutation.reset()
-    planMutation.mutate({ projectRef, recoveryTarget: new Date(recoveryTarget).toISOString() })
+    planMutation.mutate({ projectRef, recoveryTarget: new Date(target).toISOString() })
+  }
+
+  const handleCreatePlan = () => createRestorePlan(recoveryTarget)
+
+  const handleRegeneratePlan = () => {
+    if (!restorePlan) return
+    createRestorePlan(restorePlan.recoveryTarget)
   }
 
   const handleExecute = () => {
@@ -288,27 +295,39 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
                   description={$t(
                     'Preview the restore impact again to create a new plan before confirming the restore.'
                   )}
-                />
+                >
+                  <Button
+                    type="button"
+                    loading={planMutation.isPending}
+                    onClick={handleRegeneratePlan}
+                  >
+                    {$t('Regenerate restore plan')}
+                  </Button>
+                </Admonition>
               )}
               {executeMutation.isError && !requiresAAL2 && (
                 <AlertError error={executeMutation.error} subject={$t('Failed to start restore')} />
               )}
-              <p className="break-all font-mono text-xs">{restorePlan.hash}</p>
-              <Input
-                aria-label={$t('Exact restore plan hash')}
-                placeholder={$t('Paste the exact plan hash')}
-                value={confirmationHash}
-                onChange={(event) => setConfirmationHash(event.target.value)}
-              />
-              <Button
-                type="button"
-                variant="danger"
-                loading={executeMutation.isPending}
-                disabled={!canExecute || requiresAAL2}
-                onClick={handleExecute}
-              >
-                {$t('Confirm and execute restore')}
-              </Button>
+              {!isPlanExpired && (
+                <>
+                  <p className="break-all font-mono text-xs">{restorePlan.hash}</p>
+                  <Input
+                    aria-label={$t('Exact restore plan hash')}
+                    placeholder={$t('Paste the exact plan hash')}
+                    value={confirmationHash}
+                    onChange={(event) => setConfirmationHash(event.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    variant="danger"
+                    loading={executeMutation.isPending}
+                    disabled={!canExecute || requiresAAL2}
+                    onClick={handleExecute}
+                  >
+                    {$t('Confirm and execute restore')}
+                  </Button>
+                </>
+              )}
             </div>
           )}
 

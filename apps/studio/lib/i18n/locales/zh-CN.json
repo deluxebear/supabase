@@ -7732,6 +7732,7 @@
   "Retry safely": "安全重试",
   "Roll back restore": "回滚恢复操作",
   "Restore plan expired": "恢复计划已过期",
+  "Regenerate restore plan": "重新生成恢复计划",
   "Scheduled backups": "计划备份",
   "Start full backup": "启动完整备份",
   "Earliest recoverable time": "最早可恢复时间",
