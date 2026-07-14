@@ -40,9 +40,12 @@ func (s POSIXWALSource) ObserveWAL(_ context.Context, manifest controlstore.Back
 	if err != nil {
 		return recoverability.Observation{}, err
 	}
+	if len(payload) == 0 {
+		return recoverability.Observation{}, errors.New("WAL inventory is empty")
+	}
 	var inventory WALInventory
 	if err := json.Unmarshal(payload, &inventory); err != nil {
-		return recoverability.Observation{}, err
+		return recoverability.Observation{}, fmt.Errorf("WAL inventory contains invalid JSON: %w", err)
 	}
 	if inventory.RepositoryFingerprint == "" || inventory.RepositoryRevision == "" || inventory.DatabaseHistoryID == 0 || inventory.CurrentTimeline == 0 {
 		return recoverability.Observation{}, errors.New("WAL inventory identity is incomplete")

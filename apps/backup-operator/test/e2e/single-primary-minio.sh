@@ -168,11 +168,13 @@ refresh() (
   history_id="$(jq -r '.[0].db[-1].id' <<<"$info")"
   timeline_hex="$(jq -r '.[0].backup[-1].archive.stop[0:8]' <<<"$info")"
   timeline="$((16#$timeline_hex))"
-  archive="$(pgbackrest --stanza=compose-e2e --output=json --recurse repo-ls "archive/compose-e2e/$version-$history_id")"
-  segments="$(jq --arg timeline "$timeline_hex" '[to_entries[] | select(.value.type == "file") | select(.key | test("/[0-9A-F]{24}-")) | (.key | capture("/(?<name>[0-9A-F]{24})-").name) as $name | select($name | startswith($timeline)) | {name:$name,recoverableThrough:(.value.time | todateiso8601)}] | unique_by(.name)' <<<"$archive")"
   tmp="/work/.wal-inventory.json.$$"
-  jq -n --argjson history "$history_id" --argjson timeline "$timeline" --argjson segments "$segments" \
-    '{repositoryFingerprint:"compose-fingerprint",repositoryRevision:"compose-revision",databaseHistoryId:$history,currentTimeline:$timeline,segments:$segments,history:[]}' >"$tmp"
+  segments_file="/work/.wal-segments.json.$$"
+  trap 'rm -f "$tmp" "$segments_file"' EXIT
+  pgbackrest --stanza=compose-e2e --output=json --recurse repo-ls "archive/compose-e2e/$version-$history_id" |
+    jq --arg timeline "$timeline_hex" '[to_entries[] | select(.value.type == "file") | select(.key | test("/[0-9A-F]{24}-")) | (.key | capture("/(?<name>[0-9A-F]{24})-").name) as $name | select($name | startswith($timeline)) | {name:$name,recoverableThrough:(.value.time | todateiso8601)}] | unique_by(.name)' >"$segments_file"
+  jq -n --argjson history "$history_id" --argjson timeline "$timeline" --slurpfile segments "$segments_file" \
+    '{repositoryFingerprint:"compose-fingerprint",repositoryRevision:"compose-revision",databaseHistoryId:$history,currentTimeline:$timeline,segments:$segments[0],history:[]}' >"$tmp"
   chmod 600 "$tmp"
   mv "$tmp" /work/wal-inventory.json
 )
@@ -239,6 +241,8 @@ docker exec -d "$control" sh -c "exec env \
   /work/backup-operator --mode agent > /work/agent.log 2>&1"
 for _ in $(seq 1 120); do docker exec "$control" test -s /var/lib/backup-agent/journal.db && break; sleep 1; done
 docker exec -d "$control" /work/refresh-wal-inventory
+for _ in $(seq 1 30); do docker exec "$control" test -s /work/wal-inventory.json && break; sleep 1; done
+docker exec "$control" test -s /work/wal-inventory.json
 
 docker exec -i "$control" bash -es -- "$system_id" "$target_time" <<'PRODUCT_CHAIN'
 system_id="$1" target="$2" key=01234567890123456789012345678901

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -29,5 +30,25 @@ func TestPOSIXWALInventoryRequiresExplicitOwnerOnlyMetadata(t *testing.T) {
 	}
 	if _, err := source.ObserveWAL(context.Background(), controlstore.BackupManifestRecord{BackupLabel: "backup"}); err == nil {
 		t.Fatal("world-readable inventory accepted")
+	}
+}
+
+func TestPOSIXWALInventoryReportsEmptyAndInvalidFiles(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "wal.json")
+	source := POSIXWALSource{InventoryFile: path}
+	manifest := controlstore.BackupManifestRecord{BackupLabel: "backup"}
+
+	if err := os.WriteFile(path, nil, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := source.ObserveWAL(context.Background(), manifest); err == nil || err.Error() != "WAL inventory is empty" {
+		t.Fatalf("empty inventory error = %v", err)
+	}
+
+	if err := os.WriteFile(path, []byte("{"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := source.ObserveWAL(context.Background(), manifest); err == nil || !strings.HasPrefix(err.Error(), "WAL inventory contains invalid JSON:") {
+		t.Fatalf("invalid inventory error = %v", err)
 	}
 }
