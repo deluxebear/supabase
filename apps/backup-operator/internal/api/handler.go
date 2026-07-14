@@ -777,7 +777,7 @@ func (h *Handler) executeRestorePlan(w http.ResponseWriter, r *http.Request) {
 			writeError(w, 403, "restore_not_authorized", err.Error())
 			return
 		}
-		writeJSON(w, 202, existing)
+		writeJSON(w, 202, jobResponse(existing))
 		return
 	}
 	if err != nil && !errors.Is(err, controlstore.ErrJobNotFound) {
@@ -814,7 +814,7 @@ func (h *Handler) executeRestorePlan(w http.ResponseWriter, r *http.Request) {
 		writeError(w, 409, "restore_dispatch_failed", err.Error())
 		return
 	}
-	writeJSON(w, 202, job)
+	writeJSON(w, 202, jobResponse(job))
 }
 func (h *Handler) rollbackJob(w http.ResponseWriter, r *http.Request) {
 	original, err := h.store.GetJob(r.Context(), r.PathValue("jobId"))

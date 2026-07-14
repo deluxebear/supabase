@@ -1,7 +1,11 @@
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { operatorBackupsSchema, requestBackupOperator } from './backup-operator-client'
+import {
+  operatorBackupsSchema,
+  operatorJobSchema,
+  requestBackupOperator,
+} from './backup-operator-client'
 import { resolveProjectConnection } from './resolve-connection'
 import { mswServer } from '@/tests/lib/msw'
 
@@ -21,6 +25,17 @@ afterEach(() => {
 })
 
 describe('Backup Operator self-platform client', () => {
+  it('normalizes legacy mutation job responses', () => {
+    expect(
+      operatorJobSchema.parse({
+        id: 'restore-job',
+        type: 'restore',
+        state: 'queued',
+        updatedAt: '2026-07-14T08:00:29Z',
+      })
+    ).toMatchObject({ progress: 0, rollbackUntil: null, manualIntervention: null })
+  })
+
   it.each([
     { label: 'null', blockers: null },
     { label: 'missing', blockers: undefined },

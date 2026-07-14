@@ -105,21 +105,36 @@ func TestAAL2ExecuteAgentResultAndRollbackFlow(t *testing.T) {
 	if executed.Code != 202 {
 		t.Fatalf("execute: %d %s", executed.Code, executed.Body.String())
 	}
-	var job controlstore.JobRecord
-	_ = json.Unmarshal(executed.Body.Bytes(), &job)
+	var executedPayload struct {
+		ID                 string         `json:"id"`
+		Progress           *float64       `json:"progress"`
+		RollbackUntil      any            `json:"rollbackUntil"`
+		ManualIntervention map[string]any `json:"manualIntervention"`
+	}
+	if err := json.Unmarshal(executed.Body.Bytes(), &executedPayload); err != nil {
+		t.Fatal(err)
+	}
+	if executedPayload.ID == "" || executedPayload.Progress == nil || *executedPayload.Progress != 0 || executedPayload.RollbackUntil != nil || executedPayload.ManualIntervention != nil {
+		t.Fatalf("execute response does not match the Operator job contract: %s", executed.Body.String())
+	}
 	replayed := do(trusted, "POST", "/v1/clusters/cluster-a/restore-plans/"+plan.ID+"/execute", map[string]any{"planHash": plan.Hash})
 	if replayed.Code != 202 {
 		t.Fatalf("execute replay: %d %s", replayed.Code, replayed.Body.String())
 	}
-	var replayedJob controlstore.JobRecord
-	_ = json.Unmarshal(replayed.Body.Bytes(), &replayedJob)
-	if replayedJob.ID != job.ID || observations.calls != 2 {
-		t.Fatalf("execute replay must return the durable job without re-observation: first=%q replay=%q observation_calls=%d", job.ID, replayedJob.ID, observations.calls)
+	var replayedJob struct {
+		ID                 string         `json:"id"`
+		Progress           *float64       `json:"progress"`
+		RollbackUntil      any            `json:"rollbackUntil"`
+		ManualIntervention map[string]any `json:"manualIntervention"`
 	}
-	if ok, err := store.ReconcileTaskResult(context.Background(), job.ID+"/execute", true, nil, ""); err != nil || !ok {
+	_ = json.Unmarshal(replayed.Body.Bytes(), &replayedJob)
+	if replayedJob.ID != executedPayload.ID || replayedJob.Progress == nil || replayedJob.RollbackUntil != nil || replayedJob.ManualIntervention != nil || observations.calls != 2 {
+		t.Fatalf("execute replay must return the durable job contract without re-observation: first=%q replay=%q observation_calls=%d", executedPayload.ID, replayedJob.ID, observations.calls)
+	}
+	if ok, err := store.ReconcileTaskResult(context.Background(), executedPayload.ID+"/execute", true, nil, ""); err != nil || !ok {
 		t.Fatalf("agent result: %v %v", ok, err)
 	}
-	rollback := do(trusted, "POST", "/v1/clusters/cluster-a/jobs/"+job.ID+"/rollback", map[string]any{"planHash": plan.Hash})
+	rollback := do(trusted, "POST", "/v1/clusters/cluster-a/jobs/"+executedPayload.ID+"/rollback", map[string]any{"planHash": plan.Hash})
 	if rollback.Code != 202 {
 		t.Fatalf("rollback: %d %s", rollback.Code, rollback.Body.String())
 	}

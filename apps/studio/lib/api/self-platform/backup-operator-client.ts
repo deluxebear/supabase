@@ -109,9 +109,12 @@ export const operatorJobSchema = z.object({
     'manual-intervention',
     'rollback-available',
   ]),
-  progress: z.number().min(0).max(100),
+  // v0.1.1 returned the durable JobRecord directly from a few mutation
+  // endpoints. Keep the Studio client compatible while those Operators are
+  // upgraded to the normalized job response contract.
+  progress: z.number().min(0).max(100).default(0),
   updatedAt: z.string(),
-  rollbackUntil: z.string().nullable(),
+  rollbackUntil: z.string().nullable().default(null),
   manualIntervention: z
     .object({
       code: z.string(),
@@ -119,7 +122,8 @@ export const operatorJobSchema = z.object({
       safeAction: z.string(),
       runbookUrl: z.string(),
     })
-    .nullable(),
+    .nullable()
+    .default(null),
 })
 
 export class BackupOperatorAPIError extends Error {
