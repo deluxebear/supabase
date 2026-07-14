@@ -50,7 +50,10 @@ export const operatorPITRSchema = z.object({
   enabled: z.boolean(),
   healthy: z.boolean(),
   archiveCommand: z.string().optional(),
-  repositoryId: z.string().optional(),
+  repositoryId: z
+    .string()
+    .nullish()
+    .transform((value) => value ?? undefined),
   blockers: nullableStringArraySchema,
 })
 

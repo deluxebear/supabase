@@ -17,6 +17,7 @@ import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 import DatabaseBackupsNav from '@/components/interfaces/Database/Backups/DatabaseBackupsNav'
 import { PITRNotice } from '@/components/interfaces/Database/Backups/PITR/PITRNotice'
 import { PITRSelection } from '@/components/interfaces/Database/Backups/PITR/PITRSelection'
+import { SelfPlatformPITR } from '@/components/interfaces/Database/Backups/SelfPlatformPITR'
 import DatabaseLayout from '@/components/layouts/DatabaseLayout/DatabaseLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { AlertError } from '@/components/ui/AlertError'
@@ -55,7 +56,7 @@ const DatabasePhysicalBackups: NextPageWithLayout = () => {
                 type="default"
                 title={$t('Observing operator-managed physical backups')}
                 description={$t(
-                  'This page reflects the pgBackRest state your operator publishes. Physical backups and PITR cover the entire database instance (not a single logical database). Restores run via the pgBackRest CLI runbook, not from Studio.'
+                  'This page reflects the Backup Operator control plane. Physical backups and PITR cover the entire database instance, and restore controls are available in Studio.'
                 )}
               />
             )}
@@ -88,7 +89,7 @@ const PITR = () => {
     isPending: isLoadingBackups,
     isError,
     isSuccess,
-  } = useBackupsQuery({ projectRef })
+  } = useBackupsQuery({ projectRef }, { enabled: !IS_SELF_PLATFORM })
 
   const isLoading = isLoadingBackups || isLoadingEntitlements || isProjectPending
   const isEnabled = backups?.pitr_enabled
@@ -101,6 +102,10 @@ const PITR = () => {
 
   if (isPermissionsLoaded && !canReadPhysicalBackups) {
     return <NoPermission resourceText="view PITR backups" />
+  }
+
+  if (IS_SELF_PLATFORM) {
+    return <SelfPlatformPITR projectRef={projectRef} />
   }
 
   if (isOrioleDbInAws) {
@@ -140,31 +145,21 @@ const PITR = () => {
       {isSuccess && (
         <>
           {!isEnabled ? (
-            IS_SELF_PLATFORM ? (
-              <Admonition
-                type="default"
-                title={$t('Point-in-time recovery is not configured')}
-                description={$t(
-                  'Ask your operator to enable pgBackRest WAL archiving to expose a recovery window here.'
-                )}
-              />
-            ) : (
-              <UpgradeToPro
-                addon={hasAccessToPitr ? 'pitr' : undefined}
-                source="pitr"
-                featureProposition="enable Point-in-Time Recovery"
-                primaryText={
-                  hasAccessToPitr
-                    ? 'Point in Time Recovery is available as an add-on'
-                    : 'Point in Time Recovery is a Pro Plan add-on'
-                }
-                secondaryText={
-                  !hasAccessToPitr
-                    ? 'Roll back your database to a specific second. Starts at $100/month. Pro Plan already includes daily backups at no extra cost.'
-                    : 'Enable the add-on to add point-in-time recovery to your project.'
-                }
-              />
-            )
+            <UpgradeToPro
+              addon={hasAccessToPitr ? 'pitr' : undefined}
+              source="pitr"
+              featureProposition="enable Point-in-Time Recovery"
+              primaryText={
+                hasAccessToPitr
+                  ? 'Point in Time Recovery is available as an add-on'
+                  : 'Point in Time Recovery is a Pro Plan add-on'
+              }
+              secondaryText={
+                !hasAccessToPitr
+                  ? 'Roll back your database to a specific second. Starts at $100/month. Pro Plan already includes daily backups at no extra cost.'
+                  : 'Enable the add-on to add point-in-time recovery to your project.'
+              }
+            />
           ) : !isActiveHealthy ? (
             <Alert>
               <AlertCircle />
