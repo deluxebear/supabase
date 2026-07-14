@@ -717,15 +717,9 @@ func main() {
 			return configuredRestoreObservations, nil
 		}
 	}
-	if *drillEnable {
-		deps.RecoverabilityFactory = func(store app.Store) (operatorapi.RecoverabilitySource, error) {
-			control, ok := store.(*controlstore.Store)
-			if !ok || localRecoverability == nil {
-				return nil, errors.New("restore drill recoverability projection requires local server observations")
-			}
-			return drill.Projection{Observations: localRecoverability, Results: drill.TaskResultStore{Source: control, Capability: app.CapabilitySinglePrimary + ".maintenance.restore-drill"}}, nil
-		}
-	}
+	configureSinglePrimaryRecoverability(&deps, *singlePrimary, func() *opruntime.RefreshingLocalSource {
+		return localRecoverability
+	})
 	deps.WorkerFactory = workerFactory
 	var closeAgent func() error
 	if mode == app.ModeAgent {
@@ -849,6 +843,23 @@ func envInt64(name string, fallback int64) int64 {
 		return fallback
 	}
 	return parsed
+}
+
+// Recoverability is a read-only projection over observed backup and WAL
+// evidence. It must remain available when scheduled restore drills are disabled;
+// drill evidence only upgrades the confidence of the projected window.
+func configureSinglePrimaryRecoverability(deps *app.Dependencies, enabled bool, source func() *opruntime.RefreshingLocalSource) {
+	if !enabled {
+		return
+	}
+	deps.RecoverabilityFactory = func(store app.Store) (operatorapi.RecoverabilitySource, error) {
+		control, ok := store.(*controlstore.Store)
+		observations := source()
+		if !ok || observations == nil {
+			return nil, errors.New("single-primary recoverability projection requires local server observations")
+		}
+		return drill.Projection{Observations: observations, Results: drill.TaskResultStore{Source: control, Capability: app.CapabilitySinglePrimary + ".maintenance.restore-drill"}}, nil
+	}
 }
 
 func dnsRestoreDestination(target string) string {

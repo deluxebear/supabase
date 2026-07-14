@@ -158,6 +158,30 @@ observed_until="$(date -u -v+5M +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d '+
 jq -n --arg start "$archive_start" --arg stop "$archive_stop" --arg through "$observed_until" \
   '{repositoryFingerprint:"compose-fingerprint",repositoryRevision:"compose-revision",databaseHistoryId:1,currentTimeline:1,segments:([$start,$stop]|unique|map({name:.,recoverableThrough:$through})),history:[]}' >"$work/wal-inventory.json"
 chmod 600 "$work/wal-inventory.json"
+cat >"$work/refresh-wal-inventory" <<'REFRESH_WAL_INVENTORY'
+#!/usr/bin/env bash
+set -uo pipefail
+refresh() (
+  set -Eeuo pipefail
+  info="$(pgbackrest --stanza=compose-e2e --output=json info)"
+  version="$(jq -r '.[0].db[-1].version' <<<"$info")"
+  history_id="$(jq -r '.[0].db[-1].id' <<<"$info")"
+  timeline_hex="$(jq -r '.[0].backup[-1].archive.stop[0:8]' <<<"$info")"
+  timeline="$((16#$timeline_hex))"
+  archive="$(pgbackrest --stanza=compose-e2e --output=json --recurse repo-ls "archive/compose-e2e/$version-$history_id")"
+  segments="$(jq --arg timeline "$timeline_hex" '[to_entries[] | select(.value.type == "file") | select(.key | test("/[0-9A-F]{24}-")) | (.key | capture("/(?<name>[0-9A-F]{24})-").name) as $name | select($name | startswith($timeline)) | {name:$name,recoverableThrough:(.value.time | todateiso8601)}] | unique_by(.name)' <<<"$archive")"
+  tmp="/work/.wal-inventory.json.$$"
+  jq -n --argjson history "$history_id" --argjson timeline "$timeline" --argjson segments "$segments" \
+    '{repositoryFingerprint:"compose-fingerprint",repositoryRevision:"compose-revision",databaseHistoryId:$history,currentTimeline:$timeline,segments:$segments,history:[]}' >"$tmp"
+  chmod 600 "$tmp"
+  mv "$tmp" /work/wal-inventory.json
+)
+while true; do
+  refresh || true
+  sleep 2
+done
+REFRESH_WAL_INVENTORY
+chmod 755 "$work/refresh-wal-inventory"
 
 docker run -d --name "$control" --network "$network" --network-alias backup-operator \
   -v /var/run/docker.sock:/var/run/docker.sock -v "$data_volume:/recovery" -v "$data_volume:/var/lib/postgresql" \
@@ -214,6 +238,7 @@ docker exec -d "$control" sh -c "exec env \
   BACKUP_AGENT_FENCE_COMMAND=/work/backup-fence BACKUP_AGENT_ROLLBACK_WINDOW=1h \
   /work/backup-operator --mode agent > /work/agent.log 2>&1"
 for _ in $(seq 1 120); do docker exec "$control" test -s /var/lib/backup-agent/journal.db && break; sleep 1; done
+docker exec -d "$control" /work/refresh-wal-inventory
 
 docker exec -i "$control" bash -es -- "$system_id" "$target_time" <<'PRODUCT_CHAIN'
 system_id="$1" target="$2" key=01234567890123456789012345678901

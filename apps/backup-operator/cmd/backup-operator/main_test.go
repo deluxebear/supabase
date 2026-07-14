@@ -6,7 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/supabase/supabase/apps/backup-operator/internal/app"
 	"github.com/supabase/supabase/apps/backup-operator/internal/controlstore"
+	opruntime "github.com/supabase/supabase/apps/backup-operator/internal/runtime"
 )
 
 func TestRuntimeEnabledEnvironmentParsing(t *testing.T) {
@@ -32,6 +34,32 @@ func TestRuntimeDurationEnvironmentParsing(t *testing.T) {
 	t.Setenv("BACKUP_OPERATOR_RUNTIME_POLL_INTERVAL", "invalid")
 	if got := envDuration("BACKUP_OPERATOR_RUNTIME_POLL_INTERVAL", 3); got != 3 {
 		t.Fatalf("invalid duration did not preserve fallback: %s", got)
+	}
+}
+
+func TestSinglePrimaryRecoverabilityDoesNotRequireScheduledRestoreDrills(t *testing.T) {
+	deps := app.DefaultDependencies()
+	observations := &opruntime.RefreshingLocalSource{}
+	configureSinglePrimaryRecoverability(&deps, true, func() *opruntime.RefreshingLocalSource {
+		return observations
+	})
+	if deps.RecoverabilityFactory == nil {
+		t.Fatal("single-primary recoverability projection was not configured")
+	}
+	projection, err := deps.RecoverabilityFactory(&controlstore.Store{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if projection == nil {
+		t.Fatal("single-primary recoverability projection is nil")
+	}
+
+	disabled := app.DefaultDependencies()
+	configureSinglePrimaryRecoverability(&disabled, false, func() *opruntime.RefreshingLocalSource {
+		return observations
+	})
+	if disabled.RecoverabilityFactory != nil {
+		t.Fatal("recoverability projection was configured without single-primary observations")
 	}
 }
 
