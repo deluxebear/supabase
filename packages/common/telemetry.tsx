@@ -388,7 +388,7 @@ export const PageTelemetry = ({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [enabled, sendPageLeaveTelemetry])
 
-  useTelemetryIdentify(API_URL)
+  useTelemetryIdentify(API_URL, enabled && hasAcceptedConsent)
 
   return null
 }
@@ -434,10 +434,12 @@ export function sendTelemetryIdentify(API_URL: string, body: IdentifyBody) {
   })
 }
 
-export function useTelemetryIdentify(API_URL: string) {
+export function useTelemetryIdentify(API_URL: string, enabled = true) {
   const user = useUser()
 
   useEffect(() => {
+    if (!enabled) return
+
     if (user?.id) {
       const anonymousId = posthogClient.getDistinctId()
 
@@ -454,7 +456,7 @@ export function useTelemetryIdentify(API_URL: string) {
         ...(user.created_at && { signup_timestamp: user.created_at }),
       })
     }
-  }, [API_URL, user?.id])
+  }, [API_URL, enabled, user?.id])
 }
 
 //---

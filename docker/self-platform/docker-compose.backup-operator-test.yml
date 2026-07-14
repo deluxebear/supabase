@@ -1,0 +1,14 @@
+services:
+  studio:
+    image: deluxebear/supabase-plt-studio:backup-operator-test-dev
+    command: ['pnpm', '--prefix', 'apps/studio', 'exec', 'next', 'dev', '-p', '3000']
+    healthcheck:
+      start_period: 120s
+    environment:
+      STUDIO_PORT: '3000'
+      NEXT_PUBLIC_IS_PLATFORM: 'true'
+      NEXT_PUBLIC_ENVIRONMENT: local
+      BACKUP_OPERATOR_URL: http://backup-operator:8080
+      BACKUP_OPERATOR_SERVICE_ASSERTION_KEY: '01234567890123456789012345678901'
+      BACKUP_OPERATOR_SERVICE_ASSERTION_ISSUER: supabase-studio
+      BACKUP_OPERATOR_SERVICE_ASSERTION_AUDIENCE: backup-operator

@@ -6,6 +6,7 @@ import { useConsentToast } from 'ui-patterns/consent'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { API_URL, IS_PLATFORM } from '@/lib/constants'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export function Telemetry() {
   // Although this is "technically" breaking the rules of hooks
@@ -68,7 +69,7 @@ export function Telemetry() {
     <PageTelemetry
       API_URL={API_URL}
       hasAcceptedConsent={hasAcceptedConsent}
-      enabled={IS_PLATFORM}
+      enabled={IS_PLATFORM && !IS_SELF_PLATFORM}
       organizationSlug={organization?.slug}
     />
   )

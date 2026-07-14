@@ -57,6 +57,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { AuthProvider } from '@/lib/auth'
 import { configureMonacoLoader } from '@/lib/configure-monaco-loader'
 import { API_URL, BASE_PATH, IS_PLATFORM, useDefaultProvider } from '@/lib/constants'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { TimezoneProvider, useTimezone } from '@/lib/datetime'
 import { I18nProvider } from '@/lib/i18n/I18nProvider'
 import { ProfileProvider } from '@/lib/profile'
@@ -192,7 +193,10 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
           <NuqsAdapter>
             <HydrationBoundary state={pageProps.dehydratedState}>
               <AuthProvider>
-                <FeatureFlagProviderWithOrgContext API_URL={API_URL} enabled={IS_PLATFORM}>
+                <FeatureFlagProviderWithOrgContext
+                  API_URL={API_URL}
+                  enabled={IS_PLATFORM && !IS_SELF_PLATFORM}
+                >
                   <ProfileProvider>
                     <TimezoneProvider>
                       <TimestampInfoTimezoneBridge>
