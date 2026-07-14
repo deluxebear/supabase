@@ -1,0 +1,44 @@
+# Self-hosted parity and Fleet Studio architecture
+
+This directory contains the architecture and implementation records for the self-hosted Studio fork.
+
+## Start here
+
+- [Dual-profile Studio platform architecture and development standard](./2026-07-15-dual-profile-studio-platform-architecture.md): the engineering-reviewed normative baseline for Embedded Studio, Fleet Studio, Fleet Control, Backup Operator/Agent boundaries, development rules, testing, upstream synchronization, and release gates.
+
+## Core platform foundations
+
+- [Multi-user and multi-project design](./2026-07-02-F9-F16-multiuser-multiproject-design.md)
+- [Project registry and connection resolver](./2026-07-02-F9-F16-M2-project-registry-design.md)
+- [Per-ref hardening](./2026-07-03-F9-F16-M2.1-per-ref-hardening-design.md)
+- [Credential closure](./2026-07-03-F9-F16-M2.2-credential-closure-design.md)
+- [RBAC core](./2026-07-03-F9-F16-M3.0-rbac-core-design.md)
+- [Member management](./2026-07-03-F9-F16-M3.1-member-mgmt-design.md)
+- [Invitations](./2026-07-04-F9-F16-M3.2-invitations-design.md)
+- [Auth desired-state configuration](./2026-07-04-F9-F16-M4-auth-config-design.md)
+- [Self-platform all-in-one Compose](./2026-07-10-self-platform-compose-design.md)
+
+## Connectivity and observability
+
+- [Health probing](./2026-07-05-M6.0-health-probing-design.md)
+- [Connection configuration](./2026-07-05-M6.1-connection-config-design.md)
+- [Logflare pipeline](./2026-07-06-M6.2-logflare-pipeline-design.md)
+- [Infrastructure metrics](./2026-07-06-M6.3-infra-metrics-design.md)
+- [Container-granular metrics](./2026-07-06-M6.4-container-granularity-metrics-design.md)
+- [Kubernetes metrics identity](./2026-07-08-M6.4-D3-k8s-metrics-dialect-design.md)
+
+## Backup and recovery
+
+- [Go Backup Operator architecture](./2026-07-12-go-backup-operator-architecture.md)
+- [Backup Operator runbook](./2026-07-07-F4-backups-operator-runbook.md)
+- [Control-store recovery-domain spike](./2026-07-12-M0.1-control-store-recovery-domain-spike.md)
+- [Patroni PITR spike](./2026-07-12-M0.2-patroni-pitr-spike.md)
+- [Kubernetes replacement-workload spike](./2026-07-12-M0.3-kubernetes-replacement-spike.md)
+- [Write-fence and provider contracts](./2026-07-12-M0.4-write-fence-and-provider-contracts.md)
+- [Single-primary recovery](./2026-07-12-M3-single-primary-recovery.md)
+- [Patroni recovery](./2026-07-12-M4-patroni-recovery.md)
+- [Kubernetes replacement recovery](./2026-07-12-M5-kubernetes-replacement.md)
+
+## Document status
+
+Older milestone documents remain useful implementation evidence. When they conflict with the dual-profile architecture baseline, the newer baseline governs unless a later ADR explicitly supersedes it.
