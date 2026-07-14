@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { requestBackupOperator } from './backup-operator-client'
+import { operatorBackupsSchema, requestBackupOperator } from './backup-operator-client'
 import { resolveProjectConnection } from './resolve-connection'
 import { mswServer } from '@/tests/lib/msw'
 
@@ -21,6 +21,34 @@ afterEach(() => {
 })
 
 describe('Backup Operator self-platform client', () => {
+  it.each([
+    { label: 'null', blockers: null },
+    { label: 'missing', blockers: undefined },
+    { label: 'empty', blockers: [] },
+  ])('normalizes $label backup blockers to an empty array', ({ blockers }) => {
+    const payload = {
+      backups: [],
+      recoveryWindow: { earliest: null, latest: null },
+      confidence: 'inferred',
+      isStale: false,
+      drill: null,
+      ...(blockers === undefined ? {} : { blockers }),
+    }
+    expect(operatorBackupsSchema.parse(payload).blockers).toEqual([])
+  })
+
+  it('preserves reported backup blockers', () => {
+    const payload = {
+      backups: [],
+      recoveryWindow: { earliest: null, latest: null },
+      confidence: 'unknown',
+      isStale: false,
+      blockers: ['WAL gap'],
+      drill: null,
+    }
+    expect(operatorBackupsSchema.parse(payload).blockers).toEqual(['WAL gap'])
+  })
+
   it('maps project ref to cluster and mints a short-lived assertion per request', async () => {
     const authorizations: string[] = []
     let correlationId = ''

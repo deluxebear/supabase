@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -103,6 +104,15 @@ func TestBackupsAPIProjectsRestoreDrillEvidence(t *testing.T) {
 	mux.ServeHTTP(response, authorizedRequest(http.MethodGet, "/v1/clusters/cluster-1/backups", nil))
 	if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"confidence":"drill-verified"`) || !strings.Contains(response.Body.String(), `"evidenceDigest":"sha256:evidence"`) {
 		t.Fatalf("recoverability response: status=%d body=%s", response.Code, response.Body.String())
+	}
+	var payload struct {
+		Blockers []string `json:"blockers"`
+	}
+	if err := json.Unmarshal(response.Body.Bytes(), &payload); err != nil {
+		t.Fatal(err)
+	}
+	if payload.Blockers == nil {
+		t.Fatalf("healthy recoverability blockers must be an empty array: %s", response.Body.String())
 	}
 }
 

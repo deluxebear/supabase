@@ -583,7 +583,11 @@ func (h *Handler) listBackups(w http.ResponseWriter, r *http.Request) {
 	if drill != nil {
 		drillResponse = map[string]any{"id": drill.ID, "targetTime": drill.TargetTime.UTC().Format(time.RFC3339), "completedAt": drill.CompletedAt.UTC().Format(time.RFC3339), "passed": drill.Passed, "evidenceDigest": nullable(drill.EvidenceDigest)}
 	}
-	writeJSON(w, 200, map[string]any{"backups": backups, "recoveryWindow": map[string]any{"earliest": earliest, "latest": latest}, "confidence": window.Confidence, "isStale": false, "blockers": window.Reasons, "drill": drillResponse})
+	blockers := window.Reasons
+	if blockers == nil {
+		blockers = []string{}
+	}
+	writeJSON(w, 200, map[string]any{"backups": backups, "recoveryWindow": map[string]any{"earliest": earliest, "latest": latest}, "confidence": window.Confidence, "isStale": false, "blockers": blockers, "drill": drillResponse})
 }
 func (h *Handler) getClusterJob(w http.ResponseWriter, r *http.Request) {
 	target, ok := h.authorizedTarget(w, r, "backup.read")
