@@ -216,12 +216,19 @@ func ValidateUnchanged(plan Plan, current SafetyInputs, now time.Time) error {
 	if !now.Before(plan.ExpiresAt) || !now.Before(plan.SafetyInputs.TopologyValidUntil) || !now.Before(current.TopologyValidUntil) {
 		return contracts.ErrEvidenceExpired
 	}
+	if current.Capacity.AvailableBytes < plan.SafetyInputs.Capacity.RequiredBytes {
+		return fmt.Errorf("%w: restore destination capacity is no longer sufficient", ErrStaleSafetyInputs)
+	}
 	// ValidUntil is freshness metadata, not topology identity. The observation
 	// source must refresh it before execution, while the confirmed plan remains
 	// bounded by its original evidence deadline. Compare the stable safety facts
 	// using the confirmed deadline so a healthy refresh does not manufacture
 	// plan drift.
 	current.TopologyValidUntil = plan.SafetyInputs.TopologyValidUntil
+	// Available capacity is also observation metadata and naturally changes as
+	// PostgreSQL writes WAL. Its safety invariant is sufficiency, checked above,
+	// rather than byte-for-byte equality with the preview.
+	current.Capacity.AvailableBytes = plan.SafetyInputs.Capacity.AvailableBytes
 	_, hash, err := HashSafetyInputs(current)
 	if err != nil {
 		return err

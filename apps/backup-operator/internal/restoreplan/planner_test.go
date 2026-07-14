@@ -39,8 +39,14 @@ func TestBuildSelectsLatestBackupBeforeTargetAndHashesSafetyInputs(t *testing.T)
 	}
 	refreshed := plan.SafetyInputs
 	refreshed.TopologyValidUntil = now.Add(2 * time.Minute)
+	refreshed.Capacity.AvailableBytes = 25
 	if err := ValidateUnchanged(plan, refreshed, now.Add(time.Second)); err != nil {
-		t.Fatalf("fresh evidence with unchanged topology identity was rejected: %v", err)
+		t.Fatalf("fresh evidence with sufficient capacity was rejected: %v", err)
+	}
+	insufficient := refreshed
+	insufficient.Capacity.AvailableBytes = 9
+	if err := ValidateUnchanged(plan, insufficient, now.Add(time.Second)); !errors.Is(err, ErrStaleSafetyInputs) {
+		t.Fatalf("insufficient current capacity was accepted: %v", err)
 	}
 	if err := ValidateUnchanged(plan, refreshed, topology.Evidence.ValidUntil); !errors.Is(err, contracts.ErrEvidenceExpired) {
 		t.Fatalf("plan outlived the evidence used at confirmation: %v", err)

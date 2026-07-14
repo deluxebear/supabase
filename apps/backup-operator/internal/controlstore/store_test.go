@@ -125,6 +125,12 @@ func TestSQLiteLeaseEnrollmentPlanClaimAndRetention(t *testing.T) {
 	if err := store.ConfirmRestorePlan(ctx, "plan", "hash", restoreplan.AAL2Assertion{Subject: "user", Authenticated: store.now()}, 5*time.Minute); err != nil {
 		t.Fatal(err)
 	}
+	if err := store.ConfirmRestorePlan(ctx, "plan", "hash", restoreplan.AAL2Assertion{Subject: "user", Authenticated: store.now()}, 5*time.Minute); err != nil {
+		t.Fatalf("same-subject confirmation replay must be idempotent: %v", err)
+	}
+	if err := store.ConfirmRestorePlan(ctx, "plan", "hash", restoreplan.AAL2Assertion{Subject: "other-user", Authenticated: store.now()}, 5*time.Minute); !errors.Is(err, ErrRestorePlanNotConfirmable) {
+		t.Fatalf("cross-subject confirmation replay was accepted: %v", err)
+	}
 	if err := store.CreateRecoveryExecution(ctx, "plan", "fence-handle", 2); err != nil {
 		t.Fatal(err)
 	}

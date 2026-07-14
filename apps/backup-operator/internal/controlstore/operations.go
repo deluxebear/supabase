@@ -325,6 +325,10 @@ WHERE id=$3 AND plan_hash=$4 AND expires_at_ms>$5 AND confirmed_at_ms IS NULL`
 		return err
 	}
 	if rows != 1 {
+		confirmed, err := s.RequireConfirmedRestorePlan(ctx, planID, planHash, maxAAL2Age)
+		if err == nil && confirmed.Subject == assertion.Subject {
+			return nil
+		}
 		return ErrRestorePlanNotConfirmable
 	}
 	return nil

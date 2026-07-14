@@ -397,7 +397,7 @@ describe('SelfPlatformBackupOperator', () => {
     })
   })
 
-  it('surfaces a non-AAL2 confirmation failure and stops before execute', async () => {
+  it('renews a stale or already-confirmed plan instead of showing a generic failure', async () => {
     let executeRequests = 0
     mswServer.use(
       http.post(operatorURL('restore-plans'), () => HttpResponse.json(restorePlan)),
@@ -422,7 +422,10 @@ describe('SelfPlatformBackupOperator', () => {
     await userEvent.type(screen.getByLabelText('Exact restore plan hash'), 'exact-plan-hash')
     await userEvent.click(screen.getByRole('button', { name: 'Confirm and execute restore' }))
 
-    expect(await screen.findByText('Failed to start restore')).toBeInTheDocument()
+    expect(await screen.findByText('Restore plan must be renewed')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Regenerate restore plan' })).toBeEnabled()
+    expect(screen.queryByText('Failed to start restore')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Exact restore plan hash')).not.toBeInTheDocument()
     expect(executeRequests).toBe(0)
     expect(screen.queryByText('Additional authentication required')).not.toBeInTheDocument()
   })

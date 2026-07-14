@@ -36,6 +36,20 @@ export function isOperatorAAL2RequiredError(error: unknown) {
   )
 }
 
+export function isOperatorRestorePlanInvalidError(error: unknown) {
+  if (!(error instanceof OperatorMutationError) || isOperatorAAL2RequiredError(error)) return false
+  const code = error.code?.toLowerCase()
+  const message = error.message.toLowerCase()
+  return (
+    code === 'restore_not_confirmable' ||
+    code === 'restore_not_confirmed' ||
+    (code === 'restore_not_authorized' &&
+      (message.includes('evidence expired') ||
+        message.includes('safety inputs changed') ||
+        message.includes('plan has expired')))
+  )
+}
+
 async function mutateOperator(
   projectRef: string,
   path: string,

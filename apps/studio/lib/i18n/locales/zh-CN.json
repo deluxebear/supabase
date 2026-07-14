@@ -7732,6 +7732,8 @@
   "Retry safely": "安全重试",
   "Roll back restore": "回滚恢复操作",
   "Restore plan expired": "恢复计划已过期",
+  "Restore plan must be renewed": "需要重新生成恢复计划",
+  "The previous confirmation cannot be continued safely. Regenerate the plan from fresh evidence before trying again.": "无法安全地继续上一次确认。请根据最新证据重新生成计划后再试。",
   "Regenerate restore plan": "重新生成恢复计划",
   "Scheduled backups": "计划备份",
   "Start full backup": "启动完整备份",

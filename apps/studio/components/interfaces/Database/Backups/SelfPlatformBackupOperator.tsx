@@ -18,6 +18,7 @@ import { AlertError } from '@/components/ui/AlertError'
 import { isActiveBackupOperatorJob } from '@/data/backup-operator/backup-operator-job.utils'
 import {
   isOperatorAAL2RequiredError,
+  isOperatorRestorePlanInvalidError,
   useJobResolutionMutation,
   useRestoreExecuteMutation,
   useRestorePlanCreateMutation,
@@ -42,6 +43,7 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
   const [recoveryTarget, setRecoveryTarget] = useState('')
   const [confirmationHash, setConfirmationHash] = useState('')
   const [requiresAAL2, setRequiresAAL2] = useState(false)
+  const [requiresNewPlan, setRequiresNewPlan] = useState(false)
   const [, setPlanExpiryCheck] = useState(0)
   const [selectedPlanId, setSelectedPlanId] = useState<string>()
   const [selectedJobId, setSelectedJobId] = useState<string>()
@@ -62,7 +64,10 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
   })
   const executeMutation = useRestoreExecuteMutation({
     onSuccess: (job) => updateSelection({ backupPlan: planId, backupJob: job.id }),
-    onError: (error) => setRequiresAAL2(isOperatorAAL2RequiredError(error)),
+    onError: (error) => {
+      setRequiresAAL2(isOperatorAAL2RequiredError(error))
+      setRequiresNewPlan(isOperatorRestorePlanInvalidError(error))
+    },
   })
   const rollbackMutation = useRestoreRollbackMutation()
   const resolutionMutation = useJobResolutionMutation()
@@ -108,6 +113,7 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
   const backupState = backupsQuery.data
   const restorePlan = planQuery.data ?? null
   const isPlanExpired = isRestorePlanExpired(restorePlan, new Date())
+  const mustRegeneratePlan = isPlanExpired || requiresNewPlan
   const canExecute = canExecuteRestore(restorePlan, confirmationHash, new Date())
   const canRollback = canRollbackRestore(jobQuery.data, new Date())
   const isJobStale =
@@ -119,6 +125,7 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
     if (!projectRef || !target) return
     setConfirmationHash('')
     setRequiresAAL2(false)
+    setRequiresNewPlan(false)
     executeMutation.reset()
     planMutation.mutate({ projectRef, recoveryTarget: new Date(target).toISOString() })
   }
@@ -290,12 +297,16 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
                   description={restorePlan.blockers.map((blocker) => $t(blocker)).join(' ')}
                 />
               )}
-              {isPlanExpired && (
+              {mustRegeneratePlan && (
                 <Admonition
                   type="warning"
-                  title={$t('Restore plan expired')}
+                  title={$t(
+                    isPlanExpired ? 'Restore plan expired' : 'Restore plan must be renewed'
+                  )}
                   description={$t(
-                    'Preview the restore impact again to create a new plan before confirming the restore.'
+                    isPlanExpired
+                      ? 'Preview the restore impact again to create a new plan before confirming the restore.'
+                      : 'The previous confirmation cannot be continued safely. Regenerate the plan from fresh evidence before trying again.'
                   )}
                 >
                   <Button
@@ -307,10 +318,10 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
                   </Button>
                 </Admonition>
               )}
-              {executeMutation.isError && !requiresAAL2 && (
+              {executeMutation.isError && !requiresAAL2 && !requiresNewPlan && (
                 <AlertError error={executeMutation.error} subject={$t('Failed to start restore')} />
               )}
-              {!isPlanExpired && (
+              {!mustRegeneratePlan && (
                 <>
                   <p className="break-all font-mono text-xs">{restorePlan.hash}</p>
                   <Input
