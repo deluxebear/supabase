@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/supabase/supabase/apps/backup-operator/internal/restoreplan"
@@ -298,6 +299,14 @@ func (s *Store) ReconcileTaskResult(ctx context.Context, taskID string, succeede
 	if inserted == 0 {
 		return false, nil
 	}
+	var jobType, targetID, idempotencyKey string
+	jobLookup := "SELECT type, target_id, COALESCE(idempotency_key,'') FROM jobs WHERE id=?"
+	if s.dialect == Postgres {
+		jobLookup = "SELECT type, target_id, COALESCE(idempotency_key,'') FROM jobs WHERE id=$1 FOR UPDATE"
+	}
+	if err := tx.QueryRowContext(ctx, jobLookup, jobID).Scan(&jobType, &targetID, &idempotencyKey); err != nil {
+		return false, err
+	}
 	stepState, jobState, eventType := "succeeded", "succeeded", "task_succeeded"
 	if !succeeded {
 		stepState, jobState, eventType = "failed", "failed", "task_failed"
@@ -317,6 +326,23 @@ func (s *Store) ReconcileTaskResult(ctx context.Context, taskID string, succeede
 		args  []any
 	}{{outboxUpdate, []any{now, taskID}}, {stepUpdate, []any{stepState, string(evidence), now, jobID, stepName}}, {jobUpdate, []any{jobState, nullString(errorCode), string(evidence), now, jobID}}, {eventInsert, []any{jobID, stepName, eventType, string(evidence), now}}} {
 		if _, err := tx.ExecContext(ctx, statement.query, statement.args...); err != nil {
+			return false, err
+		}
+	}
+	// The restore lease must remain held after cutover so a second destructive
+	// restore cannot invalidate the durable rollback window. Once rollback has
+	// succeeded, release only the original restore owner's lease. The owner
+	// predicate prevents a late rollback result from deleting a newer lease.
+	if succeeded && jobType == "rollback" && stepName == "rollback" {
+		originalJobID := strings.TrimPrefix(idempotencyKey, "rollback/")
+		if originalJobID == "" || originalJobID == idempotencyKey {
+			return false, errors.New("rollback job lacks an original restore owner")
+		}
+		releaseLease := "DELETE FROM leases WHERE resource_key=? AND owner_id=?"
+		if s.dialect == Postgres {
+			releaseLease = "DELETE FROM leases WHERE resource_key=$1 AND owner_id=$2"
+		}
+		if _, err := tx.ExecContext(ctx, releaseLease, "destructive/"+targetID, originalJobID); err != nil {
 			return false, err
 		}
 	}

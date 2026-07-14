@@ -68,6 +68,45 @@ func TestReconcileTaskResultIsIdempotent(t *testing.T) {
 	}
 }
 
+func TestRollbackResultReleasesOnlySuccessfulRestoreLease(t *testing.T) {
+	for _, test := range []struct {
+		name      string
+		succeeded bool
+		wantLease bool
+	}{
+		{name: "successful rollback releases lease", succeeded: true, wantLease: true},
+		{name: "failed rollback preserves lease", succeeded: false, wantLease: false},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			ctx := context.Background()
+			store := openOrchestrationStore(t, filepath.Join(t.TempDir(), "control.db"))
+			store.now = func() time.Time { return time.Date(2026, 7, 14, 4, 0, 0, 0, time.UTC) }
+			if _, acquired, err := store.AcquireLease(ctx, "destructive/target", "restore-original", 15*time.Minute); err != nil || !acquired {
+				t.Fatalf("seed restore lease: acquired=%v err=%v", acquired, err)
+			}
+			job, created, err := store.CreateJob(ctx, CreateJobInput{
+				ID: "restore-original-rollback", ProjectID: "project", TargetID: "target", Type: "rollback",
+				IdempotencyKey: "rollback/restore-original", PlanHash: "plan", StepName: "rollback",
+				Capability: "static-primary.rollback", TargetNodeID: "node", Payload: []byte(`{}`),
+			})
+			if err != nil || !created {
+				t.Fatalf("create rollback job: job=%+v created=%v err=%v", job, created, err)
+			}
+			changed, err := store.ReconcileTaskResult(ctx, job.ID+"/rollback", test.succeeded, nil, "rollback_failed")
+			if err != nil || !changed {
+				t.Fatalf("reconcile rollback: changed=%v err=%v", changed, err)
+			}
+			_, acquired, err := store.AcquireLease(ctx, "destructive/target", "restore-next", 15*time.Minute)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if acquired != test.wantLease {
+				t.Fatalf("next restore acquired lease=%v, want %v", acquired, test.wantLease)
+			}
+		})
+	}
+}
+
 func TestPendingOutboxSurvivesRestart(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "control.db")
 	store := openOrchestrationStore(t, path)

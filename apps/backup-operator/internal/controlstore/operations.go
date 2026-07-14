@@ -221,8 +221,11 @@ func (s *Store) DispatchConfirmedRestore(ctx context.Context, plan ConfirmedRest
 		return JobRecord{}, errors.New("confirmed restore plan has no routable target node")
 	}
 	_, acquired, err := s.AcquireLease(ctx, "destructive/"+job.TargetID, plan.JobID, executionTTL)
-	if err != nil || !acquired {
-		return JobRecord{}, fmt.Errorf("acquire destructive fencing lease: acquired=%v: %w", acquired, err)
+	if err != nil {
+		return JobRecord{}, fmt.Errorf("acquire destructive fencing lease: %w", err)
+	}
+	if !acquired {
+		return JobRecord{}, errors.New("destructive restore lease is held by another operation")
 	}
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
