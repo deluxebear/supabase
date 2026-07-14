@@ -8,8 +8,17 @@ import type {
 type RestorePlan = z.infer<typeof restorePlanSchema>
 type OperatorJob = z.infer<typeof operatorJobSchema>
 
-export function canExecuteRestore(plan: RestorePlan | null, enteredHash: string) {
-  return plan !== null && plan.blockers.length === 0 && enteredHash === plan.hash
+export function isRestorePlanExpired(plan: RestorePlan | null, now: Date) {
+  return plan !== null && now.getTime() >= new Date(plan.expiresAt).getTime()
+}
+
+export function canExecuteRestore(plan: RestorePlan | null, enteredHash: string, now: Date) {
+  return (
+    plan !== null &&
+    !isRestorePlanExpired(plan, now) &&
+    plan.blockers.length === 0 &&
+    enteredHash === plan.hash
+  )
 }
 
 export function canRollbackRestore(job: OperatorJob | undefined, now: Date) {

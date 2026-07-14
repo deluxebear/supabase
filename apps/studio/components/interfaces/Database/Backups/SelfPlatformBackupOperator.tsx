@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { AlertTriangle, RotateCcw } from 'lucide-react'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Badge, Button, Card, CardContent, CardFooter, Input, Progress } from 'ui'
 import { Admonition } from 'ui-patterns/admonition'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
@@ -10,6 +10,7 @@ import {
   canExecuteRestore,
   canRollbackRestore,
   getAAL2UpgradePath,
+  isRestorePlanExpired,
 } from './SelfPlatformBackupOperator.utils'
 import { SelfPlatformBackupOperatorPolicy } from './SelfPlatformBackupOperatorPolicy'
 import { SelfPlatformBackupOperatorStatus } from './SelfPlatformBackupOperatorStatus'
@@ -41,6 +42,7 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
   const [recoveryTarget, setRecoveryTarget] = useState('')
   const [confirmationHash, setConfirmationHash] = useState('')
   const [requiresAAL2, setRequiresAAL2] = useState(false)
+  const [, setPlanExpiryCheck] = useState(0)
   const [selectedPlanId, setSelectedPlanId] = useState<string>()
   const [selectedJobId, setSelectedJobId] = useState<string>()
   const planId =
@@ -67,6 +69,17 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
   const resolutionMutation = useJobResolutionMutation()
   const factorsQuery = useMfaListFactorsQuery({ enabled: requiresAAL2 })
   const hasMfaFactor = (factorsQuery.data?.totp.length ?? 0) > 0
+
+  useEffect(() => {
+    if (planQuery.data === undefined) return
+    const expiresIn = new Date(planQuery.data.expiresAt).getTime() - Date.now()
+    if (expiresIn <= 0) return
+    const timer = window.setTimeout(
+      () => setPlanExpiryCheck((value) => value + 1),
+      Math.min(expiresIn + 50, 2_147_483_647)
+    )
+    return () => window.clearTimeout(timer)
+  }, [planQuery.data])
 
   const updateSelection = ({
     backupPlan,
@@ -95,7 +108,8 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
   const policy = policyQuery.data
   const backupState = backupsQuery.data
   const restorePlan = planQuery.data ?? null
-  const canExecute = canExecuteRestore(restorePlan, confirmationHash)
+  const isPlanExpired = isRestorePlanExpired(restorePlan, new Date())
+  const canExecute = canExecuteRestore(restorePlan, confirmationHash, new Date())
   const canRollback = canRollbackRestore(jobQuery.data, new Date())
   const isJobStale =
     jobQuery.data !== undefined &&
@@ -105,6 +119,8 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
   const handleCreatePlan = () => {
     if (!projectRef || !recoveryTarget) return
     setConfirmationHash('')
+    setRequiresAAL2(false)
+    executeMutation.reset()
     planMutation.mutate({ projectRef, recoveryTarget: new Date(recoveryTarget).toISOString() })
   }
 
@@ -264,6 +280,18 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
                   title={$t('Restore plan is blocked')}
                   description={restorePlan.blockers.map((blocker) => $t(blocker)).join(' ')}
                 />
+              )}
+              {isPlanExpired && (
+                <Admonition
+                  type="warning"
+                  title={$t('Restore plan expired')}
+                  description={$t(
+                    'Preview the restore impact again to create a new plan before confirming the restore.'
+                  )}
+                />
+              )}
+              {executeMutation.isError && !requiresAAL2 && (
+                <AlertError error={executeMutation.error} subject={$t('Failed to start restore')} />
               )}
               <p className="break-all font-mono text-xs">{restorePlan.hash}</p>
               <Input

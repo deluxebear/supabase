@@ -4,6 +4,7 @@ import {
   canExecuteRestore,
   canRollbackRestore,
   getAAL2UpgradePath,
+  isRestorePlanExpired,
 } from '@/components/interfaces/Database/Backups/SelfPlatformBackupOperator.utils'
 
 const plan = {
@@ -23,8 +24,10 @@ describe('getAAL2UpgradePath', () => {
 })
 
 describe('canExecuteRestore', () => {
+  const now = new Date('2026-07-13T11:00:00Z')
+
   it('requires the exact plan hash and no blockers', () => {
-    expect(canExecuteRestore(plan, 'exact-hash')).toBe(true)
+    expect(canExecuteRestore(plan, 'exact-hash', now)).toBe(true)
   })
 
   it.each([
@@ -32,8 +35,14 @@ describe('canExecuteRestore', () => {
     ['empty confirmation', plan, ''],
     ['changed hash', plan, 'other-hash'],
     ['plan blocker', { ...plan, blockers: ['Topology changed'] }, 'exact-hash'],
+    ['expired plan', { ...plan, expiresAt: now.toISOString() }, 'exact-hash'],
   ])('rejects %s', (_, candidate, confirmation) => {
-    expect(canExecuteRestore(candidate, confirmation)).toBe(false)
+    expect(canExecuteRestore(candidate, confirmation, now)).toBe(false)
+  })
+
+  it('reports expiration at and after the plan deadline', () => {
+    expect(isRestorePlanExpired(plan, new Date('2026-07-13T11:59:59Z'))).toBe(false)
+    expect(isRestorePlanExpired(plan, new Date('2026-07-13T12:00:00Z'))).toBe(true)
   })
 })
 

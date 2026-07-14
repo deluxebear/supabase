@@ -68,7 +68,7 @@ const backups = {
 const restorePlan = {
   id: 'plan-1',
   hash: 'exact-plan-hash',
-  expiresAt: '2026-07-13T12:00:00Z',
+  expiresAt: '2099-07-13T12:00:00Z',
   recoveryTarget: '2026-07-13T09:30:00Z',
   impact: {
     serviceInterruption: 'Writes will stop during recovery.',
@@ -186,9 +186,7 @@ describe('Backup Operator React Query options', () => {
 describe('SelfPlatformBackupOperator', () => {
   it('does not request or render restore progress for an empty backupJob URL parameter', async () => {
     let jobRequests = 0
-    routerMock.setCurrentUrl(
-      '/project/project-a/database/backups/scheduled?backupPlan=&backupJob='
-    )
+    routerMock.setCurrentUrl('/project/project-a/database/backups/scheduled?backupPlan=&backupJob=')
     mswServer.use(
       http.get(operatorURL('jobs/:jobId'), () => {
         jobRequests++
@@ -357,6 +355,51 @@ describe('SelfPlatformBackupOperator', () => {
     await userEvent.click(setupMfa)
     expect(routerMock.pathname).toBe('/account/security')
     expect(routerMock.query.returnTo).toContain('/project/project-a/database/backups/scheduled')
+  })
+
+  it('disables execution and explains when the restore plan has expired', async () => {
+    const expiredPlan = { ...restorePlan, expiresAt: '2026-07-13T12:00:00Z' }
+    mswServer.use(
+      http.post(operatorURL('restore-plans'), () => HttpResponse.json(expiredPlan)),
+      http.get(operatorURL('restore-plans/plan-1'), () => HttpResponse.json(expiredPlan))
+    )
+    customRender(<SelfPlatformBackupOperator projectRef="project-a" />)
+    await screen.findByText('Backup policy')
+    await createPlan()
+    await userEvent.type(screen.getByLabelText('Exact restore plan hash'), 'exact-plan-hash')
+
+    expect(screen.getByText('Restore plan expired')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Confirm and execute restore' })).toBeDisabled()
+  })
+
+  it('surfaces a non-AAL2 confirmation failure and stops before execute', async () => {
+    let executeRequests = 0
+    mswServer.use(
+      http.post(operatorURL('restore-plans'), () => HttpResponse.json(restorePlan)),
+      http.post(operatorURL('restore-plans/plan-1/confirm'), () =>
+        HttpResponse.json(
+          {
+            code: 'restore_not_confirmable',
+            message: 'restore plan is missing, stale, expired, or already confirmed',
+            retryable: false,
+          },
+          { status: 409 }
+        )
+      ),
+      http.post(operatorURL('restore-plans/plan-1/execute'), () => {
+        executeRequests++
+        return HttpResponse.json({})
+      })
+    )
+    customRender(<SelfPlatformBackupOperator projectRef="project-a" />)
+    await screen.findByText('Backup policy')
+    await createPlan()
+    await userEvent.type(screen.getByLabelText('Exact restore plan hash'), 'exact-plan-hash')
+    await userEvent.click(screen.getByRole('button', { name: 'Confirm and execute restore' }))
+
+    expect(await screen.findByText('Failed to start restore')).toBeInTheDocument()
+    expect(executeRequests).toBe(0)
+    expect(screen.queryByText('Additional authentication required')).not.toBeInTheDocument()
   })
 
   it('renders an orphaned job as a non-terminal takeover warning state', async () => {
