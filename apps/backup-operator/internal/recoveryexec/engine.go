@@ -53,6 +53,7 @@ type HostRecovery interface {
 	ValidateTarget(context.Context, contracts.BackupIdentity, contracts.RestoreTarget) error
 	CutOver(context.Context, string) error
 	RestoreQuarantinedPGDATA(context.Context, string, string) error
+	DiscardFailedPGDATA(context.Context, string) error
 }
 
 type ArchiveCoordinator interface {
@@ -282,14 +283,17 @@ func (e RollbackEngine) Rollback(ctx context.Context, plan contracts.RecoveryPla
 		{StateFailedQuarantined, StateOriginalRestored, func(ctx context.Context, x *Execution) error {
 			return e.Host.RestoreQuarantinedPGDATA(ctx, x.OriginalPGDATA, plan.Destination)
 		}},
-		{StateOriginalRestored, StateRolledBack, func(ctx context.Context, _ *Execution) error {
+		{StateOriginalRestored, StateRolledBack, func(ctx context.Context, x *Execution) error {
 			if err := e.Host.CutOver(ctx, plan.Destination); err != nil {
 				return err
 			}
 			if err := e.Archive.SetRepositoryWritable(ctx, true); err != nil {
 				return err
 			}
-			return e.Archive.Check(ctx)
+			if err := e.Archive.Check(ctx); err != nil {
+				return err
+			}
+			return e.Host.DiscardFailedPGDATA(ctx, x.FailedPGDATA)
 		}},
 	}
 	for _, step := range steps {

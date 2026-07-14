@@ -261,6 +261,7 @@ test "$(find /recovery -maxdepth 1 -type d -name 'pgdata.backup-operator-quarant
 rollback="$(api POST "/v1/clusters/compose-e2e/jobs/$job_id/rollback" "$(jq -nc --arg hash "$plan_hash" '{planHash:$hash}')" rollback-compose)"; rollback_job="$(jq -r .id <<<"$rollback")"; wait_job "$rollback_job"
 test "$(psql 'postgres://postgres@source/postgres?sslmode=disable' -Atqc "select string_agg(value,',' order by id) from compose_fixture")" = before-target,after-target
 test ! -e /recovery/pgdata.backup-operator-quarantine
+test ! -e /recovery/pgdata.backup-operator-failed
 printf '%s\n' "$plan_id" >/work/plan-id; printf '%s\n' "$job_id" >/work/job-id; printf '%s\n' "$rollback_job" >/work/rollback-job
 PRODUCT_CHAIN
 

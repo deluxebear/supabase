@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -167,6 +168,12 @@ func TestIdentityAwareQuarantinePreparesEmptyRestoreAndIsolatesFailedTree(t *tes
 	}
 	if err := host.RestoreQuarantinedPGDATA(context.Background(), original, pgdata); err != nil {
 		t.Fatal(err)
+	}
+	if err := host.DiscardFailedPGDATA(context.Background(), failed); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(failed); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("failed restore tree was not discarded: %v", err)
 	}
 }
 

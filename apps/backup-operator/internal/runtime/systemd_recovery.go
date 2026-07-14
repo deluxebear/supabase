@@ -402,6 +402,7 @@ func (osFilesystem) Exists(_ context.Context, path string) (bool, error) {
 	return err == nil, errorUnlessNotExist(err)
 }
 func (osFilesystem) Rename(_ context.Context, from, to string) error { return os.Rename(from, to) }
+func (osFilesystem) RemoveAll(_ context.Context, path string) error  { return os.RemoveAll(path) }
 func (osFilesystem) LstatDirectory(_ context.Context, path string) (directoryIdentity, error) {
 	info, err := os.Lstat(path)
 	if err != nil {

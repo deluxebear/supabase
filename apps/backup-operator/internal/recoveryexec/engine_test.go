@@ -78,7 +78,7 @@ func TestSeparateRollbackRestoresQuarantinedOriginal(t *testing.T) {
 		t.Fatal(err)
 	}
 	execution, _ = store.Load(context.Background(), plan.ID)
-	if execution.State != StateRolledBack || !host.originalRestored || execution.FailedPGDATA == "" {
+	if execution.State != StateRolledBack || !host.originalRestored || !host.failedDiscarded || execution.FailedPGDATA == "" {
 		t.Fatalf("rollback incomplete: %#v", execution)
 	}
 }
@@ -107,7 +107,7 @@ func (s *memoryStore) Transition(_ context.Context, _ string, from, to State, mu
 	return nil
 }
 
-type fakeHost struct{ isolated, validated, originalRestored bool }
+type fakeHost struct{ isolated, validated, originalRestored, failedDiscarded bool }
 
 func (h *fakeHost) StopPostgres(context.Context) error { return nil }
 func (h *fakeHost) QuarantinePGDATA(_ context.Context, path string) (string, error) {
@@ -121,6 +121,10 @@ func (h *fakeHost) ValidateTarget(context.Context, contracts.BackupIdentity, con
 func (h *fakeHost) CutOver(context.Context, string) error { return nil }
 func (h *fakeHost) RestoreQuarantinedPGDATA(context.Context, string, string) error {
 	h.originalRestored = true
+	return nil
+}
+func (h *fakeHost) DiscardFailedPGDATA(context.Context, string) error {
+	h.failedDiscarded = true
 	return nil
 }
 

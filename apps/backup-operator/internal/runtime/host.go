@@ -34,6 +34,11 @@ type restoreDirectoryFilesystem interface {
 	EnsureEmptyDirectory(context.Context, string, directoryIdentity) error
 }
 
+type removableDirectoryFilesystem interface {
+	LstatDirectory(context.Context, string) (directoryIdentity, error)
+	RemoveAll(context.Context, string) error
+}
+
 type IsolatedRuntime interface {
 	Start(context.Context, string) error
 	Stop(context.Context) error
@@ -200,6 +205,25 @@ func (h SinglePrimaryHost) RestoreQuarantinedPGDATA(ctx context.Context, quarant
 		return errors.New("rollback PGDATA postcondition is ambiguous")
 	}
 	return h.FS.Rename(ctx, quarantine, destination)
+}
+
+func (h SinglePrimaryHost) DiscardFailedPGDATA(ctx context.Context, failed string) error {
+	expected := filepath.Clean(h.PGDataRoot) + ".backup-operator-failed"
+	if filepath.Clean(failed) != expected {
+		return fmt.Errorf("failed PGDATA path %q does not match the enrolled lifecycle", failed)
+	}
+	fs, ok := h.FS.(removableDirectoryFilesystem)
+	if !ok {
+		return errors.New("PGDATA filesystem does not support safe failed-tree removal")
+	}
+	exists, err := h.FS.Exists(ctx, expected)
+	if err != nil || !exists {
+		return err
+	}
+	if _, err := fs.LstatDirectory(ctx, expected); err != nil {
+		return err
+	}
+	return fs.RemoveAll(ctx, expected)
 }
 
 func (h SinglePrimaryHost) validate() error {
