@@ -1396,10 +1396,11 @@ Launch A, the authority-contract portion of B, and the transport-boundary portio
 
 Synthesized from the engineering review. Checkbox each task as it ships; priorities describe architectural release gates, not the current documentation-only change.
 
-- [ ] **T1 (P1)** — Studio profiles — Implement canonical build-time deployment profile, legacy mapping, invalid-combination failure, and two-image CI matrix.
+- [x] **T1 (P1)** — Studio profiles — Implement canonical build-time deployment profile, legacy mapping, invalid-combination failure, and two-image CI matrix.
   - Surfaced by: architecture review — current `NEXT_PUBLIC_*` flags are inlined at build time.
   - Files: `apps/studio/lib/constants/`, `apps/studio/Dockerfile`, Studio CI/release workflows.
   - Verify: full profile unit matrix plus separate production builds and Embedded/Fleet smoke tests.
+  - Implemented: 2026-07-15 — canonical resolver and static capability baseline, legacy compatibility validation, explicit Embedded/Fleet Docker build arguments and OCI profile labels, two-profile CI/release matrices, and profile-specific container smoke assertions. No ADR change was required.
 - [ ] **T2 (P1)** — Fleet credential boundary — Remove Fleet browser `connectionString`/encrypted DSN responses and proxy pg-meta server-side after RBAC.
   - Surfaced by: security review — current project responses expose password-derived pg-meta bearer material.
   - Files: `apps/studio/lib/api/self-platform/resolve-connection.ts`, project/pg-meta API routes, dependent data hooks.

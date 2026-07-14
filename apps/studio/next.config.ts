@@ -5,6 +5,7 @@ import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 
 import { getCSP } from './csp'
+import { STUDIO_DEPLOYMENT_PROFILE } from './lib/constants/deployment-profile'
 import {
   getMaintenanceRedirects,
   PLATFORM_REDIRECTS,
@@ -15,6 +16,9 @@ import {
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 })
+
+const isPlatformProfile =
+  STUDIO_DEPLOYMENT_PROFILE === 'cloud' || STUDIO_DEPLOYMENT_PROFILE === 'fleet'
 
 function getAssetPrefix() {
   // If not force enabled, but not production env, disable CDN
@@ -52,6 +56,12 @@ const marketplaceApiProtocol: 'http' | 'https' | null =
 // types to a different major version than studio's own next dependency.
 const nextConfig = {
   basePath: process.env.NEXT_PUBLIC_BASE_PATH,
+  env: {
+    // Keep upstream/common legacy consumers coherent while they migrate to the
+    // canonical resolver. These values are compiled into the same bundle.
+    NEXT_PUBLIC_IS_PLATFORM: String(isPlatformProfile),
+    NEXT_PUBLIC_SELF_PLATFORM: String(STUDIO_DEPLOYMENT_PROFILE === 'fleet'),
+  },
   assetPrefix: getAssetPrefix(),
   output: 'standalone',
   experimental: {
@@ -71,10 +81,9 @@ const nextConfig = {
     // auto-prepends `basePath` to source and destination on its own,
     // except for the special `/` → basePath bounce below which opts out
     // via `basePath: false`.
-    const isPlatform = process.env.NEXT_PUBLIC_IS_PLATFORM === 'true'
     const maintenance = process.env.MAINTENANCE_MODE === 'true'
     return [
-      ...(isPlatform ? PLATFORM_REDIRECTS : SELF_HOSTED_REDIRECTS),
+      ...(isPlatformProfile ? PLATFORM_REDIRECTS : SELF_HOSTED_REDIRECTS),
       ...SHARED_REDIRECTS,
       ...(process.env.NEXT_PUBLIC_BASE_PATH?.length
         ? [
@@ -105,14 +114,13 @@ const nextConfig = {
           {
             key: 'Strict-Transport-Security',
             value:
-              process.env.NEXT_PUBLIC_IS_PLATFORM === 'true' && process.env.VERCEL === '1'
+              isPlatformProfile && process.env.VERCEL === '1'
                 ? 'max-age=31536000; includeSubDomains; preload'
                 : '',
           },
           {
             key: 'Content-Security-Policy',
-            value:
-              process.env.NEXT_PUBLIC_IS_PLATFORM === 'true' ? getCSP() : "frame-ancestors 'none';",
+            value: isPlatformProfile ? getCSP() : "frame-ancestors 'none';",
           },
           {
             key: 'Referrer-Policy',
@@ -214,10 +222,9 @@ const nextConfig = {
 
 // Make sure adding Sentry options is the last code to run before exporting, to
 // ensure that your source maps include changes from all other Webpack plugins
-const platformConfig =
-  process.env.NEXT_PUBLIC_IS_PLATFORM === 'true' ? withBundleAnalyzer(nextConfig) : nextConfig
+const platformConfig = isPlatformProfile ? withBundleAnalyzer(nextConfig) : nextConfig
 
-export default process.env.NEXT_PUBLIC_IS_PLATFORM === 'true' && process.env.VERCEL === '1'
+export default isPlatformProfile && process.env.VERCEL === '1'
   ? withSentryConfig(platformConfig, {
       silent: true,
 

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 async function loadAllowlist(selfPlatform: string | undefined) {
   vi.resetModules()
+  vi.stubEnv('NEXT_PUBLIC_IS_PLATFORM', selfPlatform === 'true' ? 'true' : '')
   if (selfPlatform === undefined) {
     vi.stubEnv('NEXT_PUBLIC_SELF_PLATFORM', '')
   } else {

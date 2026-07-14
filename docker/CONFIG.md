@@ -156,8 +156,10 @@ Self-hosted Studio reads `ENABLED_FEATURES_*` env vars at container start time t
 
 | Variable | Type | Set by | Description | Notes |
 |---|---|---|---|---|
-| `CURRENT_CLI_VERSION` | string | CLI | Version string set when Studio is started by the Supabase CLI. | Renames the default project to "Supabase Studio (CLI)" when set. Exposed to client via Next.js passthrough. |
-| `NEXT_PUBLIC_IS_PLATFORM` | boolean | | Master switch: `"true"` runs Studio in hosted (multi-project) mode, anything else runs in self-hosted single-project mode. | Self-hosted images are **built** with this unset/`false`. Exposed to client. Setting this to `true` in a self-hosted deployment will break the dashboard. |
+| `NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE` | enum | Image build | Canonical build-time Studio profile: `cloud`, `embedded`, `fleet`, or `cli`. | Next.js compiles this into the bundle. An image cannot switch profiles at container startup. Published self-hosted images use `embedded` or `fleet`. |
+| `CURRENT_CLI_VERSION` | string | CLI | Version string set when Studio is started by the Supabase CLI. | When the canonical profile is absent, preserves the upstream legacy mapping to the `cli` profile. Exposed to client via Next.js passthrough. |
+| `NEXT_PUBLIC_IS_PLATFORM` | boolean | Image build | Legacy compatibility input: `true` for `cloud` and `fleet`; false/unset for `embedded` and `cli`. | Deprecated for new feature code. If explicitly set, it must agree with the canonical profile or the build fails. |
+| `NEXT_PUBLIC_SELF_PLATFORM` | boolean | Image build | Legacy compatibility input: `true` only for `fleet`. | Deprecated for new feature code. `true` without `NEXT_PUBLIC_IS_PLATFORM=true`, or a value contradicting the canonical profile, fails the build. |
 | `NEXT_PUBLIC_NODE_ENV` | string | | Marks the build as a test build (used by E2E setup). | Set to `test` only by `generateLocalEnv.js`. Exposed to client. |
 | `NODE_ENV` | enum | Both | Standard Node.js environment (`development` / `production` / `test`). | Set automatically by Next.js. |
 
