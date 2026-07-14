@@ -172,3 +172,27 @@ examples/**/package-lock.json
 examples/**/yarn.lock
 examples/**/pnpm-lock.yaml
 .gstack/
+
+# Local AI assistant files
+.agents/skills/clickhouse-logs-queries/
+.agents/skills/dev-toolbar-review/
+.agents/skills/safe-sql-execution/
+.agents/skills/studio-best-practices/
+.agents/skills/studio-e2e-tests/
+.agents/skills/studio-error-handling/
+.agents/skills/studio-i18n-sync/
+.agents/skills/studio-mock-api-tests/
+.agents/skills/studio-queries/
+.agents/skills/studio-testing/
+.agents/skills/studio-ui-patterns/
+.agents/skills/telemetry-standards/
+.agents/skills/vercel-composition-patterns/
+.codex/
+AGENTS.md
+
+# Local build and diagnostic artifacts
+apps/backup-operator/dist/
+apps/backup-operator/patroni-name-evidence.json
+apps/backup-operator/scripts/__pycache__/
+docker/volumes/snippets/*.sql
+examples/product-sample-supabase-kt/.gradle/
