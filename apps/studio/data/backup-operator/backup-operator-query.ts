@@ -100,7 +100,7 @@ export const operatorJobQueryOptions = ({ projectRef, jobId }: BackupOperatorJob
   queryOptions({
     queryKey: backupOperatorKeys.job(projectRef, jobId),
     queryFn: ({ signal }) => getOperatorJob({ projectRef, jobId }, signal),
-    enabled: IS_SELF_PLATFORM && typeof projectRef !== 'undefined' && typeof jobId !== 'undefined',
+    enabled: IS_SELF_PLATFORM && Boolean(projectRef) && Boolean(jobId),
     refetchInterval: ({ state }) => (isActiveBackupOperatorJob(state.data?.state) ? 2_000 : false),
   })
 
@@ -118,5 +118,5 @@ export const restorePlanQueryOptions = ({ projectRef, planId }: BackupOperatorPl
   queryOptions({
     queryKey: backupOperatorKeys.plan(projectRef, planId),
     queryFn: ({ signal }) => getRestorePlan({ projectRef, planId }, signal),
-    enabled: IS_SELF_PLATFORM && typeof projectRef !== 'undefined' && typeof planId !== 'undefined',
+    enabled: IS_SELF_PLATFORM && Boolean(projectRef) && Boolean(planId),
   })

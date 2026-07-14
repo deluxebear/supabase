@@ -8,6 +8,8 @@ import { SelfPlatformBackupOperator } from '@/components/interfaces/Database/Bac
 import {
   backupPolicyQueryOptions,
   operatorBackupsQueryOptions,
+  operatorJobQueryOptions,
+  restorePlanQueryOptions,
 } from '@/data/backup-operator/backup-operator-query'
 import { customRender, customRenderHook } from '@/tests/lib/custom-render'
 import { mswServer } from '@/tests/lib/msw'
@@ -133,6 +135,11 @@ beforeEach(() => {
 })
 
 describe('Backup Operator React Query options', () => {
+  it('disables job and restore plan queries for empty URL parameters', () => {
+    expect(operatorJobQueryOptions({ projectRef: 'project-a', jobId: '' }).enabled).toBe(false)
+    expect(restorePlanQueryOptions({ projectRef: 'project-a', planId: '' }).enabled).toBe(false)
+  })
+
   it('loads and validates policy and backup responses through the network boundary', async () => {
     const authorizationHeaders: Array<string | null> = []
     mswServer.use(
@@ -174,6 +181,25 @@ describe('Backup Operator React Query options', () => {
 })
 
 describe('SelfPlatformBackupOperator', () => {
+  it('does not request or render restore progress for an empty backupJob URL parameter', async () => {
+    let jobRequests = 0
+    routerMock.setCurrentUrl(
+      '/project/project-a/database/backups/scheduled?backupPlan=&backupJob='
+    )
+    mswServer.use(
+      http.get(operatorURL('jobs/:jobId'), () => {
+        jobRequests++
+        return HttpResponse.json({ message: 'Job ID is required' }, { status: 400 })
+      })
+    )
+
+    customRender(<SelfPlatformBackupOperator projectRef="project-a" />)
+
+    expect(await screen.findByText('Backup policy')).toBeInTheDocument()
+    expect(jobRequests).toBe(0)
+    expect(screen.queryByText('Failed to load restore progress')).not.toBeInTheDocument()
+  })
+
   it('renders durable isolated restore drill evidence', async () => {
     customRender(<SelfPlatformBackupOperator projectRef="project-a" />)
     expect(await screen.findByText('Isolated restore drill')).toBeInTheDocument()

@@ -269,7 +269,7 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
           )}
 
           {jobQuery.isPending && jobId && <GenericSkeletonLoader />}
-          {jobQuery.isError && (
+          {jobId && jobQuery.isError && (
             <AlertError error={jobQuery.error} subject={$t('Failed to load restore progress')} />
           )}
           {jobQuery.data && (
