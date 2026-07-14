@@ -118,7 +118,7 @@ func (validator) Validate(context.Context, string, contracts.BackupIdentity, con
 
 func TestQuarantineCrashPostconditionAndRollback(t *testing.T) {
 	fs := memoryFS{"/data/pg": true}
-	host := SinglePrimaryHost{Controller: process{}, ServiceID: "db", FS: fs, PGDataRoot: "/data/pg", Isolated: isolated{}, Validator: validator{}}
+	host := SinglePrimaryHost{Controller: process{}, ServiceID: "db", FS: fs, PGDataRoot: "/data/pg", Isolated: isolated{}, Validator: validator{}, CutOverValidator: validator{}}
 	quarantine, err := host.QuarantinePGDATA(context.Background(), "/data/pg")
 	if err != nil {
 		t.Fatal(err)
@@ -145,7 +145,7 @@ func TestIdentityAwareQuarantinePreparesEmptyRestoreAndIsolatesFailedTree(t *tes
 	if err := os.WriteFile(filepath.Join(pgdata, "PG_VERSION"), []byte("17\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	host := SinglePrimaryHost{Controller: process{}, ServiceID: "db", FS: osFilesystem{}, PGDataRoot: pgdata, Isolated: isolated{}, Validator: validator{}}
+	host := SinglePrimaryHost{Controller: process{}, ServiceID: "db", FS: osFilesystem{}, PGDataRoot: pgdata, Isolated: isolated{}, Validator: validator{}, CutOverValidator: validator{}}
 	original, err := host.QuarantinePGDATA(context.Background(), pgdata)
 	if err != nil {
 		t.Fatal(err)
@@ -187,7 +187,7 @@ func TestIdentityAwareQuarantineRejectsSymlinkAndMismatchedReplay(t *testing.T) 
 	if err := os.Symlink(real, link); err != nil {
 		t.Fatal(err)
 	}
-	host := SinglePrimaryHost{Controller: process{}, ServiceID: "db", FS: osFilesystem{}, PGDataRoot: link, Isolated: isolated{}, Validator: validator{}}
+	host := SinglePrimaryHost{Controller: process{}, ServiceID: "db", FS: osFilesystem{}, PGDataRoot: link, Isolated: isolated{}, Validator: validator{}, CutOverValidator: validator{}}
 	if _, err := host.QuarantinePGDATA(context.Background(), link); err == nil {
 		t.Fatal("symlink PGDATA accepted")
 	}

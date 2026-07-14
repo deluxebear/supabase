@@ -101,7 +101,7 @@ func newDockerRecovery(ctx context.Context, config DockerRecoveryConfig, client 
 		_ = store.Close()
 		return nil, fmt.Errorf("recover persisted Compose write fence: %w", err)
 	}
-	host := SinglePrimaryHost{Controller: client, ServiceID: config.SourceContainer, FS: osFilesystem{}, PGDataRoot: config.PGData, Isolated: fixedDockerRuntime{client: client, container: config.ValidationContainer}, Validator: postgresTargetValidator{database: validation}}
+	host := SinglePrimaryHost{Controller: client, ServiceID: config.SourceContainer, FS: osFilesystem{}, PGDataRoot: config.PGData, Isolated: fixedDockerRuntime{client: client, container: config.ValidationContainer}, Validator: postgresTargetValidator{database: validation}, CutOverValidator: postgresTargetValidator{database: database}}
 	archive := localArchive{repositoryPath: config.RepositoryPath, client: pgbackrestClient, stanza: config.Stanza}
 	backup := pgBackRestBackupProvider{client: pgbackrestClient, stanza: config.Stanza}
 	coordinator, err := singleprimary.NewCoordinator(store, host, archive, backup, fence, executionLease{store: store}, singleprimary.ControlStoreWindows{Store: store}, config.RollbackWindow)

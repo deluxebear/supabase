@@ -51,12 +51,13 @@ type TargetValidator interface {
 // SinglePrimaryHost adapts an enrolled Compose container or systemd unit to
 // recoveryexec.HostRecovery. Paths must remain under the configured PGDATA root.
 type SinglePrimaryHost struct {
-	Controller ProcessController
-	ServiceID  string
-	FS         Filesystem
-	PGDataRoot string
-	Isolated   IsolatedRuntime
-	Validator  TargetValidator
+	Controller       ProcessController
+	ServiceID        string
+	FS               Filesystem
+	PGDataRoot       string
+	Isolated         IsolatedRuntime
+	Validator        TargetValidator
+	CutOverValidator TargetValidator
 }
 
 func (h SinglePrimaryHost) StopPostgres(ctx context.Context) error {
@@ -173,6 +174,10 @@ func (h SinglePrimaryHost) ValidateTarget(ctx context.Context, identity contract
 	return h.Validator.Validate(ctx, h.PGDataRoot, identity, target)
 }
 
+func (h SinglePrimaryHost) ValidateCutOver(ctx context.Context, identity contracts.BackupIdentity, target contracts.RestoreTarget) error {
+	return h.CutOverValidator.Validate(ctx, h.PGDataRoot, identity, target)
+}
+
 func (h SinglePrimaryHost) CutOver(ctx context.Context, pgdata string) error {
 	if err := h.allowedPath(pgdata); err != nil {
 		return err
@@ -227,7 +232,7 @@ func (h SinglePrimaryHost) DiscardFailedPGDATA(ctx context.Context, failed strin
 }
 
 func (h SinglePrimaryHost) validate() error {
-	if h.Controller == nil || h.ServiceID == "" || h.FS == nil || h.Isolated == nil || h.Validator == nil {
+	if h.Controller == nil || h.ServiceID == "" || h.FS == nil || h.Isolated == nil || h.Validator == nil || h.CutOverValidator == nil {
 		return errors.New("single-primary runtime is incomplete")
 	}
 	return h.allowedPath(h.PGDataRoot)

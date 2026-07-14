@@ -71,7 +71,7 @@ func TestCrashResumeFromDurableRestoreState(t *testing.T) {
 	if err := engine.Execute(context.Background(), plan, handle, 7); err != nil {
 		t.Fatal(err)
 	}
-	if !host.isolated || !host.validated {
+	if !host.isolated || host.validateCalls != 1 || host.cutOverValidateCalls != 1 {
 		t.Fatal("resume did not continue isolated validation")
 	}
 }

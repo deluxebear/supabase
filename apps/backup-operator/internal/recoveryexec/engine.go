@@ -52,6 +52,7 @@ type HostRecovery interface {
 	StartIsolated(context.Context, string) error
 	ValidateTarget(context.Context, contracts.BackupIdentity, contracts.RestoreTarget) error
 	CutOver(context.Context, string) error
+	ValidateCutOver(context.Context, contracts.BackupIdentity, contracts.RestoreTarget) error
 	RestoreQuarantinedPGDATA(context.Context, string, string) error
 	DiscardFailedPGDATA(context.Context, string) error
 }
@@ -133,7 +134,12 @@ func (e Engine) Execute(ctx context.Context, plan contracts.RecoveryPlan, handle
 			}
 			return nil
 		}},
-		{StepCutOver, StateArchiveHealthy, StateCutOver, func(ctx context.Context, _ *Execution) error { return e.Host.CutOver(ctx, plan.Destination) }},
+		{StepCutOver, StateArchiveHealthy, StateCutOver, func(ctx context.Context, _ *Execution) error {
+			if err := e.Host.CutOver(ctx, plan.Destination); err != nil {
+				return err
+			}
+			return e.Host.ValidateCutOver(ctx, plan.Backup, plan.Recovery)
+		}},
 	}
 	for _, step := range steps {
 		execution, err = e.Store.Load(ctx, plan.ID)
@@ -285,6 +291,9 @@ func (e RollbackEngine) Rollback(ctx context.Context, plan contracts.RecoveryPla
 		}},
 		{StateOriginalRestored, StateRolledBack, func(ctx context.Context, x *Execution) error {
 			if err := e.Host.CutOver(ctx, plan.Destination); err != nil {
+				return err
+			}
+			if err := e.Host.ValidateCutOver(ctx, plan.Backup, plan.Recovery); err != nil {
 				return err
 			}
 			if err := e.Archive.SetRepositoryWritable(ctx, true); err != nil {

@@ -102,7 +102,7 @@ func NewSystemdRecovery(ctx context.Context, config SystemdRecoveryConfig) (*Sys
 		_ = store.Close()
 		return nil, fmt.Errorf("recover persisted systemd write fence: %w", err)
 	}
-	host := SinglePrimaryHost{Controller: controller, ServiceID: config.PostgresUnit, FS: osFilesystem{}, PGDataRoot: config.PGData, Isolated: fixedSystemdRuntime{controller: controller, unit: config.ValidationUnit}, Validator: postgresTargetValidator{database: validation}}
+	host := SinglePrimaryHost{Controller: controller, ServiceID: config.PostgresUnit, FS: osFilesystem{}, PGDataRoot: config.PGData, Isolated: fixedSystemdRuntime{controller: controller, unit: config.ValidationUnit}, Validator: postgresTargetValidator{database: validation}, CutOverValidator: postgresTargetValidator{database: database}}
 	archive := localArchive{repositoryPath: config.RepositoryPath, client: client, stanza: config.Stanza}
 	backup := pgBackRestBackupProvider{client: client, stanza: config.Stanza}
 	coordinator, err := singleprimary.NewCoordinator(store, host, archive, backup, fence, executionLease{store: store}, singleprimary.ControlStoreWindows{Store: store}, config.RollbackWindow)

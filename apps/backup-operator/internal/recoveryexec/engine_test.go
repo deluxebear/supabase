@@ -23,7 +23,7 @@ func TestExecuteRunsReadOnlyIsolatedRecoveryAndCutover(t *testing.T) {
 	if execution.State != StateCutOver || execution.OriginalPGDATA == "" {
 		t.Fatalf("unexpected execution: %#v", execution)
 	}
-	if !backup.request.ReadOnlyRepo || !host.isolated || !host.validated || !archive.reconciled || !archive.writable {
+	if !backup.request.ReadOnlyRepo || !host.isolated || host.validateCalls != 1 || host.cutOverValidateCalls != 1 || !archive.reconciled || !archive.writable {
 		t.Fatal("recovery safety sequence was incomplete")
 	}
 	if err := engine.Execute(context.Background(), plan, handle, 7); err != nil {
@@ -78,7 +78,7 @@ func TestSeparateRollbackRestoresQuarantinedOriginal(t *testing.T) {
 		t.Fatal(err)
 	}
 	execution, _ = store.Load(context.Background(), plan.ID)
-	if execution.State != StateRolledBack || !host.originalRestored || !host.failedDiscarded || execution.FailedPGDATA == "" {
+	if execution.State != StateRolledBack || !host.originalRestored || !host.failedDiscarded || host.validateCalls != 1 || host.cutOverValidateCalls != 1 || execution.FailedPGDATA == "" {
 		t.Fatalf("rollback incomplete: %#v", execution)
 	}
 }
@@ -107,7 +107,10 @@ func (s *memoryStore) Transition(_ context.Context, _ string, from, to State, mu
 	return nil
 }
 
-type fakeHost struct{ isolated, validated, originalRestored, failedDiscarded bool }
+type fakeHost struct {
+	isolated, originalRestored, failedDiscarded bool
+	validateCalls, cutOverValidateCalls         int
+}
 
 func (h *fakeHost) StopPostgres(context.Context) error { return nil }
 func (h *fakeHost) QuarantinePGDATA(_ context.Context, path string) (string, error) {
@@ -115,10 +118,14 @@ func (h *fakeHost) QuarantinePGDATA(_ context.Context, path string) (string, err
 }
 func (h *fakeHost) StartIsolated(context.Context, string) error { h.isolated = true; return nil }
 func (h *fakeHost) ValidateTarget(context.Context, contracts.BackupIdentity, contracts.RestoreTarget) error {
-	h.validated = true
+	h.validateCalls++
 	return nil
 }
 func (h *fakeHost) CutOver(context.Context, string) error { return nil }
+func (h *fakeHost) ValidateCutOver(context.Context, contracts.BackupIdentity, contracts.RestoreTarget) error {
+	h.cutOverValidateCalls++
+	return nil
+}
 func (h *fakeHost) RestoreQuarantinedPGDATA(context.Context, string, string) error {
 	h.originalRestored = true
 	return nil

@@ -63,7 +63,7 @@ func TestDockerRecoverySideEffectsRemainIdempotentAcrossCrashRestart(t *testing.
 		t.Fatal(err)
 	}
 	fs := memoryFS{"/recovery/pgdata": true}
-	host := SinglePrimaryHost{Controller: client, ServiceID: "source", FS: fs, PGDataRoot: "/recovery/pgdata", Isolated: fixedDockerRuntime{client: client, container: "validation"}, Validator: validator{}}
+	host := SinglePrimaryHost{Controller: client, ServiceID: "source", FS: fs, PGDataRoot: "/recovery/pgdata", Isolated: fixedDockerRuntime{client: client, container: "validation"}, Validator: validator{}, CutOverValidator: validator{}}
 	ctx := context.Background()
 
 	// Each pair represents a process crash after the external side effect but
