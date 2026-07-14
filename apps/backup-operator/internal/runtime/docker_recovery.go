@@ -123,6 +123,13 @@ func (r *DockerRecovery) Backup(ctx context.Context, kind, repositoryID, _ strin
 	return r.client.RunBackup(ctx, r.config.Stanza, kind)
 }
 
+func (r *DockerRecovery) BackupEvidence(ctx context.Context, kind, repositoryID, _ string) (controlstore.BackupManifestRecord, error) {
+	if r == nil || r.client == nil || repositoryID != r.config.RepositoryID {
+		return controlstore.BackupManifestRecord{}, errors.New("backup repository does not match the enrolled Docker recovery domain")
+	}
+	return runBackupWithEvidence(ctx, r.client, r.config.Stanza, kind, repositoryID)
+}
+
 func (r *DockerRecovery) EnablePITR(ctx context.Context, repositoryID string, generation int64, _ string) error {
 	if r == nil || repositoryID != r.config.RepositoryID {
 		return errors.New("PITR repository does not match the enrolled Docker recovery domain")

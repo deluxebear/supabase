@@ -100,6 +100,7 @@ func (d *Dispatcher) DispatchOnce(ctx context.Context) error {
 
 type ResultStore interface {
 	ReconcileTaskResult(context.Context, string, bool, []byte, string) (bool, error)
+	RecordBackupManifest(context.Context, controlstore.BackupManifestRecord) error
 }
 
 type Result struct {
@@ -178,6 +179,18 @@ func (r *Reconciler) Run(ctx context.Context) error {
 			}
 			if result.TaskID == "" {
 				continue
+			}
+			if result.Succeeded && strings.Contains(result.Capability, ".backup.") {
+				var manifest controlstore.BackupManifestRecord
+				if err := json.Unmarshal(result.Evidence, &manifest); err != nil {
+					return fmt.Errorf("decode backup manifest evidence for task %s: %w", result.TaskID, err)
+				}
+				if manifest.ProviderJobID == "" || manifest.PolicyID == "" || manifest.RepositoryID == "" || manifest.BackupLabel == "" || manifest.BackupType == "" || manifest.CompletedAt.IsZero() {
+					return fmt.Errorf("backup manifest evidence for task %s is incomplete", result.TaskID)
+				}
+				if err := r.Store.RecordBackupManifest(ctx, manifest); err != nil {
+					return fmt.Errorf("record backup manifest for task %s: %w", result.TaskID, err)
+				}
 			}
 			if _, err := r.Store.ReconcileTaskResult(ctx, result.TaskID, result.Succeeded, result.Evidence, result.ErrorCode); err != nil {
 				observability.CoreMetrics{Registry: r.Metrics}.Job("task", "failed", 0)

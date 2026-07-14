@@ -132,6 +132,13 @@ func (r *SystemdRecovery) Backup(ctx context.Context, kind, repositoryID, _ stri
 	return r.client.RunBackup(ctx, r.config.Stanza, kind)
 }
 
+func (r *SystemdRecovery) BackupEvidence(ctx context.Context, kind, repositoryID, _ string) (controlstore.BackupManifestRecord, error) {
+	if r == nil || r.client == nil || repositoryID != r.config.RepositoryID {
+		return controlstore.BackupManifestRecord{}, errors.New("backup repository does not match the enrolled recovery domain")
+	}
+	return runBackupWithEvidence(ctx, r.client, r.config.Stanza, kind, repositoryID)
+}
+
 func (r *SystemdRecovery) EnablePITR(ctx context.Context, repositoryID string, generation int64, _ string) error {
 	if r == nil || repositoryID != r.config.RepositoryID {
 		return errors.New("PITR repository does not match the enrolled recovery domain")

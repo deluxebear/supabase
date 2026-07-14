@@ -25,6 +25,10 @@ type ManagementRuntime interface {
 	RestoreDrill(context.Context, string) error
 }
 
+type BackupEvidenceRuntime interface {
+	BackupEvidence(context.Context, string, string, string) (controlstore.BackupManifestRecord, error)
+}
+
 type ManagementTaskHandler struct {
 	Provider string
 	Runtime  ManagementRuntime
@@ -73,6 +77,16 @@ func (h ManagementTaskHandler) execute(ctx context.Context, task controlstore.Ou
 		}
 		if payload.BackupFrom != "" && payload.BackupFrom != "primary" {
 			return nil, errors.New("single-primary backup cannot implicitly fall back from a standby")
+		}
+		if typed, ok := h.Runtime.(BackupEvidenceRuntime); ok {
+			manifest, err := typed.BackupEvidence(ctx, kind, payload.RepositoryID, task.IdempotencyKey)
+			if err != nil {
+				return nil, err
+			}
+			manifest.PolicyID = payload.PolicyID
+			manifest.RepositoryID = payload.RepositoryID
+			manifest.BackupType = kind
+			return json.Marshal(manifest)
 		}
 		return nil, h.Runtime.Backup(ctx, kind, payload.RepositoryID, task.IdempotencyKey)
 	case "pitr.enable":

@@ -2,11 +2,25 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/supabase/supabase/apps/backup-operator/internal/controlstore"
 )
+
+type managementEvidenceRuntime struct{ managementRuntimeFake }
+
+func (f *managementEvidenceRuntime) BackupEvidence(_ context.Context, kind, repository, key string) (controlstore.BackupManifestRecord, error) {
+	f.calls = append(f.calls, "backup-evidence:"+kind+":"+repository+":"+key)
+	return controlstore.BackupManifestRecord{
+		ProviderJobID: "20260714-023549F",
+		BackupLabel:   "20260714-023549F",
+		CompletedAt:   time.Date(2026, 7, 14, 2, 35, 52, 0, time.UTC),
+		ManifestJSON:  "{}",
+	}, nil
+}
 
 type managementRuntimeFake struct{ calls []string }
 
@@ -64,5 +78,26 @@ func TestManagementTaskHandlerFailsClosed(t *testing.T) {
 		if err := handler.Execute(context.Background(), task); err == nil {
 			t.Fatalf("accepted %#v", task)
 		}
+	}
+}
+
+func TestManagementTaskHandlerReturnsTypedBackupManifestEvidence(t *testing.T) {
+	runtime := &managementEvidenceRuntime{}
+	handler := ManagementTaskHandler{Provider: CapabilitySinglePrimary, Runtime: runtime}
+	task := controlstore.OutboxTask{
+		Capability:     CapabilitySinglePrimary + ".backup.full",
+		IdempotencyKey: "backup-key",
+		Payload:        []byte(`{"policyId":"policy-a","repositoryId":"repo-a","backupType":"full"}`),
+	}
+	evidence, err := handler.ExecuteWithEvidence(context.Background(), task)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var manifest controlstore.BackupManifestRecord
+	if err := json.Unmarshal(evidence, &manifest); err != nil {
+		t.Fatal(err)
+	}
+	if manifest.PolicyID != "policy-a" || manifest.RepositoryID != "repo-a" || manifest.BackupType != "full" || manifest.BackupLabel != "20260714-023549F" {
+		t.Fatalf("manifest = %#v", manifest)
 	}
 }
