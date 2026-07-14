@@ -8,6 +8,7 @@ import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { fetchGet } from '@/data/fetchers'
+import { constructFleetPgMetaHeaders } from '@/lib/api/self-platform/pg-meta'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 
 vi.hoisted(() => {
@@ -16,6 +17,7 @@ vi.hoisted(() => {
 })
 vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({ guardProjectRoute: vi.fn() }))
 vi.mock('@/data/fetchers', () => ({ fetchGet: vi.fn() }))
+vi.mock('@/lib/api/self-platform/pg-meta', () => ({ constructFleetPgMetaHeaders: vi.fn() }))
 
 const ROUTES = [
   'column-privileges',
@@ -34,6 +36,9 @@ describe.each(ROUTES)('pg-meta/[ref]/%s guard', (name) => {
   beforeEach(() => {
     vi.mocked(guardProjectRoute).mockReset()
     vi.mocked(fetchGet).mockReset().mockResolvedValue({ data: [], error: undefined })
+    vi.mocked(constructFleetPgMetaHeaders)
+      .mockReset()
+      .mockResolvedValue({ 'x-connection-encrypted': 'SERVER_ENC' })
   })
 
   it('declares tenant:Sql:Admin:Read and stops on deny', async () => {
@@ -51,6 +56,7 @@ describe.each(ROUTES)('pg-meta/[ref]/%s guard', (name) => {
     })
     expect(res._getStatusCode()).toBe(403)
     expect(vi.mocked(fetchGet)).not.toHaveBeenCalled()
+    expect(constructFleetPgMetaHeaders).not.toHaveBeenCalled()
   })
 
   it('allows through and fetches when guardProjectRoute permits', async () => {
@@ -60,6 +66,10 @@ describe.each(ROUTES)('pg-meta/[ref]/%s guard', (name) => {
     await handler(req as any, res as any, { sub: 'g-1' })
 
     expect(res._getStatusCode()).toBe(200)
+    expect(constructFleetPgMetaHeaders).toHaveBeenCalledWith('proj-b', req.headers)
     expect(vi.mocked(fetchGet)).toHaveBeenCalledTimes(1)
+    expect(vi.mocked(fetchGet).mock.calls[0][1]).toMatchObject({
+      headers: { 'x-connection-encrypted': 'SERVER_ENC' },
+    })
   })
 })

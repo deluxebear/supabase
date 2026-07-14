@@ -6,10 +6,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { apiWrapper } from '@/lib/api/apiWrapper'
 import { POSTGRES_PORT } from '@/lib/api/self-hosted/constants'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
-import {
-  ProjectNotFound,
-  resolveProjectConnection,
-} from '@/lib/api/self-platform/resolve-connection'
+import { ProjectNotFound, resolveProjectIdentity } from '@/lib/api/self-platform/resolve-connection'
 import { PROJECT_DB_HOST, PROJECT_REST_URL } from '@/lib/constants/api'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
@@ -62,29 +59,29 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
   }
   const ref = String(req.query.ref)
   try {
-    const conn = await resolveProjectConnection(ref)
-    const body: ResponseData = [
+    const project = await resolveProjectIdentity(ref)
+    const body: Array<
+      Omit<ResponseData[number], 'connectionString' | 'connection_string_read_only'>
+    > = [
       {
         // [self-platform] row-source-of-truth: use the registry's cloud_provider
         // for a resolved project (the self-hosted branch above has no `conn` /
         // registry row, so it stays the hardcoded 'AWS'). Narrows the row's
         // `text` column -> the DatabaseDetailResponse cloud_provider enum;
         // sanctioned `as X['cloud_provider']` exception (not `as any`).
-        cloud_provider: conn.cloudProvider as ResponseData[number]['cloud_provider'],
-        connectionString: conn.pgConnEncrypted,
-        connection_string_read_only: conn.pgConnReadOnlyEncrypted,
-        db_host: conn.dbHost,
-        db_name: conn.dbName,
-        db_port: conn.dbPort,
-        db_user: conn.dbUser,
-        identifier: conn.ref,
+        cloud_provider: project.cloudProvider as ResponseData[number]['cloud_provider'],
+        db_host: project.dbHost,
+        db_name: project.dbName,
+        db_port: project.dbPort,
+        db_user: project.dbUser,
+        identifier: project.ref,
         inserted_at: '2021-08-02T06:40:40.646Z',
-        region: conn.region,
-        restUrl: conn.restUrl,
+        region: project.region,
+        restUrl: project.restUrl,
         size: '',
         // [self-platform] narrows DB `text` -> the DatabaseDetailResponse status enum; sanctioned
         // `as X['status']` exception (not `as any`).
-        status: conn.status as ResponseData[number]['status'],
+        status: project.status as ResponseData[number]['status'],
       },
     ]
     return res.status(200).json(body)

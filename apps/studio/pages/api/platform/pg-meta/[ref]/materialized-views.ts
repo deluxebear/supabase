@@ -6,6 +6,7 @@ import { getPgMetaRedirectUrl } from './tables'
 import { fetchGet } from '@/data/fetchers'
 import { constructHeaders } from '@/lib/api/apiHelpers'
 import apiWrapper from '@/lib/api/apiWrapper'
+import { constructFleetPgMetaHeaders } from '@/lib/api/self-platform/pg-meta'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
@@ -34,7 +35,9 @@ const handleGetAll = async (req: NextApiRequest, res: NextApiResponse, claims?: 
     if (!ok) return
   }
 
-  const headers = constructHeaders(req.headers)
+  const headers = IS_SELF_PLATFORM
+    ? await constructFleetPgMetaHeaders(String(req.query.ref), req.headers)
+    : constructHeaders(req.headers)
   const response = await fetchGet(getPgMetaRedirectUrl(req, 'materialized-views'), { headers })
 
   if (response.error) {

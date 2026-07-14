@@ -6,7 +6,7 @@
 // it would have silently served/mutated the shared local store.
 //
 // This file uses the REAL guardProjectRoute (not mocked) with only
-// resolveProjectConnection stubbed to reject for the ghost ref, so
+// resolveProjectIdentity stubbed to reject for the ghost ref, so
 // checkPermission is never reached — proving the 404 is resolver-backed,
 // not a permission decision. Guard behavior itself (action/resource
 // wiring, allow/deny) is covered by content-rbac.test.ts.
@@ -25,10 +25,10 @@ vi.mock('@/lib/api/apiAuthenticate', () => ({
   apiAuthenticate: vi.fn().mockResolvedValue({ sub: 'test-user' }),
 }))
 
-const { resolveProjectConnection } = vi.hoisted(() => ({ resolveProjectConnection: vi.fn() }))
+const { resolveProjectIdentity } = vi.hoisted(() => ({ resolveProjectIdentity: vi.fn() }))
 vi.mock('@/lib/api/self-platform/resolve-connection', async (importOriginal) => ({
   ...(await importOriginal<object>()),
-  resolveProjectConnection,
+  resolveProjectIdentity,
 }))
 
 const { getSnippets, getSnippet, getFolders } = vi.hoisted(() => ({
@@ -45,7 +45,7 @@ vi.mock('@/lib/api/snippets.utils', async (importOriginal) => ({
 
 beforeEach(async () => {
   const { ProjectNotFound } = await import('@/lib/api/self-platform/resolve-connection')
-  resolveProjectConnection.mockReset().mockRejectedValue(new ProjectNotFound('ghost'))
+  resolveProjectIdentity.mockReset().mockRejectedValue(new ProjectNotFound('ghost'))
   getSnippets.mockReset()
   getSnippet.mockReset()
   getFolders.mockReset()
@@ -68,7 +68,7 @@ describe.each(ROUTES)('content per-ref: %s', (path, method, query) => {
     })
     await route(req as any, res as any)
 
-    expect(resolveProjectConnection).toHaveBeenCalledWith('ghost')
+    expect(resolveProjectIdentity).toHaveBeenCalledWith('ghost')
     expect(res._getStatusCode()).toBe(404)
     expect(res._getJSONData()).toEqual({ message: 'Project not found' })
     expect(getSnippets).not.toHaveBeenCalled()

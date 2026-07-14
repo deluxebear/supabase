@@ -17,6 +17,7 @@ import {
   prefetchTableEditor,
 } from '@/data/table-editor/table-editor-query'
 import { isMsSqlForeignTable } from '@/data/table-editor/table-editor-types'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { timeout } from '@/lib/helpers'
 import { RoleImpersonationState, wrapWithRoleImpersonation } from '@/lib/role-impersonation'
 import { isRoleImpersonationEnabled } from '@/state/role-impersonation-state'
@@ -422,7 +423,7 @@ export const useTableRowsQuery = <TData = TableRowsData>(
       enabled &&
       typeof projectRef !== 'undefined' &&
       typeof tableId !== 'undefined' &&
-      (!IS_PLATFORM || typeof connectionString !== 'undefined'),
+      (!IS_PLATFORM || IS_SELF_PLATFORM || typeof connectionString !== 'undefined'),
     ...options,
   })
 }

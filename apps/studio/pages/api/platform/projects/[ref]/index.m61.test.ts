@@ -12,7 +12,7 @@ import {
   updateProjectConnection,
 } from '@/lib/api/self-platform/projects-admin'
 import { checkPermission, guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
-import { resolveProjectConnection } from '@/lib/api/self-platform/resolve-connection'
+import { resolveProjectIdentity } from '@/lib/api/self-platform/resolve-connection'
 
 vi.hoisted(() => {
   process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
@@ -36,7 +36,7 @@ vi.mock('@/lib/api/self-platform/projects', async (importOriginal) => ({
 vi.mock('@/lib/api/self-platform/health', () => ({ clearHealthCache: vi.fn() }))
 vi.mock('@/lib/api/self-platform/resolve-connection', () => {
   class ProjectNotFound extends Error {}
-  return { ProjectNotFound, resolveProjectConnection: vi.fn() }
+  return { ProjectNotFound, resolveProjectIdentity: vi.fn() }
 })
 
 const claimsOf = (sub: string) => ({ sub }) as JwtPayload
@@ -81,7 +81,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(guardProjectRoute).mockResolvedValue(true)
   vi.mocked(checkPermission).mockResolvedValue(true)
-  vi.mocked(resolveProjectConnection).mockResolvedValue(resolved as never)
+  vi.mocked(resolveProjectIdentity).mockResolvedValue(resolved as never)
   vi.mocked(updateProjectConnection).mockResolvedValue({ propagatedChildren: [] })
   vi.mocked(listSharedDbChildRefs).mockResolvedValue([])
 })
@@ -99,9 +99,9 @@ describe('PATCH /platform/projects/[ref] (self-platform)', () => {
     expect(res._getStatusCode()).toBe(200)
     expect(res._getJSONData()).toMatchObject({
       ref: 'proj-b',
-      connectionString: 'ENC',
       propagated_children: [],
     })
+    expect(res._getJSONData()).not.toHaveProperty('connectionString')
     expect(clearHealthCache).not.toHaveBeenCalled()
   })
 
@@ -244,7 +244,7 @@ describe('GET self_platform block (M6.1)', () => {
       metrics_token_enc: null,
       container_name: null,
     }
-    vi.mocked(resolveProjectConnection).mockResolvedValue({
+    vi.mocked(resolveProjectIdentity).mockResolvedValue({
       ...resolved,
       row: sharedRow,
     } as never)

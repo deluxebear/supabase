@@ -7,14 +7,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { handler } from './index'
 import { checkPermissionWithContext } from '@/lib/api/self-platform/rbac/enforce'
-import { resolveProjectConnection } from '@/lib/api/self-platform/resolve-connection'
+import {
+  resolveProjectConnection,
+  resolveProjectIdentity,
+} from '@/lib/api/self-platform/resolve-connection'
 
 vi.hoisted(() => {
   process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
 })
 vi.mock('@/lib/api/self-platform/resolve-connection', () => {
   class ProjectNotFound extends Error {}
-  return { ProjectNotFound, resolveProjectConnection: vi.fn() }
+  return { ProjectNotFound, resolveProjectConnection: vi.fn(), resolveProjectIdentity: vi.fn() }
 })
 // [self-platform] Task 12: the route now gates on tenant:Sql:Query before
 // executeQuery. These pre-existing tests aren't exercising the readOnly
@@ -45,9 +48,9 @@ beforeEach(() => {
 })
 
 describe('POST /platform/pg-meta/[ref]/query (self-platform)', () => {
-  it('returns 404 Project not found when resolveProjectConnection throws ProjectNotFound', async () => {
+  it('returns 404 Project not found when identity resolution throws ProjectNotFound', async () => {
     const { ProjectNotFound } = await import('@/lib/api/self-platform/resolve-connection')
-    vi.mocked(resolveProjectConnection).mockRejectedValue(new ProjectNotFound('ghost'))
+    vi.mocked(resolveProjectIdentity).mockRejectedValue(new ProjectNotFound('ghost'))
 
     const { req, res } = createMocks({
       method: 'POST',
@@ -64,6 +67,7 @@ describe('POST /platform/pg-meta/[ref]/query (self-platform)', () => {
   })
 
   it('executes against the resolved project connection when the project is registered', async () => {
+    vi.mocked(resolveProjectIdentity).mockResolvedValue({ ref: 'proj-b' } as never)
     vi.mocked(resolveProjectConnection).mockResolvedValue({
       pgConnEncrypted: 'ENC-B',
       pgConnReadOnlyEncrypted: 'ENC-B-RO',

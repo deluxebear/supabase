@@ -1,10 +1,18 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { getProjectByRef } from './projects'
-import { ProjectNotFound, resolveProjectConnection } from './resolve-connection'
+import {
+  ProjectNotFound,
+  resolveProjectConnection,
+  resolveProjectIdentity,
+} from './resolve-connection'
+
+const { decryptSecret } = vi.hoisted(() => ({
+  decryptSecret: vi.fn((value: string) => `dec(${value})`),
+}))
 
 vi.mock('./projects', () => ({ getProjectByRef: vi.fn() }))
-vi.mock('./secrets', () => ({ decryptSecret: (s: string) => `dec(${s})` }))
+vi.mock('./secrets', () => ({ decryptSecret }))
 vi.mock('../self-hosted/util', () => ({
   encryptString: (s: string) => `enc(${s})`,
   getConnectionString: ({ readOnly }: { readOnly: boolean }) =>
@@ -39,6 +47,15 @@ const row = {
 afterEach(() => vi.clearAllMocks())
 
 describe('resolveProjectConnection', () => {
+  it('resolves project identity without decrypting any credential', async () => {
+    vi.mocked(getProjectByRef).mockResolvedValue(row as any)
+
+    const identity = await resolveProjectIdentity('proj-b')
+
+    expect(identity).toMatchObject({ ref: 'proj-b', dbHost: 'db-b', row })
+    expect(decryptSecret).not.toHaveBeenCalled()
+  })
+
   it('resolves a registered project: decrypts secrets and re-encrypts DSN for pg-meta', async () => {
     vi.mocked(getProjectByRef).mockResolvedValue(row as any)
     const r = await resolveProjectConnection('proj-b')

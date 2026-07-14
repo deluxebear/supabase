@@ -8,10 +8,7 @@ import { executeQuery } from '@/lib/api/self-hosted/query'
 import { PgMetaDatabaseError } from '@/lib/api/self-hosted/types'
 import { checkPermissionWithContext } from '@/lib/api/self-platform/rbac/enforce'
 import { effectiveBaseRoleName } from '@/lib/api/self-platform/rbac/expand'
-import {
-  ProjectNotFound,
-  resolveProjectConnection,
-} from '@/lib/api/self-platform/resolve-connection'
+import { ProjectNotFound, resolveProjectIdentity } from '@/lib/api/self-platform/resolve-connection'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export default (req: NextApiRequest, res: NextApiResponse) =>
@@ -41,9 +38,9 @@ const handlePost = async (req: NextApiRequest, res: NextApiResponse, claims?: Jw
   try {
     let readOnly = false
     if (IS_SELF_PLATFORM) {
-      // [self-platform] 404 before 403: resolve first (throws ProjectNotFound
-      // into the catch below), then check, then pick the DSN tier (spec §7.4).
-      await resolveProjectConnection(String(req.query.ref))
+      // Resolve non-secret identity for 404 semantics. executeQuery resolves
+      // the server-side credential only after this permission check succeeds.
+      await resolveProjectIdentity(String(req.query.ref))
       const { can, ctx } = await checkPermissionWithContext(claims, {
         action: PermissionAction.TENANT_SQL_QUERY,
         resource: 'projects',

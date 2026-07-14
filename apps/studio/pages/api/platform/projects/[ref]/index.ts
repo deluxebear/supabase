@@ -19,10 +19,7 @@ import {
   updateProjectConnection,
 } from '@/lib/api/self-platform/projects-admin'
 import { checkPermission, guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
-import {
-  ProjectNotFound,
-  resolveProjectConnection,
-} from '@/lib/api/self-platform/resolve-connection'
+import { ProjectNotFound, resolveProjectIdentity } from '@/lib/api/self-platform/resolve-connection'
 import { DEFAULT_PROJECT, PROJECT_REST_URL } from '@/lib/constants/api'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
@@ -39,7 +36,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
     }
     const ref = String(req.query.ref)
     try {
-      const conn = await resolveProjectConnection(ref)
+      const project = await resolveProjectIdentity(ref)
       // [self-platform] Visibility guard (spec §8): resolver 404 has already won
       // for unknown refs; a resolvable ref the member has no read grant on is 403.
       const canRead = await checkPermission(claims, {
@@ -48,17 +45,15 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
         projectRef: ref,
       })
       if (!canRead) return res.status(403).json({ message: 'Forbidden' })
-      // [self-platform] conn.row is the raw registry row (Task 4's ResolvedConnection.row) — a
-      // registry hit maps through toProjectDetailResponse, the 'default' global-env fallback (no
-      // row) shapes as DEFAULT_PROJECT with the resolved connection/rest URL. Avoids a second
-      // getProjectByRef query.
-      const base = conn.row
+      // Fleet project metadata is intentionally non-secret. pg-meta credentials
+      // are resolved only inside the server-side BFF after this RBAC check.
+      const base = project.row
         ? {
-            ...toProjectDetailResponse(conn.row, conn.pgConnEncrypted),
+            ...toProjectDetailResponse(project.row),
             // [self-platform] M6.1: additive edit-panel prefill block (spec §5).
-            self_platform: await buildSelfPlatformBlock(conn.row),
+            self_platform: await buildSelfPlatformBlock(project.row),
           }
-        : { ...DEFAULT_PROJECT, connectionString: conn.pgConnEncrypted, restUrl: conn.restUrl }
+        : { ...DEFAULT_PROJECT, restUrl: project.restUrl }
       return res.status(200).json(base)
     } catch (err) {
       if (err instanceof ProjectNotFound)
@@ -173,10 +168,10 @@ async function handlePatch(req: NextApiRequest, res: NextApiResponse, claims?: J
       clearHealthCache(ref)
       for (const child of propagatedChildren) clearHealthCache(child)
     }
-    const conn = await resolveProjectConnection(ref)
-    const detail = conn.row
-      ? toProjectDetailResponse(conn.row, conn.pgConnEncrypted)
-      : { ...DEFAULT_PROJECT, connectionString: conn.pgConnEncrypted, restUrl: conn.restUrl }
+    const project = await resolveProjectIdentity(ref)
+    const detail = project.row
+      ? toProjectDetailResponse(project.row)
+      : { ...DEFAULT_PROJECT, restUrl: project.restUrl }
     return res.status(200).json({ ...detail, propagated_children: propagatedChildren })
   } catch (err) {
     if (err instanceof ProjectRowMissing) {
