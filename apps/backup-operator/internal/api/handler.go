@@ -731,6 +731,10 @@ func (h *Handler) confirmRestorePlan(w http.ResponseWriter, r *http.Request) {
 	}
 	aal2 := restoreplan.AAL2Assertion{Subject: claims.Subject, Authenticated: time.Unix(claims.AALAuthenticatedAt, 0).UTC()}
 	if err := h.store.ConfirmRestorePlan(r.Context(), r.PathValue("planId"), request.PlanHash, aal2, 5*time.Minute); err != nil {
+		if errors.Is(err, restoreplan.ErrAAL2Required) {
+			writeError(w, 403, "aal2_required", err.Error())
+			return
+		}
 		writeError(w, 409, "restore_not_confirmable", err.Error())
 		return
 	}

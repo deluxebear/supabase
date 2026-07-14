@@ -35,6 +35,7 @@ const SignInMfaPage: NextPageWithLayout = () => {
   const { mutate: addLoginEvent } = useAddLoginEvent()
 
   const [loading, setLoading] = useState(true)
+  const forceReauthentication = router.query.reauthenticate === 'true'
 
   // This useEffect redirects the user to MFA if they're already halfway signed in
   useEffect(() => {
@@ -61,7 +62,7 @@ const SignInMfaPage: NextPageWithLayout = () => {
             return router.push({ pathname: '/sign-in', query: router.query })
           }
 
-          if (data.currentLevel === data.nextLevel) {
+          if (data.currentLevel === data.nextLevel && !forceReauthentication) {
             onSignInTracked()
             addLoginEvent({})
 
@@ -88,7 +89,7 @@ const SignInMfaPage: NextPageWithLayout = () => {
         router.push({ pathname: '/sign-in', query: router.query })
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [forceReauthentication])
 
   if (loading) {
     return (

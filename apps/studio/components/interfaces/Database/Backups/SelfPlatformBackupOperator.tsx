@@ -17,7 +17,7 @@ import { SelfPlatformBackupOperatorStatus } from './SelfPlatformBackupOperatorSt
 import { AlertError } from '@/components/ui/AlertError'
 import { isActiveBackupOperatorJob } from '@/data/backup-operator/backup-operator-job.utils'
 import {
-  OperatorMutationError,
+  isOperatorAAL2RequiredError,
   useJobResolutionMutation,
   useRestoreExecuteMutation,
   useRestorePlanCreateMutation,
@@ -62,8 +62,7 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
   })
   const executeMutation = useRestoreExecuteMutation({
     onSuccess: (job) => updateSelection({ backupPlan: planId, backupJob: job.id }),
-    onError: (error) =>
-      setRequiresAAL2(error instanceof OperatorMutationError && error.code === 'AAL2_REQUIRED'),
+    onError: (error) => setRequiresAAL2(isOperatorAAL2RequiredError(error)),
   })
   const rollbackMutation = useRestoreRollbackMutation()
   const resolutionMutation = useJobResolutionMutation()
@@ -144,7 +143,10 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
   const handleUpgradeAAL2 = () => {
     void router.push({
       pathname: getAAL2UpgradePath(hasMfaFactor),
-      query: { returnTo: router.asPath },
+      query: {
+        returnTo: router.asPath,
+        ...(hasMfaFactor ? { reauthenticate: 'true' } : {}),
+      },
     })
   }
 
@@ -182,12 +184,12 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
           title={$t('Additional authentication required')}
           description={$t(
             hasMfaFactor
-              ? 'Upgrade this session to AAL2, then return and confirm the unchanged restore plan.'
+              ? 'Verify MFA again to refresh AAL2, then return and confirm the unchanged restore plan.'
               : 'Enable MFA on your account first'
           )}
         >
           <Button type="button" loading={factorsQuery.isPending} onClick={handleUpgradeAAL2}>
-            {$t(hasMfaFactor ? 'Upgrade to AAL2' : 'Set up MFA')}
+            {$t(hasMfaFactor ? 'Verify AAL2 again' : 'Set up MFA')}
           </Button>
         </Admonition>
       )}

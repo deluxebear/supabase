@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -62,6 +63,10 @@ func TestAAL2ExecuteAgentResultAndRollbackFlow(t *testing.T) {
 		Issuer: "studio", Subject: "test", Audience: "operator", NotBefore: now.Add(-time.Minute).Unix(), Expires: now.Add(time.Minute).Unix(),
 		Scopes: []string{"*"}, Projects: []string{"cluster-a"}, AAL: "aal2", AALAuthenticatedAt: now.Unix(),
 	})
+	staleAAL2 := signedServiceAssertion(t, key, security.ServiceClaims{
+		Issuer: "studio", Subject: "test", Audience: "operator", NotBefore: now.Add(-time.Minute).Unix(), Expires: now.Add(time.Minute).Unix(),
+		Scopes: []string{"*"}, Projects: []string{"cluster-a"}, AAL: "aal2", AALAuthenticatedAt: now.Add(-10 * time.Minute).Unix(),
+	})
 	untrusted := signedServiceAssertion(t, key, security.ServiceClaims{
 		Issuer: "studio", Subject: "test", Audience: "operator", NotBefore: now.Add(-time.Minute).Unix(), Expires: now.Add(time.Minute).Unix(),
 		Scopes: []string{"*"}, Projects: []string{"cluster-a"}, AAL: "aal1",
@@ -87,6 +92,10 @@ func TestAAL2ExecuteAgentResultAndRollbackFlow(t *testing.T) {
 	spoofed := do(untrusted, "POST", "/v1/clusters/cluster-a/restore-plans/"+plan.ID+"/confirm", map[string]any{"planHash": plan.Hash, "aal2Subject": "test", "aal2AuthenticatedAt": now})
 	if spoofed.Code != 400 {
 		t.Fatalf("client-supplied AAL2 facts must be rejected: %d %s", spoofed.Code, spoofed.Body.String())
+	}
+	staleConfirmation := do(staleAAL2, "POST", "/v1/clusters/cluster-a/restore-plans/"+plan.ID+"/confirm", map[string]any{"planHash": plan.Hash})
+	if staleConfirmation.Code != http.StatusForbidden || !strings.Contains(staleConfirmation.Body.String(), `"code":"aal2_required"`) {
+		t.Fatalf("stale AAL2 must request fresh authentication: %d %s", staleConfirmation.Code, staleConfirmation.Body.String())
 	}
 	confirmed := do(trusted, "POST", "/v1/clusters/cluster-a/restore-plans/"+plan.ID+"/confirm", map[string]any{"planHash": plan.Hash})
 	if confirmed.Code != 200 {

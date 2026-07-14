@@ -26,6 +26,16 @@ export class OperatorMutationError extends Error {
   }
 }
 
+export function isOperatorAAL2RequiredError(error: unknown) {
+  if (!(error instanceof OperatorMutationError)) return false
+  const code = error.code?.toLowerCase()
+  return (
+    code === 'aal2_required' ||
+    (code === 'restore_not_confirmable' &&
+      error.message.toLowerCase().includes('fresh aal2 confirmation'))
+  )
+}
+
 async function mutateOperator(
   projectRef: string,
   path: string,

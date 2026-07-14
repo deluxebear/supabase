@@ -329,8 +329,8 @@ describe('SelfPlatformBackupOperator', () => {
       http.post(operatorURL('restore-plans/plan-1/confirm'), () =>
         HttpResponse.json(
           {
-            code: 'AAL2_REQUIRED',
-            message: 'A recent AAL2 session is required',
+            code: 'restore_not_confirmable',
+            message: 'a fresh AAL2 confirmation is required',
             correlation_id: 'corr-aal2',
             retryable: false,
             details: {},

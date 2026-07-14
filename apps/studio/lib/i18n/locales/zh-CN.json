@@ -7749,6 +7749,8 @@
   "Topology": "拓扑结构",
   "Upgrade this session to AAL2, then return and confirm the unchanged restore plan.": "请将此会话升级到 AAL2，然后返回并确认未更改的恢复计划。",
   "Upgrade to AAL2": "升级到 AAL2",
+  "Verify AAL2 again": "重新验证 AAL2",
+  "Verify MFA again to refresh AAL2, then return and confirm the unchanged restore plan.": "请再次验证 MFA 以刷新 AAL2，然后返回并确认未更改的恢复计划。",
   "Verified": "已验证",
   "WAL recovery coverage has not been observed": "尚未观测到 WAL 恢复覆盖范围",
   "{{count}} retained events received": "已收到 {{count}} 个保留事件",
