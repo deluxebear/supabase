@@ -120,6 +120,8 @@ grant usage on schema platform to fleet_platform_dispatcher;
 grant execute on function platform.claim_operation_outbox(text, integer) to fleet_platform_dispatcher;
 grant execute on function platform.complete_operation_dispatch(text, text, text) to fleet_platform_dispatcher;
 grant execute on function platform.fail_operation_dispatch(text, text, text, text, boolean) to fleet_platform_dispatcher;
+grant select on platform.function_deployments, platform.operation_outbox to fleet_platform_dispatcher;
+grant execute on function platform.apply_function_deployment_observation(text, text, text, uuid, bigint, text, text, text, text, text, timestamptz) to fleet_platform_dispatcher;
 SQL
 fi
 

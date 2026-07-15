@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
 	"github.com/supabase/supabase/apps/backup-operator/internal/security"
 )
 
@@ -19,6 +20,26 @@ type memoryStore struct {
 	ready     bool
 	completed bool
 	failures  []string
+}
+
+type projectionMemoryStore struct {
+	memoryStore
+	candidate FunctionProjection
+	ready     bool
+	applied   []fleetfunctions.Evidence
+}
+
+func (s *projectionMemoryStore) NextFunctionProjection(context.Context) (FunctionProjection, bool, error) {
+	return s.candidate, s.ready, nil
+}
+
+func (s *projectionMemoryStore) ApplyFunctionProjection(_ context.Context, candidate FunctionProjection, evidence fleetfunctions.Evidence, _ string) (bool, error) {
+	if candidate != s.candidate {
+		return false, nil
+	}
+	s.applied = append(s.applied, evidence)
+	s.ready = false
+	return true, nil
 }
 
 func (s *memoryStore) Claim(context.Context, string, time.Duration) (OutboxOperation, bool, error) {
@@ -103,6 +124,28 @@ func TestOutboxDispatcherFailsClosedOnMismatchedSnapshotResponse(t *testing.T) {
 	}
 	if len(store.failures) != 1 || store.failures[0] != "downstream_invalid_response" || store.ready {
 		t.Fatalf("mismatched response failure = %+v ready=%v", store.failures, store.ready)
+	}
+}
+
+func TestFunctionProjectionRequiresProjectBoundTypedTerminalEvidence(t *testing.T) {
+	key := []byte("fleet-control-test-key-at-least-32-bytes")
+	now := time.Unix(1_700_000_000, 0).UTC()
+	candidate := FunctionProjection{OperationID: "op-function", ProjectRef: "project-a", Slug: "hello", DesiredRevision: "11111111-1111-4111-8111-111111111111", DesiredGeneration: 3}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		claims, err := securityClaims(r, key)
+		if err != nil || len(claims.Projects) != 1 || claims.Projects[0] != candidate.ProjectRef || len(claims.Scopes) != 1 || claims.Scopes[0] != "fleet.read" {
+			t.Fatalf("projection assertion = %+v, %v", claims, err)
+		}
+		evidence := fleetfunctions.Evidence{Schema: fleetfunctions.EvidenceSchemaV1, Status: "active", Adapter: fleetfunctions.AdapterCompose, Slug: candidate.Slug, ArtifactDigest: "26b3426b2593763c96d0890b4a77a0bbf66d13fc512b0c6b138a23c290f30a2a", ObservedGeneration: candidate.DesiredGeneration, Probe: fleetfunctions.ProbeEvidence{Succeeded: true}, ActivatedAt: now}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{"id": candidate.OperationID, "projectRef": candidate.ProjectRef, "state": "applied", "evidenceSchema": fleetfunctions.EvidenceSchemaV1, "evidence": evidence})
+	}))
+	defer server.Close()
+	store := &projectionMemoryStore{candidate: candidate, ready: true}
+	cfg := Config{Store: store, FleetControlURL: server.URL, AssertionKey: key, AssertionIssuer: "studio-platform", AssertionAudience: "fleet-control", WorkerID: "worker-1", Lease: 30 * time.Second, PollInterval: time.Second, Now: func() time.Time { return now }}
+	projected, err := cfg.ProjectFunctionOnce(context.Background())
+	if err != nil || !projected || len(store.applied) != 1 || store.applied[0].Slug != candidate.Slug {
+		t.Fatalf("projection = %v applied=%+v err=%v", projected, store.applied, err)
 	}
 }
 

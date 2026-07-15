@@ -54,7 +54,7 @@ const PROFILE_CAPABILITIES: Record<StudioDeploymentProfile, StudioCapabilities> 
     multiProject: true,
     platformIdentity: true,
     localFunctionsDirectory: false,
-    remoteFunctionsDeployment: false,
+    remoteFunctionsDeployment: true,
     runtimeConfiguration: false,
     lifecycleManagement: false,
     backupManagement: false,

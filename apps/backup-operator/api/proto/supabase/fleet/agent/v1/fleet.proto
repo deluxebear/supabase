@@ -8,6 +8,7 @@ option go_package = "github.com/supabase/supabase/apps/backup-operator/gen/proto
 
 service FleetAgentControlService {
   rpc Connect(stream ConnectRequest) returns (stream ConnectResponse);
+  rpc DownloadArtifact(DownloadArtifactRequest) returns (stream ArtifactChunk);
 }
 
 message ConnectRequest {
@@ -45,6 +46,7 @@ message TypedTask {
   oneof input {
     ObserveRuntimeInput observe_runtime = 10;
     ReconcileConfigurationInput reconcile_configuration = 11;
+    DeployFunctionInput deploy_function = 12;
   }
 }
 
@@ -58,6 +60,10 @@ message ReconcileConfigurationInput {
   int64 expected_generation = 3;
 }
 
+message DeployFunctionInput {
+  bytes deployment_json = 1;
+}
+
 message TaskResult {
   string task_id = 1;
   string evidence_schema = 2;
@@ -65,6 +71,7 @@ message TaskResult {
     ObserveRuntimeEvidence observe_runtime = 10;
     supabase.agent.transport.v1.TaskError error = 11;
     ReconcileConfigurationEvidence reconcile_configuration = 12;
+    FunctionDeploymentEvidence deploy_function = 13;
   }
 }
 
@@ -75,6 +82,22 @@ message ObserveRuntimeEvidence {
 
 message ReconcileConfigurationEvidence {
   bytes evidence_json = 1;
+}
+
+message FunctionDeploymentEvidence {
+  bytes evidence_json = 1;
+}
+
+message DownloadArtifactRequest {
+  string agent_id = 1;
+  string project_ref = 2;
+  string target_id = 3;
+  string binding_id = 4;
+  string digest = 5;
+}
+
+message ArtifactChunk {
+  bytes data = 1;
 }
 
 message RuntimeService {

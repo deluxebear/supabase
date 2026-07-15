@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { components } from 'api-types'
 import { toast } from 'sonner'
+import { z } from 'zod'
 
 import { edgeFunctionsKeys } from './keys'
 import {
@@ -8,8 +9,9 @@ import {
   getFallbackImportMapPath,
   getStaticPatterns,
 } from '@/components/interfaces/EdgeFunctions/EdgeFunctions.utils'
-import { handleError, post } from '@/data/fetchers'
-import type { ResponseError, UseCustomMutationOptions } from '@/types'
+import { constructHeaders, handleError, post } from '@/data/fetchers'
+import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
+import { ResponseError, type UseCustomMutationOptions } from '@/types'
 
 type EdgeFunctionsDeployBodyMetadata = components['schemas']['FunctionDeployBody']['metadata']
 type EdgeFunctionsDeployVariables = {
@@ -18,6 +20,7 @@ type EdgeFunctionsDeployVariables = {
   metadata: Partial<EdgeFunctionsDeployBodyMetadata>
   files: { name: string; content: string }[]
   authorization?: string
+  expectedGeneration?: number
 }
 
 export async function deployEdgeFunction({
@@ -26,6 +29,7 @@ export async function deployEdgeFunction({
   metadata: _metadata,
   files,
   authorization,
+  expectedGeneration = 0,
 }: EdgeFunctionsDeployVariables) {
   if (!projectRef) throw new Error('projectRef is required')
 
@@ -35,6 +39,53 @@ export async function deployEdgeFunction({
   if (!_metadata.entrypoint_path) metadata.entrypoint_path = getFallbackEntrypointPath(files)
   if (!_metadata.import_map_path) metadata.import_map_path = getFallbackImportMapPath(files)
   if (!_metadata.static_patterns) metadata.static_patterns = getStaticPatterns(files)
+
+  if (STUDIO_DEPLOYMENT_PROFILE === 'fleet') {
+    const idempotencyKey = crypto.randomUUID()
+    const response = await fetch(
+      `/api/platform/fleet/v1/projects/${encodeURIComponent(projectRef)}/functions`,
+      {
+        method: 'POST',
+        headers: await constructHeaders({
+          'Content-Type': 'application/json',
+          'Idempotency-Key': idempotencyKey,
+        }),
+        body: JSON.stringify({
+          slug,
+          expectedGeneration,
+          metadata: {
+            entrypointPath: metadata.entrypoint_path,
+            importMapPath: metadata.import_map_path,
+            staticPatterns: metadata.static_patterns ?? [],
+            verifyJwt: metadata.verify_jwt ?? true,
+          },
+          files,
+        }),
+      }
+    )
+    const text = await response.text()
+    let body: unknown
+    try {
+      body = text === '' ? {} : JSON.parse(text)
+    } catch {
+      throw new ResponseError('Function deployment API returned invalid JSON', response.status)
+    }
+    if (!response.ok) {
+      const message =
+        body !== null &&
+        typeof body === 'object' &&
+        'message' in body &&
+        typeof body.message === 'string'
+          ? body.message
+          : 'Failed to deploy edge function'
+      throw new ResponseError(message, response.status)
+    }
+    return z
+      .object({
+        deployment: z.object({ slug: z.string(), generation: z.number().int() }).passthrough(),
+      })
+      .parse(body)
+  }
 
   const { data, error } = await post(`/v1/projects/{ref}/functions/deploy`, {
     params: { path: { ref: projectRef }, query: { slug: slug } },
@@ -82,6 +133,7 @@ export const useEdgeFunctionDeployMutation = ({
         queryClient.invalidateQueries({ queryKey: edgeFunctionsKeys.list(projectRef) }),
         queryClient.invalidateQueries({ queryKey: edgeFunctionsKeys.detail(projectRef, slug) }),
         queryClient.invalidateQueries({ queryKey: edgeFunctionsKeys.body(projectRef, slug) }),
+        queryClient.invalidateQueries({ queryKey: edgeFunctionsKeys.deployments(projectRef) }),
       ])
       await onSuccess?.(data, variables, context)
     },

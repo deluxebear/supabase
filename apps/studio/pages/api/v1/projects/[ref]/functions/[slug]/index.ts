@@ -5,7 +5,10 @@ import { type NextApiRequest, type NextApiResponse } from 'next'
 
 import { apiWrapper } from '@/lib/api/apiWrapper'
 import { getFunctionsArtifactStore } from '@/lib/api/self-hosted/functions'
+import { requireProjectCapability } from '@/lib/api/self-platform/attachment'
+import { getFunctionDeployment } from '@/lib/api/self-platform/function-deployments'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
+import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { uuidv4 } from '@/lib/helpers'
 
@@ -19,8 +22,8 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
 
   // [self-platform] M3.1 RBAC guard (M3.0 final-review I2 first batch).
   // 404-before-403 lives inside guardProjectRoute (resolver-first). Note the
-  // functions artifact store itself is still GLOBAL (not per-ref) — the guard
-  // controls who may read; per-ref artifacts are separate future work.
+  // Embedded keeps the upstream mounted directory contract. Fleet branches to
+  // the project-scoped platform deployment authority below.
   if (IS_SELF_PLATFORM && method === 'GET') {
     const ok = await guardProjectRoute(res, claims, {
       action: PermissionAction.FUNCTIONS_READ,
@@ -31,11 +34,35 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
 
   switch (method) {
     case 'GET':
+      if (STUDIO_DEPLOYMENT_PROFILE === 'fleet') {
+        return handleFleetGet(req, res)
+      }
       return handleGet(req, res)
     default:
       res.setHeader('Allow', ['GET'])
       res.status(405).json({ data: null, error: { message: `Method ${method} Not Allowed` } })
   }
+}
+
+const handleFleetGet = async (req: NextApiRequest, res: NextApiResponse) => {
+  const slugParam = req.query.slug
+  const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam
+  if (!slug) return res.status(404).json({ error: { message: `Function not found` } })
+  const projectRef = String(req.query.ref)
+  await requireProjectCapability(projectRef, 'functions.read')
+  const deployment = await getFunctionDeployment(projectRef, slug)
+  if (!deployment || deployment.state === 'deleted') {
+    return res.status(404).json({ error: { message: `Function not found` } })
+  }
+  return res.status(200).json({
+    id: `${deployment.projectRef}:${deployment.slug}`,
+    slug: deployment.slug,
+    version: deployment.generation,
+    name: deployment.slug,
+    status: 'ACTIVE',
+    created_at: Date.parse(deployment.createdAt),
+    updated_at: Date.parse(deployment.updatedAt),
+  } satisfies EdgeFunctionsResponse)
 }
 
 type EdgeFunctionsResponse = components['schemas']['FunctionResponse']

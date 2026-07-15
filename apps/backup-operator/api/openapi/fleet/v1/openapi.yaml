@@ -44,6 +44,53 @@ paths:
                     type: array
                     items: { $ref: '#/components/schemas/Capability' }
         '403': { $ref: '#/components/responses/Error' }
+  /platform/fleet/v1/projects/{projectRef}/function-artifacts/{digest}:
+    put:
+      operationId: putFunctionArtifact
+      parameters:
+        - { $ref: '#/components/parameters/ProjectRef' }
+        - { $ref: '#/components/parameters/ArtifactDigest' }
+        - name: X-Function-Slug
+          in: header
+          required: true
+          schema: { type: string, pattern: '^[A-Za-z0-9][A-Za-z0-9_-]{0,62}$' }
+        - name: X-Function-Entrypoint
+          in: header
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 512 }
+      requestBody:
+        required: true
+        content:
+          application/vnd.supabase.function-bundle+json:
+            schema: { type: string, format: binary, maxLength: 20971520 }
+      responses:
+        '200':
+          description: Existing byte-identical project artifact
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FunctionArtifact' }
+        '201':
+          description: Immutable project artifact stored
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FunctionArtifact' }
+        '400': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '413': { $ref: '#/components/responses/Error' }
+    get:
+      operationId: getFunctionArtifact
+      parameters:
+        - { $ref: '#/components/parameters/ProjectRef' }
+        - { $ref: '#/components/parameters/ArtifactDigest' }
+      responses:
+        '200':
+          description: Project-authorized immutable function bundle
+          content:
+            application/vnd.supabase.function-bundle+json:
+              schema: { type: string, format: binary }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
   /platform/fleet/v1/projects/{projectRef}/operations:
     post:
       operationId: createFleetOperation
@@ -273,6 +320,13 @@ components:
         in: path,
         required: true,
         schema: { type: string, minLength: 1, maxLength: 128 },
+      }
+    ArtifactDigest:
+      {
+        name: digest,
+        in: path,
+        required: true,
+        schema: { type: string, pattern: '^[0-9a-f]{64}$' },
       }
   responses:
     Error:
@@ -599,6 +653,49 @@ components:
         errorCode: { type: string }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+    FunctionArtifact:
+      type: object
+      required: [digest, size, created]
+      properties:
+        digest: { type: string, pattern: '^[0-9a-f]{64}$' }
+        size: { type: integer, format: int64, minimum: 1, maximum: 20971520 }
+        created: { type: boolean }
+    FunctionDeploymentDocument:
+      type: object
+      additionalProperties: false
+      required: [action, slug, adapter, staticPatterns, verifyJwt]
+      properties:
+        action: { type: string, enum: [deploy, delete] }
+        slug: { type: string, pattern: '^[A-Za-z0-9][A-Za-z0-9_-]{0,62}$' }
+        adapter: { type: string, enum: [compose, kubernetes] }
+        artifactDigest: { type: string, pattern: '^[0-9a-f]{64}$' }
+        artifactSize: { type: integer, format: int64, minimum: 1, maximum: 20971520 }
+        entrypointPath: { type: string, minLength: 1, maxLength: 512 }
+        importMapPath: { type: string, minLength: 1, maxLength: 512 }
+        staticPatterns:
+          type: array
+          maxItems: 64
+          items: { type: string, minLength: 1, maxLength: 512 }
+        verifyJwt: { type: boolean }
+    FunctionDeploymentEvidence:
+      type: object
+      required: [schema, status, adapter, slug, observedGeneration, probe, activatedAt]
+      properties:
+        schema: { type: string, const: supabase.fleet.functions.deploy.evidence.v1 }
+        status: { type: string, enum: [active, deleted, rolled-back, manual-intervention] }
+        adapter: { type: string, enum: [compose, kubernetes] }
+        slug: { type: string }
+        artifactDigest: { type: string }
+        previousDigest: { type: string }
+        observedGeneration: { type: integer, format: int64, minimum: 1 }
+        probe:
+          type: object
+          required: [succeeded]
+          properties:
+            succeeded: { type: boolean }
+            message: { type: string }
+        activatedAt: { type: string, format: date-time }
+        remediation: { type: string }
     ConfigurationDocument:
       type: object
       additionalProperties: false

@@ -27,6 +27,7 @@ services:
       FLEET_CONTROL_STORE_DSN: postgres://fleet_control:${FLEET_CONTROL_POSTGRES_PASSWORD}@fleet-control-db:5432/fleet_control?sslmode=disable
       FLEET_CONTROL_STORE_SYSTEM_IDENTIFIER: ${FLEET_CONTROL_STORE_SYSTEM_IDENTIFIER:-fleet-control}
       FLEET_CONTROL_STORE_DATA_DOMAIN: ${FLEET_CONTROL_STORE_DATA_DOMAIN:-fleet-control-db}
+      FLEET_CONTROL_ARTIFACT_ROOT: /var/lib/fleet-artifacts
       FLEET_CONTROL_AGENT_CA_CERT: /run/secrets/fleet-management/ca.crt
       FLEET_CONTROL_AGENT_CA_KEY: /run/secrets/fleet-management/ca.key
       FLEET_CONTROL_AGENT_TRUST_DOMAIN: ${FLEET_CONTROL_AGENT_TRUST_DOMAIN:-fleet.internal}
@@ -36,6 +37,8 @@ services:
       - 127.0.0.1:${FLEET_CONTROL_HTTP_PORT:-8090}:8090
       - 127.0.0.1:${FLEET_CONTROL_ENROLLMENT_HTTPS_PORT:-8091}:8091
       - 127.0.0.1:${FLEET_CONTROL_AGENT_GRPC_PORT:-8092}:8092
+    volumes:
+      - fleet-artifacts:/var/lib/fleet-artifacts
     secrets:
       - source: fleet_agent_ca_cert
         target: fleet-management/ca.crt
@@ -53,6 +56,7 @@ services:
 
 volumes:
   fleet-control-db:
+  fleet-artifacts:
 
 secrets:
   fleet_agent_ca_cert:

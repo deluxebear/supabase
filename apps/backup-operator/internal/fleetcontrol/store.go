@@ -23,13 +23,14 @@ import (
 //go:embed migrations/*/*.sql
 var fleetMigrations embed.FS
 
-const CurrentSchemaVersion = 4
+const CurrentSchemaVersion = 5
 
 var ErrOperationNotFound = errors.New("Fleet operation not found")
 var ErrMigrationChecksum = errors.New("Fleet migration checksum mismatch")
 var ErrOperationBinding = errors.New("Fleet operation binding mismatch")
 var ErrOperationCapability = errors.New("Fleet operation capability unavailable")
 var ErrOperationState = errors.New("Fleet operation state conflict")
+var ErrArtifactNotFound = errors.New("Fleet function artifact not found")
 
 type StoreDialect string
 
@@ -112,6 +113,7 @@ type CompleteOperationInput struct {
 	EvidenceSchema string
 	Evidence       json.RawMessage
 	ErrorCode      string
+	TerminalState  string
 }
 
 func OpenSQLite(ctx context.Context, path string, identity StoreIdentity) (*Store, error) {
@@ -620,9 +622,18 @@ func (s *Store) CompleteOperation(ctx context.Context, input CompleteOperationIn
 	if input.Succeeded && input.ErrorCode != "" || !input.Succeeded && input.ErrorCode == "" {
 		return errors.New("Agent result success and error code conflict")
 	}
-	state := "applied"
-	if !input.Succeeded {
-		state = "failed"
+	state := input.TerminalState
+	if state == "" {
+		state = "applied"
+		if !input.Succeeded {
+			state = "failed"
+		}
+	}
+	if state != "applied" && state != "failed" && state != "manual_intervention" {
+		return errors.New("Agent result terminal state is invalid")
+	}
+	if input.Succeeded != (state == "applied") {
+		return errors.New("Agent result terminal state and success conflict")
 	}
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -714,4 +725,41 @@ func (s *Store) AuditCount(ctx context.Context, projectRef string) (int, error) 
 	var count int
 	err := s.db.QueryRowContext(ctx, query, projectRef).Scan(&count)
 	return count, err
+}
+
+func (s *Store) RegisterFunctionArtifact(ctx context.Context, projectRef, digest string, size int64, actor, correlationID string) error {
+	if projectRef == "" || digest == "" || size < 1 || actor == "" || correlationID == "" {
+		return errors.New("complete function artifact metadata is required")
+	}
+	query := `INSERT INTO function_artifacts(project_ref,digest,size_bytes,created_by,correlation_id,created_at_ms)
+VALUES(?,?,?,?,?,?) ON CONFLICT(project_ref,digest) DO NOTHING`
+	if s.dialect == FleetPostgres {
+		query = `INSERT INTO function_artifacts(project_ref,digest,size_bytes,created_by,correlation_id,created_at_ms)
+VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(project_ref,digest) DO NOTHING`
+	}
+	if _, err := s.db.ExecContext(ctx, query, projectRef, digest, size, actor, correlationID, s.now().UTC().UnixMilli()); err != nil {
+		return err
+	}
+	stored, ok, err := s.GetFunctionArtifact(ctx, projectRef, digest)
+	if err != nil {
+		return err
+	}
+	if !ok || stored != size {
+		return errors.New("immutable function artifact metadata conflict")
+	}
+	return nil
+}
+
+func (s *Store) GetFunctionArtifact(ctx context.Context, projectRef, digest string) (int64, bool, error) {
+	query := "SELECT size_bytes FROM function_artifacts WHERE project_ref=? AND digest=?"
+	if s.dialect == FleetPostgres {
+		query = "SELECT size_bytes FROM function_artifacts WHERE project_ref=$1 AND digest=$2"
+	}
+	var size int64
+	if err := s.db.QueryRowContext(ctx, query, projectRef, digest).Scan(&size); errors.Is(err, sql.ErrNoRows) {
+		return 0, false, nil
+	} else if err != nil {
+		return 0, false, err
+	}
+	return size, true, nil
 }

@@ -15,6 +15,7 @@ import (
 	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
 	"github.com/supabase/supabase/apps/backup-operator/internal/security"
 )
 
@@ -40,6 +41,19 @@ type Store interface {
 	Claim(context.Context, string, time.Duration) (OutboxOperation, bool, error)
 	Complete(context.Context, string, string, string) (bool, error)
 	Fail(context.Context, string, string, string, string, bool) (bool, error)
+}
+
+type FunctionProjection struct {
+	OperationID       string
+	ProjectRef        string
+	Slug              string
+	DesiredRevision   string
+	DesiredGeneration int64
+}
+
+type FunctionProjectionStore interface {
+	NextFunctionProjection(context.Context) (FunctionProjection, bool, error)
+	ApplyFunctionProjection(context.Context, FunctionProjection, fleetfunctions.Evidence, string) (bool, error)
 }
 
 type PostgresStore struct{ db *sql.DB }
@@ -92,6 +106,34 @@ func (s *PostgresStore) Fail(ctx context.Context, operationID, worker, code, mes
 	var completed bool
 	err := s.db.QueryRowContext(ctx, "SELECT platform.fail_operation_dispatch($1,$2,$3,$4,$5)", operationID, worker, code, message, retryable).Scan(&completed)
 	return completed, err
+}
+
+func (s *PostgresStore) NextFunctionProjection(ctx context.Context) (FunctionProjection, bool, error) {
+	const query = `SELECT deployment.operation_id, deployment.project_ref, deployment.slug,
+deployment.desired_revision::text, deployment.generation
+FROM platform.function_deployments deployment
+JOIN platform.operation_outbox outbox ON outbox.operation_id = deployment.operation_id
+WHERE deployment.state = 'queued' AND outbox.delivery_state = 'dispatched'
+ORDER BY deployment.updated_at LIMIT 1`
+	var candidate FunctionProjection
+	err := s.db.QueryRowContext(ctx, query).Scan(&candidate.OperationID, &candidate.ProjectRef, &candidate.Slug, &candidate.DesiredRevision, &candidate.DesiredGeneration)
+	if errors.Is(err, sql.ErrNoRows) {
+		return FunctionProjection{}, false, nil
+	}
+	if err != nil {
+		return FunctionProjection{}, false, err
+	}
+	return candidate, true, nil
+}
+
+func (s *PostgresStore) ApplyFunctionProjection(ctx context.Context, candidate FunctionProjection, evidence fleetfunctions.Evidence, errorCode string) (bool, error) {
+	var applied bool
+	err := s.db.QueryRowContext(ctx, `SELECT platform.apply_function_deployment_observation(
+$1,$2,$3,$4::uuid,$5,$6,$7,$8,$9,$10,$11::timestamptz
+)`, candidate.ProjectRef, candidate.Slug, candidate.OperationID, candidate.DesiredRevision,
+		candidate.DesiredGeneration, evidence.Status, evidence.ArtifactDigest,
+		evidence.PreviousDigest, errorCode, evidence.Remediation, evidence.ActivatedAt).Scan(&applied)
+	return applied, err
 }
 
 type Config struct {
@@ -154,6 +196,77 @@ func (c Config) DispatchOnce(ctx context.Context) (bool, error) {
 	}
 	if !completed {
 		return true, errors.New("outbox dispatch lease was lost before failure recording")
+	}
+	return true, nil
+}
+
+func (c Config) ProjectFunctionOnce(ctx context.Context) (bool, error) {
+	store, ok := c.Store.(FunctionProjectionStore)
+	if !ok {
+		return false, nil
+	}
+	candidate, ok, err := store.NextFunctionProjection(ctx)
+	if err != nil || !ok {
+		return ok, err
+	}
+	now := time.Now
+	if c.Now != nil {
+		now = c.Now
+	}
+	assertion, err := security.SignServiceJWT(security.ServiceClaims{
+		Issuer: c.AssertionIssuer, Subject: "fleet-platform-projector", Audience: c.AssertionAudience,
+		NotBefore: now().Add(-5 * time.Second).Unix(), Expires: now().Add(time.Minute).Unix(),
+		Scopes: []string{"fleet.read"}, Projects: []string{candidate.ProjectRef},
+	}, c.AssertionKey)
+	if err != nil {
+		return true, err
+	}
+	endpoint := strings.TrimRight(c.FleetControlURL, "/") + "/platform/fleet/v1/projects/" + url.PathEscape(candidate.ProjectRef) + "/operations/" + url.PathEscape(candidate.OperationID)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return true, err
+	}
+	request.Header.Set("Authorization", "Bearer "+assertion)
+	client := c.HTTPClient
+	if client == nil {
+		client = &http.Client{Timeout: 10 * time.Second}
+	}
+	response, err := client.Do(request)
+	if err != nil {
+		return true, err
+	}
+	defer response.Body.Close()
+	payload, err := io.ReadAll(io.LimitReader(response.Body, 1<<20))
+	if err != nil {
+		return true, err
+	}
+	if response.StatusCode != http.StatusOK || !strings.Contains(response.Header.Get("Content-Type"), "application/json") {
+		return true, &FleetError{Code: "downstream_invalid_response", Message: fmt.Sprintf("Fleet Control operation projection returned HTTP %d", response.StatusCode), Retryable: response.StatusCode >= 500}
+	}
+	var operation struct {
+		ID             string          `json:"id"`
+		ProjectRef     string          `json:"projectRef"`
+		State          string          `json:"state"`
+		EvidenceSchema string          `json:"evidenceSchema"`
+		Evidence       json.RawMessage `json:"evidence"`
+		ErrorCode      string          `json:"errorCode"`
+	}
+	if json.Unmarshal(payload, &operation) != nil || operation.ID != candidate.OperationID || operation.ProjectRef != candidate.ProjectRef {
+		return true, &FleetError{Code: "downstream_invalid_response", Message: "Fleet Control returned mismatched function operation evidence", Retryable: false}
+	}
+	if operation.State != "applied" && operation.State != "failed" && operation.State != "manual_intervention" {
+		return false, nil
+	}
+	var evidence fleetfunctions.Evidence
+	if operation.EvidenceSchema != fleetfunctions.EvidenceSchemaV1 || json.Unmarshal(operation.Evidence, &evidence) != nil || evidence.Schema != fleetfunctions.EvidenceSchemaV1 || evidence.Slug != candidate.Slug || evidence.ObservedGeneration != candidate.DesiredGeneration {
+		return true, &FleetError{Code: "downstream_invalid_response", Message: "Fleet Control returned invalid function deployment evidence", Retryable: false}
+	}
+	applied, err := store.ApplyFunctionProjection(ctx, candidate, evidence, operation.ErrorCode)
+	if err != nil {
+		return true, err
+	}
+	if !applied {
+		return true, errors.New("stale function deployment evidence was rejected")
 	}
 	return true, nil
 }
@@ -257,6 +370,9 @@ func Run(ctx context.Context, cfg Config) error {
 			if !dispatched {
 				break
 			}
+		}
+		if _, err := cfg.ProjectFunctionOnce(ctx); err != nil {
+			cfg.Logger.Error("Fleet function deployment projection failed", "error", err)
 		}
 		select {
 		case <-ctx.Done():

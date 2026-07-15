@@ -15,6 +15,7 @@ import (
 	"github.com/supabase/supabase/apps/backup-operator/internal/agentjournal"
 	"github.com/supabase/supabase/apps/backup-operator/internal/agenttransport"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetagent"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 	"github.com/supabase/supabase/apps/backup-operator/internal/version"
 	"k8s.io/client-go/dynamic"
@@ -35,6 +36,11 @@ func main() {
 	nodeID := flag.String("node-id", os.Getenv("FLEET_AGENT_NODE_ID"), "stable execution node id")
 	adapter := flag.String("adapter", envOr("FLEET_AGENT_ADAPTER", "compose"), "reconciliation adapter: compose or kubernetes")
 	ownedRoot := flag.String("compose-owned-root", envOr("FLEET_AGENT_COMPOSE_OWNED_ROOT", "/var/lib/supabase-fleet/config"), "Fleet-owned Compose generated configuration root")
+	functionRoot := flag.String("function-artifact-root", envOr("FLEET_AGENT_FUNCTION_ARTIFACT_ROOT", "/var/lib/supabase-fleet/functions"), "Fleet-owned project-isolated function revision root or Kubernetes artifact volume")
+	functionProbeURL := flag.String("function-probe-url", os.Getenv("FLEET_AGENT_FUNCTION_PROBE_URL"), "fixed Edge Runtime invocation probe base URL")
+	functionProbeToken := flag.String("function-probe-token", os.Getenv("FLEET_AGENT_FUNCTION_PROBE_TOKEN"), "optional local Edge Runtime probe bearer token")
+	kubernetesNamespace := flag.String("kubernetes-namespace", os.Getenv("FLEET_AGENT_KUBERNETES_NAMESPACE"), "allowlisted Edge Runtime Kubernetes namespace")
+	kubernetesDeployment := flag.String("kubernetes-edge-runtime-deployment", os.Getenv("FLEET_AGENT_KUBERNETES_EDGE_RUNTIME_DEPLOYMENT"), "allowlisted Edge Runtime Kubernetes Deployment")
 	kubeconfig := flag.String("kubeconfig", os.Getenv("FLEET_AGENT_KUBECONFIG"), "Kubernetes kubeconfig; empty uses in-cluster configuration")
 	allowedKubernetesFields := flag.String("kubernetes-allowed-field-prefixes", envOr("FLEET_AGENT_KUBERNETES_ALLOWED_FIELD_PREFIXES", "/metadata/labels/supabase.com~1fleet-revision,/metadata/annotations/supabase.com~1fleet-revision,/spec/template/metadata/annotations/supabase.com~1fleet-revision,/spec/template/spec/containers"), "comma-separated JSON pointer prefixes Fleet may own")
 	journalPath := flag.String("journal", envOr("FLEET_AGENT_JOURNAL", "/var/lib/supabase-fleet/agent-journal.db"), "durable Fleet Agent execution journal")
@@ -59,6 +65,19 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	var functionProviders *fleetfunctions.Registry
+	capabilities := []string{fleetproviders.CapabilityReconcileConfiguration}
+	if strings.TrimSpace(*functionProbeURL) != "" {
+		functionProvider, err := buildFunctionProvider(*adapter, *functionRoot, *functionProbeURL, *functionProbeToken, *kubeconfig, *kubernetesNamespace, *kubernetesDeployment)
+		if err != nil {
+			log.Fatal(err)
+		}
+		functionProviders, err = fleetfunctions.NewRegistry(functionProvider)
+		if err != nil {
+			log.Fatal(err)
+		}
+		capabilities = append(capabilities, fleetfunctions.CapabilityDeploy)
+	}
 	journal, err := agentjournal.Open(ctx, *journalPath)
 	if err != nil {
 		log.Fatal(err)
@@ -76,13 +95,45 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	executor := &fleetagent.Executor{Journal: journal, Providers: providers, ProjectRef: *projectRef, TargetID: *targetID, BindingID: *bindingID}
+	executor := &fleetagent.Executor{Journal: journal, Providers: providers, FunctionProviders: functionProviders, ProjectRef: *projectRef, TargetID: *targetID, BindingID: *bindingID}
 	client := fleetagent.Client{
 		Address: *address, TLS: tlsConfig, AgentID: *agentID, TargetID: *targetID, BindingID: *bindingID, NodeID: *nodeID,
-		Build: version.String(), Capabilities: []string{fleetproviders.CapabilityReconcileConfiguration}, Executor: executor, HeartbeatInterval: *heartbeat,
+		Build: version.String(), Capabilities: capabilities, Executor: executor, HeartbeatInterval: *heartbeat,
 	}
 	if err := client.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
 		log.Fatal(err)
+	}
+}
+
+func buildFunctionProvider(adapter, root, probeURL, probeToken, kubeconfig, namespace, deployment string) (fleetfunctions.Provider, error) {
+	if strings.TrimSpace(root) == "" || strings.TrimSpace(probeURL) == "" {
+		return nil, errors.New("Fleet function artifact root and fixed probe URL are required")
+	}
+	prober := fleetfunctions.HTTPProber{BaseURL: probeURL, Token: probeToken}
+	switch adapter {
+	case string(fleetfunctions.AdapterCompose):
+		return fleetfunctions.ComposeProvider{Root: root, Prober: prober}, nil
+	case string(fleetfunctions.AdapterKubernetes):
+		if namespace == "" || deployment == "" {
+			return nil, errors.New("Kubernetes Edge Runtime namespace and Deployment are required")
+		}
+		var config *rest.Config
+		var err error
+		if kubeconfig == "" {
+			config, err = rest.InClusterConfig()
+		} else {
+			config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
+		}
+		if err != nil {
+			return nil, err
+		}
+		client, err := dynamic.NewForConfig(config)
+		if err != nil {
+			return nil, err
+		}
+		return fleetfunctions.KubernetesProvider{ArtifactRoot: root, Prober: prober, Runtime: fleetfunctions.DynamicKubernetesRuntime{Client: client, Namespace: namespace, DeploymentName: deployment}}, nil
+	default:
+		return nil, fmt.Errorf("unsupported Fleet function deployment adapter %q", adapter)
 	}
 }
 

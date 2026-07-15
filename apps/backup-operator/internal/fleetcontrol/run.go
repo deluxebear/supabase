@@ -27,6 +27,7 @@ type Config struct {
 	ShutdownTimeout          time.Duration
 	StoreDriver              string
 	StoreDSN                 string
+	ArtifactRoot             string
 	StoreIdentity            StoreIdentity
 	AssertionKey             []byte
 	AssertionIssuer          string
@@ -44,8 +45,8 @@ type Config struct {
 }
 
 func (c Config) Validate() error {
-	if strings.TrimSpace(c.Listen) == "" || strings.TrimSpace(c.EnrollmentListen) == "" || strings.TrimSpace(c.AgentListen) == "" || strings.TrimSpace(c.StoreDSN) == "" {
-		return errors.New("Fleet control, enrollment, and Agent listen addresses and store DSN are required")
+	if strings.TrimSpace(c.Listen) == "" || strings.TrimSpace(c.EnrollmentListen) == "" || strings.TrimSpace(c.AgentListen) == "" || strings.TrimSpace(c.StoreDSN) == "" || strings.TrimSpace(c.ArtifactRoot) == "" {
+		return errors.New("Fleet control, enrollment, and Agent listen addresses, store DSN, and artifact root are required")
 	}
 	if c.Listen == c.EnrollmentListen || c.Listen == c.AgentListen || c.EnrollmentListen == c.AgentListen {
 		return errors.New("Fleet control, enrollment, and Agent listeners must be separate")
@@ -112,9 +113,10 @@ func Run(ctx context.Context, cfg Config) error {
 		return fmt.Errorf("initialize Fleet Control store: %w", err)
 	}
 	defer store.Close()
+	artifacts := &ArtifactStore{Root: cfg.ArtifactRoot, Store: store}
 	mux := http.NewServeMux()
 	handler := &Handler{
-		Store: store, Capabilities: NewCapabilityRegistry(),
+		Store: store, Artifacts: artifacts, Capabilities: NewCapabilityRegistry(),
 		Validator: security.AssertionValidator{Key: cfg.AssertionKey, Issuer: cfg.AssertionIssuer, Audience: cfg.AssertionAudience, MaxTTL: cfg.AssertionMaxTTL},
 		AgentCA:   agentCA, EnrollmentTokenTTL: cfg.EnrollmentTokenTTL, CertificateOverlap: cfg.CertificateOverlap,
 	}
@@ -149,12 +151,12 @@ func Run(ctx context.Context, cfg Config) error {
 		ClientCAs: clientCAs, ClientAuth: tls.RequireAndVerifyClientCert,
 	}
 	agentGRPC := grpc.NewServer(grpc.Creds(credentials.NewTLS(agentTLS)))
-	fleetagentv1.RegisterFleetAgentControlServiceServer(agentGRPC, &AgentServer{Store: store, Authority: agentCA})
+	fleetagentv1.RegisterFleetAgentControlServiceServer(agentGRPC, &AgentServer{Store: store, Artifacts: artifacts, Authority: agentCA})
 	errCh := make(chan error, 3)
 	go func() { errCh <- server.Serve(listener) }()
 	go func() { errCh <- enrollmentServer.Serve(tls.NewListener(enrollmentListener, enrollmentTLS)) }()
 	go func() { errCh <- agentGRPC.Serve(agentListener) }()
-	cfg.Logger.Info("Fleet Control starting", "listen", cfg.Listen, "enrollment_listen", cfg.EnrollmentListen, "agent_listen", cfg.AgentListen, "trust_domain", cfg.AgentTrustDomain, "api_version", "v1", "schema_version", CurrentSchemaVersion, "build", version.String())
+	cfg.Logger.Info("Fleet Control starting", "listen", cfg.Listen, "enrollment_listen", cfg.EnrollmentListen, "agent_listen", cfg.AgentListen, "trust_domain", cfg.AgentTrustDomain, "artifact_root", cfg.ArtifactRoot, "api_version", "v1", "schema_version", CurrentSchemaVersion, "build", version.String())
 	var serveErr error
 	select {
 	case err := <-errCh:

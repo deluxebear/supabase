@@ -315,6 +315,7 @@ import { Route as ApiPlatformAuthRefUsersIdFactorsRouteImport } from './routes/a
 import { Route as ApiV1ProjectsRefConfigAuthSigningKeysIndexRouteImport } from './routes/api/v1/projects/$ref/config/auth/signing-keys/index'
 import { Route as ApiPlatformStorageRefVectorBucketsIdIndexesIndexRouteImport } from './routes/api/platform/storage/$ref/vector-buckets/$id/indexes/index'
 import { Route as ApiPlatformStorageRefBucketsIdObjectsIndexRouteImport } from './routes/api/platform/storage/$ref/buckets/$id/objects/index'
+import { Route as ApiPlatformFleetV1ProjectsRefFunctionsIndexRouteImport } from './routes/api/platform/fleet/v1/projects/$ref/functions/index'
 import { Route as ApiV1ProjectsRefConfigAuthSigningKeysLegacyRouteImport } from './routes/api/v1/projects/$ref/config/auth/signing-keys/legacy'
 import { Route as ApiPlatformStorageRefVectorBucketsIdIndexesIndexNameRouteImport } from './routes/api/platform/storage/$ref/vector-buckets/$id/indexes/$indexName'
 import { Route as ApiPlatformStorageRefBucketsIdObjectsSignMultiRouteImport } from './routes/api/platform/storage/$ref/buckets/$id/objects/sign-multi'
@@ -2035,6 +2036,12 @@ const ApiPlatformStorageRefBucketsIdObjectsIndexRoute =
     path: '/api/platform/storage/$ref/buckets/$id/objects/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPlatformFleetV1ProjectsRefFunctionsIndexRoute =
+  ApiPlatformFleetV1ProjectsRefFunctionsIndexRouteImport.update({
+    id: '/api/platform/fleet/v1/projects/$ref/functions/',
+    path: '/api/platform/fleet/v1/projects/$ref/functions/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiV1ProjectsRefConfigAuthSigningKeysLegacyRoute =
   ApiV1ProjectsRefConfigAuthSigningKeysLegacyRouteImport.update({
     id: '/api/v1/projects/$ref/config/auth/signing-keys/legacy',
@@ -2394,6 +2401,7 @@ export interface FileRoutesByFullPath {
   '/api/platform/storage/$ref/buckets/$id/objects/sign-multi': typeof ApiPlatformStorageRefBucketsIdObjectsSignMultiRoute
   '/api/platform/storage/$ref/vector-buckets/$id/indexes/$indexName': typeof ApiPlatformStorageRefVectorBucketsIdIndexesIndexNameRoute
   '/api/v1/projects/$ref/config/auth/signing-keys/legacy': typeof ApiV1ProjectsRefConfigAuthSigningKeysLegacyRoute
+  '/api/platform/fleet/v1/projects/$ref/functions/': typeof ApiPlatformFleetV1ProjectsRefFunctionsIndexRoute
   '/api/platform/storage/$ref/buckets/$id/objects/': typeof ApiPlatformStorageRefBucketsIdObjectsIndexRoute
   '/api/platform/storage/$ref/vector-buckets/$id/indexes/': typeof ApiPlatformStorageRefVectorBucketsIdIndexesIndexRoute
   '/api/v1/projects/$ref/config/auth/signing-keys/': typeof ApiV1ProjectsRefConfigAuthSigningKeysIndexRoute
@@ -2696,6 +2704,7 @@ export interface FileRoutesByTo {
   '/api/platform/storage/$ref/buckets/$id/objects/sign-multi': typeof ApiPlatformStorageRefBucketsIdObjectsSignMultiRoute
   '/api/platform/storage/$ref/vector-buckets/$id/indexes/$indexName': typeof ApiPlatformStorageRefVectorBucketsIdIndexesIndexNameRoute
   '/api/v1/projects/$ref/config/auth/signing-keys/legacy': typeof ApiV1ProjectsRefConfigAuthSigningKeysLegacyRoute
+  '/api/platform/fleet/v1/projects/$ref/functions': typeof ApiPlatformFleetV1ProjectsRefFunctionsIndexRoute
   '/api/platform/storage/$ref/buckets/$id/objects': typeof ApiPlatformStorageRefBucketsIdObjectsIndexRoute
   '/api/platform/storage/$ref/vector-buckets/$id/indexes': typeof ApiPlatformStorageRefVectorBucketsIdIndexesIndexRoute
   '/api/v1/projects/$ref/config/auth/signing-keys': typeof ApiV1ProjectsRefConfigAuthSigningKeysIndexRoute
@@ -3013,6 +3022,7 @@ export interface FileRoutesById {
   '/api/platform/storage/$ref/buckets/$id/objects/sign-multi': typeof ApiPlatformStorageRefBucketsIdObjectsSignMultiRoute
   '/api/platform/storage/$ref/vector-buckets/$id/indexes/$indexName': typeof ApiPlatformStorageRefVectorBucketsIdIndexesIndexNameRoute
   '/api/v1/projects/$ref/config/auth/signing-keys/legacy': typeof ApiV1ProjectsRefConfigAuthSigningKeysLegacyRoute
+  '/api/platform/fleet/v1/projects/$ref/functions/': typeof ApiPlatformFleetV1ProjectsRefFunctionsIndexRoute
   '/api/platform/storage/$ref/buckets/$id/objects/': typeof ApiPlatformStorageRefBucketsIdObjectsIndexRoute
   '/api/platform/storage/$ref/vector-buckets/$id/indexes/': typeof ApiPlatformStorageRefVectorBucketsIdIndexesIndexRoute
   '/api/v1/projects/$ref/config/auth/signing-keys/': typeof ApiV1ProjectsRefConfigAuthSigningKeysIndexRoute
@@ -3329,6 +3339,7 @@ export interface FileRouteTypes {
     | '/api/platform/storage/$ref/buckets/$id/objects/sign-multi'
     | '/api/platform/storage/$ref/vector-buckets/$id/indexes/$indexName'
     | '/api/v1/projects/$ref/config/auth/signing-keys/legacy'
+    | '/api/platform/fleet/v1/projects/$ref/functions/'
     | '/api/platform/storage/$ref/buckets/$id/objects/'
     | '/api/platform/storage/$ref/vector-buckets/$id/indexes/'
     | '/api/v1/projects/$ref/config/auth/signing-keys/'
@@ -3631,6 +3642,7 @@ export interface FileRouteTypes {
     | '/api/platform/storage/$ref/buckets/$id/objects/sign-multi'
     | '/api/platform/storage/$ref/vector-buckets/$id/indexes/$indexName'
     | '/api/v1/projects/$ref/config/auth/signing-keys/legacy'
+    | '/api/platform/fleet/v1/projects/$ref/functions'
     | '/api/platform/storage/$ref/buckets/$id/objects'
     | '/api/platform/storage/$ref/vector-buckets/$id/indexes'
     | '/api/v1/projects/$ref/config/auth/signing-keys'
@@ -3947,6 +3959,7 @@ export interface FileRouteTypes {
     | '/api/platform/storage/$ref/buckets/$id/objects/sign-multi'
     | '/api/platform/storage/$ref/vector-buckets/$id/indexes/$indexName'
     | '/api/v1/projects/$ref/config/auth/signing-keys/legacy'
+    | '/api/platform/fleet/v1/projects/$ref/functions/'
     | '/api/platform/storage/$ref/buckets/$id/objects/'
     | '/api/platform/storage/$ref/vector-buckets/$id/indexes/'
     | '/api/v1/projects/$ref/config/auth/signing-keys/'
@@ -4077,6 +4090,7 @@ export interface RootRouteChildren {
   ApiPlatformStorageRefBucketsIdObjectsSignMultiRoute: typeof ApiPlatformStorageRefBucketsIdObjectsSignMultiRoute
   ApiPlatformStorageRefVectorBucketsIdIndexesIndexNameRoute: typeof ApiPlatformStorageRefVectorBucketsIdIndexesIndexNameRoute
   ApiV1ProjectsRefConfigAuthSigningKeysLegacyRoute: typeof ApiV1ProjectsRefConfigAuthSigningKeysLegacyRoute
+  ApiPlatformFleetV1ProjectsRefFunctionsIndexRoute: typeof ApiPlatformFleetV1ProjectsRefFunctionsIndexRoute
   ApiPlatformStorageRefBucketsIdObjectsIndexRoute: typeof ApiPlatformStorageRefBucketsIdObjectsIndexRoute
   ApiPlatformStorageRefVectorBucketsIdIndexesIndexRoute: typeof ApiPlatformStorageRefVectorBucketsIdIndexesIndexRoute
   ApiV1ProjectsRefConfigAuthSigningKeysIndexRoute: typeof ApiV1ProjectsRefConfigAuthSigningKeysIndexRoute
@@ -6226,6 +6240,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPlatformStorageRefBucketsIdObjectsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/platform/fleet/v1/projects/$ref/functions/': {
+      id: '/api/platform/fleet/v1/projects/$ref/functions/'
+      path: '/api/platform/fleet/v1/projects/$ref/functions'
+      fullPath: '/api/platform/fleet/v1/projects/$ref/functions/'
+      preLoaderRoute: typeof ApiPlatformFleetV1ProjectsRefFunctionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/projects/$ref/config/auth/signing-keys/legacy': {
       id: '/api/v1/projects/$ref/config/auth/signing-keys/legacy'
       path: '/api/v1/projects/$ref/config/auth/signing-keys/legacy'
@@ -7128,6 +7149,8 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPlatformStorageRefVectorBucketsIdIndexesIndexNameRoute,
   ApiV1ProjectsRefConfigAuthSigningKeysLegacyRoute:
     ApiV1ProjectsRefConfigAuthSigningKeysLegacyRoute,
+  ApiPlatformFleetV1ProjectsRefFunctionsIndexRoute:
+    ApiPlatformFleetV1ProjectsRefFunctionsIndexRoute,
   ApiPlatformStorageRefBucketsIdObjectsIndexRoute:
     ApiPlatformStorageRefBucketsIdObjectsIndexRoute,
   ApiPlatformStorageRefVectorBucketsIdIndexesIndexRoute:

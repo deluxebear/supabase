@@ -5,6 +5,8 @@ package fleetopenapiv1
 
 import (
 	"time"
+
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 const (
@@ -235,6 +237,13 @@ type Error struct {
 	Retryable bool                   `json:"retryable"`
 }
 
+// FunctionArtifact defines model for FunctionArtifact.
+type FunctionArtifact struct {
+	Created bool   `json:"created"`
+	Digest  string `json:"digest"`
+	Size    int64  `json:"size"`
+}
+
 // Health defines model for Health.
 type Health struct {
 	ApiVersion    string       `json:"apiVersion"`
@@ -336,6 +345,9 @@ type ProjectedCapabilityState string
 // AgentId defines model for AgentId.
 type AgentId = string
 
+// ArtifactDigest defines model for ArtifactDigest.
+type ArtifactDigest = string
+
 // BindingId defines model for BindingId.
 type BindingId = string
 
@@ -351,6 +363,15 @@ type ProjectRef = string
 // RotateAgentCertificateJSONBody defines parameters for RotateAgentCertificate.
 type RotateAgentCertificateJSONBody struct {
 	CsrPem string `json:"csrPem"`
+}
+
+// PutFunctionArtifactApplicationVndSupabaseFunctionBundlePlusJSONBody defines parameters for PutFunctionArtifact.
+type PutFunctionArtifactApplicationVndSupabaseFunctionBundlePlusJSONBody = openapi_types.File
+
+// PutFunctionArtifactParams defines parameters for PutFunctionArtifact.
+type PutFunctionArtifactParams struct {
+	XFunctionSlug       string `json:"X-Function-Slug"`
+	XFunctionEntrypoint string `json:"X-Function-Entrypoint"`
 }
 
 // CreateFleetOperationParams defines parameters for CreateFleetOperation.
@@ -372,6 +393,9 @@ type RecordAgentHeartbeatJSONRequestBody = AgentHeartbeat
 
 // EnrollAgentJSONRequestBody defines body for EnrollAgent for application/json ContentType.
 type EnrollAgentJSONRequestBody = EnrollAgent
+
+// PutFunctionArtifactApplicationVndSupabaseFunctionBundlePlusJSONRequestBody defines body for PutFunctionArtifact for application/vnd.supabase.function-bundle+json ContentType.
+type PutFunctionArtifactApplicationVndSupabaseFunctionBundlePlusJSONRequestBody = PutFunctionArtifactApplicationVndSupabaseFunctionBundlePlusJSONBody
 
 // CreateAgentEnrollmentTokenJSONRequestBody defines body for CreateAgentEnrollmentToken for application/json ContentType.
 type CreateAgentEnrollmentTokenJSONRequestBody = CreateEnrollmentToken

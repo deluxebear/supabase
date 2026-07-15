@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 	"github.com/supabase/supabase/apps/backup-operator/internal/security"
 	sharedtransport "github.com/supabase/supabase/apps/backup-operator/internal/shared/agenttransport"
@@ -26,6 +27,7 @@ var desiredRevisionPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-
 
 type Handler struct {
 	Store              *Store
+	Artifacts          *ArtifactStore
 	Capabilities       *CapabilityRegistry
 	Validator          security.AssertionValidator
 	AgentCA            *CertificateAuthority
@@ -57,6 +59,10 @@ func (h *Handler) Register(mux *http.ServeMux) error {
 	mux.HandleFunc("GET /healthz", h.health)
 	mux.HandleFunc("GET /readyz", h.ready)
 	mux.Handle("GET /platform/fleet/v1/projects/{projectRef}/capabilities", h.authorize("fleet.read", http.HandlerFunc(h.listCapabilities)))
+	if h.Artifacts != nil {
+		mux.Handle("PUT /platform/fleet/v1/projects/{projectRef}/function-artifacts/{digest}", h.authorize("fleet.artifacts.write", http.HandlerFunc(h.putFunctionArtifact)))
+		mux.Handle("GET /platform/fleet/v1/projects/{projectRef}/function-artifacts/{digest}", h.authorize("fleet.artifacts.read", http.HandlerFunc(h.getFunctionArtifact)))
+	}
 	mux.Handle("POST /platform/fleet/v1/projects/{projectRef}/operations", h.authorize("fleet.execute", http.HandlerFunc(h.createOperation)))
 	mux.Handle("GET /platform/fleet/v1/projects/{projectRef}/operations/{operationId}", h.authorize("fleet.read", http.HandlerFunc(h.getOperation)))
 	mux.Handle("GET /platform/fleet/v1/projects/{projectRef}/operations/{operationId}/events", h.authorize("fleet.read", http.HandlerFunc(h.replayEvents)))
@@ -68,6 +74,56 @@ func (h *Handler) Register(mux *http.ServeMux) error {
 	mux.HandleFunc("POST /platform/fleet/v1/agents/{agentId}/certificate-requests", h.rotateAgentCertificate)
 	mux.HandleFunc("POST /platform/fleet/v1/agents/{agentId}/heartbeat", h.recordAgentHeartbeat)
 	return nil
+}
+
+func (h *Handler) getFunctionArtifact(w http.ResponseWriter, r *http.Request) {
+	artifact, size, err := h.Artifacts.Open(r.Context(), r.PathValue("projectRef"), r.PathValue("digest"))
+	if err != nil {
+		writeFleetError(w, r, http.StatusNotFound, "artifact_not_found", "Function artifact was not found in this project", false, map[string]any{})
+		return
+	}
+	defer artifact.Close()
+	w.Header().Set("Content-Type", "application/vnd.supabase.function-bundle+json")
+	w.Header().Set("Content-Length", strconv.FormatInt(size, 10))
+	w.Header().Set("Cache-Control", "private, immutable, max-age=31536000")
+	w.WriteHeader(http.StatusOK)
+	_, _ = io.Copy(w, artifact)
+}
+
+func (h *Handler) putFunctionArtifact(w http.ResponseWriter, r *http.Request) {
+	digest := strings.TrimSpace(r.PathValue("digest"))
+	slug := strings.TrimSpace(r.Header.Get("X-Function-Slug"))
+	entrypoint := strings.TrimSpace(r.Header.Get("X-Function-Entrypoint"))
+	if r.Header.Get("Content-Type") != "application/vnd.supabase.function-bundle+json" {
+		writeFleetError(w, r, http.StatusUnsupportedMediaType, "validation_failed", "Function artifact content type is invalid", false, map[string]any{})
+		return
+	}
+	r.Body = http.MaxBytesReader(w, r.Body, fleetfunctions.MaxArtifactBytes)
+	raw, err := io.ReadAll(r.Body)
+	if err != nil || len(raw) == 0 {
+		writeFleetError(w, r, http.StatusRequestEntityTooLarge, "artifact_too_large", "Function artifact exceeds the configured limit", false, map[string]any{"maxBytes": fleetfunctions.MaxArtifactBytes})
+		return
+	}
+	deployment := fleetfunctions.Deployment{Action: fleetfunctions.ActionDeploy, Slug: slug, Adapter: fleetfunctions.AdapterCompose, ArtifactDigest: digest, ArtifactSize: int64(len(raw)), EntrypointPath: entrypoint, StaticPatterns: []string{}}
+	if _, err := fleetfunctions.ParseBundle(raw, deployment); err != nil {
+		writeFleetError(w, r, http.StatusBadRequest, "validation_failed", "Function artifact failed security validation", false, map[string]any{"reason": err.Error()})
+		return
+	}
+	actor, ok := security.ActorFromContext(r.Context())
+	if !ok {
+		writeFleetError(w, r, http.StatusUnauthorized, "unauthenticated", "Fleet artifact actor context is missing", false, map[string]any{})
+		return
+	}
+	created, err := h.Artifacts.Put(r.Context(), r.PathValue("projectRef"), digest, raw, actor.Subject, r.Header.Get(CorrelationHeader))
+	if err != nil {
+		writeFleetError(w, r, http.StatusConflict, "artifact_conflict", "Function artifact could not be stored immutably", false, map[string]any{})
+		return
+	}
+	statusCode := http.StatusOK
+	if created {
+		statusCode = http.StatusCreated
+	}
+	writeJSON(w, statusCode, map[string]any{"digest": digest, "size": len(raw), "created": created})
 }
 
 func (h *Handler) health(w http.ResponseWriter, _ *http.Request) {
@@ -168,6 +224,23 @@ func (h *Handler) createOperation(w http.ResponseWriter, r *http.Request) {
 		if string(document.Adapter) != binding.Binding.DeploymentKind {
 			writeFleetError(w, r, http.StatusConflict, "capability_unavailable", "The reconciliation adapter does not match the bound deployment kind", false, map[string]any{"capability": request.Capability, "blockers": []Blocker{{Code: "adapter_mismatch", Message: "Use the adapter declared by the project management binding"}}})
 			return
+		}
+	}
+	if request.Capability == fleetfunctions.CapabilityDeploy {
+		deployment, err := fleetfunctions.ParseDeployment(request.TypedInput)
+		if err != nil {
+			writeFleetError(w, r, http.StatusBadRequest, "validation_failed", "Fleet function deployment document is invalid", false, map[string]any{"reason": err.Error()})
+			return
+		}
+		if string(deployment.Adapter) != binding.Binding.DeploymentKind {
+			writeFleetError(w, r, http.StatusConflict, "capability_unavailable", "The function deployment adapter does not match the bound deployment kind", false, map[string]any{"capability": request.Capability, "blockers": []Blocker{{Code: "adapter_mismatch", Message: "Use the adapter declared by the project management binding"}}})
+			return
+		}
+		if deployment.Action == fleetfunctions.ActionDeploy {
+			if size, exists, err := h.Store.GetFunctionArtifact(r.Context(), projectRef, deployment.ArtifactDigest); err != nil || !exists || size != deployment.ArtifactSize {
+				writeFleetError(w, r, http.StatusConflict, "artifact_unavailable", "The immutable project artifact is not available in Fleet Control", false, map[string]any{"digest": deployment.ArtifactDigest})
+				return
+			}
 		}
 	}
 	policy := sharedtransport.DomainPolicy{Namespace: "supabase.fleet.", ProtocolMajor: 1, MaxMinor: 0, Schemas: h.Capabilities.Schemas()}

@@ -10,31 +10,41 @@ import (
 	transportv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/agent/transport/v1"
 	fleetagentv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/fleet/v1"
 	"github.com/supabase/supabase/apps/backup-operator/internal/agentjournal"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 )
 
 type Executor struct {
-	Journal    *agentjournal.Journal
-	Providers  *fleetproviders.Registry
-	ProjectRef string
-	TargetID   string
-	BindingID  string
-	Now        func() time.Time
+	Journal           *agentjournal.Journal
+	Providers         *fleetproviders.Registry
+	FunctionProviders *fleetfunctions.Registry
+	ProjectRef        string
+	TargetID          string
+	BindingID         string
+	Now               func() time.Time
 }
 
 type storedResult struct {
 	Evidence  string `json:"evidence,omitempty"`
+	Kind      string `json:"kind,omitempty"`
 	ErrorCode string `json:"errorCode,omitempty"`
 }
 
+type ArtifactFetcher interface {
+	Fetch(context.Context, string, int64) ([]byte, error)
+}
+
 func (e *Executor) Execute(ctx context.Context, task *fleetagentv1.TypedTask, progress func(*transportv1.TaskProgress) error) *fleetagentv1.TaskResult {
+	return e.ExecuteWithArtifacts(ctx, task, progress, nil)
+}
+
+func (e *Executor) ExecuteWithArtifacts(ctx context.Context, task *fleetagentv1.TypedTask, progress func(*transportv1.TaskProgress) error, artifacts ArtifactFetcher) *fleetagentv1.TaskResult {
 	identity := task.GetIdentity()
-	input := task.GetReconcileConfiguration()
-	if e.Journal == nil || e.Providers == nil || identity == nil || input == nil ||
+	if e.Journal == nil || identity == nil ||
 		identity.GetOperationId() == "" || identity.GetTaskId() == "" || identity.GetProjectRef() != e.ProjectRef ||
 		identity.GetTargetId() != e.TargetID || identity.GetBindingId() != e.BindingID || identity.GetIdempotencyKey() == "" || identity.GetFencingToken() < 1 ||
-		task.GetCapability() != fleetproviders.CapabilityReconcileConfiguration || task.GetInputSchema() != fleetproviders.InputSchemaV1 || input.GetExpectedGeneration() != identity.GetExpectedGeneration() || input.GetDesiredDigest() == "" {
-		return failed(identityTaskID(identity), "invalid_task", "Fleet reconciliation task identity or schema is invalid")
+		identity.GetExpectedGeneration() < 1 {
+		return failed(identityTaskID(identity), "invalid_task", "Fleet task identity is invalid")
 	}
 	now := time.Now
 	if e.Now != nil {
@@ -43,11 +53,30 @@ func (e *Executor) Execute(ctx context.Context, task *fleetagentv1.TypedTask, pr
 	if identity.GetDeadlineUnixMilliseconds() <= now().UnixMilli() {
 		return failed(identity.GetTaskId(), "task_expired", "Fleet reconciliation task expired")
 	}
-	document, err := fleetproviders.ParseDocument(input.GetDocumentJson())
-	if err != nil {
-		return failed(identity.GetTaskId(), "validation_failed", err.Error())
+	var configuration fleetproviders.ConfigurationDocument
+	var deployment fleetfunctions.Deployment
+	destructive := true
+	switch {
+	case task.GetCapability() == fleetproviders.CapabilityReconcileConfiguration && task.GetInputSchema() == fleetproviders.InputSchemaV1 && task.GetReconcileConfiguration() != nil && e.Providers != nil:
+		input := task.GetReconcileConfiguration()
+		if input.GetExpectedGeneration() != identity.GetExpectedGeneration() || input.GetDesiredDigest() == "" {
+			return failed(identity.GetTaskId(), "invalid_task", "Fleet reconciliation generation or digest is invalid")
+		}
+		var err error
+		configuration, err = fleetproviders.ParseDocument(input.GetDocumentJson())
+		if err != nil {
+			return failed(identity.GetTaskId(), "validation_failed", err.Error())
+		}
+		destructive = configuration.OwnershipMode == fleetproviders.DirectManaged
+	case task.GetCapability() == fleetfunctions.CapabilityDeploy && task.GetInputSchema() == fleetfunctions.InputSchemaV1 && task.GetDeployFunction() != nil && e.FunctionProviders != nil:
+		var err error
+		deployment, err = fleetfunctions.ParseDeployment(task.GetDeployFunction().GetDeploymentJson())
+		if err != nil {
+			return failed(identity.GetTaskId(), "validation_failed", err.Error())
+		}
+	default:
+		return failed(identity.GetTaskId(), "invalid_task", "Fleet task capability or typed schema is invalid")
 	}
-	destructive := document.OwnershipMode == fleetproviders.DirectManaged
 	disposition, err := e.Journal.Begin(ctx, identity.GetTaskId(), identity.GetIdempotencyKey(), identity.GetFencingToken(), destructive)
 	if err != nil {
 		return failed(identity.GetTaskId(), journalErrorCode(err), err.Error())
@@ -63,24 +92,51 @@ func (e *Executor) Execute(ctx context.Context, task *fleetagentv1.TypedTask, pr
 	if progress != nil {
 		_ = progress(&transportv1.TaskProgress{TaskId: identity.GetTaskId(), Percent: 1, Phase: "observing"})
 	}
-	evidence, reconcileErr := e.Providers.Reconcile(deadlineCtx, fleetproviders.Request{
-		OperationID: identity.GetOperationId(), ProjectRef: identity.GetProjectRef(), TargetID: identity.GetTargetId(), BindingID: identity.GetBindingId(),
-		Domain: task.GetDomain(), ExpectedGeneration: identity.GetExpectedGeneration(), DesiredDigest: input.GetDesiredDigest(), Document: document,
-	})
 	var result *fleetagentv1.TaskResult
-	if reconcileErr == nil || errors.As(reconcileErr, new(*fleetproviders.OwnershipConflictError)) {
-		raw, err := json.Marshal(evidence)
-		if err != nil {
-			result = failed(identity.GetTaskId(), "evidence_invalid", "Fleet reconciliation evidence could not be encoded")
+	if task.GetCapability() == fleetproviders.CapabilityReconcileConfiguration {
+		input := task.GetReconcileConfiguration()
+		evidence, reconcileErr := e.Providers.Reconcile(deadlineCtx, fleetproviders.Request{
+			OperationID: identity.GetOperationId(), ProjectRef: identity.GetProjectRef(), TargetID: identity.GetTargetId(), BindingID: identity.GetBindingId(),
+			Domain: task.GetDomain(), ExpectedGeneration: identity.GetExpectedGeneration(), DesiredDigest: input.GetDesiredDigest(), Document: configuration,
+		})
+		if reconcileErr == nil || errors.As(reconcileErr, new(*fleetproviders.OwnershipConflictError)) {
+			raw, err := json.Marshal(evidence)
+			if err != nil {
+				result = failed(identity.GetTaskId(), "evidence_invalid", "Fleet reconciliation evidence could not be encoded")
+			} else {
+				result = &fleetagentv1.TaskResult{TaskId: identity.GetTaskId(), Result: &fleetagentv1.TaskResult_ReconcileConfiguration{ReconcileConfiguration: &fleetagentv1.ReconcileConfigurationEvidence{EvidenceJson: raw}}}
+			}
 		} else {
-			result = &fleetagentv1.TaskResult{TaskId: identity.GetTaskId(), Result: &fleetagentv1.TaskResult_ReconcileConfiguration{ReconcileConfiguration: &fleetagentv1.ReconcileConfigurationEvidence{EvidenceJson: raw}}}
+			result = providerFailure(identity.GetTaskId(), deadlineCtx, reconcileErr)
 		}
 	} else {
-		code := "provider_failed"
-		if errors.Is(deadlineCtx.Err(), context.DeadlineExceeded) {
-			code = "task_deadline_exceeded"
+		var artifact []byte
+		if deployment.Action == fleetfunctions.ActionDeploy {
+			if artifacts == nil {
+				result = failed(identity.GetTaskId(), "artifact_unavailable", "Fleet Agent artifact transport is unavailable")
+			} else if artifact, err = artifacts.Fetch(deadlineCtx, deployment.ArtifactDigest, deployment.ArtifactSize); err != nil {
+				result = failed(identity.GetTaskId(), "artifact_unavailable", "Fleet Agent could not download the immutable project artifact")
+			}
 		}
-		result = failed(identity.GetTaskId(), code, reconcileErr.Error())
+		if result == nil {
+			evidence, deployErr := e.FunctionProviders.Deploy(deadlineCtx, fleetfunctions.Request{
+				OperationID: identity.GetOperationId(), ProjectRef: identity.GetProjectRef(), TargetID: identity.GetTargetId(), BindingID: identity.GetBindingId(), ExpectedGeneration: identity.GetExpectedGeneration(), Deployment: deployment, Artifact: artifact,
+			})
+			var typedErr *fleetfunctions.DeploymentError
+			if deployErr == nil || errors.As(deployErr, &typedErr) {
+				if typedErr != nil {
+					evidence = typedErr.Evidence
+				}
+				raw, marshalErr := json.Marshal(evidence)
+				if marshalErr != nil {
+					result = failed(identity.GetTaskId(), "evidence_invalid", "Fleet function deployment evidence could not be encoded")
+				} else {
+					result = &fleetagentv1.TaskResult{TaskId: identity.GetTaskId(), Result: &fleetagentv1.TaskResult_DeployFunction{DeployFunction: &fleetagentv1.FunctionDeploymentEvidence{EvidenceJson: raw}}}
+				}
+			} else {
+				result = providerFailure(identity.GetTaskId(), deadlineCtx, deployErr)
+			}
+		}
 	}
 	if progress != nil {
 		_ = progress(&transportv1.TaskProgress{TaskId: identity.GetTaskId(), Percent: 100, Phase: "completed"})
@@ -88,6 +144,10 @@ func (e *Executor) Execute(ctx context.Context, task *fleetagentv1.TypedTask, pr
 	stored := storedResult{}
 	if typed := result.GetReconcileConfiguration(); typed != nil {
 		stored.Evidence = base64.StdEncoding.EncodeToString(typed.GetEvidenceJson())
+		stored.Kind = "configuration"
+	} else if typed := result.GetDeployFunction(); typed != nil {
+		stored.Evidence = base64.StdEncoding.EncodeToString(typed.GetEvidenceJson())
+		stored.Kind = "function"
 	} else if taskError := result.GetError(); taskError != nil {
 		stored.ErrorCode = taskError.GetCode()
 	}
@@ -114,7 +174,18 @@ func (e *Executor) replay(ctx context.Context, taskID, idempotencyKey string) *f
 	if err != nil {
 		return failed(taskID, "journal_replay_failed", "Fleet Agent durable evidence is invalid")
 	}
+	if stored.Kind == "function" {
+		return &fleetagentv1.TaskResult{TaskId: taskID, Result: &fleetagentv1.TaskResult_DeployFunction{DeployFunction: &fleetagentv1.FunctionDeploymentEvidence{EvidenceJson: evidence}}}
+	}
 	return &fleetagentv1.TaskResult{TaskId: taskID, Result: &fleetagentv1.TaskResult_ReconcileConfiguration{ReconcileConfiguration: &fleetagentv1.ReconcileConfigurationEvidence{EvidenceJson: evidence}}}
+}
+
+func providerFailure(taskID string, ctx context.Context, err error) *fleetagentv1.TaskResult {
+	code := "provider_failed"
+	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+		code = "task_deadline_exceeded"
+	}
+	return failed(taskID, code, err.Error())
 }
 
 func failed(taskID, code, message string) *fleetagentv1.TaskResult {

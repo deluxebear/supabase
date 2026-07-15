@@ -3,6 +3,8 @@ export const normalizeFunctionIds = (functionIds: string[]): string[] =>
 
 export const edgeFunctionsKeys = {
   list: (projectRef: string | undefined) => ['projects', projectRef, 'edge-functions'] as const,
+  deployments: (projectRef: string | undefined) =>
+    ['projects', projectRef, 'edge-functions', 'fleet-deployments'] as const,
   lastHourStats: (
     projectRef: string | undefined,
     functionIds: string[] = [],

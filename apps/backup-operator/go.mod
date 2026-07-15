@@ -4,6 +4,7 @@ go 1.24.0
 
 require (
 	github.com/jackc/pgx/v5 v5.7.5
+	github.com/oapi-codegen/runtime v1.1.1
 	github.com/robfig/cron/v3 v3.0.1
 	golang.org/x/sys v0.34.0
 	google.golang.org/grpc v1.72.2
