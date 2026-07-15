@@ -3,7 +3,6 @@ package agenttransport
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"sync"
 	"sync/atomic"
@@ -12,6 +11,7 @@ import (
 	agentv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/v1"
 	"github.com/supabase/supabase/apps/backup-operator/internal/controlstore"
 	"github.com/supabase/supabase/apps/backup-operator/internal/orchestration"
+	sharedtransport "github.com/supabase/supabase/apps/backup-operator/internal/shared/agenttransport"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -86,20 +86,22 @@ func (r *SessionRegistry) Send(ctx context.Context, task controlstore.OutboxTask
 	if s == nil {
 		return ErrAgentOffline
 	}
-	if task.TaskID == "" || task.JobID == "" || task.ClusterID == "" || task.NodeID == "" || task.IdempotencyKey == "" || task.Capability == "" || s.clusterID != task.ClusterID || s.nodeID != task.NodeID {
-		return errors.New("task does not match the enrolled cluster/node/Agent session")
-	}
-	if _, ok := s.capabilities[task.Capability]; !ok {
-		return fmt.Errorf("Agent %s does not advertise capability %s", task.NodeID, task.Capability)
-	}
 	_, destructive := r.destructive[task.Capability]
-	if destructive && task.FencingToken <= 0 {
-		return errors.New("destructive task requires a positive fencing token")
+	payload := task.Payload
+	if len(payload) == 0 {
+		payload = []byte("{}")
+	}
+	capabilities := make([]string, 0, len(s.capabilities))
+	for capability := range s.capabilities {
+		capabilities = append(capabilities, capability)
+	}
+	if err := sharedtransport.ValidateDispatch(sharedtransport.Dispatch{TaskID: task.TaskID, OperationID: task.JobID, TargetID: task.ClusterID, NodeID: task.NodeID, Capability: task.Capability, IdempotencyKey: task.IdempotencyKey, FencingToken: task.FencingToken, Destructive: destructive, Payload: payload}, sharedtransport.SessionIdentity{AgentID: s.agentID, TargetID: s.clusterID, NodeID: s.nodeID, Protocol: "v1", Build: "enrolled", Capabilities: capabilities}); err != nil {
+		return err
 	}
 	expiresAt := r.now().Add(r.taskTTL)
 	message := &agentv1.ConnectResponse{Payload: &agentv1.ConnectResponse_Task{Task: &agentv1.Task{
 		TaskId: task.TaskID, OperationId: task.JobID, Capability: task.Capability, IdempotencyKey: task.IdempotencyKey,
-		TypedInput: append([]byte(nil), task.Payload...), ExpiresAtUnixMilliseconds: expiresAt.UnixMilli(),
+		TypedInput: append([]byte(nil), payload...), ExpiresAtUnixMilliseconds: expiresAt.UnixMilli(),
 		FencingToken: task.FencingToken, Destructive: destructive, ClusterId: task.ClusterID, NodeId: task.NodeID, AgentId: s.agentID,
 	}}}
 	sent := make(chan error, 1)
@@ -253,7 +255,7 @@ func (s *Server) Connect(stream agentv1.AgentControlService_ConnectServer) error
 		return err
 	}
 	hello := first.GetHello()
-	if hello == nil || hello.GetAgentId() == "" || hello.GetClusterId() == "" || hello.GetNodeId() == "" || hello.GetProtocolVersion() != "v1" || hello.GetBuild() == "" || len(hello.GetCapabilities()) == 0 {
+	if hello == nil || hello.GetProtocolVersion() != "v1" || sharedtransport.ValidateSession(sharedtransport.SessionIdentity{AgentID: hello.GetAgentId(), TargetID: hello.GetClusterId(), NodeID: hello.GetNodeId(), Protocol: hello.GetProtocolVersion(), Build: hello.GetBuild(), Capabilities: hello.GetCapabilities()}) != nil {
 		return status.Error(codes.InvalidArgument, "first message must be a complete v1 Agent hello")
 	}
 	if err := ValidatePeerAgentID(stream.Context(), hello.GetAgentId()); err != nil {

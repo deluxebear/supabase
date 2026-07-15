@@ -1,0 +1,186 @@
+openapi: 3.1.0
+info:
+  title: Supabase Fleet Control API
+  version: 1.0.0
+  description: General stack management control domain. Backup and restore APIs are intentionally excluded.
+security:
+  - serviceAssertion: []
+paths:
+  /healthz:
+    security: []
+    get:
+      operationId: fleetHealth
+      responses:
+        "200":
+          description: Process is alive
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Health"}
+  /readyz:
+    security: []
+    get:
+      operationId: fleetReady
+      responses:
+        "200":
+          description: Fleet store schema is ready
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Health"}
+        "503": {$ref: "#/components/responses/Error"}
+  /platform/fleet/v1/projects/{projectRef}/capabilities:
+    get:
+      operationId: listFleetCapabilities
+      parameters: [{$ref: "#/components/parameters/ProjectRef"}]
+      responses:
+        "200":
+          description: Project-authorized Fleet Control provider capabilities
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [capabilities]
+                properties:
+                  capabilities:
+                    type: array
+                    items: {$ref: "#/components/schemas/Capability"}
+        "403": {$ref: "#/components/responses/Error"}
+  /platform/fleet/v1/projects/{projectRef}/operations:
+    post:
+      operationId: createFleetOperation
+      parameters:
+        - {$ref: "#/components/parameters/ProjectRef"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/CreateOperation"}
+      responses:
+        "201":
+          description: Durable Fleet operation accepted
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Operation"}
+        "200":
+          description: Existing idempotent Fleet operation
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Operation"}
+        "400": {$ref: "#/components/responses/Error"}
+        "403": {$ref: "#/components/responses/Error"}
+        "409": {$ref: "#/components/responses/Error"}
+  /platform/fleet/v1/projects/{projectRef}/operations/{operationId}:
+    get:
+      operationId: getFleetOperation
+      parameters:
+        - {$ref: "#/components/parameters/ProjectRef"}
+        - {$ref: "#/components/parameters/OperationId"}
+      responses:
+        "200":
+          description: Project-scoped durable operation
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Operation"}
+        "404": {$ref: "#/components/responses/Error"}
+  /platform/fleet/v1/projects/{projectRef}/operations/{operationId}/events:
+    get:
+      operationId: replayFleetOperationEvents
+      parameters:
+        - {$ref: "#/components/parameters/ProjectRef"}
+        - {$ref: "#/components/parameters/OperationId"}
+        - {name: cursor, in: query, schema: {type: integer, format: int64, minimum: 0}}
+        - {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 1000, default: 100}}
+      responses:
+        "200":
+          description: Bounded resumable event page
+          content:
+            text/event-stream:
+              schema: {type: string}
+        "404": {$ref: "#/components/responses/Error"}
+components:
+  securitySchemes:
+    serviceAssertion:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    ProjectRef: {name: projectRef, in: path, required: true, schema: {type: string, minLength: 1, maxLength: 128}}
+    OperationId: {name: operationId, in: path, required: true, schema: {type: string, minLength: 1, maxLength: 128}}
+    IdempotencyKey: {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 1, maxLength: 255}}
+  responses:
+    Error:
+      description: Stable Fleet error
+      content:
+        application/json:
+          schema: {$ref: "#/components/schemas/Error"}
+  schemas:
+    Health:
+      type: object
+      required: [status, service, apiVersion, schemaVersion]
+      properties:
+        status: {type: string, enum: [ok]}
+        service: {type: string, const: fleet-control}
+        apiVersion: {type: string, const: v1}
+        schemaVersion: {type: integer, minimum: 1}
+    Blocker:
+      type: object
+      required: [code, message]
+      properties:
+        code: {type: string}
+        message: {type: string}
+        remediation: {type: string}
+    Capability:
+      type: object
+      required: [name, state, mode, source, contractVersion, blockers]
+      properties:
+        name: {type: string}
+        state: {type: string, enum: [available, unavailable, unauthorized, stale, unsupported]}
+        mode: {type: string, enum: [operator, agent, kubernetes-job, unsupported]}
+        source: {type: string, const: fleet-control}
+        contractVersion: {type: string}
+        blockers:
+          type: array
+          items: {$ref: "#/components/schemas/Blocker"}
+    CreateOperation:
+      type: object
+      required: [operationId, targetId, bindingId, domain, capability, protocolMajor, protocolMinor, expectedGeneration, inputSchema, preconditions, typedInput]
+      additionalProperties: false
+      properties:
+        operationId: {type: string, minLength: 1, maxLength: 128}
+        targetId: {type: string, minLength: 1, maxLength: 128}
+        bindingId: {type: string, minLength: 1, maxLength: 128}
+        domain: {type: string, minLength: 1, maxLength: 64}
+        capability: {type: string, minLength: 1, maxLength: 128}
+        protocolMajor: {type: integer, minimum: 1}
+        protocolMinor: {type: integer, minimum: 0}
+        expectedGeneration: {type: integer, format: int64, minimum: 0}
+        inputSchema: {type: string, pattern: '^supabase\\.fleet\\.'}
+        preconditions: {type: object}
+        typedInput: {type: object}
+    Operation:
+      type: object
+      required: [id, projectRef, targetId, bindingId, domain, capability, state, protocolMajor, protocolMinor, expectedGeneration, inputSchema, fencingToken, createdAt, updatedAt]
+      properties:
+        id: {type: string}
+        projectRef: {type: string}
+        targetId: {type: string}
+        bindingId: {type: string}
+        domain: {type: string}
+        capability: {type: string}
+        state: {type: string, enum: [queued, running, verifying, succeeded, failed, orphaned_execution, manual_intervention]}
+        protocolMajor: {type: integer}
+        protocolMinor: {type: integer}
+        expectedGeneration: {type: integer, format: int64}
+        inputSchema: {type: string}
+        fencingToken: {type: integer, format: int64, minimum: 1}
+        createdAt: {type: string, format: date-time}
+        updatedAt: {type: string, format: date-time}
+    Error:
+      type: object
+      required: [code, message, requestId, retryable, details]
+      properties:
+        code: {type: string}
+        message: {type: string}
+        requestId: {type: string}
+        retryable: {type: boolean}
+        details: {type: object}

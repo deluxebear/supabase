@@ -29,12 +29,15 @@ Its stores and authorities are:
 | State | Authority | Durable volume |
 | --- | --- | --- |
 | Login, organizations, RBAC, registry | `platform-db` | `platform-db-data` |
-| General Fleet operations | future Fleet Control service (T4) | `fleet-control-db-data` |
+| General Fleet operations | `fleet-control` | `fleet-control-db-data` |
 | Backup jobs, manifests, plans, evidence | `backup-operator` | `backup-operator-db-data` |
 
-T3 deliberately provisions the Fleet Control PostgreSQL recovery domain but
-does not introduce the Fleet Control API or schema; that bounded-context work
-is T4. Do not write platform or backup state into this reserved database.
+Fleet Control owns its `/platform/fleet/v1/...` API, `supabase.fleet.*` Agent
+contracts, schema ledger, operations, events, audit records, and fencing tokens.
+It does not own backup policies, manifests, restore plans, or recovery evidence;
+those remain in the independent Backup Operator store. The T4 binary advertises
+runtime capabilities as unsupported until a concrete provider is registered,
+so starting the service cannot silently enable Fleet mutations.
 
 The `managed` network is the only connection between the projects. It permits
 Studio/pg-meta to reach registered data-plane services, but no managed service

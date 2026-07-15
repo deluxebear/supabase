@@ -6,6 +6,7 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 compose_config="$(
   BACKUP_OPERATOR_VERSION=v0.0.0-validation \
     BACKUP_OPERATOR_SERVICE_ASSERTION_KEY=validation-only-at-least-32-bytes \
+    BACKUP_OPERATOR_POSTGRES_PASSWORD=backup-validation-password \
     docker compose -f "$root/deploy/compose.yaml" config --format json
 )"
 if jq -e '.services | has("backup-agent")' <<<"$compose_config" >/dev/null; then
@@ -18,6 +19,22 @@ jq -e '
     and ($operator.ports | any(.host_ip == "127.0.0.1" and .target == 8080))
     and ($operator.read_only == true)
 ' <<<"$compose_config" >/dev/null
+
+fleet_compose_config="$(
+  FLEET_CONTROL_VERSION=v0.0.0-validation \
+    FLEET_CONTROL_POSTGRES_PASSWORD=fleet-validation-password \
+    FLEET_CONTROL_SERVICE_ASSERTION_KEY=fleet-validation-only-at-least-32-bytes \
+    docker compose -f "$root/deploy/fleet-control/compose.yaml" config --format json
+)"
+jq -e '
+  .services["fleet-control"] as $control
+  | ($control.command | index("--listen=0.0.0.0:8090")) != null
+    and ($control.ports | any(.host_ip == "127.0.0.1" and .target == 8090))
+    and ($control.read_only == true)
+    and ($control.environment.FLEET_CONTROL_STORE_DRIVER == "postgres")
+    and ($control.environment.FLEET_CONTROL_SERVICE_ASSERTION_AUDIENCE == "fleet-control")
+    and (.volumes | has("fleet-control-db"))
+' <<<"$fleet_compose_config" >/dev/null
 helm lint "$root/deploy/helm/backup-operator" --set image.tag=v0.0.0-validation
 helm_output="$(helm template validation "$root/deploy/helm/backup-operator" --set image.tag=v0.0.0-validation)"
 kustomize_output="$(kubectl kustomize "$root/deploy")"
@@ -25,7 +42,7 @@ for output in "$helm_output" "$kustomize_output"; do
   grep -q 'name: BACKUP_OPERATOR_SERVICE_ASSERTION_KEY' <<<"$output"
   grep -q 'secretKeyRef:' <<<"$output"
   grep -q 'name: BACKUP_OPERATOR_RUNTIME_ENABLED' <<<"$output"
-  grep -q 'claimName:' <<<"$output"
+  grep -q 'name: BACKUP_OPERATOR_CONTROL_STORE_DSN' <<<"$output"
   grep -q 'readOnlyRootFilesystem: true' <<<"$output"
   grep -q 'path: /readyz' <<<"$output"
   grep -q 'path: /healthz' <<<"$output"

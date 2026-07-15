@@ -15,6 +15,8 @@ go run ./cmd/backup-operator --mode operator --listen 127.0.0.1:8080
 go run ./cmd/backup-operator --mode agent
 go run ./cmd/backup-operator --mode all --listen 127.0.0.1:8080
 go run ./cmd/backupctl --endpoint http://127.0.0.1:8080 capabilities
+FLEET_CONTROL_SERVICE_ASSERTION_KEY=replace-with-at-least-32-bytes \
+  go run ./cmd/fleet-control --listen 127.0.0.1:8090
 ```
 
 - `operator`: durable orchestration/API process; it never requires host shell
@@ -24,6 +26,9 @@ go run ./cmd/backupctl --endpoint http://127.0.0.1:8080 capabilities
 - `all`: lightweight single-host packaging that runs both roles in one process
   while retaining the same interfaces.
 - `backupctl`: typed administrative API client, not an arbitrary shell wrapper.
+- `fleet-control`: a separate general stack-management API and store domain. It
+  shares only neutral transport validation, fencing allocation, and event replay
+  primitives with Backup Operator; it has no backup or restore routes.
 
 ## Docker Compose deployment
 
@@ -58,7 +63,11 @@ the default control store is SQLite on a `ReadWriteOnce` volume.
 
 - OpenAPI source: `api/openapi/v1/openapi.yaml`
 - Agent protobuf source: `api/proto/supabase/backup/agent/v1/agent.proto`
-- Generated Go bindings: `gen/openapi/v1` and `gen/proto/v1`
+- Fleet OpenAPI source: `api/openapi/fleet/v1/openapi.yaml`
+- Neutral/Fleet protobuf sources: `api/proto/supabase/agent/transport/v1/transport.proto`
+  and `api/proto/supabase/fleet/agent/v1/fleet.proto`
+- Generated Go bindings: `gen/openapi/v1`, `gen/openapi/fleet/v1`, and
+  the corresponding `gen/proto` packages
 - Provider contracts: `internal/contracts`
 - Optional CloudNativePG/CNPG-I adapter: `internal/cloudnativepg`
 - Production operations and compatibility matrix: `docs/production-runbook.md`
@@ -81,3 +90,8 @@ make test
 go vet ./...
 go run github.com/bufbuild/buf/cmd/buf@v1.50.0 lint
 ```
+
+Fleet Control operational deployment and rollback guidance is in
+`docs/fleet-control-runbook.md`; its standalone Compose manifest is under
+`deploy/fleet-control/`. Embedded Studio does not import or start this
+binary and retains the upstream self-hosted behavior.

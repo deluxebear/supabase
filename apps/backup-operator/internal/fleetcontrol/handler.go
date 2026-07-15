@@ -1,0 +1,230 @@
+package fleetcontrol
+
+import (
+	"context"
+	"crypto/rand"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"io"
+	"net/http"
+	"strconv"
+	"strings"
+
+	"github.com/supabase/supabase/apps/backup-operator/internal/security"
+	sharedtransport "github.com/supabase/supabase/apps/backup-operator/internal/shared/agenttransport"
+	sharedevents "github.com/supabase/supabase/apps/backup-operator/internal/shared/events"
+)
+
+const CorrelationHeader = "X-Correlation-ID"
+
+type Handler struct {
+	Store        *Store
+	Capabilities *CapabilityRegistry
+	Validator    security.AssertionValidator
+}
+
+type createOperationRequest struct {
+	OperationID        string          `json:"operationId"`
+	TargetID           string          `json:"targetId"`
+	BindingID          string          `json:"bindingId"`
+	Domain             string          `json:"domain"`
+	Capability         string          `json:"capability"`
+	ProtocolMajor      int             `json:"protocolMajor"`
+	ProtocolMinor      int             `json:"protocolMinor"`
+	ExpectedGeneration int64           `json:"expectedGeneration"`
+	InputSchema        string          `json:"inputSchema"`
+	Preconditions      json.RawMessage `json:"preconditions"`
+	TypedInput         json.RawMessage `json:"typedInput"`
+}
+
+func (h *Handler) Register(mux *http.ServeMux) error {
+	if h == nil || h.Store == nil || h.Capabilities == nil || len(h.Validator.Key) < 32 || h.Validator.Issuer == "" || h.Validator.Audience == "" {
+		return errors.New("Fleet handler requires store, capability registry, and service assertion validator")
+	}
+	mux.HandleFunc("GET /healthz", h.health)
+	mux.HandleFunc("GET /readyz", h.ready)
+	mux.Handle("GET /platform/fleet/v1/projects/{projectRef}/capabilities", h.authorize("fleet.read", http.HandlerFunc(h.listCapabilities)))
+	mux.Handle("POST /platform/fleet/v1/projects/{projectRef}/operations", h.authorize("fleet.execute", http.HandlerFunc(h.createOperation)))
+	mux.Handle("GET /platform/fleet/v1/projects/{projectRef}/operations/{operationId}", h.authorize("fleet.read", http.HandlerFunc(h.getOperation)))
+	mux.Handle("GET /platform/fleet/v1/projects/{projectRef}/operations/{operationId}/events", h.authorize("fleet.read", http.HandlerFunc(h.replayEvents)))
+	return nil
+}
+
+func (h *Handler) health(w http.ResponseWriter, _ *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]any{"status": "ok", "service": "fleet-control", "apiVersion": "v1", "schemaVersion": CurrentSchemaVersion})
+}
+
+func (h *Handler) ready(w http.ResponseWriter, r *http.Request) {
+	version, err := h.Store.SchemaVersion(r.Context())
+	if err != nil || version != CurrentSchemaVersion {
+		writeFleetError(w, r, http.StatusServiceUnavailable, "migration_required", "Fleet Control store schema is not ready", true, map[string]any{"requiredSchemaVersion": CurrentSchemaVersion})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"status": "ok", "service": "fleet-control", "apiVersion": "v1", "schemaVersion": version})
+}
+
+func (h *Handler) authorize(scope string, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		correlate(w, r)
+		header := strings.TrimSpace(r.Header.Get("Authorization"))
+		if !strings.HasPrefix(header, "Bearer ") {
+			writeFleetError(w, r, http.StatusUnauthorized, "unauthenticated", "A Fleet Control service assertion is required", false, map[string]any{})
+			return
+		}
+		claims, err := h.Validator.Validate(strings.TrimSpace(strings.TrimPrefix(header, "Bearer ")))
+		if err != nil {
+			writeFleetError(w, r, http.StatusUnauthorized, "unauthenticated", "The Fleet Control service assertion is invalid or expired", false, map[string]any{})
+			return
+		}
+		projectRef := strings.TrimSpace(r.PathValue("projectRef"))
+		if projectRef == "" || len(projectRef) > 128 {
+			writeFleetError(w, r, http.StatusNotFound, "project_not_found", "Project was not found", false, map[string]any{})
+			return
+		}
+		if err := security.Authorize(claims, security.AccessRequest{Scope: scope, ProjectID: projectRef}); err != nil {
+			writeFleetError(w, r, http.StatusForbidden, "forbidden", "The service assertion is not authorized for this project", false, map[string]any{})
+			return
+		}
+		ctx := security.WithActor(r.Context(), claims.Actor(projectRef))
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func (h *Handler) listCapabilities(w http.ResponseWriter, _ *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]any{"capabilities": h.Capabilities.List()})
+}
+
+func (h *Handler) createOperation(w http.ResponseWriter, r *http.Request) {
+	idempotencyKey := strings.TrimSpace(r.Header.Get("Idempotency-Key"))
+	if idempotencyKey == "" || len(idempotencyKey) > 255 || strings.ContainsAny(idempotencyKey, "\r\n") {
+		writeFleetError(w, r, http.StatusBadRequest, "validation_failed", "A valid Idempotency-Key header is required", false, map[string]any{})
+		return
+	}
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	var request createOperationRequest
+	if err := decoder.Decode(&request); err != nil {
+		writeFleetError(w, r, http.StatusBadRequest, "validation_failed", "Fleet operation input is invalid", false, map[string]any{})
+		return
+	}
+	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
+		writeFleetError(w, r, http.StatusBadRequest, "validation_failed", "Fleet operation input must contain one JSON document", false, map[string]any{})
+		return
+	}
+	capability, ok := h.Capabilities.Get(request.Capability)
+	if !ok || capability.State != "available" {
+		blockers := []Blocker{{Code: "capability_not_registered", Message: "The requested Fleet capability is not registered"}}
+		if ok {
+			blockers = capability.Blockers
+		}
+		writeFleetError(w, r, http.StatusConflict, "capability_unavailable", "The requested Fleet capability is unavailable", false, map[string]any{"capability": request.Capability, "blockers": blockers})
+		return
+	}
+	projectRef := r.PathValue("projectRef")
+	policy := sharedtransport.DomainPolicy{Namespace: "supabase.fleet.", ProtocolMajor: 1, MaxMinor: 0, Schemas: h.Capabilities.Schemas()}
+	envelope := sharedtransport.OperationEnvelope{OperationID: request.OperationID, ProjectRef: projectRef, TargetID: request.TargetID, BindingID: request.BindingID, Domain: request.Domain, Capability: request.Capability, ProtocolMajor: request.ProtocolMajor, ProtocolMinor: request.ProtocolMinor, IdempotencyKey: idempotencyKey, ExpectedGeneration: request.ExpectedGeneration, InputSchema: request.InputSchema, TypedInput: request.TypedInput, Preconditions: request.Preconditions}
+	if err := policy.Validate(envelope); err != nil {
+		writeFleetError(w, r, http.StatusBadRequest, "validation_failed", "Fleet operation contract validation failed", false, map[string]any{"reason": err.Error()})
+		return
+	}
+	actor, ok := security.ActorFromContext(r.Context())
+	if !ok {
+		writeFleetError(w, r, http.StatusUnauthorized, "unauthenticated", "Fleet operation actor context is missing", false, map[string]any{})
+		return
+	}
+	operation, created, err := h.Store.CreateOperation(r.Context(), CreateOperationInput{Operation: Operation{ID: request.OperationID, ProjectRef: projectRef, TargetID: request.TargetID, BindingID: request.BindingID, Domain: request.Domain, Capability: request.Capability, ProtocolMajor: request.ProtocolMajor, ProtocolMinor: request.ProtocolMinor, ExpectedGeneration: request.ExpectedGeneration, InputSchema: request.InputSchema}, IdempotencyKey: idempotencyKey, TypedInput: request.TypedInput, Preconditions: request.Preconditions, Actor: actor.Subject, CorrelationID: r.Header.Get(CorrelationHeader)})
+	if err != nil {
+		writeFleetError(w, r, http.StatusInternalServerError, "downstream_unavailable", "Fleet Control could not persist the operation", true, map[string]any{})
+		return
+	}
+	status := http.StatusOK
+	if created {
+		status = http.StatusCreated
+	}
+	writeJSON(w, status, operation)
+}
+
+func (h *Handler) getOperation(w http.ResponseWriter, r *http.Request) {
+	operation, _, err := h.Store.GetOperation(r.Context(), r.PathValue("projectRef"), r.PathValue("operationId"))
+	if errors.Is(err, ErrOperationNotFound) {
+		writeFleetError(w, r, http.StatusNotFound, "project_not_found", "Operation was not found in this project", false, map[string]any{})
+		return
+	}
+	if err != nil {
+		writeFleetError(w, r, http.StatusInternalServerError, "downstream_unavailable", "Fleet Control could not read the operation", true, map[string]any{})
+		return
+	}
+	writeJSON(w, http.StatusOK, operation)
+}
+
+func (h *Handler) replayEvents(w http.ResponseWriter, r *http.Request) {
+	operationID := r.PathValue("operationId")
+	if _, _, err := h.Store.GetOperation(r.Context(), r.PathValue("projectRef"), operationID); err != nil {
+		writeFleetError(w, r, http.StatusNotFound, "project_not_found", "Operation was not found in this project", false, map[string]any{})
+		return
+	}
+	cursor, err := strconv.ParseInt(defaultString(r.URL.Query().Get("cursor"), "0"), 10, 64)
+	if err != nil || cursor < 0 {
+		writeFleetError(w, r, http.StatusBadRequest, "validation_failed", "Event cursor is invalid", false, map[string]any{})
+		return
+	}
+	limit, err := strconv.Atoi(defaultString(r.URL.Query().Get("limit"), "100"))
+	if err != nil || limit < 1 || limit > 1000 {
+		writeFleetError(w, r, http.StatusBadRequest, "validation_failed", "Event limit is invalid", false, map[string]any{})
+		return
+	}
+	w.Header().Set("Content-Type", "text/event-stream")
+	if _, err := sharedevents.ReplaySSE(r.Context(), w, fleetEventReader{store: h.Store}, operationID, cursor, limit); err != nil {
+		return
+	}
+}
+
+type fleetEventReader struct{ store *Store }
+
+func (r fleetEventReader) ReadAfter(ctx context.Context, operationID string, cursor int64, limit int) ([]sharedevents.Event, error) {
+	events, err := r.store.ReadEventsAfter(ctx, operationID, cursor, limit)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]sharedevents.Event, len(events))
+	for index, event := range events {
+		result[index] = sharedevents.Event{Cursor: event.Cursor, Type: event.Type, Data: event.Data}
+	}
+	return result, nil
+}
+
+func correlate(w http.ResponseWriter, r *http.Request) {
+	correlationID := strings.TrimSpace(r.Header.Get(CorrelationHeader))
+	if correlationID == "" || len(correlationID) > 128 || strings.ContainsAny(correlationID, "\r\n") {
+		var value [16]byte
+		if _, err := rand.Read(value[:]); err != nil {
+			correlationID = "unavailable"
+		} else {
+			correlationID = hex.EncodeToString(value[:])
+		}
+	}
+	r.Header.Set(CorrelationHeader, correlationID)
+	w.Header().Set(CorrelationHeader, correlationID)
+}
+
+func writeFleetError(w http.ResponseWriter, r *http.Request, status int, code, message string, retryable bool, details map[string]any) {
+	if details == nil {
+		details = map[string]any{}
+	}
+	writeJSON(w, status, map[string]any{"code": code, "message": message, "requestId": r.Header.Get(CorrelationHeader), "retryable": retryable, "details": details})
+}
+
+func writeJSON(w http.ResponseWriter, status int, value any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(value)
+}
+
+func defaultString(value, fallback string) string {
+	if value == "" {
+		return fallback
+	}
+	return value
+}
