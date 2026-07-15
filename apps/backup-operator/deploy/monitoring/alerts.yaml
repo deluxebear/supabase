@@ -1,4 +1,34 @@
 groups:
+  - name: fleet-control
+    rules:
+      - alert: FleetAgentSessionSaturation
+        expr: fleet_agent_sessions / fleet_agent_session_limit > 0.9
+        for: 10m
+        labels: {severity: warning}
+        annotations:
+          summary: Fleet Agent sessions exceed 90 percent of the tested envelope
+          runbook_url: https://github.com/supabase/supabase/blob/master/apps/backup-operator/docs/fleet-control-runbook.md#capacity-and-backpressure
+      - alert: FleetOperationCapacitySaturated
+        expr: fleet_operations_active >= fleet_operation_concurrency_limit
+        for: 10m
+        labels: {severity: warning}
+        annotations:
+          summary: Fleet target-side operation concurrency is saturated
+          runbook_url: https://github.com/supabase/supabase/blob/master/apps/backup-operator/docs/fleet-control-runbook.md#capacity-and-backpressure
+      - alert: FleetOperationQueueBacklog
+        expr: fleet_operation_queue_depth > 100
+        for: 15m
+        labels: {severity: warning}
+        annotations:
+          summary: Fleet operation queue is not draining within the event visibility SLO
+          runbook_url: https://github.com/supabase/supabase/blob/master/apps/backup-operator/docs/fleet-control-runbook.md#slos-and-alerts
+      - alert: FleetCapacityRejectingWork
+        expr: increase(fleet_capacity_rejections_total[10m]) > 0
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: Fleet Control rejected work at a configured safe capacity boundary
+          runbook_url: https://github.com/supabase/supabase/blob/master/apps/backup-operator/docs/fleet-control-runbook.md#capacity-and-backpressure
   - name: backup-operator
     rules:
       - alert: BackupOperatorLogBackpressure

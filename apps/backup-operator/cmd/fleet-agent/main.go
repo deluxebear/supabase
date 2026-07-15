@@ -46,6 +46,8 @@ func main() {
 	journalPath := flag.String("journal", envOr("FLEET_AGENT_JOURNAL", "/var/lib/supabase-fleet/agent-journal.db"), "durable Fleet Agent execution journal")
 	lockPath := flag.String("lock", envOr("FLEET_AGENT_LOCK", "/var/lib/supabase-fleet/agent.lock"), "Fleet Agent singleton lock")
 	heartbeat := flag.Duration("heartbeat", envDuration("FLEET_AGENT_HEARTBEAT", 10*time.Second), "Fleet Agent heartbeat interval")
+	minBackoff := flag.Duration("reconnect-min-backoff", envDuration("FLEET_AGENT_RECONNECT_MIN_BACKOFF", time.Second), "minimum randomized reconnect backoff")
+	maxBackoff := flag.Duration("reconnect-max-backoff", envDuration("FLEET_AGENT_RECONNECT_MAX_BACKOFF", 30*time.Second), "maximum randomized reconnect backoff")
 	showVersion := flag.Bool("version", false, "print version and exit")
 	flag.Parse()
 	if *showVersion {
@@ -54,6 +56,9 @@ func main() {
 	}
 	if *address == "" || *cert == "" || *key == "" || *ca == "" || *serverName == "" || *agentID == "" || *projectRef == "" || *targetID == "" || *bindingID == "" || *nodeID == "" {
 		log.Fatal("complete Fleet Agent address, mTLS, and enrollment identity are required")
+	}
+	if *minBackoff <= 0 || *maxBackoff < *minBackoff || *maxBackoff > 5*time.Minute {
+		log.Fatal("Fleet Agent reconnect backoff must be positive, ordered, and at most 5m")
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -99,6 +104,7 @@ func main() {
 	client := fleetagent.Client{
 		Address: *address, TLS: tlsConfig, AgentID: *agentID, TargetID: *targetID, BindingID: *bindingID, NodeID: *nodeID,
 		Build: version.String(), Capabilities: capabilities, Executor: executor, HeartbeatInterval: *heartbeat,
+		MinBackoff: *minBackoff, MaxBackoff: *maxBackoff,
 	}
 	if err := client.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
 		log.Fatal(err)

@@ -16,6 +16,7 @@ import (
 
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
+	"github.com/supabase/supabase/apps/backup-operator/internal/observability"
 	"github.com/supabase/supabase/apps/backup-operator/internal/security"
 	sharedtransport "github.com/supabase/supabase/apps/backup-operator/internal/shared/agenttransport"
 	sharedevents "github.com/supabase/supabase/apps/backup-operator/internal/shared/events"
@@ -33,6 +34,7 @@ type Handler struct {
 	AgentCA            *CertificateAuthority
 	EnrollmentTokenTTL time.Duration
 	CertificateOverlap time.Duration
+	Metrics            *observability.Metrics
 }
 
 type createOperationRequest struct {
@@ -116,6 +118,13 @@ func (h *Handler) putFunctionArtifact(w http.ResponseWriter, r *http.Request) {
 	}
 	created, err := h.Artifacts.Put(r.Context(), r.PathValue("projectRef"), digest, raw, actor.Subject, r.Header.Get(CorrelationHeader))
 	if err != nil {
+		if errors.Is(err, ErrCapacityExceeded) {
+			if h.Metrics != nil {
+				_ = h.Metrics.Add("fleet_capacity_rejections_total", 1, map[string]string{"component": "artifacts"})
+			}
+			writeFleetError(w, r, http.StatusInsufficientStorage, "capacity_exceeded", "Fleet artifact capacity is exhausted", false, map[string]any{"reason": err.Error()})
+			return
+		}
 		writeFleetError(w, r, http.StatusConflict, "artifact_conflict", "Function artifact could not be stored immutably", false, map[string]any{})
 		return
 	}
@@ -215,6 +224,18 @@ func (h *Handler) createOperation(w http.ResponseWriter, r *http.Request) {
 		writeFleetError(w, r, http.StatusServiceUnavailable, "downstream_unavailable", "Fleet Control could not validate the management binding", true, map[string]any{})
 		return
 	}
+	if err := h.Store.CheckOperationQuota(r.Context(), binding.Binding.OrganizationID, request.TargetID, projectRef, idempotencyKey); err != nil {
+		if errors.Is(err, ErrCapacityExceeded) {
+			if h.Metrics != nil {
+				_ = h.Metrics.Add("fleet_capacity_rejections_total", 1, map[string]string{"component": "operations"})
+			}
+			w.Header().Set("Retry-After", "5")
+			writeFleetError(w, r, http.StatusTooManyRequests, "capacity_exceeded", "Fleet operation capacity is temporarily exhausted", true, map[string]any{"reason": err.Error()})
+			return
+		}
+		writeFleetError(w, r, http.StatusServiceUnavailable, "downstream_unavailable", "Fleet Control could not evaluate operation capacity", true, map[string]any{})
+		return
+	}
 	if request.Capability == fleetproviders.CapabilityReconcileConfiguration {
 		document, err := fleetproviders.ParseDocument(request.TypedInput)
 		if err != nil {
@@ -256,6 +277,11 @@ func (h *Handler) createOperation(w http.ResponseWriter, r *http.Request) {
 	}
 	operation, created, err := h.Store.CreateOperation(r.Context(), CreateOperationInput{Operation: Operation{ID: request.OperationID, ProjectRef: projectRef, TargetID: request.TargetID, BindingID: request.BindingID, Domain: request.Domain, Capability: request.Capability, ProtocolMajor: request.ProtocolMajor, ProtocolMinor: request.ProtocolMinor, ExpectedGeneration: request.ExpectedGeneration, DesiredRevision: request.DesiredRevision, DesiredDigest: request.DesiredDigest, InputSchema: request.InputSchema}, IdempotencyKey: idempotencyKey, TypedInput: request.TypedInput, SnapshotCanonical: request.SnapshotCanonical, Preconditions: request.Preconditions, Actor: actor.Subject, CorrelationID: r.Header.Get(CorrelationHeader)})
 	if err != nil {
+		if errors.Is(err, ErrCapacityExceeded) {
+			w.Header().Set("Retry-After", "5")
+			writeFleetError(w, r, http.StatusTooManyRequests, "capacity_exceeded", "Fleet operation capacity is temporarily exhausted", true, map[string]any{"reason": err.Error()})
+			return
+		}
 		writeFleetError(w, r, http.StatusInternalServerError, "downstream_unavailable", "Fleet Control could not persist the operation", true, map[string]any{})
 		return
 	}

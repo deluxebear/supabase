@@ -14,6 +14,7 @@ import (
 	"time"
 
 	fleetagentv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/fleet/v1"
+	"github.com/supabase/supabase/apps/backup-operator/internal/observability"
 	"github.com/supabase/supabase/apps/backup-operator/internal/security"
 	"github.com/supabase/supabase/apps/backup-operator/internal/version"
 	"google.golang.org/grpc"
@@ -42,6 +43,9 @@ type Config struct {
 	EnrollmentServerCertFile string
 	EnrollmentServerKeyFile  string
 	Logger                   *slog.Logger
+	Capacity                 CapacityPolicy
+	RetentionInterval        time.Duration
+	Metrics                  *observability.Metrics
 }
 
 func (c Config) Validate() error {
@@ -69,6 +73,12 @@ func (c Config) Validate() error {
 	if c.AgentCertificateTTL <= 0 || c.AgentCertificateTTL > maximumAgentCertificateTTL || c.EnrollmentTokenTTL <= 0 || c.EnrollmentTokenTTL > time.Hour || c.CertificateOverlap <= 0 || c.CertificateOverlap > time.Hour {
 		return errors.New("Fleet Agent certificate, enrollment token, or rotation overlap duration is invalid")
 	}
+	if err := c.Capacity.Validate(); err != nil {
+		return err
+	}
+	if c.RetentionInterval <= 0 || c.RetentionInterval > 24*time.Hour {
+		return errors.New("Fleet retention interval is invalid")
+	}
 	return nil
 }
 
@@ -76,6 +86,17 @@ func Run(ctx context.Context, cfg Config) error {
 	if cfg.ShutdownTimeout == 0 {
 		cfg.ShutdownTimeout = 10 * time.Second
 	}
+	if cfg.Capacity.MaxAgentSessions == 0 {
+		cfg.Capacity = DefaultCapacityPolicy()
+	}
+	if cfg.RetentionInterval == 0 {
+		cfg.RetentionInterval = 5 * time.Minute
+	}
+	if cfg.Metrics == nil {
+		cfg.Metrics = &observability.Metrics{}
+	}
+	_ = cfg.Metrics.Set("fleet_agent_session_limit", float64(cfg.Capacity.MaxAgentSessions), nil)
+	_ = cfg.Metrics.Set("fleet_operation_concurrency_limit", float64(cfg.Capacity.MaxConcurrentOperations), nil)
 	if err := cfg.Validate(); err != nil {
 		return fmt.Errorf("validate Fleet Control configuration: %w", err)
 	}
@@ -113,16 +134,24 @@ func Run(ctx context.Context, cfg Config) error {
 		return fmt.Errorf("initialize Fleet Control store: %w", err)
 	}
 	defer store.Close()
+	if err := store.SetCapacityPolicy(cfg.Capacity); err != nil {
+		return err
+	}
+	sessions, err := NewSessionLimiter(cfg.Capacity.MaxAgentSessions)
+	if err != nil {
+		return err
+	}
 	artifacts := &ArtifactStore{Root: cfg.ArtifactRoot, Store: store}
 	mux := http.NewServeMux()
 	handler := &Handler{
 		Store: store, Artifacts: artifacts, Capabilities: NewCapabilityRegistry(),
 		Validator: security.AssertionValidator{Key: cfg.AssertionKey, Issuer: cfg.AssertionIssuer, Audience: cfg.AssertionAudience, MaxTTL: cfg.AssertionMaxTTL},
-		AgentCA:   agentCA, EnrollmentTokenTTL: cfg.EnrollmentTokenTTL, CertificateOverlap: cfg.CertificateOverlap,
+		AgentCA:   agentCA, EnrollmentTokenTTL: cfg.EnrollmentTokenTTL, CertificateOverlap: cfg.CertificateOverlap, Metrics: cfg.Metrics,
 	}
 	if err := handler.Register(mux); err != nil {
 		return err
 	}
+	mux.Handle("GET /metrics", observability.MetricsHandler(cfg.Metrics))
 	listener, err := net.Listen("tcp", cfg.Listen)
 	if err != nil {
 		return fmt.Errorf("listen for Fleet Control: %w", err)
@@ -151,11 +180,34 @@ func Run(ctx context.Context, cfg Config) error {
 		ClientCAs: clientCAs, ClientAuth: tls.RequireAndVerifyClientCert,
 	}
 	agentGRPC := grpc.NewServer(grpc.Creds(credentials.NewTLS(agentTLS)))
-	fleetagentv1.RegisterFleetAgentControlServiceServer(agentGRPC, &AgentServer{Store: store, Artifacts: artifacts, Authority: agentCA})
-	errCh := make(chan error, 3)
+	fleetagentv1.RegisterFleetAgentControlServiceServer(agentGRPC, &AgentServer{Store: store, Artifacts: artifacts, Authority: agentCA, Sessions: sessions, Metrics: cfg.Metrics})
+	errCh := make(chan error, 4)
 	go func() { errCh <- server.Serve(listener) }()
 	go func() { errCh <- enrollmentServer.Serve(tls.NewListener(enrollmentListener, enrollmentTLS)) }()
 	go func() { errCh <- agentGRPC.Serve(agentListener) }()
+	go func() {
+		ticker := time.NewTicker(cfg.RetentionInterval)
+		defer ticker.Stop()
+		for {
+			result, err := store.EnforceRetention(ctx)
+			if err != nil {
+				cfg.Logger.Error("Fleet retention cycle failed", "error", err)
+			} else if result.OperationEventsArchived+result.AuditEventsArchived > 0 {
+				_ = cfg.Metrics.Add("fleet_retention_archived_total", uint64(result.OperationEventsArchived+result.AuditEventsArchived), nil)
+			}
+			if snapshot, snapshotErr := store.CapacitySnapshot(ctx); snapshotErr == nil {
+				_ = cfg.Metrics.Set("fleet_operations_active", float64(snapshot.ActiveOperations), nil)
+				_ = cfg.Metrics.Set("fleet_operation_queue_depth", float64(snapshot.QueuedOperations), nil)
+				_ = cfg.Metrics.Set("fleet_event_backlog", float64(snapshot.LiveEvents), nil)
+			}
+			select {
+			case <-ctx.Done():
+				errCh <- nil
+				return
+			case <-ticker.C:
+			}
+		}
+	}()
 	cfg.Logger.Info("Fleet Control starting", "listen", cfg.Listen, "enrollment_listen", cfg.EnrollmentListen, "agent_listen", cfg.AgentListen, "trust_domain", cfg.AgentTrustDomain, "artifact_root", cfg.ArtifactRoot, "api_version", "v1", "schema_version", CurrentSchemaVersion, "build", version.String())
 	var serveErr error
 	select {

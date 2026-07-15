@@ -36,6 +36,18 @@ func main() {
 	agentCertificateTTL := flag.Duration("agent-certificate-ttl", envDuration("FLEET_CONTROL_AGENT_CERTIFICATE_TTL", 24*time.Hour), "short-lived Agent certificate lifetime")
 	enrollmentTokenTTL := flag.Duration("enrollment-token-ttl", envDuration("FLEET_CONTROL_ENROLLMENT_TOKEN_TTL", 10*time.Minute), "single-use enrollment token lifetime")
 	certificateOverlap := flag.Duration("certificate-overlap", envDuration("FLEET_CONTROL_CERTIFICATE_OVERLAP", 15*time.Minute), "certificate rotation overlap window")
+	maxAgentSessions := flag.Int("max-agent-sessions", envInt("FLEET_CONTROL_MAX_AGENT_SESSIONS", 300), "maximum concurrent Fleet Agent sessions")
+	maxOperations := flag.Int("max-concurrent-operations", envInt("FLEET_CONTROL_MAX_CONCURRENT_OPERATIONS", 20), "maximum concurrent target-side operations")
+	maxOperationsPerTarget := flag.Int("max-concurrent-operations-per-target", envInt("FLEET_CONTROL_MAX_CONCURRENT_OPERATIONS_PER_TARGET", 2), "maximum concurrent operations for one target")
+	maxQueuedPerOrganization := flag.Int("max-queued-per-organization", envInt("FLEET_CONTROL_MAX_QUEUED_PER_ORGANIZATION", 1000), "maximum queued operations per organization")
+	maxQueuedPerTarget := flag.Int("max-queued-per-target", envInt("FLEET_CONTROL_MAX_QUEUED_PER_TARGET", 100), "maximum queued operations per target")
+	maxArtifactBytesPerProject := flag.Int64("max-artifact-bytes-per-project", envInt64("FLEET_CONTROL_MAX_ARTIFACT_BYTES_PER_PROJECT", 1<<30), "maximum immutable artifact bytes per project")
+	maxArtifactBytesPerOrganization := flag.Int64("max-artifact-bytes-per-organization", envInt64("FLEET_CONTROL_MAX_ARTIFACT_BYTES_PER_ORGANIZATION", 20<<30), "maximum immutable artifact bytes per organization")
+	maxEventsPerOperation := flag.Int("max-events-per-operation", envInt("FLEET_CONTROL_MAX_EVENTS_PER_OPERATION", 10_000), "maximum live events retained per operation before archival")
+	terminalEventRetention := flag.Duration("terminal-event-retention", envDuration("FLEET_CONTROL_TERMINAL_EVENT_RETENTION", 30*24*time.Hour), "terminal operation event live retention")
+	auditRetention := flag.Duration("audit-retention", envDuration("FLEET_CONTROL_AUDIT_RETENTION", 365*24*time.Hour), "Fleet audit live retention before archival")
+	retentionInterval := flag.Duration("retention-interval", envDuration("FLEET_CONTROL_RETENTION_INTERVAL", 5*time.Minute), "Fleet retention worker interval")
+	retentionBatchSize := flag.Int("retention-batch-size", envInt("FLEET_CONTROL_RETENTION_BATCH_SIZE", 10_000), "maximum rows archived per retention cycle")
 	enrollmentServerCert := flag.String("enrollment-server-cert", os.Getenv("FLEET_CONTROL_ENROLLMENT_SERVER_CERT"), "enrollment HTTPS server certificate PEM path")
 	enrollmentServerKey := flag.String("enrollment-server-key", os.Getenv("FLEET_CONTROL_ENROLLMENT_SERVER_KEY"), "enrollment HTTPS server private key PEM path")
 	shutdownTimeout := flag.Duration("shutdown-timeout", envDuration("FLEET_CONTROL_SHUTDOWN_TIMEOUT", 10*time.Second), "graceful shutdown timeout")
@@ -76,6 +88,14 @@ func main() {
 		AgentCACertFile: *agentCACert, AgentCAKeyFile: *agentCAKey, AgentTrustDomain: *agentTrustDomain,
 		AgentCertificateTTL: *agentCertificateTTL, EnrollmentTokenTTL: *enrollmentTokenTTL, CertificateOverlap: *certificateOverlap,
 		EnrollmentServerCertFile: *enrollmentServerCert, EnrollmentServerKeyFile: *enrollmentServerKey,
+		Capacity: fleetcontrol.CapacityPolicy{
+			MaxAgentSessions: *maxAgentSessions, MaxConcurrentOperations: *maxOperations,
+			MaxConcurrentPerTarget: *maxOperationsPerTarget, MaxQueuedPerOrganization: *maxQueuedPerOrganization,
+			MaxQueuedPerTarget: *maxQueuedPerTarget, MaxArtifactBytesPerProject: *maxArtifactBytesPerProject,
+			MaxArtifactBytesPerOrganization: *maxArtifactBytesPerOrganization, MaxEventsPerOperation: *maxEventsPerOperation,
+			TerminalEventRetention: *terminalEventRetention, AuditRetention: *auditRetention, RetentionBatchSize: *retentionBatchSize,
+		},
+		RetentionInterval: *retentionInterval,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -102,4 +122,20 @@ func envDuration(name string, fallback time.Duration) time.Duration {
 		return fallback
 	}
 	return parsed
+}
+
+func envInt(name string, fallback int) int {
+	value, err := strconv.Atoi(os.Getenv(name))
+	if err != nil {
+		return fallback
+	}
+	return value
+}
+
+func envInt64(name string, fallback int64) int64 {
+	value, err := strconv.ParseInt(os.Getenv(name), 10, 64)
+	if err != nil {
+		return fallback
+	}
+	return value
 }

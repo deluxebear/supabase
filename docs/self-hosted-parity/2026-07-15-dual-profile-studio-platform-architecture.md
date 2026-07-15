@@ -936,7 +936,9 @@ Every state-changing management action records actor, organization, project, sou
 
 The architecture does not claim unlimited scale. The first production release MUST publish the tested envelope and test at least:
 
-- 100 attached projects and 300 connected Agents per Fleet control-plane installation;
+- 100 attached projects, up to 100 distinct active execution Agents under the
+  one-active-Agent-per-binding T7 topology, and 300 concurrent Agent sessions
+  during certificate-overlap/reconnect storms per Fleet control-plane installation;
 - 20 concurrent target-side operations, with a configurable lower per-target limit;
 - 10,000 retained operation events per active operation before archival/compaction;
 - project-list and cached capability reads at p95 below 500 ms inside the control plane, excluding a live downstream probe;
@@ -1441,10 +1443,11 @@ Synthesized from the engineering review. Checkbox each task as it ships; priorit
   - Files: Studio functions APIs/data/UI, artifact backend, Agent Compose/Kubernetes plugins.
   - Verify: archive security tests, project isolation E2E, failed-probe rollback, and large Kubernetes artifact test.
   - Implemented: 2026-07-15 — Fleet Studio now gates Edge Function reads and mutations through the canonical profile, static capability, project capability, project RBAC, active project/target/binding, adapter, and direct-managed functions ownership policy. The BFF builds bounded canonical bundles, rejects traversal/symlink-shaped/duplicate/oversized/unsupported input, computes SHA-256, and uploads bytes to Fleet Control's independent project-scoped immutable artifact volume before a platform schema 16 CAS commit. Fleet Control schema 5 validates and streams exact-project artifacts to the enrolled Agent over mTLS; durable typed operations and terminal evidence project active, rolled-back, deleted, or manual-intervention state without making Agent state authoritative. The Compose provider preserves upstream Edge Runtime behavior through a project-specific runtime symlink view, atomic immutable revision switching and invocation/absence probes; the Kubernetes provider keeps large bytes on an artifact volume, uses `supabase-fleet-functions` server-side apply with `force=false`, waits for rollout, and never places bundles in ConfigMaps. Failed probes restore the previous pointer, while uncertain rollback retains the last known active platform digest and exposes localized remediation. Embedded and CLI mounted-directory behavior and Cloud hosted behavior remain unchanged. Focused Go/API/i18n tests and a disposable PostgreSQL/Compose acceptance cover archive security, durable replay, two-project isolation, idempotency conflicts, failed-probe rollback, manual intervention, audit, and a 2 MiB Kubernetes artifact. No ADR change was required; this implements ADR-003, ADR-004, ADR-005, ADR-007, ADR-009, ADR-010, ADR-011, ADR-013, and ADR-014. See [T9 Edge Functions Fleet deployment operations](./2026-07-15-t9-edge-functions-fleet-deployment-operations.md).
-- [ ] **T10 (P2)** — Capacity and operations — Add bounded concurrency, backoff, retention, load tests, SLOs, and independent control-plane DR drills.
+- [x] **T10 (P2)** — Capacity and operations — Add bounded concurrency, backoff, retention, load tests, SLOs, and independent control-plane DR drills.
   - Surfaced by: performance review — the prior plan had no scale envelope or reconnect/fan-out controls.
   - Files: Fleet/backup runtimes, probe/metrics workers, deployment config, alert/runbook docs.
   - Verify: the section 14.1 envelope and section 18.6 failure matrix pass.
+  - Implemented: 2026-07-15 — Fleet Control schema 6 adds fail-closed organization/target queue quotas, 20-operation global and configurable per-target dispatch limits, 300-session admission control, project/organization artifact byte quotas, 10,000-live-event compaction with independent archives, and low-cardinality capacity metrics. Fleet Agent reconnects and platform outbox retries now use bounded equal jitter; Backup Operator in-process execution is configurable up to the tested 20-operation maximum and periodic failures back off with jitter. Studio's Fleet metrics sampler batches its registry read, limits fan-out to 8 by default (safe maximum 32), caches scrape state per project, and backs off an unhealthy project independently. Production Compose publishes every safe limit, Prometheus alerts and SLO/runbook guidance, a 100-project/300-session/20-operation load harness, and a three-store plus authority-key DR drill that proves missing CA material fails readiness. T7's one-active-Agent-per-binding constraint conflicts with interpreting the original 300-Agent number as 300 distinct active identities under 100 projects; ADR-015 preserves that isolation model and defines the tested value as 300 concurrent Agent sessions during reconnect/certificate overlap, with at most 100 distinct active execution Agents. Embedded code paths, routes, and deployment behavior are unchanged. See [T10 capacity and control-plane operations](./2026-07-15-t10-capacity-control-plane-operations.md).
 - [ ] **T11 (P3)** — Lifecycle providers — Add upgrades, replica lifecycle, network controls, and optional branching only behind versioned provider capabilities.
   - Surfaced by: scope review — these features are valuable but do not block a truthful attach/configuration/backup Fleet release.
   - Files: provider packages, impact-plan APIs, lifecycle UI.
@@ -1531,6 +1534,7 @@ Run profile-specific Compose/E2E checks proportional to the risk.
 | ADR-012 | Server-side Fleet database credential boundary                 | accepted |
 | ADR-013 | Ownership-aware direct, observe-only, and GitOps modes         | accepted |
 | ADR-014 | Non-destructive detach as the default removal operation        | accepted |
+| ADR-015 | Capacity is topology-aware; one active execution Agent per binding remains authoritative while reconnect capacity is measured in concurrent sessions | accepted |
 
 Future reversals add a new ADR row and link the superseded decision.
 
@@ -1550,6 +1554,7 @@ Future reversals add a new ADR row and link the superseded decision.
 - [T5 state authority and migration operations](./2026-07-15-t5-state-authority-operations.md)
 - [T6 honest attachment operations](./2026-07-15-t6-honest-attachment-operations.md)
 - [T7 management trust operations](./2026-07-15-t7-management-trust-operations.md)
+- [T10 capacity and control-plane operations](./2026-07-15-t10-capacity-control-plane-operations.md)
 
 ## GSTACK REVIEW REPORT
 
