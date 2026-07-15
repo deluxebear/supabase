@@ -1,0 +1,247 @@
+name: supabase-fleet-control
+
+# Production Fleet control plane. This project is intentionally separate from
+# docker-compose.yml (the managed Supabase stack) and owns independent volumes.
+# Never merge these volumes into a managed stack or its backup/restore policy.
+services:
+  platform-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: platform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${PLATFORM_POSTGRES_PASSWORD:?set PLATFORM_POSTGRES_PASSWORD}
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres -d platform]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - platform-db-data:/var/lib/postgresql/data
+      - ../volumes/platform/migrations:/docker-entrypoint-initdb.d:ro
+    networks: [control]
+
+  fleet-control-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fleet_control
+      POSTGRES_USER: fleet_control
+      POSTGRES_PASSWORD: ${FLEET_CONTROL_POSTGRES_PASSWORD:?set FLEET_CONTROL_POSTGRES_PASSWORD}
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U fleet_control -d fleet_control]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - fleet-control-db-data:/var/lib/postgresql/data
+    networks: [control]
+
+  fleet-control:
+    image: ghcr.io/supabase/fleet-control:${FLEET_CONTROL_VERSION:?set FLEET_CONTROL_VERSION}
+    command: [--listen=0.0.0.0:8090]
+    restart: unless-stopped
+    read_only: true
+    user: "65532:65532"
+    depends_on:
+      fleet-control-db:
+        condition: service_healthy
+    environment:
+      FLEET_CONTROL_SERVICE_ASSERTION_KEY: ${FLEET_CONTROL_SERVICE_ASSERTION_KEY:?set FLEET_CONTROL_SERVICE_ASSERTION_KEY}
+      FLEET_CONTROL_SERVICE_ASSERTION_ISSUER: ${FLEET_CONTROL_SERVICE_ASSERTION_ISSUER:-studio-platform}
+      FLEET_CONTROL_SERVICE_ASSERTION_AUDIENCE: ${FLEET_CONTROL_SERVICE_ASSERTION_AUDIENCE:-fleet-control}
+      FLEET_CONTROL_STORE_DRIVER: postgres
+      FLEET_CONTROL_STORE_DSN: postgres://fleet_control:${FLEET_CONTROL_POSTGRES_PASSWORD}@fleet-control-db:5432/fleet_control?sslmode=disable
+      FLEET_CONTROL_STORE_SYSTEM_IDENTIFIER: ${FLEET_CONTROL_STORE_SYSTEM_IDENTIFIER:-fleet-control}
+      FLEET_CONTROL_STORE_DATA_DOMAIN: ${FLEET_CONTROL_STORE_DATA_DOMAIN:-fleet-control-db-data}
+    ports:
+      - 127.0.0.1:${FLEET_CONTROL_HTTP_PORT:-8090}:8090
+    security_opt: [no-new-privileges:true]
+    networks: [control]
+
+  backup-operator-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: backup_operator
+      POSTGRES_USER: backup_operator
+      POSTGRES_PASSWORD: ${BACKUP_OPERATOR_POSTGRES_PASSWORD:?set BACKUP_OPERATOR_POSTGRES_PASSWORD}
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U backup_operator -d backup_operator]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - backup-operator-db-data:/var/lib/postgresql/data
+    networks: [control]
+
+  backup-operator:
+    image: ghcr.io/supabase/backup-operator:${BACKUP_OPERATOR_VERSION:?set BACKUP_OPERATOR_VERSION}
+    command: [--mode=operator, --listen=0.0.0.0:8080]
+    restart: unless-stopped
+    read_only: true
+    user: "65532:65532"
+    depends_on:
+      backup-operator-db:
+        condition: service_healthy
+    environment:
+      BACKUP_OPERATOR_SERVICE_ASSERTION_KEY: ${BACKUP_OPERATOR_SERVICE_ASSERTION_KEY:?set BACKUP_OPERATOR_SERVICE_ASSERTION_KEY}
+      BACKUP_OPERATOR_CONTROL_STORE_DRIVER: postgres
+      BACKUP_OPERATOR_CONTROL_STORE_DSN: postgres://backup_operator:${BACKUP_OPERATOR_POSTGRES_PASSWORD}@backup-operator-db:5432/backup_operator?sslmode=disable
+      BACKUP_OPERATOR_CONTROL_STORE_SYSTEM_IDENTIFIER: ${BACKUP_OPERATOR_CONTROL_STORE_SYSTEM_IDENTIFIER:-fleet-backup-control}
+      BACKUP_OPERATOR_CONTROL_STORE_DATA_DOMAIN: ${BACKUP_OPERATOR_CONTROL_STORE_DATA_DOMAIN:-backup-operator-db-data}
+      BACKUP_OPERATOR_RUNTIME_ENABLED: "true"
+    ports:
+      - 127.0.0.1:${BACKUP_OPERATOR_HTTP_PORT:-8080}:8080
+    security_opt: [no-new-privileges:true]
+    networks: [control]
+
+  platform-mail:
+    image: axllent/mailpit:v1.20
+    restart: unless-stopped
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+    ports:
+      - 127.0.0.1:${PLATFORM_MAILPIT_UI_HOST_PORT:-8025}:8025
+    networks: [control]
+
+  platform-auth:
+    image: supabase/gotrue:v2.189.0
+    restart: unless-stopped
+    depends_on:
+      platform-db:
+        condition: service_healthy
+      platform-mail:
+        condition: service_started
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      API_EXTERNAL_URL: ${FLEET_PUBLIC_URL:?set FLEET_PUBLIC_URL}/platform-auth/v1
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://postgres:${PLATFORM_POSTGRES_PASSWORD}@platform-db:5432/platform
+      GOTRUE_SITE_URL: ${FLEET_PUBLIC_URL}
+      GOTRUE_URI_ALLOW_LIST: ${FLEET_PUBLIC_URL}/**
+      GOTRUE_DISABLE_SIGNUP: "true"
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_SECRET: ${PLATFORM_JWT_SECRET:?set PLATFORM_JWT_SECRET}
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+      GOTRUE_SMTP_HOST: ${PLATFORM_SMTP_HOST:-platform-mail}
+      GOTRUE_SMTP_PORT: ${PLATFORM_SMTP_PORT:-1025}
+      GOTRUE_SMTP_USER: ${PLATFORM_SMTP_USER:-}
+      GOTRUE_SMTP_PASS: ${PLATFORM_SMTP_PASS:-}
+      GOTRUE_SMTP_ADMIN_EMAIL: ${PLATFORM_SMTP_ADMIN_EMAIL:-admin@internal.test}
+      GOTRUE_SMTP_SENDER_NAME: ${PLATFORM_SMTP_SENDER_NAME:-Supabase Platform}
+      GOTRUE_MAILER_URLPATHS_INVITE: /verify
+      GOTRUE_MAILER_URLPATHS_RECOVERY: /verify
+      GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: /verify
+      GOTRUE_MAILER_URLPATHS_CONFIRMATION: /verify
+    healthcheck:
+      test: [CMD, wget, --no-verbose, --tries=1, --spider, http://localhost:9999/health]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [control]
+
+  meta:
+    image: supabase/postgres-meta:v0.95.2
+    restart: unless-stopped
+    environment:
+      PG_META_PORT: 8080
+      PG_META_DB_HOST: platform-db
+      PG_META_DB_PORT: 5432
+      PG_META_DB_NAME: platform
+      PG_META_DB_USER: postgres
+      PG_META_DB_PASSWORD: ${PLATFORM_POSTGRES_PASSWORD}
+      CRYPTO_KEY: ${PG_META_CRYPTO_KEY:?set PG_META_CRYPTO_KEY}
+    networks: [control, managed]
+
+  studio:
+    image: ${FLEET_STUDIO_IMAGE:?set FLEET_STUDIO_IMAGE}
+    restart: unless-stopped
+    depends_on:
+      platform-db:
+        condition: service_healthy
+      platform-auth:
+        condition: service_healthy
+    environment:
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE: fleet
+      NEXT_PUBLIC_SELF_PLATFORM: "true"
+      PLATFORM_POSTGRES_HOST: platform-db
+      PLATFORM_POSTGRES_PORT: 5432
+      PLATFORM_POSTGRES_DB: platform
+      PLATFORM_POSTGRES_USER: postgres
+      PLATFORM_POSTGRES_PASSWORD: ${PLATFORM_POSTGRES_PASSWORD}
+      PLATFORM_PG_META_URL: http://meta:8080
+      PLATFORM_GOTRUE_URL: http://platform-auth:9999
+      PLATFORM_JWT_SECRET: ${PLATFORM_JWT_SECRET}
+      PLATFORM_ENCRYPTION_KEY: ${PLATFORM_ENCRYPTION_KEY:?set PLATFORM_ENCRYPTION_KEY}
+      PLATFORM_SITE_URL: ${FLEET_PUBLIC_URL}
+      NEXT_PUBLIC_API_URL: ${FLEET_PUBLIC_URL}/api
+      NEXT_PUBLIC_GOTRUE_URL: ${FLEET_PUBLIC_URL}/platform-auth/v1
+      STUDIO_PG_META_URL: http://meta:8080
+      PG_META_CRYPTO_KEY: ${PG_META_CRYPTO_KEY}
+      SUPABASE_PUBLIC_URL: ${FLEET_PUBLIC_URL}
+      SUPABASE_URL: ${MANAGED_SUPABASE_URL:-http://kong:8000}
+      SUPABASE_ANON_KEY: ${MANAGED_ANON_KEY:-unused-fleet-default}
+      SUPABASE_SERVICE_KEY: ${MANAGED_SERVICE_ROLE_KEY:-unused-fleet-default}
+      AUTH_JWT_SECRET: ${MANAGED_JWT_SECRET:-unused-fleet-default}
+      SNIPPETS_MANAGEMENT_FOLDER: /app/snippets
+      EDGE_FUNCTIONS_MANAGEMENT_FOLDER: /app/edge-functions
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          node -e "fetch('http://localhost:3000/api/platform/telemetry/feature-flags').then(r=>{if(r.status!==200)throw Error(r.status)})"
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    volumes:
+      - control-snippets:/app/snippets
+      - control-functions:/app/edge-functions:ro
+    networks: [control, managed]
+
+  gateway:
+    image: kong/kong:3.9.1
+    restart: unless-stopped
+    depends_on:
+      studio:
+        condition: service_healthy
+    ports:
+      - ${FLEET_HTTP_PORT:-8001}:8000
+    volumes:
+      - ./volumes/api/kong-plt.yml:/home/kong/temp.yml:ro
+      - ../volumes/api/kong-entrypoint.sh:/home/kong/kong-entrypoint.sh:ro
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/kong.yml
+      KONG_ROUTER_FLAVOR: expressions
+      KONG_DNS_ORDER: LAST,A,CNAME
+      KONG_PLUGINS: request-transformer,cors,key-auth,acl,basic-auth,request-termination,ip-restriction,post-function
+      SUPABASE_ANON_KEY: ${MANAGED_ANON_KEY:-unused-fleet-default}
+      SUPABASE_SERVICE_KEY: ${MANAGED_SERVICE_ROLE_KEY:-unused-fleet-default}
+      SUPABASE_PUBLISHABLE_KEY: ""
+      SUPABASE_SECRET_KEY: ""
+      ANON_KEY_ASYMMETRIC: ""
+      SERVICE_ROLE_KEY_ASYMMETRIC: ""
+    entrypoint: [/bin/sh, /home/kong/kong-entrypoint.sh]
+    networks:
+      control:
+        aliases: [kong]
+
+networks:
+  control: {}
+  managed:
+    name: ${MANAGED_NETWORK_NAME:-supabase-plt_default}
+    external: true
+
+volumes:
+  platform-db-data:
+  fleet-control-db-data:
+  backup-operator-db-data:
+  control-snippets:
+  control-functions:

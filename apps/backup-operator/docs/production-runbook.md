@@ -2,14 +2,14 @@
 
 ## Supported matrix
 
-| Environment | Backup | PITR | Automatic replica rebuild | Recovery strategy |
-| --- | --- | --- | --- | --- |
-| Bare metal/systemd, single primary | pgBackRest | Yes | N/A | In-place with PGDATA quarantine |
-| Docker Compose database, host systemd Agent | pgBackRest | Yes | N/A | In-place with volume quarantine |
-| Patroni, one primary plus standbys | pgBackRest | Yes | Yes | Restore primary, reconcile DCS, fresh rebuild standbys |
-| Kubernetes self-managed `deluxebear/postgres:17` | Built-in pgBackRest 2.58 | Yes | Yes | Replacement StatefulSet/new PVC |
-| Kubernetes self-managed `deluxebear/postgres:orioledb-17` | Built-in pgBackRest 2.58 | Yes | Yes | Replacement StatefulSet/new PVC |
-| CloudNativePG 1.29.1 + Barman Cloud plugin 0.13.0 | CNPG-I ObjectStore | Yes | Managed by replacement Cluster | Optional replacement-Cluster provider; not required by the default platform |
+| Environment                                               | Backup                   | PITR | Automatic replica rebuild      | Recovery strategy                                                           |
+| --------------------------------------------------------- | ------------------------ | ---- | ------------------------------ | --------------------------------------------------------------------------- |
+| Bare metal/systemd, single primary                        | pgBackRest               | Yes  | N/A                            | In-place with PGDATA quarantine                                             |
+| Docker Compose database, host systemd Agent               | pgBackRest               | Yes  | N/A                            | In-place with volume quarantine                                             |
+| Patroni, one primary plus standbys                        | pgBackRest               | Yes  | Yes                            | Restore primary, reconcile DCS, fresh rebuild standbys                      |
+| Kubernetes self-managed `deluxebear/postgres:17`          | Built-in pgBackRest 2.58 | Yes  | Yes                            | Replacement StatefulSet/new PVC                                             |
+| Kubernetes self-managed `deluxebear/postgres:orioledb-17` | Built-in pgBackRest 2.58 | Yes  | Yes                            | Replacement StatefulSet/new PVC                                             |
+| CloudNativePG 1.29.1 + Barman Cloud plugin 0.13.0         | CNPG-I ObjectStore       | Yes  | Managed by replacement Cluster | Optional replacement-Cluster provider; not required by the default platform |
 
 Always pin an OCI digest in production. A tag alone is not a compatibility guarantee.
 
@@ -20,6 +20,29 @@ Always pin an OCI digest in production. A tag alone is not a compatibility guara
 3. Create a dedicated repository and encryption key; never reuse one stanza across unrelated database histories.
 4. Enroll Agents with mTLS and verify reported capabilities, image digest, system identifier, topology, pgBackRest version, and repository check.
 5. Enable backup policy only after a full backup, WAL switch, and restore drill succeed.
+
+### Independent control store
+
+Production deployments use the PostgreSQL control-store driver. The database,
+credentials, volume/PVC, backups, and encryption/CA key recovery procedure must
+be independent from every managed PostgreSQL cluster. The Compose deployment
+bundles a dedicated `backup-operator-db`; Helm and Kustomize read the complete
+PostgreSQL DSN from the `control-store-dsn` key in
+`backup-operator-secrets`. SQLite remains supported for tests and local
+development, but is not the production manifest default.
+
+Before enrollment, set unique
+`BACKUP_OPERATOR_CONTROL_STORE_SYSTEM_IDENTIFIER` and
+`BACKUP_OPERATOR_CONTROL_STORE_DATA_DOMAIN` values that identify the control
+recovery domain. Registration fails closed when a target reports the same
+database system identifier or data-domain identity. Back up the Operator store
+and service assertion/Agent CA keys together, but never into a repository whose
+restore depends on a managed stack.
+
+During a managed-stack outage, `/readyz`, durable job snapshots, backup
+manifests, restore plans, audit evidence, and repository observations must
+remain readable. Staleness must be explicit; an outage must not erase or hide
+the last durable recovery evidence.
 
 For Docker Compose databases, run only the Operator with
 `deploy/compose.yaml`; install the Agent on the database host with

@@ -1,20 +1,39 @@
 services:
+  backup-operator-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: backup_operator
+      POSTGRES_USER: backup_operator
+      POSTGRES_PASSWORD: ${BACKUP_OPERATOR_POSTGRES_PASSWORD:?set BACKUP_OPERATOR_POSTGRES_PASSWORD}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U backup_operator -d backup_operator']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - operator-db:/var/lib/postgresql/data
+    restart: unless-stopped
+
   backup-operator:
     image: ghcr.io/supabase/backup-operator:${BACKUP_OPERATOR_VERSION:?set BACKUP_OPERATOR_VERSION}
-    command: ["--mode=operator", "--listen=0.0.0.0:8080"]
+    command: ['--mode=operator', '--listen=0.0.0.0:8080']
     read_only: true
-    user: "65532:65532"
+    user: '65532:65532'
     environment:
       BACKUP_OPERATOR_SERVICE_ASSERTION_KEY: ${BACKUP_OPERATOR_SERVICE_ASSERTION_KEY:?set BACKUP_OPERATOR_SERVICE_ASSERTION_KEY}
-      BACKUP_OPERATOR_CONTROL_STORE_DRIVER: ${BACKUP_OPERATOR_CONTROL_STORE_DRIVER:-sqlite}
-      BACKUP_OPERATOR_CONTROL_STORE_DSN: ${BACKUP_OPERATOR_CONTROL_STORE_DSN:-/var/lib/backup-operator/control.db}
+      BACKUP_OPERATOR_CONTROL_STORE_DRIVER: postgres
+      BACKUP_OPERATOR_CONTROL_STORE_DSN: postgres://backup_operator:${BACKUP_OPERATOR_POSTGRES_PASSWORD}@backup-operator-db:5432/backup_operator?sslmode=disable
+      BACKUP_OPERATOR_CONTROL_STORE_SYSTEM_IDENTIFIER: ${BACKUP_OPERATOR_CONTROL_STORE_SYSTEM_IDENTIFIER:-backup-operator-control}
+      BACKUP_OPERATOR_CONTROL_STORE_DATA_DOMAIN: ${BACKUP_OPERATOR_CONTROL_STORE_DATA_DOMAIN:-operator-db}
       BACKUP_OPERATOR_RUNTIME_ENABLED: ${BACKUP_OPERATOR_RUNTIME_ENABLED:-true}
     ports:
-      - "127.0.0.1:${BACKUP_OPERATOR_HTTP_PORT:-8080}:8080"
+      - '127.0.0.1:${BACKUP_OPERATOR_HTTP_PORT:-8080}:8080'
     volumes:
-      - operator-state:/var/lib/backup-operator
       - ./secrets:/run/secrets:ro
     restart: unless-stopped
-    security_opt: ["no-new-privileges:true"]
+    security_opt: ['no-new-privileges:true']
+    depends_on:
+      backup-operator-db:
+        condition: service_healthy
 volumes:
-  operator-state:
+  operator-db:

@@ -1,0 +1,14 @@
+services:
+  fleet-control-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: fleet_control
+      POSTGRES_USER: fleet_control
+      POSTGRES_PASSWORD: fleet-control-test
+    ports:
+      - 127.0.0.1:${FLEET_CONTROL_TEST_POSTGRES_PORT:-55439}:5432
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U fleet_control -d fleet_control]
+      interval: 1s
+      timeout: 2s
+      retries: 30

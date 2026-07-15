@@ -1,6 +1,11 @@
 # Self-platform all-in-one compose — design
 
-Date: 2026-07-10 · Status: approved (user decisions recorded below) · Milestone: SP-C1
+Date: 2026-07-10 · Status: development/evaluation topology; superseded for production by ADR-011 · Milestone: SP-C1
+
+> Production note (2026-07-15): the shared `_platform` recovery domain below is
+> retained only for local all-in-one evaluation. T3 implements the accepted
+> ADR-011 boundary in `docker/self-platform/docker-compose.control-plane.yml`.
+> Production deployments must use that independent control-plane project.
 
 ## Goal
 

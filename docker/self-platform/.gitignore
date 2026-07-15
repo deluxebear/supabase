@@ -1,5 +1,6 @@
 # [self-platform] Local runtime state — never commit.
 .env
+control-plane.env
 volumes/db/data/
 volumes/storage/
 volumes/functions/

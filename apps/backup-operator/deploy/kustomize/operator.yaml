@@ -5,10 +5,10 @@ metadata:
 spec:
   replicas: 1
   selector:
-    matchLabels: {app: backup-operator}
+    matchLabels: { app: backup-operator }
   template:
     metadata:
-      labels: {app: backup-operator}
+      labels: { app: backup-operator }
     spec:
       serviceAccountName: backup-operator
       securityContext:
@@ -17,7 +17,7 @@ spec:
       containers:
         - name: operator
           image: ghcr.io/supabase/backup-operator
-          args: ["--mode=operator", "--listen=0.0.0.0:8080"]
+          args: ['--mode=operator', '--listen=0.0.0.0:8080']
           env:
             - name: BACKUP_OPERATOR_SERVICE_ASSERTION_KEY
               valueFrom:
@@ -25,47 +25,37 @@ spec:
                   name: backup-operator-secrets
                   key: service-assertion-key
             - name: BACKUP_OPERATOR_CONTROL_STORE_DRIVER
-              value: sqlite
+              value: postgres
             - name: BACKUP_OPERATOR_CONTROL_STORE_DSN
-              value: /var/lib/backup-operator/control.db
+              valueFrom:
+                secretKeyRef:
+                  name: backup-operator-secrets
+                  key: control-store-dsn
+            - name: BACKUP_OPERATOR_CONTROL_STORE_SYSTEM_IDENTIFIER
+              value: backup-operator-control
+            - name: BACKUP_OPERATOR_CONTROL_STORE_DATA_DOMAIN
+              value: backup-operator-postgres
             - name: BACKUP_OPERATOR_RUNTIME_ENABLED
-              value: "true"
+              value: 'true'
           ports:
             - name: http
               containerPort: 8080
           readinessProbe:
-            httpGet: {path: /readyz, port: http}
+            httpGet: { path: /readyz, port: http }
           livenessProbe:
-            httpGet: {path: /healthz, port: http}
-          volumeMounts:
-            - name: state
-              mountPath: /var/lib/backup-operator
+            httpGet: { path: /healthz, port: http }
           securityContext:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-            capabilities: {drop: ["ALL"]}
-      volumes:
-        - name: state
-          persistentVolumeClaim:
-            claimName: backup-operator-state
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: backup-operator-state
-spec:
-  accessModes: ["ReadWriteOnce"]
-  resources:
-    requests:
-      storage: 10Gi
+            capabilities: { drop: ['ALL'] }
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: backup-operator
 spec:
-  selector: {app: backup-operator}
+  selector: { app: backup-operator }
   ports:
     - name: http
       port: 8080

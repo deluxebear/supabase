@@ -1,7 +1,7 @@
 image:
   repository: ghcr.io/supabase/backup-operator
   tag: v0.1.1
-  digest: ""
+  digest: ''
 replicaCount: 1
 serviceAccount:
   create: true
@@ -11,8 +11,10 @@ service:
 serviceAssertion:
   existingSecret: backup-operator-secrets
   key: service-assertion-key
-persistence:
-  create: true
-  existingClaim: ""
-  storageClass: ""
-  size: 10Gi
+controlStore:
+  # Production requires a PostgreSQL database in a recovery domain independent
+  # from every managed PostgreSQL cluster. The Secret value is a complete DSN.
+  existingSecret: backup-operator-secrets
+  dsnKey: control-store-dsn
+  systemIdentifier: backup-operator-control
+  dataDomain: backup-operator-postgres

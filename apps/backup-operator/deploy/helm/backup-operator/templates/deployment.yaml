@@ -25,9 +25,16 @@ spec:
                   name: {{ required "serviceAssertion.existingSecret is required" .Values.serviceAssertion.existingSecret }}
                   key: {{ .Values.serviceAssertion.key }}
             - name: BACKUP_OPERATOR_CONTROL_STORE_DRIVER
-              value: sqlite
+              value: postgres
             - name: BACKUP_OPERATOR_CONTROL_STORE_DSN
-              value: /var/lib/backup-operator/control.db
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "controlStore.existingSecret is required" .Values.controlStore.existingSecret }}
+                  key: {{ .Values.controlStore.dsnKey }}
+            - name: BACKUP_OPERATOR_CONTROL_STORE_SYSTEM_IDENTIFIER
+              value: {{ required "controlStore.systemIdentifier is required" .Values.controlStore.systemIdentifier | quote }}
+            - name: BACKUP_OPERATOR_CONTROL_STORE_DATA_DOMAIN
+              value: {{ required "controlStore.dataDomain is required" .Values.controlStore.dataDomain | quote }}
             - name: BACKUP_OPERATOR_RUNTIME_ENABLED
               value: "true"
           ports:
@@ -37,15 +44,8 @@ spec:
             httpGet: {path: /readyz, port: http}
           livenessProbe:
             httpGet: {path: /healthz, port: http}
-          volumeMounts:
-            - name: state
-              mountPath: /var/lib/backup-operator
           securityContext:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             capabilities: {drop: ["ALL"]}
-      volumes:
-        - name: state
-          persistentVolumeClaim:
-            claimName: {{ default (printf "%s-backup-operator-state" .Release.Name) .Values.persistence.existingClaim }}
