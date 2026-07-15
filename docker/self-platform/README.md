@@ -60,6 +60,18 @@ the login surface, platform registry fixture, Fleet durable-operation fixture,
 and Backup Operator job evidence remain available before restarting the managed
 services. Run it only against a disposable or explicitly approved environment.
 
+T6 attachment and detachment semantics have a separate disposable acceptance test:
+
+```bash
+./scripts/verify-honest-attachment.sh
+```
+
+It applies the checksum-locked platform migrations, proves that two project rows
+cannot hold the same verified stack fingerprint, detaches an offline target, and
+asserts that the project tombstone, audit evidence, retained connection revision,
+cleanup intent, and a managed-infrastructure marker all survive. It never targets
+the configured production control plane.
+
 For the design rationale and the full list of decisions behind this layout, see
 [`docs/self-hosted-parity/2026-07-10-self-platform-compose-design.md`](../../docs/self-hosted-parity/2026-07-10-self-platform-compose-design.md).
 For everything about the control plane's data model, RBAC, invitations, and the

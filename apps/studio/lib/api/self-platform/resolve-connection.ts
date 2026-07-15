@@ -4,6 +4,7 @@
 // (zero-break). Unknown non-default ref -> ProjectNotFound (route maps to 404).
 import { POSTGRES_PORT } from '../self-hosted/constants'
 import { encryptString, getConnectionString } from '../self-hosted/util'
+import { buildCandidateConnectionString } from './attachment'
 import { getProjectByRef, type PlatformProjectRow } from './projects'
 import { decryptSecret } from './secrets'
 import { PROJECT_DB_HOST, PROJECT_REST_URL } from '@/lib/constants/api'
@@ -75,8 +76,25 @@ export interface ResolvedProjectIdentity {
 
 function fromRow(row: PlatformProjectRow): ResolvedConnection {
   const dbPass = decryptSecret(row.db_pass_enc)
-  const rwDsn = `postgresql://${row.db_user}:${dbPass}@${row.db_host}:${row.db_port}/${row.db_name}`
-  const roDsn = `postgresql://${row.db_user_readonly}:${dbPass}@${row.db_host}:${row.db_port}/${row.db_name}`
+  const dbPassReadonly = row.db_pass_readonly_enc ? decryptSecret(row.db_pass_readonly_enc) : dbPass
+  const rwDsn = buildCandidateConnectionString({
+    dbHost: row.db_host,
+    dbPort: row.db_port,
+    dbName: row.db_name,
+    dbUser: row.db_user,
+    dbPass,
+    tlsMode: row.tls_mode ?? 'prefer',
+    tlsCaReference: row.tls_ca_reference ?? null,
+  })
+  const roDsn = buildCandidateConnectionString({
+    dbHost: row.db_host,
+    dbPort: row.db_port,
+    dbName: row.db_name,
+    dbUser: row.db_user_readonly,
+    dbPass: dbPassReadonly,
+    tlsMode: row.tls_mode ?? 'prefer',
+    tlsCaReference: row.tls_ca_reference ?? null,
+  })
   return {
     ref: row.ref,
     organizationId: row.organization_id,
@@ -94,7 +112,7 @@ function fromRow(row: PlatformProjectRow): ResolvedConnection {
     dbUser: row.db_user,
     serviceKey: decryptSecret(row.service_key_enc),
     anonKey: decryptSecret(row.anon_key_enc),
-    jwtSecret: decryptSecret(row.jwt_secret_enc),
+    jwtSecret: row.jwt_secret_enc ? decryptSecret(row.jwt_secret_enc) : '',
     publishableKey: row.publishable_key_enc ? decryptSecret(row.publishable_key_enc) : null,
     secretKey: row.secret_key_enc ? decryptSecret(row.secret_key_enc) : null,
     logflareUrl: row.logflare_url,
@@ -172,7 +190,7 @@ async function lookupProjectRow(ref: string): Promise<PlatformProjectRow | null>
  */
 export async function resolveProjectIdentity(ref: string): Promise<ResolvedProjectIdentity> {
   const row = await lookupProjectRow(ref)
-  if (row) {
+  if (row && row.detached_at == null && row.status !== 'INACTIVE') {
     return {
       ref: row.ref,
       organizationId: row.organization_id,
@@ -211,7 +229,7 @@ export async function resolveProjectIdentity(ref: string): Promise<ResolvedProje
 /** Resolve credentials only after the caller has completed RBAC/isolation checks. */
 export async function resolveProjectConnection(ref: string): Promise<ResolvedConnection> {
   const row = await lookupProjectRow(ref)
-  if (row) return fromRow(row)
+  if (row && row.detached_at == null && row.status !== 'INACTIVE') return fromRow(row)
   if (ref === 'default') {
     console.log('[self-platform] project registry miss for "default", using global env')
     return fromGlobalEnv()

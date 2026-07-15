@@ -245,6 +245,7 @@ import { Route as ApiPlatformProjectsRefSettingsRouteImport } from './routes/api
 import { Route as ApiPlatformProjectsRefRunLintsRouteImport } from './routes/api/platform/projects/$ref/run-lints'
 import { Route as ApiPlatformProjectsRefInfraMonitoringRouteImport } from './routes/api/platform/projects/$ref/infra-monitoring'
 import { Route as ApiPlatformProjectsRefDatabasesRouteImport } from './routes/api/platform/projects/$ref/databases'
+import { Route as ApiPlatformProjectsRefCapabilitiesRouteImport } from './routes/api/platform/projects/$ref/capabilities'
 import { Route as ApiPlatformPgMetaRefViewsRouteImport } from './routes/api/platform/pg-meta/$ref/views'
 import { Route as ApiPlatformPgMetaRefTypesRouteImport } from './routes/api/platform/pg-meta/$ref/types'
 import { Route as ApiPlatformPgMetaRefTriggersRouteImport } from './routes/api/platform/pg-meta/$ref/triggers'
@@ -1609,6 +1610,12 @@ const ApiPlatformProjectsRefDatabasesRoute =
     path: '/api/platform/projects/$ref/databases',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPlatformProjectsRefCapabilitiesRoute =
+  ApiPlatformProjectsRefCapabilitiesRouteImport.update({
+    id: '/api/platform/projects/$ref/capabilities',
+    path: '/api/platform/projects/$ref/capabilities',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPlatformPgMetaRefViewsRoute =
   ApiPlatformPgMetaRefViewsRouteImport.update({
     id: '/api/platform/pg-meta/$ref/views',
@@ -2241,6 +2248,7 @@ export interface FileRoutesByFullPath {
   '/api/platform/pg-meta/$ref/triggers': typeof ApiPlatformPgMetaRefTriggersRoute
   '/api/platform/pg-meta/$ref/types': typeof ApiPlatformPgMetaRefTypesRoute
   '/api/platform/pg-meta/$ref/views': typeof ApiPlatformPgMetaRefViewsRoute
+  '/api/platform/projects/$ref/capabilities': typeof ApiPlatformProjectsRefCapabilitiesRoute
   '/api/platform/projects/$ref/databases': typeof ApiPlatformProjectsRefDatabasesRoute
   '/api/platform/projects/$ref/infra-monitoring': typeof ApiPlatformProjectsRefInfraMonitoringRoute
   '/api/platform/projects/$ref/run-lints': typeof ApiPlatformProjectsRefRunLintsRoute
@@ -2536,6 +2544,7 @@ export interface FileRoutesByTo {
   '/api/platform/pg-meta/$ref/triggers': typeof ApiPlatformPgMetaRefTriggersRoute
   '/api/platform/pg-meta/$ref/types': typeof ApiPlatformPgMetaRefTypesRoute
   '/api/platform/pg-meta/$ref/views': typeof ApiPlatformPgMetaRefViewsRoute
+  '/api/platform/projects/$ref/capabilities': typeof ApiPlatformProjectsRefCapabilitiesRoute
   '/api/platform/projects/$ref/databases': typeof ApiPlatformProjectsRefDatabasesRoute
   '/api/platform/projects/$ref/infra-monitoring': typeof ApiPlatformProjectsRefInfraMonitoringRoute
   '/api/platform/projects/$ref/run-lints': typeof ApiPlatformProjectsRefRunLintsRoute
@@ -2846,6 +2855,7 @@ export interface FileRoutesById {
   '/api/platform/pg-meta/$ref/triggers': typeof ApiPlatformPgMetaRefTriggersRoute
   '/api/platform/pg-meta/$ref/types': typeof ApiPlatformPgMetaRefTypesRoute
   '/api/platform/pg-meta/$ref/views': typeof ApiPlatformPgMetaRefViewsRoute
+  '/api/platform/projects/$ref/capabilities': typeof ApiPlatformProjectsRefCapabilitiesRoute
   '/api/platform/projects/$ref/databases': typeof ApiPlatformProjectsRefDatabasesRoute
   '/api/platform/projects/$ref/infra-monitoring': typeof ApiPlatformProjectsRefInfraMonitoringRoute
   '/api/platform/projects/$ref/run-lints': typeof ApiPlatformProjectsRefRunLintsRoute
@@ -3155,6 +3165,7 @@ export interface FileRouteTypes {
     | '/api/platform/pg-meta/$ref/triggers'
     | '/api/platform/pg-meta/$ref/types'
     | '/api/platform/pg-meta/$ref/views'
+    | '/api/platform/projects/$ref/capabilities'
     | '/api/platform/projects/$ref/databases'
     | '/api/platform/projects/$ref/infra-monitoring'
     | '/api/platform/projects/$ref/run-lints'
@@ -3450,6 +3461,7 @@ export interface FileRouteTypes {
     | '/api/platform/pg-meta/$ref/triggers'
     | '/api/platform/pg-meta/$ref/types'
     | '/api/platform/pg-meta/$ref/views'
+    | '/api/platform/projects/$ref/capabilities'
     | '/api/platform/projects/$ref/databases'
     | '/api/platform/projects/$ref/infra-monitoring'
     | '/api/platform/projects/$ref/run-lints'
@@ -3759,6 +3771,7 @@ export interface FileRouteTypes {
     | '/api/platform/pg-meta/$ref/triggers'
     | '/api/platform/pg-meta/$ref/types'
     | '/api/platform/pg-meta/$ref/views'
+    | '/api/platform/projects/$ref/capabilities'
     | '/api/platform/projects/$ref/databases'
     | '/api/platform/projects/$ref/infra-monitoring'
     | '/api/platform/projects/$ref/run-lints'
@@ -3932,6 +3945,7 @@ export interface RootRouteChildren {
   ApiPlatformPgMetaRefTriggersRoute: typeof ApiPlatformPgMetaRefTriggersRoute
   ApiPlatformPgMetaRefTypesRoute: typeof ApiPlatformPgMetaRefTypesRoute
   ApiPlatformPgMetaRefViewsRoute: typeof ApiPlatformPgMetaRefViewsRoute
+  ApiPlatformProjectsRefCapabilitiesRoute: typeof ApiPlatformProjectsRefCapabilitiesRoute
   ApiPlatformProjectsRefDatabasesRoute: typeof ApiPlatformProjectsRefDatabasesRoute
   ApiPlatformProjectsRefInfraMonitoringRoute: typeof ApiPlatformProjectsRefInfraMonitoringRoute
   ApiPlatformProjectsRefRunLintsRoute: typeof ApiPlatformProjectsRefRunLintsRoute
@@ -5638,6 +5652,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPlatformProjectsRefDatabasesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/platform/projects/$ref/capabilities': {
+      id: '/api/platform/projects/$ref/capabilities'
+      path: '/api/platform/projects/$ref/capabilities'
+      fullPath: '/api/platform/projects/$ref/capabilities'
+      preLoaderRoute: typeof ApiPlatformProjectsRefCapabilitiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/platform/pg-meta/$ref/views': {
       id: '/api/platform/pg-meta/$ref/views'
       path: '/api/platform/pg-meta/$ref/views'
@@ -6889,6 +6910,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPlatformPgMetaRefTriggersRoute: ApiPlatformPgMetaRefTriggersRoute,
   ApiPlatformPgMetaRefTypesRoute: ApiPlatformPgMetaRefTypesRoute,
   ApiPlatformPgMetaRefViewsRoute: ApiPlatformPgMetaRefViewsRoute,
+  ApiPlatformProjectsRefCapabilitiesRoute:
+    ApiPlatformProjectsRefCapabilitiesRoute,
   ApiPlatformProjectsRefDatabasesRoute: ApiPlatformProjectsRefDatabasesRoute,
   ApiPlatformProjectsRefInfraMonitoringRoute:
     ApiPlatformProjectsRefInfraMonitoringRoute,

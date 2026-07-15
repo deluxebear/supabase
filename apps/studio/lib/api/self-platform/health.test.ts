@@ -310,7 +310,8 @@ describe('writeThroughStatus', () => {
   it('writes db-derived status with the guarded single-statement UPDATE', async () => {
     await writeThroughStatus('proj-x', resultsWithDb('UNHEALTHY'))
     const call = vi.mocked(executePlatformQuery).mock.calls.at(-1)![0]
-    expect(call.parameters).toEqual(['proj-x', 'UNHEALTHY'])
+    expect(call.parameters).toEqual(['proj-x', 'UNHEALTHY', 'unreachable'])
+    expect(call.query).toContain('data_plane_health = $3')
     expect(call.query).toContain('status is distinct from $2')
     expect(call.query).toContain("interval '60 seconds'")
     expect(call.query).toContain('last_health_at = now()')
@@ -321,6 +322,7 @@ describe('writeThroughStatus', () => {
     expect(vi.mocked(executePlatformQuery).mock.calls.at(-1)![0].parameters).toEqual([
       'proj-x',
       'ACTIVE_HEALTHY',
+      'healthy',
     ])
   })
 

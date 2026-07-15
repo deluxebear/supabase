@@ -13,13 +13,17 @@ export type SelfPlatformExternalConnection = {
   dbUser?: string
   dbUserReadonly?: string
   dbPass: string
+  dbPassReadonly?: string
   kongUrl: string
   restUrl?: string
-  anonKey: string
-  serviceKey: string
-  jwtSecret: string
+  anonKey?: string
+  serviceKey?: string
+  jwtSecret?: string
   publishableKey?: string
   secretKey?: string
+  keyMode: 'legacy-jwt' | 'asymmetric-jwks' | 'mixed'
+  tlsMode: 'disable' | 'prefer' | 'require' | 'verify-ca' | 'verify-full'
+  tlsCaReference?: string
   logflareUrl?: string
   logflareToken?: string
 }
@@ -40,6 +44,8 @@ export type SelfPlatformProjectCreateResponse = {
   name: string
   status: string
   organization_slug: string
+  attachment_state: 'active'
+  connection_revision: number
 }
 
 export async function createSelfPlatformProject(vars: SelfPlatformProjectCreateVariables) {

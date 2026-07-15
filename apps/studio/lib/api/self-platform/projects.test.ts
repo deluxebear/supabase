@@ -29,6 +29,7 @@ const row = {
   kong_url: 'http://kong-b:8000',
   rest_url: 'http://kong-b:8000/rest/v1/',
   db_pass_enc: 'x',
+  db_pass_readonly_enc: null,
   service_key_enc: 'x',
   anon_key_enc: 'x',
   jwt_secret_enc: 'x',
@@ -43,6 +44,10 @@ const row = {
   k8s_pod_selector: null,
   stack_kind: 'external',
   stack_meta: {},
+  key_mode: 'legacy-jwt' as const,
+  tls_mode: 'prefer' as const,
+  tls_ca_reference: null,
+  detached_at: null,
 }
 
 function legacyRowWithoutStackFields() {

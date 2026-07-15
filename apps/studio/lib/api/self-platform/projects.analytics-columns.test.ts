@@ -70,6 +70,11 @@ describe('projects.ts analytics columns', () => {
       container_name: null,
       k8s_namespace: null,
       k8s_pod_selector: null,
+      key_mode: 'legacy-jwt',
+      tls_mode: 'prefer',
+      tls_ca_reference: null,
+      detached_at: null,
+      db_pass_readonly_enc: null,
     })
   })
 

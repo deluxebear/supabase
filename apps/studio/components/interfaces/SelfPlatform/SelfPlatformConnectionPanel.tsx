@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
+import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -17,6 +18,11 @@ import {
   FormControl,
   FormField,
   Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   WarningIcon,
 } from 'ui'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
@@ -30,6 +36,10 @@ import {
 } from 'ui-patterns/PageSection'
 import * as z from 'zod'
 
+import {
+  findProjectCapability,
+  projectCapabilitiesQueryOptions,
+} from '@/data/projects/project-capabilities-query'
 import {
   useSelfPlatformProjectUpdateMutation,
   type SelfPlatformConnectionPatch,
@@ -55,9 +65,15 @@ function buildConnectionEditSchema() {
     kongUrl: z.string().trim().url($t('Must be a URL (the browser-facing gateway)')),
     restUrl: z.string().trim().url($t('Must be a URL')),
     dbPass: z.string(),
+    dbPassReadonly: z.string(),
+    dbPassReadonlyClear: z.boolean(),
     anonKey: z.string(),
     serviceKey: z.string(),
     jwtSecret: z.string(),
+    keyMode: z.enum(['legacy-jwt', 'asymmetric-jwks', 'mixed']),
+    tlsMode: z.enum(['disable', 'prefer', 'require', 'verify-ca', 'verify-full']),
+    tlsCaReference: z.string(),
+    tlsCaReferenceClear: z.boolean(),
     publishableKey: z.string(),
     publishableKeyClear: z.boolean(),
     secretKey: z.string(),
@@ -89,9 +105,15 @@ function buildDefaults(sp: SelfPlatformProjectBlock): FormValues {
     kongUrl: sp.kong_url,
     restUrl: sp.rest_url,
     dbPass: '',
+    dbPassReadonly: '',
+    dbPassReadonlyClear: false,
     anonKey: '',
     serviceKey: '',
     jwtSecret: '',
+    keyMode: sp.key_mode ?? sp.attachment?.keyMode ?? 'legacy-jwt',
+    tlsMode: sp.tls_mode ?? 'prefer',
+    tlsCaReference: sp.tls_ca_reference ?? '',
+    tlsCaReferenceClear: false,
     publishableKey: '',
     publishableKeyClear: false,
     secretKey: '',
@@ -115,6 +137,7 @@ function buildDefaults(sp: SelfPlatformProjectBlock): FormValues {
 export const SelfPlatformConnectionPanel = () => {
   const { data: project } = useSelectedProjectQuery()
   const { can: canUpdate } = useAsyncCheckPermissions(PermissionAction.UPDATE, 'projects')
+  const capabilities = useQuery(projectCapabilitiesQueryOptions({ projectRef: project?.ref }))
   const [pendingPayload, setPendingPayload] = useState<SelfPlatformProjectUpdateVariables>()
   const [serverError, setServerError] = useState<string>()
 
@@ -153,6 +176,8 @@ export const SelfPlatformConnectionPanel = () => {
 
   const isSharedDb = selfPlatform.stack_kind === 'shared-db'
   const sharedChildren = selfPlatform.shared_children
+  const connectionCapability = findProjectCapability(capabilities.data, 'project.connection.update')
+  const canUpdateConnection = canUpdate && connectionCapability?.state === 'available'
 
   const buildPayload = (values: FormValues): SelfPlatformProjectUpdateVariables | undefined => {
     const dirty = form.formState.dirtyFields
@@ -165,9 +190,22 @@ export const SelfPlatformConnectionPanel = () => {
     if (dirty.kongUrl) connection.kongUrl = values.kongUrl
     if (dirty.restUrl) connection.restUrl = values.restUrl
     if (values.dbPass !== '') connection.dbPass = values.dbPass
+    if (values.dbPassReadonlyClear) connection.dbPassReadonly = null
+    else if (values.dbPassReadonly !== '') connection.dbPassReadonly = values.dbPassReadonly
     if (values.anonKey !== '') connection.anonKey = values.anonKey
     if (values.serviceKey !== '') connection.serviceKey = values.serviceKey
     if (values.jwtSecret !== '') connection.jwtSecret = values.jwtSecret
+    if (dirty.keyMode) {
+      connection.keyMode = values.keyMode
+      if (values.keyMode === 'asymmetric-jwks' && values.jwtSecret === '') {
+        connection.jwtSecret = null
+      }
+    }
+    if (dirty.tlsMode) connection.tlsMode = values.tlsMode
+    if (values.tlsCaReferenceClear) connection.tlsCaReference = null
+    else if (dirty.tlsCaReference && values.tlsCaReference !== '') {
+      connection.tlsCaReference = values.tlsCaReference
+    }
     if (values.publishableKeyClear) connection.publishableKey = null
     else if (values.publishableKey !== '') connection.publishableKey = values.publishableKey
     if (values.secretKeyClear) connection.secretKey = null
@@ -243,7 +281,11 @@ export const SelfPlatformConnectionPanel = () => {
       render={({ field }) => (
         <FormItemLayout name={name} layout="vertical" label={label} description={description}>
           <FormControl>
-            <Input {...field} value={String(field.value ?? '')} disabled={!canUpdate} />
+            <Input
+              {...field}
+              value={String(field.value ?? '')}
+              disabled={!canUpdate || (!isSharedDb && !canUpdateConnection)}
+            />
           </FormControl>
         </FormItemLayout>
       )}
@@ -274,7 +316,7 @@ export const SelfPlatformConnectionPanel = () => {
               value={String(field.value ?? '')}
               type="password"
               placeholder={secretPlaceholder}
-              disabled={!canUpdate}
+              disabled={!canUpdateConnection}
             />
           </FormControl>
         </FormItemLayout>
@@ -312,6 +354,15 @@ export const SelfPlatformConnectionPanel = () => {
           <Alert>
             <AlertDescription>
               {$t('You need additional permissions to update connection configuration.')}
+            </AlertDescription>
+          </Alert>
+        )}
+        {canUpdate && !canUpdateConnection && (
+          <Alert variant="warning">
+            <WarningIcon />
+            <AlertDescription>
+              {connectionCapability?.blockers[0]?.message ??
+                $t('Connection updates are unavailable until the project capability is verified.')}
             </AlertDescription>
           </Alert>
         )}
@@ -359,7 +410,74 @@ export const SelfPlatformConnectionPanel = () => {
                 {textField('dbUserReadonly', $t('Read-only database user'))}
                 {textField('kongUrl', $t('API gateway URL'))}
                 {textField('restUrl', $t('REST URL'))}
+                <FormField
+                  control={form.control}
+                  name="keyMode"
+                  render={({ field }) => (
+                    <FormItemLayout name="keyMode" layout="vertical" label={$t('API key mode')}>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={!canUpdateConnection}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="legacy-jwt">{$t('Legacy JWT')}</SelectItem>
+                            <SelectItem value="asymmetric-jwks">{$t('Asymmetric JWKS')}</SelectItem>
+                            <SelectItem value="mixed">{$t('Mixed migration')}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                    </FormItemLayout>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tlsMode"
+                  render={({ field }) => (
+                    <FormItemLayout
+                      name="tlsMode"
+                      layout="vertical"
+                      label={$t('Database TLS mode')}
+                    >
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={!canUpdateConnection}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {['disable', 'prefer', 'require', 'verify-ca', 'verify-full'].map(
+                              (mode) => (
+                                <SelectItem key={mode} value={mode}>
+                                  {mode}
+                                </SelectItem>
+                              )
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                    </FormItemLayout>
+                  )}
+                />
+                {textField('tlsCaReference', $t('TLS CA reference'))}
+                {clearCheckbox('tlsCaReferenceClear', $t('Clear the stored TLS CA reference'))}
                 {secretField('dbPass', $t('Database password'))}
+                {secretField(
+                  'dbPassReadonly',
+                  $t('Read-only database password'),
+                  selfPlatform.secrets_set.db_pass_readonly
+                )}
+                {clearCheckbox(
+                  'dbPassReadonlyClear',
+                  $t('Use the primary database password for read-only access')
+                )}
                 {secretField('anonKey', $t('Anon key'))}
                 {secretField('serviceKey', $t('Service role key'))}
                 {secretField('jwtSecret', $t('JWT secret'))}

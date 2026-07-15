@@ -1,8 +1,19 @@
+import { randomUUID } from 'node:crypto'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import type { JwtPayload } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
+import {
+  AttachmentPreflightFailed,
+  CapabilityUnavailable,
+  DetachOperationConflict,
+  detachProject,
+  getProjectAttachmentStatus,
+  listProjectCapabilities,
+  requireProjectCapability,
+  StackAlreadyAttached,
+} from '@/lib/api/self-platform/attachment'
 import { clearHealthCache } from '@/lib/api/self-platform/health'
 import type { PlatformProjectRow } from '@/lib/api/self-platform/projects'
 import {
@@ -11,7 +22,6 @@ import {
   toProjectDetailResponse,
 } from '@/lib/api/self-platform/projects'
 import {
-  deleteProjectByRef,
   parseProjectPatchInput,
   ProbeFailed,
   ProjectRowMissing,
@@ -21,6 +31,7 @@ import {
 import { checkPermission, guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { ProjectNotFound, resolveProjectIdentity } from '@/lib/api/self-platform/resolve-connection'
 import { DEFAULT_PROJECT, PROJECT_REST_URL } from '@/lib/constants/api'
+import { STUDIO_CAPABILITIES, STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
@@ -77,7 +88,11 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
 // never touches the real database. Order: ghost 404 (guard resolves first) →
 // 403 (Owner-only via the matrix deny) → default-refusal 400 → business.
 async function handleDelete(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
-  if (!IS_SELF_PLATFORM) {
+  if (
+    !IS_SELF_PLATFORM ||
+    STUDIO_DEPLOYMENT_PROFILE !== 'fleet' ||
+    !STUDIO_CAPABILITIES.projectAttachment
+  ) {
     return res.status(404).json({ message: 'Not available on this deployment' })
   }
   if (Array.isArray(req.query.ref)) {
@@ -91,10 +106,32 @@ async function handleDelete(req: NextApiRequest, res: NextApiResponse, claims?: 
   })
   if (!ok) return
   if (ref === 'default') {
-    return res.status(400).json({ message: 'The default project cannot be deleted' })
+    return res.status(400).json({ message: 'The default project cannot be detached' })
   }
-  await deleteProjectByRef(ref)
-  return res.status(200).json({ ref })
+  try {
+    await requireProjectCapability(ref, 'project.detach')
+    const detached = await detachProject({
+      projectRef: ref,
+      actor: claims?.sub ?? 'unknown',
+      correlationId:
+        (typeof req.headers['x-correlation-id'] === 'string' && req.headers['x-correlation-id']) ||
+        randomUUID(),
+    })
+    clearHealthCache(ref)
+    return res.status(200).json({ ref, ...detached })
+  } catch (error) {
+    if (error instanceof CapabilityUnavailable) {
+      return res.status(409).json({
+        code: 'capability_unavailable',
+        message: error.message,
+        blockers: error.blockers,
+      })
+    }
+    if (error instanceof DetachOperationConflict) {
+      return res.status(409).json({ code: 'operation_conflict', message: error.message })
+    }
+    throw error
+  }
 }
 
 // [self-platform] M6.1 spec §5: everything the edit panel needs to prefill —
@@ -111,6 +148,10 @@ async function buildSelfPlatformBlock(row: PlatformProjectRow) {
     }
   }
   const hostRef = (row.stack_meta as Record<string, unknown> | null)?.host_ref
+  const [attachment, capabilities] = await Promise.all([
+    getProjectAttachmentStatus(row.ref),
+    listProjectCapabilities(row.ref),
+  ])
   return {
     stack_kind: row.stack_kind,
     host_ref: typeof hostRef === 'string' ? hostRef : null,
@@ -121,6 +162,9 @@ async function buildSelfPlatformBlock(row: PlatformProjectRow) {
     db_user_readonly: row.db_user_readonly,
     kong_url: row.kong_url,
     rest_url: row.rest_url,
+    key_mode: row.key_mode ?? 'legacy-jwt',
+    tls_mode: row.tls_mode ?? 'prefer',
+    tls_ca_reference: row.tls_ca_reference ?? null,
     logflare_url: row.logflare_url ?? null,
     metrics_url: row.metrics_url ?? null,
     container_name: row.container_name ?? null,
@@ -128,6 +172,7 @@ async function buildSelfPlatformBlock(row: PlatformProjectRow) {
     k8s_pod_selector: row.k8s_pod_selector ?? null,
     secrets_set: {
       db_pass: true,
+      db_pass_readonly: Boolean(row.db_pass_readonly_enc),
       anon_key: true,
       service_key: true,
       jwt_secret: true,
@@ -137,6 +182,8 @@ async function buildSelfPlatformBlock(row: PlatformProjectRow) {
       metrics_token: row.metrics_token_enc != null,
     },
     shared_children: sharedChildren,
+    attachment,
+    capabilities,
   }
 }
 
@@ -146,7 +193,11 @@ async function buildSelfPlatformBlock(row: PlatformProjectRow) {
 // 400, missing row → 404) → per-ref health-cache invalidation for connection
 // changes → 200 detail + propagated_children.
 async function handlePatch(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
-  if (!IS_SELF_PLATFORM) {
+  if (
+    !IS_SELF_PLATFORM ||
+    STUDIO_DEPLOYMENT_PROFILE !== 'fleet' ||
+    !STUDIO_CAPABILITIES.projectAttachment
+  ) {
     return res.status(404).json({ message: 'Not available on this deployment' })
   }
   if (Array.isArray(req.query.ref)) {
@@ -162,7 +213,15 @@ async function handlePatch(req: NextApiRequest, res: NextApiResponse, claims?: J
   const parsed = parseProjectPatchInput(req.body)
   if ('error' in parsed) return res.status(400).json({ message: parsed.error })
   try {
-    const { propagatedChildren } = await updateProjectConnection(ref, parsed.value)
+    if (parsed.value.connection !== undefined) {
+      await requireProjectCapability(ref, 'project.connection.update')
+    }
+    const { propagatedChildren } = await updateProjectConnection(ref, parsed.value, {
+      actor: claims?.sub ?? 'unknown',
+      correlationId:
+        (typeof req.headers['x-correlation-id'] === 'string' && req.headers['x-correlation-id']) ||
+        randomUUID(),
+    })
     if (parsed.value.connection !== undefined) {
       // Spec D4: never leave the OLD stack's probe results on screen.
       clearHealthCache(ref)
@@ -182,6 +241,27 @@ async function handlePatch(req: NextApiRequest, res: NextApiResponse, claims?: J
     }
     if (err instanceof ProbeFailed) {
       return res.status(400).json({ message: `Could not connect to database: ${err.message}` })
+    }
+    if (err instanceof AttachmentPreflightFailed) {
+      return res.status(422).json({
+        code: 'preflight_failed',
+        message: err.message,
+        preflight: err.report,
+      })
+    }
+    if (err instanceof StackAlreadyAttached) {
+      return res.status(409).json({
+        code: 'stack_already_attached',
+        message: err.message,
+        existing_project_ref: err.existingProjectRef,
+      })
+    }
+    if (err instanceof CapabilityUnavailable) {
+      return res.status(409).json({
+        code: 'capability_unavailable',
+        message: err.message,
+        blockers: err.blockers,
+      })
     }
     throw err
   }

@@ -3,9 +3,25 @@
 // (register an independent stack with a connectivity probe), and
 // deregister-with-GC. Read paths stay in projects.ts; this module owns the
 // mutations. Spec: docs/self-hosted-parity/2026-07-05-F9-F16-M5.0-provisioning-design.md
+import {
+  activateConnectionCandidate,
+  AttachmentPreflightFailed,
+  attachVerifiedProject,
+  buildEncryptedConnectionDocument,
+  connectionFromProjectRow,
+  createConnectionCandidate,
+  failConnectionCandidate,
+  KEY_MODES,
+  runAttachmentPreflight,
+  TLS_MODES,
+  type AttachmentConnectionInput,
+  type AttachmentPreflightReport,
+  type ProjectKeyMode,
+  type ProjectTlsMode,
+} from './attachment'
 import { executePlatformQuery } from './db'
 import { getProjectByRef } from './projects'
-import { decryptSecret, encryptSecret } from './secrets'
+import { encryptSecret } from './secrets'
 import { constructHeaders } from '@/lib/api/apiHelpers'
 import { executeQuery } from '@/lib/api/self-hosted/query'
 import { encryptString } from '@/lib/api/self-hosted/util'
@@ -23,32 +39,32 @@ export class InvalidHostStack extends Error {}
 export class ProbeFailed extends Error {}
 export class CreateDatabaseFailed extends Error {}
 
-export interface ExternalConnectionInput {
-  dbHost: string
-  dbPort: number
-  dbName: string
-  dbUser: string
-  dbUserReadonly: string
-  dbPass: string
-  kongUrl: string
-  restUrl: string
-  anonKey: string
-  serviceKey: string
-  jwtSecret: string
-  publishableKey?: string | null
-  secretKey?: string | null
-  logflareUrl?: string | null
-  logflareToken?: string | null
-}
+export type ExternalConnectionInput = Omit<
+  AttachmentConnectionInput,
+  | 'publishableKey'
+  | 'secretKey'
+  | 'keyMode'
+  | 'tlsMode'
+  | 'tlsCaReference'
+  | 'dbPassReadonly'
+  | 'logflareUrl'
+  | 'logflareToken'
+> &
+  Partial<
+    Pick<
+      AttachmentConnectionInput,
+      | 'publishableKey'
+      | 'secretKey'
+      | 'keyMode'
+      | 'tlsMode'
+      | 'tlsCaReference'
+      | 'dbPassReadonly'
+      | 'logflareUrl'
+      | 'logflareToken'
+    >
+  >
 
-const REQUIRED_CONNECTION_FIELDS = [
-  'dbHost',
-  'dbPass',
-  'kongUrl',
-  'anonKey',
-  'serviceKey',
-  'jwtSecret',
-] as const
+const REQUIRED_CONNECTION_FIELDS = ['dbHost', 'dbPass', 'kongUrl'] as const
 
 // Mirrors the register CLI's REQUIRED_INPUT_FIELDS guard: never register an
 // empty-secret project. Optional fields get the CLI's defaults.
@@ -62,6 +78,27 @@ export function parseExternalConnectionInput(
     return { error: `Missing required connection field(s): ${missing.join(', ')}` }
   }
   const kongUrl = str('kongUrl')
+  const keyMode = (str('keyMode') || 'legacy-jwt') as ProjectKeyMode
+  const tlsMode = (str('tlsMode') || 'prefer') as ProjectTlsMode
+  if (!KEY_MODES.includes(keyMode)) return { error: 'Invalid keyMode' }
+  if (!TLS_MODES.includes(tlsMode)) return { error: 'Invalid tlsMode' }
+  const anonKey = str('anonKey')
+  const serviceKey = str('serviceKey')
+  const jwtSecret = str('jwtSecret')
+  const publishableKey = str('publishableKey') || null
+  const secretKey = str('secretKey') || null
+  const missingLegacy = !anonKey || !serviceKey || !jwtSecret
+  const missingAsymmetric = !publishableKey || !secretKey
+  if (
+    (keyMode === 'legacy-jwt' && missingLegacy) ||
+    (keyMode === 'asymmetric-jwks' && missingAsymmetric) ||
+    (keyMode === 'mixed' && (missingLegacy || missingAsymmetric))
+  ) {
+    return { error: `Missing credentials required for key mode ${keyMode}` }
+  }
+  if (keyMode === 'asymmetric-jwks' && jwtSecret) {
+    return { error: 'jwtSecret must be empty for asymmetric-jwks key mode' }
+  }
   const port = obj.dbPort === undefined ? 5432 : Number(obj.dbPort)
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
     return { error: 'Invalid dbPort' }
@@ -74,13 +111,17 @@ export function parseExternalConnectionInput(
       dbUser: str('dbUser') || 'supabase_admin',
       dbUserReadonly: str('dbUserReadonly') || 'supabase_read_only_user',
       dbPass: str('dbPass'),
+      dbPassReadonly: str('dbPassReadonly') || null,
       kongUrl,
       restUrl: str('restUrl') || kongUrl.replace(/\/$/, '') + '/rest/v1/',
-      anonKey: str('anonKey'),
-      serviceKey: str('serviceKey'),
-      jwtSecret: str('jwtSecret'),
-      publishableKey: str('publishableKey') || null,
-      secretKey: str('secretKey') || null,
+      anonKey,
+      serviceKey,
+      jwtSecret,
+      publishableKey,
+      secretKey,
+      keyMode,
+      tlsMode,
+      tlsCaReference: str('tlsCaReference') || null,
       logflareUrl: str('logflareUrl') || null,
       logflareToken: str('logflareToken') || null,
     },
@@ -233,49 +274,42 @@ export async function attachExternalProject(input: {
   name: string
   organizationId: number
   connection: ExternalConnectionInput
+  actor?: string
+  correlationId?: string
   // [self-platform] M6.4: optional Postgres container name for
   // container-granular metrics; defaults null (host-level metrics fallback).
   containerName?: string | null
-}): Promise<{ id: number }> {
-  const c = input.connection
-  const probe = await probeConnection(c)
-  if (!probe.ok) throw new ProbeFailed(probe.error)
-
-  const insert = await executePlatformQuery<{ id: number }>({
-    query: `insert into platform.projects
-      (${INSERT_COLUMNS})
-      values ($1,$2,$3,'ACTIVE_HEALTHY','AWS','local',$4,$5,$6,$7,$8,$9,$10,
-              $11,$12,$13,$14,$15,$16,$17,$18,'external','{}'::jsonb,$19)
-      returning id`,
-    parameters: [
-      input.ref,
-      input.organizationId,
-      input.name,
-      c.dbHost,
-      c.dbPort,
-      c.dbName,
-      c.dbUser,
-      c.dbUserReadonly,
-      c.kongUrl,
-      c.restUrl,
-      encryptSecret(c.dbPass),
-      encryptSecret(c.serviceKey),
-      encryptSecret(c.anonKey),
-      encryptSecret(c.jwtSecret),
-      c.publishableKey ? encryptSecret(c.publishableKey) : null,
-      c.secretKey ? encryptSecret(c.secretKey) : null,
-      c.logflareUrl ?? null,
-      c.logflareToken ? encryptSecret(c.logflareToken) : null,
-      input.containerName ?? null,
-    ],
-  })
-  if (insert.error) {
-    if (isDuplicateKey(insert.error)) throw new DuplicateRef(input.ref)
-    throw insert.error
+}): Promise<{
+  id: number
+  connectionRevision?: number
+  preflight?: AttachmentPreflightReport
+}> {
+  const c: AttachmentConnectionInput = {
+    publishableKey: null,
+    secretKey: null,
+    keyMode: 'legacy-jwt',
+    tlsMode: 'prefer',
+    tlsCaReference: null,
+    dbPassReadonly: null,
+    logflareUrl: null,
+    logflareToken: null,
+    ...input.connection,
   }
-  const id = insert.data?.[0]?.id
-  if (id === undefined) throw new Error('project insert returned no id')
-  return { id }
+  const preflight = await runAttachmentPreflight(c)
+  if (preflight.outcome !== 'pass') throw new AttachmentPreflightFailed(preflight)
+  try {
+    const attached = await attachVerifiedProject({
+      ...input,
+      connection: c,
+      report: preflight,
+      actor: input.actor ?? 'system:legacy-project-attach',
+      correlationId: input.correlationId ?? 'legacy-project-attach',
+    })
+    return { ...attached, preflight }
+  } catch (error) {
+    if (error instanceof Error && isDuplicateKey(error)) throw new DuplicateRef(input.ref)
+    throw error
+  }
 }
 
 export async function deleteProjectByRef(ref: string): Promise<boolean> {
@@ -322,11 +356,15 @@ export interface ConnectionPatch {
   kongUrl?: string
   restUrl?: string
   dbPass?: string
+  dbPassReadonly?: string | null
   anonKey?: string
   serviceKey?: string
-  jwtSecret?: string
+  jwtSecret?: string | null
   publishableKey?: string | null
   secretKey?: string | null
+  keyMode?: ProjectKeyMode
+  tlsMode?: ProjectTlsMode
+  tlsCaReference?: string | null
 }
 
 export interface ProjectPatch {
@@ -350,8 +388,8 @@ const NON_SECRET_CONNECTION_FIELDS = [
   'kongUrl',
   'restUrl',
 ] as const
-const REQUIRED_SECRET_FIELDS = ['dbPass', 'anonKey', 'serviceKey', 'jwtSecret'] as const
-const NULLABLE_SECRET_FIELDS = ['publishableKey', 'secretKey'] as const
+const REQUIRED_SECRET_FIELDS = ['dbPass', 'anonKey', 'serviceKey'] as const
+const NULLABLE_SECRET_FIELDS = ['dbPassReadonly', 'publishableKey', 'secretKey'] as const
 
 // Semantics (spec D2/D5): immutable trio → error BY NAME; unknown keys are
 // dropped (auth-config whitelist precedent — the upstream rename form may
@@ -403,6 +441,26 @@ export function parseProjectPatchInput(raw: unknown): { value: ProjectPatch } | 
       if (!Number.isInteger(port) || port < 1 || port > 65535) return { error: 'Invalid dbPort' }
       conn.dbPort = port
     }
+    if (c.keyMode !== undefined) {
+      if (typeof c.keyMode !== 'string' || !KEY_MODES.includes(c.keyMode as ProjectKeyMode)) {
+        return { error: 'Invalid keyMode' }
+      }
+      conn.keyMode = c.keyMode as ProjectKeyMode
+    }
+    if (c.tlsMode !== undefined) {
+      if (typeof c.tlsMode !== 'string' || !TLS_MODES.includes(c.tlsMode as ProjectTlsMode)) {
+        return { error: 'Invalid tlsMode' }
+      }
+      conn.tlsMode = c.tlsMode as ProjectTlsMode
+    }
+    if (c.tlsCaReference !== undefined) {
+      if (c.tlsCaReference === null) conn.tlsCaReference = null
+      else if (typeof c.tlsCaReference !== 'string') {
+        return { error: 'Invalid tlsCaReference' }
+      } else if (c.tlsCaReference.trim() !== '') {
+        conn.tlsCaReference = c.tlsCaReference.trim()
+      }
+    }
     for (const key of REQUIRED_SECRET_FIELDS) {
       const v = c[key]
       if (v === undefined) continue
@@ -410,6 +468,11 @@ export function parseProjectPatchInput(raw: unknown): { value: ProjectPatch } | 
       if (typeof v !== 'string') return { error: `Invalid ${key}` }
       if (v.trim() === '') continue // mask round-trip: keep stored value
       conn[key] = v.trim()
+    }
+    if (c.jwtSecret !== undefined) {
+      if (c.jwtSecret === null) conn.jwtSecret = null
+      else if (typeof c.jwtSecret !== 'string') return { error: 'Invalid jwtSecret' }
+      else if (c.jwtSecret.trim() !== '') conn.jwtSecret = c.jwtSecret.trim()
     }
     for (const key of NULLABLE_SECRET_FIELDS) {
       const v = c[key]
@@ -532,6 +595,7 @@ const PROPAGATED_CONNECTION_KEYS: ReadonlyArray<keyof ConnectionPatch> = [
   'kongUrl',
   'restUrl',
   'dbPass',
+  'dbPassReadonly',
   'anonKey',
   'serviceKey',
   'jwtSecret',
@@ -541,7 +605,11 @@ const PROPAGATED_CONNECTION_KEYS: ReadonlyArray<keyof ConnectionPatch> = [
 
 export async function updateProjectConnection(
   ref: string,
-  patch: ProjectPatch
+  patch: ProjectPatch,
+  context: { actor: string; correlationId: string } = {
+    actor: 'system:legacy-project-update',
+    correlationId: 'legacy-project-update',
+  }
 ): Promise<{ propagatedChildren: string[] }> {
   const row = await getProjectByRef(ref)
   if (!row) {
@@ -557,17 +625,82 @@ export async function updateProjectConnection(
     )
   }
 
-  // Probe-before-save (spec D3): presence-based — any effective connection
-  // field requires the merged candidate DSN to answer `select 1` first.
+  // T6: every effective connection edit is persisted as a write-only
+  // candidate, receives the full multi-service preflight, and is activated
+  // atomically only after identity and duplicate checks pass.
   if (conn) {
-    const probe = await probeConnection({
-      dbHost: conn.dbHost ?? row.db_host,
-      dbPort: conn.dbPort ?? row.db_port,
-      dbName: conn.dbName ?? row.db_name,
-      dbUser: conn.dbUser ?? row.db_user,
-      dbPass: conn.dbPass ?? decryptSecret(row.db_pass_enc),
+    const candidateConnection = connectionFromProjectRow(row)
+    if (conn.dbHost !== undefined) candidateConnection.dbHost = conn.dbHost
+    if (conn.dbPort !== undefined) candidateConnection.dbPort = conn.dbPort
+    if (conn.dbName !== undefined) candidateConnection.dbName = conn.dbName
+    if (conn.dbUser !== undefined) candidateConnection.dbUser = conn.dbUser
+    if (conn.dbUserReadonly !== undefined) candidateConnection.dbUserReadonly = conn.dbUserReadonly
+    if (conn.kongUrl !== undefined) candidateConnection.kongUrl = conn.kongUrl
+    if (conn.restUrl !== undefined) candidateConnection.restUrl = conn.restUrl
+    if (conn.dbPass !== undefined) candidateConnection.dbPass = conn.dbPass
+    if (conn.dbPassReadonly !== undefined) {
+      candidateConnection.dbPassReadonly = conn.dbPassReadonly
+    }
+    if (conn.anonKey !== undefined) candidateConnection.anonKey = conn.anonKey
+    if (conn.serviceKey !== undefined) candidateConnection.serviceKey = conn.serviceKey
+    if (conn.jwtSecret !== undefined) candidateConnection.jwtSecret = conn.jwtSecret ?? ''
+    if (conn.publishableKey !== undefined) candidateConnection.publishableKey = conn.publishableKey
+    if (conn.secretKey !== undefined) candidateConnection.secretKey = conn.secretKey
+    if (conn.keyMode !== undefined) candidateConnection.keyMode = conn.keyMode
+    if (conn.tlsMode !== undefined) candidateConnection.tlsMode = conn.tlsMode
+    if (conn.tlsCaReference !== undefined) {
+      candidateConnection.tlsCaReference = conn.tlsCaReference
+    }
+    const candidate = await createConnectionCandidate({
+      projectRef: ref,
+      keyMode: candidateConnection.keyMode,
+      connectionDocument: buildEncryptedConnectionDocument(candidateConnection),
+      actor: context.actor,
+      correlationId: context.correlationId,
     })
-    if (!probe.ok) throw new ProbeFailed(probe.error)
+    let report = await runAttachmentPreflight(candidateConnection, { excludingProjectRef: ref })
+    const binding = await executePlatformQuery<{
+      stack_fingerprint: string | null
+      fingerprint_proof_state: string
+    }>({
+      query: `select stack_fingerprint, fingerprint_proof_state
+        from platform.stack_bindings where project_ref = $1`,
+      parameters: [ref],
+    })
+    if (binding.error) throw binding.error
+    const currentFingerprint = binding.data?.[0]?.stack_fingerprint
+    if (
+      currentFingerprint &&
+      report.stackFingerprint &&
+      currentFingerprint !== report.stackFingerprint
+    ) {
+      report = {
+        ...report,
+        outcome: 'fail',
+        checks: [
+          ...report.checks,
+          {
+            name: 'stack-identity-match',
+            status: 'fail',
+            required: true,
+            message: 'The candidate connection points to a different Supabase stack',
+            remediation: 'Detach the existing binding before attaching a different stack.',
+          },
+        ],
+      }
+    }
+    if (report.outcome !== 'pass') {
+      await failConnectionCandidate(candidate.id, report)
+      throw new AttachmentPreflightFailed(report)
+    }
+    await activateConnectionCandidate({
+      id: candidate.id,
+      projectRef: ref,
+      connection: candidateConnection,
+      report,
+      actor: context.actor,
+      correlationId: context.correlationId,
+    })
   }
 
   // SET clause: column names only ever come from the literals below —
@@ -579,28 +712,9 @@ export async function updateProjectConnection(
     sets.push(`${column} = $${parameters.length}`)
   }
   if (patch.name !== undefined) set('name', patch.name)
-  if (conn) {
-    if (conn.dbHost !== undefined) set('db_host', conn.dbHost)
-    if (conn.dbPort !== undefined) set('db_port', conn.dbPort)
-    if (conn.dbName !== undefined) set('db_name', conn.dbName)
-    if (conn.dbUser !== undefined) set('db_user', conn.dbUser)
-    if (conn.dbUserReadonly !== undefined) set('db_user_readonly', conn.dbUserReadonly)
-    if (conn.kongUrl !== undefined) set('kong_url', conn.kongUrl)
-    if (conn.restUrl !== undefined) set('rest_url', conn.restUrl)
-    if (conn.dbPass !== undefined) set('db_pass_enc', encryptSecret(conn.dbPass))
-    if (conn.anonKey !== undefined) set('anon_key_enc', encryptSecret(conn.anonKey))
-    if (conn.serviceKey !== undefined) set('service_key_enc', encryptSecret(conn.serviceKey))
-    if (conn.jwtSecret !== undefined) set('jwt_secret_enc', encryptSecret(conn.jwtSecret))
-    if (conn.publishableKey !== undefined) {
-      set(
-        'publishable_key_enc',
-        conn.publishableKey === null ? null : encryptSecret(conn.publishableKey)
-      )
-    }
-    if (conn.secretKey !== undefined) {
-      set('secret_key_enc', conn.secretKey === null ? null : encryptSecret(conn.secretKey))
-    }
-  }
+  // Connection fields were already promoted atomically by
+  // activateConnectionCandidate. Re-applying them here would introduce a
+  // post-activation failure window and would encrypt the same secret twice.
   if (patch.logflareUrl !== undefined) set('logflare_url', patch.logflareUrl)
   if (patch.logflareToken !== undefined) {
     set(
@@ -617,13 +731,13 @@ export async function updateProjectConnection(
   // [self-platform] M6.4 D3: k8s identity is non-secret, same as container_name.
   if (patch.k8sNamespace !== undefined) set('k8s_namespace', patch.k8sNamespace)
   if (patch.k8sPodSelector !== undefined) set('k8s_pod_selector', patch.k8sPodSelector)
-  if (sets.length === 0) throw new Error('empty project patch') // parse guarantees ≥1 — defense only
-
-  const update = await executePlatformQuery({
-    query: `update platform.projects set ${sets.join(', ')}, updated_at = now() where ref = $1`,
-    parameters,
-  })
-  if (update.error) throw update.error
+  if (sets.length > 0) {
+    const update = await executePlatformQuery({
+      query: `update platform.projects set ${sets.join(', ')}, updated_at = now() where ref = $1`,
+      parameters,
+    })
+    if (update.error) throw update.error
+  }
 
   // Propagation (spec D7): FULL cloned-set re-sync from the host row's
   // post-update values — children become exact clones again (heals any
@@ -640,9 +754,12 @@ export async function updateProjectConnection(
           db_host = h.db_host, db_port = h.db_port,
           db_user = h.db_user, db_user_readonly = h.db_user_readonly,
           kong_url = h.kong_url, rest_url = h.rest_url,
-          db_pass_enc = h.db_pass_enc, service_key_enc = h.service_key_enc,
+          db_pass_enc = h.db_pass_enc, db_pass_readonly_enc = h.db_pass_readonly_enc,
+          service_key_enc = h.service_key_enc,
           anon_key_enc = h.anon_key_enc, jwt_secret_enc = h.jwt_secret_enc,
           publishable_key_enc = h.publishable_key_enc, secret_key_enc = h.secret_key_enc,
+          key_mode = h.key_mode, tls_mode = h.tls_mode,
+          tls_ca_reference = h.tls_ca_reference,
           updated_at = now()
         from platform.projects h
         where h.ref = $1

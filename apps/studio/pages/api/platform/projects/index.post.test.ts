@@ -4,11 +4,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { handler } from './index'
 import {
+  AttachmentPreflightFailed,
+  StackAlreadyAttached,
+  type AttachmentPreflightReport,
+} from '@/lib/api/self-platform/attachment'
+import {
   attachExternalProject,
-  CreateDatabaseFailed,
-  createSharedDbProject,
   DuplicateRef,
-  InvalidHostStack,
   ProbeFailed,
 } from '@/lib/api/self-platform/projects-admin'
 import { guardOrgRoute } from '@/lib/api/self-platform/rbac/enforce'
@@ -21,7 +23,6 @@ vi.hoisted(() => {
 vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({ guardOrgRoute: vi.fn() }))
 vi.mock('@/lib/api/self-platform/projects-admin', async (importOriginal) => ({
   ...(await importOriginal<object>()),
-  createSharedDbProject: vi.fn(),
   attachExternalProject: vi.fn(),
 }))
 // GET-path deps — the POST tests never reach them, but the module imports them.
@@ -36,17 +37,45 @@ const SHARED_BODY = {
   name: 'Team A',
   ref: 'team-a',
 }
+const EXTERNAL_BODY = {
+  mode: 'external',
+  organization_slug: 'default',
+  name: 'Ext',
+  ref: 'ext-1',
+  connection: {
+    dbHost: 'h',
+    dbPass: 'p',
+    kongUrl: 'http://k:8000',
+    anonKey: 'a',
+    serviceKey: 's',
+    jwtSecret: 'j',
+  },
+}
+const FAILED_REPORT: AttachmentPreflightReport = {
+  contractVersion: 'v1',
+  startedAt: '2026-07-15T00:00:00.000Z',
+  completedAt: '2026-07-15T00:00:01.000Z',
+  outcome: 'fail',
+  stackFingerprint: 'a'.repeat(64),
+  checks: [
+    {
+      name: 'storage',
+      status: 'fail',
+      required: true,
+      message: 'Storage returned HTTP 503',
+    },
+  ],
+}
 
 beforeEach(() => {
   vi.mocked(guardOrgRoute).mockReset().mockResolvedValue({ orgId: 1, orgSlug: 'default' })
-  vi.mocked(createSharedDbProject).mockReset().mockResolvedValue({ id: 7 })
   vi.mocked(attachExternalProject).mockReset().mockResolvedValue({ id: 8 })
 })
 
 const post = (body: object) => createMocks({ method: 'POST', body })
 
 describe('POST /platform/projects (self-platform)', () => {
-  it('shared-db happy path → 201 with host_ref defaulting to default', async () => {
+  it('rejects shared-db creation because a Fleet project must bind one independent stack', async () => {
     const { req, res } = post(SHARED_BODY)
     await handler(req as never, res as never, claimsOf('g-owner'))
     expect(vi.mocked(guardOrgRoute).mock.calls[0][2]).toMatchObject({
@@ -54,37 +83,16 @@ describe('POST /platform/projects (self-platform)', () => {
       action: 'write:Create',
       resource: 'projects',
     })
-    expect(createSharedDbProject).toHaveBeenCalledWith({
-      ref: 'team-a',
-      name: 'Team A',
-      hostRef: 'default',
-      organizationId: 1,
-    })
-    expect(res._getStatusCode()).toBe(201)
+    expect(res._getStatusCode()).toBe(400)
     expect(res._getJSONData()).toEqual({
-      id: 7,
-      ref: 'team-a',
-      name: 'Team A',
-      status: 'ACTIVE_HEALTHY',
-      organization_slug: 'default',
+      code: 'validation_failed',
+      message:
+        'Shared-database project creation is incompatible with one-project-per-stack attachment. Attach an independent stack instead.',
     })
   })
 
   it('external happy path → 201 via attachExternalProject', async () => {
-    const { req, res } = post({
-      mode: 'external',
-      organization_slug: 'default',
-      name: 'Ext',
-      ref: 'ext-1',
-      connection: {
-        dbHost: 'h',
-        dbPass: 'p',
-        kongUrl: 'http://k:8000',
-        anonKey: 'a',
-        serviceKey: 's',
-        jwtSecret: 'j',
-      },
-    })
+    const { req, res } = post(EXTERNAL_BODY)
     await handler(req as never, res as never, claimsOf('g-owner'))
     expect(attachExternalProject).toHaveBeenCalled()
     expect(res._getStatusCode()).toBe(201)
@@ -124,61 +132,58 @@ describe('POST /platform/projects (self-platform)', () => {
     vi.mocked(guardOrgRoute).mockResolvedValue(null)
     const { req, res } = post(SHARED_BODY)
     await handler(req as never, res as never, claimsOf('g-dev'))
-    expect(createSharedDbProject).not.toHaveBeenCalled()
+    expect(attachExternalProject).not.toHaveBeenCalled()
+  })
+
+  it('rejects a stale or missing session before starting preflight', async () => {
+    vi.mocked(guardOrgRoute).mockImplementation(async (res) => {
+      res.status(401).json({ code: 'forbidden', message: 'Session expired' })
+      return null
+    })
+    const { req, res } = post(EXTERNAL_BODY)
+    await handler(req as never, res as never, undefined)
+    expect(res._getStatusCode()).toBe(401)
+    expect(attachExternalProject).not.toHaveBeenCalled()
+  })
+
+  it('returns the structured preflight report without creating a false healthy project', async () => {
+    vi.mocked(attachExternalProject).mockRejectedValue(new AttachmentPreflightFailed(FAILED_REPORT))
+    const { req, res } = post(EXTERNAL_BODY)
+    await handler(req as never, res as never, claimsOf('g-owner'))
+    expect(res._getStatusCode()).toBe(422)
+    expect(res._getJSONData()).toEqual({
+      code: 'preflight_failed',
+      message: 'Attachment preflight failed',
+      preflight: FAILED_REPORT,
+    })
+  })
+
+  it('returns stack_already_attached with owner remediation context', async () => {
+    vi.mocked(attachExternalProject).mockRejectedValue(new StackAlreadyAttached('project-a'))
+    const { req, res } = post(EXTERNAL_BODY)
+    await handler(req as never, res as never, claimsOf('g-owner'))
+    expect(res._getStatusCode()).toBe(409)
+    expect(res._getJSONData()).toMatchObject({
+      code: 'stack_already_attached',
+      existing_project_ref: 'project-a',
+    })
   })
 
   it('DuplicateRef → 409', async () => {
-    vi.mocked(createSharedDbProject).mockRejectedValue(new DuplicateRef('team-a'))
-    const { req, res } = post(SHARED_BODY)
+    vi.mocked(attachExternalProject).mockRejectedValue(new DuplicateRef('team-a'))
+    const { req, res } = post(EXTERNAL_BODY)
     await handler(req as never, res as never, claimsOf('g-owner'))
     expect(res._getStatusCode()).toBe(409)
     expect(res._getJSONData()).toEqual({ message: 'A project with this ref already exists' })
   })
 
-  it('InvalidHostStack → 400 with the thrown message', async () => {
-    vi.mocked(createSharedDbProject).mockRejectedValue(
-      new InvalidHostStack('Host stack "proj-b" is not a registered external stack')
-    )
-    const { req, res } = post({ ...SHARED_BODY, host_ref: 'proj-b' })
-    await handler(req as never, res as never, claimsOf('g-owner'))
-    expect(res._getStatusCode()).toBe(400)
-    expect(res._getJSONData()).toEqual({
-      message: 'Host stack "proj-b" is not a registered external stack',
-    })
-  })
-
   it('ProbeFailed → 400 with the cause', async () => {
     vi.mocked(attachExternalProject).mockRejectedValue(new ProbeFailed('connect ECONNREFUSED'))
-    const { req, res } = post({
-      mode: 'external',
-      organization_slug: 'default',
-      name: 'Ext',
-      ref: 'ext-1',
-      connection: {
-        dbHost: 'h',
-        dbPass: 'p',
-        kongUrl: 'http://k:8000',
-        anonKey: 'a',
-        serviceKey: 's',
-        jwtSecret: 'j',
-      },
-    })
+    const { req, res } = post(EXTERNAL_BODY)
     await handler(req as never, res as never, claimsOf('g-owner'))
     expect(res._getStatusCode()).toBe(400)
     expect(res._getJSONData()).toEqual({
       message: 'Could not connect to database: connect ECONNREFUSED',
-    })
-  })
-
-  it('CreateDatabaseFailed → 500 with the descriptive message', async () => {
-    vi.mocked(createSharedDbProject).mockRejectedValue(
-      new CreateDatabaseFailed('CREATE DATABASE failed: database "e2e_m50" already exists')
-    )
-    const { req, res } = post(SHARED_BODY)
-    await handler(req as never, res as never, claimsOf('g-owner'))
-    expect(res._getStatusCode()).toBe(500)
-    expect(res._getJSONData()).toEqual({
-      message: 'CREATE DATABASE failed: database "e2e_m50" already exists',
     })
   })
 

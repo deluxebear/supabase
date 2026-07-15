@@ -3,6 +3,11 @@ import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { handler } from './index'
+import {
+  getProjectAttachmentStatus,
+  listProjectCapabilities,
+  requireProjectCapability,
+} from '@/lib/api/self-platform/attachment'
 import { clearHealthCache } from '@/lib/api/self-platform/health'
 import { listSharedDbChildRefs, MISSING_STACK_COLUMN } from '@/lib/api/self-platform/projects'
 import {
@@ -23,6 +28,12 @@ vi.mock('@/lib/api/self-platform/rbac/enforce', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   guardProjectRoute: vi.fn(),
   checkPermission: vi.fn(),
+}))
+vi.mock('@/lib/api/self-platform/attachment', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  getProjectAttachmentStatus: vi.fn(),
+  listProjectCapabilities: vi.fn(),
+  requireProjectCapability: vi.fn(),
 }))
 // parse + error classes stay REAL; only the write entry point is mocked.
 vi.mock('@/lib/api/self-platform/projects-admin', async (importOriginal) => ({
@@ -84,6 +95,9 @@ beforeEach(() => {
   vi.mocked(resolveProjectIdentity).mockResolvedValue(resolved as never)
   vi.mocked(updateProjectConnection).mockResolvedValue({ propagatedChildren: [] })
   vi.mocked(listSharedDbChildRefs).mockResolvedValue([])
+  vi.mocked(getProjectAttachmentStatus).mockResolvedValue(null)
+  vi.mocked(listProjectCapabilities).mockResolvedValue([])
+  vi.mocked(requireProjectCapability).mockResolvedValue()
 })
 
 describe('PATCH /platform/projects/[ref] (self-platform)', () => {
@@ -95,7 +109,11 @@ describe('PATCH /platform/projects/[ref] (self-platform)', () => {
       projectRef: 'proj-b',
       resource: 'projects',
     })
-    expect(updateProjectConnection).toHaveBeenCalledWith('proj-b', { name: 'Renamed' })
+    expect(updateProjectConnection).toHaveBeenCalledWith(
+      'proj-b',
+      { name: 'Renamed' },
+      expect.objectContaining({ actor: 'g-admin', correlationId: expect.any(String) })
+    )
     expect(res._getStatusCode()).toBe(200)
     expect(res._getJSONData()).toMatchObject({
       ref: 'proj-b',
@@ -108,7 +126,11 @@ describe('PATCH /platform/projects/[ref] (self-platform)', () => {
   it('upstream rename payload shape passes: unknown cloud keys ignored', async () => {
     const { req, res } = patchReq('proj-b', { name: 'Renamed', cloud_provider: 'AWS' })
     await handler(req as never, res as never, claimsOf('g-admin'))
-    expect(updateProjectConnection).toHaveBeenCalledWith('proj-b', { name: 'Renamed' })
+    expect(updateProjectConnection).toHaveBeenCalledWith(
+      'proj-b',
+      { name: 'Renamed' },
+      expect.objectContaining({ actor: 'g-admin', correlationId: expect.any(String) })
+    )
     expect(res._getStatusCode()).toBe(200)
   })
 
@@ -204,6 +226,9 @@ describe('GET self_platform block (M6.1)', () => {
       db_user_readonly: 'supabase_read_only_user',
       kong_url: 'http://kong-b:8000',
       rest_url: 'http://kong-b:8000/rest/v1/',
+      key_mode: 'legacy-jwt',
+      tls_mode: 'prefer',
+      tls_ca_reference: null,
       logflare_url: null,
       metrics_url: 'http://h:9598/metrics',
       container_name: 'supabase-db',
@@ -211,6 +236,7 @@ describe('GET self_platform block (M6.1)', () => {
       k8s_pod_selector: 'supabase-db-0',
       secrets_set: {
         db_pass: true,
+        db_pass_readonly: false,
         anon_key: true,
         service_key: true,
         jwt_secret: true,
@@ -220,6 +246,8 @@ describe('GET self_platform block (M6.1)', () => {
         metrics_token: true,
       },
       shared_children: ['child-a', 'child-b'],
+      attachment: null,
+      capabilities: [],
     })
     const raw = JSON.stringify(res._getJSONData())
     for (const ciphertext of [
