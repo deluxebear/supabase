@@ -1,17 +1,16 @@
+import { randomUUID } from 'node:crypto'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import type { JwtPayload } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
+import { AttachmentPreflightFailed, StackAlreadyAttached } from '@/lib/api/self-platform/attachment'
 import { listAllProjectsV2 } from '@/lib/api/self-platform/list-user-projects'
 import { getMemberContext } from '@/lib/api/self-platform/members'
 import { parsePaginationParam } from '@/lib/api/self-platform/pagination'
 import {
   attachExternalProject,
-  CreateDatabaseFailed,
-  createSharedDbProject,
   DuplicateRef,
-  InvalidHostStack,
   parseExternalConnectionInput,
   ProbeFailed,
   REF_PATTERN,
@@ -19,6 +18,7 @@ import {
 } from '@/lib/api/self-platform/projects-admin'
 import { guardOrgRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { DEFAULT_PROJECT } from '@/lib/constants/api'
+import { STUDIO_CAPABILITIES, STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export default (req: NextApiRequest, res: NextApiResponse) =>
@@ -64,7 +64,11 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
 // recorded order deviation (M3.1 precedent): the guard needs
 // organization_slug from the body.
 async function handleCreate(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
-  if (!IS_SELF_PLATFORM) {
+  if (
+    !IS_SELF_PLATFORM ||
+    STUDIO_DEPLOYMENT_PROFILE !== 'fleet' ||
+    !STUDIO_CAPABILITIES.projectAttachment
+  ) {
     return res.status(404).json({ message: 'Not available on this deployment' })
   }
   const body = (req.body ?? {}) as Record<string, unknown>
@@ -99,43 +103,57 @@ async function handleCreate(req: NextApiRequest, res: NextApiResponse, claims?: 
 
   try {
     if (mode === 'shared-db') {
-      const hostRef =
-        typeof body.host_ref === 'string' && body.host_ref !== '' ? body.host_ref : 'default'
-      const { id } = await createSharedDbProject({
-        ref,
-        name,
-        hostRef,
-        organizationId: ctx.orgId,
+      return res.status(400).json({
+        code: 'validation_failed',
+        message:
+          'Shared-database project creation is incompatible with one-project-per-stack attachment. Attach an independent stack instead.',
       })
-      return res
-        .status(201)
-        .json({ id, ref, name, status: 'ACTIVE_HEALTHY', organization_slug: ctx.orgSlug })
     }
     const parsed = parseExternalConnectionInput(body.connection)
     if ('error' in parsed) {
       return res.status(400).json({ message: parsed.error })
     }
-    const { id } = await attachExternalProject({
+    const correlationId =
+      (typeof req.headers['x-correlation-id'] === 'string' && req.headers['x-correlation-id']) ||
+      randomUUID()
+    const { id, connectionRevision, preflight } = await attachExternalProject({
       ref,
       name,
       organizationId: ctx.orgId,
       connection: parsed.value,
+      actor: claims?.sub ?? 'unknown',
+      correlationId,
     })
-    return res
-      .status(201)
-      .json({ id, ref, name, status: 'ACTIVE_HEALTHY', organization_slug: ctx.orgSlug })
+    return res.status(201).json({
+      id,
+      ref,
+      name,
+      status: 'ACTIVE_HEALTHY',
+      attachment_state: 'active',
+      connection_revision: connectionRevision,
+      preflight,
+      organization_slug: ctx.orgSlug,
+    })
   } catch (err) {
     if (err instanceof DuplicateRef) {
       return res.status(409).json({ message: 'A project with this ref already exists' })
     }
-    if (err instanceof InvalidHostStack) {
-      return res.status(400).json({ message: err.message })
-    }
     if (err instanceof ProbeFailed) {
       return res.status(400).json({ message: `Could not connect to database: ${err.message}` })
     }
-    if (err instanceof CreateDatabaseFailed) {
-      return res.status(500).json({ message: err.message })
+    if (err instanceof AttachmentPreflightFailed) {
+      return res.status(422).json({
+        code: 'preflight_failed',
+        message: err.message,
+        preflight: err.report,
+      })
+    }
+    if (err instanceof StackAlreadyAttached) {
+      return res.status(409).json({
+        code: 'stack_already_attached',
+        message: err.message,
+        existing_project_ref: err.existingProjectRef,
+      })
     }
     throw err
   }

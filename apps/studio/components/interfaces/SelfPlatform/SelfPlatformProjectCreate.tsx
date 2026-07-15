@@ -12,6 +12,11 @@ import {
   FormControl,
   FormField,
   Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import * as z from 'zod'
@@ -42,25 +47,53 @@ function buildRefSchema() {
 }
 
 function buildAttachSchema() {
-  return z.object({
-    name: z.string().min(1, $t('Project name is required')).max(64),
-    ref: buildRefSchema(),
-    dbHost: z.string().min(1, $t('Database host is required')),
-    dbPort: z.coerce.number().int().min(1).max(65535).default(5432),
-    dbName: z.string().default('postgres'),
-    dbUser: z.string().default('supabase_admin'),
-    dbUserReadonly: z.string().default('supabase_read_only_user'),
-    dbPass: z.string().min(1, $t('Database password is required')),
-    kongUrl: z.string().url($t('Must be a URL (the browser-facing gateway)')),
-    restUrl: z.string().optional(),
-    anonKey: z.string().min(1, $t('Required')),
-    serviceKey: z.string().min(1, $t('Required')),
-    jwtSecret: z.string().min(1, $t('Required')),
-    publishableKey: z.string().optional(),
-    secretKey: z.string().optional(),
-    logflareUrl: z.string().optional(),
-    logflareToken: z.string().optional(),
-  })
+  return z
+    .object({
+      name: z.string().min(1, $t('Project name is required')).max(64),
+      ref: buildRefSchema(),
+      dbHost: z.string().min(1, $t('Database host is required')),
+      dbPort: z.coerce.number().int().min(1).max(65535).default(5432),
+      dbName: z.string().default('postgres'),
+      dbUser: z.string().default('supabase_admin'),
+      dbUserReadonly: z.string().default('supabase_read_only_user'),
+      dbPass: z.string().min(1, $t('Database password is required')),
+      dbPassReadonly: z.string().optional(),
+      kongUrl: z.string().url($t('Must be a URL (the browser-facing gateway)')),
+      restUrl: z.string().optional(),
+      keyMode: z.enum(['legacy-jwt', 'asymmetric-jwks', 'mixed']),
+      tlsMode: z.enum(['disable', 'prefer', 'require', 'verify-ca', 'verify-full']),
+      tlsCaReference: z.string().optional(),
+      anonKey: z.string().optional(),
+      serviceKey: z.string().optional(),
+      jwtSecret: z.string().optional(),
+      publishableKey: z.string().optional(),
+      secretKey: z.string().optional(),
+      logflareUrl: z.string().optional(),
+      logflareToken: z.string().optional(),
+    })
+    .superRefine((value, context) => {
+      if (value.keyMode !== 'asymmetric-jwks') {
+        for (const field of ['anonKey', 'serviceKey', 'jwtSecret'] as const) {
+          if (!value[field]) {
+            context.addIssue({ code: 'custom', path: [field], message: $t('Required') })
+          }
+        }
+      }
+      if (value.keyMode !== 'legacy-jwt') {
+        for (const field of ['publishableKey', 'secretKey'] as const) {
+          if (!value[field]) {
+            context.addIssue({ code: 'custom', path: [field], message: $t('Required') })
+          }
+        }
+      }
+      if (value.keyMode === 'asymmetric-jwks' && value.jwtSecret) {
+        context.addIssue({
+          code: 'custom',
+          path: ['jwtSecret'],
+          message: $t('Leave JWT secret empty for asymmetric keys'),
+        })
+      }
+    })
 }
 
 type AttachFormValues = z.infer<ReturnType<typeof buildAttachSchema>>
@@ -89,11 +122,15 @@ export const SelfPlatformProjectCreate = () => {
       dbUser: 'supabase_admin',
       dbUserReadonly: 'supabase_read_only_user',
       dbPass: '',
+      dbPassReadonly: '',
       kongUrl: '',
       restUrl: '',
       anonKey: '',
       serviceKey: '',
       jwtSecret: '',
+      keyMode: 'legacy-jwt',
+      tlsMode: 'prefer',
+      tlsCaReference: '',
       publishableKey: '',
       secretKey: '',
       logflareUrl: '',
@@ -106,6 +143,7 @@ export const SelfPlatformProjectCreate = () => {
       form.setValue('ref', refSuggestion(name))
     }
   }
+  const keyMode = attachForm.watch('keyMode')
 
   const onAttachSubmit = attachForm.handleSubmit(({ name, ref, ...c }) =>
     createProject({
@@ -173,14 +211,49 @@ export const SelfPlatformProjectCreate = () => {
             )}
           </p>
           {nameAndRefFields(attachForm)}
+          <FormField
+            control={attachForm.control}
+            name="keyMode"
+            render={({ field }) => (
+              <FormItemLayout
+                name="keyMode"
+                layout="vertical"
+                label={$t('API key mode')}
+                description={$t('Choose the signing and API key model used by the target stack.')}
+              >
+                <FormControl>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="legacy-jwt">{$t('Legacy JWT')}</SelectItem>
+                      <SelectItem value="asymmetric-jwks">{$t('Asymmetric JWKS')}</SelectItem>
+                      <SelectItem value="mixed">{$t('Mixed migration')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+              </FormItemLayout>
+            )}
+          />
           {(
             [
               ['dbHost', $t('Database host'), 'text'],
               ['dbPass', $t('Database password'), 'password'],
               ['kongUrl', $t('Gateway URL'), 'text'],
-              ['anonKey', $t('Anon key'), 'password'],
-              ['serviceKey', $t('Service role key'), 'password'],
-              ['jwtSecret', $t('JWT secret'), 'password'],
+              ...(keyMode === 'asymmetric-jwks'
+                ? []
+                : ([
+                    ['anonKey', $t('Anon key'), 'password'],
+                    ['serviceKey', $t('Service role key'), 'password'],
+                    ['jwtSecret', $t('JWT secret'), 'password'],
+                  ] as const)),
+              ...(keyMode === 'legacy-jwt'
+                ? []
+                : ([
+                    ['publishableKey', $t('Publishable key'), 'password'],
+                    ['secretKey', $t('Secret key'), 'password'],
+                  ] as const)),
             ] as const
           ).map(([key, label, type]) => (
             <FormField
@@ -209,11 +282,11 @@ export const SelfPlatformProjectCreate = () => {
                   ['dbName', $t('Database name'), 'text'],
                   ['dbUser', $t('Database user'), 'text'],
                   ['dbUserReadonly', $t('Read-only database user'), 'text'],
+                  ['dbPassReadonly', $t('Read-only database password'), 'password'],
                   ['restUrl', $t('REST URL (derived from the gateway URL if empty)'), 'text'],
-                  ['publishableKey', $t('Publishable key'), 'password'],
-                  ['secretKey', $t('Secret key'), 'password'],
                   ['logflareUrl', $t('Logflare URL'), 'text'],
                   ['logflareToken', $t('Logflare token'), 'password'],
+                  ['tlsCaReference', $t('TLS CA reference'), 'text'],
                 ] as const
               ).map(([key, label, type]) => (
                 <FormField
@@ -229,6 +302,30 @@ export const SelfPlatformProjectCreate = () => {
                   )}
                 />
               ))}
+              <FormField
+                control={attachForm.control}
+                name="tlsMode"
+                render={({ field }) => (
+                  <FormItemLayout name="tlsMode" layout="vertical" label={$t('Database TLS mode')}>
+                    <FormControl>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {['disable', 'prefer', 'require', 'verify-ca', 'verify-full'].map(
+                            (mode) => (
+                              <SelectItem key={mode} value={mode}>
+                                {mode}
+                              </SelectItem>
+                            )
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                  </FormItemLayout>
+                )}
+              />
             </CollapsibleContent>
           </Collapsible>
           <div className="flex justify-end">

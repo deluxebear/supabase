@@ -22,9 +22,10 @@ export interface PlatformProjectRow {
   kong_url: string
   rest_url: string
   db_pass_enc: string
+  db_pass_readonly_enc?: string | null
   service_key_enc: string
   anon_key_enc: string
-  jwt_secret_enc: string
+  jwt_secret_enc: string | null
   publishable_key_enc: string | null
   secret_key_enc: string | null
   logflare_url: string | null
@@ -36,6 +37,10 @@ export interface PlatformProjectRow {
   k8s_pod_selector: string | null
   stack_kind: string
   stack_meta: Record<string, unknown>
+  key_mode?: 'legacy-jwt' | 'asymmetric-jwks' | 'mixed'
+  tls_mode?: 'disable' | 'prefer' | 'require' | 'verify-ca' | 'verify-full'
+  tls_ca_reference?: string | null
+  detached_at?: string | null
 }
 
 type ProjectDetailResponse = components['schemas']['ProjectDetailResponse']
@@ -46,8 +51,19 @@ export const PROJECT_SELECT_COLUMNS = `
   db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc,
   publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc,
   metrics_url, metrics_token_enc, stack_kind, stack_meta, container_name,
+  k8s_namespace, k8s_pod_selector, key_mode, tls_mode, tls_ca_reference, detached_at,
+  db_pass_readonly_enc
+`
+
+const PRE_T6_SELECT_COLUMNS = `
+  id, ref, organization_id, name, status, cloud_provider, region,
+  db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
+  db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc,
+  publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc,
+  metrics_url, metrics_token_enc, stack_kind, stack_meta, container_name,
   k8s_namespace, k8s_pod_selector
 `
+const MISSING_T6_COLUMN = 'column "key_mode" does not exist'
 
 // [self-platform] M6.4-era list (container_name, no k8s identity) — retry tier
 // for a platform-db that has 10-container.sql but not 11-k8s-identity.sql.
@@ -109,6 +125,7 @@ const LEGACY_SELECT_COLUMNS = `
 const MISSING_ANALYTICS_COLUMN = 'column "logflare_url" does not exist'
 
 let warnedMissingK8sColumns = false
+let warnedMissingT6Columns = false
 let warnedMissingContainerColumn = false
 let warnedMissingMetricsColumns = false
 let warnedMissingStackColumns = false
@@ -143,6 +160,15 @@ async function queryProjectRows(
   // fails that with MISSING_ANALYTICS_COLUMN and falls through to
   // LEGACY_SELECT_COLUMNS. Every vintage lands on the right tier.
   let result = await attempt(PROJECT_SELECT_COLUMNS)
+  if (result.error?.message.includes(MISSING_T6_COLUMN)) {
+    if (!warnedMissingT6Columns) {
+      warnedMissingT6Columns = true
+      console.warn(
+        '[self-platform] platform.projects has no T6 attachment columns — treating the row as an unverified legacy JWT connection. Run docker/volumes/platform/migrations/13-honest-attachment.sql to upgrade.'
+      )
+    }
+    result = await attempt(PRE_T6_SELECT_COLUMNS)
+  }
   if (result.error?.message.includes(MISSING_K8S_COLUMN)) {
     if (!warnedMissingK8sColumns) {
       warnedMissingK8sColumns = true
@@ -207,6 +233,11 @@ async function queryProjectRows(
     k8s_pod_selector: r.k8s_pod_selector ?? null,
     stack_kind: r.stack_kind ?? 'external',
     stack_meta: r.stack_meta ?? ({} as Record<string, unknown>),
+    key_mode: r.key_mode ?? 'legacy-jwt',
+    tls_mode: r.tls_mode ?? 'prefer',
+    tls_ca_reference: r.tls_ca_reference ?? null,
+    detached_at: r.detached_at ?? null,
+    db_pass_readonly_enc: r.db_pass_readonly_enc ?? null,
   }))
 }
 
@@ -220,15 +251,17 @@ export async function listProjectsByOrgId(
   limit = 100,
   offset = 0
 ): Promise<PlatformProjectRow[]> {
-  return queryProjectRows('where organization_id = $1 order by id limit $2 offset $3', [
-    orgId,
-    limit,
-    offset,
-  ])
+  return queryProjectRows(
+    "where organization_id = $1 and status <> 'INACTIVE' order by id limit $2 offset $3",
+    [orgId, limit, offset]
+  )
 }
 
 export async function listAllProjects(limit = 100, offset = 0): Promise<PlatformProjectRow[]> {
-  return queryProjectRows('order by id limit $1 offset $2', [limit, offset])
+  return queryProjectRows("where status <> 'INACTIVE' order by id limit $1 offset $2", [
+    limit,
+    offset,
+  ])
 }
 
 // [self-platform] Total-row counts for the paginated list routes. These hit
@@ -236,7 +269,8 @@ export async function listAllProjects(limit = 100, offset = 0): Promise<Platform
 // queryProjectRows — they don't need the pre-M2.1 degradation retry.
 export async function countProjectsByOrgId(orgId: number): Promise<number> {
   const { data, error } = await executePlatformQuery<{ count: number }>({
-    query: 'select count(*)::int as count from platform.projects where organization_id = $1',
+    query:
+      "select count(*)::int as count from platform.projects where organization_id = $1 and status <> 'INACTIVE'",
     parameters: [orgId],
   })
   if (error) throw error
@@ -245,7 +279,7 @@ export async function countProjectsByOrgId(orgId: number): Promise<number> {
 
 export async function countAllProjects(): Promise<number> {
   const { data, error } = await executePlatformQuery<{ count: number }>({
-    query: 'select count(*)::int as count from platform.projects',
+    query: "select count(*)::int as count from platform.projects where status <> 'INACTIVE'",
   })
   if (error) throw error
   return data?.[0]?.count ?? 0
@@ -261,7 +295,7 @@ export async function listProjectsVisible(
   offset = 0
 ): Promise<PlatformProjectRow[]> {
   return queryProjectRows(
-    'where (organization_id = any($1) or id = any($2)) order by id limit $3 offset $4',
+    "where status <> 'INACTIVE' and (organization_id = any($1) or id = any($2)) order by id limit $3 offset $4",
     [orgIds, ids, limit, offset]
   )
 }
@@ -269,7 +303,7 @@ export async function listProjectsVisible(
 export async function countProjectsVisible(orgIds: number[], ids: number[]): Promise<number> {
   const { data, error } = await executePlatformQuery<{ count: number }>({
     query:
-      'select count(*)::int as count from platform.projects where (organization_id = any($1) or id = any($2))',
+      "select count(*)::int as count from platform.projects where status <> 'INACTIVE' and (organization_id = any($1) or id = any($2))",
     parameters: [orgIds, ids],
   })
   if (error) throw error
@@ -283,7 +317,7 @@ export async function listProjectsByOrgIdAndIds(
   offset = 0
 ): Promise<PlatformProjectRow[]> {
   return queryProjectRows(
-    'where organization_id = $1 and id = any($2) order by id limit $3 offset $4',
+    "where status <> 'INACTIVE' and organization_id = $1 and id = any($2) order by id limit $3 offset $4",
     [orgId, ids, limit, offset]
   )
 }
@@ -291,7 +325,7 @@ export async function listProjectsByOrgIdAndIds(
 export async function countProjectsByOrgIdAndIds(orgId: number, ids: number[]): Promise<number> {
   const { data, error } = await executePlatformQuery<{ count: number }>({
     query:
-      'select count(*)::int as count from platform.projects where organization_id = $1 and id = any($2)',
+      "select count(*)::int as count from platform.projects where status <> 'INACTIVE' and organization_id = $1 and id = any($2)",
     parameters: [orgId, ids],
   })
   if (error) throw error

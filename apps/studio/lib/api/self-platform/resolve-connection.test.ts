@@ -64,9 +64,24 @@ describe('resolveProjectConnection', () => {
     expect(r.jwtSecret).toBe('dec(JWTENC)')
     expect(r.supabaseUrl).toBe('http://kong-b:8000')
     // DSN built from row + decrypted pass, then encrypted for transport
-    expect(r.pgConnEncrypted).toBe('enc(postgresql://supabase_admin:dec(PWENC)@db-b:5432/postgres)')
+    expect(r.pgConnEncrypted).toBe(
+      'enc(postgresql://supabase_admin:dec(PWENC)@db-b:5432/postgres?sslmode=prefer)'
+    )
     expect(r.pgConnReadOnlyEncrypted).toBe(
-      'enc(postgresql://ro_user:dec(PWENC)@db-b:5432/postgres)'
+      'enc(postgresql://ro_user:dec(PWENC)@db-b:5432/postgres?sslmode=prefer)'
+    )
+  })
+
+  it('uses an independent read-only credential when the attachment provides one', async () => {
+    vi.mocked(getProjectByRef).mockResolvedValue({
+      ...row,
+      db_pass_readonly_enc: 'ROPWENC',
+    } as any)
+
+    const result = await resolveProjectConnection('proj-b')
+
+    expect(result.pgConnReadOnlyEncrypted).toBe(
+      'enc(postgresql://ro_user:dec(ROPWENC)@db-b:5432/postgres?sslmode=prefer)'
     )
   })
 

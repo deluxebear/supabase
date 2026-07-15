@@ -224,13 +224,20 @@ export async function writeThroughStatus(
   const status = db.status === 'ACTIVE_HEALTHY' ? 'ACTIVE_HEALTHY' : 'UNHEALTHY'
   try {
     const { error } = await executePlatformQuery({
-      query: `update platform.projects
+      query: `with binding_observation as (
+          update platform.stack_bindings
+          set data_plane_health = $3, last_verified_at = now(), status_observed_at = now()
+          where project_ref = $1 and attachment_state = 'active'
+            and (data_plane_health is distinct from $3
+                 or status_observed_at < now() - interval '60 seconds')
+        )
+        update platform.projects
         set status = $2, last_health_at = now()
-        where ref = $1
+        where ref = $1 and detached_at is null
           and (status is distinct from $2
                or last_health_at is null
                or last_health_at < now() - interval '60 seconds')`,
-      parameters: [ref, status],
+      parameters: [ref, status, db.healthy ? 'healthy' : 'unreachable'],
     })
     if (error) {
       console.warn(`[self-platform] health write-through failed for "${ref}": ${error.message}`)

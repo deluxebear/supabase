@@ -42,6 +42,11 @@ jobs:
           sh utils/generate-keys.sh --update-env
           sh utils/add-new-auth-keys.sh --update-env
 
+      - name: Verify Fleet honest attachment schema and detach boundary
+        if: matrix.config == 'default'
+        shell: bash
+        run: docker/self-platform/scripts/verify-honest-attachment.sh
+
       - name: Start self-hosted Supabase
         shell: bash
         # Ensure all services can be started and healthy with default config

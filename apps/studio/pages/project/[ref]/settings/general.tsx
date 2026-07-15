@@ -9,6 +9,9 @@ import {
 } from 'ui-patterns/PageHeader'
 
 import { subscriptionHasHipaaAddon } from '@/components/interfaces/Billing/Subscription/Subscription.utils'
+import { SelfPlatformAttachmentStatusPanel } from '@/components/interfaces/SelfPlatform/SelfPlatformAttachmentStatusPanel'
+import { SelfPlatformConnectionPanel } from '@/components/interfaces/SelfPlatform/SelfPlatformConnectionPanel'
+import { SelfPlatformDeleteProjectPanel } from '@/components/interfaces/SelfPlatform/SelfPlatformDeleteProjectPanel'
 import { ComplianceConfig } from '@/components/interfaces/Settings/General/ComplianceConfig/ProjectComplianceMode'
 import { CustomDomainConfig } from '@/components/interfaces/Settings/General/CustomDomainConfig/CustomDomainConfig'
 import { DeleteBranchPanel } from '@/components/interfaces/Settings/General/DeleteBranchPanel'
@@ -22,6 +25,7 @@ import { useOrgSubscriptionQuery } from '@/data/subscriptions/org-subscription-q
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
@@ -38,6 +42,7 @@ const ProjectSettings: NextPageWithLayout = () => {
     { enabled: IS_PLATFORM }
   )
   const hasHipaaAddon = subscriptionHasHipaaAddon(subscription)
+  const isFleet = STUDIO_DEPLOYMENT_PROFILE === 'fleet'
 
   return (
     <>
@@ -53,7 +58,14 @@ const ProjectSettings: NextPageWithLayout = () => {
       </PageHeader>
       <PageContainer size="small">
         <General />
-        {IS_PLATFORM && (
+        {isFleet && (
+          <>
+            <SelfPlatformAttachmentStatusPanel />
+            <SelfPlatformConnectionPanel />
+            <SelfPlatformDeleteProjectPanel />
+          </>
+        )}
+        {IS_PLATFORM && !isFleet && (
           <>
             <Project />
             {/* this is only settable on compliance orgs, currently that means HIPAA orgs */}

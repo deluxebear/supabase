@@ -9,6 +9,7 @@ export interface StudioCapabilities {
   lifecycleManagement: boolean
   backupManagement: boolean
   cloudManagementApi: boolean
+  projectAttachment: boolean
 }
 
 export interface StudioDeploymentProfileEnvironment {
@@ -30,6 +31,7 @@ const PROFILE_CAPABILITIES: Record<StudioDeploymentProfile, StudioCapabilities> 
     lifecycleManagement: true,
     backupManagement: true,
     cloudManagementApi: true,
+    projectAttachment: false,
   },
   embedded: {
     multiProject: false,
@@ -40,6 +42,7 @@ const PROFILE_CAPABILITIES: Record<StudioDeploymentProfile, StudioCapabilities> 
     lifecycleManagement: false,
     backupManagement: false,
     cloudManagementApi: false,
+    projectAttachment: false,
   },
   fleet: {
     multiProject: true,
@@ -50,6 +53,7 @@ const PROFILE_CAPABILITIES: Record<StudioDeploymentProfile, StudioCapabilities> 
     lifecycleManagement: false,
     backupManagement: false,
     cloudManagementApi: false,
+    projectAttachment: true,
   },
   cli: {
     multiProject: false,
@@ -60,6 +64,7 @@ const PROFILE_CAPABILITIES: Record<StudioDeploymentProfile, StudioCapabilities> 
     lifecycleManagement: false,
     backupManagement: false,
     cloudManagementApi: false,
+    projectAttachment: false,
   },
 }
 

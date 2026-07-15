@@ -14,13 +14,17 @@ export type SelfPlatformConnectionPatch = {
   dbUser?: string
   dbUserReadonly?: string
   dbPass?: string
+  dbPassReadonly?: string | null
   kongUrl?: string
   restUrl?: string
   anonKey?: string
   serviceKey?: string
-  jwtSecret?: string
+  jwtSecret?: string | null
   publishableKey?: string | null
   secretKey?: string | null
+  keyMode?: 'legacy-jwt' | 'asymmetric-jwks' | 'mixed'
+  tlsMode?: 'disable' | 'prefer' | 'require' | 'verify-ca' | 'verify-full'
+  tlsCaReference?: string | null
 }
 
 export type SelfPlatformProjectUpdateVariables = {
@@ -54,6 +58,9 @@ export type SelfPlatformProjectBlock = {
   db_user_readonly: string
   kong_url: string
   rest_url: string
+  key_mode: 'legacy-jwt' | 'asymmetric-jwks' | 'mixed'
+  tls_mode: 'disable' | 'prefer' | 'require' | 'verify-ca' | 'verify-full'
+  tls_ca_reference: string | null
   logflare_url: string | null
   metrics_url: string | null
   container_name: string | null
@@ -61,6 +68,7 @@ export type SelfPlatformProjectBlock = {
   k8s_pod_selector: string | null
   secrets_set: {
     db_pass: boolean
+    db_pass_readonly: boolean
     anon_key: boolean
     service_key: boolean
     jwt_secret: boolean
@@ -70,6 +78,25 @@ export type SelfPlatformProjectBlock = {
     metrics_token: boolean
   }
   shared_children: string[]
+  attachment: {
+    attachmentState: 'draft' | 'validating' | 'active' | 'detaching' | 'detached' | 'failed'
+    dataPlaneHealth: 'unknown' | 'healthy' | 'degraded' | 'unreachable'
+    managementConnectivity: 'unconfigured' | 'online' | 'offline' | 'incompatible' | 'revoked'
+    driftState: 'unknown' | 'in-sync' | 'drifted' | 'ownership-conflict'
+    operationState: 'idle' | 'active' | 'manual-intervention'
+    fingerprintProofState: 'unverified' | 'verified' | 'revoked'
+    keyMode: 'legacy-jwt' | 'asymmetric-jwks' | 'mixed'
+    activeConnectionRevision: number
+    firstVerifiedAt: string | null
+    lastVerifiedAt: string | null
+    statusObservedAt: string
+    targetCleanupPending: boolean
+  } | null
+  capabilities: Array<{
+    name: string
+    state: 'available' | 'unavailable' | 'unauthorized' | 'stale' | 'unsupported'
+    blockers: Array<{ code: string; message: string; remediation?: string }>
+  }>
 }
 
 export async function updateSelfPlatformProject({

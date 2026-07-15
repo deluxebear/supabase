@@ -1,4 +1,5 @@
 import { PermissionAction } from '@supabase/shared-types/out/constants'
+import { useQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -13,23 +14,25 @@ import {
 
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { TextConfirmModal } from '@/components/ui/TextConfirmModalWrapper'
+import {
+  findProjectCapability,
+  projectCapabilitiesQueryOptions,
+} from '@/data/projects/project-capabilities-query'
 import { useProjectDeleteMutation } from '@/data/projects/project-delete-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { t as $t } from '@/lib/i18n'
 
-// [self-platform] M5.0 T6: DELETE /platform/projects/[ref] (Task 4) only
-// removes the registry row — the real database keeps running on its own
-// stack. This panel replaces the upstream DeleteProjectPanel (whose copy
-// promises permanent data deletion) in self-platform mode; see the
-// IS_SELF_PLATFORM swap in pages/project/[ref]/settings/general.tsx.
+// Fleet removal is a T6 detach: the binding is tombstoned while audit and
+// recovery references remain. Infrastructure deletion is never implied.
 export const SelfPlatformDeleteProjectPanel = () => {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const { data: project } = useSelectedProjectQuery()
   const { data: organization } = useSelectedOrganizationQuery()
   const { can: canDelete } = useAsyncCheckPermissions(PermissionAction.DELETE, 'projects')
+  const capabilities = useQuery(projectCapabilitiesQueryOptions({ projectRef: project?.ref }))
 
   const { mutate: deleteProject, isPending } = useProjectDeleteMutation({
     onSuccess: () => {
@@ -41,12 +44,16 @@ export const SelfPlatformDeleteProjectPanel = () => {
   if (project === undefined) return null
 
   const isDefault = project.ref === 'default'
-  const isDisabled = !canDelete || isDefault
+  const detachCapability = findProjectCapability(capabilities.data, 'project.detach')
+  const canDetach = detachCapability?.state === 'available'
+  const isDisabled = !canDelete || !canDetach || isDefault
   const disabledReason = isDefault
     ? $t('The default project cannot be removed.')
     : !canDelete
       ? $t('Only organization owners can remove projects.')
-      : undefined
+      : !canDetach
+        ? (detachCapability?.blockers[0]?.message ?? $t('Detach is unavailable for this project.'))
+        : undefined
 
   return (
     <PageSection id="remove-project">
@@ -61,7 +68,7 @@ export const SelfPlatformDeleteProjectPanel = () => {
           <CriticalIcon />
           <AlertDescription>
             {$t(
-              'Removing a project deletes its registry entry only. The underlying database and stack keep running and can be re-attached later; drop the database manually if you no longer need it.'
+              'Detaching revokes the Fleet binding and stops probes and reconciliation. The stack, database, containers, namespaces, PVCs, backup references, and audit history are not deleted.'
             )}
           </AlertDescription>
           <div className="mt-2">
@@ -71,7 +78,7 @@ export const SelfPlatformDeleteProjectPanel = () => {
               onClick={() => setIsOpen(true)}
               tooltip={{ content: { side: 'bottom', text: disabledReason } }}
             >
-              {$t('Remove project')}
+              {$t('Detach project')}
             </ButtonTooltip>
           </div>
         </Alert>
@@ -80,12 +87,12 @@ export const SelfPlatformDeleteProjectPanel = () => {
       <TextConfirmModal
         visible={isOpen}
         loading={isPending}
-        title={$t('Confirm removal of {{name}}', { name: project.name })}
+        title={$t('Confirm detach of {{name}}', { name: project.name })}
         variant="destructive"
         confirmPlaceholder={$t('Type the project ref in here')}
         confirmString={project.ref}
-        confirmLabel={$t('I understand, remove this project from the platform')}
-        text={$t('The database itself is NOT deleted and keeps running on its stack.')}
+        confirmLabel={$t('I understand, detach this project from Fleet Studio')}
+        text={$t('No managed infrastructure or backup artifacts will be deleted.')}
         onConfirm={() =>
           deleteProject({ projectRef: project.ref, organizationSlug: organization?.slug })
         }

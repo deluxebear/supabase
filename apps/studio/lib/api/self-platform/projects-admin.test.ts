@@ -1,5 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import {
+  activateConnectionCandidate,
+  AttachmentPreflightFailed,
+  attachVerifiedProject,
+  createConnectionCandidate,
+  failConnectionCandidate,
+  runAttachmentPreflight,
+  type AttachmentPreflightReport,
+} from './attachment'
 import { executePlatformQuery } from './db'
 import { getProjectByRef } from './projects'
 import {
@@ -12,7 +21,6 @@ import {
   parseExternalConnectionInput,
   parseProjectPatchInput,
   probeConnection,
-  ProbeFailed,
   ProjectRowMissing,
   REF_PATTERN,
   refToDbName,
@@ -23,6 +31,14 @@ import {
 import { executeQuery } from '@/lib/api/self-hosted/query'
 
 vi.mock('./db', () => ({ executePlatformQuery: vi.fn() }))
+vi.mock('./attachment', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./attachment')>()),
+  runAttachmentPreflight: vi.fn(),
+  attachVerifiedProject: vi.fn(),
+  createConnectionCandidate: vi.fn(),
+  failConnectionCandidate: vi.fn(),
+  activateConnectionCandidate: vi.fn(),
+}))
 vi.mock('./projects', () => ({ getProjectByRef: vi.fn() }))
 vi.mock('./secrets', () => ({
   encryptSecret: vi.fn((s: string) => `enc(${s})`),
@@ -75,6 +91,15 @@ const CONNECTION = {
   jwtSecret: 'jwt',
 }
 
+const PASS_REPORT: AttachmentPreflightReport = {
+  contractVersion: 'v1',
+  startedAt: '2026-07-15T00:00:00.000Z',
+  completedAt: '2026-07-15T00:00:01.000Z',
+  outcome: 'pass',
+  stackFingerprint: 'a'.repeat(64),
+  checks: [],
+}
+
 beforeEach(() => {
   vi.mocked(executePlatformQuery)
     .mockReset()
@@ -85,6 +110,11 @@ beforeEach(() => {
   vi.mocked(getProjectByRef)
     .mockReset()
     .mockResolvedValue(HOST_ROW as never)
+  vi.mocked(runAttachmentPreflight).mockReset().mockResolvedValue(PASS_REPORT)
+  vi.mocked(attachVerifiedProject).mockReset().mockResolvedValue({ id: 7, connectionRevision: 1 })
+  vi.mocked(createConnectionCandidate).mockReset().mockResolvedValue({ id: 9, revision: 2 })
+  vi.mocked(failConnectionCandidate).mockReset().mockResolvedValue()
+  vi.mocked(activateConnectionCandidate).mockReset().mockResolvedValue({ revision: 2 })
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => [] }))
 })
 
@@ -232,8 +262,12 @@ describe('probeConnection / attachExternalProject', () => {
     expect(out).toEqual({ ok: false, error: 'connect ECONNREFUSED' })
   })
 
-  it('attach probes first and does not insert on failure', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network down')))
+  it('attach fails closed when the multi-service preflight fails', async () => {
+    vi.mocked(runAttachmentPreflight).mockResolvedValueOnce({
+      ...PASS_REPORT,
+      outcome: 'fail',
+      stackFingerprint: null,
+    })
     await expect(
       attachExternalProject({
         ref: 'ext-1',
@@ -241,23 +275,24 @@ describe('probeConnection / attachExternalProject', () => {
         organizationId: 1,
         connection: CONNECTION,
       })
-    ).rejects.toBeInstanceOf(ProbeFailed)
-    expect(executePlatformQuery).not.toHaveBeenCalled()
+    ).rejects.toBeInstanceOf(AttachmentPreflightFailed)
+    expect(attachVerifiedProject).not.toHaveBeenCalled()
   })
 
-  it('attach encrypts secrets and inserts an ACTIVE_HEALTHY external row', async () => {
+  it('attaches only the verified report and records the first connection revision', async () => {
     await attachExternalProject({
       ref: 'ext-1',
       name: 'Ext',
       organizationId: 1,
       connection: CONNECTION,
     })
-    const insert = vi.mocked(executePlatformQuery).mock.calls[0][0]
-    expect(insert.query).toContain("'ACTIVE_HEALTHY'")
-    expect(insert.query).toContain("'external'")
-    expect(insert.parameters).toContain('enc(pw)')
-    expect(insert.parameters).toContain('enc(jwt)')
-    expect(insert.parameters).not.toContain('pw') // no plaintext secret bound
+    expect(attachVerifiedProject).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ref: 'ext-1',
+        connection: expect.objectContaining({ keyMode: 'legacy-jwt', tlsMode: 'prefer' }),
+        report: PASS_REPORT,
+      })
+    )
   })
 
   it('parseExternalConnectionInput enforces required fields and derives restUrl', () => {
@@ -275,6 +310,35 @@ describe('probeConnection / attachExternalProject', () => {
     expect(good.value.restUrl).toBe('http://k:8000/rest/v1/')
     expect(good.value.dbPort).toBe(5432)
     expect(good.value.dbUser).toBe('supabase_admin')
+  })
+
+  it('accepts asymmetric credentials without a JWT secret and validates mixed mode', () => {
+    const asymmetric = parseExternalConnectionInput({
+      dbHost: 'h',
+      dbPass: 'p',
+      kongUrl: 'https://gateway.example.com',
+      keyMode: 'asymmetric-jwks',
+      publishableKey: 'sb_publishable_example',
+      secretKey: 'sb_secret_example',
+      tlsMode: 'verify-full',
+    })
+    expect(asymmetric).toMatchObject({
+      value: {
+        keyMode: 'asymmetric-jwks',
+        jwtSecret: '',
+        tlsMode: 'verify-full',
+      },
+    })
+
+    const mixedMissingLegacy = parseExternalConnectionInput({
+      dbHost: 'h',
+      dbPass: 'p',
+      kongUrl: 'https://gateway.example.com',
+      keyMode: 'mixed',
+      publishableKey: 'sb_publishable_example',
+      secretKey: 'sb_secret_example',
+    })
+    expect(mixedMissingLegacy).toEqual({ error: 'Missing credentials required for key mode mixed' })
   })
 })
 
@@ -522,28 +586,28 @@ describe('updateProjectConnection (M6.1)', () => {
     expect(call.parameters).toEqual(['child-a', 'Renamed', 'http://lf:4000'])
   })
 
-  it('probes the merged DSN — patched values where present, decrypted stored password otherwise', async () => {
-    const { encryptString } = await import('@/lib/api/self-hosted/util')
-    vi.mocked(encryptString).mockClear()
+  it('stages and activates the merged candidate instead of replacing the active revision directly', async () => {
     await updateProjectConnection('default', { connection: { dbHost: '10.9.9.9' } })
-    expect(vi.mocked(encryptString)).toHaveBeenCalledWith(
-      'postgresql://supabase_admin:dec(PASS_ENC)@10.9.9.9:5432/postgres'
+    expect(createConnectionCandidate).toHaveBeenCalledWith(
+      expect.objectContaining({ projectRef: 'default', keyMode: 'legacy-jwt' })
+    )
+    expect(runAttachmentPreflight).toHaveBeenCalledWith(
+      expect.objectContaining({ dbHost: '10.9.9.9', dbPass: 'dec(PASS_ENC)' }),
+      { excludingProjectRef: 'default' }
+    )
+    expect(activateConnectionCandidate).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 9, projectRef: 'default', report: PASS_REPORT })
     )
   })
 
-  it('probe failure → ProbeFailed, zero writes', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: async () => ({ message: 'connection refused' }),
-      })
-    )
+  it('failed candidate keeps the active revision and records the failed report', async () => {
+    const report = { ...PASS_REPORT, outcome: 'fail' as const, stackFingerprint: null }
+    vi.mocked(runAttachmentPreflight).mockResolvedValueOnce(report)
     await expect(
       updateProjectConnection('default', { connection: { dbHost: '10.255.255.1' } })
-    ).rejects.toBeInstanceOf(ProbeFailed)
-    expect(executePlatformQuery).not.toHaveBeenCalled()
+    ).rejects.toBeInstanceOf(AttachmentPreflightFailed)
+    expect(failConnectionCandidate).toHaveBeenCalledWith(9, report)
+    expect(activateConnectionCandidate).not.toHaveBeenCalled()
   })
 
   it('name/logflare-only patch does not probe', async () => {
@@ -553,22 +617,29 @@ describe('updateProjectConnection (M6.1)', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it('secrets: new values re-encrypted, null clears; immutable columns unreachable in SET', async () => {
+  it('secrets are encrypted only inside the staged connection document', async () => {
     await updateProjectConnection('default', {
       connection: { anonKey: 'new-anon', publishableKey: null },
     })
-    const call = vi.mocked(executePlatformQuery).mock.calls[0][0]
-    expect(call.query.startsWith('update platform.projects set ')).toBe(true)
-    expect(call.query).toContain('anon_key_enc = $2')
-    expect(call.query).toContain('publishable_key_enc = $3')
-    expect(call.parameters).toEqual(['default', 'enc(new-anon)', null])
-    const setClause = call.query.split(' where ')[0]
-    expect(setClause).not.toMatch(/stack_kind|stack_meta|\bref\b|status|last_health_at/)
+    expect(createConnectionCandidate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        projectRef: 'default',
+        connectionDocument: expect.objectContaining({
+          anon_key_enc: 'enc(new-anon)',
+          publishable_key_enc: null,
+        }),
+      })
+    )
+    expect(
+      vi
+        .mocked(executePlatformQuery)
+        .mock.calls.some(([value]) => value.query.startsWith('update platform.projects set '))
+    ).toBe(false)
   })
 
   it('external host + cloned field → full-set re-sync statement, children refs returned', async () => {
     vi.mocked(executePlatformQuery)
-      .mockResolvedValueOnce({ data: [], error: undefined } as never)
+      .mockResolvedValueOnce({ data: [], error: undefined } as never) // active fingerprint
       .mockResolvedValueOnce({
         data: [{ ref: 'child-a' }, { ref: 'child-b' }],
         error: undefined,
@@ -590,11 +661,15 @@ describe('updateProjectConnection (M6.1)', () => {
       'kong_url',
       'rest_url',
       'db_pass_enc',
+      'db_pass_readonly_enc',
       'service_key_enc',
       'anon_key_enc',
       'jwt_secret_enc',
       'publishable_key_enc',
       'secret_key_enc',
+      'key_mode',
+      'tls_mode',
+      'tls_ca_reference',
     ]) {
       expect(prop.query).toContain(`${col} = h.${col}`)
     }
