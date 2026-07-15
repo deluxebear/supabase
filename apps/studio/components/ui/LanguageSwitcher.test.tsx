@@ -1,9 +1,12 @@
-import { act, render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from 'ui'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { i18n } from '@/lib/i18n'
 import { I18nProvider } from '@/lib/i18n/I18nProvider'
+import { customRender } from '@/tests/lib/custom-render'
 
 describe('LanguageSwitcher', () => {
   beforeEach(async () => {
@@ -12,17 +15,21 @@ describe('LanguageSwitcher', () => {
   })
 
   it('switches the locale to zh-CN when selected', async () => {
-    render(
+    const user = userEvent.setup()
+    customRender(
       <I18nProvider>
-        <LanguageSwitcher />
+        <DropdownMenu defaultOpen>
+          <DropdownMenuTrigger>Languages</DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <LanguageSwitcher />
+          </DropdownMenuContent>
+        </DropdownMenu>
       </I18nProvider>
     )
-    const select = screen.getByLabelText('Language') as HTMLSelectElement
-    expect(select.value).toBe('en')
-    await act(async () => {
-      select.value = 'zh-CN'
-      select.dispatchEvent(new Event('change', { bubbles: true }))
-    })
+    expect(await screen.findByRole('menuitemradio', { name: 'English' })).toBeChecked()
+
+    await user.click(screen.getByRole('menuitemradio', { name: '简体中文' }))
+
     expect(i18n.language).toBe('zh-CN')
   })
 })

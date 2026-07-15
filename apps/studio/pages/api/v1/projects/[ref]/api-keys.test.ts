@@ -8,6 +8,7 @@ import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
 const resolveProjectConnection = vi.fn()
 
 vi.hoisted(() => {
+  process.env.NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE = 'fleet'
   process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
   process.env.NEXT_PUBLIC_IS_PLATFORM = 'true'
 })

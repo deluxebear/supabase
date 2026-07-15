@@ -14,6 +14,7 @@ import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.hoisted(() => {
+  process.env.NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE = 'fleet'
   process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
   process.env.NEXT_PUBLIC_IS_PLATFORM = 'true'
 })
