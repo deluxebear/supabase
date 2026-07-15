@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getMemberContext } from '../members'
 import { getOrgMfaEnforced, listOrganizationsForProfile } from '../organizations'
-import { ProjectNotFound, resolveProjectConnection } from '../resolve-connection'
+import { ProjectNotFound, resolveProjectIdentity } from '../resolve-connection'
 import {
   checkPermission,
   checkPermissionWithContext,
@@ -23,7 +23,7 @@ vi.mock('../organizations', () => ({
 }))
 vi.mock('../resolve-connection', async (importOriginal) => ({
   ...(await importOriginal<object>()),
-  resolveProjectConnection: vi.fn(),
+  resolveProjectIdentity: vi.fn(),
 }))
 
 const claimsOf = (sub: string) => ({ sub }) as JwtPayload
@@ -49,7 +49,7 @@ const ZERO = { gotrueId: 'g-0', roles: [] }
 describe('checkPermission', () => {
   beforeEach(() => {
     vi.mocked(getMemberContext).mockReset()
-    vi.mocked(resolveProjectConnection).mockReset()
+    vi.mocked(resolveProjectIdentity).mockReset()
     vi.mocked(getOrgMfaEnforced).mockReset()
   })
 
@@ -141,12 +141,12 @@ describe('checkPermission', () => {
 describe('guardProjectRoute (404 before 403)', () => {
   beforeEach(() => {
     vi.mocked(getMemberContext).mockReset()
-    vi.mocked(resolveProjectConnection).mockReset()
+    vi.mocked(resolveProjectIdentity).mockReset()
     vi.mocked(getOrgMfaEnforced).mockReset()
   })
 
   it('propagates ProjectNotFound before any permission work', async () => {
-    vi.mocked(resolveProjectConnection).mockRejectedValue(new ProjectNotFound('ghost'))
+    vi.mocked(resolveProjectIdentity).mockRejectedValue(new ProjectNotFound('ghost'))
     const { res } = createMocks()
     await expect(
       guardProjectRoute(res, claimsOf('g-1'), { action: 'read:Read', projectRef: 'ghost' })
@@ -155,7 +155,7 @@ describe('guardProjectRoute (404 before 403)', () => {
   })
 
   it('sends 403 {message: Forbidden} and returns false when denied', async () => {
-    vi.mocked(resolveProjectConnection).mockResolvedValue({} as never)
+    vi.mocked(resolveProjectIdentity).mockResolvedValue({} as never)
     vi.mocked(getMemberContext).mockResolvedValue(ZERO)
     const { res } = createMocks()
     expect(
@@ -166,7 +166,7 @@ describe('guardProjectRoute (404 before 403)', () => {
   })
 
   it('returns true and sends nothing when allowed', async () => {
-    vi.mocked(resolveProjectConnection).mockResolvedValue({} as never)
+    vi.mocked(resolveProjectIdentity).mockResolvedValue({} as never)
     vi.mocked(getMemberContext).mockResolvedValue(OWNER)
     const { res } = createMocks()
     expect(
@@ -176,7 +176,7 @@ describe('guardProjectRoute (404 before 403)', () => {
   })
 
   it('guardProjectRoute 403s aal1 when the project org enforces MFA', async () => {
-    vi.mocked(resolveProjectConnection).mockResolvedValue({} as never)
+    vi.mocked(resolveProjectIdentity).mockResolvedValue({} as never)
     vi.mocked(getMemberContext).mockResolvedValue(DEV) // ref's org resolved from member ctx
     vi.mocked(getOrgMfaEnforced).mockResolvedValue(true)
     const res = createMocks({ method: 'GET' }).res

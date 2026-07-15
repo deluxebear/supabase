@@ -69,8 +69,8 @@ describe('listProjectsByOrgId', () => {
 })
 
 describe('mappers', () => {
-  it('toProjectDetailResponse carries ref/org/status + passed-in encrypted conn string', () => {
-    const res = toProjectDetailResponse(row, 'ENC')
+  it('toProjectDetailResponse carries metadata and omits the Fleet connection string', () => {
+    const res = toProjectDetailResponse(row)
     expect(res).toMatchObject({
       ref: 'proj-b',
       organization_id: 1,
@@ -78,10 +78,10 @@ describe('mappers', () => {
       status: 'ACTIVE_HEALTHY',
       db_host: 'db-b',
       restUrl: 'http://kong-b:8000/rest/v1/',
-      connectionString: 'ENC',
       cloud_provider: 'AWS',
       region: 'local',
     })
+    expect(res).not.toHaveProperty('connectionString')
   })
 })
 

@@ -14,6 +14,7 @@ import {
   prefetchTableEditor,
 } from '@/data/table-editor/table-editor-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { RoleImpersonationState, wrapWithRoleImpersonation } from '@/lib/role-impersonation'
 import { isRoleImpersonationEnabled } from '@/state/role-impersonation-state'
 import { ResponseError, UseCustomQueryOptions } from '@/types'
@@ -141,7 +142,7 @@ export const useTableRowsCountQuery = <TData = TableRowsCountData>(
       enabled &&
       typeof projectRef !== 'undefined' &&
       typeof tableId !== 'undefined' &&
-      (!IS_PLATFORM || typeof connectionString !== 'undefined'),
+      (!IS_PLATFORM || IS_SELF_PLATFORM || typeof connectionString !== 'undefined'),
     ...options,
   })
 }

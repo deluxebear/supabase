@@ -1401,10 +1401,11 @@ Synthesized from the engineering review. Checkbox each task as it ships; priorit
   - Files: `apps/studio/lib/constants/`, `apps/studio/Dockerfile`, Studio CI/release workflows.
   - Verify: full profile unit matrix plus separate production builds and Embedded/Fleet smoke tests.
   - Implemented: 2026-07-15 — canonical resolver and static capability baseline, legacy compatibility validation, explicit Embedded/Fleet Docker build arguments and OCI profile labels, two-profile CI/release matrices, and profile-specific container smoke assertions. No ADR change was required.
-- [ ] **T2 (P1)** — Fleet credential boundary — Remove Fleet browser `connectionString`/encrypted DSN responses and proxy pg-meta server-side after RBAC.
+- [x] **T2 (P1)** — Fleet credential boundary — Remove Fleet browser `connectionString`/encrypted DSN responses and proxy pg-meta server-side after RBAC.
   - Surfaced by: security review — current project responses expose password-derived pg-meta bearer material.
   - Files: `apps/studio/lib/api/self-platform/resolve-connection.ts`, project/pg-meta API routes, dependent data hooks.
   - Verify: network tests prove no DSN material in responses and cross-project/permission failures occur before decryption.
+  - Implemented: 2026-07-15 — split non-secret project identity lookup from credential resolution; Fleet project and database responses omit both read-write and read-only encrypted DSNs; browser pg-meta middleware strips legacy connection headers; all Fleet pg-meta listing/query routes authorize before server-side credential injection; connection-dependent hooks remain enabled under the server-side BFF contract. Unit/network suites cover response redaction, forged-header replacement, deny-before-resolution ordering, project isolation, and unchanged Embedded response/transport behavior. No ADR change was required.
 - [ ] **T3 (P1)** — Control-plane recovery boundary — Deploy platform identity/registry, Fleet Control, and Backup Operator stores outside managed-stack recovery domains.
   - Surfaced by: architecture review — current all-in-one Compose stores `_platform` in the default managed cluster.
   - Files: `docker/self-platform/`, Fleet/backup deployment manifests, production runbooks.

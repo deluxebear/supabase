@@ -9,7 +9,7 @@ import type { NextApiResponse } from 'next'
 
 import { getMemberContext, type MemberContext } from '../members'
 import { getOrgMfaEnforced, listOrganizationsForProfile } from '../organizations'
-import { resolveProjectConnection } from '../resolve-connection'
+import { resolveProjectIdentity } from '../resolve-connection'
 import { expandPermissions } from './expand'
 import { doPermissionsCheck } from '@/lib/permissions-check'
 
@@ -69,7 +69,7 @@ export async function checkPermission(
 }
 
 /**
- * Uniform [ref]-route guard: resolves the ref FIRST — an unknown ref throws
+ * Uniform [ref]-route guard: resolves non-secret project identity FIRST — an unknown ref throws
  * ProjectNotFound, which apiWrapper maps to 404 (spec §7.2: 404 before 403).
  * Then checks the permission and sends the 403 itself. Callers must
  * `return` immediately when this yields false. Only call under
@@ -80,7 +80,7 @@ export async function guardProjectRoute(
   claims: JwtPayload | undefined,
   input: { action: string; projectRef: string; resource?: string; data?: object }
 ): Promise<boolean> {
-  await resolveProjectConnection(input.projectRef)
+  await resolveProjectIdentity(input.projectRef)
   // [self-platform] M3.2: MFA enforcement for project routes. Single-org: the
   // enforcing org is the member's org. Resolve it from the member context;
   // when the caller holds no roles the permission check below denies anyway.

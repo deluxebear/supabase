@@ -22,10 +22,14 @@ vi.hoisted(() => {
 })
 vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({ guardProjectRoute: vi.fn() }))
 
-const { resolveProjectConnection } = vi.hoisted(() => ({ resolveProjectConnection: vi.fn() }))
+const { resolveProjectConnection, resolveProjectIdentity } = vi.hoisted(() => ({
+  resolveProjectConnection: vi.fn(),
+  resolveProjectIdentity: vi.fn(),
+}))
 vi.mock('@/lib/api/self-platform/resolve-connection', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   resolveProjectConnection,
+  resolveProjectIdentity,
 }))
 
 // M6.0: health is probed for real now — databases-statuses.ts calls
@@ -54,6 +58,7 @@ const resolved = {
 beforeEach(() => {
   vi.mocked(guardProjectRoute).mockReset()
   resolveProjectConnection.mockReset().mockResolvedValue(resolved)
+  resolveProjectIdentity.mockReset().mockResolvedValue(resolved)
   // M6.0: health is probed for real now — default to a healthy, non-fresh
   // probe so the guard-pass path doesn't also assert on write-through.
   vi.mocked(probeStackHealth)
@@ -80,7 +85,7 @@ describe('databases.ts GET guard', () => {
       projectRef: 'proj-b',
     })
     expect(res._getStatusCode()).toBe(403)
-    expect(resolveProjectConnection).not.toHaveBeenCalled()
+    expect(resolveProjectIdentity).not.toHaveBeenCalled()
   })
 
   it('allows through and reaches resolveProjectConnection when guardProjectRoute permits', async () => {
@@ -89,7 +94,7 @@ describe('databases.ts GET guard', () => {
     const { req, res } = createMocks({ method: 'GET', query: { ref: 'proj-b' } })
     await handler(req as any, res as any, claimsOf('g-1'))
 
-    expect(resolveProjectConnection).toHaveBeenCalledWith('proj-b')
+    expect(resolveProjectIdentity).toHaveBeenCalledWith('proj-b')
     expect(res._getStatusCode()).toBe(200)
   })
 })

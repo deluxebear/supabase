@@ -16,13 +16,13 @@ vi.hoisted(() => {
   process.env.NEXT_PUBLIC_IS_PLATFORM = 'true'
 })
 
-const { resolveProjectConnection } = vi.hoisted(() => ({ resolveProjectConnection: vi.fn() }))
+const { resolveProjectIdentity } = vi.hoisted(() => ({ resolveProjectIdentity: vi.fn() }))
 // [self-platform] importOriginal spread: ProjectNotFound is a real class
 // used elsewhere (instanceof checks); only resolveProjectConnection itself
 // is a mock here.
 vi.mock('@/lib/api/self-platform/resolve-connection', async (importOriginal) => ({
   ...(await importOriginal<object>()),
-  resolveProjectConnection,
+  resolveProjectIdentity,
 }))
 vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({ checkPermissionWithContext: vi.fn() }))
 vi.mock('@/lib/api/self-hosted/query', () => ({ executeQuery: vi.fn() }))
@@ -64,10 +64,7 @@ const DERIVED_DEV_CTX = {
 const ZERO_CTX = { gotrueId: 'g-0', roles: [] }
 
 beforeEach(() => {
-  resolveProjectConnection.mockReset().mockResolvedValue({
-    pgConnEncrypted: 'ENC',
-    pgConnReadOnlyEncrypted: 'ENC-RO',
-  })
+  resolveProjectIdentity.mockReset().mockResolvedValue({ ref: 'default' })
   vi.mocked(checkPermissionWithContext).mockReset()
   vi.mocked(executeQuery)
     .mockReset()

@@ -2,14 +2,14 @@ import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { handler } from './databases'
-import { resolveProjectConnection } from '@/lib/api/self-platform/resolve-connection'
+import { resolveProjectIdentity } from '@/lib/api/self-platform/resolve-connection'
 
 vi.hoisted(() => {
   process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
 })
 vi.mock('@/lib/api/self-platform/resolve-connection', () => {
   class ProjectNotFound extends Error {}
-  return { ProjectNotFound, resolveProjectConnection: vi.fn() }
+  return { ProjectNotFound, resolveProjectIdentity: vi.fn() }
 })
 // [self-platform] Task 14: RBAC guards now gate this route. Stub it open so
 // this sweep keeps exercising business logic — the guard's own behavior is
@@ -37,26 +37,26 @@ const resolved = {
 beforeEach(() => vi.clearAllMocks())
 
 describe('GET /platform/projects/[ref]/databases (self-platform)', () => {
-  it('returns one database entry with both encrypted conn strings', async () => {
-    vi.mocked(resolveProjectConnection).mockResolvedValue(resolved as any)
+  it('returns database metadata without either Fleet connection string', async () => {
+    vi.mocked(resolveProjectIdentity).mockResolvedValue(resolved as any)
     const { req, res } = createMocks({ method: 'GET', query: { ref: 'proj-b' } })
     await handler(req as any, res as any)
     expect(res._getStatusCode()).toBe(200)
     const body = res._getJSONData()
     expect(body[0]).toMatchObject({
       identifier: 'proj-b',
-      connectionString: 'ENC',
-      connection_string_read_only: 'ENC_RO',
       db_host: 'db-b',
       db_port: 5432,
       status: 'ACTIVE_HEALTHY',
     })
+    expect(body[0]).not.toHaveProperty('connectionString')
+    expect(body[0]).not.toHaveProperty('connection_string_read_only')
   })
 
   // [self-platform] CLEANUP — row-source-of-truth: cloud_provider must come
   // from the resolved connection, not be hardcoded to 'AWS'.
   it('uses the resolved connection cloud_provider, not a hardcoded value', async () => {
-    vi.mocked(resolveProjectConnection).mockResolvedValue(resolved as any)
+    vi.mocked(resolveProjectIdentity).mockResolvedValue(resolved as any)
     const { req, res } = createMocks({ method: 'GET', query: { ref: 'proj-b' } })
     await handler(req as any, res as any)
     const body = res._getJSONData()

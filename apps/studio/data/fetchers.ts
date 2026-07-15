@@ -6,6 +6,7 @@ import createClient from 'openapi-fetch'
 import type { paths } from './api'
 import { ERROR_PATTERNS } from './error-patterns'
 import { API_URL } from '@/lib/constants'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { uuidv4 } from '@/lib/helpers'
 import { ResponseError } from '@/types'
 import { UnknownAPIResponseError } from '@/types/api-errors'
@@ -46,7 +47,7 @@ export function isValidConnString(connString?: string | null) {
   // If there is no `connectionString` on platform, pg-meta will necessarily fail to connect to the target database.
   // This only applies if IS_PLATFORM is true; otherwise (test/local-dev), pg-meta won't need this parameter
   // and will connect to the locally running DB_URL instead.
-  return IS_PLATFORM ? Boolean(connString) : true
+  return IS_PLATFORM && !IS_SELF_PLATFORM ? Boolean(connString) : true
 }
 
 export async function constructHeaders(headersInit?: HeadersInit | undefined) {
@@ -92,9 +93,13 @@ export async function normalizeEmptyBodyResponse(response: Response): Promise<Re
   })
 }
 
-function pgMetaGuard(request: Request) {
+export function pgMetaGuard(request: Request) {
   // Only check for /platform/pg-meta/ endpoints
   if (request.url.includes('/platform/pg-meta/')) {
+    // Fleet credentials are injected by the server-side BFF after RBAC. Strip
+    // any stale/client-provided value so a DSN can never cross the browser
+    // boundary. Hosted and Embedded retain their upstream behavior.
+    if (IS_SELF_PLATFORM) request.headers.delete('x-connection-encrypted')
     // If there is no valid `x-connection-encrypted`, pg-meta will necesseraly fail to connect to the target database
     // in such case, we save the hops and throw a 421 response instead
     if (!isValidConnString(request.headers.get('x-connection-encrypted'))) {

@@ -5,6 +5,7 @@ import { IS_PLATFORM } from 'common'
 import { databaseKeys } from './keys'
 import { useConnectionStringForReadOps } from '@/data/read-replicas/replicas-query'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { ResponseError, UseCustomQueryOptions } from '@/types'
 
 type GetForeignKeyConstraintsVariables = {
@@ -98,7 +99,7 @@ export const useForeignKeyConstraintsQuery = <TData = ForeignKeyConstraintsData>
       enabled &&
       typeof projectRef !== 'undefined' &&
       typeof schema !== 'undefined' &&
-      (!IS_PLATFORM || typeof connectionString !== 'undefined') &&
+      (!IS_PLATFORM || IS_SELF_PLATFORM || typeof connectionString !== 'undefined') &&
       schema.length > 0,
     ...options,
   })

@@ -299,12 +299,10 @@ export async function countProjectsByOrgIdAndIds(orgId: number, ids: number[]): 
 }
 
 export function toProjectDetailResponse(
-  row: PlatformProjectRow,
-  connectionStringEnc: string
-): ProjectDetailResponse {
+  row: PlatformProjectRow
+): Omit<ProjectDetailResponse, 'connectionString'> {
   return {
     cloud_provider: row.cloud_provider,
-    connectionString: connectionStringEnc,
     db_host: row.db_host,
     high_availability: false,
     id: row.id,

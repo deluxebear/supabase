@@ -58,6 +58,21 @@ export interface ResolvedConnection {
   row: PlatformProjectRow | null
 }
 
+export interface ResolvedProjectIdentity {
+  ref: string
+  organizationId: number | null
+  name: string
+  status: string
+  cloudProvider: string
+  region: string
+  restUrl: string
+  dbHost: string
+  dbPort: number
+  dbName: string
+  dbUser: string
+  row: PlatformProjectRow | null
+}
+
 function fromRow(row: PlatformProjectRow): ResolvedConnection {
   const dbPass = decryptSecret(row.db_pass_enc)
   const rwDsn = `postgresql://${row.db_user}:${dbPass}@${row.db_host}:${row.db_port}/${row.db_name}`
@@ -135,7 +150,7 @@ function fromGlobalEnv(): ResolvedConnection {
 // than letting it 500 every [ref] route.
 const MISSING_PROJECTS_TABLE = 'relation "platform.projects" does not exist'
 
-export async function resolveProjectConnection(ref: string): Promise<ResolvedConnection> {
+async function lookupProjectRow(ref: string): Promise<PlatformProjectRow | null> {
   let row: PlatformProjectRow | null
   try {
     row = await getProjectByRef(ref)
@@ -147,6 +162,55 @@ export async function resolveProjectConnection(ref: string): Promise<ResolvedCon
     )
     row = null
   }
+  return row
+}
+
+/**
+ * Resolve only project identity and non-secret database metadata. Route guards
+ * must use this lookup so 404/project isolation checks happen without touching
+ * encrypted credentials.
+ */
+export async function resolveProjectIdentity(ref: string): Promise<ResolvedProjectIdentity> {
+  const row = await lookupProjectRow(ref)
+  if (row) {
+    return {
+      ref: row.ref,
+      organizationId: row.organization_id,
+      name: row.name,
+      status: row.status,
+      cloudProvider: row.cloud_provider,
+      region: row.region,
+      restUrl: row.rest_url,
+      dbHost: row.db_host,
+      dbPort: row.db_port,
+      dbName: row.db_name,
+      dbUser: row.db_user,
+      row,
+    }
+  }
+  if (ref === 'default') {
+    console.log('[self-platform] project registry miss for "default", using global env')
+    return {
+      ref: 'default',
+      organizationId: null,
+      name: process.env.DEFAULT_PROJECT_NAME || 'Default Project',
+      status: 'ACTIVE_HEALTHY',
+      cloudProvider: 'AWS',
+      region: 'local',
+      restUrl: PROJECT_REST_URL,
+      dbHost: PROJECT_DB_HOST,
+      dbPort: POSTGRES_PORT,
+      dbName: process.env.POSTGRES_DB || 'postgres',
+      dbUser: process.env.POSTGRES_USER_READ_WRITE || 'supabase_admin',
+      row: null,
+    }
+  }
+  throw new ProjectNotFound(ref)
+}
+
+/** Resolve credentials only after the caller has completed RBAC/isolation checks. */
+export async function resolveProjectConnection(ref: string): Promise<ResolvedConnection> {
+  const row = await lookupProjectRow(ref)
   if (row) return fromRow(row)
   if (ref === 'default') {
     console.log('[self-platform] project registry miss for "default", using global env')
