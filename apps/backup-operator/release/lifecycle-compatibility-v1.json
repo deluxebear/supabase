@@ -1,0 +1,38 @@
+{
+  "schema": "supabase.fleet.lifecycle.compatibility.v1",
+  "contractVersion": "v1",
+  "minimums": {
+    "postgres": 15,
+    "fleetControl": 1,
+    "agent": 1,
+    "adapter": 1
+  },
+  "providers": {
+    "compose": [
+      "runtime.restart",
+      "runtime.rollout",
+      "runtime.scale",
+      "postgres.upgrade.plan",
+      "network.bans.read",
+      "network.bans.update"
+    ],
+    "kubernetes": [
+      "runtime.restart",
+      "runtime.rollout",
+      "runtime.scale",
+      "postgres.upgrade.plan",
+      "postgres.upgrade.execute",
+      "replica.create",
+      "replica.remove",
+      "branch.create",
+      "branch.restore",
+      "network.bans.read",
+      "network.bans.update"
+    ]
+  },
+  "notes": [
+    "This matrix describes contract eligibility, not project availability.",
+    "Fleet Control, the bound Agent capability, exact component discovery, ownership policy, RBAC and project binding must all pass.",
+    "Branching remains optional and is advertised only by an installed Kubernetes provider plugin."
+  ]
+}

@@ -277,6 +277,9 @@ services:
       NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE: fleet
       NEXT_PUBLIC_SELF_PLATFORM: "true"
       SELF_PLATFORM_METRICS_CONCURRENCY: ${SELF_PLATFORM_METRICS_CONCURRENCY:-8}
+      # Server-only discovery snapshot. The browser never supplies lifecycle
+      # component versions; the Agent rejects a plan if its local snapshot differs.
+      FLEET_LIFECYCLE_COMPONENT_VERSIONS: ${FLEET_LIFECYCLE_COMPONENT_VERSIONS:-}
       PLATFORM_POSTGRES_HOST: platform-db
       PLATFORM_POSTGRES_PORT: 5432
       PLATFORM_POSTGRES_DB: platform

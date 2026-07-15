@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -16,6 +17,7 @@ import (
 	"github.com/supabase/supabase/apps/backup-operator/internal/agenttransport"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetagent"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetlifecycle"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 	"github.com/supabase/supabase/apps/backup-operator/internal/version"
 	"k8s.io/client-go/dynamic"
@@ -43,6 +45,9 @@ func main() {
 	kubernetesDeployment := flag.String("kubernetes-edge-runtime-deployment", os.Getenv("FLEET_AGENT_KUBERNETES_EDGE_RUNTIME_DEPLOYMENT"), "allowlisted Edge Runtime Kubernetes Deployment")
 	kubeconfig := flag.String("kubeconfig", os.Getenv("FLEET_AGENT_KUBECONFIG"), "Kubernetes kubeconfig; empty uses in-cluster configuration")
 	allowedKubernetesFields := flag.String("kubernetes-allowed-field-prefixes", envOr("FLEET_AGENT_KUBERNETES_ALLOWED_FIELD_PREFIXES", "/metadata/labels/supabase.com~1fleet-revision,/metadata/annotations/supabase.com~1fleet-revision,/spec/template/metadata/annotations/supabase.com~1fleet-revision,/spec/template/spec/containers"), "comma-separated JSON pointer prefixes Fleet may own")
+	lifecyclePlugin := flag.String("lifecycle-plugin", os.Getenv("FLEET_AGENT_LIFECYCLE_PLUGIN"), "operator-managed typed lifecycle provider executable")
+	lifecycleCapabilities := flag.String("lifecycle-capabilities", os.Getenv("FLEET_AGENT_LIFECYCLE_CAPABILITIES"), "comma-separated lifecycle capabilities explicitly provided by the plugin")
+	lifecycleVersionsJSON := flag.String("lifecycle-component-versions", os.Getenv("FLEET_AGENT_LIFECYCLE_COMPONENT_VERSIONS"), "complete discovered component-version JSON used for lifecycle compatibility")
 	journalPath := flag.String("journal", envOr("FLEET_AGENT_JOURNAL", "/var/lib/supabase-fleet/agent-journal.db"), "durable Fleet Agent execution journal")
 	lockPath := flag.String("lock", envOr("FLEET_AGENT_LOCK", "/var/lib/supabase-fleet/agent.lock"), "Fleet Agent singleton lock")
 	heartbeat := flag.Duration("heartbeat", envDuration("FLEET_AGENT_HEARTBEAT", 10*time.Second), "Fleet Agent heartbeat interval")
@@ -71,6 +76,8 @@ func main() {
 		log.Fatal(err)
 	}
 	var functionProviders *fleetfunctions.Registry
+	var lifecycleProviders *fleetlifecycle.Registry
+	var lifecycleVersions fleetlifecycle.ComponentVersions
 	capabilities := []string{fleetproviders.CapabilityReconcileConfiguration}
 	if strings.TrimSpace(*functionProbeURL) != "" {
 		functionProvider, err := buildFunctionProvider(*adapter, *functionRoot, *functionProbeURL, *functionProbeToken, *kubeconfig, *kubernetesNamespace, *kubernetesDeployment)
@@ -82,6 +89,28 @@ func main() {
 			log.Fatal(err)
 		}
 		capabilities = append(capabilities, fleetfunctions.CapabilityDeploy)
+	}
+	if strings.TrimSpace(*lifecyclePlugin) != "" || strings.TrimSpace(*lifecycleCapabilities) != "" || strings.TrimSpace(*lifecycleVersionsJSON) != "" {
+		if strings.TrimSpace(*lifecyclePlugin) == "" || strings.TrimSpace(*lifecycleCapabilities) == "" || strings.TrimSpace(*lifecycleVersionsJSON) == "" {
+			log.Fatal("Fleet lifecycle plugin, explicit capabilities, and complete component versions must be configured together")
+		}
+		actions, err := fleetlifecycle.ParseActions(splitNonEmpty(*lifecycleCapabilities))
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := json.Unmarshal([]byte(*lifecycleVersionsJSON), &lifecycleVersions); err != nil {
+			log.Fatal("Fleet lifecycle component versions must be valid JSON")
+		}
+		if err := lifecycleVersions.Validate(); err != nil {
+			log.Fatal(err)
+		}
+		lifecycleProviders, err = fleetlifecycle.NewRegistry(fleetlifecycle.DefaultMatrix(), fleetlifecycle.ManagedProvider{Kind: fleetlifecycle.Adapter(*adapter), Supported: actions, Runtime: fleetlifecycle.PluginRuntime{Executable: *lifecyclePlugin}})
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, action := range actions {
+			capabilities = append(capabilities, string(action))
+		}
 	}
 	journal, err := agentjournal.Open(ctx, *journalPath)
 	if err != nil {
@@ -100,7 +129,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	executor := &fleetagent.Executor{Journal: journal, Providers: providers, FunctionProviders: functionProviders, ProjectRef: *projectRef, TargetID: *targetID, BindingID: *bindingID}
+	executor := &fleetagent.Executor{Journal: journal, Providers: providers, FunctionProviders: functionProviders, LifecycleProviders: lifecycleProviders, LifecycleVersions: lifecycleVersions, ProjectRef: *projectRef, TargetID: *targetID, BindingID: *bindingID}
 	client := fleetagent.Client{
 		Address: *address, TLS: tlsConfig, AgentID: *agentID, TargetID: *targetID, BindingID: *bindingID, NodeID: *nodeID,
 		Build: version.String(), Capabilities: capabilities, Executor: executor, HeartbeatInterval: *heartbeat,

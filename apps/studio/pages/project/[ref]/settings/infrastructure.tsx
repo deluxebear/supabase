@@ -1,3 +1,4 @@
+import { SelfPlatformLifecyclePanel } from '@/components/interfaces/SelfPlatform/SelfPlatformLifecyclePanel'
 import { InfrastructureActivity } from '@/components/interfaces/Settings/Infrastructure/InfrastructureActivity'
 import { InfrastructureInfo } from '@/components/interfaces/Settings/Infrastructure/InfrastructureInfo'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
@@ -9,6 +10,7 @@ import {
   ScaffoldHeader,
   ScaffoldTitle,
 } from '@/components/layouts/Scaffold'
+import { STUDIO_CAPABILITIES, STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
@@ -26,6 +28,11 @@ const ProjectInfrastructure: NextPageWithLayout = () => {
       <InfrastructureInfo />
       <ScaffoldDivider />
       <InfrastructureActivity />
+      {STUDIO_DEPLOYMENT_PROFILE === 'fleet' && STUDIO_CAPABILITIES.lifecycleManagement && (
+        <ScaffoldContainer>
+          <SelfPlatformLifecyclePanel />
+        </ScaffoldContainer>
+      )}
     </>
   )
 }

@@ -116,6 +116,25 @@ paths:
         '400': { $ref: '#/components/responses/Error' }
         '403': { $ref: '#/components/responses/Error' }
         '409': { $ref: '#/components/responses/Error' }
+  /platform/fleet/v1/projects/{projectRef}/lifecycle/impact-plans:
+    post:
+      operationId: createLifecycleImpactPlan
+      description: Creates a durable, expiring and single-use impact plan after binding, Agent capability, adapter, and target-version compatibility checks.
+      parameters: [{ $ref: '#/components/parameters/ProjectRef' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateLifecycleImpactPlan' }
+      responses:
+        '201':
+          description: Version-pinned impact plan
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LifecycleImpactPlan' }
+        '400': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
   /platform/fleet/v1/projects/{projectRef}/operations/{operationId}:
     get:
       operationId: getFleetOperation
@@ -587,6 +606,67 @@ components:
             type: object,
             description: Strictly validated against inputSchema; runtime.config.reconcile uses ConfigurationDocument,
           }
+    ComponentVersions:
+      type: object
+      additionalProperties: false
+      required: [postgres, gotrue, postgrest, storage, realtime, edgeRuntime, gateway, adapter, fleetControl, backupOperator, agent]
+      properties:
+        postgres: { type: string }
+        gotrue: { type: string }
+        postgrest: { type: string }
+        storage: { type: string }
+        realtime: { type: string }
+        edgeRuntime: { type: string }
+        gateway: { type: string }
+        adapter: { type: string }
+        fleetControl: { type: string }
+        backupOperator: { type: string }
+        agent: { type: string }
+    LifecycleParameters:
+      type: object
+      additionalProperties: false
+      properties:
+        service: { type: string, pattern: '^[a-z][a-z0-9-]{0,62}$' }
+        replicas: { type: integer, minimum: 0, maximum: 64 }
+        targetVersion: { type: string, maxLength: 32 }
+        replicaName: { type: string, pattern: '^[a-z][a-z0-9-]{0,62}$' }
+        branchName: { type: string, pattern: '^[a-z][a-z0-9-]{0,62}$' }
+        sourceBranch: { type: string, pattern: '^[a-z][a-z0-9-]{0,62}$' }
+        bannedNetworks:
+          type: array
+          maxItems: 256
+          items: { type: string, maxLength: 64 }
+    CreateLifecycleImpactPlan:
+      type: object
+      additionalProperties: false
+      required: [targetId, bindingId, action, adapter, parameters, componentVersions]
+      properties:
+        targetId: { type: string }
+        bindingId: { type: string }
+        action: { type: string }
+        adapter: { type: string, enum: [compose, kubernetes] }
+        parameters: { $ref: '#/components/schemas/LifecycleParameters' }
+        componentVersions: { $ref: '#/components/schemas/ComponentVersions' }
+    LifecycleImpactPlan:
+      type: object
+      required: [schema, id, projectRef, action, adapter, parameters, componentVersions, impact, verification, rollback, manualIntervention, requiresRecentAal2, requiresExplicitConfirmation, createdAt, expiresAt, hash]
+      properties:
+        schema: { type: string, const: supabase.fleet.lifecycle.impact-plan.v1 }
+        id: { type: string }
+        projectRef: { type: string }
+        action: { type: string }
+        adapter: { type: string, enum: [compose, kubernetes] }
+        parameters: { $ref: '#/components/schemas/LifecycleParameters' }
+        componentVersions: { $ref: '#/components/schemas/ComponentVersions' }
+        impact: { type: object }
+        verification: { type: array, items: { type: string } }
+        rollback: { type: array, items: { type: string } }
+        manualIntervention: { type: array, items: { type: string } }
+        requiresRecentAal2: { type: boolean }
+        requiresExplicitConfirmation: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        hash: { type: string, pattern: '^[0-9a-f]{64}$' }
     Operation:
       type: object
       required:

@@ -11,17 +11,20 @@ import (
 	fleetagentv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/fleet/v1"
 	"github.com/supabase/supabase/apps/backup-operator/internal/agentjournal"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetlifecycle"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 )
 
 type Executor struct {
-	Journal           *agentjournal.Journal
-	Providers         *fleetproviders.Registry
-	FunctionProviders *fleetfunctions.Registry
-	ProjectRef        string
-	TargetID          string
-	BindingID         string
-	Now               func() time.Time
+	Journal            *agentjournal.Journal
+	Providers          *fleetproviders.Registry
+	FunctionProviders  *fleetfunctions.Registry
+	LifecycleProviders *fleetlifecycle.Registry
+	LifecycleVersions  fleetlifecycle.ComponentVersions
+	ProjectRef         string
+	TargetID           string
+	BindingID          string
+	Now                func() time.Time
 }
 
 type storedResult struct {
@@ -55,6 +58,7 @@ func (e *Executor) ExecuteWithArtifacts(ctx context.Context, task *fleetagentv1.
 	}
 	var configuration fleetproviders.ConfigurationDocument
 	var deployment fleetfunctions.Deployment
+	var lifecycle fleetlifecycle.Document
 	destructive := true
 	switch {
 	case task.GetCapability() == fleetproviders.CapabilityReconcileConfiguration && task.GetInputSchema() == fleetproviders.InputSchemaV1 && task.GetReconcileConfiguration() != nil && e.Providers != nil:
@@ -73,6 +77,15 @@ func (e *Executor) ExecuteWithArtifacts(ctx context.Context, task *fleetagentv1.
 		deployment, err = fleetfunctions.ParseDeployment(task.GetDeployFunction().GetDeploymentJson())
 		if err != nil {
 			return failed(identity.GetTaskId(), "validation_failed", err.Error())
+		}
+	case task.GetInputSchema() == fleetlifecycle.InputSchemaV1 && task.GetExecuteLifecycle() != nil && e.LifecycleProviders != nil:
+		var err error
+		lifecycle, err = fleetlifecycle.ParseDocument(task.GetExecuteLifecycle().GetLifecycleJson(), now())
+		if err != nil || string(lifecycle.Action) != task.GetCapability() {
+			return failed(identity.GetTaskId(), "validation_failed", "Fleet lifecycle input or capability is invalid")
+		}
+		if lifecycle.ComponentVersions != e.LifecycleVersions {
+			return failed(identity.GetTaskId(), "target_version_stale", "Fleet lifecycle component discovery changed after impact planning")
 		}
 	default:
 		return failed(identity.GetTaskId(), "invalid_task", "Fleet task capability or typed schema is invalid")
@@ -109,7 +122,7 @@ func (e *Executor) ExecuteWithArtifacts(ctx context.Context, task *fleetagentv1.
 		} else {
 			result = providerFailure(identity.GetTaskId(), deadlineCtx, reconcileErr)
 		}
-	} else {
+	} else if task.GetCapability() == fleetfunctions.CapabilityDeploy {
 		var artifact []byte
 		if deployment.Action == fleetfunctions.ActionDeploy {
 			if artifacts == nil {
@@ -137,6 +150,22 @@ func (e *Executor) ExecuteWithArtifacts(ctx context.Context, task *fleetagentv1.
 				result = providerFailure(identity.GetTaskId(), deadlineCtx, deployErr)
 			}
 		}
+	} else {
+		evidence, lifecycleErr := e.LifecycleProviders.Execute(deadlineCtx, fleetlifecycle.Request{OperationID: identity.GetOperationId(), ProjectRef: identity.GetProjectRef(), TargetID: identity.GetTargetId(), BindingID: identity.GetBindingId(), ExpectedGeneration: identity.GetExpectedGeneration(), Document: lifecycle})
+		var typedErr *fleetlifecycle.ExecutionError
+		if errors.As(lifecycleErr, &typedErr) {
+			evidence = typedErr.Evidence
+		}
+		if lifecycleErr == nil || typedErr != nil {
+			raw, marshalErr := json.Marshal(evidence)
+			if marshalErr != nil {
+				result = failed(identity.GetTaskId(), "evidence_invalid", "Fleet lifecycle evidence could not be encoded")
+			} else {
+				result = &fleetagentv1.TaskResult{TaskId: identity.GetTaskId(), Result: &fleetagentv1.TaskResult_ExecuteLifecycle{ExecuteLifecycle: &fleetagentv1.LifecycleEvidence{EvidenceJson: raw}}}
+			}
+		} else {
+			result = providerFailure(identity.GetTaskId(), deadlineCtx, lifecycleErr)
+		}
 	}
 	if progress != nil {
 		_ = progress(&transportv1.TaskProgress{TaskId: identity.GetTaskId(), Percent: 100, Phase: "completed"})
@@ -148,6 +177,9 @@ func (e *Executor) ExecuteWithArtifacts(ctx context.Context, task *fleetagentv1.
 	} else if typed := result.GetDeployFunction(); typed != nil {
 		stored.Evidence = base64.StdEncoding.EncodeToString(typed.GetEvidenceJson())
 		stored.Kind = "function"
+	} else if typed := result.GetExecuteLifecycle(); typed != nil {
+		stored.Evidence = base64.StdEncoding.EncodeToString(typed.GetEvidenceJson())
+		stored.Kind = "lifecycle"
 	} else if taskError := result.GetError(); taskError != nil {
 		stored.ErrorCode = taskError.GetCode()
 	}
@@ -176,6 +208,9 @@ func (e *Executor) replay(ctx context.Context, taskID, idempotencyKey string) *f
 	}
 	if stored.Kind == "function" {
 		return &fleetagentv1.TaskResult{TaskId: taskID, Result: &fleetagentv1.TaskResult_DeployFunction{DeployFunction: &fleetagentv1.FunctionDeploymentEvidence{EvidenceJson: evidence}}}
+	}
+	if stored.Kind == "lifecycle" {
+		return &fleetagentv1.TaskResult{TaskId: taskID, Result: &fleetagentv1.TaskResult_ExecuteLifecycle{ExecuteLifecycle: &fleetagentv1.LifecycleEvidence{EvidenceJson: evidence}}}
 	}
 	return &fleetagentv1.TaskResult{TaskId: taskID, Result: &fleetagentv1.TaskResult_ReconcileConfiguration{ReconcileConfiguration: &fleetagentv1.ReconcileConfigurationEvidence{EvidenceJson: evidence}}}
 }

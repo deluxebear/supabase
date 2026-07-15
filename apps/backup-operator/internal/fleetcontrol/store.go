@@ -23,7 +23,7 @@ import (
 //go:embed migrations/*/*.sql
 var fleetMigrations embed.FS
 
-const CurrentSchemaVersion = 6
+const CurrentSchemaVersion = 7
 
 var ErrOperationNotFound = errors.New("Fleet operation not found")
 var ErrMigrationChecksum = errors.New("Fleet migration checksum mismatch")

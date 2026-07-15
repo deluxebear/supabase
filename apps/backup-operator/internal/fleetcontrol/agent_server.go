@@ -12,6 +12,7 @@ import (
 	transportv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/agent/transport/v1"
 	fleetagentv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/fleet/v1"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetlifecycle"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 	"github.com/supabase/supabase/apps/backup-operator/internal/observability"
 	"google.golang.org/grpc/codes"
@@ -235,6 +236,26 @@ func (s *AgentServer) handleAgentMessage(stream fleetagentv1.FleetAgentControlSe
 		default:
 			return status.Error(codes.InvalidArgument, "Fleet Agent function deployment status is invalid")
 		}
+	} else if typed := result.GetExecuteLifecycle(); typed != nil {
+		var evidence fleetlifecycle.Evidence
+		if json.Unmarshal(typed.GetEvidenceJson(), &evidence) != nil || evidence.Schema != fleetlifecycle.EvidenceSchemaV1 || evidence.ObservedGeneration != (*active).ExpectedGeneration || string(evidence.Action) != (*active).Capability || evidence.PlanHash == "" {
+			return status.Error(codes.InvalidArgument, "Fleet Agent lifecycle evidence is invalid")
+		}
+		completion.EvidenceSchema = fleetlifecycle.EvidenceSchemaV1
+		completion.Evidence = append(json.RawMessage(nil), typed.GetEvidenceJson()...)
+		switch evidence.Status {
+		case "succeeded":
+			completion.Succeeded = true
+		case "rolled-back":
+			completion.ErrorCode = "verification_failed"
+		case "manual-intervention":
+			completion.ErrorCode = "manual_intervention_required"
+			completion.TerminalState = "manual_intervention"
+		case "failed":
+			completion.ErrorCode = "provider_failed"
+		default:
+			return status.Error(codes.InvalidArgument, "Fleet Agent lifecycle status is invalid")
+		}
 	} else if taskError := result.GetError(); taskError != nil && taskError.GetCode() != "" {
 		completion.Succeeded = false
 		completion.ErrorCode = taskError.GetCode()
@@ -279,6 +300,12 @@ func (s *AgentServer) taskMessage(operation ClaimedOperation) (*fleetagentv1.Typ
 		task.Input = &fleetagentv1.TypedTask_ReconcileConfiguration{ReconcileConfiguration: &fleetagentv1.ReconcileConfigurationInput{DocumentJson: operation.TypedInput, DesiredDigest: operation.DesiredDigest, ExpectedGeneration: operation.ExpectedGeneration}}
 	case operation.Capability == fleetfunctions.CapabilityDeploy && operation.InputSchema == fleetfunctions.InputSchemaV1:
 		task.Input = &fleetagentv1.TypedTask_DeployFunction{DeployFunction: &fleetagentv1.DeployFunctionInput{DeploymentJson: operation.TypedInput}}
+	case operation.InputSchema == fleetlifecycle.InputSchemaV1:
+		document, parseErr := fleetlifecycle.ParseDocument(operation.TypedInput, now())
+		if parseErr != nil || string(document.Action) != operation.Capability {
+			return nil, errors.New("Fleet lifecycle operation contract is invalid or expired")
+		}
+		task.Input = &fleetagentv1.TypedTask_ExecuteLifecycle{ExecuteLifecycle: &fleetagentv1.ExecuteLifecycleInput{LifecycleJson: operation.TypedInput}}
 	default:
 		return nil, errors.New("Fleet operation has no executable provider contract")
 	}

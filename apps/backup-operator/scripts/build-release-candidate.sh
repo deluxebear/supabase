@@ -48,8 +48,9 @@ cat >"$output/upgrade-compatibility.json" <<JSON
  {"from":"different-agent-build","to":"$version","operation":"destructive","result":"blocked-as-designed","evidence":"destructive build pin"}
 ]}
 JSON
+cp "$root/release/lifecycle-compatibility-v1.json" "$output/lifecycle-compatibility-v1.json"
 
-(cd "$output" && sha256sum backup-operator-linux-* backup-agent-linux-* backupctl-linux-* sbom.*.json backup-operator-multiarch.oci.tar upgrade-compatibility.json >SHA256SUMS)
+(cd "$output" && sha256sum backup-operator-linux-* backup-agent-linux-* backupctl-linux-* sbom.*.json backup-operator-multiarch.oci.tar upgrade-compatibility.json lifecycle-compatibility-v1.json >SHA256SUMS)
 subjects="$(cd "$output" && awk '{print $1"\t"$2}' SHA256SUMS | jq -Rn '[inputs|split("\t")|{name:.[1],digest:{sha256:.[0]}}]')"
 jq -n --arg version "$version" --arg commit "$commit" --arg created "$build_date" --argjson workspace_dirty "$workspace_dirty" --argjson subjects "$subjects" '
   {_type:"https://in-toto.io/Statement/v1",subject:$subjects,predicateType:"https://slsa.dev/provenance/v1",
@@ -71,7 +72,7 @@ jq -n --arg observed_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg version "$version
       oci_multiarch:"passed: local OCI layout contains amd64 and arm64 manifests",
       sbom:["SPDX-2.3","CycloneDX-1.5"],checksums:"verified",provenance:"offline subject digests verified",
       deployments:"compose, Helm and Kustomize validated locally; systemd validation reused passed Linux-container evidence from failure-observability matrix",
-      upgrade_matrix:"SQLite migration reopen and protocol rolling compatibility passed; incompatible destructive build is blocked",
+      upgrade_matrix:"SQLite migration reopen, protocol rolling, and lifecycle target-version compatibility passed; incompatible actions are blocked",
       output_directory:$output,
       external_step_requiring_user_authorization:"publish_and_sign: push multiarch OCI, upload release assets, create external release, and perform external keyless signing/transparency-log entry",
       external_actions_performed:false,RESULT:"PASS"}}' >"$root/test/e2e/evidence/release-candidate.json"

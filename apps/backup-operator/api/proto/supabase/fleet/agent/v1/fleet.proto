@@ -47,6 +47,7 @@ message TypedTask {
     ObserveRuntimeInput observe_runtime = 10;
     ReconcileConfigurationInput reconcile_configuration = 11;
     DeployFunctionInput deploy_function = 12;
+    ExecuteLifecycleInput execute_lifecycle = 13;
   }
 }
 
@@ -64,6 +65,10 @@ message DeployFunctionInput {
   bytes deployment_json = 1;
 }
 
+message ExecuteLifecycleInput {
+  bytes lifecycle_json = 1;
+}
+
 message TaskResult {
   string task_id = 1;
   string evidence_schema = 2;
@@ -72,6 +77,7 @@ message TaskResult {
     supabase.agent.transport.v1.TaskError error = 11;
     ReconcileConfigurationEvidence reconcile_configuration = 12;
     FunctionDeploymentEvidence deploy_function = 13;
+    LifecycleEvidence execute_lifecycle = 14;
   }
 }
 
@@ -85,6 +91,10 @@ message ReconcileConfigurationEvidence {
 }
 
 message FunctionDeploymentEvidence {
+  bytes evidence_json = 1;
+}
+
+message LifecycleEvidence {
   bytes evidence_json = 1;
 }
 
