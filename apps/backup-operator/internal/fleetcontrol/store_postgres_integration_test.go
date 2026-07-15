@@ -18,7 +18,7 @@ func TestFleetPostgresStoreCompatibility(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer store.Close()
-	operation, created, err := store.CreateOperation(ctx, CreateOperationInput{Operation: Operation{ID: "postgres-op", ProjectRef: "project-a", TargetID: "target-a", BindingID: "binding-a", Domain: "runtime", Capability: "runtime.observe", ProtocolMajor: 1, ProtocolMinor: 0, InputSchema: "supabase.fleet.runtime.observe.v1"}, IdempotencyKey: "postgres-idem", TypedInput: json.RawMessage(`{"services":["auth"]}`), Preconditions: json.RawMessage(`{}`), Actor: "integration", CorrelationID: "integration-request"})
+	operation, created, err := store.CreateOperation(ctx, CreateOperationInput{Operation: Operation{ID: "postgres-op", ProjectRef: "project-a", TargetID: "target-a", BindingID: "binding-a", Domain: "runtime", Capability: "runtime.observe", ProtocolMajor: 1, ProtocolMinor: 0, ExpectedGeneration: 1, DesiredRevision: "11111111-1111-4111-8111-111111111111", DesiredDigest: "2a34f64f7cc90fa0edbae5de45ce56f31768e5e68bcae21deec6162c05a826e0", InputSchema: "supabase.fleet.runtime.observe.v1"}, IdempotencyKey: "postgres-idem", TypedInput: json.RawMessage(`{"services":["auth"]}`), SnapshotCanonical: `{"services":["auth"]}`, Preconditions: json.RawMessage(`{}`), Actor: "integration", CorrelationID: "integration-request"})
 	if err != nil || !created || operation.FencingToken != 1 {
 		t.Fatalf("PostgreSQL operation = %+v, created=%v, err=%v", operation, created, err)
 	}

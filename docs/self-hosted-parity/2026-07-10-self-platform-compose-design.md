@@ -66,10 +66,10 @@ docker/self-platform/
 ├── volumes/
 │   ├── api/kong-plt.yml          # kong.yml minus basic-auth/DASHBOARD consumer, plus platform-auth route
 │   └── db/
-│       ├── _platform.sql         # role platform_admin + database _platform (initdb)
-│       └── platform-migrations.sql  # \c _platform; set role; \i /platform-migrations/01..11
+│       └── _platform.sql         # role platform_admin + database _platform (initdb)
 └── scripts/
-    └── bootstrap.sh              # idempotent: existing-volume init + first admin + register default project
+    ├── bootstrap.sh              # idempotent: existing-volume init + migration + admin + default project
+    └── run-platform-migrations.sh # T5 ordered checksum ledger and readiness gate
 ```
 
 Immutable config is referenced from the parent (`../volumes/db/*.sql`,
@@ -87,17 +87,15 @@ initdb and never collides with `docker/volumes/db/data`.
   via psql `\set` backtick, same idiom as `_supabase.sql`), `CREATE DATABASE _platform OWNER
 platform_admin`, and `ALTER ROLE platform_admin IN DATABASE _platform SET search_path =
 public, auth` — the M1 Task-4 lesson: GoTrue lookups must fall through to `auth`.
-- `volumes/db/platform-migrations.sql` (mounted as `.../migrations/98-platform-migrations.sql`):
-  `\c _platform`, `set role platform_admin`, then `\i /platform-migrations/NN-*.sql` for all 11
-  platform migrations, `reset role`, `\c postgres`. The migrations dir is mounted at
-  **`/platform-migrations`, deliberately OUTSIDE `/docker-entrypoint-initdb.d`** so the image
-  entrypoint cannot auto-execute them against the wrong database; only the wrapper reaches them
-  via absolute `\i` paths.
+- T5 supersedes the original static `platform-migrations.sql` wrapper with the one-shot
+  `platform-migrate` service. `run-platform-migrations.sh` connects to `_platform`, holds an
+  advisory lock, orders the mounted migration directory, and verifies the SHA-256 ledger before
+  Studio or platform-auth can become ready. Fresh and existing volumes use this same path.
 - Platform GoTrue runs its own migrations into `_platform`'s `auth` schema at startup —
   schema-per-database means zero collision with the project's `auth` schema.
 - The `db` service gains the `PLATFORM_POSTGRES_PASSWORD` env (needed by the `\set` backtick).
 
-### D2 — initdb runs once; `bootstrap.sh` covers everything else
+### D2 — initdb runs once; `platform-migrate` and `bootstrap.sh` cover everything else
 
 `docker-entrypoint-initdb.d` only executes on a fresh `PGDATA`. `scripts/bootstrap.sh` is the
 single idempotent host-side entry point (docker + psql-in-container + curl + openssl only — no

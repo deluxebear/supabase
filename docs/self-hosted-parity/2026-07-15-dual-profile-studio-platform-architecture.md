@@ -1416,10 +1416,11 @@ Synthesized from the engineering review. Checkbox each task as it ships; priorit
   - Files: `apps/backup-operator`, planned Fleet Control Go packages, generated contracts.
   - Verify: independent schema/API compatibility tests and unchanged backup/restore regression suite.
   - Implemented: 2026-07-15 — added a separate `fleet-control` binary, `/platform/fleet/v1/...` OpenAPI contract, `supabase.fleet.*` typed Agent protocol, independent SQLite/PostgreSQL store migrations, project-scoped service-assertion RBAC, immutable operation/audit/event records, and capability-fail-closed behavior. Backup Operator keeps its existing `/v1/clusters/...` API, `supabase.backup.*` protocol, store, and recovery state machines; only protocol-neutral dispatch validation, fencing allocation, and bounded event replay moved into shared packages. Production Compose now runs Fleet Control against the T3-reserved independent PostgreSQL recovery domain. T5 remains responsible for platform desired-state outbox/CAS and the checksum-locked migration runner; T7 remains responsible for management-target enrollment and certificate lifecycle. No ADR change was required; this implements ADR-007, ADR-009, ADR-010, and ADR-011.
-- [ ] **T5 (P1)** — Authority and migrations — Implement authoritative platform desired state, transactional outbox, immutable control snapshots, CAS observations, and versioned migration runner.
+- [x] **T5 (P1)** — Authority and migrations — Implement authoritative platform desired state, transactional outbox, immutable control snapshots, CAS observations, and versioned migration runner.
   - Surfaced by: architecture review — desired state and operations previously had competing implied owners.
   - Files: platform migrations/API, Fleet Control store/migrations, operation queries.
   - Verify: restart/replay/stale-result integration tests and fresh/upgrade/changed-checksum migration tests.
+  - Implemented: 2026-07-15 — added the platform-owned desired configuration/revision authority, atomic operation outbox and summary projection, immutable revision/outbox payload guards, leased idempotent dispatcher, and revision/generation CAS observation projection. Platform and Fleet Control migration runners now use ordered SHA-256 ledgers, PostgreSQL advisory locks, transactional application, changed/removed-file rejection, and readiness gates; Fleet Control schema 2 persists and verifies the platform revision, digest, and canonical snapshot before accepting an operation. Production Compose provisions a least-privilege outbox dispatcher identity and blocks Studio/Auth startup on platform migration completion. Focused Studio/Go tests plus a disposable Compose acceptance cover RBAC/project isolation, Embedded API isolation, legacy upgrade, concurrent fresh migration, replay, stale observation rejection, and checksum tampering. T7 still owns real project-to-management-target binding and T8 owns executable providers, so T5 does not advertise or fake configuration apply. No ADR change was required; this implements ADR-004, ADR-009, ADR-010, and ADR-011.
 - [ ] **T6 (P2)** — Honest attachment — Add stack fingerprint proof, duplicate protection, key modes, multi-service preflight, independent status dimensions, staged connection update, and detach.
   - Surfaced by: architecture and test review — `select 1` currently yields `ACTIVE_HEALTHY` and delete semantics are too broad.
   - Files: project admin/connection/health APIs, platform schema, New Project and project settings UI.
@@ -1542,6 +1543,7 @@ Future reversals add a new ADR row and link the superseded decision.
 - [Studio i18n design](../superpowers/specs/2026-07-02-studio-i18n-zh-cn-design.md)
 - [Studio i18n operating guide](../../apps/studio/scripts/i18n/README.md)
 - [Backup Operator production runbook](../../apps/backup-operator/docs/production-runbook.md)
+- [T5 state authority and migration operations](./2026-07-15-t5-state-authority-operations.md)
 
 ## GSTACK REVIEW REPORT
 

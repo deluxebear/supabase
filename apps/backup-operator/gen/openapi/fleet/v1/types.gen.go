@@ -71,6 +71,8 @@ type CapabilityState string
 type CreateOperation struct {
 	BindingId          string                 `json:"bindingId"`
 	Capability         string                 `json:"capability"`
+	DesiredDigest      string                 `json:"desiredDigest"`
+	DesiredRevision    string                 `json:"desiredRevision"`
 	Domain             string                 `json:"domain"`
 	ExpectedGeneration int64                  `json:"expectedGeneration"`
 	InputSchema        string                 `json:"inputSchema"`
@@ -78,8 +80,11 @@ type CreateOperation struct {
 	Preconditions      map[string]interface{} `json:"preconditions"`
 	ProtocolMajor      int                    `json:"protocolMajor"`
 	ProtocolMinor      int                    `json:"protocolMinor"`
-	TargetId           string                 `json:"targetId"`
-	TypedInput         map[string]interface{} `json:"typedInput"`
+
+	// SnapshotCanonical Canonical immutable JSON used for digest verification and never returned
+	SnapshotCanonical string                 `json:"snapshotCanonical"`
+	TargetId          string                 `json:"targetId"`
+	TypedInput        map[string]interface{} `json:"typedInput"`
 }
 
 // Error defines model for Error.
@@ -107,6 +112,8 @@ type Operation struct {
 	BindingId          string         `json:"bindingId"`
 	Capability         string         `json:"capability"`
 	CreatedAt          time.Time      `json:"createdAt"`
+	DesiredDigest      string         `json:"desiredDigest"`
+	DesiredRevision    string         `json:"desiredRevision"`
 	Domain             string         `json:"domain"`
 	ExpectedGeneration int64          `json:"expectedGeneration"`
 	FencingToken       int64          `json:"fencingToken"`

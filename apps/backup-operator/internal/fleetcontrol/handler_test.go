@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -35,7 +36,9 @@ func TestFleetHandlerEnforcesCapabilityRBACAndProjectIsolation(t *testing.T) {
 		t.Fatal(err)
 	}
 	token := signFleetJWT(t, key, security.ServiceClaims{Issuer: "studio", Subject: "user-a", Audience: "fleet-control", NotBefore: time.Now().Add(-time.Minute).Unix(), Expires: time.Now().Add(time.Minute).Unix(), Scopes: []string{"fleet.read", "fleet.execute"}, Projects: []string{"project-a", "project-b"}})
-	body := `{"operationId":"op-a","targetId":"target-a","bindingId":"binding-a","domain":"runtime","capability":"runtime.observe","protocolMajor":1,"protocolMinor":0,"expectedGeneration":3,"inputSchema":"supabase.fleet.runtime.observe.v1","preconditions":{},"typedInput":{"accessToken":"do-not-return"}}`
+	snapshot := `{"accessToken":"do-not-return"}`
+	digest := sha256.Sum256([]byte(snapshot))
+	body := fmt.Sprintf(`{"operationId":"op-a","targetId":"target-a","bindingId":"binding-a","domain":"runtime","capability":"runtime.observe","protocolMajor":1,"protocolMinor":0,"expectedGeneration":3,"desiredRevision":"11111111-1111-4111-8111-111111111111","desiredDigest":"%x","snapshotCanonical":%q,"inputSchema":"supabase.fleet.runtime.observe.v1","preconditions":{},"typedInput":%s}`, digest, snapshot, snapshot)
 	request := httptest.NewRequest(http.MethodPost, "/platform/fleet/v1/projects/project-a/operations", bytes.NewBufferString(body))
 	request.Header.Set("Authorization", "Bearer "+token)
 	request.Header.Set("Idempotency-Key", "idem-a")
@@ -50,6 +53,9 @@ func TestFleetHandlerEnforcesCapabilityRBACAndProjectIsolation(t *testing.T) {
 	var operation fleetopenapiv1.Operation
 	if err := json.Unmarshal(response.Body.Bytes(), &operation); err != nil || operation.ProjectRef != "project-a" || operation.FencingToken < 1 {
 		t.Fatalf("generated response contract = %+v, %v", operation, err)
+	}
+	if operation.DesiredRevision != "11111111-1111-4111-8111-111111111111" || operation.DesiredDigest != fmt.Sprintf("%x", digest) {
+		t.Fatalf("desired snapshot identity missing from operation: %+v", operation)
 	}
 
 	crossProject := httptest.NewRequest(http.MethodGet, "/platform/fleet/v1/projects/project-b/operations/op-a", nil)
@@ -71,6 +77,21 @@ func TestFleetHandlerEnforcesCapabilityRBACAndProjectIsolation(t *testing.T) {
 	}
 	if count, err := store.AuditCount(context.Background(), "project-a"); err != nil || count != 1 {
 		t.Fatalf("denied request mutated store: count=%d err=%v", count, err)
+	}
+}
+
+func TestValidateDesiredSnapshotRejectsNonCanonicalRevision(t *testing.T) {
+	snapshot := `{"enabled":true}`
+	digest := sha256.Sum256([]byte(snapshot))
+	err := validateDesiredSnapshot(createOperationRequest{
+		ExpectedGeneration: 1,
+		DesiredRevision:    "not-a-platform-revision",
+		DesiredDigest:      fmt.Sprintf("%x", digest),
+		SnapshotCanonical:  snapshot,
+		TypedInput:         json.RawMessage(snapshot),
+	})
+	if err == nil {
+		t.Fatal("invalid desired revision was accepted")
 	}
 }
 

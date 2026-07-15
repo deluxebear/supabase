@@ -2,8 +2,10 @@ package fleetcontrol
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
 	"embed"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -21,9 +23,10 @@ import (
 //go:embed migrations/*/*.sql
 var fleetMigrations embed.FS
 
-const CurrentSchemaVersion = 1
+const CurrentSchemaVersion = 2
 
 var ErrOperationNotFound = errors.New("Fleet operation not found")
+var ErrMigrationChecksum = errors.New("Fleet migration checksum mismatch")
 
 type StoreDialect string
 
@@ -55,6 +58,8 @@ type Operation struct {
 	ProtocolMajor      int       `json:"protocolMajor"`
 	ProtocolMinor      int       `json:"protocolMinor"`
 	ExpectedGeneration int64     `json:"expectedGeneration"`
+	DesiredRevision    string    `json:"desiredRevision"`
+	DesiredDigest      string    `json:"desiredDigest"`
 	InputSchema        string    `json:"inputSchema"`
 	FencingToken       int64     `json:"fencingToken"`
 	CreatedAt          time.Time `json:"createdAt"`
@@ -63,11 +68,12 @@ type Operation struct {
 
 type CreateOperationInput struct {
 	Operation
-	IdempotencyKey string
-	TypedInput     json.RawMessage
-	Preconditions  json.RawMessage
-	Actor          string
-	CorrelationID  string
+	IdempotencyKey    string
+	TypedInput        json.RawMessage
+	SnapshotCanonical string
+	Preconditions     json.RawMessage
+	Actor             string
+	CorrelationID     string
 }
 
 type Event struct {
@@ -114,12 +120,36 @@ func OpenPostgres(ctx context.Context, dsn string, identity StoreIdentity) (*Sto
 func (s *Store) Close() error { return s.db.Close() }
 
 func (s *Store) migrate(ctx context.Context) error {
+	conn, err := s.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	locked := false
+	defer func() {
+		if conn == nil {
+			return
+		}
+		if locked {
+			_, _ = conn.ExecContext(context.Background(), "SELECT pg_advisory_unlock(19088743, 6)")
+		}
+		_ = conn.Close()
+	}()
+	if s.dialect == FleetPostgres {
+		if _, err := conn.ExecContext(ctx, "SELECT pg_advisory_lock(19088743, 6)"); err != nil {
+			return fmt.Errorf("acquire Fleet migration lock: %w", err)
+		}
+		locked = true
+	}
+	if err := s.ensureMigrationLedger(ctx, conn); err != nil {
+		return err
+	}
 	dir := "migrations/" + string(s.dialect)
 	entries, err := fs.ReadDir(fleetMigrations, dir)
 	if err != nil {
 		return err
 	}
 	sort.Slice(entries, func(i, j int) bool { return entries[i].Name() < entries[j].Name() })
+	expectedMigrations := make(map[int]string, len(entries))
 	for _, entry := range entries {
 		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".sql") {
 			continue
@@ -128,28 +158,44 @@ func (s *Store) migrate(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("Fleet migration %s: %w", entry.Name(), err)
 		}
-		var applied int
-		check := "SELECT COUNT(*) FROM schema_migrations WHERE version=?"
-		if s.dialect == FleetPostgres {
-			check = "SELECT COUNT(*) FROM schema_migrations WHERE version=$1"
-		}
-		if err := s.db.QueryRowContext(ctx, check, version).Scan(&applied); err == nil && applied > 0 {
-			continue
-		}
+		expectedMigrations[version] = entry.Name()
 		content, err := fleetMigrations.ReadFile(dir + "/" + entry.Name())
 		if err != nil {
 			return err
 		}
-		tx, err := s.db.BeginTx(ctx, nil)
+		digest := sha256.Sum256(content)
+		checksum := hex.EncodeToString(digest[:])
+		var appliedName, appliedChecksum sql.NullString
+		check := "SELECT name, checksum FROM schema_migrations WHERE version=?"
+		if s.dialect == FleetPostgres {
+			check = "SELECT name, checksum FROM schema_migrations WHERE version=$1"
+		}
+		err = conn.QueryRowContext(ctx, check, version).Scan(&appliedName, &appliedChecksum)
+		if err == nil {
+			if !appliedName.Valid || !appliedChecksum.Valid {
+				if err := s.adoptLegacyMigration(ctx, conn, version, entry.Name(), checksum); err != nil {
+					return err
+				}
+				continue
+			}
+			if appliedName.String != entry.Name() || appliedChecksum.String != checksum {
+				return fmt.Errorf("%w: %s", ErrMigrationChecksum, entry.Name())
+			}
+			continue
+		}
+		if !errors.Is(err, sql.ErrNoRows) {
+			return err
+		}
+		tx, err := conn.BeginTx(ctx, nil)
 		if err != nil {
 			return err
 		}
 		if _, err = tx.ExecContext(ctx, string(content)); err == nil {
-			insert := "INSERT INTO schema_migrations(version, applied_at_ms) VALUES(?, ?) ON CONFLICT(version) DO NOTHING"
+			insert := "INSERT INTO schema_migrations(version, name, checksum, applied_at_ms) VALUES(?, ?, ?, ?)"
 			if s.dialect == FleetPostgres {
-				insert = "INSERT INTO schema_migrations(version, applied_at_ms) VALUES($1, $2) ON CONFLICT(version) DO NOTHING"
+				insert = "INSERT INTO schema_migrations(version, name, checksum, applied_at_ms) VALUES($1, $2, $3, $4)"
 			}
-			_, err = tx.ExecContext(ctx, insert, version, s.now().UnixMilli())
+			_, err = tx.ExecContext(ctx, insert, version, entry.Name(), checksum, s.now().UnixMilli())
 		}
 		if err != nil {
 			tx.Rollback()
@@ -159,7 +205,109 @@ func (s *Store) migrate(ctx context.Context) error {
 			return err
 		}
 	}
+	if err := s.ensureNoRemovedMigrations(ctx, conn, expectedMigrations); err != nil {
+		return err
+	}
+	if locked {
+		if _, err := conn.ExecContext(ctx, "SELECT pg_advisory_unlock(19088743, 6)"); err != nil {
+			return err
+		}
+		locked = false
+	}
+	if err := conn.Close(); err != nil {
+		return err
+	}
+	conn = nil
 	return s.ensureIdentity(ctx)
+}
+
+func (s *Store) ensureNoRemovedMigrations(ctx context.Context, conn *sql.Conn, expected map[int]string) error {
+	rows, err := conn.QueryContext(ctx, "SELECT version, name FROM schema_migrations")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var version int
+		var name sql.NullString
+		if err := rows.Scan(&version, &name); err != nil {
+			return err
+		}
+		expectedName, ok := expected[version]
+		if !ok || !name.Valid || name.String != expectedName {
+			return fmt.Errorf("%w: applied Fleet migration version %d is missing from the binary", ErrMigrationChecksum, version)
+		}
+	}
+	return rows.Err()
+}
+
+func (s *Store) ensureMigrationLedger(ctx context.Context, conn *sql.Conn) error {
+	create := `CREATE TABLE IF NOT EXISTS schema_migrations (
+version INTEGER PRIMARY KEY, name TEXT, checksum TEXT, applied_at_ms INTEGER NOT NULL)`
+	if s.dialect == FleetPostgres {
+		create = `CREATE TABLE IF NOT EXISTS schema_migrations (
+version BIGINT PRIMARY KEY, name TEXT, checksum TEXT, applied_at_ms BIGINT NOT NULL)`
+	}
+	if _, err := conn.ExecContext(ctx, create); err != nil {
+		return fmt.Errorf("create Fleet migration ledger: %w", err)
+	}
+	for _, column := range []string{"name", "checksum"} {
+		exists, err := s.migrationLedgerColumnExists(ctx, conn, column)
+		if err != nil {
+			return err
+		}
+		if exists {
+			continue
+		}
+		if _, err := conn.ExecContext(ctx, "ALTER TABLE schema_migrations ADD COLUMN "+column+" TEXT"); err != nil {
+			return fmt.Errorf("upgrade Fleet migration ledger column %s: %w", column, err)
+		}
+	}
+	return nil
+}
+
+func (s *Store) migrationLedgerColumnExists(ctx context.Context, conn *sql.Conn, column string) (bool, error) {
+	if s.dialect == FleetPostgres {
+		var exists bool
+		err := conn.QueryRowContext(ctx, `SELECT EXISTS (
+SELECT 1 FROM information_schema.columns
+WHERE table_schema=current_schema() AND table_name='schema_migrations' AND column_name=$1
+)`, column).Scan(&exists)
+		return exists, err
+	}
+	rows, err := conn.QueryContext(ctx, "PRAGMA table_info(schema_migrations)")
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var cid, notNull, primaryKey int
+		var name, dataType string
+		var defaultValue any
+		if err := rows.Scan(&cid, &name, &dataType, &notNull, &defaultValue, &primaryKey); err != nil {
+			return false, err
+		}
+		if name == column {
+			return true, nil
+		}
+	}
+	return false, rows.Err()
+}
+
+func (s *Store) adoptLegacyMigration(ctx context.Context, conn *sql.Conn, version int, name, checksum string) error {
+	query := "UPDATE schema_migrations SET name=?, checksum=? WHERE version=? AND name IS NULL AND checksum IS NULL"
+	if s.dialect == FleetPostgres {
+		query = "UPDATE schema_migrations SET name=$1, checksum=$2 WHERE version=$3 AND name IS NULL AND checksum IS NULL"
+	}
+	result, err := conn.ExecContext(ctx, query, name, checksum, version)
+	if err != nil {
+		return err
+	}
+	rows, err := result.RowsAffected()
+	if err != nil || rows != 1 {
+		return fmt.Errorf("%w: cannot adopt legacy migration %s", ErrMigrationChecksum, name)
+	}
+	return nil
 }
 
 func (s *Store) ensureIdentity(ctx context.Context) error {
@@ -190,7 +338,7 @@ func (s *Store) SchemaVersion(ctx context.Context) (int, error) {
 }
 
 func (s *Store) CreateOperation(ctx context.Context, input CreateOperationInput) (Operation, bool, error) {
-	if input.ID == "" || input.ProjectRef == "" || input.TargetID == "" || input.BindingID == "" || input.Capability == "" || input.IdempotencyKey == "" || input.Actor == "" || input.CorrelationID == "" {
+	if input.ID == "" || input.ProjectRef == "" || input.TargetID == "" || input.BindingID == "" || input.Capability == "" || input.DesiredRevision == "" || input.DesiredDigest == "" || input.SnapshotCanonical == "" || input.IdempotencyKey == "" || input.Actor == "" || input.CorrelationID == "" {
 		return Operation{}, false, errors.New("complete Fleet operation and audit identity is required")
 	}
 	if existing, err := s.getByIdempotency(ctx, input.ProjectRef, input.IdempotencyKey); err == nil {
@@ -213,13 +361,13 @@ func (s *Store) CreateOperation(ctx context.Context, input CreateOperationInput)
 		return Operation{}, false, err
 	}
 	now := s.now().UnixMilli()
-	query := `INSERT INTO operations(id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,idempotency_key,fencing_token,expected_generation,input_schema,typed_input_json,preconditions_json,actor,correlation_id,created_at_ms,updated_at_ms)
-VALUES(?,?,?,?,?,?,'queued',?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(project_ref,idempotency_key) DO NOTHING`
+	query := `INSERT INTO operations(id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,idempotency_key,fencing_token,expected_generation,desired_revision,desired_digest,snapshot_canonical,input_schema,typed_input_json,preconditions_json,actor,correlation_id,created_at_ms,updated_at_ms)
+VALUES(?,?,?,?,?,?,'queued',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(project_ref,idempotency_key) DO NOTHING`
 	if s.dialect == FleetPostgres {
-		query = `INSERT INTO operations(id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,idempotency_key,fencing_token,expected_generation,input_schema,typed_input_json,preconditions_json,actor,correlation_id,created_at_ms,updated_at_ms)
-VALUES($1,$2,$3,$4,$5,$6,'queued',$7,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb,$15,$16,$17,$18) ON CONFLICT(project_ref,idempotency_key) DO NOTHING`
+		query = `INSERT INTO operations(id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,idempotency_key,fencing_token,expected_generation,desired_revision,desired_digest,snapshot_canonical,input_schema,typed_input_json,preconditions_json,actor,correlation_id,created_at_ms,updated_at_ms)
+VALUES($1,$2,$3,$4,$5,$6,'queued',$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17::jsonb,$18,$19,$20,$21) ON CONFLICT(project_ref,idempotency_key) DO NOTHING`
 	}
-	result, err := tx.ExecContext(ctx, query, input.ID, input.ProjectRef, input.TargetID, input.BindingID, input.Domain, input.Capability, input.ProtocolMajor, input.ProtocolMinor, input.IdempotencyKey, token, input.ExpectedGeneration, input.InputSchema, string(input.TypedInput), string(input.Preconditions), input.Actor, input.CorrelationID, now, now)
+	result, err := tx.ExecContext(ctx, query, input.ID, input.ProjectRef, input.TargetID, input.BindingID, input.Domain, input.Capability, input.ProtocolMajor, input.ProtocolMinor, input.IdempotencyKey, token, input.ExpectedGeneration, input.DesiredRevision, input.DesiredDigest, input.SnapshotCanonical, input.InputSchema, string(input.TypedInput), string(input.Preconditions), input.Actor, input.CorrelationID, now, now)
 	if err != nil {
 		return Operation{}, false, err
 	}
@@ -253,16 +401,16 @@ VALUES($1,$2,$3,$4,$5,$6,'queued',$7,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb,$15
 }
 
 func (s *Store) GetOperation(ctx context.Context, projectRef, operationID string) (Operation, bool, error) {
-	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,input_schema,fencing_token,created_at_ms,updated_at_ms FROM operations WHERE project_ref=? AND id=?`
+	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,created_at_ms,updated_at_ms FROM operations WHERE project_ref=? AND id=?`
 	if s.dialect == FleetPostgres {
-		query = `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,input_schema,fencing_token,created_at_ms,updated_at_ms FROM operations WHERE project_ref=$1 AND id=$2`
+		query = `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,created_at_ms,updated_at_ms FROM operations WHERE project_ref=$1 AND id=$2`
 	}
 	operation, err := s.scanOperation(ctx, query, projectRef, operationID)
 	return operation, err == nil, err
 }
 
 func (s *Store) getByIdempotency(ctx context.Context, projectRef, key string) (Operation, error) {
-	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,input_schema,fencing_token,created_at_ms,updated_at_ms FROM operations WHERE project_ref=? AND idempotency_key=?`
+	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,created_at_ms,updated_at_ms FROM operations WHERE project_ref=? AND idempotency_key=?`
 	if s.dialect == FleetPostgres {
 		query = strings.ReplaceAll(query, "?", "%s")
 		query = fmt.Sprintf(query, "$1", "$2")
@@ -273,7 +421,7 @@ func (s *Store) getByIdempotency(ctx context.Context, projectRef, key string) (O
 func (s *Store) scanOperation(ctx context.Context, query string, args ...any) (Operation, error) {
 	var operation Operation
 	var created, updated int64
-	err := s.db.QueryRowContext(ctx, query, args...).Scan(&operation.ID, &operation.ProjectRef, &operation.TargetID, &operation.BindingID, &operation.Domain, &operation.Capability, &operation.State, &operation.ProtocolMajor, &operation.ProtocolMinor, &operation.ExpectedGeneration, &operation.InputSchema, &operation.FencingToken, &created, &updated)
+	err := s.db.QueryRowContext(ctx, query, args...).Scan(&operation.ID, &operation.ProjectRef, &operation.TargetID, &operation.BindingID, &operation.Domain, &operation.Capability, &operation.State, &operation.ProtocolMajor, &operation.ProtocolMinor, &operation.ExpectedGeneration, &operation.DesiredRevision, &operation.DesiredDigest, &operation.InputSchema, &operation.FencingToken, &created, &updated)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Operation{}, ErrOperationNotFound
 	}

@@ -1,7 +1,7 @@
 -- Platform project registry (F9+F16 M2). Connection metadata for each
 -- registered Supabase stack. Secret columns (*_enc) are AES-encrypted at
 -- the application layer with PLATFORM_ENCRYPTION_KEY before insert.
-create table platform.projects (
+create table if not exists platform.projects (
   id                  bigint generated always as identity primary key,
   ref                 text not null unique,
   organization_id     bigint not null references platform.organizations (id) on delete restrict,

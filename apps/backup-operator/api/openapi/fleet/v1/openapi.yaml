@@ -143,7 +143,7 @@ components:
           items: {$ref: "#/components/schemas/Blocker"}
     CreateOperation:
       type: object
-      required: [operationId, targetId, bindingId, domain, capability, protocolMajor, protocolMinor, expectedGeneration, inputSchema, preconditions, typedInput]
+      required: [operationId, targetId, bindingId, domain, capability, protocolMajor, protocolMinor, expectedGeneration, desiredRevision, desiredDigest, snapshotCanonical, inputSchema, preconditions, typedInput]
       additionalProperties: false
       properties:
         operationId: {type: string, minLength: 1, maxLength: 128}
@@ -153,13 +153,16 @@ components:
         capability: {type: string, minLength: 1, maxLength: 128}
         protocolMajor: {type: integer, minimum: 1}
         protocolMinor: {type: integer, minimum: 0}
-        expectedGeneration: {type: integer, format: int64, minimum: 0}
+        expectedGeneration: {type: integer, format: int64, minimum: 1}
+        desiredRevision: {type: string, pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'}
+        desiredDigest: {type: string, pattern: '^[0-9a-f]{64}$'}
+        snapshotCanonical: {type: string, description: Canonical immutable JSON used for digest verification and never returned}
         inputSchema: {type: string, pattern: '^supabase\\.fleet\\.'}
         preconditions: {type: object}
         typedInput: {type: object}
     Operation:
       type: object
-      required: [id, projectRef, targetId, bindingId, domain, capability, state, protocolMajor, protocolMinor, expectedGeneration, inputSchema, fencingToken, createdAt, updatedAt]
+      required: [id, projectRef, targetId, bindingId, domain, capability, state, protocolMajor, protocolMinor, expectedGeneration, desiredRevision, desiredDigest, inputSchema, fencingToken, createdAt, updatedAt]
       properties:
         id: {type: string}
         projectRef: {type: string}
@@ -171,6 +174,8 @@ components:
         protocolMajor: {type: integer}
         protocolMinor: {type: integer}
         expectedGeneration: {type: integer, format: int64}
+        desiredRevision: {type: string, pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'}
+        desiredDigest: {type: string, pattern: '^[0-9a-f]{64}$'}
         inputSchema: {type: string}
         fencingToken: {type: integer, format: int64, minimum: 1}
         createdAt: {type: string, format: date-time}

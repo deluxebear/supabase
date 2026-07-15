@@ -130,6 +130,21 @@ type ServiceClaims struct {
 	AALAuthenticatedAt int64    `json:"aal_authenticated_at,omitempty"`
 }
 
+func SignServiceJWT(claims ServiceClaims, key []byte) (string, error) {
+	if len(key) < 32 || claims.Issuer == "" || claims.Subject == "" || claims.Audience == "" || claims.Expires <= claims.NotBefore {
+		return "", errors.New("complete service JWT claims and key are required")
+	}
+	header := base64.RawURLEncoding.EncodeToString([]byte(`{"alg":"HS256","typ":"JWT"}`))
+	payload, err := json.Marshal(claims)
+	if err != nil {
+		return "", err
+	}
+	encodedPayload := base64.RawURLEncoding.EncodeToString(payload)
+	mac := hmac.New(sha256.New, key)
+	_, _ = mac.Write([]byte(header + "." + encodedPayload))
+	return header + "." + encodedPayload + "." + base64.RawURLEncoding.EncodeToString(mac.Sum(nil)), nil
+}
+
 func ValidateServiceJWT(token string, key []byte, issuer, audience string, now time.Time) (ServiceClaims, error) {
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 || len(key) < 32 {

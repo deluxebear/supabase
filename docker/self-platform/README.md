@@ -163,17 +163,13 @@ Run every command below from this directory (`docker/self-platform/`).
    ./scripts/bootstrap.sh
    ```
 
-   This is required exactly once against any given `./volumes/db/data` volume — it
-   initializes `_platform` (on pre-existing volumes; a brand-new volume already gets it
-   from `docker-entrypoint-initdb.d`), creates the first dashboard admin from
+   This initializes `_platform` on pre-existing volumes, runs the same checksum-locked
+   `platform-migrate` service used for fresh volumes, creates the first dashboard admin from
    `PLATFORM_ADMIN_EMAIL`/`PLATFORM_ADMIN_PASSWORD` and grants it the Owner role, and
-   registers the default project in `platform.projects`. The script is idempotent — safe
-   to re-run — but a re-run only re-asserts the admin and refreshes the default
+   registers the default project in `platform.projects`. The script is idempotent and safe
+   to re-run: it verifies/applies pending platform migrations, re-asserts the admin, and refreshes the default
    project's registration (for example, to pick up the Logflare/metrics URLs after
-   enabling the `obs` profile — see "Observability profile" below). It does **not**
-   apply platform migrations added after the volume was initialized: once the platform
-   schema exists, the script skips the migration step entirely, so new migration files
-   always require the manual step in "Applying future platform migrations" below.
+   enabling the `obs` profile — see "Observability profile" below).
 
 6. **Log in.** Open `${SUPABASE_PUBLIC_URL}` (e.g. `http://192.168.1.100:8000` — the container-reachable origin you set in `.env`) in a
    browser and sign in with `PLATFORM_ADMIN_EMAIL` / `PLATFORM_ADMIN_PASSWORD`.
@@ -320,57 +316,21 @@ as-is.
 
 ## 6. Applying future platform migrations
 
-New files added to `docker/volumes/platform/migrations/` after your `./volumes/db/data`
-volume was first initialized are **not** applied automatically — `docker-entrypoint-initdb.d`
-(and this stack's `98-platform-migrations.sql` wrapper) only runs once, against a
-genuinely empty `PGDATA`. New migrations must **also** be appended to
-`volumes/db/platform-migrations.sql`'s hand-maintained `\i` list — it cannot glob the
-migrations directory the way `scripts/bootstrap.sh` phase 1 does, so a forgotten line
-means every future fresh volume silently skips that migration at initdb time. Apply a new
-migration by hand against the running stack,
-mirroring the replay pattern `scripts/bootstrap.sh` phase 1 uses — `set role
-platform_admin` first, so the new objects are owned by `platform_admin`, the role Studio
-and platform GoTrue connect as:
+Add a lexically later SQL file under `docker/volumes/platform/migrations/`; never edit an
+applied file. `platform-migrate` orders the directory, holds a PostgreSQL advisory lock,
+applies each missing file transactionally, and records its SHA-256 checksum in
+`platform.schema_migrations`. Studio and platform-auth wait for the one-shot migration
+service to complete, so a missing, changed, or failed migration blocks readiness.
+
+For the all-in-one stack, rerun `./scripts/bootstrap.sh`. For the independent production
+control plane, run `docker compose -f docker-compose.control-plane.yml up platform-migrate`
+before rolling Studio/Auth. A failed candidate transaction can be corrected and retried
+only if it was never recorded; otherwise add a forward-repair migration. The disposable
+upgrade/replay/CAS/checksum acceptance test is:
 
 ```bash
-{ echo "set role platform_admin;"; cat ../volumes/platform/migrations/NN-new.sql; } | \
-  docker exec -i supabase-db psql -U supabase_admin -d _platform -v ON_ERROR_STOP=1
+./scripts/verify-platform-state-authority.sh
 ```
-
-Plain DDL migrations need nothing more. If a future migration ever needs cluster-level
-rights beyond what `platform_admin` holds (the way `01-schema.sql` runs `alter role
-postgres set search_path ...`), use `scripts/bootstrap.sh` phase 1's elevation bracket
-— grant `createrole` and `postgres ... with admin option` before, revoke and restore the
-`search_path` after, even on failure — as the reference.
-
-`scripts/bootstrap.sh` prints `platform schema present — skipping migrations (apply newer
-files manually; see README)` on every re-run once `platform.projects` already exists —
-that message is this instruction.
-
-**If a migration fails partway through:**
-
-- **Fresh-volume (initdb) path** — a failure inside `98-platform-migrations.sql` during
-  the very first `docker-entrypoint-initdb.d` run leaves `PGDATA` **half-initialized**:
-  some platform migrations applied, others not, and — because that script's elevation
-  cleanup (`revoke postgres from platform_admin`, restoring the `postgres` role's
-  `search_path`) sits *after* the migration sequence — a failure can also skip that
-  cleanup. Since `docker-entrypoint-initdb.d` never re-runs against a non-empty data
-  directory, this state does not self-heal, and `bootstrap.sh`'s own "already
-  initialized" check (does `platform.projects` exist?) can be satisfied by a partial run,
-  masking the problem. The safe recovery is to wipe the volume and start clean:
-
-  ```bash
-  docker compose down
-  rm -rf ./volumes/db/data
-  docker compose up -d
-  ```
-
-- **Existing-volume (`bootstrap.sh` phase 1) path** — this path is written to always
-  revoke `platform_admin`'s temporary elevation and restore the `postgres` role's
-  `search_path`, **even when a migration file fails partway through the loop** (see the
-  `mig_rc` handling in `scripts/bootstrap.sh`). A failure here does not leave the cluster
-  in an elevated or corrupted state — just fix whatever the migration file's error was
-  and re-run `./scripts/bootstrap.sh`.
 
 ## 7. Mutual exclusivity & ports
 

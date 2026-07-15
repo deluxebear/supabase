@@ -3,11 +3,13 @@ package fleetcontrol
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -17,6 +19,8 @@ import (
 )
 
 const CorrelationHeader = "X-Correlation-ID"
+
+var desiredRevisionPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
 
 type Handler struct {
 	Store        *Store
@@ -33,6 +37,9 @@ type createOperationRequest struct {
 	ProtocolMajor      int             `json:"protocolMajor"`
 	ProtocolMinor      int             `json:"protocolMinor"`
 	ExpectedGeneration int64           `json:"expectedGeneration"`
+	DesiredRevision    string          `json:"desiredRevision"`
+	DesiredDigest      string          `json:"desiredDigest"`
+	SnapshotCanonical  string          `json:"snapshotCanonical"`
 	InputSchema        string          `json:"inputSchema"`
 	Preconditions      json.RawMessage `json:"preconditions"`
 	TypedInput         json.RawMessage `json:"typedInput"`
@@ -122,6 +129,10 @@ func (h *Handler) createOperation(w http.ResponseWriter, r *http.Request) {
 		writeFleetError(w, r, http.StatusConflict, "capability_unavailable", "The requested Fleet capability is unavailable", false, map[string]any{"capability": request.Capability, "blockers": blockers})
 		return
 	}
+	if err := validateDesiredSnapshot(request); err != nil {
+		writeFleetError(w, r, http.StatusBadRequest, "validation_failed", "Fleet desired snapshot validation failed", false, map[string]any{"reason": err.Error()})
+		return
+	}
 	projectRef := r.PathValue("projectRef")
 	policy := sharedtransport.DomainPolicy{Namespace: "supabase.fleet.", ProtocolMajor: 1, MaxMinor: 0, Schemas: h.Capabilities.Schemas()}
 	envelope := sharedtransport.OperationEnvelope{OperationID: request.OperationID, ProjectRef: projectRef, TargetID: request.TargetID, BindingID: request.BindingID, Domain: request.Domain, Capability: request.Capability, ProtocolMajor: request.ProtocolMajor, ProtocolMinor: request.ProtocolMinor, IdempotencyKey: idempotencyKey, ExpectedGeneration: request.ExpectedGeneration, InputSchema: request.InputSchema, TypedInput: request.TypedInput, Preconditions: request.Preconditions}
@@ -134,7 +145,7 @@ func (h *Handler) createOperation(w http.ResponseWriter, r *http.Request) {
 		writeFleetError(w, r, http.StatusUnauthorized, "unauthenticated", "Fleet operation actor context is missing", false, map[string]any{})
 		return
 	}
-	operation, created, err := h.Store.CreateOperation(r.Context(), CreateOperationInput{Operation: Operation{ID: request.OperationID, ProjectRef: projectRef, TargetID: request.TargetID, BindingID: request.BindingID, Domain: request.Domain, Capability: request.Capability, ProtocolMajor: request.ProtocolMajor, ProtocolMinor: request.ProtocolMinor, ExpectedGeneration: request.ExpectedGeneration, InputSchema: request.InputSchema}, IdempotencyKey: idempotencyKey, TypedInput: request.TypedInput, Preconditions: request.Preconditions, Actor: actor.Subject, CorrelationID: r.Header.Get(CorrelationHeader)})
+	operation, created, err := h.Store.CreateOperation(r.Context(), CreateOperationInput{Operation: Operation{ID: request.OperationID, ProjectRef: projectRef, TargetID: request.TargetID, BindingID: request.BindingID, Domain: request.Domain, Capability: request.Capability, ProtocolMajor: request.ProtocolMajor, ProtocolMinor: request.ProtocolMinor, ExpectedGeneration: request.ExpectedGeneration, DesiredRevision: request.DesiredRevision, DesiredDigest: request.DesiredDigest, InputSchema: request.InputSchema}, IdempotencyKey: idempotencyKey, TypedInput: request.TypedInput, SnapshotCanonical: request.SnapshotCanonical, Preconditions: request.Preconditions, Actor: actor.Subject, CorrelationID: r.Header.Get(CorrelationHeader)})
 	if err != nil {
 		writeFleetError(w, r, http.StatusInternalServerError, "downstream_unavailable", "Fleet Control could not persist the operation", true, map[string]any{})
 		return
@@ -144,6 +155,35 @@ func (h *Handler) createOperation(w http.ResponseWriter, r *http.Request) {
 		status = http.StatusCreated
 	}
 	writeJSON(w, status, operation)
+}
+
+func validateDesiredSnapshot(request createOperationRequest) error {
+	if request.ExpectedGeneration < 1 || !desiredRevisionPattern.MatchString(request.DesiredRevision) || len(request.DesiredDigest) != 64 || request.SnapshotCanonical == "" {
+		return errors.New("desired revision, generation, digest, and canonical snapshot are required")
+	}
+	digest := sha256.Sum256([]byte(request.SnapshotCanonical))
+	if hex.EncodeToString(digest[:]) != request.DesiredDigest {
+		return errors.New("desired snapshot digest does not match")
+	}
+	var canonicalValue, typedValue any
+	if err := json.Unmarshal([]byte(request.SnapshotCanonical), &canonicalValue); err != nil {
+		return errors.New("canonical snapshot is not valid JSON")
+	}
+	if err := json.Unmarshal(request.TypedInput, &typedValue); err != nil {
+		return errors.New("typed input is not valid JSON")
+	}
+	canonicalJSON, err := json.Marshal(canonicalValue)
+	if err != nil {
+		return err
+	}
+	typedJSON, err := json.Marshal(typedValue)
+	if err != nil {
+		return err
+	}
+	if string(canonicalJSON) != string(typedJSON) {
+		return errors.New("typed input differs from the immutable desired snapshot")
+	}
+	return nil
 }
 
 func (h *Handler) getOperation(w http.ResponseWriter, r *http.Request) {

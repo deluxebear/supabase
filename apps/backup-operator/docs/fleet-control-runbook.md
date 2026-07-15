@@ -56,16 +56,26 @@ per project/target/binding domain in the same transaction as operation creation.
 ## Upgrade and rollback
 
 Run `make generate`, `make check-generated`, `make build`, `make test`, and
-`go vet ./...` before rollout. Protocol major 1 and Fleet schema 1 are the T4
+`go vet ./...` before rollout. Protocol major 1 and Fleet schema 2 are the T5
 compatibility boundary. Unknown protocol majors, capability names, or
 `supabase.backup.*` payload schemas fail before persistence.
 
 Upgrade Fleet Control independently from Backup Operator. Verify `/readyz`,
 then exercise project-scoped capability and operation reads with a short-lived
-service assertion. Roll back to the previous image digest only while it supports
-Fleet schema 1. T5 will add the checksum-locked production migration runner and
-rolling-schema compatibility; until then, take an independent PostgreSQL backup
-before schema changes and do not edit an applied migration file.
+service assertion. The runner acquires a PostgreSQL advisory lock, stores the
+name and SHA-256 checksum of every migration, and rejects a changed migration at
+startup. The first T5 rollout adopts checksum metadata for the pre-T5 schema-1
+ledger; every later rollout is strictly locked. Roll back to an image digest only
+while it supports Fleet schema 2. Never edit an applied migration; use a forward
+repair migration after taking an independent PostgreSQL backup.
+
+Production Compose also runs the same image in `outbox-dispatcher` mode. Its
+platform PostgreSQL login can only execute the three security-definer claim,
+complete, and fail functions. The dispatcher uses bounded leases and the
+platform idempotency key, so a process restart between Fleet Control acceptance
+and platform acknowledgement safely replays the original operation. It sends a
+project-bound `fleet.execute` assertion and validates the returned project,
+operation, desired revision, and digest before acknowledging the outbox row.
 
 During a managed-stack outage, Fleet Control and `fleet-control-db` must remain
 available. Run `docker/self-platform/scripts/verify-control-plane-recovery-boundary.sh`

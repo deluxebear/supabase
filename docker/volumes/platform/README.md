@@ -1,5 +1,10 @@
 # Platform control-plane mini-stack (M1 login gate, F9+F16)
 
+> T5 migration note (2026-07-15): production and all-in-one Fleet deployments now use
+> `docker/self-platform/scripts/run-platform-migrations.sh` and the one-shot
+> `platform-migrate` service. It owns the ordered checksum ledger and supersedes the
+> historical manual-apply instructions retained below for the legacy mini-stack.
+
 This is a **local-only, not-upstream** addition. It gives self-hosted Studio its own
 lightweight multi-user/multi-org control plane (metadata Postgres + a dedicated GoTrue
 instance) instead of Supabase's real hosted platform API, so Studio can run in "self-platform"

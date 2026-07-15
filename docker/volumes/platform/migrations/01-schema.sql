@@ -8,11 +8,15 @@ create schema if not exists auth;
 -- Default to public for DDL; unqualified lookups (e.g. identities) fall through to auth.
 -- Without this, new connections default to search_path "$user",public and
 -- GoTrue signup fails with: relation "identities" does not exist (42P01).
-alter role postgres set search_path to public, auth;
+do $$
+begin
+  execute format('alter role %I set search_path to public, auth', current_user);
+end;
+$$;
 
 create schema if not exists platform;
 
-create table platform.organizations (
+create table if not exists platform.organizations (
   id bigint generated always as identity primary key,
   slug text not null unique,
   name text not null,
@@ -20,7 +24,7 @@ create table platform.organizations (
   updated_at timestamptz not null default now()
 );
 
-create table platform.profiles (
+create table if not exists platform.profiles (
   id bigint generated always as identity primary key,
   gotrue_id uuid not null unique,
   username text not null,
@@ -31,7 +35,7 @@ create table platform.profiles (
   updated_at timestamptz not null default now()
 );
 
-create table platform.organization_members (
+create table if not exists platform.organization_members (
   organization_id bigint not null references platform.organizations (id) on delete cascade,
   profile_id bigint not null references platform.profiles (id) on delete cascade,
   created_at timestamptz not null default now(),
@@ -39,4 +43,5 @@ create table platform.organization_members (
 );
 
 insert into platform.organizations (slug, name)
-values ('default', 'Default Organization');
+values ('default', 'Default Organization')
+on conflict (slug) do nothing;

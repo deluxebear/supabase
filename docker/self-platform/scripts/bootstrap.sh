@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # [self-platform] Idempotent bootstrap for the all-in-one stack. Safe to re-run.
-#   Phase 1: ensure the _platform database exists (pre-existing PGDATA volumes;
-#            fresh volumes already got it from docker-entrypoint-initdb.d).
+#   Phase 1: ensure the _platform database exists and run the checksum-locked
+#            migration service (fresh and upgraded volumes use the same path).
 #   Phase 2: ensure the first admin exists, has a profile, and holds Owner.
 #   Phase 3: register/refresh the default project in platform.projects.
 # Requires: docker, curl, openssl. No node/psql needed on the host.
@@ -109,36 +109,8 @@ if ! PSQL -tAc "select 1 from pg_database where datname='_platform'" | grep -q 1
   echo "created database _platform"
 fi
 PSQL -c "alter role platform_admin in database _platform set search_path = public, auth"
-if ! PSQL -d _platform -tAc "select 1 from information_schema.tables where table_schema='platform' and table_name='projects'" | grep -q 1; then
-  # [self-platform] Mirror volumes/db/platform-migrations.sql: 01-schema.sql
-  # alters the postgres role's cluster-wide search_path. Capture it first,
-  # elevate platform_admin for the window, and ALWAYS revoke + restore —
-  # even if a migration file fails mid-loop.
-  saved_sp=$(PSQL -tAc "select coalesce((select regexp_replace(cfg, '^search_path=', '') from unnest((select setconfig from pg_db_role_setting where setrole = 'postgres'::regrole and setdatabase = 0)) as u(cfg) where cfg like 'search_path=%'), '')")
-  PSQL -c "alter role platform_admin createrole"
-  PSQL -c "grant postgres to platform_admin with admin option"
-  mig_rc=0
-  for f in ../volumes/platform/migrations/*.sql; do
-    echo "applying $(basename "$f")"
-    if ! { echo "set role platform_admin;"; cat "$f"; } | PSQL -d _platform; then
-      mig_rc=1
-      break
-    fi
-  done
-  PSQL -c "revoke postgres from platform_admin"
-  PSQL -c "alter role platform_admin nocreaterole"
-  if [ -n "$saved_sp" ]; then
-    # Unquoted splice on purpose: the value is postgres' own catalog content;
-    # a quoted literal would collapse the list into one element (see the
-    # initdb wrapper's comment).
-    PSQL -c "alter role postgres set search_path = $saved_sp"
-  else
-    PSQL -c "alter role postgres reset search_path"
-  fi
-  [ "$mig_rc" -eq 0 ] || { echo "ERROR: platform migration failed — elevation revoked and search_path restored; fix the cause and re-run" >&2; exit 1; }
-else
-  echo "platform schema present — skipping migrations (apply newer files manually; see README)"
-fi
+docker compose up --no-deps platform-migrate
+docker compose up -d platform-auth studio
 
 echo "== Phase 2: first admin =="
 GOTRUE="$SUPABASE_PUBLIC_URL/platform-auth/v1"

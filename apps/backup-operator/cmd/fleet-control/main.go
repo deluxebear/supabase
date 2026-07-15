@@ -12,10 +12,12 @@ import (
 	"time"
 
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetcontrol"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetplatform"
 	"github.com/supabase/supabase/apps/backup-operator/internal/version"
 )
 
 func main() {
+	mode := flag.String("mode", envOr("FLEET_CONTROL_MODE", "control"), "process mode: control or outbox-dispatcher")
 	listen := flag.String("listen", envOr("FLEET_CONTROL_LISTEN", "127.0.0.1:8090"), "Fleet Control HTTP listen address")
 	storeDriver := flag.String("store-driver", envOr("FLEET_CONTROL_STORE_DRIVER", "sqlite"), "Fleet Control store driver: sqlite or postgres")
 	storeDSN := flag.String("store-dsn", envOr("FLEET_CONTROL_STORE_DSN", "fleet-control.db"), "Fleet Control store path or PostgreSQL DSN")
@@ -34,6 +36,27 @@ func main() {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	if *mode == "outbox-dispatcher" {
+		platformDSN := envOr("FLEET_PLATFORM_STORE_DSN", "")
+		store, err := fleetplatform.OpenPostgres(ctx, platformDSN)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer store.Close()
+		err = fleetplatform.Run(ctx, fleetplatform.Config{
+			Store: store, FleetControlURL: envOr("FLEET_CONTROL_URL", "http://127.0.0.1:8090"),
+			AssertionKey: []byte(*assertionKey), AssertionIssuer: *assertionIssuer,
+			AssertionAudience: *assertionAudience, WorkerID: envOr("FLEET_OUTBOX_WORKER_ID", "fleet-outbox-1"),
+			Lease: envDuration("FLEET_OUTBOX_LEASE", 30*time.Second), PollInterval: envDuration("FLEET_OUTBOX_POLL_INTERVAL", 2*time.Second),
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+	if *mode != "control" {
+		log.Fatalf("unsupported Fleet Control mode %q", *mode)
+	}
 	err := fleetcontrol.Run(ctx, fleetcontrol.Config{Listen: *listen, ShutdownTimeout: *shutdownTimeout, StoreDriver: *storeDriver, StoreDSN: *storeDSN, StoreIdentity: fleetcontrol.StoreIdentity{SystemIdentifier: *storeSystemID, DataDomain: *storeDataDomain}, AssertionKey: []byte(*assertionKey), AssertionIssuer: *assertionIssuer, AssertionAudience: *assertionAudience, AssertionMaxTTL: *assertionMaxTTL})
 	if err != nil {
 		log.Fatal(err)

@@ -1,0 +1,34 @@
+name: supabase-platform-migration-test
+
+services:
+  platform-db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: platform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: migration-test-password
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres -d platform]
+      interval: 1s
+      timeout: 2s
+      retries: 30
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  platform-migrate:
+    image: postgres:17
+    depends_on:
+      platform-db:
+        condition: service_healthy
+    environment:
+      PGHOST: platform-db
+      PGPORT: 5432
+      PGDATABASE: platform
+      PGUSER: postgres
+      PGPASSWORD: migration-test-password
+      PLATFORM_OUTBOX_DISPATCHER_PASSWORD: dispatcher-test-password
+    volumes:
+      - ../volumes/platform/migrations:/platform-migrations:ro
+      - ./scripts/run-platform-migrations.sh:/usr/local/bin/run-platform-migrations:ro
+    entrypoint: [/bin/bash, /usr/local/bin/run-platform-migrations]
+    command: [migrate]

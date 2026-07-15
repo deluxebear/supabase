@@ -31,8 +31,8 @@ services:
       retries: 3
       start_period: 20s
     depends_on:
-      db:
-        condition: service_healthy
+      platform-migrate:
+        condition: service_completed_successfully
       platform-auth:
         condition: service_healthy
     environment:
@@ -507,8 +507,6 @@ services:
       - ../volumes/db/pooler.sql:/docker-entrypoint-initdb.d/migrations/99-pooler.sql:Z
       # [self-platform] control-plane database in the shared cluster
       - ./volumes/db/_platform.sql:/docker-entrypoint-initdb.d/migrations/97-_platform.sql:Z
-      - ./volumes/db/platform-migrations.sql:/docker-entrypoint-initdb.d/migrations/98-platform-migrations.sql:Z
-      - ../volumes/platform/migrations:/platform-migrations:ro,z
       - db-config:/etc/postgresql-custom
     healthcheck:
       test: ['CMD', 'pg_isready', '-U', 'postgres', '-h', 'localhost']
@@ -535,6 +533,25 @@ services:
         '-c',
         'log_min_messages=fatal',
       ]
+
+  platform-migrate:
+    container_name: supabase-platform-migrate
+    image: deluxebear/postgres:17
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGPORT: ${POSTGRES_PORT}
+      PGDATABASE: _platform
+      PGUSER: platform_admin
+      PGPASSWORD: ${PLATFORM_POSTGRES_PASSWORD}
+    volumes:
+      - ../volumes/platform/migrations:/platform-migrations:ro,z
+      - ./scripts/run-platform-migrations.sh:/usr/local/bin/run-platform-migrations:ro,z
+    entrypoint: [/bin/bash, /usr/local/bin/run-platform-migrations]
+    command: [migrate]
 
   supavisor:
     container_name: supabase-pooler
@@ -607,8 +624,8 @@ services:
     image: supabase/gotrue:v2.189.0
     restart: unless-stopped
     depends_on:
-      db:
-        condition: service_healthy
+      platform-migrate:
+        condition: service_completed_successfully
       platform-mail:
         condition: service_started
     healthcheck:
