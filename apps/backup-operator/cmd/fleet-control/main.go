@@ -20,6 +20,7 @@ func main() {
 	mode := flag.String("mode", envOr("FLEET_CONTROL_MODE", "control"), "process mode: control or outbox-dispatcher")
 	listen := flag.String("listen", envOr("FLEET_CONTROL_LISTEN", "127.0.0.1:8090"), "Fleet Control HTTP listen address")
 	enrollmentListen := flag.String("enrollment-listen", envOr("FLEET_CONTROL_ENROLLMENT_LISTEN", "127.0.0.1:8091"), "Fleet Agent enrollment HTTPS listen address")
+	agentListen := flag.String("agent-listen", envOr("FLEET_CONTROL_AGENT_LISTEN", "127.0.0.1:8092"), "Fleet Agent mTLS gRPC listen address")
 	storeDriver := flag.String("store-driver", envOr("FLEET_CONTROL_STORE_DRIVER", "sqlite"), "Fleet Control store driver: sqlite or postgres")
 	storeDSN := flag.String("store-dsn", envOr("FLEET_CONTROL_STORE_DSN", "fleet-control.db"), "Fleet Control store path or PostgreSQL DSN")
 	storeSystemID := flag.String("store-system-identifier", envOr("FLEET_CONTROL_STORE_SYSTEM_IDENTIFIER", "fleet-control-local"), "independent Fleet store system identity")
@@ -67,7 +68,7 @@ func main() {
 		log.Fatalf("unsupported Fleet Control mode %q", *mode)
 	}
 	err := fleetcontrol.Run(ctx, fleetcontrol.Config{
-		Listen: *listen, EnrollmentListen: *enrollmentListen, ShutdownTimeout: *shutdownTimeout,
+		Listen: *listen, EnrollmentListen: *enrollmentListen, AgentListen: *agentListen, ShutdownTimeout: *shutdownTimeout,
 		StoreDriver: *storeDriver, StoreDSN: *storeDSN,
 		StoreIdentity: fleetcontrol.StoreIdentity{SystemIdentifier: *storeSystemID, DataDomain: *storeDataDomain},
 		AssertionKey:  []byte(*assertionKey), AssertionIssuer: *assertionIssuer, AssertionAudience: *assertionAudience, AssertionMaxTTL: *assertionMaxTTL,

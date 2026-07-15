@@ -16,7 +16,7 @@ services:
 
   fleet-control:
     image: ghcr.io/supabase/fleet-control:${FLEET_CONTROL_VERSION:?set FLEET_CONTROL_VERSION}
-    command: [--listen=0.0.0.0:8090, --enrollment-listen=0.0.0.0:8091]
+    command: [--listen=0.0.0.0:8090, --enrollment-listen=0.0.0.0:8091, --agent-listen=0.0.0.0:8092]
     read_only: true
     user: '65532:65532'
     environment:
@@ -35,6 +35,7 @@ services:
     ports:
       - 127.0.0.1:${FLEET_CONTROL_HTTP_PORT:-8090}:8090
       - 127.0.0.1:${FLEET_CONTROL_ENROLLMENT_HTTPS_PORT:-8091}:8091
+      - 127.0.0.1:${FLEET_CONTROL_AGENT_GRPC_PORT:-8092}:8092
     secrets:
       - source: fleet_agent_ca_cert
         target: fleet-management/ca.crt

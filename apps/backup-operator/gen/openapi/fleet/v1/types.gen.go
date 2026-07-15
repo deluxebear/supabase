@@ -77,6 +77,8 @@ const (
 
 // Defines values for OperationState.
 const (
+	Applied            OperationState = "applied"
+	Applying           OperationState = "applying"
 	Failed             OperationState = "failed"
 	ManualIntervention OperationState = "manual_intervention"
 	OrphanedExecution  OperationState = "orphaned_execution"
@@ -188,9 +190,11 @@ type CreateOperation struct {
 	ProtocolMinor      int                    `json:"protocolMinor"`
 
 	// SnapshotCanonical Canonical immutable JSON used for digest verification and never returned
-	SnapshotCanonical string                 `json:"snapshotCanonical"`
-	TargetId          string                 `json:"targetId"`
-	TypedInput        map[string]interface{} `json:"typedInput"`
+	SnapshotCanonical string `json:"snapshotCanonical"`
+	TargetId          string `json:"targetId"`
+
+	// TypedInput Strictly validated against inputSchema; runtime.config.reconcile uses ConfigurationDocument
+	TypedInput map[string]interface{} `json:"typedInput"`
 }
 
 // EnrollAgent defines model for EnrollAgent.
@@ -281,22 +285,29 @@ type ManagementBindingStatus struct {
 
 // Operation defines model for Operation.
 type Operation struct {
-	BindingId          string         `json:"bindingId"`
-	Capability         string         `json:"capability"`
-	CreatedAt          time.Time      `json:"createdAt"`
-	DesiredDigest      string         `json:"desiredDigest"`
-	DesiredRevision    string         `json:"desiredRevision"`
-	Domain             string         `json:"domain"`
-	ExpectedGeneration int64          `json:"expectedGeneration"`
-	FencingToken       int64          `json:"fencingToken"`
-	Id                 string         `json:"id"`
-	InputSchema        string         `json:"inputSchema"`
-	ProjectRef         string         `json:"projectRef"`
-	ProtocolMajor      int            `json:"protocolMajor"`
-	ProtocolMinor      int            `json:"protocolMinor"`
-	State              OperationState `json:"state"`
-	TargetId           string         `json:"targetId"`
-	UpdatedAt          time.Time      `json:"updatedAt"`
+	AgentId         *string   `json:"agentId,omitempty"`
+	BindingId       string    `json:"bindingId"`
+	Capability      string    `json:"capability"`
+	CreatedAt       time.Time `json:"createdAt"`
+	DesiredDigest   string    `json:"desiredDigest"`
+	DesiredRevision string    `json:"desiredRevision"`
+	Domain          string    `json:"domain"`
+	ErrorCode       *string   `json:"errorCode,omitempty"`
+
+	// Evidence Redacted typed Agent evidence; desired input is never returned
+	Evidence           *map[string]interface{} `json:"evidence,omitempty"`
+	EvidenceSchema     *string                 `json:"evidenceSchema,omitempty"`
+	ExpectedGeneration int64                   `json:"expectedGeneration"`
+	FencingToken       int64                   `json:"fencingToken"`
+	Id                 string                  `json:"id"`
+	InputSchema        string                  `json:"inputSchema"`
+	ProjectRef         string                  `json:"projectRef"`
+	ProtocolMajor      int                     `json:"protocolMajor"`
+	ProtocolMinor      int                     `json:"protocolMinor"`
+	State              OperationState          `json:"state"`
+	TargetId           string                  `json:"targetId"`
+	TaskId             *string                 `json:"taskId,omitempty"`
+	UpdatedAt          time.Time               `json:"updatedAt"`
 }
 
 // OperationState defines model for Operation.State.

@@ -13,13 +13,17 @@ import (
 	"strings"
 	"time"
 
+	fleetagentv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/fleet/v1"
 	"github.com/supabase/supabase/apps/backup-operator/internal/security"
 	"github.com/supabase/supabase/apps/backup-operator/internal/version"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 type Config struct {
 	Listen                   string
 	EnrollmentListen         string
+	AgentListen              string
 	ShutdownTimeout          time.Duration
 	StoreDriver              string
 	StoreDSN                 string
@@ -40,11 +44,11 @@ type Config struct {
 }
 
 func (c Config) Validate() error {
-	if strings.TrimSpace(c.Listen) == "" || strings.TrimSpace(c.EnrollmentListen) == "" || strings.TrimSpace(c.StoreDSN) == "" {
-		return errors.New("Fleet control/enrollment listen addresses and store DSN are required")
+	if strings.TrimSpace(c.Listen) == "" || strings.TrimSpace(c.EnrollmentListen) == "" || strings.TrimSpace(c.AgentListen) == "" || strings.TrimSpace(c.StoreDSN) == "" {
+		return errors.New("Fleet control, enrollment, and Agent listen addresses and store DSN are required")
 	}
-	if c.Listen == c.EnrollmentListen {
-		return errors.New("Fleet control and enrollment listeners must be separate")
+	if c.Listen == c.EnrollmentListen || c.Listen == c.AgentListen || c.EnrollmentListen == c.AgentListen {
+		return errors.New("Fleet control, enrollment, and Agent listeners must be separate")
 	}
 	if c.StoreDriver != string(FleetSQLite) && c.StoreDriver != string(FleetPostgres) {
 		return fmt.Errorf("unsupported Fleet store driver %q", c.StoreDriver)
@@ -134,10 +138,23 @@ func Run(ctx context.Context, cfg Config) error {
 		ClientAuth:   tls.VerifyClientCertIfGiven,
 	}
 	enrollmentServer := &http.Server{Handler: mux, ReadHeaderTimeout: 5 * time.Second, TLSConfig: enrollmentTLS}
-	errCh := make(chan error, 2)
+	agentListener, err := net.Listen("tcp", cfg.AgentListen)
+	if err != nil {
+		listener.Close()
+		enrollmentListener.Close()
+		return fmt.Errorf("listen for Fleet Agent control: %w", err)
+	}
+	agentTLS := &tls.Config{
+		MinVersion: tls.VersionTLS13, Certificates: []tls.Certificate{serverCertificate},
+		ClientCAs: clientCAs, ClientAuth: tls.RequireAndVerifyClientCert,
+	}
+	agentGRPC := grpc.NewServer(grpc.Creds(credentials.NewTLS(agentTLS)))
+	fleetagentv1.RegisterFleetAgentControlServiceServer(agentGRPC, &AgentServer{Store: store, Authority: agentCA})
+	errCh := make(chan error, 3)
 	go func() { errCh <- server.Serve(listener) }()
 	go func() { errCh <- enrollmentServer.Serve(tls.NewListener(enrollmentListener, enrollmentTLS)) }()
-	cfg.Logger.Info("Fleet Control starting", "listen", cfg.Listen, "enrollment_listen", cfg.EnrollmentListen, "trust_domain", cfg.AgentTrustDomain, "api_version", "v1", "schema_version", CurrentSchemaVersion, "build", version.String())
+	go func() { errCh <- agentGRPC.Serve(agentListener) }()
+	cfg.Logger.Info("Fleet Control starting", "listen", cfg.Listen, "enrollment_listen", cfg.EnrollmentListen, "agent_listen", cfg.AgentListen, "trust_domain", cfg.AgentTrustDomain, "api_version", "v1", "schema_version", CurrentSchemaVersion, "build", version.String())
 	var serveErr error
 	select {
 	case err := <-errCh:
@@ -153,6 +170,13 @@ func Run(ctx context.Context, cfg Config) error {
 	}
 	if err := enrollmentServer.Shutdown(shutdownCtx); err != nil {
 		return fmt.Errorf("shutdown Fleet Agent enrollment: %w", err)
+	}
+	grpcDone := make(chan struct{})
+	go func() { agentGRPC.GracefulStop(); close(grpcDone) }()
+	select {
+	case <-grpcDone:
+	case <-shutdownCtx.Done():
+		agentGRPC.Stop()
 	}
 	return serveErr
 }

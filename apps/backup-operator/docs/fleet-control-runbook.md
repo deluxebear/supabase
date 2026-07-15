@@ -6,9 +6,11 @@ exclusively owned by Backup Operator. The services may share an image build
 repository and neutral Agent infrastructure, but never an API namespace,
 database, migration ledger, retention policy, or domain payload schema.
 
-Schema 3 adds management bindings, hash-only single-use enrollment, Agent CSR
+Schema 4 adds durable ownership-safe reconciliation tasks and typed Agent
+evidence on top of schema 3 management bindings, hash-only single-use enrollment, Agent CSR
 issuance, and short-lived mTLS certificates. The service-assertion listener and
-the TLS/mTLS enrollment listener remain separate. Generate and mount the Agent
+the TLS enrollment listener remain separate from the mTLS-only Agent gRPC
+listener on port 8092. Generate and mount the Agent
 CA and enrollment server certificate before startup; never place the CA private
 key or Agent private keys in the platform store or Studio responses. Protocol
 major 1 is required. Rotate Agent certificates before expiry, retain only the
@@ -38,13 +40,15 @@ FLEET_CONTROL_SERVICE_ASSERTION_AUDIENCE=fleet-control
 
 Use a dedicated assertion key of at least 32 random bytes; do not reuse the
 Backup Operator assertion key. `/healthz` proves process liveness and `/readyz`
-returns success only when the independent Fleet schema is at version 3.
+returns success only when the independent Fleet schema is at version 4.
 
-The T4 production assembly deliberately registers no execution provider.
-`runtime.observe` therefore returns an explicit `unsupported` capability with a
-`provider_not_registered` blocker, and operation creation returns
-`capability_unavailable`. Later provider work must register a typed
-`supabase.fleet.*` input schema before an operation can be accepted.
+T8 registers `runtime.config.reconcile` with
+`supabase.fleet.runtime.config.reconcile.v1` input and
+`supabase.fleet.runtime.config.evidence.v1` evidence. Operation creation still
+fails with `capability_unavailable` unless the exact active project binding has
+an enrolled Agent advertising that capability. The Agent may use only the
+Compose or Kubernetes providers described in the
+[T8 operations runbook](../../../docs/self-hosted-parity/2026-07-15-t8-ownership-safe-reconciliation-operations.md).
 
 ## Authorization and isolation
 
@@ -65,7 +69,7 @@ per project/target/binding domain in the same transaction as operation creation.
 ## Upgrade and rollback
 
 Run `make generate`, `make check-generated`, `make build`, `make test`, and
-`go vet ./...` before rollout. Protocol major 1 and Fleet schema 2 are the T5
+`go vet ./...` before rollout. Protocol major 1 and Fleet schema 4 are the T8
 compatibility boundary. Unknown protocol majors, capability names, or
 `supabase.backup.*` payload schemas fail before persistence.
 
@@ -75,7 +79,7 @@ service assertion. The runner acquires a PostgreSQL advisory lock, stores the
 name and SHA-256 checksum of every migration, and rejects a changed migration at
 startup. The first T5 rollout adopts checksum metadata for the pre-T5 schema-1
 ledger; every later rollout is strictly locked. Roll back to an image digest only
-while it supports Fleet schema 2. Never edit an applied migration; use a forward
+while it supports Fleet schema 4. Never edit an applied migration; use a forward
 repair migration after taking an independent PostgreSQL backup.
 
 Production Compose also runs the same image in `outbox-dispatcher` mode. Its

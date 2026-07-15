@@ -23,10 +23,13 @@ import (
 //go:embed migrations/*/*.sql
 var fleetMigrations embed.FS
 
-const CurrentSchemaVersion = 3
+const CurrentSchemaVersion = 4
 
 var ErrOperationNotFound = errors.New("Fleet operation not found")
 var ErrMigrationChecksum = errors.New("Fleet migration checksum mismatch")
+var ErrOperationBinding = errors.New("Fleet operation binding mismatch")
+var ErrOperationCapability = errors.New("Fleet operation capability unavailable")
+var ErrOperationState = errors.New("Fleet operation state conflict")
 
 type StoreDialect string
 
@@ -62,6 +65,11 @@ type Operation struct {
 	DesiredDigest      string    `json:"desiredDigest"`
 	InputSchema        string    `json:"inputSchema"`
 	FencingToken       int64     `json:"fencingToken"`
+	TaskID             string    `json:"taskId,omitempty"`
+	AgentID            string    `json:"agentId,omitempty"`
+	EvidenceSchema     string    `json:"evidenceSchema,omitempty"`
+	Evidence           any       `json:"evidence,omitempty"`
+	ErrorCode          string    `json:"errorCode,omitempty"`
 	CreatedAt          time.Time `json:"createdAt"`
 	UpdatedAt          time.Time `json:"updatedAt"`
 }
@@ -80,6 +88,30 @@ type Event struct {
 	Cursor int64
 	Type   string
 	Data   any
+}
+
+type ClaimedOperation struct {
+	Operation
+	IdempotencyKey string
+	TypedInput     json.RawMessage
+	Preconditions  json.RawMessage
+}
+
+type AgentSessionIdentity struct {
+	AgentID      string
+	ProjectRef   string
+	TargetID     string
+	BindingID    string
+	Capabilities []string
+}
+
+type CompleteOperationInput struct {
+	TaskID         string
+	AgentID        string
+	Succeeded      bool
+	EvidenceSchema string
+	Evidence       json.RawMessage
+	ErrorCode      string
 }
 
 func OpenSQLite(ctx context.Context, path string, identity StoreIdentity) (*Store, error) {
@@ -401,19 +433,18 @@ VALUES($1,$2,$3,$4,$5,$6,'queued',$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$1
 }
 
 func (s *Store) GetOperation(ctx context.Context, projectRef, operationID string) (Operation, bool, error) {
-	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,created_at_ms,updated_at_ms FROM operations WHERE project_ref=? AND id=?`
+	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,COALESCE(task_id,''),COALESCE(agent_id,''),COALESCE(evidence_schema,''),COALESCE(evidence_json,'{}'),COALESCE(error_code,''),created_at_ms,updated_at_ms FROM operations WHERE project_ref=? AND id=?`
 	if s.dialect == FleetPostgres {
-		query = `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,created_at_ms,updated_at_ms FROM operations WHERE project_ref=$1 AND id=$2`
+		query = `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,COALESCE(task_id,''),COALESCE(agent_id,''),COALESCE(evidence_schema,''),COALESCE(evidence_json,'{}'::jsonb),COALESCE(error_code,''),created_at_ms,updated_at_ms FROM operations WHERE project_ref=$1 AND id=$2`
 	}
 	operation, err := s.scanOperation(ctx, query, projectRef, operationID)
 	return operation, err == nil, err
 }
 
 func (s *Store) getByIdempotency(ctx context.Context, projectRef, key string) (Operation, error) {
-	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,created_at_ms,updated_at_ms FROM operations WHERE project_ref=? AND idempotency_key=?`
+	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,COALESCE(task_id,''),COALESCE(agent_id,''),COALESCE(evidence_schema,''),COALESCE(evidence_json,'{}'),COALESCE(error_code,''),created_at_ms,updated_at_ms FROM operations WHERE project_ref=? AND idempotency_key=?`
 	if s.dialect == FleetPostgres {
-		query = strings.ReplaceAll(query, "?", "%s")
-		query = fmt.Sprintf(query, "$1", "$2")
+		query = `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,COALESCE(task_id,''),COALESCE(agent_id,''),COALESCE(evidence_schema,''),COALESCE(evidence_json,'{}'::jsonb),COALESCE(error_code,''),created_at_ms,updated_at_ms FROM operations WHERE project_ref=$1 AND idempotency_key=$2`
 	}
 	return s.scanOperation(ctx, query, projectRef, key)
 }
@@ -421,7 +452,8 @@ func (s *Store) getByIdempotency(ctx context.Context, projectRef, key string) (O
 func (s *Store) scanOperation(ctx context.Context, query string, args ...any) (Operation, error) {
 	var operation Operation
 	var created, updated int64
-	err := s.db.QueryRowContext(ctx, query, args...).Scan(&operation.ID, &operation.ProjectRef, &operation.TargetID, &operation.BindingID, &operation.Domain, &operation.Capability, &operation.State, &operation.ProtocolMajor, &operation.ProtocolMinor, &operation.ExpectedGeneration, &operation.DesiredRevision, &operation.DesiredDigest, &operation.InputSchema, &operation.FencingToken, &created, &updated)
+	var evidence []byte
+	err := s.db.QueryRowContext(ctx, query, args...).Scan(&operation.ID, &operation.ProjectRef, &operation.TargetID, &operation.BindingID, &operation.Domain, &operation.Capability, &operation.State, &operation.ProtocolMajor, &operation.ProtocolMinor, &operation.ExpectedGeneration, &operation.DesiredRevision, &operation.DesiredDigest, &operation.InputSchema, &operation.FencingToken, &operation.TaskID, &operation.AgentID, &operation.EvidenceSchema, &evidence, &operation.ErrorCode, &created, &updated)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Operation{}, ErrOperationNotFound
 	}
@@ -429,7 +461,222 @@ func (s *Store) scanOperation(ctx context.Context, query string, args ...any) (O
 		return Operation{}, err
 	}
 	operation.CreatedAt, operation.UpdatedAt = time.UnixMilli(created).UTC(), time.UnixMilli(updated).UTC()
+	if len(evidence) > 0 && string(evidence) != "{}" {
+		if err := json.Unmarshal(evidence, &operation.Evidence); err != nil {
+			return Operation{}, err
+		}
+	}
 	return operation, nil
+}
+
+func (s *Store) ValidateOperationBinding(ctx context.Context, projectRef, targetID, bindingID, capability string) (BindingStatus, error) {
+	status, err := s.GetBindingStatus(ctx, projectRef, bindingID)
+	if err != nil {
+		return BindingStatus{}, ErrOperationBinding
+	}
+	if status.Binding.ProjectRef != projectRef || status.Binding.TargetID != targetID || status.Binding.BindingID != bindingID || status.Binding.State != "active" {
+		return BindingStatus{}, ErrOperationBinding
+	}
+	if status.Agent == nil || (status.Agent.State != "online" && status.Agent.State != "offline") {
+		return BindingStatus{}, ErrOperationCapability
+	}
+	for _, observed := range status.Agent.Capabilities {
+		if observed.Name == capability {
+			return status, nil
+		}
+	}
+	return BindingStatus{}, ErrOperationCapability
+}
+
+func (s *Store) ClaimOperation(ctx context.Context, identity AgentSessionIdentity) (ClaimedOperation, bool, error) {
+	if identity.AgentID == "" || identity.ProjectRef == "" || identity.TargetID == "" || identity.BindingID == "" || len(identity.Capabilities) == 0 {
+		return ClaimedOperation{}, false, errors.New("complete Agent session identity is required")
+	}
+	status, err := s.GetBindingStatus(ctx, identity.ProjectRef, identity.BindingID)
+	if err != nil {
+		return ClaimedOperation{}, false, ErrOperationBinding
+	}
+	if status.Agent == nil || status.Agent.ID != identity.AgentID || status.Binding.TargetID != identity.TargetID || status.Binding.State != "active" {
+		return ClaimedOperation{}, false, ErrOperationBinding
+	}
+	storedCapabilities := make(map[string]struct{}, len(status.Agent.Capabilities))
+	for _, capability := range status.Agent.Capabilities {
+		storedCapabilities[capability.Name] = struct{}{}
+	}
+	capabilities := make([]string, 0, len(identity.Capabilities))
+	seen := make(map[string]struct{}, len(identity.Capabilities))
+	for _, capability := range identity.Capabilities {
+		if _, stored := storedCapabilities[capability]; !stored {
+			return ClaimedOperation{}, false, ErrOperationCapability
+		}
+		if _, duplicate := seen[capability]; duplicate {
+			continue
+		}
+		seen[capability] = struct{}{}
+		capabilities = append(capabilities, capability)
+	}
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return ClaimedOperation{}, false, err
+	}
+	defer tx.Rollback()
+	placeholders := make([]string, len(capabilities))
+	args := []any{identity.ProjectRef, identity.TargetID, identity.BindingID, identity.AgentID}
+	for index, capability := range capabilities {
+		args = append(args, capability)
+		if s.dialect == FleetPostgres {
+			placeholders[index] = "$" + strconv.Itoa(index+5)
+		} else {
+			placeholders[index] = "?"
+		}
+	}
+	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,idempotency_key,COALESCE(task_id,''),COALESCE(agent_id,''),typed_input_json,preconditions_json,created_at_ms,updated_at_ms
+FROM operations WHERE project_ref=? AND target_id=? AND binding_id=? AND (state='queued' OR (state='applying' AND agent_id=?)) AND capability IN (` + strings.Join(placeholders, ",") + `) ORDER BY created_at_ms LIMIT 1`
+	if s.dialect == FleetPostgres {
+		query = `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,idempotency_key,COALESCE(task_id,''),COALESCE(agent_id,''),typed_input_json,preconditions_json,created_at_ms,updated_at_ms
+FROM operations WHERE project_ref=$1 AND target_id=$2 AND binding_id=$3 AND (state='queued' OR (state='applying' AND agent_id=$4)) AND capability IN (` + strings.Join(placeholders, ",") + `) ORDER BY created_at_ms FOR UPDATE SKIP LOCKED LIMIT 1`
+	}
+	var claimed ClaimedOperation
+	var typedInput, preconditions []byte
+	var created, updated int64
+	err = tx.QueryRowContext(ctx, query, args...).Scan(&claimed.ID, &claimed.ProjectRef, &claimed.TargetID, &claimed.BindingID, &claimed.Domain, &claimed.Capability, &claimed.State, &claimed.ProtocolMajor, &claimed.ProtocolMinor, &claimed.ExpectedGeneration, &claimed.DesiredRevision, &claimed.DesiredDigest, &claimed.InputSchema, &claimed.FencingToken, &claimed.IdempotencyKey, &claimed.TaskID, &claimed.AgentID, &typedInput, &preconditions, &created, &updated)
+	if errors.Is(err, sql.ErrNoRows) {
+		return ClaimedOperation{}, false, nil
+	}
+	if err != nil {
+		return ClaimedOperation{}, false, err
+	}
+	if claimed.State == "applying" {
+		if claimed.TaskID == "" || claimed.AgentID != identity.AgentID {
+			return ClaimedOperation{}, false, ErrOperationState
+		}
+		if err := tx.Commit(); err != nil {
+			return ClaimedOperation{}, false, err
+		}
+		claimed.TypedInput = append(json.RawMessage(nil), typedInput...)
+		claimed.Preconditions = append(json.RawMessage(nil), preconditions...)
+		claimed.CreatedAt, claimed.UpdatedAt = time.UnixMilli(created).UTC(), time.UnixMilli(updated).UTC()
+		return claimed, true, nil
+	}
+	claimed.TaskID = claimed.ID + ":1"
+	now := s.now().UTC().UnixMilli()
+	update := "UPDATE operations SET state='applying',task_id=?,agent_id=?,started_at_ms=?,updated_at_ms=? WHERE id=? AND state='queued'"
+	if s.dialect == FleetPostgres {
+		update = "UPDATE operations SET state='applying',task_id=$1,agent_id=$2,started_at_ms=$3,updated_at_ms=$4 WHERE id=$5 AND state='queued'"
+	}
+	result, err := tx.ExecContext(ctx, update, claimed.TaskID, identity.AgentID, now, now, claimed.ID)
+	if err != nil {
+		return ClaimedOperation{}, false, err
+	}
+	if rows, err := result.RowsAffected(); err != nil || rows != 1 {
+		return ClaimedOperation{}, false, ErrOperationState
+	}
+	event := "INSERT INTO operation_events(operation_id,event_type,payload_json,created_at_ms) VALUES(?,'operation_applying',?,?)"
+	if s.dialect == FleetPostgres {
+		event = "INSERT INTO operation_events(operation_id,event_type,payload_json,created_at_ms) VALUES($1,'operation_applying',$2::jsonb,$3)"
+	}
+	payload, _ := json.Marshal(map[string]any{"taskId": claimed.TaskID, "agentId": identity.AgentID})
+	if _, err := tx.ExecContext(ctx, event, claimed.ID, string(payload), now); err != nil {
+		return ClaimedOperation{}, false, err
+	}
+	if err := tx.Commit(); err != nil {
+		return ClaimedOperation{}, false, err
+	}
+	claimed.State = "applying"
+	claimed.AgentID = identity.AgentID
+	claimed.TypedInput = append(json.RawMessage(nil), typedInput...)
+	claimed.Preconditions = append(json.RawMessage(nil), preconditions...)
+	claimed.CreatedAt, claimed.UpdatedAt = time.UnixMilli(created).UTC(), time.UnixMilli(now).UTC()
+	return claimed, true, nil
+}
+
+func (s *Store) RecordOperationProgress(ctx context.Context, taskID, agentID string, percent uint32, phase string) error {
+	if taskID == "" || agentID == "" || percent > 100 || phase == "" || len(phase) > 128 {
+		return errors.New("valid Agent task progress is required")
+	}
+	var operationID string
+	query := "SELECT id FROM operations WHERE task_id=? AND agent_id=? AND state='applying'"
+	if s.dialect == FleetPostgres {
+		query = "SELECT id FROM operations WHERE task_id=$1 AND agent_id=$2 AND state='applying'"
+	}
+	if err := s.db.QueryRowContext(ctx, query, taskID, agentID).Scan(&operationID); errors.Is(err, sql.ErrNoRows) {
+		return ErrOperationState
+	} else if err != nil {
+		return err
+	}
+	payload, _ := json.Marshal(map[string]any{"taskId": taskID, "percent": percent, "phase": phase})
+	event := "INSERT INTO operation_events(operation_id,event_type,payload_json,created_at_ms) VALUES(?,'task_progress',?,?)"
+	if s.dialect == FleetPostgres {
+		event = "INSERT INTO operation_events(operation_id,event_type,payload_json,created_at_ms) VALUES($1,'task_progress',$2::jsonb,$3)"
+	}
+	_, err := s.db.ExecContext(ctx, event, operationID, string(payload), s.now().UTC().UnixMilli())
+	return err
+}
+
+func (s *Store) CompleteOperation(ctx context.Context, input CompleteOperationInput) error {
+	if input.TaskID == "" || input.AgentID == "" || len(input.Evidence) == 0 || !json.Valid(input.Evidence) || input.EvidenceSchema == "" {
+		return errors.New("complete typed Agent evidence is required")
+	}
+	if input.Succeeded && input.ErrorCode != "" || !input.Succeeded && input.ErrorCode == "" {
+		return errors.New("Agent result success and error code conflict")
+	}
+	state := "applied"
+	if !input.Succeeded {
+		state = "failed"
+	}
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	now := s.now().UTC().UnixMilli()
+	query := "UPDATE operations SET state=?,evidence_schema=?,evidence_json=?,error_code=?,finished_at_ms=?,updated_at_ms=? WHERE task_id=? AND agent_id=? AND state='applying'"
+	if s.dialect == FleetPostgres {
+		query = "UPDATE operations SET state=$1,evidence_schema=$2,evidence_json=$3::jsonb,error_code=$4,finished_at_ms=$5,updated_at_ms=$6 WHERE task_id=$7 AND agent_id=$8 AND state='applying'"
+	}
+	result, err := tx.ExecContext(ctx, query, state, input.EvidenceSchema, string(input.Evidence), input.ErrorCode, now, now, input.TaskID, input.AgentID)
+	if err != nil {
+		return err
+	}
+	if rows, err := result.RowsAffected(); err != nil || rows != 1 {
+		return ErrOperationState
+	}
+	var operationID string
+	selectID := "SELECT id FROM operations WHERE task_id=?"
+	if s.dialect == FleetPostgres {
+		selectID = "SELECT id FROM operations WHERE task_id=$1"
+	}
+	if err := tx.QueryRowContext(ctx, selectID, input.TaskID).Scan(&operationID); err != nil {
+		return err
+	}
+	payload, _ := json.Marshal(map[string]any{"taskId": input.TaskID, "state": state, "errorCode": input.ErrorCode})
+	event := "INSERT INTO operation_events(operation_id,event_type,payload_json,created_at_ms) VALUES(?,?,?,?)"
+	if s.dialect == FleetPostgres {
+		event = "INSERT INTO operation_events(operation_id,event_type,payload_json,created_at_ms) VALUES($1,$2,$3::jsonb,$4)"
+	}
+	if _, err := tx.ExecContext(ctx, event, operationID, "operation_"+state, string(payload), now); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+func (s *Store) TouchAgentSession(ctx context.Context, agentID string) error {
+	if agentID == "" {
+		return errors.New("Agent id is required")
+	}
+	query := "UPDATE agents SET state='online',last_seen_at_ms=?,updated_at_ms=? WHERE id=? AND state IN ('online','offline')"
+	if s.dialect == FleetPostgres {
+		query = "UPDATE agents SET state='online',last_seen_at_ms=$1,updated_at_ms=$2 WHERE id=$3 AND state IN ('online','offline')"
+	}
+	now := s.now().UTC().UnixMilli()
+	result, err := s.db.ExecContext(ctx, query, now, now, agentID)
+	if err != nil {
+		return err
+	}
+	if rows, err := result.RowsAffected(); err != nil || rows != 1 {
+		return ErrAgentNotFound
+	}
+	return nil
 }
 
 func (s *Store) ReadEventsAfter(ctx context.Context, operationID string, cursor int64, limit int) ([]Event, error) {
