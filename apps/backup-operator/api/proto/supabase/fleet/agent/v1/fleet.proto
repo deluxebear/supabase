@@ -44,11 +44,18 @@ message TypedTask {
   map<string, string> preconditions = 5;
   oneof input {
     ObserveRuntimeInput observe_runtime = 10;
+    ReconcileConfigurationInput reconcile_configuration = 11;
   }
 }
 
 message ObserveRuntimeInput {
   repeated string services = 1;
+}
+
+message ReconcileConfigurationInput {
+  bytes document_json = 1;
+  string desired_digest = 2;
+  int64 expected_generation = 3;
 }
 
 message TaskResult {
@@ -57,12 +64,17 @@ message TaskResult {
   oneof result {
     ObserveRuntimeEvidence observe_runtime = 10;
     supabase.agent.transport.v1.TaskError error = 11;
+    ReconcileConfigurationEvidence reconcile_configuration = 12;
   }
 }
 
 message ObserveRuntimeEvidence {
   repeated RuntimeService services = 1;
   int64 observed_at_unix_milliseconds = 2;
+}
+
+message ReconcileConfigurationEvidence {
+  bytes evidence_json = 1;
 }
 
 message RuntimeService {

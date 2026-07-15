@@ -4,6 +4,8 @@ import (
 	"errors"
 	"sort"
 	"sync"
+
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 )
 
 type Blocker struct {
@@ -34,12 +36,16 @@ func NewCapabilityRegistry() *CapabilityRegistry {
 		InputSchema: "supabase.fleet.runtime.observe.v1",
 		Blockers:    []Blocker{{Code: "provider_not_registered", Message: "No compatible Fleet runtime observation provider is registered", Remediation: "Enroll a compatible Stack Agent after management-target trust is configured"}},
 	}
+	registry.capabilities[fleetproviders.CapabilityReconcileConfiguration] = Capability{
+		Name: fleetproviders.CapabilityReconcileConfiguration, State: "available", Mode: "agent", Source: "fleet-control", ContractVersion: "v1",
+		InputSchema: fleetproviders.InputSchemaV1, Blockers: []Blocker{},
+	}
 	return registry
 }
 
-// RegisterAvailable is intentionally used only by a concrete provider during
-// process assembly. The T4 production binary registers no execution provider,
-// so it cannot return false success before later provider tasks ship.
+// RegisterAvailable is used only by a concrete provider during process
+// assembly. T8 registers the ownership-safe reconciliation transport while
+// target availability still fails closed against the bound Agent capability.
 func (r *CapabilityRegistry) RegisterAvailable(capability Capability) error {
 	if r == nil || capability.Name == "" || capability.InputSchema == "" || capability.ContractVersion == "" || capability.Mode == "" || capability.Mode == "unsupported" {
 		return errors.New("complete executable provider capability is required")

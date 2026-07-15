@@ -271,6 +271,7 @@ import { Route as ApiV1ProjectsRefFunctionsIndexRouteImport } from './routes/api
 import { Route as ApiPlatformStorageRefVectorBucketsIndexRouteImport } from './routes/api/platform/storage/$ref/vector-buckets/index'
 import { Route as ApiPlatformStorageRefBucketsIndexRouteImport } from './routes/api/platform/storage/$ref/buckets/index'
 import { Route as ApiPlatformPropsProjectRefIndexRouteImport } from './routes/api/platform/props/project/$ref/index'
+import { Route as ApiPlatformProjectsRefOwnershipPoliciesIndexRouteImport } from './routes/api/platform/projects/$ref/ownership-policies/index'
 import { Route as ApiPlatformProjectsRefManagementBindingIndexRouteImport } from './routes/api/platform/projects/$ref/management-binding/index'
 import { Route as ApiPlatformProjectsRefContentIndexRouteImport } from './routes/api/platform/projects/$ref/content/index'
 import { Route as ApiPlatformProjectsRefConfigIndexRouteImport } from './routes/api/platform/projects/$ref/config/index'
@@ -1770,6 +1771,12 @@ const ApiPlatformPropsProjectRefIndexRoute =
     path: '/api/platform/props/project/$ref/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPlatformProjectsRefOwnershipPoliciesIndexRoute =
+  ApiPlatformProjectsRefOwnershipPoliciesIndexRouteImport.update({
+    id: '/api/platform/projects/$ref/ownership-policies/',
+    path: '/api/platform/projects/$ref/ownership-policies/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPlatformProjectsRefManagementBindingIndexRoute =
   ApiPlatformProjectsRefManagementBindingIndexRouteImport.update({
     id: '/api/platform/projects/$ref/management-binding/',
@@ -2359,6 +2366,7 @@ export interface FileRoutesByFullPath {
   '/api/platform/projects/$ref/config/': typeof ApiPlatformProjectsRefConfigIndexRoute
   '/api/platform/projects/$ref/content/': typeof ApiPlatformProjectsRefContentIndexRoute
   '/api/platform/projects/$ref/management-binding/': typeof ApiPlatformProjectsRefManagementBindingIndexRoute
+  '/api/platform/projects/$ref/ownership-policies/': typeof ApiPlatformProjectsRefOwnershipPoliciesIndexRoute
   '/api/platform/props/project/$ref/': typeof ApiPlatformPropsProjectRefIndexRoute
   '/api/platform/storage/$ref/buckets/': typeof ApiPlatformStorageRefBucketsIndexRoute
   '/api/platform/storage/$ref/vector-buckets/': typeof ApiPlatformStorageRefVectorBucketsIndexRoute
@@ -2660,6 +2668,7 @@ export interface FileRoutesByTo {
   '/api/platform/projects/$ref/config': typeof ApiPlatformProjectsRefConfigIndexRoute
   '/api/platform/projects/$ref/content': typeof ApiPlatformProjectsRefContentIndexRoute
   '/api/platform/projects/$ref/management-binding': typeof ApiPlatformProjectsRefManagementBindingIndexRoute
+  '/api/platform/projects/$ref/ownership-policies': typeof ApiPlatformProjectsRefOwnershipPoliciesIndexRoute
   '/api/platform/props/project/$ref': typeof ApiPlatformPropsProjectRefIndexRoute
   '/api/platform/storage/$ref/buckets': typeof ApiPlatformStorageRefBucketsIndexRoute
   '/api/platform/storage/$ref/vector-buckets': typeof ApiPlatformStorageRefVectorBucketsIndexRoute
@@ -2976,6 +2985,7 @@ export interface FileRoutesById {
   '/api/platform/projects/$ref/config/': typeof ApiPlatformProjectsRefConfigIndexRoute
   '/api/platform/projects/$ref/content/': typeof ApiPlatformProjectsRefContentIndexRoute
   '/api/platform/projects/$ref/management-binding/': typeof ApiPlatformProjectsRefManagementBindingIndexRoute
+  '/api/platform/projects/$ref/ownership-policies/': typeof ApiPlatformProjectsRefOwnershipPoliciesIndexRoute
   '/api/platform/props/project/$ref/': typeof ApiPlatformPropsProjectRefIndexRoute
   '/api/platform/storage/$ref/buckets/': typeof ApiPlatformStorageRefBucketsIndexRoute
   '/api/platform/storage/$ref/vector-buckets/': typeof ApiPlatformStorageRefVectorBucketsIndexRoute
@@ -3291,6 +3301,7 @@ export interface FileRouteTypes {
     | '/api/platform/projects/$ref/config/'
     | '/api/platform/projects/$ref/content/'
     | '/api/platform/projects/$ref/management-binding/'
+    | '/api/platform/projects/$ref/ownership-policies/'
     | '/api/platform/props/project/$ref/'
     | '/api/platform/storage/$ref/buckets/'
     | '/api/platform/storage/$ref/vector-buckets/'
@@ -3592,6 +3603,7 @@ export interface FileRouteTypes {
     | '/api/platform/projects/$ref/config'
     | '/api/platform/projects/$ref/content'
     | '/api/platform/projects/$ref/management-binding'
+    | '/api/platform/projects/$ref/ownership-policies'
     | '/api/platform/props/project/$ref'
     | '/api/platform/storage/$ref/buckets'
     | '/api/platform/storage/$ref/vector-buckets'
@@ -3907,6 +3919,7 @@ export interface FileRouteTypes {
     | '/api/platform/projects/$ref/config/'
     | '/api/platform/projects/$ref/content/'
     | '/api/platform/projects/$ref/management-binding/'
+    | '/api/platform/projects/$ref/ownership-policies/'
     | '/api/platform/props/project/$ref/'
     | '/api/platform/storage/$ref/buckets/'
     | '/api/platform/storage/$ref/vector-buckets/'
@@ -4039,6 +4052,7 @@ export interface RootRouteChildren {
   ApiPlatformProjectsRefConfigIndexRoute: typeof ApiPlatformProjectsRefConfigIndexRoute
   ApiPlatformProjectsRefContentIndexRoute: typeof ApiPlatformProjectsRefContentIndexRoute
   ApiPlatformProjectsRefManagementBindingIndexRoute: typeof ApiPlatformProjectsRefManagementBindingIndexRoute
+  ApiPlatformProjectsRefOwnershipPoliciesIndexRoute: typeof ApiPlatformProjectsRefOwnershipPoliciesIndexRoute
   ApiPlatformPropsProjectRefIndexRoute: typeof ApiPlatformPropsProjectRefIndexRoute
   ApiPlatformStorageRefBucketsIndexRoute: typeof ApiPlatformStorageRefBucketsIndexRoute
   ApiPlatformStorageRefVectorBucketsIndexRoute: typeof ApiPlatformStorageRefVectorBucketsIndexRoute
@@ -5904,6 +5918,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPlatformPropsProjectRefIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/platform/projects/$ref/ownership-policies/': {
+      id: '/api/platform/projects/$ref/ownership-policies/'
+      path: '/api/platform/projects/$ref/ownership-policies'
+      fullPath: '/api/platform/projects/$ref/ownership-policies/'
+      preLoaderRoute: typeof ApiPlatformProjectsRefOwnershipPoliciesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/platform/projects/$ref/management-binding/': {
       id: '/api/platform/projects/$ref/management-binding/'
       path: '/api/platform/projects/$ref/management-binding'
@@ -7061,6 +7082,8 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPlatformProjectsRefContentIndexRoute,
   ApiPlatformProjectsRefManagementBindingIndexRoute:
     ApiPlatformProjectsRefManagementBindingIndexRoute,
+  ApiPlatformProjectsRefOwnershipPoliciesIndexRoute:
+    ApiPlatformProjectsRefOwnershipPoliciesIndexRoute,
   ApiPlatformPropsProjectRefIndexRoute: ApiPlatformPropsProjectRefIndexRoute,
   ApiPlatformStorageRefBucketsIndexRoute:
     ApiPlatformStorageRefBucketsIndexRoute,

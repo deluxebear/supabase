@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 	"github.com/supabase/supabase/apps/backup-operator/internal/security"
 	sharedtransport "github.com/supabase/supabase/apps/backup-operator/internal/shared/agenttransport"
 	sharedevents "github.com/supabase/supabase/apps/backup-operator/internal/shared/events"
@@ -145,6 +146,30 @@ func (h *Handler) createOperation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	projectRef := r.PathValue("projectRef")
+	binding, err := h.Store.ValidateOperationBinding(r.Context(), projectRef, request.TargetID, request.BindingID, request.Capability)
+	if errors.Is(err, ErrOperationBinding) {
+		writeFleetError(w, r, http.StatusConflict, "binding_revoked", "The Fleet operation binding is inactive or belongs to another project or target", false, map[string]any{"blockers": []Blocker{{Code: "binding_revoked", Message: "Refresh or replace the project management binding before retrying"}}})
+		return
+	}
+	if errors.Is(err, ErrOperationCapability) {
+		writeFleetError(w, r, http.StatusConflict, "capability_unavailable", "The bound Agent does not advertise the requested Fleet capability", false, map[string]any{"capability": request.Capability, "blockers": []Blocker{{Code: "agent_capability_unavailable", Message: "Enroll or reconnect an Agent with the requested typed capability"}}})
+		return
+	}
+	if err != nil {
+		writeFleetError(w, r, http.StatusServiceUnavailable, "downstream_unavailable", "Fleet Control could not validate the management binding", true, map[string]any{})
+		return
+	}
+	if request.Capability == fleetproviders.CapabilityReconcileConfiguration {
+		document, err := fleetproviders.ParseDocument(request.TypedInput)
+		if err != nil {
+			writeFleetError(w, r, http.StatusBadRequest, "validation_failed", "Fleet reconciliation document is invalid", false, map[string]any{"reason": err.Error()})
+			return
+		}
+		if string(document.Adapter) != binding.Binding.DeploymentKind {
+			writeFleetError(w, r, http.StatusConflict, "capability_unavailable", "The reconciliation adapter does not match the bound deployment kind", false, map[string]any{"capability": request.Capability, "blockers": []Blocker{{Code: "adapter_mismatch", Message: "Use the adapter declared by the project management binding"}}})
+			return
+		}
+	}
 	policy := sharedtransport.DomainPolicy{Namespace: "supabase.fleet.", ProtocolMajor: 1, MaxMinor: 0, Schemas: h.Capabilities.Schemas()}
 	envelope := sharedtransport.OperationEnvelope{OperationID: request.OperationID, ProjectRef: projectRef, TargetID: request.TargetID, BindingID: request.BindingID, Domain: request.Domain, Capability: request.Capability, ProtocolMajor: request.ProtocolMajor, ProtocolMinor: request.ProtocolMinor, IdempotencyKey: idempotencyKey, ExpectedGeneration: request.ExpectedGeneration, InputSchema: request.InputSchema, TypedInput: request.TypedInput, Preconditions: request.Preconditions}
 	if err := policy.Validate(envelope); err != nil {

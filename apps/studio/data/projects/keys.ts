@@ -20,6 +20,8 @@ export const projectKeys = {
   detail: (projectRef: string | undefined) => ['project', projectRef, 'detail'] as const,
   managementBinding: (projectRef: string | undefined) =>
     ['project', projectRef, 'management-binding'] as const,
+  ownershipPolicies: (projectRef: string | undefined) =>
+    ['project', projectRef, 'ownership-policies'] as const,
   serviceVersions: (projectRef: string | undefined) =>
     ['project', projectRef, 'service-versions'] as const,
   readonlyStatus: (projectRef: string | undefined) =>

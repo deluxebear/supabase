@@ -11,6 +11,7 @@ export interface StudioCapabilities {
   cloudManagementApi: boolean
   projectAttachment: boolean
   managementTrust: boolean
+  ownershipReconciliation: boolean
 }
 
 export interface StudioDeploymentProfileEnvironment {
@@ -34,6 +35,7 @@ const PROFILE_CAPABILITIES: Record<StudioDeploymentProfile, StudioCapabilities> 
     cloudManagementApi: true,
     projectAttachment: false,
     managementTrust: false,
+    ownershipReconciliation: false,
   },
   embedded: {
     multiProject: false,
@@ -46,6 +48,7 @@ const PROFILE_CAPABILITIES: Record<StudioDeploymentProfile, StudioCapabilities> 
     cloudManagementApi: false,
     projectAttachment: false,
     managementTrust: false,
+    ownershipReconciliation: false,
   },
   fleet: {
     multiProject: true,
@@ -58,6 +61,7 @@ const PROFILE_CAPABILITIES: Record<StudioDeploymentProfile, StudioCapabilities> 
     cloudManagementApi: false,
     projectAttachment: true,
     managementTrust: true,
+    ownershipReconciliation: true,
   },
   cli: {
     multiProject: false,
@@ -70,6 +74,7 @@ const PROFILE_CAPABILITIES: Record<StudioDeploymentProfile, StudioCapabilities> 
     cloudManagementApi: false,
     projectAttachment: false,
     managementTrust: false,
+    ownershipReconciliation: false,
   },
 }
 

@@ -48,7 +48,7 @@ export const SelfPlatformManagementTrustPanel = () => {
   const [deploymentKind, setDeploymentKind] = useState<
     'compose' | 'kubernetes' | 'systemd' | 'bare-metal'
   >('compose')
-  const [prefixes, setPrefixes] = useState('backup.')
+  const [prefixes, setPrefixes] = useState('backup.,runtime.')
   const [token, setToken] = useState<EnrollmentTokenResponse>()
   const [serverError, setServerError] = useState<Error>()
   const binding = bindingQuery.data?.binding

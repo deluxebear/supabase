@@ -72,6 +72,7 @@ describe('getStudioCapabilities', () => {
       localFunctionsDirectory: true,
       cloudManagementApi: false,
       managementTrust: false,
+      ownershipReconciliation: false,
     })
     expect(getStudioCapabilities('cli')).toEqual(getStudioCapabilities('embedded'))
   })
@@ -86,6 +87,7 @@ describe('getStudioCapabilities', () => {
       backupManagement: false,
       cloudManagementApi: false,
       managementTrust: true,
+      ownershipReconciliation: true,
     })
   })
 
