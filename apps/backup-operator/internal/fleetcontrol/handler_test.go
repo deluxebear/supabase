@@ -16,6 +16,7 @@ import (
 	"time"
 
 	fleetopenapiv1 "github.com/supabase/supabase/apps/backup-operator/gen/openapi/fleet/v1"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetlifecycle"
 	"github.com/supabase/supabase/apps/backup-operator/internal/security"
 )
 
@@ -112,6 +113,36 @@ func TestValidateDesiredSnapshotRejectsNonCanonicalRevision(t *testing.T) {
 	})
 	if err == nil {
 		t.Fatal("invalid desired revision was accepted")
+	}
+}
+
+func TestValidateLifecyclePreconditionsRequiresRecentAAL2ForDestructiveActions(t *testing.T) {
+	now := time.Date(2026, 7, 15, 12, 0, 0, 0, time.UTC)
+	document := fleetlifecycle.Document{Action: fleetlifecycle.PostgresUpgradeExecute, PlanHash: "plan-hash"}
+
+	valid := json.RawMessage(fmt.Sprintf(`{"planHash":"plan-hash","aal":"aal2","aalAuthenticatedAt":%d}`, now.Add(-5*time.Minute).Unix()))
+	if err := validateLifecyclePreconditions(document, valid, now); err != nil {
+		t.Fatalf("recent aal2 was rejected: %v", err)
+	}
+
+	for name, raw := range map[string]json.RawMessage{
+		"aal1":    json.RawMessage(fmt.Sprintf(`{"planHash":"plan-hash","aal":"aal1","aalAuthenticatedAt":%d}`, now.Unix())),
+		"expired": json.RawMessage(fmt.Sprintf(`{"planHash":"plan-hash","aal":"aal2","aalAuthenticatedAt":%d}`, now.Add(-11*time.Minute).Unix())),
+		"future":  json.RawMessage(fmt.Sprintf(`{"planHash":"plan-hash","aal":"aal2","aalAuthenticatedAt":%d}`, now.Add(2*time.Minute).Unix())),
+		"hash":    json.RawMessage(fmt.Sprintf(`{"planHash":"other","aal":"aal2","aalAuthenticatedAt":%d}`, now.Unix())),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if err := validateLifecyclePreconditions(document, raw, now); err == nil {
+				t.Fatal("invalid lifecycle preconditions were accepted")
+			}
+		})
+	}
+}
+
+func TestValidateLifecyclePreconditionsAllowsNonDestructiveActionWithoutAAL2(t *testing.T) {
+	document := fleetlifecycle.Document{Action: fleetlifecycle.RuntimeRestart, PlanHash: "plan-hash"}
+	if err := validateLifecyclePreconditions(document, json.RawMessage(`{"planHash":"plan-hash"}`), time.Now()); err != nil {
+		t.Fatalf("non-destructive lifecycle preconditions were rejected: %v", err)
 	}
 }
 

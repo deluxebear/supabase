@@ -37,4 +37,5 @@ if not {"amd64", "arm64"}.issubset(architectures):
     raise SystemExit(f"multiarch OCI index missing platforms: {architectures}")
 PY
 jq -e '[.matrix[].result]|all(.=="passed" or .=="blocked-as-designed")' "$directory/upgrade-compatibility.json" >/dev/null
+jq -e '.schema=="supabase.fleet.lifecycle.compatibility.v1" and .contractVersion=="v1" and (.providers.compose|index("postgres.upgrade.execute")|not) and (.providers.kubernetes|index("postgres.upgrade.execute"))' "$directory/lifecycle-compatibility-v1.json" >/dev/null
 printf 'release_candidate_verification=PASS\n'

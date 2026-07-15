@@ -2,6 +2,7 @@
   "$schema": "./node_modules/turbo/schema.json",
   "ui": "stream",
   "cacheMaxAge": "14d",
+  "globalEnv": ["FLEET_LIFECYCLE_COMPONENT_VERSIONS"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

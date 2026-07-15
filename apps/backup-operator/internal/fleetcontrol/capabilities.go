@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetlifecycle"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 )
 
@@ -44,6 +45,15 @@ func NewCapabilityRegistry() *CapabilityRegistry {
 	registry.capabilities[fleetfunctions.CapabilityDeploy] = Capability{
 		Name: fleetfunctions.CapabilityDeploy, State: "available", Mode: "agent", Source: "fleet-control", ContractVersion: "v1",
 		InputSchema: fleetfunctions.InputSchemaV1, Blockers: []Blocker{},
+	}
+	for action := range map[fleetlifecycle.Action]struct{}{
+		fleetlifecycle.RuntimeRestart: {}, fleetlifecycle.RuntimeRollout: {}, fleetlifecycle.RuntimeScale: {},
+		fleetlifecycle.PostgresUpgradePlan: {}, fleetlifecycle.PostgresUpgradeExecute: {},
+		fleetlifecycle.ReplicaCreate: {}, fleetlifecycle.ReplicaRemove: {},
+		fleetlifecycle.BranchCreate: {}, fleetlifecycle.BranchRestore: {},
+		fleetlifecycle.NetworkBansRead: {}, fleetlifecycle.NetworkBansUpdate: {},
+	} {
+		registry.capabilities[string(action)] = Capability{Name: string(action), State: "available", Mode: "agent", Source: "fleet-control", ContractVersion: "v1", InputSchema: fleetlifecycle.InputSchemaV1, Blockers: []Blocker{}}
 	}
 	return registry
 }

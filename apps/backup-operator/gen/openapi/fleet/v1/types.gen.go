@@ -47,6 +47,12 @@ const (
 	CreateEnrollmentTokenDeploymentKindSystemd    CreateEnrollmentTokenDeploymentKind = "systemd"
 )
 
+// Defines values for CreateLifecycleImpactPlanAdapter.
+const (
+	CreateLifecycleImpactPlanAdapterCompose    CreateLifecycleImpactPlanAdapter = "compose"
+	CreateLifecycleImpactPlanAdapterKubernetes CreateLifecycleImpactPlanAdapter = "kubernetes"
+)
+
 // Defines values for EnrollAgentDeploymentKind.
 const (
 	EnrollAgentDeploymentKindBareMetal  EnrollAgentDeploymentKind = "bare-metal"
@@ -58,6 +64,12 @@ const (
 // Defines values for HealthStatus.
 const (
 	Ok HealthStatus = "ok"
+)
+
+// Defines values for LifecycleImpactPlanAdapter.
+const (
+	LifecycleImpactPlanAdapterCompose    LifecycleImpactPlanAdapter = "compose"
+	LifecycleImpactPlanAdapterKubernetes LifecycleImpactPlanAdapter = "kubernetes"
 )
 
 // Defines values for ManagementBindingDeploymentKind.
@@ -165,6 +177,21 @@ type CapabilityObservation struct {
 	ObservedAt      *time.Time `json:"observedAt,omitempty"`
 }
 
+// ComponentVersions defines model for ComponentVersions.
+type ComponentVersions struct {
+	Adapter        string `json:"adapter"`
+	Agent          string `json:"agent"`
+	BackupOperator string `json:"backupOperator"`
+	EdgeRuntime    string `json:"edgeRuntime"`
+	FleetControl   string `json:"fleetControl"`
+	Gateway        string `json:"gateway"`
+	Gotrue         string `json:"gotrue"`
+	Postgres       string `json:"postgres"`
+	Postgrest      string `json:"postgrest"`
+	Realtime       string `json:"realtime"`
+	Storage        string `json:"storage"`
+}
+
 // CreateEnrollmentToken defines model for CreateEnrollmentToken.
 type CreateEnrollmentToken struct {
 	AllowedCapabilityPrefixes []string                            `json:"allowedCapabilityPrefixes"`
@@ -176,6 +203,19 @@ type CreateEnrollmentToken struct {
 
 // CreateEnrollmentTokenDeploymentKind defines model for CreateEnrollmentToken.DeploymentKind.
 type CreateEnrollmentTokenDeploymentKind string
+
+// CreateLifecycleImpactPlan defines model for CreateLifecycleImpactPlan.
+type CreateLifecycleImpactPlan struct {
+	Action            string                           `json:"action"`
+	Adapter           CreateLifecycleImpactPlanAdapter `json:"adapter"`
+	BindingId         string                           `json:"bindingId"`
+	ComponentVersions ComponentVersions                `json:"componentVersions"`
+	Parameters        LifecycleParameters              `json:"parameters"`
+	TargetId          string                           `json:"targetId"`
+}
+
+// CreateLifecycleImpactPlanAdapter defines model for CreateLifecycleImpactPlan.Adapter.
+type CreateLifecycleImpactPlanAdapter string
 
 // CreateOperation defines model for CreateOperation.
 type CreateOperation struct {
@@ -263,6 +303,40 @@ type IssuedAgentCertificate struct {
 	CertificatePem       string     `json:"certificatePem"`
 	CertificateSerial    *string    `json:"certificateSerial,omitempty"`
 	OverlapUntil         *time.Time `json:"overlapUntil,omitempty"`
+}
+
+// LifecycleImpactPlan defines model for LifecycleImpactPlan.
+type LifecycleImpactPlan struct {
+	Action                       string                     `json:"action"`
+	Adapter                      LifecycleImpactPlanAdapter `json:"adapter"`
+	ComponentVersions            ComponentVersions          `json:"componentVersions"`
+	CreatedAt                    time.Time                  `json:"createdAt"`
+	ExpiresAt                    time.Time                  `json:"expiresAt"`
+	Hash                         string                     `json:"hash"`
+	Id                           string                     `json:"id"`
+	Impact                       map[string]interface{}     `json:"impact"`
+	ManualIntervention           []string                   `json:"manualIntervention"`
+	Parameters                   LifecycleParameters        `json:"parameters"`
+	ProjectRef                   string                     `json:"projectRef"`
+	RequiresExplicitConfirmation bool                       `json:"requiresExplicitConfirmation"`
+	RequiresRecentAal2           bool                       `json:"requiresRecentAal2"`
+	Rollback                     []string                   `json:"rollback"`
+	Schema                       string                     `json:"schema"`
+	Verification                 []string                   `json:"verification"`
+}
+
+// LifecycleImpactPlanAdapter defines model for LifecycleImpactPlan.Adapter.
+type LifecycleImpactPlanAdapter string
+
+// LifecycleParameters defines model for LifecycleParameters.
+type LifecycleParameters struct {
+	BannedNetworks *[]string `json:"bannedNetworks,omitempty"`
+	BranchName     *string   `json:"branchName,omitempty"`
+	ReplicaName    *string   `json:"replicaName,omitempty"`
+	Replicas       *int      `json:"replicas,omitempty"`
+	Service        *string   `json:"service,omitempty"`
+	SourceBranch   *string   `json:"sourceBranch,omitempty"`
+	TargetVersion  *string   `json:"targetVersion,omitempty"`
 }
 
 // ManagementBinding defines model for ManagementBinding.
@@ -396,6 +470,9 @@ type EnrollAgentJSONRequestBody = EnrollAgent
 
 // PutFunctionArtifactApplicationVndSupabaseFunctionBundlePlusJSONRequestBody defines body for PutFunctionArtifact for application/vnd.supabase.function-bundle+json ContentType.
 type PutFunctionArtifactApplicationVndSupabaseFunctionBundlePlusJSONRequestBody = PutFunctionArtifactApplicationVndSupabaseFunctionBundlePlusJSONBody
+
+// CreateLifecycleImpactPlanJSONRequestBody defines body for CreateLifecycleImpactPlan for application/json ContentType.
+type CreateLifecycleImpactPlanJSONRequestBody = CreateLifecycleImpactPlan
 
 // CreateAgentEnrollmentTokenJSONRequestBody defines body for CreateAgentEnrollmentToken for application/json ContentType.
 type CreateAgentEnrollmentTokenJSONRequestBody = CreateEnrollmentToken
