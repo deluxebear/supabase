@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	FleetAgentControlService_Connect_FullMethodName = "/supabase.fleet.agent.v1.FleetAgentControlService/Connect"
+	FleetAgentControlService_Connect_FullMethodName          = "/supabase.fleet.agent.v1.FleetAgentControlService/Connect"
+	FleetAgentControlService_DownloadArtifact_FullMethodName = "/supabase.fleet.agent.v1.FleetAgentControlService/DownloadArtifact"
 )
 
 // FleetAgentControlServiceClient is the client API for FleetAgentControlService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FleetAgentControlServiceClient interface {
 	Connect(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[ConnectRequest, ConnectResponse], error)
+	DownloadArtifact(ctx context.Context, in *DownloadArtifactRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ArtifactChunk], error)
 }
 
 type fleetAgentControlServiceClient struct {
@@ -50,11 +52,31 @@ func (c *fleetAgentControlServiceClient) Connect(ctx context.Context, opts ...gr
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type FleetAgentControlService_ConnectClient = grpc.BidiStreamingClient[ConnectRequest, ConnectResponse]
 
+func (c *fleetAgentControlServiceClient) DownloadArtifact(ctx context.Context, in *DownloadArtifactRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ArtifactChunk], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &FleetAgentControlService_ServiceDesc.Streams[1], FleetAgentControlService_DownloadArtifact_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[DownloadArtifactRequest, ArtifactChunk]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type FleetAgentControlService_DownloadArtifactClient = grpc.ServerStreamingClient[ArtifactChunk]
+
 // FleetAgentControlServiceServer is the server API for FleetAgentControlService service.
 // All implementations must embed UnimplementedFleetAgentControlServiceServer
 // for forward compatibility.
 type FleetAgentControlServiceServer interface {
 	Connect(grpc.BidiStreamingServer[ConnectRequest, ConnectResponse]) error
+	DownloadArtifact(*DownloadArtifactRequest, grpc.ServerStreamingServer[ArtifactChunk]) error
 	mustEmbedUnimplementedFleetAgentControlServiceServer()
 }
 
@@ -67,6 +89,9 @@ type UnimplementedFleetAgentControlServiceServer struct{}
 
 func (UnimplementedFleetAgentControlServiceServer) Connect(grpc.BidiStreamingServer[ConnectRequest, ConnectResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method Connect not implemented")
+}
+func (UnimplementedFleetAgentControlServiceServer) DownloadArtifact(*DownloadArtifactRequest, grpc.ServerStreamingServer[ArtifactChunk]) error {
+	return status.Errorf(codes.Unimplemented, "method DownloadArtifact not implemented")
 }
 func (UnimplementedFleetAgentControlServiceServer) mustEmbedUnimplementedFleetAgentControlServiceServer() {
 }
@@ -97,6 +122,17 @@ func _FleetAgentControlService_Connect_Handler(srv interface{}, stream grpc.Serv
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type FleetAgentControlService_ConnectServer = grpc.BidiStreamingServer[ConnectRequest, ConnectResponse]
 
+func _FleetAgentControlService_DownloadArtifact_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(DownloadArtifactRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FleetAgentControlServiceServer).DownloadArtifact(m, &grpc.GenericServerStream[DownloadArtifactRequest, ArtifactChunk]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type FleetAgentControlService_DownloadArtifactServer = grpc.ServerStreamingServer[ArtifactChunk]
+
 // FleetAgentControlService_ServiceDesc is the grpc.ServiceDesc for FleetAgentControlService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -110,6 +146,11 @@ var FleetAgentControlService_ServiceDesc = grpc.ServiceDesc{
 			Handler:       _FleetAgentControlService_Connect_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
+		},
+		{
+			StreamName:    "DownloadArtifact",
+			Handler:       _FleetAgentControlService_DownloadArtifact_Handler,
+			ServerStreams: true,
 		},
 	},
 	Metadata: "supabase/fleet/agent/v1/fleet.proto",

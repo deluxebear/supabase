@@ -745,6 +745,8 @@ type ManagementDomainRequest = {
   method: 'GET' | 'POST' | 'PUT'
   path: string
   body?: unknown
+  contentType?: string
+  headers?: Record<string, string>
   scopes: string[]
   actor: string
   correlationId: string
@@ -752,7 +754,8 @@ type ManagementDomainRequest = {
   aal?: string
   aalAuthenticatedAt?: number
   idempotencyKey?: string
-  responseType?: 'json' | 'text'
+  responseType?: 'json' | 'text' | 'buffer'
+  maxResponseBytes?: number
 }
 
 export async function requestManagementDomain(
@@ -792,6 +795,7 @@ export async function requestManagementDomain(
         body: request.body,
         ca,
         headers: {
+          ...(request.headers ?? {}),
           Authorization: `Bearer ${assertion}`,
           'X-Correlation-ID': request.correlationId,
           'X-Audit-Context': JSON.stringify({
@@ -804,7 +808,9 @@ export async function requestManagementDomain(
           }),
           ...(request.idempotencyKey ? { 'Idempotency-Key': request.idempotencyKey } : {}),
         },
+        contentType: request.contentType,
         responseType: request.responseType,
+        maxResponseBytes: request.maxResponseBytes,
       }
     )
     await recordManagementDomainObservation(binding.managementTargetId, domainName, 'available')
@@ -935,13 +941,20 @@ function httpsRequestJSON(
   input: {
     method: 'GET' | 'POST' | 'PUT'
     body?: unknown
+    contentType?: string
     ca: string
     headers: Record<string, string>
-    responseType?: 'json' | 'text'
+    responseType?: 'json' | 'text' | 'buffer'
+    maxResponseBytes?: number
   }
 ): Promise<unknown> {
   return new Promise((resolve, reject) => {
-    const body = input.body === undefined ? undefined : JSON.stringify(input.body)
+    const body =
+      input.body === undefined
+        ? undefined
+        : Buffer.isBuffer(input.body)
+          ? input.body
+          : Buffer.from(JSON.stringify(input.body))
     const request = https.request(
       url,
       {
@@ -952,10 +965,13 @@ function httpsRequestJSON(
         timeout: MANAGEMENT_REQUEST_TIMEOUT_MS,
         headers: {
           Accept: 'application/json',
+          ...input.headers,
           ...(body === undefined
             ? {}
-            : { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }),
-          ...input.headers,
+            : {
+                'Content-Type': input.contentType ?? 'application/json',
+                'Content-Length': body.length,
+              }),
         },
       },
       (response) => {
@@ -963,7 +979,11 @@ function httpsRequestJSON(
         let size = 0
         response.on('data', (chunk: Buffer) => {
           size += chunk.length
-          if (size > MANAGEMENT_RESPONSE_LIMIT_BYTES) {
+          const responseLimit = Math.min(
+            input.maxResponseBytes ?? MANAGEMENT_RESPONSE_LIMIT_BYTES,
+            20 << 20
+          )
+          if (size > responseLimit) {
             request.destroy(new Error('Management target response exceeded the size limit'))
             return
           }
@@ -971,6 +991,17 @@ function httpsRequestJSON(
         })
         response.on('end', () => {
           const text = Buffer.concat(chunks).toString('utf8')
+          if (
+            input.responseType === 'buffer' &&
+            (response.statusCode ?? 500) >= 200 &&
+            (response.statusCode ?? 500) < 300
+          ) {
+            resolve({
+              body: Buffer.concat(chunks),
+              contentType: response.headers['content-type'] ?? 'application/octet-stream',
+            })
+            return
+          }
           if (
             input.responseType === 'text' &&
             (response.statusCode ?? 500) >= 200 &&

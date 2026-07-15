@@ -29,7 +29,7 @@ import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import type { OwnershipPolicy } from '@/lib/api/self-platform/ownership-policy'
 import { t as $t } from '@/lib/i18n'
 
-const CONFIGURATION_DOMAINS = ['auth', 'storage', 'realtime', 'postgrest'] as const
+const CONFIGURATION_DOMAINS = ['auth', 'storage', 'realtime', 'postgrest', 'functions'] as const
 const OWNERSHIP_MODES = ['observe-only', 'direct-managed', 'gitops-managed'] as const
 
 const driftVariant = (driftState: OwnershipPolicy['driftState']) => {
@@ -62,6 +62,7 @@ export const SelfPlatformOwnershipPolicyPanel = () => {
     'configuration.ownership.update'
   )
   const reconcileCapability = findProjectCapability(capabilities.data, 'runtime.config.reconcile')
+  const functionDeployCapability = findProjectCapability(capabilities.data, 'functions.deploy')
   const policyByDomain = new Map(
     policies.data.policies.map((policy) => [policy.domain, policy] as const)
   )
@@ -114,6 +115,15 @@ export const SelfPlatformOwnershipPolicyPanel = () => {
             <AlertDescription>
               {reconcileCapability?.blockers[0]?.message ??
                 $t('Enroll a compatible Agent before selecting direct-managed mode.')}
+            </AlertDescription>
+          </Alert>
+        )}
+        {functionDeployCapability?.state !== 'available' && (
+          <Alert variant="warning">
+            <AlertTitle>{$t('Edge Function deployment is unavailable')}</AlertTitle>
+            <AlertDescription>
+              {functionDeployCapability?.blockers[0]?.message ??
+                $t('Enroll a compatible Agent before enabling direct-managed functions.')}
             </AlertDescription>
           </Alert>
         )}
@@ -172,7 +182,11 @@ export const SelfPlatformOwnershipPolicyPanel = () => {
                     <SelectItem value="observe-only">{$t('Observe only')}</SelectItem>
                     <SelectItem
                       value="direct-managed"
-                      disabled={reconcileCapability?.state !== 'available'}
+                      disabled={
+                        domain === 'functions'
+                          ? functionDeployCapability?.state !== 'available'
+                          : reconcileCapability?.state !== 'available'
+                      }
                     >
                       {$t('Direct managed')}
                     </SelectItem>

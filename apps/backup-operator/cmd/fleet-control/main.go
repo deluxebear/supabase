@@ -23,6 +23,7 @@ func main() {
 	agentListen := flag.String("agent-listen", envOr("FLEET_CONTROL_AGENT_LISTEN", "127.0.0.1:8092"), "Fleet Agent mTLS gRPC listen address")
 	storeDriver := flag.String("store-driver", envOr("FLEET_CONTROL_STORE_DRIVER", "sqlite"), "Fleet Control store driver: sqlite or postgres")
 	storeDSN := flag.String("store-dsn", envOr("FLEET_CONTROL_STORE_DSN", "fleet-control.db"), "Fleet Control store path or PostgreSQL DSN")
+	artifactRoot := flag.String("artifact-root", envOr("FLEET_CONTROL_ARTIFACT_ROOT", "fleet-artifacts"), "project-isolated immutable function artifact root")
 	storeSystemID := flag.String("store-system-identifier", envOr("FLEET_CONTROL_STORE_SYSTEM_IDENTIFIER", "fleet-control-local"), "independent Fleet store system identity")
 	storeDataDomain := flag.String("store-data-domain", envOr("FLEET_CONTROL_STORE_DATA_DOMAIN", "fleet-control-local"), "independent Fleet store data domain")
 	assertionKey := flag.String("service-assertion-key", os.Getenv("FLEET_CONTROL_SERVICE_ASSERTION_KEY"), "Studio-to-Fleet service assertion key")
@@ -69,7 +70,7 @@ func main() {
 	}
 	err := fleetcontrol.Run(ctx, fleetcontrol.Config{
 		Listen: *listen, EnrollmentListen: *enrollmentListen, AgentListen: *agentListen, ShutdownTimeout: *shutdownTimeout,
-		StoreDriver: *storeDriver, StoreDSN: *storeDSN,
+		StoreDriver: *storeDriver, StoreDSN: *storeDSN, ArtifactRoot: *artifactRoot,
 		StoreIdentity: fleetcontrol.StoreIdentity{SystemIdentifier: *storeSystemID, DataDomain: *storeDataDomain},
 		AssertionKey:  []byte(*assertionKey), AssertionIssuer: *assertionIssuer, AssertionAudience: *assertionAudience, AssertionMaxTTL: *assertionMaxTTL,
 		AgentCACertFile: *agentCACert, AgentCAKeyFile: *agentCAKey, AgentTrustDomain: *agentTrustDomain,

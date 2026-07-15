@@ -3,6 +3,7 @@ package fleetagent
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"os"
@@ -13,6 +14,7 @@ import (
 	transportv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/agent/transport/v1"
 	fleetagentv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/fleet/v1"
 	"github.com/supabase/supabase/apps/backup-operator/internal/agentjournal"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 )
 
@@ -62,6 +64,57 @@ func TestExecutorRejectsIdentityAndPreservesUserOwnedCompose(t *testing.T) {
 	}
 	if payload, err := os.ReadFile(userFile); err != nil || string(payload) != "services: {}\n" {
 		t.Fatalf("user Compose file changed: %q, %v", payload, err)
+	}
+}
+
+type staticArtifactFetcher struct{ raw []byte }
+
+func (f staticArtifactFetcher) Fetch(_ context.Context, digest string, size int64) ([]byte, error) {
+	computed := sha256.Sum256(f.raw)
+	if digest != hex.EncodeToString(computed[:]) || size != int64(len(f.raw)) {
+		return nil, os.ErrInvalid
+	}
+	return append([]byte(nil), f.raw...), nil
+}
+
+func TestExecutorDownloadsProjectArtifactDeploysAndReplaysFunctionEvidence(t *testing.T) {
+	t.Parallel()
+	executor, cleanup := newExecutor(t, t.TempDir())
+	defer cleanup()
+	functionRoot := t.TempDir()
+	registry, err := fleetfunctions.NewRegistry(fleetfunctions.ComposeProvider{
+		Root:   functionRoot,
+		Prober: fleetfunctions.ProbeFunc(func(context.Context, string, bool) error { return nil }),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	executor.FunctionProviders = registry
+	raw, err := fleetfunctions.CanonicalBundle([]fleetfunctions.BundleFile{{Path: "index.ts", ContentBase64: base64.StdEncoding.EncodeToString([]byte("Deno.serve(() => new Response('ok'))")), Mode: 0o600}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	digest := sha256.Sum256(raw)
+	deployment, err := json.Marshal(fleetfunctions.Deployment{Action: fleetfunctions.ActionDeploy, Slug: "hello", Adapter: fleetfunctions.AdapterCompose, ArtifactDigest: hex.EncodeToString(digest[:]), ArtifactSize: int64(len(raw)), EntrypointPath: "index.ts", StaticPatterns: []string{}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	task := &fleetagentv1.TypedTask{
+		Identity: &transportv1.OperationIdentity{OperationId: "op-function", TaskId: "task-function", ProjectRef: "project-a", TargetId: "target-a", BindingId: "binding-a", IdempotencyKey: "idem-function", FencingToken: 2, ExpectedGeneration: 1, DeadlineUnixMilliseconds: time.Now().Add(time.Minute).UnixMilli()},
+		Domain:   "functions/hello", Capability: fleetfunctions.CapabilityDeploy, InputSchema: fleetfunctions.InputSchemaV1,
+		Input: &fleetagentv1.TypedTask_DeployFunction{DeployFunction: &fleetagentv1.DeployFunctionInput{DeploymentJson: deployment}},
+	}
+	result := executor.ExecuteWithArtifacts(context.Background(), task, nil, staticArtifactFetcher{raw: raw})
+	if result.GetDeployFunction() == nil || result.GetError() != nil {
+		t.Fatalf("function result = %#v", result)
+	}
+	var evidence fleetfunctions.Evidence
+	if err := json.Unmarshal(result.GetDeployFunction().GetEvidenceJson(), &evidence); err != nil || evidence.Status != "active" || evidence.ArtifactDigest != hex.EncodeToString(digest[:]) {
+		t.Fatalf("function evidence = %+v, %v", evidence, err)
+	}
+	replayed := executor.ExecuteWithArtifacts(context.Background(), task, nil, nil)
+	if string(replayed.GetDeployFunction().GetEvidenceJson()) != string(result.GetDeployFunction().GetEvidenceJson()) {
+		t.Fatal("durable function replay returned different evidence")
 	}
 }
 

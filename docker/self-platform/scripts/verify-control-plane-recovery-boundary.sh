@@ -29,7 +29,7 @@ docker compose -f docker-compose.yml stop db auth rest realtime storage meta fun
   "select value from platform.t3_recovery_evidence where id=1" | grep -qx registry-survived
 "${compose[@]}" exec -T fleet-control-db psql -U fleet_control -d fleet_control -Atqc \
   "select state from t3_operation_evidence where id=1" | grep -qx durable
-curl -fsS "http://127.0.0.1:${FLEET_CONTROL_HTTP_PORT:-8090}/readyz" | grep -q '"schemaVersion":3'
+curl -fsS "http://127.0.0.1:${FLEET_CONTROL_HTTP_PORT:-8090}/readyz" | grep -q '"schemaVersion":5'
 "${compose[@]}" exec -T backup-operator-db psql -U backup_operator -d backup_operator -Atqc \
   "select count(*) from jobs" | grep -qx "$before_jobs"
 curl -fsS "${FLEET_PUBLIC_URL:-$(grep '^FLEET_PUBLIC_URL=' control-plane.env | cut -d= -f2-)}/api/platform/telemetry/feature-flags" >/dev/null

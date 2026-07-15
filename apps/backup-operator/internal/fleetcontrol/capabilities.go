@@ -5,6 +5,7 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 )
 
@@ -39,6 +40,10 @@ func NewCapabilityRegistry() *CapabilityRegistry {
 	registry.capabilities[fleetproviders.CapabilityReconcileConfiguration] = Capability{
 		Name: fleetproviders.CapabilityReconcileConfiguration, State: "available", Mode: "agent", Source: "fleet-control", ContractVersion: "v1",
 		InputSchema: fleetproviders.InputSchemaV1, Blockers: []Blocker{},
+	}
+	registry.capabilities[fleetfunctions.CapabilityDeploy] = Capability{
+		Name: fleetfunctions.CapabilityDeploy, State: "available", Mode: "agent", Source: "fleet-control", ContractVersion: "v1",
+		InputSchema: fleetfunctions.InputSchemaV1, Blockers: []Blocker{},
 	}
 	return registry
 }

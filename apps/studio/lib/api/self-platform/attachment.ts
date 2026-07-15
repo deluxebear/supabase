@@ -297,7 +297,7 @@ export function derivePreflightCapabilities(
     if (!check) throw new Error(`Preflight report is missing ${name}`)
     return check
   }
-  const capabilities = [
+  const capabilities: ProjectCapabilityRecord[] = [
     capabilityFromCheck(
       'database.metadata.read',
       required('metadata-permissions'),
@@ -307,6 +307,38 @@ export function derivePreflightCapabilities(
     capabilityFromCheck('auth.users.manage', required('auth'), observedAt, revision),
     capabilityFromCheck('storage.objects.manage', required('storage'), observedAt, revision),
     capabilityFromCheck('realtime.inspect', required('realtime'), observedAt, revision),
+    {
+      name: 'functions.read',
+      state: report.outcome === 'pass' ? 'available' : 'unavailable',
+      mode: 'direct',
+      source: 'static-profile',
+      contractVersion: 'v1',
+      targetVersion: null,
+      observationRevision: revision,
+      observedAt,
+      validUntil: null,
+      blockers:
+        report.outcome === 'pass'
+          ? []
+          : [{ code: 'preflight_failed', message: 'Required attachment checks failed.' }],
+    },
+    {
+      name: 'functions.deploy',
+      state: 'unavailable',
+      mode: 'agent',
+      source: 'agent',
+      contractVersion: 'v1',
+      targetVersion: null,
+      observationRevision: revision,
+      observedAt,
+      validUntil: null,
+      blockers: [
+        {
+          code: 'agent_capability_unavailable',
+          message: 'Connect an Agent with the functions.deploy v1 capability.',
+        },
+      ],
+    },
   ]
   for (const name of ['project.status.read', 'project.connection.update', 'project.detach']) {
     capabilities.push({
@@ -997,12 +1029,26 @@ export async function listProjectCapabilities(
 
 export async function requireProjectCapability(projectRef: string, name: string): Promise<void> {
   const capability = (await listProjectCapabilities(projectRef)).find((item) => item.name === name)
-  if (!capability || capability.state !== 'available') {
+  const isExpired =
+    capability?.validUntil !== null &&
+    capability?.validUntil !== undefined &&
+    Date.parse(capability.validUntil) <= Date.now()
+  if (!capability || capability.state !== 'available' || isExpired) {
     throw new CapabilityUnavailable(
       name,
-      capability?.blockers ?? [
-        { code: 'capability_unavailable', message: `Capability ${name} is not available.` },
-      ]
+      isExpired
+        ? [
+            {
+              code: 'capability_stale',
+              message: `Capability ${name} has stale Agent evidence. Refresh the management binding.`,
+            },
+          ]
+        : (capability?.blockers ?? [
+            {
+              code: 'capability_unavailable',
+              message: `Capability ${name} is not available.`,
+            },
+          ])
     )
   }
 }

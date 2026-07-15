@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
 import { useFlag, useParams } from 'common'
 import { ExternalLink, RefreshCw, Search, X } from 'lucide-react'
 import { useRouter } from 'next/router'
@@ -36,8 +37,10 @@ import { AlertError } from '@/components/ui/AlertError'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useEdgeFunctionsQuery } from '@/data/edge-functions/edge-functions-query'
+import { fleetFunctionDeploymentsQueryOptions } from '@/data/edge-functions/fleet-function-deployments-query'
 import { useIsProjectActive } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL, IS_PLATFORM } from '@/lib/constants'
+import { STUDIO_CAPABILITIES, STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
@@ -48,6 +51,8 @@ const EdgeFunctionsPage: NextPageWithLayout = () => {
   const { ref } = useParams()
   const showLastHourStats = useFlag('edgeFunctionsRequestMetrics')
   const isProjectActive = useIsProjectActive()
+  const isFleetFunctions =
+    STUDIO_DEPLOYMENT_PROFILE === 'fleet' && STUDIO_CAPABILITIES.remoteFunctionsDeployment
 
   const searchInputRef = useRef<HTMLInputElement>(null)
 
@@ -57,15 +62,39 @@ const EdgeFunctionsPage: NextPageWithLayout = () => {
     parseAsStringLiteral<EdgeFunctionsSort>(EDGE_FUNCTIONS_SORT_VALUES).withDefault('name:asc')
   )
 
-  const {
-    data: functions,
-    error,
-    isPending: isLoading,
-    isError,
-    isSuccess,
-    isFetching,
-    refetch,
-  } = useEdgeFunctionsQuery({ projectRef: ref })
+  const upstreamFunctions = useEdgeFunctionsQuery(
+    { projectRef: ref },
+    { enabled: !isFleetFunctions }
+  )
+  const fleetDeployments = useQuery(fleetFunctionDeploymentsQueryOptions({ projectRef: ref }))
+  const functions = useMemo(
+    () =>
+      isFleetFunctions
+        ? (fleetDeployments.data ?? []).map((deployment) => ({
+            id: `${deployment.projectRef}:${deployment.slug}`,
+            slug: deployment.slug,
+            name: deployment.slug,
+            version: deployment.generation,
+            status: 'ACTIVE' as const,
+            created_at: Date.parse(deployment.createdAt),
+            updated_at: Date.parse(deployment.updatedAt),
+          }))
+        : upstreamFunctions.data,
+    [fleetDeployments.data, isFleetFunctions, upstreamFunctions.data]
+  )
+  const error = isFleetFunctions ? fleetDeployments.error : upstreamFunctions.error
+  const isLoading = isFleetFunctions ? fleetDeployments.isPending : upstreamFunctions.isPending
+  const isError = isFleetFunctions ? fleetDeployments.isError : upstreamFunctions.isError
+  const isSuccess = isFleetFunctions ? fleetDeployments.isSuccess : upstreamFunctions.isSuccess
+  const isFetching = isFleetFunctions ? fleetDeployments.isFetching : upstreamFunctions.isFetching
+  const refetch = isFleetFunctions ? fleetDeployments.refetch : upstreamFunctions.refetch
+  const deploymentsBySlug = useMemo(
+    () => new Map((fleetDeployments.data ?? []).map((item) => [item.slug, item])),
+    [fleetDeployments.data]
+  )
+  const manualInterventions = (fleetDeployments.data ?? []).filter(
+    (item) => item.state === 'manual-intervention'
+  )
 
   useFunctionsListShortcuts({
     searchInputRef,
@@ -104,12 +133,22 @@ const EdgeFunctionsPage: NextPageWithLayout = () => {
   }, [functions, search, sort])
 
   const hasFunctions = (functions ?? []).length > 0
+  const functionCount = functions?.length ?? 0
 
   return (
     <PageContainer size="large">
       <PageSection>
         <PageSectionContent>
           <div className="flex flex-col gap-6">
+            {manualInterventions.length > 0 && (
+              <Admonition type="danger" title={$t('Manual intervention required')}>
+                <p className="text-sm">
+                  {$t(
+                    'One or more function rollouts could not restore the previous revision automatically. Follow the remediation shown for each deployment before retrying.'
+                  )}
+                </p>
+              </Admonition>
+            )}
             {isLoading && <GenericSkeletonLoader />}
             {isError &&
               (IS_PLATFORM ? (
@@ -177,13 +216,13 @@ const EdgeFunctionsPage: NextPageWithLayout = () => {
                         </Button>
                       </ShortcutTooltip>
                       <span className="border-l border-default pl-2 text-xs text-foreground-light">
-                        {search && filteredFunctions.length !== functions.length
+                        {search && filteredFunctions.length !== functionCount
                           ? $t('Viewing {{count}} of {{total}} functions in total', {
                               count: filteredFunctions.length,
-                              total: functions.length,
+                              total: functionCount,
                             })
                           : $t('Viewing {{count}} functions in total', {
-                              count: functions.length,
+                              count: functionCount,
                             })}
                       </span>
                     </div>
@@ -215,7 +254,11 @@ const EdgeFunctionsPage: NextPageWithLayout = () => {
                           <>
                             {filteredFunctions.length > 0 ? (
                               filteredFunctions.map((item) => (
-                                <EdgeFunctionsListItem key={item.id} function={item} />
+                                <EdgeFunctionsListItem
+                                  key={item.id}
+                                  function={item}
+                                  deployment={deploymentsBySlug.get(item.slug)}
+                                />
                               ))
                             ) : (
                               <TableRow>
@@ -272,7 +315,7 @@ export const EdgeFunctionsIndexPageWrapper = ({ children }: PropsWithChildren) =
                 {$t('Examples')}
               </a>
             </Button>
-            {IS_PLATFORM && <DeployEdgeFunctionButton />}
+            {STUDIO_CAPABILITIES.remoteFunctionsDeployment && <DeployEdgeFunctionButton />}
           </PageHeaderAside>
         </PageHeaderMeta>
       </PageHeader>

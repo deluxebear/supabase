@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"io"
 	"sync"
 	"time"
 
@@ -115,11 +116,48 @@ func (c Client) connect(ctx context.Context) error {
 		if task == nil {
 			continue
 		}
-		result := c.Executor.Execute(ctx, task, func(progress *transportv1.TaskProgress) error {
+		artifactFetcher := grpcArtifactFetcher{client: fleetagentv1.NewFleetAgentControlServiceClient(connection), agentID: c.AgentID, projectRef: c.Executor.ProjectRef, targetID: c.TargetID, bindingID: c.BindingID}
+		result := c.Executor.ExecuteWithArtifacts(ctx, task, func(progress *transportv1.TaskProgress) error {
 			return send(&fleetagentv1.ConnectRequest{Payload: &fleetagentv1.ConnectRequest_Progress{Progress: progress}})
-		})
+		}, artifactFetcher)
 		if err := send(&fleetagentv1.ConnectRequest{Payload: &fleetagentv1.ConnectRequest_Result{Result: result}}); err != nil {
 			return err
 		}
 	}
+}
+
+type grpcArtifactFetcher struct {
+	client     fleetagentv1.FleetAgentControlServiceClient
+	agentID    string
+	projectRef string
+	targetID   string
+	bindingID  string
+}
+
+func (f grpcArtifactFetcher) Fetch(ctx context.Context, digest string, expectedSize int64) ([]byte, error) {
+	if f.client == nil || digest == "" || expectedSize < 1 || expectedSize > 20<<20 {
+		return nil, errors.New("invalid Fleet artifact request")
+	}
+	stream, err := f.client.DownloadArtifact(ctx, &fleetagentv1.DownloadArtifactRequest{AgentId: f.agentID, ProjectRef: f.projectRef, TargetId: f.targetID, BindingId: f.bindingID, Digest: digest})
+	if err != nil {
+		return nil, err
+	}
+	result := make([]byte, 0, expectedSize)
+	for {
+		chunk, err := stream.Recv()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		if int64(len(result)+len(chunk.GetData())) > expectedSize {
+			return nil, errors.New("Fleet artifact stream exceeded its immutable size")
+		}
+		result = append(result, chunk.GetData()...)
+	}
+	if int64(len(result)) != expectedSize {
+		return nil, errors.New("Fleet artifact stream ended before its immutable size")
+	}
+	return result, nil
 }

@@ -2,10 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   buildCandidateConnectionString,
+  CapabilityUnavailable,
   derivePreflightCapabilities,
   DetachOperationConflict,
   detachProject,
   listProjectCapabilities,
+  requireProjectCapability,
   runAttachmentPreflight,
   type AttachmentConnectionInput,
 } from './attachment'
@@ -199,6 +201,30 @@ describe('capability and detach boundaries', () => {
     ).rejects.toBeInstanceOf(DetachOperationConflict)
   })
 
+  it('fails closed when Agent capability evidence has expired', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({
+      data: [
+        {
+          name: 'functions.deploy',
+          state: 'available',
+          mode: 'agent',
+          source: 'agent',
+          contract_version: 'v1',
+          target_version: 'v1.74.0',
+          observation_revision: 'agent:1',
+          observed_at: '2026-07-15T00:00:00Z',
+          valid_until: '1970-01-01T00:00:30Z',
+          blockers: [],
+        },
+      ],
+      error: undefined,
+    })
+    await expect(requireProjectCapability('project-a', 'functions.deploy')).rejects.toMatchObject({
+      constructor: CapabilityUnavailable,
+      blockers: [{ code: 'capability_stale' }],
+    })
+  })
+
   it('derives explicit unavailable capabilities instead of false success', () => {
     const report = {
       contractVersion: 'v1' as const,
@@ -225,6 +251,12 @@ describe('capability and detach boundaries', () => {
     expect(capabilities.find((item) => item.name === 'management.enrollment.issue')).toMatchObject({
       state: 'unavailable',
       blockers: [{ code: 'management_target_unbound' }],
+    })
+    expect(capabilities.find((item) => item.name === 'functions.read')?.state).toBe('unavailable')
+    expect(capabilities.find((item) => item.name === 'functions.deploy')).toMatchObject({
+      state: 'unavailable',
+      mode: 'agent',
+      blockers: [{ code: 'agent_capability_unavailable' }],
     })
   })
 })

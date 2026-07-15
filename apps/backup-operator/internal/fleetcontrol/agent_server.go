@@ -11,6 +11,7 @@ import (
 
 	transportv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/agent/transport/v1"
 	fleetagentv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/fleet/v1"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
@@ -21,10 +22,49 @@ import (
 type AgentServer struct {
 	fleetagentv1.UnimplementedFleetAgentControlServiceServer
 	Store        *Store
+	Artifacts    *ArtifactStore
 	Authority    *CertificateAuthority
 	PollInterval time.Duration
 	TaskTTL      time.Duration
 	Now          func() time.Time
+}
+
+func (s *AgentServer) DownloadArtifact(request *fleetagentv1.DownloadArtifactRequest, stream fleetagentv1.FleetAgentControlService_DownloadArtifactServer) error {
+	if s.Store == nil || s.Artifacts == nil || s.Authority == nil || request == nil || request.GetAgentId() == "" || request.GetProjectRef() == "" || request.GetTargetId() == "" || request.GetBindingId() == "" || request.GetDigest() == "" {
+		return status.Error(codes.InvalidArgument, "complete Fleet Agent artifact identity is required")
+	}
+	certificate, err := peerCertificate(stream.Context())
+	if err != nil {
+		return status.Error(codes.Unauthenticated, err.Error())
+	}
+	certificateAgentID, err := s.Authority.AgentID(certificate)
+	if err != nil || certificateAgentID != request.GetAgentId() {
+		return status.Error(codes.Unauthenticated, "Fleet Agent certificate identity does not match artifact request")
+	}
+	binding, agent, err := s.Store.ValidateAgentCertificate(stream.Context(), request.GetAgentId(), certificate.SerialNumber.Text(16))
+	if err != nil || agent.ID != request.GetAgentId() || binding.ProjectRef != request.GetProjectRef() || binding.TargetID != request.GetTargetId() || binding.BindingID != request.GetBindingId() {
+		return status.Error(codes.PermissionDenied, "Fleet Agent artifact request does not match its active project binding")
+	}
+	artifact, _, err := s.Artifacts.Open(stream.Context(), request.GetProjectRef(), request.GetDigest())
+	if err != nil {
+		return status.Error(codes.NotFound, "project artifact was not found")
+	}
+	defer artifact.Close()
+	buffer := make([]byte, 64<<10)
+	for {
+		count, readErr := artifact.Read(buffer)
+		if count > 0 {
+			if err := stream.Send(&fleetagentv1.ArtifactChunk{Data: append([]byte(nil), buffer[:count]...)}); err != nil {
+				return err
+			}
+		}
+		if errors.Is(readErr, io.EOF) {
+			return nil
+		}
+		if readErr != nil {
+			return status.Error(codes.Internal, "project artifact could not be streamed")
+		}
+	}
 }
 
 func (s *AgentServer) Connect(stream fleetagentv1.FleetAgentControlService_ConnectServer) error {
@@ -155,6 +195,24 @@ func (s *AgentServer) handleAgentMessage(stream fleetagentv1.FleetAgentControlSe
 		if !completion.Succeeded {
 			completion.ErrorCode = "ownership_conflict"
 		}
+	} else if typed := result.GetDeployFunction(); typed != nil {
+		var evidence fleetfunctions.Evidence
+		if json.Unmarshal(typed.GetEvidenceJson(), &evidence) != nil || evidence.Schema != fleetfunctions.EvidenceSchemaV1 || evidence.ObservedGeneration != (*active).ExpectedGeneration || evidence.Adapter == "" || evidence.Slug == "" {
+			return status.Error(codes.InvalidArgument, "Fleet Agent function deployment evidence is invalid")
+		}
+		completion.EvidenceSchema = fleetfunctions.EvidenceSchemaV1
+		completion.Evidence = append(json.RawMessage(nil), typed.GetEvidenceJson()...)
+		switch evidence.Status {
+		case "active", "deleted":
+			completion.Succeeded = true
+		case "rolled-back":
+			completion.ErrorCode = "rollout_probe_failed"
+		case "manual-intervention":
+			completion.ErrorCode = "manual_intervention_required"
+			completion.TerminalState = "manual_intervention"
+		default:
+			return status.Error(codes.InvalidArgument, "Fleet Agent function deployment status is invalid")
+		}
 	} else if taskError := result.GetError(); taskError != nil && taskError.GetCode() != "" {
 		completion.Succeeded = false
 		completion.ErrorCode = taskError.GetCode()
@@ -173,9 +231,6 @@ func (s *AgentServer) handleAgentMessage(stream fleetagentv1.FleetAgentControlSe
 }
 
 func (s *AgentServer) taskMessage(operation ClaimedOperation) (*fleetagentv1.TypedTask, error) {
-	if operation.Capability != fleetproviders.CapabilityReconcileConfiguration || operation.InputSchema != fleetproviders.InputSchemaV1 {
-		return nil, errors.New("Fleet operation has no executable T8 provider contract")
-	}
 	now := time.Now
 	if s.Now != nil {
 		now = s.Now
@@ -188,19 +243,24 @@ func (s *AgentServer) taskMessage(operation ClaimedOperation) (*fleetagentv1.Typ
 	if err != nil {
 		return nil, err
 	}
-	return &fleetagentv1.TypedTask{
+	task := &fleetagentv1.TypedTask{
 		Identity: &transportv1.OperationIdentity{
 			OperationId: operation.ID, TaskId: operation.TaskID, ProjectRef: operation.ProjectRef,
 			TargetId: operation.TargetID, BindingId: operation.BindingID,
 			IdempotencyKey: operation.IdempotencyKey, FencingToken: operation.FencingToken,
 			ExpectedGeneration: operation.ExpectedGeneration, DeadlineUnixMilliseconds: now().Add(ttl).UnixMilli(),
 		},
-		Domain: operation.Domain, Capability: operation.Capability, InputSchema: operation.InputSchema,
-		Preconditions: preconditions,
-		Input: &fleetagentv1.TypedTask_ReconcileConfiguration{ReconcileConfiguration: &fleetagentv1.ReconcileConfigurationInput{
-			DocumentJson: operation.TypedInput, DesiredDigest: operation.DesiredDigest, ExpectedGeneration: operation.ExpectedGeneration,
-		}},
-	}, nil
+		Domain: operation.Domain, Capability: operation.Capability, InputSchema: operation.InputSchema, Preconditions: preconditions,
+	}
+	switch {
+	case operation.Capability == fleetproviders.CapabilityReconcileConfiguration && operation.InputSchema == fleetproviders.InputSchemaV1:
+		task.Input = &fleetagentv1.TypedTask_ReconcileConfiguration{ReconcileConfiguration: &fleetagentv1.ReconcileConfigurationInput{DocumentJson: operation.TypedInput, DesiredDigest: operation.DesiredDigest, ExpectedGeneration: operation.ExpectedGeneration}}
+	case operation.Capability == fleetfunctions.CapabilityDeploy && operation.InputSchema == fleetfunctions.InputSchemaV1:
+		task.Input = &fleetagentv1.TypedTask_DeployFunction{DeployFunction: &fleetagentv1.DeployFunctionInput{DeploymentJson: operation.TypedInput}}
+	default:
+		return nil, errors.New("Fleet operation has no executable provider contract")
+	}
+	return task, nil
 }
 
 func peerCertificate(ctx context.Context) (*x509.Certificate, error) {

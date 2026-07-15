@@ -17,6 +17,9 @@ vi.hoisted(() => {
   process.env.NEXT_PUBLIC_IS_PLATFORM = 'true'
 })
 vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({ guardProjectRoute: vi.fn() }))
+vi.mock('@/lib/constants/deployment-profile', () => ({
+  STUDIO_DEPLOYMENT_PROFILE: 'embedded',
+}))
 
 const { getFunctions, getFunctionBySlug, getFileEntriesBySlug } = vi.hoisted(() => ({
   getFunctions: vi.fn(),

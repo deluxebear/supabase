@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 import { Check, Copy } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { useMemo, useState, type MouseEvent } from 'react'
-import { cn, copyToClipboard, TableCell, TableRow } from 'ui'
+import { Badge, cn, copyToClipboard, TableCell, TableRow } from 'ui'
 import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 
@@ -15,15 +15,64 @@ import {
   useEdgeFunctionsQuery,
   type EdgeFunctionsResponse,
 } from '@/data/edge-functions/edge-functions-query'
+import type { FleetFunctionDeployment } from '@/data/edge-functions/fleet-function-deployments-query'
 import { normalizeFunctionIds } from '@/data/edge-functions/keys'
 import { t as $t } from '@/lib/i18n'
 import { createNavigationHandler } from '@/lib/navigation'
 
 interface EdgeFunctionsListItemProps {
   function: EdgeFunctionsResponse
+  deployment?: FleetFunctionDeployment
 }
 
-export const EdgeFunctionsListItem = ({ function: item }: EdgeFunctionsListItemProps) => {
+function functionDeploymentStateLabel(state: FleetFunctionDeployment['state']) {
+  switch (state) {
+    case 'queued':
+      return $t('Queued')
+    case 'activating':
+      return $t('Activating')
+    case 'probing':
+      return $t('Probing')
+    case 'active':
+      return $t('Active')
+    case 'rolled-back':
+      return $t('Rolled back')
+    case 'failed':
+      return $t('Failed')
+    case 'manual-intervention':
+      return $t('Manual intervention')
+    case 'deleted':
+      return $t('Deleted')
+  }
+}
+
+function functionDeploymentRemediation(remediation: string) {
+  switch (remediation) {
+    case 'Inspect the immutable artifact and Edge Runtime logs, then deploy a corrected revision.':
+      return $t(
+        'Inspect the immutable artifact and Edge Runtime logs, then deploy a corrected revision.'
+      )
+    case 'Restore the function current pointer to the previous immutable revision and verify Edge Runtime before releasing the operation.':
+      return $t(
+        'Restore the function current pointer to the previous immutable revision and verify Edge Runtime before releasing the operation.'
+      )
+    case 'Inspect the immutable artifact and Edge Runtime workload events, then deploy a corrected revision.':
+      return $t(
+        'Inspect the immutable artifact and Edge Runtime workload events, then deploy a corrected revision.'
+      )
+    case 'Restore the prior artifact pointer and Kubernetes rollout revision, then verify the Edge Runtime workload manually.':
+      return $t(
+        'Restore the prior artifact pointer and Kubernetes rollout revision, then verify the Edge Runtime workload manually.'
+      )
+    default:
+      return remediation
+  }
+}
+
+export const EdgeFunctionsListItem = ({
+  function: item,
+  deployment,
+}: EdgeFunctionsListItemProps) => {
   const router = useRouter()
   const { ref } = useParams()
   const [isCopied, setIsCopied] = useState(false)
@@ -164,7 +213,30 @@ export const EdgeFunctionsListItem = ({ function: item }: EdgeFunctionsListItemP
         </>
       )}
       <TableCell className="hidden 2xl:table-cell">
-        <p className="text-foreground-light">{item.version}</p>
+        {deployment === undefined ? (
+          <p className="text-foreground-light">{item.version}</p>
+        ) : (
+          <div className="flex flex-col items-start gap-1">
+            <Badge
+              variant={
+                deployment.state === 'active'
+                  ? 'success'
+                  : deployment.state === 'manual-intervention' || deployment.state === 'failed'
+                    ? 'destructive'
+                    : deployment.state === 'rolled-back'
+                      ? 'warning'
+                      : 'default'
+              }
+            >
+              {functionDeploymentStateLabel(deployment.state)}
+            </Badge>
+            {deployment.remediation && (
+              <p className="max-w-64 text-xs text-foreground-light">
+                {functionDeploymentRemediation(deployment.remediation)}
+              </p>
+            )}
+          </div>
+        )}
         <button tabIndex={-1} className="sr-only">
           {$t('Go to function details')}
         </button>

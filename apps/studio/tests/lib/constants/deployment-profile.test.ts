@@ -77,11 +77,11 @@ describe('getStudioCapabilities', () => {
     expect(getStudioCapabilities('cli')).toEqual(getStudioCapabilities('embedded'))
   })
 
-  it('does not infer unimplemented Fleet runtime capabilities from platform mode', () => {
+  it('exposes only implemented Fleet runtime capabilities', () => {
     expect(getStudioCapabilities('fleet')).toMatchObject({
       multiProject: true,
       platformIdentity: true,
-      remoteFunctionsDeployment: false,
+      remoteFunctionsDeployment: true,
       runtimeConfiguration: false,
       lifecycleManagement: false,
       backupManagement: false,
