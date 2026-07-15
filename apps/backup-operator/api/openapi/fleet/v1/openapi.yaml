@@ -11,28 +11,28 @@ paths:
     get:
       operationId: fleetHealth
       responses:
-        "200":
+        '200':
           description: Process is alive
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/Health"}
+              schema: { $ref: '#/components/schemas/Health' }
   /readyz:
     security: []
     get:
       operationId: fleetReady
       responses:
-        "200":
+        '200':
           description: Fleet store schema is ready
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/Health"}
-        "503": {$ref: "#/components/responses/Error"}
+              schema: { $ref: '#/components/schemas/Health' }
+        '503': { $ref: '#/components/responses/Error' }
   /platform/fleet/v1/projects/{projectRef}/capabilities:
     get:
       operationId: listFleetCapabilities
-      parameters: [{$ref: "#/components/parameters/ProjectRef"}]
+      parameters: [{ $ref: '#/components/parameters/ProjectRef' }]
       responses:
-        "200":
+        '200':
           description: Project-authorized Fleet Control provider capabilities
           content:
             application/json:
@@ -42,150 +42,554 @@ paths:
                 properties:
                   capabilities:
                     type: array
-                    items: {$ref: "#/components/schemas/Capability"}
-        "403": {$ref: "#/components/responses/Error"}
+                    items: { $ref: '#/components/schemas/Capability' }
+        '403': { $ref: '#/components/responses/Error' }
   /platform/fleet/v1/projects/{projectRef}/operations:
     post:
       operationId: createFleetOperation
       parameters:
-        - {$ref: "#/components/parameters/ProjectRef"}
-        - {$ref: "#/components/parameters/IdempotencyKey"}
+        - { $ref: '#/components/parameters/ProjectRef' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
       requestBody:
         required: true
         content:
           application/json:
-            schema: {$ref: "#/components/schemas/CreateOperation"}
+            schema: { $ref: '#/components/schemas/CreateOperation' }
       responses:
-        "201":
+        '201':
           description: Durable Fleet operation accepted
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/Operation"}
-        "200":
+              schema: { $ref: '#/components/schemas/Operation' }
+        '200':
           description: Existing idempotent Fleet operation
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/Operation"}
-        "400": {$ref: "#/components/responses/Error"}
-        "403": {$ref: "#/components/responses/Error"}
-        "409": {$ref: "#/components/responses/Error"}
+              schema: { $ref: '#/components/schemas/Operation' }
+        '400': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
   /platform/fleet/v1/projects/{projectRef}/operations/{operationId}:
     get:
       operationId: getFleetOperation
       parameters:
-        - {$ref: "#/components/parameters/ProjectRef"}
-        - {$ref: "#/components/parameters/OperationId"}
+        - { $ref: '#/components/parameters/ProjectRef' }
+        - { $ref: '#/components/parameters/OperationId' }
       responses:
-        "200":
+        '200':
           description: Project-scoped durable operation
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/Operation"}
-        "404": {$ref: "#/components/responses/Error"}
+              schema: { $ref: '#/components/schemas/Operation' }
+        '404': { $ref: '#/components/responses/Error' }
   /platform/fleet/v1/projects/{projectRef}/operations/{operationId}/events:
     get:
       operationId: replayFleetOperationEvents
       parameters:
-        - {$ref: "#/components/parameters/ProjectRef"}
-        - {$ref: "#/components/parameters/OperationId"}
-        - {name: cursor, in: query, schema: {type: integer, format: int64, minimum: 0}}
-        - {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 1000, default: 100}}
+        - { $ref: '#/components/parameters/ProjectRef' }
+        - { $ref: '#/components/parameters/OperationId' }
+        - { name: cursor, in: query, schema: { type: integer, format: int64, minimum: 0 } }
+        - {
+            name: limit,
+            in: query,
+            schema: { type: integer, minimum: 1, maximum: 1000, default: 100 },
+          }
       responses:
-        "200":
+        '200':
           description: Bounded resumable event page
           content:
             text/event-stream:
-              schema: {type: string}
-        "404": {$ref: "#/components/responses/Error"}
+              schema: { type: string }
+        '404': { $ref: '#/components/responses/Error' }
+  /platform/fleet/v1/projects/{projectRef}/management-bindings/{bindingId}/enrollment-tokens:
+    post:
+      operationId: createAgentEnrollmentToken
+      parameters:
+        - { $ref: '#/components/parameters/ProjectRef' }
+        - { $ref: '#/components/parameters/BindingId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateEnrollmentToken' }
+      responses:
+        '201':
+          description: Single-use enrollment token; plaintext is returned only once
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EnrollmentToken' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /platform/fleet/v1/projects/{projectRef}/management-bindings/{bindingId}:
+    get:
+      operationId: getManagementBinding
+      parameters:
+        - { $ref: '#/components/parameters/ProjectRef' }
+        - { $ref: '#/components/parameters/BindingId' }
+      responses:
+        '200':
+          description: Non-secret Agent and capability projection for one project binding
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ManagementBindingStatus' }
+        '404': { $ref: '#/components/responses/Error' }
+  /platform/fleet/v1/projects/{projectRef}/management-bindings/{bindingId}/revoke:
+    post:
+      operationId: revokeManagementBinding
+      parameters:
+        - { $ref: '#/components/parameters/ProjectRef' }
+        - { $ref: '#/components/parameters/BindingId' }
+      responses:
+        '200':
+          description: Binding, certificates, and outstanding enrollment tokens are centrally revoked
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [bindingId, state]
+                properties:
+                  bindingId: { type: string }
+                  state: { type: string, const: revoked }
+        '404': { $ref: '#/components/responses/Error' }
+  /platform/fleet/v1/projects/{projectRef}/management-bindings/{bindingId}/agents/{agentId}/revoke:
+    post:
+      operationId: revokeAgent
+      parameters:
+        - { $ref: '#/components/parameters/ProjectRef' }
+        - { $ref: '#/components/parameters/BindingId' }
+        - { $ref: '#/components/parameters/AgentId' }
+      responses:
+        '200':
+          description: Agent certificates and outstanding enrollment tokens are centrally revoked
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [agentId, state]
+                properties:
+                  agentId: { type: string }
+                  state: { type: string, const: revoked }
+        '404': { $ref: '#/components/responses/Error' }
+  /platform/fleet/v1/enrollments:
+    security: []
+    post:
+      operationId: enrollAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EnrollAgent' }
+      responses:
+        '201':
+          description: Short-lived client certificate issued from a validated CSR
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IssuedAgentCertificate' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /platform/fleet/v1/agents/{agentId}/certificate-requests:
+    security:
+      - agentMutualTLS: []
+    post:
+      operationId: rotateAgentCertificate
+      parameters: [{ $ref: '#/components/parameters/AgentId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [csrPem]
+              properties:
+                csrPem: { type: string, minLength: 1, maxLength: 32768 }
+      responses:
+        '201':
+          description: New certificate revision with a bounded old-certificate overlap window
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IssuedAgentCertificate' }
+        '401': { $ref: '#/components/responses/Error' }
+  /platform/fleet/v1/agents/{agentId}/heartbeat:
+    security:
+      - agentMutualTLS: []
+    post:
+      operationId: recordAgentHeartbeat
+      parameters: [{ $ref: '#/components/parameters/AgentId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AgentHeartbeat' }
+      responses:
+        '200':
+          description: Versioned Agent and per-domain capability observation persisted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ManagementBindingStatus' }
+        '401': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
 components:
   securitySchemes:
     serviceAssertion:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    agentMutualTLS:
+      type: mutualTLS
   parameters:
-    ProjectRef: {name: projectRef, in: path, required: true, schema: {type: string, minLength: 1, maxLength: 128}}
-    OperationId: {name: operationId, in: path, required: true, schema: {type: string, minLength: 1, maxLength: 128}}
-    IdempotencyKey: {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 1, maxLength: 255}}
+    ProjectRef:
+      {
+        name: projectRef,
+        in: path,
+        required: true,
+        schema: { type: string, minLength: 1, maxLength: 128 },
+      }
+    OperationId:
+      {
+        name: operationId,
+        in: path,
+        required: true,
+        schema: { type: string, minLength: 1, maxLength: 128 },
+      }
+    IdempotencyKey:
+      {
+        name: Idempotency-Key,
+        in: header,
+        required: true,
+        schema: { type: string, minLength: 1, maxLength: 255 },
+      }
+    BindingId:
+      {
+        name: bindingId,
+        in: path,
+        required: true,
+        schema: { type: string, minLength: 1, maxLength: 128 },
+      }
+    AgentId:
+      {
+        name: agentId,
+        in: path,
+        required: true,
+        schema: { type: string, minLength: 1, maxLength: 128 },
+      }
   responses:
     Error:
       description: Stable Fleet error
       content:
         application/json:
-          schema: {$ref: "#/components/schemas/Error"}
+          schema: { $ref: '#/components/schemas/Error' }
   schemas:
     Health:
       type: object
       required: [status, service, apiVersion, schemaVersion]
       properties:
-        status: {type: string, enum: [ok]}
-        service: {type: string, const: fleet-control}
-        apiVersion: {type: string, const: v1}
-        schemaVersion: {type: integer, minimum: 1}
+        status: { type: string, enum: [ok] }
+        service: { type: string, const: fleet-control }
+        apiVersion: { type: string, const: v1 }
+        schemaVersion: { type: integer, minimum: 1 }
     Blocker:
       type: object
       required: [code, message]
       properties:
-        code: {type: string}
-        message: {type: string}
-        remediation: {type: string}
+        code: { type: string }
+        message: { type: string }
+        remediation: { type: string }
     Capability:
       type: object
       required: [name, state, mode, source, contractVersion, blockers]
       properties:
-        name: {type: string}
-        state: {type: string, enum: [available, unavailable, unauthorized, stale, unsupported]}
-        mode: {type: string, enum: [operator, agent, kubernetes-job, unsupported]}
-        source: {type: string, const: fleet-control}
-        contractVersion: {type: string}
+        name: { type: string }
+        state: { type: string, enum: [available, unavailable, unauthorized, stale, unsupported] }
+        mode: { type: string, enum: [operator, agent, kubernetes-job, unsupported] }
+        source: { type: string, const: fleet-control }
+        contractVersion: { type: string }
         blockers:
           type: array
-          items: {$ref: "#/components/schemas/Blocker"}
+          items: { $ref: '#/components/schemas/Blocker' }
+    CapabilityObservation:
+      type: object
+      additionalProperties: false
+      required: [domain, name, contractVersion, inputSchema, evidenceSchema]
+      properties:
+        domain: { type: string, pattern: '^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$' }
+        name: { type: string, pattern: '^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$' }
+        contractVersion: { type: string, minLength: 1, maxLength: 32 }
+        inputSchema: { type: string, pattern: '^supabase\\.' }
+        evidenceSchema: { type: string, pattern: '^supabase\\.' }
+        observedAt: { type: string, format: date-time }
+    CreateEnrollmentToken:
+      type: object
+      additionalProperties: false
+      required:
+        [organizationId, targetId, executionTarget, deploymentKind, allowedCapabilityPrefixes]
+      properties:
+        organizationId: { type: string, minLength: 1, maxLength: 128 }
+        targetId: { type: string, minLength: 1, maxLength: 128 }
+        executionTarget: { type: string, minLength: 1, maxLength: 255 }
+        deploymentKind: { type: string, enum: [compose, kubernetes, systemd, bare-metal] }
+        allowedCapabilityPrefixes:
+          type: array
+          minItems: 1
+          maxItems: 32
+          uniqueItems: true
+          items: { type: string, pattern: '^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*\\.$' }
+    EnrollmentToken:
+      type: object
+      required: [id, bindingId, token, expiresAt]
+      properties:
+        id: { type: string }
+        bindingId: { type: string }
+        token: { type: string, writeOnly: true }
+        expiresAt: { type: string, format: date-time }
+    EnrollAgent:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          token,
+          organizationId,
+          projectRef,
+          targetId,
+          bindingId,
+          executionTarget,
+          deploymentKind,
+          agentId,
+          csrPem,
+          protocolMajor,
+          protocolMinor,
+          build,
+          observedIdentity,
+          capabilities,
+        ]
+      properties:
+        token: { type: string, writeOnly: true, minLength: 32, maxLength: 256 }
+        organizationId: { type: string, minLength: 1, maxLength: 128 }
+        projectRef: { type: string, minLength: 1, maxLength: 128 }
+        targetId: { type: string, minLength: 1, maxLength: 128 }
+        bindingId: { type: string, minLength: 1, maxLength: 128 }
+        executionTarget: { type: string, minLength: 1, maxLength: 255 }
+        deploymentKind: { type: string, enum: [compose, kubernetes, systemd, bare-metal] }
+        agentId: { type: string, minLength: 1, maxLength: 128 }
+        csrPem: { type: string, minLength: 1, maxLength: 32768 }
+        protocolMajor: { type: integer, minimum: 1 }
+        protocolMinor: { type: integer, minimum: 0 }
+        build: { type: string, minLength: 1, maxLength: 128 }
+        observedIdentity: { type: object }
+        capabilities:
+          type: array
+          minItems: 1
+          maxItems: 256
+          items: { $ref: '#/components/schemas/CapabilityObservation' }
+    Agent:
+      type: object
+      required:
+        [
+          id,
+          bindingId,
+          state,
+          protocolMajor,
+          protocolMinor,
+          build,
+          activeCertificateRevision,
+          certificateExpiresAt,
+          lastSeenAt,
+          capabilities,
+        ]
+      properties:
+        id: { type: string }
+        bindingId: { type: string }
+        state: { type: string, enum: [online, offline, revoked, replaced, incompatible] }
+        protocolMajor: { type: integer }
+        protocolMinor: { type: integer }
+        build: { type: string }
+        activeCertificateRevision: { type: integer, minimum: 1 }
+        certificateExpiresAt: { type: string, format: date-time }
+        lastSeenAt: { type: string, format: date-time }
+        capabilities:
+          type: array
+          items: { $ref: '#/components/schemas/CapabilityObservation' }
+    ManagementBinding:
+      type: object
+      required:
+        [
+          bindingId,
+          organizationId,
+          projectRef,
+          targetId,
+          executionTarget,
+          deploymentKind,
+          allowedCapabilityPrefixes,
+          state,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        bindingId: { type: string }
+        organizationId: { type: string }
+        projectRef: { type: string }
+        targetId: { type: string }
+        executionTarget: { type: string }
+        deploymentKind: { type: string, enum: [compose, kubernetes, systemd, bare-metal] }
+        allowedCapabilityPrefixes:
+          type: array
+          items: { type: string }
+        state: { type: string, enum: [pending, enrolling, active, revoked, incompatible] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    ProjectedCapability:
+      allOf:
+        - { $ref: '#/components/schemas/CapabilityObservation' }
+        - type: object
+          required: [state, mode, source, blockers]
+          properties:
+            state:
+              { type: string, enum: [available, unavailable, unauthorized, stale, unsupported] }
+            mode: { type: string, enum: [operator, agent, kubernetes-job, unsupported] }
+            source: { type: string, const: agent }
+            blockers:
+              type: array
+              items: { $ref: '#/components/schemas/Blocker' }
+    ManagementBindingStatus:
+      type: object
+      required: [binding, agent, capabilities]
+      properties:
+        binding: { $ref: '#/components/schemas/ManagementBinding' }
+        agent:
+          allOf:
+            - { $ref: '#/components/schemas/Agent' }
+          nullable: true
+        capabilities:
+          type: array
+          items: { $ref: '#/components/schemas/ProjectedCapability' }
+    IssuedAgentCertificate:
+      type: object
+      required: [agent, certificatePem, caCertificatePem, certificateExpiresAt]
+      properties:
+        agent: { $ref: '#/components/schemas/Agent' }
+        certificatePem: { type: string }
+        caCertificatePem: { type: string }
+        certificateExpiresAt: { type: string, format: date-time }
+        certificateSerial: { type: string }
+        overlapUntil: { type: string, format: date-time }
+    AgentHeartbeat:
+      type: object
+      additionalProperties: false
+      required: [protocolMajor, protocolMinor, build, capabilities]
+      properties:
+        protocolMajor: { type: integer, minimum: 1 }
+        protocolMinor: { type: integer, minimum: 0 }
+        build: { type: string, minLength: 1, maxLength: 128 }
+        capabilities:
+          type: array
+          minItems: 1
+          maxItems: 256
+          items: { $ref: '#/components/schemas/CapabilityObservation' }
     CreateOperation:
       type: object
-      required: [operationId, targetId, bindingId, domain, capability, protocolMajor, protocolMinor, expectedGeneration, desiredRevision, desiredDigest, snapshotCanonical, inputSchema, preconditions, typedInput]
+      required:
+        [
+          operationId,
+          targetId,
+          bindingId,
+          domain,
+          capability,
+          protocolMajor,
+          protocolMinor,
+          expectedGeneration,
+          desiredRevision,
+          desiredDigest,
+          snapshotCanonical,
+          inputSchema,
+          preconditions,
+          typedInput,
+        ]
       additionalProperties: false
       properties:
-        operationId: {type: string, minLength: 1, maxLength: 128}
-        targetId: {type: string, minLength: 1, maxLength: 128}
-        bindingId: {type: string, minLength: 1, maxLength: 128}
-        domain: {type: string, minLength: 1, maxLength: 64}
-        capability: {type: string, minLength: 1, maxLength: 128}
-        protocolMajor: {type: integer, minimum: 1}
-        protocolMinor: {type: integer, minimum: 0}
-        expectedGeneration: {type: integer, format: int64, minimum: 1}
-        desiredRevision: {type: string, pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'}
-        desiredDigest: {type: string, pattern: '^[0-9a-f]{64}$'}
-        snapshotCanonical: {type: string, description: Canonical immutable JSON used for digest verification and never returned}
-        inputSchema: {type: string, pattern: '^supabase\\.fleet\\.'}
-        preconditions: {type: object}
-        typedInput: {type: object}
+        operationId: { type: string, minLength: 1, maxLength: 128 }
+        targetId: { type: string, minLength: 1, maxLength: 128 }
+        bindingId: { type: string, minLength: 1, maxLength: 128 }
+        domain: { type: string, minLength: 1, maxLength: 64 }
+        capability: { type: string, minLength: 1, maxLength: 128 }
+        protocolMajor: { type: integer, minimum: 1 }
+        protocolMinor: { type: integer, minimum: 0 }
+        expectedGeneration: { type: integer, format: int64, minimum: 1 }
+        desiredRevision:
+          {
+            type: string,
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+          }
+        desiredDigest: { type: string, pattern: '^[0-9a-f]{64}$' }
+        snapshotCanonical:
+          {
+            type: string,
+            description: Canonical immutable JSON used for digest verification and never returned,
+          }
+        inputSchema: { type: string, pattern: '^supabase\\.fleet\\.' }
+        preconditions: { type: object }
+        typedInput: { type: object }
     Operation:
       type: object
-      required: [id, projectRef, targetId, bindingId, domain, capability, state, protocolMajor, protocolMinor, expectedGeneration, desiredRevision, desiredDigest, inputSchema, fencingToken, createdAt, updatedAt]
+      required:
+        [
+          id,
+          projectRef,
+          targetId,
+          bindingId,
+          domain,
+          capability,
+          state,
+          protocolMajor,
+          protocolMinor,
+          expectedGeneration,
+          desiredRevision,
+          desiredDigest,
+          inputSchema,
+          fencingToken,
+          createdAt,
+          updatedAt,
+        ]
       properties:
-        id: {type: string}
-        projectRef: {type: string}
-        targetId: {type: string}
-        bindingId: {type: string}
-        domain: {type: string}
-        capability: {type: string}
-        state: {type: string, enum: [queued, running, verifying, succeeded, failed, orphaned_execution, manual_intervention]}
-        protocolMajor: {type: integer}
-        protocolMinor: {type: integer}
-        expectedGeneration: {type: integer, format: int64}
-        desiredRevision: {type: string, pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'}
-        desiredDigest: {type: string, pattern: '^[0-9a-f]{64}$'}
-        inputSchema: {type: string}
-        fencingToken: {type: integer, format: int64, minimum: 1}
-        createdAt: {type: string, format: date-time}
-        updatedAt: {type: string, format: date-time}
+        id: { type: string }
+        projectRef: { type: string }
+        targetId: { type: string }
+        bindingId: { type: string }
+        domain: { type: string }
+        capability: { type: string }
+        state:
+          {
+            type: string,
+            enum:
+              [
+                queued,
+                running,
+                verifying,
+                succeeded,
+                failed,
+                orphaned_execution,
+                manual_intervention,
+              ],
+          }
+        protocolMajor: { type: integer }
+        protocolMinor: { type: integer }
+        expectedGeneration: { type: integer, format: int64 }
+        desiredRevision:
+          {
+            type: string,
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+          }
+        desiredDigest: { type: string, pattern: '^[0-9a-f]{64}$' }
+        inputSchema: { type: string }
+        fencingToken: { type: integer, format: int64, minimum: 1 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
     Error:
       type: object
       required: [code, message, requestId, retryable, details]
       properties:
-        code: {type: string}
-        message: {type: string}
-        requestId: {type: string}
-        retryable: {type: boolean}
-        details: {type: object}
+        code: { type: string }
+        message: { type: string }
+        requestId: { type: string }
+        retryable: { type: boolean }
+        details: { type: object }

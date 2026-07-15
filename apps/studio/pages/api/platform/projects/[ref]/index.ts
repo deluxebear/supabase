@@ -15,6 +15,10 @@ import {
   StackAlreadyAttached,
 } from '@/lib/api/self-platform/attachment'
 import { clearHealthCache } from '@/lib/api/self-platform/health'
+import {
+  getProjectManagementBinding,
+  revokeProjectManagementBinding,
+} from '@/lib/api/self-platform/management-trust'
 import type { PlatformProjectRow } from '@/lib/api/self-platform/projects'
 import {
   listSharedDbChildRefs,
@@ -110,12 +114,17 @@ async function handleDelete(req: NextApiRequest, res: NextApiResponse, claims?: 
   }
   try {
     await requireProjectCapability(ref, 'project.detach')
+    const actor = claims?.sub ?? 'unknown'
+    const correlationId =
+      (typeof req.headers['x-correlation-id'] === 'string' && req.headers['x-correlation-id']) ||
+      randomUUID()
+    if (await getProjectManagementBinding(ref)) {
+      await revokeProjectManagementBinding({ projectRef: ref, actor, correlationId })
+    }
     const detached = await detachProject({
       projectRef: ref,
-      actor: claims?.sub ?? 'unknown',
-      correlationId:
-        (typeof req.headers['x-correlation-id'] === 'string' && req.headers['x-correlation-id']) ||
-        randomUUID(),
+      actor,
+      correlationId,
     })
     clearHealthCache(ref)
     return res.status(200).json({ ref, ...detached })

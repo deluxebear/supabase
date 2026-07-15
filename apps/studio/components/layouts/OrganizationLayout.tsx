@@ -23,7 +23,15 @@ interface OrganizationLayoutProps {
 }
 
 // [Joshen] Just for page title generation for org settings pages
-const settingsPages = ['general', 'security', 'sso', 'apps', 'audit', 'documents']
+const settingsPages = [
+  'general',
+  'security',
+  'sso',
+  'apps',
+  'audit',
+  'documents',
+  'management-targets',
+]
 
 type MarketplaceBannerRedirectSource = 'vercel' | 'aws'
 

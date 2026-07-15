@@ -271,9 +271,11 @@ import { Route as ApiV1ProjectsRefFunctionsIndexRouteImport } from './routes/api
 import { Route as ApiPlatformStorageRefVectorBucketsIndexRouteImport } from './routes/api/platform/storage/$ref/vector-buckets/index'
 import { Route as ApiPlatformStorageRefBucketsIndexRouteImport } from './routes/api/platform/storage/$ref/buckets/index'
 import { Route as ApiPlatformPropsProjectRefIndexRouteImport } from './routes/api/platform/props/project/$ref/index'
+import { Route as ApiPlatformProjectsRefManagementBindingIndexRouteImport } from './routes/api/platform/projects/$ref/management-binding/index'
 import { Route as ApiPlatformProjectsRefContentIndexRouteImport } from './routes/api/platform/projects/$ref/content/index'
 import { Route as ApiPlatformProjectsRefConfigIndexRouteImport } from './routes/api/platform/projects/$ref/config/index'
 import { Route as ApiPlatformPgMetaRefQueryIndexRouteImport } from './routes/api/platform/pg-meta/$ref/query/index'
+import { Route as ApiPlatformOrganizationsSlugManagementTargetsIndexRouteImport } from './routes/api/platform/organizations/$slug/management-targets/index'
 import { Route as ApiPlatformAuthRefUsersIndexRouteImport } from './routes/api/platform/auth/$ref/users/index'
 import { Route as ProjectRefStorageVectorsBucketsBucketIdRouteImport } from './routes/project/$ref/storage/vectors/buckets/$bucketId'
 import { Route as ProjectRefStorageFilesBucketsBucketIdRouteImport } from './routes/project/$ref/storage/files/buckets/$bucketId'
@@ -283,6 +285,8 @@ import { Route as ApiV1ProjectsRefTypesTypescriptRouteImport } from './routes/ap
 import { Route as ApiV1ProjectsRefDatabaseMigrationsRouteImport } from './routes/api/v1/projects/$ref/database/migrations'
 import { Route as ApiV1ProjectsRefApiKeysIdRouteImport } from './routes/api/v1/projects/$ref/api-keys/$id'
 import { Route as ApiPlatformPropsProjectRefApiRouteImport } from './routes/api/platform/props/project/$ref/api'
+import { Route as ApiPlatformProjectsRefManagementBindingSyncRouteImport } from './routes/api/platform/projects/$ref/management-binding/sync'
+import { Route as ApiPlatformProjectsRefManagementBindingEnrollmentTokenRouteImport } from './routes/api/platform/projects/$ref/management-binding/enrollment-token'
 import { Route as ApiPlatformProjectsRefContentCountRouteImport } from './routes/api/platform/projects/$ref/content/count'
 import { Route as ApiPlatformProjectsRefConfigPostgrestRouteImport } from './routes/api/platform/projects/$ref/config/postgrest'
 import { Route as ApiPlatformProjectsRefBillingAddonsRouteImport } from './routes/api/platform/projects/$ref/billing/addons'
@@ -290,6 +294,7 @@ import { Route as ApiPlatformProjectsRefApiRestRouteImport } from './routes/api/
 import { Route as ApiPlatformProjectsRefApiGraphqlRouteImport } from './routes/api/platform/projects/$ref/api/graphql'
 import { Route as ApiPlatformProjectsRefApiKeysTemporaryRouteImport } from './routes/api/platform/projects/$ref/api-keys/temporary'
 import { Route as ApiPlatformProjectsRefAnalyticsLogDrainsRouteImport } from './routes/api/platform/projects/$ref/analytics/log-drains'
+import { Route as ApiPlatformOrganizationsSlugManagementTargetsTargetIdRouteImport } from './routes/api/platform/organizations/$slug/management-targets/$targetId'
 import { Route as ApiPlatformOrganizationsSlugBillingSubscriptionRouteImport } from './routes/api/platform/organizations/$slug/billing/subscription'
 import { Route as ApiPlatformDatabaseRefBackupOperatorStatusRouteImport } from './routes/api/platform/database/$ref/backup-operator/status'
 import { Route as ProjectRefIntegrationsIdPageIdChildIdIndexRouteImport } from './routes/project/$ref/integrations/$id/$pageId/$childId/index'
@@ -1765,6 +1770,12 @@ const ApiPlatformPropsProjectRefIndexRoute =
     path: '/api/platform/props/project/$ref/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPlatformProjectsRefManagementBindingIndexRoute =
+  ApiPlatformProjectsRefManagementBindingIndexRouteImport.update({
+    id: '/api/platform/projects/$ref/management-binding/',
+    path: '/api/platform/projects/$ref/management-binding/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPlatformProjectsRefContentIndexRoute =
   ApiPlatformProjectsRefContentIndexRouteImport.update({
     id: '/api/platform/projects/$ref/content/',
@@ -1781,6 +1792,12 @@ const ApiPlatformPgMetaRefQueryIndexRoute =
   ApiPlatformPgMetaRefQueryIndexRouteImport.update({
     id: '/api/platform/pg-meta/$ref/query/',
     path: '/api/platform/pg-meta/$ref/query/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPlatformOrganizationsSlugManagementTargetsIndexRoute =
+  ApiPlatformOrganizationsSlugManagementTargetsIndexRouteImport.update({
+    id: '/api/platform/organizations/$slug/management-targets/',
+    path: '/api/platform/organizations/$slug/management-targets/',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPlatformAuthRefUsersIndexRoute =
@@ -1837,6 +1854,18 @@ const ApiPlatformPropsProjectRefApiRoute =
     path: '/api/platform/props/project/$ref/api',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPlatformProjectsRefManagementBindingSyncRoute =
+  ApiPlatformProjectsRefManagementBindingSyncRouteImport.update({
+    id: '/api/platform/projects/$ref/management-binding/sync',
+    path: '/api/platform/projects/$ref/management-binding/sync',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute =
+  ApiPlatformProjectsRefManagementBindingEnrollmentTokenRouteImport.update({
+    id: '/api/platform/projects/$ref/management-binding/enrollment-token',
+    path: '/api/platform/projects/$ref/management-binding/enrollment-token',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPlatformProjectsRefContentCountRoute =
   ApiPlatformProjectsRefContentCountRouteImport.update({
     id: '/api/platform/projects/$ref/content/count',
@@ -1877,6 +1906,12 @@ const ApiPlatformProjectsRefAnalyticsLogDrainsRoute =
   ApiPlatformProjectsRefAnalyticsLogDrainsRouteImport.update({
     id: '/api/platform/projects/$ref/analytics/log-drains',
     path: '/api/platform/projects/$ref/analytics/log-drains',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPlatformOrganizationsSlugManagementTargetsTargetIdRoute =
+  ApiPlatformOrganizationsSlugManagementTargetsTargetIdRouteImport.update({
+    id: '/api/platform/organizations/$slug/management-targets/$targetId',
+    path: '/api/platform/organizations/$slug/management-targets/$targetId',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPlatformOrganizationsSlugBillingSubscriptionRoute =
@@ -2300,6 +2335,7 @@ export interface FileRoutesByFullPath {
   '/project/$ref/storage/vectors/': typeof ProjectRefStorageVectorsIndexRoute
   '/api/platform/database/$ref/backup-operator/status': typeof ApiPlatformDatabaseRefBackupOperatorStatusRoute
   '/api/platform/organizations/$slug/billing/subscription': typeof ApiPlatformOrganizationsSlugBillingSubscriptionRoute
+  '/api/platform/organizations/$slug/management-targets/$targetId': typeof ApiPlatformOrganizationsSlugManagementTargetsTargetIdRoute
   '/api/platform/projects/$ref/analytics/log-drains': typeof ApiPlatformProjectsRefAnalyticsLogDrainsRouteWithChildren
   '/api/platform/projects/$ref/api-keys/temporary': typeof ApiPlatformProjectsRefApiKeysTemporaryRoute
   '/api/platform/projects/$ref/api/graphql': typeof ApiPlatformProjectsRefApiGraphqlRoute
@@ -2307,6 +2343,8 @@ export interface FileRoutesByFullPath {
   '/api/platform/projects/$ref/billing/addons': typeof ApiPlatformProjectsRefBillingAddonsRoute
   '/api/platform/projects/$ref/config/postgrest': typeof ApiPlatformProjectsRefConfigPostgrestRoute
   '/api/platform/projects/$ref/content/count': typeof ApiPlatformProjectsRefContentCountRoute
+  '/api/platform/projects/$ref/management-binding/enrollment-token': typeof ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute
+  '/api/platform/projects/$ref/management-binding/sync': typeof ApiPlatformProjectsRefManagementBindingSyncRoute
   '/api/platform/props/project/$ref/api': typeof ApiPlatformPropsProjectRefApiRoute
   '/api/v1/projects/$ref/api-keys/$id': typeof ApiV1ProjectsRefApiKeysIdRoute
   '/api/v1/projects/$ref/database/migrations': typeof ApiV1ProjectsRefDatabaseMigrationsRoute
@@ -2316,9 +2354,11 @@ export interface FileRoutesByFullPath {
   '/project/$ref/storage/files/buckets/$bucketId': typeof ProjectRefStorageFilesBucketsBucketIdRoute
   '/project/$ref/storage/vectors/buckets/$bucketId': typeof ProjectRefStorageVectorsBucketsBucketIdRoute
   '/api/platform/auth/$ref/users/': typeof ApiPlatformAuthRefUsersIndexRoute
+  '/api/platform/organizations/$slug/management-targets/': typeof ApiPlatformOrganizationsSlugManagementTargetsIndexRoute
   '/api/platform/pg-meta/$ref/query/': typeof ApiPlatformPgMetaRefQueryIndexRoute
   '/api/platform/projects/$ref/config/': typeof ApiPlatformProjectsRefConfigIndexRoute
   '/api/platform/projects/$ref/content/': typeof ApiPlatformProjectsRefContentIndexRoute
+  '/api/platform/projects/$ref/management-binding/': typeof ApiPlatformProjectsRefManagementBindingIndexRoute
   '/api/platform/props/project/$ref/': typeof ApiPlatformPropsProjectRefIndexRoute
   '/api/platform/storage/$ref/buckets/': typeof ApiPlatformStorageRefBucketsIndexRoute
   '/api/platform/storage/$ref/vector-buckets/': typeof ApiPlatformStorageRefVectorBucketsIndexRoute
@@ -2596,6 +2636,7 @@ export interface FileRoutesByTo {
   '/project/$ref/storage/vectors': typeof ProjectRefStorageVectorsIndexRoute
   '/api/platform/database/$ref/backup-operator/status': typeof ApiPlatformDatabaseRefBackupOperatorStatusRoute
   '/api/platform/organizations/$slug/billing/subscription': typeof ApiPlatformOrganizationsSlugBillingSubscriptionRoute
+  '/api/platform/organizations/$slug/management-targets/$targetId': typeof ApiPlatformOrganizationsSlugManagementTargetsTargetIdRoute
   '/api/platform/projects/$ref/analytics/log-drains': typeof ApiPlatformProjectsRefAnalyticsLogDrainsRouteWithChildren
   '/api/platform/projects/$ref/api-keys/temporary': typeof ApiPlatformProjectsRefApiKeysTemporaryRoute
   '/api/platform/projects/$ref/api/graphql': typeof ApiPlatformProjectsRefApiGraphqlRoute
@@ -2603,6 +2644,8 @@ export interface FileRoutesByTo {
   '/api/platform/projects/$ref/billing/addons': typeof ApiPlatformProjectsRefBillingAddonsRoute
   '/api/platform/projects/$ref/config/postgrest': typeof ApiPlatformProjectsRefConfigPostgrestRoute
   '/api/platform/projects/$ref/content/count': typeof ApiPlatformProjectsRefContentCountRoute
+  '/api/platform/projects/$ref/management-binding/enrollment-token': typeof ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute
+  '/api/platform/projects/$ref/management-binding/sync': typeof ApiPlatformProjectsRefManagementBindingSyncRoute
   '/api/platform/props/project/$ref/api': typeof ApiPlatformPropsProjectRefApiRoute
   '/api/v1/projects/$ref/api-keys/$id': typeof ApiV1ProjectsRefApiKeysIdRoute
   '/api/v1/projects/$ref/database/migrations': typeof ApiV1ProjectsRefDatabaseMigrationsRoute
@@ -2612,9 +2655,11 @@ export interface FileRoutesByTo {
   '/project/$ref/storage/files/buckets/$bucketId': typeof ProjectRefStorageFilesBucketsBucketIdRoute
   '/project/$ref/storage/vectors/buckets/$bucketId': typeof ProjectRefStorageVectorsBucketsBucketIdRoute
   '/api/platform/auth/$ref/users': typeof ApiPlatformAuthRefUsersIndexRoute
+  '/api/platform/organizations/$slug/management-targets': typeof ApiPlatformOrganizationsSlugManagementTargetsIndexRoute
   '/api/platform/pg-meta/$ref/query': typeof ApiPlatformPgMetaRefQueryIndexRoute
   '/api/platform/projects/$ref/config': typeof ApiPlatformProjectsRefConfigIndexRoute
   '/api/platform/projects/$ref/content': typeof ApiPlatformProjectsRefContentIndexRoute
+  '/api/platform/projects/$ref/management-binding': typeof ApiPlatformProjectsRefManagementBindingIndexRoute
   '/api/platform/props/project/$ref': typeof ApiPlatformPropsProjectRefIndexRoute
   '/api/platform/storage/$ref/buckets': typeof ApiPlatformStorageRefBucketsIndexRoute
   '/api/platform/storage/$ref/vector-buckets': typeof ApiPlatformStorageRefVectorBucketsIndexRoute
@@ -2907,6 +2952,7 @@ export interface FileRoutesById {
   '/project/$ref/storage/vectors/': typeof ProjectRefStorageVectorsIndexRoute
   '/api/platform/database/$ref/backup-operator/status': typeof ApiPlatformDatabaseRefBackupOperatorStatusRoute
   '/api/platform/organizations/$slug/billing/subscription': typeof ApiPlatformOrganizationsSlugBillingSubscriptionRoute
+  '/api/platform/organizations/$slug/management-targets/$targetId': typeof ApiPlatformOrganizationsSlugManagementTargetsTargetIdRoute
   '/api/platform/projects/$ref/analytics/log-drains': typeof ApiPlatformProjectsRefAnalyticsLogDrainsRouteWithChildren
   '/api/platform/projects/$ref/api-keys/temporary': typeof ApiPlatformProjectsRefApiKeysTemporaryRoute
   '/api/platform/projects/$ref/api/graphql': typeof ApiPlatformProjectsRefApiGraphqlRoute
@@ -2914,6 +2960,8 @@ export interface FileRoutesById {
   '/api/platform/projects/$ref/billing/addons': typeof ApiPlatformProjectsRefBillingAddonsRoute
   '/api/platform/projects/$ref/config/postgrest': typeof ApiPlatformProjectsRefConfigPostgrestRoute
   '/api/platform/projects/$ref/content/count': typeof ApiPlatformProjectsRefContentCountRoute
+  '/api/platform/projects/$ref/management-binding/enrollment-token': typeof ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute
+  '/api/platform/projects/$ref/management-binding/sync': typeof ApiPlatformProjectsRefManagementBindingSyncRoute
   '/api/platform/props/project/$ref/api': typeof ApiPlatformPropsProjectRefApiRoute
   '/api/v1/projects/$ref/api-keys/$id': typeof ApiV1ProjectsRefApiKeysIdRoute
   '/api/v1/projects/$ref/database/migrations': typeof ApiV1ProjectsRefDatabaseMigrationsRoute
@@ -2923,9 +2971,11 @@ export interface FileRoutesById {
   '/project/$ref/storage/files/buckets/$bucketId': typeof ProjectRefStorageFilesBucketsBucketIdRoute
   '/project/$ref/storage/vectors/buckets/$bucketId': typeof ProjectRefStorageVectorsBucketsBucketIdRoute
   '/api/platform/auth/$ref/users/': typeof ApiPlatformAuthRefUsersIndexRoute
+  '/api/platform/organizations/$slug/management-targets/': typeof ApiPlatformOrganizationsSlugManagementTargetsIndexRoute
   '/api/platform/pg-meta/$ref/query/': typeof ApiPlatformPgMetaRefQueryIndexRoute
   '/api/platform/projects/$ref/config/': typeof ApiPlatformProjectsRefConfigIndexRoute
   '/api/platform/projects/$ref/content/': typeof ApiPlatformProjectsRefContentIndexRoute
+  '/api/platform/projects/$ref/management-binding/': typeof ApiPlatformProjectsRefManagementBindingIndexRoute
   '/api/platform/props/project/$ref/': typeof ApiPlatformPropsProjectRefIndexRoute
   '/api/platform/storage/$ref/buckets/': typeof ApiPlatformStorageRefBucketsIndexRoute
   '/api/platform/storage/$ref/vector-buckets/': typeof ApiPlatformStorageRefVectorBucketsIndexRoute
@@ -3217,6 +3267,7 @@ export interface FileRouteTypes {
     | '/project/$ref/storage/vectors/'
     | '/api/platform/database/$ref/backup-operator/status'
     | '/api/platform/organizations/$slug/billing/subscription'
+    | '/api/platform/organizations/$slug/management-targets/$targetId'
     | '/api/platform/projects/$ref/analytics/log-drains'
     | '/api/platform/projects/$ref/api-keys/temporary'
     | '/api/platform/projects/$ref/api/graphql'
@@ -3224,6 +3275,8 @@ export interface FileRouteTypes {
     | '/api/platform/projects/$ref/billing/addons'
     | '/api/platform/projects/$ref/config/postgrest'
     | '/api/platform/projects/$ref/content/count'
+    | '/api/platform/projects/$ref/management-binding/enrollment-token'
+    | '/api/platform/projects/$ref/management-binding/sync'
     | '/api/platform/props/project/$ref/api'
     | '/api/v1/projects/$ref/api-keys/$id'
     | '/api/v1/projects/$ref/database/migrations'
@@ -3233,9 +3286,11 @@ export interface FileRouteTypes {
     | '/project/$ref/storage/files/buckets/$bucketId'
     | '/project/$ref/storage/vectors/buckets/$bucketId'
     | '/api/platform/auth/$ref/users/'
+    | '/api/platform/organizations/$slug/management-targets/'
     | '/api/platform/pg-meta/$ref/query/'
     | '/api/platform/projects/$ref/config/'
     | '/api/platform/projects/$ref/content/'
+    | '/api/platform/projects/$ref/management-binding/'
     | '/api/platform/props/project/$ref/'
     | '/api/platform/storage/$ref/buckets/'
     | '/api/platform/storage/$ref/vector-buckets/'
@@ -3513,6 +3568,7 @@ export interface FileRouteTypes {
     | '/project/$ref/storage/vectors'
     | '/api/platform/database/$ref/backup-operator/status'
     | '/api/platform/organizations/$slug/billing/subscription'
+    | '/api/platform/organizations/$slug/management-targets/$targetId'
     | '/api/platform/projects/$ref/analytics/log-drains'
     | '/api/platform/projects/$ref/api-keys/temporary'
     | '/api/platform/projects/$ref/api/graphql'
@@ -3520,6 +3576,8 @@ export interface FileRouteTypes {
     | '/api/platform/projects/$ref/billing/addons'
     | '/api/platform/projects/$ref/config/postgrest'
     | '/api/platform/projects/$ref/content/count'
+    | '/api/platform/projects/$ref/management-binding/enrollment-token'
+    | '/api/platform/projects/$ref/management-binding/sync'
     | '/api/platform/props/project/$ref/api'
     | '/api/v1/projects/$ref/api-keys/$id'
     | '/api/v1/projects/$ref/database/migrations'
@@ -3529,9 +3587,11 @@ export interface FileRouteTypes {
     | '/project/$ref/storage/files/buckets/$bucketId'
     | '/project/$ref/storage/vectors/buckets/$bucketId'
     | '/api/platform/auth/$ref/users'
+    | '/api/platform/organizations/$slug/management-targets'
     | '/api/platform/pg-meta/$ref/query'
     | '/api/platform/projects/$ref/config'
     | '/api/platform/projects/$ref/content'
+    | '/api/platform/projects/$ref/management-binding'
     | '/api/platform/props/project/$ref'
     | '/api/platform/storage/$ref/buckets'
     | '/api/platform/storage/$ref/vector-buckets'
@@ -3823,6 +3883,7 @@ export interface FileRouteTypes {
     | '/project/$ref/storage/vectors/'
     | '/api/platform/database/$ref/backup-operator/status'
     | '/api/platform/organizations/$slug/billing/subscription'
+    | '/api/platform/organizations/$slug/management-targets/$targetId'
     | '/api/platform/projects/$ref/analytics/log-drains'
     | '/api/platform/projects/$ref/api-keys/temporary'
     | '/api/platform/projects/$ref/api/graphql'
@@ -3830,6 +3891,8 @@ export interface FileRouteTypes {
     | '/api/platform/projects/$ref/billing/addons'
     | '/api/platform/projects/$ref/config/postgrest'
     | '/api/platform/projects/$ref/content/count'
+    | '/api/platform/projects/$ref/management-binding/enrollment-token'
+    | '/api/platform/projects/$ref/management-binding/sync'
     | '/api/platform/props/project/$ref/api'
     | '/api/v1/projects/$ref/api-keys/$id'
     | '/api/v1/projects/$ref/database/migrations'
@@ -3839,9 +3902,11 @@ export interface FileRouteTypes {
     | '/project/$ref/storage/files/buckets/$bucketId'
     | '/project/$ref/storage/vectors/buckets/$bucketId'
     | '/api/platform/auth/$ref/users/'
+    | '/api/platform/organizations/$slug/management-targets/'
     | '/api/platform/pg-meta/$ref/query/'
     | '/api/platform/projects/$ref/config/'
     | '/api/platform/projects/$ref/content/'
+    | '/api/platform/projects/$ref/management-binding/'
     | '/api/platform/props/project/$ref/'
     | '/api/platform/storage/$ref/buckets/'
     | '/api/platform/storage/$ref/vector-buckets/'
@@ -3955,6 +4020,7 @@ export interface RootRouteChildren {
   ApiPlatformProjectsRefIndexRoute: typeof ApiPlatformProjectsRefIndexRoute
   ApiPlatformDatabaseRefBackupOperatorStatusRoute: typeof ApiPlatformDatabaseRefBackupOperatorStatusRoute
   ApiPlatformOrganizationsSlugBillingSubscriptionRoute: typeof ApiPlatformOrganizationsSlugBillingSubscriptionRoute
+  ApiPlatformOrganizationsSlugManagementTargetsTargetIdRoute: typeof ApiPlatformOrganizationsSlugManagementTargetsTargetIdRoute
   ApiPlatformProjectsRefAnalyticsLogDrainsRoute: typeof ApiPlatformProjectsRefAnalyticsLogDrainsRouteWithChildren
   ApiPlatformProjectsRefApiKeysTemporaryRoute: typeof ApiPlatformProjectsRefApiKeysTemporaryRoute
   ApiPlatformProjectsRefApiGraphqlRoute: typeof ApiPlatformProjectsRefApiGraphqlRoute
@@ -3962,13 +4028,17 @@ export interface RootRouteChildren {
   ApiPlatformProjectsRefBillingAddonsRoute: typeof ApiPlatformProjectsRefBillingAddonsRoute
   ApiPlatformProjectsRefConfigPostgrestRoute: typeof ApiPlatformProjectsRefConfigPostgrestRoute
   ApiPlatformProjectsRefContentCountRoute: typeof ApiPlatformProjectsRefContentCountRoute
+  ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute: typeof ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute
+  ApiPlatformProjectsRefManagementBindingSyncRoute: typeof ApiPlatformProjectsRefManagementBindingSyncRoute
   ApiPlatformPropsProjectRefApiRoute: typeof ApiPlatformPropsProjectRefApiRoute
   ApiV1ProjectsRefDatabaseMigrationsRoute: typeof ApiV1ProjectsRefDatabaseMigrationsRoute
   ApiV1ProjectsRefTypesTypescriptRoute: typeof ApiV1ProjectsRefTypesTypescriptRoute
   ApiPlatformAuthRefUsersIndexRoute: typeof ApiPlatformAuthRefUsersIndexRoute
+  ApiPlatformOrganizationsSlugManagementTargetsIndexRoute: typeof ApiPlatformOrganizationsSlugManagementTargetsIndexRoute
   ApiPlatformPgMetaRefQueryIndexRoute: typeof ApiPlatformPgMetaRefQueryIndexRoute
   ApiPlatformProjectsRefConfigIndexRoute: typeof ApiPlatformProjectsRefConfigIndexRoute
   ApiPlatformProjectsRefContentIndexRoute: typeof ApiPlatformProjectsRefContentIndexRoute
+  ApiPlatformProjectsRefManagementBindingIndexRoute: typeof ApiPlatformProjectsRefManagementBindingIndexRoute
   ApiPlatformPropsProjectRefIndexRoute: typeof ApiPlatformPropsProjectRefIndexRoute
   ApiPlatformStorageRefBucketsIndexRoute: typeof ApiPlatformStorageRefBucketsIndexRoute
   ApiPlatformStorageRefVectorBucketsIndexRoute: typeof ApiPlatformStorageRefVectorBucketsIndexRoute
@@ -5834,6 +5904,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPlatformPropsProjectRefIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/platform/projects/$ref/management-binding/': {
+      id: '/api/platform/projects/$ref/management-binding/'
+      path: '/api/platform/projects/$ref/management-binding'
+      fullPath: '/api/platform/projects/$ref/management-binding/'
+      preLoaderRoute: typeof ApiPlatformProjectsRefManagementBindingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/platform/projects/$ref/content/': {
       id: '/api/platform/projects/$ref/content/'
       path: '/api/platform/projects/$ref/content'
@@ -5853,6 +5930,13 @@ declare module '@tanstack/react-router' {
       path: '/api/platform/pg-meta/$ref/query'
       fullPath: '/api/platform/pg-meta/$ref/query/'
       preLoaderRoute: typeof ApiPlatformPgMetaRefQueryIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/platform/organizations/$slug/management-targets/': {
+      id: '/api/platform/organizations/$slug/management-targets/'
+      path: '/api/platform/organizations/$slug/management-targets'
+      fullPath: '/api/platform/organizations/$slug/management-targets/'
+      preLoaderRoute: typeof ApiPlatformOrganizationsSlugManagementTargetsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/platform/auth/$ref/users/': {
@@ -5918,6 +6002,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPlatformPropsProjectRefApiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/platform/projects/$ref/management-binding/sync': {
+      id: '/api/platform/projects/$ref/management-binding/sync'
+      path: '/api/platform/projects/$ref/management-binding/sync'
+      fullPath: '/api/platform/projects/$ref/management-binding/sync'
+      preLoaderRoute: typeof ApiPlatformProjectsRefManagementBindingSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/platform/projects/$ref/management-binding/enrollment-token': {
+      id: '/api/platform/projects/$ref/management-binding/enrollment-token'
+      path: '/api/platform/projects/$ref/management-binding/enrollment-token'
+      fullPath: '/api/platform/projects/$ref/management-binding/enrollment-token'
+      preLoaderRoute: typeof ApiPlatformProjectsRefManagementBindingEnrollmentTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/platform/projects/$ref/content/count': {
       id: '/api/platform/projects/$ref/content/count'
       path: '/api/platform/projects/$ref/content/count'
@@ -5965,6 +6063,13 @@ declare module '@tanstack/react-router' {
       path: '/api/platform/projects/$ref/analytics/log-drains'
       fullPath: '/api/platform/projects/$ref/analytics/log-drains'
       preLoaderRoute: typeof ApiPlatformProjectsRefAnalyticsLogDrainsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/platform/organizations/$slug/management-targets/$targetId': {
+      id: '/api/platform/organizations/$slug/management-targets/$targetId'
+      path: '/api/platform/organizations/$slug/management-targets/$targetId'
+      fullPath: '/api/platform/organizations/$slug/management-targets/$targetId'
+      preLoaderRoute: typeof ApiPlatformOrganizationsSlugManagementTargetsTargetIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/platform/organizations/$slug/billing/subscription': {
@@ -6924,6 +7029,8 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPlatformDatabaseRefBackupOperatorStatusRoute,
   ApiPlatformOrganizationsSlugBillingSubscriptionRoute:
     ApiPlatformOrganizationsSlugBillingSubscriptionRoute,
+  ApiPlatformOrganizationsSlugManagementTargetsTargetIdRoute:
+    ApiPlatformOrganizationsSlugManagementTargetsTargetIdRoute,
   ApiPlatformProjectsRefAnalyticsLogDrainsRoute:
     ApiPlatformProjectsRefAnalyticsLogDrainsRouteWithChildren,
   ApiPlatformProjectsRefApiKeysTemporaryRoute:
@@ -6936,16 +7043,24 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPlatformProjectsRefConfigPostgrestRoute,
   ApiPlatformProjectsRefContentCountRoute:
     ApiPlatformProjectsRefContentCountRoute,
+  ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute:
+    ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute,
+  ApiPlatformProjectsRefManagementBindingSyncRoute:
+    ApiPlatformProjectsRefManagementBindingSyncRoute,
   ApiPlatformPropsProjectRefApiRoute: ApiPlatformPropsProjectRefApiRoute,
   ApiV1ProjectsRefDatabaseMigrationsRoute:
     ApiV1ProjectsRefDatabaseMigrationsRoute,
   ApiV1ProjectsRefTypesTypescriptRoute: ApiV1ProjectsRefTypesTypescriptRoute,
   ApiPlatformAuthRefUsersIndexRoute: ApiPlatformAuthRefUsersIndexRoute,
+  ApiPlatformOrganizationsSlugManagementTargetsIndexRoute:
+    ApiPlatformOrganizationsSlugManagementTargetsIndexRoute,
   ApiPlatformPgMetaRefQueryIndexRoute: ApiPlatformPgMetaRefQueryIndexRoute,
   ApiPlatformProjectsRefConfigIndexRoute:
     ApiPlatformProjectsRefConfigIndexRoute,
   ApiPlatformProjectsRefContentIndexRoute:
     ApiPlatformProjectsRefContentIndexRoute,
+  ApiPlatformProjectsRefManagementBindingIndexRoute:
+    ApiPlatformProjectsRefManagementBindingIndexRoute,
   ApiPlatformPropsProjectRefIndexRoute: ApiPlatformPropsProjectRefIndexRoute,
   ApiPlatformStorageRefBucketsIndexRoute:
     ApiPlatformStorageRefBucketsIndexRoute,

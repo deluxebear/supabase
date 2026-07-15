@@ -5,6 +5,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { handler } from './index'
 import { detachProject, requireProjectCapability } from '@/lib/api/self-platform/attachment'
 import { clearHealthCache } from '@/lib/api/self-platform/health'
+import {
+  getProjectManagementBinding,
+  revokeProjectManagementBinding,
+} from '@/lib/api/self-platform/management-trust'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 
 vi.hoisted(() => {
@@ -23,6 +27,10 @@ vi.mock('@/lib/api/self-platform/attachment', async (importOriginal) => ({
   requireProjectCapability: vi.fn(),
 }))
 vi.mock('@/lib/api/self-platform/health', () => ({ clearHealthCache: vi.fn() }))
+vi.mock('@/lib/api/self-platform/management-trust', () => ({
+  getProjectManagementBinding: vi.fn(),
+  revokeProjectManagementBinding: vi.fn(),
+}))
 // GET-path deps the module imports; DELETE tests never reach them.
 vi.mock('@/lib/api/self-platform/resolve-connection', async (importOriginal) => ({
   ...(await importOriginal<object>()),
@@ -40,6 +48,12 @@ beforeEach(() => {
     detachedAt: '2026-07-15T00:00:00.000Z',
     targetCleanupPending: false,
     infrastructureDeleted: false,
+  })
+  vi.mocked(getProjectManagementBinding).mockReset().mockResolvedValue(null)
+  vi.mocked(revokeProjectManagementBinding).mockReset().mockResolvedValue({
+    bindingId: 'binding-a',
+    targetRevoked: true,
+    targetCleanupPending: false,
   })
 })
 
@@ -63,6 +77,19 @@ describe('DELETE /platform/projects/[ref] (self-platform)', () => {
       infrastructureDeleted: false,
       targetCleanupPending: false,
     })
+  })
+
+  it('revokes management trust before tombstoning an attached project', async () => {
+    vi.mocked(getProjectManagementBinding).mockResolvedValue({ id: 'binding-a' } as never)
+    const { req, res } = del('team-a')
+    await handler(req as never, res as never, claimsOf('g-owner'))
+    expect(revokeProjectManagementBinding).toHaveBeenCalledWith(
+      expect.objectContaining({ projectRef: 'team-a', actor: 'g-owner' })
+    )
+    expect(vi.mocked(revokeProjectManagementBinding).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(detachProject).mock.invocationCallOrder[0]
+    )
+    expect(res._getStatusCode()).toBe(200)
   })
 
   it('guard denial short-circuits before the data layer', async () => {

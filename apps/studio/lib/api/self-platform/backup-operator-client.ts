@@ -1,7 +1,9 @@
 import { createHash, createHmac, randomUUID } from 'node:crypto'
 import { z } from 'zod'
 
+import { getProjectManagementBinding, requestManagementDomain } from './management-trust'
 import { resolveProjectConnection } from './resolve-connection'
+import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 
 const REQUEST_TIMEOUT_MS = 10_000
 const nullableStringArraySchema = z
@@ -226,6 +228,49 @@ export async function requestBackupOperator(
   } = {}
 ) {
   const { clusterId, operatorUrl } = await resolveBackupOperatorTarget(projectRef)
+  const operatorPath = path.startsWith('/operations/')
+    ? `/v1${path}`
+    : `/v1/clusters/${encodeURIComponent(clusterId)}${path}`
+  if (STUDIO_DEPLOYMENT_PROFILE === 'fleet') {
+    const binding = await getProjectManagementBinding(projectRef)
+    if (!binding) {
+      throw new BackupOperatorAPIError(
+        'UNAVAILABLE',
+        'Project has no management target binding',
+        503
+      )
+    }
+    const correlationId = init.correlationId ?? randomUUID()
+    const idempotencyKey =
+      init.method && init.method !== 'GET'
+        ? (init.idempotencyKey ??
+          createHash('sha256')
+            .update(`${projectRef}\n${path}\n${JSON.stringify(init.body ?? null)}`)
+            .digest('hex'))
+        : undefined
+    try {
+      const result = await requestManagementDomain(binding, 'backup-operator', {
+        method: init.method ?? 'GET',
+        path: operatorPath,
+        body: init.body,
+        scopes: ['backup.read', 'backup.write', 'restore.execute'],
+        actor: init.actor || 'studio-api',
+        correlationId,
+        projectId: clusterId,
+        aal: init.aal,
+        aalAuthenticatedAt: init.aalAuthenticatedAt,
+        idempotencyKey,
+      })
+      init.onResponse?.({ correlationId })
+      return result
+    } catch (error) {
+      throw new BackupOperatorAPIError(
+        error instanceof Error && 'code' in error ? String(error.code) : 'UNAVAILABLE',
+        error instanceof Error ? error.message : 'Management target request failed',
+        error instanceof Error && 'status' in error ? Number(error.status) : 503
+      )
+    }
+  }
   const assertionKey = process.env.BACKUP_OPERATOR_SERVICE_ASSERTION_KEY
   const assertionIssuer = process.env.BACKUP_OPERATOR_SERVICE_ASSERTION_ISSUER ?? 'supabase-studio'
   const assertionAudience =
@@ -248,9 +293,6 @@ export async function requestBackupOperator(
     aal: init.aal,
     aalAuthenticatedAt: init.aalAuthenticatedAt,
   })
-  const operatorPath = path.startsWith('/operations/')
-    ? `/v1${path}`
-    : `/v1/clusters/${encodeURIComponent(clusterId)}${path}`
   const response = await fetch(`${operatorUrl.replace(/\/$/, '')}${operatorPath}`, {
     method: init.method ?? 'GET',
     headers: {
@@ -315,6 +357,39 @@ export async function requestBackupOperatorEvents(
   } = {}
 ) {
   const { clusterId, operatorUrl } = await resolveBackupOperatorTarget(projectRef)
+  const eventPath = `/v1/operations/${encodeURIComponent(operationId)}/events?cursor=${encodeURIComponent(String(cursor))}`
+  if (STUDIO_DEPLOYMENT_PROFILE === 'fleet') {
+    const binding = await getProjectManagementBinding(projectRef)
+    if (!binding) {
+      throw new BackupOperatorAPIError(
+        'UNAVAILABLE',
+        'Project has no management target binding',
+        503
+      )
+    }
+    const correlationId = init.correlationId ?? randomUUID()
+    try {
+      const result = (await requestManagementDomain(binding, 'backup-operator', {
+        method: 'GET',
+        path: eventPath,
+        scopes: ['backup.read'],
+        actor: init.actor || 'studio-api',
+        correlationId,
+        projectId: clusterId,
+        aal: init.aal,
+        aalAuthenticatedAt: init.aalAuthenticatedAt,
+        responseType: 'text',
+      })) as { body: string; contentType: string }
+      init.onResponse?.({ correlationId })
+      return result
+    } catch (error) {
+      throw new BackupOperatorAPIError(
+        error instanceof Error && 'code' in error ? String(error.code) : 'UNAVAILABLE',
+        error instanceof Error ? error.message : 'Management target request failed',
+        error instanceof Error && 'status' in error ? Number(error.status) : 503
+      )
+    }
+  }
   const assertionKey = process.env.BACKUP_OPERATOR_SERVICE_ASSERTION_KEY
   const assertionIssuer = process.env.BACKUP_OPERATOR_SERVICE_ASSERTION_ISSUER ?? 'supabase-studio'
   const assertionAudience =

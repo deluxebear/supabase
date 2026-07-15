@@ -2,13 +2,13 @@ import { useMutation, useQueryClient, type UseMutationOptions } from '@tanstack/
 import { toast } from 'sonner'
 
 import { backupOperatorKeys } from './keys'
-import { constructHeaders } from '@/data/fetchers'
 import {
   backupPolicySchema,
   operatorClusterSchema,
   operatorJobSchema,
   restorePlanSchema,
-} from '@/lib/api/self-platform/backup-operator-client'
+} from '@/data/backup-operator/schemas'
+import { constructHeaders } from '@/data/fetchers'
 import { BASE_PATH } from '@/lib/constants'
 import { uuidv4 } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'

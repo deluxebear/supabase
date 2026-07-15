@@ -58,7 +58,7 @@ services:
 
   fleet-control:
     image: ghcr.io/supabase/fleet-control:${FLEET_CONTROL_VERSION:?set FLEET_CONTROL_VERSION}
-    command: [--listen=0.0.0.0:8090]
+    command: [--listen=0.0.0.0:8090, --enrollment-listen=0.0.0.0:8091]
     restart: unless-stopped
     read_only: true
     user: "65532:65532"
@@ -73,8 +73,26 @@ services:
       FLEET_CONTROL_STORE_DSN: postgres://fleet_control:${FLEET_CONTROL_POSTGRES_PASSWORD}@fleet-control-db:5432/fleet_control?sslmode=disable
       FLEET_CONTROL_STORE_SYSTEM_IDENTIFIER: ${FLEET_CONTROL_STORE_SYSTEM_IDENTIFIER:-fleet-control}
       FLEET_CONTROL_STORE_DATA_DOMAIN: ${FLEET_CONTROL_STORE_DATA_DOMAIN:-fleet-control-db-data}
+      FLEET_CONTROL_AGENT_CA_CERT: /run/secrets/fleet-management/ca.crt
+      FLEET_CONTROL_AGENT_CA_KEY: /run/secrets/fleet-management/ca.key
+      FLEET_CONTROL_AGENT_TRUST_DOMAIN: ${FLEET_CONTROL_AGENT_TRUST_DOMAIN:-fleet.internal}
+      FLEET_CONTROL_AGENT_CERT_TTL: ${FLEET_CONTROL_AGENT_CERT_TTL:-1h}
+      FLEET_CONTROL_ENROLLMENT_TOKEN_TTL: ${FLEET_CONTROL_ENROLLMENT_TOKEN_TTL:-10m}
+      FLEET_CONTROL_AGENT_CERT_OVERLAP: ${FLEET_CONTROL_AGENT_CERT_OVERLAP:-5m}
+      FLEET_CONTROL_ENROLLMENT_SERVER_CERT: /run/secrets/fleet-management/server.crt
+      FLEET_CONTROL_ENROLLMENT_SERVER_KEY: /run/secrets/fleet-management/server.key
     ports:
       - 127.0.0.1:${FLEET_CONTROL_HTTP_PORT:-8090}:8090
+      - 127.0.0.1:${FLEET_CONTROL_ENROLLMENT_HTTPS_PORT:-8091}:8091
+    secrets:
+      - source: fleet_agent_ca_cert
+        target: fleet-management/ca.crt
+      - source: fleet_agent_ca_key
+        target: fleet-management/ca.key
+      - source: fleet_enrollment_server_cert
+        target: fleet-management/server.crt
+      - source: fleet_enrollment_server_key
+        target: fleet-management/server.key
     security_opt: [no-new-privileges:true]
     networks: [control]
 
@@ -132,7 +150,11 @@ services:
       backup-operator-db:
         condition: service_healthy
     environment:
-      BACKUP_OPERATOR_SERVICE_ASSERTION_KEY: ${BACKUP_OPERATOR_SERVICE_ASSERTION_KEY:?set BACKUP_OPERATOR_SERVICE_ASSERTION_KEY}
+      # One management-target signing key is shared by its registered domain
+      # APIs; audience pinning still prevents cross-domain assertion reuse.
+      BACKUP_OPERATOR_SERVICE_ASSERTION_KEY: ${FLEET_CONTROL_SERVICE_ASSERTION_KEY:?set FLEET_CONTROL_SERVICE_ASSERTION_KEY}
+      BACKUP_OPERATOR_SERVICE_ASSERTION_ISSUER: ${BACKUP_OPERATOR_SERVICE_ASSERTION_ISSUER:-studio-platform}
+      BACKUP_OPERATOR_SERVICE_ASSERTION_AUDIENCE: ${BACKUP_OPERATOR_SERVICE_ASSERTION_AUDIENCE:-backup-operator}
       BACKUP_OPERATOR_CONTROL_STORE_DRIVER: postgres
       BACKUP_OPERATOR_CONTROL_STORE_DSN: postgres://backup_operator:${BACKUP_OPERATOR_POSTGRES_PASSWORD}@backup-operator-db:5432/backup_operator?sslmode=disable
       BACKUP_OPERATOR_CONTROL_STORE_SYSTEM_IDENTIFIER: ${BACKUP_OPERATOR_CONTROL_STORE_SYSTEM_IDENTIFIER:-fleet-backup-control}
@@ -140,6 +162,25 @@ services:
       BACKUP_OPERATOR_RUNTIME_ENABLED: "true"
     ports:
       - 127.0.0.1:${BACKUP_OPERATOR_HTTP_PORT:-8080}:8080
+    security_opt: [no-new-privileges:true]
+    networks: [control]
+
+  backup-operator-tls:
+    image: nginxinc/nginx-unprivileged:1.27-alpine
+    restart: unless-stopped
+    read_only: true
+    depends_on:
+      backup-operator:
+        condition: service_started
+    volumes:
+      - ./volumes/management/backup-operator-nginx.conf:/etc/nginx/nginx.conf:ro
+    secrets:
+      - source: fleet_enrollment_server_cert
+        target: fleet-management/server.crt
+      - source: fleet_enrollment_server_key
+        target: fleet-management/server.key
+    tmpfs:
+      - /tmp:size=16m,mode=1777
     security_opt: [no-new-privileges:true]
     networks: [control]
 
@@ -237,6 +278,7 @@ services:
       SUPABASE_ANON_KEY: ${MANAGED_ANON_KEY:-unused-fleet-default}
       SUPABASE_SERVICE_KEY: ${MANAGED_SERVICE_ROLE_KEY:-unused-fleet-default}
       AUTH_JWT_SECRET: ${MANAGED_JWT_SECRET:-unused-fleet-default}
+      FLEET_MANAGEMENT_ASSERTION_PRIMARY: ${FLEET_CONTROL_SERVICE_ASSERTION_KEY:?set FLEET_CONTROL_SERVICE_ASSERTION_KEY}
       SNIPPETS_MANAGEMENT_FOLDER: /app/snippets
       EDGE_FUNCTIONS_MANAGEMENT_FOLDER: /app/edge-functions
     healthcheck:
@@ -250,6 +292,9 @@ services:
     volumes:
       - control-snippets:/app/snippets
       - control-functions:/app/edge-functions:ro
+    secrets:
+      - source: fleet_agent_ca_cert
+        target: fleet-management/ca.crt
     networks: [control, managed]
 
   gateway:
@@ -292,3 +337,13 @@ volumes:
   backup-operator-db-data:
   control-snippets:
   control-functions:
+
+secrets:
+  fleet_agent_ca_cert:
+    file: ./secrets/fleet-management/ca.crt
+  fleet_agent_ca_key:
+    file: ./secrets/fleet-management/ca.key
+  fleet_enrollment_server_cert:
+    file: ./secrets/fleet-management/server.crt
+  fleet_enrollment_server_key:
+    file: ./secrets/fleet-management/server.key

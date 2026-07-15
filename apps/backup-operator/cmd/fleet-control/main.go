@@ -19,6 +19,7 @@ import (
 func main() {
 	mode := flag.String("mode", envOr("FLEET_CONTROL_MODE", "control"), "process mode: control or outbox-dispatcher")
 	listen := flag.String("listen", envOr("FLEET_CONTROL_LISTEN", "127.0.0.1:8090"), "Fleet Control HTTP listen address")
+	enrollmentListen := flag.String("enrollment-listen", envOr("FLEET_CONTROL_ENROLLMENT_LISTEN", "127.0.0.1:8091"), "Fleet Agent enrollment HTTPS listen address")
 	storeDriver := flag.String("store-driver", envOr("FLEET_CONTROL_STORE_DRIVER", "sqlite"), "Fleet Control store driver: sqlite or postgres")
 	storeDSN := flag.String("store-dsn", envOr("FLEET_CONTROL_STORE_DSN", "fleet-control.db"), "Fleet Control store path or PostgreSQL DSN")
 	storeSystemID := flag.String("store-system-identifier", envOr("FLEET_CONTROL_STORE_SYSTEM_IDENTIFIER", "fleet-control-local"), "independent Fleet store system identity")
@@ -27,6 +28,14 @@ func main() {
 	assertionIssuer := flag.String("service-assertion-issuer", envOr("FLEET_CONTROL_SERVICE_ASSERTION_ISSUER", "studio-platform"), "service assertion issuer")
 	assertionAudience := flag.String("service-assertion-audience", envOr("FLEET_CONTROL_SERVICE_ASSERTION_AUDIENCE", "fleet-control"), "service assertion audience")
 	assertionMaxTTL := flag.Duration("service-assertion-max-ttl", envDuration("FLEET_CONTROL_SERVICE_ASSERTION_MAX_TTL", 5*time.Minute), "maximum service assertion lifetime")
+	agentCACert := flag.String("agent-ca-cert", os.Getenv("FLEET_CONTROL_AGENT_CA_CERT"), "Agent CA certificate PEM path")
+	agentCAKey := flag.String("agent-ca-key", os.Getenv("FLEET_CONTROL_AGENT_CA_KEY"), "Agent CA private key PEM path")
+	agentTrustDomain := flag.String("agent-trust-domain", os.Getenv("FLEET_CONTROL_AGENT_TRUST_DOMAIN"), "Agent SPIFFE trust domain")
+	agentCertificateTTL := flag.Duration("agent-certificate-ttl", envDuration("FLEET_CONTROL_AGENT_CERTIFICATE_TTL", 24*time.Hour), "short-lived Agent certificate lifetime")
+	enrollmentTokenTTL := flag.Duration("enrollment-token-ttl", envDuration("FLEET_CONTROL_ENROLLMENT_TOKEN_TTL", 10*time.Minute), "single-use enrollment token lifetime")
+	certificateOverlap := flag.Duration("certificate-overlap", envDuration("FLEET_CONTROL_CERTIFICATE_OVERLAP", 15*time.Minute), "certificate rotation overlap window")
+	enrollmentServerCert := flag.String("enrollment-server-cert", os.Getenv("FLEET_CONTROL_ENROLLMENT_SERVER_CERT"), "enrollment HTTPS server certificate PEM path")
+	enrollmentServerKey := flag.String("enrollment-server-key", os.Getenv("FLEET_CONTROL_ENROLLMENT_SERVER_KEY"), "enrollment HTTPS server private key PEM path")
 	shutdownTimeout := flag.Duration("shutdown-timeout", envDuration("FLEET_CONTROL_SHUTDOWN_TIMEOUT", 10*time.Second), "graceful shutdown timeout")
 	showVersion := flag.Bool("version", false, "print version and exit")
 	flag.Parse()
@@ -57,7 +66,15 @@ func main() {
 	if *mode != "control" {
 		log.Fatalf("unsupported Fleet Control mode %q", *mode)
 	}
-	err := fleetcontrol.Run(ctx, fleetcontrol.Config{Listen: *listen, ShutdownTimeout: *shutdownTimeout, StoreDriver: *storeDriver, StoreDSN: *storeDSN, StoreIdentity: fleetcontrol.StoreIdentity{SystemIdentifier: *storeSystemID, DataDomain: *storeDataDomain}, AssertionKey: []byte(*assertionKey), AssertionIssuer: *assertionIssuer, AssertionAudience: *assertionAudience, AssertionMaxTTL: *assertionMaxTTL})
+	err := fleetcontrol.Run(ctx, fleetcontrol.Config{
+		Listen: *listen, EnrollmentListen: *enrollmentListen, ShutdownTimeout: *shutdownTimeout,
+		StoreDriver: *storeDriver, StoreDSN: *storeDSN,
+		StoreIdentity: fleetcontrol.StoreIdentity{SystemIdentifier: *storeSystemID, DataDomain: *storeDataDomain},
+		AssertionKey:  []byte(*assertionKey), AssertionIssuer: *assertionIssuer, AssertionAudience: *assertionAudience, AssertionMaxTTL: *assertionMaxTTL,
+		AgentCACertFile: *agentCACert, AgentCAKeyFile: *agentCAKey, AgentTrustDomain: *agentTrustDomain,
+		AgentCertificateTTL: *agentCertificateTTL, EnrollmentTokenTTL: *enrollmentTokenTTL, CertificateOverlap: *certificateOverlap,
+		EnrollmentServerCertFile: *enrollmentServerCert, EnrollmentServerKeyFile: *enrollmentServerKey,
+	})
 	if err != nil {
 		log.Fatal(err)
 	}

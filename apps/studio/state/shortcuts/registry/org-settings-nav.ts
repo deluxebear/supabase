@@ -18,6 +18,7 @@ export const ORG_SETTINGS_NAV_SHORTCUT_IDS = {
   NAV_ORG_SETTINGS_AUDIT: 'nav.org-settings-audit',
   NAV_ORG_SETTINGS_AUDIT_LOG_DRAINS: 'nav.org-settings-audit-log-drains',
   NAV_ORG_SETTINGS_DOCUMENTS: 'nav.org-settings-documents',
+  NAV_ORG_SETTINGS_MANAGEMENT_TARGETS: 'nav.org-settings-management-targets',
 } as const
 
 export type OrgSettingsNavShortcutId =
@@ -92,6 +93,14 @@ export const orgSettingsNavRegistry: RegistryDefinations<OrgSettingsNavShortcutI
     id: ORG_SETTINGS_NAV_SHORTCUT_IDS.NAV_ORG_SETTINGS_DOCUMENTS,
     label: 'Go to Legal documents',
     sequence: ['S', 'D'],
+    showInSettings: false,
+    referenceGroup: SHORTCUT_REFERENCE_GROUPS.NAVIGATION_ORG_SETTINGS,
+    options: { ignoreInputs: true },
+  },
+  [ORG_SETTINGS_NAV_SHORTCUT_IDS.NAV_ORG_SETTINGS_MANAGEMENT_TARGETS]: {
+    id: ORG_SETTINGS_NAV_SHORTCUT_IDS.NAV_ORG_SETTINGS_MANAGEMENT_TARGETS,
+    label: 'Go to Management targets',
+    sequence: ['S', 'M'],
     showInSettings: false,
     referenceGroup: SHORTCUT_REFERENCE_GROUPS.NAVIGATION_ORG_SETTINGS,
     options: { ignoreInputs: true },

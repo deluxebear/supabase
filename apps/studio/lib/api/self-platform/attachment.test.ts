@@ -219,5 +219,12 @@ describe('capability and detach boundaries', () => {
       blockers: [{ code: 'preflight_failed', message: 'no' }],
     })
     expect(capabilities.find((item) => item.name === 'project.detach')?.state).toBe('unavailable')
+    expect(capabilities.find((item) => item.name === 'management.target.bind')?.state).toBe(
+      'unavailable'
+    )
+    expect(capabilities.find((item) => item.name === 'management.enrollment.issue')).toMatchObject({
+      state: 'unavailable',
+      blockers: [{ code: 'management_target_unbound' }],
+    })
   })
 })

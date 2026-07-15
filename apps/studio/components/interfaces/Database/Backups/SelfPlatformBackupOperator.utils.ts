@@ -1,9 +1,6 @@
 import type { z } from 'zod'
 
-import type {
-  operatorJobSchema,
-  restorePlanSchema,
-} from '@/lib/api/self-platform/backup-operator-client'
+import type { operatorJobSchema, restorePlanSchema } from '@/data/backup-operator/schemas'
 
 type RestorePlan = z.infer<typeof restorePlanSchema>
 type OperatorJob = z.infer<typeof operatorJobSchema>

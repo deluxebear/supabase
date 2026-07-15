@@ -26,7 +26,7 @@ import {
   usePITRMutation,
 } from '@/data/backup-operator/backup-operator-mutations'
 import { operatorPITRQueryOptions } from '@/data/backup-operator/backup-operator-query'
-import type { backupPolicySchema } from '@/lib/api/self-platform/backup-operator-client'
+import type { backupPolicySchema } from '@/data/backup-operator/schemas'
 import { t as $t } from '@/lib/i18n'
 
 const policyFormSchema = z
