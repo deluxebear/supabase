@@ -71,6 +71,7 @@ describe('getStudioCapabilities', () => {
       platformIdentity: false,
       localFunctionsDirectory: true,
       cloudManagementApi: false,
+      managementTrust: false,
     })
     expect(getStudioCapabilities('cli')).toEqual(getStudioCapabilities('embedded'))
   })
@@ -84,11 +85,13 @@ describe('getStudioCapabilities', () => {
       lifecycleManagement: false,
       backupManagement: false,
       cloudManagementApi: false,
+      managementTrust: true,
     })
   })
 
   it('keeps hosted management capabilities cloud-only', () => {
     expect(getStudioCapabilities('cloud').cloudManagementApi).toBe(true)
     expect(getStudioCapabilities('fleet').cloudManagementApi).toBe(false)
+    expect(getStudioCapabilities('embedded').managementTrust).toBe(false)
   })
 })

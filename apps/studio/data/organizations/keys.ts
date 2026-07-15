@@ -3,6 +3,7 @@ export const organizationKeys = {
   detail: (slug?: string) => ['organizations', slug] as const,
   members: (slug?: string) => ['organizations', slug, 'members'] as const,
   mfa: (slug?: string) => ['organizations', slug, 'mfa'] as const,
+  managementTargets: (slug?: string) => ['organizations', slug, 'management-targets'] as const,
   paymentMethods: (slug: string | undefined) => ['organizations', slug, 'payment-methods'] as const,
   entitlements: (slug: string | undefined) => ['entitlements', slug] as const,
   roles: (slug: string | undefined) => ['organizations', slug, 'roles'] as const,

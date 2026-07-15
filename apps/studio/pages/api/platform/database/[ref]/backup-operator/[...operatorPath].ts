@@ -3,12 +3,14 @@ import type { JwtPayload } from '@supabase/supabase-js'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
+import { CapabilityUnavailable, requireProjectCapability } from '@/lib/api/self-platform/attachment'
 import {
   BackupOperatorAPIError,
   requestBackupOperator,
   requestBackupOperatorEvents,
 } from '@/lib/api/self-platform/backup-operator-client'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
+import { STUDIO_CAPABILITIES, STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 type OperatorRoute = {
@@ -68,6 +70,9 @@ export default backupOperatorHandler
 
 export async function handler(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
   if (!IS_SELF_PLATFORM) return res.status(404).json({ message: 'Not found' })
+  if (STUDIO_DEPLOYMENT_PROFILE === 'fleet' && !STUDIO_CAPABILITIES.backupManagement) {
+    return res.status(404).json({ message: 'Not found' })
+  }
   const projectRef = String(req.query.ref)
   const segments = Array.isArray(req.query.operatorPath)
     ? req.query.operatorPath
@@ -87,6 +92,9 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
   }
 
   try {
+    if (STUDIO_DEPLOYMENT_PROFILE === 'fleet') {
+      await requireProjectCapability(projectRef, 'management.agent.connect')
+    }
     let correlationId: string | undefined
     const commonInit = {
       actor: claims?.sub ?? 'studio-api',
@@ -132,6 +140,13 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
     if (correlationId) res.setHeader('X-Correlation-ID', correlationId)
     return res.status(200).json(data)
   } catch (error) {
+    if (error instanceof CapabilityUnavailable) {
+      return res.status(409).json({
+        code: 'capability_unavailable',
+        message: error.message,
+        blockers: error.blockers,
+      })
+    }
     if (error instanceof BackupOperatorAPIError) {
       if (error.metadata.correlationId) {
         res.setHeader('X-Correlation-ID', error.metadata.correlationId)

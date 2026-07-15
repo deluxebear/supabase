@@ -12,6 +12,7 @@ import { subscriptionHasHipaaAddon } from '@/components/interfaces/Billing/Subsc
 import { SelfPlatformAttachmentStatusPanel } from '@/components/interfaces/SelfPlatform/SelfPlatformAttachmentStatusPanel'
 import { SelfPlatformConnectionPanel } from '@/components/interfaces/SelfPlatform/SelfPlatformConnectionPanel'
 import { SelfPlatformDeleteProjectPanel } from '@/components/interfaces/SelfPlatform/SelfPlatformDeleteProjectPanel'
+import { SelfPlatformManagementTrustPanel } from '@/components/interfaces/SelfPlatform/SelfPlatformManagementTrustPanel'
 import { ComplianceConfig } from '@/components/interfaces/Settings/General/ComplianceConfig/ProjectComplianceMode'
 import { CustomDomainConfig } from '@/components/interfaces/Settings/General/CustomDomainConfig/CustomDomainConfig'
 import { DeleteBranchPanel } from '@/components/interfaces/Settings/General/DeleteBranchPanel'
@@ -61,6 +62,7 @@ const ProjectSettings: NextPageWithLayout = () => {
         {isFleet && (
           <>
             <SelfPlatformAttachmentStatusPanel />
+            <SelfPlatformManagementTrustPanel />
             <SelfPlatformConnectionPanel />
             <SelfPlatformDeleteProjectPanel />
           </>

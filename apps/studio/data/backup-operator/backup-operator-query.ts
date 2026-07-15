@@ -2,7 +2,6 @@ import { queryOptions } from '@tanstack/react-query'
 
 import { isActiveBackupOperatorJob } from './backup-operator-job.utils'
 import { backupOperatorKeys } from './keys'
-import { constructHeaders } from '@/data/fetchers'
 import {
   backupPolicySchema,
   operatorBackupsSchema,
@@ -10,7 +9,8 @@ import {
   operatorJobSchema,
   operatorPITRSchema,
   restorePlanSchema,
-} from '@/lib/api/self-platform/backup-operator-client'
+} from '@/data/backup-operator/schemas'
+import { constructHeaders } from '@/data/fetchers'
 import { BASE_PATH } from '@/lib/constants'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 

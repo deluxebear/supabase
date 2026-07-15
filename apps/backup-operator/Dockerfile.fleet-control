@@ -8,7 +8,8 @@ ARG TARGETARCH
 ARG VERSION=dev
 ARG COMMIT=unknown
 ARG BUILD_DATE=unknown
-RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w -X github.com/supabase/supabase/apps/backup-operator/internal/version.Version=${VERSION} -X github.com/supabase/supabase/apps/backup-operator/internal/version.Commit=${COMMIT}" -o /out/fleet-control ./cmd/fleet-control
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w -X github.com/supabase/supabase/apps/backup-operator/internal/version.Version=${VERSION} -X github.com/supabase/supabase/apps/backup-operator/internal/version.Commit=${COMMIT}" -o /out/fleet-control ./cmd/fleet-control \
+    && CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w -X github.com/supabase/supabase/apps/backup-operator/internal/version.Version=${VERSION} -X github.com/supabase/supabase/apps/backup-operator/internal/version.Commit=${COMMIT}" -o /out/fleet-agent-bootstrap ./cmd/fleet-agent-bootstrap
 
 FROM gcr.io/distroless/static-debian12:nonroot
 ARG VERSION=dev
@@ -20,8 +21,9 @@ LABEL org.opencontainers.image.title="Supabase Fleet Control" \
       org.opencontainers.image.revision="${COMMIT}" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       io.supabase.fleet-control.api-version="v1" \
-      io.supabase.fleet-control.schema-version="2" \
+      io.supabase.fleet-control.schema-version="3" \
       io.supabase.agent.protocol-major="1"
 COPY --from=build /out/fleet-control /usr/local/bin/fleet-control
+COPY --from=build /out/fleet-agent-bootstrap /usr/local/bin/fleet-agent-bootstrap
 USER nonroot:nonroot
 ENTRYPOINT ["/usr/local/bin/fleet-control"]

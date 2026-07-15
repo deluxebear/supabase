@@ -11,6 +11,15 @@ const (
 	ServiceAssertionScopes = "serviceAssertion.Scopes"
 )
 
+// Defines values for AgentState.
+const (
+	AgentStateIncompatible AgentState = "incompatible"
+	AgentStateOffline      AgentState = "offline"
+	AgentStateOnline       AgentState = "online"
+	AgentStateReplaced     AgentState = "replaced"
+	AgentStateRevoked      AgentState = "revoked"
+)
+
 // Defines values for CapabilityMode.
 const (
 	CapabilityModeAgent         CapabilityMode = "agent"
@@ -28,9 +37,42 @@ const (
 	CapabilityStateUnsupported  CapabilityState = "unsupported"
 )
 
+// Defines values for CreateEnrollmentTokenDeploymentKind.
+const (
+	CreateEnrollmentTokenDeploymentKindBareMetal  CreateEnrollmentTokenDeploymentKind = "bare-metal"
+	CreateEnrollmentTokenDeploymentKindCompose    CreateEnrollmentTokenDeploymentKind = "compose"
+	CreateEnrollmentTokenDeploymentKindKubernetes CreateEnrollmentTokenDeploymentKind = "kubernetes"
+	CreateEnrollmentTokenDeploymentKindSystemd    CreateEnrollmentTokenDeploymentKind = "systemd"
+)
+
+// Defines values for EnrollAgentDeploymentKind.
+const (
+	EnrollAgentDeploymentKindBareMetal  EnrollAgentDeploymentKind = "bare-metal"
+	EnrollAgentDeploymentKindCompose    EnrollAgentDeploymentKind = "compose"
+	EnrollAgentDeploymentKindKubernetes EnrollAgentDeploymentKind = "kubernetes"
+	EnrollAgentDeploymentKindSystemd    EnrollAgentDeploymentKind = "systemd"
+)
+
 // Defines values for HealthStatus.
 const (
 	Ok HealthStatus = "ok"
+)
+
+// Defines values for ManagementBindingDeploymentKind.
+const (
+	BareMetal  ManagementBindingDeploymentKind = "bare-metal"
+	Compose    ManagementBindingDeploymentKind = "compose"
+	Kubernetes ManagementBindingDeploymentKind = "kubernetes"
+	Systemd    ManagementBindingDeploymentKind = "systemd"
+)
+
+// Defines values for ManagementBindingState.
+const (
+	ManagementBindingStateActive       ManagementBindingState = "active"
+	ManagementBindingStateEnrolling    ManagementBindingState = "enrolling"
+	ManagementBindingStateIncompatible ManagementBindingState = "incompatible"
+	ManagementBindingStatePending      ManagementBindingState = "pending"
+	ManagementBindingStateRevoked      ManagementBindingState = "revoked"
 )
 
 // Defines values for OperationState.
@@ -43,6 +85,48 @@ const (
 	Succeeded          OperationState = "succeeded"
 	Verifying          OperationState = "verifying"
 )
+
+// Defines values for ProjectedCapabilityMode.
+const (
+	ProjectedCapabilityModeAgent         ProjectedCapabilityMode = "agent"
+	ProjectedCapabilityModeKubernetesJob ProjectedCapabilityMode = "kubernetes-job"
+	ProjectedCapabilityModeOperator      ProjectedCapabilityMode = "operator"
+	ProjectedCapabilityModeUnsupported   ProjectedCapabilityMode = "unsupported"
+)
+
+// Defines values for ProjectedCapabilityState.
+const (
+	ProjectedCapabilityStateAvailable    ProjectedCapabilityState = "available"
+	ProjectedCapabilityStateStale        ProjectedCapabilityState = "stale"
+	ProjectedCapabilityStateUnauthorized ProjectedCapabilityState = "unauthorized"
+	ProjectedCapabilityStateUnavailable  ProjectedCapabilityState = "unavailable"
+	ProjectedCapabilityStateUnsupported  ProjectedCapabilityState = "unsupported"
+)
+
+// Agent defines model for Agent.
+type Agent struct {
+	ActiveCertificateRevision int                     `json:"activeCertificateRevision"`
+	BindingId                 string                  `json:"bindingId"`
+	Build                     string                  `json:"build"`
+	Capabilities              []CapabilityObservation `json:"capabilities"`
+	CertificateExpiresAt      time.Time               `json:"certificateExpiresAt"`
+	Id                        string                  `json:"id"`
+	LastSeenAt                time.Time               `json:"lastSeenAt"`
+	ProtocolMajor             int                     `json:"protocolMajor"`
+	ProtocolMinor             int                     `json:"protocolMinor"`
+	State                     AgentState              `json:"state"`
+}
+
+// AgentState defines model for Agent.State.
+type AgentState string
+
+// AgentHeartbeat defines model for AgentHeartbeat.
+type AgentHeartbeat struct {
+	Build         string                  `json:"build"`
+	Capabilities  []CapabilityObservation `json:"capabilities"`
+	ProtocolMajor int                     `json:"protocolMajor"`
+	ProtocolMinor int                     `json:"protocolMinor"`
+}
 
 // Blocker defines model for Blocker.
 type Blocker struct {
@@ -67,6 +151,28 @@ type CapabilityMode string
 // CapabilityState defines model for Capability.State.
 type CapabilityState string
 
+// CapabilityObservation defines model for CapabilityObservation.
+type CapabilityObservation struct {
+	ContractVersion string     `json:"contractVersion"`
+	Domain          string     `json:"domain"`
+	EvidenceSchema  string     `json:"evidenceSchema"`
+	InputSchema     string     `json:"inputSchema"`
+	Name            string     `json:"name"`
+	ObservedAt      *time.Time `json:"observedAt,omitempty"`
+}
+
+// CreateEnrollmentToken defines model for CreateEnrollmentToken.
+type CreateEnrollmentToken struct {
+	AllowedCapabilityPrefixes []string                            `json:"allowedCapabilityPrefixes"`
+	DeploymentKind            CreateEnrollmentTokenDeploymentKind `json:"deploymentKind"`
+	ExecutionTarget           string                              `json:"executionTarget"`
+	OrganizationId            string                              `json:"organizationId"`
+	TargetId                  string                              `json:"targetId"`
+}
+
+// CreateEnrollmentTokenDeploymentKind defines model for CreateEnrollmentToken.DeploymentKind.
+type CreateEnrollmentTokenDeploymentKind string
+
 // CreateOperation defines model for CreateOperation.
 type CreateOperation struct {
 	BindingId          string                 `json:"bindingId"`
@@ -85,6 +191,35 @@ type CreateOperation struct {
 	SnapshotCanonical string                 `json:"snapshotCanonical"`
 	TargetId          string                 `json:"targetId"`
 	TypedInput        map[string]interface{} `json:"typedInput"`
+}
+
+// EnrollAgent defines model for EnrollAgent.
+type EnrollAgent struct {
+	AgentId          string                    `json:"agentId"`
+	BindingId        string                    `json:"bindingId"`
+	Build            string                    `json:"build"`
+	Capabilities     []CapabilityObservation   `json:"capabilities"`
+	CsrPem           string                    `json:"csrPem"`
+	DeploymentKind   EnrollAgentDeploymentKind `json:"deploymentKind"`
+	ExecutionTarget  string                    `json:"executionTarget"`
+	ObservedIdentity map[string]interface{}    `json:"observedIdentity"`
+	OrganizationId   string                    `json:"organizationId"`
+	ProjectRef       string                    `json:"projectRef"`
+	ProtocolMajor    int                       `json:"protocolMajor"`
+	ProtocolMinor    int                       `json:"protocolMinor"`
+	TargetId         string                    `json:"targetId"`
+	Token            *string                   `json:"token,omitempty"`
+}
+
+// EnrollAgentDeploymentKind defines model for EnrollAgent.DeploymentKind.
+type EnrollAgentDeploymentKind string
+
+// EnrollmentToken defines model for EnrollmentToken.
+type EnrollmentToken struct {
+	BindingId string    `json:"bindingId"`
+	ExpiresAt time.Time `json:"expiresAt"`
+	Id        string    `json:"id"`
+	Token     *string   `json:"token,omitempty"`
 }
 
 // Error defines model for Error.
@@ -106,6 +241,43 @@ type Health struct {
 
 // HealthStatus defines model for Health.Status.
 type HealthStatus string
+
+// IssuedAgentCertificate defines model for IssuedAgentCertificate.
+type IssuedAgentCertificate struct {
+	Agent                Agent      `json:"agent"`
+	CaCertificatePem     string     `json:"caCertificatePem"`
+	CertificateExpiresAt time.Time  `json:"certificateExpiresAt"`
+	CertificatePem       string     `json:"certificatePem"`
+	CertificateSerial    *string    `json:"certificateSerial,omitempty"`
+	OverlapUntil         *time.Time `json:"overlapUntil,omitempty"`
+}
+
+// ManagementBinding defines model for ManagementBinding.
+type ManagementBinding struct {
+	AllowedCapabilityPrefixes []string                        `json:"allowedCapabilityPrefixes"`
+	BindingId                 string                          `json:"bindingId"`
+	CreatedAt                 time.Time                       `json:"createdAt"`
+	DeploymentKind            ManagementBindingDeploymentKind `json:"deploymentKind"`
+	ExecutionTarget           string                          `json:"executionTarget"`
+	OrganizationId            string                          `json:"organizationId"`
+	ProjectRef                string                          `json:"projectRef"`
+	State                     ManagementBindingState          `json:"state"`
+	TargetId                  string                          `json:"targetId"`
+	UpdatedAt                 time.Time                       `json:"updatedAt"`
+}
+
+// ManagementBindingDeploymentKind defines model for ManagementBinding.DeploymentKind.
+type ManagementBindingDeploymentKind string
+
+// ManagementBindingState defines model for ManagementBinding.State.
+type ManagementBindingState string
+
+// ManagementBindingStatus defines model for ManagementBindingStatus.
+type ManagementBindingStatus struct {
+	Agent        *Agent                `json:"agent"`
+	Binding      ManagementBinding     `json:"binding"`
+	Capabilities []ProjectedCapability `json:"capabilities"`
+}
 
 // Operation defines model for Operation.
 type Operation struct {
@@ -130,6 +302,32 @@ type Operation struct {
 // OperationState defines model for Operation.State.
 type OperationState string
 
+// ProjectedCapability defines model for ProjectedCapability.
+type ProjectedCapability struct {
+	Blockers        []Blocker                `json:"blockers"`
+	ContractVersion string                   `json:"contractVersion"`
+	Domain          string                   `json:"domain"`
+	EvidenceSchema  string                   `json:"evidenceSchema"`
+	InputSchema     string                   `json:"inputSchema"`
+	Mode            ProjectedCapabilityMode  `json:"mode"`
+	Name            string                   `json:"name"`
+	ObservedAt      *time.Time               `json:"observedAt,omitempty"`
+	Source          string                   `json:"source"`
+	State           ProjectedCapabilityState `json:"state"`
+}
+
+// ProjectedCapabilityMode defines model for ProjectedCapability.Mode.
+type ProjectedCapabilityMode string
+
+// ProjectedCapabilityState defines model for ProjectedCapability.State.
+type ProjectedCapabilityState string
+
+// AgentId defines model for AgentId.
+type AgentId = string
+
+// BindingId defines model for BindingId.
+type BindingId = string
+
 // IdempotencyKey defines model for IdempotencyKey.
 type IdempotencyKey = string
 
@@ -138,6 +336,11 @@ type OperationId = string
 
 // ProjectRef defines model for ProjectRef.
 type ProjectRef = string
+
+// RotateAgentCertificateJSONBody defines parameters for RotateAgentCertificate.
+type RotateAgentCertificateJSONBody struct {
+	CsrPem string `json:"csrPem"`
+}
 
 // CreateFleetOperationParams defines parameters for CreateFleetOperation.
 type CreateFleetOperationParams struct {
@@ -149,6 +352,18 @@ type ReplayFleetOperationEventsParams struct {
 	Cursor *int64 `form:"cursor,omitempty" json:"cursor,omitempty"`
 	Limit  *int   `form:"limit,omitempty" json:"limit,omitempty"`
 }
+
+// RotateAgentCertificateJSONRequestBody defines body for RotateAgentCertificate for application/json ContentType.
+type RotateAgentCertificateJSONRequestBody RotateAgentCertificateJSONBody
+
+// RecordAgentHeartbeatJSONRequestBody defines body for RecordAgentHeartbeat for application/json ContentType.
+type RecordAgentHeartbeatJSONRequestBody = AgentHeartbeat
+
+// EnrollAgentJSONRequestBody defines body for EnrollAgent for application/json ContentType.
+type EnrollAgentJSONRequestBody = EnrollAgent
+
+// CreateAgentEnrollmentTokenJSONRequestBody defines body for CreateAgentEnrollmentToken for application/json ContentType.
+type CreateAgentEnrollmentTokenJSONRequestBody = CreateEnrollmentToken
 
 // CreateFleetOperationJSONRequestBody defines body for CreateFleetOperation for application/json ContentType.
 type CreateFleetOperationJSONRequestBody = CreateOperation

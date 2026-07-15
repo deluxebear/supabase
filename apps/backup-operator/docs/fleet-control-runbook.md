@@ -6,6 +6,15 @@ exclusively owned by Backup Operator. The services may share an image build
 repository and neutral Agent infrastructure, but never an API namespace,
 database, migration ledger, retention policy, or domain payload schema.
 
+Schema 3 adds management bindings, hash-only single-use enrollment, Agent CSR
+issuance, and short-lived mTLS certificates. The service-assertion listener and
+the TLS/mTLS enrollment listener remain separate. Generate and mount the Agent
+CA and enrollment server certificate before startup; never place the CA private
+key or Agent private keys in the platform store or Studio responses. Protocol
+major 1 is required. Rotate Agent certificates before expiry, retain only the
+configured short overlap, and revoke all revisions when a binding is detached
+or an Agent is replaced.
+
 ## Deployment
 
 Build `Dockerfile.fleet-control` and pin the resulting image digest. Production
@@ -29,7 +38,7 @@ FLEET_CONTROL_SERVICE_ASSERTION_AUDIENCE=fleet-control
 
 Use a dedicated assertion key of at least 32 random bytes; do not reuse the
 Backup Operator assertion key. `/healthz` proves process liveness and `/readyz`
-returns success only when the independent Fleet schema is at version 1.
+returns success only when the independent Fleet schema is at version 3.
 
 The T4 production assembly deliberately registers no execution provider.
 `runtime.observe` therefore returns an explicit `unsupported` capability with a

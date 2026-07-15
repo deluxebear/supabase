@@ -16,9 +16,9 @@ services:
 
   fleet-control:
     image: ghcr.io/supabase/fleet-control:${FLEET_CONTROL_VERSION:?set FLEET_CONTROL_VERSION}
-    command: [--listen=0.0.0.0:8090]
+    command: [--listen=0.0.0.0:8090, --enrollment-listen=0.0.0.0:8091]
     read_only: true
-    user: "65532:65532"
+    user: '65532:65532'
     environment:
       FLEET_CONTROL_SERVICE_ASSERTION_KEY: ${FLEET_CONTROL_SERVICE_ASSERTION_KEY:?set FLEET_CONTROL_SERVICE_ASSERTION_KEY}
       FLEET_CONTROL_SERVICE_ASSERTION_ISSUER: ${FLEET_CONTROL_SERVICE_ASSERTION_ISSUER:-studio-platform}
@@ -27,8 +27,23 @@ services:
       FLEET_CONTROL_STORE_DSN: postgres://fleet_control:${FLEET_CONTROL_POSTGRES_PASSWORD}@fleet-control-db:5432/fleet_control?sslmode=disable
       FLEET_CONTROL_STORE_SYSTEM_IDENTIFIER: ${FLEET_CONTROL_STORE_SYSTEM_IDENTIFIER:-fleet-control}
       FLEET_CONTROL_STORE_DATA_DOMAIN: ${FLEET_CONTROL_STORE_DATA_DOMAIN:-fleet-control-db}
+      FLEET_CONTROL_AGENT_CA_CERT: /run/secrets/fleet-management/ca.crt
+      FLEET_CONTROL_AGENT_CA_KEY: /run/secrets/fleet-management/ca.key
+      FLEET_CONTROL_AGENT_TRUST_DOMAIN: ${FLEET_CONTROL_AGENT_TRUST_DOMAIN:-fleet.internal}
+      FLEET_CONTROL_ENROLLMENT_SERVER_CERT: /run/secrets/fleet-management/server.crt
+      FLEET_CONTROL_ENROLLMENT_SERVER_KEY: /run/secrets/fleet-management/server.key
     ports:
       - 127.0.0.1:${FLEET_CONTROL_HTTP_PORT:-8090}:8090
+      - 127.0.0.1:${FLEET_CONTROL_ENROLLMENT_HTTPS_PORT:-8091}:8091
+    secrets:
+      - source: fleet_agent_ca_cert
+        target: fleet-management/ca.crt
+      - source: fleet_agent_ca_key
+        target: fleet-management/ca.key
+      - source: fleet_enrollment_server_cert
+        target: fleet-management/server.crt
+      - source: fleet_enrollment_server_key
+        target: fleet-management/server.key
     restart: unless-stopped
     security_opt: [no-new-privileges:true]
     depends_on:
@@ -37,3 +52,13 @@ services:
 
 volumes:
   fleet-control-db:
+
+secrets:
+  fleet_agent_ca_cert:
+    file: ./secrets/ca.crt
+  fleet_agent_ca_key:
+    file: ./secrets/ca.key
+  fleet_enrollment_server_cert:
+    file: ./secrets/server.crt
+  fleet_enrollment_server_key:
+    file: ./secrets/server.key

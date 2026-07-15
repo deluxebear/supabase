@@ -325,6 +325,74 @@ export function derivePreflightCapabilities(
           : [{ code: 'preflight_failed', message: 'Required attachment checks failed.' }],
     })
   }
+  capabilities.push(
+    {
+      name: 'management.target.bind',
+      state: report.outcome === 'pass' ? 'available' : 'unavailable',
+      mode: 'direct',
+      source: 'static-profile',
+      contractVersion: 'v1',
+      targetVersion: null,
+      observationRevision: revision,
+      observedAt,
+      validUntil: null,
+      blockers:
+        report.outcome === 'pass'
+          ? []
+          : [{ code: 'preflight_failed', message: 'Required attachment checks failed.' }],
+    },
+    {
+      name: 'management.agent.connect',
+      state: 'unavailable',
+      mode: 'agent',
+      source: 'static-profile',
+      contractVersion: 'v1',
+      targetVersion: null,
+      observationRevision: revision,
+      observedAt,
+      validUntil: null,
+      blockers: [
+        {
+          code: 'agent_not_enrolled',
+          message: 'Issue a single-use enrollment token and enroll an Agent.',
+        },
+      ],
+    },
+    {
+      name: 'management.enrollment.issue',
+      state: 'unavailable',
+      mode: 'operator',
+      source: 'static-profile',
+      contractVersion: 'v1',
+      targetVersion: null,
+      observationRevision: revision,
+      observedAt,
+      validUntil: null,
+      blockers: [
+        {
+          code: 'management_target_unbound',
+          message: 'Bind the project to a management target before enrolling an Agent.',
+        },
+      ],
+    },
+    {
+      name: 'management.certificate.revoke',
+      state: 'unavailable',
+      mode: 'operator',
+      source: 'static-profile',
+      contractVersion: 'v1',
+      targetVersion: null,
+      observationRevision: revision,
+      observedAt,
+      validUntil: null,
+      blockers: [
+        {
+          code: 'agent_not_enrolled',
+          message: 'Enroll an Agent before revoking its certificate.',
+        },
+      ],
+    }
+  )
   return capabilities
 }
 

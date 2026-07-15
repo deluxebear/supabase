@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/supabase/supabase/apps/backup-operator/internal/security"
 	sharedtransport "github.com/supabase/supabase/apps/backup-operator/internal/shared/agenttransport"
@@ -23,9 +24,12 @@ const CorrelationHeader = "X-Correlation-ID"
 var desiredRevisionPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
 
 type Handler struct {
-	Store        *Store
-	Capabilities *CapabilityRegistry
-	Validator    security.AssertionValidator
+	Store              *Store
+	Capabilities       *CapabilityRegistry
+	Validator          security.AssertionValidator
+	AgentCA            *CertificateAuthority
+	EnrollmentTokenTTL time.Duration
+	CertificateOverlap time.Duration
 }
 
 type createOperationRequest struct {
@@ -55,6 +59,13 @@ func (h *Handler) Register(mux *http.ServeMux) error {
 	mux.Handle("POST /platform/fleet/v1/projects/{projectRef}/operations", h.authorize("fleet.execute", http.HandlerFunc(h.createOperation)))
 	mux.Handle("GET /platform/fleet/v1/projects/{projectRef}/operations/{operationId}", h.authorize("fleet.read", http.HandlerFunc(h.getOperation)))
 	mux.Handle("GET /platform/fleet/v1/projects/{projectRef}/operations/{operationId}/events", h.authorize("fleet.read", http.HandlerFunc(h.replayEvents)))
+	mux.Handle("POST /platform/fleet/v1/projects/{projectRef}/management-bindings/{bindingId}/enrollment-tokens", h.authorize("fleet.enrollment.write", http.HandlerFunc(h.createEnrollmentToken)))
+	mux.Handle("GET /platform/fleet/v1/projects/{projectRef}/management-bindings/{bindingId}", h.authorize("fleet.read", http.HandlerFunc(h.getManagementBinding)))
+	mux.Handle("POST /platform/fleet/v1/projects/{projectRef}/management-bindings/{bindingId}/revoke", h.authorize("fleet.enrollment.write", http.HandlerFunc(h.revokeManagementBinding)))
+	mux.Handle("POST /platform/fleet/v1/projects/{projectRef}/management-bindings/{bindingId}/agents/{agentId}/revoke", h.authorize("fleet.enrollment.write", http.HandlerFunc(h.revokeAgent)))
+	mux.HandleFunc("POST /platform/fleet/v1/enrollments", h.enrollAgent)
+	mux.HandleFunc("POST /platform/fleet/v1/agents/{agentId}/certificate-requests", h.rotateAgentCertificate)
+	mux.HandleFunc("POST /platform/fleet/v1/agents/{agentId}/heartbeat", h.recordAgentHeartbeat)
 	return nil
 }
 

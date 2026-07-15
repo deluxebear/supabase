@@ -9,6 +9,7 @@ import { ProductMenuShortcuts } from '@/components/ui/ProductMenu/ProductMenuSho
 import { convertSectionsToProductMenu } from '@/components/ui/ProductMenu/SubMenu.utils'
 import { useCurrentPath } from '@/hooks/misc/useCurrentPath'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { STUDIO_CAPABILITIES, STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -20,6 +21,7 @@ interface OrganizationSettingsMenuItemsProps {
   showPlatformWebhooks?: boolean
   showPrivateApps?: boolean
   showAuditLogDrains?: boolean
+  showManagementTargets?: boolean
 }
 
 interface OrganizationSettingsSectionsProps extends OrganizationSettingsMenuItemsProps {
@@ -36,6 +38,7 @@ export const generateOrganizationSettingsMenuItems = ({
   showPlatformWebhooks = true,
   showPrivateApps: _showPrivateApps = false,
   showAuditLogDrains = false,
+  showManagementTargets = false,
 }: OrganizationSettingsMenuItemsProps) => [
   {
     key: 'general',
@@ -97,6 +100,15 @@ export const generateOrganizationSettingsMenuItems = ({
         },
       ]
     : []),
+  ...(showManagementTargets
+    ? [
+        {
+          key: 'management-targets',
+          label: 'Management Targets',
+          href: `/org/${slug}/management-targets`,
+        },
+      ]
+    : []),
 ]
 
 export const generateOrganizationSettingsSections = ({
@@ -108,6 +120,7 @@ export const generateOrganizationSettingsSections = ({
   showPlatformWebhooks = true,
   showPrivateApps = false,
   showAuditLogDrains = false,
+  showManagementTargets = false,
 }: OrganizationSettingsSectionsProps): SidebarSection[] => {
   const isLinkActive = (key: string, href: string) =>
     key === 'webhooks'
@@ -167,6 +180,16 @@ export const generateOrganizationSettingsSections = ({
             label: 'Webhooks',
             href: `/org/${slug}/webhooks`,
             shortcutId: SHORTCUT_IDS.NAV_ORG_SETTINGS_WEBHOOKS,
+          },
+        ]
+      : []),
+    ...(showManagementTargets
+      ? [
+          {
+            key: 'management-targets',
+            label: 'Management Targets',
+            href: `/org/${slug}/management-targets`,
+            shortcutId: SHORTCUT_IDS.NAV_ORG_SETTINGS_MANAGEMENT_TARGETS,
           },
         ]
       : []),
@@ -256,6 +279,8 @@ export function OrganizationSettingsLayout({ children }: PropsWithChildren) {
     showPlatformWebhooks,
     showPrivateApps,
     showAuditLogDrains,
+    showManagementTargets:
+      STUDIO_DEPLOYMENT_PROFILE === 'fleet' && STUDIO_CAPABILITIES.managementTrust,
   })
 
   const orgSettingsMenu = useMemo(
