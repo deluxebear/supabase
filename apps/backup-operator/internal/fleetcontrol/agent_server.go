@@ -13,6 +13,7 @@ import (
 	fleetagentv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/fleet/v1"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
+	"github.com/supabase/supabase/apps/backup-operator/internal/observability"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/peer"
@@ -27,6 +28,8 @@ type AgentServer struct {
 	PollInterval time.Duration
 	TaskTTL      time.Duration
 	Now          func() time.Time
+	Sessions     *SessionLimiter
+	Metrics      *observability.Metrics
 }
 
 func (s *AgentServer) DownloadArtifact(request *fleetagentv1.DownloadArtifactRequest, stream fleetagentv1.FleetAgentControlService_DownloadArtifactServer) error {
@@ -95,6 +98,25 @@ func (s *AgentServer) Connect(stream fleetagentv1.FleetAgentControlService_Conne
 		return status.Error(codes.PermissionDenied, "Fleet Agent hello does not match the enrolled project binding")
 	}
 	identity := AgentSessionIdentity{AgentID: agent.ID, ProjectRef: binding.ProjectRef, TargetID: binding.TargetID, BindingID: binding.BindingID, Capabilities: append([]string(nil), hello.GetCapabilities()...)}
+	if s.Sessions == nil {
+		return status.Error(codes.FailedPrecondition, "Fleet Agent session limiter is required")
+	}
+	release, ok := s.Sessions.Acquire(binding.TargetID)
+	if !ok {
+		if s.Metrics != nil {
+			_ = s.Metrics.Add("fleet_capacity_rejections_total", 1, map[string]string{"component": "agent_sessions"})
+		}
+		return status.Error(codes.ResourceExhausted, "Fleet Agent session capacity is exhausted; reconnect with backoff")
+	}
+	if s.Metrics != nil {
+		_ = s.Metrics.Set("fleet_agent_sessions", float64(s.Sessions.Active()), nil)
+	}
+	defer func() {
+		release()
+		if s.Metrics != nil {
+			_ = s.Metrics.Set("fleet_agent_sessions", float64(s.Sessions.Active()), nil)
+		}
+	}()
 	if err := s.Store.TouchAgentSession(stream.Context(), agent.ID); err != nil {
 		return status.Error(codes.PermissionDenied, "Fleet Agent session is no longer active")
 	}

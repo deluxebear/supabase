@@ -4,7 +4,9 @@ import { describe, expect, it, vi } from 'vitest'
 import { handler } from './entitlements'
 
 vi.hoisted(() => {
+  process.env.NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE = 'fleet'
   process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
+  process.env.NEXT_PUBLIC_IS_PLATFORM = 'true'
 })
 
 describe('GET /platform/organizations/{slug}/entitlements (self-platform, M3.1)', () => {

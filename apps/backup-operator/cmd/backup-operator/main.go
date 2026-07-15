@@ -49,6 +49,7 @@ func main() {
 	runtimeOwner := flag.String("runtime-owner", envOr("BACKUP_OPERATOR_RUNTIME_OWNER", "backup-operator"), "durable runtime owner id")
 	runtimePoll := flag.Duration("runtime-poll-interval", envDuration("BACKUP_OPERATOR_RUNTIME_POLL_INTERVAL", time.Second), "operator runtime poll interval")
 	runtimeLease := flag.Duration("runtime-lease-ttl", envDuration("BACKUP_OPERATOR_RUNTIME_LEASE_TTL", 5*time.Second), "operator runtime lease TTL")
+	runtimeConcurrency := flag.Int("runtime-max-concurrent-operations", envInt("BACKUP_OPERATOR_RUNTIME_MAX_CONCURRENT_OPERATIONS", 4), "bounded in-process operation concurrency")
 	agentGRPCListen := flag.String("agent-grpc-listen", os.Getenv("BACKUP_OPERATOR_AGENT_GRPC_LISTEN"), "mTLS Agent control gRPC listen address")
 	agentGRPCCert := flag.String("agent-grpc-cert", os.Getenv("BACKUP_OPERATOR_AGENT_GRPC_CERT"), "Agent control server certificate")
 	agentGRPCKey := flag.String("agent-grpc-key", os.Getenv("BACKUP_OPERATOR_AGENT_GRPC_KEY"), "Agent control server private key")
@@ -158,7 +159,7 @@ func main() {
 		Mode: mode, Listen: *listen, ShutdownTimeout: *shutdownTimeout,
 		ControlStore:     app.ControlStoreConfig{Driver: *storeDriver, DSN: *storeDSN, SystemIdentifier: *storeSystemID, DataDomain: *storeDataDomain},
 		ServiceAssertion: app.ServiceAssertionConfig{Key: []byte(*assertionKey), Issuer: *assertionIssuer, Audience: *assertionAudience, MaxTTL: *assertionMaxTTL},
-		Runtime:          app.RuntimeConfig{Enabled: *runtimeEnable, OwnerID: *runtimeOwner, PollInterval: *runtimePoll, LeaseTTL: *runtimeLease},
+		Runtime:          app.RuntimeConfig{Enabled: *runtimeEnable, OwnerID: *runtimeOwner, PollInterval: *runtimePoll, LeaseTTL: *runtimeLease, MaxConcurrentOperations: *runtimeConcurrency},
 	}
 	taskRouter := app.NewTargetTaskRouter()
 	providers := app.RuntimeProviders{TaskRouter: taskRouter}
@@ -839,6 +840,18 @@ func envInt64(name string, fallback int64) int64 {
 		return fallback
 	}
 	parsed, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		return fallback
+	}
+	return parsed
+}
+
+func envInt(name string, fallback int) int {
+	value := strings.TrimSpace(os.Getenv(name))
+	if value == "" {
+		return fallback
+	}
+	parsed, err := strconv.Atoi(value)
 	if err != nil {
 		return fallback
 	}

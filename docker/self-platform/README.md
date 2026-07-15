@@ -60,6 +60,20 @@ the login surface, platform registry fixture, Fleet durable-operation fixture,
 and Backup Operator job evidence remain available before restarting the managed
 services. Run it only against a disposable or explicitly approved environment.
 
+T10 adds a second, independent control-plane restore drill:
+
+```bash
+./scripts/verify-control-plane-dr.sh
+```
+
+It restores the platform, Fleet Control, and Backup Operator dumps into three
+scratch databases, verifies all migration ledgers and the Fleet schema-6
+readiness gate, checks a protected authority/key bundle, and proves missing
+Agent CA material fails closed. It does not stop the managed stack. Capacity
+defaults in `control-plane.env.example` are the published tested envelope; run
+`../../apps/backup-operator/scripts/run-t10-capacity-load.sh` before proposing a
+higher limit.
+
 T6 attachment and detachment semantics have a separate disposable acceptance test:
 
 ```bash

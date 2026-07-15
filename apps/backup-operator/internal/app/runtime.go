@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"math/rand/v2"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/supabase/supabase/apps/backup-operator/internal/controlstore"
@@ -17,10 +19,11 @@ import (
 // RuntimeConfig enables the complete operator worker graph. Leaving it
 // disabled keeps the API available while advertising operator-runtime=false.
 type RuntimeConfig struct {
-	Enabled      bool
-	OwnerID      string
-	PollInterval time.Duration
-	LeaseTTL     time.Duration
+	Enabled                 bool
+	OwnerID                 string
+	PollInterval            time.Duration
+	LeaseTTL                time.Duration
+	MaxConcurrentOperations int
 }
 
 type RuntimeProviders struct {
@@ -72,6 +75,13 @@ func defaultRuntimeWorkerFactory(providers RuntimeProviders) func(Config, Store)
 		if leaseTTL <= interval {
 			leaseTTL = 3 * interval
 		}
+		concurrency := cfg.Runtime.MaxConcurrentOperations
+		if concurrency == 0 {
+			concurrency = 4
+		}
+		if concurrency < 1 || concurrency > 20 {
+			return nil, false, errors.New("backup runtime concurrency must be between 1 and the tested maximum of 20")
+		}
 		sender, results := providers.Sender, providers.Results
 		var inProcess *inProcessTransport
 		if cfg.Mode == ModeAll {
@@ -79,7 +89,7 @@ func defaultRuntimeWorkerFactory(providers RuntimeProviders) func(Config, Store)
 			if execute == nil && providers.TaskRouter != nil {
 				execute = providers.TaskRouter.Execute
 			}
-			inProcess = newInProcessTransport(execute, 128, cfg.Metrics)
+			inProcess = newInProcessTransport(execute, 128, concurrency, cfg.Metrics)
 			sender, results = inProcess, inProcess.results
 		}
 		workers := []Worker{
@@ -151,19 +161,29 @@ func (w *periodicWorker) Run(ctx context.Context) error {
 	if w.run == nil || w.interval <= 0 {
 		return errors.New("periodic worker is not configured")
 	}
-	ticker := time.NewTicker(w.interval)
-	defer ticker.Stop()
+	failures := 0
 	for {
+		delay := w.interval
 		if err := w.run(ctx); err != nil {
 			if ctx.Err() != nil {
 				return nil
 			}
 			slog.Warn("periodic operator worker cycle failed", "worker", w.name, "error", err)
+			failures++
+			ceiling := w.interval * time.Duration(1<<min(failures, 8))
+			if ceiling > time.Minute {
+				ceiling = time.Minute
+			}
+			delay = ceiling/2 + time.Duration(rand.Int64N(max(1, int64(ceiling/2))))
+		} else {
+			failures = 0
 		}
+		timer := time.NewTimer(delay)
 		select {
 		case <-ctx.Done():
+			timer.Stop()
 			return nil
-		case <-ticker.C:
+		case <-timer.C:
 		}
 	}
 }
@@ -209,14 +229,15 @@ func (s backupJobSink) EnsureBackupJob(ctx context.Context, request scheduler.Ba
 }
 
 type inProcessTransport struct {
-	execute func(context.Context, controlstore.OutboxTask) orchestration.Result
-	tasks   chan controlstore.OutboxTask
-	results chan orchestration.Result
-	metrics *observability.Metrics
+	execute     func(context.Context, controlstore.OutboxTask) orchestration.Result
+	tasks       chan controlstore.OutboxTask
+	results     chan orchestration.Result
+	metrics     *observability.Metrics
+	concurrency int
 }
 
-func newInProcessTransport(execute func(context.Context, controlstore.OutboxTask) orchestration.Result, size int, metrics *observability.Metrics) *inProcessTransport {
-	return &inProcessTransport{execute: execute, tasks: make(chan controlstore.OutboxTask, size), results: make(chan orchestration.Result, size), metrics: metrics}
+func newInProcessTransport(execute func(context.Context, controlstore.OutboxTask) orchestration.Result, size, concurrency int, metrics *observability.Metrics) *inProcessTransport {
+	return &inProcessTransport{execute: execute, tasks: make(chan controlstore.OutboxTask, size), results: make(chan orchestration.Result, size), metrics: metrics, concurrency: concurrency}
 }
 func (t *inProcessTransport) Name() string { return "in-process-agent-transport" }
 func (t *inProcessTransport) Send(ctx context.Context, task controlstore.OutboxTask) error {
@@ -230,11 +251,25 @@ func (t *inProcessTransport) Send(ctx context.Context, task controlstore.OutboxT
 	}
 }
 func (t *inProcessTransport) Run(ctx context.Context) error {
+	if t.concurrency < 1 || t.concurrency > 20 {
+		return errors.New("in-process Agent concurrency is outside the tested envelope")
+	}
+	var workers sync.WaitGroup
+	workers.Add(t.concurrency)
+	for index := 0; index < t.concurrency; index++ {
+		go func() { defer workers.Done(); t.runWorker(ctx) }()
+	}
+	<-ctx.Done()
+	workers.Wait()
+	return nil
+}
+
+func (t *inProcessTransport) runWorker(ctx context.Context) {
 	defer observability.CoreMetrics{Registry: t.metrics}.AgentSession(false, time.Now())
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return
 		case task := <-t.tasks:
 			observability.CoreMetrics{Registry: t.metrics}.AgentSession(true, time.Now())
 			result := t.execute(ctx, task)
@@ -243,7 +278,7 @@ func (t *inProcessTransport) Run(ctx context.Context) error {
 			}
 			select {
 			case <-ctx.Done():
-				return nil
+				return
 			case t.results <- result:
 			}
 		}

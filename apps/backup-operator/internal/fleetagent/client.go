@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"io"
+	"math/rand/v2"
 	"sync"
 	"time"
 
@@ -27,6 +28,7 @@ type Client struct {
 	HeartbeatInterval time.Duration
 	MinBackoff        time.Duration
 	MaxBackoff        time.Duration
+	Jitter            func(time.Duration) time.Duration
 }
 
 func (c Client) Run(ctx context.Context) error {
@@ -48,7 +50,8 @@ func (c Client) Run(ctx context.Context) error {
 		} else if ctx.Err() != nil {
 			return nil
 		}
-		timer := time.NewTimer(backoff)
+		delay := reconnectDelay(backoff, c.Jitter)
+		timer := time.NewTimer(delay)
 		select {
 		case <-ctx.Done():
 			timer.Stop()
@@ -60,6 +63,20 @@ func (c Client) Run(ctx context.Context) error {
 			backoff = maximum
 		}
 	}
+}
+
+func reconnectDelay(backoff time.Duration, jitter func(time.Duration) time.Duration) time.Duration {
+	if jitter != nil {
+		delay := jitter(backoff)
+		if delay >= backoff/2 && delay <= backoff {
+			return delay
+		}
+	}
+	half := backoff / 2
+	if half <= 0 {
+		return backoff
+	}
+	return half + time.Duration(rand.Int64N(int64(backoff-half)+1))
 }
 
 func (c Client) connect(ctx context.Context) error {

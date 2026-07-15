@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { executePlatformQuery } from './db'
 import {
+  CapacityExceededError,
   applyConfigurationObservation,
   commitDesiredConfiguration,
   ConfigurationConflictError,
@@ -74,6 +75,16 @@ describe('Fleet desired-state authority', () => {
     await expect(
       commitDesiredConfiguration({ ...baseInput, expectedGeneration: 4 })
     ).rejects.toBeInstanceOf(ConfigurationConflictError)
+  })
+
+  it('maps durable queue quota failures to a stable retryable capacity code', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({
+      data: undefined,
+      error: new Error('capacity_exceeded: organization queued operation limit reached'),
+    })
+    await expect(commitDesiredConfiguration(baseInput)).rejects.toBeInstanceOf(
+      CapacityExceededError
+    )
   })
 
   it('projects observations only with project, revision, and generation CAS inputs', async () => {

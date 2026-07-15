@@ -6,7 +6,8 @@ exclusively owned by Backup Operator. The services may share an image build
 repository and neutral Agent infrastructure, but never an API namespace,
 database, migration ledger, retention policy, or domain payload schema.
 
-Schema 5 adds project-scoped immutable Edge Function artifact metadata and
+Schema 6 adds capacity admission, operation-event/audit archives, and bounded
+retention on top of schema 5 project-scoped immutable Edge Function artifact metadata and
 mTLS artifact streaming on top of schema 4 durable ownership-safe
 reconciliation tasks and typed Agent evidence. Schema 3 introduced management
 bindings, hash-only single-use enrollment, Agent CSR
@@ -43,7 +44,7 @@ FLEET_CONTROL_SERVICE_ASSERTION_AUDIENCE=fleet-control
 
 Use a dedicated assertion key of at least 32 random bytes; do not reuse the
 Backup Operator assertion key. `/healthz` proves process liveness and `/readyz`
-returns success only when the independent Fleet schema is at version 5. The
+returns success only when the independent Fleet schema is at version 6. The
 artifact root is a separate access-controlled volume; do not mount it into
 central Studio or include it in a managed stack recovery domain.
 
@@ -77,10 +78,44 @@ operation, and correlation ID without copying typed input or secrets. Event
 replay is bounded and cursor based. Fencing tokens are monotonically allocated
 per project/target/binding domain in the same transaction as operation creation.
 
+## Capacity and backpressure
+
+The published envelope is 100 attached projects, 300 concurrent authenticated
+Agent sessions during reconnect/certificate overlap, 20 concurrent target-side
+operations, two concurrent operations per target, 1,000 queued operations per
+organization, 100 queued operations per target, and 10,000 live events per
+operation. The T7 topology still permits only one distinct active execution
+Agent per binding. Configure lower limits with `FLEET_CONTROL_MAX_*`; do not
+raise published limits without a new result from
+`scripts/run-t10-capacity-load.sh`.
+
+`capacity_exceeded` is a real rejection. For operations it is retryable after
+queued work drains; artifact byte exhaustion requires retention/capacity action.
+Idempotent replays and reconnect reclaim of an already active task remain
+available at saturation. An offline target keeps durable queued work but does
+not occupy an applying slot. Agent reconnect uses bounded equal jitter.
+
+## SLOs and alerts
+
+Scrape `/metrics` and install `deploy/monitoring/alerts.yaml`. Cached control
+reads target p95 below 500 ms and committed events must be visible within five
+seconds. Investigate `FleetAgentSessionSaturation`,
+`FleetOperationCapacitySaturated`, `FleetOperationQueueBacklog`, and
+`FleetCapacityRejectingWork` using correlation logs. Project, target, Agent,
+and operation identities are intentionally absent from metric labels.
+
+## Event and audit retention
+
+The newest 10,000 events per operation remain live. Overflow is archived in
+bounded batches; terminal events older than 30 days and audit rows older than
+365 days also move to independent archive tables. The operation snapshot is the
+cursor-expiry fallback. Back up live and archive tables together before schema
+upgrade or retention-policy changes.
+
 ## Upgrade and rollback
 
 Run `make generate`, `make check-generated`, `make build`, `make test`, and
-`go vet ./...` before rollout. Protocol major 1 and Fleet schema 5 are the T9
+`go vet ./...` before rollout. Protocol major 1 and Fleet schema 6 are the T10
 compatibility boundary. Unknown protocol majors, capability names, or
 `supabase.backup.*` payload schemas fail before persistence.
 
@@ -90,7 +125,7 @@ service assertion. The runner acquires a PostgreSQL advisory lock, stores the
 name and SHA-256 checksum of every migration, and rejects a changed migration at
 startup. The first T5 rollout adopts checksum metadata for the pre-T5 schema-1
 ledger; every later rollout is strictly locked. Roll back to an image digest only
-while it supports Fleet schema 5. Never edit an applied migration; use a forward
+while it supports Fleet schema 6. Never edit an applied migration; use a forward
 repair migration after taking an independent PostgreSQL backup.
 
 Production Compose also runs the same image in `outbox-dispatcher` mode. Its
@@ -104,3 +139,9 @@ operation, desired revision, and digest before acknowledging the outbox row.
 During a managed-stack outage, Fleet Control and `fleet-control-db` must remain
 available. Run `docker/self-platform/scripts/verify-control-plane-recovery-boundary.sh`
 only in a disposable or explicitly approved environment to prove this boundary.
+
+Run `docker/self-platform/scripts/verify-control-plane-dr.sh` in a disposable
+production topology to restore the platform, Fleet Control, and Backup Operator
+stores independently and to prove missing Agent CA material fails readiness.
+Store dumps without platform encryption/assertion keys and Agent CA keys are
+not a valid recovery set.

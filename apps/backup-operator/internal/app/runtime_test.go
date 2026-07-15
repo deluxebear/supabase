@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"sort"
 	"sync"
@@ -132,6 +133,37 @@ func TestDefaultRuntimeMissingDependencyDegradesCapabilityWithoutStartupFailure(
 	workers, configured, err := defaultRuntimeWorkerFactory(RuntimeProviders{})(cfg, store)
 	if err != nil || configured || len(workers) != 0 {
 		t.Fatalf("incomplete runtime should degrade: workers=%d configured=%v err=%v", len(workers), configured, err)
+	}
+}
+
+func TestInProcessTransportBoundsConcurrentBackupOperations(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	var active, peak atomic.Int64
+	transport := newInProcessTransport(func(_ context.Context, task controlstore.OutboxTask) orchestration.Result {
+		current := active.Add(1)
+		for current > peak.Load() && !peak.CompareAndSwap(peak.Load(), current) {
+		}
+		time.Sleep(5 * time.Millisecond)
+		active.Add(-1)
+		return orchestration.Result{TaskID: task.TaskID, Succeeded: true}
+	}, 32, 4, nil)
+	done := make(chan error, 1)
+	go func() { done <- transport.Run(ctx) }()
+	for index := 0; index < 20; index++ {
+		if err := transport.Send(ctx, controlstore.OutboxTask{TaskID: fmt.Sprintf("task-%d", index)}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for index := 0; index < 20; index++ {
+		<-transport.results
+	}
+	if peak.Load() != 4 {
+		t.Fatalf("peak backup operation concurrency = %d", peak.Load())
+	}
+	cancel()
+	if err := <-done; err != nil {
+		t.Fatal(err)
 	}
 }
 

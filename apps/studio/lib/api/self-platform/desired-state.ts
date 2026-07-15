@@ -66,6 +66,15 @@ export class ConfigurationConflictError extends Error {
   }
 }
 
+export class CapacityExceededError extends Error {
+  readonly code = 'capacity_exceeded'
+
+  constructor() {
+    super('Fleet operation capacity is temporarily exhausted; retry after queued work completes')
+    this.name = 'CapacityExceededError'
+  }
+}
+
 export async function commitDesiredConfiguration(
   value: CommitDesiredConfigurationInput
 ): Promise<CommittedDesiredConfiguration> {
@@ -93,6 +102,9 @@ export async function commitDesiredConfiguration(
   if (result.error) {
     if (result.error.message.includes('configuration_conflict')) {
       throw new ConfigurationConflictError()
+    }
+    if (result.error.message.includes('capacity_exceeded')) {
+      throw new CapacityExceededError()
     }
     throw result.error
   }

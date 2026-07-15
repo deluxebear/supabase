@@ -7,7 +7,9 @@ import { guardOrgRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { listRolesV2 } from '@/lib/api/self-platform/roles'
 
 vi.hoisted(() => {
+  process.env.NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE = 'fleet'
   process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
+  process.env.NEXT_PUBLIC_IS_PLATFORM = 'true'
 })
 
 vi.mock('@/lib/api/self-platform/roles', () => ({ listRolesV2: vi.fn() }))

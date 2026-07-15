@@ -13,6 +13,9 @@ export const METRICS_RETENTION_DAYS = 7
 export const METRICS_SCRAPE_TIMEOUT_MS = 15_000
 export const METRICS_L1_TIMEOUT_MS = 5_000
 export const SWEEP_MIN_INTERVAL_MS = 3_600_000
+export const METRICS_DEFAULT_CONCURRENCY = 8
+export const METRICS_MAX_CONCURRENCY = 32
+export const METRICS_BACKOFF_MAX_MS = 300_000
 
 export interface AttributeMeta {
   format: '%' | 'bytes' | 'bytes-per-second' | ''
@@ -534,7 +537,7 @@ function warn(ref: string, stage: string, err: unknown): void {
   )
 }
 
-export async function sampleProject(ref: string): Promise<void> {
+export async function sampleProject(ref: string): Promise<boolean> {
   const conn = await resolveProjectConnection(ref)
   const values: Record<string, number> = {}
   const collect = (row: Record<string, unknown>) => {
@@ -590,7 +593,7 @@ export async function sampleProject(ref: string): Promise<void> {
     )
   }
   const attrs = Object.keys(values)
-  if (attrs.length === 0) return
+  if (attrs.length === 0) return false
   // Values fully parameterized; attribute names only ever come from
   // ATTRIBUTE_META keys (collect() filter) — M5.0 injection-barrier class.
   const params: unknown[] = [ref]
@@ -602,7 +605,11 @@ export async function sampleProject(ref: string): Promise<void> {
     query: `insert into platform.metrics_samples (project_ref, sampled_at, attribute, value) values ${rows.join(', ')}`,
     parameters: params,
   })
-  if (error) warn(ref, 'sample insert', error)
+  if (error) {
+    warn(ref, 'sample insert', error)
+    return false
+  }
+  return true
 }
 
 let lastSweepAt = 0
@@ -620,6 +627,38 @@ export async function sweepIfDue(now = Date.now()): Promise<void> {
 }
 
 let cycleRunning = false
+const projectBackoff = new Map<string, { failures: number; nextAttemptAt: number }>()
+
+export function metricsConcurrency(value = process.env.SELF_PLATFORM_METRICS_CONCURRENCY): number {
+  const parsed = Number(value)
+  if (!Number.isInteger(parsed) || parsed < 1) return METRICS_DEFAULT_CONCURRENCY
+  return Math.min(parsed, METRICS_MAX_CONCURRENCY)
+}
+
+export function metricsBackoffMs(failures: number, random = Math.random): number {
+  const exponent = Math.max(0, Math.min(failures - 1, 8))
+  const ceiling = Math.min(METRICS_BACKOFF_MAX_MS, 5_000 * 2 ** exponent)
+  return Math.floor(ceiling / 2 + random() * (ceiling / 2))
+}
+
+export async function runBounded<T>(
+  items: readonly T[],
+  concurrency: number,
+  worker: (item: T) => Promise<void>
+): Promise<void> {
+  if (items.length === 0) return
+  const limit = Math.max(1, Math.min(concurrency, items.length, METRICS_MAX_CONCURRENCY))
+  let cursor = 0
+  await Promise.all(
+    Array.from({ length: limit }, async () => {
+      while (cursor < items.length) {
+        const item = items[cursor++]
+        await worker(item)
+      }
+    })
+  )
+}
+
 export async function runSamplerCycle(): Promise<void> {
   if (cycleRunning) return // an overrunning cycle skips ticks, never stacks
   cycleRunning = true
@@ -633,9 +672,23 @@ export async function runSamplerCycle(): Promise<void> {
       console.warn(`[self-platform] metrics cycle: listing projects failed: ${error.message}`)
       return
     }
-    await Promise.all(
-      (data ?? []).map((row) => sampleProject(row.ref).catch((err) => warn(row.ref, 'sample', err)))
-    )
+    const now = Date.now()
+    const due = (data ?? []).filter((row) => (projectBackoff.get(row.ref)?.nextAttemptAt ?? 0) <= now)
+    await runBounded(due, metricsConcurrency(), async (row) => {
+      try {
+        const succeeded = await sampleProject(row.ref)
+        if (succeeded) {
+          projectBackoff.delete(row.ref)
+          return
+        }
+        const failures = (projectBackoff.get(row.ref)?.failures ?? 0) + 1
+        projectBackoff.set(row.ref, { failures, nextAttemptAt: now + metricsBackoffMs(failures) })
+      } catch (err) {
+        warn(row.ref, 'sample', err)
+        const failures = (projectBackoff.get(row.ref)?.failures ?? 0) + 1
+        projectBackoff.set(row.ref, { failures, nextAttemptAt: now + metricsBackoffMs(failures) })
+      }
+    })
     await sweepIfDue()
   } catch (err) {
     console.warn(
@@ -664,4 +717,5 @@ export function resetMetricsSamplerForTest(): void {
   cycleRunning = false
   lastSweepAt = 0
   lastScrape.clear()
+  projectBackoff.clear()
 }

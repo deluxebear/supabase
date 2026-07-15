@@ -5,7 +5,9 @@ import { describe, expect, it, vi } from 'vitest'
 import { handler } from './sso'
 
 vi.hoisted(() => {
+  process.env.NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE = 'fleet'
   process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
+  process.env.NEXT_PUBLIC_IS_PLATFORM = 'true'
 })
 
 const claimsOf = (sub: string) => ({ sub }) as JwtPayload

@@ -4,7 +4,9 @@ import { describe, expect, it, vi } from 'vitest'
 import { handler } from './audit-login'
 
 vi.hoisted(() => {
+  process.env.NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE = 'fleet'
   process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
+  process.env.NEXT_PUBLIC_IS_PLATFORM = 'true'
 })
 
 describe('POST /platform/profile/audit-login (self-platform)', () => {

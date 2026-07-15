@@ -20,6 +20,7 @@ import { checkPermission, guardProjectRoute } from '@/lib/api/self-platform/rbac
 import { resolveProjectIdentity } from '@/lib/api/self-platform/resolve-connection'
 
 vi.hoisted(() => {
+  process.env.NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE = 'fleet'
   process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
   process.env.NEXT_PUBLIC_IS_PLATFORM = 'true'
 })

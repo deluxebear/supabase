@@ -29,6 +29,15 @@ func (s *ArtifactStore) Put(ctx context.Context, projectRef, digest string, raw 
 		return false, errors.New("function artifact digest does not match request")
 	}
 	path := s.path(projectRef, digest)
+	if existingSize, exists, err := s.Store.GetFunctionArtifact(ctx, projectRef, digest); err != nil {
+		return false, err
+	} else if !exists {
+		if err := s.Store.CheckArtifactQuota(ctx, projectRef, int64(len(raw))); err != nil {
+			return false, err
+		}
+	} else if existingSize != int64(len(raw)) {
+		return false, errors.New("immutable function artifact metadata conflict")
+	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return false, err
 	}

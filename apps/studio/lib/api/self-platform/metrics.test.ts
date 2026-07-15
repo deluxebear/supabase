@@ -11,9 +11,14 @@ import {
   containerSelector,
   k8sSelector,
   METRICS_RETENTION_DAYS,
+  METRICS_DEFAULT_CONCURRENCY,
+  METRICS_MAX_CONCURRENCY,
+  metricsBackoffMs,
+  metricsConcurrency,
   parsePrometheusText,
   resetMetricsSamplerForTest,
   runSamplerCycle,
+  runBounded,
   sampleProject,
   startMetricsSampler,
   SWEEP_MIN_INTERVAL_MS,
@@ -654,6 +659,37 @@ describe('runSamplerCycle', () => {
       .mocked(executePlatformQuery)
       .mock.calls.filter(([o]) => o.query.startsWith('select ref'))
     expect(listCalls).toHaveLength(1)
+  })
+})
+
+describe('bounded sampler scheduling', () => {
+  it('bounds project fan-out while processing every project', async () => {
+    let active = 0
+    let peak = 0
+    const completed: number[] = []
+    await runBounded(Array.from({ length: 100 }, (_, index) => index), 8, async (index) => {
+      active++
+      peak = Math.max(peak, active)
+      await Promise.resolve()
+      completed.push(index)
+      active--
+    })
+    expect(peak).toBe(8)
+    expect(completed).toHaveLength(100)
+  })
+
+  it('uses safe concurrency defaults and clamps configured values', () => {
+    expect(metricsConcurrency(undefined)).toBe(METRICS_DEFAULT_CONCURRENCY)
+    expect(metricsConcurrency('invalid')).toBe(METRICS_DEFAULT_CONCURRENCY)
+    expect(metricsConcurrency('0')).toBe(METRICS_DEFAULT_CONCURRENCY)
+    expect(metricsConcurrency('4')).toBe(4)
+    expect(metricsConcurrency('1000')).toBe(METRICS_MAX_CONCURRENCY)
+  })
+
+  it('applies bounded exponential backoff with jitter', () => {
+    expect(metricsBackoffMs(1, () => 0)).toBe(2_500)
+    expect(metricsBackoffMs(1, () => 1)).toBe(5_000)
+    expect(metricsBackoffMs(20, () => 1)).toBe(300_000)
   })
 })
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Disposable Compose acceptance test for T5 platform migrations and state CAS.
+# Disposable Compose acceptance test for platform migrations, state CAS, and T10 capacity.
 set -Eeuo pipefail
 cd "$(dirname "$0")/.."
 
@@ -22,7 +22,7 @@ for migration in ../volumes/platform/migrations/{01-schema,02-projects,03-analyt
   psql_test <"$migration" >/dev/null
 done
 "${compose[@]}" run --rm platform-migrate
-psql_test -tAc "select count(*) = 13 from platform.schema_migrations" | grep -qx t
+psql_test -tAc "select count(*) = 18 from platform.schema_migrations" | grep -qx t
 
 echo '== fresh migration, concurrent replay, desired/outbox/CAS =='
 cleanup
@@ -90,6 +90,36 @@ begin
   end if;
 end;
 $$;
+
+-- T10 capacity is enforced transactionally at the platform authority before
+-- work enters Fleet Control. Terminal dispatched history does not consume the
+-- bounded live queue.
+update platform.operation_outbox set delivery_state='dispatched' where operation_id in ('op-1','op-2');
+update platform.operation_summaries set state='applied' where operation_id in ('op-1','op-2');
+set platform.fleet_max_queued_per_target = '2';
+select * from platform.commit_desired_configuration(
+  'project-a','auth','auth.config.apply',2,'op-3','target-a','binding-a',
+  'supabase.fleet.auth.config.apply.v1','idem-3','{"enabled":true}'::jsonb,
+  '{}'::jsonb,'user-a','request-3'
+);
+select * from platform.commit_desired_configuration(
+  'project-a','auth','auth.config.apply',3,'op-4','target-a','binding-a',
+  'supabase.fleet.auth.config.apply.v1','idem-4','{"enabled":false}'::jsonb,
+  '{}'::jsonb,'user-a','request-4'
+);
+do $$
+begin
+  perform platform.commit_desired_configuration(
+    'project-a','auth','auth.config.apply',4,'op-5','target-a','binding-a',
+    'supabase.fleet.auth.config.apply.v1','idem-5','{"enabled":true}'::jsonb,
+    '{}'::jsonb,'user-a','request-5'
+  );
+  raise exception 'target capacity limit was not enforced';
+exception
+  when sqlstate '54000' then
+    if sqlerrm <> 'capacity_exceeded' then raise; end if;
+end;
+$$;
 SQL
 
 echo '== changed checksum fails readiness =='
@@ -99,4 +129,4 @@ if "${compose[@]}" run --rm platform-migrate; then
   exit 1
 fi
 
-echo 'T5 platform migration/state-authority acceptance passed'
+echo 'Platform migration/state-authority/capacity acceptance passed'

@@ -7,7 +7,9 @@ import { writeHookConfig } from '@/lib/api/self-platform/auth-config'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 
 vi.hoisted(() => {
+  process.env.NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE = 'fleet'
   process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
+  process.env.NEXT_PUBLIC_IS_PLATFORM = 'true'
 })
 
 vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({ guardProjectRoute: vi.fn() }))

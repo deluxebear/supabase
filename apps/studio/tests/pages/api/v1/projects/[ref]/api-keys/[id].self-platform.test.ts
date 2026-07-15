@@ -21,7 +21,9 @@ import { resolveProjectConnection } from '@/lib/api/self-platform/resolve-connec
 // filename) doesn't have this hazard, hence its self-hosted sibling test IS
 // colocated (see `api-keys.self-hosted.test.ts`).
 vi.hoisted(() => {
+  process.env.NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE = 'fleet'
   process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
+  process.env.NEXT_PUBLIC_IS_PLATFORM = 'true'
 })
 vi.mock('@/lib/api/self-platform/resolve-connection', () => {
   class ProjectNotFound extends Error {}

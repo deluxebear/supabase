@@ -4,11 +4,17 @@ import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { handler } from './index'
+import {
+  getProjectAttachmentStatus,
+  listProjectCapabilities,
+} from '@/lib/api/self-platform/attachment'
 import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
 import { ProjectNotFound, resolveProjectIdentity } from '@/lib/api/self-platform/resolve-connection'
 
 vi.hoisted(() => {
+  process.env.NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE = 'fleet'
   process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
+  process.env.NEXT_PUBLIC_IS_PLATFORM = 'true'
 })
 vi.mock('@/lib/api/self-platform/resolve-connection', () => {
   class ProjectNotFound extends Error {}
@@ -18,6 +24,11 @@ vi.mock('@/lib/api/self-platform/resolve-connection', () => {
   }
 })
 vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({ checkPermission: vi.fn() }))
+vi.mock('@/lib/api/self-platform/attachment', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  getProjectAttachmentStatus: vi.fn(),
+  listProjectCapabilities: vi.fn(),
+}))
 
 const claimsOf = (sub: string) => ({ sub }) as JwtPayload
 
@@ -70,6 +81,8 @@ const resolved = {
 beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(checkPermission).mockResolvedValue(true)
+  vi.mocked(getProjectAttachmentStatus).mockResolvedValue(null)
+  vi.mocked(listProjectCapabilities).mockResolvedValue([])
 })
 
 describe('GET /platform/projects/[ref] (self-platform)', () => {

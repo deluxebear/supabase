@@ -23,7 +23,7 @@ import (
 //go:embed migrations/*/*.sql
 var fleetMigrations embed.FS
 
-const CurrentSchemaVersion = 5
+const CurrentSchemaVersion = 6
 
 var ErrOperationNotFound = errors.New("Fleet operation not found")
 var ErrMigrationChecksum = errors.New("Fleet migration checksum mismatch")
@@ -49,6 +49,7 @@ type Store struct {
 	dialect  StoreDialect
 	identity StoreIdentity
 	now      func() time.Time
+	capacity CapacityPolicy
 }
 
 type Operation struct {
@@ -122,7 +123,7 @@ func OpenSQLite(ctx context.Context, path string, identity StoreIdentity) (*Stor
 		return nil, err
 	}
 	db.SetMaxOpenConns(1)
-	store := &Store{db: db, dialect: FleetSQLite, identity: identity, now: time.Now}
+	store := &Store{db: db, dialect: FleetSQLite, identity: identity, now: time.Now, capacity: DefaultCapacityPolicy()}
 	if _, err := db.ExecContext(ctx, "PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;"); err != nil {
 		db.Close()
 		return nil, err
@@ -139,7 +140,7 @@ func OpenPostgres(ctx context.Context, dsn string, identity StoreIdentity) (*Sto
 	if err != nil {
 		return nil, err
 	}
-	store := &Store{db: db, dialect: FleetPostgres, identity: identity, now: time.Now}
+	store := &Store{db: db, dialect: FleetPostgres, identity: identity, now: time.Now, capacity: DefaultCapacityPolicy()}
 	if err := db.PingContext(ctx); err != nil {
 		db.Close()
 		return nil, err
@@ -385,6 +386,9 @@ func (s *Store) CreateOperation(ctx context.Context, input CreateOperationInput)
 		return Operation{}, false, err
 	}
 	defer tx.Rollback()
+	if err := s.enforceOperationQuotaTx(ctx, tx, input.ProjectRef, input.TargetID, input.BindingID); err != nil {
+		return Operation{}, false, err
+	}
 	dialect := sharedfencing.SQLite
 	if s.dialect == FleetPostgres {
 		dialect = sharedfencing.Postgres
@@ -522,6 +526,11 @@ func (s *Store) ClaimOperation(ctx context.Context, identity AgentSessionIdentit
 		return ClaimedOperation{}, false, err
 	}
 	defer tx.Rollback()
+	if s.dialect == FleetPostgres {
+		if _, err := tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock(19088743, 10)"); err != nil {
+			return ClaimedOperation{}, false, err
+		}
+	}
 	placeholders := make([]string, len(capabilities))
 	args := []any{identity.ProjectRef, identity.TargetID, identity.BindingID, identity.AgentID}
 	for index, capability := range capabilities {
@@ -533,10 +542,10 @@ func (s *Store) ClaimOperation(ctx context.Context, identity AgentSessionIdentit
 		}
 	}
 	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,idempotency_key,COALESCE(task_id,''),COALESCE(agent_id,''),typed_input_json,preconditions_json,created_at_ms,updated_at_ms
-FROM operations WHERE project_ref=? AND target_id=? AND binding_id=? AND (state='queued' OR (state='applying' AND agent_id=?)) AND capability IN (` + strings.Join(placeholders, ",") + `) ORDER BY created_at_ms LIMIT 1`
+FROM operations WHERE project_ref=? AND target_id=? AND binding_id=? AND (state='queued' OR (state='applying' AND agent_id=?)) AND capability IN (` + strings.Join(placeholders, ",") + `) ORDER BY CASE WHEN state='applying' THEN 0 ELSE 1 END,created_at_ms LIMIT 1`
 	if s.dialect == FleetPostgres {
 		query = `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,idempotency_key,COALESCE(task_id,''),COALESCE(agent_id,''),typed_input_json,preconditions_json,created_at_ms,updated_at_ms
-FROM operations WHERE project_ref=$1 AND target_id=$2 AND binding_id=$3 AND (state='queued' OR (state='applying' AND agent_id=$4)) AND capability IN (` + strings.Join(placeholders, ",") + `) ORDER BY created_at_ms FOR UPDATE SKIP LOCKED LIMIT 1`
+FROM operations WHERE project_ref=$1 AND target_id=$2 AND binding_id=$3 AND (state='queued' OR (state='applying' AND agent_id=$4)) AND capability IN (` + strings.Join(placeholders, ",") + `) ORDER BY CASE WHEN state='applying' THEN 0 ELSE 1 END,created_at_ms FOR UPDATE SKIP LOCKED LIMIT 1`
 	}
 	var claimed ClaimedOperation
 	var typedInput, preconditions []byte
@@ -559,6 +568,10 @@ FROM operations WHERE project_ref=$1 AND target_id=$2 AND binding_id=$3 AND (sta
 		claimed.Preconditions = append(json.RawMessage(nil), preconditions...)
 		claimed.CreatedAt, claimed.UpdatedAt = time.UnixMilli(created).UTC(), time.UnixMilli(updated).UTC()
 		return claimed, true, nil
+	}
+	available, err := s.operationCapacityAvailable(ctx, tx, identity.TargetID)
+	if err != nil || !available {
+		return ClaimedOperation{}, false, err
 	}
 	claimed.TaskID = claimed.ID + ":1"
 	now := s.now().UTC().UnixMilli()
@@ -731,23 +744,40 @@ func (s *Store) RegisterFunctionArtifact(ctx context.Context, projectRef, digest
 	if projectRef == "" || digest == "" || size < 1 || actor == "" || correlationID == "" {
 		return errors.New("complete function artifact metadata is required")
 	}
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if err := s.lockArtifactQuotaTx(ctx, tx, projectRef); err != nil {
+		return err
+	}
+	existingQuery := `SELECT size_bytes FROM function_artifacts WHERE project_ref=? AND digest=?`
+	if s.dialect == FleetPostgres {
+		existingQuery = `SELECT size_bytes FROM function_artifacts WHERE project_ref=$1 AND digest=$2`
+	}
+	var existingSize int64
+	if err := tx.QueryRowContext(ctx, existingQuery, projectRef, digest).Scan(&existingSize); err == nil {
+		if existingSize != size {
+			return errors.New("immutable function artifact metadata conflict")
+		}
+		return tx.Commit()
+	} else if !errors.Is(err, sql.ErrNoRows) {
+		return err
+	}
+	if err := s.enforceArtifactQuotaTx(ctx, tx, projectRef, size); err != nil {
+		return err
+	}
 	query := `INSERT INTO function_artifacts(project_ref,digest,size_bytes,created_by,correlation_id,created_at_ms)
 VALUES(?,?,?,?,?,?) ON CONFLICT(project_ref,digest) DO NOTHING`
 	if s.dialect == FleetPostgres {
 		query = `INSERT INTO function_artifacts(project_ref,digest,size_bytes,created_by,correlation_id,created_at_ms)
 VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(project_ref,digest) DO NOTHING`
 	}
-	if _, err := s.db.ExecContext(ctx, query, projectRef, digest, size, actor, correlationID, s.now().UTC().UnixMilli()); err != nil {
+	if _, err := tx.ExecContext(ctx, query, projectRef, digest, size, actor, correlationID, s.now().UTC().UnixMilli()); err != nil {
 		return err
 	}
-	stored, ok, err := s.GetFunctionArtifact(ctx, projectRef, digest)
-	if err != nil {
-		return err
-	}
-	if !ok || stored != size {
-		return errors.New("immutable function artifact metadata conflict")
-	}
-	return nil
+	return tx.Commit()
 }
 
 func (s *Store) GetFunctionArtifact(ctx context.Context, projectRef, digest string) (int64, bool, error) {

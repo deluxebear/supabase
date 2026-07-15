@@ -18,6 +18,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 
 vi.hoisted(() => {
+  process.env.NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE = 'fleet'
   process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
   process.env.NEXT_PUBLIC_IS_PLATFORM = 'true'
 })
@@ -83,13 +84,11 @@ beforeEach(() => {
   vi.mocked(guardProjectRoute).mockReset()
   getAdminClientForRef.mockReset().mockResolvedValue(makeAuthAdminClient())
   getAdminContextForRef.mockReset()
-  resolveProjectConnection
-    .mockReset()
-    .mockResolvedValue({
-      row: { id: 2 },
-      supabaseUrl: 'http://kong-b:8100',
-      serviceKey: 'service-b',
-    })
+  resolveProjectConnection.mockReset().mockResolvedValue({
+    row: { id: 2 },
+    supabaseUrl: 'http://kong-b:8100',
+    serviceKey: 'service-b',
+  })
   fetchPost.mockReset().mockResolvedValue({ ok: true })
 })
 
