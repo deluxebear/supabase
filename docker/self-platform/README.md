@@ -1,10 +1,61 @@
-# Self-platform: all-in-one compose
+# Self-platform Compose deployments
+
+> `docker-compose.yml` is retained for local development and evaluation only.
+> Production Fleet deployments MUST use `docker-compose.control-plane.yml` for
+> the control plane and a separately managed Supabase stack. The production
+> topology keeps platform identity/registry, Fleet Control persistence, and
+> Backup Operator evidence in three independent control-plane volumes; none is
+> restored with a managed stack.
 
 This directory runs the full default Supabase stack **and** the self-hosted management
 control plane in a single `docker compose` project. It is the merged-stack successor to
 running the plain `docker/` stack side by side with the `docker-compose.platform.yml`
 mini-stack: everything lives in one `docker compose up -d`, one `.env`, one Postgres
 cluster.
+
+## Production recovery boundary
+
+The production control plane is a separate Compose project:
+
+```bash
+cp control-plane.env.example control-plane.env
+# replace every placeholder and create/start the managed stack network first
+docker compose --env-file control-plane.env \
+  -f docker-compose.control-plane.yml up -d
+```
+
+Its stores and authorities are:
+
+| State | Authority | Durable volume |
+| --- | --- | --- |
+| Login, organizations, RBAC, registry | `platform-db` | `platform-db-data` |
+| General Fleet operations | future Fleet Control service (T4) | `fleet-control-db-data` |
+| Backup jobs, manifests, plans, evidence | `backup-operator` | `backup-operator-db-data` |
+
+T3 deliberately provisions the Fleet Control PostgreSQL recovery domain but
+does not introduce the Fleet Control API or schema; that bounded-context work
+is T4. Do not write platform or backup state into this reserved database.
+
+The `managed` network is the only connection between the projects. It permits
+Studio/pg-meta to reach registered data-plane services, but no managed service
+mounts or owns a control volume. Use different database credentials, storage,
+backup repositories, encryption keys, and restore procedures for all control
+stores. Merely changing a database name inside `supabase-db` is not isolation.
+`control-plane.env.example` targets this directory's `supabase-plt_default`
+network for the acceptance drill; set `MANAGED_NETWORK_NAME` to the actual
+external network of a separately deployed production stack.
+
+For a destructive acceptance drill, copy and populate `control-plane.env`,
+start both projects, bootstrap an administrator/registry record, and run:
+
+```bash
+./scripts/verify-control-plane-recovery-boundary.sh
+```
+
+The script stops only managed-stack database-dependent services, then proves
+the login surface, platform registry fixture, Fleet durable-operation fixture,
+and Backup Operator job evidence remain available before restarting the managed
+services. Run it only against a disposable or explicitly approved environment.
 
 For the design rationale and the full list of decisions behind this layout, see
 [`docs/self-hosted-parity/2026-07-10-self-platform-compose-design.md`](../../docs/self-hosted-parity/2026-07-10-self-platform-compose-design.md).

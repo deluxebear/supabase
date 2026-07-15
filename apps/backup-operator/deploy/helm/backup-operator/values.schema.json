@@ -5,7 +5,7 @@
     "replicaCount": {
       "type": "integer",
       "const": 1,
-      "description": "The bundled SQLite control store supports exactly one Operator replica."
+      "description": "T3 keeps one Operator replica; HA rollout is a later production-hardening task."
     },
     "serviceAssertion": {
       "type": "object",
@@ -15,15 +15,16 @@
         "key": { "type": "string", "minLength": 1 }
       }
     },
-    "persistence": {
+    "controlStore": {
       "type": "object",
-      "required": ["create", "existingClaim", "size"],
+      "required": ["existingSecret", "dsnKey", "systemIdentifier", "dataDomain"],
       "properties": {
-        "create": { "type": "boolean" },
-        "existingClaim": { "type": "string" },
-        "storageClass": { "type": "string" },
-        "size": { "type": "string", "minLength": 1 }
+        "existingSecret": { "type": "string", "minLength": 1 },
+        "dsnKey": { "type": "string", "minLength": 1 },
+        "systemIdentifier": { "type": "string", "minLength": 1 },
+        "dataDomain": { "type": "string", "minLength": 1 }
       }
     }
-  }
+  },
+  "required": ["serviceAssertion", "controlStore"]
 }
