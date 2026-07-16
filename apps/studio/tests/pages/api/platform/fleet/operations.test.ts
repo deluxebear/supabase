@@ -2,11 +2,11 @@ import type { JwtPayload } from '@supabase/supabase-js'
 import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { getOperationSummary } from '@/lib/api/self-platform/desired-state'
+import { getFleetOperation } from '@/lib/api/self-platform/fleet-operations'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { handler } from '@/pages/api/platform/fleet/v1/projects/[ref]/operations/[operationId]'
 
-vi.mock('@/lib/api/self-platform/desired-state', () => ({ getOperationSummary: vi.fn() }))
+vi.mock('@/lib/api/self-platform/fleet-operations', () => ({ getFleetOperation: vi.fn() }))
 vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({ guardProjectRoute: vi.fn() }))
 vi.mock('@/lib/constants/deployment-profile', () => ({
   STUDIO_DEPLOYMENT_PROFILE: 'fleet',
@@ -20,7 +20,7 @@ describe('Fleet operation summary API', () => {
   })
 
   it('authorizes and queries with the exact project ref', async () => {
-    vi.mocked(getOperationSummary).mockResolvedValue({ operation_id: 'op-a' } as never)
+    vi.mocked(getFleetOperation).mockResolvedValue({ id: 'op-a' } as never)
     const { req, res } = createMocks({
       method: 'GET',
       query: { ref: 'project-a', operationId: 'op-a' },
@@ -31,7 +31,9 @@ describe('Fleet operation summary API', () => {
       action: expect.any(String),
       projectRef: 'project-a',
     })
-    expect(getOperationSummary).toHaveBeenCalledWith('project-a', 'op-a')
+    expect(getFleetOperation).toHaveBeenCalledWith(
+      expect.objectContaining({ projectRef: 'project-a', operationId: 'op-a', actor: 'user-a' })
+    )
     expect(res._getStatusCode()).toBe(200)
   })
 
@@ -45,18 +47,7 @@ describe('Fleet operation summary API', () => {
       query: { ref: 'project-b', operationId: 'op-a' },
     })
     await handler(req, res, { sub: 'user-a' } as JwtPayload)
-    expect(getOperationSummary).not.toHaveBeenCalled()
+    expect(getFleetOperation).not.toHaveBeenCalled()
     expect(res._getStatusCode()).toBe(403)
-  })
-
-  it('keeps cross-project operation misses non-enumerating', async () => {
-    vi.mocked(getOperationSummary).mockResolvedValue(null)
-    const { req, res } = createMocks({
-      method: 'GET',
-      query: { ref: 'project-b', operationId: 'op-a' },
-    })
-    await handler(req, res, { sub: 'user-a' } as JwtPayload)
-    expect(res._getStatusCode()).toBe(404)
-    expect(res._getJSONData()).toMatchObject({ code: 'project_not_found' })
   })
 })

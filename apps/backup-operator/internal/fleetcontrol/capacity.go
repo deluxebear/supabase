@@ -69,7 +69,7 @@ func (s *Store) CapacitySnapshot(ctx context.Context) (CapacitySnapshot, error) 
 	var snapshot CapacitySnapshot
 	query := `SELECT
 COALESCE(SUM(CASE WHEN state='queued' THEN 1 ELSE 0 END),0),
-COALESCE(SUM(CASE WHEN state='applying' THEN 1 ELSE 0 END),0)
+COALESCE(SUM(CASE WHEN state='running' THEN 1 ELSE 0 END),0)
 FROM operations`
 	if err := s.db.QueryRowContext(ctx, query).Scan(&snapshot.QueuedOperations, &snapshot.ActiveOperations); err != nil {
 		return snapshot, err
@@ -145,7 +145,7 @@ func (s *Store) CheckOperationQuota(ctx context.Context, organizationID, targetI
 		return nil
 	}
 	policy := s.capacity
-	queuedStates := "('queued','applying')"
+	queuedStates := "('queued','running')"
 	orgQuery := `SELECT COUNT(*) FROM operations o JOIN management_bindings b ON b.binding_id=o.binding_id WHERE b.organization_id=? AND o.state IN ` + queuedStates
 	targetQuery := `SELECT COUNT(*) FROM operations WHERE target_id=? AND state IN ` + queuedStates
 	if s.dialect == FleetPostgres {
@@ -173,9 +173,9 @@ type rowQuerier interface {
 }
 
 func (s *Store) operationCapacityAvailable(ctx context.Context, queryer rowQuerier, targetID string) (bool, error) {
-	query := "SELECT COUNT(*), COALESCE(SUM(CASE WHEN target_id=? THEN 1 ELSE 0 END),0) FROM operations WHERE state='applying'"
+	query := "SELECT COUNT(*), COALESCE(SUM(CASE WHEN target_id=? THEN 1 ELSE 0 END),0) FROM operations WHERE state='running'"
 	if s.dialect == FleetPostgres {
-		query = "SELECT COUNT(*), COALESCE(SUM(CASE WHEN target_id=$1 THEN 1 ELSE 0 END),0) FROM operations WHERE state='applying'"
+		query = "SELECT COUNT(*), COALESCE(SUM(CASE WHEN target_id=$1 THEN 1 ELSE 0 END),0) FROM operations WHERE state='running'"
 	}
 	var global, target int
 	if err := queryer.QueryRowContext(ctx, query, targetID).Scan(&global, &target); err != nil {
@@ -203,7 +203,7 @@ func (s *Store) enforceOperationQuotaTx(ctx context.Context, tx *sql.Tx, project
 			return err
 		}
 	}
-	states := "('queued','applying')"
+	states := "('queued','running')"
 	organizationQuery := `SELECT COUNT(*) FROM operations o JOIN management_bindings b ON b.binding_id=o.binding_id WHERE b.organization_id=? AND o.state IN ` + states
 	targetQuery := `SELECT COUNT(*) FROM operations WHERE target_id=? AND state IN ` + states
 	if s.dialect == FleetPostgres {

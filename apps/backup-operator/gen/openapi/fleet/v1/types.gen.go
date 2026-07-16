@@ -91,15 +91,20 @@ const (
 
 // Defines values for OperationState.
 const (
-	Applied            OperationState = "applied"
-	Applying           OperationState = "applying"
-	Failed             OperationState = "failed"
-	ManualIntervention OperationState = "manual_intervention"
-	OrphanedExecution  OperationState = "orphaned_execution"
-	Queued             OperationState = "queued"
-	Running            OperationState = "running"
-	Succeeded          OperationState = "succeeded"
-	Verifying          OperationState = "verifying"
+	OperationStateCancelled OperationState = "cancelled"
+	OperationStateFailed    OperationState = "failed"
+	OperationStateQueued    OperationState = "queued"
+	OperationStateRunning   OperationState = "running"
+	OperationStateSucceeded OperationState = "succeeded"
+	OperationStateTimedOut  OperationState = "timed_out"
+)
+
+// Defines values for OperationAttemptState.
+const (
+	OperationAttemptStateFailed    OperationAttemptState = "failed"
+	OperationAttemptStateRunning   OperationAttemptState = "running"
+	OperationAttemptStateSucceeded OperationAttemptState = "succeeded"
+	OperationAttemptStateTimedOut  OperationAttemptState = "timed_out"
 )
 
 // Defines values for ProjectedCapabilityMode.
@@ -368,25 +373,31 @@ type ManagementBindingStatus struct {
 
 // Operation defines model for Operation.
 type Operation struct {
-	AgentId         *string   `json:"agentId,omitempty"`
-	BindingId       string    `json:"bindingId"`
-	Capability      string    `json:"capability"`
-	CreatedAt       time.Time `json:"createdAt"`
-	DesiredDigest   string    `json:"desiredDigest"`
-	DesiredRevision string    `json:"desiredRevision"`
-	Domain          string    `json:"domain"`
-	ErrorCode       *string   `json:"errorCode,omitempty"`
+	AgentId         *string            `json:"agentId,omitempty"`
+	AttemptHistory  []OperationAttempt `json:"attemptHistory"`
+	Attempts        int                `json:"attempts"`
+	BindingId       string             `json:"bindingId"`
+	Capability      string             `json:"capability"`
+	CorrelationId   string             `json:"correlationId"`
+	CreatedAt       time.Time          `json:"createdAt"`
+	DeadlineAt      time.Time          `json:"deadlineAt"`
+	DesiredDigest   string             `json:"desiredDigest"`
+	DesiredRevision string             `json:"desiredRevision"`
+	Domain          string             `json:"domain"`
+	ErrorCode       *string            `json:"errorCode,omitempty"`
 
 	// Evidence Redacted typed Agent evidence; desired input is never returned
 	Evidence           *map[string]interface{} `json:"evidence,omitempty"`
 	EvidenceSchema     *string                 `json:"evidenceSchema,omitempty"`
 	ExpectedGeneration int64                   `json:"expectedGeneration"`
 	FencingToken       int64                   `json:"fencingToken"`
+	FinishedAt         *time.Time              `json:"finishedAt,omitempty"`
 	Id                 string                  `json:"id"`
 	InputSchema        string                  `json:"inputSchema"`
 	ProjectRef         string                  `json:"projectRef"`
 	ProtocolMajor      int                     `json:"protocolMajor"`
 	ProtocolMinor      int                     `json:"protocolMinor"`
+	StartedAt          *time.Time              `json:"startedAt,omitempty"`
 	State              OperationState          `json:"state"`
 	TargetId           string                  `json:"targetId"`
 	TaskId             *string                 `json:"taskId,omitempty"`
@@ -395,6 +406,22 @@ type Operation struct {
 
 // OperationState defines model for Operation.State.
 type OperationState string
+
+// OperationAttempt defines model for OperationAttempt.
+type OperationAttempt struct {
+	AgentId        string                  `json:"agentId"`
+	Attempt        int                     `json:"attempt"`
+	ErrorCode      *string                 `json:"errorCode,omitempty"`
+	Evidence       *map[string]interface{} `json:"evidence,omitempty"`
+	EvidenceSchema *string                 `json:"evidenceSchema,omitempty"`
+	FinishedAt     *time.Time              `json:"finishedAt,omitempty"`
+	StartedAt      time.Time               `json:"startedAt"`
+	State          OperationAttemptState   `json:"state"`
+	TaskId         string                  `json:"taskId"`
+}
+
+// OperationAttemptState defines model for OperationAttempt.State.
+type OperationAttemptState string
 
 // ProjectedCapability defines model for ProjectedCapability.
 type ProjectedCapability struct {

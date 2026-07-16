@@ -38,13 +38,13 @@ func (s *Store) retainedEventIDs(ctx context.Context, terminalBefore int64) ([]i
 	query := `SELECT id FROM (
 SELECT e.id,e.created_at_ms,o.state,ROW_NUMBER() OVER(PARTITION BY e.operation_id ORDER BY e.id DESC) AS position
 FROM operation_events e JOIN operations o ON o.id=e.operation_id
-) retained WHERE position>? OR (state IN ('applied','failed','manual_intervention') AND created_at_ms<?)
+) retained WHERE position>? OR (state IN ('succeeded','failed','cancelled','timed_out') AND created_at_ms<?)
 ORDER BY id LIMIT ?`
 	if s.dialect == FleetPostgres {
 		query = `SELECT id FROM (
 SELECT e.id,e.created_at_ms,o.state,ROW_NUMBER() OVER(PARTITION BY e.operation_id ORDER BY e.id DESC) AS position
 FROM operation_events e JOIN operations o ON o.id=e.operation_id
-) retained WHERE position>$1 OR (state IN ('applied','failed','manual_intervention') AND created_at_ms<$2)
+) retained WHERE position>$1 OR (state IN ('succeeded','failed','cancelled','timed_out') AND created_at_ms<$2)
 ORDER BY id LIMIT $3`
 	}
 	return scanIDs(ctx, s.db, query, s.capacity.MaxEventsPerOperation, terminalBefore, s.capacity.RetentionBatchSize)

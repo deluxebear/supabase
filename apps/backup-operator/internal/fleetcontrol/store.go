@@ -23,7 +23,9 @@ import (
 //go:embed migrations/*/*.sql
 var fleetMigrations embed.FS
 
-const CurrentSchemaVersion = 8
+const CurrentSchemaVersion = 9
+
+const operationDeadline = 15 * time.Minute
 
 var ErrOperationNotFound = errors.New("Fleet operation not found")
 var ErrMigrationChecksum = errors.New("Fleet migration checksum mismatch")
@@ -54,27 +56,45 @@ type Store struct {
 }
 
 type Operation struct {
-	ID                 string    `json:"id"`
-	ProjectRef         string    `json:"projectRef"`
-	TargetID           string    `json:"targetId"`
-	BindingID          string    `json:"bindingId"`
-	Domain             string    `json:"domain"`
-	Capability         string    `json:"capability"`
-	State              string    `json:"state"`
-	ProtocolMajor      int       `json:"protocolMajor"`
-	ProtocolMinor      int       `json:"protocolMinor"`
-	ExpectedGeneration int64     `json:"expectedGeneration"`
-	DesiredRevision    string    `json:"desiredRevision"`
-	DesiredDigest      string    `json:"desiredDigest"`
-	InputSchema        string    `json:"inputSchema"`
-	FencingToken       int64     `json:"fencingToken"`
-	TaskID             string    `json:"taskId,omitempty"`
-	AgentID            string    `json:"agentId,omitempty"`
-	EvidenceSchema     string    `json:"evidenceSchema,omitempty"`
-	Evidence           any       `json:"evidence,omitempty"`
-	ErrorCode          string    `json:"errorCode,omitempty"`
-	CreatedAt          time.Time `json:"createdAt"`
-	UpdatedAt          time.Time `json:"updatedAt"`
+	ID                 string             `json:"id"`
+	ProjectRef         string             `json:"projectRef"`
+	TargetID           string             `json:"targetId"`
+	BindingID          string             `json:"bindingId"`
+	Domain             string             `json:"domain"`
+	Capability         string             `json:"capability"`
+	State              string             `json:"state"`
+	ProtocolMajor      int                `json:"protocolMajor"`
+	ProtocolMinor      int                `json:"protocolMinor"`
+	ExpectedGeneration int64              `json:"expectedGeneration"`
+	DesiredRevision    string             `json:"desiredRevision"`
+	DesiredDigest      string             `json:"desiredDigest"`
+	InputSchema        string             `json:"inputSchema"`
+	FencingToken       int64              `json:"fencingToken"`
+	TaskID             string             `json:"taskId,omitempty"`
+	AgentID            string             `json:"agentId,omitempty"`
+	EvidenceSchema     string             `json:"evidenceSchema,omitempty"`
+	Evidence           any                `json:"evidence,omitempty"`
+	ErrorCode          string             `json:"errorCode,omitempty"`
+	Attempts           int                `json:"attempts"`
+	CorrelationID      string             `json:"correlationId"`
+	DeadlineAt         time.Time          `json:"deadlineAt"`
+	StartedAt          time.Time          `json:"startedAt,omitempty"`
+	FinishedAt         time.Time          `json:"finishedAt,omitempty"`
+	AttemptHistory     []OperationAttempt `json:"attemptHistory"`
+	CreatedAt          time.Time          `json:"createdAt"`
+	UpdatedAt          time.Time          `json:"updatedAt"`
+}
+
+type OperationAttempt struct {
+	Attempt        int       `json:"attempt"`
+	TaskID         string    `json:"taskId"`
+	AgentID        string    `json:"agentId"`
+	State          string    `json:"state"`
+	EvidenceSchema string    `json:"evidenceSchema,omitempty"`
+	Evidence       any       `json:"evidence,omitempty"`
+	ErrorCode      string    `json:"errorCode,omitempty"`
+	StartedAt      time.Time `json:"startedAt"`
+	FinishedAt     time.Time `json:"finishedAt,omitempty"`
 }
 
 type CreateOperationInput struct {
@@ -399,14 +419,15 @@ func (s *Store) CreateOperation(ctx context.Context, input CreateOperationInput)
 	if err != nil {
 		return Operation{}, false, err
 	}
-	now := s.now().UnixMilli()
-	query := `INSERT INTO operations(id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,idempotency_key,fencing_token,expected_generation,desired_revision,desired_digest,snapshot_canonical,input_schema,typed_input_json,preconditions_json,actor,correlation_id,created_at_ms,updated_at_ms)
-VALUES(?,?,?,?,?,?,'queued',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(project_ref,idempotency_key) DO NOTHING`
+	now := s.now().UTC()
+	deadline := now.Add(operationDeadline)
+	query := `INSERT INTO operations(id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,idempotency_key,fencing_token,expected_generation,desired_revision,desired_digest,snapshot_canonical,input_schema,typed_input_json,preconditions_json,actor,correlation_id,created_at_ms,updated_at_ms,deadline_at_ms)
+VALUES(?,?,?,?,?,?,'queued',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(project_ref,idempotency_key) DO NOTHING`
 	if s.dialect == FleetPostgres {
-		query = `INSERT INTO operations(id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,idempotency_key,fencing_token,expected_generation,desired_revision,desired_digest,snapshot_canonical,input_schema,typed_input_json,preconditions_json,actor,correlation_id,created_at_ms,updated_at_ms)
-VALUES($1,$2,$3,$4,$5,$6,'queued',$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17::jsonb,$18,$19,$20,$21) ON CONFLICT(project_ref,idempotency_key) DO NOTHING`
+		query = `INSERT INTO operations(id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,idempotency_key,fencing_token,expected_generation,desired_revision,desired_digest,snapshot_canonical,input_schema,typed_input_json,preconditions_json,actor,correlation_id,created_at_ms,updated_at_ms,deadline_at_ms)
+VALUES($1,$2,$3,$4,$5,$6,'queued',$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17::jsonb,$18,$19,$20,$21,$22) ON CONFLICT(project_ref,idempotency_key) DO NOTHING`
 	}
-	result, err := tx.ExecContext(ctx, query, input.ID, input.ProjectRef, input.TargetID, input.BindingID, input.Domain, input.Capability, input.ProtocolMajor, input.ProtocolMinor, input.IdempotencyKey, token, input.ExpectedGeneration, input.DesiredRevision, input.DesiredDigest, input.SnapshotCanonical, input.InputSchema, string(input.TypedInput), string(input.Preconditions), input.Actor, input.CorrelationID, now, now)
+	result, err := tx.ExecContext(ctx, query, input.ID, input.ProjectRef, input.TargetID, input.BindingID, input.Domain, input.Capability, input.ProtocolMajor, input.ProtocolMinor, input.IdempotencyKey, token, input.ExpectedGeneration, input.DesiredRevision, input.DesiredDigest, input.SnapshotCanonical, input.InputSchema, string(input.TypedInput), string(input.Preconditions), input.Actor, input.CorrelationID, now.UnixMilli(), now.UnixMilli(), deadline.UnixMilli())
 	if err != nil {
 		return Operation{}, false, err
 	}
@@ -427,10 +448,10 @@ VALUES($1,$2,$3,$4,$5,$6,'queued',$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$1
 		event = "INSERT INTO operation_events(operation_id,event_type,payload_json,created_at_ms) VALUES($1,'operation_queued','{}'::jsonb,$2)"
 		audit = "INSERT INTO audit_events(actor,project_ref,action,target_id,operation_id,correlation_id,payload_json,created_at_ms) VALUES($1,$2,$3,$4,$5,$6,'{}'::jsonb,$7)"
 	}
-	if _, err := tx.ExecContext(ctx, event, input.ID, now); err != nil {
+	if _, err := tx.ExecContext(ctx, event, input.ID, now.UnixMilli()); err != nil {
 		return Operation{}, false, err
 	}
-	if _, err := tx.ExecContext(ctx, audit, input.Actor, input.ProjectRef, "fleet.operation.create", input.TargetID, input.ID, input.CorrelationID, now); err != nil {
+	if _, err := tx.ExecContext(ctx, audit, input.Actor, input.ProjectRef, "fleet.operation.create", input.TargetID, input.ID, input.CorrelationID, now.UnixMilli()); err != nil {
 		return Operation{}, false, err
 	}
 	if err := tx.Commit(); err != nil {
@@ -440,40 +461,245 @@ VALUES($1,$2,$3,$4,$5,$6,'queued',$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$1
 }
 
 func (s *Store) GetOperation(ctx context.Context, projectRef, operationID string) (Operation, bool, error) {
-	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,COALESCE(task_id,''),COALESCE(agent_id,''),COALESCE(evidence_schema,''),COALESCE(evidence_json,'{}'),COALESCE(error_code,''),created_at_ms,updated_at_ms FROM operations WHERE project_ref=? AND id=?`
+	if err := s.ExpireOperations(ctx); err != nil {
+		return Operation{}, false, err
+	}
+	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,COALESCE(task_id,''),COALESCE(agent_id,''),COALESCE(evidence_schema,''),COALESCE(evidence_json,'{}'),COALESCE(error_code,''),attempts,correlation_id,deadline_at_ms,COALESCE(started_at_ms,0),COALESCE(finished_at_ms,0),created_at_ms,updated_at_ms FROM operations WHERE project_ref=? AND id=?`
 	if s.dialect == FleetPostgres {
-		query = `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,COALESCE(task_id,''),COALESCE(agent_id,''),COALESCE(evidence_schema,''),COALESCE(evidence_json,'{}'::jsonb),COALESCE(error_code,''),created_at_ms,updated_at_ms FROM operations WHERE project_ref=$1 AND id=$2`
+		query = `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,COALESCE(task_id,''),COALESCE(agent_id,''),COALESCE(evidence_schema,''),COALESCE(evidence_json,'{}'::jsonb),COALESCE(error_code,''),attempts,correlation_id,deadline_at_ms,COALESCE(started_at_ms,0),COALESCE(finished_at_ms,0),created_at_ms,updated_at_ms FROM operations WHERE project_ref=$1 AND id=$2`
 	}
 	operation, err := s.scanOperation(ctx, query, projectRef, operationID)
+	if err == nil {
+		operation.AttemptHistory, err = s.readOperationAttempts(ctx, operation.ID)
+	}
 	return operation, err == nil, err
 }
 
 func (s *Store) getByIdempotency(ctx context.Context, projectRef, key string) (Operation, error) {
-	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,COALESCE(task_id,''),COALESCE(agent_id,''),COALESCE(evidence_schema,''),COALESCE(evidence_json,'{}'),COALESCE(error_code,''),created_at_ms,updated_at_ms FROM operations WHERE project_ref=? AND idempotency_key=?`
+	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,COALESCE(task_id,''),COALESCE(agent_id,''),COALESCE(evidence_schema,''),COALESCE(evidence_json,'{}'),COALESCE(error_code,''),attempts,correlation_id,deadline_at_ms,COALESCE(started_at_ms,0),COALESCE(finished_at_ms,0),created_at_ms,updated_at_ms FROM operations WHERE project_ref=? AND idempotency_key=?`
 	if s.dialect == FleetPostgres {
-		query = `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,COALESCE(task_id,''),COALESCE(agent_id,''),COALESCE(evidence_schema,''),COALESCE(evidence_json,'{}'::jsonb),COALESCE(error_code,''),created_at_ms,updated_at_ms FROM operations WHERE project_ref=$1 AND idempotency_key=$2`
+		query = `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,COALESCE(task_id,''),COALESCE(agent_id,''),COALESCE(evidence_schema,''),COALESCE(evidence_json,'{}'::jsonb),COALESCE(error_code,''),attempts,correlation_id,deadline_at_ms,COALESCE(started_at_ms,0),COALESCE(finished_at_ms,0),created_at_ms,updated_at_ms FROM operations WHERE project_ref=$1 AND idempotency_key=$2`
 	}
-	return s.scanOperation(ctx, query, projectRef, key)
+	operation, err := s.scanOperation(ctx, query, projectRef, key)
+	if err == nil {
+		operation.AttemptHistory, err = s.readOperationAttempts(ctx, operation.ID)
+	}
+	return operation, err
+}
+
+func (s *Store) GetOperationByIdempotency(ctx context.Context, projectRef, key string) (Operation, error) {
+	if err := s.ExpireOperations(ctx); err != nil {
+		return Operation{}, err
+	}
+	return s.getByIdempotency(ctx, projectRef, key)
 }
 
 func (s *Store) scanOperation(ctx context.Context, query string, args ...any) (Operation, error) {
 	var operation Operation
-	var created, updated int64
+	var deadline, started, finished, created, updated int64
 	var evidence []byte
-	err := s.db.QueryRowContext(ctx, query, args...).Scan(&operation.ID, &operation.ProjectRef, &operation.TargetID, &operation.BindingID, &operation.Domain, &operation.Capability, &operation.State, &operation.ProtocolMajor, &operation.ProtocolMinor, &operation.ExpectedGeneration, &operation.DesiredRevision, &operation.DesiredDigest, &operation.InputSchema, &operation.FencingToken, &operation.TaskID, &operation.AgentID, &operation.EvidenceSchema, &evidence, &operation.ErrorCode, &created, &updated)
+	err := s.db.QueryRowContext(ctx, query, args...).Scan(&operation.ID, &operation.ProjectRef, &operation.TargetID, &operation.BindingID, &operation.Domain, &operation.Capability, &operation.State, &operation.ProtocolMajor, &operation.ProtocolMinor, &operation.ExpectedGeneration, &operation.DesiredRevision, &operation.DesiredDigest, &operation.InputSchema, &operation.FencingToken, &operation.TaskID, &operation.AgentID, &operation.EvidenceSchema, &evidence, &operation.ErrorCode, &operation.Attempts, &operation.CorrelationID, &deadline, &started, &finished, &created, &updated)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Operation{}, ErrOperationNotFound
 	}
 	if err != nil {
 		return Operation{}, err
 	}
+	operation.DeadlineAt = time.UnixMilli(deadline).UTC()
 	operation.CreatedAt, operation.UpdatedAt = time.UnixMilli(created).UTC(), time.UnixMilli(updated).UTC()
+	if started > 0 {
+		operation.StartedAt = time.UnixMilli(started).UTC()
+	}
+	if finished > 0 {
+		operation.FinishedAt = time.UnixMilli(finished).UTC()
+	}
 	if len(evidence) > 0 && string(evidence) != "{}" {
 		if err := json.Unmarshal(evidence, &operation.Evidence); err != nil {
 			return Operation{}, err
 		}
 	}
 	return operation, nil
+}
+
+func (s *Store) readOperationAttempts(ctx context.Context, operationID string) ([]OperationAttempt, error) {
+	query := `SELECT attempt,task_id,agent_id,state,COALESCE(evidence_schema,''),COALESCE(evidence_json,'{}'),COALESCE(error_code,''),started_at_ms,COALESCE(finished_at_ms,0) FROM operation_attempts WHERE operation_id=? ORDER BY attempt`
+	if s.dialect == FleetPostgres {
+		query = `SELECT attempt,task_id,agent_id,state,COALESCE(evidence_schema,''),COALESCE(evidence_json,'{}'::jsonb),COALESCE(error_code,''),started_at_ms,COALESCE(finished_at_ms,0) FROM operation_attempts WHERE operation_id=$1 ORDER BY attempt`
+	}
+	rows, err := s.db.QueryContext(ctx, query, operationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	attempts := make([]OperationAttempt, 0)
+	for rows.Next() {
+		var attempt OperationAttempt
+		var evidence []byte
+		var started, finished int64
+		if err := rows.Scan(&attempt.Attempt, &attempt.TaskID, &attempt.AgentID, &attempt.State, &attempt.EvidenceSchema, &evidence, &attempt.ErrorCode, &started, &finished); err != nil {
+			return nil, err
+		}
+		attempt.StartedAt = time.UnixMilli(started).UTC()
+		if finished > 0 {
+			attempt.FinishedAt = time.UnixMilli(finished).UTC()
+		}
+		if len(evidence) > 0 && string(evidence) != "{}" {
+			if err := json.Unmarshal(evidence, &attempt.Evidence); err != nil {
+				return nil, err
+			}
+		}
+		attempts = append(attempts, attempt)
+	}
+	return attempts, rows.Err()
+}
+
+func (s *Store) ExpireOperations(ctx context.Context) error {
+	now := s.now().UTC().UnixMilli()
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	query := "SELECT id,project_ref,target_id,correlation_id,COALESCE(task_id,'') FROM operations WHERE state IN ('queued','running') AND deadline_at_ms<=?"
+	if s.dialect == FleetPostgres {
+		query = "SELECT id,project_ref,target_id,correlation_id,COALESCE(task_id,'') FROM operations WHERE state IN ('queued','running') AND deadline_at_ms<=$1 FOR UPDATE"
+	}
+	rows, err := tx.QueryContext(ctx, query, now)
+	if err != nil {
+		return err
+	}
+	type expiredOperation struct{ id, projectRef, targetID, correlationID, taskID string }
+	expired := make([]expiredOperation, 0)
+	for rows.Next() {
+		var operation expiredOperation
+		if err := rows.Scan(&operation.id, &operation.projectRef, &operation.targetID, &operation.correlationID, &operation.taskID); err != nil {
+			rows.Close()
+			return err
+		}
+		expired = append(expired, operation)
+	}
+	if err := rows.Close(); err != nil {
+		return err
+	}
+	for _, operation := range expired {
+		update := "UPDATE operations SET state='timed_out',error_code='operation_timed_out',finished_at_ms=?,updated_at_ms=? WHERE id=? AND state IN ('queued','running')"
+		if s.dialect == FleetPostgres {
+			update = "UPDATE operations SET state='timed_out',error_code='operation_timed_out',finished_at_ms=$1,updated_at_ms=$2 WHERE id=$3 AND state IN ('queued','running')"
+		}
+		result, err := tx.ExecContext(ctx, update, now, now, operation.id)
+		if err != nil {
+			return err
+		}
+		if affected, err := result.RowsAffected(); err != nil || affected != 1 {
+			continue
+		}
+		if operation.taskID != "" {
+			attempt := "UPDATE operation_attempts SET state='timed_out',error_code='operation_timed_out',finished_at_ms=? WHERE task_id=? AND state='running'"
+			if s.dialect == FleetPostgres {
+				attempt = "UPDATE operation_attempts SET state='timed_out',error_code='operation_timed_out',finished_at_ms=$1 WHERE task_id=$2 AND state='running'"
+			}
+			if _, err := tx.ExecContext(ctx, attempt, now, operation.taskID); err != nil {
+				return err
+			}
+		}
+		if err := s.recordOperationTransitionTx(ctx, tx, operation.id, operation.projectRef, operation.targetID, "system:fleet-control", operation.correlationID, "timed_out", "fleet.operation.timeout", now, map[string]any{"errorCode": "operation_timed_out"}); err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
+func (s *Store) CancelOperation(ctx context.Context, projectRef, operationID, actor, correlationID string) error {
+	if projectRef == "" || operationID == "" || actor == "" || correlationID == "" {
+		return errors.New("complete operation cancellation identity is required")
+	}
+	return s.transitionQueuedOperation(ctx, projectRef, operationID, actor, correlationID, "cancelled", "fleet.operation.cancel")
+}
+
+func (s *Store) RetryOperation(ctx context.Context, projectRef, operationID, actor, correlationID string) error {
+	if projectRef == "" || operationID == "" || actor == "" || correlationID == "" {
+		return errors.New("complete operation retry identity is required")
+	}
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	var targetID string
+	selectTarget := "SELECT target_id FROM operations WHERE project_ref=? AND id=?"
+	if s.dialect == FleetPostgres {
+		selectTarget = "SELECT target_id FROM operations WHERE project_ref=$1 AND id=$2 FOR UPDATE"
+	}
+	if err := tx.QueryRowContext(ctx, selectTarget, projectRef, operationID).Scan(&targetID); errors.Is(err, sql.ErrNoRows) {
+		return ErrOperationNotFound
+	} else if err != nil {
+		return err
+	}
+	now := s.now().UTC()
+	update := "UPDATE operations SET state='queued',task_id=NULL,agent_id=NULL,evidence_schema=NULL,evidence_json=NULL,error_code=NULL,started_at_ms=NULL,finished_at_ms=NULL,deadline_at_ms=?,updated_at_ms=? WHERE project_ref=? AND id=? AND state='failed'"
+	if s.dialect == FleetPostgres {
+		update = "UPDATE operations SET state='queued',task_id=NULL,agent_id=NULL,evidence_schema=NULL,evidence_json=NULL,error_code=NULL,started_at_ms=NULL,finished_at_ms=NULL,deadline_at_ms=$1,updated_at_ms=$2 WHERE project_ref=$3 AND id=$4 AND state='failed'"
+	}
+	result, err := tx.ExecContext(ctx, update, now.Add(operationDeadline).UnixMilli(), now.UnixMilli(), projectRef, operationID)
+	if err != nil {
+		return err
+	}
+	if affected, err := result.RowsAffected(); err != nil || affected != 1 {
+		return ErrOperationState
+	}
+	if err := s.recordOperationTransitionTx(ctx, tx, operationID, projectRef, targetID, actor, correlationID, "queued", "fleet.operation.retry", now.UnixMilli(), map[string]any{"reason": "explicit_retry"}); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+func (s *Store) transitionQueuedOperation(ctx context.Context, projectRef, operationID, actor, correlationID, state, action string) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	var targetID string
+	selectTarget := "SELECT target_id FROM operations WHERE project_ref=? AND id=?"
+	if s.dialect == FleetPostgres {
+		selectTarget = "SELECT target_id FROM operations WHERE project_ref=$1 AND id=$2 FOR UPDATE"
+	}
+	if err := tx.QueryRowContext(ctx, selectTarget, projectRef, operationID).Scan(&targetID); errors.Is(err, sql.ErrNoRows) {
+		return ErrOperationNotFound
+	} else if err != nil {
+		return err
+	}
+	now := s.now().UTC().UnixMilli()
+	update := "UPDATE operations SET state=?,finished_at_ms=?,updated_at_ms=? WHERE project_ref=? AND id=? AND state='queued'"
+	if s.dialect == FleetPostgres {
+		update = "UPDATE operations SET state=$1,finished_at_ms=$2,updated_at_ms=$3 WHERE project_ref=$4 AND id=$5 AND state='queued'"
+	}
+	result, err := tx.ExecContext(ctx, update, state, now, now, projectRef, operationID)
+	if err != nil {
+		return err
+	}
+	if affected, err := result.RowsAffected(); err != nil || affected != 1 {
+		return ErrOperationState
+	}
+	if err := s.recordOperationTransitionTx(ctx, tx, operationID, projectRef, targetID, actor, correlationID, state, action, now, map[string]any{"action": action}); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+func (s *Store) recordOperationTransitionTx(ctx context.Context, tx *sql.Tx, operationID, projectRef, targetID, actor, correlationID, state, auditAction string, now int64, payloadValue map[string]any) error {
+	payload, _ := json.Marshal(payloadValue)
+	event := "INSERT INTO operation_events(operation_id,event_type,payload_json,created_at_ms) VALUES(?,?,?,?)"
+	audit := "INSERT INTO audit_events(actor,project_ref,action,target_id,operation_id,correlation_id,payload_json,created_at_ms) VALUES(?,?,?,?,?,?,?,?)"
+	if s.dialect == FleetPostgres {
+		event = "INSERT INTO operation_events(operation_id,event_type,payload_json,created_at_ms) VALUES($1,$2,$3::jsonb,$4)"
+		audit = "INSERT INTO audit_events(actor,project_ref,action,target_id,operation_id,correlation_id,payload_json,created_at_ms) VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8)"
+	}
+	if _, err := tx.ExecContext(ctx, event, operationID, "operation_"+state, string(payload), now); err != nil {
+		return err
+	}
+	_, err := tx.ExecContext(ctx, audit, actor, projectRef, auditAction, targetID, operationID, correlationID, string(payload), now)
+	return err
 }
 
 func (s *Store) ValidateOperationBinding(ctx context.Context, projectRef, targetID, bindingID, capability string) (BindingStatus, error) {
@@ -505,6 +731,9 @@ func (s *Store) ClaimOperation(ctx context.Context, identity AgentSessionIdentit
 	}
 	if status.Agent == nil || status.Agent.ID != identity.AgentID || status.Agent.SessionState != "online" || status.Binding.TargetID != identity.TargetID || status.Binding.State != "active" {
 		return ClaimedOperation{}, false, ErrOperationBinding
+	}
+	if err := s.ExpireOperations(ctx); err != nil {
+		return ClaimedOperation{}, false, err
 	}
 	storedCapabilities := make(map[string]struct{}, len(status.Agent.Capabilities))
 	for _, capability := range status.Agent.Capabilities {
@@ -544,23 +773,24 @@ func (s *Store) ClaimOperation(ctx context.Context, identity AgentSessionIdentit
 			placeholders[index] = "?"
 		}
 	}
-	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,idempotency_key,COALESCE(task_id,''),COALESCE(agent_id,''),typed_input_json,preconditions_json,created_at_ms,updated_at_ms
-FROM operations WHERE project_ref=? AND target_id=? AND binding_id=? AND (state='queued' OR (state='applying' AND agent_id=?)) AND capability IN (` + strings.Join(placeholders, ",") + `) ORDER BY CASE WHEN state='applying' THEN 0 ELSE 1 END,created_at_ms LIMIT 1`
+	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,idempotency_key,COALESCE(task_id,''),COALESCE(agent_id,''),attempts,deadline_at_ms,typed_input_json,preconditions_json,created_at_ms,updated_at_ms
+FROM operations WHERE project_ref=? AND target_id=? AND binding_id=? AND (state='queued' OR (state='running' AND agent_id=?)) AND capability IN (` + strings.Join(placeholders, ",") + `) ORDER BY CASE WHEN state='running' THEN 0 ELSE 1 END,created_at_ms LIMIT 1`
 	if s.dialect == FleetPostgres {
-		query = `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,idempotency_key,COALESCE(task_id,''),COALESCE(agent_id,''),typed_input_json,preconditions_json,created_at_ms,updated_at_ms
-FROM operations WHERE project_ref=$1 AND target_id=$2 AND binding_id=$3 AND (state='queued' OR (state='applying' AND agent_id=$4)) AND capability IN (` + strings.Join(placeholders, ",") + `) ORDER BY CASE WHEN state='applying' THEN 0 ELSE 1 END,created_at_ms FOR UPDATE SKIP LOCKED LIMIT 1`
+		query = `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,idempotency_key,COALESCE(task_id,''),COALESCE(agent_id,''),attempts,deadline_at_ms,typed_input_json,preconditions_json,created_at_ms,updated_at_ms
+FROM operations WHERE project_ref=$1 AND target_id=$2 AND binding_id=$3 AND (state='queued' OR (state='running' AND agent_id=$4)) AND capability IN (` + strings.Join(placeholders, ",") + `) ORDER BY CASE WHEN state='running' THEN 0 ELSE 1 END,created_at_ms FOR UPDATE SKIP LOCKED LIMIT 1`
 	}
 	var claimed ClaimedOperation
 	var typedInput, preconditions []byte
-	var created, updated int64
-	err = tx.QueryRowContext(ctx, query, args...).Scan(&claimed.ID, &claimed.ProjectRef, &claimed.TargetID, &claimed.BindingID, &claimed.Domain, &claimed.Capability, &claimed.State, &claimed.ProtocolMajor, &claimed.ProtocolMinor, &claimed.ExpectedGeneration, &claimed.DesiredRevision, &claimed.DesiredDigest, &claimed.InputSchema, &claimed.FencingToken, &claimed.IdempotencyKey, &claimed.TaskID, &claimed.AgentID, &typedInput, &preconditions, &created, &updated)
+	var deadline, created, updated int64
+	err = tx.QueryRowContext(ctx, query, args...).Scan(&claimed.ID, &claimed.ProjectRef, &claimed.TargetID, &claimed.BindingID, &claimed.Domain, &claimed.Capability, &claimed.State, &claimed.ProtocolMajor, &claimed.ProtocolMinor, &claimed.ExpectedGeneration, &claimed.DesiredRevision, &claimed.DesiredDigest, &claimed.InputSchema, &claimed.FencingToken, &claimed.IdempotencyKey, &claimed.TaskID, &claimed.AgentID, &claimed.Attempts, &deadline, &typedInput, &preconditions, &created, &updated)
 	if errors.Is(err, sql.ErrNoRows) {
 		return ClaimedOperation{}, false, nil
 	}
 	if err != nil {
 		return ClaimedOperation{}, false, err
 	}
-	if claimed.State == "applying" {
+	claimed.DeadlineAt = time.UnixMilli(deadline).UTC()
+	if claimed.State == "running" {
 		if claimed.TaskID == "" || claimed.AgentID != identity.AgentID {
 			return ClaimedOperation{}, false, ErrOperationState
 		}
@@ -576,31 +806,39 @@ FROM operations WHERE project_ref=$1 AND target_id=$2 AND binding_id=$3 AND (sta
 	if err != nil || !available {
 		return ClaimedOperation{}, false, err
 	}
-	claimed.TaskID = claimed.ID + ":1"
+	claimed.Attempts++
+	claimed.TaskID = claimed.ID + ":" + strconv.Itoa(claimed.Attempts)
 	now := s.now().UTC().UnixMilli()
-	update := "UPDATE operations SET state='applying',task_id=?,agent_id=?,started_at_ms=?,updated_at_ms=? WHERE id=? AND state='queued'"
+	update := "UPDATE operations SET state='running',attempts=?,task_id=?,agent_id=?,started_at_ms=?,finished_at_ms=NULL,updated_at_ms=? WHERE id=? AND state='queued'"
 	if s.dialect == FleetPostgres {
-		update = "UPDATE operations SET state='applying',task_id=$1,agent_id=$2,started_at_ms=$3,updated_at_ms=$4 WHERE id=$5 AND state='queued'"
+		update = "UPDATE operations SET state='running',attempts=$1,task_id=$2,agent_id=$3,started_at_ms=$4,finished_at_ms=NULL,updated_at_ms=$5 WHERE id=$6 AND state='queued'"
 	}
-	result, err := tx.ExecContext(ctx, update, claimed.TaskID, identity.AgentID, now, now, claimed.ID)
+	result, err := tx.ExecContext(ctx, update, claimed.Attempts, claimed.TaskID, identity.AgentID, now, now, claimed.ID)
 	if err != nil {
 		return ClaimedOperation{}, false, err
 	}
 	if rows, err := result.RowsAffected(); err != nil || rows != 1 {
 		return ClaimedOperation{}, false, ErrOperationState
 	}
-	event := "INSERT INTO operation_events(operation_id,event_type,payload_json,created_at_ms) VALUES(?,'operation_applying',?,?)"
+	attempt := "INSERT INTO operation_attempts(operation_id,attempt,task_id,agent_id,state,started_at_ms) VALUES(?,?,?,?, 'running', ?)"
 	if s.dialect == FleetPostgres {
-		event = "INSERT INTO operation_events(operation_id,event_type,payload_json,created_at_ms) VALUES($1,'operation_applying',$2::jsonb,$3)"
+		attempt = "INSERT INTO operation_attempts(operation_id,attempt,task_id,agent_id,state,started_at_ms) VALUES($1,$2,$3,$4,'running',$5)"
 	}
-	payload, _ := json.Marshal(map[string]any{"taskId": claimed.TaskID, "agentId": identity.AgentID})
+	if _, err := tx.ExecContext(ctx, attempt, claimed.ID, claimed.Attempts, claimed.TaskID, identity.AgentID, now); err != nil {
+		return ClaimedOperation{}, false, err
+	}
+	event := "INSERT INTO operation_events(operation_id,event_type,payload_json,created_at_ms) VALUES(?,'operation_running',?,?)"
+	if s.dialect == FleetPostgres {
+		event = "INSERT INTO operation_events(operation_id,event_type,payload_json,created_at_ms) VALUES($1,'operation_running',$2::jsonb,$3)"
+	}
+	payload, _ := json.Marshal(map[string]any{"taskId": claimed.TaskID, "agentId": identity.AgentID, "attempt": claimed.Attempts})
 	if _, err := tx.ExecContext(ctx, event, claimed.ID, string(payload), now); err != nil {
 		return ClaimedOperation{}, false, err
 	}
 	if err := tx.Commit(); err != nil {
 		return ClaimedOperation{}, false, err
 	}
-	claimed.State = "applying"
+	claimed.State = "running"
 	claimed.AgentID = identity.AgentID
 	claimed.TypedInput = append(json.RawMessage(nil), typedInput...)
 	claimed.Preconditions = append(json.RawMessage(nil), preconditions...)
@@ -613,9 +851,9 @@ func (s *Store) RecordOperationProgress(ctx context.Context, taskID, agentID str
 		return errors.New("valid Agent task progress is required")
 	}
 	var operationID string
-	query := "SELECT id FROM operations WHERE task_id=? AND agent_id=? AND state='applying'"
+	query := "SELECT id FROM operations WHERE task_id=? AND agent_id=? AND state='running'"
 	if s.dialect == FleetPostgres {
-		query = "SELECT id FROM operations WHERE task_id=$1 AND agent_id=$2 AND state='applying'"
+		query = "SELECT id FROM operations WHERE task_id=$1 AND agent_id=$2 AND state='running'"
 	}
 	if err := s.db.QueryRowContext(ctx, query, taskID, agentID).Scan(&operationID); errors.Is(err, sql.ErrNoRows) {
 		return ErrOperationState
@@ -640,15 +878,18 @@ func (s *Store) CompleteOperation(ctx context.Context, input CompleteOperationIn
 	}
 	state := input.TerminalState
 	if state == "" {
-		state = "applied"
+		state = "succeeded"
 		if !input.Succeeded {
 			state = "failed"
 		}
 	}
-	if state != "applied" && state != "failed" && state != "manual_intervention" {
+	if state == "manual_intervention" {
+		state = "failed"
+	}
+	if state != "succeeded" && state != "failed" {
 		return errors.New("Agent result terminal state is invalid")
 	}
-	if input.Succeeded != (state == "applied") {
+	if input.Succeeded != (state == "succeeded") {
 		return errors.New("Agent result terminal state and success conflict")
 	}
 	tx, err := s.db.BeginTx(ctx, nil)
@@ -657,9 +898,9 @@ func (s *Store) CompleteOperation(ctx context.Context, input CompleteOperationIn
 	}
 	defer tx.Rollback()
 	now := s.now().UTC().UnixMilli()
-	query := "UPDATE operations SET state=?,evidence_schema=?,evidence_json=?,error_code=?,finished_at_ms=?,updated_at_ms=? WHERE task_id=? AND agent_id=? AND state='applying'"
+	query := "UPDATE operations SET state=?,evidence_schema=?,evidence_json=?,error_code=?,finished_at_ms=?,updated_at_ms=? WHERE task_id=? AND agent_id=? AND state='running'"
 	if s.dialect == FleetPostgres {
-		query = "UPDATE operations SET state=$1,evidence_schema=$2,evidence_json=$3::jsonb,error_code=$4,finished_at_ms=$5,updated_at_ms=$6 WHERE task_id=$7 AND agent_id=$8 AND state='applying'"
+		query = "UPDATE operations SET state=$1,evidence_schema=$2,evidence_json=$3::jsonb,error_code=$4,finished_at_ms=$5,updated_at_ms=$6 WHERE task_id=$7 AND agent_id=$8 AND state='running'"
 	}
 	result, err := tx.ExecContext(ctx, query, state, input.EvidenceSchema, string(input.Evidence), input.ErrorCode, now, now, input.TaskID, input.AgentID)
 	if err != nil {
@@ -675,6 +916,15 @@ func (s *Store) CompleteOperation(ctx context.Context, input CompleteOperationIn
 	}
 	if err := tx.QueryRowContext(ctx, selectID, input.TaskID).Scan(&operationID); err != nil {
 		return err
+	}
+	attempt := "UPDATE operation_attempts SET state=?,evidence_schema=?,evidence_json=?,error_code=?,finished_at_ms=? WHERE task_id=? AND agent_id=? AND state='running'"
+	if s.dialect == FleetPostgres {
+		attempt = "UPDATE operation_attempts SET state=$1,evidence_schema=$2,evidence_json=$3::jsonb,error_code=$4,finished_at_ms=$5 WHERE task_id=$6 AND agent_id=$7 AND state='running'"
+	}
+	if result, err := tx.ExecContext(ctx, attempt, state, input.EvidenceSchema, string(input.Evidence), input.ErrorCode, now, input.TaskID, input.AgentID); err != nil {
+		return err
+	} else if rows, err := result.RowsAffected(); err != nil || rows != 1 {
+		return ErrOperationState
 	}
 	payload, _ := json.Marshal(map[string]any{"taskId": input.TaskID, "state": state, "errorCode": input.ErrorCode})
 	event := "INSERT INTO operation_events(operation_id,event_type,payload_json,created_at_ms) VALUES(?,?,?,?)"

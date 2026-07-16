@@ -148,6 +148,38 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Operation' }
         '404': { $ref: '#/components/responses/Error' }
+  /platform/fleet/v1/projects/{projectRef}/operations/{operationId}/cancel:
+    post:
+      operationId: cancelFleetOperation
+      description: Cancels a queued operation. Running operations reject cancellation because the Agent protocol cannot guarantee interruption or rollback.
+      parameters:
+        - { $ref: '#/components/parameters/ProjectRef' }
+        - { $ref: '#/components/parameters/OperationId' }
+      responses:
+        '200':
+          description: Queued operation cancelled
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Operation' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /platform/fleet/v1/projects/{projectRef}/operations/{operationId}/retry:
+    post:
+      operationId: retryFleetOperation
+      description: Requeues a failed operation as a new durable attempt while preserving its immutable desired snapshot and idempotency identity.
+      parameters:
+        - { $ref: '#/components/parameters/ProjectRef' }
+        - { $ref: '#/components/parameters/OperationId' }
+      responses:
+        '200':
+          description: Failed operation requeued
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Operation' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
   /platform/fleet/v1/projects/{projectRef}/operations/{operationId}/events:
     get:
       operationId: replayFleetOperationEvents
@@ -685,6 +717,10 @@ components:
           desiredDigest,
           inputSchema,
           fencingToken,
+          attempts,
+          correlationId,
+          deadlineAt,
+          attemptHistory,
           createdAt,
           updatedAt,
         ]
@@ -698,18 +734,7 @@ components:
         state:
           {
             type: string,
-            enum:
-              [
-                queued,
-                applying,
-                running,
-                verifying,
-                applied,
-                succeeded,
-                failed,
-                orphaned_execution,
-                manual_intervention,
-              ],
+            enum: [queued, running, succeeded, failed, cancelled, timed_out],
           }
         protocolMajor: { type: integer }
         protocolMinor: { type: integer }
@@ -731,8 +756,29 @@ components:
             description: Redacted typed Agent evidence; desired input is never returned,
           }
         errorCode: { type: string }
+        attempts: { type: integer, minimum: 0 }
+        correlationId: { type: string }
+        deadlineAt: { type: string, format: date-time }
+        startedAt: { type: string, format: date-time }
+        finishedAt: { type: string, format: date-time }
+        attemptHistory:
+          type: array
+          items: { $ref: '#/components/schemas/OperationAttempt' }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+    OperationAttempt:
+      type: object
+      required: [attempt, taskId, agentId, state, startedAt]
+      properties:
+        attempt: { type: integer, minimum: 1 }
+        taskId: { type: string }
+        agentId: { type: string }
+        state: { type: string, enum: [running, succeeded, failed, timed_out] }
+        evidenceSchema: { type: string, pattern: '^supabase\.fleet\.' }
+        evidence: { type: object }
+        errorCode: { type: string }
+        startedAt: { type: string, format: date-time }
+        finishedAt: { type: string, format: date-time }
     FunctionArtifact:
       type: object
       required: [digest, size, created]

@@ -192,7 +192,7 @@ $1,$2,$3,$4::uuid,$5,$6::jsonb,$7,$8,$9,$10,$11::jsonb,$12,$13::timestamptz
 )`, candidate.ProjectRef, candidate.Domain, candidate.PolicyRevision,
 		candidate.DesiredRevision, candidate.DesiredGeneration,
 		string(evidence.ObservedDocument), evidence.ObservedDigest, candidate.OperationID,
-		evidence.DriftState, evidence.Applied && operationState == "applied", string(blockers),
+		evidence.DriftState, evidence.Applied && operationState == "succeeded", string(blockers),
 		errorCode, time.Now().UTC()).Scan(&applied)
 	return applied, err
 }
@@ -315,7 +315,7 @@ func (c Config) ProjectFunctionOnce(ctx context.Context) (bool, error) {
 	if json.Unmarshal(payload, &operation) != nil || operation.ID != candidate.OperationID || operation.ProjectRef != candidate.ProjectRef {
 		return true, &FleetError{Code: "downstream_invalid_response", Message: "Fleet Control returned mismatched function operation evidence", Retryable: false}
 	}
-	if operation.State != "applied" && operation.State != "failed" && operation.State != "manual_intervention" {
+	if operation.State != "succeeded" && operation.State != "failed" && operation.State != "cancelled" && operation.State != "timed_out" {
 		return false, nil
 	}
 	var evidence fleetfunctions.Evidence
@@ -386,7 +386,7 @@ func (c Config) ProjectConfigurationOnce(ctx context.Context) (bool, error) {
 	if json.Unmarshal(payload, &operation) != nil || operation.ID != candidate.OperationID || operation.ProjectRef != candidate.ProjectRef {
 		return true, &FleetError{Code: "downstream_invalid_response", Message: "Fleet Control returned mismatched configuration operation evidence", Retryable: false}
 	}
-	if operation.State != "applied" && operation.State != "failed" && operation.State != "manual_intervention" {
+	if operation.State != "succeeded" && operation.State != "failed" && operation.State != "cancelled" && operation.State != "timed_out" {
 		return false, nil
 	}
 	var evidence fleetproviders.Evidence
@@ -396,7 +396,7 @@ func (c Config) ProjectConfigurationOnce(ctx context.Context) (bool, error) {
 		evidence.ObservedGeneration == candidate.DesiredGeneration &&
 		len(evidence.ObservedDigest) == 64 && json.Valid(evidence.ObservedDocument) &&
 		(evidence.DriftState == "in-sync" || evidence.DriftState == "drifted" || evidence.DriftState == "ownership-conflict")
-	if operation.State == "applied" && (!validEvidence || !evidence.Applied) {
+	if operation.State == "succeeded" && (!validEvidence || !evidence.Applied) {
 		return true, &FleetError{Code: "downstream_invalid_response", Message: "Fleet Control marked unapplied configuration evidence as applied", Retryable: false}
 	}
 	var typedEvidence *fleetproviders.Evidence

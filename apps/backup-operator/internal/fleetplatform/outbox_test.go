@@ -159,7 +159,7 @@ func TestFunctionProjectionRequiresProjectBoundTypedTerminalEvidence(t *testing.
 		}
 		evidence := fleetfunctions.Evidence{Schema: fleetfunctions.EvidenceSchemaV1, Status: "active", Adapter: fleetfunctions.AdapterCompose, Slug: candidate.Slug, ArtifactDigest: "26b3426b2593763c96d0890b4a77a0bbf66d13fc512b0c6b138a23c290f30a2a", ObservedGeneration: candidate.DesiredGeneration, Probe: fleetfunctions.ProbeEvidence{Succeeded: true}, ActivatedAt: now}
 		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(map[string]any{"id": candidate.OperationID, "projectRef": candidate.ProjectRef, "state": "applied", "evidenceSchema": fleetfunctions.EvidenceSchemaV1, "evidence": evidence})
+		_ = json.NewEncoder(w).Encode(map[string]any{"id": candidate.OperationID, "projectRef": candidate.ProjectRef, "state": "succeeded", "evidenceSchema": fleetfunctions.EvidenceSchemaV1, "evidence": evidence})
 	}))
 	defer server.Close()
 	store := &projectionMemoryStore{candidate: candidate, ready: true}
@@ -186,7 +186,7 @@ func TestConfigurationProjectionRequiresAppliedTypedEvidence(t *testing.T) {
 			ObservedDigest: "26b3426b2593763c96d0890b4a77a0bbf66d13fc512b0c6b138a23c290f30a2a", Conflicts: []fleetproviders.Conflict{},
 		}
 		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(map[string]any{"id": candidate.OperationID, "projectRef": candidate.ProjectRef, "state": "applied", "evidenceSchema": fleetproviders.EvidenceSchemaV1, "evidence": evidence})
+		_ = json.NewEncoder(w).Encode(map[string]any{"id": candidate.OperationID, "projectRef": candidate.ProjectRef, "state": "succeeded", "evidenceSchema": fleetproviders.EvidenceSchemaV1, "evidence": evidence})
 	}))
 	defer server.Close()
 	store := &configurationProjectionMemoryStore{candidate: candidate, ready: true}

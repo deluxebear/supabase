@@ -76,6 +76,8 @@ func (h *Handler) Register(mux *http.ServeMux) error {
 		mux.Handle("GET /platform/fleet/v1/projects/{projectRef}/function-artifacts/{digest}", h.authorize("fleet.artifacts.read", http.HandlerFunc(h.getFunctionArtifact)))
 	}
 	mux.Handle("POST /platform/fleet/v1/projects/{projectRef}/operations", h.authorize("fleet.execute", http.HandlerFunc(h.createOperation)))
+	mux.Handle("POST /platform/fleet/v1/projects/{projectRef}/operations/{operationId}/cancel", h.authorize("fleet.execute", http.HandlerFunc(h.cancelOperation)))
+	mux.Handle("POST /platform/fleet/v1/projects/{projectRef}/operations/{operationId}/retry", h.authorize("fleet.execute", http.HandlerFunc(h.retryOperation)))
 	mux.Handle("POST /platform/fleet/v1/projects/{projectRef}/lifecycle/impact-plans", h.authorize("fleet.execute", http.HandlerFunc(h.createLifecyclePlan)))
 	mux.Handle("GET /platform/fleet/v1/projects/{projectRef}/operations/{operationId}", h.authorize("fleet.read", http.HandlerFunc(h.getOperation)))
 	mux.Handle("GET /platform/fleet/v1/projects/{projectRef}/operations/{operationId}/events", h.authorize("fleet.read", http.HandlerFunc(h.replayEvents)))
@@ -288,6 +290,17 @@ func (h *Handler) createOperation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	projectRef := r.PathValue("projectRef")
+	if existing, err := h.Store.GetOperationByIdempotency(r.Context(), projectRef, idempotencyKey); err == nil {
+		if existing.ID != request.OperationID || existing.DesiredRevision != request.DesiredRevision || existing.DesiredDigest != request.DesiredDigest {
+			writeFleetError(w, r, http.StatusConflict, "idempotency_conflict", "Idempotency-Key is already bound to a different immutable operation", false, map[string]any{})
+			return
+		}
+		writeJSON(w, http.StatusOK, existing)
+		return
+	} else if !errors.Is(err, ErrOperationNotFound) {
+		writeFleetError(w, r, http.StatusInternalServerError, "downstream_unavailable", "Fleet Control could not verify operation idempotency", true, map[string]any{})
+		return
+	}
 	binding, err := h.Store.ValidateOperationBinding(r.Context(), projectRef, request.TargetID, request.BindingID, request.Capability)
 	if errors.Is(err, ErrOperationBinding) {
 		writeFleetError(w, r, http.StatusConflict, "binding_revoked", "The Fleet operation binding is inactive or belongs to another project or target", false, map[string]any{"blockers": []Blocker{{Code: "binding_revoked", Message: "Refresh or replace the project management binding before retrying"}}})
@@ -452,6 +465,43 @@ func (h *Handler) getOperation(w http.ResponseWriter, r *http.Request) {
 		writeFleetError(w, r, http.StatusNotFound, "project_not_found", "Operation was not found in this project", false, map[string]any{})
 		return
 	}
+	if err != nil {
+		writeFleetError(w, r, http.StatusInternalServerError, "downstream_unavailable", "Fleet Control could not read the operation", true, map[string]any{})
+		return
+	}
+	writeJSON(w, http.StatusOK, operation)
+}
+
+func (h *Handler) cancelOperation(w http.ResponseWriter, r *http.Request) {
+	h.transitionOperation(w, r, h.Store.CancelOperation, "cancel")
+}
+
+func (h *Handler) retryOperation(w http.ResponseWriter, r *http.Request) {
+	h.transitionOperation(w, r, h.Store.RetryOperation, "retry")
+}
+
+func (h *Handler) transitionOperation(w http.ResponseWriter, r *http.Request, transition func(context.Context, string, string, string, string) error, action string) {
+	actor, ok := security.ActorFromContext(r.Context())
+	if !ok {
+		writeFleetError(w, r, http.StatusUnauthorized, "unauthenticated", "Fleet operation actor context is missing", false, map[string]any{})
+		return
+	}
+	projectRef := r.PathValue("projectRef")
+	operationID := r.PathValue("operationId")
+	err := transition(r.Context(), projectRef, operationID, actor.Subject, r.Header.Get(CorrelationHeader))
+	if errors.Is(err, ErrOperationNotFound) {
+		writeFleetError(w, r, http.StatusNotFound, "project_not_found", "Operation was not found in this project", false, map[string]any{})
+		return
+	}
+	if errors.Is(err, ErrOperationState) {
+		writeFleetError(w, r, http.StatusConflict, "operation_conflict", "Operation cannot "+action+" from its current state", false, map[string]any{})
+		return
+	}
+	if err != nil {
+		writeFleetError(w, r, http.StatusInternalServerError, "downstream_unavailable", "Fleet Control could not "+action+" the operation", true, map[string]any{})
+		return
+	}
+	operation, _, err := h.Store.GetOperation(r.Context(), projectRef, operationID)
 	if err != nil {
 		writeFleetError(w, r, http.StatusInternalServerError, "downstream_unavailable", "Fleet Control could not read the operation", true, map[string]any{})
 		return

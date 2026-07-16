@@ -59,6 +59,39 @@ func TestFleetHandlerEnforcesCapabilityRBACAndProjectIsolation(t *testing.T) {
 	if operation.DesiredRevision != "11111111-1111-4111-8111-111111111111" || operation.DesiredDigest != fmt.Sprintf("%x", digest) {
 		t.Fatalf("desired snapshot identity missing from operation: %+v", operation)
 	}
+	if _, err := store.db.Exec("UPDATE agents SET state='offline' WHERE id='agent-a'"); err != nil {
+		t.Fatal(err)
+	}
+	replay := httptest.NewRequest(http.MethodPost, "/platform/fleet/v1/projects/project-a/operations", bytes.NewBufferString(body))
+	replay.Header.Set("Authorization", "Bearer "+token)
+	replay.Header.Set("Idempotency-Key", "idem-a")
+	replayResponse := httptest.NewRecorder()
+	mux.ServeHTTP(replayResponse, replay)
+	if replayResponse.Code != http.StatusOK || !strings.Contains(replayResponse.Body.String(), `"id":"op-a"`) {
+		t.Fatalf("offline idempotent replay = %d, %s", replayResponse.Code, replayResponse.Body.String())
+	}
+	conflict := httptest.NewRequest(http.MethodPost, "/platform/fleet/v1/projects/project-a/operations", bytes.NewBufferString(strings.Replace(body, `"op-a"`, `"op-other"`, 1)))
+	conflict.Header.Set("Authorization", "Bearer "+token)
+	conflict.Header.Set("Idempotency-Key", "idem-a")
+	conflictResponse := httptest.NewRecorder()
+	mux.ServeHTTP(conflictResponse, conflict)
+	if conflictResponse.Code != http.StatusConflict || !strings.Contains(conflictResponse.Body.String(), "idempotency_conflict") {
+		t.Fatalf("idempotency conflict = %d, %s", conflictResponse.Code, conflictResponse.Body.String())
+	}
+	cancel := httptest.NewRequest(http.MethodPost, "/platform/fleet/v1/projects/project-a/operations/op-a/cancel", nil)
+	cancel.Header.Set("Authorization", "Bearer "+token)
+	cancelResponse := httptest.NewRecorder()
+	mux.ServeHTTP(cancelResponse, cancel)
+	if cancelResponse.Code != http.StatusOK || !strings.Contains(cancelResponse.Body.String(), `"state":"cancelled"`) || !strings.Contains(cancelResponse.Body.String(), `"attempts":0`) {
+		t.Fatalf("cancel response = %d, %s", cancelResponse.Code, cancelResponse.Body.String())
+	}
+	retry := httptest.NewRequest(http.MethodPost, "/platform/fleet/v1/projects/project-a/operations/op-a/retry", nil)
+	retry.Header.Set("Authorization", "Bearer "+token)
+	retryResponse := httptest.NewRecorder()
+	mux.ServeHTTP(retryResponse, retry)
+	if retryResponse.Code != http.StatusConflict || !strings.Contains(retryResponse.Body.String(), "operation_conflict") {
+		t.Fatalf("cancelled retry response = %d, %s", retryResponse.Code, retryResponse.Body.String())
+	}
 
 	crossProject := httptest.NewRequest(http.MethodGet, "/platform/fleet/v1/projects/project-b/operations/op-a", nil)
 	crossProject.Header.Set("Authorization", "Bearer "+token)
@@ -77,7 +110,7 @@ func TestFleetHandlerEnforcesCapabilityRBACAndProjectIsolation(t *testing.T) {
 	if deniedResponse.Code != http.StatusForbidden {
 		t.Fatalf("RBAC denial status = %d, body = %s", deniedResponse.Code, deniedResponse.Body.String())
 	}
-	if count, err := store.AuditCount(context.Background(), "project-a"); err != nil || count != 1 {
+	if count, err := store.AuditCount(context.Background(), "project-a"); err != nil || count != 2 {
 		t.Fatalf("denied request mutated store: count=%d err=%v", count, err)
 	}
 }
