@@ -5,6 +5,7 @@ This directory contains the architecture and implementation records for the self
 ## Start here
 
 - [Dual-profile Studio platform architecture and development standard](./2026-07-15-dual-profile-studio-platform-architecture.md): the engineering-reviewed normative baseline for Embedded Studio, Fleet Studio, Fleet Control, Backup Operator/Agent boundaries, development rules, testing, upstream synchronization, and release gates.
+- [Compact control plane and unified Agent execution plan](./2026-07-16-compact-control-plane-unified-agent-execution-plan.md): executable T12 plan for one Compact control process and one Agent process while preserving Fleet/Backup API, authorization, store, migration, and recovery boundaries; Hardened topology remains supported.
 
 ## Core platform foundations
 
