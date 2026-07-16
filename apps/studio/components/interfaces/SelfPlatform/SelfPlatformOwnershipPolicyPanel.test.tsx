@@ -37,7 +37,9 @@ const authPolicy = {
   domain: 'auth',
   ownershipMode: 'direct-managed',
   adapter: 'kubernetes',
+  fieldOwners: { '*': 'fleet', '/spec/template': 'project-service' },
   policyRevision: 2,
+  casToken: '00000000-0000-4000-8000-000000000010',
   driftState: 'ownership-conflict',
   blockers: [
     {
@@ -53,6 +55,12 @@ const authPolicy = {
   lastObservedGeneration: 2,
   lastObservedDigest: 'a'.repeat(64),
   lastObservedAt: '2026-07-15T00:01:00Z',
+  desiredRevision: '00000000-0000-4000-8000-000000000011',
+  desiredGeneration: 2,
+  desiredDigest: 'b'.repeat(64),
+  observedRevision: '00000000-0000-4000-8000-000000000011',
+  observedGeneration: 2,
+  observedDigest: 'a'.repeat(64),
   updatedAt: '2026-07-15T00:01:00Z',
 }
 
@@ -133,6 +141,7 @@ describe('SelfPlatformOwnershipPolicyPanel', () => {
       domain: 'auth',
       ownershipMode: 'gitops-managed',
       expectedRevision: 2,
+      expectedCasToken: '00000000-0000-4000-8000-000000000010',
     })
   })
 })

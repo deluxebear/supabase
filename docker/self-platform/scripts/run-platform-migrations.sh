@@ -122,6 +122,9 @@ grant execute on function platform.complete_operation_dispatch(text, text, text)
 grant execute on function platform.fail_operation_dispatch(text, text, text, text, boolean) to fleet_platform_dispatcher;
 grant select on platform.function_deployments, platform.operation_outbox to fleet_platform_dispatcher;
 grant execute on function platform.apply_function_deployment_observation(text, text, text, uuid, bigint, text, text, text, text, text, timestamptz) to fleet_platform_dispatcher;
+grant execute on function platform.next_configuration_projection() to fleet_platform_dispatcher;
+grant execute on function platform.apply_configuration_reconciliation_evidence(text, text, bigint, uuid, bigint, jsonb, text, text, text, boolean, jsonb, text, timestamptz) to fleet_platform_dispatcher;
+grant execute on function platform.apply_configuration_operation_failure(text, text, uuid, bigint, text) to fleet_platform_dispatcher;
 SQL
 fi
 

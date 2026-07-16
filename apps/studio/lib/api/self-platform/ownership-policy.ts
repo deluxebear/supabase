@@ -19,20 +19,39 @@ type OwnershipPolicyRow = {
   domain: string
   ownership_mode: OwnershipPolicy['ownershipMode']
   adapter: OwnershipPolicy['adapter']
+  field_owners: unknown
   policy_revision: number
+  cas_token: string
   drift_state: OwnershipPolicy['driftState']
   blockers: unknown
   last_operation_id: string | null
   last_observed_generation: number | null
   last_observed_digest: string | null
   last_observed_at: string | null
+  desired_revision: string | null
+  desired_generation: number | null
+  desired_digest: string | null
+  observed_revision: string | null
+  observed_generation: number | null
+  observed_digest: string | null
   updated_at: string
 }
 
-const policySelect = `select project_ref, domain, ownership_mode, adapter,
-  policy_revision, drift_state, blockers, last_operation_id,
-  last_observed_generation, last_observed_digest, last_observed_at, updated_at
-from platform.project_ownership_policies`
+const policySelect = `select policy.project_ref, policy.domain, policy.ownership_mode, policy.adapter,
+  field_owners, policy_revision, cas_token, drift_state, blockers, last_operation_id,
+  last_observed_generation, last_observed_digest, last_observed_at,
+  desired.revision_id as desired_revision,
+  desired.generation as desired_generation,
+  desired.desired_digest,
+  observation.desired_revision as observed_revision,
+  observation.observed_generation,
+  observation.observed_digest,
+  policy.updated_at
+from platform.project_ownership_policies policy
+left join platform.desired_configurations desired
+  on desired.project_ref = policy.project_ref and desired.domain = policy.domain
+left join platform.project_observations observation
+  on observation.project_ref = policy.project_ref and observation.domain = policy.domain`
 
 function mapPolicy(row: OwnershipPolicyRow): OwnershipPolicy {
   return ownershipPolicySchema.parse({
@@ -40,7 +59,9 @@ function mapPolicy(row: OwnershipPolicyRow): OwnershipPolicy {
     domain: row.domain,
     ownershipMode: row.ownership_mode,
     adapter: row.adapter,
+    fieldOwners: row.field_owners,
     policyRevision: Number(row.policy_revision),
+    casToken: row.cas_token,
     driftState: row.drift_state,
     blockers: row.blockers ?? [],
     lastOperationId: row.last_operation_id,
@@ -48,6 +69,12 @@ function mapPolicy(row: OwnershipPolicyRow): OwnershipPolicy {
       row.last_observed_generation === null ? null : Number(row.last_observed_generation),
     lastObservedDigest: row.last_observed_digest,
     lastObservedAt: row.last_observed_at,
+    desiredRevision: row.desired_revision ?? null,
+    desiredGeneration: row.desired_generation == null ? null : Number(row.desired_generation),
+    desiredDigest: row.desired_digest ?? null,
+    observedRevision: row.observed_revision ?? null,
+    observedGeneration: row.observed_generation == null ? null : Number(row.observed_generation),
+    observedDigest: row.observed_digest ?? null,
     updatedAt: row.updated_at,
   })
 }
@@ -55,7 +82,7 @@ function mapPolicy(row: OwnershipPolicyRow): OwnershipPolicy {
 export async function listProjectOwnershipPolicies(projectRef: string): Promise<OwnershipPolicy[]> {
   if (!projectRef) throw new Error('projectRef is required')
   const result = await executePlatformQuery<OwnershipPolicyRow>({
-    query: `${policySelect} where project_ref = $1 order by domain`,
+    query: `${policySelect} where policy.project_ref = $1 order by policy.domain`,
     parameters: [projectRef],
   })
   if (result.error) throw result.error
@@ -80,7 +107,7 @@ export async function setProjectOwnershipPolicy(input: {
 }): Promise<OwnershipPolicy> {
   const policy = ownershipPolicyInputSchema.parse(input.policy)
   const result = await executePlatformQuery<OwnershipPolicyRow>({
-    query: `select * from platform.set_project_ownership_policy($1,$2,$3,$4,$5,$6)`,
+    query: `select * from platform.set_project_ownership_policy($1,$2,$3,$4,$5,$6,$7::jsonb,$8::uuid)`,
     parameters: [
       input.projectRef,
       policy.domain,
@@ -88,6 +115,8 @@ export async function setProjectOwnershipPolicy(input: {
       policy.expectedRevision,
       input.actor,
       input.correlationId,
+      policy.fieldOwners === undefined ? null : JSON.stringify(policy.fieldOwners),
+      policy.expectedCasToken ?? null,
     ],
   })
   if (result.error) {

@@ -89,6 +89,7 @@ export const SelfPlatformOwnershipPolicyPanel = () => {
       domain,
       ownershipMode,
       expectedRevision: policy?.policyRevision ?? 0,
+      expectedCasToken: policy?.casToken ?? null,
     })
   }
 
@@ -149,6 +150,19 @@ export const SelfPlatformOwnershipPolicyPanel = () => {
                         observedAt: new Date(policy.lastObservedAt).toLocaleString(),
                         generation: policy.lastObservedGeneration ?? '—',
                       })}
+                    </p>
+                  )}
+                  {policy?.desiredGeneration && (
+                    <p className="text-xs text-foreground-muted">
+                      {$t('Desired generation {{desired}} · observed generation {{observed}}', {
+                        desired: policy.desiredGeneration,
+                        observed: policy.observedGeneration ?? '—',
+                      })}
+                    </p>
+                  )}
+                  {policy && (
+                    <p className="text-xs text-foreground-muted">
+                      {$t('Field owner')}: {policy.fieldOwners['*'] ?? $t('mixed')}
                     </p>
                   )}
                   {policy?.blockers.map((blocker) => (

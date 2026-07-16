@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 	"github.com/supabase/supabase/apps/backup-operator/internal/security"
 )
 
@@ -27,6 +28,26 @@ type projectionMemoryStore struct {
 	candidate FunctionProjection
 	ready     bool
 	applied   []fleetfunctions.Evidence
+}
+
+type configurationProjectionMemoryStore struct {
+	memoryStore
+	candidate ConfigurationProjection
+	ready     bool
+	applied   []*fleetproviders.Evidence
+}
+
+func (s *configurationProjectionMemoryStore) NextConfigurationProjection(context.Context) (ConfigurationProjection, bool, error) {
+	return s.candidate, s.ready, nil
+}
+
+func (s *configurationProjectionMemoryStore) ApplyConfigurationProjection(_ context.Context, candidate ConfigurationProjection, evidence *fleetproviders.Evidence, _, _ string) (bool, error) {
+	if candidate != s.candidate {
+		return false, nil
+	}
+	s.applied = append(s.applied, evidence)
+	s.ready = false
+	return true, nil
 }
 
 func (s *projectionMemoryStore) NextFunctionProjection(context.Context) (FunctionProjection, bool, error) {
@@ -145,6 +166,33 @@ func TestFunctionProjectionRequiresProjectBoundTypedTerminalEvidence(t *testing.
 	cfg := Config{Store: store, FleetControlURL: server.URL, AssertionKey: key, AssertionIssuer: "studio-platform", AssertionAudience: "fleet-control", WorkerID: "worker-1", Lease: 30 * time.Second, PollInterval: time.Second, Now: func() time.Time { return now }}
 	projected, err := cfg.ProjectFunctionOnce(context.Background())
 	if err != nil || !projected || len(store.applied) != 1 || store.applied[0].Slug != candidate.Slug {
+		t.Fatalf("projection = %v applied=%+v err=%v", projected, store.applied, err)
+	}
+}
+
+func TestConfigurationProjectionRequiresAppliedTypedEvidence(t *testing.T) {
+	key := []byte("fleet-control-test-key-at-least-32-bytes")
+	now := time.Unix(1_700_000_000, 0).UTC()
+	candidate := ConfigurationProjection{OperationID: "op-config", ProjectRef: "project-a", Domain: "auth", PolicyRevision: 2, DesiredRevision: "11111111-1111-4111-8111-111111111111", DesiredGeneration: 3}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		claims, err := securityClaims(r, key)
+		if err != nil || len(claims.Projects) != 1 || claims.Projects[0] != candidate.ProjectRef || len(claims.Scopes) != 1 || claims.Scopes[0] != "fleet.read" {
+			t.Fatalf("projection assertion = %+v, %v", claims, err)
+		}
+		evidence := fleetproviders.Evidence{
+			Schema: fleetproviders.EvidenceSchemaV1, OwnershipMode: fleetproviders.DirectManaged,
+			Adapter: fleetproviders.AdapterCompose, DriftState: "in-sync", Applied: true,
+			ObservedGeneration: candidate.DesiredGeneration, ObservedDocument: json.RawMessage(`{"files":{"auth.env":"digest"}}`),
+			ObservedDigest: "26b3426b2593763c96d0890b4a77a0bbf66d13fc512b0c6b138a23c290f30a2a", Conflicts: []fleetproviders.Conflict{},
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{"id": candidate.OperationID, "projectRef": candidate.ProjectRef, "state": "applied", "evidenceSchema": fleetproviders.EvidenceSchemaV1, "evidence": evidence})
+	}))
+	defer server.Close()
+	store := &configurationProjectionMemoryStore{candidate: candidate, ready: true}
+	cfg := Config{Store: store, FleetControlURL: server.URL, AssertionKey: key, AssertionIssuer: "studio-platform", AssertionAudience: "fleet-control", WorkerID: "worker-1", Lease: 30 * time.Second, PollInterval: time.Second, Now: func() time.Time { return now }}
+	projected, err := cfg.ProjectConfigurationOnce(context.Background())
+	if err != nil || !projected || len(store.applied) != 1 || store.applied[0] == nil || !store.applied[0].Applied {
 		t.Fatalf("projection = %v applied=%+v err=%v", projected, store.applied, err)
 	}
 }

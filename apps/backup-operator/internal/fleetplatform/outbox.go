@@ -16,6 +16,7 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 	"github.com/supabase/supabase/apps/backup-operator/internal/security"
 )
 
@@ -54,6 +55,20 @@ type FunctionProjection struct {
 type FunctionProjectionStore interface {
 	NextFunctionProjection(context.Context) (FunctionProjection, bool, error)
 	ApplyFunctionProjection(context.Context, FunctionProjection, fleetfunctions.Evidence, string) (bool, error)
+}
+
+type ConfigurationProjection struct {
+	OperationID       string
+	ProjectRef        string
+	Domain            string
+	PolicyRevision    int64
+	DesiredRevision   string
+	DesiredGeneration int64
+}
+
+type ConfigurationProjectionStore interface {
+	NextConfigurationProjection(context.Context) (ConfigurationProjection, bool, error)
+	ApplyConfigurationProjection(context.Context, ConfigurationProjection, *fleetproviders.Evidence, string, string) (bool, error)
 }
 
 type PostgresStore struct{ db *sql.DB }
@@ -133,6 +148,52 @@ $1,$2,$3,$4::uuid,$5,$6,$7,$8,$9,$10,$11::timestamptz
 )`, candidate.ProjectRef, candidate.Slug, candidate.OperationID, candidate.DesiredRevision,
 		candidate.DesiredGeneration, evidence.Status, evidence.ArtifactDigest,
 		evidence.PreviousDigest, errorCode, evidence.Remediation, evidence.ActivatedAt).Scan(&applied)
+	return applied, err
+}
+
+func (s *PostgresStore) NextConfigurationProjection(ctx context.Context) (ConfigurationProjection, bool, error) {
+	const query = `SELECT operation_id, project_ref, domain, policy_revision,
+desired_revision::text, desired_generation
+FROM platform.next_configuration_projection()`
+	var candidate ConfigurationProjection
+	err := s.db.QueryRowContext(ctx, query).Scan(
+		&candidate.OperationID,
+		&candidate.ProjectRef,
+		&candidate.Domain,
+		&candidate.PolicyRevision,
+		&candidate.DesiredRevision,
+		&candidate.DesiredGeneration,
+	)
+	if errors.Is(err, sql.ErrNoRows) {
+		return ConfigurationProjection{}, false, nil
+	}
+	if err != nil {
+		return ConfigurationProjection{}, false, err
+	}
+	return candidate, true, nil
+}
+
+func (s *PostgresStore) ApplyConfigurationProjection(ctx context.Context, candidate ConfigurationProjection, evidence *fleetproviders.Evidence, operationState, errorCode string) (bool, error) {
+	if evidence == nil {
+		var applied bool
+		err := s.db.QueryRowContext(ctx, `SELECT platform.apply_configuration_operation_failure(
+$1,$2,$3::uuid,$4,$5
+)`, candidate.ProjectRef, candidate.OperationID, candidate.DesiredRevision,
+			candidate.DesiredGeneration, errorCode).Scan(&applied)
+		return applied, err
+	}
+	blockers, err := json.Marshal(evidence.Conflicts)
+	if err != nil {
+		return false, err
+	}
+	var applied bool
+	err = s.db.QueryRowContext(ctx, `SELECT platform.apply_configuration_reconciliation_evidence(
+$1,$2,$3,$4::uuid,$5,$6::jsonb,$7,$8,$9,$10,$11::jsonb,$12,$13::timestamptz
+)`, candidate.ProjectRef, candidate.Domain, candidate.PolicyRevision,
+		candidate.DesiredRevision, candidate.DesiredGeneration,
+		string(evidence.ObservedDocument), evidence.ObservedDigest, candidate.OperationID,
+		evidence.DriftState, evidence.Applied && operationState == "applied", string(blockers),
+		errorCode, time.Now().UTC()).Scan(&applied)
 	return applied, err
 }
 
@@ -271,6 +332,87 @@ func (c Config) ProjectFunctionOnce(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
+func (c Config) ProjectConfigurationOnce(ctx context.Context) (bool, error) {
+	store, ok := c.Store.(ConfigurationProjectionStore)
+	if !ok {
+		return false, nil
+	}
+	candidate, ok, err := store.NextConfigurationProjection(ctx)
+	if err != nil || !ok {
+		return ok, err
+	}
+	now := time.Now
+	if c.Now != nil {
+		now = c.Now
+	}
+	assertion, err := security.SignServiceJWT(security.ServiceClaims{
+		Issuer: c.AssertionIssuer, Subject: "fleet-platform-projector", Audience: c.AssertionAudience,
+		NotBefore: now().Add(-5 * time.Second).Unix(), Expires: now().Add(time.Minute).Unix(),
+		Scopes: []string{"fleet.read"}, Projects: []string{candidate.ProjectRef},
+	}, c.AssertionKey)
+	if err != nil {
+		return true, err
+	}
+	endpoint := strings.TrimRight(c.FleetControlURL, "/") + "/platform/fleet/v1/projects/" + url.PathEscape(candidate.ProjectRef) + "/operations/" + url.PathEscape(candidate.OperationID)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return true, err
+	}
+	request.Header.Set("Authorization", "Bearer "+assertion)
+	client := c.HTTPClient
+	if client == nil {
+		client = &http.Client{Timeout: 10 * time.Second}
+	}
+	response, err := client.Do(request)
+	if err != nil {
+		return true, err
+	}
+	defer response.Body.Close()
+	payload, err := io.ReadAll(io.LimitReader(response.Body, 1<<20))
+	if err != nil {
+		return true, err
+	}
+	if response.StatusCode != http.StatusOK || !strings.Contains(response.Header.Get("Content-Type"), "application/json") {
+		return true, &FleetError{Code: "downstream_invalid_response", Message: fmt.Sprintf("Fleet Control operation projection returned HTTP %d", response.StatusCode), Retryable: response.StatusCode >= 500}
+	}
+	var operation struct {
+		ID             string          `json:"id"`
+		ProjectRef     string          `json:"projectRef"`
+		State          string          `json:"state"`
+		EvidenceSchema string          `json:"evidenceSchema"`
+		Evidence       json.RawMessage `json:"evidence"`
+		ErrorCode      string          `json:"errorCode"`
+	}
+	if json.Unmarshal(payload, &operation) != nil || operation.ID != candidate.OperationID || operation.ProjectRef != candidate.ProjectRef {
+		return true, &FleetError{Code: "downstream_invalid_response", Message: "Fleet Control returned mismatched configuration operation evidence", Retryable: false}
+	}
+	if operation.State != "applied" && operation.State != "failed" && operation.State != "manual_intervention" {
+		return false, nil
+	}
+	var evidence fleetproviders.Evidence
+	validEvidence := operation.EvidenceSchema == fleetproviders.EvidenceSchemaV1 &&
+		json.Unmarshal(operation.Evidence, &evidence) == nil &&
+		evidence.Schema == fleetproviders.EvidenceSchemaV1 &&
+		evidence.ObservedGeneration == candidate.DesiredGeneration &&
+		len(evidence.ObservedDigest) == 64 && json.Valid(evidence.ObservedDocument) &&
+		(evidence.DriftState == "in-sync" || evidence.DriftState == "drifted" || evidence.DriftState == "ownership-conflict")
+	if operation.State == "applied" && (!validEvidence || !evidence.Applied) {
+		return true, &FleetError{Code: "downstream_invalid_response", Message: "Fleet Control marked unapplied configuration evidence as applied", Retryable: false}
+	}
+	var typedEvidence *fleetproviders.Evidence
+	if validEvidence {
+		typedEvidence = &evidence
+	}
+	applied, err := store.ApplyConfigurationProjection(ctx, candidate, typedEvidence, operation.State, operation.ErrorCode)
+	if err != nil {
+		return true, err
+	}
+	if !applied {
+		return true, errors.New("stale configuration evidence was rejected")
+	}
+	return true, nil
+}
+
 type FleetError struct {
 	Code      string
 	Message   string
@@ -373,6 +515,9 @@ func Run(ctx context.Context, cfg Config) error {
 		}
 		if _, err := cfg.ProjectFunctionOnce(ctx); err != nil {
 			cfg.Logger.Error("Fleet function deployment projection failed", "error", err)
+		}
+		if _, err := cfg.ProjectConfigurationOnce(ctx); err != nil {
+			cfg.Logger.Error("Fleet configuration projection failed", "error", err)
 		}
 		select {
 		case <-ctx.Done():

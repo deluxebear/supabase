@@ -17,6 +17,7 @@ type Variables = {
   domain: string
   ownershipMode: z.infer<typeof ownershipModeSchema>
   expectedRevision: number
+  expectedCasToken?: string | null
 }
 
 const responseSchema = z.object({ policy: ownershipPolicySchema })

@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { handler } from '@/pages/api/platform/projects/[ref]/ownership-policies'
 import { requireProjectCapability } from '@/lib/api/self-platform/attachment'
 import { setProjectOwnershipPolicy } from '@/lib/api/self-platform/ownership-policy'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
+import { handler } from '@/pages/api/platform/projects/[ref]/ownership-policies'
 
 vi.hoisted(() => {
   process.env.NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE = 'fleet'
@@ -65,13 +65,21 @@ describe('project ownership policy API', () => {
       domain: 'auth',
       ownershipMode: 'direct-managed',
       adapter: 'compose',
+      fieldOwners: { '*': 'fleet' },
       policyRevision: 2,
+      casToken: '00000000-0000-4000-8000-000000000010',
       driftState: 'unknown',
       blockers: [],
       lastOperationId: null,
       lastObservedGeneration: null,
       lastObservedDigest: null,
       lastObservedAt: null,
+      desiredRevision: null,
+      desiredGeneration: null,
+      desiredDigest: null,
+      observedRevision: null,
+      observedGeneration: null,
+      observedDigest: null,
       updatedAt: '2026-07-15T00:00:00Z',
     })
     const res = response()

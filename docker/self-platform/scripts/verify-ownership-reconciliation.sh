@@ -78,11 +78,11 @@ update platform.stack_bindings set
 where project_ref in ('ownership-a', 'ownership-b');
 
 select * from platform.set_project_ownership_policy(
-  'ownership-a', 'auth', 'direct-managed', 0, 'owner-a', 'set-a'
+  'ownership-a', 'auth', 'direct-managed', 1, 'owner-a', 'set-a'
 );
 
 select platform.apply_ownership_observation(
-  'ownership-a', 'auth', 1, 'op-a', 1, repeat('c', 64),
+  'ownership-a', 'auth', 2, 'op-a', 1, repeat('c', 64),
   'ownership-conflict',
   '[{"code":"ownership_conflict","message":"user-owned Compose directory","remediation":"choose a Fleet-owned directory","resource":"compose.yaml"}]'::jsonb,
   now()
@@ -104,7 +104,7 @@ begin
   if exists (
     select 1 from platform.project_ownership_policies
     where project_ref = 'ownership-b'
-      and (domain = 'auth' or updated_by = 'owner-a')
+      and updated_by = 'owner-a'
   ) then raise exception 'project A policy leaked into project B'; end if;
   if not exists (
     select 1 from platform.audit_events
@@ -114,7 +114,7 @@ end;
 $$;
 
 select * from platform.set_project_ownership_policy(
-  'ownership-b', 'storage', 'gitops-managed', 0, 'owner-b', 'set-b'
+  'ownership-b', 'storage', 'gitops-managed', 1, 'owner-b', 'set-b'
 );
 SQL
 
