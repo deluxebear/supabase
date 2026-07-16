@@ -197,6 +197,7 @@ PSQL -d _platform <<SQL
 insert into platform.projects
   (ref, organization_id, name, status, cloud_provider, region,
    db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
+   tls_mode,
    db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc,
    publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc,
    metrics_url, metrics_token_enc, stack_kind, container_name, k8s_namespace, k8s_pod_selector)
@@ -205,6 +206,7 @@ values
    '$(sqlq "$PROJECT_NAME")', 'ACTIVE_HEALTHY', 'AWS', 'local',
    'db', $POSTGRES_PORT, '$(sqlq "$POSTGRES_DB")', 'supabase_admin', 'supabase_read_only_user',
    '$(sqlq "$SUPABASE_PUBLIC_URL")', '$(sqlq "$SUPABASE_PUBLIC_URL")/rest/v1/',
+   'disable',
    '$(sqlq "$(enc "$POSTGRES_PASSWORD")")', '$(sqlq "$(enc "$SERVICE_ROLE_KEY")")',
    '$(sqlq "$(enc "$ANON_KEY")")', '$(sqlq "$(enc "$JWT_SECRET")")',
    $PUB_SQL, $SEC_SQL, $LOGFLARE_URL_SQL, $LOGFLARE_TOKEN_SQL,
@@ -217,6 +219,7 @@ on conflict (ref) do update set
   db_host=excluded.db_host, db_port=excluded.db_port, db_name=excluded.db_name,
   db_user=excluded.db_user, db_user_readonly=excluded.db_user_readonly,
   kong_url=excluded.kong_url, rest_url=excluded.rest_url,
+  tls_mode=excluded.tls_mode,
   db_pass_enc=excluded.db_pass_enc, service_key_enc=excluded.service_key_enc,
   anon_key_enc=excluded.anon_key_enc, jwt_secret_enc=excluded.jwt_secret_enc,
   publishable_key_enc=excluded.publishable_key_enc, secret_key_enc=excluded.secret_key_enc,
