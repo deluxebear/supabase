@@ -13,6 +13,7 @@ import (
 	fleetagentv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/fleet/v1"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetdatabase"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetinventory"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetlifecycle"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 	"github.com/supabase/supabase/apps/backup-operator/internal/observability"
@@ -32,6 +33,7 @@ type AgentServer struct {
 	Now          func() time.Time
 	Sessions     *SessionLimiter
 	Metrics      *observability.Metrics
+	Capabilities *CapabilityRegistry
 }
 
 func (s *AgentServer) DownloadArtifact(request *fleetagentv1.DownloadArtifactRequest, stream fleetagentv1.FleetAgentControlService_DownloadArtifactServer) error {
@@ -96,8 +98,16 @@ func (s *AgentServer) Connect(stream fleetagentv1.FleetAgentControlService_Conne
 	if err != nil {
 		return status.Error(codes.PermissionDenied, "Fleet Agent certificate or binding is inactive")
 	}
-	if binding.BindingID != hello.GetBindingId() || binding.TargetID != hello.GetTargetId() || agent.ID != hello.GetAgentId() || !agentCapabilitiesAllowed(hello.GetCapabilities(), agent.Capabilities) {
+	if binding.BindingID != hello.GetBindingId() || binding.TargetID != hello.GetTargetId() || agent.ID != hello.GetAgentId() {
 		return status.Error(codes.PermissionDenied, "Fleet Agent hello does not match the enrolled project binding")
+	}
+	registry := s.Capabilities
+	if registry == nil {
+		registry = NewCapabilityRegistry()
+	}
+	observations, err := registry.Observations(hello.GetCapabilities())
+	if err != nil || s.Store.RefreshAgentCapabilities(stream.Context(), binding, agent.ID, observations) != nil {
+		return status.Error(codes.PermissionDenied, "Fleet Agent capabilities exceed the control or binding allowlist")
 	}
 	identity := AgentSessionIdentity{AgentID: agent.ID, ProjectRef: binding.ProjectRef, TargetID: binding.TargetID, BindingID: binding.BindingID, Capabilities: append([]string(nil), hello.GetCapabilities()...)}
 	if s.Sessions == nil {
@@ -209,7 +219,15 @@ func (s *AgentServer) handleAgentMessage(stream fleetagentv1.FleetAgentControlSe
 		return status.Error(codes.FailedPrecondition, "Fleet Agent result does not match its active task")
 	}
 	completion := CompleteOperationInput{TaskID: result.GetTaskId(), AgentID: identity.AgentID, EvidenceSchema: fleetproviders.EvidenceSchemaV1, Evidence: json.RawMessage(`{}`)}
-	if typed := result.GetReconcileConfiguration(); typed != nil {
+	if typed := result.GetObserveRuntime(); typed != nil {
+		var evidence fleetinventory.Evidence
+		if json.Unmarshal(typed.GetInventoryJson(), &evidence) != nil || evidence.Validate() != nil || evidence.ObservedGeneration != (*active).ExpectedGeneration {
+			return status.Error(codes.InvalidArgument, "Fleet Agent runtime inventory evidence is invalid")
+		}
+		completion.EvidenceSchema = fleetinventory.EvidenceSchemaV1
+		completion.Evidence = append(json.RawMessage(nil), typed.GetInventoryJson()...)
+		completion.Succeeded = true
+	} else if typed := result.GetReconcileConfiguration(); typed != nil {
 		var evidence fleetproviders.Evidence
 		if json.Unmarshal(typed.GetEvidenceJson(), &evidence) != nil || evidence.Schema != fleetproviders.EvidenceSchemaV1 || evidence.ObservedGeneration != (*active).ExpectedGeneration || evidence.Adapter == "" || evidence.OwnershipMode == "" || len(evidence.Conflicts) > 256 {
 			return status.Error(codes.InvalidArgument, "Fleet Agent reconciliation evidence is invalid")
@@ -329,6 +347,12 @@ func (s *AgentServer) taskMessage(operation ClaimedOperation) (*fleetagentv1.Typ
 		Domain: operation.Domain, Capability: operation.Capability, InputSchema: operation.InputSchema, Preconditions: preconditions,
 	}
 	switch {
+	case operation.Capability == fleetinventory.CapabilityObserve && operation.InputSchema == fleetinventory.InputSchemaV1:
+		input, parseErr := fleetinventory.ParseInput(operation.TypedInput)
+		if parseErr != nil {
+			return nil, errors.New("Fleet runtime observation contract is invalid")
+		}
+		task.Input = &fleetagentv1.TypedTask_ObserveRuntime{ObserveRuntime: &fleetagentv1.ObserveRuntimeInput{Services: input.Services}}
 	case operation.Capability == fleetproviders.CapabilityReconcileConfiguration && operation.InputSchema == fleetproviders.InputSchemaV1:
 		task.Input = &fleetagentv1.TypedTask_ReconcileConfiguration{ReconcileConfiguration: &fleetagentv1.ReconcileConfigurationInput{DocumentJson: operation.TypedInput, DesiredDigest: operation.DesiredDigest, ExpectedGeneration: operation.ExpectedGeneration}}
 	case operation.Capability == fleetdatabase.CapabilityReconcile && operation.InputSchema == fleetdatabase.InputSchemaV1:

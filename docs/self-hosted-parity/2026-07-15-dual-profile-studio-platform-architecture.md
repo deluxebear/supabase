@@ -1463,6 +1463,8 @@ Roadmap P1-2 is also complete: Fleet Control schema 9 now provides the shared si
 
 Roadmap P1-3 is complete: Fleet Control schema 10 encrypts sensitive operation input at rest and the typed database provider now reconciles primary/read-only passwords, SSL/CA, network CIDRs, and Supavisor limits with direct and pooled probes plus rollback evidence. Fleet Database Settings exposes the real project-scoped controls without hosted PgBouncer or entitlement dependencies. See [P1-3 database security and Supavisor operations](./2026-07-16-p1-3-database-security-pooler.md).
 
+Roadmap P1-4 is complete: the typed `runtime.observe` operation now projects project-scoped disk/database/WAL/system utilization, Compose compute/container/volume inventory, service versions, and honest upgrade readiness. A target-local read-only observer owns Docker socket access while the generic Agent remains socket-free; targets without an allowlisted upgrade executor expose explicit preflight blockers, plan, rollback, and recovery instead of false eligibility. See [P1-4 runtime inventory and upgrade readiness](./2026-07-16-p1-4-runtime-inventory-upgrade.md).
+
 ## 22. Definition of done for a management feature
 
 A Fleet management feature is not complete until all items pass:

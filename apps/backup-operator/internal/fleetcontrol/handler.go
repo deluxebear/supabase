@@ -16,6 +16,7 @@ import (
 
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetdatabase"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetinventory"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetlifecycle"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 	"github.com/supabase/supabase/apps/backup-operator/internal/observability"
@@ -376,6 +377,12 @@ func (h *Handler) createOperation(w http.ResponseWriter, r *http.Request) {
 			}
 			redactedSnapshotCanonical = string(redactedTypedInput)
 			sensitive = true
+		}
+	}
+	if request.Capability == fleetinventory.CapabilityObserve {
+		if _, err := fleetinventory.ParseInput(request.TypedInput); err != nil {
+			writeFleetError(w, r, http.StatusBadRequest, "validation_failed", "Fleet runtime observation input is invalid", false, map[string]any{"reason": err.Error()})
+			return
 		}
 	}
 	if request.InputSchema == fleetlifecycle.InputSchemaV1 {

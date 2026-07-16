@@ -159,9 +159,10 @@ func Run(ctx context.Context, cfg Config) error {
 		return err
 	}
 	artifacts := &ArtifactStore{Root: cfg.ArtifactRoot, Store: store}
+	capabilities := NewCapabilityRegistry()
 	mux := http.NewServeMux()
 	handler := &Handler{
-		Store: store, Artifacts: artifacts, Capabilities: NewCapabilityRegistry(),
+		Store: store, Artifacts: artifacts, Capabilities: capabilities,
 		Validator: security.AssertionValidator{Key: cfg.AssertionKey, Issuer: cfg.AssertionIssuer, Audience: cfg.AssertionAudience, MaxTTL: cfg.AssertionMaxTTL},
 		AgentCA:   agentCA, EnrollmentTokenTTL: cfg.EnrollmentTokenTTL, CertificateOverlap: cfg.CertificateOverlap, Metrics: cfg.Metrics,
 	}
@@ -197,7 +198,7 @@ func Run(ctx context.Context, cfg Config) error {
 		ClientCAs: clientCAs, ClientAuth: tls.RequireAndVerifyClientCert,
 	}
 	agentGRPC := grpc.NewServer(grpc.Creds(credentials.NewTLS(agentTLS)))
-	fleetagentv1.RegisterFleetAgentControlServiceServer(agentGRPC, &AgentServer{Store: store, Artifacts: artifacts, Authority: agentCA, Sessions: sessions, Metrics: cfg.Metrics})
+	fleetagentv1.RegisterFleetAgentControlServiceServer(agentGRPC, &AgentServer{Store: store, Artifacts: artifacts, Authority: agentCA, Sessions: sessions, Metrics: cfg.Metrics, Capabilities: capabilities})
 	errCh := make(chan error, 5)
 	go func() { errCh <- server.Serve(listener) }()
 	go func() { errCh <- enrollmentServer.Serve(tls.NewListener(enrollmentListener, enrollmentTLS)) }()

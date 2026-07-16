@@ -270,7 +270,12 @@ export function applyPriorDecisionToSDK(
 }
 
 async function initUserCentrics() {
-  if (process.env.NODE_ENV === 'test' || !IS_PLATFORM) return
+  if (
+    process.env.NODE_ENV === 'test' ||
+    !IS_PLATFORM ||
+    !process.env.NEXT_PUBLIC_USERCENTRICS_RULESET_ID
+  )
+    return
 
   // [Alaister] For local development and staging, we accept all consent by default.
   // If you need to test usercentrics in these environments, comment out this

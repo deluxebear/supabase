@@ -18,6 +18,7 @@ import (
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetagent"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetdatabase"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetinventory"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetlifecycle"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 	"github.com/supabase/supabase/apps/backup-operator/internal/version"
@@ -55,6 +56,9 @@ func main() {
 	databaseTLSCARoot := flag.String("database-tls-ca-root", os.Getenv("FLEET_AGENT_DATABASE_TLS_CA_ROOT"), "operator-managed TLS CA allowlist root")
 	databasePrimaryRole := flag.String("database-primary-role", envOr("FLEET_AGENT_DATABASE_PRIMARY_ROLE", "postgres"), "allowlisted primary database role")
 	databaseReadOnlyRole := flag.String("database-read-only-role", envOr("FLEET_AGENT_DATABASE_READ_ONLY_ROLE", "supabase_read_only_user"), "allowlisted read-only database role")
+	runtimeObserverURL := flag.String("runtime-observer-url", os.Getenv("FLEET_AGENT_RUNTIME_OBSERVER_URL"), "project-local read-only Compose inventory observer URL")
+	runtimeAdminDSN := flag.String("runtime-admin-dsn", os.Getenv("FLEET_AGENT_RUNTIME_ADMIN_DSN"), "operator-only PostgreSQL inventory DSN")
+	runtimeUpgradeTargets := flag.String("runtime-upgrade-targets", os.Getenv("FLEET_AGENT_RUNTIME_UPGRADE_TARGETS"), "comma-separated locally approved PostgreSQL upgrade targets")
 	journalPath := flag.String("journal", envOr("FLEET_AGENT_JOURNAL", "/var/lib/supabase-fleet/agent-journal.db"), "durable Fleet Agent execution journal")
 	lockPath := flag.String("lock", envOr("FLEET_AGENT_LOCK", "/var/lib/supabase-fleet/agent.lock"), "Fleet Agent singleton lock")
 	heartbeat := flag.Duration("heartbeat", envDuration("FLEET_AGENT_HEARTBEAT", 10*time.Second), "Fleet Agent heartbeat interval")
@@ -85,8 +89,16 @@ func main() {
 	var functionProviders *fleetfunctions.Registry
 	var lifecycleProviders *fleetlifecycle.Registry
 	var databaseProviders *fleetdatabase.Registry
+	var inventoryProvider fleetinventory.Provider
 	var lifecycleVersions fleetlifecycle.ComponentVersions
 	capabilities := []string{fleetproviders.CapabilityReconcileConfiguration}
+	if strings.TrimSpace(*runtimeObserverURL) != "" || strings.TrimSpace(*runtimeAdminDSN) != "" {
+		if strings.TrimSpace(*runtimeObserverURL) == "" || strings.TrimSpace(*runtimeAdminDSN) == "" || *adapter != "compose" {
+			log.Fatal("Fleet runtime observer URL, administration DSN, and Compose adapter must be configured together")
+		}
+		inventoryProvider = fleetinventory.ComposeProvider{ObserverURL: *runtimeObserverURL, AdminDSN: *runtimeAdminDSN, UpgradeTargets: fleetinventory.ParseTargets(*runtimeUpgradeTargets)}
+		capabilities = append(capabilities, fleetinventory.CapabilityObserve)
+	}
 	databaseConfigured := []bool{strings.TrimSpace(*databaseAdminDSN) != "", strings.TrimSpace(*databaseStateRoot) != "", strings.TrimSpace(*databaseTLSCARoot) != ""}
 	if databaseConfigured[0] || databaseConfigured[1] || databaseConfigured[2] {
 		if !databaseConfigured[0] || !databaseConfigured[1] || !databaseConfigured[2] || *adapter != string(fleetdatabase.AdapterCompose) {
@@ -151,7 +163,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	executor := &fleetagent.Executor{Journal: journal, Providers: providers, FunctionProviders: functionProviders, LifecycleProviders: lifecycleProviders, DatabaseProviders: databaseProviders, LifecycleVersions: lifecycleVersions, ProjectRef: *projectRef, TargetID: *targetID, BindingID: *bindingID}
+	executor := &fleetagent.Executor{Journal: journal, Providers: providers, FunctionProviders: functionProviders, LifecycleProviders: lifecycleProviders, DatabaseProviders: databaseProviders, InventoryProvider: inventoryProvider, LifecycleVersions: lifecycleVersions, ProjectRef: *projectRef, TargetID: *targetID, BindingID: *bindingID}
 	client := fleetagent.Client{
 		Address: *address, TLS: tlsConfig, AgentID: *agentID, TargetID: *targetID, BindingID: *bindingID, NodeID: *nodeID,
 		Build: version.String(), Capabilities: capabilities, Executor: executor, HeartbeatInterval: *heartbeat,

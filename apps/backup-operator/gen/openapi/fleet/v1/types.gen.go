@@ -240,7 +240,7 @@ type CreateOperation struct {
 	SnapshotCanonical string `json:"snapshotCanonical"`
 	TargetId          string `json:"targetId"`
 
-	// TypedInput Strictly validated against inputSchema; runtime.config.reconcile uses ConfigurationDocument
+	// TypedInput Strictly validated against inputSchema; sensitive database password fields are encrypted at rest and redacted from ordinary operation storage and responses
 	TypedInput map[string]interface{} `json:"typedInput"`
 }
 

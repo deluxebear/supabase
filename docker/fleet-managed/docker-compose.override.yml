@@ -147,6 +147,8 @@ services:
     depends_on:
       fleet-agent-init:
         condition: service_completed_successfully
+      fleet-compose-observer:
+        condition: service_started
     environment:
       FLEET_AGENT_CONTROL_ADDRESS: ${FLEET_AGENT_CONTROL_ADDRESS:-fleet-control:8092}
       FLEET_AGENT_CLIENT_CERT: /var/lib/fleet-agent/trust/agent-cert.pem
@@ -169,6 +171,9 @@ services:
       FLEET_AGENT_DATABASE_TLS_CA_ROOT: /etc/fleet-agent/tls-ca
       FLEET_AGENT_DATABASE_PRIMARY_ROLE: postgres
       FLEET_AGENT_DATABASE_READ_ONLY_ROLE: supabase_read_only_user
+      FLEET_AGENT_RUNTIME_OBSERVER_URL: http://fleet-compose-observer:8093
+      FLEET_AGENT_RUNTIME_ADMIN_DSN: postgres://supabase_admin:${POSTGRES_PASSWORD}@db-${MANAGED_PROJECT_REF}:5432/postgres?sslmode=disable
+      FLEET_AGENT_RUNTIME_UPGRADE_TARGETS: ${FLEET_AGENT_RUNTIME_UPGRADE_TARGETS:-}
       FLEET_AGENT_JOURNAL: /var/lib/fleet-agent/agent-journal.db
       FLEET_AGENT_LOCK: /var/lib/fleet-agent/agent.lock
     volumes:
@@ -181,6 +186,27 @@ services:
     networks:
       default: {}
       management: {}
+
+  # This target-local observer is the only process with Docker socket access.
+  # Its HTTP surface exposes bounded GET-only inventory scoped to the current
+  # Compose project; the generic Fleet Agent never receives the socket.
+  fleet-compose-observer:
+    image: ${FLEET_AGENT_IMAGE:?set FLEET_AGENT_IMAGE}
+    profiles: [agent]
+    restart: unless-stopped
+    user: "0:0"
+    entrypoint: [/usr/local/bin/fleet-compose-observer]
+    environment:
+      FLEET_OBSERVER_COMPOSE_PROJECT: ${COMPOSE_PROJECT_NAME}
+      FLEET_OBSERVER_DATABASE_PATH: /inventory/database
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - managed-db-data:/inventory/database:ro
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    security_opt: [no-new-privileges:true]
+    networks: [default]
 
 networks:
   management:

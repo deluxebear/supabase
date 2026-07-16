@@ -898,6 +898,7 @@ type ObserveRuntimeEvidence struct {
 	state                      protoimpl.MessageState `protogen:"open.v1"`
 	Services                   []*RuntimeService      `protobuf:"bytes,1,rep,name=services,proto3" json:"services,omitempty"`
 	ObservedAtUnixMilliseconds int64                  `protobuf:"varint,2,opt,name=observed_at_unix_milliseconds,json=observedAtUnixMilliseconds,proto3" json:"observed_at_unix_milliseconds,omitempty"`
+	InventoryJson              []byte                 `protobuf:"bytes,3,opt,name=inventory_json,json=inventoryJson,proto3" json:"inventory_json,omitempty"`
 	unknownFields              protoimpl.UnknownFields
 	sizeCache                  protoimpl.SizeCache
 }
@@ -944,6 +945,13 @@ func (x *ObserveRuntimeEvidence) GetObservedAtUnixMilliseconds() int64 {
 		return x.ObservedAtUnixMilliseconds
 	}
 	return 0
+}
+
+func (x *ObserveRuntimeEvidence) GetInventoryJson() []byte {
+	if x != nil {
+		return x.InventoryJson
+	}
+	return nil
 }
 
 type ReconcileConfigurationEvidence struct {
@@ -1458,10 +1466,11 @@ const file_supabase_fleet_agent_v1_fleet_proto_rawDesc = "" +
 	"\x0fdeploy_function\x18\r \x01(\v23.supabase.fleet.agent.v1.FunctionDeploymentEvidenceH\x00R\x0edeployFunction\x12Y\n" +
 	"\x11execute_lifecycle\x18\x0e \x01(\v2*.supabase.fleet.agent.v1.LifecycleEvidenceH\x00R\x10executeLifecycle\x12s\n" +
 	"\x1breconcile_database_security\x18\x0f \x01(\v21.supabase.fleet.agent.v1.DatabaseSecurityEvidenceH\x00R\x19reconcileDatabaseSecurityB\b\n" +
-	"\x06result\"\xa0\x01\n" +
+	"\x06result\"\xc7\x01\n" +
 	"\x16ObserveRuntimeEvidence\x12C\n" +
 	"\bservices\x18\x01 \x03(\v2'.supabase.fleet.agent.v1.RuntimeServiceR\bservices\x12A\n" +
-	"\x1dobserved_at_unix_milliseconds\x18\x02 \x01(\x03R\x1aobservedAtUnixMilliseconds\"E\n" +
+	"\x1dobserved_at_unix_milliseconds\x18\x02 \x01(\x03R\x1aobservedAtUnixMilliseconds\x12%\n" +
+	"\x0einventory_json\x18\x03 \x01(\fR\rinventoryJson\"E\n" +
 	"\x1eReconcileConfigurationEvidence\x12#\n" +
 	"\revidence_json\x18\x01 \x01(\fR\fevidenceJson\"A\n" +
 	"\x1aFunctionDeploymentEvidence\x12#\n" +

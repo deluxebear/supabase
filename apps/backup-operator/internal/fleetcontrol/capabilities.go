@@ -7,6 +7,7 @@ import (
 
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetdatabase"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetinventory"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetlifecycle"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 )
@@ -24,6 +25,7 @@ type Capability struct {
 	Source          string    `json:"source"`
 	ContractVersion string    `json:"contractVersion"`
 	InputSchema     string    `json:"-"`
+	EvidenceSchema  string    `json:"-"`
 	Blockers        []Blocker `json:"blockers"`
 }
 
@@ -34,22 +36,21 @@ type CapabilityRegistry struct {
 
 func NewCapabilityRegistry() *CapabilityRegistry {
 	registry := &CapabilityRegistry{capabilities: make(map[string]Capability)}
-	registry.capabilities["runtime.observe"] = Capability{
-		Name: "runtime.observe", State: "unsupported", Mode: "unsupported", Source: "fleet-control", ContractVersion: "v1",
-		InputSchema: "supabase.fleet.runtime.observe.v1",
-		Blockers:    []Blocker{{Code: "provider_not_registered", Message: "No compatible Fleet runtime observation provider is registered", Remediation: "Enroll a compatible Stack Agent after management-target trust is configured"}},
+	registry.capabilities[fleetinventory.CapabilityObserve] = Capability{
+		Name: fleetinventory.CapabilityObserve, State: "available", Mode: "agent", Source: "fleet-control", ContractVersion: "v1",
+		InputSchema: fleetinventory.InputSchemaV1, EvidenceSchema: fleetinventory.EvidenceSchemaV1, Blockers: []Blocker{},
 	}
 	registry.capabilities[fleetproviders.CapabilityReconcileConfiguration] = Capability{
 		Name: fleetproviders.CapabilityReconcileConfiguration, State: "available", Mode: "agent", Source: "fleet-control", ContractVersion: "v1",
-		InputSchema: fleetproviders.InputSchemaV1, Blockers: []Blocker{},
+		InputSchema: fleetproviders.InputSchemaV1, EvidenceSchema: fleetproviders.EvidenceSchemaV1, Blockers: []Blocker{},
 	}
 	registry.capabilities[fleetfunctions.CapabilityDeploy] = Capability{
 		Name: fleetfunctions.CapabilityDeploy, State: "available", Mode: "agent", Source: "fleet-control", ContractVersion: "v1",
-		InputSchema: fleetfunctions.InputSchemaV1, Blockers: []Blocker{},
+		InputSchema: fleetfunctions.InputSchemaV1, EvidenceSchema: fleetfunctions.EvidenceSchemaV1, Blockers: []Blocker{},
 	}
 	registry.capabilities[fleetdatabase.CapabilityReconcile] = Capability{
 		Name: fleetdatabase.CapabilityReconcile, State: "available", Mode: "agent", Source: "fleet-control", ContractVersion: "v1",
-		InputSchema: fleetdatabase.InputSchemaV1, Blockers: []Blocker{},
+		InputSchema: fleetdatabase.InputSchemaV1, EvidenceSchema: fleetdatabase.EvidenceSchemaV1, Blockers: []Blocker{},
 	}
 	for action := range map[fleetlifecycle.Action]struct{}{
 		fleetlifecycle.RuntimeRestart: {}, fleetlifecycle.RuntimeRollout: {}, fleetlifecycle.RuntimeScale: {},
@@ -58,7 +59,7 @@ func NewCapabilityRegistry() *CapabilityRegistry {
 		fleetlifecycle.BranchCreate: {}, fleetlifecycle.BranchRestore: {},
 		fleetlifecycle.NetworkBansRead: {}, fleetlifecycle.NetworkBansUpdate: {},
 	} {
-		registry.capabilities[string(action)] = Capability{Name: string(action), State: "available", Mode: "agent", Source: "fleet-control", ContractVersion: "v1", InputSchema: fleetlifecycle.InputSchemaV1, Blockers: []Blocker{}}
+		registry.capabilities[string(action)] = Capability{Name: string(action), State: "available", Mode: "agent", Source: "fleet-control", ContractVersion: "v1", InputSchema: fleetlifecycle.InputSchemaV1, EvidenceSchema: fleetlifecycle.EvidenceSchemaV1, Blockers: []Blocker{}}
 	}
 	return registry
 }
@@ -67,7 +68,7 @@ func NewCapabilityRegistry() *CapabilityRegistry {
 // assembly. T8 registers the ownership-safe reconciliation transport while
 // target availability still fails closed against the bound Agent capability.
 func (r *CapabilityRegistry) RegisterAvailable(capability Capability) error {
-	if r == nil || capability.Name == "" || capability.InputSchema == "" || capability.ContractVersion == "" || capability.Mode == "" || capability.Mode == "unsupported" {
+	if r == nil || capability.Name == "" || capability.InputSchema == "" || capability.EvidenceSchema == "" || capability.ContractVersion == "" || capability.Mode == "" || capability.Mode == "unsupported" {
 		return errors.New("complete executable provider capability is required")
 	}
 	capability.State = "available"
@@ -114,4 +115,24 @@ func (r *CapabilityRegistry) Schemas() map[string]string {
 		result[capability.Name] = capability.InputSchema
 	}
 	return result
+}
+
+func (r *CapabilityRegistry) Observations(names []string) ([]CapabilityObservation, error) {
+	if r == nil || len(names) == 0 || len(names) > 256 {
+		return nil, errors.New("between 1 and 256 executable Agent capabilities are required")
+	}
+	seen := make(map[string]struct{}, len(names))
+	result := make([]CapabilityObservation, 0, len(names))
+	for _, name := range names {
+		if _, duplicate := seen[name]; duplicate {
+			return nil, errors.New("duplicate executable Agent capability")
+		}
+		capability, ok := r.Get(name)
+		if !ok || capability.State != "available" || capability.InputSchema == "" || capability.EvidenceSchema == "" {
+			return nil, errors.New("Agent advertised an unavailable executable capability")
+		}
+		seen[name] = struct{}{}
+		result = append(result, CapabilityObservation{Domain: "fleet", Name: name, ContractVersion: capability.ContractVersion, InputSchema: capability.InputSchema, EvidenceSchema: capability.EvidenceSchema})
+	}
+	return result, nil
 }

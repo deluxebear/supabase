@@ -558,6 +558,30 @@ func (s *Store) RecordHeartbeat(ctx context.Context, agentID, serial string, pro
 	return s.GetBindingStatus(ctx, binding.ProjectRef, binding.BindingID)
 }
 
+// RefreshAgentCapabilities replaces an authenticated Agent's executable
+// capability set on reconnect. The control plane supplies the schemas from its
+// own registry, while the binding prefix allowlist remains authoritative. This
+// permits safe Agent image upgrades without issuing a new trust credential.
+func (s *Store) RefreshAgentCapabilities(ctx context.Context, binding ManagementBinding, agentID string, capabilities []CapabilityObservation) error {
+	if agentID == "" || binding.BindingID == "" {
+		return errors.New("complete Agent capability refresh identity is required")
+	}
+	if err := validateCapabilityObservations(capabilities, binding.AllowedCapabilityPrefixes); err != nil {
+		return err
+	}
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	now := s.now().UTC()
+	leaseExpiresAt := now.Add(s.livenessPolicy().LeaseTTL)
+	if err := replaceAgentCapabilities(ctx, tx, s.dialect, agentID, capabilities, now.UnixMilli(), leaseExpiresAt.UnixMilli()); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
 func (s *Store) RevokeAgent(ctx context.Context, projectRef, bindingID, agentID, actor, correlationID string) error {
 	status, err := s.GetBindingStatus(ctx, projectRef, bindingID)
 	if err != nil || status.Agent == nil || status.Agent.ID != agentID {

@@ -12,6 +12,7 @@ import (
 	"github.com/supabase/supabase/apps/backup-operator/internal/agentjournal"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetdatabase"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetinventory"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetlifecycle"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 )
@@ -22,6 +23,7 @@ type Executor struct {
 	FunctionProviders  *fleetfunctions.Registry
 	LifecycleProviders *fleetlifecycle.Registry
 	DatabaseProviders  *fleetdatabase.Registry
+	InventoryProvider  fleetinventory.Provider
 	LifecycleVersions  fleetlifecycle.ComponentVersions
 	ProjectRef         string
 	TargetID           string
@@ -62,8 +64,15 @@ func (e *Executor) ExecuteWithArtifacts(ctx context.Context, task *fleetagentv1.
 	var deployment fleetfunctions.Deployment
 	var lifecycle fleetlifecycle.Document
 	var database fleetdatabase.Document
+	var inventoryInput fleetinventory.Input
 	destructive := true
 	switch {
+	case task.GetCapability() == fleetinventory.CapabilityObserve && task.GetInputSchema() == fleetinventory.InputSchemaV1 && task.GetObserveRuntime() != nil && e.InventoryProvider != nil:
+		inventoryInput = fleetinventory.Input{Services: append([]string(nil), task.GetObserveRuntime().GetServices()...)}
+		if err := inventoryInput.Validate(); err != nil {
+			return failed(identity.GetTaskId(), "validation_failed", err.Error())
+		}
+		destructive = false
 	case task.GetCapability() == fleetproviders.CapabilityReconcileConfiguration && task.GetInputSchema() == fleetproviders.InputSchemaV1 && task.GetReconcileConfiguration() != nil && e.Providers != nil:
 		input := task.GetReconcileConfiguration()
 		if input.GetExpectedGeneration() != identity.GetExpectedGeneration() || input.GetDesiredDigest() == "" {
@@ -119,7 +128,16 @@ func (e *Executor) ExecuteWithArtifacts(ctx context.Context, task *fleetagentv1.
 		_ = progress(&transportv1.TaskProgress{TaskId: identity.GetTaskId(), Percent: 1, Phase: "observing"})
 	}
 	var result *fleetagentv1.TaskResult
-	if task.GetCapability() == fleetproviders.CapabilityReconcileConfiguration {
+	if task.GetCapability() == fleetinventory.CapabilityObserve {
+		evidence, observeErr := e.InventoryProvider.Observe(deadlineCtx, fleetinventory.Request{ProjectRef: identity.GetProjectRef(), ExpectedGeneration: identity.GetExpectedGeneration(), Input: inventoryInput})
+		if observeErr != nil {
+			result = providerFailure(identity.GetTaskId(), deadlineCtx, observeErr)
+		} else if raw, marshalErr := json.Marshal(evidence); marshalErr != nil {
+			result = failed(identity.GetTaskId(), "evidence_invalid", "Fleet runtime inventory evidence could not be encoded")
+		} else {
+			result = &fleetagentv1.TaskResult{TaskId: identity.GetTaskId(), Result: &fleetagentv1.TaskResult_ObserveRuntime{ObserveRuntime: &fleetagentv1.ObserveRuntimeEvidence{InventoryJson: raw, ObservedAtUnixMilliseconds: now().UnixMilli()}}}
+		}
+	} else if task.GetCapability() == fleetproviders.CapabilityReconcileConfiguration {
 		input := task.GetReconcileConfiguration()
 		evidence, reconcileErr := e.Providers.Reconcile(deadlineCtx, fleetproviders.Request{
 			OperationID: identity.GetOperationId(), ProjectRef: identity.GetProjectRef(), TargetID: identity.GetTargetId(), BindingID: identity.GetBindingId(),
@@ -203,7 +221,10 @@ func (e *Executor) ExecuteWithArtifacts(ctx context.Context, task *fleetagentv1.
 		_ = progress(&transportv1.TaskProgress{TaskId: identity.GetTaskId(), Percent: 100, Phase: "completed"})
 	}
 	stored := storedResult{}
-	if typed := result.GetReconcileConfiguration(); typed != nil {
+	if typed := result.GetObserveRuntime(); typed != nil {
+		stored.Evidence = base64.StdEncoding.EncodeToString(typed.GetInventoryJson())
+		stored.Kind = "inventory"
+	} else if typed := result.GetReconcileConfiguration(); typed != nil {
 		stored.Evidence = base64.StdEncoding.EncodeToString(typed.GetEvidenceJson())
 		stored.Kind = "configuration"
 	} else if typed := result.GetReconcileDatabaseSecurity(); typed != nil {
@@ -243,6 +264,9 @@ func (e *Executor) replay(ctx context.Context, taskID, idempotencyKey string) *f
 	}
 	if stored.Kind == "function" {
 		return &fleetagentv1.TaskResult{TaskId: taskID, Result: &fleetagentv1.TaskResult_DeployFunction{DeployFunction: &fleetagentv1.FunctionDeploymentEvidence{EvidenceJson: evidence}}}
+	}
+	if stored.Kind == "inventory" {
+		return &fleetagentv1.TaskResult{TaskId: taskID, Result: &fleetagentv1.TaskResult_ObserveRuntime{ObserveRuntime: &fleetagentv1.ObserveRuntimeEvidence{InventoryJson: evidence}}}
 	}
 	if stored.Kind == "database" {
 		return &fleetagentv1.TaskResult{TaskId: taskID, Result: &fleetagentv1.TaskResult_ReconcileDatabaseSecurity{ReconcileDatabaseSecurity: &fleetagentv1.DatabaseSecurityEvidence{EvidenceJson: evidence}}}

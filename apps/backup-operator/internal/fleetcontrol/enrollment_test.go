@@ -77,7 +77,7 @@ func TestManagementTrustEnrollmentRotationRevocationAndIsolation(t *testing.T) {
 	statusRequest.Header.Set("Authorization", "Bearer "+serviceToken)
 	statusResponse := httptest.NewRecorder()
 	mux.ServeHTTP(statusResponse, statusRequest)
-	if statusResponse.Code != http.StatusOK || !bytes.Contains(statusResponse.Body.Bytes(), []byte(`"state":"unsupported"`)) || !bytes.Contains(statusResponse.Body.Bytes(), []byte(`"inputSchema":"supabase.fleet.runtime.observe.v1"`)) {
+	if statusResponse.Code != http.StatusOK || !bytes.Contains(statusResponse.Body.Bytes(), []byte(`"state":"available"`)) || !bytes.Contains(statusResponse.Body.Bytes(), []byte(`"inputSchema":"supabase.fleet.runtime.observe.v1"`)) {
 		t.Fatalf("binding status=%d body=%s", statusResponse.Code, statusResponse.Body.String())
 	}
 

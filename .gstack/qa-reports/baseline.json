@@ -1,0 +1,147 @@
+{
+  "date": "2026-07-16",
+  "url": "http://192.168.50.149:8001",
+  "healthScore": 46,
+  "issues": [
+    {
+      "id": "ISSUE-001",
+      "title": "项目对外地址投影为 Docker 内网地址",
+      "severity": "high",
+      "category": "functional",
+      "status": "resolved",
+      "resolvedAt": "2026-07-16T19:41:00+08:00",
+      "verification": "Versioned endpoint registry, CAS conflict, public-only API projection, host REST/Auth/Storage/S3/Postgres checks, and browser home/Connect/S3 checks passed."
+    },
+    {
+      "id": "ISSUE-002",
+      "title": "Connect 面板无法生成连接字符串",
+      "severity": "high",
+      "category": "functional",
+      "status": "resolved",
+      "resolvedAt": "2026-07-16T20:10:00+08:00",
+      "verification": "Fleet connection profiles expose direct, Supavisor transaction/session, and read-only endpoints without secrets; browser Connect and Database Settings checks plus four real select 1 connections passed, with zero PgBouncer requests."
+    },
+    {
+      "id": "ISSUE-003",
+      "title": "备份页面请求未携带平台访问令牌",
+      "severity": "high",
+      "category": "functional",
+      "status": "resolved",
+      "resolvedAt": "2026-07-16T20:28:00+08:00",
+      "verification": "All browser Backup Operator requests use the shared Platform Auth header boundary. Scheduled, PITR, and Add-ons return status 200 with no visible skeleton; project-a correctly shows the unconfigured blocker, while unauthenticated status and policy requests remain 401."
+    },
+    {
+      "id": "ISSUE-004",
+      "title": "Fleet Agent 状态陈旧但仍标记 available/online",
+      "severity": "high",
+      "category": "functional",
+      "status": "resolved",
+      "resolvedAt": "2026-07-16T19:04:00+08:00",
+      "verification": "Heartbeat lease renewal, stale/unavailable TTL projection, capability mutation gating, same-Agent certificate re-enrollment, and browser auto-refresh passed."
+    },
+    {
+      "id": "ISSUE-005",
+      "title": "缺少 Fleet Attach 流程",
+      "severity": "high",
+      "category": "functional",
+      "status": "resolved",
+      "resolvedAt": "2026-07-16T22:25:00+08:00",
+      "verification": "Fleet-only staged Attach Wizard, structured preflight, management binding retry, one-use Agent enrollment, explicit activation, and atomic staged rollback passed component/API tests and a two-independent-Compose-stack live acceptance. Chrome screenshot replay remains pending because the extension session was unavailable."
+    },
+    { "id": "ISSUE-006", "title": "日志、API Gateway 报表与首页请求量不可用", "severity": "high", "category": "functional" },
+    {
+      "id": "ISSUE-007",
+      "title": "数据库安全与连接策略缺少 Fleet 契约",
+      "severity": "high",
+      "category": "functional",
+      "status": "resolved",
+      "resolvedAt": "2026-07-17T01:42:00+08:00",
+      "verification": "Fleet schema 10 encrypted operations and the typed database provider passed project-b password, SSL rollback, CIDR, Supavisor configuration, direct/pooled probes, Studio API, and secret-redaction acceptance."
+    },
+    {
+      "id": "ISSUE-008",
+      "title": "磁盘、服务版本和升级能力缺失",
+      "severity": "high",
+      "category": "functional",
+      "status": "resolved",
+      "resolvedAt": "2026-07-17T02:12:00+08:00",
+      "verification": "Typed runtime.observe inventory, schema 27 projection, six compatibility endpoints, project-b disk/database/WAL/system classification, 12 services, five volumes, honest upgrade blockers, and browser rendering passed."
+    },
+    { "id": "ISSUE-009", "title": "Edge Function Secrets 与部署可靠性未闭环", "severity": "high", "category": "functional" },
+    {
+      "id": "ISSUE-010",
+      "title": "Configuration Ownership 能力缺失",
+      "severity": "medium-high",
+      "category": "functional",
+      "status": "resolved",
+      "resolvedAt": "2026-07-16T23:27:00+08:00",
+      "verification": "Future Attach bindings seed read/update capabilities and five ownership domains. Both live projects return isolated ownership state, opaque CAS rejects a stale write with 409, desired/observed revisions and field owners are projected, and only Agent evidence with Applied=true advances observed state."
+    },
+    { "id": "ISSUE-011", "title": "S3 credentials 缺路由且 Endpoint 为内网地址", "severity": "medium-high", "category": "functional" },
+    {
+      "id": "ISSUE-012",
+      "title": "组织 Usage 页面日期为 1970 且 daily API 404",
+      "severity": "medium",
+      "category": "content",
+      "status": "resolved",
+      "resolvedAt": "2026-07-16T23:05:00+08:00",
+      "verification": "Fleet profile hides organization Usage and blocks the hosted usage API at the shared request boundary; cross-project usage aggregation remains a future Fleet capability."
+    },
+    {
+      "id": "ISSUE-013",
+      "title": "Cloud Billing/Marketplace/IPv4/Spend Cap UI 泄漏",
+      "severity": "medium",
+      "category": "ux",
+      "status": "resolved",
+      "resolvedAt": "2026-07-16T23:05:00+08:00",
+      "verification": "The canonical Fleet capability matrix hides Billing, organization and project hosted integrations, compute pricing, Dedicated IPv4, Storage Analytics/Vectors entitlements, preview branching, ETL replication, and spend-cap upsells. Direct routes render an unavailable boundary."
+    },
+    {
+      "id": "ISSUE-014",
+      "title": "Hosted-only 集成产生持续控制台噪声",
+      "severity": "low",
+      "category": "console",
+      "status": "resolved",
+      "resolvedAt": "2026-07-16T23:05:00+08:00",
+      "verification": "Fleet no longer mounts hosted consent, telemetry, or feature flags, disables incident queries, and returns 404 at the shared API boundary for hosted-only endpoints. Compose liveness now uses /api/get-utc-time."
+    },
+    { "id": "ISSUE-015", "title": "Data API/Vault 集成页永久骨架屏", "severity": "medium", "category": "functional" },
+    {
+      "id": "ISSUE-016",
+      "title": "Branching 与 Replication 暴露无后端能力的操作 UI",
+      "severity": "medium",
+      "category": "ux",
+      "status": "resolved",
+      "resolvedAt": "2026-07-16T23:05:00+08:00",
+      "verification": "Fleet capability defaults remove branching and ETL navigation, selectors, commands, dialogs, and mutations; direct pages show the unavailable boundary and the shared API guard rejects those routes."
+    }
+  ],
+  "categoryScores": {
+    "console": 10,
+    "links": 100,
+    "visual": 84,
+    "functional": 0,
+    "ux": 0,
+    "performance": 76,
+    "content": 77,
+    "accessibility": 100
+  },
+  "partialVerification": {
+    "updatedAt": "2026-07-17T02:12:00+08:00",
+    "resolvedIssues": [
+      "ISSUE-001",
+      "ISSUE-002",
+      "ISSUE-003",
+      "ISSUE-004",
+      "ISSUE-005",
+      "ISSUE-007",
+      "ISSUE-008",
+      "ISSUE-012",
+      "ISSUE-013",
+      "ISSUE-014",
+      "ISSUE-016"
+    ],
+    "healthScoreRecalculated": false,
+    "note": "The overall health score remains the original full-run score until all requested Fleet Epics are re-tested."
+  }
+}

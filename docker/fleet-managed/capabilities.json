@@ -1,6 +1,13 @@
 [
   {
     "domain": "fleet.runtime",
+    "name": "runtime.observe",
+    "contractVersion": "v1",
+    "inputSchema": "supabase.fleet.runtime.observe.v1",
+    "evidenceSchema": "supabase.fleet.runtime.observe.evidence.v1"
+  },
+  {
+    "domain": "fleet.runtime",
     "name": "runtime.config.reconcile",
     "contractVersion": "v1",
     "inputSchema": "supabase.fleet.runtime.config.reconcile.v1",

@@ -92,6 +92,7 @@ message TaskResult {
 message ObserveRuntimeEvidence {
   repeated RuntimeService services = 1;
   int64 observed_at_unix_milliseconds = 2;
+  bytes inventory_json = 3;
 }
 
 message ReconcileConfigurationEvidence {

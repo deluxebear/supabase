@@ -29,7 +29,7 @@ func TestFleetHandlerEnforcesCapabilityRBACAndProjectIsolation(t *testing.T) {
 	key := []byte("fleet-control-test-key-at-least-32-bytes")
 	validator := security.AssertionValidator{Key: key, Issuer: "studio", Audience: "fleet-control", MaxTTL: 5 * time.Minute}
 	registry := NewCapabilityRegistry()
-	if err := registry.RegisterAvailable(Capability{Name: "runtime.observe", Mode: "agent", ContractVersion: "v1", InputSchema: "supabase.fleet.runtime.observe.v1"}); err != nil {
+	if err := registry.RegisterAvailable(Capability{Name: "runtime.observe", Mode: "agent", ContractVersion: "v1", InputSchema: "supabase.fleet.runtime.observe.v1", EvidenceSchema: "supabase.fleet.runtime.observe.evidence.v1"}); err != nil {
 		t.Fatal(err)
 	}
 	seedHandlerBinding(t, store, "project-a", "target-a", "binding-a", "agent-a", "runtime.observe")
@@ -38,7 +38,7 @@ func TestFleetHandlerEnforcesCapabilityRBACAndProjectIsolation(t *testing.T) {
 		t.Fatal(err)
 	}
 	token := signFleetJWT(t, key, security.ServiceClaims{Issuer: "studio", Subject: "user-a", Audience: "fleet-control", NotBefore: time.Now().Add(-time.Minute).Unix(), Expires: time.Now().Add(time.Minute).Unix(), Scopes: []string{"fleet.read", "fleet.execute"}, Projects: []string{"project-a", "project-b"}})
-	snapshot := `{"accessToken":"do-not-return"}`
+	snapshot := `{"services":["auth"]}`
 	digest := sha256.Sum256([]byte(snapshot))
 	body := fmt.Sprintf(`{"operationId":"op-a","targetId":"target-a","bindingId":"binding-a","domain":"runtime","capability":"runtime.observe","protocolMajor":1,"protocolMinor":0,"expectedGeneration":3,"desiredRevision":"11111111-1111-4111-8111-111111111111","desiredDigest":"%x","snapshotCanonical":%q,"inputSchema":"supabase.fleet.runtime.observe.v1","preconditions":{},"typedInput":%s}`, digest, snapshot, snapshot)
 	request := httptest.NewRequest(http.MethodPost, "/platform/fleet/v1/projects/project-a/operations", bytes.NewBufferString(body))
@@ -49,7 +49,7 @@ func TestFleetHandlerEnforcesCapabilityRBACAndProjectIsolation(t *testing.T) {
 	if response.Code != http.StatusCreated {
 		t.Fatalf("create status = %d, body = %s", response.Code, response.Body.String())
 	}
-	if strings.Contains(response.Body.String(), "do-not-return") || strings.Contains(response.Body.String(), "typedInput") {
+	if strings.Contains(response.Body.String(), "typedInput") {
 		t.Fatalf("operation response exposed immutable input: %s", response.Body.String())
 	}
 	var operation fleetopenapiv1.Operation
@@ -198,13 +198,15 @@ func TestFleetHandlerReportsUnsupportedWithoutFalseSuccess(t *testing.T) {
 	if capabilitiesResponse.Code != http.StatusOK || !strings.Contains(capabilitiesResponse.Body.String(), `"blockers":[`) {
 		t.Fatalf("capabilities response = %d, %s", capabilitiesResponse.Code, capabilitiesResponse.Body.String())
 	}
-	body := `{"operationId":"op-a","targetId":"target-a","bindingId":"binding-a","domain":"runtime","capability":"runtime.observe","protocolMajor":1,"protocolMinor":0,"expectedGeneration":0,"inputSchema":"supabase.fleet.runtime.observe.v1","preconditions":{},"typedInput":{}}`
+	snapshot := `{}`
+	digest := sha256.Sum256([]byte(snapshot))
+	body := fmt.Sprintf(`{"operationId":"op-a","targetId":"target-a","bindingId":"binding-a","domain":"runtime","capability":"runtime.missing","protocolMajor":1,"protocolMinor":0,"expectedGeneration":1,"desiredRevision":"11111111-1111-4111-8111-111111111111","desiredDigest":"%x","snapshotCanonical":%q,"inputSchema":"supabase.fleet.runtime.missing.v1","preconditions":{},"typedInput":{}}`, digest, snapshot)
 	request := httptest.NewRequest(http.MethodPost, "/platform/fleet/v1/projects/project-a/operations", bytes.NewBufferString(body))
 	request.Header.Set("Authorization", "Bearer "+token)
 	request.Header.Set("Idempotency-Key", "idem-a")
 	response := httptest.NewRecorder()
 	mux.ServeHTTP(response, request)
-	if response.Code != http.StatusConflict || !strings.Contains(response.Body.String(), "capability_unavailable") || !strings.Contains(response.Body.String(), "provider_not_registered") {
+	if response.Code != http.StatusConflict || !strings.Contains(response.Body.String(), "capability_unavailable") || !strings.Contains(response.Body.String(), "capability_not_registered") {
 		t.Fatalf("unsupported response = %d, %s", response.Code, response.Body.String())
 	}
 	if count, err := store.AuditCount(context.Background(), "project-a"); err != nil || count != 0 {

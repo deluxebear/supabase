@@ -1,6 +1,5 @@
-import { Admonition } from 'ui-patterns/admonition'
-
 import { SelfPlatformLifecyclePanel } from '@/components/interfaces/SelfPlatform/SelfPlatformLifecyclePanel'
+import { FleetInfrastructure } from '@/components/interfaces/Settings/Infrastructure/FleetInfrastructure'
 import { InfrastructureActivity } from '@/components/interfaces/Settings/Infrastructure/InfrastructureActivity'
 import { InfrastructureInfo } from '@/components/interfaces/Settings/Infrastructure/InfrastructureInfo'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
@@ -38,13 +37,7 @@ const ProjectInfrastructure: NextPageWithLayout = () => {
       )}
       {isFleet && (
         <ScaffoldContainer>
-          <Admonition
-            type="default"
-            title={$t('Capacity and version inventory unavailable')}
-            description={$t(
-              'Fleet Agent has not reported the capacity, service version, and upgrade capabilities required for this view.'
-            )}
-          />
+          <FleetInfrastructure />
         </ScaffoldContainer>
       )}
       {isFleet && STUDIO_CAPABILITIES.lifecycleManagement && (
