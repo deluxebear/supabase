@@ -57,6 +57,39 @@ umask 077
   printf 'SUPABASE_PUBLIC_URL=%s\n' "$public_url"
   printf 'API_EXTERNAL_URL=%s/auth/v1\n' "$public_url"
   printf 'SITE_URL=%s\n' "$public_url"
+  printf 'POOLER_TENANT_ID=%s\n' "$project_ref"
+  # Each attached stack is an independent security boundary. Generate its
+  # database, JWT, Realtime, Supavisor, Logflare and S3 credentials directly
+  # into the mode-0600 environment file without ever printing them.
+  node <<'NODE'
+const crypto = require('node:crypto')
+const base64url = (value) => Buffer.from(value).toString('base64url')
+const random = (bytes) => crypto.randomBytes(bytes)
+const jwtSecret = random(32).toString('base64url')
+const header = base64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }))
+const issuedAt = Math.floor(Date.now() / 1000)
+const expiresAt = issuedAt + 5 * 365 * 24 * 60 * 60
+const token = (role) => {
+  const payload = base64url(JSON.stringify({ role, iss: 'supabase', iat: issuedAt, exp: expiresAt }))
+  const signingInput = `${header}.${payload}`
+  const signature = crypto.createHmac('sha256', jwtSecret).update(signingInput).digest('base64url')
+  return `${signingInput}.${signature}`
+}
+const values = {
+  POSTGRES_PASSWORD: random(24).toString('hex'),
+  JWT_SECRET: jwtSecret,
+  ANON_KEY: token('anon'),
+  SERVICE_ROLE_KEY: token('service_role'),
+  SECRET_KEY_BASE: random(48).toString('base64url'),
+  REALTIME_DB_ENC_KEY: random(8).toString('hex'),
+  VAULT_ENC_KEY: random(16).toString('hex'),
+  LOGFLARE_PUBLIC_ACCESS_TOKEN: random(32).toString('base64url'),
+  LOGFLARE_PRIVATE_ACCESS_TOKEN: random(32).toString('base64url'),
+  S3_PROTOCOL_ACCESS_KEY_ID: random(16).toString('hex'),
+  S3_PROTOCOL_ACCESS_KEY_SECRET: random(32).toString('hex'),
+}
+for (const [name, value] of Object.entries(values)) console.log(`${name}=${value}`)
+NODE
   printf 'DASHBOARD_USERNAME=disabled\n'
   printf 'DASHBOARD_PASSWORD=disabled-embedded-studio\n'
   printf 'FLEET_MANAGEMENT_NETWORK_NAME=fleet-management\n'

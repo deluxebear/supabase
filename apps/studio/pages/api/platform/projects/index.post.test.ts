@@ -12,6 +12,7 @@ import {
   attachExternalProject,
   DuplicateRef,
   ProbeFailed,
+  stageExternalProject,
 } from '@/lib/api/self-platform/projects-admin'
 import { guardOrgRoute } from '@/lib/api/self-platform/rbac/enforce'
 
@@ -25,6 +26,7 @@ vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({ guardOrgRoute: vi.fn() 
 vi.mock('@/lib/api/self-platform/projects-admin', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   attachExternalProject: vi.fn(),
+  stageExternalProject: vi.fn(),
 }))
 // GET-path deps — the POST tests never reach them, but the module imports them.
 vi.mock('@/lib/api/self-platform/list-user-projects', () => ({ listAllProjectsV2: vi.fn() }))
@@ -52,6 +54,35 @@ const EXTERNAL_BODY = {
     jwtSecret: 'j',
   },
 }
+const STAGED_BODY = {
+  ...EXTERNAL_BODY,
+  attachment_mode: 'staged',
+  public_endpoints: {
+    apiUrl: 'https://api.project-a.example.com',
+    restUrl: 'https://api.project-a.example.com/rest/v1',
+    authUrl: 'https://api.project-a.example.com/auth/v1',
+    storageUrl: 'https://api.project-a.example.com/storage/v1',
+    realtimeUrl: 'https://api.project-a.example.com/realtime/v1',
+    functionsUrl: 'https://api.project-a.example.com/functions/v1',
+    s3Url: 'https://api.project-a.example.com/storage/v1/s3',
+    directPostgres: {
+      host: 'db.project-a.example.com',
+      port: 5432,
+      database: 'postgres',
+      user: 'postgres',
+      tlsMode: 'require',
+    },
+    supavisor: {
+      host: 'pooler.project-a.example.com',
+      transactionPort: 6543,
+      sessionPort: 5432,
+      database: 'postgres',
+      user: 'postgres',
+      tenantId: 'project-a',
+      tlsMode: 'require',
+    },
+  },
+}
 const FAILED_REPORT: AttachmentPreflightReport = {
   contractVersion: 'v1',
   startedAt: '2026-07-15T00:00:00.000Z',
@@ -71,6 +102,9 @@ const FAILED_REPORT: AttachmentPreflightReport = {
 beforeEach(() => {
   vi.mocked(guardOrgRoute).mockReset().mockResolvedValue({ orgId: 1, orgSlug: 'default' })
   vi.mocked(attachExternalProject).mockReset().mockResolvedValue({ id: 8 })
+  vi.mocked(stageExternalProject)
+    .mockReset()
+    .mockResolvedValue({ id: 9, connectionRevision: 1, preflight: FAILED_REPORT })
 })
 
 const post = (body: object) => createMocks({ method: 'POST', body })
@@ -98,6 +132,31 @@ describe('POST /platform/projects (self-platform)', () => {
     expect(attachExternalProject).toHaveBeenCalled()
     expect(res._getStatusCode()).toBe(201)
     expect(res._getJSONData()).toMatchObject({ id: 8, ref: 'ext-1' })
+  })
+
+  it('stages a verified project without reporting it active', async () => {
+    const { req, res } = post(STAGED_BODY)
+    await handler(req as never, res as never, claimsOf('g-owner'))
+    expect(stageExternalProject).toHaveBeenCalledWith(
+      expect.objectContaining({ ref: 'ext-1', publicEndpoints: STAGED_BODY.public_endpoints })
+    )
+    expect(attachExternalProject).not.toHaveBeenCalled()
+    expect(res._getStatusCode()).toBe(201)
+    expect(res._getJSONData()).toMatchObject({
+      status: 'COMING_UP',
+      attachment_state: 'validating',
+    })
+  })
+
+  it('rejects Docker-only public endpoints before staging', async () => {
+    const { req, res } = post({
+      ...STAGED_BODY,
+      public_endpoints: { ...STAGED_BODY.public_endpoints, apiUrl: 'http://kong:8000' },
+    })
+    await handler(req as never, res as never, claimsOf('g-owner'))
+    expect(res._getStatusCode()).toBe(400)
+    expect(res._getJSONData()).toMatchObject({ code: 'validation_failed' })
+    expect(stageExternalProject).not.toHaveBeenCalled()
   })
 
   it.each([

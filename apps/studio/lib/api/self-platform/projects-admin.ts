@@ -13,6 +13,7 @@ import {
   failConnectionCandidate,
   KEY_MODES,
   runAttachmentPreflight,
+  stageVerifiedProject,
   TLS_MODES,
   type AttachmentConnectionInput,
   type AttachmentPreflightReport,
@@ -20,6 +21,7 @@ import {
   type ProjectTlsMode,
 } from './attachment'
 import { executePlatformQuery } from './db'
+import type { PublicProjectEndpoints } from './endpoint-registry'
 import { getProjectPgMetaBaseUrl } from './pg-meta'
 import { getProjectByRef } from './projects'
 import { encryptSecret } from './secrets'
@@ -314,6 +316,46 @@ export async function attachExternalProject(input: {
       correlationId: input.correlationId ?? 'legacy-project-attach',
     })
     return { ...attached, preflight }
+  } catch (error) {
+    if (error instanceof Error && isDuplicateKey(error)) throw new DuplicateRef(input.ref)
+    throw error
+  }
+}
+
+export async function stageExternalProject(input: {
+  ref: string
+  name: string
+  organizationId: number
+  connection: ExternalConnectionInput
+  publicEndpoints: PublicProjectEndpoints
+  actor: string
+  correlationId: string
+  containerName?: string | null
+}): Promise<{
+  id: number
+  connectionRevision: number
+  preflight: AttachmentPreflightReport
+}> {
+  const c: AttachmentConnectionInput = {
+    publishableKey: null,
+    secretKey: null,
+    keyMode: 'legacy-jwt',
+    tlsMode: 'prefer',
+    tlsCaReference: null,
+    dbPassReadonly: null,
+    logflareUrl: null,
+    logflareToken: null,
+    ...input.connection,
+  }
+  const preflight = await runAttachmentPreflight(c)
+  if (preflight.outcome !== 'pass') throw new AttachmentPreflightFailed(preflight)
+  try {
+    const staged = await stageVerifiedProject({
+      ...input,
+      connection: c,
+      report: preflight,
+    })
+    return { ...staged, preflight }
   } catch (error) {
     if (error instanceof Error && isDuplicateKey(error)) throw new DuplicateRef(input.ref)
     throw error

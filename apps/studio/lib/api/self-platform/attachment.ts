@@ -5,6 +5,10 @@ import { constructHeaders } from '@/lib/api/apiHelpers'
 import { encryptString } from '@/lib/api/self-hosted/util'
 import { projectCapabilityAt } from '@/lib/api/self-platform/capability-liveness'
 import { executePlatformQuery } from '@/lib/api/self-platform/db'
+import {
+  validatePublicProjectEndpoints,
+  type PublicProjectEndpoints,
+} from '@/lib/api/self-platform/endpoint-registry'
 import { getProjectPgMetaBaseUrl } from '@/lib/api/self-platform/pg-meta'
 import { decryptSecret, encryptSecret } from '@/lib/api/self-platform/secrets'
 
@@ -109,6 +113,12 @@ export class CapabilityUnavailable extends Error {
 }
 
 export class DetachOperationConflict extends Error {}
+
+export class AttachmentActivationBlocked extends Error {
+  constructor(public readonly blockers: Array<{ code: string; message: string }>) {
+    super('The staged attachment is not ready to activate')
+  }
+}
 
 const identityRowSchema = z.object({
   system_identifier: z.coerce.string().min(1),
@@ -691,6 +701,17 @@ export function buildInternalEndpointDocument(connection: AttachmentConnectionIn
   }
 }
 
+export function buildEndpointDocument(
+  connection: AttachmentConnectionInput,
+  publicEndpoints?: PublicProjectEndpoints
+) {
+  const document = buildInternalEndpointDocument(connection)
+  return {
+    ...document,
+    public: publicEndpoints ? validatePublicProjectEndpoints(publicEndpoints) : {},
+  }
+}
+
 export function connectionFromProjectRow(row: {
   db_host: string
   db_port: number
@@ -754,7 +775,7 @@ function capabilityRows(capabilities: ProjectCapabilityRecord[]) {
   }))
 }
 
-export async function attachVerifiedProject(input: {
+type VerifiedProjectInput = {
   ref: string
   name: string
   organizationId: number
@@ -763,13 +784,25 @@ export async function attachVerifiedProject(input: {
   actor: string
   correlationId: string
   containerName?: string | null
-}): Promise<{ id: number; connectionRevision: number }> {
+  publicEndpoints?: PublicProjectEndpoints
+}
+
+async function persistVerifiedProject(
+  input: VerifiedProjectInput,
+  activation: 'active' | 'staged'
+): Promise<{ id: number; connectionRevision: number }> {
   if (input.report.outcome !== 'pass' || !input.report.stackFingerprint) {
     throw new AttachmentPreflightFailed(input.report)
   }
   const c = input.connection
   const document = buildEncryptedConnectionDocument(c)
+  const endpointDocument = buildEndpointDocument(c, input.publicEndpoints)
   const capabilities = derivePreflightCapabilities(input.report)
+  const projectStatus = activation === 'active' ? 'ACTIVE_HEALTHY' : 'COMING_UP'
+  const revisionState = activation === 'active' ? 'active' : 'validating'
+  const attachmentState = activation === 'active' ? 'active' : 'validating'
+  const auditAction =
+    activation === 'active' ? 'fleet.project.attach' : 'fleet.project.attach.stage'
   const result = await executePlatformQuery<{ id: number; connection_revision: number }>({
     query: `with project as (
         insert into platform.projects (
@@ -780,7 +813,7 @@ export async function attachVerifiedProject(input: {
           stack_kind, stack_meta, container_name, key_mode, tls_mode, tls_ca_reference,
           db_pass_readonly_enc, endpoint_document
         ) values (
-          $1, $2, $3, 'ACTIVE_HEALTHY', 'AWS', 'local',
+          $1, $2, $3, $31, 'AWS', 'local',
           $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,
           'external', '{}'::jsonb, $19, $20, $21, $22, $29, $30::jsonb
         ) returning id
@@ -789,7 +822,8 @@ export async function attachVerifiedProject(input: {
           project_ref, revision, state, key_mode, connection_document, endpoint_document,
           stack_fingerprint, preflight_report, created_by, correlation_id,
           validated_at, activated_at
-        ) values ($1, 1, 'active', $20, $23::jsonb, $30::jsonb, $24, $25::jsonb, $26, $27, now(), now())
+        ) values ($1, 1, $32, $20, $23::jsonb, $30::jsonb, $24, $25::jsonb, $26, $27,
+                  now(), case when $32 = 'active' then now() else null end)
         returning revision
       ), binding as (
         insert into platform.stack_bindings (
@@ -797,7 +831,7 @@ export async function attachVerifiedProject(input: {
           active_connection_revision, key_mode, attachment_state,
           data_plane_health, management_connectivity, drift_state, operation_state,
           first_verified_at, last_verified_at, status_observed_at
-        ) values ($1, $24, 'verified', 1, $20, 'active', 'healthy',
+        ) values ($1, $24, 'verified', 1, $20, $33, 'healthy',
                   'unconfigured', 'unknown', 'idle', now(), now(), now())
       ), capabilities as (
         insert into platform.project_capabilities (
@@ -812,7 +846,7 @@ export async function attachVerifiedProject(input: {
       ), audit as (
         insert into platform.audit_events (
           actor, project_ref, action, correlation_id, payload
-        ) values ($26, $1, 'fleet.project.attach', $27,
+        ) values ($26, $1, $34, $27,
           jsonb_build_object('stack_fingerprint', $24, 'connection_revision', 1, 'key_mode', $20))
       )
       select project.id, revision.revision as connection_revision from project cross join revision`,
@@ -846,7 +880,11 @@ export async function attachVerifiedProject(input: {
       input.correlationId,
       JSON.stringify(capabilityRows(capabilities)),
       document.db_pass_readonly_enc,
-      JSON.stringify(buildInternalEndpointDocument(c)),
+      JSON.stringify(endpointDocument),
+      projectStatus,
+      revisionState,
+      attachmentState,
+      auditAction,
     ],
   })
   if (result.error) {
@@ -859,6 +897,109 @@ export async function attachVerifiedProject(input: {
   const row = result.data?.[0]
   if (!row) throw new Error('Project attachment returned no row')
   return { id: row.id, connectionRevision: row.connection_revision }
+}
+
+export async function attachVerifiedProject(
+  input: VerifiedProjectInput
+): Promise<{ id: number; connectionRevision: number }> {
+  return persistVerifiedProject(input, 'active')
+}
+
+export async function stageVerifiedProject(
+  input: VerifiedProjectInput & { publicEndpoints: PublicProjectEndpoints }
+): Promise<{ id: number; connectionRevision: number }> {
+  return persistVerifiedProject(input, 'staged')
+}
+
+export async function activateStagedAttachment(input: {
+  projectRef: string
+  actor: string
+  correlationId: string
+}): Promise<{ projectRef: string; connectionRevision: number; attachmentState: 'active' }> {
+  const readiness = await executePlatformQuery<{
+    attachment_state: ProjectAttachmentStatus['attachmentState']
+    revision_state: string
+    binding_state: string | null
+    agent_session_state: string | null
+    active_connection_revision: number
+  }>({
+    query: `select s.attachment_state, r.state as revision_state,
+                   m.state as binding_state, m.agent_session_state,
+                   s.active_connection_revision
+      from platform.stack_bindings s
+      join platform.project_connection_revisions r
+        on r.project_ref = s.project_ref and r.revision = s.active_connection_revision
+      left join platform.project_management_bindings m
+        on m.id = s.management_binding_id and m.state <> 'revoked'
+      where s.project_ref = $1`,
+    parameters: [input.projectRef],
+  })
+  if (readiness.error) throw readiness.error
+  const row = readiness.data?.[0]
+  const blockers: Array<{ code: string; message: string }> = []
+  if (!row || row.attachment_state !== 'validating' || row.revision_state !== 'validating') {
+    blockers.push({
+      code: 'attachment_not_staged',
+      message: 'Stage and verify the project connection before activation.',
+    })
+  }
+  if (
+    !row?.binding_state ||
+    !['active', 'stale', 'offline', 'enrolling'].includes(row.binding_state)
+  ) {
+    blockers.push({
+      code: 'management_target_unbound',
+      message: 'Bind the project to an active management target.',
+    })
+  }
+  if (row?.agent_session_state !== 'online') {
+    blockers.push({
+      code: 'agent_not_online',
+      message: 'Enroll the Agent and wait for a current online heartbeat.',
+    })
+  }
+  if (blockers.length > 0) throw new AttachmentActivationBlocked(blockers)
+
+  const result = await executePlatformQuery<{ revision: number }>({
+    query: `with eligible as (
+        select s.project_ref, s.active_connection_revision
+        from platform.stack_bindings s
+        join platform.project_connection_revisions r
+          on r.project_ref = s.project_ref and r.revision = s.active_connection_revision
+        join platform.project_management_bindings m
+          on m.id = s.management_binding_id and m.state <> 'revoked'
+        where s.project_ref = $1 and s.attachment_state = 'validating'
+          and r.state = 'validating' and m.agent_session_state = 'online'
+        for update of s, r, m
+      ), revision as (
+        update platform.project_connection_revisions r
+        set state = 'active', activated_at = now()
+        where r.project_ref = $1
+          and r.revision = (select active_connection_revision from eligible)
+          and r.state = 'validating'
+        returning r.revision
+      ), project as (
+        update platform.projects p set status = 'ACTIVE_HEALTHY', updated_at = now()
+        where p.ref = $1 and exists (select 1 from revision)
+      ), binding as (
+        update platform.stack_bindings s set attachment_state = 'active', status_observed_at = now()
+        where s.project_ref = $1 and exists (select 1 from revision)
+      ), audit as (
+        insert into platform.audit_events (actor, project_ref, action, correlation_id, payload)
+        select $2, $1, 'fleet.project.attach.activate', $3,
+               jsonb_build_object('connection_revision', revision.revision)
+        from revision
+      ) select revision from revision`,
+    parameters: [input.projectRef, input.actor, input.correlationId],
+  })
+  if (result.error) throw result.error
+  const revision = result.data?.[0]?.revision
+  if (!revision) {
+    throw new AttachmentActivationBlocked([
+      { code: 'activation_race', message: 'Attachment state changed. Refresh and try again.' },
+    ])
+  }
+  return { projectRef: input.projectRef, connectionRevision: revision, attachmentState: 'active' }
 }
 
 export async function createConnectionCandidate(input: {
@@ -1156,6 +1297,33 @@ export async function detachProject(input: {
     projectRef: row.project_ref,
     detachedAt: row.detached_at,
     targetCleanupPending: row.target_cleanup_pending,
+    infrastructureDeleted: false,
+  }
+}
+
+export async function rollbackStagedAttachment(input: {
+  projectRef: string
+  actor: string
+  correlationId?: string
+}): Promise<{
+  projectRef: string
+  rolledBackAt: string
+  infrastructureDeleted: false
+}> {
+  const result = await executePlatformQuery<{
+    project_ref: string
+    rolled_back_at: string
+    infrastructure_deleted: false
+  }>({
+    query: `select * from platform.rollback_staged_attachment($1, $2, $3)`,
+    parameters: [input.projectRef, input.actor, input.correlationId ?? randomUUID()],
+  })
+  if (result.error) throw result.error
+  const row = result.data?.[0]
+  if (!row) throw new Error('Staged attachment rollback returned no row')
+  return {
+    projectRef: row.project_ref,
+    rolledBackAt: row.rolled_back_at,
     infrastructureDeleted: false,
   }
 }

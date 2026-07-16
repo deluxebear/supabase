@@ -7,6 +7,7 @@ import {
   createConnectionCandidate,
   failConnectionCandidate,
   runAttachmentPreflight,
+  stageVerifiedProject,
   type AttachmentPreflightReport,
 } from './attachment'
 import { executePlatformQuery } from './db'
@@ -26,6 +27,7 @@ import {
   refToDbName,
   RESERVED_REFS,
   SharedDbLocked,
+  stageExternalProject,
   updateProjectConnection,
 } from './projects-admin'
 import { executeQuery } from '@/lib/api/self-hosted/query'
@@ -35,6 +37,7 @@ vi.mock('./attachment', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./attachment')>()),
   runAttachmentPreflight: vi.fn(),
   attachVerifiedProject: vi.fn(),
+  stageVerifiedProject: vi.fn(),
   createConnectionCandidate: vi.fn(),
   failConnectionCandidate: vi.fn(),
   activateConnectionCandidate: vi.fn(),
@@ -112,6 +115,7 @@ beforeEach(() => {
     .mockResolvedValue(HOST_ROW as never)
   vi.mocked(runAttachmentPreflight).mockReset().mockResolvedValue(PASS_REPORT)
   vi.mocked(attachVerifiedProject).mockReset().mockResolvedValue({ id: 7, connectionRevision: 1 })
+  vi.mocked(stageVerifiedProject).mockReset().mockResolvedValue({ id: 8, connectionRevision: 1 })
   vi.mocked(createConnectionCandidate).mockReset().mockResolvedValue({ id: 9, revision: 2 })
   vi.mocked(failConnectionCandidate).mockReset().mockResolvedValue()
   vi.mocked(activateConnectionCandidate).mockReset().mockResolvedValue({ revision: 2 })
@@ -293,6 +297,47 @@ describe('probeConnection / attachExternalProject', () => {
         report: PASS_REPORT,
       })
     )
+  })
+
+  it('stages a verified connection and public endpoint document without activating it', async () => {
+    const publicEndpoints = {
+      apiUrl: 'https://api.example.com',
+      restUrl: 'https://api.example.com/rest/v1',
+      authUrl: 'https://api.example.com/auth/v1',
+      storageUrl: 'https://api.example.com/storage/v1',
+      realtimeUrl: 'https://api.example.com/realtime/v1',
+      functionsUrl: 'https://api.example.com/functions/v1',
+      s3Url: 'https://api.example.com/storage/v1/s3',
+      directPostgres: {
+        host: 'db.example.com',
+        port: 5432,
+        database: 'postgres',
+        user: 'postgres',
+        tlsMode: 'require' as const,
+      },
+      supavisor: {
+        host: 'pooler.example.com',
+        transactionPort: 6543,
+        sessionPort: 5432,
+        database: 'postgres',
+        user: 'postgres',
+        tenantId: 'ext-1',
+        tlsMode: 'require' as const,
+      },
+    }
+    await stageExternalProject({
+      ref: 'ext-1',
+      name: 'Ext',
+      organizationId: 1,
+      connection: CONNECTION,
+      publicEndpoints,
+      actor: 'owner-a',
+      correlationId: 'corr-a',
+    })
+    expect(stageVerifiedProject).toHaveBeenCalledWith(
+      expect.objectContaining({ ref: 'ext-1', report: PASS_REPORT, publicEndpoints })
+    )
+    expect(attachVerifiedProject).not.toHaveBeenCalled()
   })
 
   it('parseExternalConnectionInput enforces required fields and derives restUrl', () => {

@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  activateStagedAttachment,
+  AttachmentActivationBlocked,
   buildCandidateConnectionString,
   CapabilityUnavailable,
   derivePreflightCapabilities,
@@ -8,12 +10,18 @@ import {
   detachProject,
   listProjectCapabilities,
   requireProjectCapability,
+  rollbackStagedAttachment,
   runAttachmentPreflight,
+  stageVerifiedProject,
   type AttachmentConnectionInput,
 } from './attachment'
 import { executePlatformQuery } from './db'
 
 vi.mock('./db', () => ({ executePlatformQuery: vi.fn() }))
+vi.mock('./secrets', () => ({
+  encryptSecret: vi.fn((value: string) => `enc:${value}`),
+  decryptSecret: vi.fn((value: string) => value.replace(/^enc:/, '')),
+}))
 vi.mock('@/lib/api/self-hosted/util', () => ({ encryptString: vi.fn(() => 'encrypted-dsn') }))
 vi.mock('@/lib/api/apiHelpers', () => ({
   constructHeaders: vi.fn((headers: Record<string, string>) => headers),
@@ -201,6 +209,29 @@ describe('capability and detach boundaries', () => {
     ).rejects.toBeInstanceOf(DetachOperationConflict)
   })
 
+  it('maps staged rollback without reporting infrastructure deletion', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({
+      data: [
+        {
+          project_ref: 'project-a',
+          rolled_back_at: '2026-07-16T00:00:00.000Z',
+          infrastructure_deleted: false,
+        },
+      ],
+      error: undefined,
+    })
+    await expect(
+      rollbackStagedAttachment({ projectRef: 'project-a', actor: 'owner', correlationId: 'corr' })
+    ).resolves.toEqual({
+      projectRef: 'project-a',
+      rolledBackAt: '2026-07-16T00:00:00.000Z',
+      infrastructureDeleted: false,
+    })
+    expect(vi.mocked(executePlatformQuery).mock.calls[0][0].query).toContain(
+      'platform.rollback_staged_attachment'
+    )
+  })
+
   it('fails closed when Agent capability evidence has expired', async () => {
     vi.mocked(executePlatformQuery).mockResolvedValue({
       data: [
@@ -258,5 +289,119 @@ describe('capability and detach boundaries', () => {
       mode: 'agent',
       blockers: [{ code: 'agent_capability_unavailable' }],
     })
+  })
+})
+
+describe('staged attachment activation', () => {
+  const report = {
+    contractVersion: 'v1' as const,
+    startedAt: '2026-07-16T00:00:00.000Z',
+    completedAt: '2026-07-16T00:00:01.000Z',
+    outcome: 'pass' as const,
+    stackFingerprint: 'a'.repeat(64),
+    checks: [
+      { name: 'metadata-permissions', status: 'pass' as const, required: true, message: 'ok' },
+      { name: 'auth', status: 'pass' as const, required: true, message: 'ok' },
+      { name: 'storage', status: 'pass' as const, required: true, message: 'ok' },
+      { name: 'realtime', status: 'pass' as const, required: false, message: 'ok' },
+    ],
+  }
+  const publicEndpoints = {
+    apiUrl: 'https://api.project-a.example.com',
+    restUrl: 'https://api.project-a.example.com/rest/v1',
+    authUrl: 'https://api.project-a.example.com/auth/v1',
+    storageUrl: 'https://api.project-a.example.com/storage/v1',
+    realtimeUrl: 'https://api.project-a.example.com/realtime/v1',
+    functionsUrl: 'https://api.project-a.example.com/functions/v1',
+    s3Url: 'https://api.project-a.example.com/storage/v1/s3',
+    directPostgres: {
+      host: 'db.project-a.example.com',
+      port: 5432,
+      database: 'postgres',
+      user: 'postgres',
+      tlsMode: 'verify-full' as const,
+    },
+    supavisor: {
+      host: 'pooler.project-a.example.com',
+      transactionPort: 6543,
+      sessionPort: 5432,
+      database: 'postgres',
+      user: 'postgres',
+      tenantId: 'project-a',
+      tlsMode: 'verify-full' as const,
+    },
+  }
+
+  it('persists a verified connection as validating without activating the project', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({
+      data: [{ id: 42, connection_revision: 1 }],
+      error: undefined,
+    })
+    await stageVerifiedProject({
+      ref: 'project-a',
+      name: 'Project A',
+      organizationId: 1,
+      connection: LEGACY_CONNECTION,
+      publicEndpoints,
+      report,
+      actor: 'owner-a',
+      correlationId: 'corr-a',
+    })
+
+    const call = vi.mocked(executePlatformQuery).mock.calls[0][0]
+    expect(call.parameters).toEqual(
+      expect.arrayContaining(['COMING_UP', 'validating', 'fleet.project.attach.stage'])
+    )
+    expect(call.query).toContain("case when $32 = 'active' then now() else null end")
+  })
+
+  it('blocks activation until the Agent has a current online session', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({
+      data: [
+        {
+          attachment_state: 'validating',
+          revision_state: 'validating',
+          binding_state: 'enrolling',
+          agent_session_state: 'unavailable',
+          active_connection_revision: 1,
+        },
+      ],
+      error: undefined,
+    })
+    await expect(
+      activateStagedAttachment({ projectRef: 'project-a', actor: 'owner-a', correlationId: 'c' })
+    ).rejects.toMatchObject({
+      constructor: AttachmentActivationBlocked,
+      blockers: [{ code: 'agent_not_online' }],
+    })
+    expect(executePlatformQuery).toHaveBeenCalledTimes(1)
+  })
+
+  it('atomically activates only a validating revision with an online Agent', async () => {
+    vi.mocked(executePlatformQuery)
+      .mockResolvedValueOnce({
+        data: [
+          {
+            attachment_state: 'validating',
+            revision_state: 'validating',
+            binding_state: 'active',
+            agent_session_state: 'online',
+            active_connection_revision: 1,
+          },
+        ],
+        error: undefined,
+      })
+      .mockResolvedValueOnce({ data: [{ revision: 1 }], error: undefined })
+
+    await expect(
+      activateStagedAttachment({ projectRef: 'project-a', actor: 'owner-a', correlationId: 'c' })
+    ).resolves.toEqual({
+      projectRef: 'project-a',
+      connectionRevision: 1,
+      attachmentState: 'active',
+    })
+    expect(vi.mocked(executePlatformQuery).mock.calls[1][0].query).toContain(
+      "m.agent_session_state = 'online'"
+    )
   })
 })

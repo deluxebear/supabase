@@ -5,6 +5,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
 import { AttachmentPreflightFailed, StackAlreadyAttached } from '@/lib/api/self-platform/attachment'
+import { validatePublicProjectEndpoints } from '@/lib/api/self-platform/endpoint-registry'
 import { listAllProjectsV2 } from '@/lib/api/self-platform/list-user-projects'
 import { getMemberContext } from '@/lib/api/self-platform/members'
 import { parsePaginationParam } from '@/lib/api/self-platform/pagination'
@@ -15,6 +16,7 @@ import {
   ProbeFailed,
   REF_PATTERN,
   RESERVED_REFS,
+  stageExternalProject,
 } from '@/lib/api/self-platform/projects-admin'
 import { guardOrgRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { DEFAULT_PROJECT } from '@/lib/constants/api'
@@ -116,20 +118,43 @@ async function handleCreate(req: NextApiRequest, res: NextApiResponse, claims?: 
     const correlationId =
       (typeof req.headers['x-correlation-id'] === 'string' && req.headers['x-correlation-id']) ||
       randomUUID()
-    const { id, connectionRevision, preflight } = await attachExternalProject({
-      ref,
-      name,
-      organizationId: ctx.orgId,
-      connection: parsed.value,
-      actor: claims?.sub ?? 'unknown',
-      correlationId,
-    })
+    const isStaged = body.attachment_mode === 'staged'
+    let publicEndpoints
+    if (isStaged) {
+      try {
+        publicEndpoints = validatePublicProjectEndpoints(body.public_endpoints)
+      } catch (error) {
+        return res.status(400).json({
+          code: 'validation_failed',
+          message:
+            error instanceof Error ? error.message : 'Public endpoint configuration is invalid',
+        })
+      }
+    }
+    const { id, connectionRevision, preflight } = isStaged
+      ? await stageExternalProject({
+          ref,
+          name,
+          organizationId: ctx.orgId,
+          connection: parsed.value,
+          publicEndpoints: publicEndpoints!,
+          actor: claims?.sub ?? 'unknown',
+          correlationId,
+        })
+      : await attachExternalProject({
+          ref,
+          name,
+          organizationId: ctx.orgId,
+          connection: parsed.value,
+          actor: claims?.sub ?? 'unknown',
+          correlationId,
+        })
     return res.status(201).json({
       id,
       ref,
       name,
-      status: 'ACTIVE_HEALTHY',
-      attachment_state: 'active',
+      status: isStaged ? 'COMING_UP' : 'ACTIVE_HEALTHY',
+      attachment_state: isStaged ? 'validating' : 'active',
       connection_revision: connectionRevision,
       preflight,
       organization_slug: ctx.orgSlug,

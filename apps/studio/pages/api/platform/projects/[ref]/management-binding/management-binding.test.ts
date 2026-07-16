@@ -2,7 +2,11 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { handler } from './index'
 import { requireProjectCapability } from '@/lib/api/self-platform/attachment'
-import { bindProjectManagementTarget } from '@/lib/api/self-platform/management-trust'
+import {
+  bindProjectManagementTarget,
+  getProjectManagementBinding,
+  syncProjectManagementBinding,
+} from '@/lib/api/self-platform/management-trust'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 
 vi.hoisted(() => {
@@ -21,6 +25,7 @@ vi.mock('@/lib/api/self-platform/management-trust', async (importOriginal) => ({
   bindProjectManagementTarget: vi.fn(),
   getProjectManagementBinding: vi.fn(),
   revokeProjectManagementBinding: vi.fn(),
+  syncProjectManagementBinding: vi.fn(),
 }))
 
 function response() {
@@ -74,5 +79,25 @@ describe('project management binding API', () => {
       expect.objectContaining({ projectRef: 'project-a', binding: body, actor: 'owner-a' })
     )
     expect(res.statusCode).toBe(201)
+  })
+
+  it('returns the local pending binding before Fleet Control enrollment exists', async () => {
+    vi.mocked(guardProjectRoute).mockResolvedValue(true)
+    vi.mocked(requireProjectCapability).mockResolvedValue(undefined)
+    vi.mocked(getProjectManagementBinding).mockResolvedValue({
+      id: '00000000-0000-4000-8000-00000000000b',
+      state: 'pending',
+    } as never)
+    const res = response()
+
+    await handler(
+      { method: 'GET', query: { ref: 'project-a' }, headers: {} } as never,
+      res as never,
+      { sub: 'owner-a' } as never
+    )
+
+    expect(res.statusCode).toBe(200)
+    expect(res.payload).toMatchObject({ binding: { state: 'pending' } })
+    expect(syncProjectManagementBinding).not.toHaveBeenCalled()
   })
 })

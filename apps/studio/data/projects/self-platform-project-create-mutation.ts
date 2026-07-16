@@ -28,6 +28,32 @@ export type SelfPlatformExternalConnection = {
   logflareToken?: string
 }
 
+export type SelfPlatformPublicEndpoints = {
+  apiUrl: string
+  restUrl: string
+  authUrl: string
+  storageUrl: string
+  realtimeUrl: string
+  functionsUrl: string
+  s3Url: string
+  directPostgres: {
+    host: string
+    port: number
+    database: string
+    user: string
+    tlsMode: SelfPlatformExternalConnection['tlsMode']
+  }
+  supavisor: {
+    host: string
+    transactionPort: number
+    sessionPort: number
+    database: string
+    user: string
+    tenantId: string
+    tlsMode: SelfPlatformExternalConnection['tlsMode']
+  }
+}
+
 export type SelfPlatformProjectCreateVariables =
   | { mode: 'shared-db'; organizationSlug: string; name: string; ref: string; hostRef: string }
   | {
@@ -36,6 +62,8 @@ export type SelfPlatformProjectCreateVariables =
       name: string
       ref: string
       connection: SelfPlatformExternalConnection
+      attachmentMode?: 'active' | 'staged'
+      publicEndpoints?: SelfPlatformPublicEndpoints
     }
 
 export type SelfPlatformProjectCreateResponse = {
@@ -44,8 +72,19 @@ export type SelfPlatformProjectCreateResponse = {
   name: string
   status: string
   organization_slug: string
-  attachment_state: 'active'
+  attachment_state: 'active' | 'validating'
   connection_revision: number
+  preflight?: {
+    outcome: 'pass' | 'fail'
+    stackFingerprint: string | null
+    checks: Array<{
+      name: string
+      status: 'pass' | 'fail' | 'warning' | 'unsupported'
+      required: boolean
+      message: string
+      remediation?: string
+    }>
+  }
 }
 
 export async function createSelfPlatformProject(vars: SelfPlatformProjectCreateVariables) {
@@ -64,6 +103,8 @@ export async function createSelfPlatformProject(vars: SelfPlatformProjectCreateV
           name: vars.name,
           ref: vars.ref,
           connection: vars.connection,
+          attachment_mode: vars.attachmentMode,
+          public_endpoints: vars.publicEndpoints,
         }
   // [self-platform] The body intentionally diverges from the cloud
   // CreateProjectBody (spec §4); the openapi client is typed to the cloud

@@ -43,16 +43,22 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
       await requireProjectCapability(projectRef, 'project.status.read')
       const binding = await getProjectManagementBinding(projectRef)
       return res.status(200).json({
-        binding: binding
-          ? await syncProjectManagementBinding({
-              projectRef,
-              actor: claims?.sub ?? 'unknown',
-              correlationId:
-                (typeof req.headers['x-correlation-id'] === 'string' &&
-                  req.headers['x-correlation-id']) ||
-                randomUUID(),
-            })
-          : null,
+        // Fleet Control creates its side of the binding when the first
+        // enrollment token is issued. Until then the durable platform record
+        // is the authoritative pending state; attempting a downstream sync
+        // here would return 404 and deadlock the wizard before it can issue
+        // that token.
+        binding:
+          binding && binding.state !== 'pending'
+            ? await syncProjectManagementBinding({
+                projectRef,
+                actor: claims?.sub ?? 'unknown',
+                correlationId:
+                  (typeof req.headers['x-correlation-id'] === 'string' &&
+                    req.headers['x-correlation-id']) ||
+                  randomUUID(),
+              })
+            : binding,
       })
     }
     if (req.method === 'PUT') {

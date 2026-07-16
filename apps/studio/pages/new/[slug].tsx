@@ -33,6 +33,7 @@ import { ProjectCreationFooter } from '@/components/interfaces/ProjectCreation/P
 import { ProjectNameInput } from '@/components/interfaces/ProjectCreation/ProjectNameInput'
 import { RegionSelector } from '@/components/interfaces/ProjectCreation/RegionSelector'
 import { SecurityOptions } from '@/components/interfaces/ProjectCreation/SecurityOptions'
+import { SelfPlatformProjectCreate } from '@/components/interfaces/SelfPlatform/SelfPlatformProjectCreate'
 import {
   GitHubRepositoryField,
   useGitHubRepositoryOptions,
@@ -69,6 +70,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { withAuth } from '@/hooks/misc/withAuth'
 import { usePHFlag } from '@/hooks/ui/useFlag'
 import { DOCS_URL, PROJECT_STATUS, PROVIDERS, useDefaultProvider } from '@/lib/constants'
+import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import { buildStudioPageTitle } from '@/lib/page-title'
 import { useProfile } from '@/lib/profile'
@@ -725,10 +727,13 @@ const PageLayout = withAuth(({ children }: PropsWithChildren) => {
   return <WizardLayoutWithoutAuth>{children}</WizardLayoutWithoutAuth>
 })
 
-Wizard.getLayout = (page) => (
+const FleetAwareWizard: NextPageWithLayout = (props) =>
+  STUDIO_DEPLOYMENT_PROFILE === 'fleet' ? <SelfPlatformProjectCreate /> : <Wizard {...props} />
+
+FleetAwareWizard.getLayout = (page) => (
   <DefaultLayout hideMobileMenu headerTitle="New project">
     <PageLayout>{page}</PageLayout>
   </DefaultLayout>
 )
 
-export default Wizard
+export default FleetAwareWizard
