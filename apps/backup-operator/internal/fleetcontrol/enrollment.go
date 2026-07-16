@@ -40,6 +40,7 @@ type CapabilityObservation struct {
 	InputSchema     string    `json:"inputSchema"`
 	EvidenceSchema  string    `json:"evidenceSchema"`
 	ObservedAt      time.Time `json:"observedAt"`
+	ValidUntil      time.Time `json:"validUntil"`
 }
 
 type AgentRecord struct {
@@ -52,6 +53,9 @@ type AgentRecord struct {
 	ActiveCertificateRevision int                     `json:"activeCertificateRevision"`
 	CertificateExpiresAt      time.Time               `json:"certificateExpiresAt"`
 	LastSeenAt                time.Time               `json:"lastSeenAt"`
+	LeaseExpiresAt            time.Time               `json:"leaseExpiresAt"`
+	UnavailableAt             time.Time               `json:"unavailableAt"`
+	SessionState              string                  `json:"sessionState"`
 	Capabilities              []CapabilityObservation `json:"capabilities"`
 }
 
@@ -198,26 +202,51 @@ FROM enrollment_tokens t JOIN management_bindings b ON b.binding_id=t.binding_id
 	if rows, err := result.RowsAffected(); err != nil || rows != 1 {
 		return AgentRecord{}, ErrEnrollmentReplay
 	}
+	var existingAgentBinding string
+	existingAgent := "SELECT binding_id FROM agents WHERE id=?"
+	if s.dialect == FleetPostgres {
+		existingAgent = "SELECT binding_id FROM agents WHERE id=$1 FOR UPDATE"
+	}
+	err = tx.QueryRowContext(ctx, existingAgent, input.AgentID).Scan(&existingAgentBinding)
+	if err == nil && existingAgentBinding != stored.BindingID {
+		return AgentRecord{}, ErrEnrollmentBinding
+	}
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return AgentRecord{}, err
+	}
 	if err := replaceBindingAgents(ctx, tx, s.dialect, stored.BindingID, now.UnixMilli()); err != nil {
+		return AgentRecord{}, err
+	}
+	certificateRevision := 1
+	certificateRevisionQuery := "SELECT COALESCE(MAX(revision),0)+1 FROM agent_certificates WHERE agent_id=?"
+	if s.dialect == FleetPostgres {
+		certificateRevisionQuery = "SELECT COALESCE(MAX(revision),0)+1 FROM agent_certificates WHERE agent_id=$1"
+	}
+	if err := tx.QueryRowContext(ctx, certificateRevisionQuery, input.AgentID).Scan(&certificateRevision); err != nil {
 		return AgentRecord{}, err
 	}
 	observedIdentity := input.ObservedIdentity
 	if len(observedIdentity) == 0 {
 		observedIdentity = json.RawMessage(`{}`)
 	}
-	insertAgent := `INSERT INTO agents(id,binding_id,state,protocol_major,protocol_minor,build,observed_identity_json,active_certificate_revision,last_seen_at_ms,created_at_ms,updated_at_ms)
-VALUES(?,?,'online',?,?,?,?,1,?,?,?)`
+	policy := s.livenessPolicy()
+	leaseExpiresAt := now.Add(policy.LeaseTTL)
+	unavailableAt := leaseExpiresAt.Add(policy.StaleGrace)
+	insertAgent := `INSERT INTO agents(id,binding_id,state,protocol_major,protocol_minor,build,observed_identity_json,active_certificate_revision,last_seen_at_ms,lease_expires_at_ms,session_unavailable_at_ms,created_at_ms,updated_at_ms)
+VALUES(?,?,'online',?,?,?,?,?,?,?,?,?,?)
+ON CONFLICT(id) DO UPDATE SET binding_id=excluded.binding_id,state='online',protocol_major=excluded.protocol_major,protocol_minor=excluded.protocol_minor,build=excluded.build,observed_identity_json=excluded.observed_identity_json,active_certificate_revision=excluded.active_certificate_revision,last_seen_at_ms=excluded.last_seen_at_ms,lease_expires_at_ms=excluded.lease_expires_at_ms,session_unavailable_at_ms=excluded.session_unavailable_at_ms,updated_at_ms=excluded.updated_at_ms`
 	if s.dialect == FleetPostgres {
-		insertAgent = `INSERT INTO agents(id,binding_id,state,protocol_major,protocol_minor,build,observed_identity_json,active_certificate_revision,last_seen_at_ms,created_at_ms,updated_at_ms)
-VALUES($1,$2,'online',$3,$4,$5,$6::jsonb,1,$7,$8,$9)`
+		insertAgent = `INSERT INTO agents(id,binding_id,state,protocol_major,protocol_minor,build,observed_identity_json,active_certificate_revision,last_seen_at_ms,lease_expires_at_ms,session_unavailable_at_ms,created_at_ms,updated_at_ms)
+VALUES($1,$2,'online',$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12)
+ON CONFLICT(id) DO UPDATE SET binding_id=excluded.binding_id,state='online',protocol_major=excluded.protocol_major,protocol_minor=excluded.protocol_minor,build=excluded.build,observed_identity_json=excluded.observed_identity_json,active_certificate_revision=excluded.active_certificate_revision,last_seen_at_ms=excluded.last_seen_at_ms,lease_expires_at_ms=excluded.lease_expires_at_ms,session_unavailable_at_ms=excluded.session_unavailable_at_ms,updated_at_ms=excluded.updated_at_ms`
 	}
-	if _, err := tx.ExecContext(ctx, insertAgent, input.AgentID, stored.BindingID, input.ProtocolMajor, input.ProtocolMinor, input.Build, string(observedIdentity), now.UnixMilli(), now.UnixMilli(), now.UnixMilli()); err != nil {
+	if _, err := tx.ExecContext(ctx, insertAgent, input.AgentID, stored.BindingID, input.ProtocolMajor, input.ProtocolMinor, input.Build, string(observedIdentity), certificateRevision, now.UnixMilli(), leaseExpiresAt.UnixMilli(), unavailableAt.UnixMilli(), now.UnixMilli(), now.UnixMilli()); err != nil {
 		return AgentRecord{}, err
 	}
-	if err := insertAgentCertificate(ctx, tx, s.dialect, input.AgentID, 1, input.Certificate, now.UnixMilli()); err != nil {
+	if err := insertAgentCertificate(ctx, tx, s.dialect, input.AgentID, certificateRevision, input.Certificate, now.UnixMilli()); err != nil {
 		return AgentRecord{}, err
 	}
-	if err := replaceAgentCapabilities(ctx, tx, s.dialect, input.AgentID, input.Capabilities, now.UnixMilli()); err != nil {
+	if err := replaceAgentCapabilities(ctx, tx, s.dialect, input.AgentID, input.Capabilities, now.UnixMilli(), leaseExpiresAt.UnixMilli()); err != nil {
 		return AgentRecord{}, err
 	}
 	updateBinding := "UPDATE management_bindings SET state='active',updated_at_ms=? WHERE binding_id=?"
@@ -233,7 +262,7 @@ VALUES($1,$2,'online',$3,$4,$5,$6::jsonb,1,$7,$8,$9)`
 	if err := tx.Commit(); err != nil {
 		return AgentRecord{}, err
 	}
-	return AgentRecord{ID: input.AgentID, BindingID: stored.BindingID, State: "online", ProtocolMajor: input.ProtocolMajor, ProtocolMinor: input.ProtocolMinor, Build: input.Build, ActiveCertificateRevision: 1, CertificateExpiresAt: input.Certificate.NotAfter, LastSeenAt: now, Capabilities: withObservedAt(input.Capabilities, now)}, nil
+	return AgentRecord{ID: input.AgentID, BindingID: stored.BindingID, State: "online", ProtocolMajor: input.ProtocolMajor, ProtocolMinor: input.ProtocolMinor, Build: input.Build, ActiveCertificateRevision: certificateRevision, CertificateExpiresAt: input.Certificate.NotAfter, LastSeenAt: now, LeaseExpiresAt: leaseExpiresAt, UnavailableAt: unavailableAt, SessionState: "online", Capabilities: withObservationWindow(input.Capabilities, now, leaseExpiresAt)}, nil
 }
 
 func sameBinding(left, right ManagementBinding) bool {
@@ -265,7 +294,7 @@ VALUES($1,$2,$3,$4,'active',$5,$6,$7)`
 	return err
 }
 
-func replaceAgentCapabilities(ctx context.Context, tx *sql.Tx, dialect StoreDialect, agentID string, capabilities []CapabilityObservation, now int64) error {
+func replaceAgentCapabilities(ctx context.Context, tx *sql.Tx, dialect StoreDialect, agentID string, capabilities []CapabilityObservation, now, validUntil int64) error {
 	deleteQuery := "DELETE FROM agent_capabilities WHERE agent_id=?"
 	if dialect == FleetPostgres {
 		deleteQuery = "DELETE FROM agent_capabilities WHERE agent_id=$1"
@@ -273,22 +302,23 @@ func replaceAgentCapabilities(ctx context.Context, tx *sql.Tx, dialect StoreDial
 	if _, err := tx.ExecContext(ctx, deleteQuery, agentID); err != nil {
 		return err
 	}
-	query := "INSERT INTO agent_capabilities(agent_id,domain,name,contract_version,input_schema,evidence_schema,observed_at_ms) VALUES(?,?,?,?,?,?,?)"
+	query := "INSERT INTO agent_capabilities(agent_id,domain,name,contract_version,input_schema,evidence_schema,observed_at_ms,valid_until_ms) VALUES(?,?,?,?,?,?,?,?)"
 	if dialect == FleetPostgres {
-		query = "INSERT INTO agent_capabilities(agent_id,domain,name,contract_version,input_schema,evidence_schema,observed_at_ms) VALUES($1,$2,$3,$4,$5,$6,$7)"
+		query = "INSERT INTO agent_capabilities(agent_id,domain,name,contract_version,input_schema,evidence_schema,observed_at_ms,valid_until_ms) VALUES($1,$2,$3,$4,$5,$6,$7,$8)"
 	}
 	for _, capability := range capabilities {
-		if _, err := tx.ExecContext(ctx, query, agentID, capability.Domain, capability.Name, capability.ContractVersion, capability.InputSchema, capability.EvidenceSchema, now); err != nil {
+		if _, err := tx.ExecContext(ctx, query, agentID, capability.Domain, capability.Name, capability.ContractVersion, capability.InputSchema, capability.EvidenceSchema, now, validUntil); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func withObservedAt(capabilities []CapabilityObservation, observedAt time.Time) []CapabilityObservation {
+func withObservationWindow(capabilities []CapabilityObservation, observedAt, validUntil time.Time) []CapabilityObservation {
 	result := append([]CapabilityObservation(nil), capabilities...)
 	for index := range result {
 		result[index].ObservedAt = observedAt
+		result[index].ValidUntil = validUntil
 	}
 	return result
 }
@@ -321,7 +351,7 @@ FROM management_bindings WHERE project_ref=$1 AND binding_id=$2`
 		return BindingStatus{}, err
 	}
 	status.Binding.CreatedAt, status.Binding.UpdatedAt = time.UnixMilli(created).UTC(), time.UnixMilli(updated).UTC()
-	agentQuery := `SELECT a.id,a.binding_id,a.state,a.protocol_major,a.protocol_minor,a.build,a.active_certificate_revision,a.last_seen_at_ms,c.not_after_ms
+	agentQuery := `SELECT a.id,a.binding_id,a.state,a.protocol_major,a.protocol_minor,a.build,a.active_certificate_revision,a.last_seen_at_ms,a.lease_expires_at_ms,a.session_unavailable_at_ms,c.not_after_ms
 FROM agents a JOIN agent_certificates c ON c.agent_id=a.id AND c.revision=a.active_certificate_revision
 WHERE a.binding_id=? AND a.state IN ('online','offline','incompatible') ORDER BY a.updated_at_ms DESC LIMIT 1`
 	if s.dialect == FleetPostgres {
@@ -329,7 +359,8 @@ WHERE a.binding_id=? AND a.state IN ('online','offline','incompatible') ORDER BY
 	}
 	var agent AgentRecord
 	var lastSeen, expires int64
-	err := s.db.QueryRowContext(ctx, agentQuery, bindingID).Scan(&agent.ID, &agent.BindingID, &agent.State, &agent.ProtocolMajor, &agent.ProtocolMinor, &agent.Build, &agent.ActiveCertificateRevision, &lastSeen, &expires)
+	var leaseExpires, unavailableAt sql.NullInt64
+	err := s.db.QueryRowContext(ctx, agentQuery, bindingID).Scan(&agent.ID, &agent.BindingID, &agent.State, &agent.ProtocolMajor, &agent.ProtocolMinor, &agent.Build, &agent.ActiveCertificateRevision, &lastSeen, &leaseExpires, &unavailableAt, &expires)
 	if errors.Is(err, sql.ErrNoRows) {
 		return status, nil
 	}
@@ -337,7 +368,19 @@ WHERE a.binding_id=? AND a.state IN ('online','offline','incompatible') ORDER BY
 		return BindingStatus{}, err
 	}
 	agent.LastSeenAt, agent.CertificateExpiresAt = time.UnixMilli(lastSeen).UTC(), time.UnixMilli(expires).UTC()
-	capabilityQuery := "SELECT domain,name,contract_version,input_schema,evidence_schema,observed_at_ms FROM agent_capabilities WHERE agent_id=? ORDER BY name"
+	policy := s.livenessPolicy()
+	if leaseExpires.Valid {
+		agent.LeaseExpiresAt = time.UnixMilli(leaseExpires.Int64).UTC()
+	} else {
+		agent.LeaseExpiresAt = agent.LastSeenAt.Add(policy.LeaseTTL)
+	}
+	if unavailableAt.Valid {
+		agent.UnavailableAt = time.UnixMilli(unavailableAt.Int64).UTC()
+	} else {
+		agent.UnavailableAt = agent.LeaseExpiresAt.Add(policy.StaleGrace)
+	}
+	agent.SessionState = sessionState(s.now().UTC(), agent.LeaseExpiresAt, policy.StaleGrace)
+	capabilityQuery := "SELECT domain,name,contract_version,input_schema,evidence_schema,observed_at_ms,valid_until_ms FROM agent_capabilities WHERE agent_id=? ORDER BY name"
 	if s.dialect == FleetPostgres {
 		capabilityQuery = strings.ReplaceAll(capabilityQuery, "?", "$1")
 	}
@@ -350,10 +393,16 @@ WHERE a.binding_id=? AND a.state IN ('online','offline','incompatible') ORDER BY
 	for rows.Next() {
 		var capability CapabilityObservation
 		var observed int64
-		if err := rows.Scan(&capability.Domain, &capability.Name, &capability.ContractVersion, &capability.InputSchema, &capability.EvidenceSchema, &observed); err != nil {
+		var validUntil sql.NullInt64
+		if err := rows.Scan(&capability.Domain, &capability.Name, &capability.ContractVersion, &capability.InputSchema, &capability.EvidenceSchema, &observed, &validUntil); err != nil {
 			return BindingStatus{}, err
 		}
 		capability.ObservedAt = time.UnixMilli(observed).UTC()
+		if validUntil.Valid {
+			capability.ValidUntil = time.UnixMilli(validUntil.Int64).UTC()
+		} else {
+			capability.ValidUntil = capability.ObservedAt.Add(policy.LeaseTTL)
+		}
 		agent.Capabilities = append(agent.Capabilities, capability)
 	}
 	if err := rows.Err(); err != nil {
@@ -397,6 +446,33 @@ WHERE c.serial=? AND a.id=?`
 	}
 	binding.CreatedAt, binding.UpdatedAt = time.UnixMilli(bindingCreated).UTC(), time.UnixMilli(bindingUpdated).UTC()
 	agent.LastSeenAt, agent.CertificateExpiresAt = time.UnixMilli(lastSeen).UTC(), time.UnixMilli(expires).UTC()
+	capabilityQuery := "SELECT domain,name,contract_version,input_schema,evidence_schema,observed_at_ms,valid_until_ms FROM agent_capabilities WHERE agent_id=? ORDER BY name"
+	if s.dialect == FleetPostgres {
+		capabilityQuery = strings.ReplaceAll(capabilityQuery, "?", "$1")
+	}
+	rows, err := s.db.QueryContext(ctx, capabilityQuery, agentID)
+	if err != nil {
+		return ManagementBinding{}, AgentRecord{}, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var capability CapabilityObservation
+		var observed int64
+		var validUntil sql.NullInt64
+		if err := rows.Scan(&capability.Domain, &capability.Name, &capability.ContractVersion, &capability.InputSchema, &capability.EvidenceSchema, &observed, &validUntil); err != nil {
+			return ManagementBinding{}, AgentRecord{}, err
+		}
+		capability.ObservedAt = time.UnixMilli(observed).UTC()
+		if validUntil.Valid {
+			capability.ValidUntil = time.UnixMilli(validUntil.Int64).UTC()
+		} else {
+			capability.ValidUntil = capability.ObservedAt.Add(s.livenessPolicy().LeaseTTL)
+		}
+		agent.Capabilities = append(agent.Capabilities, capability)
+	}
+	if err := rows.Err(); err != nil {
+		return ManagementBinding{}, AgentRecord{}, err
+	}
 	return binding, agent, nil
 }
 
@@ -463,14 +539,17 @@ func (s *Store) RecordHeartbeat(ctx context.Context, agentID, serial string, pro
 	}
 	defer tx.Rollback()
 	now := s.now().UTC()
-	update := "UPDATE agents SET state='online',protocol_minor=?,build=?,last_seen_at_ms=?,updated_at_ms=? WHERE id=?"
+	policy := s.livenessPolicy()
+	leaseExpiresAt := now.Add(policy.LeaseTTL)
+	unavailableAt := leaseExpiresAt.Add(policy.StaleGrace)
+	update := "UPDATE agents SET state='online',protocol_minor=?,build=?,last_seen_at_ms=?,lease_expires_at_ms=?,session_unavailable_at_ms=?,updated_at_ms=? WHERE id=?"
 	if s.dialect == FleetPostgres {
-		update = "UPDATE agents SET state='online',protocol_minor=$1,build=$2,last_seen_at_ms=$3,updated_at_ms=$4 WHERE id=$5"
+		update = "UPDATE agents SET state='online',protocol_minor=$1,build=$2,last_seen_at_ms=$3,lease_expires_at_ms=$4,session_unavailable_at_ms=$5,updated_at_ms=$6 WHERE id=$7"
 	}
-	if _, err := tx.ExecContext(ctx, update, protocolMinor, build, now.UnixMilli(), now.UnixMilli(), agentID); err != nil {
+	if _, err := tx.ExecContext(ctx, update, protocolMinor, build, now.UnixMilli(), leaseExpiresAt.UnixMilli(), unavailableAt.UnixMilli(), now.UnixMilli(), agentID); err != nil {
 		return BindingStatus{}, err
 	}
-	if err := replaceAgentCapabilities(ctx, tx, s.dialect, agentID, capabilities, now.UnixMilli()); err != nil {
+	if err := replaceAgentCapabilities(ctx, tx, s.dialect, agentID, capabilities, now.UnixMilli(), leaseExpiresAt.UnixMilli()); err != nil {
 		return BindingStatus{}, err
 	}
 	if err := tx.Commit(); err != nil {

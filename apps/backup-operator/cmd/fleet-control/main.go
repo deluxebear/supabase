@@ -34,6 +34,8 @@ func main() {
 	agentCAKey := flag.String("agent-ca-key", os.Getenv("FLEET_CONTROL_AGENT_CA_KEY"), "Agent CA private key PEM path")
 	agentTrustDomain := flag.String("agent-trust-domain", os.Getenv("FLEET_CONTROL_AGENT_TRUST_DOMAIN"), "Agent SPIFFE trust domain")
 	agentCertificateTTL := flag.Duration("agent-certificate-ttl", envDuration("FLEET_CONTROL_AGENT_CERTIFICATE_TTL", 24*time.Hour), "short-lived Agent certificate lifetime")
+	agentLeaseTTL := flag.Duration("agent-lease-ttl", envDuration("FLEET_CONTROL_AGENT_LEASE_TTL", 30*time.Second), "Fleet Agent heartbeat lease lifetime")
+	agentStaleGrace := flag.Duration("agent-stale-grace", envDuration("FLEET_CONTROL_AGENT_STALE_GRACE", 30*time.Second), "grace period between stale and unavailable Agent state")
 	enrollmentTokenTTL := flag.Duration("enrollment-token-ttl", envDuration("FLEET_CONTROL_ENROLLMENT_TOKEN_TTL", 10*time.Minute), "single-use enrollment token lifetime")
 	certificateOverlap := flag.Duration("certificate-overlap", envDuration("FLEET_CONTROL_CERTIFICATE_OVERLAP", 15*time.Minute), "certificate rotation overlap window")
 	maxAgentSessions := flag.Int("max-agent-sessions", envInt("FLEET_CONTROL_MAX_AGENT_SESSIONS", 300), "maximum concurrent Fleet Agent sessions")
@@ -86,7 +88,8 @@ func main() {
 		StoreIdentity: fleetcontrol.StoreIdentity{SystemIdentifier: *storeSystemID, DataDomain: *storeDataDomain},
 		AssertionKey:  []byte(*assertionKey), AssertionIssuer: *assertionIssuer, AssertionAudience: *assertionAudience, AssertionMaxTTL: *assertionMaxTTL,
 		AgentCACertFile: *agentCACert, AgentCAKeyFile: *agentCAKey, AgentTrustDomain: *agentTrustDomain,
-		AgentCertificateTTL: *agentCertificateTTL, EnrollmentTokenTTL: *enrollmentTokenTTL, CertificateOverlap: *certificateOverlap,
+		AgentCertificateTTL: *agentCertificateTTL, AgentLeaseTTL: *agentLeaseTTL, AgentStaleGrace: *agentStaleGrace,
+		EnrollmentTokenTTL: *enrollmentTokenTTL, CertificateOverlap: *certificateOverlap,
 		EnrollmentServerCertFile: *enrollmentServerCert, EnrollmentServerKeyFile: *enrollmentServerKey,
 		Capacity: fleetcontrol.CapacityPolicy{
 			MaxAgentSessions: *maxAgentSessions, MaxConcurrentOperations: *maxOperations,

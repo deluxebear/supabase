@@ -82,6 +82,8 @@ export type SelfPlatformProjectBlock = {
     attachmentState: 'draft' | 'validating' | 'active' | 'detaching' | 'detached' | 'failed'
     dataPlaneHealth: 'unknown' | 'healthy' | 'degraded' | 'unreachable'
     managementConnectivity: 'unconfigured' | 'online' | 'offline' | 'incompatible' | 'revoked'
+    targetConnectivity: 'unconfigured' | 'online' | 'offline' | 'incompatible' | 'revoked'
+    agentConnectivity: 'unconfigured' | 'online' | 'stale' | 'offline' | 'incompatible' | 'revoked'
     driftState: 'unknown' | 'in-sync' | 'drifted' | 'ownership-conflict'
     operationState: 'idle' | 'active' | 'manual-intervention'
     fingerprintProofState: 'unverified' | 'verified' | 'revoked'

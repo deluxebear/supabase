@@ -18,7 +18,9 @@ vi.hoisted(() => {
 const attachment = {
   attachmentState: 'active',
   dataPlaneHealth: 'healthy',
-  managementConnectivity: 'offline',
+  managementConnectivity: 'online',
+  targetConnectivity: 'online',
+  agentConnectivity: 'offline',
   driftState: 'unknown',
   operationState: 'idle',
   fingerprintProofState: 'verified',
@@ -43,6 +45,45 @@ const capability = {
   blockers: [],
 } as const
 
+const managementBinding = {
+  id: '11111111-1111-4111-8111-111111111111',
+  projectRef: 'default',
+  organizationId: 1,
+  managementTargetId: '22222222-2222-4222-8222-222222222222',
+  managementTargetName: 'Local Fleet Management',
+  trustDomain: 'fleet.internal',
+  executionTarget: 'compose-default',
+  deploymentKind: 'compose',
+  allowedCapabilityPrefixes: ['runtime.'],
+  state: 'offline',
+  agentId: 'agent-default',
+  protocolMajor: 1,
+  protocolMinor: 0,
+  agentBuild: 'test',
+  activeCertificateRevision: 2,
+  certificateExpiresAt: '2026-07-16T00:00:00.000Z',
+  lastSeenAt: '2026-07-15T00:01:00.000Z',
+  agentSessionState: 'unavailable',
+  agentLeaseExpiresAt: '2026-07-15T00:01:30.000Z',
+  agentUnavailableAt: '2026-07-15T00:02:00.000Z',
+  observationRevision: 'r2',
+  createdAt: '2026-07-15T00:00:00.000Z',
+  updatedAt: '2026-07-15T00:02:00.000Z',
+  targetState: 'active',
+  domains: [
+    {
+      domain: 'fleet-control',
+      apiUrl: 'https://fleet-control.test',
+      audience: 'fleet-control',
+      contractVersion: 'v1',
+      capabilitySchemaPrefix: 'supabase.fleet.',
+      targetVersion: 'test',
+      state: 'available',
+      observedAt: '2026-07-15T00:02:00.000Z',
+    },
+  ],
+} as const
+
 beforeEach(() => {
   routerMock.setCurrentUrl('/project/default/settings/general')
   addAPIMock({
@@ -64,6 +105,9 @@ beforeEach(() => {
   mswServer.use(
     http.get(`${API_URL}/platform/projects/:ref/capabilities`, () =>
       HttpResponse.json({ capabilities: [capability] })
+    ),
+    http.get(`${API_URL}/platform/projects/:ref/management-binding`, () =>
+      HttpResponse.json({ binding: managementBinding })
     )
   )
 })
@@ -78,6 +122,8 @@ describe('SelfPlatformAttachmentStatusPanel', () => {
 
     expect(await screen.findByText('Fleet attachment status')).toBeInTheDocument()
     expect(screen.getByText('healthy')).toBeInTheDocument()
+    expect(screen.getByText('Management target')).toBeInTheDocument()
+    expect(screen.getByText('Fleet Agent')).toBeInTheDocument()
     expect(screen.getByText('offline')).toBeInTheDocument()
     expect(screen.getByText(/Connection revision 2/)).toBeInTheDocument()
   })
@@ -104,5 +150,25 @@ describe('SelfPlatformAttachmentStatusPanel', () => {
 
     expect(await screen.findByText('The stack binding was revoked.')).toBeInTheDocument()
     expect(screen.queryByText('Fleet attachment status')).not.toBeInTheDocument()
+  })
+
+  it('projects a fresh stale Agent session over the persisted attachment snapshot', async () => {
+    mswServer.use(
+      http.get(`${API_URL}/platform/projects/:ref/management-binding`, () =>
+        HttpResponse.json({
+          binding: { ...managementBinding, state: 'stale', agentSessionState: 'stale' },
+        })
+      )
+    )
+    customRender(
+      <ProjectContextProvider projectRef="default">
+        <SelfPlatformAttachmentStatusPanel />
+      </ProjectContextProvider>
+    )
+
+    expect(await screen.findByText('Fleet attachment status')).toBeInTheDocument()
+    expect(await screen.findByText('stale')).toBeInTheDocument()
+    expect(screen.getByText('healthy')).toBeInTheDocument()
+    expect(screen.getByText('online')).toBeInTheDocument()
   })
 })

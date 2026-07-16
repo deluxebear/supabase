@@ -176,7 +176,11 @@ export const SelfPlatformManagementTrustPanel = () => {
             <div className="rounded-md border p-4 space-y-1">
               <div className="flex items-center gap-2">
                 <span className="font-medium">{binding.managementTargetName}</span>
-                <Badge>{binding.state}</Badge>
+                <Badge>
+                  {binding.domains.find((domain) => domain.domain === 'fleet-control')?.state ??
+                    'unverified'}
+                </Badge>
+                <Badge>{binding.agentSessionState}</Badge>
               </div>
               <p className="text-sm text-foreground-light">
                 {binding.executionTarget} · {binding.deploymentKind}

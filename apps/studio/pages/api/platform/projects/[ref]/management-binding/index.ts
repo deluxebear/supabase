@@ -10,7 +10,9 @@ import {
   getProjectManagementBinding,
   managementBindingInputSchema,
   ManagementTrustConflict,
+  ManagementTrustDownstreamError,
   revokeProjectManagementBinding,
+  syncProjectManagementBinding,
 } from '@/lib/api/self-platform/management-trust'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { STUDIO_CAPABILITIES, STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
@@ -39,7 +41,19 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
   try {
     if (req.method === 'GET') {
       await requireProjectCapability(projectRef, 'project.status.read')
-      return res.status(200).json({ binding: await getProjectManagementBinding(projectRef) })
+      const binding = await getProjectManagementBinding(projectRef)
+      return res.status(200).json({
+        binding: binding
+          ? await syncProjectManagementBinding({
+              projectRef,
+              actor: claims?.sub ?? 'unknown',
+              correlationId:
+                (typeof req.headers['x-correlation-id'] === 'string' &&
+                  req.headers['x-correlation-id']) ||
+                randomUUID(),
+            })
+          : null,
+      })
     }
     if (req.method === 'PUT') {
       await requireProjectCapability(projectRef, 'management.target.bind')
@@ -85,6 +99,11 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
     }
     if (error instanceof ManagementTrustConflict) {
       return res.status(409).json({ code: error.code, message: error.message })
+    }
+    if (error instanceof ManagementTrustDownstreamError) {
+      return res
+        .status(503)
+        .json({ code: error.code, message: error.message, details: error.details })
     }
     throw error
   }

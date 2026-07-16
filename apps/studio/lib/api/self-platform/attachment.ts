@@ -3,6 +3,7 @@ import { z } from 'zod'
 
 import { constructHeaders } from '@/lib/api/apiHelpers'
 import { encryptString } from '@/lib/api/self-hosted/util'
+import { projectCapabilityAt } from '@/lib/api/self-platform/capability-liveness'
 import { executePlatformQuery } from '@/lib/api/self-platform/db'
 import { getProjectPgMetaBaseUrl } from '@/lib/api/self-platform/pg-meta'
 import { decryptSecret, encryptSecret } from '@/lib/api/self-platform/secrets'
@@ -71,6 +72,8 @@ export interface ProjectAttachmentStatus {
   attachmentState: 'draft' | 'validating' | 'active' | 'detaching' | 'detached' | 'failed'
   dataPlaneHealth: 'unknown' | 'healthy' | 'degraded' | 'unreachable'
   managementConnectivity: 'unconfigured' | 'online' | 'offline' | 'incompatible' | 'revoked'
+  targetConnectivity: 'unconfigured' | 'online' | 'offline' | 'incompatible' | 'revoked'
+  agentConnectivity: 'unconfigured' | 'online' | 'stale' | 'offline' | 'incompatible' | 'revoked'
   driftState: 'unknown' | 'in-sync' | 'drifted' | 'ownership-conflict'
   operationState: 'idle' | 'active' | 'manual-intervention'
   fingerprintProofState: 'unverified' | 'verified' | 'revoked'
@@ -1018,42 +1021,33 @@ export async function listProjectCapabilities(
     parameters: [projectRef],
   })
   if (result.error) throw result.error
-  return (result.data ?? []).map((row) => ({
-    name: row.name,
-    state: row.state,
-    mode: row.mode,
-    source: row.source,
-    contractVersion: row.contract_version,
-    targetVersion: row.target_version,
-    observationRevision: row.observation_revision,
-    observedAt: row.observed_at,
-    validUntil: row.valid_until,
-    blockers: Array.isArray(row.blockers) ? row.blockers : [],
-  }))
+  return (result.data ?? []).map((row) =>
+    projectCapabilityAt({
+      name: row.name,
+      state: row.state,
+      mode: row.mode,
+      source: row.source,
+      contractVersion: row.contract_version,
+      targetVersion: row.target_version,
+      observationRevision: row.observation_revision,
+      observedAt: row.observed_at,
+      validUntil: row.valid_until,
+      blockers: Array.isArray(row.blockers) ? row.blockers : [],
+    })
+  )
 }
 
 export async function requireProjectCapability(projectRef: string, name: string): Promise<void> {
   const capability = (await listProjectCapabilities(projectRef)).find((item) => item.name === name)
-  const isExpired =
-    capability?.validUntil !== null &&
-    capability?.validUntil !== undefined &&
-    Date.parse(capability.validUntil) <= Date.now()
-  if (!capability || capability.state !== 'available' || isExpired) {
+  if (!capability || capability.state !== 'available') {
     throw new CapabilityUnavailable(
       name,
-      isExpired
-        ? [
-            {
-              code: 'capability_stale',
-              message: `Capability ${name} has stale Agent evidence. Refresh the management binding.`,
-            },
-          ]
-        : (capability?.blockers ?? [
-            {
-              code: 'capability_unavailable',
-              message: `Capability ${name} is not available.`,
-            },
-          ])
+      capability?.blockers ?? [
+        {
+          code: 'capability_unavailable',
+          message: `Capability ${name} is not available.`,
+        },
+      ]
     )
   }
 }
@@ -1065,6 +1059,7 @@ export async function getProjectAttachmentStatus(
     attachment_state: ProjectAttachmentStatus['attachmentState']
     data_plane_health: ProjectAttachmentStatus['dataPlaneHealth']
     management_connectivity: ProjectAttachmentStatus['managementConnectivity']
+    agent_connectivity: ProjectAttachmentStatus['agentConnectivity']
     drift_state: ProjectAttachmentStatus['driftState']
     operation_state: ProjectAttachmentStatus['operationState']
     fingerprint_proof_state: ProjectAttachmentStatus['fingerprintProofState']
@@ -1075,7 +1070,7 @@ export async function getProjectAttachmentStatus(
     status_observed_at: string
     target_cleanup_pending: boolean
   }>({
-    query: `select attachment_state, data_plane_health, management_connectivity,
+    query: `select attachment_state, data_plane_health, management_connectivity, agent_connectivity,
                    drift_state, operation_state, fingerprint_proof_state, key_mode,
                    active_connection_revision, first_verified_at, last_verified_at,
                    status_observed_at, target_cleanup_pending
@@ -1089,6 +1084,8 @@ export async function getProjectAttachmentStatus(
     attachmentState: row.attachment_state,
     dataPlaneHealth: row.data_plane_health,
     managementConnectivity: row.management_connectivity,
+    targetConnectivity: row.management_connectivity,
+    agentConnectivity: row.agent_connectivity,
     driftState: row.drift_state,
     operationState: row.operation_state,
     fingerprintProofState: row.fingerprint_proof_state,

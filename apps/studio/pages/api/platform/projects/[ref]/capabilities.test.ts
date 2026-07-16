@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { handler } from './capabilities'
 import { listProjectCapabilities } from '@/lib/api/self-platform/attachment'
+import { syncProjectManagementBinding } from '@/lib/api/self-platform/management-trust'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 
 vi.hoisted(() => {
@@ -13,12 +14,18 @@ vi.hoisted(() => {
 })
 
 vi.mock('@/lib/api/self-platform/attachment', () => ({ listProjectCapabilities: vi.fn() }))
+vi.mock('@/lib/api/self-platform/management-trust', () => ({
+  syncProjectManagementBinding: vi.fn(),
+  ManagementTrustConflict: class ManagementTrustConflict extends Error {},
+  ManagementTrustDownstreamError: class ManagementTrustDownstreamError extends Error {},
+}))
 vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({ guardProjectRoute: vi.fn() }))
 
 const claims = { sub: 'user-a' } as JwtPayload
 
 beforeEach(() => {
   vi.mocked(guardProjectRoute).mockReset().mockResolvedValue(true)
+  vi.mocked(syncProjectManagementBinding).mockReset().mockResolvedValue({} as never)
   vi.mocked(listProjectCapabilities)
     .mockReset()
     .mockResolvedValue([
@@ -52,6 +59,9 @@ describe('GET /platform/projects/[ref]/capabilities', () => {
       })
     )
     expect(listProjectCapabilities).toHaveBeenCalledWith('project-a')
+    expect(syncProjectManagementBinding).toHaveBeenCalledWith(
+      expect.objectContaining({ projectRef: 'project-a', actor: 'user-a' })
+    )
     expect(res._getStatusCode()).toBe(200)
     expect(res._getJSONData().capabilities[0]).toMatchObject({
       name: 'project.detach',

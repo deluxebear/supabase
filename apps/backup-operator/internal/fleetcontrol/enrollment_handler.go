@@ -193,7 +193,16 @@ func (h *Handler) getManagementBinding(w http.ResponseWriter, r *http.Request) {
 	if status.Agent != nil {
 		for _, observed := range status.Agent.Capabilities {
 			projected := projectedCapability{CapabilityObservation: observed, State: "unsupported", Mode: "unsupported", Source: "agent", Blockers: []Blocker{{Code: "provider_not_registered", Message: "The Agent reported this schema, but no executable Fleet provider is registered"}}}
-			if provider, ok := h.Capabilities.Get(observed.Name); ok && provider.State == "available" && provider.ContractVersion == observed.ContractVersion {
+			capabilityState := sessionState(h.Store.now().UTC(), observed.ValidUntil, h.Store.livenessPolicy().StaleGrace)
+			if capabilityState == "stale" {
+				projected.State = "stale"
+				projected.Mode = "agent"
+				projected.Blockers = []Blocker{{Code: "capability_stale", Message: "The Agent capability lease expired and is within its stale grace period"}}
+			} else if capabilityState == "unavailable" {
+				projected.State = "unavailable"
+				projected.Mode = "agent"
+				projected.Blockers = []Blocker{{Code: "agent_unavailable", Message: "The Agent capability lease and stale grace period expired"}}
+			} else if provider, ok := h.Capabilities.Get(observed.Name); ok && provider.State == "available" && provider.ContractVersion == observed.ContractVersion {
 				projected.State, projected.Mode, projected.Blockers = "available", provider.Mode, []Blocker{}
 			}
 			capabilities = append(capabilities, projected)

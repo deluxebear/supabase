@@ -38,6 +38,8 @@ type Config struct {
 	AgentCAKeyFile           string
 	AgentTrustDomain         string
 	AgentCertificateTTL      time.Duration
+	AgentLeaseTTL            time.Duration
+	AgentStaleGrace          time.Duration
 	EnrollmentTokenTTL       time.Duration
 	CertificateOverlap       time.Duration
 	EnrollmentServerCertFile string
@@ -73,6 +75,9 @@ func (c Config) Validate() error {
 	if c.AgentCertificateTTL <= 0 || c.AgentCertificateTTL > maximumAgentCertificateTTL || c.EnrollmentTokenTTL <= 0 || c.EnrollmentTokenTTL > time.Hour || c.CertificateOverlap <= 0 || c.CertificateOverlap > time.Hour {
 		return errors.New("Fleet Agent certificate, enrollment token, or rotation overlap duration is invalid")
 	}
+	if err := (LivenessPolicy{LeaseTTL: c.AgentLeaseTTL, StaleGrace: c.AgentStaleGrace}).Validate(); err != nil {
+		return err
+	}
 	if err := c.Capacity.Validate(); err != nil {
 		return err
 	}
@@ -91,6 +96,12 @@ func Run(ctx context.Context, cfg Config) error {
 	}
 	if cfg.RetentionInterval == 0 {
 		cfg.RetentionInterval = 5 * time.Minute
+	}
+	if cfg.AgentLeaseTTL == 0 {
+		cfg.AgentLeaseTTL = DefaultLivenessPolicy().LeaseTTL
+	}
+	if cfg.AgentStaleGrace == 0 {
+		cfg.AgentStaleGrace = DefaultLivenessPolicy().StaleGrace
 	}
 	if cfg.Metrics == nil {
 		cfg.Metrics = &observability.Metrics{}
@@ -137,6 +148,9 @@ func Run(ctx context.Context, cfg Config) error {
 	if err := store.SetCapacityPolicy(cfg.Capacity); err != nil {
 		return err
 	}
+	if err := store.SetLivenessPolicy(LivenessPolicy{LeaseTTL: cfg.AgentLeaseTTL, StaleGrace: cfg.AgentStaleGrace}); err != nil {
+		return err
+	}
 	sessions, err := NewSessionLimiter(cfg.Capacity.MaxAgentSessions)
 	if err != nil {
 		return err
@@ -181,7 +195,7 @@ func Run(ctx context.Context, cfg Config) error {
 	}
 	agentGRPC := grpc.NewServer(grpc.Creds(credentials.NewTLS(agentTLS)))
 	fleetagentv1.RegisterFleetAgentControlServiceServer(agentGRPC, &AgentServer{Store: store, Artifacts: artifacts, Authority: agentCA, Sessions: sessions, Metrics: cfg.Metrics})
-	errCh := make(chan error, 4)
+	errCh := make(chan error, 5)
 	go func() { errCh <- server.Serve(listener) }()
 	go func() { errCh <- enrollmentServer.Serve(tls.NewListener(enrollmentListener, enrollmentTLS)) }()
 	go func() { errCh <- agentGRPC.Serve(agentListener) }()
@@ -199,6 +213,30 @@ func Run(ctx context.Context, cfg Config) error {
 				_ = cfg.Metrics.Set("fleet_operations_active", float64(snapshot.ActiveOperations), nil)
 				_ = cfg.Metrics.Set("fleet_operation_queue_depth", float64(snapshot.QueuedOperations), nil)
 				_ = cfg.Metrics.Set("fleet_event_backlog", float64(snapshot.LiveEvents), nil)
+			}
+			select {
+			case <-ctx.Done():
+				errCh <- nil
+				return
+			case <-ticker.C:
+			}
+		}
+	}()
+	go func() {
+		interval := cfg.AgentLeaseTTL / 3
+		if interval < time.Second {
+			interval = time.Second
+		}
+		if interval > 10*time.Second {
+			interval = 10 * time.Second
+		}
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for {
+			if expired, err := store.ExpireAgentLeases(ctx); err != nil {
+				cfg.Logger.Error("Fleet Agent lease expiry cycle failed", "error", err)
+			} else if expired > 0 {
+				_ = cfg.Metrics.Add("fleet_agent_leases_expired_total", uint64(expired), nil)
 			}
 			select {
 			case <-ctx.Done():

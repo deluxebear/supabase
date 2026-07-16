@@ -221,7 +221,7 @@ describe('capability and detach boundaries', () => {
     })
     await expect(requireProjectCapability('project-a', 'functions.deploy')).rejects.toMatchObject({
       constructor: CapabilityUnavailable,
-      blockers: [{ code: 'capability_stale' }],
+      blockers: [{ code: 'agent_unavailable' }],
     })
   })
 

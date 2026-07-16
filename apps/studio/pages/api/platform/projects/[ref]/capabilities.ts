@@ -4,6 +4,11 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
 import { listProjectCapabilities } from '@/lib/api/self-platform/attachment'
+import {
+  ManagementTrustConflict,
+  ManagementTrustDownstreamError,
+  syncProjectManagementBinding,
+} from '@/lib/api/self-platform/management-trust'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { STUDIO_CAPABILITIES, STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 
@@ -29,5 +34,18 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
     resource: 'projects',
   })
   if (!allowed) return
+  try {
+    await syncProjectManagementBinding({
+      projectRef,
+      actor: claims?.sub ?? 'unknown',
+    })
+  } catch (error) {
+    if (
+      !(error instanceof ManagementTrustConflict) &&
+      !(error instanceof ManagementTrustDownstreamError)
+    ) {
+      throw error
+    }
+  }
   return res.status(200).json({ capabilities: await listProjectCapabilities(projectRef) })
 }

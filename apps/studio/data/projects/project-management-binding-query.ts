@@ -39,4 +39,5 @@ export const projectManagementBindingQueryOptions = ({
       STUDIO_DEPLOYMENT_PROFILE === 'fleet' &&
       STUDIO_CAPABILITIES.managementTrust &&
       typeof projectRef !== 'undefined',
+    refetchInterval: 10_000,
   })

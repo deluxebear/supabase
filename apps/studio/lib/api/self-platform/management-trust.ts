@@ -111,6 +111,7 @@ export const projectedCapabilitySchema = z.object({
   inputSchema: z.string(),
   evidenceSchema: z.string(),
   observedAt: z.string().datetime({ offset: true }),
+  validUntil: z.string().datetime({ offset: true }),
   state: z.enum(['available', 'unavailable', 'unauthorized', 'stale', 'unsupported']),
   mode: z.enum(['operator', 'agent', 'kubernetes-job', 'unsupported']),
   source: z.literal('agent'),
@@ -137,6 +138,7 @@ export const managementBindingSchema = z.object({
     'pending',
     'enrolling',
     'active',
+    'stale',
     'offline',
     'incompatible',
     'revoking',
@@ -149,6 +151,9 @@ export const managementBindingSchema = z.object({
   activeCertificateRevision: z.number().int().positive().nullable(),
   certificateExpiresAt: z.string().datetime({ offset: true }).nullable(),
   lastSeenAt: z.string().datetime({ offset: true }).nullable(),
+  agentSessionState: z.enum(['online', 'stale', 'unavailable', 'incompatible', 'revoked']),
+  agentLeaseExpiresAt: z.string().datetime({ offset: true }).nullable(),
+  agentUnavailableAt: z.string().datetime({ offset: true }).nullable(),
   observationRevision: z.string().nullable(),
   createdAt: z.string().datetime({ offset: true }),
   updatedAt: z.string().datetime({ offset: true }),
@@ -182,6 +187,9 @@ const fleetBindingStatusSchema = z.object({
       activeCertificateRevision: z.number().int().positive(),
       certificateExpiresAt: z.string().datetime({ offset: true }),
       lastSeenAt: z.string().datetime({ offset: true }),
+      leaseExpiresAt: z.string().datetime({ offset: true }),
+      unavailableAt: z.string().datetime({ offset: true }),
+      sessionState: z.enum(['online', 'stale', 'unavailable']),
       capabilities: z.array(z.unknown()).default([]),
     })
     .nullable(),
@@ -240,6 +248,9 @@ type ManagementBindingRow = {
   active_certificate_revision: number | null
   certificate_expires_at: string | null
   last_seen_at: string | null
+  agent_session_state: ManagementBinding['agentSessionState']
+  agent_lease_expires_at: string | null
+  agent_unavailable_at: string | null
   observation_revision: string | null
   created_at: string
   updated_at: string
@@ -436,6 +447,7 @@ select b.id, b.project_ref, p.organization_id, b.management_target_id,
        b.execution_target, b.deployment_kind, b.allowed_capability_prefixes,
        b.state, b.agent_id, b.protocol_major, b.protocol_minor, b.agent_build,
        b.active_certificate_revision, b.certificate_expires_at, b.last_seen_at,
+       b.agent_session_state, b.agent_lease_expires_at, b.agent_unavailable_at,
        b.observation_revision, b.created_at, b.updated_at, t.state as target_state,
        coalesce(jsonb_agg(jsonb_build_object(
          'domain', d.domain, 'apiUrl', d.api_url, 'audience', d.audience,
@@ -467,6 +479,9 @@ function mapBinding(row: ManagementBindingRow): ManagementBinding {
     activeCertificateRevision: row.active_certificate_revision,
     certificateExpiresAt: normalizeNullableDatabaseTimestamp(row.certificate_expires_at),
     lastSeenAt: normalizeNullableDatabaseTimestamp(row.last_seen_at),
+    agentSessionState: row.agent_session_state,
+    agentLeaseExpiresAt: normalizeNullableDatabaseTimestamp(row.agent_lease_expires_at),
+    agentUnavailableAt: normalizeNullableDatabaseTimestamp(row.agent_unavailable_at),
     observationRevision: row.observation_revision,
     createdAt: normalizeDatabaseTimestamp(row.created_at),
     updatedAt: normalizeDatabaseTimestamp(row.updated_at),
@@ -595,29 +610,33 @@ export async function syncProjectManagementBinding(input: {
   const observationRevision = agent
     ? `${agent.id}:${agent.activeCertificateRevision}:${Date.parse(agent.lastSeenAt)}`
     : `binding:${binding.id}:${observed.binding.state}`
-  const validUntil = agent ? new Date(Date.parse(agent.lastSeenAt) + 30_000).toISOString() : null
   const platformState: ManagementBinding['state'] = !agent
     ? observed.binding.state === 'incompatible'
       ? 'incompatible'
       : 'enrolling'
-    : agent.state === 'online'
+    : agent.sessionState === 'online'
       ? 'active'
-      : agent.state === 'incompatible'
-        ? 'incompatible'
-        : 'offline'
+      : agent.sessionState === 'stale'
+        ? 'stale'
+        : agent.state === 'incompatible'
+          ? 'incompatible'
+          : 'offline'
   const result = await executePlatformQuery({
     query: `with updated_binding as (
       update platform.project_management_bindings set
         state = $3, agent_id = $4, protocol_major = $5, protocol_minor = $6,
         agent_build = $7, active_certificate_revision = $8,
         certificate_expires_at = $9, last_seen_at = $10,
-        observation_revision = $11, updated_at = now()
+        observation_revision = $11, agent_session_state = $12,
+        agent_lease_expires_at = $13, agent_unavailable_at = $14, updated_at = now()
       where id = $1 and project_ref = $2 and state <> 'revoked'
       returning id
     ), updated_stack as (
       update platform.stack_bindings set
-        management_connectivity = case $3
-          when 'active' then 'online'
+        management_connectivity = 'online',
+        agent_connectivity = case $12
+          when 'online' then 'online'
+          when 'stale' then 'stale'
           when 'incompatible' then 'incompatible'
           else 'offline'
         end,
@@ -629,10 +648,14 @@ export async function syncProjectManagementBinding(input: {
         observation_revision, observed_at, valid_until, blockers
       ) values (
         $2, 'management.agent.connect',
-        case when $4::text is null then 'unavailable' else 'available' end,
-        'agent', 'agent', 'v1', $7, $11, coalesce($10::timestamptz, now()), $12,
+        case $12 when 'online' then 'available' when 'stale' then 'stale' else 'unavailable' end,
+        'agent', 'agent', 'v1', $7, $11, coalesce($10::timestamptz, now()), $13,
         case when $4::text is null
           then '[{"code":"agent_not_enrolled","message":"Issue a single-use enrollment token and enroll an Agent."}]'::jsonb
+          when $12 = 'stale'
+          then '[{"code":"agent_stale","message":"The Agent heartbeat lease expired and is within its stale grace period."}]'::jsonb
+          when $12 <> 'online'
+          then '[{"code":"agent_unavailable","message":"The Agent heartbeat lease and stale grace period expired."}]'::jsonb
           else '[]'::jsonb end
       ) on conflict (project_ref, name) do update set
         state = excluded.state, mode = excluded.mode, source = excluded.source,
@@ -646,7 +669,7 @@ export async function syncProjectManagementBinding(input: {
       ) values (
         $2, 'management.certificate.revoke',
         case when $4::text is null then 'unavailable' else 'available' end,
-        'operator', 'operator', 'v1', $7, $11, coalesce($10::timestamptz, now()), $12,
+        'operator', 'operator', 'v1', $7, $11, coalesce($10::timestamptz, now()), null,
         case when $4::text is null
           then '[{"code":"agent_not_enrolled","message":"Enroll an Agent before revoking its certificate."}]'::jsonb
           else '[]'::jsonb end
@@ -661,11 +684,11 @@ export async function syncProjectManagementBinding(input: {
         observation_revision, observed_at, valid_until, blockers
       )
       select $2, capability.name, capability.state, capability.mode, 'agent',
-             capability.contract_version, $7, $11, capability.observed_at, $12,
+             capability.contract_version, $7, $11, capability.observed_at, capability.valid_until,
              capability.blockers
-      from jsonb_to_recordset($13::jsonb) as capability(
+      from jsonb_to_recordset($15::jsonb) as capability(
         name text, state text, mode text, contract_version text,
-        observed_at timestamptz, blockers jsonb
+        observed_at timestamptz, valid_until timestamptz, blockers jsonb
       )
       where capability.name not like 'management.%'
       on conflict (project_ref, name) do update set
@@ -677,7 +700,7 @@ export async function syncProjectManagementBinding(input: {
         and excluded.name not like 'management.%'
     ), audit as (
       insert into platform.audit_events (actor, project_ref, action, correlation_id, payload)
-      select $14, $2, 'fleet.management_binding.observe', $15,
+      select $16, $2, 'fleet.management_binding.observe', $17,
              jsonb_build_object('binding_id', $1, 'state', $3,
                                 'agent_id', $4, 'observation_revision', $11)
       from updated_binding
@@ -694,7 +717,9 @@ export async function syncProjectManagementBinding(input: {
       agent?.certificateExpiresAt ?? null,
       agent?.lastSeenAt ?? null,
       observationRevision,
-      validUntil,
+      agent?.sessionState ?? 'unavailable',
+      agent?.leaseExpiresAt ?? null,
+      agent?.unavailableAt ?? null,
       JSON.stringify(
         observed.capabilities.map((capability) => ({
           name: capability.name,
@@ -702,6 +727,7 @@ export async function syncProjectManagementBinding(input: {
           mode: capability.mode,
           contract_version: capability.contractVersion,
           observed_at: capability.observedAt,
+          valid_until: capability.validUntil,
           blockers: capability.blockers,
         }))
       ),

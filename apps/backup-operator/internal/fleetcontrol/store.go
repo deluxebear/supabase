@@ -23,7 +23,7 @@ import (
 //go:embed migrations/*/*.sql
 var fleetMigrations embed.FS
 
-const CurrentSchemaVersion = 7
+const CurrentSchemaVersion = 8
 
 var ErrOperationNotFound = errors.New("Fleet operation not found")
 var ErrMigrationChecksum = errors.New("Fleet migration checksum mismatch")
@@ -50,6 +50,7 @@ type Store struct {
 	identity StoreIdentity
 	now      func() time.Time
 	capacity CapacityPolicy
+	liveness LivenessPolicy
 }
 
 type Operation struct {
@@ -123,7 +124,7 @@ func OpenSQLite(ctx context.Context, path string, identity StoreIdentity) (*Stor
 		return nil, err
 	}
 	db.SetMaxOpenConns(1)
-	store := &Store{db: db, dialect: FleetSQLite, identity: identity, now: time.Now, capacity: DefaultCapacityPolicy()}
+	store := &Store{db: db, dialect: FleetSQLite, identity: identity, now: time.Now, capacity: DefaultCapacityPolicy(), liveness: DefaultLivenessPolicy()}
 	if _, err := db.ExecContext(ctx, "PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;"); err != nil {
 		db.Close()
 		return nil, err
@@ -140,7 +141,7 @@ func OpenPostgres(ctx context.Context, dsn string, identity StoreIdentity) (*Sto
 	if err != nil {
 		return nil, err
 	}
-	store := &Store{db: db, dialect: FleetPostgres, identity: identity, now: time.Now, capacity: DefaultCapacityPolicy()}
+	store := &Store{db: db, dialect: FleetPostgres, identity: identity, now: time.Now, capacity: DefaultCapacityPolicy(), liveness: DefaultLivenessPolicy()}
 	if err := db.PingContext(ctx); err != nil {
 		db.Close()
 		return nil, err
@@ -483,11 +484,11 @@ func (s *Store) ValidateOperationBinding(ctx context.Context, projectRef, target
 	if status.Binding.ProjectRef != projectRef || status.Binding.TargetID != targetID || status.Binding.BindingID != bindingID || status.Binding.State != "active" {
 		return BindingStatus{}, ErrOperationBinding
 	}
-	if status.Agent == nil || (status.Agent.State != "online" && status.Agent.State != "offline") {
+	if status.Agent == nil || status.Agent.SessionState != "online" {
 		return BindingStatus{}, ErrOperationCapability
 	}
 	for _, observed := range status.Agent.Capabilities {
-		if observed.Name == capability {
+		if observed.Name == capability && !s.now().UTC().After(observed.ValidUntil) {
 			return status, nil
 		}
 	}
@@ -502,12 +503,14 @@ func (s *Store) ClaimOperation(ctx context.Context, identity AgentSessionIdentit
 	if err != nil {
 		return ClaimedOperation{}, false, ErrOperationBinding
 	}
-	if status.Agent == nil || status.Agent.ID != identity.AgentID || status.Binding.TargetID != identity.TargetID || status.Binding.State != "active" {
+	if status.Agent == nil || status.Agent.ID != identity.AgentID || status.Agent.SessionState != "online" || status.Binding.TargetID != identity.TargetID || status.Binding.State != "active" {
 		return ClaimedOperation{}, false, ErrOperationBinding
 	}
 	storedCapabilities := make(map[string]struct{}, len(status.Agent.Capabilities))
 	for _, capability := range status.Agent.Capabilities {
-		storedCapabilities[capability.Name] = struct{}{}
+		if !s.now().UTC().After(capability.ValidUntil) {
+			storedCapabilities[capability.Name] = struct{}{}
+		}
 	}
 	capabilities := make([]string, 0, len(identity.Capabilities))
 	seen := make(map[string]struct{}, len(identity.Capabilities))
@@ -688,19 +691,34 @@ func (s *Store) TouchAgentSession(ctx context.Context, agentID string) error {
 	if agentID == "" {
 		return errors.New("Agent id is required")
 	}
-	query := "UPDATE agents SET state='online',last_seen_at_ms=?,updated_at_ms=? WHERE id=? AND state IN ('online','offline')"
-	if s.dialect == FleetPostgres {
-		query = "UPDATE agents SET state='online',last_seen_at_ms=$1,updated_at_ms=$2 WHERE id=$3 AND state IN ('online','offline')"
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
 	}
-	now := s.now().UTC().UnixMilli()
-	result, err := s.db.ExecContext(ctx, query, now, now, agentID)
+	defer tx.Rollback()
+	policy := s.livenessPolicy()
+	now := s.now().UTC()
+	leaseExpiresAt := now.Add(policy.LeaseTTL)
+	unavailableAt := leaseExpiresAt.Add(policy.StaleGrace)
+	query := "UPDATE agents SET state='online',last_seen_at_ms=?,lease_expires_at_ms=?,session_unavailable_at_ms=?,updated_at_ms=? WHERE id=? AND state IN ('online','offline')"
+	if s.dialect == FleetPostgres {
+		query = "UPDATE agents SET state='online',last_seen_at_ms=$1,lease_expires_at_ms=$2,session_unavailable_at_ms=$3,updated_at_ms=$4 WHERE id=$5 AND state IN ('online','offline')"
+	}
+	result, err := tx.ExecContext(ctx, query, now.UnixMilli(), leaseExpiresAt.UnixMilli(), unavailableAt.UnixMilli(), now.UnixMilli(), agentID)
 	if err != nil {
 		return err
 	}
 	if rows, err := result.RowsAffected(); err != nil || rows != 1 {
 		return ErrAgentNotFound
 	}
-	return nil
+	capabilities := "UPDATE agent_capabilities SET observed_at_ms=?,valid_until_ms=? WHERE agent_id=?"
+	if s.dialect == FleetPostgres {
+		capabilities = "UPDATE agent_capabilities SET observed_at_ms=$1,valid_until_ms=$2 WHERE agent_id=$3"
+	}
+	if _, err := tx.ExecContext(ctx, capabilities, now.UnixMilli(), leaseExpiresAt.UnixMilli(), agentID); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 func (s *Store) ReadEventsAfter(ctx context.Context, operationID string, cursor int64, limit int) ([]Event, error) {

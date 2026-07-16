@@ -150,6 +150,57 @@ func TestEnrollmentRejectsWrongBindingExpiredTokenAndProtocolMismatch(t *testing
 	}
 }
 
+func TestEnrollmentRenewsTheSameAgentIdentityAfterCertificateExpiry(t *testing.T) {
+	store, err := OpenSQLite(context.Background(), filepath.Join(t.TempDir(), "fleet.db"), StoreIdentity{SystemIdentifier: "fleet", DataDomain: "fleet-volume"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer store.Close()
+	baseTime := time.Date(2026, 7, 15, 0, 0, 0, 0, time.UTC)
+	store.now = func() time.Time { return baseTime }
+	authority := newTestCertificateAuthority(t)
+	binding := ManagementBinding{BindingID: "binding-a", OrganizationID: "org-a", ProjectRef: "project-a", TargetID: "target-a", ExecutionTarget: "compose-a", DeploymentKind: "compose", AllowedCapabilityPrefixes: []string{"runtime."}}
+
+	enroll := func(tokenID, token string, certificate IssuedCertificate) AgentRecord {
+		t.Helper()
+		digest := sha256.Sum256([]byte(token))
+		if err := store.CreateEnrollmentToken(context.Background(), CreateEnrollmentTokenInput{Binding: binding, TokenID: tokenID, TokenHash: hex.EncodeToString(digest[:]), ExpiresAt: baseTime.Add(time.Minute), Actor: "owner-a", CorrelationID: tokenID}); err != nil {
+			t.Fatal(err)
+		}
+		record, err := store.EnrollAgent(context.Background(), EnrollAgentInput{TokenHash: hex.EncodeToString(digest[:]), Binding: binding, AgentID: "agent-a", ProtocolMajor: 1, Build: "v1", ObservedIdentity: json.RawMessage(`{}`), Capabilities: testCapabilities(), Certificate: certificate})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return record
+	}
+
+	firstCertificate, err := authority.Issue(newAgentCSR(t, "agent-a-first"), CertificateIdentity{OrganizationID: "org-a", ProjectRef: "project-a", TargetID: "target-a", BindingID: "binding-a", AgentID: "agent-a"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	first := enroll("enrollment-a", "token-a", firstCertificate)
+	if first.ActiveCertificateRevision != 1 {
+		t.Fatalf("first certificate revision=%d", first.ActiveCertificateRevision)
+	}
+
+	secondCertificate, err := authority.Issue(newAgentCSR(t, "agent-a-second"), CertificateIdentity{OrganizationID: "org-a", ProjectRef: "project-a", TargetID: "target-a", BindingID: "binding-a", AgentID: "agent-a"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	second := enroll("enrollment-b", "token-b", secondCertificate)
+	if second.ActiveCertificateRevision != 2 || second.SessionState != "online" {
+		t.Fatalf("renewed agent revision=%d session=%s", second.ActiveCertificateRevision, second.SessionState)
+	}
+	if _, _, err := store.ValidateAgentCertificate(context.Background(), "agent-a", firstCertificate.Serial); !errors.Is(err, ErrCertificateRevoked) {
+		t.Fatalf("first certificate remained valid: %v", err)
+	}
+	if _, agent, err := store.ValidateAgentCertificate(context.Background(), "agent-a", secondCertificate.Serial); err != nil {
+		t.Fatalf("renewed certificate was rejected: %v", err)
+	} else if agent.ActiveCertificateRevision != 2 || len(agent.Capabilities) != 1 || agent.Capabilities[0].Name != "runtime.observe" {
+		t.Fatalf("validated agent revision=%d capabilities=%v", agent.ActiveCertificateRevision, agent.Capabilities)
+	}
+}
+
 func TestBindingRevocationInvalidatesAnOutstandingEnrollmentToken(t *testing.T) {
 	store, err := OpenSQLite(context.Background(), filepath.Join(t.TempDir(), "fleet.db"), StoreIdentity{SystemIdentifier: "fleet", DataDomain: "fleet-volume"})
 	if err != nil {

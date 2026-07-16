@@ -41,7 +41,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
   })
   if (!allowed) return
   try {
-    await requireProjectCapability(projectRef, 'management.enrollment.issue')
+    await requireProjectCapability(projectRef, 'project.status.read')
     return res.status(200).json({
       binding: await syncProjectManagementBinding({
         projectRef,

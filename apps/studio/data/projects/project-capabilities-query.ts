@@ -72,6 +72,7 @@ export const projectCapabilitiesQueryOptions = ({ projectRef }: ProjectCapabilit
       STUDIO_DEPLOYMENT_PROFILE === 'fleet' &&
       STUDIO_CAPABILITIES.projectAttachment &&
       typeof projectRef !== 'undefined',
+    refetchInterval: 10_000,
   })
 
 export function findProjectCapability(

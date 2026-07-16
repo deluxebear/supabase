@@ -13,6 +13,7 @@ import {
   findProjectCapability,
   projectCapabilitiesQueryOptions,
 } from '@/data/projects/project-capabilities-query'
+import { projectManagementBindingQueryOptions } from '@/data/projects/project-management-binding-query'
 import type { SelfPlatformProjectBlock } from '@/data/projects/self-platform-project-update-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { t as $t } from '@/lib/i18n'
@@ -33,6 +34,9 @@ export const SelfPlatformAttachmentStatusPanel = () => {
     project as unknown as { self_platform?: SelfPlatformProjectBlock } | undefined
   )?.self_platform
   const capabilities = useQuery(projectCapabilitiesQueryOptions({ projectRef: project?.ref }))
+  const managementBinding = useQuery(
+    projectManagementBindingQueryOptions({ projectRef: project?.ref })
+  )
 
   if (!project || !selfPlatform) return null
   if (capabilities.isPending) return <GenericSkeletonLoader />
@@ -61,10 +65,27 @@ export const SelfPlatformAttachmentStatusPanel = () => {
     )
   }
 
+  const binding = managementBinding.data?.binding
+  const targetState = binding?.domains.find((domain) => domain.domain === 'fleet-control')?.state
+  const targetConnectivity =
+    targetState === 'available'
+      ? 'online'
+      : targetState === 'incompatible'
+        ? 'incompatible'
+        : targetState === 'revoked'
+          ? 'revoked'
+          : targetState
+            ? 'offline'
+            : status.targetConnectivity
+  const agentConnectivity =
+    binding?.agentSessionState === 'unavailable'
+      ? 'offline'
+      : (binding?.agentSessionState ?? status.agentConnectivity)
   const dimensions = [
     [$t('Attachment'), status.attachmentState],
     [$t('Data plane'), status.dataPlaneHealth],
-    [$t('Management'), status.managementConnectivity],
+    [$t('Management target'), targetConnectivity],
+    [$t('Fleet Agent'), agentConnectivity],
     [$t('Drift'), status.driftState],
     [$t('Operations'), status.operationState],
     [$t('Identity proof'), status.fingerprintProofState],
