@@ -39,7 +39,36 @@ const asRole = (secrets: boolean) =>
     )
 
 const conn = {
-  row: { id: 2 },
+  row: {
+    id: 2,
+    endpoint_document: {
+      public: {
+        apiUrl: 'http://public-b.example:8200',
+        restUrl: 'http://public-b.example:8200/rest/v1/',
+        authUrl: 'http://public-b.example:8200/auth/v1',
+        storageUrl: 'http://public-b.example:8200/storage/v1',
+        realtimeUrl: 'http://public-b.example:8200/realtime/v1',
+        functionsUrl: 'http://public-b.example:8200/functions/v1',
+        s3Url: 'http://public-b.example:8200/storage/v1/s3',
+        directPostgres: {
+          host: 'public-b.example',
+          port: 55433,
+          database: 'projectb',
+          user: 'supabase_admin',
+          tlsMode: 'require',
+        },
+        supavisor: {
+          host: 'public-b.example',
+          transactionPort: 56543,
+          sessionPort: 55432,
+          database: 'projectb',
+          user: 'supabase_admin',
+          tenantId: 'projectb',
+          tlsMode: 'require',
+        },
+      },
+    },
+  },
   ref: 'proj-b',
   organizationId: 1,
   name: 'B',
@@ -62,16 +91,16 @@ const conn = {
 const expectedAdmin = {
   app_config: {
     db_schema: 'public',
-    endpoint: 'kong-b.example:8100',
-    storage_endpoint: 'kong-b.example:8100',
+    endpoint: 'public-b.example:8200',
+    storage_endpoint: 'public-b.example:8200',
     protocol: 'http',
   },
   cloud_provider: 'AWS',
   db_dns_name: '-',
-  db_host: 'db',
+  db_host: 'public-b.example',
   db_ip_addr_config: 'legacy',
   db_name: 'projectb',
-  db_port: 5432,
+  db_port: 55433,
   db_user: 'supabase_admin',
   inserted_at: '2021-08-02T06:40:40.646Z',
   jwt_secret: 'jwt-b',
@@ -82,7 +111,7 @@ const expectedAdmin = {
     { api_key: 'anon-b', name: 'anon key', tags: 'anon' },
     { api_key: 'service-b', name: 'service_role key', tags: 'service_role' },
   ],
-  ssl_enforced: false,
+  ssl_enforced: true,
   status: 'ACTIVE_HEALTHY',
 }
 

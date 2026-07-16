@@ -5,6 +5,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 import { apiWrapper } from '@/lib/api/apiWrapper'
 import { getProjectSettings } from '@/lib/api/self-hosted/settings'
+import { publicProjectEndpointsFromDocument } from '@/lib/api/self-platform/endpoint-registry'
 import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
 import {
   ProjectNotFound,
@@ -53,7 +54,28 @@ const handleGetAll = async (req: NextApiRequest, res: NextApiResponse, claims?: 
     })
     if (!canRead) return res.status(403).json({ message: 'Forbidden' })
 
-    const settings = getProjectSettings(conn)
+    const endpoints = publicProjectEndpointsFromDocument(conn.row?.endpoint_document)
+    if (!endpoints) {
+      return res.status(409).json({
+        code: 'endpoint_registry_unconfigured',
+        message: `Public endpoints are not configured for project ${conn.ref}.`,
+      })
+    }
+    const apiUrl = new URL(endpoints.apiUrl)
+    const settings = {
+      ...getProjectSettings(conn),
+      app_config: {
+        db_schema: 'public',
+        endpoint: apiUrl.host,
+        storage_endpoint: apiUrl.host,
+        protocol: apiUrl.protocol.replace(':', ''),
+      },
+      db_host: endpoints.directPostgres.host,
+      db_port: endpoints.directPostgres.port,
+      db_name: endpoints.directPostgres.database,
+      db_user: endpoints.directPostgres.user,
+      ssl_enforced: endpoints.directPostgres.tlsMode !== 'disable',
+    }
     const canReadSecrets = await checkPermission(claims, {
       action: PermissionAction.SECRETS_READ,
       resource: 'projects',

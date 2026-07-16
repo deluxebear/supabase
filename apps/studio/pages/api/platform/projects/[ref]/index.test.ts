@@ -76,6 +76,34 @@ const resolved = {
     jwt_secret_enc: 'x',
     publishable_key_enc: null,
     secret_key_enc: null,
+    endpoint_document: {
+      contractVersion: 'v1',
+      public: {
+        apiUrl: 'http://192.168.50.149:8200',
+        restUrl: 'http://192.168.50.149:8200/rest/v1/',
+        authUrl: 'http://192.168.50.149:8200/auth/v1',
+        storageUrl: 'http://192.168.50.149:8200/storage/v1',
+        realtimeUrl: 'http://192.168.50.149:8200/realtime/v1',
+        functionsUrl: 'http://192.168.50.149:8200/functions/v1',
+        s3Url: 'http://192.168.50.149:8200/storage/v1/s3',
+        directPostgres: {
+          host: '192.168.50.149',
+          port: 55433,
+          database: 'postgres',
+          user: 'postgres',
+          tlsMode: 'disable',
+        },
+        supavisor: {
+          host: '192.168.50.149',
+          transactionPort: 56543,
+          sessionPort: 55432,
+          database: 'postgres',
+          user: 'postgres',
+          tenantId: 'project-a',
+          tlsMode: 'disable',
+        },
+      },
+    },
   },
 }
 beforeEach(() => {
@@ -99,7 +127,7 @@ describe('GET /platform/projects/[ref] (self-platform)', () => {
     expect(res._getStatusCode()).toBe(200)
     expect(res._getJSONData()).toMatchObject({
       ref: 'proj-b',
-      restUrl: 'http://kong-b:8000/rest/v1/',
+      restUrl: 'http://192.168.50.149:8200/rest/v1/',
     })
     expect(res._getJSONData()).not.toHaveProperty('connectionString')
   })

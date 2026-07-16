@@ -673,6 +673,24 @@ export function buildEncryptedConnectionDocument(
   }
 }
 
+export function buildInternalEndpointDocument(connection: AttachmentConnectionInput) {
+  const apiUrl = connection.kongUrl.replace(/\/$/, '')
+  return {
+    contractVersion: 'v1',
+    internal: {
+      apiUrl,
+      restUrl: connection.restUrl,
+      authUrl: `${apiUrl}/auth/v1`,
+      storageUrl: `${apiUrl}/storage/v1`,
+      realtimeUrl: `${apiUrl}/realtime/v1`,
+      functionsUrl: `${apiUrl}/functions/v1`,
+      s3Url: `${apiUrl}/storage/v1/s3`,
+      postgres: { host: connection.dbHost, port: connection.dbPort },
+    },
+    public: {},
+  }
+}
+
 export function connectionFromProjectRow(row: {
   db_host: string
   db_port: number
@@ -760,18 +778,18 @@ export async function attachVerifiedProject(input: {
           db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc,
           publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc,
           stack_kind, stack_meta, container_name, key_mode, tls_mode, tls_ca_reference,
-          db_pass_readonly_enc
+          db_pass_readonly_enc, endpoint_document
         ) values (
           $1, $2, $3, 'ACTIVE_HEALTHY', 'AWS', 'local',
           $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,
-          'external', '{}'::jsonb, $19, $20, $21, $22, $29
+          'external', '{}'::jsonb, $19, $20, $21, $22, $29, $30::jsonb
         ) returning id
       ), revision as (
         insert into platform.project_connection_revisions (
-          project_ref, revision, state, key_mode, connection_document,
+          project_ref, revision, state, key_mode, connection_document, endpoint_document,
           stack_fingerprint, preflight_report, created_by, correlation_id,
           validated_at, activated_at
-        ) values ($1, 1, 'active', $20, $23::jsonb, $24, $25::jsonb, $26, $27, now(), now())
+        ) values ($1, 1, 'active', $20, $23::jsonb, $30::jsonb, $24, $25::jsonb, $26, $27, now(), now())
         returning revision
       ), binding as (
         insert into platform.stack_bindings (
@@ -828,6 +846,7 @@ export async function attachVerifiedProject(input: {
       input.correlationId,
       JSON.stringify(capabilityRows(capabilities)),
       document.db_pass_readonly_enc,
+      JSON.stringify(buildInternalEndpointDocument(c)),
     ],
   })
   if (result.error) {
@@ -853,13 +872,20 @@ export async function createConnectionCandidate(input: {
     query: `with lock as (
         select pg_advisory_xact_lock(hashtextextended($1 || '/connection', 0))
       ), next_revision as (
-        select coalesce(max(revision), 0) + 1 as revision
+        select coalesce(max(revision), 0) + 1 as revision,
+               (select active.endpoint_document
+                  from platform.project_connection_revisions active
+                 where active.project_ref = $1 and active.state = 'active'
+                 order by active.revision desc limit 1) as endpoint_document
         from platform.project_connection_revisions where project_ref = $1
       )
       insert into platform.project_connection_revisions (
-        project_ref, revision, state, key_mode, connection_document, created_by, correlation_id
+        project_ref, revision, state, key_mode, connection_document, endpoint_document,
+        created_by, correlation_id
       )
-      select $1, next_revision.revision, 'validating', $2, $3::jsonb, $4, $5
+      select $1, next_revision.revision, 'validating', $2, $3::jsonb,
+             coalesce(next_revision.endpoint_document,
+               '{"contractVersion":"v1","internal":{},"public":{}}'::jsonb), $4, $5
       from next_revision cross join lock
       returning id, revision`,
     parameters: [
@@ -923,7 +949,7 @@ export async function activateConnectionCandidate(input: {
             validated_at = now(), activated_at = now()
         where id = (select id from eligible) and project_ref = $2 and state = 'validating'
           and exists (select 1 from previous)
-        returning revision, connection_document, key_mode
+        returning revision, connection_document, endpoint_document, key_mode
       ), project_update as (
         update platform.projects p set
           db_host = candidate.connection_document->>'db_host',
@@ -940,6 +966,7 @@ export async function activateConnectionCandidate(input: {
           jwt_secret_enc = candidate.connection_document->>'jwt_secret_enc',
           publishable_key_enc = candidate.connection_document->>'publishable_key_enc',
           secret_key_enc = candidate.connection_document->>'secret_key_enc',
+          endpoint_document = candidate.endpoint_document,
           key_mode = candidate.key_mode,
           tls_mode = candidate.connection_document->>'tls_mode',
           tls_ca_reference = candidate.connection_document->>'tls_ca_reference',

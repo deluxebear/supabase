@@ -17,6 +17,8 @@ services:
 
   db:
     container_name: ${MANAGED_CONTAINER_PREFIX:?set MANAGED_CONTAINER_PREFIX}-db
+    ports: !override
+      - ${MANAGED_DB_DIRECT_HOST_PORT:-55433}:5432/tcp
     volumes: !override
       - ./volumes/db/realtime.sql:/docker-entrypoint-initdb.d/migrations/99-realtime.sql:Z
       - ./volumes/db/webhooks.sql:/docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql:Z

@@ -14,6 +14,10 @@ import {
   requireProjectCapability,
   StackAlreadyAttached,
 } from '@/lib/api/self-platform/attachment'
+import {
+  publicProjectEndpointsFromDocument,
+  safeLegacyPublicUrl,
+} from '@/lib/api/self-platform/endpoint-registry'
 import { clearHealthCache } from '@/lib/api/self-platform/health'
 import {
   getProjectManagementBinding,
@@ -161,18 +165,24 @@ async function buildSelfPlatformBlock(row: PlatformProjectRow) {
     getProjectAttachmentStatus(row.ref),
     listProjectCapabilities(row.ref),
   ])
+  const endpoints = publicProjectEndpointsFromDocument(row.endpoint_document)
+  const legacyApiUrl =
+    row.endpoint_document === undefined ? safeLegacyPublicUrl(row.kong_url) : null
+  const legacyRestUrl =
+    row.endpoint_document === undefined ? safeLegacyPublicUrl(row.rest_url) : null
   return {
     stack_kind: row.stack_kind,
     host_ref: typeof hostRef === 'string' ? hostRef : null,
-    db_host: row.db_host,
-    db_port: row.db_port,
-    db_name: row.db_name,
-    db_user: row.db_user,
-    db_user_readonly: row.db_user_readonly,
-    kong_url: row.kong_url,
-    rest_url: row.rest_url,
+    db_host: endpoints?.directPostgres.host ?? '',
+    db_port: endpoints?.directPostgres.port ?? 0,
+    db_name: endpoints?.directPostgres.database ?? '',
+    db_user: endpoints?.directPostgres.user ?? '',
+    db_user_readonly: endpoints?.directPostgres.user ?? '',
+    kong_url: endpoints?.apiUrl ?? legacyApiUrl ?? '',
+    rest_url: endpoints?.restUrl ?? legacyRestUrl ?? '',
+    endpoints,
     key_mode: row.key_mode ?? 'legacy-jwt',
-    tls_mode: row.tls_mode ?? 'prefer',
+    tls_mode: endpoints?.directPostgres.tlsMode ?? 'prefer',
     tls_ca_reference: row.tls_ca_reference ?? null,
     logflare_url: row.logflare_url ?? null,
     metrics_url: row.metrics_url ?? null,

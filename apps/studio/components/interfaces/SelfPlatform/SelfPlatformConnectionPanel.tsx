@@ -62,8 +62,8 @@ function buildConnectionEditSchema() {
     dbName: z.string().trim().min(1, $t('Required')),
     dbUser: z.string().trim().min(1, $t('Required')),
     dbUserReadonly: z.string().trim().min(1, $t('Required')),
-    kongUrl: z.string().trim().url($t('Must be a URL (the browser-facing gateway)')),
-    restUrl: z.string().trim().url($t('Must be a URL')),
+    kongUrl: z.union([z.literal(''), z.string().trim().url($t('Must be a URL'))]),
+    restUrl: z.union([z.literal(''), z.string().trim().url($t('Must be a URL'))]),
     dbPass: z.string(),
     dbPassReadonly: z.string(),
     dbPassReadonlyClear: z.boolean(),
@@ -182,13 +182,6 @@ export const SelfPlatformConnectionPanel = () => {
   const buildPayload = (values: FormValues): SelfPlatformProjectUpdateVariables | undefined => {
     const dirty = form.formState.dirtyFields
     const connection: SelfPlatformConnectionPatch = {}
-    if (dirty.dbHost) connection.dbHost = values.dbHost
-    if (dirty.dbPort) connection.dbPort = values.dbPort
-    if (dirty.dbName) connection.dbName = values.dbName
-    if (dirty.dbUser) connection.dbUser = values.dbUser
-    if (dirty.dbUserReadonly) connection.dbUserReadonly = values.dbUserReadonly
-    if (dirty.kongUrl) connection.kongUrl = values.kongUrl
-    if (dirty.restUrl) connection.restUrl = values.restUrl
     if (values.dbPass !== '') connection.dbPass = values.dbPass
     if (values.dbPassReadonlyClear) connection.dbPassReadonly = null
     else if (values.dbPassReadonly !== '') connection.dbPassReadonly = values.dbPassReadonly
@@ -286,6 +279,28 @@ export const SelfPlatformConnectionPanel = () => {
               value={String(field.value ?? '')}
               disabled={!canUpdate || (!isSharedDb && !canUpdateConnection)}
             />
+          </FormControl>
+        </FormItemLayout>
+      )}
+    />
+  )
+
+  const registryField = (
+    name: 'dbHost' | 'dbPort' | 'dbName' | 'dbUser' | 'dbUserReadonly' | 'kongUrl' | 'restUrl',
+    label: string
+  ) => (
+    <FormField
+      control={form.control}
+      name={name}
+      render={({ field }) => (
+        <FormItemLayout
+          name={name}
+          layout="vertical"
+          label={label}
+          description={$t('Managed by the versioned Fleet endpoint registry')}
+        >
+          <FormControl>
+            <Input {...field} value={String(field.value)} disabled />
           </FormControl>
         </FormItemLayout>
       )}
@@ -403,13 +418,13 @@ export const SelfPlatformConnectionPanel = () => {
                     </AlertDescription>
                   </Alert>
                 )}
-                {textField('dbHost', $t('Database host'))}
-                {textField('dbPort', $t('Database port'))}
-                {textField('dbName', $t('Database name'))}
-                {textField('dbUser', $t('Database user'))}
-                {textField('dbUserReadonly', $t('Read-only database user'))}
-                {textField('kongUrl', $t('API gateway URL'))}
-                {textField('restUrl', $t('REST URL'))}
+                {registryField('dbHost', $t('Public database host'))}
+                {registryField('dbPort', $t('Public database port'))}
+                {registryField('dbName', $t('Database name'))}
+                {registryField('dbUser', $t('Database user'))}
+                {registryField('dbUserReadonly', $t('Read-only database user'))}
+                {registryField('kongUrl', $t('Public API gateway URL'))}
+                {registryField('restUrl', $t('Public REST URL'))}
                 <FormField
                   control={form.control}
                   name="keyMode"

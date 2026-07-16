@@ -4,6 +4,10 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 import { apiWrapper } from '@/lib/api/apiWrapper'
 import { POSTGRES_PORT } from '@/lib/api/self-hosted/constants'
+import {
+  publicProjectEndpointsFromDocument,
+  safeLegacyPublicUrl,
+} from '@/lib/api/self-platform/endpoint-registry'
 import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
 import {
   ProjectNotFound,
@@ -123,26 +127,33 @@ const handleGetAll = async (req: NextApiRequest, res: NextApiResponse, claims?: 
       resource: 'projects',
       projectRef: String(req.query.ref),
     })
-    // [self-platform] conn.supabaseUrl is only the project's public-facing
-    // kong URL for a registry hit (conn.row set). For the unregistered
-    // 'default' fallback, resolveProjectConnection's fromGlobalEnv() sets
-    // supabaseUrl = process.env.SUPABASE_URL — the service-INTERNAL url
-    // (e.g. kong:8000), which is non-empty in real deployments and must
-    // NOT be used to derive the public endpoint/protocol. Only derive from
-    // conn.supabaseUrl when there's an actual registry row; otherwise keep
-    // the PROJECT_ENDPOINT / PROJECT_ENDPOINT_PROTOCOL globals (public host).
+    // Registered Fleet projects expose only the versioned public endpoint
+    // projection. Server-side proxying continues to use conn.supabaseUrl.
     let endpoint = PROJECT_ENDPOINT
     let protocol = PROJECT_ENDPOINT_PROTOCOL
+    let restUrl = conn.restUrl || PROJECT_REST_URL
     if (conn.row) {
+      const registered = publicProjectEndpointsFromDocument(conn.row.endpoint_document)
+      const apiUrl = registered?.apiUrl ?? safeLegacyPublicUrl(conn.supabaseUrl)
+      const registeredRestUrl = registered?.restUrl ?? safeLegacyPublicUrl(conn.restUrl)
+      if (!apiUrl || !registeredRestUrl) {
+        return res.status(409).json({
+          code: 'endpoint_registry_unconfigured',
+          message: 'Public project endpoints are not configured.',
+        })
+      }
       try {
-        const u = new URL(conn.supabaseUrl)
+        const u = new URL(apiUrl)
         endpoint = u.host
         protocol = u.protocol.replace(':', '')
+        restUrl = registeredRestUrl
       } catch {
-        // registry row with a somehow-malformed kong_url — keep globals.
+        return res.status(409).json({
+          code: 'endpoint_registry_invalid',
+          message: 'Public project endpoints are invalid.',
+        })
       }
     }
-    const restUrl = conn.restUrl || PROJECT_REST_URL
     const serviceApiKeys = [
       { api_key_encrypted: '-', name: 'service_role key', tags: 'service_role' },
       { api_key_encrypted: '-', name: 'anon key', tags: 'anon' },

@@ -58,6 +58,31 @@ export type SelfPlatformProjectBlock = {
   db_user_readonly: string
   kong_url: string
   rest_url: string
+  endpoints: {
+    apiUrl: string
+    restUrl: string
+    authUrl: string
+    storageUrl: string
+    realtimeUrl: string
+    functionsUrl: string
+    s3Url: string
+    directPostgres: {
+      host: string
+      port: number
+      database: string
+      user: string
+      tlsMode: 'disable' | 'prefer' | 'require' | 'verify-ca' | 'verify-full'
+    }
+    supavisor: {
+      host: string
+      transactionPort: number
+      sessionPort: number
+      database: string
+      user: string
+      tenantId: string
+      tlsMode: 'disable' | 'prefer' | 'require' | 'verify-ca' | 'verify-full'
+    }
+  } | null
   key_mode: 'legacy-jwt' | 'asymmetric-jwks' | 'mixed'
   tls_mode: 'disable' | 'prefer' | 'require' | 'verify-ca' | 'verify-full'
   tls_ca_reference: string | null

@@ -5,6 +5,7 @@
 import type { components } from 'api-types'
 
 import { executePlatformQuery } from './db'
+import { publicProjectEndpointsFromDocument, safeLegacyPublicUrl } from './endpoint-registry'
 
 export interface PlatformProjectRow {
   id: number
@@ -41,6 +42,7 @@ export interface PlatformProjectRow {
   tls_mode?: 'disable' | 'prefer' | 'require' | 'verify-ca' | 'verify-full'
   tls_ca_reference?: string | null
   detached_at?: string | null
+  endpoint_document?: unknown
 }
 
 type ProjectDetailResponse = components['schemas']['ProjectDetailResponse']
@@ -52,8 +54,19 @@ export const PROJECT_SELECT_COLUMNS = `
   publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc,
   metrics_url, metrics_token_enc, stack_kind, stack_meta, container_name,
   k8s_namespace, k8s_pod_selector, key_mode, tls_mode, tls_ca_reference, detached_at,
+  db_pass_readonly_enc, endpoint_document
+`
+
+const PRE_ENDPOINT_SELECT_COLUMNS = `
+  id, ref, organization_id, name, status, cloud_provider, region,
+  db_host, db_port, db_name, db_user, db_user_readonly, kong_url, rest_url,
+  db_pass_enc, service_key_enc, anon_key_enc, jwt_secret_enc,
+  publishable_key_enc, secret_key_enc, logflare_url, logflare_token_enc,
+  metrics_url, metrics_token_enc, stack_kind, stack_meta, container_name,
+  k8s_namespace, k8s_pod_selector, key_mode, tls_mode, tls_ca_reference, detached_at,
   db_pass_readonly_enc
 `
+const MISSING_ENDPOINT_COLUMN = 'column "endpoint_document" does not exist'
 
 const PRE_T6_SELECT_COLUMNS = `
   id, ref, organization_id, name, status, cloud_provider, region,
@@ -125,6 +138,7 @@ const LEGACY_SELECT_COLUMNS = `
 const MISSING_ANALYTICS_COLUMN = 'column "logflare_url" does not exist'
 
 let warnedMissingK8sColumns = false
+let warnedMissingEndpointColumn = false
 let warnedMissingT6Columns = false
 let warnedMissingContainerColumn = false
 let warnedMissingMetricsColumns = false
@@ -160,6 +174,15 @@ async function queryProjectRows(
   // fails that with MISSING_ANALYTICS_COLUMN and falls through to
   // LEGACY_SELECT_COLUMNS. Every vintage lands on the right tier.
   let result = await attempt(PROJECT_SELECT_COLUMNS)
+  if (result.error?.message.includes(MISSING_ENDPOINT_COLUMN)) {
+    if (!warnedMissingEndpointColumn) {
+      warnedMissingEndpointColumn = true
+      console.warn(
+        '[self-platform] platform.projects has no endpoint registry — public endpoints stay unconfigured until migration 20 is applied.'
+      )
+    }
+    result = await attempt(PRE_ENDPOINT_SELECT_COLUMNS)
+  }
   if (result.error?.message.includes(MISSING_T6_COLUMN)) {
     if (!warnedMissingT6Columns) {
       warnedMissingT6Columns = true
@@ -335,9 +358,13 @@ export async function countProjectsByOrgIdAndIds(orgId: number, ids: number[]): 
 export function toProjectDetailResponse(
   row: PlatformProjectRow
 ): Omit<ProjectDetailResponse, 'connectionString'> {
+  const endpoints = publicProjectEndpointsFromDocument(row.endpoint_document)
+  const publicRestUrl =
+    endpoints?.restUrl ??
+    (row.endpoint_document === undefined ? safeLegacyPublicUrl(row.rest_url) : null)
   return {
     cloud_provider: row.cloud_provider,
-    db_host: row.db_host,
+    db_host: endpoints?.directPostgres.host ?? '',
     high_availability: false,
     id: row.id,
     inserted_at: '2021-08-02T06:40:40.646Z',
@@ -348,7 +375,7 @@ export function toProjectDetailResponse(
     organization_id: row.organization_id,
     ref: row.ref,
     region: row.region,
-    restUrl: row.rest_url,
+    restUrl: publicRestUrl ?? '',
     status: row.status as ProjectDetailResponse['status'],
     subscription_id: '',
     updated_at: '2021-08-02T06:40:40.646Z',
