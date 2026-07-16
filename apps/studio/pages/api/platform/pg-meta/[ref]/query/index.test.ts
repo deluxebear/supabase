@@ -71,6 +71,8 @@ describe('POST /platform/pg-meta/[ref]/query (self-platform)', () => {
   it('executes against the resolved project connection when the project is registered', async () => {
     vi.mocked(resolveProjectIdentity).mockResolvedValue({ ref: 'proj-b' } as never)
     vi.mocked(resolveProjectConnection).mockResolvedValue({
+      supabaseUrl: 'http://project-b.example',
+      serviceKey: 'PROJECT_SERVICE_KEY',
       pgConnEncrypted: 'ENC-B',
       pgConnReadOnlyEncrypted: 'ENC-B-RO',
     } as any)
@@ -87,7 +89,8 @@ describe('POST /platform/pg-meta/[ref]/query (self-platform)', () => {
     await handler(req as any, res as any)
 
     expect(res._getStatusCode()).toBe(200)
-    const init = (globalThis.fetch as any).mock.calls[0][1]
+    const [url, init] = (globalThis.fetch as any).mock.calls[0]
+    expect(url).toBe('http://project-b.example/pg/query')
     expect(new Headers(init.headers).get('x-connection-encrypted')).toBe('ENC-B')
 
     vi.unstubAllGlobals()

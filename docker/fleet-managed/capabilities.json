@@ -1,0 +1,16 @@
+[
+  {
+    "domain": "fleet.runtime",
+    "name": "runtime.config.reconcile",
+    "contractVersion": "v1",
+    "inputSchema": "supabase.fleet.runtime.config.reconcile.v1",
+    "evidenceSchema": "supabase.fleet.runtime.config.evidence.v1"
+  },
+  {
+    "domain": "fleet.functions",
+    "name": "functions.deploy",
+    "contractVersion": "v1",
+    "inputSchema": "supabase.fleet.functions.deploy.v1",
+    "evidenceSchema": "supabase.fleet.functions.deploy.evidence.v1"
+  }
+]

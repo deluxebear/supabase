@@ -10,15 +10,15 @@ import {
   computeScrapeAttributes,
   containerSelector,
   k8sSelector,
-  METRICS_RETENTION_DAYS,
   METRICS_DEFAULT_CONCURRENCY,
   METRICS_MAX_CONCURRENCY,
+  METRICS_RETENTION_DAYS,
   metricsBackoffMs,
   metricsConcurrency,
   parsePrometheusText,
   resetMetricsSamplerForTest,
-  runSamplerCycle,
   runBounded,
+  runSamplerCycle,
   sampleProject,
   startMetricsSampler,
   SWEEP_MIN_INTERVAL_MS,
@@ -39,7 +39,10 @@ vi.mock('@/lib/api/apiHelpers', () => ({
 
 const CONN = {
   ref: 'proj-x',
+  supabaseUrl: 'http://stack.example:8000',
+  serviceKey: 'service-key-x',
   pgConnEncrypted: 'enc-dsn',
+  pgConnReadOnlyEncrypted: 'enc-ro-dsn',
   metricsUrl: 'http://stack:9598/metrics',
   metricsToken: null,
 } as unknown as Awaited<ReturnType<typeof resolveProjectConnection>>
@@ -667,13 +670,17 @@ describe('bounded sampler scheduling', () => {
     let active = 0
     let peak = 0
     const completed: number[] = []
-    await runBounded(Array.from({ length: 100 }, (_, index) => index), 8, async (index) => {
-      active++
-      peak = Math.max(peak, active)
-      await Promise.resolve()
-      completed.push(index)
-      active--
-    })
+    await runBounded(
+      Array.from({ length: 100 }, (_, index) => index),
+      8,
+      async (index) => {
+        active++
+        peak = Math.max(peak, active)
+        await Promise.resolve()
+        completed.push(index)
+        active--
+      }
+    )
     expect(peak).toBe(8)
     expect(completed).toHaveLength(100)
   })

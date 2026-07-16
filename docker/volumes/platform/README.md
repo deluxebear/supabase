@@ -125,6 +125,11 @@ Notes on two easy-to-miss entries:
   `docs/self-hosted-parity/2026-07-02-M1-spike-findings.md` and
   `.superpowers/sdd/task-11-report.md`'s "Interstitial Fix Report".)
 
+> **Fleet control-plane note:** the production Fleet Compose does not use this legacy
+> `PLATFORM_PG_META_URL` path. Fleet Studio opens a server-side PostgreSQL pool directly to
+> `platform-db`, while project database requests are sent to each registered project's own
+> `${kong_url}/pg` endpoint. The Fleet control plane therefore has no `meta` container.
+
 To switch back to plain self-hosted mode for regression testing, swap in a self-hosted-profile
 backup of `.env.local` (e.g. `apps/studio/.env.local.selfhosted.bak`) and restart the dev
 server — no code changes needed either direction, only the env profile.
@@ -1747,8 +1752,9 @@ compose file:
   (`disk_io_exhaustion`, the auth email/rate-limit keys, `need_pitr`) stays `null` — there is no
   usage/quota system to derive them from, and M6.3 doesn't invent one.
 - Rows with no `metrics_url` registered still chart connection counts, database size, and WAL
-  size — that slice comes from the platform-db's own SQL layer (`pg-meta`), which needs no
-  stack-side deployment at all. Only the host-level series (CPU, memory, disk-IO, network) stay
+  size — that slice comes from each registered project's own SQL layer (`${kong_url}/pg`), so
+  the Fleet control plane needs no shared pg-meta deployment. Only the host-level series (CPU,
+  memory, disk-IO, network) stay
   empty for such a row. Requesting an attribute the sampler doesn't know about returns an
   honestly-empty zeroed series, not a 404 — there is deliberately no 404 wall here, unlike the
   per-project analytics endpoints in the M6.2 section above.

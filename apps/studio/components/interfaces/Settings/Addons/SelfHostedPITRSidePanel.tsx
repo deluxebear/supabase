@@ -6,7 +6,7 @@ import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { AlertError } from '@/components/ui/AlertError'
 import { backupOperatorStatusQueryOptions } from '@/data/database/backup-operator-status-query'
-import type { BackupOperatorStatus } from '@/lib/api/self-platform/backup-operator-status'
+import type { BackupOperatorStatus } from '@/lib/api/self-platform/backup-operator-status.shared'
 import { t as $t } from '@/lib/i18n'
 import { useAddonsPagePanel } from '@/state/addons-page'
 

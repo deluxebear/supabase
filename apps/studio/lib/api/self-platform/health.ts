@@ -4,9 +4,9 @@
 // probed from the Studio server using the registry's connection material.
 // Spec: docs/self-hosted-parity/2026-07-05-M6.0-health-probing-design.md
 import { executePlatformQuery } from './db'
+import { constructProjectPgMetaRequest } from './pg-meta'
 import { resolveProjectConnection } from './resolve-connection'
-import { constructHeaders } from '@/lib/api/apiHelpers'
-import { PG_META_URL } from '@/lib/constants'
+import type { ResolvedConnection } from './resolve-connection'
 
 export type ProbeService = 'db' | 'auth' | 'rest' | 'storage' | 'realtime' | 'edge_function'
 export type ProbeStatus = 'ACTIVE_HEALTHY' | 'UNHEALTHY' | 'DISABLED'
@@ -150,14 +150,12 @@ async function probeHttp(
   }
 }
 
-async function probeDb(pgConnEncrypted: string): Promise<ServiceProbeResult> {
+async function probeDb(connection: ResolvedConnection): Promise<ServiceProbeResult> {
   try {
-    const response = await fetch(`${PG_META_URL}/query`, {
+    const target = constructProjectPgMetaRequest(connection)
+    const response = await fetch(`${target.baseUrl}/query`, {
       method: 'POST',
-      headers: constructHeaders({
-        'Content-Type': 'application/json',
-        'x-connection-encrypted': pgConnEncrypted,
-      }),
+      headers: target.headers,
       body: JSON.stringify({ query: 'select 1' }),
       signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
     })
@@ -192,7 +190,7 @@ export async function probeStackHealth(
   const base = conn.supabaseUrl.replace(/\/$/, '')
   const httpServices = ['auth', 'rest', 'storage', 'realtime', 'edge_function'] as const
   const results = await Promise.all([
-    probeDb(conn.pgConnEncrypted),
+    probeDb(conn),
     ...httpServices.map((name) =>
       probeHttp(
         name,

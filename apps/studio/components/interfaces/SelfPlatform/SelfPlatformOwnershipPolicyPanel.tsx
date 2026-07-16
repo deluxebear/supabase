@@ -26,7 +26,7 @@ import {
 import { projectOwnershipPoliciesQueryOptions } from '@/data/projects/project-ownership-policies-query'
 import { useProjectOwnershipPolicyMutation } from '@/data/projects/project-ownership-policy-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import type { OwnershipPolicy } from '@/lib/api/self-platform/ownership-policy'
+import type { OwnershipPolicy } from '@/lib/api/self-platform/ownership-policy.shared'
 import { t as $t } from '@/lib/i18n'
 
 const CONFIGURATION_DOMAINS = ['auth', 'storage', 'realtime', 'postgrest', 'functions'] as const

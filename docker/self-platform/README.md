@@ -24,6 +24,15 @@ docker compose --env-file control-plane.env \
   -f docker-compose.control-plane.yml up -d
 ```
 
+`FLEET_PUBLIC_URL` is the control plane's canonical browser origin. Open Studio
+with that exact scheme, host, and port. For example, when it is
+`http://192.168.1.100:8001`, do not open `http://127.0.0.1:8001` or
+`http://localhost:8001` instead. Studio's browser API and login URLs use the
+canonical origin; an alternate origin turns authenticated requests into
+cross-origin requests and browsers correctly reject wildcard CORS responses
+that carry credentials. The bootstrap script prints the canonical URL after it
+has verified the administrator login flow.
+
 Its stores and authorities are:
 
 | State | Authority | Durable volume |
@@ -39,14 +48,15 @@ those remain in the independent Backup Operator store. The T4 binary advertises
 runtime capabilities as unsupported until a concrete provider is registered,
 so starting the service cannot silently enable Fleet mutations.
 
-The `managed` network is the only connection between the projects. It permits
-Studio/pg-meta to reach registered data-plane services, but no managed service
+The `management` network is the only connection between the projects. It permits
+Studio to reach each registered stack's gateway and project-owned pg-meta, but no managed service
 mounts or owns a control volume. Use different database credentials, storage,
 backup repositories, encryption keys, and restore procedures for all control
 stores. Merely changing a database name inside `supabase-db` is not isolation.
-`control-plane.env.example` targets this directory's `supabase-plt_default`
-network for the acceptance drill; set `MANAGED_NETWORK_NAME` to the actual
-external network of a separately deployed production stack.
+Fleet Studio accesses `platform-db` directly and routes project SQL/metadata to
+the registered stack's `${kong_url}/pg` endpoint; the production control plane
+does not run its own pg-meta container. `PG_META_CRYPTO_KEY` remains a management
+trust value and must match pg-meta's `CRYPTO_KEY` on enrolled targets.
 
 For a destructive acceptance drill, copy and populate `control-plane.env`,
 start both projects, bootstrap an administrator/registry record, and run:

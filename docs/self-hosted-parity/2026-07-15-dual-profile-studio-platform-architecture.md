@@ -703,6 +703,11 @@ migration_required
 ### 12.1 Database
 
 Direct project-scoped pg-meta remains the primary path for SQL and metadata.
+Fleet Studio derives `${kong_url}/pg` from the authorized project binding and
+uses that stack's own pg-meta service; the production control plane does not
+run a cross-project pg-meta container. Platform identity, RBAC, registry, and
+outbox SQL use a bounded server-side PostgreSQL pool directly against
+`platform-db`.
 
 Required changes:
 
@@ -1186,7 +1191,7 @@ Planned test locations:
 - `apps/studio/tests/components/interfaces/` for unsupported, stale, offline, unauthorized, drift, and manual-intervention UI;
 - `apps/backup-operator/internal/...` for unchanged backup protocol/recovery behavior and shared-transport extraction regressions;
 - planned Fleet Control Go packages for provider contracts, enrollment, outbox consumption, evidence validation, and backpressure;
-- `e2e/studio/` for Embedded zero-break, two-project Fleet isolation, attach/detach, reconciliation, and Edge Function flows;
+- a dedicated Docker Compose target fixture for Embedded zero-break, two-project Fleet isolation, attach/detach, reconciliation, and Edge Function flows;
 - isolated disposable Compose/Kubernetes harnesses for restore and runtime mutation.
 
 ### 18.6 Production failure-mode acceptance matrix
@@ -1519,22 +1524,22 @@ Run profile-specific Compose/E2E checks proportional to the risk.
 
 ## 24. Architecture decision log
 
-| ADR     | Decision                                                       | Status   |
-| ------- | -------------------------------------------------------------- | -------- |
-| ADR-001 | One source branch, two build profiles                          | accepted |
-| ADR-002 | Direct data plane plus Operator/Agent execution plane          | accepted |
-| ADR-003 | Typed capability model instead of product-mode inference       | accepted |
-| ADR-004 | Desired/observed reconciliation; no successful no-ops          | accepted |
-| ADR-005 | Project-scoped Edge Function artifact management in Fleet      | accepted |
-| ADR-006 | Independent Backup Operator control store for destructive work | accepted |
-| ADR-007 | Typed operations and no arbitrary shell                        | accepted |
-| ADR-008 | Upstream-safe regenerable i18n codemod                         | accepted |
-| ADR-009 | Separate Fleet Control and Backup Operator bounded contexts    | accepted |
-| ADR-010 | One authoritative store per mutable domain                     | accepted |
-| ADR-011 | Production control state outside every managed recovery domain | accepted |
-| ADR-012 | Server-side Fleet database credential boundary                 | accepted |
-| ADR-013 | Ownership-aware direct, observe-only, and GitOps modes         | accepted |
-| ADR-014 | Non-destructive detach as the default removal operation        | accepted |
+| ADR     | Decision                                                                                                                                             | Status   |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| ADR-001 | One source branch, two build profiles                                                                                                                | accepted |
+| ADR-002 | Direct data plane plus Operator/Agent execution plane                                                                                                | accepted |
+| ADR-003 | Typed capability model instead of product-mode inference                                                                                             | accepted |
+| ADR-004 | Desired/observed reconciliation; no successful no-ops                                                                                                | accepted |
+| ADR-005 | Project-scoped Edge Function artifact management in Fleet                                                                                            | accepted |
+| ADR-006 | Independent Backup Operator control store for destructive work                                                                                       | accepted |
+| ADR-007 | Typed operations and no arbitrary shell                                                                                                              | accepted |
+| ADR-008 | Upstream-safe regenerable i18n codemod                                                                                                               | accepted |
+| ADR-009 | Separate Fleet Control and Backup Operator bounded contexts                                                                                          | accepted |
+| ADR-010 | One authoritative store per mutable domain                                                                                                           | accepted |
+| ADR-011 | Production control state outside every managed recovery domain                                                                                       | accepted |
+| ADR-012 | Server-side Fleet database credential boundary                                                                                                       | accepted |
+| ADR-013 | Ownership-aware direct, observe-only, and GitOps modes                                                                                               | accepted |
+| ADR-014 | Non-destructive detach as the default removal operation                                                                                              | accepted |
 | ADR-015 | Capacity is topology-aware; one active execution Agent per binding remains authoritative while reconnect capacity is measured in concurrent sessions | accepted |
 
 Future reversals add a new ADR row and link the superseded decision.

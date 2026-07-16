@@ -20,12 +20,12 @@ import {
   type ProjectTlsMode,
 } from './attachment'
 import { executePlatformQuery } from './db'
+import { getProjectPgMetaBaseUrl } from './pg-meta'
 import { getProjectByRef } from './projects'
 import { encryptSecret } from './secrets'
 import { constructHeaders } from '@/lib/api/apiHelpers'
 import { executeQuery } from '@/lib/api/self-hosted/query'
 import { encryptString } from '@/lib/api/self-hosted/util'
-import { PG_META_URL } from '@/lib/constants'
 
 export const REF_PATTERN = /^[a-z][a-z0-9-]{2,29}$/
 export const RESERVED_REFS = new Set(['default'])
@@ -134,16 +134,24 @@ export function parseExternalConnectionInput(
 // executeQuery (registry-bound via projectRef) cannot do this. No new
 // database driver dependency.
 export async function probeConnection(
-  c: Pick<ExternalConnectionInput, 'dbHost' | 'dbPort' | 'dbName' | 'dbUser' | 'dbPass'>
+  c: Pick<
+    ExternalConnectionInput,
+    'dbHost' | 'dbPort' | 'dbName' | 'dbUser' | 'dbPass' | 'kongUrl' | 'serviceKey' | 'secretKey'
+  >
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const dsn = `postgresql://${c.dbUser}:${c.dbPass}@${c.dbHost}:${c.dbPort}/${c.dbName}`
+  const serviceKey = c.serviceKey || c.secretKey || ''
   try {
-    const response = await fetch(`${PG_META_URL}/query`, {
+    const response = await fetch(`${getProjectPgMetaBaseUrl(c.kongUrl)}/query`, {
       method: 'POST',
-      headers: constructHeaders({
-        'Content-Type': 'application/json',
-        'x-connection-encrypted': encryptString(dsn),
-      }),
+      headers: {
+        ...constructHeaders({
+          'Content-Type': 'application/json',
+          'x-connection-encrypted': encryptString(dsn),
+        }),
+        Authorization: `Bearer ${serviceKey}`,
+        apiKey: serviceKey,
+      },
       body: JSON.stringify({ query: 'select 1' }),
       signal: AbortSignal.timeout(10_000),
     })

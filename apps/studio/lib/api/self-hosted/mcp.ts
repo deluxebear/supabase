@@ -101,8 +101,8 @@ export function getDevelopmentOperations({
       ]
       return publishableKeysArray
     },
-    async generateTypescriptTypes(_projectRef) {
-      const response = await generateTypescriptTypes({ headers })
+    async generateTypescriptTypes(projectRef) {
+      const response = await generateTypescriptTypes({ headers, projectRef })
 
       if (response instanceof ResponseError) {
         throw response

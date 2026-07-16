@@ -29,6 +29,7 @@ const CONN = {
   anonKey: 'anon-key-x',
   serviceKey: 'service-key-x',
   pgConnEncrypted: 'enc-dsn',
+  pgConnReadOnlyEncrypted: 'enc-ro-dsn',
 } as never
 
 const okResponse = (body: unknown = []) => ({
@@ -67,7 +68,9 @@ describe('probeStackHealth mapping', () => {
     // admin-only, see SERVICE_HEALTH_PATHS), every other probe stays anon
     const calls = vi
       .mocked(fetch)
-      .mock.calls.filter(([u]) => String(u).startsWith(CONN_SUPABASE_URL))
+      .mock.calls.filter(
+        ([u]) => String(u).startsWith(CONN_SUPABASE_URL) && !String(u).includes('/pg/query')
+      )
     expect(calls).toHaveLength(5)
     for (const [url, init] of calls) {
       const key = String(url).includes('/rest/') ? 'service-key-x' : 'anon-key-x'
@@ -175,7 +178,9 @@ describe('probeStackHealth mapping', () => {
   it('db probe goes through the encrypted-DSN pg-meta channel', async () => {
     await probeStackHealth('proj-x')
     const dbCall = vi.mocked(fetch).mock.calls.find(([u]) => String(u).endsWith('/query'))!
+    expect(dbCall[0]).toBe(`${CONN_SUPABASE_URL}/pg/query`)
     expect((dbCall[1] as RequestInit).headers).toMatchObject({
+      apiKey: 'service-key-x',
       'x-connection-encrypted': 'enc-dsn',
     })
     expect((dbCall[1] as RequestInit).body).toBe(JSON.stringify({ query: 'select 1' }))

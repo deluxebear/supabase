@@ -8,7 +8,7 @@ import {
   ownershipModeSchema,
   ownershipPolicySchema,
   type OwnershipPolicy,
-} from '@/lib/api/self-platform/ownership-policy'
+} from '@/lib/api/self-platform/ownership-policy.shared'
 import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 

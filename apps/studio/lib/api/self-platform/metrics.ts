@@ -4,9 +4,9 @@
 // FINAL gauge/rate values, and writes them to platform.metrics_samples.
 // Routes are pure bucket-aggregations over that table — no math downstream.
 import { executePlatformQuery } from './db'
+import { constructProjectPgMetaRequest } from './pg-meta'
 import { resolveProjectConnection } from './resolve-connection'
-import { constructHeaders } from '@/lib/api/apiHelpers'
-import { PG_META_URL } from '@/lib/constants'
+import type { ResolvedConnection } from './resolve-connection'
 
 export const METRICS_SAMPLE_INTERVAL_MS = 60_000
 export const METRICS_RETENTION_DAYS = 7
@@ -514,15 +514,13 @@ select
 const L1_WAL_SQL = `select coalesce(sum(size), 0)::float8 as disk_fs_used_wal from pg_ls_waldir()`
 
 async function executeProjectQuery(
-  pgConnEncrypted: string,
+  connection: ResolvedConnection,
   query: string
 ): Promise<Record<string, unknown>> {
-  const response = await fetch(`${PG_META_URL}/query`, {
+  const target = constructProjectPgMetaRequest(connection)
+  const response = await fetch(`${target.baseUrl}/query`, {
     method: 'POST',
-    headers: constructHeaders({
-      'Content-Type': 'application/json',
-      'x-connection-encrypted': pgConnEncrypted,
-    }),
+    headers: target.headers,
     body: JSON.stringify({ query }),
     signal: AbortSignal.timeout(METRICS_L1_TIMEOUT_MS),
   })
@@ -549,12 +547,12 @@ export async function sampleProject(ref: string): Promise<boolean> {
   // L1 — statement-isolated: a failing statement (e.g. pg_ls_waldir privilege
   // on a locked-down external stack) drops only its own attributes.
   try {
-    collect(await executeProjectQuery(conn.pgConnEncrypted, L1_MAIN_SQL))
+    collect(await executeProjectQuery(conn, L1_MAIN_SQL))
   } catch (err) {
     warn(ref, 'L1 connections/size', err)
   }
   try {
-    collect(await executeProjectQuery(conn.pgConnEncrypted, L1_WAL_SQL))
+    collect(await executeProjectQuery(conn, L1_WAL_SQL))
   } catch (err) {
     warn(ref, 'L1 wal', err)
   }
@@ -673,7 +671,9 @@ export async function runSamplerCycle(): Promise<void> {
       return
     }
     const now = Date.now()
-    const due = (data ?? []).filter((row) => (projectBackoff.get(row.ref)?.nextAttemptAt ?? 0) <= now)
+    const due = (data ?? []).filter(
+      (row) => (projectBackoff.get(row.ref)?.nextAttemptAt ?? 0) <= now
+    )
     await runBounded(due, metricsConcurrency(), async (row) => {
       try {
         const succeeded = await sampleProject(row.ref)

@@ -4,8 +4,8 @@ import { z } from 'zod'
 import { constructHeaders } from '@/lib/api/apiHelpers'
 import { encryptString } from '@/lib/api/self-hosted/util'
 import { executePlatformQuery } from '@/lib/api/self-platform/db'
+import { getProjectPgMetaBaseUrl } from '@/lib/api/self-platform/pg-meta'
 import { decryptSecret, encryptSecret } from '@/lib/api/self-platform/secrets'
-import { PG_META_URL } from '@/lib/constants'
 
 export const KEY_MODES = ['legacy-jwt', 'asymmetric-jwks', 'mixed'] as const
 export const TLS_MODES = ['disable', 'prefer', 'require', 'verify-ca', 'verify-full'] as const
@@ -163,12 +163,17 @@ async function queryCandidate<T>(
   connection: AttachmentConnectionInput,
   query: string
 ): Promise<T[]> {
-  const response = await fetch(`${PG_META_URL}/query`, {
+  const serviceKey = connection.serviceKey || connection.secretKey || ''
+  const response = await fetch(`${getProjectPgMetaBaseUrl(connection.kongUrl)}/query`, {
     method: 'POST',
-    headers: constructHeaders({
-      'Content-Type': 'application/json',
-      'x-connection-encrypted': encryptString(buildCandidateConnectionString(connection)),
-    }),
+    headers: {
+      ...constructHeaders({
+        'Content-Type': 'application/json',
+        'x-connection-encrypted': encryptString(buildCandidateConnectionString(connection)),
+      }),
+      Authorization: `Bearer ${serviceKey}`,
+      apiKey: serviceKey,
+    },
     body: JSON.stringify({ query }),
     signal: AbortSignal.timeout(10_000),
   })

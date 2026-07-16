@@ -1,5 +1,5 @@
 // [self-platform] Server-side env for the platform control-plane stack.
-// Hosts are as seen FROM the pg-meta container (docker network DNS).
+// Hosts are resolved directly from the Studio server process.
 export const PLATFORM_POSTGRES_HOST = process.env.PLATFORM_POSTGRES_HOST || 'platform-db'
 export const PLATFORM_POSTGRES_PORT = parseInt(process.env.PLATFORM_POSTGRES_PORT || '5432', 10)
 export const PLATFORM_POSTGRES_DB = process.env.PLATFORM_POSTGRES_DB || 'platform'

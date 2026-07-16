@@ -5,7 +5,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { fetchGet } from '@/data/fetchers'
 import { constructHeaders } from '@/lib/api/apiHelpers'
 import apiWrapper from '@/lib/api/apiWrapper'
-import { constructFleetPgMetaHeaders } from '@/lib/api/self-platform/pg-meta'
+import { resolveFleetPgMetaRequest } from '@/lib/api/self-platform/pg-meta'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { PG_META_URL } from '@/lib/constants'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
@@ -31,7 +31,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
  * @param req
  * @param endpoint
  */
-export function getPgMetaRedirectUrl(req: NextApiRequest, endpoint: string) {
+export function getPgMetaRedirectUrl(req: NextApiRequest, endpoint: string, baseUrl = PG_META_URL) {
   const query = Object.entries(req.query).reduce((query, entry) => {
     const [key, value] = entry
     if (Array.isArray(value)) {
@@ -44,7 +44,7 @@ export function getPgMetaRedirectUrl(req: NextApiRequest, endpoint: string) {
     return query
   }, new URLSearchParams())
 
-  let url = `${PG_META_URL}/${endpoint}`
+  let url = `${baseUrl}/${endpoint}`
   if (Object.keys(req.query).length > 0) {
     url += `?${query}`
   }
@@ -60,10 +60,12 @@ const handleGetAll = async (req: NextApiRequest, res: NextApiResponse, claims?: 
     if (!ok) return
   }
 
-  const headers = IS_SELF_PLATFORM
-    ? await constructFleetPgMetaHeaders(String(req.query.ref), req.headers)
-    : constructHeaders(req.headers)
-  const response = await fetchGet(getPgMetaRedirectUrl(req, 'tables'), { headers })
+  const target = IS_SELF_PLATFORM
+    ? await resolveFleetPgMetaRequest(String(req.query.ref), req.headers)
+    : { baseUrl: PG_META_URL, headers: constructHeaders(req.headers) }
+  const response = await fetchGet(getPgMetaRedirectUrl(req, 'tables', target.baseUrl), {
+    headers: target.headers,
+  })
 
   if (response.error) {
     const { code, message } = response.error

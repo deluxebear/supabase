@@ -13,9 +13,13 @@ vi.mock('@/lib/api/apiHelpers', () => ({
   constructHeaders: vi.fn((h: Record<string, string>) => h),
 }))
 
-const CONN = { ref: 'proj-x', pgConnEncrypted: 'enc-dsn' } as unknown as Awaited<
-  ReturnType<typeof resolveProjectConnection>
->
+const CONN = {
+  ref: 'proj-x',
+  supabaseUrl: 'http://stack.example:8000',
+  serviceKey: 'service-key-x',
+  pgConnEncrypted: 'enc-dsn',
+  pgConnReadOnlyEncrypted: 'enc-ro-dsn',
+} as unknown as Awaited<ReturnType<typeof resolveProjectConnection>>
 
 const POPULATED = readFileSync(
   join(__dirname, '__fixtures__', 'pgbackrest-info-populated.json'),
@@ -91,7 +95,11 @@ describe('getProjectBackups', () => {
     const res = await getProjectBackups('proj-x')
     expect(res.backups.length).toBeGreaterThan(0)
     const call = vi.mocked(fetch).mock.calls.find(([u]) => String(u).endsWith('/query'))!
-    expect((call[1] as RequestInit).headers).toMatchObject({ 'x-connection-encrypted': 'enc-dsn' })
+    expect(call[0]).toBe('http://stack.example:8000/pg/query')
+    expect((call[1] as RequestInit).headers).toMatchObject({
+      apiKey: 'service-key-x',
+      'x-connection-encrypted': 'enc-dsn',
+    })
   })
 
   it('status table absent (pg-meta error) → honest-empty, no throw', async () => {

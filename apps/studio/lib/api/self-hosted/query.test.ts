@@ -8,9 +8,12 @@ vi.hoisted(() => {
   process.env.NEXT_PUBLIC_SELF_PLATFORM = 'true'
 })
 vi.mock('@/lib/api/self-platform/resolve-connection', () => ({
-  resolveProjectConnection: vi
-    .fn()
-    .mockResolvedValue({ pgConnEncrypted: 'ENC-B', pgConnReadOnlyEncrypted: 'ENC-B-RO' }),
+  resolveProjectConnection: vi.fn().mockResolvedValue({
+    supabaseUrl: 'http://project-b.example',
+    serviceKey: 'PROJECT_SERVICE_KEY',
+    pgConnEncrypted: 'ENC-B',
+    pgConnReadOnlyEncrypted: 'ENC-B-RO',
+  }),
 }))
 vi.mock('./util', () => ({
   assertSelfHosted: vi.fn(),
@@ -36,8 +39,10 @@ describe('executeQuery projectRef', () => {
     vi.clearAllMocks()
 
     await executeQuery({ query: 'select 1', projectRef: 'proj-b' })
-    const init = (globalThis.fetch as any).mock.calls[0][1]
+    const [url, init] = (globalThis.fetch as any).mock.calls[0]
+    expect(url).toBe('http://project-b.example/pg/query')
     expect(new Headers(init.headers).get('x-connection-encrypted')).toBe('ENC-B')
+    expect(new Headers(init.headers).get('apikey')).toBe('PROJECT_SERVICE_KEY')
   })
   it('uses read-only DSN when readOnly + projectRef', async () => {
     vi.clearAllMocks()

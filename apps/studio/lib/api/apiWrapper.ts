@@ -5,7 +5,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { IS_PLATFORM } from '../constants'
 import { IS_SELF_PLATFORM } from '../constants/self-platform'
 import { apiAuthenticate } from './apiAuthenticate'
-import { ProjectNotFound } from './self-platform/resolve-connection'
+import { ProjectNotFound } from './self-platform/errors'
 import { ResponseError, ResponseFailure } from '@/types'
 
 export function isResponseOk<T>(response: T | ResponseFailure | undefined): response is T {

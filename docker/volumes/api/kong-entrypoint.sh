@@ -46,4 +46,13 @@ awk '{
 # Remove empty key-auth credentials (unconfigured opaque keys)
 sed -i '/^[[:space:]]*- key:[[:space:]]*$/d' "$KONG_DECLARATIVE_CONFIG"
 
+# The Fleet control plane has no pg-meta service. Its projects expose their own
+# /pg route, so omit the otherwise shared route instead of leaving a dangling
+# upstream in the control-plane gateway.
+if [ "$KONG_DISABLE_META_ROUTE" = "true" ]; then
+  sed -i '/^  - name: meta$/,/^  - name: mcp-blocker$/ {
+    /^  - name: mcp-blocker$/!d
+  }' "$KONG_DECLARATIVE_CONFIG"
+fi
+
 exec /entrypoint.sh kong docker-start

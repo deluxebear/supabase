@@ -4,6 +4,7 @@ import { constructHeaders } from '../apiHelpers'
 import { databaseErrorSchema, PgMetaDatabaseError, WrappedResult } from './types'
 import { assertSelfHosted, encryptString, getConnectionString } from './util'
 // [self-platform] Per-project DSN resolution for the SQL editor's query path.
+import { constructProjectPgMetaRequest } from '@/lib/api/self-platform/pg-meta'
 import { resolveProjectConnection } from '@/lib/api/self-platform/resolve-connection'
 import { PG_META_URL } from '@/lib/constants/index'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
@@ -35,12 +36,19 @@ export async function executeQuery<T = unknown>({
   // [self-platform] Self-platform + a projectRef routes at the resolved
   // project's DSN; otherwise fall back to the M1 global-env connection
   // (plain self-hosted / no-ref path stays byte-identical).
-  let connectionStringEncrypted: string
+  let pgMetaUrl = PG_META_URL
+  let requestHeaders: HeadersInit
   if (IS_SELF_PLATFORM && projectRef) {
     const conn = await resolveProjectConnection(projectRef)
-    connectionStringEncrypted = readOnly ? conn.pgConnReadOnlyEncrypted : conn.pgConnEncrypted
+    const target = constructProjectPgMetaRequest(conn, headers, { readOnly })
+    pgMetaUrl = target.baseUrl
+    requestHeaders = target.headers
   } else {
-    connectionStringEncrypted = encryptString(getConnectionString({ readOnly }))
+    requestHeaders = constructHeaders({
+      ...headers,
+      'Content-Type': 'application/json',
+      'x-connection-encrypted': encryptString(getConnectionString({ readOnly })),
+    })
   }
 
   const requestBody: { query: string; parameters?: unknown[] } = { query }
@@ -49,13 +57,9 @@ export async function executeQuery<T = unknown>({
   }
 
   return await Sentry.startSpan({ name: 'pg-meta.query', op: 'db.query' }, async (span) => {
-    const response = await fetch(`${PG_META_URL}/query`, {
+    const response = await fetch(`${pgMetaUrl}/query`, {
       method: 'POST',
-      headers: constructHeaders({
-        ...headers,
-        'Content-Type': 'application/json',
-        'x-connection-encrypted': connectionStringEncrypted,
-      }),
+      headers: requestHeaders,
       body: JSON.stringify(requestBody),
     })
 

@@ -57,7 +57,7 @@ services:
     networks: [control]
 
   fleet-control:
-    image: ghcr.io/supabase/fleet-control:${FLEET_CONTROL_VERSION:?set FLEET_CONTROL_VERSION}
+    image: ${FLEET_CONTROL_IMAGE:?set FLEET_CONTROL_IMAGE}
     command: [--listen=0.0.0.0:8090, --enrollment-listen=0.0.0.0:8091, --agent-listen=0.0.0.0:8092]
     restart: unless-stopped
     read_only: true
@@ -110,10 +110,13 @@ services:
       - source: fleet_enrollment_server_key
         target: fleet-management/server.key
     security_opt: [no-new-privileges:true]
-    networks: [control]
+    networks:
+      control: {}
+      management:
+        aliases: [fleet-control]
 
   platform-outbox-dispatcher:
-    image: ghcr.io/supabase/fleet-control:${FLEET_CONTROL_VERSION:?set FLEET_CONTROL_VERSION}
+    image: ${FLEET_CONTROL_IMAGE:?set FLEET_CONTROL_IMAGE}
     command: [--mode=outbox-dispatcher]
     restart: unless-stopped
     read_only: true
@@ -157,7 +160,7 @@ services:
     networks: [control]
 
   backup-operator:
-    image: ghcr.io/supabase/backup-operator:${BACKUP_OPERATOR_VERSION:?set BACKUP_OPERATOR_VERSION}
+    image: ${BACKUP_OPERATOR_IMAGE:?set BACKUP_OPERATOR_IMAGE}
     command: [--mode=operator, --listen=0.0.0.0:8080]
     restart: unless-stopped
     read_only: true
@@ -199,7 +202,10 @@ services:
     tmpfs:
       - /tmp:size=16m,mode=1777
     security_opt: [no-new-privileges:true]
-    networks: [control]
+    networks:
+      control: {}
+      management:
+        aliases: [backup-operator-tls]
 
   platform-mail:
     image: axllent/mailpit:v1.20
@@ -251,19 +257,6 @@ services:
       retries: 20
     networks: [control]
 
-  meta:
-    image: supabase/postgres-meta:v0.95.2
-    restart: unless-stopped
-    environment:
-      PG_META_PORT: 8080
-      PG_META_DB_HOST: platform-db
-      PG_META_DB_PORT: 5432
-      PG_META_DB_NAME: platform
-      PG_META_DB_USER: postgres
-      PG_META_DB_PASSWORD: ${PLATFORM_POSTGRES_PASSWORD}
-      CRYPTO_KEY: ${PG_META_CRYPTO_KEY:?set PG_META_CRYPTO_KEY}
-    networks: [control, managed]
-
   studio:
     image: ${FLEET_STUDIO_IMAGE:?set FLEET_STUDIO_IMAGE}
     restart: unless-stopped
@@ -285,21 +278,25 @@ services:
       PLATFORM_POSTGRES_DB: platform
       PLATFORM_POSTGRES_USER: postgres
       PLATFORM_POSTGRES_PASSWORD: ${PLATFORM_POSTGRES_PASSWORD}
-      PLATFORM_PG_META_URL: http://meta:8080
       PLATFORM_GOTRUE_URL: http://platform-auth:9999
       PLATFORM_JWT_SECRET: ${PLATFORM_JWT_SECRET}
       PLATFORM_ENCRYPTION_KEY: ${PLATFORM_ENCRYPTION_KEY:?set PLATFORM_ENCRYPTION_KEY}
       PLATFORM_SITE_URL: ${FLEET_PUBLIC_URL}
       NEXT_PUBLIC_API_URL: ${FLEET_PUBLIC_URL}/api
       NEXT_PUBLIC_GOTRUE_URL: ${FLEET_PUBLIC_URL}/platform-auth/v1
-      STUDIO_PG_META_URL: http://meta:8080
+      # Fleet routes use each registered project's `${kong_url}/pg` endpoint.
+      # This key must match the pg-meta CRYPTO_KEY on every managed target.
       PG_META_CRYPTO_KEY: ${PG_META_CRYPTO_KEY}
       SUPABASE_PUBLIC_URL: ${FLEET_PUBLIC_URL}
       SUPABASE_URL: ${MANAGED_SUPABASE_URL:-http://kong:8000}
-      SUPABASE_ANON_KEY: ${MANAGED_ANON_KEY:-unused-fleet-default}
-      SUPABASE_SERVICE_KEY: ${MANAGED_SERVICE_ROLE_KEY:-unused-fleet-default}
+      SUPABASE_ANON_KEY: ${MANAGED_ANON_KEY:-unused-fleet-anon}
+      SUPABASE_SERVICE_KEY: ${MANAGED_SERVICE_ROLE_KEY:-unused-fleet-service}
       AUTH_JWT_SECRET: ${MANAGED_JWT_SECRET:-unused-fleet-default}
       FLEET_MANAGEMENT_ASSERTION_PRIMARY: ${FLEET_CONTROL_SERVICE_ASSERTION_KEY:?set FLEET_CONTROL_SERVICE_ASSERTION_KEY}
+      BACKUP_OPERATOR_URL: https://backup-operator-tls:8443
+      BACKUP_OPERATOR_SERVICE_ASSERTION_KEY: ${FLEET_CONTROL_SERVICE_ASSERTION_KEY:?set FLEET_CONTROL_SERVICE_ASSERTION_KEY}
+      BACKUP_OPERATOR_SERVICE_ASSERTION_ISSUER: ${BACKUP_OPERATOR_SERVICE_ASSERTION_ISSUER:-studio-platform}
+      BACKUP_OPERATOR_SERVICE_ASSERTION_AUDIENCE: ${BACKUP_OPERATOR_SERVICE_ASSERTION_AUDIENCE:-backup-operator}
       SNIPPETS_MANAGEMENT_FOLDER: /app/snippets
     healthcheck:
       test:
@@ -314,7 +311,7 @@ services:
     secrets:
       - source: fleet_agent_ca_cert
         target: fleet-management/ca.crt
-    networks: [control, managed]
+    networks: [control, management]
 
   gateway:
     image: kong/kong:3.9.1
@@ -330,11 +327,12 @@ services:
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /usr/local/kong/kong.yml
+      KONG_DISABLE_META_ROUTE: "true"
       KONG_ROUTER_FLAVOR: expressions
       KONG_DNS_ORDER: LAST,A,CNAME
       KONG_PLUGINS: request-transformer,cors,key-auth,acl,basic-auth,request-termination,ip-restriction,post-function
-      SUPABASE_ANON_KEY: ${MANAGED_ANON_KEY:-unused-fleet-default}
-      SUPABASE_SERVICE_KEY: ${MANAGED_SERVICE_ROLE_KEY:-unused-fleet-default}
+      SUPABASE_ANON_KEY: ${MANAGED_ANON_KEY:-unused-fleet-anon}
+      SUPABASE_SERVICE_KEY: ${MANAGED_SERVICE_ROLE_KEY:-unused-fleet-service}
       SUPABASE_PUBLISHABLE_KEY: ""
       SUPABASE_SECRET_KEY: ""
       ANON_KEY_ASYMMETRIC: ""
@@ -346,8 +344,8 @@ services:
 
 networks:
   control: {}
-  managed:
-    name: ${MANAGED_NETWORK_NAME:-supabase-plt_default}
+  management:
+    name: ${FLEET_MANAGEMENT_NETWORK_NAME:-fleet-management}
     external: true
 
 volumes:

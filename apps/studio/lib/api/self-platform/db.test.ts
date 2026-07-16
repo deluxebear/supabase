@@ -1,7 +1,20 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+const { poolQuery } = vi.hoisted(() => ({ poolQuery: vi.fn() }))
+
+vi.mock('pg', () => ({
+  Pool: class MockPool {
+    query = poolQuery
+  },
+  types: {
+    builtins: { INT8: 20, TIMESTAMP: 1114, TIMESTAMPTZ: 1184 },
+    setTypeParser: vi.fn(),
+  },
+}))
+
 async function loadDb() {
   vi.resetModules()
+  globalThis.selfPlatformPostgresPool = undefined
   vi.stubEnv('PLATFORM_POSTGRES_HOST', 'platform-db')
   vi.stubEnv('PLATFORM_POSTGRES_PORT', '5432')
   vi.stubEnv('PLATFORM_POSTGRES_DB', 'platform')
@@ -12,7 +25,8 @@ async function loadDb() {
 
 afterEach(() => {
   vi.unstubAllEnvs()
-  vi.unstubAllGlobals()
+  poolQuery.mockReset()
+  globalThis.selfPlatformPostgresPool = undefined
 })
 
 describe('getPlatformConnectionString', () => {
@@ -25,11 +39,8 @@ describe('getPlatformConnectionString', () => {
 })
 
 describe('executePlatformQuery', () => {
-  it('POSTs to pg-meta /query with encrypted connection header and parameters', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(new Response(JSON.stringify([{ ok: 1 }]), { status: 200 }))
-    vi.stubGlobal('fetch', fetchMock)
+  it('executes parameterized SQL through the server-side PostgreSQL pool', async () => {
+    poolQuery.mockResolvedValue({ rows: [{ ok: 1 }] })
     const { executePlatformQuery } = await loadDb()
 
     const { data, error } = await executePlatformQuery<{ ok: number }>({
@@ -39,35 +50,20 @@ describe('executePlatformQuery', () => {
 
     expect(error).toBeUndefined()
     expect(data).toEqual([{ ok: 1 }])
-    const [url, init] = fetchMock.mock.calls[0]
-    expect(String(url)).toMatch(/\/query$/)
-    const headers = new Headers(init.headers)
-    expect(headers.get('x-connection-encrypted')).toBeTruthy()
-    expect(JSON.parse(init.body)).toEqual({
-      query: 'select 1 as ok where $1 = $1',
-      parameters: ['x'],
-    })
+    expect(poolQuery).toHaveBeenCalledWith('select 1 as ok where $1 = $1', ['x'])
   })
 
-  it('returns error on non-ok response', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(new Response(JSON.stringify({ message: 'boom' }), { status: 500 }))
-    )
+  it('returns an error tuple when PostgreSQL rejects the query', async () => {
+    poolQuery.mockRejectedValue(new Error('boom'))
     const { executePlatformQuery } = await loadDb()
     const { data, error } = await executePlatformQuery({ query: 'select 1' })
     expect(data).toBeUndefined()
     expect(error?.message).toContain('boom')
   })
 
-  it('returns error tuple (does not throw) when the response body is not JSON', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(new Response('<html>502 Bad Gateway</html>', { status: 502 }))
-    )
+  it('returns non-Error PostgreSQL failures as thrown values', async () => {
+    poolQuery.mockRejectedValue('connection closed')
     const { executePlatformQuery } = await loadDb()
-    const { data, error } = await executePlatformQuery({ query: 'select 1' })
-    expect(data).toBeUndefined()
-    expect(error).toBeInstanceOf(Error)
+    await expect(executePlatformQuery({ query: 'select 1' })).rejects.toBe('connection closed')
   })
 })

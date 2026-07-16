@@ -38,7 +38,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
 const handleGetAll = async (req: NextApiRequest, res: NextApiResponse) => {
   const headers = constructHeaders(req.headers)
 
-  const response = await generateTypescriptTypes({ headers })
+  const response = await generateTypescriptTypes({ headers, projectRef: String(req.query.ref) })
 
   if (response instanceof ResponseError) {
     return res.status(response.code ?? 500).json({ message: response.message })

@@ -4,7 +4,7 @@ import { databaseKeys } from './keys'
 import {
   backupOperatorStatusSchema,
   type BackupOperatorStatus,
-} from '@/lib/api/self-platform/backup-operator-status'
+} from '@/lib/api/self-platform/backup-operator-status.shared'
 import { BASE_PATH } from '@/lib/constants'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 

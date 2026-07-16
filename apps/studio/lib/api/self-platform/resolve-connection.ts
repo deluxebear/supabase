@@ -5,16 +5,12 @@
 import { POSTGRES_PORT } from '../self-hosted/constants'
 import { encryptString, getConnectionString } from '../self-hosted/util'
 import { buildCandidateConnectionString } from './attachment'
+import { ProjectNotFound } from './errors'
 import { getProjectByRef, type PlatformProjectRow } from './projects'
 import { decryptSecret } from './secrets'
 import { PROJECT_DB_HOST, PROJECT_REST_URL } from '@/lib/constants/api'
 
-export class ProjectNotFound extends Error {
-  constructor(ref: string) {
-    super(`Project not found: ${ref}`)
-    this.name = 'ProjectNotFound'
-  }
-}
+export { ProjectNotFound } from './errors'
 
 export interface ResolvedConnection {
   ref: string

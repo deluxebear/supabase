@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { projectKeys } from './keys'
 import { get, handleError } from '@/data/fetchers'
-import { ownershipPolicySchema } from '@/lib/api/self-platform/ownership-policy'
+import { ownershipPolicySchema } from '@/lib/api/self-platform/ownership-policy.shared'
 import { STUDIO_CAPABILITIES, STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 
 const responseSchema = z.object({ policies: z.array(ownershipPolicySchema) })

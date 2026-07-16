@@ -5,9 +5,9 @@
 // `pgbackrest info --output=json`. Absent/malformed → honest-empty response.
 import type { paths } from 'api-types'
 
+import { constructProjectPgMetaRequest } from './pg-meta'
 import { ProjectNotFound, resolveProjectConnection } from './resolve-connection'
-import { constructHeaders } from '@/lib/api/apiHelpers'
-import { PG_META_URL } from '@/lib/constants'
+import type { ResolvedConnection } from './resolve-connection'
 
 type BackupsResponse =
   paths['/platform/database/{ref}/backups']['get']['responses']['200']['content']['application/json']
@@ -35,15 +35,13 @@ interface PgbackrestStanza {
 }
 
 async function queryProjectDb(
-  pgConnEncrypted: string,
+  connection: ResolvedConnection,
   query: string
 ): Promise<Record<string, unknown>[]> {
-  const response = await fetch(`${PG_META_URL}/query`, {
+  const target = constructProjectPgMetaRequest(connection)
+  const response = await fetch(`${target.baseUrl}/query`, {
     method: 'POST',
-    headers: constructHeaders({
-      'Content-Type': 'application/json',
-      'x-connection-encrypted': pgConnEncrypted,
-    }),
+    headers: target.headers,
     body: JSON.stringify({ query }),
     signal: AbortSignal.timeout(PROJECT_QUERY_TIMEOUT_MS),
   })
@@ -93,7 +91,7 @@ export function mapPgbackrestInfo(info: unknown): BackupsResponse {
 export async function getProjectBackups(ref: string): Promise<BackupsResponse> {
   try {
     const conn = await resolveProjectConnection(ref)
-    const rows = await queryProjectDb(conn.pgConnEncrypted, STATUS_SQL)
+    const rows = await queryProjectDb(conn, STATUS_SQL)
     const raw = rows[0]?.info
     const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw
     return mapPgbackrestInfo(parsed)
