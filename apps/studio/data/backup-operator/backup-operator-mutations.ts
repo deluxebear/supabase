@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient, type UseMutationOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import { fetchBackupOperator } from './backup-operator-fetch'
 import { backupOperatorKeys } from './keys'
 import {
   backupPolicySchema,
@@ -8,7 +9,6 @@ import {
   operatorJobSchema,
   restorePlanSchema,
 } from '@/data/backup-operator/schemas'
-import { constructHeaders } from '@/data/fetchers'
 import { BASE_PATH } from '@/lib/constants'
 import { uuidv4 } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
@@ -58,13 +58,16 @@ async function mutateOperator(
   idempotencyKey?: string
 ) {
   if (!projectRef) throw new Error('Project ref is required')
-  const headers = await constructHeaders({
-    'Content-Type': 'application/json',
-    ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
-  })
-  const response = await fetch(
+  const response = await fetchBackupOperator(
     `${BASE_PATH}/api/platform/database/${encodeURIComponent(projectRef)}/backup-operator/${path}`,
-    { method, headers, body: JSON.stringify(body) }
+    {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
+      },
+      body: JSON.stringify(body),
+    }
   )
   const payload = await response.json().catch(() => null)
   if (!response.ok) {

@@ -1,5 +1,6 @@
 import { queryOptions } from '@tanstack/react-query'
 
+import { fetchBackupOperator, retryBackupOperatorQuery } from './backup-operator-fetch'
 import { isActiveBackupOperatorJob } from './backup-operator-job.utils'
 import { backupOperatorKeys } from './keys'
 import {
@@ -10,14 +11,14 @@ import {
   operatorPITRSchema,
   restorePlanSchema,
 } from '@/data/backup-operator/schemas'
-import { constructHeaders } from '@/data/fetchers'
 import { BASE_PATH } from '@/lib/constants'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
+import { ResponseError } from '@/types'
 
 export type BackupOperatorVariables = { projectRef?: string }
 export type BackupOperatorJobVariables = BackupOperatorVariables & { jobId?: string }
 export type BackupOperatorPlanVariables = BackupOperatorVariables & { planId?: string }
-export type BackupOperatorError = Error
+export type BackupOperatorError = ResponseError
 
 async function getOperatorCluster({ projectRef }: BackupOperatorVariables, signal?: AbortSignal) {
   return operatorClusterSchema.parse(await getOperatorResource(projectRef, 'cluster', signal))
@@ -29,6 +30,7 @@ export const operatorClusterQueryOptions = ({ projectRef }: BackupOperatorVariab
     queryFn: ({ signal }) => getOperatorCluster({ projectRef }, signal),
     enabled: IS_SELF_PLATFORM && typeof projectRef !== 'undefined',
     refetchInterval: 30_000,
+    retry: retryBackupOperatorQuery,
   })
 
 async function getOperatorPITR({ projectRef }: BackupOperatorVariables, signal?: AbortSignal) {
@@ -41,6 +43,7 @@ export const operatorPITRQueryOptions = ({ projectRef }: BackupOperatorVariables
     queryFn: ({ signal }) => getOperatorPITR({ projectRef }, signal),
     enabled: IS_SELF_PLATFORM && typeof projectRef !== 'undefined',
     refetchInterval: 30_000,
+    retry: retryBackupOperatorQuery,
   })
 
 async function getOperatorResource(
@@ -49,17 +52,18 @@ async function getOperatorResource(
   signal?: AbortSignal
 ) {
   if (!projectRef) throw new Error('Project ref is required')
-  const headers = await constructHeaders()
-  const response = await fetch(
+  const response = await fetchBackupOperator(
     `${BASE_PATH}/api/platform/database/${encodeURIComponent(projectRef)}/backup-operator/${path}`,
-    { headers, signal }
+    { signal }
   )
   const payload = await response.json().catch(() => null)
   if (!response.ok) {
-    throw new Error(
+    throw new ResponseError(
       payload && typeof payload === 'object' && 'message' in payload
         ? String(payload.message)
-        : `Backup Operator returned HTTP ${response.status}`
+        : `Backup Operator returned HTTP ${response.status}`,
+      response.status,
+      response.headers.get('X-Request-Id') ?? undefined
     )
   }
   return payload
@@ -74,6 +78,7 @@ export const backupPolicyQueryOptions = ({ projectRef }: BackupOperatorVariables
     queryKey: backupOperatorKeys.policy(projectRef),
     queryFn: ({ signal }) => getBackupPolicy({ projectRef }, signal),
     enabled: IS_SELF_PLATFORM && typeof projectRef !== 'undefined',
+    retry: retryBackupOperatorQuery,
   })
 
 async function getOperatorBackups({ projectRef }: BackupOperatorVariables, signal?: AbortSignal) {
@@ -86,6 +91,7 @@ export const operatorBackupsQueryOptions = ({ projectRef }: BackupOperatorVariab
     queryFn: ({ signal }) => getOperatorBackups({ projectRef }, signal),
     enabled: IS_SELF_PLATFORM && typeof projectRef !== 'undefined',
     refetchInterval: 30_000,
+    retry: retryBackupOperatorQuery,
   })
 
 async function getOperatorJob(
@@ -102,6 +108,7 @@ export const operatorJobQueryOptions = ({ projectRef, jobId }: BackupOperatorJob
     queryFn: ({ signal }) => getOperatorJob({ projectRef, jobId }, signal),
     enabled: IS_SELF_PLATFORM && Boolean(projectRef) && Boolean(jobId),
     refetchInterval: ({ state }) => (isActiveBackupOperatorJob(state.data?.state) ? 2_000 : false),
+    retry: retryBackupOperatorQuery,
   })
 
 async function getRestorePlan(
@@ -119,4 +126,5 @@ export const restorePlanQueryOptions = ({ projectRef, planId }: BackupOperatorPl
     queryKey: backupOperatorKeys.plan(projectRef, planId),
     queryFn: ({ signal }) => getRestorePlan({ projectRef, planId }, signal),
     enabled: IS_SELF_PLATFORM && Boolean(projectRef) && Boolean(planId),
+    retry: retryBackupOperatorQuery,
   })

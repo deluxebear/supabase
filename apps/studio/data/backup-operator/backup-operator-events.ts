@@ -1,4 +1,4 @@
-import { constructHeaders } from '@/data/fetchers'
+import { fetchBackupOperator } from './backup-operator-fetch'
 import { BASE_PATH } from '@/lib/constants'
 
 export type OperatorEvent = {
@@ -54,10 +54,10 @@ async function getEventPage({
   signal?: AbortSignal
   fetcher: typeof fetch
 }): Promise<EventPage> {
-  const headers = await constructHeaders({ Accept: 'text/event-stream' })
-  const response = await fetcher(
+  const response = await fetchBackupOperator(
     `${BASE_PATH}/api/platform/database/${encodeURIComponent(projectRef)}/backup-operator/jobs/${encodeURIComponent(jobId)}/events?cursor=${cursor}`,
-    { signal, headers, cache: 'no-store' }
+    { signal, headers: { Accept: 'text/event-stream' }, cache: 'no-store' },
+    fetcher
   )
   if (response.status === 410) {
     const payload = await response.json().catch(() => null)

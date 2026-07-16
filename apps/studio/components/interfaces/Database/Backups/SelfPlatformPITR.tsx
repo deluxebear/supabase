@@ -5,6 +5,7 @@ import { Admonition } from 'ui-patterns/admonition'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { BackupManagementUnavailable } from './BackupManagementUnavailable'
+import { BackupOperatorNotConfigured } from './BackupOperatorNotConfigured'
 import { AlertError } from '@/components/ui/AlertError'
 import {
   operatorBackupsQueryOptions,
@@ -33,6 +34,9 @@ export function SelfPlatformPITR({ projectRef }: SelfPlatformPITRProps) {
         projectRef={projectRef}
       />
     )
+  }
+  if (!statusQuery.data.configured) {
+    return <BackupOperatorNotConfigured projectRef={projectRef} status={statusQuery.data} />
   }
 
   return <SelfPlatformPITRContent projectRef={projectRef} />

@@ -93,9 +93,12 @@ export const Addons = () => {
     isError,
     isSuccess,
   } = useProjectAddonsQuery({ projectRef })
-  const { data: backupOperatorStatus, isPending: isBackupOperatorStatusLoading } = useQuery(
-    backupOperatorStatusQueryOptions({ projectRef })
-  )
+  const {
+    data: backupOperatorStatus,
+    error: backupOperatorStatusError,
+    isError: isBackupOperatorStatusError,
+    isPending: isBackupOperatorStatusLoading,
+  } = useQuery(backupOperatorStatusQueryOptions({ projectRef }))
 
   const selectedAddons = addons?.selected_addons ?? []
   const { pitr, customDomain, ipv4 } = getAddons(selectedAddons)
@@ -111,7 +114,7 @@ export const Addons = () => {
   const canOpenIPv4 =
     isAws && isProjectActive && !projectUpdateDisabled && (canUpdateIPv4 || ipv4Enabled)
   const canOpenPITR = IS_SELF_PLATFORM
-    ? true
+    ? !isBackupOperatorStatusError
     : isProjectActive &&
       !projectUpdateDisabled &&
       sufficientPgVersion &&
@@ -242,6 +245,14 @@ export const Addons = () => {
         )}
 
         {isError && <AlertError error={error} subject="Failed to retrieve project add-ons" />}
+
+        {IS_SELF_PLATFORM && isBackupOperatorStatusError && (
+          <AlertError
+            error={backupOperatorStatusError}
+            subject={$t('Failed to retrieve Backup Operator status')}
+            hideContactSupport
+          />
+        )}
 
         {isSuccess && (
           <ResourceList className={listTopSpacing}>

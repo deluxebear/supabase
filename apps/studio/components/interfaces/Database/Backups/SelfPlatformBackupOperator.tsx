@@ -7,6 +7,7 @@ import { Admonition } from 'ui-patterns/admonition'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { BackupManagementUnavailable } from './BackupManagementUnavailable'
+import { BackupOperatorNotConfigured } from './BackupOperatorNotConfigured'
 import {
   canExecuteRestore,
   canRollbackRestore,
@@ -56,6 +57,9 @@ export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOpe
         projectRef={projectRef}
       />
     )
+  }
+  if (!statusQuery.data.configured) {
+    return <BackupOperatorNotConfigured projectRef={projectRef} status={statusQuery.data} />
   }
 
   return <SelfPlatformBackupOperatorControls projectRef={projectRef} />
