@@ -17,6 +17,7 @@ import { ConnectionPooling } from '@/components/interfaces/Settings/Database/Con
 import { DatabaseReadOnlyAlert } from '@/components/interfaces/Settings/Database/DatabaseReadOnlyAlert'
 import { ResetDbPassword } from '@/components/interfaces/Settings/Database/DatabaseSettings/ResetDbPassword'
 import { DiskSizeConfiguration } from '@/components/interfaces/Settings/Database/DiskSizeConfiguration'
+import { FleetConnectionProfiles } from '@/components/interfaces/Settings/Database/FleetConnectionProfiles'
 import { JitDbAccessConfiguration } from '@/components/interfaces/Settings/Database/JitDatabaseAccess/JitDbAccessConfiguration'
 import { NetworkRestrictions } from '@/components/interfaces/Settings/Database/NetworkRestrictions/NetworkRestrictions'
 import { PoolingModesModal } from '@/components/interfaces/Settings/Database/PoolingModesModal'
@@ -27,6 +28,7 @@ import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useIsAwsCloudProvider, useIsAwsK8sCloudProvider } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
+import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
@@ -37,6 +39,7 @@ const DatabaseSettings: NextPageWithLayout = () => {
   const showNewDiskManagementUI = isAws || isAwsK8s
   const { databaseNetworkRestrictions } = useIsFeatureEnabled(['database:network_restrictions'])
   const databaseLogsConfigurationEnabled = useFlag('databaseLogsConfiguration')
+  const isFleet = STUDIO_DEPLOYMENT_PROFILE === 'fleet'
 
   return (
     <>
@@ -50,7 +53,11 @@ const DatabaseSettings: NextPageWithLayout = () => {
           </PageHeaderSummary>
         </PageHeaderMeta>
       </PageHeader>
-      {IS_PLATFORM ? (
+      {isFleet ? (
+        <PageContainer size="small" className="flex flex-col gap-8 pb-12">
+          <FleetConnectionProfiles />
+        </PageContainer>
+      ) : IS_PLATFORM ? (
         <>
           <PageContainer size="small" className="flex flex-col gap-8 pb-12">
             <DatabaseReadOnlyAlert />

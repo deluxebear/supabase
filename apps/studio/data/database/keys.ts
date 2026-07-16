@@ -25,6 +25,8 @@ export const databaseKeys = {
     ['projects', projectRef, 'database', 'backup-operator-status'] as const,
   poolingConfiguration: (projectRef: string | undefined) =>
     ['projects', projectRef, 'database', 'pooling-configuration'] as const,
+  connectionProfiles: (projectRef: string | undefined) =>
+    ['projects', projectRef, 'database', 'connection-profiles'] as const,
   indexesFromQuery: (projectRef: string | undefined, query: string) =>
     ['projects', projectRef, 'indexes', { query }] as const,
   indexAdvisorFromQuery: (

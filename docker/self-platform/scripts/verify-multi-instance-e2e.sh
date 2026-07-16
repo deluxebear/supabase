@@ -95,7 +95,7 @@ process.stdout.write(JSON.stringify({
     dbPort: Number(process.env.TARGET_DB_PORT),
     dbName: "postgres",
     dbUser: "postgres",
-    dbUserReadonly: "postgres",
+    dbUserReadonly: "supabase_read_only_user",
     dbPass: process.env.DB_PASSWORD,
     dbPassReadonly: process.env.DB_PASSWORD,
     kongUrl: gateway,

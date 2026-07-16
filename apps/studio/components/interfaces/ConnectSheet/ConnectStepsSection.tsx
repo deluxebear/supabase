@@ -35,6 +35,7 @@ import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useDeploymentMode } from '@/hooks/misc/useDeploymentMode'
 import { useIsDataApiEnabled } from '@/hooks/misc/useIsDataApiEnabled'
 import { DOCS_URL } from '@/lib/constants'
+import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { pluckObjectFields } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
 
@@ -68,8 +69,14 @@ function useConnectionStringPooler(deploymentMode: DeploymentMode): ConnectionSt
     return pluckObjectFields(settings || emptyState, DB_FIELDS)
   }, [settings])
 
-  const poolingConfigurationShared = supavisorConfig?.find((x) => x.database_type === 'PRIMARY')
-  const poolingConfigurationDedicated = allowPgBouncerSelection ? pgbouncerConfig : undefined
+  const poolingConfigurationShared = supavisorConfig?.find(
+    (x) => x.database_type === 'PRIMARY' && x.pool_mode === 'transaction'
+  )
+  const poolingConfigurationSession = supavisorConfig?.find(
+    (x) => x.database_type === 'PRIMARY' && x.pool_mode === 'session'
+  )
+  const poolingConfigurationDedicated =
+    allowPgBouncerSelection && STUDIO_DEPLOYMENT_PROFILE !== 'fleet' ? pgbouncerConfig : undefined
 
   const connectionStringsShared = useMemo(
     () =>
@@ -112,9 +119,17 @@ function useConnectionStringPooler(deploymentMode: DeploymentMode): ConnectionSt
         connectionInfo,
         connectionStringsShared,
         connectionStringsDedicated,
+        sessionShared: poolingConfigurationSession?.connection_string,
         ipv4Addon: !!ipv4Addon,
       }),
-    [deploymentMode, connectionInfo, connectionStringsShared, connectionStringsDedicated, ipv4Addon]
+    [
+      deploymentMode,
+      connectionInfo,
+      connectionStringsShared,
+      connectionStringsDedicated,
+      poolingConfigurationSession?.connection_string,
+      ipv4Addon,
+    ]
   )
 }
 
@@ -205,14 +220,14 @@ export function ConnectStepsSection({ steps, state, projectKeys }: ConnectStepsS
     }
   )
   const showIpv4AddonNotice = shouldShowIpv4AddonNotice({
-    isPlatform: deploymentMode.isPlatform,
+    isPlatform: deploymentMode.isPlatform && STUDIO_DEPLOYMENT_PROFILE !== 'fleet',
     mode: state.mode,
     connectionMethod: state.connectionMethod,
     useSharedPooler: state.useSharedPooler,
     hasIpv4Addon: !!ipv4Addon,
   })
   const showSessionPoolerNotice = shouldShowSessionPoolerNotice({
-    isPlatform: deploymentMode.isPlatform,
+    isPlatform: deploymentMode.isPlatform && STUDIO_DEPLOYMENT_PROFILE !== 'fleet',
     mode: state.mode,
     connectionMethod: state.connectionMethod,
   })

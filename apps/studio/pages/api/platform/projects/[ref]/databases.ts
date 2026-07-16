@@ -5,6 +5,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 import { apiWrapper } from '@/lib/api/apiWrapper'
 import { POSTGRES_PORT } from '@/lib/api/self-hosted/constants'
+import { publicProjectEndpointsFromDocument } from '@/lib/api/self-platform/endpoint-registry'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { ProjectNotFound, resolveProjectIdentity } from '@/lib/api/self-platform/resolve-connection'
 import { PROJECT_DB_HOST, PROJECT_REST_URL } from '@/lib/constants/api'
@@ -60,6 +61,14 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
   const ref = String(req.query.ref)
   try {
     const project = await resolveProjectIdentity(ref)
+    const endpoints = publicProjectEndpointsFromDocument(project.row?.endpoint_document)
+    if (project.row && !endpoints) {
+      return res.status(409).json({
+        code: 'endpoint_registry_unconfigured',
+        message: 'Public database endpoints are not configured.',
+      })
+    }
+    const direct = endpoints?.directPostgres
     const body: Array<
       Omit<ResponseData[number], 'connectionString' | 'connection_string_read_only'>
     > = [
@@ -70,14 +79,14 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
         // `text` column -> the DatabaseDetailResponse cloud_provider enum;
         // sanctioned `as X['cloud_provider']` exception (not `as any`).
         cloud_provider: project.cloudProvider as ResponseData[number]['cloud_provider'],
-        db_host: project.dbHost,
-        db_name: project.dbName,
-        db_port: project.dbPort,
-        db_user: project.dbUser,
+        db_host: direct?.host ?? project.dbHost,
+        db_name: direct?.database ?? project.dbName,
+        db_port: direct?.port ?? project.dbPort,
+        db_user: direct?.user ?? project.dbUser,
         identifier: project.ref,
         inserted_at: '2021-08-02T06:40:40.646Z',
         region: project.region,
-        restUrl: project.restUrl,
+        restUrl: endpoints?.restUrl ?? project.restUrl,
         size: '',
         // [self-platform] narrows DB `text` -> the DatabaseDetailResponse status enum; sanctioned
         // `as X['status']` exception (not `as any`).

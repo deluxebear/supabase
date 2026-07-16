@@ -31,6 +31,7 @@ import { formatDatabaseID, formatDatabaseRegion } from '@/data/read-replicas/rep
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useDeploymentMode } from '@/hooks/misc/useDeploymentMode'
 import { useIsHighAvailability } from '@/hooks/misc/useSelectedProject'
+import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 
 // ============================================================================
 // Data Source Helpers
@@ -122,11 +123,13 @@ function getFieldOptionsFromSource({
         value: m.value,
         label: m.label,
         description:
-          deploymentMode.isSelfHosted && m.value === 'direct'
-            ? 'Manually configurable for self-hosted Supabase.'
-            : deploymentMode.isSelfHosted && m.value === 'session'
-              ? 'Supavisor (default pooler for self-hosted Supabase).'
-              : m.description,
+          STUDIO_DEPLOYMENT_PROFILE === 'fleet' && m.value === 'session'
+            ? 'Maintains a server-side session through Supavisor.'
+            : deploymentMode.isSelfHosted && m.value === 'direct'
+              ? 'Manually configurable for self-hosted Supabase.'
+              : deploymentMode.isSelfHosted && m.value === 'session'
+                ? 'Supavisor (default pooler for self-hosted Supabase).'
+                : m.description,
       }))
     }
 
@@ -349,7 +352,11 @@ export function useConnectState(initialState?: Partial<ConnectState>): UseConnec
 
   const activeFields = useMemo(() => {
     let fields = getActiveFields(connectSchema, state)
-    if (!hasDedicatedPooler || !deploymentMode.isPlatform) {
+    if (
+      !hasDedicatedPooler ||
+      !deploymentMode.isPlatform ||
+      STUDIO_DEPLOYMENT_PROFILE === 'fleet'
+    ) {
       // useSharedPooler is a platform-only toggle (CLI has no pooler; self-hosted
       // already uses Supavisor shared)
       fields = fields.filter((f) => f.id !== 'useSharedPooler')

@@ -35,6 +35,35 @@ const resolved = {
   // prove the resolved branch reads cloud_provider from the registry row
   // (via ResolvedConnection.cloudProvider) rather than hardcoding it.
   cloudProvider: 'FLY',
+  row: {
+    endpoint_document: {
+      public: {
+        apiUrl: 'http://192.168.50.149:8200',
+        restUrl: 'http://192.168.50.149:8200/rest/v1/',
+        authUrl: 'http://192.168.50.149:8200/auth/v1',
+        storageUrl: 'http://192.168.50.149:8200/storage/v1',
+        realtimeUrl: 'http://192.168.50.149:8200/realtime/v1',
+        functionsUrl: 'http://192.168.50.149:8200/functions/v1',
+        s3Url: 'http://192.168.50.149:8200/storage/v1/s3',
+        directPostgres: {
+          host: '192.168.50.149',
+          port: 55433,
+          database: 'postgres',
+          user: 'postgres',
+          tlsMode: 'disable',
+        },
+        supavisor: {
+          host: '192.168.50.149',
+          transactionPort: 56543,
+          sessionPort: 55432,
+          database: 'postgres',
+          user: 'postgres',
+          tenantId: 'your-tenant-id',
+          tlsMode: 'disable',
+        },
+      },
+    },
+  },
 }
 beforeEach(() => vi.clearAllMocks())
 
@@ -47,8 +76,8 @@ describe('GET /platform/projects/[ref]/databases (self-platform)', () => {
     const body = res._getJSONData()
     expect(body[0]).toMatchObject({
       identifier: 'proj-b',
-      db_host: 'db-b',
-      db_port: 5432,
+      db_host: '192.168.50.149',
+      db_port: 55433,
       status: 'ACTIVE_HEALTHY',
     })
     expect(body[0]).not.toHaveProperty('connectionString')

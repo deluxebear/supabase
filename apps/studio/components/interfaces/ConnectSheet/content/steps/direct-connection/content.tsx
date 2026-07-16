@@ -34,6 +34,7 @@ import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { useProjectAddonsQuery } from '@/data/subscriptions/project-addons-query'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useIsHighAvailability } from '@/hooks/misc/useSelectedProject'
+import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { pluckObjectFields } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
@@ -73,9 +74,15 @@ const useConnectionStringDatabases = (deploymentMode: DeploymentMode) => {
       databases.map((db) => {
         const connectionInfo = pluckObjectFields(db || emptyState, DB_FIELDS)
         const poolingConfigurationShared = supavisorConfig?.find(
-          (x) => x.identifier === db.identifier
+          (x) => x.identifier === db.identifier && x.pool_mode === 'transaction'
         )
-        const poolingConfigurationDedicated = allowPgBouncerSelection ? pgbouncerConfig : undefined
+        const poolingConfigurationSession = supavisorConfig?.find(
+          (x) => x.identifier === db.identifier && x.pool_mode === 'session'
+        )
+        const poolingConfigurationDedicated =
+          allowPgBouncerSelection && STUDIO_DEPLOYMENT_PROFILE !== 'fleet'
+            ? pgbouncerConfig
+            : undefined
 
         const connectionStringsShared = getConnectionStrings({
           connectionInfo,
@@ -114,6 +121,7 @@ const useConnectionStringDatabases = (deploymentMode: DeploymentMode) => {
             connectionInfo,
             connectionStringsShared,
             connectionStringsDedicated,
+            sessionShared: poolingConfigurationSession?.connection_string,
             ipv4Addon: !!ipv4Addon,
           }),
         ]
@@ -223,11 +231,15 @@ function DirectConnectionContent({ state, deploymentMode }: StepContentProps) {
 
   const poolerBadge =
     connectionMethod === 'transaction'
-      ? useSharedPooler || !hasDedicatedPooler
-        ? 'Shared Pooler'
-        : 'Dedicated Pooler'
+      ? STUDIO_DEPLOYMENT_PROFILE === 'fleet'
+        ? 'Supavisor'
+        : useSharedPooler || !hasDedicatedPooler
+          ? 'Shared Pooler'
+          : 'Dedicated Pooler'
       : connectionMethod === 'session'
-        ? 'Shared Pooler'
+        ? STUDIO_DEPLOYMENT_PROFILE === 'fleet'
+          ? 'Supavisor'
+          : 'Shared Pooler'
         : null
 
   const showSelfHostedDirectNotice = deploymentMode.isSelfHosted && connectionMethod === 'direct'
@@ -253,7 +265,7 @@ function DirectConnectionContent({ state, deploymentMode }: StepContentProps) {
             {connectionString}
           </CodeBlock>
         </div>
-        {deploymentMode.isPlatform && (
+        {deploymentMode.isPlatform && STUDIO_DEPLOYMENT_PROFILE !== 'fleet' && (
           <div className="flex flex-col gap-2 border-t px-6 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="text-sm text-foreground-light">
               {temporaryDatabasePassword ? (

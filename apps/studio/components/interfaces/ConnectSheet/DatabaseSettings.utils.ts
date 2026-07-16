@@ -227,12 +227,14 @@ export const buildConnectionStringPooler = ({
   connectionInfo,
   connectionStringsShared,
   connectionStringsDedicated,
+  sessionShared,
   ipv4Addon,
 }: {
   deploymentMode: DeploymentMode
   connectionInfo: { db_host: string; db_port: number | string }
   connectionStringsShared: { direct: ConnectionStrings; pooler: ConnectionStrings }
   connectionStringsDedicated?: { direct: ConnectionStrings; pooler: ConnectionStrings }
+  sessionShared?: string
   ipv4Addon: boolean
 }): ConnectionStringPooler => {
   if (deploymentMode.isSelfHosted) {
@@ -270,7 +272,7 @@ export const buildConnectionStringPooler = ({
   // (PgBouncer has no session mode).
   return {
     transactionShared: connectionStringsShared.pooler.uri,
-    sessionShared: connectionStringsShared.pooler.uri.replace('6543', '5432'),
+    sessionShared: sessionShared ?? connectionStringsShared.pooler.uri.replace('6543', '5432'),
     transactionDedicated: connectionStringsDedicated?.pooler.uri,
     sessionDedicated: connectionStringsDedicated?.pooler.uri.replace('6543', '5432'),
     ipv4SupportedForDedicatedPooler: ipv4Addon,

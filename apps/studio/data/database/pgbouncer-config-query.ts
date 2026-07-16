@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { databaseKeys } from './keys'
 import { get, handleError } from '@/data/fetchers'
 import { IS_PLATFORM } from '@/lib/constants'
+import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import type { ResponseError, UseCustomQueryOptions } from '@/types'
 
 export type PgbouncerConfigVariables = {
@@ -36,6 +37,10 @@ export const usePgbouncerConfigQuery = <TData = PgbouncerConfigData>(
   useQuery<PgbouncerConfigData, PgbouncerConfigError, TData>({
     queryKey: databaseKeys.pgbouncerConfig(projectRef),
     queryFn: ({ signal }) => getPgbouncerConfig({ projectRef }, signal),
-    enabled: enabled && typeof projectRef !== 'undefined' && IS_PLATFORM,
+    enabled:
+      enabled &&
+      typeof projectRef !== 'undefined' &&
+      IS_PLATFORM &&
+      STUDIO_DEPLOYMENT_PROFILE !== 'fleet',
     ...options,
   })
