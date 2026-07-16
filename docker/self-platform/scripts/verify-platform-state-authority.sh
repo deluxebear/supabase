@@ -4,6 +4,7 @@ set -Eeuo pipefail
 cd "$(dirname "$0")/.."
 
 compose=(docker compose -f docker-compose.migration-test.yml)
+expected_migrations=$(find ../volumes/platform/migrations -maxdepth 1 -type f -name '*.sql' | wc -l | tr -d ' ')
 cleanup() { "${compose[@]}" down --volumes --remove-orphans >/dev/null 2>&1 || true; }
 trap cleanup EXIT
 cleanup
@@ -22,7 +23,7 @@ for migration in ../volumes/platform/migrations/{01-schema,02-projects,03-analyt
   psql_test <"$migration" >/dev/null
 done
 "${compose[@]}" run --rm platform-migrate
-psql_test -tAc "select count(*) = 18 from platform.schema_migrations" | grep -qx t
+psql_test -tAc "select count(*) = $expected_migrations from platform.schema_migrations" | grep -qx t
 
 echo '== fresh migration, concurrent replay, desired/outbox/CAS =='
 cleanup

@@ -25,6 +25,30 @@ const backupState = {
   drill: null,
 }
 
+const availableStatus = {
+  configured: true,
+  policy: {
+    enabled: true,
+    retentionDays: 7,
+    schedule: '0 1 * * *',
+    backupFrom: 'primary',
+  },
+  provider: { name: 'pgBackRest', version: '2.56' },
+  topology: { kind: 'static-primary', primary: 'primary-a', standbys: 0 },
+  repository: { type: 's3', location: 's3://backups' },
+  check: { status: 'healthy', checkedAt: '2026-07-13T10:00:00Z', message: null },
+  lastJob: null,
+  capabilities: { backup: true, restore: true, blockers: [] },
+  compatibility: { image: 'postgres:17', supported: true, blocker: null },
+  updatedAt: '2026-07-13T10:00:00Z',
+  management: {
+    state: 'available',
+    configured: true,
+    blockers: [],
+    correlationId: '00000000-0000-4000-8000-000000000019',
+  },
+}
+
 function operatorURL(path: string) {
   return `*/api/platform/database/project-a/backup-operator/${path}`
 }
@@ -47,6 +71,7 @@ function mockOperator({
   backups?: typeof backupState
 } = {}) {
   mswServer.use(
+    http.get(operatorURL('status'), () => HttpResponse.json(availableStatus)),
     http.get(operatorURL('pitr'), () => HttpResponse.json(pitr)),
     http.get(operatorURL('backups'), () => HttpResponse.json(backups))
   )

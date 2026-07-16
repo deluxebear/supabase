@@ -74,14 +74,53 @@ describe('self-platform Backup Operator proxy', () => {
     expect(response.statusCode).toBe(200)
   })
 
-  it('uses UPDATE authorization for policy writes', async () => {
+  it('uses infrastructure authorization for policy writes', async () => {
     const response = responseRecorder()
     await handler(request('PUT', ['policy'], { enabled: true }), response, claims())
     expect(guardProjectRoute).toHaveBeenCalledWith(
       response,
       expect.anything(),
-      expect.objectContaining({ action: 'write:Update', projectRef: 'project-a' })
+      expect.objectContaining({
+        action: 'infra:Execute',
+        projectRef: 'project-a',
+        resource: 'back_ups',
+      })
     )
+  })
+
+  it('uses the restore preparation resource before creating an impact plan', async () => {
+    const response = responseRecorder()
+    await handler(
+      request('POST', ['restore-plans'], { recoveryTarget: '2026-07-16T00:00:00Z' }),
+      response,
+      claims()
+    )
+    expect(guardProjectRoute).toHaveBeenCalledWith(
+      response,
+      expect.anything(),
+      expect.objectContaining({
+        action: 'infra:Execute',
+        projectRef: 'project-a',
+        resource: 'queue_job.restore.prepare',
+      })
+    )
+  })
+
+  it('checks restore execution permission before enforcing AAL2 or contacting the Operator', async () => {
+    vi.mocked(guardProjectRoute).mockResolvedValue(false)
+    const response = responseRecorder()
+    await handler(request('POST', ['restore-plans', 'plan-1', 'execute']), response, claims('aal2'))
+
+    expect(guardProjectRoute).toHaveBeenCalledWith(
+      response,
+      expect.anything(),
+      expect.objectContaining({
+        action: 'infra:Execute',
+        resource: 'queue_job.restore.prepare',
+        projectRef: 'project-a',
+      })
+    )
+    expect(requestBackupOperator).not.toHaveBeenCalled()
   })
 
   it('forwards a caller-provided idempotency key for manual backups', async () => {

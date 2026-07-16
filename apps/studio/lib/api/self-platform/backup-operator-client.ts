@@ -162,6 +162,7 @@ export function mintBackupOperatorServiceAssertion({
   project,
   aal,
   aalAuthenticatedAt,
+  scopes = ['backup.read', 'backup.write', 'restore.execute'],
   ttlSeconds = 60,
 }: {
   key: string
@@ -171,6 +172,7 @@ export function mintBackupOperatorServiceAssertion({
   project: string
   aal?: string
   aalAuthenticatedAt?: number
+  scopes?: string[]
   ttlSeconds?: number
 }) {
   if (Buffer.byteLength(key) < 32 || !issuer || !audience || !subject || !project) {
@@ -187,7 +189,7 @@ export function mintBackupOperatorServiceAssertion({
     iat: now,
     exp: now + ttl,
     jti: randomUUID(),
-    scopes: ['backup.read', 'backup.write', 'restore.execute'],
+    scopes,
     roles: ['studio'],
     projects: [project],
     ...(aal === 'aal2' &&
@@ -199,6 +201,16 @@ export function mintBackupOperatorServiceAssertion({
   })
   const signature = createHmac('sha256', key).update(`${header}.${payload}`).digest('base64url')
   return `${header}.${payload}.${signature}`
+}
+
+export function backupOperatorScopes(
+  method: 'GET' | 'POST' | 'PUT' = 'GET',
+  path: string
+): string[] {
+  if (method !== 'GET' && /^\/(restore-plans|jobs\/[^/]+\/rollback)(?:\/|$)/.test(path)) {
+    return ['restore.execute']
+  }
+  return [method === 'GET' ? 'backup.read' : 'backup.write']
 }
 
 export async function resolveBackupOperatorTarget(projectRef: string) {
@@ -231,6 +243,7 @@ export async function requestBackupOperator(
   const operatorPath = path.startsWith('/operations/')
     ? `/v1${path}`
     : `/v1/clusters/${encodeURIComponent(clusterId)}${path}`
+  const scopes = backupOperatorScopes(init.method, path)
   if (STUDIO_DEPLOYMENT_PROFILE === 'fleet') {
     const binding = await getProjectManagementBinding(projectRef)
     if (!binding) {
@@ -253,7 +266,7 @@ export async function requestBackupOperator(
         method: init.method ?? 'GET',
         path: operatorPath,
         body: init.body,
-        scopes: ['backup.read', 'backup.write', 'restore.execute'],
+        scopes,
         actor: init.actor || 'studio-api',
         correlationId,
         projectId: clusterId,
@@ -290,6 +303,7 @@ export async function requestBackupOperator(
     audience: assertionAudience,
     subject: actor,
     project: clusterId,
+    scopes,
     aal: init.aal,
     aalAuthenticatedAt: init.aalAuthenticatedAt,
   })
@@ -409,6 +423,7 @@ export async function requestBackupOperatorEvents(
     audience: assertionAudience,
     subject: actor,
     project: clusterId,
+    scopes: ['backup.read'],
     aal: init.aal,
     aalAuthenticatedAt: init.aalAuthenticatedAt,
   })

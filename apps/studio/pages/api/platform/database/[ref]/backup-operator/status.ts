@@ -3,8 +3,15 @@ import type { JwtPayload } from '@supabase/supabase-js'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
-import { CapabilityUnavailable, requireProjectCapability } from '@/lib/api/self-platform/attachment'
-import { getBackupOperatorStatus } from '@/lib/api/self-platform/backup-operator-status'
+import {
+  getBackupManagementAvailability,
+  type BackupManagementAvailability,
+} from '@/lib/api/self-platform/backup-management-availability'
+import { requestBackupOperator } from '@/lib/api/self-platform/backup-operator-client'
+import {
+  getBackupOperatorStatus,
+  unavailableBackupOperatorStatus,
+} from '@/lib/api/self-platform/backup-operator-status'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { STUDIO_CAPABILITIES, STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
@@ -27,19 +34,52 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
     projectRef,
   })
   if (!isAllowed) return
-  if (STUDIO_DEPLOYMENT_PROFILE === 'fleet') {
+  if (STUDIO_DEPLOYMENT_PROFILE !== 'fleet') {
+    return res.status(200).json(await getBackupOperatorStatus(projectRef))
+  }
+
+  let management = await getBackupManagementAvailability(projectRef)
+  res.setHeader('X-Correlation-ID', management.correlationId)
+
+  if (management.state === 'checking' || management.state === 'available') {
     try {
-      await requireProjectCapability(projectRef, 'management.agent.connect')
+      await requestBackupOperator(projectRef, '', {
+        method: 'GET',
+        actor: claims?.sub ?? 'studio-api',
+        correlationId: management.correlationId,
+      })
+      management = { ...management, state: 'available', blockers: [] }
     } catch (error) {
-      if (error instanceof CapabilityUnavailable) {
-        return res.status(409).json({
-          code: 'capability_unavailable',
-          message: error.message,
-          blockers: error.blockers,
-        })
-      }
-      throw error
+      management = operatorFailureAvailability(management, error)
     }
   }
-  return res.status(200).json(await getBackupOperatorStatus(projectRef))
+
+  if (management.state !== 'available') {
+    return res.status(200).json({ ...unavailableBackupOperatorStatus, management })
+  }
+  return res.status(200).json({ ...(await getBackupOperatorStatus(projectRef)), management })
+}
+
+function operatorFailureAvailability(
+  current: BackupManagementAvailability,
+  error: unknown
+): BackupManagementAvailability {
+  const incompatible =
+    error instanceof Error &&
+    ('status' in error ? Number(error.status) === 426 : /incompatible/i.test(error.message))
+  return {
+    ...current,
+    state: incompatible ? 'incompatible' : 'offline',
+    blockers: [
+      {
+        code: incompatible ? 'backup_domain_incompatible' : 'backup_domain_offline',
+        message: incompatible
+          ? 'The Backup Operator domain is not compatible with this Studio release.'
+          : 'The configured Backup Operator domain did not pass its readiness check.',
+        remediation: incompatible
+          ? 'Upgrade Studio and the Backup Operator to a compatible contract version.'
+          : 'Check the management target, Agent connection, TLS trust, and Operator health.',
+      },
+    ],
+  }
 }

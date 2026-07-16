@@ -10,6 +10,7 @@ import { useProjectAddonsQuery } from '@/data/subscriptions/project-addons-query
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -130,7 +131,7 @@ export const useGenerateDatabaseMenu = (): ProductMenuGroup[] => {
             label: enablePgReplicate ? 'New' : undefined,
             shortcutId: SHORTCUT_IDS.NAV_DATABASE_REPLICATION,
           },
-        IS_PLATFORM && {
+        STUDIO_CAPABILITIES.backupManagement && {
           name: $t('Backups'),
           key: 'backups',
           url: pitrEnabled ? getDatabaseURL('backups/pitr') : getDatabaseURL('backups/scheduled'),

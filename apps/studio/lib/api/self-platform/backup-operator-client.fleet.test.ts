@@ -49,7 +49,24 @@ describe('Backup Operator Fleet management trust client', () => {
         aalAuthenticatedAt: 1_700_000_000,
         correlationId: 'correlation-a',
         idempotencyKey: expect.stringMatching(/^[a-f0-9]{64}$/),
+        scopes: ['restore.execute'],
       })
+    )
+  })
+
+  it('uses least-privilege scopes for reads and non-restore writes', async () => {
+    await requestBackupOperator('project-a', '/backup-policy')
+    expect(requestManagementDomain).toHaveBeenLastCalledWith(
+      expect.anything(),
+      'backup-operator',
+      expect.objectContaining({ scopes: ['backup.read'] })
+    )
+
+    await requestBackupOperator('project-a', '/backups', { method: 'POST', body: { type: 'full' } })
+    expect(requestManagementDomain).toHaveBeenLastCalledWith(
+      expect.anything(),
+      'backup-operator',
+      expect.objectContaining({ scopes: ['backup.write'] })
     )
   })
 })

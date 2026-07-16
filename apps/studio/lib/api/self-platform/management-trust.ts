@@ -197,6 +197,18 @@ const enrollmentTokenResponseSchema = z.object({
 
 export type EnrollmentTokenResponse = z.infer<typeof enrollmentTokenResponseSchema>
 
+export const enrollmentTokenAuditQuery = `with binding as (
+  update platform.project_management_bindings set state = 'enrolling', updated_at = now()
+  where id = $1 and project_ref = $2 and state in ('pending', 'enrolling', 'offline', 'incompatible')
+  returning id
+), audit as (
+  insert into platform.audit_events (actor, project_ref, action, correlation_id, payload)
+  select $3, $2, 'fleet.enrollment_token.issue', $4,
+         jsonb_build_object('binding_id', id, 'enrollment_id', $5::text,
+                            'expires_at', $6::timestamptz)
+  from binding
+) select id from binding`
+
 type ManagementTargetRow = {
   id: string
   organization_id: number
@@ -247,6 +259,33 @@ select t.id, t.organization_id, t.name, t.trust_domain, t.ca_reference,
 from platform.management_targets t
 left join platform.management_target_domains d on d.management_target_id = t.id`
 
+// pg-meta returns timestamptz values using PostgreSQL's text representation
+// (`YYYY-MM-DD HH:mm:ss.us+00`). Normalize at the database boundary before the
+// public schemas enforce ISO 8601. Downstream Fleet APIs already return ISO.
+function normalizeDatabaseTimestamp(value: string): string {
+  const timestamp = new Date(value)
+  return Number.isNaN(timestamp.getTime()) ? value : timestamp.toISOString()
+}
+
+function normalizeNullableDatabaseTimestamp(value: string | null): string | null {
+  return value === null ? null : normalizeDatabaseTimestamp(value)
+}
+
+function normalizeDomainTimestamps(value: unknown): unknown {
+  if (!Array.isArray(value)) return value
+  return value.map((domain) => {
+    if (domain === null || typeof domain !== 'object') return domain
+    const record = domain as Record<string, unknown>
+    return {
+      ...record,
+      observedAt:
+        typeof record.observedAt === 'string'
+          ? normalizeDatabaseTimestamp(record.observedAt)
+          : record.observedAt,
+    }
+  })
+}
+
 function mapTarget(row: ManagementTargetRow): ManagementTarget {
   return managementTargetSchema.parse({
     id: row.id,
@@ -256,9 +295,9 @@ function mapTarget(row: ManagementTargetRow): ManagementTarget {
     caReference: row.ca_reference,
     assertionKeyReference: row.assertion_key_reference,
     state: row.state,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    domains: row.domains,
+    createdAt: normalizeDatabaseTimestamp(row.created_at),
+    updatedAt: normalizeDatabaseTimestamp(row.updated_at),
+    domains: normalizeDomainTimestamps(row.domains),
   })
 }
 
@@ -426,13 +465,13 @@ function mapBinding(row: ManagementBindingRow): ManagementBinding {
     protocolMinor: row.protocol_minor,
     agentBuild: row.agent_build,
     activeCertificateRevision: row.active_certificate_revision,
-    certificateExpiresAt: row.certificate_expires_at,
-    lastSeenAt: row.last_seen_at,
+    certificateExpiresAt: normalizeNullableDatabaseTimestamp(row.certificate_expires_at),
+    lastSeenAt: normalizeNullableDatabaseTimestamp(row.last_seen_at),
     observationRevision: row.observation_revision,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    createdAt: normalizeDatabaseTimestamp(row.created_at),
+    updatedAt: normalizeDatabaseTimestamp(row.updated_at),
     targetState: row.target_state,
-    domains: row.domains,
+    domains: normalizeDomainTimestamps(row.domains),
   })
 }
 
@@ -507,16 +546,7 @@ export async function issueProjectEnrollmentToken(input: {
   })
   const token = enrollmentTokenResponseSchema.parse(response)
   const updated = await executePlatformQuery({
-    query: `with binding as (
-      update platform.project_management_bindings set state = 'enrolling', updated_at = now()
-      where id = $1 and project_ref = $2 and state in ('pending', 'enrolling', 'offline', 'incompatible')
-      returning id
-    ), audit as (
-      insert into platform.audit_events (actor, project_ref, action, correlation_id, payload)
-      select $3, $2, 'fleet.enrollment_token.issue', $4,
-             jsonb_build_object('binding_id', id, 'enrollment_id', $5, 'expires_at', $6::timestamptz)
-      from binding
-    ) select id from binding`,
+    query: enrollmentTokenAuditQuery,
     parameters: [
       binding.id,
       input.projectRef,

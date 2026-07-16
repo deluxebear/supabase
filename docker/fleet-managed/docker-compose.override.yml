@@ -1,0 +1,184 @@
+services:
+  studio:
+    container_name: ${MANAGED_CONTAINER_PREFIX:?set MANAGED_CONTAINER_PREFIX}-embedded-studio
+    profiles: [embedded-studio]
+
+  kong:
+    container_name: ${MANAGED_CONTAINER_PREFIX:?set MANAGED_CONTAINER_PREFIX}-kong
+    depends_on: !override []
+    ports: !override
+      - ${MANAGED_KONG_HTTP_PORT:?set MANAGED_KONG_HTTP_PORT}:8000/tcp
+      - ${MANAGED_KONG_HTTPS_PORT:?set MANAGED_KONG_HTTPS_PORT}:8443/tcp
+    networks:
+      default: {}
+      management:
+        aliases:
+          - kong-${MANAGED_PROJECT_REF:?set MANAGED_PROJECT_REF}
+
+  db:
+    container_name: ${MANAGED_CONTAINER_PREFIX:?set MANAGED_CONTAINER_PREFIX}-db
+    volumes: !override
+      - ./volumes/db/realtime.sql:/docker-entrypoint-initdb.d/migrations/99-realtime.sql:Z
+      - ./volumes/db/webhooks.sql:/docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql:Z
+      - ./volumes/db/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:Z
+      - ./volumes/db/jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:Z
+      - managed-db-data:/var/lib/postgresql/data
+      - ./volumes/db/_supabase.sql:/docker-entrypoint-initdb.d/migrations/97-_supabase.sql:Z
+      - ./volumes/db/logs.sql:/docker-entrypoint-initdb.d/migrations/99-logs.sql:Z
+      - ./volumes/db/pooler.sql:/docker-entrypoint-initdb.d/migrations/99-pooler.sql:Z
+      - db-config:/etc/postgresql-custom
+    networks:
+      default: {}
+      management:
+        aliases:
+          - db-${MANAGED_PROJECT_REF:?set MANAGED_PROJECT_REF}
+
+  meta:
+    container_name: ${MANAGED_CONTAINER_PREFIX:?set MANAGED_CONTAINER_PREFIX}-meta
+    networks:
+      default: {}
+      management:
+        aliases:
+          - meta-${MANAGED_PROJECT_REF:?set MANAGED_PROJECT_REF}
+
+  auth:
+    container_name: ${MANAGED_CONTAINER_PREFIX:?set MANAGED_CONTAINER_PREFIX}-auth
+
+  rest:
+    container_name: ${MANAGED_CONTAINER_PREFIX:?set MANAGED_CONTAINER_PREFIX}-rest
+
+  realtime:
+    container_name: realtime-dev.${MANAGED_CONTAINER_PREFIX:?set MANAGED_CONTAINER_PREFIX}
+    networks:
+      default:
+        aliases: [realtime-dev.supabase-realtime]
+
+  storage:
+    container_name: ${MANAGED_CONTAINER_PREFIX:?set MANAGED_CONTAINER_PREFIX}-storage
+    volumes: !override
+      - managed-storage-data:/var/lib/storage
+
+  imgproxy:
+    container_name: ${MANAGED_CONTAINER_PREFIX:?set MANAGED_CONTAINER_PREFIX}-imgproxy
+    volumes: !override
+      - managed-storage-data:/var/lib/storage
+
+  functions:
+    container_name: ${MANAGED_CONTAINER_PREFIX:?set MANAGED_CONTAINER_PREFIX}-functions
+    depends_on:
+      fleet-agent-init:
+        condition: service_completed_successfully
+    volumes: !override
+      - type: bind
+        source: ${FLEET_FUNCTION_ROOT:?set FLEET_FUNCTION_ROOT}/${FLEET_FUNCTION_PROJECT_KEY:?set FLEET_FUNCTION_PROJECT_KEY}
+        target: /home/deno/functions
+      - deno-cache:/root/.cache/deno
+
+  supavisor:
+    container_name: ${MANAGED_CONTAINER_PREFIX:?set MANAGED_CONTAINER_PREFIX}-pooler
+    ports: !override
+      - ${MANAGED_POSTGRES_HOST_PORT:?set MANAGED_POSTGRES_HOST_PORT}:5432/tcp
+      - ${MANAGED_POOLER_HOST_PORT:?set MANAGED_POOLER_HOST_PORT}:6543/tcp
+
+  fleet-agent-init:
+    image: alpine:3.22
+    restart: "no"
+    environment:
+      FLEET_FUNCTION_PROJECT_KEY: ${FLEET_FUNCTION_PROJECT_KEY:?set FLEET_FUNCTION_PROJECT_KEY}
+    command:
+      - /bin/sh
+      - -ceu
+      - |
+        project_root="/functions/$${FLEET_FUNCTION_PROJECT_KEY}"
+        mkdir -p "$$project_root" /agent-state /fleet-config
+        if [ ! -f "$$project_root/main/index.ts" ]; then
+          cp -a /seed/. "$$project_root/"
+        fi
+        chown -R 65532:65532 /functions /agent-state /fleet-config
+        chmod 0700 /agent-state
+    volumes:
+      - ./volumes/functions:/seed:ro
+      - ${FLEET_FUNCTION_ROOT}:/functions
+      - fleet-agent-state:/agent-state
+      - ${FLEET_CONFIG_ROOT:?set FLEET_CONFIG_ROOT}:/fleet-config
+
+  fleet-agent-bootstrap:
+    image: ${FLEET_AGENT_IMAGE:?set FLEET_AGENT_IMAGE}
+    profiles: [enroll]
+    restart: "no"
+    user: "65532:65532"
+    entrypoint: [/usr/local/bin/fleet-agent-bootstrap]
+    depends_on:
+      fleet-agent-init:
+        condition: service_completed_successfully
+    environment:
+      FLEET_AGENT_ENROLLMENT_URL: ${FLEET_AGENT_ENROLLMENT_URL:-https://fleet-control:8091}
+      FLEET_AGENT_ENROLLMENT_TOKEN: ${FLEET_AGENT_ENROLLMENT_TOKEN:-}
+      FLEET_AGENT_ENROLLMENT_SERVER_CA: /run/secrets/fleet-management/ca.crt
+      FLEET_AGENT_ORGANIZATION_ID: ${FLEET_AGENT_ORGANIZATION_ID:-}
+      FLEET_AGENT_PROJECT_REF: ${MANAGED_PROJECT_REF:?set MANAGED_PROJECT_REF}
+      FLEET_AGENT_TARGET_ID: ${FLEET_AGENT_TARGET_ID:-}
+      FLEET_AGENT_BINDING_ID: ${FLEET_AGENT_BINDING_ID:-}
+      FLEET_AGENT_EXECUTION_TARGET: ${FLEET_AGENT_EXECUTION_TARGET:-}
+      FLEET_AGENT_DEPLOYMENT_KIND: compose
+      FLEET_AGENT_ID: ${FLEET_AGENT_ID:-}
+      FLEET_AGENT_CAPABILITIES_FILE: /etc/fleet-agent/capabilities.json
+      FLEET_AGENT_TRUST_OUTPUT: /var/lib/fleet-agent/trust
+    volumes:
+      - fleet-agent-state:/var/lib/fleet-agent
+      - ./fleet-managed/capabilities.json:/etc/fleet-agent/capabilities.json:ro
+    secrets:
+      - source: fleet_enrollment_ca
+        target: fleet-management/ca.crt
+    security_opt: [no-new-privileges:true]
+    networks: [management]
+
+  fleet-agent:
+    image: ${FLEET_AGENT_IMAGE:?set FLEET_AGENT_IMAGE}
+    profiles: [agent]
+    restart: unless-stopped
+    user: "65532:65532"
+    entrypoint: [/usr/local/bin/fleet-agent]
+    depends_on:
+      fleet-agent-init:
+        condition: service_completed_successfully
+    environment:
+      FLEET_AGENT_CONTROL_ADDRESS: ${FLEET_AGENT_CONTROL_ADDRESS:-fleet-control:8092}
+      FLEET_AGENT_CLIENT_CERT: /var/lib/fleet-agent/trust/agent-cert.pem
+      FLEET_AGENT_CLIENT_KEY: /var/lib/fleet-agent/trust/agent-key.pem
+      FLEET_AGENT_SERVER_CA: /var/lib/fleet-agent/trust/agent-ca.pem
+      FLEET_AGENT_SERVER_NAME: ${FLEET_AGENT_SERVER_NAME:-fleet-control}
+      FLEET_AGENT_ID: ${FLEET_AGENT_ID:-}
+      FLEET_AGENT_PROJECT_REF: ${MANAGED_PROJECT_REF:?set MANAGED_PROJECT_REF}
+      FLEET_AGENT_TARGET_ID: ${FLEET_AGENT_TARGET_ID:-}
+      FLEET_AGENT_BINDING_ID: ${FLEET_AGENT_BINDING_ID:-}
+      FLEET_AGENT_NODE_ID: ${FLEET_AGENT_NODE_ID:-}
+      FLEET_AGENT_ADAPTER: compose
+      FLEET_AGENT_COMPOSE_OWNED_ROOT: /var/lib/supabase-fleet/config
+      FLEET_AGENT_FUNCTION_ARTIFACT_ROOT: /var/lib/supabase-fleet/functions
+      FLEET_AGENT_FUNCTION_PROBE_URL: http://kong:8000/functions/v1
+      FLEET_AGENT_FUNCTION_PROBE_TOKEN: ${SERVICE_ROLE_KEY}
+      FLEET_AGENT_JOURNAL: /var/lib/fleet-agent/agent-journal.db
+      FLEET_AGENT_LOCK: /var/lib/fleet-agent/agent.lock
+    volumes:
+      - fleet-agent-state:/var/lib/fleet-agent
+      - ${FLEET_CONFIG_ROOT:?set FLEET_CONFIG_ROOT}:/var/lib/supabase-fleet/config
+      - ${FLEET_FUNCTION_ROOT}:/var/lib/supabase-fleet/functions
+    security_opt: [no-new-privileges:true]
+    networks:
+      default: {}
+      management: {}
+
+networks:
+  management:
+    name: ${FLEET_MANAGEMENT_NETWORK_NAME:-fleet-management}
+    external: true
+
+volumes:
+  managed-db-data:
+  managed-storage-data:
+  fleet-agent-state:
+
+secrets:
+  fleet_enrollment_ca:
+    file: ./self-platform/secrets/fleet-management/ca.crt

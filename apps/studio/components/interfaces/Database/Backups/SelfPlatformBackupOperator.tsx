@@ -6,6 +6,7 @@ import { Badge, Button, Card, CardContent, CardFooter, Input, Progress } from 'u
 import { Admonition } from 'ui-patterns/admonition'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
+import { BackupManagementUnavailable } from './BackupManagementUnavailable'
 import {
   canExecuteRestore,
   canRollbackRestore,
@@ -31,6 +32,7 @@ import {
   restorePlanQueryOptions,
 } from '@/data/backup-operator/backup-operator-query'
 import { useBackupOperatorEvents } from '@/data/backup-operator/use-backup-operator-events'
+import { backupOperatorStatusQueryOptions } from '@/data/database/backup-operator-status-query'
 import { useMfaListFactorsQuery } from '@/data/profile/mfa-list-factors-query'
 import { t as $t } from '@/lib/i18n'
 
@@ -39,6 +41,27 @@ interface SelfPlatformBackupOperatorProps {
 }
 
 export function SelfPlatformBackupOperator({ projectRef }: SelfPlatformBackupOperatorProps) {
+  const statusQuery = useQuery(backupOperatorStatusQueryOptions({ projectRef }))
+
+  if (statusQuery.isPending) return <GenericSkeletonLoader />
+  if (statusQuery.isError) {
+    return (
+      <AlertError error={statusQuery.error} subject={$t('Failed to check Backup management')} />
+    )
+  }
+  if (statusQuery.data.management && statusQuery.data.management.state !== 'available') {
+    return (
+      <BackupManagementUnavailable
+        availability={statusQuery.data.management}
+        projectRef={projectRef}
+      />
+    )
+  }
+
+  return <SelfPlatformBackupOperatorControls projectRef={projectRef} />
+}
+
+function SelfPlatformBackupOperatorControls({ projectRef }: SelfPlatformBackupOperatorProps) {
   const router = useRouter()
   const [recoveryTarget, setRecoveryTarget] = useState('')
   const [confirmationHash, setConfirmationHash] = useState('')

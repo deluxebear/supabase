@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { executePlatformQuery } from './db'
 import {
   createManagementTarget,
+  enrollmentTokenAuditQuery,
   managementBindingInputSchema,
   managementTargetInputSchema,
   mintManagementServiceAssertion,
@@ -55,6 +56,11 @@ describe('management trust platform boundary', () => {
     ).toBe(false)
   })
 
+  it('types enrollment audit parameters that PostgreSQL cannot infer from JSON builders', () => {
+    expect(enrollmentTokenAuditQuery).toContain("'enrollment_id', $5::text")
+    expect(enrollmentTokenAuditQuery).toContain("'expires_at', $6::timestamptz")
+  })
+
   it('mints a short project-scoped assertion without secret material in claims', () => {
     const token = mintManagementServiceAssertion({
       key: '01234567890123456789012345678901',
@@ -100,8 +106,8 @@ describe('management trust platform boundary', () => {
             ca_reference: 'file:/run/secrets/fleet-management/ca.crt',
             assertion_key_reference: 'env:FLEET_MANAGEMENT_ASSERTION_PRIMARY',
             state: 'active',
-            created_at: '2026-07-15T00:00:00Z',
-            updated_at: '2026-07-15T00:00:00Z',
+            created_at: '2026-07-15 00:00:00.123456+00',
+            updated_at: '2026-07-15 00:00:01.654321+00',
             domains: [
               {
                 domain: 'fleet-control',
@@ -111,14 +117,14 @@ describe('management trust platform boundary', () => {
                 capabilitySchemaPrefix: 'supabase.fleet.',
                 targetVersion: null,
                 state: 'unverified',
-                observedAt: null,
+                observedAt: '2026-07-15 00:00:02.987654+00',
               },
             ],
           },
         ],
       } as never)
 
-    await createManagementTarget({
+    const target = await createManagementTarget({
       organizationId: 1,
       actor: 'owner-a',
       target: {
@@ -140,5 +146,8 @@ describe('management trust platform boundary', () => {
     const parameters = vi.mocked(executePlatformQuery).mock.calls[0][0].parameters
     expect(parameters).toContain('env:FLEET_MANAGEMENT_ASSERTION_PRIMARY')
     expect(JSON.stringify(parameters)).not.toContain('resolved-secret')
+    expect(target.createdAt).toBe('2026-07-15T00:00:00.123Z')
+    expect(target.updatedAt).toBe('2026-07-15T00:00:01.654Z')
+    expect(target.domains[0].observedAt).toBe('2026-07-15T00:00:02.987Z')
   })
 })

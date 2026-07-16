@@ -89,6 +89,7 @@ describe('Backup Operator self-platform client', () => {
       aud: 'backup-operator',
       sub: 'studio-api',
       projects: ['cluster-a'],
+      scopes: ['backup.read'],
     })
     expect(claims.exp - claims.iat).toBe(60)
     expect(correlationId).toMatch(/^[0-9a-f-]{36}$/)

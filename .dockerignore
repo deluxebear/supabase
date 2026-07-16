@@ -12,6 +12,10 @@ supabase
 tests
 
 **/.next
+**/.turbo
+**/coverage
+**/dist
+**/*.tsbuildinfo
 .vercel
 **/.env.*
 

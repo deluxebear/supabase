@@ -82,6 +82,30 @@ function operatorURL(path: string) {
   return `*/api/platform/database/project-a/backup-operator/${path}`
 }
 
+const availableStatus = {
+  configured: true,
+  policy: {
+    enabled: true,
+    retentionDays: 7,
+    schedule: '0 1 * * *',
+    backupFrom: 'primary',
+  },
+  provider: { name: 'pgBackRest', version: '2.56' },
+  topology: { kind: 'static-primary', primary: 'primary-a', standbys: 0 },
+  repository: { type: 's3', location: 's3://backups' },
+  check: { status: 'healthy', checkedAt: '2026-07-13T10:00:00Z', message: null },
+  lastJob: null,
+  capabilities: { backup: true, restore: true, blockers: [] },
+  compatibility: { image: 'postgres:17', supported: true, blocker: null },
+  updatedAt: '2026-07-13T10:00:00Z',
+  management: {
+    state: 'available',
+    configured: true,
+    blockers: [],
+    correlationId: '00000000-0000-4000-8000-000000000019',
+  },
+}
+
 function mockPolicyAndBackups({
   policyResponse = policy,
   backupsResponse = backups,
@@ -90,6 +114,9 @@ function mockPolicyAndBackups({
   backupsResponse?: typeof backups
 } = {}) {
   mswServer.use(
+    http.get('*/api/platform/database/project-a/backup-operator/status', () =>
+      HttpResponse.json(availableStatus)
+    ),
     http.get(operatorURL('policy'), () => HttpResponse.json(policyResponse)),
     http.get(operatorURL('backups'), () => HttpResponse.json(backupsResponse)),
     http.get(operatorURL('cluster'), () =>
@@ -184,6 +211,44 @@ describe('Backup Operator React Query options', () => {
 })
 
 describe('SelfPlatformBackupOperator', () => {
+  it('renders correlated setup guidance without contacting Operator resources', async () => {
+    let operatorRequests = 0
+    mswServer.use(
+      http.get('*/api/platform/database/project-a/backup-operator/status', () =>
+        HttpResponse.json({
+          ...availableStatus,
+          management: {
+            state: 'unconfigured',
+            configured: false,
+            blockers: [
+              {
+                code: 'backup_management_unconfigured',
+                message: 'This project is not bound to a Backup Operator management domain.',
+                remediation:
+                  'Add a Backup Operator domain to a management target, then bind this project.',
+              },
+            ],
+            correlationId: '00000000-0000-4000-8000-000000000020',
+          },
+        })
+      ),
+      http.get(operatorURL('*'), () => {
+        operatorRequests++
+        return HttpResponse.json({ message: 'unexpected' }, { status: 500 })
+      })
+    )
+
+    customRender(<SelfPlatformBackupOperator projectRef="project-a" />)
+
+    expect(await screen.findByText('Backup management is not configured')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Open management trust settings' })).toHaveAttribute(
+      'href',
+      '/project/project-a/settings/general'
+    )
+    expect(screen.getByText(/00000000-0000-4000-8000-000000000020/)).toBeInTheDocument()
+    expect(operatorRequests).toBe(0)
+  })
+
   it('does not request or render restore progress for an empty backupJob URL parameter', async () => {
     let jobRequests = 0
     routerMock.setCurrentUrl('/project/project-a/database/backups/scheduled?backupPlan=&backupJob=')

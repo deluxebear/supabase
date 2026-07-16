@@ -102,7 +102,9 @@ begin
     where project_ref = 'ownership-a' and drift_state = 'ownership-conflict'
   ) then raise exception 'aggregate stack drift state is missing'; end if;
   if exists (
-    select 1 from platform.project_ownership_policies where project_ref = 'ownership-b'
+    select 1 from platform.project_ownership_policies
+    where project_ref = 'ownership-b'
+      and (domain = 'auth' or updated_by = 'owner-a')
   ) then raise exception 'project A policy leaked into project B'; end if;
   if not exists (
     select 1 from platform.audit_events

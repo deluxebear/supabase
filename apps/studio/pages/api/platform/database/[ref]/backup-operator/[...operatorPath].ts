@@ -18,6 +18,8 @@ type OperatorRoute = {
   path: string
   destructive?: boolean
   eventOperationId?: string
+  permissionAction?: PermissionAction
+  permissionResource?: string
 }
 
 function resolveRoute(method: string | undefined, segments: string[]): OperatorRoute | null {
@@ -33,7 +35,11 @@ function resolveRoute(method: string | undefined, segments: string[]): OperatorR
   if (method === 'POST' && joined === 'pitr/disable')
     return { method: 'POST', path: '/pitr/disable' }
   if (method === 'POST' && joined === 'restore-plans') {
-    return { method: 'POST', path: '/restore-plans' }
+    return {
+      method: 'POST',
+      path: '/restore-plans',
+      permissionResource: 'queue_job.restore.prepare',
+    }
   }
   const eventMatch = joined.match(/^jobs\/([a-zA-Z0-9_-]+)\/events$/)
   if (method === 'GET' && eventMatch) {
@@ -81,8 +87,12 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
   if (!route) return res.status(405).json({ message: 'Backup Operator operation is not allowed' })
 
   const isAllowed = await guardProjectRoute(res, claims, {
-    action: route.method === 'GET' ? PermissionAction.READ : PermissionAction.UPDATE,
+    action:
+      route.permissionAction ??
+      (route.method === 'GET' ? PermissionAction.READ : PermissionAction.INFRA_EXECUTE),
     projectRef,
+    resource:
+      route.permissionResource ?? (route.destructive ? 'queue_job.restore.prepare' : 'back_ups'),
   })
   if (!isAllowed) return
   if (route.destructive && claims?.aal !== 'aal2') {

@@ -4,11 +4,13 @@ import { Badge, Button, Card, CardContent } from 'ui'
 import { Admonition } from 'ui-patterns/admonition'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
+import { BackupManagementUnavailable } from './BackupManagementUnavailable'
 import { AlertError } from '@/components/ui/AlertError'
 import {
   operatorBackupsQueryOptions,
   operatorPITRQueryOptions,
 } from '@/data/backup-operator/backup-operator-query'
+import { backupOperatorStatusQueryOptions } from '@/data/database/backup-operator-status-query'
 import { t as $t } from '@/lib/i18n'
 
 interface SelfPlatformPITRProps {
@@ -16,6 +18,27 @@ interface SelfPlatformPITRProps {
 }
 
 export function SelfPlatformPITR({ projectRef }: SelfPlatformPITRProps) {
+  const statusQuery = useQuery(backupOperatorStatusQueryOptions({ projectRef }))
+
+  if (statusQuery.isPending) return <GenericSkeletonLoader />
+  if (statusQuery.isError) {
+    return (
+      <AlertError error={statusQuery.error} subject={$t('Failed to check Backup management')} />
+    )
+  }
+  if (statusQuery.data.management && statusQuery.data.management.state !== 'available') {
+    return (
+      <BackupManagementUnavailable
+        availability={statusQuery.data.management}
+        projectRef={projectRef}
+      />
+    )
+  }
+
+  return <SelfPlatformPITRContent projectRef={projectRef} />
+}
+
+function SelfPlatformPITRContent({ projectRef }: SelfPlatformPITRProps) {
   const pitrQuery = useQuery(operatorPITRQueryOptions({ projectRef }))
   const backupsQuery = useQuery(operatorBackupsQueryOptions({ projectRef }))
 
