@@ -35,6 +35,24 @@ describe('isHostedSupportedApiPath', () => {
     expect(isHostedSupportedApiPath('/api/totally-unknown')).toBe(false)
   })
 
+  it('rejects hosted-only platform APIs in Fleet mode', async () => {
+    const { isHostedSupportedApiPath } = await loadAllowlist('true')
+
+    expect(isHostedSupportedApiPath('/api/platform/integrations/github/connections')).toBe(false)
+    expect(
+      isHostedSupportedApiPath('/api/platform/organizations/default/billing/subscription')
+    ).toBe(false)
+    expect(isHostedSupportedApiPath('/api/platform/organizations/default/usage')).toBe(false)
+    expect(isHostedSupportedApiPath('/api/v1/projects/project-a/branches')).toBe(false)
+    expect(isHostedSupportedApiPath('/api/platform/replication/project-a/destinations')).toBe(false)
+    expect(isHostedSupportedApiPath('/api/platform/storage/project-a/analytics-buckets')).toBe(
+      false
+    )
+    expect(isHostedSupportedApiPath('/api/platform/storage/project-a/vector-buckets')).toBe(false)
+    expect(isHostedSupportedApiPath('/api/platform/telemetry/event')).toBe(false)
+    expect(isHostedSupportedApiPath('/api/incident-status')).toBe(false)
+  })
+
   // [self-platform] C1 hardening: matching used to be `.includes`, so a
   // smuggled path with `/api/v1/` or `/api/platform/` anywhere mid-string
   // (not just as the actual API prefix) would incorrectly pass.

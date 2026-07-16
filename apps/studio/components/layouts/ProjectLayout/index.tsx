@@ -56,6 +56,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { withAuth } from '@/hooks/misc/withAuth'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
 import { t as $t } from '@/lib/i18n'
 import { buildStudioPageTitle } from '@/lib/page-title'
@@ -365,7 +366,7 @@ export const ProjectLayout = forwardRef<HTMLDivElement, PropsWithChildren<Projec
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>
-        <CreateBranchModal />
+        {STUDIO_CAPABILITIES.previewBranching && <CreateBranchModal />}
         <ProjectAPIDocs />
       </>
     )

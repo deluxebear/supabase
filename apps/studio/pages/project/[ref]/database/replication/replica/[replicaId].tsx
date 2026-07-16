@@ -22,15 +22,27 @@ import { PageLayout } from '@/components/layouts/PageLayout/PageLayout'
 import { ScaffoldDescription, ScaffoldTitle } from '@/components/layouts/Scaffold'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import CopyButton from '@/components/ui/CopyButton'
+import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import {
   ReplicaInitializationStatus,
   useReadReplicasStatusesQuery,
 } from '@/data/read-replicas/replicas-status-query'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const DatabaseReadReplicaPage: NextPageWithLayout = () => {
+  const { ref } = useParams()
+
+  if (!STUDIO_CAPABILITIES.etlReplication) {
+    return <UnknownInterface urlBack={`/project/${ref}/database/schemas`} />
+  }
+
+  return <DatabaseReadReplicaPageContent />
+}
+
+const DatabaseReadReplicaPageContent = () => {
   const router = useRouter()
   const { ref, replicaId } = useParams()
 

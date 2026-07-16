@@ -6,6 +6,7 @@ import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM, PROJECT_STATUS } from '@/lib/constants'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -107,15 +108,19 @@ export const useGenerateSettingsMenu = () => {
           items: [],
           shortcutId: SHORTCUT_IDS.NAV_PROJECT_SETTINGS_GENERAL,
         },
-        {
-          name: $t('Compute and Disk'),
-          key: 'compute-and-disk',
-          url: `/project/${ref}/settings/compute-and-disk`,
-          items: [],
-          disabled: !isProjectActive,
-          isLoading: isPending,
-          shortcutId: SHORTCUT_IDS.NAV_PROJECT_SETTINGS_COMPUTE_AND_DISK,
-        },
+        ...(STUDIO_CAPABILITIES.cloudManagementApi
+          ? [
+              {
+                name: $t('Compute and Disk'),
+                key: 'compute-and-disk',
+                url: `/project/${ref}/settings/compute-and-disk`,
+                items: [],
+                disabled: !isProjectActive,
+                isLoading: isPending,
+                shortcutId: SHORTCUT_IDS.NAV_PROJECT_SETTINGS_COMPUTE_AND_DISK,
+              },
+            ]
+          : []),
         {
           name: $t('Infrastructure'),
           key: 'infrastructure',
@@ -126,15 +131,19 @@ export const useGenerateSettingsMenu = () => {
           shortcutId: SHORTCUT_IDS.NAV_PROJECT_SETTINGS_INFRASTRUCTURE,
         },
 
-        {
-          name: $t('Integrations'),
-          key: 'integrations',
-          url: `/project/${ref}/settings/integrations`,
-          items: [],
-          disabled: !isProjectActive,
-          isLoading: isPending,
-          shortcutId: SHORTCUT_IDS.NAV_PROJECT_SETTINGS_INTEGRATIONS,
-        },
+        ...(STUDIO_CAPABILITIES.hostedMarketplaceIntegrations
+          ? [
+              {
+                name: $t('Integrations'),
+                key: 'integrations',
+                url: `/project/${ref}/settings/integrations`,
+                items: [],
+                disabled: !isProjectActive,
+                isLoading: isPending,
+                shortcutId: SHORTCUT_IDS.NAV_PROJECT_SETTINGS_INTEGRATIONS,
+              },
+            ]
+          : []),
         ...(platformWebhooksEnabled
           ? [
               {
@@ -230,7 +239,7 @@ export const useGenerateSettingsMenu = () => {
     {
       title: $t('Billing'),
       items: [
-        ...(billingEnabled
+        ...(STUDIO_CAPABILITIES.hostedBilling && billingEnabled
           ? [
               {
                 name: $t('Subscription'),
@@ -241,14 +250,18 @@ export const useGenerateSettingsMenu = () => {
               },
             ]
           : []),
-        {
-          name: $t('Usage'),
-          key: 'usage',
-          url: `/org/${organization?.slug}/usage?projectRef=${ref}`,
-          items: [],
-          rightIcon: <ArrowUpRight strokeWidth={1} className="h-4 w-4" />,
-        },
+        ...(STUDIO_CAPABILITIES.hostedOrganizationUsage
+          ? [
+              {
+                name: $t('Usage'),
+                key: 'usage',
+                url: `/org/${organization?.slug}/usage?projectRef=${ref}`,
+                items: [],
+                rightIcon: <ArrowUpRight strokeWidth={1} className="h-4 w-4" />,
+              },
+            ]
+          : []),
       ],
     },
-  ]
+  ].filter((group) => group.items.length > 0)
 }

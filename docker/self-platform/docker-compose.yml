@@ -22,9 +22,9 @@ services:
     healthcheck:
       test: [
           'CMD-SHELL',
-          # [self-platform] /api/platform/profile 401s under default-deny;
-          # telemetry/feature-flags is the stable withAuth:false 200.
-          'node -e "fetch(''http://localhost:3000/api/platform/telemetry/feature-flags'').then((r) => {if (r.status !== 200) throw new Error(r.status)})"',
+          # [self-platform] Use the deployment-neutral liveness endpoint. Hosted
+          # telemetry and feature-flag routes are intentionally unavailable in Fleet.
+          'node -e "fetch(''http://localhost:3000/api/get-utc-time'').then((r) => {if (r.status !== 200) throw new Error(r.status)})"',
         ]
       timeout: 10s
       interval: 5s

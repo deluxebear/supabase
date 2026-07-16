@@ -6,6 +6,7 @@ import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import OrganizationLayout from '@/components/layouts/OrganizationLayout'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import {
   ORG_SETTINGS_PANEL_KEYS,
@@ -28,7 +29,7 @@ const OrgBillingSettings: NextPageWithLayout = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [panel])
 
-  if (!showBilling) {
+  if (!STUDIO_CAPABILITIES.hostedBilling || !showBilling) {
     return <UnknownInterface urlBack={`/org/${slug}`} />
   }
 

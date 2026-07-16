@@ -17,6 +17,22 @@ vi.mock('@/lib/constants', async () => {
   }
 })
 
+vi.mock('@/lib/constants/deployment-profile', async () => {
+  const actual = await vi.importActual<Record<string, unknown>>(
+    '@/lib/constants/deployment-profile'
+  )
+  return {
+    ...actual,
+    STUDIO_CAPABILITIES: {
+      ...(actual.STUDIO_CAPABILITIES as Record<string, boolean>),
+      cloudManagementApi: true,
+      hostedBilling: true,
+      hostedOrganizationUsage: true,
+      hostedMarketplaceIntegrations: true,
+    },
+  }
+})
+
 vi.mock('common', () => ({
   useFlag: vi.fn().mockReturnValue(false),
   useParams: vi.fn().mockReturnValue({ ref: 'project-ref' }),

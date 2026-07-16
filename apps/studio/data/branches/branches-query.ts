@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { branchKeys } from './keys'
 import type { components } from '@/data/api'
 import { get, handleError } from '@/data/fetchers'
-import { IS_PLATFORM } from '@/lib/constants'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import type { ResponseError, UseCustomQueryOptions } from '@/types'
 
 export type BranchesVariables = {
@@ -41,6 +41,6 @@ export const useBranchesQuery = <TData = BranchesData>(
   useQuery<BranchesData, BranchesError, TData>({
     queryKey: branchKeys.list(projectRef),
     queryFn: ({ signal }) => getBranches({ projectRef }, signal),
-    enabled: IS_PLATFORM && enabled && Boolean(projectRef),
+    enabled: STUDIO_CAPABILITIES.previewBranching && enabled && Boolean(projectRef),
     ...options,
   })

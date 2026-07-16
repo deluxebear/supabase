@@ -51,6 +51,7 @@ import {
   useSelectedProjectQuery,
 } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH, DOCS_URL } from '@/lib/constants'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { getDatabaseMajorVersion, getSemanticVersion } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
@@ -110,6 +111,7 @@ export const Addons = () => {
     ? backupOperatorStatus?.policy.enabled === true
     : pitr !== undefined
   const customDomainEnabled = customDomain !== undefined
+  const showDedicatedIPv4 = STUDIO_CAPABILITIES.dedicatedIPv4 && projectAddonsDedicatedIpv4Address
 
   const canOpenIPv4 =
     isAws && isProjectActive && !projectUpdateDisabled && (canUpdateIPv4 || ipv4Enabled)
@@ -256,7 +258,7 @@ export const Addons = () => {
 
         {isSuccess && (
           <ResourceList className={listTopSpacing}>
-            {projectAddonsDedicatedIpv4Address && (
+            {showDedicatedIPv4 && (
               <ResourceItem
                 className={resourceItemClassName}
                 onClick={canOpenIPv4 ? () => setPanel('ipv4') : undefined}
@@ -425,7 +427,7 @@ export const Addons = () => {
 
         <PITRSidePanel />
         <CustomDomainSidePanel />
-        <IPv4SidePanel />
+        {showDedicatedIPv4 && <IPv4SidePanel />}
       </PageSection>
     </PageContainer>
   )

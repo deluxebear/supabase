@@ -48,6 +48,7 @@ import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 
 const formId = 'pooling-configuration-form'
@@ -166,23 +167,26 @@ export const ConnectionPooling = () => {
         </PageSectionAside>
       </PageSectionMeta>
       <PageSectionContent className="space-y-4">
-        {isSuccessAddons && !disablePoolModeSelection && !hasIpv4Addon && (
-          <Admonition
-            type="default"
-            layout="responsive"
-            title={$t('Dedicated pooler uses IPv6 by default')}
-            description={$t(
-              'Connections from IPv4-only networks require enabling the IPv4 add-on on your project instance.'
-            )}
-            actions={
-              <Button variant="default" asChild>
-                <Link href={`/project/${projectRef}/settings/addons?panel=ipv4`}>
-                  {$t('Enable IPv4 add-on')}
-                </Link>
-              </Button>
-            }
-          />
-        )}
+        {STUDIO_CAPABILITIES.dedicatedIPv4 &&
+          isSuccessAddons &&
+          !disablePoolModeSelection &&
+          !hasIpv4Addon && (
+            <Admonition
+              type="default"
+              layout="responsive"
+              title={$t('Dedicated pooler uses IPv6 by default')}
+              description={$t(
+                'Connections from IPv4-only networks require enabling the IPv4 add-on on your project instance.'
+              )}
+              actions={
+                <Button variant="default" asChild>
+                  <Link href={`/project/${projectRef}/settings/addons?panel=ipv4`}>
+                    {$t('Enable IPv4 add-on')}
+                  </Link>
+                </Button>
+              }
+            />
+          )}
 
         <Panel
           noMargin

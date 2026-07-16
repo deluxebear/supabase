@@ -11,11 +11,23 @@ import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { PageLayout } from '@/components/layouts/PageLayout/PageLayout'
 import StorageLayout from '@/components/layouts/StorageLayout/StorageLayout'
 import { DocsButton } from '@/components/ui/DocsButton'
+import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const AnalyticsBucketPage: NextPageWithLayout = () => {
+  const { ref } = useParams()
+
+  if (!STUDIO_CAPABILITIES.storageAnalytics) {
+    return <UnknownInterface urlBack={`/project/${ref}/storage/files`} />
+  }
+
+  return <AnalyticsBucketPageContent />
+}
+
+const AnalyticsBucketPageContent = () => {
   const config = BUCKET_TYPES.analytics
   const router = useRouter()
   const { ref, bucketId } = useParams()

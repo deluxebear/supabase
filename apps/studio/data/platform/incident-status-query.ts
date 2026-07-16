@@ -4,6 +4,7 @@ import { partition } from 'lodash'
 import { platformKeys } from './keys'
 import type { IncidentInfo } from '@/lib/api/incident-status'
 import { BASE_PATH, IS_PLATFORM, IS_TEST_ENV } from '@/lib/constants'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { ResponseError, UseCustomQueryOptions } from '@/types'
 
 export async function getIncidentStatus(
@@ -65,6 +66,8 @@ export const useIncidentStatusQuery = <TData = IncidentStatusData>(
     },
     ...options,
     // Enable in platform mode, or in test environment for E2E testing
-    enabled: (IS_PLATFORM || IS_TEST_ENV) && (options.enabled ?? true),
+    enabled:
+      ((IS_PLATFORM && STUDIO_CAPABILITIES.hostedIncidentStatus) || IS_TEST_ENV) &&
+      (options.enabled ?? true),
   })
 }

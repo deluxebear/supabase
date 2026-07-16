@@ -10,6 +10,7 @@ import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useHighAvailability } from '@/hooks/misc/useHighAvailability'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import { PipelineRequestStatusProvider } from '@/state/replication-pipeline-request-status'
 import type { NextPageWithLayout } from '@/types'
@@ -19,7 +20,7 @@ const DatabaseReplicationPage: NextPageWithLayout = () => {
   const { isHighAvailability } = useHighAvailability()
   const showPgReplicate = useIsFeatureEnabled('database:replication')
 
-  if (!showPgReplicate) {
+  if (!STUDIO_CAPABILITIES.etlReplication || !showPgReplicate) {
     return <UnknownInterface urlBack={`/project/${selectedProject?.ref}/database/schemas`} />
   }
 

@@ -7,6 +7,7 @@ import { IRouteCommand } from 'ui-patterns/CommandMenu/internal/types'
 import { COMMAND_MENU_SECTIONS } from '@/components/interfaces/App/CommandMenu/CommandMenu.utils'
 import { orderCommandSectionsByPriority } from '@/components/interfaces/App/CommandMenu/ordering'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 
 export function useDatabaseGotoCommands(options?: CommandOptions) {
   let { ref } = useParams()
@@ -85,7 +86,7 @@ export function useDatabaseGotoCommands(options?: CommandOptions) {
             } as IRouteCommand,
           ]
         : []),
-      ...(databaseReplication
+      ...(STUDIO_CAPABILITIES.etlReplication && databaseReplication
         ? [
             {
               id: 'nav-database-replication',

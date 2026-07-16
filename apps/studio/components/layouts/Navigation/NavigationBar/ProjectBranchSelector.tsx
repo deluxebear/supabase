@@ -19,7 +19,7 @@ import { useBranchesQuery } from '@/data/branches/branches-query'
 import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { IS_PLATFORM } from '@/lib/constants'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 
 export function ProjectBranchSelector() {
   const router = useRouter()
@@ -61,7 +61,7 @@ export function ProjectBranchSelector() {
   if (isLoadingProject || !displayProject)
     return <ShimmeringLoader className="w-[120px] ml-1 md:py-3" />
 
-  if (!IS_PLATFORM) {
+  if (!STUDIO_CAPABILITIES.previewBranching) {
     return (
       <SidebarMenu>
         <SidebarMenuItem>

@@ -3,7 +3,7 @@ import { IS_PLATFORM } from 'common'
 
 import { platformKeys } from './keys'
 import { BASE_PATH } from '@/lib/constants'
-import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 
 export interface IncidentBannerItem {
   id: string
@@ -38,5 +38,5 @@ export const incidentBannerQueryOptions = () =>
     // long retry delays.
     retryDelay: (attemptIndex) => Math.min(1000 * 4 ** attemptIndex, 1000 * 60 * 5),
     staleTime: 1000 * 60 * 5,
-    enabled: IS_PLATFORM && !IS_SELF_PLATFORM,
+    enabled: IS_PLATFORM && STUDIO_CAPABILITIES.hostedIncidentStatus,
   })

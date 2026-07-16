@@ -304,7 +304,7 @@ services:
       test:
         - CMD-SHELL
         - >-
-          node -e "fetch('http://localhost:3000/api/platform/telemetry/feature-flags').then(r=>{if(r.status!==200)throw Error(r.status)})"
+          node -e "fetch('http://localhost:3000/api/get-utc-time').then(r=>{if(r.status!==200)throw Error(r.status)})"
       interval: 5s
       timeout: 10s
       retries: 10

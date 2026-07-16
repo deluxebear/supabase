@@ -18,6 +18,7 @@ import { ScaffoldContainer, ScaffoldSection } from '@/components/layouts/Scaffol
 import { useLocalStorage } from '@/hooks/misc/useLocalStorage'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM, PROJECT_STATUS } from '@/lib/constants'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAppStateSnapshot } from '@/state/app-state'
 
@@ -63,7 +64,11 @@ export const ProjectHome = () => {
   }
 
   useEffect(() => {
-    if (enableBranching && !hasShownEnableBranchingModalRef.current) {
+    if (
+      STUDIO_CAPABILITIES.previewBranching &&
+      enableBranching &&
+      !hasShownEnableBranchingModalRef.current
+    ) {
       hasShownEnableBranchingModalRef.current = true
       snap.setShowCreateBranchModal(true)
     }
@@ -81,7 +86,9 @@ export const ProjectHome = () => {
 
   const renderOrder = mergeSectionOrder(sectionOrder).filter((id) => {
     if (id === 'connect') return showConnectSection
-    if (id === 'usage' || id === 'custom-report') return IS_PLATFORM
+    if (id === 'usage' || id === 'custom-report') {
+      return IS_PLATFORM && STUDIO_CAPABILITIES.hostedOrganizationUsage
+    }
     return true
   })
 

@@ -5,6 +5,7 @@ import { subscriptionKeys } from './keys'
 import { get, handleError } from '@/data/fetchers'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import type { ResponseError, UseCustomQueryOptions } from '@/types'
 
 export type OrgSubscriptionVariables = {
@@ -48,7 +49,11 @@ export const useOrgSubscriptionQuery = <TData = OrgSubscriptionData>(
   return useQuery<OrgSubscriptionData, OrgSubscriptionError, TData>({
     queryKey: subscriptionKeys.orgSubscription(orgSlug),
     queryFn: ({ signal }) => getOrgSubscription({ orgSlug }, signal),
-    enabled: enabled && canReadSubscriptions && typeof orgSlug !== 'undefined',
+    enabled:
+      enabled &&
+      STUDIO_CAPABILITIES.hostedBilling &&
+      canReadSubscriptions &&
+      typeof orgSlug !== 'undefined',
     staleTime: 60 * 60 * 1000,
     ...options,
   })

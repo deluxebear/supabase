@@ -29,6 +29,7 @@ import { useOrgUsageQuery } from '@/data/usage/org-usage-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
@@ -175,7 +176,7 @@ export const LayoutHeader = ({
                       </div>
                     )}
 
-                    {selectedProject && IS_PLATFORM && (
+                    {selectedProject && STUDIO_CAPABILITIES.previewBranching && (
                       <>
                         <LayoutHeaderDivider />
                         <BranchDropdown />
@@ -216,7 +217,7 @@ export const LayoutHeader = ({
                     ease: 'easeOut',
                   }}
                 >
-                  {IS_PLATFORM && <MergeRequestButton />}
+                  {STUDIO_CAPABILITIES.previewBranching && <MergeRequestButton />}
                   <ConnectButton buttonVariant={connectButtonVariant} />
                 </motion.div>
               )}

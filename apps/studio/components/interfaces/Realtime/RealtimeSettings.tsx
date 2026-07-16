@@ -38,6 +38,7 @@ import {
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 
 const formId = 'realtime-configuration-form'
@@ -69,6 +70,8 @@ export const RealtimeSettings = () => {
 
   const isFreePlan = organization?.plan.id === 'free'
   const isUsageBillingEnabled = organization?.usage_billing_enabled
+  const canConfigureUsageLimits =
+    !STUDIO_CAPABILITIES.hostedBilling || isUsageBillingEnabled === true
   const isRealtimeDisabled = data?.suspend ?? REALTIME_DEFAULT_CONFIG.suspend
   // Check if RLS policies exist for realtime.messages table
   const realtimeMessagesPolicies = policies?.filter(
@@ -397,7 +400,7 @@ export const RealtimeSettings = () => {
                                 {...field}
                                 id="max_events_per_second"
                                 type="number"
-                                disabled={!isUsageBillingEnabled || !canUpdateConfig}
+                                disabled={!canConfigureUsageLimits || !canUpdateConfig}
                                 value={field.value || ''}
                               />
                               <InputGroupAddon align="inline-end">
@@ -408,33 +411,35 @@ export const RealtimeSettings = () => {
                         </FormItemLayout>
                       )}
                     />
-                    {isSuccessOrganization && !isUsageBillingEnabled && (
-                      <Admonition showIcon={false} type="default">
-                        <div className="flex items-center gap-x-2">
-                          <div>
-                            <h5 className="text-foreground mb-1">
-                              {$t('Spend cap needs to be disabled to configure this value')}
-                            </h5>
-                            <p className="text-foreground-light">
-                              {isFreePlan
-                                ? 'Upgrade to the Pro plan first to disable spend cap'
-                                : 'You may adjust this setting in the organization billing settings'}
-                            </p>
+                    {STUDIO_CAPABILITIES.hostedBilling &&
+                      isSuccessOrganization &&
+                      !isUsageBillingEnabled && (
+                        <Admonition showIcon={false} type="default">
+                          <div className="flex items-center gap-x-2">
+                            <div>
+                              <h5 className="text-foreground mb-1">
+                                {$t('Spend cap needs to be disabled to configure this value')}
+                              </h5>
+                              <p className="text-foreground-light">
+                                {isFreePlan
+                                  ? 'Upgrade to the Pro plan first to disable spend cap'
+                                  : 'You may adjust this setting in the organization billing settings'}
+                              </p>
+                            </div>
+                            <div className="grow flex items-center justify-end">
+                              {isFreePlan ? (
+                                <UpgradePlanButton
+                                  source="realtimeSettings"
+                                  addon="spendCap"
+                                  featureProposition="configure the max events per second parameter of realtime settings"
+                                />
+                              ) : (
+                                <ToggleSpendCapButton />
+                              )}
+                            </div>
                           </div>
-                          <div className="grow flex items-center justify-end">
-                            {isFreePlan ? (
-                              <UpgradePlanButton
-                                source="realtimeSettings"
-                                addon="spendCap"
-                                featureProposition="configure the max events per second parameter of realtime settings"
-                              />
-                            ) : (
-                              <ToggleSpendCapButton />
-                            )}
-                          </div>
-                        </div>
-                      </Admonition>
-                    )}
+                        </Admonition>
+                      )}
                   </CardContent>
                   <CardContent className="space-y-2">
                     <FormField
@@ -455,7 +460,7 @@ export const RealtimeSettings = () => {
                                 {...field}
                                 id="max_presence_events_per_second"
                                 type="number"
-                                disabled={!isUsageBillingEnabled || !canUpdateConfig}
+                                disabled={!canConfigureUsageLimits || !canUpdateConfig}
                                 value={field.value || ''}
                               />
                               <InputGroupAddon align="inline-end">
@@ -466,33 +471,35 @@ export const RealtimeSettings = () => {
                         </FormItemLayout>
                       )}
                     />
-                    {isSuccessOrganization && !isUsageBillingEnabled && (
-                      <Admonition showIcon={false} type="default">
-                        <div className="flex items-center gap-x-2">
-                          <div>
-                            <h5 className="text-foreground mb-1">
-                              {$t('Spend cap needs to be disabled to configure this value')}
-                            </h5>
-                            <p className="text-foreground-light">
-                              {isFreePlan
-                                ? 'Upgrade to the Pro plan first to disable spend cap'
-                                : 'You may adjust this setting in the organization billing settings'}
-                            </p>
+                    {STUDIO_CAPABILITIES.hostedBilling &&
+                      isSuccessOrganization &&
+                      !isUsageBillingEnabled && (
+                        <Admonition showIcon={false} type="default">
+                          <div className="flex items-center gap-x-2">
+                            <div>
+                              <h5 className="text-foreground mb-1">
+                                {$t('Spend cap needs to be disabled to configure this value')}
+                              </h5>
+                              <p className="text-foreground-light">
+                                {isFreePlan
+                                  ? 'Upgrade to the Pro plan first to disable spend cap'
+                                  : 'You may adjust this setting in the organization billing settings'}
+                              </p>
+                            </div>
+                            <div className="grow flex items-center justify-end">
+                              {isFreePlan ? (
+                                <UpgradePlanButton
+                                  source="realtimeSettings"
+                                  addon="spendCap"
+                                  featureProposition="configure the max presence events per second parameter of realtime settings"
+                                />
+                              ) : (
+                                <ToggleSpendCapButton />
+                              )}
+                            </div>
                           </div>
-                          <div className="grow flex items-center justify-end">
-                            {isFreePlan ? (
-                              <UpgradePlanButton
-                                source="realtimeSettings"
-                                addon="spendCap"
-                                featureProposition="configure the max presence events per second parameter of realtime settings"
-                              />
-                            ) : (
-                              <ToggleSpendCapButton />
-                            )}
-                          </div>
-                        </div>
-                      </Admonition>
-                    )}
+                        </Admonition>
+                      )}
                   </CardContent>
                   <CardContent className="space-y-2">
                     <FormField
@@ -513,7 +520,7 @@ export const RealtimeSettings = () => {
                                 {...field}
                                 id="max_payload_size_in_kb"
                                 type="number"
-                                disabled={!isUsageBillingEnabled || !canUpdateConfig}
+                                disabled={!canConfigureUsageLimits || !canUpdateConfig}
                                 value={field.value || ''}
                               />
                               <InputGroupAddon align="inline-end">
@@ -524,33 +531,35 @@ export const RealtimeSettings = () => {
                         </FormItemLayout>
                       )}
                     />
-                    {isSuccessOrganization && !isUsageBillingEnabled && (
-                      <Admonition showIcon={false} type="default">
-                        <div className="flex items-center gap-x-2">
-                          <div>
-                            <h5 className="text-foreground mb-1">
-                              {$t('Spend cap needs to be disabled to configure this value')}
-                            </h5>
-                            <p className="text-foreground-light">
-                              {isFreePlan
-                                ? 'Upgrade to the Pro plan first to disable spend cap'
-                                : 'You may adjust this setting in the organization billing settings'}
-                            </p>
+                    {STUDIO_CAPABILITIES.hostedBilling &&
+                      isSuccessOrganization &&
+                      !isUsageBillingEnabled && (
+                        <Admonition showIcon={false} type="default">
+                          <div className="flex items-center gap-x-2">
+                            <div>
+                              <h5 className="text-foreground mb-1">
+                                {$t('Spend cap needs to be disabled to configure this value')}
+                              </h5>
+                              <p className="text-foreground-light">
+                                {isFreePlan
+                                  ? 'Upgrade to the Pro plan first to disable spend cap'
+                                  : 'You may adjust this setting in the organization billing settings'}
+                              </p>
+                            </div>
+                            <div className="grow flex items-center justify-end">
+                              {isFreePlan ? (
+                                <UpgradePlanButton
+                                  addon="spendCap"
+                                  source="realtimeSettings"
+                                  featureProposition="configure the max payload size parameter of realtime settings"
+                                />
+                              ) : (
+                                <ToggleSpendCapButton />
+                              )}
+                            </div>
                           </div>
-                          <div className="grow flex items-center justify-end">
-                            {isFreePlan ? (
-                              <UpgradePlanButton
-                                addon="spendCap"
-                                source="realtimeSettings"
-                                featureProposition="configure the max payload size parameter of realtime settings"
-                              />
-                            ) : (
-                              <ToggleSpendCapButton />
-                            )}
-                          </div>
-                        </div>
-                      </Admonition>
-                    )}
+                        </Admonition>
+                      )}
                   </CardContent>
                 </>
               )}

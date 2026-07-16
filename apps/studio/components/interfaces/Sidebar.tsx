@@ -43,6 +43,7 @@ import { useLints } from '@/hooks/misc/useLints'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -380,7 +381,8 @@ const OrganizationLinks = () => {
   const isUserMFAEnabled = useIsMFAEnabled()
   const disableAccessMfa = org?.organization_requires_mfa && !isUserMFAEnabled
 
-  const showBilling = useIsFeatureEnabled('billing:all')
+  const billingFeatureEnabled = useIsFeatureEnabled('billing:all')
+  const showBilling = STUDIO_CAPABILITIES.hostedBilling && billingFeatureEnabled
 
   const activeRoute = router.pathname.split('/')[3]
   const organizationSettingsRoutes = new Set([
@@ -407,20 +409,28 @@ const OrganizationLinks = () => {
       icon: <Users size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
       shortcutId: SHORTCUT_IDS.NAV_ORG_TEAM,
     },
-    {
-      label: 'Integrations',
-      href: `/org/${organizationSlug}/integrations`,
-      key: 'integrations',
-      icon: <Blocks size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
-      shortcutId: SHORTCUT_IDS.NAV_ORG_INTEGRATIONS,
-    },
-    {
-      label: 'Usage',
-      href: `/org/${organizationSlug}/usage`,
-      key: 'usage',
-      icon: <ChartArea size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
-      shortcutId: SHORTCUT_IDS.NAV_ORG_USAGE,
-    },
+    ...(STUDIO_CAPABILITIES.hostedMarketplaceIntegrations
+      ? [
+          {
+            label: 'Integrations',
+            href: `/org/${organizationSlug}/integrations`,
+            key: 'integrations',
+            icon: <Blocks size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
+            shortcutId: SHORTCUT_IDS.NAV_ORG_INTEGRATIONS,
+          },
+        ]
+      : []),
+    ...(STUDIO_CAPABILITIES.hostedOrganizationUsage
+      ? [
+          {
+            label: 'Usage',
+            href: `/org/${organizationSlug}/usage`,
+            key: 'usage',
+            icon: <ChartArea size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
+            shortcutId: SHORTCUT_IDS.NAV_ORG_USAGE,
+          },
+        ]
+      : []),
     ...(showBilling
       ? [
           {

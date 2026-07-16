@@ -8,11 +8,23 @@ import DatabaseLayout from '@/components/layouts/DatabaseLayout/DatabaseLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { ScaffoldContainer, ScaffoldSection } from '@/components/layouts/Scaffold'
 import { FormHeader } from '@/components/ui/Forms/FormHeader'
+import { UnknownInterface } from '@/components/ui/UnknownInterface'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import { PipelineRequestStatusProvider } from '@/state/replication-pipeline-request-status'
 import type { NextPageWithLayout } from '@/types'
 
 const DatabaseReplicationPage: NextPageWithLayout = () => {
+  const { ref: projectRef } = useParams()
+
+  if (!STUDIO_CAPABILITIES.etlReplication) {
+    return <UnknownInterface urlBack={`/project/${projectRef}/database/schemas`} />
+  }
+
+  return <DatabaseReplicationPageContent />
+}
+
+const DatabaseReplicationPageContent = () => {
   const router = useRouter()
   const { ref: projectRef } = useParams()
   const { hasLoaded } = useContext(FeatureFlagContext)

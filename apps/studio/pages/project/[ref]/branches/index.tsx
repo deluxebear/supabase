@@ -16,18 +16,30 @@ import { AlertError } from '@/components/ui/AlertError'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { NoPermission } from '@/components/ui/NoPermission'
+import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { Branch, useBranchesQuery } from '@/data/branches/branches-query'
 import { useGitHubConnectionsQuery } from '@/data/integrations/github-connections-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAppStateSnapshot } from '@/state/app-state'
 import type { NextPageWithLayout } from '@/types'
 
 const BranchesPage: NextPageWithLayout = () => {
+  const { ref } = useParams()
+
+  if (!STUDIO_CAPABILITIES.previewBranching) {
+    return <UnknownInterface urlBack={`/project/${ref}`} />
+  }
+
+  return <BranchesPageContent />
+}
+
+const BranchesPageContent = () => {
   const router = useRouter()
   const { ref } = useParams()
   const snap = useAppStateSnapshot()

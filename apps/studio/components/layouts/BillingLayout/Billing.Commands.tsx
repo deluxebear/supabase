@@ -5,6 +5,7 @@ import { useRegisterCommands } from 'ui-patterns/CommandMenu'
 import { COMMAND_MENU_SECTIONS } from '@/components/interfaces/App/CommandMenu/CommandMenu.utils'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 
 export function useBillingGotoCommands(options?: CommandOptions) {
   const { data: organization } = useSelectedOrganizationQuery()
@@ -13,7 +14,7 @@ export function useBillingGotoCommands(options?: CommandOptions) {
 
   useRegisterCommands(
     COMMAND_MENU_SECTIONS.NAVIGATE,
-    IS_PLATFORM && billingEnabled
+    IS_PLATFORM && STUDIO_CAPABILITIES.hostedBilling && billingEnabled
       ? [
           {
             id: 'nav-billing',

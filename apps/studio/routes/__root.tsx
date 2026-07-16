@@ -72,7 +72,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { AuthProvider } from '@/lib/auth'
 import { configureMonacoLoader } from '@/lib/configure-monaco-loader'
 import { API_URL, BASE_PATH, IS_PLATFORM, useDefaultProvider } from '@/lib/constants'
-import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 // Custom adapter instead of `nuqs/adapters/tanstack-router` — the stock one
 // injects a trailing slash before the query on every nuqs write (see module).
 import { NuqsAdapter } from '@/lib/nuqs-tanstack-adapter'
@@ -333,7 +333,7 @@ function RootComponent() {
         <AuthProvider>
           <FeatureFlagProviderWithOrgContext
             API_URL={API_URL}
-            enabled={IS_PLATFORM && !IS_SELF_PLATFORM}
+            enabled={STUDIO_CAPABILITIES.hostedFeatureFlags}
             getConfigCatFlags={getConfigCatFlags}
           >
             <ProfileProvider>
@@ -369,12 +369,12 @@ function RootComponent() {
                   </ThemeProvider>
                 </RouteValidationWrapper>
               </TooltipProvider>
-              <Telemetry />
+              {STUDIO_CAPABILITIES.hostedTelemetry && <Telemetry />}
             </ProfileProvider>
           </FeatureFlagProviderWithOrgContext>
         </AuthProvider>
       </NuqsAdapter>
-      <TelemetryTagManager />
+      {STUDIO_CAPABILITIES.hostedTelemetry && <TelemetryTagManager />}
     </ErrorBoundary>
   )
 }

@@ -12,6 +12,7 @@ import {
 } from '@/data/config/project-storage-config-query'
 import { useDeploymentMode } from '@/hooks/misc/useDeploymentMode'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS, type ShortcutId } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -37,8 +38,8 @@ export const StorageMenuV2 = () => {
   const isAnalyticsBucketsEnabled = useIsAnalyticsBucketsEnabled({ projectRef: ref })
   const isVectorBucketsEnabled = useIsVectorBucketsEnabled({ projectRef: ref })
 
-  const showAnalytics = isPlatform && storageAnalytics
-  const showVectors = (isPlatform && storageVectors) || isCli
+  const showAnalytics = STUDIO_CAPABILITIES.storageAnalytics && isPlatform && storageAnalytics
+  const showVectors = (STUDIO_CAPABILITIES.storageVectors && isPlatform && storageVectors) || isCli
 
   useShortcut(SHORTCUT_IDS.NAV_STORAGE_FILES, () => router.push(`/project/${ref}/storage/files`))
   useShortcut(

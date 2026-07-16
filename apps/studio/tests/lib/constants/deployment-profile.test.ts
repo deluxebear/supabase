@@ -88,6 +88,18 @@ describe('getStudioCapabilities', () => {
       cloudManagementApi: false,
       managementTrust: true,
       ownershipReconciliation: true,
+      hostedBilling: false,
+      hostedOrganizationUsage: false,
+      hostedMarketplaceIntegrations: false,
+      hostedIncidentStatus: false,
+      hostedConsent: false,
+      hostedTelemetry: false,
+      hostedFeatureFlags: false,
+      previewBranching: false,
+      etlReplication: false,
+      storageAnalytics: false,
+      storageVectors: false,
+      dedicatedIPv4: false,
     })
   })
 
@@ -95,5 +107,22 @@ describe('getStudioCapabilities', () => {
     expect(getStudioCapabilities('cloud').cloudManagementApi).toBe(true)
     expect(getStudioCapabilities('fleet').cloudManagementApi).toBe(false)
     expect(getStudioCapabilities('embedded').managementTrust).toBe(false)
+  })
+
+  it('keeps hosted services and paid Cloud entitlements cloud-only', () => {
+    expect(getStudioCapabilities('cloud')).toMatchObject({
+      hostedBilling: true,
+      hostedOrganizationUsage: true,
+      hostedMarketplaceIntegrations: true,
+      hostedIncidentStatus: true,
+      hostedConsent: true,
+      hostedTelemetry: true,
+      hostedFeatureFlags: true,
+      previewBranching: true,
+      etlReplication: true,
+      storageAnalytics: true,
+      storageVectors: true,
+      dedicatedIPv4: true,
+    })
   })
 })

@@ -52,6 +52,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { formatBytes } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
 
@@ -108,9 +109,13 @@ export const StorageSettings = () => {
   } = useCheckEntitlements('storage.image_transformations')
 
   const isSpendCapOn =
-    organization?.plan.id === 'pro' && organization?.usage_billing_enabled === false
+    STUDIO_CAPABILITIES.hostedBilling &&
+    organization?.plan.id === 'pro' &&
+    organization?.usage_billing_enabled === false
   const hasLimitedStorageAccess =
-    !hasAccessToImageTransformations && !hasAccessToFileSizeConfiguration
+    STUDIO_CAPABILITIES.hostedBilling &&
+    !hasAccessToImageTransformations &&
+    !hasAccessToFileSizeConfiguration
 
   const [isUpdating, setIsUpdating] = useState(false)
   const [initialValues, setInitialValues] = useState<StorageSettingsState>({
@@ -120,7 +125,11 @@ export const StorageSettings = () => {
   })
 
   const maxBytes = useMemo(() => {
-    if (organization?.usage_billing_enabled || isEntitlementUnlimited()) {
+    if (
+      !STUDIO_CAPABILITIES.hostedBilling ||
+      organization?.usage_billing_enabled ||
+      isEntitlementUnlimited()
+    ) {
       return STORAGE_FILE_SIZE_LIMIT_MAX_BYTES_UNCAPPED
     } else {
       return getEntitlementNumericValue() ?? STORAGE_FILE_SIZE_LIMIT_MAX_BYTES_CAPPED

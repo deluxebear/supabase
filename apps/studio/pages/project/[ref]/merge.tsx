@@ -24,6 +24,7 @@ import { ProjectLayoutWithAuth } from '@/components/layouts/ProjectLayout'
 import { ScaffoldContainer } from '@/components/layouts/Scaffold'
 import ProductEmptyState from '@/components/to-be-cleaned/ProductEmptyState'
 import { InlineLink } from '@/components/ui/InlineLink'
+import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useBranchDeleteMutation } from '@/data/branches/branch-delete-mutation'
 import { useBranchMergeMutation } from '@/data/branches/branch-merge-mutation'
 import { useBranchPushMutation } from '@/data/branches/branch-push-mutation'
@@ -34,11 +35,22 @@ import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
 import { useBranchMergeDiff } from '@/hooks/branches/useBranchMergeDiff'
 import { useWorkflowManagement } from '@/hooks/branches/useWorkflowManagement'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import type { NextPageWithLayout } from '@/types'
 
 const MergePage: NextPageWithLayout = () => {
+  const { ref } = useParams()
+
+  if (!STUDIO_CAPABILITIES.previewBranching) {
+    return <UnknownInterface urlBack={`/project/${ref}`} />
+  }
+
+  return <MergePageContent />
+}
+
+const MergePageContent = () => {
   const router = useRouter()
   const { ref, workflow_run_id: currentWorkflowRunId } = useParams()
   const { data: project } = useSelectedProjectQuery()

@@ -5,14 +5,11 @@ import { useConsentToast } from 'ui-patterns/consent'
 
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
-import { API_URL, IS_PLATFORM } from '@/lib/constants'
-import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
+import { API_URL } from '@/lib/constants'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 
 export function Telemetry() {
-  // Although this is "technically" breaking the rules of hooks
-  // IS_PLATFORM never changes within a session, so this won't cause any issues
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const { hasAcceptedConsent } = IS_PLATFORM ? useConsentToast() : { hasAcceptedConsent: true }
+  const { hasAcceptedConsent } = useConsentToast()
 
   // Get org from selected organization query because it's not
   // always available in the URL params
@@ -69,7 +66,7 @@ export function Telemetry() {
     <PageTelemetry
       API_URL={API_URL}
       hasAcceptedConsent={hasAcceptedConsent}
-      enabled={IS_PLATFORM && !IS_SELF_PLATFORM}
+      enabled={STUDIO_CAPABILITIES.hostedTelemetry}
       organizationSlug={organization?.slug}
     />
   )

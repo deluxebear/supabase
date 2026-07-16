@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { Box, Boxes, GitBranch } from 'lucide-react'
 import { cn, SheetHeader, SheetTitle, Tabs, TabsContent, TabsList } from 'ui'
 import MobileSheetNav from 'ui-patterns/MobileSheetNav/MobileSheetNav'
@@ -9,6 +8,8 @@ import { OrganizationDropdown } from '@/components/layouts/AppLayout/Organizatio
 import { ProjectDropdown } from '@/components/layouts/AppLayout/ProjectDropdown'
 import type { Branch } from '@/data/branches/branches-query'
 import type { ProjectDetail } from '@/data/projects/project-detail-query'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
+import { t as $t } from '@/lib/i18n'
 import type { Organization } from '@/types'
 
 const EMBEDDED_CLASSNAME =
@@ -56,11 +57,12 @@ export function ProjectBranchSelectorSheet({
       label: projectLabel,
       icon: Box,
     },
-    branchLabel && {
-      value: 'branch' as const,
-      label: branchLabel,
-      icon: GitBranch,
-    },
+    STUDIO_CAPABILITIES.previewBranching &&
+      branchLabel && {
+        value: 'branch' as const,
+        label: branchLabel,
+        icon: GitBranch,
+      },
   ].filter(Boolean) as Array<{
     value: 'organization' | 'project' | 'branch'
     label: string
@@ -83,7 +85,9 @@ export function ProjectBranchSelectorSheet({
     >
       <Tabs defaultValue={defaultTab} className="flex flex-col flex-1 min-h-0 overflow-hidden p-0">
         <SheetHeader className="border-0 border-default p-0 shrink-0">
-          <SheetTitle className="sr-only">{$t('Switch organization, project or branch')}</SheetTitle>
+          <SheetTitle className="sr-only">
+            {$t('Switch organization, project or branch')}
+          </SheetTitle>
           <TabsList
             className={cn(
               'w-full grid gap-0 shrink-0',

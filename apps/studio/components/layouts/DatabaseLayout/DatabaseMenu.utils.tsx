@@ -9,7 +9,6 @@ import type {
 import { useProjectAddonsQuery } from '@/data/subscriptions/project-addons-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { IS_PLATFORM } from '@/lib/constants'
 import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
@@ -123,7 +122,7 @@ export const useGenerateDatabaseMenu = (): ProductMenuGroup[] => {
     {
       title: $t('Platform'),
       items: [
-        IS_PLATFORM &&
+        STUDIO_CAPABILITIES.etlReplication &&
           showPgReplicate && {
             name: $t('Replication'),
             key: 'replication',

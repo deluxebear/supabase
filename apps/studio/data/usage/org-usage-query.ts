@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { usageKeys } from './keys'
 import type { components } from '@/data/api'
 import { get, handleError } from '@/data/fetchers'
-import { IS_PLATFORM } from '@/lib/constants'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import type { ResponseError, UseCustomQueryOptions } from '@/types'
 
 export type OrgUsageVariables = {
@@ -51,7 +51,8 @@ export const useOrgUsageQuery = <TData = OrgUsageData>(
       end?.toISOString()
     ),
     queryFn: ({ signal }) => getOrgUsage({ orgSlug, projectRef, start, end }, signal),
-    enabled: enabled && IS_PLATFORM && typeof orgSlug !== 'undefined',
+    enabled:
+      enabled && STUDIO_CAPABILITIES.hostedOrganizationUsage && typeof orgSlug !== 'undefined',
     staleTime: 1000 * 60 * 60,
     ...options,
   })

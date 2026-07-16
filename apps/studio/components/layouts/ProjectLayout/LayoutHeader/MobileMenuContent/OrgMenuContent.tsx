@@ -19,6 +19,7 @@ import { orgItemHasSubmenu, useOrgMenuNavigation } from './useOrgMenuNavigation'
 import { ICON_SIZE, ICON_STROKE_WIDTH } from '@/components/interfaces/Sidebar'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import { getPathnameWithoutQuery } from '@/lib/pathname.utils'
 import { useTrack } from '@/lib/telemetry/track'
@@ -35,7 +36,8 @@ export function OrgMenuContent({ onCloseSheet }: OrgMenuContentProps) {
   const isUserMFAEnabled = useIsMFAEnabled()
   const disableAccessMfa = org?.organization_requires_mfa && !isUserMFAEnabled
 
-  const showBilling = useIsFeatureEnabled('billing:all')
+  const billingFeatureEnabled = useIsFeatureEnabled('billing:all')
+  const showBilling = STUDIO_CAPABILITIES.hostedBilling && billingFeatureEnabled
 
   const pathname = getPathnameWithoutQuery(router.asPath, router.pathname)
   const activeRoute = getOrgActiveRoute(pathname)
@@ -73,18 +75,26 @@ export function OrgMenuContent({ onCloseSheet }: OrgMenuContentProps) {
         key: 'team',
         icon: <Users size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
       },
-      {
-        label: $t('Integrations'),
-        href: `/org/${organizationSlug}/integrations`,
-        key: 'integrations',
-        icon: <Blocks size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
-      },
-      {
-        label: $t('Usage'),
-        href: `/org/${organizationSlug}/usage`,
-        key: 'usage',
-        icon: <ChartArea size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
-      },
+      ...(STUDIO_CAPABILITIES.hostedMarketplaceIntegrations
+        ? [
+            {
+              label: $t('Integrations'),
+              href: `/org/${organizationSlug}/integrations`,
+              key: 'integrations',
+              icon: <Blocks size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
+            },
+          ]
+        : []),
+      ...(STUDIO_CAPABILITIES.hostedOrganizationUsage
+        ? [
+            {
+              label: $t('Usage'),
+              href: `/org/${organizationSlug}/usage`,
+              key: 'usage',
+              icon: <ChartArea size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
+            },
+          ]
+        : []),
       ...(showBilling
         ? [
             {

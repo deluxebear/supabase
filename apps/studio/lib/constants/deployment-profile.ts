@@ -12,6 +12,18 @@ export interface StudioCapabilities {
   projectAttachment: boolean
   managementTrust: boolean
   ownershipReconciliation: boolean
+  hostedBilling: boolean
+  hostedOrganizationUsage: boolean
+  hostedMarketplaceIntegrations: boolean
+  hostedIncidentStatus: boolean
+  hostedConsent: boolean
+  hostedTelemetry: boolean
+  hostedFeatureFlags: boolean
+  previewBranching: boolean
+  etlReplication: boolean
+  storageAnalytics: boolean
+  storageVectors: boolean
+  dedicatedIPv4: boolean
 }
 
 export interface StudioDeploymentProfileEnvironment {
@@ -36,6 +48,18 @@ const PROFILE_CAPABILITIES: Record<StudioDeploymentProfile, StudioCapabilities> 
     projectAttachment: false,
     managementTrust: false,
     ownershipReconciliation: false,
+    hostedBilling: true,
+    hostedOrganizationUsage: true,
+    hostedMarketplaceIntegrations: true,
+    hostedIncidentStatus: true,
+    hostedConsent: true,
+    hostedTelemetry: true,
+    hostedFeatureFlags: true,
+    previewBranching: true,
+    etlReplication: true,
+    storageAnalytics: true,
+    storageVectors: true,
+    dedicatedIPv4: true,
   },
   embedded: {
     multiProject: false,
@@ -49,6 +73,18 @@ const PROFILE_CAPABILITIES: Record<StudioDeploymentProfile, StudioCapabilities> 
     projectAttachment: false,
     managementTrust: false,
     ownershipReconciliation: false,
+    hostedBilling: false,
+    hostedOrganizationUsage: false,
+    hostedMarketplaceIntegrations: false,
+    hostedIncidentStatus: false,
+    hostedConsent: false,
+    hostedTelemetry: false,
+    hostedFeatureFlags: false,
+    previewBranching: false,
+    etlReplication: false,
+    storageAnalytics: false,
+    storageVectors: false,
+    dedicatedIPv4: false,
   },
   fleet: {
     multiProject: true,
@@ -62,6 +98,18 @@ const PROFILE_CAPABILITIES: Record<StudioDeploymentProfile, StudioCapabilities> 
     projectAttachment: true,
     managementTrust: true,
     ownershipReconciliation: true,
+    hostedBilling: false,
+    hostedOrganizationUsage: false,
+    hostedMarketplaceIntegrations: false,
+    hostedIncidentStatus: false,
+    hostedConsent: false,
+    hostedTelemetry: false,
+    hostedFeatureFlags: false,
+    previewBranching: false,
+    etlReplication: false,
+    storageAnalytics: false,
+    storageVectors: false,
+    dedicatedIPv4: false,
   },
   cli: {
     multiProject: false,
@@ -75,6 +123,18 @@ const PROFILE_CAPABILITIES: Record<StudioDeploymentProfile, StudioCapabilities> 
     projectAttachment: false,
     managementTrust: false,
     ownershipReconciliation: false,
+    hostedBilling: false,
+    hostedOrganizationUsage: false,
+    hostedMarketplaceIntegrations: false,
+    hostedIncidentStatus: false,
+    hostedConsent: false,
+    hostedTelemetry: false,
+    hostedFeatureFlags: false,
+    previewBranching: false,
+    etlReplication: false,
+    storageAnalytics: false,
+    storageVectors: false,
+    dedicatedIPv4: false,
   },
 }
 
