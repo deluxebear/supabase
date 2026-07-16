@@ -145,6 +145,9 @@ func Run(ctx context.Context, cfg Config) error {
 		return fmt.Errorf("initialize Fleet Control store: %w", err)
 	}
 	defer store.Close()
+	if err := store.ConfigureSensitiveOperationKey(cfg.AssertionKey); err != nil {
+		return fmt.Errorf("configure sensitive Fleet operation encryption: %w", err)
+	}
 	if err := store.SetCapacityPolicy(cfg.Capacity); err != nil {
 		return err
 	}

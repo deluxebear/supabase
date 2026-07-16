@@ -2,6 +2,9 @@ package fleetcontrol
 
 import (
 	"context"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"crypto/sha256"
 	"database/sql"
 	"embed"
@@ -9,6 +12,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"sort"
 	"strconv"
@@ -23,7 +27,7 @@ import (
 //go:embed migrations/*/*.sql
 var fleetMigrations embed.FS
 
-const CurrentSchemaVersion = 9
+const CurrentSchemaVersion = 10
 
 const operationDeadline = 15 * time.Minute
 
@@ -47,12 +51,13 @@ type StoreIdentity struct {
 }
 
 type Store struct {
-	db       *sql.DB
-	dialect  StoreDialect
-	identity StoreIdentity
-	now      func() time.Time
-	capacity CapacityPolicy
-	liveness LivenessPolicy
+	db              *sql.DB
+	dialect         StoreDialect
+	identity        StoreIdentity
+	now             func() time.Time
+	capacity        CapacityPolicy
+	liveness        LivenessPolicy
+	sensitiveCipher cipher.AEAD
 }
 
 type Operation struct {
@@ -99,12 +104,46 @@ type OperationAttempt struct {
 
 type CreateOperationInput struct {
 	Operation
-	IdempotencyKey    string
-	TypedInput        json.RawMessage
-	SnapshotCanonical string
-	Preconditions     json.RawMessage
-	Actor             string
-	CorrelationID     string
+	IdempotencyKey            string
+	TypedInput                json.RawMessage
+	SnapshotCanonical         string
+	Preconditions             json.RawMessage
+	Actor                     string
+	CorrelationID             string
+	Sensitive                 bool
+	RedactedTypedInput        json.RawMessage
+	RedactedSnapshotCanonical string
+}
+
+func (s *Store) ConfigureSensitiveOperationKey(secret []byte) error {
+	if len(secret) < 32 {
+		return errors.New("sensitive operation encryption secret must contain at least 32 bytes")
+	}
+	key := sha256.Sum256(append([]byte("supabase-fleet-sensitive-operation-v1\x00"), secret...))
+	block, err := aes.NewCipher(key[:])
+	if err != nil {
+		return err
+	}
+	s.sensitiveCipher, err = cipher.NewGCM(block)
+	return err
+}
+
+func (s *Store) encryptSensitiveInput(plaintext []byte) ([]byte, []byte, error) {
+	if s.sensitiveCipher == nil {
+		return nil, nil, errors.New("sensitive operation encryption is not configured")
+	}
+	nonce := make([]byte, s.sensitiveCipher.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return nil, nil, err
+	}
+	return s.sensitiveCipher.Seal(nil, nonce, plaintext, nil), nonce, nil
+}
+
+func (s *Store) decryptSensitiveInput(ciphertext, nonce []byte) ([]byte, error) {
+	if s.sensitiveCipher == nil {
+		return nil, errors.New("sensitive operation encryption is not configured")
+	}
+	return s.sensitiveCipher.Open(nil, nonce, ciphertext, nil)
 }
 
 type Event struct {
@@ -421,13 +460,27 @@ func (s *Store) CreateOperation(ctx context.Context, input CreateOperationInput)
 	}
 	now := s.now().UTC()
 	deadline := now.Add(operationDeadline)
-	query := `INSERT INTO operations(id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,idempotency_key,fencing_token,expected_generation,desired_revision,desired_digest,snapshot_canonical,input_schema,typed_input_json,preconditions_json,actor,correlation_id,created_at_ms,updated_at_ms,deadline_at_ms)
-VALUES(?,?,?,?,?,?,'queued',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(project_ref,idempotency_key) DO NOTHING`
-	if s.dialect == FleetPostgres {
-		query = `INSERT INTO operations(id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,idempotency_key,fencing_token,expected_generation,desired_revision,desired_digest,snapshot_canonical,input_schema,typed_input_json,preconditions_json,actor,correlation_id,created_at_ms,updated_at_ms,deadline_at_ms)
-VALUES($1,$2,$3,$4,$5,$6,'queued',$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17::jsonb,$18,$19,$20,$21,$22) ON CONFLICT(project_ref,idempotency_key) DO NOTHING`
+	storedInput := append(json.RawMessage(nil), input.TypedInput...)
+	storedSnapshot := input.SnapshotCanonical
+	var inputCiphertext, inputNonce []byte
+	if input.Sensitive {
+		if len(input.RedactedTypedInput) == 0 || !json.Valid(input.RedactedTypedInput) || input.RedactedSnapshotCanonical == "" {
+			return Operation{}, false, errors.New("sensitive operation requires a redacted durable payload")
+		}
+		inputCiphertext, inputNonce, err = s.encryptSensitiveInput(input.TypedInput)
+		if err != nil {
+			return Operation{}, false, err
+		}
+		storedInput = append(json.RawMessage(nil), input.RedactedTypedInput...)
+		storedSnapshot = input.RedactedSnapshotCanonical
 	}
-	result, err := tx.ExecContext(ctx, query, input.ID, input.ProjectRef, input.TargetID, input.BindingID, input.Domain, input.Capability, input.ProtocolMajor, input.ProtocolMinor, input.IdempotencyKey, token, input.ExpectedGeneration, input.DesiredRevision, input.DesiredDigest, input.SnapshotCanonical, input.InputSchema, string(input.TypedInput), string(input.Preconditions), input.Actor, input.CorrelationID, now.UnixMilli(), now.UnixMilli(), deadline.UnixMilli())
+	query := `INSERT INTO operations(id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,idempotency_key,fencing_token,expected_generation,desired_revision,desired_digest,snapshot_canonical,input_schema,typed_input_json,preconditions_json,actor,correlation_id,created_at_ms,updated_at_ms,deadline_at_ms,sensitive,input_ciphertext,input_nonce)
+VALUES(?,?,?,?,?,?,'queued',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(project_ref,idempotency_key) DO NOTHING`
+	if s.dialect == FleetPostgres {
+		query = `INSERT INTO operations(id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,idempotency_key,fencing_token,expected_generation,desired_revision,desired_digest,snapshot_canonical,input_schema,typed_input_json,preconditions_json,actor,correlation_id,created_at_ms,updated_at_ms,deadline_at_ms,sensitive,input_ciphertext,input_nonce)
+VALUES($1,$2,$3,$4,$5,$6,'queued',$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17::jsonb,$18,$19,$20,$21,$22,$23,$24,$25) ON CONFLICT(project_ref,idempotency_key) DO NOTHING`
+	}
+	result, err := tx.ExecContext(ctx, query, input.ID, input.ProjectRef, input.TargetID, input.BindingID, input.Domain, input.Capability, input.ProtocolMajor, input.ProtocolMinor, input.IdempotencyKey, token, input.ExpectedGeneration, input.DesiredRevision, input.DesiredDigest, storedSnapshot, input.InputSchema, string(storedInput), string(input.Preconditions), input.Actor, input.CorrelationID, now.UnixMilli(), now.UnixMilli(), deadline.UnixMilli(), input.Sensitive, inputCiphertext, inputNonce)
 	if err != nil {
 		return Operation{}, false, err
 	}
@@ -773,21 +826,28 @@ func (s *Store) ClaimOperation(ctx context.Context, identity AgentSessionIdentit
 			placeholders[index] = "?"
 		}
 	}
-	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,idempotency_key,COALESCE(task_id,''),COALESCE(agent_id,''),attempts,deadline_at_ms,typed_input_json,preconditions_json,created_at_ms,updated_at_ms
+	query := `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,idempotency_key,COALESCE(task_id,''),COALESCE(agent_id,''),attempts,deadline_at_ms,typed_input_json,preconditions_json,sensitive,COALESCE(input_ciphertext,x''),COALESCE(input_nonce,x''),created_at_ms,updated_at_ms
 FROM operations WHERE project_ref=? AND target_id=? AND binding_id=? AND (state='queued' OR (state='running' AND agent_id=?)) AND capability IN (` + strings.Join(placeholders, ",") + `) ORDER BY CASE WHEN state='running' THEN 0 ELSE 1 END,created_at_ms LIMIT 1`
 	if s.dialect == FleetPostgres {
-		query = `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,idempotency_key,COALESCE(task_id,''),COALESCE(agent_id,''),attempts,deadline_at_ms,typed_input_json,preconditions_json,created_at_ms,updated_at_ms
+		query = `SELECT id,project_ref,target_id,binding_id,domain,capability,state,protocol_major,protocol_minor,expected_generation,desired_revision,desired_digest,input_schema,fencing_token,idempotency_key,COALESCE(task_id,''),COALESCE(agent_id,''),attempts,deadline_at_ms,typed_input_json,preconditions_json,sensitive,COALESCE(input_ciphertext,''::bytea),COALESCE(input_nonce,''::bytea),created_at_ms,updated_at_ms
 FROM operations WHERE project_ref=$1 AND target_id=$2 AND binding_id=$3 AND (state='queued' OR (state='running' AND agent_id=$4)) AND capability IN (` + strings.Join(placeholders, ",") + `) ORDER BY CASE WHEN state='running' THEN 0 ELSE 1 END,created_at_ms FOR UPDATE SKIP LOCKED LIMIT 1`
 	}
 	var claimed ClaimedOperation
-	var typedInput, preconditions []byte
+	var typedInput, preconditions, inputCiphertext, inputNonce []byte
+	var sensitive bool
 	var deadline, created, updated int64
-	err = tx.QueryRowContext(ctx, query, args...).Scan(&claimed.ID, &claimed.ProjectRef, &claimed.TargetID, &claimed.BindingID, &claimed.Domain, &claimed.Capability, &claimed.State, &claimed.ProtocolMajor, &claimed.ProtocolMinor, &claimed.ExpectedGeneration, &claimed.DesiredRevision, &claimed.DesiredDigest, &claimed.InputSchema, &claimed.FencingToken, &claimed.IdempotencyKey, &claimed.TaskID, &claimed.AgentID, &claimed.Attempts, &deadline, &typedInput, &preconditions, &created, &updated)
+	err = tx.QueryRowContext(ctx, query, args...).Scan(&claimed.ID, &claimed.ProjectRef, &claimed.TargetID, &claimed.BindingID, &claimed.Domain, &claimed.Capability, &claimed.State, &claimed.ProtocolMajor, &claimed.ProtocolMinor, &claimed.ExpectedGeneration, &claimed.DesiredRevision, &claimed.DesiredDigest, &claimed.InputSchema, &claimed.FencingToken, &claimed.IdempotencyKey, &claimed.TaskID, &claimed.AgentID, &claimed.Attempts, &deadline, &typedInput, &preconditions, &sensitive, &inputCiphertext, &inputNonce, &created, &updated)
 	if errors.Is(err, sql.ErrNoRows) {
 		return ClaimedOperation{}, false, nil
 	}
 	if err != nil {
 		return ClaimedOperation{}, false, err
+	}
+	if sensitive {
+		typedInput, err = s.decryptSensitiveInput(inputCiphertext, inputNonce)
+		if err != nil {
+			return ClaimedOperation{}, false, err
+		}
 	}
 	claimed.DeadlineAt = time.UnixMilli(deadline).UTC()
 	if claimed.State == "running" {

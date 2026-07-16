@@ -18,6 +18,7 @@ import { DatabaseReadOnlyAlert } from '@/components/interfaces/Settings/Database
 import { ResetDbPassword } from '@/components/interfaces/Settings/Database/DatabaseSettings/ResetDbPassword'
 import { DiskSizeConfiguration } from '@/components/interfaces/Settings/Database/DiskSizeConfiguration'
 import { FleetConnectionProfiles } from '@/components/interfaces/Settings/Database/FleetConnectionProfiles'
+import { FleetDatabaseSecurity } from '@/components/interfaces/Settings/Database/FleetDatabaseSecurity'
 import { JitDbAccessConfiguration } from '@/components/interfaces/Settings/Database/JitDatabaseAccess/JitDbAccessConfiguration'
 import { NetworkRestrictions } from '@/components/interfaces/Settings/Database/NetworkRestrictions/NetworkRestrictions'
 import { PoolingModesModal } from '@/components/interfaces/Settings/Database/PoolingModesModal'
@@ -56,6 +57,7 @@ const DatabaseSettings: NextPageWithLayout = () => {
       {isFleet ? (
         <PageContainer size="small" className="flex flex-col gap-8 pb-12">
           <FleetConnectionProfiles />
+          <FleetDatabaseSecurity />
         </PageContainer>
       ) : IS_PLATFORM ? (
         <>

@@ -93,17 +93,19 @@ services:
       - -ceu
       - |
         project_root="/functions/$${FLEET_FUNCTION_PROJECT_KEY}"
-        mkdir -p "$$project_root" /agent-state /fleet-config
+        mkdir -p "$$project_root" /agent-state /fleet-config /database-state /database-ca
         if [ ! -f "$$project_root/main/index.ts" ]; then
           cp -a /seed/. "$$project_root/"
         fi
-        chown -R 65532:65532 /functions /agent-state /fleet-config
+        chown -R 65532:65532 /functions /agent-state /fleet-config /database-state
         chmod 0700 /agent-state
     volumes:
       - ./volumes/functions:/seed:ro
       - ${FLEET_FUNCTION_ROOT}:/functions
       - fleet-agent-state:/agent-state
       - ${FLEET_CONFIG_ROOT:?set FLEET_CONFIG_ROOT}:/fleet-config
+      - db-config:/database-state
+      - ./fleet-managed/volumes/db/tls-ca:/database-ca:ro
 
   fleet-agent-bootstrap:
     image: ${FLEET_AGENT_IMAGE:?set FLEET_AGENT_IMAGE}
@@ -161,12 +163,20 @@ services:
       FLEET_AGENT_FUNCTION_ARTIFACT_ROOT: /var/lib/supabase-fleet/functions
       FLEET_AGENT_FUNCTION_PROBE_URL: http://kong:8000/functions/v1
       FLEET_AGENT_FUNCTION_PROBE_TOKEN: ${SERVICE_ROLE_KEY}
+      FLEET_AGENT_DATABASE_ADMIN_DSN: postgres://supabase_admin:${POSTGRES_PASSWORD}@db-${MANAGED_PROJECT_REF}:5432/postgres?sslmode=disable
+      FLEET_AGENT_DATABASE_POOLER_DSN: postgres://postgres.${POOLER_TENANT_ID}:${POSTGRES_PASSWORD}@supavisor:5432/postgres?sslmode=disable
+      FLEET_AGENT_DATABASE_STATE_ROOT: /var/lib/supabase-fleet/database
+      FLEET_AGENT_DATABASE_TLS_CA_ROOT: /etc/fleet-agent/tls-ca
+      FLEET_AGENT_DATABASE_PRIMARY_ROLE: postgres
+      FLEET_AGENT_DATABASE_READ_ONLY_ROLE: supabase_read_only_user
       FLEET_AGENT_JOURNAL: /var/lib/fleet-agent/agent-journal.db
       FLEET_AGENT_LOCK: /var/lib/fleet-agent/agent.lock
     volumes:
       - fleet-agent-state:/var/lib/fleet-agent
       - ${FLEET_CONFIG_ROOT:?set FLEET_CONFIG_ROOT}:/var/lib/supabase-fleet/config
       - ${FLEET_FUNCTION_ROOT}:/var/lib/supabase-fleet/functions
+      - db-config:/var/lib/supabase-fleet/database
+      - ./fleet-managed/volumes/db/tls-ca:/etc/fleet-agent/tls-ca:ro
     security_opt: [no-new-privileges:true]
     networks:
       default: {}

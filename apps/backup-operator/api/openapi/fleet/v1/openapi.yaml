@@ -636,7 +636,7 @@ components:
         typedInput:
           {
             type: object,
-            description: Strictly validated against inputSchema; runtime.config.reconcile uses ConfigurationDocument,
+            description: Strictly validated against inputSchema; sensitive database password fields are encrypted at rest and redacted from ordinary operation storage and responses,
           }
     ComponentVersions:
       type: object

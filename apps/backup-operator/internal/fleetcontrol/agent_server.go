@@ -11,6 +11,7 @@ import (
 
 	transportv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/agent/transport/v1"
 	fleetagentv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/fleet/v1"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetdatabase"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetlifecycle"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
@@ -224,6 +225,32 @@ func (s *AgentServer) handleAgentMessage(stream fleetagentv1.FleetAgentControlSe
 		} else if !completion.Succeeded {
 			completion.ErrorCode = "configuration_not_applied"
 		}
+	} else if typed := result.GetReconcileDatabaseSecurity(); typed != nil {
+		var evidence fleetdatabase.Evidence
+		if json.Unmarshal(typed.GetEvidenceJson(), &evidence) != nil || evidence.Schema != fleetdatabase.EvidenceSchemaV1 || evidence.ObservedGeneration != (*active).ExpectedGeneration || evidence.Adapter == "" {
+			return status.Error(codes.InvalidArgument, "Fleet Agent database security evidence is invalid")
+		}
+		completion.EvidenceSchema = fleetdatabase.EvidenceSchemaV1
+		completion.Evidence = append(json.RawMessage(nil), typed.GetEvidenceJson()...)
+		switch evidence.Status {
+		case "succeeded":
+			completion.Succeeded = evidence.Applied && evidence.Health == "healthy"
+			if !completion.Succeeded {
+				completion.ErrorCode = "verification_failed"
+			}
+		case "rolled-back":
+			completion.ErrorCode = "verification_failed"
+		case "manual-intervention":
+			completion.ErrorCode = "manual_intervention_required"
+			completion.TerminalState = "manual_intervention"
+		case "failed":
+			completion.ErrorCode = evidence.ErrorCode
+			if completion.ErrorCode == "" {
+				completion.ErrorCode = "provider_failed"
+			}
+		default:
+			return status.Error(codes.InvalidArgument, "Fleet Agent database security status is invalid")
+		}
 	} else if typed := result.GetDeployFunction(); typed != nil {
 		var evidence fleetfunctions.Evidence
 		if json.Unmarshal(typed.GetEvidenceJson(), &evidence) != nil || evidence.Schema != fleetfunctions.EvidenceSchemaV1 || evidence.ObservedGeneration != (*active).ExpectedGeneration || evidence.Adapter == "" || evidence.Slug == "" {
@@ -304,6 +331,11 @@ func (s *AgentServer) taskMessage(operation ClaimedOperation) (*fleetagentv1.Typ
 	switch {
 	case operation.Capability == fleetproviders.CapabilityReconcileConfiguration && operation.InputSchema == fleetproviders.InputSchemaV1:
 		task.Input = &fleetagentv1.TypedTask_ReconcileConfiguration{ReconcileConfiguration: &fleetagentv1.ReconcileConfigurationInput{DocumentJson: operation.TypedInput, DesiredDigest: operation.DesiredDigest, ExpectedGeneration: operation.ExpectedGeneration}}
+	case operation.Capability == fleetdatabase.CapabilityReconcile && operation.InputSchema == fleetdatabase.InputSchemaV1:
+		if _, parseErr := fleetdatabase.ParseDocument(operation.TypedInput); parseErr != nil {
+			return nil, errors.New("Fleet database security operation contract is invalid")
+		}
+		task.Input = &fleetagentv1.TypedTask_ReconcileDatabaseSecurity{ReconcileDatabaseSecurity: &fleetagentv1.ReconcileDatabaseSecurityInput{DocumentJson: operation.TypedInput, DesiredDigest: operation.DesiredDigest, ExpectedGeneration: operation.ExpectedGeneration}}
 	case operation.Capability == fleetfunctions.CapabilityDeploy && operation.InputSchema == fleetfunctions.InputSchemaV1:
 		task.Input = &fleetagentv1.TypedTask_DeployFunction{DeployFunction: &fleetagentv1.DeployFunctionInput{DeploymentJson: operation.TypedInput}}
 	case operation.InputSchema == fleetlifecycle.InputSchemaV1:

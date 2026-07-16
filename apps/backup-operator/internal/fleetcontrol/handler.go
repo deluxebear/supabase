@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetdatabase"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetlifecycle"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
@@ -354,6 +355,29 @@ func (h *Handler) createOperation(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	sensitive := false
+	var redactedTypedInput json.RawMessage
+	redactedSnapshotCanonical := ""
+	if request.Capability == fleetdatabase.CapabilityReconcile {
+		document, err := fleetdatabase.ParseDocument(request.TypedInput)
+		if err != nil {
+			writeFleetError(w, r, http.StatusBadRequest, "validation_failed", "Fleet database security document is invalid", false, map[string]any{"reason": err.Error()})
+			return
+		}
+		if string(document.Adapter) != binding.Binding.DeploymentKind {
+			writeFleetError(w, r, http.StatusConflict, "capability_unavailable", "The database security adapter does not match the bound deployment kind", false, map[string]any{})
+			return
+		}
+		if document.ContainsSecrets() {
+			redactedTypedInput, err = json.Marshal(document.Redacted())
+			if err != nil {
+				writeFleetError(w, r, http.StatusInternalServerError, "downstream_unavailable", "Fleet Control could not redact the database security operation", true, map[string]any{})
+				return
+			}
+			redactedSnapshotCanonical = string(redactedTypedInput)
+			sensitive = true
+		}
+	}
 	if request.InputSchema == fleetlifecycle.InputSchemaV1 {
 		document, err := fleetlifecycle.ParseDocument(request.TypedInput, time.Now())
 		if err != nil || string(document.Action) != request.Capability {
@@ -384,7 +408,7 @@ func (h *Handler) createOperation(w http.ResponseWriter, r *http.Request) {
 		writeFleetError(w, r, http.StatusUnauthorized, "unauthenticated", "Fleet operation actor context is missing", false, map[string]any{})
 		return
 	}
-	operation, created, err := h.Store.CreateOperation(r.Context(), CreateOperationInput{Operation: Operation{ID: request.OperationID, ProjectRef: projectRef, TargetID: request.TargetID, BindingID: request.BindingID, Domain: request.Domain, Capability: request.Capability, ProtocolMajor: request.ProtocolMajor, ProtocolMinor: request.ProtocolMinor, ExpectedGeneration: request.ExpectedGeneration, DesiredRevision: request.DesiredRevision, DesiredDigest: request.DesiredDigest, InputSchema: request.InputSchema}, IdempotencyKey: idempotencyKey, TypedInput: request.TypedInput, SnapshotCanonical: request.SnapshotCanonical, Preconditions: request.Preconditions, Actor: actor.Subject, CorrelationID: r.Header.Get(CorrelationHeader)})
+	operation, created, err := h.Store.CreateOperation(r.Context(), CreateOperationInput{Operation: Operation{ID: request.OperationID, ProjectRef: projectRef, TargetID: request.TargetID, BindingID: request.BindingID, Domain: request.Domain, Capability: request.Capability, ProtocolMajor: request.ProtocolMajor, ProtocolMinor: request.ProtocolMinor, ExpectedGeneration: request.ExpectedGeneration, DesiredRevision: request.DesiredRevision, DesiredDigest: request.DesiredDigest, InputSchema: request.InputSchema}, IdempotencyKey: idempotencyKey, TypedInput: request.TypedInput, SnapshotCanonical: request.SnapshotCanonical, Preconditions: request.Preconditions, Actor: actor.Subject, CorrelationID: r.Header.Get(CorrelationHeader), Sensitive: sensitive, RedactedTypedInput: redactedTypedInput, RedactedSnapshotCanonical: redactedSnapshotCanonical})
 	if err != nil {
 		if errors.Is(err, ErrCapacityExceeded) {
 			w.Header().Set("Retry-After", "5")

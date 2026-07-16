@@ -16,6 +16,7 @@ import (
 	"github.com/supabase/supabase/apps/backup-operator/internal/agentjournal"
 	"github.com/supabase/supabase/apps/backup-operator/internal/agenttransport"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetagent"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetdatabase"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetlifecycle"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
@@ -48,6 +49,12 @@ func main() {
 	lifecyclePlugin := flag.String("lifecycle-plugin", os.Getenv("FLEET_AGENT_LIFECYCLE_PLUGIN"), "operator-managed typed lifecycle provider executable")
 	lifecycleCapabilities := flag.String("lifecycle-capabilities", os.Getenv("FLEET_AGENT_LIFECYCLE_CAPABILITIES"), "comma-separated lifecycle capabilities explicitly provided by the plugin")
 	lifecycleVersionsJSON := flag.String("lifecycle-component-versions", os.Getenv("FLEET_AGENT_LIFECYCLE_COMPONENT_VERSIONS"), "complete discovered component-version JSON used for lifecycle compatibility")
+	databaseAdminDSN := flag.String("database-admin-dsn", os.Getenv("FLEET_AGENT_DATABASE_ADMIN_DSN"), "operator-only direct PostgreSQL administration DSN")
+	databasePoolerDSN := flag.String("database-pooler-dsn", os.Getenv("FLEET_AGENT_DATABASE_POOLER_DSN"), "operator-only Supavisor health probe DSN")
+	databaseStateRoot := flag.String("database-state-root", os.Getenv("FLEET_AGENT_DATABASE_STATE_ROOT"), "Fleet-owned database security state root")
+	databaseTLSCARoot := flag.String("database-tls-ca-root", os.Getenv("FLEET_AGENT_DATABASE_TLS_CA_ROOT"), "operator-managed TLS CA allowlist root")
+	databasePrimaryRole := flag.String("database-primary-role", envOr("FLEET_AGENT_DATABASE_PRIMARY_ROLE", "postgres"), "allowlisted primary database role")
+	databaseReadOnlyRole := flag.String("database-read-only-role", envOr("FLEET_AGENT_DATABASE_READ_ONLY_ROLE", "supabase_read_only_user"), "allowlisted read-only database role")
 	journalPath := flag.String("journal", envOr("FLEET_AGENT_JOURNAL", "/var/lib/supabase-fleet/agent-journal.db"), "durable Fleet Agent execution journal")
 	lockPath := flag.String("lock", envOr("FLEET_AGENT_LOCK", "/var/lib/supabase-fleet/agent.lock"), "Fleet Agent singleton lock")
 	heartbeat := flag.Duration("heartbeat", envDuration("FLEET_AGENT_HEARTBEAT", 10*time.Second), "Fleet Agent heartbeat interval")
@@ -77,8 +84,23 @@ func main() {
 	}
 	var functionProviders *fleetfunctions.Registry
 	var lifecycleProviders *fleetlifecycle.Registry
+	var databaseProviders *fleetdatabase.Registry
 	var lifecycleVersions fleetlifecycle.ComponentVersions
 	capabilities := []string{fleetproviders.CapabilityReconcileConfiguration}
+	databaseConfigured := []bool{strings.TrimSpace(*databaseAdminDSN) != "", strings.TrimSpace(*databaseStateRoot) != "", strings.TrimSpace(*databaseTLSCARoot) != ""}
+	if databaseConfigured[0] || databaseConfigured[1] || databaseConfigured[2] {
+		if !databaseConfigured[0] || !databaseConfigured[1] || !databaseConfigured[2] || *adapter != string(fleetdatabase.AdapterCompose) {
+			log.Fatal("Fleet database administration DSN, state root, TLS CA root, and Compose adapter must be configured together")
+		}
+		databaseProviders, err = fleetdatabase.NewRegistry(fleetdatabase.ManagedProvider{Kind: fleetdatabase.AdapterCompose, Runtime: fleetdatabase.ComposeRuntime{
+			AdminDSN: *databaseAdminDSN, PoolerDSN: *databasePoolerDSN, StateRoot: *databaseStateRoot, TLSCARoot: *databaseTLSCARoot,
+			PrimaryRole: *databasePrimaryRole, ReadOnlyRole: *databaseReadOnlyRole,
+		}})
+		if err != nil {
+			log.Fatal(err)
+		}
+		capabilities = append(capabilities, fleetdatabase.CapabilityReconcile)
+	}
 	if strings.TrimSpace(*functionProbeURL) != "" {
 		functionProvider, err := buildFunctionProvider(*adapter, *functionRoot, *functionProbeURL, *functionProbeToken, *kubeconfig, *kubernetesNamespace, *kubernetesDeployment)
 		if err != nil {
@@ -129,7 +151,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	executor := &fleetagent.Executor{Journal: journal, Providers: providers, FunctionProviders: functionProviders, LifecycleProviders: lifecycleProviders, LifecycleVersions: lifecycleVersions, ProjectRef: *projectRef, TargetID: *targetID, BindingID: *bindingID}
+	executor := &fleetagent.Executor{Journal: journal, Providers: providers, FunctionProviders: functionProviders, LifecycleProviders: lifecycleProviders, DatabaseProviders: databaseProviders, LifecycleVersions: lifecycleVersions, ProjectRef: *projectRef, TargetID: *targetID, BindingID: *bindingID}
 	client := fleetagent.Client{
 		Address: *address, TLS: tlsConfig, AgentID: *agentID, TargetID: *targetID, BindingID: *bindingID, NodeID: *nodeID,
 		Build: version.String(), Capabilities: capabilities, Executor: executor, HeartbeatInterval: *heartbeat,

@@ -323,6 +323,7 @@ type TypedTask struct {
 	//	*TypedTask_ReconcileConfiguration
 	//	*TypedTask_DeployFunction
 	//	*TypedTask_ExecuteLifecycle
+	//	*TypedTask_ReconcileDatabaseSecurity
 	Input         isTypedTask_Input `protobuf_oneof:"input"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -436,6 +437,15 @@ func (x *TypedTask) GetExecuteLifecycle() *ExecuteLifecycleInput {
 	return nil
 }
 
+func (x *TypedTask) GetReconcileDatabaseSecurity() *ReconcileDatabaseSecurityInput {
+	if x != nil {
+		if x, ok := x.Input.(*TypedTask_ReconcileDatabaseSecurity); ok {
+			return x.ReconcileDatabaseSecurity
+		}
+	}
+	return nil
+}
+
 type isTypedTask_Input interface {
 	isTypedTask_Input()
 }
@@ -456,6 +466,10 @@ type TypedTask_ExecuteLifecycle struct {
 	ExecuteLifecycle *ExecuteLifecycleInput `protobuf:"bytes,13,opt,name=execute_lifecycle,json=executeLifecycle,proto3,oneof"`
 }
 
+type TypedTask_ReconcileDatabaseSecurity struct {
+	ReconcileDatabaseSecurity *ReconcileDatabaseSecurityInput `protobuf:"bytes,14,opt,name=reconcile_database_security,json=reconcileDatabaseSecurity,proto3,oneof"`
+}
+
 func (*TypedTask_ObserveRuntime) isTypedTask_Input() {}
 
 func (*TypedTask_ReconcileConfiguration) isTypedTask_Input() {}
@@ -463,6 +477,8 @@ func (*TypedTask_ReconcileConfiguration) isTypedTask_Input() {}
 func (*TypedTask_DeployFunction) isTypedTask_Input() {}
 
 func (*TypedTask_ExecuteLifecycle) isTypedTask_Input() {}
+
+func (*TypedTask_ReconcileDatabaseSecurity) isTypedTask_Input() {}
 
 type ObserveRuntimeInput struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -656,6 +672,66 @@ func (x *ExecuteLifecycleInput) GetLifecycleJson() []byte {
 	return nil
 }
 
+type ReconcileDatabaseSecurityInput struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	DocumentJson       []byte                 `protobuf:"bytes,1,opt,name=document_json,json=documentJson,proto3" json:"document_json,omitempty"`
+	DesiredDigest      string                 `protobuf:"bytes,2,opt,name=desired_digest,json=desiredDigest,proto3" json:"desired_digest,omitempty"`
+	ExpectedGeneration int64                  `protobuf:"varint,3,opt,name=expected_generation,json=expectedGeneration,proto3" json:"expected_generation,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *ReconcileDatabaseSecurityInput) Reset() {
+	*x = ReconcileDatabaseSecurityInput{}
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReconcileDatabaseSecurityInput) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReconcileDatabaseSecurityInput) ProtoMessage() {}
+
+func (x *ReconcileDatabaseSecurityInput) ProtoReflect() protoreflect.Message {
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReconcileDatabaseSecurityInput.ProtoReflect.Descriptor instead.
+func (*ReconcileDatabaseSecurityInput) Descriptor() ([]byte, []int) {
+	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *ReconcileDatabaseSecurityInput) GetDocumentJson() []byte {
+	if x != nil {
+		return x.DocumentJson
+	}
+	return nil
+}
+
+func (x *ReconcileDatabaseSecurityInput) GetDesiredDigest() string {
+	if x != nil {
+		return x.DesiredDigest
+	}
+	return ""
+}
+
+func (x *ReconcileDatabaseSecurityInput) GetExpectedGeneration() int64 {
+	if x != nil {
+		return x.ExpectedGeneration
+	}
+	return 0
+}
+
 type TaskResult struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	TaskId         string                 `protobuf:"bytes,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
@@ -667,6 +743,7 @@ type TaskResult struct {
 	//	*TaskResult_ReconcileConfiguration
 	//	*TaskResult_DeployFunction
 	//	*TaskResult_ExecuteLifecycle
+	//	*TaskResult_ReconcileDatabaseSecurity
 	Result        isTaskResult_Result `protobuf_oneof:"result"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -674,7 +751,7 @@ type TaskResult struct {
 
 func (x *TaskResult) Reset() {
 	*x = TaskResult{}
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[8]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -686,7 +763,7 @@ func (x *TaskResult) String() string {
 func (*TaskResult) ProtoMessage() {}
 
 func (x *TaskResult) ProtoReflect() protoreflect.Message {
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[8]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -699,7 +776,7 @@ func (x *TaskResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TaskResult.ProtoReflect.Descriptor instead.
 func (*TaskResult) Descriptor() ([]byte, []int) {
-	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{8}
+	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *TaskResult) GetTaskId() string {
@@ -768,6 +845,15 @@ func (x *TaskResult) GetExecuteLifecycle() *LifecycleEvidence {
 	return nil
 }
 
+func (x *TaskResult) GetReconcileDatabaseSecurity() *DatabaseSecurityEvidence {
+	if x != nil {
+		if x, ok := x.Result.(*TaskResult_ReconcileDatabaseSecurity); ok {
+			return x.ReconcileDatabaseSecurity
+		}
+	}
+	return nil
+}
+
 type isTaskResult_Result interface {
 	isTaskResult_Result()
 }
@@ -792,6 +878,10 @@ type TaskResult_ExecuteLifecycle struct {
 	ExecuteLifecycle *LifecycleEvidence `protobuf:"bytes,14,opt,name=execute_lifecycle,json=executeLifecycle,proto3,oneof"`
 }
 
+type TaskResult_ReconcileDatabaseSecurity struct {
+	ReconcileDatabaseSecurity *DatabaseSecurityEvidence `protobuf:"bytes,15,opt,name=reconcile_database_security,json=reconcileDatabaseSecurity,proto3,oneof"`
+}
+
 func (*TaskResult_ObserveRuntime) isTaskResult_Result() {}
 
 func (*TaskResult_Error) isTaskResult_Result() {}
@@ -801,6 +891,8 @@ func (*TaskResult_ReconcileConfiguration) isTaskResult_Result() {}
 func (*TaskResult_DeployFunction) isTaskResult_Result() {}
 
 func (*TaskResult_ExecuteLifecycle) isTaskResult_Result() {}
+
+func (*TaskResult_ReconcileDatabaseSecurity) isTaskResult_Result() {}
 
 type ObserveRuntimeEvidence struct {
 	state                      protoimpl.MessageState `protogen:"open.v1"`
@@ -812,7 +904,7 @@ type ObserveRuntimeEvidence struct {
 
 func (x *ObserveRuntimeEvidence) Reset() {
 	*x = ObserveRuntimeEvidence{}
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[9]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -824,7 +916,7 @@ func (x *ObserveRuntimeEvidence) String() string {
 func (*ObserveRuntimeEvidence) ProtoMessage() {}
 
 func (x *ObserveRuntimeEvidence) ProtoReflect() protoreflect.Message {
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[9]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -837,7 +929,7 @@ func (x *ObserveRuntimeEvidence) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ObserveRuntimeEvidence.ProtoReflect.Descriptor instead.
 func (*ObserveRuntimeEvidence) Descriptor() ([]byte, []int) {
-	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{9}
+	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ObserveRuntimeEvidence) GetServices() []*RuntimeService {
@@ -863,7 +955,7 @@ type ReconcileConfigurationEvidence struct {
 
 func (x *ReconcileConfigurationEvidence) Reset() {
 	*x = ReconcileConfigurationEvidence{}
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[10]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -875,7 +967,7 @@ func (x *ReconcileConfigurationEvidence) String() string {
 func (*ReconcileConfigurationEvidence) ProtoMessage() {}
 
 func (x *ReconcileConfigurationEvidence) ProtoReflect() protoreflect.Message {
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[10]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -888,7 +980,7 @@ func (x *ReconcileConfigurationEvidence) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReconcileConfigurationEvidence.ProtoReflect.Descriptor instead.
 func (*ReconcileConfigurationEvidence) Descriptor() ([]byte, []int) {
-	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{10}
+	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ReconcileConfigurationEvidence) GetEvidenceJson() []byte {
@@ -907,7 +999,7 @@ type FunctionDeploymentEvidence struct {
 
 func (x *FunctionDeploymentEvidence) Reset() {
 	*x = FunctionDeploymentEvidence{}
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[11]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -919,7 +1011,7 @@ func (x *FunctionDeploymentEvidence) String() string {
 func (*FunctionDeploymentEvidence) ProtoMessage() {}
 
 func (x *FunctionDeploymentEvidence) ProtoReflect() protoreflect.Message {
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[11]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -932,7 +1024,7 @@ func (x *FunctionDeploymentEvidence) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FunctionDeploymentEvidence.ProtoReflect.Descriptor instead.
 func (*FunctionDeploymentEvidence) Descriptor() ([]byte, []int) {
-	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{11}
+	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *FunctionDeploymentEvidence) GetEvidenceJson() []byte {
@@ -951,7 +1043,7 @@ type LifecycleEvidence struct {
 
 func (x *LifecycleEvidence) Reset() {
 	*x = LifecycleEvidence{}
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[12]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -963,7 +1055,7 @@ func (x *LifecycleEvidence) String() string {
 func (*LifecycleEvidence) ProtoMessage() {}
 
 func (x *LifecycleEvidence) ProtoReflect() protoreflect.Message {
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[12]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -976,10 +1068,54 @@ func (x *LifecycleEvidence) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LifecycleEvidence.ProtoReflect.Descriptor instead.
 func (*LifecycleEvidence) Descriptor() ([]byte, []int) {
-	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{12}
+	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *LifecycleEvidence) GetEvidenceJson() []byte {
+	if x != nil {
+		return x.EvidenceJson
+	}
+	return nil
+}
+
+type DatabaseSecurityEvidence struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EvidenceJson  []byte                 `protobuf:"bytes,1,opt,name=evidence_json,json=evidenceJson,proto3" json:"evidence_json,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DatabaseSecurityEvidence) Reset() {
+	*x = DatabaseSecurityEvidence{}
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DatabaseSecurityEvidence) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DatabaseSecurityEvidence) ProtoMessage() {}
+
+func (x *DatabaseSecurityEvidence) ProtoReflect() protoreflect.Message {
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DatabaseSecurityEvidence.ProtoReflect.Descriptor instead.
+func (*DatabaseSecurityEvidence) Descriptor() ([]byte, []int) {
+	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *DatabaseSecurityEvidence) GetEvidenceJson() []byte {
 	if x != nil {
 		return x.EvidenceJson
 	}
@@ -999,7 +1135,7 @@ type DownloadArtifactRequest struct {
 
 func (x *DownloadArtifactRequest) Reset() {
 	*x = DownloadArtifactRequest{}
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[13]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1011,7 +1147,7 @@ func (x *DownloadArtifactRequest) String() string {
 func (*DownloadArtifactRequest) ProtoMessage() {}
 
 func (x *DownloadArtifactRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[13]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1024,7 +1160,7 @@ func (x *DownloadArtifactRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DownloadArtifactRequest.ProtoReflect.Descriptor instead.
 func (*DownloadArtifactRequest) Descriptor() ([]byte, []int) {
-	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{13}
+	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *DownloadArtifactRequest) GetAgentId() string {
@@ -1071,7 +1207,7 @@ type ArtifactChunk struct {
 
 func (x *ArtifactChunk) Reset() {
 	*x = ArtifactChunk{}
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[14]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1083,7 +1219,7 @@ func (x *ArtifactChunk) String() string {
 func (*ArtifactChunk) ProtoMessage() {}
 
 func (x *ArtifactChunk) ProtoReflect() protoreflect.Message {
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[14]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1096,7 +1232,7 @@ func (x *ArtifactChunk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtifactChunk.ProtoReflect.Descriptor instead.
 func (*ArtifactChunk) Descriptor() ([]byte, []int) {
-	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{14}
+	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ArtifactChunk) GetData() []byte {
@@ -1117,7 +1253,7 @@ type RuntimeService struct {
 
 func (x *RuntimeService) Reset() {
 	*x = RuntimeService{}
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[15]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1129,7 +1265,7 @@ func (x *RuntimeService) String() string {
 func (*RuntimeService) ProtoMessage() {}
 
 func (x *RuntimeService) ProtoReflect() protoreflect.Message {
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[15]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1142,7 +1278,7 @@ func (x *RuntimeService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RuntimeService.ProtoReflect.Descriptor instead.
 func (*RuntimeService) Descriptor() ([]byte, []int) {
-	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{15}
+	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *RuntimeService) GetName() string {
@@ -1175,7 +1311,7 @@ type Heartbeat struct {
 
 func (x *Heartbeat) Reset() {
 	*x = Heartbeat{}
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[16]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1187,7 +1323,7 @@ func (x *Heartbeat) String() string {
 func (*Heartbeat) ProtoMessage() {}
 
 func (x *Heartbeat) ProtoReflect() protoreflect.Message {
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[16]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1200,7 +1336,7 @@ func (x *Heartbeat) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Heartbeat.ProtoReflect.Descriptor instead.
 func (*Heartbeat) Descriptor() ([]byte, []int) {
-	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{16}
+	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *Heartbeat) GetUnixMilliseconds() int64 {
@@ -1219,7 +1355,7 @@ type Acknowledgement struct {
 
 func (x *Acknowledgement) Reset() {
 	*x = Acknowledgement{}
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[17]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1231,7 +1367,7 @@ func (x *Acknowledgement) String() string {
 func (*Acknowledgement) ProtoMessage() {}
 
 func (x *Acknowledgement) ProtoReflect() protoreflect.Message {
-	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[17]
+	mi := &file_supabase_fleet_agent_v1_fleet_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1244,7 +1380,7 @@ func (x *Acknowledgement) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Acknowledgement.ProtoReflect.Descriptor instead.
 func (*Acknowledgement) Descriptor() ([]byte, []int) {
-	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{17}
+	return file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *Acknowledgement) GetTaskId() string {
@@ -1278,7 +1414,7 @@ const file_supabase_fleet_agent_v1_fleet_proto_rawDesc = "" +
 	"\anode_id\x18\x04 \x01(\tR\x06nodeId\x12H\n" +
 	"\bprotocol\x18\x05 \x01(\v2,.supabase.agent.transport.v1.ProtocolVersionR\bprotocol\x12\x14\n" +
 	"\x05build\x18\x06 \x01(\tR\x05build\x12\"\n" +
-	"\fcapabilities\x18\a \x03(\tR\fcapabilities\"\xdc\x05\n" +
+	"\fcapabilities\x18\a \x03(\tR\fcapabilities\"\xd7\x06\n" +
 	"\tTypedTask\x12J\n" +
 	"\bidentity\x18\x01 \x01(\v2..supabase.agent.transport.v1.OperationIdentityR\bidentity\x12\x16\n" +
 	"\x06domain\x18\x02 \x01(\tR\x06domain\x12\x1e\n" +
@@ -1291,7 +1427,8 @@ const file_supabase_fleet_agent_v1_fleet_proto_rawDesc = "" +
 	" \x01(\v2,.supabase.fleet.agent.v1.ObserveRuntimeInputH\x00R\x0eobserveRuntime\x12o\n" +
 	"\x17reconcile_configuration\x18\v \x01(\v24.supabase.fleet.agent.v1.ReconcileConfigurationInputH\x00R\x16reconcileConfiguration\x12W\n" +
 	"\x0fdeploy_function\x18\f \x01(\v2,.supabase.fleet.agent.v1.DeployFunctionInputH\x00R\x0edeployFunction\x12]\n" +
-	"\x11execute_lifecycle\x18\r \x01(\v2..supabase.fleet.agent.v1.ExecuteLifecycleInputH\x00R\x10executeLifecycle\x1a@\n" +
+	"\x11execute_lifecycle\x18\r \x01(\v2..supabase.fleet.agent.v1.ExecuteLifecycleInputH\x00R\x10executeLifecycle\x12y\n" +
+	"\x1breconcile_database_security\x18\x0e \x01(\v27.supabase.fleet.agent.v1.ReconcileDatabaseSecurityInputH\x00R\x19reconcileDatabaseSecurity\x1a@\n" +
 	"\x12PreconditionsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\a\n" +
@@ -1305,7 +1442,11 @@ const file_supabase_fleet_agent_v1_fleet_proto_rawDesc = "" +
 	"\x13DeployFunctionInput\x12'\n" +
 	"\x0fdeployment_json\x18\x01 \x01(\fR\x0edeploymentJson\">\n" +
 	"\x15ExecuteLifecycleInput\x12%\n" +
-	"\x0elifecycle_json\x18\x01 \x01(\fR\rlifecycleJson\"\xa3\x04\n" +
+	"\x0elifecycle_json\x18\x01 \x01(\fR\rlifecycleJson\"\x9d\x01\n" +
+	"\x1eReconcileDatabaseSecurityInput\x12#\n" +
+	"\rdocument_json\x18\x01 \x01(\fR\fdocumentJson\x12%\n" +
+	"\x0edesired_digest\x18\x02 \x01(\tR\rdesiredDigest\x12/\n" +
+	"\x13expected_generation\x18\x03 \x01(\x03R\x12expectedGeneration\"\x98\x05\n" +
 	"\n" +
 	"TaskResult\x12\x17\n" +
 	"\atask_id\x18\x01 \x01(\tR\x06taskId\x12'\n" +
@@ -1315,7 +1456,8 @@ const file_supabase_fleet_agent_v1_fleet_proto_rawDesc = "" +
 	"\x05error\x18\v \x01(\v2&.supabase.agent.transport.v1.TaskErrorH\x00R\x05error\x12r\n" +
 	"\x17reconcile_configuration\x18\f \x01(\v27.supabase.fleet.agent.v1.ReconcileConfigurationEvidenceH\x00R\x16reconcileConfiguration\x12^\n" +
 	"\x0fdeploy_function\x18\r \x01(\v23.supabase.fleet.agent.v1.FunctionDeploymentEvidenceH\x00R\x0edeployFunction\x12Y\n" +
-	"\x11execute_lifecycle\x18\x0e \x01(\v2*.supabase.fleet.agent.v1.LifecycleEvidenceH\x00R\x10executeLifecycleB\b\n" +
+	"\x11execute_lifecycle\x18\x0e \x01(\v2*.supabase.fleet.agent.v1.LifecycleEvidenceH\x00R\x10executeLifecycle\x12s\n" +
+	"\x1breconcile_database_security\x18\x0f \x01(\v21.supabase.fleet.agent.v1.DatabaseSecurityEvidenceH\x00R\x19reconcileDatabaseSecurityB\b\n" +
 	"\x06result\"\xa0\x01\n" +
 	"\x16ObserveRuntimeEvidence\x12C\n" +
 	"\bservices\x18\x01 \x03(\v2'.supabase.fleet.agent.v1.RuntimeServiceR\bservices\x12A\n" +
@@ -1325,6 +1467,8 @@ const file_supabase_fleet_agent_v1_fleet_proto_rawDesc = "" +
 	"\x1aFunctionDeploymentEvidence\x12#\n" +
 	"\revidence_json\x18\x01 \x01(\fR\fevidenceJson\"8\n" +
 	"\x11LifecycleEvidence\x12#\n" +
+	"\revidence_json\x18\x01 \x01(\fR\fevidenceJson\"?\n" +
+	"\x18DatabaseSecurityEvidence\x12#\n" +
 	"\revidence_json\x18\x01 \x01(\fR\fevidenceJson\"\xa9\x01\n" +
 	"\x17DownloadArtifactRequest\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12\x1f\n" +
@@ -1360,7 +1504,7 @@ func file_supabase_fleet_agent_v1_fleet_proto_rawDescGZIP() []byte {
 	return file_supabase_fleet_agent_v1_fleet_proto_rawDescData
 }
 
-var file_supabase_fleet_agent_v1_fleet_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_supabase_fleet_agent_v1_fleet_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_supabase_fleet_agent_v1_fleet_proto_goTypes = []any{
 	(*ConnectRequest)(nil),                 // 0: supabase.fleet.agent.v1.ConnectRequest
 	(*ConnectResponse)(nil),                // 1: supabase.fleet.agent.v1.ConnectResponse
@@ -1370,51 +1514,55 @@ var file_supabase_fleet_agent_v1_fleet_proto_goTypes = []any{
 	(*ReconcileConfigurationInput)(nil),    // 5: supabase.fleet.agent.v1.ReconcileConfigurationInput
 	(*DeployFunctionInput)(nil),            // 6: supabase.fleet.agent.v1.DeployFunctionInput
 	(*ExecuteLifecycleInput)(nil),          // 7: supabase.fleet.agent.v1.ExecuteLifecycleInput
-	(*TaskResult)(nil),                     // 8: supabase.fleet.agent.v1.TaskResult
-	(*ObserveRuntimeEvidence)(nil),         // 9: supabase.fleet.agent.v1.ObserveRuntimeEvidence
-	(*ReconcileConfigurationEvidence)(nil), // 10: supabase.fleet.agent.v1.ReconcileConfigurationEvidence
-	(*FunctionDeploymentEvidence)(nil),     // 11: supabase.fleet.agent.v1.FunctionDeploymentEvidence
-	(*LifecycleEvidence)(nil),              // 12: supabase.fleet.agent.v1.LifecycleEvidence
-	(*DownloadArtifactRequest)(nil),        // 13: supabase.fleet.agent.v1.DownloadArtifactRequest
-	(*ArtifactChunk)(nil),                  // 14: supabase.fleet.agent.v1.ArtifactChunk
-	(*RuntimeService)(nil),                 // 15: supabase.fleet.agent.v1.RuntimeService
-	(*Heartbeat)(nil),                      // 16: supabase.fleet.agent.v1.Heartbeat
-	(*Acknowledgement)(nil),                // 17: supabase.fleet.agent.v1.Acknowledgement
-	nil,                                    // 18: supabase.fleet.agent.v1.TypedTask.PreconditionsEntry
-	(*v1.TaskProgress)(nil),                // 19: supabase.agent.transport.v1.TaskProgress
-	(*v1.ProtocolVersion)(nil),             // 20: supabase.agent.transport.v1.ProtocolVersion
-	(*v1.OperationIdentity)(nil),           // 21: supabase.agent.transport.v1.OperationIdentity
-	(*v1.TaskError)(nil),                   // 22: supabase.agent.transport.v1.TaskError
+	(*ReconcileDatabaseSecurityInput)(nil), // 8: supabase.fleet.agent.v1.ReconcileDatabaseSecurityInput
+	(*TaskResult)(nil),                     // 9: supabase.fleet.agent.v1.TaskResult
+	(*ObserveRuntimeEvidence)(nil),         // 10: supabase.fleet.agent.v1.ObserveRuntimeEvidence
+	(*ReconcileConfigurationEvidence)(nil), // 11: supabase.fleet.agent.v1.ReconcileConfigurationEvidence
+	(*FunctionDeploymentEvidence)(nil),     // 12: supabase.fleet.agent.v1.FunctionDeploymentEvidence
+	(*LifecycleEvidence)(nil),              // 13: supabase.fleet.agent.v1.LifecycleEvidence
+	(*DatabaseSecurityEvidence)(nil),       // 14: supabase.fleet.agent.v1.DatabaseSecurityEvidence
+	(*DownloadArtifactRequest)(nil),        // 15: supabase.fleet.agent.v1.DownloadArtifactRequest
+	(*ArtifactChunk)(nil),                  // 16: supabase.fleet.agent.v1.ArtifactChunk
+	(*RuntimeService)(nil),                 // 17: supabase.fleet.agent.v1.RuntimeService
+	(*Heartbeat)(nil),                      // 18: supabase.fleet.agent.v1.Heartbeat
+	(*Acknowledgement)(nil),                // 19: supabase.fleet.agent.v1.Acknowledgement
+	nil,                                    // 20: supabase.fleet.agent.v1.TypedTask.PreconditionsEntry
+	(*v1.TaskProgress)(nil),                // 21: supabase.agent.transport.v1.TaskProgress
+	(*v1.ProtocolVersion)(nil),             // 22: supabase.agent.transport.v1.ProtocolVersion
+	(*v1.OperationIdentity)(nil),           // 23: supabase.agent.transport.v1.OperationIdentity
+	(*v1.TaskError)(nil),                   // 24: supabase.agent.transport.v1.TaskError
 }
 var file_supabase_fleet_agent_v1_fleet_proto_depIdxs = []int32{
 	2,  // 0: supabase.fleet.agent.v1.ConnectRequest.hello:type_name -> supabase.fleet.agent.v1.AgentHello
-	19, // 1: supabase.fleet.agent.v1.ConnectRequest.progress:type_name -> supabase.agent.transport.v1.TaskProgress
-	8,  // 2: supabase.fleet.agent.v1.ConnectRequest.result:type_name -> supabase.fleet.agent.v1.TaskResult
-	16, // 3: supabase.fleet.agent.v1.ConnectRequest.heartbeat:type_name -> supabase.fleet.agent.v1.Heartbeat
+	21, // 1: supabase.fleet.agent.v1.ConnectRequest.progress:type_name -> supabase.agent.transport.v1.TaskProgress
+	9,  // 2: supabase.fleet.agent.v1.ConnectRequest.result:type_name -> supabase.fleet.agent.v1.TaskResult
+	18, // 3: supabase.fleet.agent.v1.ConnectRequest.heartbeat:type_name -> supabase.fleet.agent.v1.Heartbeat
 	3,  // 4: supabase.fleet.agent.v1.ConnectResponse.task:type_name -> supabase.fleet.agent.v1.TypedTask
-	17, // 5: supabase.fleet.agent.v1.ConnectResponse.acknowledgement:type_name -> supabase.fleet.agent.v1.Acknowledgement
-	20, // 6: supabase.fleet.agent.v1.AgentHello.protocol:type_name -> supabase.agent.transport.v1.ProtocolVersion
-	21, // 7: supabase.fleet.agent.v1.TypedTask.identity:type_name -> supabase.agent.transport.v1.OperationIdentity
-	18, // 8: supabase.fleet.agent.v1.TypedTask.preconditions:type_name -> supabase.fleet.agent.v1.TypedTask.PreconditionsEntry
+	19, // 5: supabase.fleet.agent.v1.ConnectResponse.acknowledgement:type_name -> supabase.fleet.agent.v1.Acknowledgement
+	22, // 6: supabase.fleet.agent.v1.AgentHello.protocol:type_name -> supabase.agent.transport.v1.ProtocolVersion
+	23, // 7: supabase.fleet.agent.v1.TypedTask.identity:type_name -> supabase.agent.transport.v1.OperationIdentity
+	20, // 8: supabase.fleet.agent.v1.TypedTask.preconditions:type_name -> supabase.fleet.agent.v1.TypedTask.PreconditionsEntry
 	4,  // 9: supabase.fleet.agent.v1.TypedTask.observe_runtime:type_name -> supabase.fleet.agent.v1.ObserveRuntimeInput
 	5,  // 10: supabase.fleet.agent.v1.TypedTask.reconcile_configuration:type_name -> supabase.fleet.agent.v1.ReconcileConfigurationInput
 	6,  // 11: supabase.fleet.agent.v1.TypedTask.deploy_function:type_name -> supabase.fleet.agent.v1.DeployFunctionInput
 	7,  // 12: supabase.fleet.agent.v1.TypedTask.execute_lifecycle:type_name -> supabase.fleet.agent.v1.ExecuteLifecycleInput
-	9,  // 13: supabase.fleet.agent.v1.TaskResult.observe_runtime:type_name -> supabase.fleet.agent.v1.ObserveRuntimeEvidence
-	22, // 14: supabase.fleet.agent.v1.TaskResult.error:type_name -> supabase.agent.transport.v1.TaskError
-	10, // 15: supabase.fleet.agent.v1.TaskResult.reconcile_configuration:type_name -> supabase.fleet.agent.v1.ReconcileConfigurationEvidence
-	11, // 16: supabase.fleet.agent.v1.TaskResult.deploy_function:type_name -> supabase.fleet.agent.v1.FunctionDeploymentEvidence
-	12, // 17: supabase.fleet.agent.v1.TaskResult.execute_lifecycle:type_name -> supabase.fleet.agent.v1.LifecycleEvidence
-	15, // 18: supabase.fleet.agent.v1.ObserveRuntimeEvidence.services:type_name -> supabase.fleet.agent.v1.RuntimeService
-	0,  // 19: supabase.fleet.agent.v1.FleetAgentControlService.Connect:input_type -> supabase.fleet.agent.v1.ConnectRequest
-	13, // 20: supabase.fleet.agent.v1.FleetAgentControlService.DownloadArtifact:input_type -> supabase.fleet.agent.v1.DownloadArtifactRequest
-	1,  // 21: supabase.fleet.agent.v1.FleetAgentControlService.Connect:output_type -> supabase.fleet.agent.v1.ConnectResponse
-	14, // 22: supabase.fleet.agent.v1.FleetAgentControlService.DownloadArtifact:output_type -> supabase.fleet.agent.v1.ArtifactChunk
-	21, // [21:23] is the sub-list for method output_type
-	19, // [19:21] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	8,  // 13: supabase.fleet.agent.v1.TypedTask.reconcile_database_security:type_name -> supabase.fleet.agent.v1.ReconcileDatabaseSecurityInput
+	10, // 14: supabase.fleet.agent.v1.TaskResult.observe_runtime:type_name -> supabase.fleet.agent.v1.ObserveRuntimeEvidence
+	24, // 15: supabase.fleet.agent.v1.TaskResult.error:type_name -> supabase.agent.transport.v1.TaskError
+	11, // 16: supabase.fleet.agent.v1.TaskResult.reconcile_configuration:type_name -> supabase.fleet.agent.v1.ReconcileConfigurationEvidence
+	12, // 17: supabase.fleet.agent.v1.TaskResult.deploy_function:type_name -> supabase.fleet.agent.v1.FunctionDeploymentEvidence
+	13, // 18: supabase.fleet.agent.v1.TaskResult.execute_lifecycle:type_name -> supabase.fleet.agent.v1.LifecycleEvidence
+	14, // 19: supabase.fleet.agent.v1.TaskResult.reconcile_database_security:type_name -> supabase.fleet.agent.v1.DatabaseSecurityEvidence
+	17, // 20: supabase.fleet.agent.v1.ObserveRuntimeEvidence.services:type_name -> supabase.fleet.agent.v1.RuntimeService
+	0,  // 21: supabase.fleet.agent.v1.FleetAgentControlService.Connect:input_type -> supabase.fleet.agent.v1.ConnectRequest
+	15, // 22: supabase.fleet.agent.v1.FleetAgentControlService.DownloadArtifact:input_type -> supabase.fleet.agent.v1.DownloadArtifactRequest
+	1,  // 23: supabase.fleet.agent.v1.FleetAgentControlService.Connect:output_type -> supabase.fleet.agent.v1.ConnectResponse
+	16, // 24: supabase.fleet.agent.v1.FleetAgentControlService.DownloadArtifact:output_type -> supabase.fleet.agent.v1.ArtifactChunk
+	23, // [23:25] is the sub-list for method output_type
+	21, // [21:23] is the sub-list for method input_type
+	21, // [21:21] is the sub-list for extension type_name
+	21, // [21:21] is the sub-list for extension extendee
+	0,  // [0:21] is the sub-list for field type_name
 }
 
 func init() { file_supabase_fleet_agent_v1_fleet_proto_init() }
@@ -1437,13 +1585,15 @@ func file_supabase_fleet_agent_v1_fleet_proto_init() {
 		(*TypedTask_ReconcileConfiguration)(nil),
 		(*TypedTask_DeployFunction)(nil),
 		(*TypedTask_ExecuteLifecycle)(nil),
+		(*TypedTask_ReconcileDatabaseSecurity)(nil),
 	}
-	file_supabase_fleet_agent_v1_fleet_proto_msgTypes[8].OneofWrappers = []any{
+	file_supabase_fleet_agent_v1_fleet_proto_msgTypes[9].OneofWrappers = []any{
 		(*TaskResult_ObserveRuntime)(nil),
 		(*TaskResult_Error)(nil),
 		(*TaskResult_ReconcileConfiguration)(nil),
 		(*TaskResult_DeployFunction)(nil),
 		(*TaskResult_ExecuteLifecycle)(nil),
+		(*TaskResult_ReconcileDatabaseSecurity)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1451,7 +1601,7 @@ func file_supabase_fleet_agent_v1_fleet_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_supabase_fleet_agent_v1_fleet_proto_rawDesc), len(file_supabase_fleet_agent_v1_fleet_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   19,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

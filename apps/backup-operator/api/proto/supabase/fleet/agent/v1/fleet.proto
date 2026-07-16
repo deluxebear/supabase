@@ -48,6 +48,7 @@ message TypedTask {
     ReconcileConfigurationInput reconcile_configuration = 11;
     DeployFunctionInput deploy_function = 12;
     ExecuteLifecycleInput execute_lifecycle = 13;
+    ReconcileDatabaseSecurityInput reconcile_database_security = 14;
   }
 }
 
@@ -69,6 +70,12 @@ message ExecuteLifecycleInput {
   bytes lifecycle_json = 1;
 }
 
+message ReconcileDatabaseSecurityInput {
+  bytes document_json = 1;
+  string desired_digest = 2;
+  int64 expected_generation = 3;
+}
+
 message TaskResult {
   string task_id = 1;
   string evidence_schema = 2;
@@ -78,6 +85,7 @@ message TaskResult {
     ReconcileConfigurationEvidence reconcile_configuration = 12;
     FunctionDeploymentEvidence deploy_function = 13;
     LifecycleEvidence execute_lifecycle = 14;
+    DatabaseSecurityEvidence reconcile_database_security = 15;
   }
 }
 
@@ -95,6 +103,10 @@ message FunctionDeploymentEvidence {
 }
 
 message LifecycleEvidence {
+  bytes evidence_json = 1;
+}
+
+message DatabaseSecurityEvidence {
   bytes evidence_json = 1;
 }
 

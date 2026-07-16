@@ -1461,6 +1461,8 @@ Synthesized from the engineering review. Checkbox each task as it ships; priorit
 
 Roadmap P1-2 is also complete: Fleet Control schema 9 now provides the shared six-state operation lifecycle, durable attempt history, exact offline idempotent replay, deadline expiry, safe queued cancellation, explicit failed-operation retry, restart recovery, correlation, audit, and complete Studio project-scoped proxies. See [P1-2 general asynchronous operations](./2026-07-16-p1-2-general-async-operations.md).
 
+Roadmap P1-3 is complete: Fleet Control schema 10 encrypts sensitive operation input at rest and the typed database provider now reconciles primary/read-only passwords, SSL/CA, network CIDRs, and Supavisor limits with direct and pooled probes plus rollback evidence. Fleet Database Settings exposes the real project-scoped controls without hosted PgBouncer or entitlement dependencies. See [P1-3 database security and Supavisor operations](./2026-07-16-p1-3-database-security-pooler.md).
+
 ## 22. Definition of done for a management feature
 
 A Fleet management feature is not complete until all items pass:

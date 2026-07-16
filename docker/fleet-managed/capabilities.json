@@ -12,5 +12,12 @@
     "contractVersion": "v1",
     "inputSchema": "supabase.fleet.functions.deploy.v1",
     "evidenceSchema": "supabase.fleet.functions.deploy.evidence.v1"
+  },
+  {
+    "domain": "fleet.database",
+    "name": "database.security.reconcile",
+    "contractVersion": "v1",
+    "inputSchema": "supabase.fleet.database.security.reconcile.v1",
+    "evidenceSchema": "supabase.fleet.database.security.evidence.v1"
   }
 ]
