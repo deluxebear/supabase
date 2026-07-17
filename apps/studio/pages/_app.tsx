@@ -55,7 +55,10 @@ import { inter, manrope, sourceCodePro } from '@/fonts'
 import { useCustomContent } from '@/hooks/custom-content/useCustomContent'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { AuthProvider } from '@/lib/auth'
-import { configureMonacoLoader } from '@/lib/configure-monaco-loader'
+import {
+  configureMonacoLoader,
+  registerMonacoCancellationHandler,
+} from '@/lib/configure-monaco-loader'
 import { API_URL, BASE_PATH, IS_PLATFORM, useDefaultProvider } from '@/lib/constants'
 import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { TimezoneProvider, useTimezone } from '@/lib/datetime'
@@ -172,28 +175,7 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
     if (!IS_PLATFORM) checkCliEnvironment()
   }, [])
 
-  // Monaco throws a benign "Canceled" promise rejection when the editor is
-  // disposed while a setModel op is still in flight — e.g. the keyed remount on
-  // every SQL snippet switch (see @monaco-editor/react disposeEditor). It doesn't
-  // break anything, but Next.js's dev error overlay catches the unhandled
-  // rejection and throws up a full-screen "Runtime Canceled" crash. Swallow just
-  // that one so it doesn't block the editor. No-op in production (no overlay).
-  useEffect(() => {
-    const isMonacoCanceled = (reason: unknown) => {
-      if (reason === 'Canceled') return true
-      const message = (reason as { message?: string } | null)?.message
-      return message === 'Canceled'
-    }
-    const onRejection = (event: PromiseRejectionEvent) => {
-      if (!isMonacoCanceled(event.reason)) return
-      // Intercept in the capture phase and stop the event before Next.js's dev
-      // overlay listener sees it, so preventDefault alone isn't relied on.
-      event.preventDefault()
-      event.stopImmediatePropagation()
-    }
-    window.addEventListener('unhandledrejection', onRejection, { capture: true })
-    return () => window.removeEventListener('unhandledrejection', onRejection, { capture: true })
-  }, [])
+  useEffect(registerMonacoCancellationHandler, [])
 
   return (
     <QueryClientProvider client={queryClient}>

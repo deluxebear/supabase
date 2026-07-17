@@ -70,7 +70,10 @@ import { GlobalErrorBoundaryState } from '@/components/ui/ErrorBoundary/GlobalEr
 import { useCustomContent } from '@/hooks/custom-content/useCustomContent'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { AuthProvider } from '@/lib/auth'
-import { configureMonacoLoader } from '@/lib/configure-monaco-loader'
+import {
+  configureMonacoLoader,
+  registerMonacoCancellationHandler,
+} from '@/lib/configure-monaco-loader'
 import { API_URL, BASE_PATH, IS_PLATFORM, useDefaultProvider } from '@/lib/constants'
 import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 // Custom adapter instead of `nuqs/adapters/tanstack-router` — the stock one
@@ -316,6 +319,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootComponent() {
   useThemeSandbox()
+  useEffect(registerMonacoCancellationHandler, [])
 
   const cloudProvider = useDefaultProvider()
 
