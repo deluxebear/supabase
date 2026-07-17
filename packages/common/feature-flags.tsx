@@ -53,6 +53,23 @@ export type FeatureFlagContextType = {
   hasLoaded?: boolean
 }
 
+type FeatureFlagProviderEnablement = boolean | { cc: boolean; ph: boolean }
+
+const hasEnabledFeatureFlagSource = (enabled: FeatureFlagProviderEnablement) =>
+  enabled === true || (typeof enabled === 'object' && (enabled.cc || enabled.ph))
+
+export const createInitialFeatureFlagStore = (
+  API_URL: string | undefined,
+  enabled: FeatureFlagProviderEnablement
+): FeatureFlagContextType => ({
+  API_URL,
+  configcat: {},
+  posthog: {},
+  // A disabled provider has no asynchronous work to wait for. Treat its empty
+  // flag set as loaded so consumers can immediately use their fallback path.
+  hasLoaded: !hasEnabledFeatureFlagSource(enabled),
+})
+
 export const FeatureFlagContext = createContext<FeatureFlagContextType>({
   API_URL: undefined,
   configcat: {},
@@ -82,7 +99,7 @@ export const FeatureFlagProvider = ({
 }: PropsWithChildren<{
   API_URL?: string
   /** Accepts either `boolean` which controls all feature flags or `{ cc: boolean, ph: boolean }` for individual providers */
-  enabled?: boolean | { cc: boolean; ph: boolean }
+  enabled?: FeatureFlagProviderEnablement
   organizationSlug?: string
   projectRef?: string
   /** Custom fetcher for ConfigCat flags if passing in custom attributes */
@@ -98,12 +115,9 @@ export const FeatureFlagProvider = ({
   const resolvedProjectRef = projectRef ?? params.ref
   const lastSentGroupContextRef = useRef<string | null>(null)
 
-  const [store, setStore] = useState<FeatureFlagContextType>({
-    API_URL,
-    configcat: {},
-    posthog: {},
-    hasLoaded: false,
-  })
+  const [store, setStore] = useState<FeatureFlagContextType>(() =>
+    createInitialFeatureFlagStore(API_URL, enabled)
+  )
 
   useEffect(() => {
     let mounted = true
@@ -138,7 +152,22 @@ export const FeatureFlagProvider = ({
     }
 
     async function processFlags() {
-      if (!enabled || isLoading) return
+      if (!hasEnabledFeatureFlagSource(enabled)) {
+        setStore((currentStore) => {
+          const isAlreadyLoadedEmptyStore =
+            currentStore.API_URL === API_URL &&
+            currentStore.hasLoaded === true &&
+            Object.keys(currentStore.configcat).length === 0 &&
+            Object.keys(currentStore.posthog).length === 0
+
+          return isAlreadyLoadedEmptyStore
+            ? currentStore
+            : createInitialFeatureFlagStore(API_URL, enabled)
+        })
+        return
+      }
+
+      if (isLoading) return
 
       const loadPHFlags =
         (enabled === true || (typeof enabled === 'object' && enabled.ph)) && !!API_URL
