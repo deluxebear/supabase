@@ -388,6 +388,14 @@ function SelfPlatformBackupOperatorControls({ projectRef }: SelfPlatformBackupOp
               <p className="text-xs text-foreground-light">
                 {$t('{{count}} retained events received', { count: events.length })}
               </p>
+              {jobQuery.data.evidence && (
+                <div className="flex flex-col gap-1">
+                  <p className="text-xs font-medium">{$t('Execution evidence')}</p>
+                  <pre className="max-h-48 overflow-auto rounded-md bg-surface-200 p-3 text-xs">
+                    {JSON.stringify(jobQuery.data.evidence, null, 2)}
+                  </pre>
+                </div>
+              )}
               {eventsError && (
                 <p className="text-sm text-warning">{$t('Job event stream is reconnecting.')}</p>
               )}
@@ -403,7 +411,8 @@ function SelfPlatformBackupOperatorControls({ projectRef }: SelfPlatformBackupOp
                   description={$t(jobQuery.data.manualIntervention.safeAction)}
                 />
               )}
-              {(jobQuery.data.state === 'orphaned' ||
+              {(jobQuery.data.state === 'failed' ||
+                jobQuery.data.state === 'orphaned' ||
                 jobQuery.data.state === 'manual-intervention') &&
                 projectRef &&
                 jobId && (

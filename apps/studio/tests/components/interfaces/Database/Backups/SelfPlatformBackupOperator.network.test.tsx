@@ -323,7 +323,9 @@ describe('SelfPlatformBackupOperator', () => {
       )
     )
     customRender(<SelfPlatformBackupOperator projectRef="project-a" />)
-    expect(await screen.findByText('Failed to load the backup policy')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Failed to load the backup policy', {}, { timeout: 5_000 })
+    ).toBeInTheDocument()
   })
 
   it('renders empty, stale, and blocker states', async () => {

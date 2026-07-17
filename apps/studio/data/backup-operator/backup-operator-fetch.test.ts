@@ -37,4 +37,11 @@ describe('fetchBackupOperator', () => {
     expect(retryBackupOperatorQuery(0, new ResponseError('Unavailable', 503))).toBe(true)
     expect(retryBackupOperatorQuery(2, new ResponseError('Unavailable', 503))).toBe(false)
   })
+
+  it('does not retry deterministic response schema drift', () => {
+    expect(retryBackupOperatorQuery(0, new Error('network failure'))).toBe(true)
+    expect(
+      retryBackupOperatorQuery(0, Object.assign(new Error('schema mismatch'), { name: 'ZodError' }))
+    ).toBe(false)
+  })
 })

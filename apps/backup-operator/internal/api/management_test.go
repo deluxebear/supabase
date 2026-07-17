@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -135,6 +136,21 @@ func TestClusterPITRPolicyAndManualBackupAPI(t *testing.T) {
 	mux.ServeHTTP(manual, manualRequest)
 	if manual.Code != 202 || !strings.Contains(manual.Body.String(), `"type":"backup"`) {
 		t.Fatalf("manual backup: %d %s", manual.Code, manual.Body.String())
+	}
+	var manualJob struct {
+		ID string `json:"id"`
+	}
+	if err := json.Unmarshal(manual.Body.Bytes(), &manualJob); err != nil || manualJob.ID == "" {
+		t.Fatalf("decode manual backup job: %v %s", err, manual.Body.String())
+	}
+	typedEvidence := []byte(`{"backupLabel":"20260717-010203F","repositoryId":"repo-a"}`)
+	if changed, err := store.ReconcileTaskResult(context.Background(), manualJob.ID+"/execute", true, typedEvidence, ""); err != nil || !changed {
+		t.Fatalf("reconcile manual backup: changed=%v err=%v", changed, err)
+	}
+	jobResponse := httptest.NewRecorder()
+	mux.ServeHTTP(jobResponse, authorizedRequest(http.MethodGet, "/v1/clusters/cluster-a/jobs/"+manualJob.ID, nil))
+	if jobResponse.Code != http.StatusOK || !strings.Contains(jobResponse.Body.String(), `"progress":100`) || !strings.Contains(jobResponse.Body.String(), `"backupLabel":"20260717-010203F"`) || !strings.Contains(jobResponse.Body.String(), `"attempts"`) {
+		t.Fatalf("manual backup evidence: %d %s", jobResponse.Code, jobResponse.Body.String())
 	}
 
 	disable := httptest.NewRecorder()

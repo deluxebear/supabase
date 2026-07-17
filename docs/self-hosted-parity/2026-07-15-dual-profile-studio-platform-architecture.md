@@ -1465,6 +1465,8 @@ Roadmap P1-3 is complete: Fleet Control schema 10 encrypts sensitive operation i
 
 Roadmap P1-4 is complete: the typed `runtime.observe` operation now projects project-scoped disk/database/WAL/system utilization, Compose compute/container/volume inventory, service versions, and honest upgrade readiness. A target-local read-only observer owns Docker socket access while the generic Agent remains socket-free; targets without an allowlisted upgrade executor expose explicit preflight blockers, plan, rollback, and recovery instead of false eligibility. See [P1-4 runtime inventory and upgrade readiness](./2026-07-16-p1-4-runtime-inventory-upgrade.md).
 
+Roadmap P1-5 is complete: Backup Operator now projects backup inventory, full/diff/incremental schedules, retention, WAL/PITR health, manual backup, exact restore plans, durable job progress/attempts/evidence, and active rollback windows. Destructive execution requires recent AAL2 plus the exact plan hash; the disposable PostgreSQL + MinIO acceptance executed and rolled back a real PITR chain without touching an existing project. See [P1-5 backup and PITR operations](./2026-07-17-p1-5-backup-pitr-operations.md).
+
 ## 22. Definition of done for a management feature
 
 A Fleet management feature is not complete until all items pass:

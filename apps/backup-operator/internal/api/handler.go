@@ -45,6 +45,10 @@ type Store interface {
 	ExportAudits(context.Context, io.Writer, int64, int) (int64, error)
 }
 
+type rollbackWindowStore interface {
+	GetRollbackWindowByJob(context.Context, string) (time.Time, error)
+}
+
 type RestoreObservationSource interface {
 	Observe(context.Context, string, time.Time) (restoreplan.Request, error)
 }
@@ -546,7 +550,30 @@ func (h *Handler) disablePITR(w http.ResponseWriter, r *http.Request) {
 }
 
 func jobResponse(job controlstore.JobRecord) map[string]any {
-	return map[string]any{"id": job.ID, "type": job.Type, "state": job.State, "progress": 0, "updatedAt": job.UpdatedAt.UTC().Format(time.RFC3339), "rollbackUntil": nil, "manualIntervention": nil}
+	progress := 0
+	if job.State == "running" {
+		progress = 50
+	} else if job.State == "succeeded" || job.State == "failed" || job.State == "cancelled" || job.State == "orphaned" || job.State == "manual-intervention" {
+		progress = 100
+	}
+	var evidence any
+	if len(job.Result) > 0 {
+		_ = json.Unmarshal(job.Result, &evidence)
+	}
+	var manualIntervention any
+	if job.State == "failed" || job.State == "orphaned" || job.State == "manual-intervention" {
+		code := job.ErrorCode
+		if code == "" {
+			code = job.State
+		}
+		manualIntervention = map[string]string{
+			"code":       code,
+			"summary":    "Backup operation requires recovery",
+			"safeAction": "Review the typed evidence and audit events, then retry the failed operation or use the confirmed restore rollback while its window remains open.",
+			"runbookUrl": "/docs/self-hosted-parity/backup-recovery",
+		}
+	}
+	return map[string]any{"id": job.ID, "type": job.Type, "state": job.State, "progress": progress, "updatedAt": job.UpdatedAt.UTC().Format(time.RFC3339), "rollbackUntil": nil, "manualIntervention": manualIntervention, "evidence": evidence, "attempts": job.Steps}
 }
 func (h *Handler) listBackups(w http.ResponseWriter, r *http.Request) {
 	target, ok := h.authorizedTarget(w, r, "backup.read")
@@ -608,7 +635,17 @@ func (h *Handler) getClusterJob(w http.ResponseWriter, r *http.Request) {
 		writeError(w, 500, "read_failed", err.Error())
 		return
 	}
-	writeJSON(w, 200, map[string]any{"id": job.ID, "type": job.Type, "state": job.State, "progress": 0, "updatedAt": job.UpdatedAt.UTC().Format(time.RFC3339), "rollbackUntil": nil, "manualIntervention": nil})
+	response := jobResponse(job)
+	if job.Type == "restore" && job.State == "succeeded" {
+		if windows, ok := h.store.(rollbackWindowStore); ok {
+			rollbackUntil, windowErr := windows.GetRollbackWindowByJob(r.Context(), job.ID)
+			if windowErr == nil && time.Now().UTC().Before(rollbackUntil) {
+				response["state"] = "rollback-available"
+				response["rollbackUntil"] = rollbackUntil.Format(time.RFC3339)
+			}
+		}
+	}
+	writeJSON(w, 200, response)
 }
 
 func (h *Handler) retryClusterJob(w http.ResponseWriter, r *http.Request) {

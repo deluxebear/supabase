@@ -16,17 +16,18 @@ var ErrJobNotFound = errors.New("job not found")
 var ErrRollbackUnavailable = errors.New("rollback is only available for a succeeded restore job")
 
 type JobRecord struct {
-	ID             string    `json:"id"`
-	ProjectID      string    `json:"projectId"`
-	TargetID       string    `json:"targetId"`
-	Type           string    `json:"type"`
-	State          string    `json:"state"`
-	IdempotencyKey string    `json:"idempotencyKey,omitempty"`
-	PlanHash       string    `json:"planHash"`
-	ErrorCode      string    `json:"errorCode,omitempty"`
-	CreatedAt      time.Time `json:"createdAt"`
-	UpdatedAt      time.Time `json:"updatedAt"`
-	Steps          []JobStep `json:"steps"`
+	ID             string          `json:"id"`
+	ProjectID      string          `json:"projectId"`
+	TargetID       string          `json:"targetId"`
+	Type           string          `json:"type"`
+	State          string          `json:"state"`
+	IdempotencyKey string          `json:"idempotencyKey,omitempty"`
+	PlanHash       string          `json:"planHash"`
+	ErrorCode      string          `json:"errorCode,omitempty"`
+	Result         json.RawMessage `json:"result,omitempty"`
+	CreatedAt      time.Time       `json:"createdAt"`
+	UpdatedAt      time.Time       `json:"updatedAt"`
+	Steps          []JobStep       `json:"steps"`
 }
 
 type JobStep struct {
@@ -48,6 +49,25 @@ type CreateJobInput struct {
 	TargetNodeID   string
 	Payload        []byte
 	FencingToken   int64
+}
+
+// GetRollbackWindowByJob returns the durable single-primary quarantine window
+// associated with a restore job. Providers that keep rollback state elsewhere
+// can omit this optional API projection.
+func (s *Store) GetRollbackWindowByJob(ctx context.Context, jobID string) (time.Time, error) {
+	query := `SELECT q.rollback_until_ms
+FROM restore_plans rp JOIN quarantines q ON q.plan_id=rp.id
+WHERE rp.job_id=? AND q.resource_type='pgdata'`
+	if s.dialect == Postgres {
+		query = `SELECT q.rollback_until_ms
+FROM restore_plans rp JOIN quarantines q ON q.plan_id=rp.id
+WHERE rp.job_id=$1 AND q.resource_type='pgdata'`
+	}
+	var rollbackUntil int64
+	if err := s.db.QueryRowContext(ctx, query, jobID).Scan(&rollbackUntil); err != nil {
+		return time.Time{}, err
+	}
+	return time.UnixMilli(rollbackUntil).UTC(), nil
 }
 
 func (s *Store) CreateJob(ctx context.Context, input CreateJobInput) (JobRecord, bool, error) {
@@ -128,17 +148,21 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8)`
 }
 
 func (s *Store) GetJob(ctx context.Context, id string) (JobRecord, error) {
-	query := `SELECT id, project_id, target_id, type, state, COALESCE(idempotency_key,''), plan_hash, COALESCE(error_code,''), created_at_ms, updated_at_ms FROM jobs WHERE id=?`
+	query := `SELECT id, project_id, target_id, type, state, COALESCE(idempotency_key,''), plan_hash, COALESCE(error_code,''), COALESCE(result_json,'{}'), created_at_ms, updated_at_ms FROM jobs WHERE id=?`
 	if s.dialect == Postgres {
-		query = `SELECT id, project_id, target_id, type, state, COALESCE(idempotency_key,''), plan_hash, COALESCE(error_code,''), created_at_ms, updated_at_ms FROM jobs WHERE id=$1`
+		query = `SELECT id, project_id, target_id, type, state, COALESCE(idempotency_key,''), plan_hash, COALESCE(error_code,''), COALESCE(result_json,'{}'::jsonb)::text, created_at_ms, updated_at_ms FROM jobs WHERE id=$1`
 	}
 	var job JobRecord
+	var resultJSON []byte
 	var created, updated int64
-	if err := s.db.QueryRowContext(ctx, query, id).Scan(&job.ID, &job.ProjectID, &job.TargetID, &job.Type, &job.State, &job.IdempotencyKey, &job.PlanHash, &job.ErrorCode, &created, &updated); err != nil {
+	if err := s.db.QueryRowContext(ctx, query, id).Scan(&job.ID, &job.ProjectID, &job.TargetID, &job.Type, &job.State, &job.IdempotencyKey, &job.PlanHash, &job.ErrorCode, &resultJSON, &created, &updated); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return JobRecord{}, ErrJobNotFound
 		}
 		return JobRecord{}, err
+	}
+	if json.Valid(resultJSON) && string(resultJSON) != "{}" {
+		job.Result = append(json.RawMessage(nil), resultJSON...)
 	}
 	job.CreatedAt, job.UpdatedAt = time.UnixMilli(created), time.UnixMilli(updated)
 	stepQuery := "SELECT name, state, attempt, updated_at_ms FROM job_steps WHERE job_id=? ORDER BY name"

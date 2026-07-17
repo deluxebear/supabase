@@ -44,7 +44,8 @@ func TestConcurrentOutboxClaimIsExclusive(t *testing.T) {
 func TestReconcileTaskResultIsIdempotent(t *testing.T) {
 	store := openOrchestrationStore(t, filepath.Join(t.TempDir(), "control.db"))
 	createTestJob(t, store, "job-result", "key-result")
-	changed, err := store.ReconcileTaskResult(context.Background(), "job-result/execute", true, nil, "")
+	evidence := []byte(`{"backupLabel":"20260717-010203F","repositoryId":"repo-a"}`)
+	changed, err := store.ReconcileTaskResult(context.Background(), "job-result/execute", true, evidence, "")
 	if err != nil || !changed {
 		t.Fatalf("first result: changed=%v err=%v", changed, err)
 	}
@@ -56,7 +57,7 @@ func TestReconcileTaskResultIsIdempotent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if job.State != "succeeded" || len(job.Steps) != 1 || job.Steps[0].State != "succeeded" {
+	if job.State != "succeeded" || len(job.Steps) != 1 || job.Steps[0].State != "succeeded" || string(job.Result) != string(evidence) {
 		t.Fatalf("unexpected reconciled job: %+v", job)
 	}
 	events, err := store.EventsAfter(context.Background(), job.ID, 0, 100)
@@ -125,6 +126,29 @@ func TestPendingOutboxSurvivesRestart(t *testing.T) {
 	}
 	if len(tasks) != 1 || tasks[0].TaskID != "job-restart/execute" {
 		t.Fatalf("unexpected recovered tasks: %+v", tasks)
+	}
+}
+
+func TestGetRollbackWindowByJob(t *testing.T) {
+	ctx := context.Background()
+	store := openOrchestrationStore(t, filepath.Join(t.TempDir(), "control.db"))
+	now := time.Now().UTC().Truncate(time.Millisecond)
+	if _, err := store.db.ExecContext(ctx, `INSERT INTO jobs(id,project_id,target_id,type,state,idempotency_key,plan_hash,input_json,created_at_ms,updated_at_ms) VALUES(?,?,?,?,?,?,?,?,?,?)`, "job-window", "project", "target", "restore", "succeeded", "restore/window", "hash-window", `{}`, now.UnixMilli(), now.UnixMilli()); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.db.ExecContext(ctx, `INSERT INTO restore_plans(id,job_id,plan_hash,safety_input_json,expires_at_ms,created_at_ms) VALUES(?,?,?,?,?,?)`, "plan-window", "job-window", "hash-window", `{}`, now.Add(time.Hour).UnixMilli(), now.UnixMilli()); err != nil {
+		t.Fatal(err)
+	}
+	want := now.Add(30 * time.Minute)
+	if err := store.RegisterQuarantine(ctx, Quarantine{ID: "plan-window/pgdata", PlanID: "plan-window", ResourceType: "pgdata", ResourceRef: "/quarantine", RollbackUntil: want}); err != nil {
+		t.Fatal(err)
+	}
+	got, err := store.GetRollbackWindowByJob(ctx, "job-window")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.Equal(want) {
+		t.Fatalf("rollback window = %s, want %s", got, want)
 	}
 }
 

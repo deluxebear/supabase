@@ -28,7 +28,7 @@
       "category": "functional",
       "status": "resolved",
       "resolvedAt": "2026-07-16T20:28:00+08:00",
-      "verification": "All browser Backup Operator requests use the shared Platform Auth header boundary. Scheduled, PITR, and Add-ons return status 200 with no visible skeleton; project-a correctly shows the unconfigured blocker, while unauthenticated status and policy requests remain 401."
+      "verification": "All browser Backup Operator requests use the shared Platform Auth header boundary. Scheduled, PITR, and Add-ons return status 200 with no visible skeleton; unauthenticated status and policy requests remain 401. P1-5 additionally passed an isolated real PostgreSQL + MinIO backup, PITR, typed evidence, AAL2/exact-plan rejection, restore, and rollback chain without contacting project-a."
     },
     {
       "id": "ISSUE-004",

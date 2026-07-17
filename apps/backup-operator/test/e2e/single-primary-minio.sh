@@ -246,23 +246,46 @@ docker exec "$control" test -s /work/wal-inventory.json
 
 docker exec -i "$control" bash -es -- "$system_id" "$target_time" <<'PRODUCT_CHAIN'
 system_id="$1" target="$2" key=01234567890123456789012345678901
+trap 'printf "PRODUCT_CHAIN_STEP_FAILURE_LINE=%s\n" "$LINENO" >&2' ERR
 b64url() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
-header="$(printf '%s' '{"alg":"HS256","typ":"JWT"}' | b64url)"; now="$(date +%s)"
-payload="$(jq -nc --argjson now "$now" '{iss:"supabase-studio",sub:"compose-e2e",aud:"backup-operator",exp:($now+300),nbf:($now-10),scopes:["*"],projects:["*"],aal:"aal2",aal_authenticated_at:$now}' | b64url)"
-signature="$(printf '%s' "$header.$payload" | openssl dgst -sha256 -hmac "$key" -binary | b64url)"; token="$header.$payload.$signature"
+token_for() {
+  aal="$1"; header="$(printf '%s' '{"alg":"HS256","typ":"JWT"}' | b64url)"; now="$(date +%s)"
+  payload="$(jq -nc --argjson now "$now" --arg aal "$aal" '{iss:"supabase-studio",sub:"compose-e2e",aud:"backup-operator",exp:($now+300),nbf:($now-10),scopes:["*"],projects:["*"],aal:$aal,aal_authenticated_at:$now}' | b64url)"
+  signature="$(printf '%s' "$header.$payload" | openssl dgst -sha256 -hmac "$key" -binary | b64url)"
+  printf '%s' "$header.$payload.$signature"
+}
+token="$(token_for aal2)"; aal1_token="$(token_for aal1)"
 api() { method="$1" path="$2" body="${3:-}" key="${4:-}"; echo "API $method $path" >&2; args=(-sS -X "$method" -H "Authorization: Bearer $token" -H 'Content-Type: application/json'); test -z "$key" || args+=(-H "Idempotency-Key: $key"); test -z "$body" || args+=(--data "$body"); response="$(curl --fail-with-body "${args[@]}" "http://127.0.0.1:8080$path")" || { status=$?; printf 'API failure response: %s\n' "$response" >&2; return "$status"; }; printf '%s' "$response"; }
+wait_job() { id="$1"; for _ in $(seq 1 240); do response="$(api GET "/v1/clusters/compose-e2e/jobs/$id")"; state="$(jq -r .state <<<"$response")"; case "$state" in succeeded) printf '%s' "$response"; return 0;; failed|orphaned|manual-intervention|cancelled) echo "$response" >&2; return 1;; esac; sleep 1; done; return 1; }
 api POST /v1/clusters "$(jq -nc --arg system "$system_id" '{projectId:"compose-e2e",targetId:"compose-e2e",systemIdentifier:$system,dataDomain:"database"}')" register-compose >/dev/null
+cluster="$(api GET /v1/clusters/compose-e2e)"
+jq -e '.discovery.provider == "single-primary-pgbackrest" and .discovery.topology == "static-primary" and .discovery.repositoryId == "compose-repo"' <<<"$cluster" >/dev/null
+policy="$(api PUT /v1/clusters/compose-e2e/backup-policy '{"enabled":true,"fullSchedule":"0 2 * * *","diffSchedule":"0 2 * * 1-6","incrSchedule":"0 * * * *","backupFrom":"primary","repositoryId":"compose-repo","retentionDays":21}' policy-compose)"
+jq -e '.enabled == true and .retentionDays == 21 and .fullSchedule == "0 2 * * *"' <<<"$policy" >/dev/null
+pitr="$(api GET /v1/clusters/compose-e2e/pitr)"
+jq -e '.enabled == true and .healthy == true and .repositoryId == "compose-repo"' <<<"$pitr" >/dev/null
+manual="$(api POST /v1/clusters/compose-e2e/backups '{"type":"full"}' manual-backup-compose)"; manual_job="$(jq -r .id <<<"$manual")"
+manual_replay="$(api POST /v1/clusters/compose-e2e/backups '{"type":"full"}' manual-backup-compose)"
+test "$(jq -r .id <<<"$manual_replay")" = "$manual_job"
+manual_result="$(wait_job "$manual_job")"
+jq -e '.state == "succeeded" and .progress == 100 and .evidence.BackupLabel != "" and .evidence.RepositoryID == "compose-repo" and .attempts[0].attempt >= 1' <<<"$manual_result" >/dev/null
+inventory="$(api GET /v1/clusters/compose-e2e/backups)"
+jq -e '(.backups | length) >= 2 and (.recoveryWindow | type == "object") and (.blockers | type == "array")' <<<"$inventory" >/dev/null
 plan="$(api POST /v1/clusters/compose-e2e/restore-plans "$(jq -nc --arg target "$target" '{recoveryTarget:$target}')" plan-compose)"; plan_id="$(jq -r .id <<<"$plan")"; plan_hash="$(jq -r .hash <<<"$plan")"
+jq -e '.blockers == [] and .impact.requiredBytes > 0 and (.impact.serviceInterruption | length) > 0' <<<"$plan" >/dev/null
+status="$(curl -sS -o /tmp/aal1-rejected.json -w '%{http_code}' -X POST -H "Authorization: Bearer $aal1_token" -H 'Idempotency-Key: reject-aal1-compose' -H 'Content-Type: application/json' --data "$(jq -nc --arg hash "$plan_hash" '{planHash:$hash}')" "http://127.0.0.1:8080/v1/clusters/compose-e2e/restore-plans/$plan_id/confirm")"
+test "$status" = 403; jq -e '.code == "aal2_required"' /tmp/aal1-rejected.json >/dev/null
+status="$(curl -sS -o /tmp/hash-rejected.json -w '%{http_code}' -X POST -H "Authorization: Bearer $token" -H 'Idempotency-Key: reject-hash-compose' -H 'Content-Type: application/json' --data '{"planHash":"wrong-plan-hash"}' "http://127.0.0.1:8080/v1/clusters/compose-e2e/restore-plans/$plan_id/confirm")"
+test "$status" = 409; jq -e '.code == "restore_not_confirmable"' /tmp/hash-rejected.json >/dev/null
 api POST "/v1/clusters/compose-e2e/restore-plans/$plan_id/confirm" "$(jq -nc --arg hash "$plan_hash" '{planHash:$hash}')" confirm-compose >/dev/null
 job="$(api POST "/v1/clusters/compose-e2e/restore-plans/$plan_id/execute" "$(jq -nc --arg hash "$plan_hash" '{planHash:$hash}')" execute-compose)"; job_id="$(jq -r .id <<<"$job")"
 # Replaying the same mutation must return the same durable job and never repeat a Docker side effect.
 replayed="$(api POST "/v1/clusters/compose-e2e/restore-plans/$plan_id/execute" "$(jq -nc --arg hash "$plan_hash" '{planHash:$hash}')" execute-compose)"; test "$(jq -r .id <<<"$replayed")" = "$job_id"
-wait_job() { id="$1"; for _ in $(seq 1 240); do response="$(api GET "/v1/clusters/compose-e2e/jobs/$id")"; state="$(jq -r .state <<<"$response")"; case "$state" in succeeded) return 0;; failed|orphaned|manual-intervention|cancelled) echo "$response" >&2; return 1;; esac; sleep 1; done; return 1; }
-wait_job "$job_id"
+restore_result="$(wait_job "$job_id")"; jq -e '.state == "succeeded" and .progress == 100 and (.attempts | length) == 1' <<<"$restore_result" >/dev/null
 test "$(psql 'postgres://postgres@source/postgres?sslmode=disable' -Atqc "select string_agg(value,',' order by id) from compose_fixture")" = before-target
 test -d /recovery/pgdata.backup-operator-quarantine
 test "$(find /recovery -maxdepth 1 -type d -name 'pgdata.backup-operator-quarantine*' | wc -l | tr -d ' ')" = 1
-rollback="$(api POST "/v1/clusters/compose-e2e/jobs/$job_id/rollback" "$(jq -nc --arg hash "$plan_hash" '{planHash:$hash}')" rollback-compose)"; rollback_job="$(jq -r .id <<<"$rollback")"; wait_job "$rollback_job"
+rollback="$(api POST "/v1/clusters/compose-e2e/jobs/$job_id/rollback" "$(jq -nc --arg hash "$plan_hash" '{planHash:$hash}')" rollback-compose)"; rollback_job="$(jq -r .id <<<"$rollback")"; rollback_result="$(wait_job "$rollback_job")"; jq -e '.state == "succeeded" and .progress == 100' <<<"$rollback_result" >/dev/null
 test "$(psql 'postgres://postgres@source/postgres?sslmode=disable' -Atqc "select string_agg(value,',' order by id) from compose_fixture")" = before-target,after-target
 test ! -e /recovery/pgdata.backup-operator-quarantine
 test ! -e /recovery/pgdata.backup-operator-failed
@@ -281,6 +304,9 @@ printf 'operator_version=%s\n' "$(docker exec "$control" /work/backup-operator -
 printf 'git_commit=%s\nbinary_sha256=%s\nimage_digest=%s\n' "$commit" "$binary_sha256" "$image_id"
 printf 'api_restore_plan_id=%s\ndurable_job_id=%s\nrollback_job_id=%s\n' "$(cat "$work/plan-id")" "$(cat "$work/job-id")" "$(cat "$work/rollback-job")"
 printf 'execution_chain=api-controlstore-outbox-mtls-agent-journal-recovery-engine\n'
+printf 'backup_inventory_policy_manual_pitr=true\n'
+printf 'job_progress_attempts_typed_evidence=true\n'
+printf 'aal2_and_exact_plan_hash_enforced=true\n'
 printf 'restore_target_utc=%s\n' "$target_time"
 printf 'utc_target_rows=before-target\nrollback_rows=before-target,after-target\n'
 printf 'rollback_window_enforced=true\noriginal_pgdata_preserved_until_rollback=true\n'

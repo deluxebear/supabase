@@ -55,6 +55,8 @@ describe('canRollbackRestore', () => {
     progress: 100,
     updatedAt: '2026-07-13T09:59:00Z',
     rollbackUntil: '2026-07-13T11:00:00Z',
+    evidence: null,
+    attempts: [],
     manualIntervention: null,
   }
 

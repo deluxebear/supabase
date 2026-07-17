@@ -108,6 +108,17 @@ export const operatorJobSchema = z.object({
   progress: z.number().min(0).max(100).default(0),
   updatedAt: z.string(),
   rollbackUntil: z.string().nullable().default(null),
+  evidence: z.record(z.string(), z.unknown()).nullable().default(null),
+  attempts: z
+    .array(
+      z.object({
+        name: z.string(),
+        state: z.string(),
+        attempt: z.number().int().nonnegative(),
+        updatedAt: z.string(),
+      })
+    )
+    .default([]),
   manualIntervention: z
     .object({
       code: z.string(),

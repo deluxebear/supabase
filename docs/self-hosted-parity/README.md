@@ -32,6 +32,7 @@ This directory contains the architecture and implementation records for the self
 
 ## Backup and recovery
 
+- [P1-5 backup and PITR operations](./2026-07-17-p1-5-backup-pitr-operations.md)
 - [Go Backup Operator architecture](./2026-07-12-go-backup-operator-architecture.md)
 - [Backup Operator runbook](./2026-07-07-F4-backups-operator-runbook.md)
 - [Control-store recovery-domain spike](./2026-07-12-M0.1-control-store-recovery-domain-spike.md)
