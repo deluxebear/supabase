@@ -15,6 +15,7 @@ import {
 import { DatePickerValue } from './Logs.DatePickers'
 import type { Filters, LogSearchCallback, LogTemplate, QueryType } from './Logs.types'
 import { maybeShowUpgradePromptIfNotEntitled } from './Logs.utils'
+import { LogsTableEmptyState } from './LogsTableEmptyState'
 import { LogTable } from './LogTable'
 import UpgradePrompt from './UpgradePrompt'
 import { useLogsPreviewShortcuts } from './useLogsPreviewShortcuts'
@@ -22,6 +23,7 @@ import PreviewFilterPanel from '@/components/interfaces/Settings/Logs/PreviewFil
 import LoadingOpacity from '@/components/ui/LoadingOpacity'
 import ShimmerLine from '@/components/ui/ShimmerLine'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
+import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
 import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import useLogsPreview from '@/hooks/analytics/useLogsPreview'
 import { useLogsUrlState } from '@/hooks/analytics/useLogsUrlState'
@@ -30,6 +32,7 @@ import useSingleLog from '@/hooks/analytics/useSingleLog'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useUpgradePrompt } from '@/hooks/misc/useUpgradePrompt'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
@@ -101,6 +104,19 @@ interface LogsPreviewerProps {
   EmptyState?: React.ReactNode
   filterPanelClassName?: string
 }
+
+export function isProjectAnalyticsConfigured({
+  isSelfPlatform,
+  logflareUrl,
+  hasLogflareToken,
+}: {
+  isSelfPlatform: boolean
+  logflareUrl?: string | null
+  hasLogflareToken?: boolean
+}) {
+  return !isSelfPlatform || Boolean(logflareUrl && hasLogflareToken)
+}
+
 export const LogsPreviewer = ({
   projectRef,
   queryType,
@@ -138,6 +154,17 @@ export const LogsPreviewer = ({
 
   const [selectedLogId, setSelectedLogId] = useSelectedLog()
   const { data: databases, isSuccess } = useReadReplicasQuery({ projectRef })
+  const { data: project, isPending: isProjectLoading } = useProjectDetailQuery(
+    { ref: projectRef },
+    { enabled: IS_SELF_PLATFORM }
+  )
+
+  const isAnalyticsConfigured = isProjectAnalyticsConfigured({
+    isSelfPlatform: IS_SELF_PLATFORM,
+    logflareUrl: project?.self_platform?.logflare_url,
+    hasLogflareToken: project?.self_platform?.secrets_set.logflare_token,
+  })
+  const canQueryAnalytics = !IS_SELF_PLATFORM || (!isProjectLoading && isAnalyticsConfigured)
 
   // TODO: Move this to useLogsUrlState to simplify LogsPreviewer. - Jordi
   function getDefaultDatePickerValue() {
@@ -174,7 +201,7 @@ export const LogsPreviewer = ({
     isLoadingOlder,
     loadOlder,
     refresh,
-  } = useLogsPreview({ projectRef, table, filterOverride })
+  } = useLogsPreview({ projectRef, table, filterOverride, enabled: canQueryAnalytics })
 
   const {
     data: selectedLog,
@@ -182,7 +209,7 @@ export const LogsPreviewer = ({
     error: selectedLogError,
   } = useSingleLog({
     projectRef,
-    id: selectedLogId ?? undefined,
+    id: canQueryAnalytics ? (selectedLogId ?? undefined) : undefined,
     queryType,
     paramsToMerge: params,
   })
@@ -297,6 +324,18 @@ export const LogsPreviewer = ({
     searchInputRef,
   }
 
+  const logsEmptyState =
+    !isProjectLoading && !isAnalyticsConfigured ? (
+      <LogsTableEmptyState
+        title={$t('Logs are not configured')}
+        description={$t(
+          'Configure a Logflare URL and token in the project connection settings to view logs.'
+        )}
+      />
+    ) : (
+      EmptyState
+    )
+
   useLogsPreviewShortcuts({
     searchInputRef,
     hasSearch: search.length > 0,
@@ -352,17 +391,17 @@ export const LogsPreviewer = ({
         </div>
       </div>
       <div className="relative flex flex-col grow flex-1 overflow-auto">
-        <ShimmerLine active={isLoading} />
-        <LoadingOpacity active={isLoading}>
+        <ShimmerLine active={isLoading || isProjectLoading} />
+        <LoadingOpacity active={isLoading || isProjectLoading}>
           <LogTable
             projectRef={projectRef}
-            isLoading={isLoading}
+            isLoading={isLoading || isProjectLoading}
             data={logData}
             queryType={queryType}
             isHistogramShowing={showChart}
             onHistogramToggle={() => setShowChart(!showChart)}
             error={error}
-            EmptyState={EmptyState}
+            EmptyState={logsEmptyState}
             onSelectedLogChange={(log) => setSelectedLogId(log?.id ?? null)}
             selectedLog={selectedLog}
             isSelectedLogLoading={isSelectedLogLoading}

@@ -1,13 +1,15 @@
-import { screen, waitFor } from '@testing-library/react'
+import { act, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
+import { HttpResponse } from 'msw'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { LOGS_API_MOCKS } from './logs.mocks'
 import { LogsTableName } from '@/components/interfaces/Settings/Logs/Logs.constants'
 import {
   calculateBarClickTimeRange,
+  isProjectAnalyticsConfigured,
   LogsPreviewer,
 } from '@/components/interfaces/Settings/Logs/LogsPreviewer'
 import useLogsPreview from '@/hooks/analytics/useLogsPreview'
@@ -90,6 +92,65 @@ test('useLogsPreview returns data from MSW', async () => {
   })
 
   expect(result.current.logData).toEqual(LOGS_API_MOCKS.result)
+})
+
+test('useLogsPreview does not query analytics when disabled', async () => {
+  const analyticsRequest = vi.fn()
+  addAPIMock({
+    method: 'get',
+    path: '/platform/projects/:ref/analytics/endpoints/logs.all',
+    response: () => {
+      analyticsRequest()
+      return HttpResponse.json<typeof LOGS_API_MOCKS>(LOGS_API_MOCKS)
+    },
+  })
+
+  const { result } = customRenderHook(() =>
+    useLogsPreview({
+      projectRef: 'default',
+      table: LogsTableName.EDGE,
+      enabled: false,
+    })
+  )
+
+  await waitFor(() => expect(result.current.isLoading).toBe(false))
+  await act(async () => {
+    await result.current.refresh()
+    result.current.loadOlder()
+  })
+  await new Promise((resolve) => setTimeout(resolve, 50))
+
+  expect(analyticsRequest).not.toHaveBeenCalled()
+})
+
+describe('isProjectAnalyticsConfigured', () => {
+  test('allows cloud projects without Fleet analytics metadata', () => {
+    expect(isProjectAnalyticsConfigured({ isSelfPlatform: false })).toBe(true)
+  })
+
+  test('requires both a Logflare URL and token for Fleet projects', () => {
+    expect(
+      isProjectAnalyticsConfigured({
+        isSelfPlatform: true,
+        logflareUrl: 'http://analytics:4000',
+        hasLogflareToken: true,
+      })
+    ).toBe(true)
+    expect(
+      isProjectAnalyticsConfigured({
+        isSelfPlatform: true,
+        logflareUrl: null,
+        hasLogflareToken: true,
+      })
+    ).toBe(false)
+    expect(
+      isProjectAnalyticsConfigured({
+        isSelfPlatform: true,
+        logflareUrl: 'http://analytics:4000',
+        hasLogflareToken: false,
+      })
+    ).toBe(false)
+  })
 })
 
 test('LogsPreviewer passes API data to LogTable', async () => {

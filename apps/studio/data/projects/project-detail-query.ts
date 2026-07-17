@@ -6,6 +6,7 @@ import { ReadReplicasData } from '../read-replicas/replicas-query'
 import { projectKeys } from './keys'
 import { OrgProjectsResponse } from './org-projects-infinite-query'
 import { getProjectStatusOverride } from './project-status-override'
+import type { SelfPlatformProjectBlock } from './self-platform-project-update-mutation'
 import type { components } from '@/data/api'
 import { get, handleError, isValidConnString, post } from '@/data/fetchers'
 import type { ResponseError, UseCustomQueryOptions } from '@/types'
@@ -20,6 +21,7 @@ export interface Project extends Omit<ProjectDetail, 'status'> {
    */
   postgrestStatus?: 'ONLINE' | 'OFFLINE'
   status: ProjectDetail['status']
+  self_platform?: SelfPlatformProjectBlock
 }
 
 export async function getProjectDetail(

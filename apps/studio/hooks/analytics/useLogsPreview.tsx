@@ -54,11 +54,13 @@ function useLogsPreview({
   table,
   filterOverride,
   limit,
+  enabled = true,
 }: {
   projectRef: string
   table: LogsTableName
   filterOverride?: Filters
   limit?: number
+  enabled?: boolean
 }): LogsPreviewHook {
   const defaultHelper = getDefaultHelper(PREVIEWER_DATEPICKER_HELPERS)
   const [latestRefresh, setLatestRefresh] = useState(new Date().toISOString())
@@ -144,6 +146,7 @@ function useLogsPreview({
       return logs
     },
     refetchOnWindowFocus: false,
+    enabled,
     initialPageParam: undefined as string | undefined,
     getNextPageParam(lastPage) {
       if ((lastPage.result?.length ?? 0) === 0) {
@@ -212,7 +215,7 @@ function useLogsPreview({
     },
     refetchOnWindowFocus: false,
     refetchInterval: 60000,
-    enabled: !error && data && data?.pages?.length > 0 ? true : false,
+    enabled: enabled && !error && data && data?.pages?.length > 0 ? true : false,
   })
 
   const newCount = countData?.result?.[0]?.count ?? 0
@@ -253,13 +256,15 @@ function useLogsPreview({
       return data as unknown as EventChart
     },
     refetchOnWindowFocus: false,
+    enabled,
   })
 
   const refresh = useCallback(async () => {
+    if (!enabled) return
     setLatestRefresh(new Date().toISOString())
     refreshEventChart()
     refetch()
-  }, [refetch, refreshEventChart])
+  }, [enabled, refetch, refreshEventChart])
 
   const normalizedEventChartData = useTimeseriesUnixToIso(
     eventChartResponse?.result ?? [],
@@ -287,7 +292,9 @@ function useLogsPreview({
     oldestTimestamp: oldestTimestamp ? String(oldestTimestamp) : undefined,
     eventChartData,
     refresh,
-    loadOlder: () => fetchNextPage(),
+    loadOlder: () => {
+      if (enabled) fetchNextPage()
+    },
   }
 }
 export default useLogsPreview
