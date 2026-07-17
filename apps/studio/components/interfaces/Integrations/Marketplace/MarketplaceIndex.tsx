@@ -209,13 +209,20 @@ export const MarketplaceIndex = () => {
 
   const activeFilters = [category, type, source].filter(Boolean)
   const pageTitle = useMemo(() => {
-    if (activeFilters.length !== 1) return 'Extend your database'
-    if (category) return `Integrations: ${formatCategoryLabel(category, categoryOptions)}`
+    if (activeFilters.length !== 1) return $t('Extend your database')
+    if (category)
+      return $t('Integrations: {{label}}', {
+        label: formatCategoryLabel(category, categoryOptions),
+      })
     if (type)
-      return `Integrations: ${INTEGRATION_TYPES.find((t) => t.key === type)?.label ?? type}s`
+      return $t('Integrations: {{label}}s', {
+        label: INTEGRATION_TYPES.find((t) => t.key === type)?.label ?? type,
+      })
     if (source)
-      return `Integrations: ${MARKETPLACE_SOURCES.find((s) => s.key === source)?.label ?? source}`
-    return 'Integrations'
+      return $t('Integrations: {{label}}', {
+        label: MARKETPLACE_SOURCES.find((s) => s.key === source)?.label ?? source,
+      })
+    return $t('Integrations')
   }, [activeFilters.length, category, type, source, categoryOptions])
 
   return (

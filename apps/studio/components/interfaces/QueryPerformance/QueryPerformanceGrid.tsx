@@ -121,9 +121,9 @@ export const QueryPerformanceGrid = ({
         return (
           <div className="flex items-center justify-between text-xs w-full">
             <div className="flex items-center gap-x-2">
-              <p className="text-foreground! font-medium">{col.name}</p>
+              <p className="text-foreground! font-medium">{$t(col.name)}</p>
               {col.description && (
-                <p className="text-foreground-lighter font-normal">{col.description}</p>
+                <p className="text-foreground-lighter font-normal">{$t(col.description)}</p>
               )}
             </div>
 

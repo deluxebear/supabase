@@ -45,7 +45,7 @@ export const FleetConnectionProfiles = () => {
               >
                 <div className="flex items-center gap-2 font-medium">
                   {$t(PROFILE_LABELS[profile.id])}
-                  {profile.poolMode !== 'direct' && <Badge>Supavisor</Badge>}
+                  {profile.poolMode !== 'direct' && <Badge>{$t('Supavisor')}</Badge>}
                 </div>
                 <dl className="grid gap-x-4 gap-y-1 text-foreground-light sm:grid-cols-2">
                   <div>

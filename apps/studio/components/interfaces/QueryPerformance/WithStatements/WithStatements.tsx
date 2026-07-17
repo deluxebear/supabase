@@ -285,7 +285,12 @@ export const WithStatements = ({
           <p>{$t('How is this report generated?')}</p>
           <Markdown
             className="text-xs"
-            content={`This report uses the pg_stat_statements table, and pg_stat_statements extension. [Learn more here](${DOCS_URL}/guides/platform/performance#examining-query-performance).`}
+            content={$t(
+              'This report uses the pg_stat_statements table, and pg_stat_statements extension. [Learn more here]({{url}}).',
+              {
+                url: `${DOCS_URL}/guides/platform/performance#examining-query-performance`,
+              }
+            )}
           />
         </div>
 
@@ -293,8 +298,10 @@ export const WithStatements = ({
           <p>{$t('Inspect your database for potential issues')}</p>
           <Markdown
             className="text-xs"
-            content={`The Supabase CLI comes with a range of tools to help inspect your Postgres instances for
-            potential issues. [Learn more here](${DOCS_URL}/guides/database/inspect).`}
+            content={$t(
+              'The Supabase CLI comes with a range of tools to help inspect your Postgres instances for potential issues. [Learn more here]({{url}}).',
+              { url: `${DOCS_URL}/guides/database/inspect` }
+            )}
           />
         </div>
       </div>
@@ -304,8 +311,8 @@ export const WithStatements = ({
         size="medium"
         variant="destructive"
         title={$t('Reset query performance analysis')}
-        confirmLabel="Reset report"
-        confirmLabelLoading="Resetting report"
+        confirmLabel={$t('Reset report')}
+        confirmLabelLoading={$t('Resetting report')}
         onCancel={() => setShowResetgPgStatStatements(false)}
         onConfirm={async () => {
           const connectionString = databases?.find(

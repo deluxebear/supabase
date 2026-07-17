@@ -19,7 +19,7 @@ export const FormActions = ({
   helper,
   disabled = false,
   isSubmitting,
-  submitText = 'Save',
+  submitText,
 }: Props) => {
   const isDisabled = isSubmitting || disabled || (!hasChanges && hasChanges !== undefined)
 
@@ -43,7 +43,7 @@ export const FormActions = ({
           disabled={isDisabled}
           loading={isSubmitting}
         >
-          {submitText}
+          {submitText ?? $t('Save')}
         </Button>
       </div>
     </div>

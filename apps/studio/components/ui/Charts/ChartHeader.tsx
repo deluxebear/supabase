@@ -189,7 +189,7 @@ export const ChartHeader = ({
     <div className="flex flex-row items-center gap-x-2">
       <div className="flex flex-row items-center gap-x-2">
         <h3 className={'text-foreground-lighter ' + (minimalHeader ? 'text-xs' : 'text-sm')}>
-          {title}
+          {title ? $t(title) : title}
         </h3>
         {titleTooltip && (
           <Tooltip>

@@ -94,18 +94,34 @@ export const ProjectAccessSection = () => {
   if (isBranch) return null
 
   const projectAccessTitle = hasLimitedVisibility
-    ? 'You have limited visibility in this organization'
+    ? $t('You have limited visibility in this organization')
     : shouldShowOrgComparison && hasOrganizationWideAccess
-      ? 'Organization-wide access'
-      : 'Restricted project access'
+      ? $t('Organization-wide access')
+      : $t('Restricted project access')
 
   const projectAccessDescription = hasLimitedVisibility
-    ? 'Your access is limited to specific projects, so you can’t see all members or settings.'
+    ? $t(
+        "Your access is limited to specific projects, so you can’t see all members or settings."
+      )
     : shouldShowOrgComparison
       ? hasOrganizationWideAccess
-        ? `All ${organizationMemberCount} organization members can access this project.`
-        : `${projectMemberCount} of ${organizationMemberCount} organization members can access this project.`
-      : `${projectMemberCount} project member${projectMemberCount === 1 ? '' : 's'} currently ${projectMemberCount === 1 ? 'has' : 'have'} access.`
+        ? $t('All {{count}} organization members can access this project.', {
+            count: organizationMemberCount,
+          })
+        : $t(
+            '{{projectCount}} of {{orgCount}} organization members can access this project.',
+            {
+              projectCount: projectMemberCount,
+              orgCount: organizationMemberCount,
+            }
+          )
+      : projectMemberCount === 1
+        ? $t('{{count}} project member currently has access.', {
+            count: projectMemberCount,
+          })
+        : $t('{{count}} project members currently have access.', {
+            count: projectMemberCount,
+          })
 
   return (
     <PageSection>
@@ -116,7 +132,10 @@ export const ProjectAccessSection = () => {
       </PageSectionMeta>
       <PageSectionContent>
         {isErrorProjectAccess ? (
-          <AlertError error={projectAccessError} subject="Failed to retrieve project members" />
+          <AlertError
+            error={projectAccessError}
+            subject={$t('Failed to retrieve project members')}
+          />
         ) : (
           <Card>
             {isLoadingProjectAccess ? (
@@ -134,7 +153,7 @@ export const ProjectAccessSection = () => {
                     {!!organization?.slug && (
                       <Button asChild variant="default">
                         <Link href={`/org/${organization.slug}/team`}>
-                          {hasLimitedVisibility ? 'View team' : 'Manage members'}
+                          {hasLimitedVisibility ? $t('View team') : $t('Manage members')}
                         </Link>
                       </Button>
                     )}
@@ -162,7 +181,12 @@ export const ProjectAccessSection = () => {
                               </div>
                             </TableCell>
                             <TableCell className="align-top text-sm text-foreground-light w-[180px]">
-                              {member.role ?? ''}
+                              {member.role
+                                ? member.role
+                                    .split(', ')
+                                    .map((roleName) => $t(roleName))
+                                    .join(', ')
+                                : ''}
                             </TableCell>
                           </TableRow>
                         ))}

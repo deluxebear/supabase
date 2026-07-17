@@ -16,6 +16,8 @@ import {
   InputGroupInput,
 } from 'ui'
 
+import { uiT } from '../lib/i18n'
+
 export interface Props extends Omit<ComponentProps<typeof BaseInput>, 'onCopy'> {
   copy?: boolean
   showCopyOnHover?: boolean
@@ -46,15 +48,15 @@ const Input = forwardRef<
     }: Props,
     ref
   ) => {
-    const [copyLabel, setCopyLabel] = useState('Copy')
+    const [isCopied, setIsCopied] = useState(false)
     const [hidden, setHidden] = useState(true)
 
     function _onCopy(value: any) {
       copyToClipboard(value, () => {
         /* clipboard successfully set */
-        setCopyLabel('Copied')
+        setIsCopied(true)
         setTimeout(function () {
-          setCopyLabel('Copy')
+          setIsCopied(false)
         }, 3000)
         onCopy?.()
       })
@@ -95,12 +97,12 @@ const Input = forwardRef<
                 icon={<Copy size={16} className="text-foreground-muted" />}
                 onClick={() => _onCopy(props.value)}
               >
-                {copyLabel}
+                {uiT(isCopied ? 'Copied' : 'Copy')}
               </InputGroupButton>
             ) : null}
             {reveal && hidden ? (
               <InputGroupButton size="tiny" variant="default" onClick={onReveal}>
-                Reveal
+                {uiT('Reveal')}
               </InputGroupButton>
             ) : null}
             {actions && actions}

@@ -83,7 +83,7 @@ export const SigningKeyRow = ({
           ) : (
             <Key className="shrink-0" size={14} />
           )}
-          <span className="truncate text-xs">{statusLabels[signingKey.status]}</span>
+          <span className="truncate text-xs">{$t(statusLabels[signingKey.status])}</span>
         </Badge>
       </div>
     </TableCell>

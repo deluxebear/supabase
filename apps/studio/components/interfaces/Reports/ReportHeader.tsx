@@ -2,6 +2,7 @@ import { useParams } from 'common'
 import { useRouter } from 'next/router'
 
 import { DatabaseSelector } from '@/components/ui/DatabaseSelector'
+import { t as $t } from '@/lib/i18n'
 
 interface ReportHeaderProps {
   title: string
@@ -15,7 +16,7 @@ const ReportHeader = ({ title, showDatabaseSelector }: ReportHeaderProps) => {
 
   return (
     <div className="flex flex-row justify-between gap-4 items-center">
-      <h1>{title}</h1>
+      <h1>{$t(title)}</h1>
       {showDatabaseSelector && (
         <DatabaseSelector
           onSelectId={(db) => {

@@ -31,8 +31,13 @@ export const MarkdownContent = ({
     }
   }, [integrationId])
 
-  const displayContent = isExpanded ? content : content.slice(0, CHAR_LIMIT)
-  const supportExpanding = content.length > CHAR_LIMIT || (content.match(/\n/g) || []).length > 1
+  // Translate the full English overview first so expanded/collapsed slices stay consistent.
+  const translatedContent = content.length > 0 ? $t(content.trim()) : ''
+  const displayContent = isExpanded
+    ? translatedContent
+    : translatedContent.slice(0, CHAR_LIMIT)
+  const supportExpanding =
+    translatedContent.length > CHAR_LIMIT || (translatedContent.match(/\n/g) || []).length > 1
 
   if (displayContent.length === 0) return null
 

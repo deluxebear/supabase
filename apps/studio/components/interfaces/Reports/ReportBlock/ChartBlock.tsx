@@ -221,7 +221,7 @@ export const ChartBlock = ({
       showDragHandle
       loading={isFetching}
       icon={metric?.category?.icon('text-foreground-muted')}
-      label={label}
+      label={$t(label)}
       actions={
         <>
           <ButtonTooltip

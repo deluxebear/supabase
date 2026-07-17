@@ -336,11 +336,29 @@ export const LogsDatePicker = ({
     return true
   }
 
+  const formatHelperLabel = (text?: string) => {
+    if (!text) return ''
+    const match = text.match(/^Last (\d+) (minute|hour|day)s?$/)
+    if (match) {
+      const count = Number(match[1])
+      const unit = match[2]
+      if (unit === 'minute') {
+        return $t(count === 1 ? 'Last {{count}} minute' : 'Last {{count}} minutes', { count })
+      }
+      if (unit === 'hour') {
+        return $t(count === 1 ? 'Last {{count}} hour' : 'Last {{count}} hours', { count })
+      }
+      return $t(count === 1 ? 'Last {{count}} day' : 'Last {{count}} days', { count })
+    }
+    // Static presets use "Last hour" (not "Last 1 hour")
+    return $t(text)
+  }
+
   const triggerButton = (
     <PopoverTrigger asChild>
       <Button variant="default" icon={<Clock size={12} />} {...buttonTriggerProps}>
         {value.isHelper
-          ? value.text
+          ? formatHelperLabel(value.text)
           : `${dayjs(value.from).format('DD MMM, HH:mm')} - ${dayjs(value.to || new Date()).format('DD MMM, HH:mm')}`}
       </Button>
     </PopoverTrigger>
@@ -391,7 +409,7 @@ export const LogsDatePicker = ({
                   disabled={helper.disabled}
                   aria-disabled={helper.disabled}
                 ></RadioGroupItem>
-                {helper.text}
+                {formatHelperLabel(helper.text)}
                 {showHelperBadge(helper) ? (
                   <Lock size={12} className="text-foreground-muted" />
                 ) : null}
@@ -471,7 +489,7 @@ export const LogsDatePicker = ({
                   'text-brand-600': copied || pasted,
                 })}
               >
-                {copied ? 'Copied!' : pasted ? 'Pasted!' : 'Copy range'}
+                {copied ? $t('Copied!') : pasted ? $t('Pasted!') : $t('Copy range')}
               </Button>
             ) : null}
 

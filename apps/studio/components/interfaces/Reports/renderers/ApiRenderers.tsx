@@ -70,7 +70,7 @@ export const NetworkTrafficRenderer = (
     const error = (
       typeof props.error === 'string' ? { message: props.error } : props.error
     ) as ResponseError
-    return <AlertError subject="Failed to retrieve network traffic" error={error} />
+    return <AlertError subject={$t('Failed to retrieve network traffic')} error={error} />
   } else if (isError) {
     return (
       <Alert variant="warning">
@@ -134,7 +134,7 @@ export const TotalRequestsChartRenderer = (
     const error = (
       typeof props.error === 'string' ? { message: props.error } : props.error
     ) as ResponseError
-    return <AlertError subject="Failed to retrieve total requests" error={error} />
+    return <AlertError subject={$t('Failed to retrieve total requests')} error={error} />
   } else if (isError) {
     return (
       <Alert variant="warning">
@@ -264,7 +264,7 @@ export const ErrorCountsChartRenderer = (
     const error = (
       typeof props.error === 'string' ? { message: props.error } : props.error
     ) as ResponseError
-    return <AlertError subject="Failed to retrieve request errors" error={error} />
+    return <AlertError subject={$t('Failed to retrieve request errors')} error={error} />
   } else if (isError) {
     return (
       <Alert variant="warning">
@@ -315,7 +315,7 @@ export const ResponseSpeedChartRenderer = (
     const error = (
       typeof props.error === 'string' ? { message: props.error } : props.error
     ) as ResponseError
-    return <AlertError subject="Failed to retrieve response speeds" error={error} />
+    return <AlertError subject={$t('Failed to retrieve response speeds')} error={error} />
   } else if (isError) {
     return (
       <Alert variant="warning">
@@ -429,7 +429,7 @@ export const RequestsByCountryMapRenderer = (
         ? { success: true, data: { message: props.error } }
         : AlertErrorSchema.safeParse(props.error)
     const alertError = parsed.success ? parsed.data : null
-    return <AlertError subject="Failed to retrieve requests by geography" error={alertError} />
+    return <AlertError subject={$t('Failed to retrieve requests by geography')} error={alertError} />
   }
 
   return (

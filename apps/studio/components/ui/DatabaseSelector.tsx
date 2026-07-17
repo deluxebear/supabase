@@ -110,8 +110,8 @@ export const DatabaseSelector = ({
               <>
                 <span className="capitalize">
                   {isLoading || selectedDatabase?.identifier === projectRef
-                    ? 'Primary database'
-                    : 'Read replica'}
+                    ? $t('Primary database')
+                    : $t('Read replica')}
                 </span>{' '}
                 {isSuccess && selectedDatabase?.identifier !== projectRef && (
                   <span>

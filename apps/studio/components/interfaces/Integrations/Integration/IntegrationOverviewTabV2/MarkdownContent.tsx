@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Markdown } from 'ui-patterns/Markdown'
 
+import { t as $t } from '@/lib/i18n'
 import { loadIntegrationOverview } from '@/static-data/integrations/overviews'
 
 interface MarkdownContentProps {
@@ -34,6 +35,7 @@ export const MarkdownContent = ({
   }, [integrationId, remoteContent])
 
   const content = remoteContent || localContent
+  const translated = content ? $t(content.trim()) : content
 
-  return <Markdown className="text-sm">{content}</Markdown>
+  return <Markdown className="text-sm">{translated}</Markdown>
 }

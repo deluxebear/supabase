@@ -19,7 +19,7 @@ export const AlgorithmHoverCard = ({ algorithm, legacy }: AlgorithmHoverCardProp
       ) : (
         <LockKeyholeOpen className="shrink-0" size={14} />
       )}
-      <p>{legacy ? `Legacy ${details.label}` : details.label}</p>
+      <p>{$t(legacy ? `Legacy ${details.label}` : details.label)}</p>
       <HoverCard closeDelay={50} openDelay={300}>
         <HoverCardTrigger className="min-w-0">
           <HelpCircle size={14} className="text-foreground-lighter" />

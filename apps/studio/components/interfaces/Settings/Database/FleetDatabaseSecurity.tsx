@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n';
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
@@ -108,13 +109,15 @@ export const FleetDatabaseSecurity = () => {
     return (
       <Admonition
         type="destructive"
-        title="Unable to load database security settings"
+        title={$t('Unable to load database security settings')}
         description={
-          error instanceof Error ? error.message : 'The database security policy is unavailable.'
+          error instanceof Error
+            ? error.message
+            : $t('The database security policy is unavailable.')
         }
       >
         <Button type="button" onClick={() => refetch()}>
-          Retry
+          {$t('Retry')}
         </Button>
       </Admonition>
     )
@@ -151,16 +154,16 @@ export const FleetDatabaseSecurity = () => {
           type={policy.state === 'failed' ? 'destructive' : 'warning'}
           title={
             policy.state === 'failed'
-              ? 'The last change was rolled back'
-              : 'Database settings are being applied'
+              ? $t('The last change was rolled back')
+              : $t('Database settings are being applied')
           }
-          description={policy.errorCode ?? 'Health verification is still in progress.'}
+          description={policy.errorCode ?? $t('Health verification is still in progress.')}
         />
       )}
       <PageSection id="fleet-database-security">
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>Database security and pooling</PageSectionTitle>
+            <PageSectionTitle>{$t('Database security and pooling')}</PageSectionTitle>
           </PageSectionSummary>
         </PageSectionMeta>
         <PageSectionContent>
@@ -174,12 +177,12 @@ export const FleetDatabaseSecurity = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Enforce SSL"
-                        description="Require TLS at Supavisor and verify the upstream database certificate."
+                        label={$t('Enforce SSL')}
+                        description={$t('Require TLS at Supavisor and verify the upstream database certificate.')}
                       >
                         <FormControl>
                           <Switch
-                            aria-label="Enforce SSL"
+                            aria-label={$t('Enforce SSL')}
                             checked={field.value}
                             onCheckedChange={field.onChange}
                           />
@@ -195,8 +198,8 @@ export const FleetDatabaseSecurity = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="TLS CA reference"
-                        description="File name from the operator-managed TLS CA allowlist."
+                        label={$t('TLS CA reference')}
+                        description={$t('File name from the operator-managed TLS CA allowlist.')}
                       >
                         <FormControl>
                           <Input {...field} placeholder="database-ca.pem" />
@@ -212,8 +215,8 @@ export const FleetDatabaseSecurity = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Network restrictions"
-                        description="Canonical IPv4 or IPv6 CIDRs, one per line. Leave empty to allow all networks."
+                        label={$t('Network restrictions')}
+                        description={$t('Canonical IPv4 or IPv6 CIDRs, one per line. Leave empty to allow all networks.')}
                       >
                         <FormControl>
                           <Textarea
@@ -233,8 +236,8 @@ export const FleetDatabaseSecurity = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Default pool size"
-                        description="Maximum upstream connections retained for each pool."
+                        label={$t('Default pool size')}
+                        description={$t('Maximum upstream connections retained for each pool.')}
                       >
                         <FormControl>
                           <Input {...field} type="number" min={1} max={1000} />
@@ -250,8 +253,8 @@ export const FleetDatabaseSecurity = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Maximum client connections"
-                        description="Upper bound for concurrent Supavisor clients."
+                        label={$t('Maximum client connections')}
+                        description={$t('Upper bound for concurrent Supavisor clients.')}
                       >
                         <FormControl>
                           <Input {...field} type="number" min={10} max={100000} />
@@ -266,7 +269,7 @@ export const FleetDatabaseSecurity = () => {
                     disabled={!settingsForm.formState.isDirty || update.isPending}
                     onClick={() => settingsForm.reset()}
                   >
-                    Cancel
+                    {$t('Cancel')}
                   </Button>
                   <Button
                     type="submit"
@@ -274,7 +277,7 @@ export const FleetDatabaseSecurity = () => {
                     loading={update.isPending}
                     disabled={!canUpdate || !settingsForm.formState.isDirty}
                   >
-                    Save
+                    {$t('Save')}
                   </Button>
                 </CardFooter>
               </Card>
@@ -286,7 +289,7 @@ export const FleetDatabaseSecurity = () => {
       <PageSection id="fleet-database-passwords">
         <PageSectionMeta>
           <PageSectionSummary>
-            <PageSectionTitle>Database passwords</PageSectionTitle>
+            <PageSectionTitle>{$t('Database passwords')}</PageSectionTitle>
           </PageSectionSummary>
         </PageSectionMeta>
         <PageSectionContent>
@@ -300,8 +303,8 @@ export const FleetDatabaseSecurity = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="Connection profile"
-                        description="Rotate the primary or read-only connection password."
+                        label={$t('Connection profile')}
+                        description={$t('Rotate the primary or read-only connection password.')}
                       >
                         <Select value={field.value} onValueChange={field.onChange}>
                           <FormControl>
@@ -310,8 +313,8 @@ export const FleetDatabaseSecurity = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="primary">Primary</SelectItem>
-                            <SelectItem value="read-only">Read-only</SelectItem>
+                            <SelectItem value="primary">{$t('Primary')}</SelectItem>
+                            <SelectItem value="read-only">{$t('Read-only')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </FormItemLayout>
@@ -325,8 +328,8 @@ export const FleetDatabaseSecurity = () => {
                     render={({ field }) => (
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label="New password"
-                        description="The password is encrypted before durable storage and is never returned by the API."
+                        label={$t('New password')}
+                        description={$t('The password is encrypted before durable storage and is never returned by the API.')}
                       >
                         <FormControl>
                           <Input {...field} type="password" autoComplete="new-password" />
@@ -342,7 +345,7 @@ export const FleetDatabaseSecurity = () => {
                     loading={rotate.isPending}
                     disabled={!canUpdate || !passwordForm.formState.isDirty}
                   >
-                    Rotate password
+                    {$t('Rotate password')}
                   </Button>
                 </CardFooter>
               </Card>

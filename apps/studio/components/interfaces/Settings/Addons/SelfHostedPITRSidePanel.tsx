@@ -13,8 +13,11 @@ import { useAddonsPagePanel } from '@/state/addons-page'
 const formatDate = (value: string | null) =>
   value === null ? $t('Never') : new Date(value).toLocaleString()
 
-const formatValue = (value: string | number | null) =>
-  value === null || value === '' ? $t('Not reported') : String(value)
+const formatValue = (value: string | number | null) => {
+  if (value === null || value === '') return $t('Not reported')
+  if (typeof value === 'string') return $t(value)
+  return String(value)
+}
 
 const StatusRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <div className="flex items-start justify-between gap-6 border-b py-3 last:border-b-0">
@@ -54,7 +57,7 @@ const SelfHostedPITRStatus = ({ status }: { status: BackupOperatorStatus }) => {
         <Admonition
           type="warning"
           title={$t('PITR is not ready')}
-          description={blockers.join('. ')}
+          description={blockers.map((blocker) => $t(blocker)).join('. ')}
         />
       )}
 
@@ -83,7 +86,7 @@ const SelfHostedPITRStatus = ({ status }: { status: BackupOperatorStatus }) => {
             label={$t('Provider')}
             value={`${status.provider.name}${status.provider.version ? ` ${status.provider.version}` : ''}`}
           />
-          <StatusRow label={$t('Topology')} value={status.topology.kind} />
+          <StatusRow label={$t('Topology')} value={$t(status.topology.kind)} />
           <StatusRow label={$t('Primary')} value={formatValue(status.topology.primary)} />
           <StatusRow label={$t('Standbys')} value={status.topology.standbys} />
           <StatusRow label={$t('Database image')} value={formatValue(status.compatibility.image)} />
@@ -94,10 +97,10 @@ const SelfHostedPITRStatus = ({ status }: { status: BackupOperatorStatus }) => {
         <CardContent className="py-2">
           <StatusRow label={$t('Repository')} value={formatValue(status.repository.type)} />
           <StatusRow label={$t('Location')} value={formatValue(status.repository.location)} />
-          <StatusRow label={$t('Repository check')} value={status.check.status} />
+          <StatusRow label={$t('Repository check')} value={$t(status.check.status)} />
           <StatusRow label={$t('Last checked')} value={formatDate(status.check.checkedAt)} />
           {status.check.message !== null && (
-            <StatusRow label={$t('Check message')} value={status.check.message} />
+            <StatusRow label={$t('Check message')} value={$t(status.check.message)} />
           )}
         </CardContent>
       </Card>

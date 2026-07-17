@@ -33,7 +33,6 @@ export const General = () => {
   const { ref } = useParams()
   const { data: project } = useSelectedProjectQuery()
   const isBranch = Boolean(project?.parent_project_ref)
-  const entityLabel = isBranch ? 'Branch' : 'Project'
 
   const { data: branches } = useBranchesQuery(
     { projectRef: project?.parent_project_ref },
@@ -185,7 +184,7 @@ export const General = () => {
                       render={({ field }) => (
                         <FormItemLayout
                           layout="flex-row-reverse"
-                          label={`${entityLabel} name`}
+                          label={$t(isBranch ? 'Branch name' : 'Project name')}
                           description={$t('Displayed throughout the dashboard.')}
                           className="[&>div]:md:w-1/2"
                         >
@@ -205,12 +204,17 @@ export const General = () => {
                     <CardContent>
                       <FormItemLayout
                         layout="flex-row-reverse"
-                        label={`${entityLabel} type`}
+                        label={$t('Branch type')}
                         description={$t('Preview or persistent')}
                         className="[&>div]:md:w-1/2 [&>div>div]:md:w-full"
                       >
                         <FormControl>
-                          <Input readOnly value={branch?.persistent ? 'Persistent' : 'Preview'} />
+                          <Input
+                            readOnly
+                            value={
+                              branch?.persistent ? $t('Persistent') : $t('Preview')
+                            }
+                          />
                         </FormControl>
                       </FormItemLayout>
                     </CardContent>
@@ -219,7 +223,7 @@ export const General = () => {
                   <CardContent>
                     <FormItemLayout
                       layout="flex-row-reverse"
-                      label={`${entityLabel} ID`}
+                      label={$t(isBranch ? 'Branch ID' : 'Project ID')}
                       description={$t('Reference used in APIs and URLs.')}
                       className="[&>div]:md:w-1/2 [&>div>div]:md:w-full"
                     >
@@ -232,7 +236,7 @@ export const General = () => {
                   <CardContent>
                     <FormItemLayout
                       layout="flex-row-reverse"
-                      label={`${entityLabel} region`}
+                      label={$t(isBranch ? 'Branch region' : 'Project region')}
                       description={regionLabel?.name}
                       className="[&>div]:md:w-1/2 [&>div>div]:md:w-full"
                     >

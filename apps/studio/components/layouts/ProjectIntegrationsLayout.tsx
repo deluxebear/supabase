@@ -74,7 +74,7 @@ const IntegrationCategoriesMenu = ({ page }: { page: string }) => {
 
   const allCategories = [
     {
-      name: 'All',
+      name: $t('All'),
       key: 'integrations',
       url: `/project/${ref}/integrations`,
       pages: ['integrations'],
@@ -83,7 +83,7 @@ const IntegrationCategoriesMenu = ({ page }: { page: string }) => {
     ...(showWrappers
       ? [
           {
-            name: 'Wrappers',
+            name: $t('Wrappers'),
             key: 'wrapper',
             url: `/project/${ref}/integrations?category=wrapper`,
             items: [],
@@ -91,13 +91,13 @@ const IntegrationCategoriesMenu = ({ page }: { page: string }) => {
         ]
       : []),
     {
-      name: 'Postgres Modules',
+      name: $t('Postgres Modules'),
       key: 'postgres_extension',
       url: `/project/${ref}/integrations?category=postgres_extension`,
       items: [],
     },
     ...nonEmptyCategories.map((category) => ({
-      name: category.name ?? '',
+      name: category.name ? $t(category.name) : '',
       key: category.slug ?? '',
       url: `/project/${ref}/integrations?category=${category.slug}`,
       items: [],

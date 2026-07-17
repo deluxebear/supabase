@@ -196,7 +196,7 @@ export const JWTSecretKeysTable = () => {
                 description={$t(
                   'Switch the standby key to in use. All new JSON Web Tokens issued by Supabase Auth will be signed with this key.'
                 )}
-                buttonLabel="Rotate keys"
+                buttonLabel={$t('Rotate keys')}
                 onClick={() => setShownDialog('rotate')}
                 loading={isUpdatingJWTSigningKey}
                 icon={<RotateCw className="size-4" />}
@@ -208,7 +208,7 @@ export const JWTSecretKeysTable = () => {
                 description={$t(
                   'Set up a new key which you can switch to once it has been picked up by all components of your application.'
                 )}
-                buttonLabel="Create Standby Key"
+                buttonLabel={$t('Create Standby Key')}
                 onClick={() => setShownDialog('create')}
                 loading={isPendingMutation}
                 variant="primary"

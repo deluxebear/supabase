@@ -81,7 +81,7 @@ export function UnifiedLogsBanner({ className = 'mx-4 mt-4' }: UnifiedLogsBanner
               className="px-1.5"
               icon={<CircleHelpIcon />}
               onClick={() => selectFeaturePreview('supabase-ui-preview-unified-logs')}
-              tooltip={{ content: { side: 'bottom', text: 'More information' } }}
+              tooltip={{ content: { side: 'bottom', text: $t('More information') } }}
             />
           </>
         )}

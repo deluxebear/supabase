@@ -228,8 +228,8 @@ const LegacyIntegrationsPage = () => {
               <PageHeaderContentSkeleton />
             ) : (
               <>
-                <PageHeaderTitle>{pageContent.title}</PageHeaderTitle>
-                <PageHeaderDescription>{pageContent.subtitle}</PageHeaderDescription>
+                <PageHeaderTitle>{$t(pageContent.title)}</PageHeaderTitle>
+                <PageHeaderDescription>{$t(pageContent.subtitle)}</PageHeaderDescription>
               </>
             )}
           </PageHeaderSummary>
@@ -266,7 +266,10 @@ const LegacyIntegrationsPage = () => {
 
             {/* Error State */}
             {isError && (
-              <AlertError subject="Failed to retrieve available integrations" error={error} />
+              <AlertError
+                subject={$t('Failed to retrieve available integrations')}
+                error={error}
+              />
             )}
 
             {/* Success State */}

@@ -51,7 +51,7 @@ export const ContactSupportButton = ({
 export const AlertError = ({
   projectRef,
   subject,
-  description = 'Try refreshing your browser, but if the issue persists for more than a few minutes, please reach out to us via support.',
+  description,
   error,
   className,
   showIcon = true,
@@ -65,9 +65,17 @@ export const AlertError = ({
   const track = useTrack()
   const hasTrackedRef = useRef(false)
 
+  const instructions =
+    description ??
+    $t(
+      'Try refreshing your browser, but if the issue persists for more than a few minutes, please reach out to us via support.'
+    )
+
   const formattedErrorMessage = error?.message?.includes('503')
-    ? '503 Service Temporarily Unavailable'
+    ? $t('503 Service Temporarily Unavailable')
     : error?.message
+      ? $t(error.message)
+      : undefined
 
   useEffect(() => {
     if (!hasTrackedRef.current) {
@@ -88,13 +96,13 @@ export const AlertError = ({
       title={subject}
       description={
         <>
-          {error?.message && (
+          {formattedErrorMessage && (
             <p>
-              {showErrorPrefix && 'Error: '}
+              {showErrorPrefix && `${$t('Error')}: `}
               {formattedErrorMessage}
             </p>
           )}
-          {showInstructions && <p>{description}</p>}
+          {showInstructions && <p>{instructions}</p>}
           {children}
         </>
       }

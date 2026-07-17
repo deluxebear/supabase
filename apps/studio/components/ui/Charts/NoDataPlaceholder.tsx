@@ -3,6 +3,7 @@ import { cn } from 'ui'
 
 import { ChartHeader } from './ChartHeader'
 import { useChartSize } from './Charts.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface NoDataPlaceholderProps {
   title?: string
@@ -19,7 +20,7 @@ interface NoDataPlaceholderProps {
 }
 const NoDataPlaceholder = ({
   attribute,
-  message = 'No data to show',
+  message,
   description,
   format,
   className = '',
@@ -30,15 +31,16 @@ const NoDataPlaceholder = ({
   docsUrl,
 }: NoDataPlaceholderProps) => {
   const { minHeight } = useChartSize(size)
+  const emptyMessage = message ?? $t('No data to show')
 
   return (
     <div className={cn(isFullHeight && 'h-full')}>
       {attribute !== undefined && (
         <ChartHeader
-          title={attribute}
+          title={$t(attribute)}
           format={format}
           highlightedValue={hideTotalPlaceholder ? undefined : 0}
-          titleTooltip={titleTooltip}
+          titleTooltip={titleTooltip ? $t(titleTooltip) : titleTooltip}
           docsUrl={docsUrl}
         />
       )}
@@ -53,8 +55,10 @@ const NoDataPlaceholder = ({
       >
         <BarChart2 size={20} className="text-border-stronger" />
         <div className="px-1">
-          <p className="text-foreground-light text-xs">{message}</p>
-          {description && <p className="text-foreground-lighter text-xs">{description}</p>}
+          <p className="text-foreground-light text-xs">{$t(emptyMessage)}</p>
+          {description && (
+            <p className="text-foreground-lighter text-xs">{$t(description)}</p>
+          )}
         </div>
       </div>
     </div>

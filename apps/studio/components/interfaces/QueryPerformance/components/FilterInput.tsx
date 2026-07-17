@@ -2,6 +2,7 @@ import { Search, X } from 'lucide-react'
 import { Button } from 'ui'
 import { Input } from 'ui-patterns/DataInputs/Input'
 
+import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 
 interface FilterInputProps {
@@ -22,7 +23,7 @@ export const FilterInput = ({ value, onChange, placeholder, className }: FilterI
       onKeyDown={onSearchInputEscape(value, onChange)}
       name="keyword"
       id="keyword"
-      placeholder={placeholder || 'Filter by query'}
+      placeholder={placeholder || $t('Filter by query')}
       className={className || 'w-56'}
       actions={[
         value && (

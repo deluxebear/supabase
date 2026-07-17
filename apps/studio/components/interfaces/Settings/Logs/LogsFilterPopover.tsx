@@ -67,7 +67,7 @@ const LogsFilterPopover = ({
             buttonClassName
           )}
         >
-          <span>{options.label}</span>
+          <span>{$t(options.label)}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent align={align} className="p-0 w-60">
@@ -104,8 +104,10 @@ const LogsFilterPopover = ({
                 />
               </div>
               <div className="flex flex-col">
-                <span>{x.label}</span>
-                <span className="text-sm text-foreground-lighter">{x.description}</span>
+                <span>{$t(x.label)}</span>
+                {x.description ? (
+                  <span className="text-sm text-foreground-lighter">{$t(x.description)}</span>
+                ) : null}
               </div>
             </Label>
           ))}

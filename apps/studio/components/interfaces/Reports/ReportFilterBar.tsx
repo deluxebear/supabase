@@ -269,7 +269,9 @@ const ReportFilterBar = ({
                   iconRight={<ChevronDown size={14} />}
                 >
                   <span>
-                    {currentProductFilter === null ? 'All Requests' : currentProductFilter.label}
+                    {currentProductFilter === null
+                      ? $t('All Requests')
+                      : $t(currentProductFilter.label)}
                   </span>
                 </Button>
               </DropdownMenuTrigger>

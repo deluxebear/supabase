@@ -1,4 +1,5 @@
 import { FilterPopover } from '@/components/ui/FilterPopover'
+import { t as $t } from '@/lib/i18n'
 
 interface SourceFilterDropdownProps {
   activeOptions: string[]
@@ -6,25 +7,25 @@ interface SourceFilterDropdownProps {
   className?: string
 }
 
-const sources = [
-  {
-    name: 'dashboard',
-    displayName: 'Dashboard',
-  },
-  {
-    name: 'non-dashboard',
-    displayName: 'Non-dashboard',
-  },
-]
-
 export const SourceFilterDropdown = ({
   activeOptions,
   onSaveFilters,
   className,
 }: SourceFilterDropdownProps) => {
+  const sources = [
+    {
+      name: 'dashboard',
+      displayName: $t('Dashboard'),
+    },
+    {
+      name: 'non-dashboard',
+      displayName: $t('Non-dashboard'),
+    },
+  ]
+
   return (
     <FilterPopover
-      name="Source"
+      name={$t('Source')}
       options={sources}
       valueKey="name"
       labelKey="displayName"

@@ -67,11 +67,13 @@ export const DataApiProjectUrlCard = () => {
         <PageSectionSummary>
           <PageSectionTitle>{$t('API URL')}</PageSectionTitle>
           <PageSectionDescription>
-            {loadBalancerSelected
-              ? 'RESTful endpoint for querying and managing your databases through your load balancer'
-              : replicaSelected
-                ? 'RESTful endpoint for querying your read replica'
-                : 'RESTful endpoint for querying and managing your database'}
+            {$t(
+              loadBalancerSelected
+                ? 'RESTful endpoint for querying and managing your databases through your load balancer'
+                : replicaSelected
+                  ? 'RESTful endpoint for querying your read replica'
+                  : 'RESTful endpoint for querying and managing your database'
+            )}
           </PageSectionDescription>
         </PageSectionSummary>
         <PageSectionAside>

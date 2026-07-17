@@ -71,7 +71,7 @@ export function LogDrainsList({
   }
 
   if (isError) {
-    return <AlertError subject="Failed to load log drains" error={error}></AlertError>
+    return <AlertError subject={$t('Failed to load log drains')} error={error}></AlertError>
   }
 
   if (!hasLogDrains) {

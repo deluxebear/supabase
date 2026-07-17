@@ -2,6 +2,8 @@ import { Code, GripHorizontal } from 'lucide-react'
 import { DragEvent, PropsWithChildren, ReactNode } from 'react'
 import { cn, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface ReportBlockContainerProps {
   icon?: ReactNode
   label: string
@@ -53,7 +55,7 @@ export const ReportBlockContainer = ({
               <Code size={16} strokeWidth={1.5} className="text-foreground-muted" />
             )}
             <div className={cn('flex items-center gap-2 flex-1 min-w-0 transition-opacity')}>
-              <h3 className="heading-meta truncate">{label}</h3>
+              <h3 className="heading-meta truncate">{$t(label)}</h3>
               {badge && <div className="flex items-center shrink-0">{badge}</div>}
             </div>
             <div className="flex items-center shrink-0">{actions}</div>

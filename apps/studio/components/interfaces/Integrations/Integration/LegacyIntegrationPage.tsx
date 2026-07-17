@@ -90,7 +90,9 @@ const LegacyIntegrationPage = () => {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>{integration?.name || 'Integration not found'}</BreadcrumbPage>
+              <BreadcrumbPage>
+                {$t(integration?.name || 'Integration not found')}
+              </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </PageHeaderBreadcrumb>
@@ -133,7 +135,7 @@ const LegacyIntegrationPage = () => {
             <NavMenu>
               {tabs.map((tab) => (
                 <NavMenuItem key={tab.href} active={tab.active}>
-                  <Link href={tab.href}>{tab.label}</Link>
+                  <Link href={tab.href}>{$t(tab.label)}</Link>
                 </NavMenuItem>
               ))}
             </NavMenu>
