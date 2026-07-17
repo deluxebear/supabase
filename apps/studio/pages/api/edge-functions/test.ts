@@ -2,6 +2,8 @@ import { IS_PLATFORM } from 'common'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import { isValidEdgeFunctionURL } from '@/lib/api/edgeFunctions'
+import { findProjectEndpointRegistryForFunctionUrl } from '@/lib/api/self-platform/endpoint-registry'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req
@@ -27,7 +29,9 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
       ? requestUrl
       : requestUrl.replace(process.env.SUPABASE_PUBLIC_URL, process.env.SUPABASE_URL)
 
-    const validEdgeFnUrl = isValidEdgeFunctionURL(url, IS_PLATFORM)
+    const validEdgeFnUrl = IS_SELF_PLATFORM
+      ? Boolean(await findProjectEndpointRegistryForFunctionUrl(url))
+      : isValidEdgeFunctionURL(url, IS_PLATFORM)
 
     if (!validEdgeFnUrl) {
       return res.status(400).json({

@@ -41,6 +41,39 @@ export type ProjectEndpointRegistry = {
   endpoints: PublicProjectEndpoints
 }
 
+export function isRegisteredFunctionUrl(
+  requestUrl: string,
+  registeredFunctionsUrl: string
+): boolean {
+  try {
+    const request = new URL(requestUrl)
+    const registered = new URL(registeredFunctionsUrl)
+    const registeredPath = registered.pathname.replace(/\/+$/, '')
+    const relativePath = request.pathname.slice(registeredPath.length + 1)
+    const hasHttpProtocol =
+      (request.protocol === 'http:' || request.protocol === 'https:') &&
+      (registered.protocol === 'http:' || registered.protocol === 'https:')
+
+    return (
+      hasHttpProtocol &&
+      request.username === '' &&
+      request.password === '' &&
+      registered.username === '' &&
+      registered.password === '' &&
+      registered.search === '' &&
+      registered.hash === '' &&
+      request.hash === '' &&
+      request.origin === registered.origin &&
+      registeredPath.length > 0 &&
+      request.pathname.startsWith(`${registeredPath}/`) &&
+      relativePath.length > 0 &&
+      !relativePath.startsWith('/')
+    )
+  } catch {
+    return false
+  }
+}
+
 export function publicProjectEndpointsFromDocument(
   document: unknown
 ): PublicProjectEndpoints | null {
@@ -125,6 +158,47 @@ export async function getProjectEndpointRegistry(
   const endpoints = publicProjectEndpointsFromDocument(row.endpoint_document)
   if (!endpoints) return null
   return { revision: row.active_connection_revision, endpoints }
+}
+
+export async function findProjectEndpointRegistryForFunctionUrl(
+  functionUrl: string
+): Promise<ProjectEndpointRegistry | null> {
+  try {
+    const parsed = new URL(functionUrl)
+    if (
+      (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') ||
+      parsed.username !== '' ||
+      parsed.password !== '' ||
+      parsed.hash !== ''
+    ) {
+      return null
+    }
+  } catch {
+    return null
+  }
+
+  const result = await executePlatformQuery<{
+    active_connection_revision: number
+    endpoint_document: unknown
+  }>({
+    query: `select b.active_connection_revision, r.endpoint_document
+      from platform.stack_bindings b
+      join platform.project_connection_revisions r
+        on r.project_ref = b.project_ref and r.revision = b.active_connection_revision
+      where b.attachment_state <> 'detached'
+        and strpos($1, r.endpoint_document->'public'->>'functionsUrl') = 1`,
+    parameters: [functionUrl],
+  })
+  if (result.error) throw result.error
+
+  for (const row of result.data ?? []) {
+    const endpoints = publicProjectEndpointsFromDocument(row.endpoint_document)
+    if (endpoints && isRegisteredFunctionUrl(functionUrl, endpoints.functionsUrl)) {
+      return { revision: row.active_connection_revision, endpoints }
+    }
+  }
+
+  return null
 }
 
 export async function requireProjectEndpointRegistry(
