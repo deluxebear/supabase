@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { edgeFunctionsKeys } from './keys'
 import { constructHeaders, del, handleError } from '@/data/fetchers'
 import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
+import { uuidv4 } from '@/lib/helpers'
 import { ResponseError, type UseCustomMutationOptions } from '@/types'
 
 export type EdgeFunctionsDeleteVariables = {
@@ -56,7 +57,7 @@ export async function deleteEdgeFunction({
         method: 'DELETE',
         headers: await constructHeaders({
           'Content-Type': 'application/json',
-          'Idempotency-Key': crypto.randomUUID(),
+          'Idempotency-Key': uuidv4(),
         }),
         body: JSON.stringify({ slug, expectedGeneration: generation }),
       }

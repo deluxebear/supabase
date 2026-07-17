@@ -11,6 +11,7 @@ import {
 } from '@/components/interfaces/EdgeFunctions/EdgeFunctions.utils'
 import { constructHeaders, handleError, post } from '@/data/fetchers'
 import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
+import { uuidv4 } from '@/lib/helpers'
 import { ResponseError, type UseCustomMutationOptions } from '@/types'
 
 type EdgeFunctionsDeployBodyMetadata = components['schemas']['FunctionDeployBody']['metadata']
@@ -41,7 +42,7 @@ export async function deployEdgeFunction({
   if (!_metadata.static_patterns) metadata.static_patterns = getStaticPatterns(files)
 
   if (STUDIO_DEPLOYMENT_PROFILE === 'fleet') {
-    const idempotencyKey = crypto.randomUUID()
+    const idempotencyKey = uuidv4()
     const response = await fetch(
       `/api/platform/fleet/v1/projects/${encodeURIComponent(projectRef)}/functions`,
       {
