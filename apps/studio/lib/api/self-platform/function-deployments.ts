@@ -151,6 +151,21 @@ const deploymentRowSchema = z.object({
   ]),
   last_error_code: z.string().nullable(),
   remediation: z.string().nullable(),
+  evidence: z
+    .object({
+      schema: z.literal('supabase.fleet.functions.deploy.evidence.v1'),
+      status: z.string(),
+      adapter: z.enum(['compose', 'kubernetes']),
+      slug: z.string(),
+      artifactDigest: digestSchema.optional(),
+      previousDigest: digestSchema.optional(),
+      observedGeneration: z.number().int().positive(),
+      probe: z.object({ succeeded: z.boolean(), message: z.string().optional() }),
+      activatedAt: z.string(),
+      remediation: z.string().optional(),
+    })
+    .nullable()
+    .default(null),
   observed_at: z.string().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
@@ -169,6 +184,7 @@ export type FunctionDeployment = {
   state: z.infer<typeof deploymentRowSchema>['state']
   lastErrorCode: string | null
   remediation: string | null
+  evidence: z.infer<typeof deploymentRowSchema>['evidence']
   observedAt: string | null
   createdAt: string
   updatedAt: string
@@ -189,6 +205,7 @@ function mapDeployment(value: unknown): FunctionDeployment {
     state: row.state,
     lastErrorCode: row.last_error_code,
     remediation: row.remediation,
+    evidence: row.evidence,
     observedAt: row.observed_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -197,7 +214,7 @@ function mapDeployment(value: unknown): FunctionDeployment {
 
 const deploymentSelect = `select project_ref, slug, generation, desired_revision,
   desired_artifact_digest, active_artifact_digest, previous_artifact_digest,
-  operation_id, adapter, state, last_error_code, remediation, observed_at,
+  operation_id, adapter, state, last_error_code, remediation, evidence, observed_at,
   created_at, updated_at from platform.function_deployments`
 
 export async function listFunctionDeployments(projectRef: string): Promise<FunctionDeployment[]> {

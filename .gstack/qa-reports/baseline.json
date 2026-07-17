@@ -67,7 +67,15 @@
       "resolvedAt": "2026-07-17T02:12:00+08:00",
       "verification": "Typed runtime.observe inventory, schema 27 projection, six compatibility endpoints, project-b disk/database/WAL/system classification, 12 services, five volumes, honest upgrade blockers, and browser rendering passed."
     },
-    { "id": "ISSUE-009", "title": "Edge Function Secrets 与部署可靠性未闭环", "severity": "high", "category": "functional" },
+    {
+      "id": "ISSUE-009",
+      "title": "Edge Function Secrets 与部署可靠性未闭环",
+      "severity": "high",
+      "category": "functional",
+      "status": "resolved",
+      "resolvedAt": "2026-07-17T11:00:00+08:00",
+      "verification": "Project-scoped encrypted secret CRUD returns metadata only. A live project-b v1 deployment returned HTTP 200, a revision-bound v2 HTTP 500 probe rolled back to v1, the post-rollback invocation returned v1, and Studio displayed revision, probe log, and restored digest without touching project-a."
+    },
     {
       "id": "ISSUE-010",
       "title": "Configuration Ownership 能力缺失",

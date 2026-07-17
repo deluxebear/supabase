@@ -201,6 +201,31 @@ func TestEnrollmentRenewsTheSameAgentIdentityAfterCertificateExpiry(t *testing.T
 	}
 }
 
+func TestCreatingEnrollmentTokenDoesNotDemoteActiveBinding(t *testing.T) {
+	store, err := OpenSQLite(context.Background(), filepath.Join(t.TempDir(), "fleet.db"), StoreIdentity{SystemIdentifier: "fleet", DataDomain: "fleet-volume"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer store.Close()
+	baseTime := time.Date(2026, 7, 17, 0, 0, 0, 0, time.UTC)
+	store.now = func() time.Time { return baseTime }
+	binding := ManagementBinding{BindingID: "binding-a", OrganizationID: "org-a", ProjectRef: "project-a", TargetID: "target-a", ExecutionTarget: "compose-a", DeploymentKind: "compose", AllowedCapabilityPrefixes: []string{"runtime."}, State: "active"}
+	if _, err := store.db.Exec(`INSERT INTO management_bindings(binding_id,organization_id,project_ref,target_id,execution_target,deployment_kind,allowed_capability_prefixes_json,state,created_at_ms,updated_at_ms) VALUES(?,?,?,?,?,?,'["runtime."]','active',?,?)`, binding.BindingID, binding.OrganizationID, binding.ProjectRef, binding.TargetID, binding.ExecutionTarget, binding.DeploymentKind, baseTime.UnixMilli(), baseTime.UnixMilli()); err != nil {
+		t.Fatal(err)
+	}
+	digest := sha256.Sum256([]byte("replacement-token"))
+	if err := store.CreateEnrollmentToken(context.Background(), CreateEnrollmentTokenInput{Binding: binding, TokenID: "enrollment-replacement", TokenHash: hex.EncodeToString(digest[:]), ExpiresAt: baseTime.Add(time.Minute), Actor: "owner-a", CorrelationID: "correlation-a"}); err != nil {
+		t.Fatal(err)
+	}
+	status, err := store.GetBindingStatus(context.Background(), binding.ProjectRef, binding.BindingID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status.Binding.State != "active" {
+		t.Fatalf("active binding was demoted to %q while issuing a replacement token", status.Binding.State)
+	}
+}
+
 func TestBindingRevocationInvalidatesAnOutstandingEnrollmentToken(t *testing.T) {
 	store, err := OpenSQLite(context.Background(), filepath.Join(t.TempDir(), "fleet.db"), StoreIdentity{SystemIdentifier: "fleet", DataDomain: "fleet-volume"})
 	if err != nil {

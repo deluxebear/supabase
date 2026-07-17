@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'common'
 import { ChevronDown, Code, Terminal } from 'lucide-react'
 import { useRouter } from 'next/router'
@@ -12,7 +13,12 @@ import {
 
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import {
+  findProjectCapability,
+  projectCapabilitiesQueryOptions,
+} from '@/data/projects/project-capabilities-query'
 import { useIsProjectActive } from '@/hooks/misc/useSelectedProject'
+import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
@@ -27,20 +33,28 @@ export const DeployEdgeFunctionButton = () => {
   const [, setCreateMethod] = useQueryState('create', parseAsString)
 
   const isProjectActive = useIsProjectActive()
+  const capabilities = useQuery(projectCapabilitiesQueryOptions({ projectRef: ref }))
+  const deployCapability = findProjectCapability(capabilities.data, 'functions.deploy')
+  const isFleetCapabilityUnavailable =
+    STUDIO_DEPLOYMENT_PROFILE === 'fleet' && deployCapability?.state !== 'available'
+  const isDeployDisabled = !isProjectActive || isFleetCapabilityUnavailable
+  const blocker = deployCapability?.blockers[0]?.message
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild disabled={!isProjectActive}>
+      <DropdownMenuTrigger asChild disabled={isDeployDisabled}>
         <ButtonTooltip
           variant="primary"
-          disabled={!isProjectActive}
+          disabled={isDeployDisabled}
           iconRight={<ChevronDown className="w-4 h-4" strokeWidth={1.5} />}
           tooltip={{
             content: {
               side: 'bottom',
               text: !isProjectActive
                 ? 'Unable to deploy function as project is inactive'
-                : undefined,
+                : isFleetCapabilityUnavailable
+                  ? (blocker ?? 'Reconnect the Fleet Agent before deploying a function')
+                  : undefined,
             },
           }}
         >

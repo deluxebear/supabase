@@ -41,6 +41,10 @@ type Prober interface {
 	Probe(context.Context, string, bool) error
 }
 
+type RevisionProber interface {
+	ProbeRevision(context.Context, string, bool, string) error
+}
+
 type ProbeFunc func(context.Context, string, bool) error
 
 func (f ProbeFunc) Probe(ctx context.Context, slug string, shouldExist bool) error {

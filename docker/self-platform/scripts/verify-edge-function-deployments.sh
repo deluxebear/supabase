@@ -148,7 +148,33 @@ begin
   if not platform.apply_function_deployment_observation(
     'functions-a', 'hello', deployment.operation_id, deployment.desired_revision,
     deployment.generation, 'active', repeat('1', 64), '', '', '', now()
+    , jsonb_build_object(
+      'schema', 'supabase.fleet.functions.deploy.evidence.v1',
+      'status', 'active', 'adapter', 'compose', 'slug', 'hello',
+      'artifactDigest', repeat('1', 64), 'observedGeneration', deployment.generation,
+      'probe', jsonb_build_object('succeeded', true, 'message', 'Invocation probe passed'),
+      'activatedAt', now()
+    )
   ) then raise exception 'active observation was rejected'; end if;
+  if not exists (
+    select 1 from platform.function_deployments
+    where project_ref = 'functions-a' and slug = 'hello'
+      and evidence->'probe'->>'message' = 'Invocation probe passed'
+  ) then raise exception 'typed function evidence was not persisted'; end if;
+  begin
+    perform platform.apply_function_deployment_observation(
+      'functions-a', 'hello', deployment.operation_id, deployment.desired_revision,
+      deployment.generation, 'active', repeat('1', 64), '', '', '', now(),
+      jsonb_build_object(
+        'schema', 'supabase.fleet.functions.deploy.evidence.v1',
+        'status', 'active', 'adapter', 'compose', 'slug', 'hello',
+        'artifactDigest', repeat('1', 64),
+        'probe', jsonb_build_object('succeeded', true), 'activatedAt', now()
+      )
+    );
+    raise exception 'malformed typed function evidence was accepted';
+  exception when sqlstate '22023' then null;
+  end;
 end;
 $$;
 

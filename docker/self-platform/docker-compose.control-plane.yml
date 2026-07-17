@@ -56,6 +56,16 @@ services:
       - fleet-control-db-data:/var/lib/postgresql/data
     networks: [control]
 
+  fleet-artifacts-init:
+    image: alpine:3.21
+    restart: "no"
+    user: "0:0"
+    command: [sh, -c, "chown -R 65532:65532 /var/lib/fleet-artifacts && chmod 0750 /var/lib/fleet-artifacts"]
+    volumes:
+      - fleet-artifacts:/var/lib/fleet-artifacts
+    security_opt: [no-new-privileges:true]
+    networks: [control]
+
   fleet-control:
     image: ${FLEET_CONTROL_IMAGE:?set FLEET_CONTROL_IMAGE}
     command: [--listen=0.0.0.0:8090, --enrollment-listen=0.0.0.0:8091, --agent-listen=0.0.0.0:8092]
@@ -65,6 +75,8 @@ services:
     depends_on:
       fleet-control-db:
         condition: service_healthy
+      fleet-artifacts-init:
+        condition: service_completed_successfully
     environment:
       FLEET_CONTROL_SERVICE_ASSERTION_KEY: ${FLEET_CONTROL_SERVICE_ASSERTION_KEY:?set FLEET_CONTROL_SERVICE_ASSERTION_KEY}
       FLEET_CONTROL_SERVICE_ASSERTION_ISSUER: ${FLEET_CONTROL_SERVICE_ASSERTION_ISSUER:-studio-platform}

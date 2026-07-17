@@ -142,12 +142,17 @@ ORDER BY deployment.updated_at LIMIT 1`
 }
 
 func (s *PostgresStore) ApplyFunctionProjection(ctx context.Context, candidate FunctionProjection, evidence fleetfunctions.Evidence, errorCode string) (bool, error) {
+	typedEvidence, err := json.Marshal(evidence)
+	if err != nil {
+		return false, err
+	}
 	var applied bool
-	err := s.db.QueryRowContext(ctx, `SELECT platform.apply_function_deployment_observation(
-$1,$2,$3,$4::uuid,$5,$6,$7,$8,$9,$10,$11::timestamptz
+	err = s.db.QueryRowContext(ctx, `SELECT platform.apply_function_deployment_observation(
+$1,$2,$3,$4::uuid,$5,$6,$7,$8,$9,$10,$11::timestamptz,$12::jsonb
 )`, candidate.ProjectRef, candidate.Slug, candidate.OperationID, candidate.DesiredRevision,
 		candidate.DesiredGeneration, evidence.Status, evidence.ArtifactDigest,
-		evidence.PreviousDigest, errorCode, evidence.Remediation, evidence.ActivatedAt).Scan(&applied)
+		evidence.PreviousDigest, errorCode, evidence.Remediation, evidence.ActivatedAt,
+		string(typedEvidence)).Scan(&applied)
 	return applied, err
 }
 

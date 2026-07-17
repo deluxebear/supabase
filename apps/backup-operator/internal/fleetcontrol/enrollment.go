@@ -112,10 +112,10 @@ func (s *Store) CreateEnrollmentToken(ctx context.Context, input CreateEnrollmen
 		return err
 	}
 	upsert := `INSERT INTO management_bindings(binding_id,organization_id,project_ref,target_id,execution_target,deployment_kind,allowed_capability_prefixes_json,state,created_at_ms,updated_at_ms)
-VALUES(?,?,?,?,?,?,?,'enrolling',?,?) ON CONFLICT(binding_id) DO UPDATE SET allowed_capability_prefixes_json=excluded.allowed_capability_prefixes_json,state='enrolling',updated_at_ms=excluded.updated_at_ms`
+VALUES(?,?,?,?,?,?,?,'enrolling',?,?) ON CONFLICT(binding_id) DO UPDATE SET allowed_capability_prefixes_json=excluded.allowed_capability_prefixes_json,state=CASE WHEN management_bindings.state='active' THEN 'active' ELSE 'enrolling' END,updated_at_ms=excluded.updated_at_ms`
 	if s.dialect == FleetPostgres {
 		upsert = `INSERT INTO management_bindings(binding_id,organization_id,project_ref,target_id,execution_target,deployment_kind,allowed_capability_prefixes_json,state,created_at_ms,updated_at_ms)
-VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,'enrolling',$8,$9) ON CONFLICT(binding_id) DO UPDATE SET allowed_capability_prefixes_json=excluded.allowed_capability_prefixes_json,state='enrolling',updated_at_ms=excluded.updated_at_ms`
+VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,'enrolling',$8,$9) ON CONFLICT(binding_id) DO UPDATE SET allowed_capability_prefixes_json=excluded.allowed_capability_prefixes_json,state=CASE WHEN management_bindings.state='active' THEN 'active' ELSE 'enrolling' END,updated_at_ms=excluded.updated_at_ms`
 	}
 	if _, err := tx.ExecContext(ctx, upsert, input.Binding.BindingID, input.Binding.OrganizationID, input.Binding.ProjectRef, input.Binding.TargetID, input.Binding.ExecutionTarget, input.Binding.DeploymentKind, string(prefixes), now, now); err != nil {
 		return err

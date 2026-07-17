@@ -43,6 +43,11 @@ This directory contains the architecture and implementation records for the self
 - [Patroni recovery](./2026-07-12-M4-patroni-recovery.md)
 - [Kubernetes replacement recovery](./2026-07-12-M5-kubernetes-replacement.md)
 
+## Edge Functions
+
+- [P1-6 Edge Functions operations](./2026-07-17-p1-6-edge-functions-operations.md)
+- [T9 Edge Functions Fleet deployment operations](./2026-07-15-t9-edge-functions-fleet-deployment-operations.md)
+
 ## Document status
 
 Older milestone documents remain useful implementation evidence. When they conflict with the dual-profile architecture baseline, the newer baseline governs unless a later ADR explicitly supersedes it.

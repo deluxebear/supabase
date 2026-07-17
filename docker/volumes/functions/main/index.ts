@@ -5,6 +5,7 @@ console.log('main function started')
 const JWT_SECRET = Deno.env.get('JWT_SECRET')
 const SUPABASE_JWKS = parseJwks(Deno.env.get('SUPABASE_JWKS'))
 const VERIFY_JWT = Deno.env.get('VERIFY_JWT') === 'true'
+const NO_MODULE_CACHE = Deno.env.get('FUNCTIONS_NO_MODULE_CACHE') === 'true'
 
 // NOTE:(kallebysantos) We don't check for valid keys but just the bare array parsing,
 // let this for 'jose' lib verification
@@ -142,12 +143,29 @@ Deno.serve(async (req: Request) => {
     })
   }
 
-  const servicePath = `/home/deno/functions/${service_name}`
+  if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,62}$/.test(service_name)) {
+    return new Response(JSON.stringify({ msg: 'invalid function name' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
+  let servicePath = `/home/deno/functions/${service_name}`
+  let fleetRevision: string | undefined
+  try {
+    const revision = (await Deno.readTextFile(`${servicePath}/.fleet-runtime-revision`)).trim()
+    if (/^[0-9a-f]{64}$/.test(revision)) {
+      fleetRevision = revision
+      servicePath = `/home/deno/functions/.fleet-artifacts/${service_name}/revisions/${revision}`
+    }
+  } catch {
+    // User-managed functions do not have a Fleet revision marker.
+  }
   console.error(`serving the request with ${servicePath}`)
 
   const memoryLimitMb = 150
   const workerTimeoutMs = 1 * 60 * 1000
-  const noModuleCache = false
+  const noModuleCache = NO_MODULE_CACHE
   const importMapPath = null
   const envVarsObj = Deno.env.toObject()
   const envVars = Object.keys(envVarsObj).map((k) => [k, envVarsObj[k]])
@@ -161,7 +179,15 @@ Deno.serve(async (req: Request) => {
       importMapPath,
       envVars,
     })
-    return await worker.fetch(req)
+    const workerResponse = await worker.fetch(req)
+    if (fleetRevision === undefined) return workerResponse
+    const headers = new Headers(workerResponse.headers)
+    headers.set('X-Supabase-Fleet-Revision', fleetRevision)
+    return new Response(workerResponse.body, {
+      status: workerResponse.status,
+      statusText: workerResponse.statusText,
+      headers,
+    })
   } catch (e) {
     const error = { msg: e.toString() }
     return new Response(JSON.stringify(error), {

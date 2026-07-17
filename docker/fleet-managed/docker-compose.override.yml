@@ -76,6 +76,8 @@ services:
         source: ${FLEET_FUNCTION_ROOT:?set FLEET_FUNCTION_ROOT}/${FLEET_FUNCTION_PROJECT_KEY:?set FLEET_FUNCTION_PROJECT_KEY}
         target: /home/deno/functions
       - deno-cache:/root/.cache/deno
+    environment:
+      FUNCTIONS_NO_MODULE_CACHE: "true"
 
   supavisor:
     container_name: ${MANAGED_CONTAINER_PREFIX:?set MANAGED_CONTAINER_PREFIX}-pooler
@@ -96,6 +98,9 @@ services:
         mkdir -p "$$project_root" /agent-state /fleet-config /database-state /database-ca
         if [ ! -f "$$project_root/main/index.ts" ]; then
           cp -a /seed/. "$$project_root/"
+        else
+          cp /seed/main/index.ts "$$project_root/main/.index.ts.next"
+          mv "$$project_root/main/.index.ts.next" "$$project_root/main/index.ts"
         fi
         chown -R 65532:65532 /functions /agent-state /fleet-config /database-state
         chmod 0700 /agent-state
@@ -163,7 +168,7 @@ services:
       FLEET_AGENT_ADAPTER: compose
       FLEET_AGENT_COMPOSE_OWNED_ROOT: /var/lib/supabase-fleet/config
       FLEET_AGENT_FUNCTION_ARTIFACT_ROOT: /var/lib/supabase-fleet/functions
-      FLEET_AGENT_FUNCTION_PROBE_URL: http://kong:8000/functions/v1
+      FLEET_AGENT_FUNCTION_PROBE_URL: http://kong-${MANAGED_PROJECT_REF}:8000/functions/v1
       FLEET_AGENT_FUNCTION_PROBE_TOKEN: ${SERVICE_ROLE_KEY}
       FLEET_AGENT_DATABASE_ADMIN_DSN: postgres://supabase_admin:${POSTGRES_PASSWORD}@db-${MANAGED_PROJECT_REF}:5432/postgres?sslmode=disable
       FLEET_AGENT_DATABASE_POOLER_DSN: postgres://postgres.${POOLER_TENANT_ID}:${POSTGRES_PASSWORD}@supavisor:5432/postgres?sslmode=disable

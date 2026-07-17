@@ -91,6 +91,10 @@ func TestComposeProviderActivatesImmutableRevisionAndRollsBackFailedProbe(t *tes
 	if err != nil || string(payload) != "version-one" {
 		t.Fatalf("upstream Edge Runtime view = %q, %v", payload, err)
 	}
+	activeRevision, err := os.ReadFile(filepath.Join(projectRoot, "hello", composeRuntimeRevisionFile))
+	if err != nil || string(activeRevision) != firstDigest {
+		t.Fatalf("runtime revision = %q, %v; want %q", activeRevision, err, firstDigest)
+	}
 }
 
 func TestComposeProviderEntersManualInterventionWhenRollbackPointerFails(t *testing.T) {

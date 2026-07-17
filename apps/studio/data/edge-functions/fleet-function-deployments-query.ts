@@ -28,6 +28,21 @@ export const fleetFunctionDeploymentSchema = z.object({
   ]),
   lastErrorCode: z.string().nullable(),
   remediation: z.string().nullable(),
+  evidence: z
+    .object({
+      schema: z.literal('supabase.fleet.functions.deploy.evidence.v1'),
+      status: z.string(),
+      adapter: z.enum(['compose', 'kubernetes']),
+      slug: z.string(),
+      artifactDigest: z.string().optional(),
+      previousDigest: z.string().optional(),
+      observedGeneration: z.number().int().positive(),
+      probe: z.object({ succeeded: z.boolean(), message: z.string().optional() }),
+      activatedAt: z.string(),
+      remediation: z.string().optional(),
+    })
+    .nullable()
+    .default(null),
   observedAt: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),

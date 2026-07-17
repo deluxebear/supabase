@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'common'
 import { isEqual } from 'lodash'
 import { AlertCircle, Book, Check } from 'lucide-react'
@@ -40,11 +41,16 @@ import { DiscardChangesConfirmationDialog } from '@/components/ui-patterns/Dialo
 import { FileExplorerAndEditor } from '@/components/ui/FileExplorerAndEditor'
 import { FileData } from '@/components/ui/FileExplorerAndEditor/FileExplorerAndEditor.types'
 import { useEdgeFunctionDeployMutation } from '@/data/edge-functions/edge-functions-deploy-mutation'
+import {
+  findProjectCapability,
+  projectCapabilitiesQueryOptions,
+} from '@/data/projects/project-capabilities-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { usePreventNavigationOnUnsavedChanges } from '@/hooks/ui/usePreventNavigationOnUnsavedChanges'
 import { BASE_PATH } from '@/lib/constants'
+import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
@@ -121,6 +127,10 @@ const NewFunctionPage = () => {
   const track = useTrack()
   const showStripeExample = useIsFeatureEnabled('edge_functions:show_stripe_example')
   const { openSidebar } = useSidebarManagerSnapshot()
+  const capabilities = useQuery(projectCapabilitiesQueryOptions({ projectRef: ref }))
+  const deployCapability = findProjectCapability(capabilities.data, 'functions.deploy')
+  const isDeployCapabilityUnavailable =
+    STUDIO_DEPLOYMENT_PROFILE === 'fleet' && deployCapability?.state !== 'available'
 
   const [files, setFiles] = useState<FileData[]>(INITIAL_FILES)
   const [selectedFileId, setSelectedFileId] = useState<number>(INITIAL_FILES[0].id)
@@ -164,7 +174,7 @@ const NewFunctionPage = () => {
   })
 
   const onSubmit = (values: FormValues) => {
-    if (isDeploying || !ref) return
+    if (isDeploying || !ref || isDeployCapabilityUnavailable) return
 
     deployFunction({
       projectRef: ref,
@@ -412,8 +422,14 @@ const NewFunctionPage = () => {
           <Button
             loading={isDeploying}
             size="medium"
-            disabled={files.length === 0 || isDeploying}
+            disabled={files.length === 0 || isDeploying || isDeployCapabilityUnavailable}
             onClick={handleDeploy}
+            title={
+              isDeployCapabilityUnavailable
+                ? (deployCapability?.blockers[0]?.message ??
+                  'Reconnect the Fleet Agent before deploying a function')
+                : undefined
+            }
           >
             {$t('Deploy function')}
           </Button>

@@ -235,6 +235,19 @@ export const EdgeFunctionsListItem = ({
                 {functionDeploymentRemediation(deployment.remediation)}
               </p>
             )}
+            <p className="max-w-64 truncate text-xs text-foreground-lighter">
+              {$t('Revision')}: {deployment.desiredRevision}
+            </p>
+            {deployment.evidence?.probe.message && (
+              <p className="max-w-64 text-xs text-foreground-light">
+                {$t('Deployment log')}: {deployment.evidence.probe.message}
+              </p>
+            )}
+            {deployment.state === 'rolled-back' && deployment.evidence?.previousDigest && (
+              <p className="max-w-64 truncate text-xs text-warning">
+                {$t('Rollback restored revision')}: {deployment.evidence.previousDigest}
+              </p>
+            )}
           </div>
         )}
         <button tabIndex={-1} className="sr-only">
