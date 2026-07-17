@@ -45,6 +45,12 @@ umask 077
   printf 'BACKUP_OPERATOR_POSTGRES_PASSWORD=%s\n' "$(random_secret)"
   printf 'PLATFORM_JWT_SECRET=%s\n' "$(random_secret)"
   printf 'PLATFORM_ENCRYPTION_KEY=%s\n' "$(random_secret)"
+  printf 'PLATFORM_SMTP_HOST=\n'
+  printf 'PLATFORM_SMTP_PORT=587\n'
+  printf 'PLATFORM_SMTP_USER=\n'
+  printf 'PLATFORM_SMTP_PASS=\n'
+  printf 'PLATFORM_SMTP_ADMIN_EMAIL=admin@internal.test\n'
+  printf 'PLATFORM_SMTP_SENDER_NAME=Supabase Platform\n'
   printf 'PG_META_CRYPTO_KEY=%s\n' "$(random_secret)"
   printf 'FLEET_CONTROL_IMAGE=supabase-fleet-control:simulation\n'
   printf 'FLEET_CONTROL_VERSION=simulation\n'
@@ -58,8 +64,8 @@ umask 077
   printf 'FLEET_CONTROL_AGENT_CERTIFICATE_TTL=24h\n'
   printf 'FLEET_CONTROL_ENROLLMENT_TOKEN_TTL=10m\n'
   printf 'FLEET_CONTROL_CERTIFICATE_OVERLAP=5m\n'
-  printf 'FLEET_CONTROL_STORE_SYSTEM_IDENTIFIER=fleet-control\n'
-  printf 'FLEET_CONTROL_STORE_DATA_DOMAIN=fleet-control-db-data\n'
+  printf 'FLEET_CONTROL_STORE_SYSTEM_IDENTIFIER=control-plane-postgres\n'
+  printf 'FLEET_CONTROL_STORE_DATA_DOMAIN=platform-db-data\n'
   printf 'FLEET_CONTROL_ARTIFACT_ROOT=/var/lib/fleet-artifacts\n'
   printf 'FLEET_CONTROL_MAX_AGENT_SESSIONS=300\n'
   printf 'FLEET_CONTROL_MAX_CONCURRENT_OPERATIONS=20\n'
@@ -84,8 +90,8 @@ umask 077
   printf 'BACKUP_OPERATOR_SERVICE_ASSERTION_ISSUER=studio-platform\n'
   printf 'BACKUP_OPERATOR_SERVICE_ASSERTION_AUDIENCE=backup-operator\n'
   printf 'BACKUP_OPERATOR_HTTP_PORT=8080\n'
-  printf 'BACKUP_OPERATOR_CONTROL_STORE_SYSTEM_IDENTIFIER=fleet-backup-control\n'
-  printf 'BACKUP_OPERATOR_CONTROL_STORE_DATA_DOMAIN=backup-operator-db-data\n'
+  printf 'BACKUP_OPERATOR_CONTROL_STORE_SYSTEM_IDENTIFIER=control-plane-postgres\n'
+  printf 'BACKUP_OPERATOR_CONTROL_STORE_DATA_DOMAIN=platform-db-data\n'
   printf 'BACKUP_OPERATOR_RUNTIME_MAX_CONCURRENT_OPERATIONS=4\n'
   printf 'MANAGED_SUPABASE_URL=\n'
   printf 'MANAGED_ANON_KEY=\n'

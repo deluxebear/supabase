@@ -4,7 +4,8 @@
 > Production Fleet deployments MUST use `docker-compose.control-plane.yml` for
 > the control plane and a separately managed Supabase stack. The production
 > topology keeps platform identity/registry, Fleet Control persistence, and
-> Backup Operator evidence in three independent control-plane volumes; none is
+> Backup Operator evidence in three credential-isolated logical databases on
+> one independent control-plane PostgreSQL instance. Its volume is never
 > restored with a managed stack.
 
 This directory runs the full default Supabase stack **and** the self-hosted management
@@ -35,11 +36,11 @@ has verified the administrator login flow.
 
 Its stores and authorities are:
 
-| State | Authority | Durable volume |
-| --- | --- | --- |
-| Login, organizations, RBAC, registry | `platform-db` | `platform-db-data` |
-| General Fleet operations | `fleet-control` | `fleet-control-db-data` |
-| Backup jobs, manifests, plans, evidence | `backup-operator` | `backup-operator-db-data` |
+| State | Authority | Database / role | Durable volume |
+| --- | --- | --- | --- |
+| Login, organizations, RBAC, registry | `platform-db` | `platform` / `postgres` | `platform-db-data` |
+| General Fleet operations | `fleet-control` | `fleet_control` / `fleet_control` | `platform-db-data` |
+| Backup jobs, manifests, plans, evidence | `backup-operator` | `backup_operator` / `backup_operator` | `platform-db-data` |
 
 Fleet Control owns its `/platform/fleet/v1/...` API, `supabase.fleet.*` Agent
 contracts, schema ledger, operations, events, audit records, and fencing tokens.
@@ -50,9 +51,10 @@ so starting the service cannot silently enable Fleet mutations.
 
 The `management` network is the only connection between the projects. It permits
 Studio to reach each registered stack's gateway and project-owned pg-meta, but no managed service
-mounts or owns a control volume. Use different database credentials, storage,
-backup repositories, encryption keys, and restore procedures for all control
-stores. Merely changing a database name inside `supabase-db` is not isolation.
+mounts or owns the control volume. The three control stores keep separate
+databases, owners, migration ledgers, and domain schemas, but deliberately share
+one PostgreSQL process, volume, backup, and restore boundary. This remains
+independent from every managed Supabase database recovery domain.
 Fleet Studio accesses `platform-db` directly and routes project SQL/metadata to
 the registered stack's `${kong_url}/pg` endpoint; the production control plane
 does not run its own pg-meta container. `PG_META_CRYPTO_KEY` remains a management
@@ -77,12 +79,34 @@ T10 adds a second, independent control-plane restore drill:
 ```
 
 It restores the platform, Fleet Control, and Backup Operator dumps into three
-scratch databases, verifies all migration ledgers and the Fleet schema-6
-readiness gate, checks a protected authority/key bundle, and proves missing
-Agent CA material fails closed. It does not stop the managed stack. Capacity
+scratch databases on the shared control-plane instance, verifies all migration
+ledgers and the current Fleet schema readiness gate, checks a protected authority/key
+bundle, and proves missing Agent CA material fails closed. It does not stop the managed stack. Capacity
 defaults in `control-plane.env.example` are the published tested envelope; run
 `../../apps/backup-operator/scripts/run-t10-capacity-load.sh` before proposing a
 higher limit.
+
+The production control-plane Compose does not bundle an SMTP sink. Configure
+`PLATFORM_SMTP_HOST`, `PLATFORM_SMTP_PORT`, `PLATFORM_SMTP_USER`,
+`PLATFORM_SMTP_PASS`, `PLATFORM_SMTP_ADMIN_EMAIL`, and
+`PLATFORM_SMTP_SENDER_NAME` when invitations or recovery email must be
+delivered. Without an external SMTP host, password login and administrator
+bootstrap continue to work, but email delivery operations fail explicitly.
+
+To migrate an already-running three-Postgres control plane, first update its
+Compose file and set both control-store system identifiers to
+`control-plane-postgres` and both data domains to `platform-db-data` in
+`control-plane.env`, then run:
+
+```bash
+./scripts/migrate-control-plane-to-single-postgres.sh
+```
+
+The migration stops control-plane writers, saves all three logical dumps under
+`.migration-backups/`, restores Fleet Control and Backup Operator into the
+existing `platform-db-data` instance, updates their recovery-domain identities,
+and starts the compact topology. The two retired database volumes are retained
+for rollback and are never deleted automatically.
 
 T6 attachment and detachment semantics have a separate disposable acceptance test:
 

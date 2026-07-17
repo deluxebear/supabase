@@ -1,6 +1,7 @@
 # [self-platform] Local runtime state — never commit.
 .env
 control-plane.env
+.migration-backups/
 secrets/
 volumes/db/data/
 volumes/storage/

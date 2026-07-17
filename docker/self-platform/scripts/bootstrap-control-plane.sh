@@ -23,11 +23,11 @@ done
 
 docker network inspect "$(envval FLEET_MANAGEMENT_NETWORK_NAME)" >/dev/null 2>&1 || \
   docker network create "$(envval FLEET_MANAGEMENT_NETWORK_NAME)" >/dev/null
-"${compose[@]}" up -d --wait
+"${compose[@]}" up -d --remove-orphans
 
 ready=0
 for _ in $(seq 1 60); do
-  if curl -fsS -o /dev/null "$public_url/api/platform/telemetry/feature-flags"; then
+  if curl -fsS -o /dev/null "$public_url/api/get-utc-time"; then
     ready=1
     break
   fi
