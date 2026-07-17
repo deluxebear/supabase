@@ -33,6 +33,7 @@ describe('Fleet Edge Function mutations in insecure browser contexts', () => {
       deployEdgeFunction({
         projectRef: 'project-a',
         slug: 'hello',
+        expectedGeneration: 7,
         metadata: { entrypoint_path: 'index.ts' },
         files: [{ name: 'index.ts', content: 'Deno.serve(() => new Response("ok"))' }],
       })
@@ -43,6 +44,7 @@ describe('Fleet Edge Function mutations in insecure browser contexts', () => {
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({ 'Idempotency-Key': 'fleet-operation-uuid' }),
+        body: expect.stringContaining('"expectedGeneration":7'),
       })
     )
   })

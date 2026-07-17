@@ -106,6 +106,7 @@ const CodePage = () => {
       deployFunction({
         projectRef: ref,
         slug: selectedFunction.slug,
+        expectedGeneration: selectedFunction.version,
         metadata: {
           name: selectedFunction.name,
           verify_jwt: selectedFunction.verify_jwt,

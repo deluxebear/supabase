@@ -65,42 +65,40 @@ export const formatFunctionBodyToFiles = ({
 }) => {
   const entrypoint_path = functionBody.metadata?.deno2_entrypoint_path ?? entrypointPath
 
-  // Set files from API response when available
-  if (entrypoint_path) {
-    const base_path = getBasePath(
-      entrypoint_path,
-      functionBody.files.map((file) => file.name)
-    )
-    const filesWithRelPath = functionBody.files
-      // set file paths relative to entrypoint
-      .map((file: { name: string; content: string }) => {
-        try {
-          // if the current file and base path doesn't share a common path,
-          // return unmodified file
-          const common_path = common([base_path, file.name])
-          if (common_path === '' || common_path === '/tmp/') {
+  const files = !entrypoint_path
+    ? functionBody.files
+    : (() => {
+        const base_path = getBasePath(
+          entrypoint_path,
+          functionBody.files.map((file) => file.name)
+        )
+        return functionBody.files.map((file: { name: string; content: string }) => {
+          // set file paths relative to entrypoint
+          try {
+            // if the current file and base path doesn't share a common path,
+            // return unmodified file
+            const common_path = common([base_path, file.name])
+            if (common_path === '' || common_path === '/tmp/') {
+              return file
+            }
+
+            // prepend "/" to turn relative paths to absolute
+            file.name = relative('/' + base_path, '/' + file.name)
+            return file
+          } catch (e) {
+            console.error(e)
+            // return unmodified file
             return file
           }
+        })
+      })()
 
-          // prepend "/" to turn relative paths to absolute
-          file.name = relative('/' + base_path, '/' + file.name)
-          return file
-        } catch (e) {
-          console.error(e)
-          // return unmodified file
-          return file
-        }
-      })
-
-    return filesWithRelPath.map((file: { name: string; content: string }, index: number) => {
-      return {
-        id: index + 1,
-        name: file.name,
-        content: file.content,
-        state: 'unchanged',
-      } as FileData
-    })
-  }
-
-  return []
+  return files.map((file: { name: string; content: string }, index: number) => {
+    return {
+      id: index + 1,
+      name: file.name,
+      content: file.content,
+      state: 'unchanged',
+    } as FileData
+  })
 }
