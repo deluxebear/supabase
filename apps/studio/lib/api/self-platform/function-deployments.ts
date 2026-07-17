@@ -7,6 +7,7 @@ import {
   getProjectManagementBinding,
   ManagementTrustConflict,
   requestManagementDomain,
+  syncProjectManagementBinding,
 } from './management-trust'
 import { listProjectOwnershipPolicies } from './ownership-policy'
 
@@ -295,9 +296,17 @@ async function commitDeployment(input: CommitInput): Promise<FunctionDeployment>
   return deployment
 }
 
-async function requireFunctionBinding(projectRef: string) {
-  await requireProjectCapability(projectRef, 'functions.deploy')
-  const binding = await getProjectManagementBinding(projectRef)
+async function requireFunctionBinding(input: {
+  projectRef: string
+  actor: string
+  correlationId: string
+}) {
+  const binding = await syncProjectManagementBinding({
+    projectRef: input.projectRef,
+    actor: input.actor,
+    correlationId: input.correlationId,
+  })
+  await requireProjectCapability(input.projectRef, 'functions.deploy')
   if (!binding || binding.state !== 'active' || binding.targetState !== 'active') {
     throw new ManagementTrustConflict(
       'management_target_unbound',
@@ -310,7 +319,7 @@ async function requireFunctionBinding(projectRef: string) {
       'Edge Function deployment supports Compose and Kubernetes targets.'
     )
   }
-  const ownership = (await listProjectOwnershipPolicies(projectRef)).find(
+  const ownership = (await listProjectOwnershipPolicies(input.projectRef)).find(
     (policy) => policy.domain === 'functions'
   )
   if (!ownership || ownership.ownershipMode !== 'direct-managed') {
@@ -344,7 +353,7 @@ export async function deployFunction(input: {
   actor: string
   correlationId: string
 }) {
-  const binding = await requireFunctionBinding(input.projectRef)
+  const binding = await requireFunctionBinding(input)
   const built = buildFunctionArtifact(input.value)
   const response = await requestManagementDomain(binding, 'fleet-control', {
     method: 'PUT',
@@ -384,7 +393,7 @@ export async function deleteFunction(input: {
   actor: string
   correlationId: string
 }) {
-  await requireFunctionBinding(input.projectRef)
+  await requireFunctionBinding(input)
   const value = functionDeleteInputSchema.parse(input.value)
   return commitDeployment({
     projectRef: input.projectRef,

@@ -8,7 +8,7 @@ import {
   functionDeploymentInputSchema,
   listFunctionDeployments,
 } from './function-deployments'
-import { getProjectManagementBinding, requestManagementDomain } from './management-trust'
+import { requestManagementDomain, syncProjectManagementBinding } from './management-trust'
 import { listProjectOwnershipPolicies } from './ownership-policy'
 
 vi.mock('./db', () => ({ executePlatformQuery: vi.fn() }))
@@ -17,8 +17,8 @@ vi.mock('./management-trust', async (importOriginal) => {
   const original = await importOriginal<typeof import('./management-trust')>()
   return {
     ...original,
-    getProjectManagementBinding: vi.fn(),
     requestManagementDomain: vi.fn(),
+    syncProjectManagementBinding: vi.fn(),
   }
 })
 vi.mock('./ownership-policy', () => ({ listProjectOwnershipPolicies: vi.fn() }))
@@ -120,7 +120,7 @@ describe('Fleet function artifact validation', () => {
     const value = input()
     const built = buildFunctionArtifact(value)
     vi.mocked(requireProjectCapability).mockResolvedValue({} as never)
-    vi.mocked(getProjectManagementBinding).mockResolvedValue({
+    vi.mocked(syncProjectManagementBinding).mockResolvedValue({
       state: 'active',
       targetState: 'active',
       deploymentKind: 'compose',
@@ -162,7 +162,15 @@ describe('Fleet function artifact validation', () => {
       actor: 'user-a',
       correlationId: 'request-a',
     })
+    expect(syncProjectManagementBinding).toHaveBeenCalledWith({
+      projectRef: 'project-a',
+      actor: 'user-a',
+      correlationId: 'request-a',
+    })
     expect(requireProjectCapability).toHaveBeenCalledWith('project-a', 'functions.deploy')
+    expect(vi.mocked(syncProjectManagementBinding).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(requireProjectCapability).mock.invocationCallOrder[0]
+    )
     expect(listProjectOwnershipPolicies).toHaveBeenCalledWith('project-a')
     expect(requestManagementDomain).toHaveBeenCalledWith(
       expect.anything(),
