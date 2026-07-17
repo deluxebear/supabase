@@ -373,16 +373,17 @@ export const EdgeFunctionDetails = () => {
             visible={showDeleteModal}
             loading={isDeleting}
             variant="destructive"
-            confirmLabel="Delete"
-            confirmLabelLoading="Deleting"
-            title={`Confirm to delete ${selectedFunction?.name}`}
+            confirmLabel={$t('Delete')}
+            confirmLabelLoading={$t('Deleting')}
+            title={`${$t('Confirm to delete')} ${selectedFunction?.name}`}
             onCancel={() => setShowDeleteModal(false)}
             onConfirm={onConfirmDelete}
             alert={{
               base: { variant: 'destructive' },
-              title: 'This action cannot be undone',
-              description:
-                'Ensure that you have made a backup if you want to restore your edge function',
+              title: $t('This action cannot be undone'),
+              description: $t(
+                'Ensure that you have made a backup if you want to restore your edge function'
+              ),
             }}
           />
         </>
