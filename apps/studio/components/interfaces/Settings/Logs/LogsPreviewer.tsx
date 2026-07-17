@@ -314,7 +314,7 @@ export const LogsPreviewer = ({
   }
 
   const logsEmptyState =
-    !isProjectLoading && !isAnalyticsConfigured ? (
+    !isProjectLoading && !canQueryAnalytics ? (
       <LogsTableEmptyState
         title={$t('Logs are not configured')}
         description={$t(
