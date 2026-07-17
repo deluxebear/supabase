@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -54,8 +55,9 @@ func (p HTTPProber) ProbeRevision(ctx context.Context, slug string, shouldExist 
 		attempt := request.Clone(probeCtx)
 		response, err := client.Do(attempt)
 		if err == nil {
+			body, _ := io.ReadAll(io.LimitReader(response.Body, 4<<10))
 			response.Body.Close()
-			if !shouldExist && response.StatusCode == http.StatusNotFound {
+			if !shouldExist && isMissingFunctionResponse(response.StatusCode, body) {
 				return nil
 			}
 			if shouldExist && response.StatusCode >= 200 && response.StatusCode < 300 {
@@ -81,4 +83,14 @@ func (p HTTPProber) ProbeRevision(ctx context.Context, slug string, shouldExist 
 		case <-timer.C:
 		}
 	}
+}
+
+func isMissingFunctionResponse(status int, body []byte) bool {
+	if status == http.StatusNotFound {
+		return true
+	}
+	message := string(body)
+	return status == http.StatusInternalServerError &&
+		strings.Contains(message, "InvalidWorkerCreation") &&
+		strings.Contains(message, "could not find an appropriate entrypoint")
 }

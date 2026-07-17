@@ -40,9 +40,23 @@ func TestHTTPProberReportsLastStatusAfterTimeout(t *testing.T) {
 	}))
 	defer server.Close()
 
-	prober := HTTPProber{BaseURL: server.URL, Timeout: 30 * time.Millisecond, Interval: 5 * time.Millisecond}
+	prober := HTTPProber{BaseURL: server.URL, Timeout: 250 * time.Millisecond, Interval: 5 * time.Millisecond}
 	err := prober.Probe(context.Background(), "broken", true)
 	if err == nil || !strings.Contains(err.Error(), "HTTP 500") {
 		t.Fatalf("probe error=%v", err)
+	}
+}
+
+func TestHTTPProberAcceptsMissingEntrypointAsDeleted(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
+		response.Header().Set("Content-Type", "application/json")
+		response.WriteHeader(http.StatusInternalServerError)
+		_, _ = response.Write([]byte(`{"msg":"InvalidWorkerCreation: worker boot error: failed to bootstrap runtime: could not find an appropriate entrypoint"}`))
+	}))
+	defer server.Close()
+
+	prober := HTTPProber{BaseURL: server.URL, Timeout: 30 * time.Millisecond, Interval: 5 * time.Millisecond}
+	if err := prober.Probe(context.Background(), "deleted", false); err != nil {
+		t.Fatalf("deleted function probe error=%v", err)
 	}
 }
