@@ -15,6 +15,7 @@ import {
   ResolvedPropertyChange,
   SyncOptionsFunction,
 } from './types'
+import { uiT } from '../lib/i18n'
 
 export function pathsEqual(a: number[], b: number[]): boolean {
   return a.length === b.length && a.every((v, i) => v === b[i])
@@ -328,9 +329,10 @@ export function groupMenuItemsByOperator(items: MenuItem[]): MenuItemGroup[] {
 
 export function getActionItemLabel(item: MenuItem): string {
   if (item.isAction && item.actionInputValue) {
-    return `Ask AI: "${item.actionInputValue}"`
+    return `${uiT('Ask AI')}: "${item.actionInputValue}"`
   }
-  return item.label
+  // Host-provided labels (e.g. "Filter by AI") go through the translator.
+  return uiT(item.label)
 }
 
 export function buildFilterPlaceholder(
@@ -340,7 +342,7 @@ export function buildFilterPlaceholder(
   const { maxProperties = 3, hasActions = false } = options
 
   if (filterProperties.length === 0) {
-    return hasActions ? 'Add filters or ask AI...' : 'Add filters...'
+    return hasActions ? uiT('Add filters or ask AI...') : uiT('Add filters...')
   }
 
   const propertyNames = filterProperties
@@ -349,7 +351,7 @@ export function buildFilterPlaceholder(
     .join(', ')
 
   const suffix = filterProperties.length > maxProperties ? '...' : ''
-  const aiSuffix = hasActions ? ' or ask AI' : ''
-
-  return `Filter by ${propertyNames}${suffix}${aiSuffix}`
+  // Compose so column names stay as-is while fixed phrases localize via uiT.
+  const base = `${uiT('Filter by')} ${propertyNames}${suffix}`
+  return hasActions ? `${base}${uiT(' or ask AI')}` : base
 }

@@ -94,8 +94,10 @@ export const SortPopoverPrimitive = ({
   const displayButtonText =
     buttonText ??
     (localSorts.length > 0
-      ? `Sorted by ${localSorts.length} rule${localSorts.length > 1 ? 's' : ''}`
-      : 'Sort')
+      ? localSorts.length === 1
+        ? $t('Sorted by 1 rule')
+        : $t('Sorted by {{count}} rules', { count: localSorts.length })
+      : $t('Sort'))
 
   // Filter available columns to exclude columns already in sorts
   const columns = useMemo(() => {

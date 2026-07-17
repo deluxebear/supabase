@@ -1,5 +1,7 @@
 import { cn, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface TwoOptionToggleProps {
   options: string[]
   width?: number
@@ -8,6 +10,12 @@ interface TwoOptionToggleProps {
   borderOverride: string
   disabledOptions?: string[]
   disabledOptionTooltip?: string
+}
+
+function optionLabel(option: string): string {
+  // Values stay English (URL/query state); display capitalizes then translates.
+  const display = option.charAt(0).toUpperCase() + option.slice(1)
+  return $t(display)
 }
 
 export const TwoOptionToggle = ({
@@ -63,7 +71,7 @@ export const TwoOptionToggle = ({
                 isDisabled && 'hover:text-foreground-light'
               )}
             >
-              {option}
+              {optionLabel(option)}
             </span>
           </span>
         )

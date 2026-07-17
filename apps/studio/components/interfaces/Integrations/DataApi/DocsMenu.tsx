@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { cn } from 'ui'
 
 import { ProductMenuGroup } from '@/components/ui/ProductMenu/ProductMenu.types'
+import { t as $t } from '@/lib/i18n'
 
 export const DocsMenu = ({
   menu,
@@ -15,7 +16,7 @@ export const DocsMenu = ({
       {menu.map((group, idx) => (
         <div key={group.key || group.title || idx}>
           {group.title && (
-            <div className="heading-meta mb-2 text-foreground-lighter">{group.title}</div>
+            <div className="heading-meta mb-2 text-foreground-lighter">{$t(group.title)}</div>
           )}
           <div className="space-y-2">
             {group.items.map((item) => {
@@ -30,7 +31,7 @@ export const DocsMenu = ({
                     isActive ? 'text-foreground' : 'text-foreground-light hover:text-foreground'
                   )}
                 >
-                  <span className="truncate">{item.name}</span>
+                  <span className="truncate">{$t(item.name)}</span>
                   {item.rightIcon && (
                     <span className="ml-auto text-foreground-lighter">{item.rightIcon}</span>
                   )}

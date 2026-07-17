@@ -9,6 +9,7 @@ import { FilterCondition } from './FilterCondition'
 import { useDeferredBlur, useHighlightNavigation } from './hooks'
 import { buildPropertyItems } from './menuItems'
 import { FilterGroup as FilterGroupType } from './types'
+import { uiT } from '../lib/i18n'
 import { buildFilterPlaceholder, pathsEqual } from './utils'
 
 export type FilterGroupProps = {
@@ -208,7 +209,7 @@ export function FilterGroup({ group, path }: FilterGroupProps) {
                 onKeyDown={handleFreeformKeyDown}
                 className="border-none bg-transparent text-xs focus:outline-hidden focus:ring-0 focus:shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full flex-1 h-auto min-w-0 px-2 py-1"
                 placeholder={
-                  group.conditions.length === 0 ? emptyPlaceholder : 'Add more filters...'
+                  group.conditions.length === 0 ? emptyPlaceholder : uiT('Add more filters...')
                 }
                 data-testid="filter-bar-freeform-input"
                 autoComplete="off"
@@ -227,7 +228,7 @@ export function FilterGroup({ group, path }: FilterGroupProps) {
                   onBlur={handleFreeformBlur}
                   onKeyDown={handleFreeformKeyDown}
                   className="h-full border-none bg-transparent py-0 text-xs md:text-xs focus:outline-hidden focus:ring-0 focus:shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full absolute left-0 top-0 px-2"
-                  placeholder="+ Add filter"
+                  placeholder={uiT('+ Add filter')}
                   autoComplete="off"
                   data-1p-ignore
                   data-lpignore="true"

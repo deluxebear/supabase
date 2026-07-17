@@ -20,7 +20,6 @@ import { getExposedSchemaCounts } from './ExposedSchemaSelector.utils'
 import { useSchemasQuery } from '@/data/database/schemas-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { INTERNAL_SCHEMAS } from '@/hooks/useProtectedSchemas'
-import { pluralize } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
 
 /**
@@ -92,8 +91,11 @@ export const ExposedSchemaSelector = ({
           <div className="w-full flex gap-1">
             <p className="text-foreground-lighter">
               {isSuccess
-                ? `${selectedCount} of ${totalCount} ${pluralize(totalCount, 'schema')} exposed`
-                : 'Loading schemas...'}
+                ? $t('{{selected}} of {{total}} schemas exposed', {
+                    selected: selectedCount,
+                    total: totalCount,
+                  })
+                : $t('Loading schemas...')}
             </p>
           </div>
         </Button>

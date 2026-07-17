@@ -288,7 +288,7 @@ const ProjectLinks = () => {
             active={isUndefined(activeRoute) && !isUndefined(router.query.ref)}
             route={{
               key: 'HOME',
-              label: 'Project Overview',
+              label: $t('Project Overview'),
               icon: <Home size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
               link: `/project/${ref}`,
               linkElement: <ProjectIndexPageLink projectRef={ref} />,

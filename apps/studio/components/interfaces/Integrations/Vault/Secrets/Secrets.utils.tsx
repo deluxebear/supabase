@@ -3,6 +3,7 @@ import { cn } from 'ui'
 
 import { SecretRow } from './SecretRow'
 import { SecretTableColumn } from './Secrets.types'
+import { t as $t } from '@/lib/i18n'
 import type { VaultSecret } from '@/types'
 
 export const SECRET_TABLE_COLUMNS: SecretTableColumn[] = [
@@ -17,7 +18,7 @@ export const formatSecretColumns = (): Column<VaultSecret>[] => {
   return SECRET_TABLE_COLUMNS.map((col) => {
     const result: Column<VaultSecret> = {
       key: col.id,
-      name: col.name,
+      name: col.name ? $t(col.name) : col.name,
       minWidth: col.minWidth ?? 100,
       maxWidth: col.maxWidth,
       width: col.width,
@@ -33,7 +34,7 @@ export const formatSecretColumns = (): Column<VaultSecret>[] => {
               col.id === 'secret' && 'ml-8'
             )}
           >
-            <p className="text-foreground!">{col.name}</p>
+            <p className="text-foreground!">{col.name ? $t(col.name) : col.name}</p>
           </div>
         )
       },

@@ -205,7 +205,7 @@ export const FilterPopoverNew = ({
     () => [
       {
         value: 'ai-filter',
-        label: 'Filter by AI',
+        label: $t('Filter by AI'),
         onSelect: async (
           inputValue: string,
           context: { path: number[]; activeFilters: FilterGroup }

@@ -77,8 +77,10 @@ const ForgotPasswordMfa: NextPageWithLayout = () => {
 
   return (
     <ForgotPasswordLayout
-      heading="Complete two-factor authentication"
-      subheading="Enter the authentication code from your two-factor authentication app before changing your password"
+      heading={$t('Complete two-factor authentication')}
+      subheading={$t(
+        'Enter the authentication code from your two-factor authentication app before changing your password'
+      )}
     >
       <SignInMfaForm context="forgot-password" />
     </ForgotPasswordLayout>

@@ -618,13 +618,13 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
             placeholder={
               hasMessages
                 ? isSupportChat
-                  ? 'Share details so the assistant can help with your support request...'
-                  : 'Ask a follow up question...'
+                  ? $t('Share details so the assistant can help with your support request...')
+                  : $t('Ask a follow up question...')
                 : (snap.sqlSnippets ?? [])?.length > 0
-                  ? 'Ask a question or make a change...'
+                  ? $t('Ask a question or make a change...')
                   : isSupportChat
-                    ? 'Describe your support issue...'
-                    : 'Chat to Postgres...'
+                    ? $t('Describe your support issue...')
+                    : $t('Chat to Postgres...')
             }
             value={value}
             onValueChange={(e) => setValue(e.target.value)}

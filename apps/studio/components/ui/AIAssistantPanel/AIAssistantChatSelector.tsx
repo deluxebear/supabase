@@ -86,7 +86,7 @@ export const AIAssistantChatSelector = ({ disabled = false }: AIAssistantChatSel
           iconRight={<ChevronDown size={14} />}
           className="max-w-64 truncate"
         >
-          {currentChat}
+          {currentChat ? $t(currentChat) : currentChat}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[250px] p-0" align="center">
@@ -156,7 +156,7 @@ export const AIAssistantChatSelector = ({ disabled = false }: AIAssistantChatSel
                               snap.activeChatId === id ? 'opacity-100' : 'opacity-0'
                             )}
                           />
-                          <span className="truncate flex-1 w-0">{chat.name}</span>
+                          <span className="truncate flex-1 w-0">{$t(chat.name)}</span>
                         </>
                       )}
                     </div>

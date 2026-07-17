@@ -131,13 +131,14 @@ export const SecretsManagement = () => {
                 <SelectTrigger size="tiny" className="w-44">
                   <SelectValue asChild>
                     <>
-                      {$t('Sort by')} {selectedSort}
+                      {$t('Sort by')}{' '}
+                      {selectedSort === 'updated_at' ? $t('Last updated') : $t('Name')}
                     </>
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="updated_at" className="text-xs">
-                    {$t('Updated at')}
+                    {$t('Last updated')}
                   </SelectItem>
                   <SelectItem value="name" className="text-xs">
                     {$t('Name')}
@@ -164,7 +165,7 @@ export const SecretsManagement = () => {
                   content: {
                     side: 'bottom',
                     text: !canManageSecrets
-                      ? 'You need additional permissions to add secrets'
+                      ? $t('You need additional permissions to add secrets')
                       : undefined,
                   },
                 }}
@@ -178,7 +179,7 @@ export const SecretsManagement = () => {
 
           {isError ? (
             <div className="grow p-4">
-              <AlertError error={error} subject="Failed to load secrets" />
+              <AlertError error={error} subject={$t('Failed to load secrets')} />
             </div>
           ) : (
             <DataGrid
@@ -207,12 +208,14 @@ export const SecretsManagement = () => {
             <div className="absolute top-32 px-6 w-full">
               <div className="text-center text-sm flex flex-col gap-y-1">
                 <p className="text-foreground">
-                  {searchValue ? 'No secrets found' : 'No secrets added yet'}
+                  {searchValue ? $t('No secrets found') : $t('No secrets added yet')}
                 </p>
                 <p className="text-foreground-light">
                   {searchValue
-                    ? `There are currently no secrets based on the search "${searchValue}"`
-                    : 'The Vault allows you to store sensitive information like API keys'}
+                    ? $t('There are currently no secrets based on the search "{{search}}"', {
+                        search: searchValue,
+                      })
+                    : $t('The Vault allows you to store sensitive information like API keys')}
                 </p>
               </div>
             </div>

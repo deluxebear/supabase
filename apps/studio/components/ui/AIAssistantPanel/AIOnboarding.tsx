@@ -78,7 +78,7 @@ export const AIOnboarding = ({
                       onFocusInput?.()
                     }}
                   >
-                    {item.title}
+                    {$t(item.title)}
                   </Button>
                 </motion.div>
               ))}
@@ -166,7 +166,7 @@ export const AIOnboarding = ({
                           onFocusInput?.()
                         }}
                       >
-                        {item.title}
+                        {$t(item.title)}
                       </Button>
                     ))}
                   </div>

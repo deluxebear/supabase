@@ -23,7 +23,6 @@ import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 import { exposedTableCountsQueryOptions } from '@/data/privileges/exposed-table-counts-query'
 import { exposedTablesInfiniteQueryOptions } from '@/data/privileges/exposed-tables-infinite-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { pluralize } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
 
 interface ExposedTableSelectorProps {
@@ -103,14 +102,22 @@ export const ExposedTableSelector = ({
           <div className="w-full flex gap-1">
             <p className="text-foreground-lighter">
               {isCountsPending
-                ? 'Loading tables...'
+                ? $t('Loading tables...')
                 : totalCount === 0
-                  ? 'No tables available'
-                  : `${grantsCount} of ${totalCount} tables exposed${
-                      pendingCount > 0
-                        ? `, ${pendingCount} pending ${pluralize(pendingCount, 'change')}`
-                        : ''
-                    }`}
+                  ? $t('No tables available')
+                  : pendingCount > 0
+                    ? $t(
+                        '{{exposed}} of {{total}} tables exposed, {{pending}} pending changes',
+                        {
+                          exposed: grantsCount,
+                          total: totalCount,
+                          pending: pendingCount,
+                        }
+                      )
+                    : $t('{{exposed}} of {{total}} tables exposed', {
+                        exposed: grantsCount,
+                        total: totalCount,
+                      })}
             </p>
           </div>
         </Button>

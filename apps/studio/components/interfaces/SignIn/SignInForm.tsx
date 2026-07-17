@@ -81,14 +81,16 @@ export const SignInForm = () => {
         const data = await getMfaAuthenticatorAssuranceLevel()
         if (data) {
           if (data.currentLevel !== data.nextLevel) {
-            toast.success(`You need to provide your second factor authentication`, { id: toastId })
+            toast.success($t('You need to provide your second factor authentication'), {
+              id: toastId,
+            })
             const url = buildPathWithParams('/sign-in-mfa')
             router.replace(url)
             return
           }
         }
 
-        toast.success(`Signed in successfully!`, { id: toastId })
+        toast.success($t('Signed in successfully!'), { id: toastId })
         track('sign_in', { category: 'account', method: 'email' })
         addLoginEvent({})
 

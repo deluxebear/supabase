@@ -23,7 +23,6 @@ import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 import { exposedFunctionCountsQueryOptions } from '@/data/privileges/exposed-function-counts-query'
 import { exposedFunctionsInfiniteQueryOptions } from '@/data/privileges/exposed-functions-infinite-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { pluralize } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
 
 interface ExposedFunctionSelectorProps {
@@ -109,14 +108,22 @@ export const ExposedFunctionSelector = ({
           <div className="w-full flex gap-1">
             <p className="text-foreground-lighter">
               {isCountsPending
-                ? 'Loading functions...'
+                ? $t('Loading functions...')
                 : totalCount === 0
-                  ? 'No functions available'
-                  : `${grantsCount} of ${totalCount} functions exposed${
-                      pendingCount > 0
-                        ? `, ${pendingCount} pending ${pluralize(pendingCount, 'change')}`
-                        : ''
-                    }`}
+                  ? $t('No functions available')
+                  : pendingCount > 0
+                    ? $t(
+                        '{{exposed}} of {{total}} functions exposed, {{pending}} pending changes',
+                        {
+                          exposed: grantsCount,
+                          total: totalCount,
+                          pending: pendingCount,
+                        }
+                      )
+                    : $t('{{exposed}} of {{total}} functions exposed', {
+                        exposed: grantsCount,
+                        total: totalCount,
+                      })}
             </p>
           </div>
         </Button>

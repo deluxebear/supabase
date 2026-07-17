@@ -101,8 +101,8 @@ const SignInMfaPage: NextPageWithLayout = () => {
 
   return (
     <SignInLayout
-      heading="Two-factor authentication"
-      subheading="Enter the authentication code from your two-factor authentication app"
+      heading={$t('Two-factor authentication')}
+      subheading={$t('Enter the authentication code from your two-factor authentication app')}
       logoLinkToMarketingSite={true}
     >
       <div className="flex flex-col gap-5">

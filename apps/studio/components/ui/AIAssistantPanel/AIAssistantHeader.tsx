@@ -139,22 +139,26 @@ export const AIAssistantHeader = ({
           type="default"
           title={
             !updatedOptInSinceMCP
-              ? 'The Assistant has just been updated to help you better!'
+              ? $t('The Assistant has just been updated to help you better!')
               : isHipaaProjectDisallowed
-                ? 'Project metadata is not shared due to HIPAA'
+                ? $t('Project metadata is not shared due to HIPAA')
                 : aiOptInLevel === 'disabled'
-                  ? 'Project metadata is currently not shared'
-                  : 'Limited metadata is shared to the Assistant'
+                  ? $t('Project metadata is currently not shared')
+                  : $t('Limited metadata is shared to the Assistant')
           }
           description={
             !updatedOptInSinceMCP
-              ? 'You may now opt-in to share schema metadata and even logs for better results'
+              ? $t('You may now opt-in to share schema metadata and even logs for better results')
               : isHipaaProjectDisallowed
-                ? 'Your organization has the HIPAA addon and will not send project metadata with your prompts for projects marked as HIPAA.'
+                ? $t(
+                    'Your organization has the HIPAA addon and will not send project metadata with your prompts for projects marked as HIPAA.'
+                  )
                 : aiOptInLevel === 'disabled'
-                  ? 'The Assistant can provide better answers if you opt-in to share schema metadata.'
+                  ? $t('The Assistant can provide better answers if you opt-in to share schema metadata.')
                   : aiOptInLevel === 'schema'
-                    ? 'Sharing query data in addition to schema can further improve responses. Update AI settings to enable this.'
+                    ? $t(
+                        'Sharing query data in addition to schema can further improve responses. Update AI settings to enable this.'
+                      )
                     : ''
           }
           className="border-0 border-b rounded-none bg-background"

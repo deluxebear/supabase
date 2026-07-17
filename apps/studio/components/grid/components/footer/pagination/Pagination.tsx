@@ -23,9 +23,9 @@ import { useTableEditorStateSnapshot } from '@/state/table-editor'
 import { useTableEditorTableStateSnapshot } from '@/state/table-editor-table'
 
 const rowsPerPageOptions = [
-  { value: 100, label: '100 rows' },
-  { value: 500, label: '500 rows' },
-  { value: 1000, label: '1000 rows' },
+  { value: 100, labelKey: '100 rows' },
+  { value: 500, labelKey: '500 rows' },
+  { value: 1000, labelKey: '1000 rows' },
 ]
 
 const RowCountSelector = ({
@@ -34,16 +34,20 @@ const RowCountSelector = ({
   onRowsPerPageChange: (value: number | string) => void
 }) => {
   const tableEditorSnap = useTableEditorStateSnapshot()
+  const options = rowsPerPageOptions.map((opt) => ({
+    value: opt.value,
+    label: $t(opt.labelKey),
+  }))
 
   return (
     <DropdownControl
-      options={rowsPerPageOptions}
+      options={options}
       onSelect={onRowsPerPageChange}
       side="top"
       align="start"
     >
       <Button asChild variant="outline" style={{ padding: '3px 10px' }}>
-        <span>{`${tableEditorSnap.rowsPerPage} rows`}</span>
+        <span>{$t('{{count}} rows', { count: tableEditorSnap.rowsPerPage })}</span>
       </Button>
     </DropdownControl>
   )
@@ -320,8 +324,8 @@ export const Pagination = ({ enableForeignRowsQuery = true }: PaginationProps) =
         <div className="flex items-center gap-x-2">
           {hasCountData && (
             <p className="text-xs text-foreground-light">
-              {`${countString} ${count === 0 || count > 1 ? `records` : 'record'}`}{' '}
-              {data.is_estimate ? '(estimated)' : ''}
+              {`${countString} ${count === 0 || count > 1 ? $t('records') : $t('record')}`}{' '}
+              {data.is_estimate ? $t('(estimated)') : ''}
             </p>
           )}
 
