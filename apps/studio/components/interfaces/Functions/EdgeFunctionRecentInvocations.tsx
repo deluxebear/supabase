@@ -15,11 +15,13 @@ import { t as $t } from '@/lib/i18n'
 interface EdgeFunctionRecentInvocationsProps {
   functionId: string
   functionSlug: string
+  enabled?: boolean
 }
 
 export const EdgeFunctionRecentInvocations = ({
   functionId,
   functionSlug,
+  enabled = true,
 }: EdgeFunctionRecentInvocationsProps) => {
   const { ref } = useParams()
   const router = useRouter()
@@ -29,6 +31,7 @@ export const EdgeFunctionRecentInvocations = ({
     table: LOGS_TABLES.fn_edge,
     filterOverride: { function_id: functionId },
     limit: 10,
+    enabled,
   })
 
   return (
@@ -43,7 +46,7 @@ export const EdgeFunctionRecentInvocations = ({
         <Button
           variant="default"
           loading={isLoading}
-          disabled={isLoading}
+          disabled={!enabled || isLoading}
           icon={<RefreshCw size={14} />}
           onClick={() => refresh()}
         >

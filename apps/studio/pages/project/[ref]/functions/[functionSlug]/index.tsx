@@ -13,6 +13,7 @@ import { PageSection, PageSectionContent } from 'ui-patterns/PageSection'
 import { EdgeFunctionOverview } from '@/components/interfaces/Functions/EdgeFunctionOverview/EdgeFunctionOverview'
 import { EdgeFunctionRecentInvocations } from '@/components/interfaces/Functions/EdgeFunctionRecentInvocations'
 import ReportWidget from '@/components/interfaces/Reports/ReportWidget'
+import { canQueryProjectAnalytics } from '@/components/interfaces/Settings/Logs/LogsPreviewer.utils'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import EdgeFunctionDetailsLayout from '@/components/layouts/EdgeFunctionsLayout/EdgeFunctionDetailsLayout'
 import AreaChart from '@/components/ui/Charts/AreaChart'
@@ -23,8 +24,10 @@ import {
   useFunctionsCombinedStatsQuery,
 } from '@/data/analytics/functions-combined-stats-query'
 import { useEdgeFunctionQuery } from '@/data/edge-functions/edge-function-query'
+import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
 import { useFillTimeseriesSorted } from '@/hooks/analytics/useFillTimeseriesSorted'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 import type { ChartIntervals, NextPageWithLayout } from '@/types'
 
@@ -69,12 +72,25 @@ const LegacyEdgeFunctionOverview = () => {
     projectRef,
     slug: functionSlug,
   })
-  const id = selectedFunction?.id
-  const combinedStatsResults = useFunctionsCombinedStatsQuery({
-    projectRef,
-    functionId: id,
-    interval: selectedInterval.key as FunctionsCombinedStatsVariables['interval'],
+  const { data: project, isPending: isProjectLoading } = useProjectDetailQuery(
+    { ref: projectRef },
+    { enabled: IS_SELF_PLATFORM }
+  )
+  const canQueryAnalytics = canQueryProjectAnalytics({
+    isSelfPlatform: IS_SELF_PLATFORM,
+    isProjectLoading,
+    logflareUrl: project?.self_platform?.logflare_url,
+    hasLogflareToken: project?.self_platform?.secrets_set.logflare_token,
   })
+  const id = selectedFunction?.id
+  const combinedStatsResults = useFunctionsCombinedStatsQuery(
+    {
+      projectRef,
+      functionId: id,
+      interval: selectedInterval.key as FunctionsCombinedStatsVariables['interval'],
+    },
+    { enabled: canQueryAnalytics }
+  )
 
   const combinedStatsData = useMemo(() => {
     const result = combinedStatsResults.data?.result as
@@ -139,6 +155,7 @@ const LegacyEdgeFunctionOverview = () => {
               <EdgeFunctionRecentInvocations
                 functionId={id}
                 functionSlug={functionSlug as string}
+                enabled={canQueryAnalytics}
               />
             </div>
           )}

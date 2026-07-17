@@ -15,6 +15,7 @@ import {
 import { DatePickerValue } from './Logs.DatePickers'
 import type { Filters, LogSearchCallback, LogTemplate, QueryType } from './Logs.types'
 import { maybeShowUpgradePromptIfNotEntitled } from './Logs.utils'
+import { canQueryProjectAnalytics } from './LogsPreviewer.utils'
 import { LogsTableEmptyState } from './LogsTableEmptyState'
 import { LogTable } from './LogTable'
 import UpgradePrompt from './UpgradePrompt'
@@ -105,18 +106,6 @@ interface LogsPreviewerProps {
   filterPanelClassName?: string
 }
 
-export function isProjectAnalyticsConfigured({
-  isSelfPlatform,
-  logflareUrl,
-  hasLogflareToken,
-}: {
-  isSelfPlatform: boolean
-  logflareUrl?: string | null
-  hasLogflareToken?: boolean
-}) {
-  return !isSelfPlatform || Boolean(logflareUrl && hasLogflareToken)
-}
-
 export const LogsPreviewer = ({
   projectRef,
   queryType,
@@ -159,12 +148,12 @@ export const LogsPreviewer = ({
     { enabled: IS_SELF_PLATFORM }
   )
 
-  const isAnalyticsConfigured = isProjectAnalyticsConfigured({
+  const canQueryAnalytics = canQueryProjectAnalytics({
     isSelfPlatform: IS_SELF_PLATFORM,
+    isProjectLoading,
     logflareUrl: project?.self_platform?.logflare_url,
     hasLogflareToken: project?.self_platform?.secrets_set.logflare_token,
   })
-  const canQueryAnalytics = !IS_SELF_PLATFORM || (!isProjectLoading && isAnalyticsConfigured)
 
   // TODO: Move this to useLogsUrlState to simplify LogsPreviewer. - Jordi
   function getDefaultDatePickerValue() {

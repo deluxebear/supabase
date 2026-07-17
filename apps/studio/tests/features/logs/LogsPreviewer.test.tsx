@@ -9,9 +9,12 @@ import { LOGS_API_MOCKS } from './logs.mocks'
 import { LogsTableName } from '@/components/interfaces/Settings/Logs/Logs.constants'
 import {
   calculateBarClickTimeRange,
-  isProjectAnalyticsConfigured,
   LogsPreviewer,
 } from '@/components/interfaces/Settings/Logs/LogsPreviewer'
+import {
+  canQueryProjectAnalytics,
+  isProjectAnalyticsConfigured,
+} from '@/components/interfaces/Settings/Logs/LogsPreviewer.utils'
 import useLogsPreview from '@/hooks/analytics/useLogsPreview'
 import { customRender, customRenderHook } from '@/tests/lib/custom-render'
 import { addAPIMock } from '@/tests/lib/msw'
@@ -150,6 +153,47 @@ describe('isProjectAnalyticsConfigured', () => {
         hasLogflareToken: false,
       })
     ).toBe(false)
+  })
+})
+
+describe('canQueryProjectAnalytics', () => {
+  test('waits for Fleet project metadata before enabling analytics queries', () => {
+    expect(
+      canQueryProjectAnalytics({
+        isSelfPlatform: true,
+        isProjectLoading: true,
+        logflareUrl: 'http://analytics:4000',
+        hasLogflareToken: true,
+      })
+    ).toBe(false)
+  })
+
+  test('disables Fleet analytics queries when the target is not fully configured', () => {
+    expect(
+      canQueryProjectAnalytics({
+        isSelfPlatform: true,
+        isProjectLoading: false,
+        logflareUrl: null,
+        hasLogflareToken: false,
+      })
+    ).toBe(false)
+  })
+
+  test('enables analytics queries for configured Fleet and cloud projects', () => {
+    expect(
+      canQueryProjectAnalytics({
+        isSelfPlatform: true,
+        isProjectLoading: false,
+        logflareUrl: 'http://analytics:4000',
+        hasLogflareToken: true,
+      })
+    ).toBe(true)
+    expect(
+      canQueryProjectAnalytics({
+        isSelfPlatform: false,
+        isProjectLoading: true,
+      })
+    ).toBe(true)
   })
 })
 
