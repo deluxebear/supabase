@@ -55,6 +55,7 @@ import {
 import { t as $t } from '@/lib/i18n'
 
 const REF_REGEX = /^[a-z][a-z0-9-]{2,29}$/
+export const FLEET_ATTACH_DEFAULT_TLS_MODE = 'disable' as const
 
 export function refSuggestion(name: string): string {
   const slug = name
@@ -210,7 +211,7 @@ export const SelfPlatformProjectCreate = () => {
       kongUrl: '',
       restUrl: '',
       keyMode: 'legacy-jwt',
-      tlsMode: 'prefer',
+      tlsMode: FLEET_ATTACH_DEFAULT_TLS_MODE,
       anonKey: '',
       serviceKey: '',
       jwtSecret: '',

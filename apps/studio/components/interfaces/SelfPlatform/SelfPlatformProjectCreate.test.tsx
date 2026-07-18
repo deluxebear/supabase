@@ -4,7 +4,10 @@ import { mockAnimationsApi } from 'jsdom-testing-mocks'
 import { http, HttpResponse } from 'msw'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-import { SelfPlatformProjectCreate } from './SelfPlatformProjectCreate'
+import {
+  FLEET_ATTACH_DEFAULT_TLS_MODE,
+  SelfPlatformProjectCreate,
+} from './SelfPlatformProjectCreate'
 import type {
   ManagementBindingResponse,
   ManagementTargetResponse,
@@ -93,6 +96,10 @@ beforeEach(() => {
 })
 
 describe('SelfPlatformProjectCreate', () => {
+  test('uses the plaintext database mode supported by the managed Compose overlay', () => {
+    expect(FLEET_ATTACH_DEFAULT_TLS_MODE).toBe('disable')
+  })
+
   test('renders the Fleet Attach flow instead of Cloud provisioning fields', async () => {
     customRender(<SelfPlatformProjectCreate />)
 

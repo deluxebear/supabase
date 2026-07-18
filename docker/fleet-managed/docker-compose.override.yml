@@ -109,7 +109,7 @@ services:
       - ${FLEET_FUNCTION_ROOT}:/functions
       - fleet-agent-state:/agent-state
       - ${FLEET_CONFIG_ROOT:?set FLEET_CONFIG_ROOT}:/fleet-config
-      - db-config:/database-state
+      - fleet-database-state:/database-state
       - ./fleet-managed/volumes/db/tls-ca:/database-ca:ro
 
   fleet-agent-bootstrap:
@@ -185,7 +185,7 @@ services:
       - fleet-agent-state:/var/lib/fleet-agent
       - ${FLEET_CONFIG_ROOT:?set FLEET_CONFIG_ROOT}:/var/lib/supabase-fleet/config
       - ${FLEET_FUNCTION_ROOT}:/var/lib/supabase-fleet/functions
-      - db-config:/var/lib/supabase-fleet/database
+      - fleet-database-state:/var/lib/supabase-fleet/database
       - ./fleet-managed/volumes/db/tls-ca:/etc/fleet-agent/tls-ca:ro
     security_opt: [no-new-privileges:true]
     networks:
@@ -222,6 +222,7 @@ volumes:
   managed-db-data:
   managed-storage-data:
   fleet-agent-state:
+  fleet-database-state:
 
 secrets:
   fleet_enrollment_ca:
