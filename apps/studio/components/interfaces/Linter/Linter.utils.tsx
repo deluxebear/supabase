@@ -415,7 +415,7 @@ export const LintCTA = ({
   }
 
   const link = lintInfo.link({ projectRef, metadata })
-  const linkText = lintInfo.linkText
+  const linkText = $t(lintInfo.linkText)
 
   return (
     <Button asChild variant="default">
@@ -446,9 +446,46 @@ export const LintEntity = ({ metadata }: { metadata: Lint['metadata'] }) => {
 export const LintCategoryBadge = ({ category }: { category: string }) => {
   return (
     <Badge variant={category === 'SECURITY' ? 'destructive' : 'warning'}>
-      {category.toLowerCase()}
+      {$t(category.toUpperCase())}
     </Badge>
   )
+}
+
+/** Localized lint title (lintInfoMap English title is the i18n key). */
+export const getLocalizedLintTitle = (lint: Pick<Lint, 'name' | 'title'>): string => {
+  const title = lintInfoMap.find((item) => item.name === lint.name)?.title ?? lint.title
+  return $t(title)
+}
+
+/** Localized static lint description from the linter SQL. */
+export const getLocalizedLintDescription = (lint: Pick<Lint, 'description'>): string => {
+  const description = lint.description?.replace(/\\`/g, '`') ?? ''
+  return description ? $t(description) : description
+}
+
+/**
+ * Localized lint detail. Dynamic entity names use {{entity}} templates so
+ * table/schema values stay as identifiers while surrounding prose translates.
+ */
+export const getLocalizedLintDetail = (lint: Lint): string => {
+  const detail = lint.detail?.replace(/\\`/g, '`') ?? ''
+  const entity = getLintEntityString(lint.metadata)
+
+  if (entity) {
+    // Common linter detail shape: "Table `schema.name` is public, but RLS has not been enabled."
+    if (lint.name === 'rls_disabled_in_public') {
+      return $t('Table `{{entity}}` is public, but RLS has not been enabled.', { entity })
+    }
+    if (lint.name === 'rls_enabled_no_policy') {
+      return $t('Table `{{entity}}` has RLS enabled, but no RLS policies exist.', { entity })
+    }
+    if (lint.name === 'policy_exists_rls_disabled') {
+      return $t('Table `{{entity}}` has RLS policies but RLS is not enabled.', { entity })
+    }
+  }
+
+  // Static or untemplated details: English source string is the catalog key.
+  return detail ? $t(detail) : detail
 }
 
 export const NoIssuesFound = ({ level }: { level: string }) => {

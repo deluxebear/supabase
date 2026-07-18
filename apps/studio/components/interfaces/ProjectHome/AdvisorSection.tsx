@@ -7,7 +7,10 @@ import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { Markdown } from '../Markdown'
 import { LINTER_LEVELS } from '@/components/interfaces/Linter/Linter.constants'
-import { createLintSummaryPrompt } from '@/components/interfaces/Linter/Linter.utils'
+import {
+  createLintSummaryPrompt,
+  getLocalizedLintDetail,
+} from '@/components/interfaces/Linter/Linter.utils'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import type { AdvisorItem } from '@/components/ui/AdvisorPanel/AdvisorPanel.types'
 import {
@@ -16,6 +19,7 @@ import {
   MAX_HOMEPAGE_ADVISOR_ITEMS,
   severityBadgeVariants,
   severityColorClasses,
+  severityLabels,
   sortAdvisorItems,
 } from '@/components/ui/AdvisorPanel/AdvisorPanel.utils'
 import { useAdvisorSignals } from '@/components/ui/AdvisorPanel/useAdvisorSignals'
@@ -59,11 +63,11 @@ export const AdvisorSection = ({ showEmptyState = false }: { showEmptyState?: bo
 
   const titleContent = useMemo(() => {
     if (totalIssues === 0) return <h2>{$t('Advisor found no issues')}</h2>
-    const issuesText = totalIssues === 1 ? 'issue' : 'issues'
-    const numberDisplay = totalIssues.toString()
     return (
       <h2>
-        {$t('Advisor found')} {numberDisplay} {issuesText}
+        {$t('Advisor found {{count}} issue(s)', {
+          count: totalIssues,
+        })}
       </h2>
     )
   }, [totalIssues])
@@ -141,10 +145,14 @@ export const AdvisorSection = ({ showEmptyState = false }: { showEmptyState?: bo
           <Row maxColumns={4} minWidth={280}>
             {visibleAdvisorItems.map((item) => {
               const isLint = item.source === 'lint'
-              const categoryLabel = item.tab === 'performance' ? 'PERFORMANCE' : 'SECURITY'
+              const categoryLabel = $t(item.tab === 'performance' ? 'PERFORMANCE' : 'SECURITY')
               const title = getAdvisorItemDisplayTitle(item)
               const description =
-                item.source === 'signal' ? item.summary : isLint ? item.original.detail : ''
+                item.source === 'signal'
+                  ? $t(item.summary)
+                  : isLint
+                    ? getLocalizedLintDetail(item.original)
+                    : ''
               const cardClasses =
                 item.severity === 'critical'
                   ? 'bg-destructive-200 border-destructive-400'
@@ -182,7 +190,7 @@ export const AdvisorSection = ({ showEmptyState = false }: { showEmptyState?: bo
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant={severityBadgeVariants[item.severity]} className="w-fit">
-                        {item.severity.toUpperCase()}
+                        {$t(severityLabels[item.severity])}
                       </Badge>
                       {isLint && (
                         <div

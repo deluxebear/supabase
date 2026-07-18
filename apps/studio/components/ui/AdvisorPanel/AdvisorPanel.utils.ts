@@ -3,8 +3,9 @@ import { Gauge, Inbox, Shield } from 'lucide-react'
 import type { ElementType } from 'react'
 
 import type { AdvisorItem, AdvisorLintItem, AdvisorNotificationItem } from './AdvisorPanel.types'
-import { lintInfoMap } from '@/components/interfaces/Linter/Linter.utils'
+import { getLocalizedLintTitle } from '@/components/interfaces/Linter/Linter.utils'
 import type { Lint } from '@/data/lint/lint-query'
+import { t as $t } from '@/lib/i18n'
 import type { Notification, NotificationData } from '@/data/notifications/notifications-v2-query'
 import type { AdvisorSeverity, AdvisorTab } from '@/state/advisor-state'
 
@@ -109,17 +110,14 @@ export const formatItemDate = (timestamp: number): string => {
 
 export const getAdvisorItemDisplayTitle = (item: AdvisorItem): string => {
   if (item.source === 'lint') {
-    return (
-      lintInfoMap.find((info) => info.name === item.original.name)?.title ||
-      item.title.replace(/[`\\]/g, '')
-    )
+    return getLocalizedLintTitle(item.original)
   }
 
   if (item.source === 'signal') {
-    return `${item.title}`
+    return $t(item.title)
   }
 
-  return item.title.replace(/[`\\]/g, '')
+  return $t(item.title.replace(/[`\\]/g, ''))
 }
 
 export const getAdvisorPanelItemDisplayTitle = (item: AdvisorItem): string => {

@@ -54,7 +54,7 @@ export const AdvisorPanelHeader = ({ selectedItem, onBack, onClose }: AdvisorPan
         </div>
         {selectedItem && (
           <Badge variant={severityBadgeVariants[selectedItem.severity]}>
-            {severityLabels[selectedItem.severity]}
+            {$t(severityLabels[selectedItem.severity])}
           </Badge>
         )}
       </div>

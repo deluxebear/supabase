@@ -4,8 +4,15 @@ import { Button } from 'ui'
 
 import { Markdown } from '../Markdown'
 import { asGraphqlExposureLint, GraphqlExposureCallout } from './GraphqlExposureLintCTA'
-import { EntityTypeIcon, LintCTA, LintEntity } from './Linter.utils'
-import { createLintSummaryPrompt, lintInfoMap } from '@/components/interfaces/Linter/Linter.utils'
+import {
+  createLintSummaryPrompt,
+  EntityTypeIcon,
+  getLocalizedLintDescription,
+  getLocalizedLintDetail,
+  lintInfoMap,
+  LintCTA,
+  LintEntity,
+} from '@/components/interfaces/Linter/Linter.utils'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
 import { Lint } from '@/data/lint/lint-query'
@@ -63,11 +70,11 @@ export const LintDetail = ({
 
       <h3 className="text-sm mb-2">{$t('Issue')}</h3>
       <Markdown className="leading-6 text-sm text-foreground-light mb-6">
-        {lint.detail.replace(/\\`/g, '`')}
+        {getLocalizedLintDetail(lint)}
       </Markdown>
       <h3 className="text-sm mb-2">{$t('Description')}</h3>
       <Markdown className="text-sm text-foreground-light mb-6">
-        {lint.description.replace(/\\`/g, '`')}
+        {getLocalizedLintDescription(lint)}
       </Markdown>
 
       {isGraphqlExposureLint && (
