@@ -384,7 +384,9 @@ export const SelfPlatformConnectionPanel = () => {
         {serverError !== undefined && (
           <Alert variant="warning">
             <WarningIcon />
-            <AlertDescription>{serverError}</AlertDescription>
+            <AlertDescription className="whitespace-pre-wrap break-words">
+              {serverError}
+            </AlertDescription>
           </Alert>
         )}
 
@@ -457,6 +459,9 @@ export const SelfPlatformConnectionPanel = () => {
                       name="tlsMode"
                       layout="vertical"
                       label={$t('Database TLS mode')}
+                      description={$t(
+                        'Saving re-runs attachment preflight. Prefer/require need a Postgres that accepts SSL; local Compose stacks usually use disable.'
+                      )}
                     >
                       <FormControl>
                         <Select

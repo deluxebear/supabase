@@ -3,8 +3,10 @@ import { toast } from 'sonner'
 
 import { projectKeys } from './keys'
 import { useInvalidateProjectsInfiniteQuery } from './org-projects-infinite-query'
+import { formatAttachmentPreflightError } from './self-platform-preflight-error'
 import { handleError, patch } from '@/data/fetchers'
 import { serviceStatusKeys } from '@/data/service-status/keys'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type SelfPlatformConnectionPatch = {
@@ -137,7 +139,15 @@ export async function updateSelfPlatformProject({
     params: { path: { ref } },
     body: body as unknown as { name: string },
   })
-  if (error) handleError(error)
+  if (error) {
+    // Surface which attachment preflight checks failed (TLS/DB/gateway/etc).
+    // The API already returns a structured report; fold it into the thrown message
+    // so Connection configuration can show actionable diagnostics.
+    const preflightMessage = formatAttachmentPreflightError(error)
+    handleError(
+      preflightMessage ? { ...(error as object), message: preflightMessage } : error
+    )
+  }
   return data as unknown as SelfPlatformProjectUpdateResponse
 }
 
@@ -172,7 +182,7 @@ export const useSelfPlatformProjectUpdateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update project: ${data.message}`)
+        toast.error($t('Failed to update project: {{message}}', { message: data.message }))
       } else {
         onError(data, variables, context)
       }
