@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  activateConnectionCandidate,
   activateStagedAttachment,
   AttachmentActivationBlocked,
   buildCandidateConnectionString,
   CapabilityUnavailable,
+  deriveConnectionActivationCapabilities,
   derivePreflightCapabilities,
   DetachOperationConflict,
   detachProject,
@@ -289,6 +291,60 @@ describe('capability and detach boundaries', () => {
       mode: 'agent',
       blockers: [{ code: 'agent_capability_unavailable' }],
     })
+  })
+
+  it('keeps management trust capabilities out of connection revision activation', () => {
+    const report = {
+      contractVersion: 'v1' as const,
+      startedAt: '2026-07-15T00:00:00.000Z',
+      completedAt: '2026-07-15T00:00:01.000Z',
+      outcome: 'pass' as const,
+      stackFingerprint: 'a'.repeat(64),
+      checks: [
+        { name: 'metadata-permissions', status: 'pass' as const, required: true, message: 'ok' },
+        { name: 'auth', status: 'pass' as const, required: true, message: 'ok' },
+        { name: 'storage', status: 'pass' as const, required: true, message: 'ok' },
+        { name: 'realtime', status: 'pass' as const, required: false, message: 'ok' },
+      ],
+    }
+
+    const capabilities = deriveConnectionActivationCapabilities(report)
+
+    expect(capabilities.some((item) => item.name.startsWith('management.'))).toBe(false)
+    expect(capabilities.find((item) => item.name === 'project.connection.update')?.state).toBe(
+      'available'
+    )
+  })
+
+  it('does not persist management trust capabilities when activating a connection candidate', async () => {
+    const report = {
+      contractVersion: 'v1' as const,
+      startedAt: '2026-07-15T00:00:00.000Z',
+      completedAt: '2026-07-15T00:00:01.000Z',
+      outcome: 'pass' as const,
+      stackFingerprint: 'a'.repeat(64),
+      checks: [
+        { name: 'metadata-permissions', status: 'pass' as const, required: true, message: 'ok' },
+        { name: 'auth', status: 'pass' as const, required: true, message: 'ok' },
+        { name: 'storage', status: 'pass' as const, required: true, message: 'ok' },
+        { name: 'realtime', status: 'pass' as const, required: false, message: 'ok' },
+      ],
+    }
+    vi.mocked(executePlatformQuery).mockResolvedValue({ data: [{ revision: 2 }], error: undefined })
+
+    await activateConnectionCandidate({
+      id: 2,
+      projectRef: 'project-a',
+      connection: LEGACY_CONNECTION,
+      report,
+      actor: 'owner-a',
+      correlationId: 'corr-a',
+    })
+
+    const capabilitySnapshot = JSON.parse(
+      String(vi.mocked(executePlatformQuery).mock.calls[0][0].parameters?.[6])
+    ) as Array<{ name: string }>
+    expect(capabilitySnapshot.some((item) => item.name.startsWith('management.'))).toBe(false)
   })
 })
 

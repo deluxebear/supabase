@@ -446,6 +446,14 @@ export function derivePreflightCapabilities(
   return capabilities
 }
 
+export function deriveConnectionActivationCapabilities(
+  report: AttachmentPreflightReport
+): ProjectCapabilityRecord[] {
+  return derivePreflightCapabilities(report).filter(
+    (capability) => !capability.name.startsWith('management.')
+  )
+}
+
 export async function findAttachedFingerprint(
   fingerprint: string,
   excludingProjectRef?: string
@@ -1068,7 +1076,10 @@ export async function activateConnectionCandidate(input: {
   if (input.report.outcome !== 'pass' || !input.report.stackFingerprint) {
     throw new AttachmentPreflightFailed(input.report)
   }
-  const capabilities = derivePreflightCapabilities(input.report)
+  // Connection preflight is not authoritative for management trust. Those
+  // capabilities are owned by bind/revoke/sync management operations and must
+  // survive an otherwise unrelated connection revision activation.
+  const capabilities = deriveConnectionActivationCapabilities(input.report)
   const result = await executePlatformQuery<{ revision: number }>({
     query: `with eligible as (
         select candidate.id, active.revision as active_revision
