@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -35,6 +36,24 @@ func TestExecutorAppliesOwnedComposeRevisionAndReplays(t *testing.T) {
 	replayed := executor.Execute(context.Background(), task, nil)
 	if string(replayed.GetReconcileConfiguration().GetEvidenceJson()) != string(result.GetReconcileConfiguration().GetEvidenceJson()) {
 		t.Fatal("durable replay returned different evidence")
+	}
+}
+
+func TestExecutorHonorsObservationOnlyPreconditionForDirectManagedConfiguration(t *testing.T) {
+	t.Parallel()
+	root := t.TempDir()
+	executor, cleanup := newExecutor(t, root)
+	defer cleanup()
+	task := reconcileTask(t, fleetproviders.DirectManaged)
+	task.Preconditions = map[string]string{"observationOnly": "true"}
+
+	result := executor.Execute(context.Background(), task, nil)
+	var evidence fleetproviders.Evidence
+	if typed := result.GetReconcileConfiguration(); typed == nil || json.Unmarshal(typed.GetEvidenceJson(), &evidence) != nil || !evidence.ObservationOnly || evidence.Applied || evidence.DriftState != "drifted" {
+		t.Fatalf("observation-only result = %#v evidence=%#v", result, evidence)
+	}
+	if _, err := os.Stat(filepath.Join(root, "auth")); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("observation-only task mutated the target: %v", err)
 	}
 }
 

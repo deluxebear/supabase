@@ -232,17 +232,11 @@ func (s *AgentServer) handleAgentMessage(stream fleetagentv1.FleetAgentControlSe
 		if json.Unmarshal(typed.GetEvidenceJson(), &evidence) != nil || evidence.Schema != fleetproviders.EvidenceSchemaV1 || evidence.ObservedGeneration != (*active).ExpectedGeneration || evidence.Adapter == "" || evidence.OwnershipMode == "" || len(evidence.Conflicts) > 256 {
 			return status.Error(codes.InvalidArgument, "Fleet Agent reconciliation evidence is invalid")
 		}
-		// A typed observation is not proof that the desired configuration was
-		// atomically applied. Fail closed unless the provider explicitly reports
-		// Applied=true; the platform projector must never turn drift-only evidence
-		// or a partial write into an applied desired revision.
-		completion.Succeeded = evidence.Applied && evidence.DriftState != "ownership-conflict"
+		// A normal reconciliation succeeds only after the provider proves the
+		// desired state was applied. An explicitly observation-only task succeeds
+		// with typed drift evidence without claiming that any write occurred.
+		completion.Succeeded, completion.ErrorCode = configurationCompletion(evidence)
 		completion.Evidence = append(json.RawMessage(nil), typed.GetEvidenceJson()...)
-		if evidence.DriftState == "ownership-conflict" {
-			completion.ErrorCode = "ownership_conflict"
-		} else if !completion.Succeeded {
-			completion.ErrorCode = "configuration_not_applied"
-		}
 	} else if typed := result.GetReconcileDatabaseSecurity(); typed != nil {
 		var evidence fleetdatabase.Evidence
 		if json.Unmarshal(typed.GetEvidenceJson(), &evidence) != nil || evidence.Schema != fleetdatabase.EvidenceSchemaV1 || evidence.ObservedGeneration != (*active).ExpectedGeneration || evidence.Adapter == "" {
@@ -322,6 +316,19 @@ func (s *AgentServer) handleAgentMessage(stream fleetagentv1.FleetAgentControlSe
 	}
 	*active = nil
 	return nil
+}
+
+func configurationCompletion(evidence fleetproviders.Evidence) (bool, string) {
+	if evidence.DriftState == "ownership-conflict" {
+		return false, "ownership_conflict"
+	}
+	if evidence.ObservationOnly {
+		return true, ""
+	}
+	if evidence.Applied {
+		return true, ""
+	}
+	return false, "configuration_not_applied"
 }
 
 func (s *AgentServer) taskMessage(operation ClaimedOperation) (*fleetagentv1.TypedTask, error) {

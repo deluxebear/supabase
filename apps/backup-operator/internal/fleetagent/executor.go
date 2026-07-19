@@ -141,7 +141,8 @@ func (e *Executor) ExecuteWithArtifacts(ctx context.Context, task *fleetagentv1.
 		input := task.GetReconcileConfiguration()
 		evidence, reconcileErr := e.Providers.Reconcile(deadlineCtx, fleetproviders.Request{
 			OperationID: identity.GetOperationId(), ProjectRef: identity.GetProjectRef(), TargetID: identity.GetTargetId(), BindingID: identity.GetBindingId(),
-			Domain: task.GetDomain(), ExpectedGeneration: identity.GetExpectedGeneration(), DesiredDigest: input.GetDesiredDigest(), Document: configuration,
+			Domain: task.GetDomain(), ExpectedGeneration: identity.GetExpectedGeneration(), DesiredDigest: input.GetDesiredDigest(),
+			ObservationOnly: task.GetPreconditions()["observationOnly"] == "true", Document: configuration,
 		})
 		if reconcileErr == nil || errors.As(reconcileErr, new(*fleetproviders.OwnershipConflictError)) {
 			raw, err := json.Marshal(evidence)

@@ -84,7 +84,7 @@ func (p KubernetesProvider) Reconcile(ctx context.Context, request Request) (Evi
 	for _, resource := range observation.Resources {
 		drifted = drifted || !resource.DesiredMatch
 	}
-	if request.Document.OwnershipMode != DirectManaged {
+	if request.ObservationOnly || request.Document.OwnershipMode != DirectManaged {
 		state := "in-sync"
 		if drifted {
 			state = "drifted"

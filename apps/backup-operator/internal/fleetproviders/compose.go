@@ -66,7 +66,7 @@ func (p ComposeProvider) Reconcile(ctx context.Context, request Request) (Eviden
 	}
 	desired := composeDigests(request.Document.Compose.Files)
 	inSync := sameDigests(current.Files, desired)
-	if request.Document.OwnershipMode == ObserveOnly || request.Document.OwnershipMode == GitOpsManaged {
+	if request.ObservationOnly || request.Document.OwnershipMode == ObserveOnly || request.Document.OwnershipMode == GitOpsManaged {
 		state := "in-sync"
 		if !inSync {
 			state = "drifted"

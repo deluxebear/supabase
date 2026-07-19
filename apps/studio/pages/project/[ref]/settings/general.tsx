@@ -13,7 +13,6 @@ import { SelfPlatformAttachmentStatusPanel } from '@/components/interfaces/SelfP
 import { SelfPlatformConnectionPanel } from '@/components/interfaces/SelfPlatform/SelfPlatformConnectionPanel'
 import { SelfPlatformDeleteProjectPanel } from '@/components/interfaces/SelfPlatform/SelfPlatformDeleteProjectPanel'
 import { SelfPlatformManagementTrustPanel } from '@/components/interfaces/SelfPlatform/SelfPlatformManagementTrustPanel'
-import { SelfPlatformOwnershipPolicyPanel } from '@/components/interfaces/SelfPlatform/SelfPlatformOwnershipPolicyPanel'
 import { ComplianceConfig } from '@/components/interfaces/Settings/General/ComplianceConfig/ProjectComplianceMode'
 import { CustomDomainConfig } from '@/components/interfaces/Settings/General/CustomDomainConfig/CustomDomainConfig'
 import { DeleteBranchPanel } from '@/components/interfaces/Settings/General/DeleteBranchPanel'
@@ -64,7 +63,6 @@ const ProjectSettings: NextPageWithLayout = () => {
           <>
             <SelfPlatformAttachmentStatusPanel />
             <SelfPlatformManagementTrustPanel />
-            <SelfPlatformOwnershipPolicyPanel />
             <SelfPlatformConnectionPanel />
             <SelfPlatformDeleteProjectPanel />
           </>

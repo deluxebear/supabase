@@ -71,6 +71,7 @@ type Request struct {
 	Domain             string
 	ExpectedGeneration int64
 	DesiredDigest      string
+	ObservationOnly    bool
 	Document           ConfigurationDocument
 }
 
@@ -89,6 +90,7 @@ type Evidence struct {
 	Adapter            AdapterKind     `json:"adapter"`
 	DriftState         string          `json:"driftState"`
 	Applied            bool            `json:"applied"`
+	ObservationOnly    bool            `json:"observationOnly,omitempty"`
 	ObservedGeneration int64           `json:"observedGeneration"`
 	ObservedDocument   json.RawMessage `json:"observedDocument"`
 	ObservedDigest     string          `json:"observedDigest"`
@@ -194,6 +196,7 @@ func NewEvidence(request Request, observed any, driftState string, applied bool,
 	return Evidence{
 		Schema: EvidenceSchemaV1, OwnershipMode: request.Document.OwnershipMode,
 		Adapter: request.Document.Adapter, DriftState: driftState, Applied: applied,
+		ObservationOnly:    request.ObservationOnly || request.Document.OwnershipMode != DirectManaged,
 		ObservedGeneration: request.ExpectedGeneration, ObservedDocument: raw,
 		ObservedDigest: hex.EncodeToString(digest[:]), Conflicts: conflicts,
 	}, nil

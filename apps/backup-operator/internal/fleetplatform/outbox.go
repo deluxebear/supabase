@@ -193,11 +193,11 @@ $1,$2,$3::uuid,$4,$5
 	}
 	var applied bool
 	err = s.db.QueryRowContext(ctx, `SELECT platform.apply_configuration_reconciliation_evidence(
-$1,$2,$3,$4::uuid,$5,$6::jsonb,$7,$8,$9,$10,$11::jsonb,$12,$13::timestamptz
+$1,$2,$3,$4::uuid,$5,$6::jsonb,$7,$8,$9,$10,$11,$12::jsonb,$13,$14::timestamptz
 )`, candidate.ProjectRef, candidate.Domain, candidate.PolicyRevision,
 		candidate.DesiredRevision, candidate.DesiredGeneration,
 		string(evidence.ObservedDocument), evidence.ObservedDigest, candidate.OperationID,
-		evidence.DriftState, evidence.Applied && operationState == "succeeded", string(blockers),
+		evidence.DriftState, evidence.Applied && operationState == "succeeded", evidence.ObservationOnly, string(blockers),
 		errorCode, time.Now().UTC()).Scan(&applied)
 	return applied, err
 }
@@ -401,7 +401,7 @@ func (c Config) ProjectConfigurationOnce(ctx context.Context) (bool, error) {
 		evidence.ObservedGeneration == candidate.DesiredGeneration &&
 		len(evidence.ObservedDigest) == 64 && json.Valid(evidence.ObservedDocument) &&
 		(evidence.DriftState == "in-sync" || evidence.DriftState == "drifted" || evidence.DriftState == "ownership-conflict")
-	if operation.State == "succeeded" && (!validEvidence || !evidence.Applied) {
+	if operation.State == "succeeded" && (!validEvidence || (!evidence.Applied && !evidence.ObservationOnly)) {
 		return true, &FleetError{Code: "downstream_invalid_response", Message: "Fleet Control marked unapplied configuration evidence as applied", Retryable: false}
 	}
 	var typedEvidence *fleetproviders.Evidence

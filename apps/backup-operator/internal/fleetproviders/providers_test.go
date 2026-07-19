@@ -35,6 +35,16 @@ func TestComposeOwnershipModes(t *testing.T) {
 	}
 
 	request.Document.OwnershipMode = DirectManaged
+	request.ObservationOnly = true
+	evidence, err = provider.Reconcile(context.Background(), request)
+	if err != nil || evidence.Applied || !evidence.ObservationOnly || evidence.DriftState != "drifted" {
+		t.Fatalf("direct-managed drift-check evidence = %#v, %v", evidence, err)
+	}
+	if _, err := os.Stat(filepath.Join(root, "auth")); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("direct-managed drift check mutated the target: %v", err)
+	}
+
+	request.ObservationOnly = false
 	evidence, err = provider.Reconcile(context.Background(), request)
 	if err != nil || !evidence.Applied || evidence.DriftState != "in-sync" {
 		t.Fatalf("direct-managed evidence = %#v, %v", evidence, err)
@@ -92,6 +102,12 @@ func TestKubernetesOwnershipModesAndFieldConflict(t *testing.T) {
 		t.Fatalf("GitOps evidence = %#v, applies=%d, err=%v", evidence, client.applies, err)
 	}
 	request.Document.OwnershipMode = DirectManaged
+	request.ObservationOnly = true
+	evidence, err = provider.Reconcile(context.Background(), request)
+	if err != nil || evidence.Applied || !evidence.ObservationOnly || evidence.DriftState != "drifted" || client.applies != 0 {
+		t.Fatalf("direct-managed drift-check evidence = %#v, applies=%d, err=%v", evidence, client.applies, err)
+	}
+	request.ObservationOnly = false
 	evidence, err = provider.Reconcile(context.Background(), request)
 	if err != nil || !evidence.Applied || client.applies != 1 || client.fieldManager != KubernetesFieldManager || client.force {
 		t.Fatalf("direct-managed evidence = %#v, client=%#v, err=%v", evidence, client, err)
