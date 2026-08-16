@@ -42,7 +42,7 @@ const User: NextPageWithLayout = () => {
 
 User.getLayout = (page) => (
   <AppLayout>
-    <DefaultLayout headerTitle={IS_PLATFORM ? $t('Account') : $t('Preferences')}>
+    <DefaultLayout headerTitle={IS_PLATFORM ? 'Account' : 'Preferences'}>
       <AccountLayout title={$t('Preferences')}>{page}</AccountLayout>
     </DefaultLayout>
   </AppLayout>
@@ -153,7 +153,7 @@ const ProfileLoadingSections = ({
     <PageSection>
       <PageSectionMeta>
         <PageSectionSummary>
-          <PageSectionTitle>{$t('Account identities')}</PageSectionTitle>
+          <PageSectionTitle>{$t('Sign-in methods')}</PageSectionTitle>
           <PageSectionDescription>
             {$t('Manage the providers linked to your Supabase account and update their details.')}
           </PageSectionDescription>

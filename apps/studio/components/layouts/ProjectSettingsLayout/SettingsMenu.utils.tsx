@@ -2,12 +2,12 @@ import { useFlag, useParams } from 'common'
 import { ArrowUpRight } from 'lucide-react'
 
 import { useIsPlatformWebhooksEnabled } from '@/components/interfaces/App/FeaturePreview/FeaturePreviewContext'
+import { getInfrastructurePath } from '@/components/interfaces/Settings/Infrastructure/Infrastructure.utils'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM, PROJECT_STATUS } from '@/lib/constants'
 import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
-import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 export const useGenerateSettingsMenu = () => {
@@ -39,22 +39,22 @@ export const useGenerateSettingsMenu = () => {
   if (!IS_PLATFORM) {
     return [
       {
-        title: $t('Configuration'),
+        title: 'Configuration',
         items: [
           {
-            name: $t('General'),
+            name: 'General',
             key: 'general',
             url: `/project/${ref}/settings/general`,
             items: [],
           },
           {
-            name: $t('API Keys'),
+            name: 'API Keys',
             key: 'api-keys',
             url: `/project/${ref}/settings/api-keys`,
             items: [],
           },
           {
-            name: $t('JWT Keys'),
+            name: 'JWT Keys',
             key: 'jwt',
             url: legacyJwtKeysEnabled
               ? `/project/${ref}/settings/jwt`
@@ -75,22 +75,22 @@ export const useGenerateSettingsMenu = () => {
         ],
       },
       {
-        title: $t('Integrations'),
+        title: 'Integrations',
         items: [
           {
-            name: $t('Data API'),
+            name: 'Data API',
             key: 'api',
             url: `/project/${ref}/integrations/data_api/overview`,
             items: [],
             rightIcon: <ArrowUpRight strokeWidth={1} className="h-4 w-4" />,
           },
           {
-            name: $t('Vault'),
+            name: 'Vault',
             key: 'vault',
             url: `/project/${ref}/integrations/vault/overview`,
             items: [],
             rightIcon: <ArrowUpRight strokeWidth={1} className="h-4 w-4" />,
-            label: $t('Beta'),
+            label: 'Beta',
           },
         ],
       },
@@ -99,32 +99,19 @@ export const useGenerateSettingsMenu = () => {
 
   return [
     {
-      title: $t('Configuration'),
+      title: 'Configuration',
       items: [
         {
-          name: $t('General'),
+          name: 'General',
           key: 'general',
           url: `/project/${ref}/settings/general`,
           items: [],
           shortcutId: SHORTCUT_IDS.NAV_PROJECT_SETTINGS_GENERAL,
         },
-        ...(STUDIO_CAPABILITIES.cloudManagementApi
-          ? [
-              {
-                name: $t('Compute and Disk'),
-                key: 'compute-and-disk',
-                url: `/project/${ref}/settings/compute-and-disk`,
-                items: [],
-                disabled: !isProjectActive,
-                isLoading: isPending,
-                shortcutId: SHORTCUT_IDS.NAV_PROJECT_SETTINGS_COMPUTE_AND_DISK,
-              },
-            ]
-          : []),
         {
-          name: $t('Infrastructure'),
+          name: 'Infrastructure',
           key: 'infrastructure',
-          url: `/project/${ref}/settings/infrastructure`,
+          url: getInfrastructurePath(ref),
           items: [],
           disabled: !isProjectActive,
           isLoading: isPending,
@@ -134,7 +121,7 @@ export const useGenerateSettingsMenu = () => {
         ...(STUDIO_CAPABILITIES.hostedMarketplaceIntegrations
           ? [
               {
-                name: $t('Integrations'),
+                name: 'Integrations',
                 key: 'integrations',
                 url: `/project/${ref}/settings/integrations`,
                 items: [],
@@ -147,7 +134,7 @@ export const useGenerateSettingsMenu = () => {
         ...(platformWebhooksEnabled
           ? [
               {
-                name: $t('Webhooks'),
+                name: 'Webhooks',
                 key: 'webhooks',
                 url: `/project/${ref}/settings/webhooks`,
                 items: [],
@@ -159,7 +146,7 @@ export const useGenerateSettingsMenu = () => {
           : []),
 
         {
-          name: $t('API Keys'),
+          name: 'API Keys',
           key: 'api-keys',
           url: `/project/${ref}/settings/api-keys`,
           items: [],
@@ -168,7 +155,7 @@ export const useGenerateSettingsMenu = () => {
           shortcutId: SHORTCUT_IDS.NAV_PROJECT_SETTINGS_API_KEYS,
         },
         {
-          name: $t('JWT Keys'),
+          name: 'JWT Keys',
           key: 'jwt',
           url: legacyJwtKeysEnabled
             ? `/project/${ref}/settings/jwt`
@@ -193,7 +180,7 @@ export const useGenerateSettingsMenu = () => {
             ]
           : []),
         {
-          name: $t('Add-ons'),
+          name: 'Add-ons',
           key: 'addons',
           url: `/project/${ref}/settings/addons`,
           items: [],
@@ -202,7 +189,7 @@ export const useGenerateSettingsMenu = () => {
         ...(showDashboardPreferences
           ? [
               {
-                name: $t('Dashboard'),
+                name: 'Dashboard',
                 key: 'dashboard',
                 url: `/project/${ref}/settings/dashboard`,
                 items: [],
@@ -213,10 +200,10 @@ export const useGenerateSettingsMenu = () => {
       ],
     },
     {
-      title: $t('Integrations'),
+      title: 'Integrations',
       items: [
         {
-          name: $t('Data API'),
+          name: 'Data API',
           key: 'api',
           url: `/project/${ref}/integrations/data_api/overview`,
           items: [],
@@ -225,24 +212,24 @@ export const useGenerateSettingsMenu = () => {
           isLoading: isPending,
         },
         {
-          name: $t('Vault'),
+          name: 'Vault',
           key: 'vault',
           url: `/project/${ref}/integrations/vault/overview`,
           items: [],
           rightIcon: <ArrowUpRight strokeWidth={1} className="h-4 w-4" />,
-          label: $t('Beta'),
+          label: 'Beta',
           disabled: !isProjectActive,
           isLoading: isPending,
         },
       ],
     },
     {
-      title: $t('Billing'),
+      title: 'Billing',
       items: [
         ...(STUDIO_CAPABILITIES.hostedBilling && billingEnabled
           ? [
               {
-                name: $t('Subscription'),
+                name: 'Subscription',
                 key: 'subscription',
                 url: `/org/${organization?.slug}/billing`,
                 items: [],
@@ -253,7 +240,7 @@ export const useGenerateSettingsMenu = () => {
         ...(STUDIO_CAPABILITIES.hostedOrganizationUsage
           ? [
               {
-                name: $t('Usage'),
+                name: 'Usage',
                 key: 'usage',
                 url: `/org/${organization?.slug}/usage?projectRef=${ref}`,
                 items: [],

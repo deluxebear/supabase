@@ -22,7 +22,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { usePreventNavigationOnUnsavedChanges } from '@/hooks/ui/usePreventNavigationOnUnsavedChanges'
-import { BASE_PATH } from '@/lib/constants'
+import { BASE_PATH, DOCS_URL } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
@@ -178,7 +178,7 @@ const CodePage = () => {
                 </li>
                 <li>
                   {$t('3. Or use the')}{' '}
-                  <InlineLink href="https://supabase.com/docs/reference/api/v1-deploy-a-function">
+                  <InlineLink href={`${DOCS_URL}/reference/api/v1-deploy-a-function`}>
                     {$t('Management API')}
                   </InlineLink>
                 </li>
@@ -263,7 +263,7 @@ const CodePage = () => {
 CodePage.getLayout = (page: React.ReactNode) => {
   return (
     <DefaultLayout>
-      <EdgeFunctionDetailsLayout title={$t('Code')}>{page}</EdgeFunctionDetailsLayout>
+      <EdgeFunctionDetailsLayout title={'Code'}>{page}</EdgeFunctionDetailsLayout>
     </DefaultLayout>
   )
 }

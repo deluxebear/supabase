@@ -4,7 +4,7 @@ import { useParams } from 'common'
 import { ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import {
   Alert,
@@ -83,6 +83,10 @@ export const BasicAuthSettingsForm = () => {
     },
   })
   const { isDirty } = form.formState
+  const externalAnonymousUsersEnabled = useWatch({
+    control: form.control,
+    name: 'EXTERNAL_ANONYMOUS_USERS_ENABLED',
+  })
 
   useEffect(() => {
     if (authConfig) {
@@ -253,7 +257,7 @@ export const BasicAuthSettingsForm = () => {
                     )}
                   />
 
-                  {form.watch('EXTERNAL_ANONYMOUS_USERS_ENABLED') && (
+                  {externalAnonymousUsersEnabled && (
                     <Alert
                       className="flex w-full items-center justify-between mt-4"
                       variant="warning"
@@ -296,24 +300,23 @@ export const BasicAuthSettingsForm = () => {
                     </Alert>
                   )}
 
-                  {!authConfig?.SECURITY_CAPTCHA_ENABLED &&
-                    form.watch('EXTERNAL_ANONYMOUS_USERS_ENABLED') && (
-                      <Alert className="mt-4">
-                        <WarningIcon />
-                        <AlertTitle>
-                          {$t('We highly recommend')}{' '}
-                          <InlineLink href={`/project/${projectRef}/auth/protection`}>
-                            {$t('enabling captcha')}
-                          </InlineLink>{' '}
-                          {$t('for anonymous sign-ins')}
-                        </AlertTitle>
-                        <AlertDescription>
-                          {$t(
-                            'This will prevent potential abuse on sign-ins which may bloat your database and incur costs for monthly active users (MAU)'
-                          )}
-                        </AlertDescription>
-                      </Alert>
-                    )}
+                  {!authConfig?.SECURITY_CAPTCHA_ENABLED && externalAnonymousUsersEnabled && (
+                    <Alert className="mt-4">
+                      <WarningIcon />
+                      <AlertTitle>
+                        {$t('We highly recommend')}{' '}
+                        <InlineLink href={`/project/${projectRef}/auth/protection`}>
+                          {$t('enabling captcha')}
+                        </InlineLink>{' '}
+                        {$t('for anonymous sign-ins')}
+                      </AlertTitle>
+                      <AlertDescription>
+                        {$t(
+                          'This will prevent potential abuse on sign-ins which may bloat your database and incur costs for monthly active users (MAU)'
+                        )}
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </CardContent>
                 <CardContent>
                   <FormField

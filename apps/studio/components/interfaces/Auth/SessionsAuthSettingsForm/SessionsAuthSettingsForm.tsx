@@ -49,6 +49,16 @@ function HoursOrNeverText({ value }: { value: number }) {
   }
 }
 
+const MAX_JWT_EXP = 604800
+
+const AccessTokenSchema = z.object({
+  JWT_EXP: z.coerce
+    .number()
+    .int('Must be a whole number')
+    .positive('Must be greater than 0')
+    .max(MAX_JWT_EXP, `Must be less than ${MAX_JWT_EXP}`),
+})
+
 const RefreshTokenSchema = z.object({
   REFRESH_TOKEN_ROTATION_ENABLED: z.boolean(),
   SECURITY_REFRESH_TOKEN_REUSE_INTERVAL: z.coerce.number().min(0, 'Must be a value more than 0'),
@@ -74,6 +84,7 @@ export const SessionsAuthSettingsForm = () => {
   const { mutate: updateAuthConfig } = useAuthConfigUpdateMutation()
 
   // Separate loading states for each form
+  const [isUpdatingAccessToken, setIsUpdatingAccessToken] = useState(false)
   const [isUpdatingRefreshTokens, setIsUpdatingRefreshTokens] = useState(false)
   const [isUpdatingUserSessions, setIsUpdatingUserSessions] = useState(false)
 
@@ -89,6 +100,13 @@ export const SessionsAuthSettingsForm = () => {
   const { hasAccess: hasUserSessionsEntitlement, isLoading: isLoadingEntitlements } =
     useCheckEntitlements('auth.user_sessions')
   const promptProPlanUpgrade = IS_PLATFORM && !hasUserSessionsEntitlement
+
+  const accessTokenForm = useForm<z.infer<typeof AccessTokenSchema>>({
+    resolver: zodResolver(AccessTokenSchema),
+    defaultValues: {
+      JWT_EXP: 3600,
+    },
+  })
 
   const refreshTokenForm = useForm<z.infer<typeof RefreshTokenSchema>>({
     resolver: zodResolver(RefreshTokenSchema),
@@ -110,6 +128,12 @@ export const SessionsAuthSettingsForm = () => {
   useEffect(() => {
     if (authConfig) {
       // Only reset forms if they're not currently being updated
+      if (!isUpdatingAccessToken) {
+        accessTokenForm.reset({
+          JWT_EXP: authConfig.JWT_EXP ?? 3600,
+        })
+      }
+
       if (!isUpdatingRefreshTokens) {
         refreshTokenForm.reset({
           REFRESH_TOKEN_ROTATION_ENABLED: authConfig.REFRESH_TOKEN_ROTATION_ENABLED || false,
@@ -125,7 +149,26 @@ export const SessionsAuthSettingsForm = () => {
         })
       }
     }
-  }, [authConfig, isUpdatingRefreshTokens, isUpdatingUserSessions])
+  }, [authConfig, isUpdatingAccessToken, isUpdatingRefreshTokens, isUpdatingUserSessions])
+
+  const onSubmitAccessToken = (values: z.infer<typeof AccessTokenSchema>) => {
+    const payload = { ...values }
+    setIsUpdatingAccessToken(true)
+
+    updateAuthConfig(
+      { projectRef: projectRef!, config: payload },
+      {
+        onError: (error) => {
+          toast.error(`Failed to update access token settings: ${error?.message}`)
+          setIsUpdatingAccessToken(false)
+        },
+        onSuccess: () => {
+          toast.success($t('Successfully updated access token settings'))
+          setIsUpdatingAccessToken(false)
+        },
+      }
+    )
+  }
 
   const onSubmitRefreshTokens = (values: any) => {
     const payload = { ...values }
@@ -197,96 +240,6 @@ export const SessionsAuthSettingsForm = () => {
 
   return (
     <>
-      <PageSection>
-        <PageSectionMeta>
-          <PageSectionSummary>
-            <PageSectionTitle>{$t('Refresh Tokens')}</PageSectionTitle>
-          </PageSectionSummary>
-        </PageSectionMeta>
-        <PageSectionContent>
-          <Form {...refreshTokenForm}>
-            <form
-              onSubmit={refreshTokenForm.handleSubmit(onSubmitRefreshTokens)}
-              className="space-y-4"
-            >
-              <Card>
-                <CardContent>
-                  <FormField
-                    control={refreshTokenForm.control}
-                    name="REFRESH_TOKEN_ROTATION_ENABLED"
-                    render={({ field }) => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label={$t('Detect and revoke potentially compromised refresh tokens')}
-                        description={$t(
-                          'Prevent replay attacks from potentially compromised refresh tokens.'
-                        )}
-                      >
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            disabled={!canUpdateConfig}
-                          />
-                        </FormControl>
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-                <CardContent>
-                  <FormField
-                    control={refreshTokenForm.control}
-                    name="SECURITY_REFRESH_TOKEN_REUSE_INTERVAL"
-                    render={({ field }) => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label={$t('Refresh token reuse interval')}
-                        description={$t(
-                          'Time interval where the same refresh token can be used multiple times to request for an access token. Recommendation: 10 seconds.'
-                        )}
-                      >
-                        <FormControl className="w-full">
-                          <InputGroup>
-                            <FormInputGroupInput
-                              type="number"
-                              min={0}
-                              {...field}
-                              disabled={!canUpdateConfig}
-                            />
-                            <InputGroupAddon align="inline-end">
-                              <InputGroupText>seconds</InputGroupText>
-                            </InputGroupAddon>
-                          </InputGroup>
-                        </FormControl>
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-                <CardFooter className="justify-end space-x-2">
-                  {refreshTokenForm.formState.isDirty && (
-                    <Button variant="default" onClick={() => refreshTokenForm.reset()}>
-                      {$t('Cancel')}
-                    </Button>
-                  )}
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    disabled={
-                      !canUpdateConfig ||
-                      isUpdatingRefreshTokens ||
-                      !refreshTokenForm.formState.isDirty
-                    }
-                    loading={isUpdatingRefreshTokens}
-                  >
-                    {$t('Save changes')}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </form>
-          </Form>
-        </PageSectionContent>
-      </PageSection>
-
       <PageSection>
         <PageSectionMeta>
           <PageSectionSummary>
@@ -393,12 +346,8 @@ export const SessionsAuthSettingsForm = () => {
                     fullWidth
                     source="authSessions"
                     featureProposition="configure user sessions"
-                    primaryText={$t(
-                      'Configuring user sessions is only available on the Pro Plan and above'
-                    )}
-                    secondaryText={$t(
-                      'Upgrade to Pro Plan to configure settings for user sessions.'
-                    )}
+                    primaryText="Configuring user sessions is only available on the Pro Plan and above"
+                    secondaryText="Upgrade to Pro Plan to configure settings for user sessions."
                   />
                 )}
 
@@ -417,6 +366,163 @@ export const SessionsAuthSettingsForm = () => {
                       !userSessionsForm.formState.isDirty
                     }
                     loading={isUpdatingUserSessions}
+                  >
+                    {$t('Save changes')}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </form>
+          </Form>
+        </PageSectionContent>
+      </PageSection>
+
+      <PageSection>
+        <PageSectionMeta>
+          <PageSectionSummary>
+            <PageSectionTitle>{$t('Access Tokens')}</PageSectionTitle>
+          </PageSectionSummary>
+        </PageSectionMeta>
+        <PageSectionContent>
+          <Form {...accessTokenForm}>
+            <form
+              onSubmit={accessTokenForm.handleSubmit(onSubmitAccessToken)}
+              className="space-y-4"
+            >
+              <Card>
+                <CardContent>
+                  <FormField
+                    control={accessTokenForm.control}
+                    name="JWT_EXP"
+                    render={({ field }) => (
+                      <FormItemLayout
+                        layout="flex-row-reverse"
+                        label={$t('Access token expiry time')}
+                        description={$t(
+                          'How long access tokens are valid for before they must be refreshed. Recommendation: 3600 seconds.'
+                        )}
+                      >
+                        <FormControl className="w-full">
+                          <InputGroup>
+                            <FormInputGroupInput
+                              type="number"
+                              min={1}
+                              {...field}
+                              disabled={!canUpdateConfig}
+                            />
+                            <InputGroupAddon align="inline-end">
+                              <InputGroupText>seconds</InputGroupText>
+                            </InputGroupAddon>
+                          </InputGroup>
+                        </FormControl>
+                      </FormItemLayout>
+                    )}
+                  />
+                </CardContent>
+                <CardFooter className="justify-end space-x-2">
+                  {accessTokenForm.formState.isDirty && (
+                    <Button variant="default" onClick={() => accessTokenForm.reset()}>
+                      {$t('Cancel')}
+                    </Button>
+                  )}
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    disabled={
+                      !canUpdateConfig ||
+                      isUpdatingAccessToken ||
+                      !accessTokenForm.formState.isDirty
+                    }
+                    loading={isUpdatingAccessToken}
+                  >
+                    {$t('Save changes')}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </form>
+          </Form>
+        </PageSectionContent>
+      </PageSection>
+
+      <PageSection>
+        <PageSectionMeta>
+          <PageSectionSummary>
+            <PageSectionTitle>{$t('Refresh Tokens')}</PageSectionTitle>
+          </PageSectionSummary>
+        </PageSectionMeta>
+        <PageSectionContent>
+          <Form {...refreshTokenForm}>
+            <form
+              onSubmit={refreshTokenForm.handleSubmit(onSubmitRefreshTokens)}
+              className="space-y-4"
+            >
+              <Card>
+                <CardContent>
+                  <FormField
+                    control={refreshTokenForm.control}
+                    name="REFRESH_TOKEN_ROTATION_ENABLED"
+                    render={({ field }) => (
+                      <FormItemLayout
+                        layout="flex-row-reverse"
+                        label={$t('Detect and revoke potentially compromised refresh tokens')}
+                        description={$t(
+                          'Prevent replay attacks from potentially compromised refresh tokens.'
+                        )}
+                      >
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            disabled={!canUpdateConfig}
+                          />
+                        </FormControl>
+                      </FormItemLayout>
+                    )}
+                  />
+                </CardContent>
+                <CardContent>
+                  <FormField
+                    control={refreshTokenForm.control}
+                    name="SECURITY_REFRESH_TOKEN_REUSE_INTERVAL"
+                    render={({ field }) => (
+                      <FormItemLayout
+                        layout="flex-row-reverse"
+                        label={$t('Refresh token reuse interval')}
+                        description={$t(
+                          'Time interval where the same refresh token can be used multiple times to request for an access token. Recommendation: 10 seconds.'
+                        )}
+                      >
+                        <FormControl className="w-full">
+                          <InputGroup>
+                            <FormInputGroupInput
+                              type="number"
+                              min={0}
+                              {...field}
+                              disabled={!canUpdateConfig}
+                            />
+                            <InputGroupAddon align="inline-end">
+                              <InputGroupText>seconds</InputGroupText>
+                            </InputGroupAddon>
+                          </InputGroup>
+                        </FormControl>
+                      </FormItemLayout>
+                    )}
+                  />
+                </CardContent>
+                <CardFooter className="justify-end space-x-2">
+                  {refreshTokenForm.formState.isDirty && (
+                    <Button variant="default" onClick={() => refreshTokenForm.reset()}>
+                      {$t('Cancel')}
+                    </Button>
+                  )}
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    disabled={
+                      !canUpdateConfig ||
+                      isUpdatingRefreshTokens ||
+                      !refreshTokenForm.formState.isDirty
+                    }
+                    loading={isUpdatingRefreshTokens}
                   >
                     {$t('Save changes')}
                   </Button>

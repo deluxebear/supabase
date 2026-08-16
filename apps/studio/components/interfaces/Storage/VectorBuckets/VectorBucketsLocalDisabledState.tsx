@@ -1,4 +1,4 @@
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 import { CodeBlock } from 'ui-patterns/CodeBlock'
 
 import { t as $t } from '@/lib/i18n'

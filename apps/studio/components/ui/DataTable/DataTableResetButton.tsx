@@ -7,9 +7,19 @@ import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
-export function DataTableResetButton() {
+export interface DataTableResetButtonProps {
+  /** Called alongside `table.resetColumnFilters()` — for filters that live outside TanStack Table's columnFilters state (e.g. a cross-cutting URL param). */
+  onReset?: () => void
+}
+
+export function DataTableResetButton({ onReset }: DataTableResetButtonProps) {
   const { table } = useDataTable()
-  useShortcut(SHORTCUT_IDS.DATA_TABLE_RESET_FILTERS, () => table.resetColumnFilters(), {
+  const reset = () => {
+    table.resetColumnFilters()
+    onReset?.()
+  }
+
+  useShortcut(SHORTCUT_IDS.DATA_TABLE_RESET_FILTERS, reset, {
     registerInCommandMenu: true,
   })
 
@@ -19,7 +29,7 @@ export function DataTableResetButton() {
       label={$t('Reset filters')}
       side="left"
     >
-      <Button variant="default" size="tiny" onClick={() => table.resetColumnFilters()} icon={<X />}>
+      <Button variant="default" size="tiny" onClick={reset} icon={<X />}>
         {$t('Reset')}
       </Button>
     </ShortcutTooltip>

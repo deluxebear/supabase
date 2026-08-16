@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { useParams } from 'common'
 import dayjs from 'dayjs'
 import Link from 'next/link'
@@ -18,6 +17,7 @@ import {
 import { useInfraMonitoringAttributesQuery } from '@/data/analytics/infra-monitoring-query'
 import { useMaxConnectionsQuery } from '@/data/database/max-connections-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 type DatabaseInfrastructureSectionProps = {
   interval: '1hr' | '1day' | '7day'
@@ -40,7 +40,6 @@ export const DatabaseInfrastructureSection = ({
   const { data: project } = useSelectedProjectQuery()
 
   // refreshKey forces date recalculation when user clicks refresh button
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const { startDate, endDate, infraInterval } = useMemo(() => {
     const now = dayjs()
     const end = now.toISOString()
@@ -154,10 +153,13 @@ export const DatabaseInfrastructureSection = ({
         >
           <MetricCard isLoading={slowQueriesLoading}>
             <MetricCardHeader linkTooltip="Go to query performance">
-              <MetricCardLabel tooltip={$t('Queries with total execution time (execution time + planning time) greater than 1000ms. High values may indicate query optimization opportunities')}>
-                
-                                              {$t('Slow Queries')}
-                                            </MetricCardLabel>
+              <MetricCardLabel
+                tooltip={$t(
+                  'Queries with total execution time (execution time + planning time) greater than 1000ms. High values may indicate query optimization opportunities'
+                )}
+              >
+                {$t('Slow Queries')}
+              </MetricCardLabel>
             </MetricCardHeader>
             <MetricCardContent>
               <MetricCardValue>{slowQueriesCount}</MetricCardValue>
@@ -168,10 +170,13 @@ export const DatabaseInfrastructureSection = ({
         <Link href={databaseReportUrl} className="block group">
           <MetricCard isLoading={infraLoading}>
             <MetricCardHeader linkTooltip="Go to database report">
-              <MetricCardLabel tooltip={$t('Highest concurrent database connections observed in the selected window, against the connection limit. Monitor to avoid connection exhaustion.')}>
-                
-                                              {$t('Peak Connections')}
-                                            </MetricCardLabel>
+              <MetricCardLabel
+                tooltip={$t(
+                  'Highest concurrent database connections observed in the selected window, against the connection limit. Monitor to avoid connection exhaustion.'
+                )}
+              >
+                {$t('Peak Connections')}
+              </MetricCardLabel>
             </MetricCardHeader>
             <MetricCardContent>
               {infraError ? (
@@ -191,9 +196,8 @@ export const DatabaseInfrastructureSection = ({
           <MetricCard isLoading={infraLoading}>
             <MetricCardHeader linkTooltip="Go to database report">
               <MetricCardLabel tooltip={$t('Disk usage percentage of total disk space used')}>
-                
-                                              {$t('Disk Usage')}
-                                            </MetricCardLabel>
+                {$t('Disk Usage')}
+              </MetricCardLabel>
             </MetricCardHeader>
             <MetricCardContent>
               {infraError ? (
@@ -210,10 +214,13 @@ export const DatabaseInfrastructureSection = ({
         <Link href={databaseReportUrl} className="block group">
           <MetricCard isLoading={infraLoading}>
             <MetricCardHeader linkTooltip="Go to database report">
-              <MetricCardLabel tooltip={$t('Disk I/O consumption percentage. High values may indicate disk bottlenecks')}>
-                
-                                              {$t('Disk IO')}
-                                            </MetricCardLabel>
+              <MetricCardLabel
+                tooltip={$t(
+                  'Disk I/O consumption percentage. High values may indicate disk bottlenecks'
+                )}
+              >
+                {$t('Disk IO')}
+              </MetricCardLabel>
             </MetricCardHeader>
             <MetricCardContent>
               {infraError ? (
@@ -230,10 +237,13 @@ export const DatabaseInfrastructureSection = ({
         <Link href={databaseReportUrl} className="block group">
           <MetricCard isLoading={infraLoading}>
             <MetricCardHeader linkTooltip="Go to database report">
-              <MetricCardLabel tooltip={$t('RAM usage percentage. Sustained high usage may indicate memory pressure')}>
-                
-                                              {$t('Memory')}
-                                            </MetricCardLabel>
+              <MetricCardLabel
+                tooltip={$t(
+                  'RAM usage percentage. Sustained high usage may indicate memory pressure'
+                )}
+              >
+                {$t('Memory')}
+              </MetricCardLabel>
             </MetricCardHeader>
             <MetricCardContent>
               {infraError ? (
@@ -250,7 +260,11 @@ export const DatabaseInfrastructureSection = ({
         <Link href={databaseReportUrl} className="block group">
           <MetricCard isLoading={infraLoading}>
             <MetricCardHeader linkTooltip="Go to database report">
-              <MetricCardLabel tooltip={$t('CPU usage percentage. High values may suggest CPU-intensive queries or workloads')}>
+              <MetricCardLabel
+                tooltip={$t(
+                  'CPU usage percentage. High values may suggest CPU-intensive queries or workloads'
+                )}
+              >
                 CPU
               </MetricCardLabel>
             </MetricCardHeader>

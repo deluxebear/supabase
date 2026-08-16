@@ -1,9 +1,8 @@
-import { t as $t } from '@/lib/i18n';
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Label } from '@ui/components/shadcn/ui/label'
 import { useParams } from 'common'
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import {
   Button,
@@ -25,6 +24,7 @@ import * as z from 'zod'
 
 import { normalizeRedirectUrl, parseRedirectUrls, urlRegex } from '../Auth.constants'
 import { useAuthConfigUpdateMutation } from '@/data/auth/auth-config-update-mutation'
+import { t as $t } from '@/lib/i18n'
 
 const MAX_URLS_LENGTH = 2 * 1024
 
@@ -90,7 +90,7 @@ export const AddNewURLModal = ({ visible, allowList, onClose }: AddNewURLModalPr
     resolver: zodResolver(formSchema),
     defaultValues: initialValues,
   })
-  const urls = form.watch('urls')
+  const urls = useWatch({ control: form.control, name: 'urls' })
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const payload = parseRedirectUrls(
@@ -134,9 +134,10 @@ export const AddNewURLModal = ({ visible, allowList, onClose }: AddNewURLModalPr
         <DialogHeader>
           <DialogTitle>{$t('Add new redirect URLs')}</DialogTitle>
           <DialogDescription>
-            
-                                  {$t('This will add a URL to a list of allowed URLs that can interact with your Authentication services for this project.')}
-                                </DialogDescription>
+            {$t(
+              'This will add a URL to a list of allowed URLs that can interact with your Authentication services for this project.'
+            )}
+          </DialogDescription>
         </DialogHeader>
         <DialogSectionSeparator />
         <Form {...form}>
@@ -170,9 +171,8 @@ export const AddNewURLModal = ({ visible, allowList, onClose }: AddNewURLModalPr
                 disabled={isUpdatingConfig}
                 loading={isUpdatingConfig}
               >
-                
-                                              {$t('Save URLs')}
-                                            </Button>
+                {$t('Save URLs')}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

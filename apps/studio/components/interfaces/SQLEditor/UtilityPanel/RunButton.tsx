@@ -1,7 +1,7 @@
 import { Loader2 } from 'lucide-react'
-import { Button, KeyboardShortcut } from 'ui'
+import { KeyboardShortcut } from 'ui'
 
-import { t as $t } from '@/lib/i18n'
+import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 
 interface SqlRunButtonProps {
   isDisabled?: boolean
@@ -9,6 +9,13 @@ interface SqlRunButtonProps {
   hasSelection?: boolean
   className?: string
   onClick: () => void
+  /**
+   * Explanation shown in a tooltip while the button is disabled — e.g. why a
+   * logs query can't run on this project. A disabled `<button>` swallows pointer
+   * events, so the tooltip is rendered via `ButtonTooltip` (pointer-events-auto)
+   * to stay reachable.
+   */
+  disabledReason?: string
 }
 
 export const SqlRunButton = ({
@@ -17,9 +24,10 @@ export const SqlRunButton = ({
   hasSelection = false,
   className,
   onClick,
+  disabledReason,
 }: SqlRunButtonProps) => {
   return (
-    <Button
+    <ButtonTooltip
       onClick={onClick}
       disabled={isDisabled}
       variant="primary"
@@ -33,8 +41,9 @@ export const SqlRunButton = ({
         )
       }
       className={className}
+      tooltip={{ content: { side: 'bottom', text: isDisabled ? disabledReason : undefined } }}
     >
-      {hasSelection ? $t('Run selected') : $t('Run')}
-    </Button>
+      {hasSelection ? 'Run selected' : 'Run'}
+    </ButtonTooltip>
   )
 }

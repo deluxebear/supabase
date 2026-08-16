@@ -5,7 +5,7 @@ import { parseAsString, useQueryStates } from 'nuqs'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Button, cn, LoadingLine } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 
 import { Markdown } from '../../Markdown'
@@ -213,6 +213,7 @@ export const WithStatements = ({
               side="top"
             >
               <Button
+                aria-label={$t('Refresh')}
                 variant="default"
                 size="tiny"
                 icon={<RefreshCw />}
@@ -226,6 +227,7 @@ export const WithStatements = ({
               side="top"
             >
               <Button
+                aria-label={$t('Reset report')}
                 variant="default"
                 size="tiny"
                 icon={<RotateCcw />}
@@ -242,7 +244,11 @@ export const WithStatements = ({
           </>
         }
       />
-      <LoadingLine loading={isLoading || isRefetching || isFetchingNextPage} />
+
+      <div>
+        <LoadingLine loading={isLoading || isRefetching || isFetchingNextPage} />
+      </div>
+
       <QueryPerformanceGrid
         aggregatedData={processedData}
         isLoading={isLoading}

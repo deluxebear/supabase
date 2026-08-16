@@ -40,7 +40,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 
 import { SidePanelEditor } from '../../TableGridEditor/SidePanelEditor/SidePanelEditor'
 import { DefaultEdge } from './DefaultEdge'
@@ -49,8 +49,10 @@ import { SchemaGraphContextProvider, SchemaGraphContextType } from './SchemaGrap
 import { SchemaGraphLegend } from './SchemaGraphLegend'
 import { EdgeData, TableNodeData } from './Schemas.constants'
 import {
+  getEnumsAsMarkdown,
   getGraphDataFromTables,
   getLayoutedElementsViaDagre,
+  getPoliciesAsMarkdown,
   getSchemaAsMarkdown,
 } from './Schemas.utils'
 import { TableNode } from './SchemaTableNode'
@@ -59,7 +61,9 @@ import { AlertError } from '@/components/ui/AlertError'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { SchemaSelector } from '@/components/ui/SchemaSelector'
 import { Shortcut } from '@/components/ui/Shortcut'
+import { useDatabasePoliciesQuery } from '@/data/database-policies/database-policies-query'
 import { useSchemasQuery } from '@/data/database/schemas-query'
+import { useEnumeratedTypesQuery } from '@/data/enumerated-types/enumerated-types-query'
 import { useInfiniteTablesQuery } from '@/data/tables/tables-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useLocalStorage } from '@/hooks/misc/useLocalStorage'
@@ -138,6 +142,20 @@ export const SchemaGraph = () => {
   })
   const tables = useMemo(() => tablesData?.pages.flat() ?? [], [tablesData])
   const hasNoTables = isSuccessTables && isSuccessSchemas && tables.length === 0 && !hasNextPage
+
+  const { data: enumeratedTypes = [], isPending: isLoadingEnumeratedTypes } =
+    useEnumeratedTypesQuery({
+      projectRef: project?.ref,
+      connectionString: project?.connectionString,
+    })
+
+  const { data: policies = [], isPending: isLoadingPolicies } = useDatabasePoliciesQuery({
+    projectRef: project?.ref,
+    connectionString: project?.connectionString,
+    schemas: [selectedSchema],
+  })
+
+  const isMarkdownDataLoading = isLoadingEnumeratedTypes || isLoadingPolicies
 
   const schema = (schemas ?? []).find((s) => s.name === selectedSchema)
   const [, setStoredPositions] = useLocalStorage(
@@ -226,11 +244,37 @@ export const SchemaGraph = () => {
   }
 
   const copyAsMarkdown = () => {
+    if (isMarkdownDataLoading) return
+
     const tableNodes = reactFlowInstance
       .getNodes()
       .filter((node) => node.type === 'table')
       .map((node) => node.data as TableNodeData)
-    copyToClipboard(getSchemaAsMarkdown(selectedSchema, tableNodes))
+
+    let markdown = getSchemaAsMarkdown(selectedSchema, tableNodes)
+
+    const enumsMarkdown = getEnumsAsMarkdown(
+      selectedSchema,
+      enumeratedTypes.map((e) => ({ name: e.name, schema: e.schema, enums: e.enums }))
+    )
+    if (enumsMarkdown) markdown += enumsMarkdown
+
+    const policiesMarkdown = getPoliciesAsMarkdown(
+      selectedSchema,
+      policies.map((p) => ({
+        name: p.name,
+        schema: p.schema,
+        table: p.table,
+        command: p.command,
+        roles: p.roles,
+        action: p.action,
+        definition: p.definition ? String(p.definition) : null,
+        check: p.check ? String(p.check) : null,
+      }))
+    )
+    if (policiesMarkdown) markdown += policiesMarkdown
+
+    copyToClipboard(markdown)
     setCopied(true)
     toast.success($t('Successfully copied as Markdown'))
   }
@@ -248,7 +292,7 @@ export const SchemaGraph = () => {
 
   useShortcut(SHORTCUT_IDS.SCHEMA_VISUALIZER_COPY_SQL, copyAsSQL, { enabled: shortcutsEnabled })
   useShortcut(SHORTCUT_IDS.SCHEMA_VISUALIZER_COPY_MARKDOWN, copyAsMarkdown, {
-    enabled: shortcutsEnabled,
+    enabled: shortcutsEnabled && !isMarkdownDataLoading,
   })
   useShortcut(SHORTCUT_IDS.SCHEMA_VISUALIZER_DOWNLOAD_PNG, () => downloadImage('png'), {
     enabled: shortcutsEnabled,
@@ -426,12 +470,17 @@ export const SchemaGraph = () => {
                     <DropdownMenuContent align="end" className="w-44">
                       <DropdownMenuItem
                         className="flex items-center space-x-2 whitespace-nowrap"
+                        disabled={isMarkdownDataLoading}
                         onClick={(e) => {
                           e.stopPropagation()
                           copyAsMarkdown()
                         }}
                       >
-                        <Copy size={12} />
+                        {isMarkdownDataLoading ? (
+                          <Loader2 size={12} className="animate-spin" />
+                        ) : (
+                          <Copy size={12} />
+                        )}
                         <span>{$t('Copy as Markdown')}</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
@@ -507,7 +556,7 @@ export const SchemaGraph = () => {
               <Admonition
                 type="default"
                 className="max-w-md"
-                title={$t('No tables in schema')}
+                title={'No tables in schema'}
                 description={
                   isSchemaLocked
                     ? $t(
@@ -517,7 +566,7 @@ export const SchemaGraph = () => {
                         }
                       )
                     : !canUpdateTables
-                      ? $t('You need additional permissions to create tables')
+                      ? 'You need additional permissions to create tables'
                       : $t('The “{{schema}}” schema doesn’t have any tables.', {
                           schema: selectedSchema,
                         })

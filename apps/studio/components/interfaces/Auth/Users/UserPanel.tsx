@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { X } from 'lucide-react'
 import { parseAsString, useQueryState } from 'nuqs'
 import { useState } from 'react'
@@ -21,10 +20,13 @@ import { UserOverview } from './UserOverview'
 import { PANEL_PADDING } from './Users.constants'
 import { useUserQuery } from '@/data/auth/user-query'
 import { User } from '@/data/auth/users-infinite-query'
+import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 export const UserPanel = () => {
   const { data: project } = useSelectedProjectQuery()
+  const showLogs = useIsFeatureEnabled('logs:all')
 
   const [selectedId, setSelectedId] = useQueryState(
     'show',
@@ -84,23 +86,22 @@ export const UserPanel = () => {
                   value="overview"
                   className="px-0 pb-0 h-full text-xs  data-[state=active]:bg-transparent shadow-none!"
                 >
-                  
-                                                        {$t('Overview')}
-                                                      </TabsTrigger>
-                <TabsTrigger
-                  value="logs"
-                  className="px-0 pb-0 h-full text-xs data-[state=active]:bg-transparent shadow-none!"
-                >
-                  
-                                                        {$t('Logs')}
-                                                      </TabsTrigger>
+                  {$t('Overview')}
+                </TabsTrigger>
+                {showLogs && (
+                  <TabsTrigger
+                    value="logs"
+                    className="px-0 pb-0 h-full text-xs data-[state=active]:bg-transparent shadow-none!"
+                  >
+                    {$t('Logs')}
+                  </TabsTrigger>
+                )}
                 <TabsTrigger
                   value="raw"
                   className="px-0 pb-0 h-full text-xs data-[state=active]:bg-transparent shadow-none!"
                 >
-                  
-                                                        {$t('Raw JSON')}
-                                                      </TabsTrigger>
+                  {$t('Raw JSON')}
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className={cn('mt-0 grow min-h-0 overflow-y-auto')}>
@@ -108,9 +109,11 @@ export const UserPanel = () => {
                   <UserOverview user={selectedUser} onDeleteSuccess={() => setSelectedId(null)} />
                 )}
               </TabsContent>
-              <TabsContent value="logs" className={cn('mt-0 grow min-h-0 overflow-y-auto')}>
-                {selectedUser && <UserLogs user={selectedUser} />}
-              </TabsContent>
+              {showLogs && (
+                <TabsContent value="logs" className={cn('mt-0 grow min-h-0 overflow-y-auto')}>
+                  {selectedUser && <UserLogs user={selectedUser} />}
+                </TabsContent>
+              )}
               <TabsContent
                 value="raw"
                 className={cn('mt-0 grow min-h-0 overflow-y-auto', PANEL_PADDING)}
@@ -119,7 +122,7 @@ export const UserPanel = () => {
                   <Input
                     autoFocus
                     type="text"
-                    placeholder={$t('Filter...')}
+                    placeholder={'Filter...'}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="mr-2"
@@ -130,9 +133,8 @@ export const UserPanel = () => {
                     onClick={() => setSearchQuery('')}
                     className="text-xs"
                   >
-                    
-                                                              {$t('Clear')}
-                                                            </Button>
+                    {$t('Clear')}
+                  </Button>
                 </div>
                 <SimpleCodeBlock className="javascript" parentClassName="[&>*>span]:text-xs">
                   {JSON.stringify(filteredProperties, null, 2)}
@@ -142,10 +144,11 @@ export const UserPanel = () => {
           ) : (
             <div className="flex items-center justify-center w-full h-full flex-col gap-y-2">
               <p className="text-foreground-light text-sm">
-                
-                                                      {$t('Unable to find user with the following ID in project')}
-                                                    </p>
-              <p className="text-foreground-lighter text-xs">{$t('ID:')} {selectedId}</p>
+                {$t('Unable to find user with the following ID in project')}
+              </p>
+              <p className="text-foreground-lighter text-xs">
+                {$t('ID:')} {selectedId}
+              </p>
             </div>
           )}
         </Tabs>

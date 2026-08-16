@@ -47,7 +47,7 @@ function SupportAssistantSuccessCardLoadingShell({ className }: { className?: st
       tabIndex={0}
       aria-label={$t('Open assistant response')}
       className={cn(
-        'group cursor-pointer bg-muted/50 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
+        'group cursor-pointer bg-muted/50 transition-colors hover:bg-muted/50 focus-ring',
         className
       )}
     >

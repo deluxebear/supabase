@@ -108,6 +108,10 @@ export const SnippetDropdown = ({
               <p className="text-xs text-center text-foreground-lighter py-3">
                 {$t('No snippets found')}
               </p>
+            ) : search.length === 0 && snippets.length === 0 ? (
+              <p className="text-xs text-center text-foreground-lighter py-3">
+                {$t('No snippets available')}
+              </p>
             ) : (
               <CommandGroup>
                 <ScrollArea className={snippets.length > 7 ? 'h-[210px]' : ''}>

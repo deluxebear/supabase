@@ -2,23 +2,14 @@ import { useParams } from 'common'
 import dayjs from 'dayjs'
 import { PauseCircle } from 'lucide-react'
 import Link from 'next/link'
-import {
-  Button,
-  Card,
-  CardContent,
-  CardFooter,
-  cn,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from 'ui'
+import { Button, Card, CardContent, CardFooter } from 'ui'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 
+import { DownloadBackupsSection } from './DownloadBackupsSection'
 import { PauseDisabledState } from './PauseDisabledState'
 import { ResumeProjectButton } from '@/components/interfaces/Project/ResumeProjectButton'
 import { AlertError } from '@/components/ui/AlertError'
-import { InlineLinkClassName } from '@/components/ui/InlineLink'
 import { UpgradePlanButton } from '@/components/ui/UpgradePlanButton'
 import { useProjectPauseStatusQuery } from '@/data/projects/project-pause-status-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
@@ -46,10 +37,11 @@ export const ProjectPausedState = ({ product }: ProjectPausedStateProps) => {
     isPending: isLoading,
   } = useProjectPauseStatusQuery({ ref }, { enabled: project?.status === PROJECT_STATUS.INACTIVE })
 
-  const finalDaysRemainingBeforeRestoreDisabled =
-    pauseStatus?.remaining_days_till_restore_disabled ??
-    pauseStatus?.max_days_till_restore_disabled ??
-    0
+  // null when there is no expiry (e.g. paid plans can always restore)
+  const restoreExpiresAt =
+    pauseStatus?.remaining_days_till_restore_disabled != null
+      ? dayjs().utc().add(pauseStatus.remaining_days_till_restore_disabled, 'day').toISOString()
+      : null
 
   const isFreePlan = selectedOrganization?.plan?.id === 'free'
   const isRestoreDisabled = isPauseStatusSuccess && !pauseStatus.can_restore
@@ -72,39 +64,27 @@ export const ProjectPausedState = ({ product }: ProjectPausedStateProps) => {
                 isFreePlan ? (
                   <ul className="text-sm list-disc pl-4 space-y-2">
                     <li>{$t('All data, including backups and storage objects, remains safe.')}</li>
-                    <li>
-                      {$t('You can resume this project from the dashboard within')}{' '}
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <span className={cn(InlineLinkClassName, 'text-foreground')}>
-                            {finalDaysRemainingBeforeRestoreDisabled} day
-                            {finalDaysRemainingBeforeRestoreDisabled > 1 ? 's' : ''}
-                          </span>{' '}
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="w-80 text-center">
+                    {restoreExpiresAt ? (
+                      <>
+                        <li>
+                          {$t('You can resume this project from the dashboard until')}{' '}
+                          <TimestampInfo
+                            displayAs="local"
+                            utcTimestamp={restoreExpiresAt}
+                            className="text-sm text-foreground"
+                            labelFormat="DD MMM YYYY"
+                          />
+                          .
+                        </li>
+                        <li>
                           {$t(
-                            'Free projects cannot be restored through the dashboard if they are paused for more than'
-                          )}{' '}
-                          {pauseStatus.max_days_till_restore_disabled} days
-                        </TooltipContent>
-                      </Tooltip>{' '}
-                      (until{' '}
-                      <TimestampInfo
-                        displayAs="local"
-                        utcTimestamp={dayjs()
-                          .utc()
-                          .add(pauseStatus.remaining_days_till_restore_disabled ?? 0, 'day')
-                          .toISOString()}
-                        className="text-sm text-foreground"
-                        labelFormat="DD MMM YYYY"
-                      />
-                      ).
-                    </li>
-                    <li>
-                      {$t(
-                        'After that, this project will not be resumable, but data will still be available for download.'
-                      )}
-                    </li>
+                            'After that, this project will not be resumable, but data will still be available for download.'
+                          )}
+                        </li>
+                      </>
+                    ) : (
+                      <li>{$t('You can resume this project from the dashboard.')}</li>
+                    )}
                     <li>
                       {enableProBenefitWording === 'variant-a'
                         ? 'Upgrade to Pro to prevent pauses and unlock features like branching, compute upgrades, and daily backups.'
@@ -114,22 +94,21 @@ export const ProjectPausedState = ({ product }: ProjectPausedStateProps) => {
                 ) : (
                   <>
                     <p className="text-sm">
-                      {$t('Your project data is safe and available for')}{' '}
-                      <span className="text-foreground">
-                        {finalDaysRemainingBeforeRestoreDisabled} day
-                        {finalDaysRemainingBeforeRestoreDisabled > 1 ? 's' : ''}
-                      </span>{' '}
-                      (until{' '}
-                      <TimestampInfo
-                        displayAs="local"
-                        utcTimestamp={dayjs()
-                          .utc()
-                          .add(pauseStatus.remaining_days_till_restore_disabled ?? 0, 'day')
-                          .toISOString()}
-                        className="text-sm text-foreground"
-                        labelFormat="DD MMM YYYY"
-                      />
-                      {$t('), but inaccessible while paused.')}
+                      {$t('Your project data is safe')}
+                      {restoreExpiresAt ? (
+                        <>
+                          {' '}
+                          {$t('and available until')}{' '}
+                          <TimestampInfo
+                            displayAs="local"
+                            utcTimestamp={restoreExpiresAt}
+                            className="text-sm text-foreground"
+                            labelFormat="DD MMM YYYY"
+                          />
+                        </>
+                      ) : null}
+
+                      {$t(', but inaccessible while paused.')}
                     </p>
                     <p className="text-sm mt-2">
                       {$t('Once resumed, usage will be billed by compute size and hours active.')}
@@ -165,17 +144,20 @@ export const ProjectPausedState = ({ product }: ProjectPausedStateProps) => {
       )}
 
       {isPauseStatusSuccess && !isRestoreDisabled && (
-        <CardFooter className="flex flex-wrap justify-end items-center gap-2">
-          <ResumeProjectButton size="tiny" variant="default" />
+        <>
+          <CardFooter className="flex flex-wrap justify-end items-center gap-2">
+            <ResumeProjectButton size="tiny" variant="default" />
 
-          {isFreePlan ? (
-            <UpgradePlanButton source="projectPausedStateRestore" />
-          ) : (
-            <Button asChild variant="default">
-              <Link href={`/project/${ref}/settings/general`}>{$t('View project settings')}</Link>
-            </Button>
-          )}
-        </CardFooter>
+            {isFreePlan ? (
+              <UpgradePlanButton source="projectPausedStateRestore" />
+            ) : (
+              <Button asChild variant="default">
+                <Link href={`/project/${ref}/settings/general`}>{$t('View project settings')}</Link>
+              </Button>
+            )}
+          </CardFooter>
+          <DownloadBackupsSection />
+        </>
       )}
 
       {isPauseStatusSuccess && isRestoreDisabled && <PauseDisabledState />}

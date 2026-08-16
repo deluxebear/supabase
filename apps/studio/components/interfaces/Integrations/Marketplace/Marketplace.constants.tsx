@@ -1,26 +1,4 @@
-import {
-  BadgeCheck,
-  BarChart3,
-  Boxes,
-  Cable,
-  Cpu,
-  CreditCard,
-  Database,
-  Fingerprint,
-  KeyRound,
-  Mail,
-  MessageSquare,
-  MousePointerClick,
-  Package2,
-  Plug,
-  Server,
-  ShieldCheck,
-  Users,
-  Webhook,
-  Wrench,
-  Zap,
-  type LucideIcon,
-} from 'lucide-react'
+import { BadgeCheck, Cable, Database, Package2, Plug, Users, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Badge, cn, IconPartners } from 'ui'
 
@@ -30,10 +8,19 @@ import type {
 } from '@/components/interfaces/Integrations/Landing/Integrations.constants'
 import { t as $t } from '@/lib/i18n'
 
+export { getCategoryIcon, CATEGORY_ICONS } from 'common/marketplace-categories'
+
 export type { MarketplaceSource } from '@/components/interfaces/Integrations/Landing/Integrations.constants'
 
 // Defines featured integrations and their order in the featured hero
-export const FEATURED_INTEGRATION_IDS = ['grafana', 'cron', 'queues', 'data_api'] as const
+export const FEATURED_INTEGRATION_IDS = [
+  'grafana',
+  'grafana-cloud',
+  'cron',
+  'queues',
+  'stripe_sync_engine',
+  'data_api',
+] as const
 
 export type MarketplaceIntegrationType = 'oauth' | 'postgres_extension' | 'template' | 'wrapper'
 
@@ -47,29 +34,6 @@ export const INTEGRATION_TYPES: Array<{
   { key: 'template', label: 'Template', icon: Package2 },
   { key: 'wrapper', label: 'Wrapper', icon: Cable },
 ]
-
-// Lucide icon per marketplace category slug. New categories fall back to a
-// neutral icon (Boxes) so nothing breaks when the marketplaceDB is updated.
-export const CATEGORY_ICONS: Record<string, LucideIcon> = {
-  observability: BarChart3,
-  security: ShieldCheck,
-  billing: CreditCard,
-  secrets: KeyRound,
-  email: Mail,
-  wrappers: Database,
-  ai: Cpu,
-  ai_vectors: Cpu,
-  storage: Package2,
-  postgres_extension: Database,
-  wrapper: Cable,
-  devtools: Wrench,
-  auth: Fingerprint,
-  'low-code': MousePointerClick,
-  'data-platform': Server,
-  api: Webhook,
-  'caching-offline-first': Zap,
-  messaging: MessageSquare,
-}
 
 export const FEATURED_CATEGORIES: Array<{ slug: string; name: string }> = [
   { slug: 'observability', name: 'Observability' },
@@ -87,11 +51,6 @@ export const EXCLUDED_CATEGORY_SLUGS = new Set([
   'foreign-data-wrapper',
   'app-templates',
 ])
-
-export const getCategoryIcon = (slug: string | null | undefined): LucideIcon => {
-  if (!slug) return Boxes
-  return CATEGORY_ICONS[slug] ?? Boxes
-}
 
 export const formatCategoryLabel = (
   slug: string | null | undefined,

@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import {
@@ -190,15 +190,12 @@ const IssueSuggestion = ({ category, projectRef }: { category: string; projectRe
       <Admonition
         type="default"
         className={className}
-        title={$t("Have you checked your project's infrastructure activity?")}
+        title={$t("Have you checked your project's database observability reports?")}
       >
         {$t(
-          'High memory or low disk IO bandwidth may be slowing down your database. Verify by checking the infrastructure activity of your project'
+          "High memory or low disk IO bandwidth may be slowing down your database. Verify by checking your project's database observability reports"
         )}{' '}
-        <InlineLink href={`${baseUrl}/settings/infrastructure#infrastructure-activity`}>
-          here
-        </InlineLink>
-        .
+        <InlineLink href={`${baseUrl}/observability/database`}>here</InlineLink>.
       </Admonition>
     )
   }
@@ -211,12 +208,9 @@ const IssueSuggestion = ({ category, projectRef }: { category: string; projectRe
         title={$t('Have you checked the Query Performance Advisor?')}
       >
         {$t(
-          'Identify slow running queries and get actionable insights on how to optimize them with the Query Performance Advisor'
+          'Identify slow running queries and get actionable insights on how to optimize them with Query Performance'
         )}{' '}
-        <InlineLink href={`${baseUrl}/settings/infrastructure#infrastructure-activity`}>
-          here
-        </InlineLink>
-        .
+        <InlineLink href={`${baseUrl}/observability/query-performance`}>here</InlineLink>.
       </Admonition>
     )
   }

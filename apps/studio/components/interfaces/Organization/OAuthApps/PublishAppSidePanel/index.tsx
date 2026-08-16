@@ -453,12 +453,7 @@ export const PublishAppSidePanel = ({
                   </div>
                 </AlertDialogTitle>
                 <AlertDialogDescription>
-                  <AuthorizeRequesterDetails
-                    icon={iconUrl || null}
-                    name={name}
-                    domain={website}
-                    scopes={scopes}
-                  />
+                  <AuthorizeRequesterDetails name={name} domain={website} scopes={scopes} />
                   <div className="pt-4 space-y-2">
                     <p className="prose text-sm">
                       {$t('Select an organization to grant API access to')}

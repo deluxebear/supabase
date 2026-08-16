@@ -161,7 +161,7 @@ export function OrgAuditLogDrains() {
                 disabled={!canManageLogDrains}
                 onClick={handleAddDestinationClick}
                 variant="primary"
-                className="rounded-r-none px-3"
+                className="rounded-r-none px-3 hover:z-10 focus-visible:z-10"
               >
                 {$t('Add destination')}
               </Button>
@@ -171,7 +171,7 @@ export function OrgAuditLogDrains() {
                 <Button
                   variant="primary"
                   title={$t('Choose destination type')}
-                  className="rounded-l-none px-[4px] py-[5px]"
+                  className="-ml-px rounded-l-none px-[4px] py-[5px] focus-visible:z-10"
                   icon={<ChevronDown />}
                 />
               </DropdownMenuTrigger>
@@ -257,7 +257,7 @@ export function OrgAuditLogDrains() {
       <ConfirmationModal
         confirmLabel="Add destination"
         variant="default"
-        title={$t('Confirm Audit Log Drain Creation')}
+        title={'Confirm Audit Log Drain Creation'}
         visible={isCreateConfirmModalOpen}
         loading={createLoading}
         onConfirm={() => {
@@ -278,8 +278,8 @@ export function OrgAuditLogDrains() {
           {IS_PLATFORM && (
             <p>
               {$t('This will incur an additional')}{' '}
-              <span className="text-foreground">{$t('$60 per month')}</span>{' '}
-              {$t('charge to your subscription.')}
+              <span className="text-foreground">{$t('$60 per month')}</span>
+              {'charge to your subscription.'}
             </p>
           )}
           <p>{$t('Are you sure you want to proceed?')}</p>

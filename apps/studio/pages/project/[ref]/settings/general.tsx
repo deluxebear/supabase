@@ -19,6 +19,7 @@ import { DeleteBranchPanel } from '@/components/interfaces/Settings/General/Dele
 import { DeleteProjectPanel } from '@/components/interfaces/Settings/General/DeleteProjectPanel/DeleteProjectPanel'
 import { General } from '@/components/interfaces/Settings/General/General'
 import { Project } from '@/components/interfaces/Settings/General/Project'
+import { ServiceVersionsSection } from '@/components/interfaces/Settings/General/ServiceVersions/ServiceVersionsSection'
 import { TransferProjectPanel } from '@/components/interfaces/Settings/General/TransferProjectPanel/TransferProjectPanel'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import SettingsLayout from '@/components/layouts/ProjectSettingsLayout/SettingsLayout'
@@ -70,6 +71,7 @@ const ProjectSettings: NextPageWithLayout = () => {
         {IS_PLATFORM && !isFleet && (
           <>
             <Project />
+            <ServiceVersionsSection />
             {/* this is only settable on compliance orgs, currently that means HIPAA orgs */}
             {!isBranch && hasHipaaAddon && <ComplianceConfig />}
             {projectSettingsCustomDomains && <CustomDomainConfig />}

@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { useParams } from 'common'
 import { ArrowDown, ArrowRight, ArrowUp, ChevronDown, TextSearch } from 'lucide-react'
 import { parseAsArrayOf, parseAsJson, parseAsString, useQueryStates } from 'nuqs'
@@ -20,7 +19,7 @@ import {
   TabsList,
   TabsTrigger,
 } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 import { CodeBlock } from 'ui-patterns/CodeBlock'
 import { InfoTooltip } from 'ui-patterns/info-tooltip'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
@@ -41,6 +40,7 @@ import { QueryPerformanceRow } from './QueryPerformance.types'
 import { formatDuration } from './QueryPerformance.utils'
 import { NumericFilter } from '@/components/interfaces/Reports/v2/ReportsNumericFilter'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 
 interface QueryPerformanceGridProps {
   aggregatedData: QueryPerformanceRow[]
@@ -149,9 +149,9 @@ export const QueryPerformanceGrid = ({
                     )}
                   >
                     <ArrowUp size={14} />
-                    
-                                                    {$t('Sort Ascending')}
-                                                  </DropdownMenuItem>
+
+                    {$t('Sort Ascending')}
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => {
                       setSortConfig(col.id, 'desc')
@@ -162,9 +162,9 @@ export const QueryPerformanceGrid = ({
                     )}
                   >
                     <ArrowDown size={14} />
-                    
-                                                    {$t('Sort Descending')}
-                                                  </DropdownMenuItem>
+
+                    {$t('Sort Descending')}
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
@@ -492,9 +492,8 @@ export const QueryPerformanceGrid = ({
             {onRetry && (
               <div className="mt-4">
                 <Button variant="default" onClick={onRetry}>
-                  
-                                                  {$t('Try again')}
-                                                </Button>
+                  {$t('Try again')}
+                </Button>
               </div>
             )}
           </Admonition>
@@ -576,9 +575,8 @@ export const QueryPerformanceGrid = ({
                 <div className="text-center">
                   <p className="text-foreground">{$t('No queries detected')}</p>
                   <p className="text-foreground-light">
-                    
-                                                    {$t('There are no actively running queries that match the criteria')}
-                                                  </p>
+                    {$t('There are no actively running queries that match the criteria')}
+                  </p>
                 </div>
               </div>
             ),
@@ -597,9 +595,8 @@ export const QueryPerformanceGrid = ({
       >
         <SheetTitle className="sr-only">{$t('Query details')}</SheetTitle>
         <SheetDescription className="sr-only">
-          
-                            {$t('Query Performance Details &amp; Indexes')}
-                          </SheetDescription>
+          {$t('Query Performance Details &amp; Indexes')}
+        </SheetDescription>
         <SheetContent
           side="right"
           className="flex flex-col h-full bg-studio border-l lg:w-[calc(100vw-802px)]! max-w-[700px] w-full"
@@ -621,17 +618,15 @@ export const QueryPerformanceGrid = ({
                   value="details"
                   className="px-0 pb-0 data-[state=active]:bg-transparent shadow-none!"
                 >
-                  
-                                                    {$t('Query details')}
-                                                  </TabsTrigger>
+                  {$t('Query details')}
+                </TabsTrigger>
                 {selectedRow !== undefined && canShowIndexesTab && (
                   <TabsTrigger
                     value="suggestion"
                     className="px-0 pb-0 data-[state=active]:bg-transparent shadow-none!"
                   >
-                    
-                                                          {$t('Indexes')}
-                                                        </TabsTrigger>
+                    {$t('Indexes')}
+                  </TabsTrigger>
                 )}
               </TabsList>
             </div>

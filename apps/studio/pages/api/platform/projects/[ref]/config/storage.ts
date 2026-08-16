@@ -29,6 +29,7 @@ const buildStorageConfig = (): StorageConfigResponse => {
     fileSizeLimit: Number.isFinite(fileSizeLimit) ? fileSizeLimit : DEFAULT_FILE_SIZE_LIMIT,
     features: {
       imageTransformation: { enabled: process.env.STORAGE_IMGPROXY_ENABLED !== 'false' },
+      purgeCache: { enabled: process.env.STORAGE_IMGPROXY_PURGE !== 'false' },
       s3Protocol: { enabled: process.env.STORAGE_S3_PROTOCOL_ENABLED !== 'false' },
       icebergCatalog: { enabled: false, maxCatalogs: 0, maxNamespaces: 0, maxTables: 0 },
       vectorBuckets: { enabled: false, maxBuckets: 0, maxIndexes: 0 },

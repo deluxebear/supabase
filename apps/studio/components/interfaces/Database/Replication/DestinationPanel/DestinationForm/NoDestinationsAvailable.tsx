@@ -14,8 +14,10 @@ export const NoDestinationsAvailable = () => {
       </h3>
       <p className="text-sm text-foreground-light max-w-lg">
         {$t('No Pipelines destinations are available for this project yet. Request')}{' '}
-        <InlineLink href="https://forms.supabase.com/pg_replicate">{$t('alpha access')}</InlineLink>{' '}
-        {$t('to use managed replication pipelines.')}
+        <InlineLink href="https://forms.supabase.com/pg_replicate">
+          {$t('Pipelines access')}
+        </InlineLink>{' '}
+        {$t('to use managed pipelines.')}
       </p>
     </div>
   )

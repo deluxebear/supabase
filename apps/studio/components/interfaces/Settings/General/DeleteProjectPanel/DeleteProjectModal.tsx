@@ -1,11 +1,13 @@
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { TextArea } from 'ui'
+import { Card, CardContent, cn, TextArea } from 'ui'
+import { CollapsibleCardSection } from 'ui-patterns/CollapsibleCardSection'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { CANCELLATION_REASONS } from '@/components/interfaces/Billing/Billing.constants'
 import { LogicalBackupCliInstructions } from '@/components/layouts/ProjectLayout/LogicalBackupCliInstructions'
+import { InlineLink } from '@/components/ui/InlineLink'
 import { TextConfirmModal } from '@/components/ui/TextConfirmModalWrapper'
 import { useSendDowngradeFeedbackMutation } from '@/data/feedback/exit-survey-send'
 import type { OrgProject } from '@/data/projects/org-projects-infinite-query'
@@ -14,6 +16,7 @@ import { useOrgSubscriptionQuery } from '@/data/subscriptions/org-subscription-q
 import { useLastVisitedOrganization } from '@/hooks/misc/useLastVisitedOrganization'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { DOCS_URL } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 import type { Organization } from '@/types'
 
@@ -126,14 +129,9 @@ export const DeleteProjectModal = ({
           <>
             {!isFree && 'All project data will be lost, and cannot be undone. '}
             {$t('Read the')}{' '}
-            <a
-              href="https://supabase.com/docs/guides/platform/delete-project"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-foreground"
-            >
+            <InlineLink href={`${DOCS_URL}/guides/platform/delete-project`}>
               documentation
-            </a>{' '}
+            </InlineLink>{' '}
             {$t('for prerequisites, implications, and recovery information.')}
           </>
         ),
@@ -152,7 +150,19 @@ export const DeleteProjectModal = ({
       }}
     >
       <div className="space-y-6">
-        <LogicalBackupCliInstructions enabled={visible} showResetPassword={false} />
+        <Card>
+          <CardContent
+            className={cn(
+              '[&>div>button]:tracking-normal',
+              '[&>div>button]:text-foreground [&>div>button]:hover:text-foreground',
+              '[&>div>button]:data-open:text-foreground [&>div>button]:text-sm'
+            )}
+          >
+            <CollapsibleCardSection title={$t('Back up your database with the Supabase CLI')}>
+              <LogicalBackupCliInstructions enabled={visible} showResetPassword={false} />
+            </CollapsibleCardSection>
+          </CardContent>
+        </Card>
 
         {/*
           [Joshen] This is basically ExitSurvey.tsx, ideally we have one shared component but the one
@@ -182,6 +192,7 @@ export const DeleteProjectModal = ({
                       ].join(' ')}
                     >
                       <input
+                        aria-label="reasons"
                         type="radio"
                         name="options"
                         value={option.value}
@@ -198,6 +209,7 @@ export const DeleteProjectModal = ({
 
             <FormItemLayout isReactForm={false} label={textareaLabel}>
               <TextArea
+                autoFocus
                 name="message"
                 rows={3}
                 value={message}

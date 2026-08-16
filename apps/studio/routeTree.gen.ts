@@ -26,6 +26,7 @@ import { Route as OrgChar91_Char93RouteImport } from './routes/org.[_]'
 import { Route as NewSlugRouteImport } from './routes/new/$slug'
 import { Route as IntegrationsVercelRouteImport } from './routes/integrations/vercel'
 import { Route as ApiStatusOverrideRouteImport } from './routes/api/status-override'
+import { Route as ApiScopedAccessTokenPermissionsRouteImport } from './routes/api/scoped-access-token-permissions'
 import { Route as ApiParseQueryRouteImport } from './routes/api/parse-query'
 import { Route as ApiIncidentStatusRouteImport } from './routes/api/incident-status'
 import { Route as ApiIncidentBannerRouteImport } from './routes/api/incident-banner'
@@ -63,6 +64,7 @@ import { Route as ProjectRefMergeRouteImport } from './routes/project/$ref/merge
 import { Route as ProjectRefLogsRouteImport } from './routes/project/$ref/logs'
 import { Route as ProjectRefIntegrationsRouteImport } from './routes/project/$ref/integrations'
 import { Route as ProjectRefFunctionsRouteImport } from './routes/project/$ref/functions'
+import { Route as ProjectRefExplorerRouteImport } from './routes/project/$ref/explorer'
 import { Route as ProjectRefEditorRouteImport } from './routes/project/$ref/editor'
 import { Route as ProjectRefDatabaseRouteImport } from './routes/project/$ref/database'
 import { Route as ProjectRefBranchesRouteImport } from './routes/project/$ref/branches'
@@ -87,6 +89,7 @@ import { Route as ProjectRefObservabilityIndexRouteImport } from './routes/proje
 import { Route as ProjectRefLogsIndexRouteImport } from './routes/project/$ref/logs/index'
 import { Route as ProjectRefIntegrationsIndexRouteImport } from './routes/project/$ref/integrations/index'
 import { Route as ProjectRefFunctionsIndexRouteImport } from './routes/project/$ref/functions/index'
+import { Route as ProjectRefExplorerIndexRouteImport } from './routes/project/$ref/explorer/index'
 import { Route as ProjectRefEditorIndexRouteImport } from './routes/project/$ref/editor/index'
 import { Route as ProjectRefBranchesIndexRouteImport } from './routes/project/$ref/branches/index'
 import { Route as ProjectRefApiIndexRouteImport } from './routes/project/$ref/api/index'
@@ -104,7 +107,6 @@ import { Route as ProjectRefSettingsIntegrationsRouteImport } from './routes/pro
 import { Route as ProjectRefSettingsInfrastructureRouteImport } from './routes/project/$ref/settings/infrastructure'
 import { Route as ProjectRefSettingsGeneralRouteImport } from './routes/project/$ref/settings/general'
 import { Route as ProjectRefSettingsDashboardRouteImport } from './routes/project/$ref/settings/dashboard'
-import { Route as ProjectRefSettingsComputeAndDiskRouteImport } from './routes/project/$ref/settings/compute-and-disk'
 import { Route as ProjectRefSettingsApiKeysRouteImport } from './routes/project/$ref/settings/api-keys'
 import { Route as ProjectRefSettingsApiRouteImport } from './routes/project/$ref/settings/api'
 import { Route as ProjectRefSettingsAddonsRouteImport } from './routes/project/$ref/settings/addons'
@@ -118,6 +120,7 @@ import { Route as ProjectRefObservabilityQueryInsightsRouteImport } from './rout
 import { Route as ProjectRefObservabilityPostgrestRouteImport } from './routes/project/$ref/observability/postgrest'
 import { Route as ProjectRefObservabilityEdgeFunctionsRouteImport } from './routes/project/$ref/observability/edge-functions'
 import { Route as ProjectRefObservabilityDatabaseRouteImport } from './routes/project/$ref/observability/database'
+import { Route as ProjectRefObservabilityConnectionsRouteImport } from './routes/project/$ref/observability/connections'
 import { Route as ProjectRefObservabilityAuthRouteImport } from './routes/project/$ref/observability/auth'
 import { Route as ProjectRefObservabilityApiOverviewRouteImport } from './routes/project/$ref/observability/api-overview'
 import { Route as ProjectRefObservabilityIdRouteImport } from './routes/project/$ref/observability/$id'
@@ -226,6 +229,9 @@ import { Route as ProjectRefFunctionsFunctionSlugLogsRouteImport } from './route
 import { Route as ProjectRefFunctionsFunctionSlugInvocationsRouteImport } from './routes/project/$ref/functions/$functionSlug/invocations'
 import { Route as ProjectRefFunctionsFunctionSlugDetailsRouteImport } from './routes/project/$ref/functions/$functionSlug/details'
 import { Route as ProjectRefFunctionsFunctionSlugCodeRouteImport } from './routes/project/$ref/functions/$functionSlug/code'
+import { Route as ProjectRefExplorerQueryIdRouteImport } from './routes/project/$ref/explorer/query/$id'
+import { Route as ProjectRefExplorerNotebookIdRouteImport } from './routes/project/$ref/explorer/notebook/$id'
+import { Route as ProjectRefExplorerChatIdRouteImport } from './routes/project/$ref/explorer/chat/$id'
 import { Route as ProjectRefDatabaseTriggersEventRouteImport } from './routes/project/$ref/database/triggers/event'
 import { Route as ProjectRefDatabaseTriggersDataRouteImport } from './routes/project/$ref/database/triggers/data'
 import { Route as ProjectRefDatabaseTablesIdRouteImport } from './routes/project/$ref/database/tables/$id'
@@ -409,6 +415,12 @@ const ApiStatusOverrideRoute = ApiStatusOverrideRouteImport.update({
   path: '/api/status-override',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiScopedAccessTokenPermissionsRoute =
+  ApiScopedAccessTokenPermissionsRouteImport.update({
+    id: '/api/scoped-access-token-permissions',
+    path: '/api/scoped-access-token-permissions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiParseQueryRoute = ApiParseQueryRouteImport.update({
   id: '/api/parse-query',
   path: '/api/parse-query',
@@ -597,6 +609,11 @@ const ProjectRefFunctionsRoute = ProjectRefFunctionsRouteImport.update({
   path: '/functions',
   getParentRoute: () => ProjectRefRoute,
 } as any)
+const ProjectRefExplorerRoute = ProjectRefExplorerRouteImport.update({
+  id: '/explorer',
+  path: '/explorer',
+  getParentRoute: () => ProjectRefRoute,
+} as any)
 const ProjectRefEditorRoute = ProjectRefEditorRouteImport.update({
   id: '/editor',
   path: '/editor',
@@ -724,6 +741,11 @@ const ProjectRefFunctionsIndexRoute =
     path: '/',
     getParentRoute: () => ProjectRefFunctionsRoute,
   } as any)
+const ProjectRefExplorerIndexRoute = ProjectRefExplorerIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProjectRefExplorerRoute,
+} as any)
 const ProjectRefEditorIndexRoute = ProjectRefEditorIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -816,12 +838,6 @@ const ProjectRefSettingsDashboardRoute =
     path: '/dashboard',
     getParentRoute: () => ProjectRefSettingsRoute,
   } as any)
-const ProjectRefSettingsComputeAndDiskRoute =
-  ProjectRefSettingsComputeAndDiskRouteImport.update({
-    id: '/compute-and-disk',
-    path: '/compute-and-disk',
-    getParentRoute: () => ProjectRefSettingsRoute,
-  } as any)
 const ProjectRefSettingsApiKeysRoute =
   ProjectRefSettingsApiKeysRouteImport.update({
     id: '/api-keys',
@@ -897,6 +913,12 @@ const ProjectRefObservabilityDatabaseRoute =
   ProjectRefObservabilityDatabaseRouteImport.update({
     id: '/database',
     path: '/database',
+    getParentRoute: () => ProjectRefObservabilityRoute,
+  } as any)
+const ProjectRefObservabilityConnectionsRoute =
+  ProjectRefObservabilityConnectionsRouteImport.update({
+    id: '/connections',
+    path: '/connections',
     getParentRoute: () => ProjectRefObservabilityRoute,
   } as any)
 const ProjectRefObservabilityAuthRoute =
@@ -1504,6 +1526,24 @@ const ProjectRefFunctionsFunctionSlugCodeRoute =
     id: '/code',
     path: '/code',
     getParentRoute: () => ProjectRefFunctionsFunctionSlugRoute,
+  } as any)
+const ProjectRefExplorerQueryIdRoute =
+  ProjectRefExplorerQueryIdRouteImport.update({
+    id: '/query/$id',
+    path: '/query/$id',
+    getParentRoute: () => ProjectRefExplorerRoute,
+  } as any)
+const ProjectRefExplorerNotebookIdRoute =
+  ProjectRefExplorerNotebookIdRouteImport.update({
+    id: '/notebook/$id',
+    path: '/notebook/$id',
+    getParentRoute: () => ProjectRefExplorerRoute,
+  } as any)
+const ProjectRefExplorerChatIdRoute =
+  ProjectRefExplorerChatIdRouteImport.update({
+    id: '/chat/$id',
+    path: '/chat/$id',
+    getParentRoute: () => ProjectRefExplorerRoute,
   } as any)
 const ProjectRefDatabaseTriggersEventRoute =
   ProjectRefDatabaseTriggersEventRouteImport.update({
@@ -2123,6 +2163,7 @@ export interface FileRoutesByFullPath {
   '/api/incident-banner': typeof ApiIncidentBannerRoute
   '/api/incident-status': typeof ApiIncidentStatusRoute
   '/api/parse-query': typeof ApiParseQueryRoute
+  '/api/scoped-access-token-permissions': typeof ApiScopedAccessTokenPermissionsRoute
   '/api/status-override': typeof ApiStatusOverrideRoute
   '/integrations/vercel': typeof IntegrationsVercelRouteWithChildren
   '/new/$slug': typeof NewSlugRoute
@@ -2148,6 +2189,7 @@ export interface FileRoutesByFullPath {
   '/project/$ref/branches': typeof ProjectRefBranchesRouteWithChildren
   '/project/$ref/database': typeof ProjectRefDatabaseRouteWithChildren
   '/project/$ref/editor': typeof ProjectRefEditorRouteWithChildren
+  '/project/$ref/explorer': typeof ProjectRefExplorerRouteWithChildren
   '/project/$ref/functions': typeof ProjectRefFunctionsRouteWithChildren
   '/project/$ref/integrations': typeof ProjectRefIntegrationsRouteWithChildren
   '/project/$ref/logs': typeof ProjectRefLogsRouteWithChildren
@@ -2241,6 +2283,7 @@ export interface FileRoutesByFullPath {
   '/project/$ref/observability/$id': typeof ProjectRefObservabilityIdRoute
   '/project/$ref/observability/api-overview': typeof ProjectRefObservabilityApiOverviewRoute
   '/project/$ref/observability/auth': typeof ProjectRefObservabilityAuthRoute
+  '/project/$ref/observability/connections': typeof ProjectRefObservabilityConnectionsRoute
   '/project/$ref/observability/database': typeof ProjectRefObservabilityDatabaseRoute
   '/project/$ref/observability/edge-functions': typeof ProjectRefObservabilityEdgeFunctionsRoute
   '/project/$ref/observability/postgrest': typeof ProjectRefObservabilityPostgrestRoute
@@ -2254,7 +2297,6 @@ export interface FileRoutesByFullPath {
   '/project/$ref/settings/addons': typeof ProjectRefSettingsAddonsRoute
   '/project/$ref/settings/api': typeof ProjectRefSettingsApiRoute
   '/project/$ref/settings/api-keys': typeof ProjectRefSettingsApiKeysRouteWithChildren
-  '/project/$ref/settings/compute-and-disk': typeof ProjectRefSettingsComputeAndDiskRoute
   '/project/$ref/settings/dashboard': typeof ProjectRefSettingsDashboardRoute
   '/project/$ref/settings/general': typeof ProjectRefSettingsGeneralRoute
   '/project/$ref/settings/infrastructure': typeof ProjectRefSettingsInfrastructureRoute
@@ -2272,6 +2314,7 @@ export interface FileRoutesByFullPath {
   '/project/$ref/api/': typeof ProjectRefApiIndexRoute
   '/project/$ref/branches/': typeof ProjectRefBranchesIndexRoute
   '/project/$ref/editor/': typeof ProjectRefEditorIndexRoute
+  '/project/$ref/explorer/': typeof ProjectRefExplorerIndexRoute
   '/project/$ref/functions/': typeof ProjectRefFunctionsIndexRoute
   '/project/$ref/integrations/': typeof ProjectRefIntegrationsIndexRoute
   '/project/$ref/logs/': typeof ProjectRefLogsIndexRoute
@@ -2317,6 +2360,9 @@ export interface FileRoutesByFullPath {
   '/project/$ref/database/tables/$id': typeof ProjectRefDatabaseTablesIdRoute
   '/project/$ref/database/triggers/data': typeof ProjectRefDatabaseTriggersDataRoute
   '/project/$ref/database/triggers/event': typeof ProjectRefDatabaseTriggersEventRoute
+  '/project/$ref/explorer/chat/$id': typeof ProjectRefExplorerChatIdRoute
+  '/project/$ref/explorer/notebook/$id': typeof ProjectRefExplorerNotebookIdRoute
+  '/project/$ref/explorer/query/$id': typeof ProjectRefExplorerQueryIdRoute
   '/project/$ref/functions/$functionSlug/code': typeof ProjectRefFunctionsFunctionSlugCodeRoute
   '/project/$ref/functions/$functionSlug/details': typeof ProjectRefFunctionsFunctionSlugDetailsRoute
   '/project/$ref/functions/$functionSlug/invocations': typeof ProjectRefFunctionsFunctionSlugInvocationsRoute
@@ -2437,6 +2483,7 @@ export interface FileRoutesByTo {
   '/api/incident-banner': typeof ApiIncidentBannerRoute
   '/api/incident-status': typeof ApiIncidentStatusRoute
   '/api/parse-query': typeof ApiParseQueryRoute
+  '/api/scoped-access-token-permissions': typeof ApiScopedAccessTokenPermissionsRoute
   '/api/status-override': typeof ApiStatusOverrideRoute
   '/integrations/vercel': typeof IntegrationsVercelRouteWithChildren
   '/new/$slug': typeof NewSlugRoute
@@ -2545,6 +2592,7 @@ export interface FileRoutesByTo {
   '/project/$ref/observability/$id': typeof ProjectRefObservabilityIdRoute
   '/project/$ref/observability/api-overview': typeof ProjectRefObservabilityApiOverviewRoute
   '/project/$ref/observability/auth': typeof ProjectRefObservabilityAuthRoute
+  '/project/$ref/observability/connections': typeof ProjectRefObservabilityConnectionsRoute
   '/project/$ref/observability/database': typeof ProjectRefObservabilityDatabaseRoute
   '/project/$ref/observability/edge-functions': typeof ProjectRefObservabilityEdgeFunctionsRoute
   '/project/$ref/observability/postgrest': typeof ProjectRefObservabilityPostgrestRoute
@@ -2557,7 +2605,6 @@ export interface FileRoutesByTo {
   '/project/$ref/realtime/settings': typeof ProjectRefRealtimeSettingsRoute
   '/project/$ref/settings/addons': typeof ProjectRefSettingsAddonsRoute
   '/project/$ref/settings/api': typeof ProjectRefSettingsApiRoute
-  '/project/$ref/settings/compute-and-disk': typeof ProjectRefSettingsComputeAndDiskRoute
   '/project/$ref/settings/dashboard': typeof ProjectRefSettingsDashboardRoute
   '/project/$ref/settings/general': typeof ProjectRefSettingsGeneralRoute
   '/project/$ref/settings/infrastructure': typeof ProjectRefSettingsInfrastructureRoute
@@ -2575,6 +2622,7 @@ export interface FileRoutesByTo {
   '/project/$ref/api': typeof ProjectRefApiIndexRoute
   '/project/$ref/branches': typeof ProjectRefBranchesIndexRoute
   '/project/$ref/editor': typeof ProjectRefEditorIndexRoute
+  '/project/$ref/explorer': typeof ProjectRefExplorerIndexRoute
   '/project/$ref/functions': typeof ProjectRefFunctionsIndexRoute
   '/project/$ref/integrations': typeof ProjectRefIntegrationsIndexRoute
   '/project/$ref/logs': typeof ProjectRefLogsIndexRoute
@@ -2620,6 +2668,9 @@ export interface FileRoutesByTo {
   '/project/$ref/database/tables/$id': typeof ProjectRefDatabaseTablesIdRoute
   '/project/$ref/database/triggers/data': typeof ProjectRefDatabaseTriggersDataRoute
   '/project/$ref/database/triggers/event': typeof ProjectRefDatabaseTriggersEventRoute
+  '/project/$ref/explorer/chat/$id': typeof ProjectRefExplorerChatIdRoute
+  '/project/$ref/explorer/notebook/$id': typeof ProjectRefExplorerNotebookIdRoute
+  '/project/$ref/explorer/query/$id': typeof ProjectRefExplorerQueryIdRoute
   '/project/$ref/functions/$functionSlug/code': typeof ProjectRefFunctionsFunctionSlugCodeRoute
   '/project/$ref/functions/$functionSlug/details': typeof ProjectRefFunctionsFunctionSlugDetailsRoute
   '/project/$ref/functions/$functionSlug/invocations': typeof ProjectRefFunctionsFunctionSlugInvocationsRoute
@@ -2744,6 +2795,7 @@ export interface FileRoutesById {
   '/api/incident-banner': typeof ApiIncidentBannerRoute
   '/api/incident-status': typeof ApiIncidentStatusRoute
   '/api/parse-query': typeof ApiParseQueryRoute
+  '/api/scoped-access-token-permissions': typeof ApiScopedAccessTokenPermissionsRoute
   '/api/status-override': typeof ApiStatusOverrideRoute
   '/integrations/vercel': typeof IntegrationsVercelRouteWithChildren
   '/new/$slug': typeof NewSlugRoute
@@ -2769,6 +2821,7 @@ export interface FileRoutesById {
   '/project/$ref/branches': typeof ProjectRefBranchesRouteWithChildren
   '/project/$ref/database': typeof ProjectRefDatabaseRouteWithChildren
   '/project/$ref/editor': typeof ProjectRefEditorRouteWithChildren
+  '/project/$ref/explorer': typeof ProjectRefExplorerRouteWithChildren
   '/project/$ref/functions': typeof ProjectRefFunctionsRouteWithChildren
   '/project/$ref/integrations': typeof ProjectRefIntegrationsRouteWithChildren
   '/project/$ref/logs': typeof ProjectRefLogsRouteWithChildren
@@ -2862,6 +2915,7 @@ export interface FileRoutesById {
   '/project/$ref/observability/$id': typeof ProjectRefObservabilityIdRoute
   '/project/$ref/observability/api-overview': typeof ProjectRefObservabilityApiOverviewRoute
   '/project/$ref/observability/auth': typeof ProjectRefObservabilityAuthRoute
+  '/project/$ref/observability/connections': typeof ProjectRefObservabilityConnectionsRoute
   '/project/$ref/observability/database': typeof ProjectRefObservabilityDatabaseRoute
   '/project/$ref/observability/edge-functions': typeof ProjectRefObservabilityEdgeFunctionsRoute
   '/project/$ref/observability/postgrest': typeof ProjectRefObservabilityPostgrestRoute
@@ -2875,7 +2929,6 @@ export interface FileRoutesById {
   '/project/$ref/settings/addons': typeof ProjectRefSettingsAddonsRoute
   '/project/$ref/settings/api': typeof ProjectRefSettingsApiRoute
   '/project/$ref/settings/api-keys': typeof ProjectRefSettingsApiKeysRouteWithChildren
-  '/project/$ref/settings/compute-and-disk': typeof ProjectRefSettingsComputeAndDiskRoute
   '/project/$ref/settings/dashboard': typeof ProjectRefSettingsDashboardRoute
   '/project/$ref/settings/general': typeof ProjectRefSettingsGeneralRoute
   '/project/$ref/settings/infrastructure': typeof ProjectRefSettingsInfrastructureRoute
@@ -2893,6 +2946,7 @@ export interface FileRoutesById {
   '/project/$ref/api/': typeof ProjectRefApiIndexRoute
   '/project/$ref/branches/': typeof ProjectRefBranchesIndexRoute
   '/project/$ref/editor/': typeof ProjectRefEditorIndexRoute
+  '/project/$ref/explorer/': typeof ProjectRefExplorerIndexRoute
   '/project/$ref/functions/': typeof ProjectRefFunctionsIndexRoute
   '/project/$ref/integrations/': typeof ProjectRefIntegrationsIndexRoute
   '/project/$ref/logs/': typeof ProjectRefLogsIndexRoute
@@ -2938,6 +2992,9 @@ export interface FileRoutesById {
   '/project/$ref/database/tables/$id': typeof ProjectRefDatabaseTablesIdRoute
   '/project/$ref/database/triggers/data': typeof ProjectRefDatabaseTriggersDataRoute
   '/project/$ref/database/triggers/event': typeof ProjectRefDatabaseTriggersEventRoute
+  '/project/$ref/explorer/chat/$id': typeof ProjectRefExplorerChatIdRoute
+  '/project/$ref/explorer/notebook/$id': typeof ProjectRefExplorerNotebookIdRoute
+  '/project/$ref/explorer/query/$id': typeof ProjectRefExplorerQueryIdRoute
   '/project/$ref/functions/$functionSlug/code': typeof ProjectRefFunctionsFunctionSlugCodeRoute
   '/project/$ref/functions/$functionSlug/details': typeof ProjectRefFunctionsFunctionSlugDetailsRoute
   '/project/$ref/functions/$functionSlug/invocations': typeof ProjectRefFunctionsFunctionSlugInvocationsRoute
@@ -3061,6 +3118,7 @@ export interface FileRouteTypes {
     | '/api/incident-banner'
     | '/api/incident-status'
     | '/api/parse-query'
+    | '/api/scoped-access-token-permissions'
     | '/api/status-override'
     | '/integrations/vercel'
     | '/new/$slug'
@@ -3086,6 +3144,7 @@ export interface FileRouteTypes {
     | '/project/$ref/branches'
     | '/project/$ref/database'
     | '/project/$ref/editor'
+    | '/project/$ref/explorer'
     | '/project/$ref/functions'
     | '/project/$ref/integrations'
     | '/project/$ref/logs'
@@ -3179,6 +3238,7 @@ export interface FileRouteTypes {
     | '/project/$ref/observability/$id'
     | '/project/$ref/observability/api-overview'
     | '/project/$ref/observability/auth'
+    | '/project/$ref/observability/connections'
     | '/project/$ref/observability/database'
     | '/project/$ref/observability/edge-functions'
     | '/project/$ref/observability/postgrest'
@@ -3192,7 +3252,6 @@ export interface FileRouteTypes {
     | '/project/$ref/settings/addons'
     | '/project/$ref/settings/api'
     | '/project/$ref/settings/api-keys'
-    | '/project/$ref/settings/compute-and-disk'
     | '/project/$ref/settings/dashboard'
     | '/project/$ref/settings/general'
     | '/project/$ref/settings/infrastructure'
@@ -3210,6 +3269,7 @@ export interface FileRouteTypes {
     | '/project/$ref/api/'
     | '/project/$ref/branches/'
     | '/project/$ref/editor/'
+    | '/project/$ref/explorer/'
     | '/project/$ref/functions/'
     | '/project/$ref/integrations/'
     | '/project/$ref/logs/'
@@ -3255,6 +3315,9 @@ export interface FileRouteTypes {
     | '/project/$ref/database/tables/$id'
     | '/project/$ref/database/triggers/data'
     | '/project/$ref/database/triggers/event'
+    | '/project/$ref/explorer/chat/$id'
+    | '/project/$ref/explorer/notebook/$id'
+    | '/project/$ref/explorer/query/$id'
     | '/project/$ref/functions/$functionSlug/code'
     | '/project/$ref/functions/$functionSlug/details'
     | '/project/$ref/functions/$functionSlug/invocations'
@@ -3375,6 +3438,7 @@ export interface FileRouteTypes {
     | '/api/incident-banner'
     | '/api/incident-status'
     | '/api/parse-query'
+    | '/api/scoped-access-token-permissions'
     | '/api/status-override'
     | '/integrations/vercel'
     | '/new/$slug'
@@ -3483,6 +3547,7 @@ export interface FileRouteTypes {
     | '/project/$ref/observability/$id'
     | '/project/$ref/observability/api-overview'
     | '/project/$ref/observability/auth'
+    | '/project/$ref/observability/connections'
     | '/project/$ref/observability/database'
     | '/project/$ref/observability/edge-functions'
     | '/project/$ref/observability/postgrest'
@@ -3495,7 +3560,6 @@ export interface FileRouteTypes {
     | '/project/$ref/realtime/settings'
     | '/project/$ref/settings/addons'
     | '/project/$ref/settings/api'
-    | '/project/$ref/settings/compute-and-disk'
     | '/project/$ref/settings/dashboard'
     | '/project/$ref/settings/general'
     | '/project/$ref/settings/infrastructure'
@@ -3513,6 +3577,7 @@ export interface FileRouteTypes {
     | '/project/$ref/api'
     | '/project/$ref/branches'
     | '/project/$ref/editor'
+    | '/project/$ref/explorer'
     | '/project/$ref/functions'
     | '/project/$ref/integrations'
     | '/project/$ref/logs'
@@ -3558,6 +3623,9 @@ export interface FileRouteTypes {
     | '/project/$ref/database/tables/$id'
     | '/project/$ref/database/triggers/data'
     | '/project/$ref/database/triggers/event'
+    | '/project/$ref/explorer/chat/$id'
+    | '/project/$ref/explorer/notebook/$id'
+    | '/project/$ref/explorer/query/$id'
     | '/project/$ref/functions/$functionSlug/code'
     | '/project/$ref/functions/$functionSlug/details'
     | '/project/$ref/functions/$functionSlug/invocations'
@@ -3681,6 +3749,7 @@ export interface FileRouteTypes {
     | '/api/incident-banner'
     | '/api/incident-status'
     | '/api/parse-query'
+    | '/api/scoped-access-token-permissions'
     | '/api/status-override'
     | '/integrations/vercel'
     | '/new/$slug'
@@ -3706,6 +3775,7 @@ export interface FileRouteTypes {
     | '/project/$ref/branches'
     | '/project/$ref/database'
     | '/project/$ref/editor'
+    | '/project/$ref/explorer'
     | '/project/$ref/functions'
     | '/project/$ref/integrations'
     | '/project/$ref/logs'
@@ -3799,6 +3869,7 @@ export interface FileRouteTypes {
     | '/project/$ref/observability/$id'
     | '/project/$ref/observability/api-overview'
     | '/project/$ref/observability/auth'
+    | '/project/$ref/observability/connections'
     | '/project/$ref/observability/database'
     | '/project/$ref/observability/edge-functions'
     | '/project/$ref/observability/postgrest'
@@ -3812,7 +3883,6 @@ export interface FileRouteTypes {
     | '/project/$ref/settings/addons'
     | '/project/$ref/settings/api'
     | '/project/$ref/settings/api-keys'
-    | '/project/$ref/settings/compute-and-disk'
     | '/project/$ref/settings/dashboard'
     | '/project/$ref/settings/general'
     | '/project/$ref/settings/infrastructure'
@@ -3830,6 +3900,7 @@ export interface FileRouteTypes {
     | '/project/$ref/api/'
     | '/project/$ref/branches/'
     | '/project/$ref/editor/'
+    | '/project/$ref/explorer/'
     | '/project/$ref/functions/'
     | '/project/$ref/integrations/'
     | '/project/$ref/logs/'
@@ -3875,6 +3946,9 @@ export interface FileRouteTypes {
     | '/project/$ref/database/tables/$id'
     | '/project/$ref/database/triggers/data'
     | '/project/$ref/database/triggers/event'
+    | '/project/$ref/explorer/chat/$id'
+    | '/project/$ref/explorer/notebook/$id'
+    | '/project/$ref/explorer/query/$id'
     | '/project/$ref/functions/$functionSlug/code'
     | '/project/$ref/functions/$functionSlug/details'
     | '/project/$ref/functions/$functionSlug/invocations'
@@ -3988,6 +4062,7 @@ export interface RootRouteChildren {
   ApiIncidentBannerRoute: typeof ApiIncidentBannerRoute
   ApiIncidentStatusRoute: typeof ApiIncidentStatusRoute
   ApiParseQueryRoute: typeof ApiParseQueryRoute
+  ApiScopedAccessTokenPermissionsRoute: typeof ApiScopedAccessTokenPermissionsRoute
   ApiStatusOverrideRoute: typeof ApiStatusOverrideRoute
   IntegrationsVercelRoute: typeof IntegrationsVercelRouteWithChildren
   NewSlugRoute: typeof NewSlugRoute
@@ -4215,6 +4290,13 @@ declare module '@tanstack/react-router' {
       path: '/api/status-override'
       fullPath: '/api/status-override'
       preLoaderRoute: typeof ApiStatusOverrideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/scoped-access-token-permissions': {
+      id: '/api/scoped-access-token-permissions'
+      path: '/api/scoped-access-token-permissions'
+      fullPath: '/api/scoped-access-token-permissions'
+      preLoaderRoute: typeof ApiScopedAccessTokenPermissionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/parse-query': {
@@ -4476,6 +4558,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectRefFunctionsRouteImport
       parentRoute: typeof ProjectRefRoute
     }
+    '/project/$ref/explorer': {
+      id: '/project/$ref/explorer'
+      path: '/explorer'
+      fullPath: '/project/$ref/explorer'
+      preLoaderRoute: typeof ProjectRefExplorerRouteImport
+      parentRoute: typeof ProjectRefRoute
+    }
     '/project/$ref/editor': {
       id: '/project/$ref/editor'
       path: '/editor'
@@ -4644,6 +4733,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectRefFunctionsIndexRouteImport
       parentRoute: typeof ProjectRefFunctionsRoute
     }
+    '/project/$ref/explorer/': {
+      id: '/project/$ref/explorer/'
+      path: '/'
+      fullPath: '/project/$ref/explorer/'
+      preLoaderRoute: typeof ProjectRefExplorerIndexRouteImport
+      parentRoute: typeof ProjectRefExplorerRoute
+    }
     '/project/$ref/editor/': {
       id: '/project/$ref/editor/'
       path: '/'
@@ -4763,13 +4859,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectRefSettingsDashboardRouteImport
       parentRoute: typeof ProjectRefSettingsRoute
     }
-    '/project/$ref/settings/compute-and-disk': {
-      id: '/project/$ref/settings/compute-and-disk'
-      path: '/compute-and-disk'
-      fullPath: '/project/$ref/settings/compute-and-disk'
-      preLoaderRoute: typeof ProjectRefSettingsComputeAndDiskRouteImport
-      parentRoute: typeof ProjectRefSettingsRoute
-    }
     '/project/$ref/settings/api-keys': {
       id: '/project/$ref/settings/api-keys'
       path: '/api-keys'
@@ -4859,6 +4948,13 @@ declare module '@tanstack/react-router' {
       path: '/database'
       fullPath: '/project/$ref/observability/database'
       preLoaderRoute: typeof ProjectRefObservabilityDatabaseRouteImport
+      parentRoute: typeof ProjectRefObservabilityRoute
+    }
+    '/project/$ref/observability/connections': {
+      id: '/project/$ref/observability/connections'
+      path: '/connections'
+      fullPath: '/project/$ref/observability/connections'
+      preLoaderRoute: typeof ProjectRefObservabilityConnectionsRouteImport
       parentRoute: typeof ProjectRefObservabilityRoute
     }
     '/project/$ref/observability/auth': {
@@ -5616,6 +5712,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/project/$ref/functions/$functionSlug/code'
       preLoaderRoute: typeof ProjectRefFunctionsFunctionSlugCodeRouteImport
       parentRoute: typeof ProjectRefFunctionsFunctionSlugRoute
+    }
+    '/project/$ref/explorer/query/$id': {
+      id: '/project/$ref/explorer/query/$id'
+      path: '/query/$id'
+      fullPath: '/project/$ref/explorer/query/$id'
+      preLoaderRoute: typeof ProjectRefExplorerQueryIdRouteImport
+      parentRoute: typeof ProjectRefExplorerRoute
+    }
+    '/project/$ref/explorer/notebook/$id': {
+      id: '/project/$ref/explorer/notebook/$id'
+      path: '/notebook/$id'
+      fullPath: '/project/$ref/explorer/notebook/$id'
+      preLoaderRoute: typeof ProjectRefExplorerNotebookIdRouteImport
+      parentRoute: typeof ProjectRefExplorerRoute
+    }
+    '/project/$ref/explorer/chat/$id': {
+      id: '/project/$ref/explorer/chat/$id'
+      path: '/chat/$id'
+      fullPath: '/project/$ref/explorer/chat/$id'
+      preLoaderRoute: typeof ProjectRefExplorerChatIdRouteImport
+      parentRoute: typeof ProjectRefExplorerRoute
     }
     '/project/$ref/database/triggers/event': {
       id: '/project/$ref/database/triggers/event'
@@ -6626,6 +6743,23 @@ const ProjectRefEditorRouteChildren: ProjectRefEditorRouteChildren = {
 const ProjectRefEditorRouteWithChildren =
   ProjectRefEditorRoute._addFileChildren(ProjectRefEditorRouteChildren)
 
+interface ProjectRefExplorerRouteChildren {
+  ProjectRefExplorerIndexRoute: typeof ProjectRefExplorerIndexRoute
+  ProjectRefExplorerChatIdRoute: typeof ProjectRefExplorerChatIdRoute
+  ProjectRefExplorerNotebookIdRoute: typeof ProjectRefExplorerNotebookIdRoute
+  ProjectRefExplorerQueryIdRoute: typeof ProjectRefExplorerQueryIdRoute
+}
+
+const ProjectRefExplorerRouteChildren: ProjectRefExplorerRouteChildren = {
+  ProjectRefExplorerIndexRoute: ProjectRefExplorerIndexRoute,
+  ProjectRefExplorerChatIdRoute: ProjectRefExplorerChatIdRoute,
+  ProjectRefExplorerNotebookIdRoute: ProjectRefExplorerNotebookIdRoute,
+  ProjectRefExplorerQueryIdRoute: ProjectRefExplorerQueryIdRoute,
+}
+
+const ProjectRefExplorerRouteWithChildren =
+  ProjectRefExplorerRoute._addFileChildren(ProjectRefExplorerRouteChildren)
+
 interface ProjectRefFunctionsFunctionSlugRouteChildren {
   ProjectRefFunctionsFunctionSlugCodeRoute: typeof ProjectRefFunctionsFunctionSlugCodeRoute
   ProjectRefFunctionsFunctionSlugDetailsRoute: typeof ProjectRefFunctionsFunctionSlugDetailsRoute
@@ -6746,6 +6880,7 @@ interface ProjectRefObservabilityRouteChildren {
   ProjectRefObservabilityIdRoute: typeof ProjectRefObservabilityIdRoute
   ProjectRefObservabilityApiOverviewRoute: typeof ProjectRefObservabilityApiOverviewRoute
   ProjectRefObservabilityAuthRoute: typeof ProjectRefObservabilityAuthRoute
+  ProjectRefObservabilityConnectionsRoute: typeof ProjectRefObservabilityConnectionsRoute
   ProjectRefObservabilityDatabaseRoute: typeof ProjectRefObservabilityDatabaseRoute
   ProjectRefObservabilityEdgeFunctionsRoute: typeof ProjectRefObservabilityEdgeFunctionsRoute
   ProjectRefObservabilityPostgrestRoute: typeof ProjectRefObservabilityPostgrestRoute
@@ -6762,6 +6897,8 @@ const ProjectRefObservabilityRouteChildren: ProjectRefObservabilityRouteChildren
     ProjectRefObservabilityApiOverviewRoute:
       ProjectRefObservabilityApiOverviewRoute,
     ProjectRefObservabilityAuthRoute: ProjectRefObservabilityAuthRoute,
+    ProjectRefObservabilityConnectionsRoute:
+      ProjectRefObservabilityConnectionsRoute,
     ProjectRefObservabilityDatabaseRoute: ProjectRefObservabilityDatabaseRoute,
     ProjectRefObservabilityEdgeFunctionsRoute:
       ProjectRefObservabilityEdgeFunctionsRoute,
@@ -6816,7 +6953,6 @@ interface ProjectRefSettingsRouteChildren {
   ProjectRefSettingsAddonsRoute: typeof ProjectRefSettingsAddonsRoute
   ProjectRefSettingsApiRoute: typeof ProjectRefSettingsApiRoute
   ProjectRefSettingsApiKeysRoute: typeof ProjectRefSettingsApiKeysRouteWithChildren
-  ProjectRefSettingsComputeAndDiskRoute: typeof ProjectRefSettingsComputeAndDiskRoute
   ProjectRefSettingsDashboardRoute: typeof ProjectRefSettingsDashboardRoute
   ProjectRefSettingsGeneralRoute: typeof ProjectRefSettingsGeneralRoute
   ProjectRefSettingsInfrastructureRoute: typeof ProjectRefSettingsInfrastructureRoute
@@ -6833,7 +6969,6 @@ const ProjectRefSettingsRouteChildren: ProjectRefSettingsRouteChildren = {
   ProjectRefSettingsAddonsRoute: ProjectRefSettingsAddonsRoute,
   ProjectRefSettingsApiRoute: ProjectRefSettingsApiRoute,
   ProjectRefSettingsApiKeysRoute: ProjectRefSettingsApiKeysRouteWithChildren,
-  ProjectRefSettingsComputeAndDiskRoute: ProjectRefSettingsComputeAndDiskRoute,
   ProjectRefSettingsDashboardRoute: ProjectRefSettingsDashboardRoute,
   ProjectRefSettingsGeneralRoute: ProjectRefSettingsGeneralRoute,
   ProjectRefSettingsInfrastructureRoute: ProjectRefSettingsInfrastructureRoute,
@@ -6904,6 +7039,7 @@ interface ProjectRefRouteChildren {
   ProjectRefBranchesRoute: typeof ProjectRefBranchesRouteWithChildren
   ProjectRefDatabaseRoute: typeof ProjectRefDatabaseRouteWithChildren
   ProjectRefEditorRoute: typeof ProjectRefEditorRouteWithChildren
+  ProjectRefExplorerRoute: typeof ProjectRefExplorerRouteWithChildren
   ProjectRefFunctionsRoute: typeof ProjectRefFunctionsRouteWithChildren
   ProjectRefIntegrationsRoute: typeof ProjectRefIntegrationsRouteWithChildren
   ProjectRefLogsRoute: typeof ProjectRefLogsRouteWithChildren
@@ -6923,6 +7059,7 @@ const ProjectRefRouteChildren: ProjectRefRouteChildren = {
   ProjectRefBranchesRoute: ProjectRefBranchesRouteWithChildren,
   ProjectRefDatabaseRoute: ProjectRefDatabaseRouteWithChildren,
   ProjectRefEditorRoute: ProjectRefEditorRouteWithChildren,
+  ProjectRefExplorerRoute: ProjectRefExplorerRouteWithChildren,
   ProjectRefFunctionsRoute: ProjectRefFunctionsRouteWithChildren,
   ProjectRefIntegrationsRoute: ProjectRefIntegrationsRouteWithChildren,
   ProjectRefLogsRoute: ProjectRefLogsRouteWithChildren,
@@ -7003,6 +7140,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiIncidentBannerRoute: ApiIncidentBannerRoute,
   ApiIncidentStatusRoute: ApiIncidentStatusRoute,
   ApiParseQueryRoute: ApiParseQueryRoute,
+  ApiScopedAccessTokenPermissionsRoute: ApiScopedAccessTokenPermissionsRoute,
   ApiStatusOverrideRoute: ApiStatusOverrideRoute,
   IntegrationsVercelRoute: IntegrationsVercelRouteWithChildren,
   NewSlugRoute: NewSlugRoute,

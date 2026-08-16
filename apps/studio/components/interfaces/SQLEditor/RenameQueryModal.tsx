@@ -1,8 +1,6 @@
-import { t as $t } from '@/lib/i18n';
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useParams } from 'common'
 import { useRouter } from 'next/router'
-import { useEffect } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import {
@@ -36,6 +34,7 @@ import { Snippet } from '@/data/content/sql-folders-query'
 import type { SqlSnippet } from '@/data/content/sql-snippets-query'
 import { useOrgAiOptInLevel } from '@/hooks/misc/useOrgOptedIntoAi'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor/sql-editor-state'
 import { createTabId, useTabsStateSnapshot } from '@/state/tabs'
 
@@ -147,6 +146,7 @@ export const RenameQueryModal = ({
       }
 
       toast.success($t('Successfully renamed snippet!'))
+      reset({ name, description }, { keepDirtyValues: false })
       if (onComplete) onComplete()
     } catch (error: any) {
       // [Joshen] We probably need some rollback cause all the saving is async
@@ -157,18 +157,15 @@ export const RenameQueryModal = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { name: name ?? '', description: description ?? '' },
+    values: { name: name ?? '', description: description ?? '' },
+    resetOptions: { keepDirtyValues: true },
   })
   const { reset, formState } = form
   const { isDirty, isSubmitting } = formState
 
-  useEffect(() => {
-    if (isDirty) return
-    reset({ name: name ?? '', description: description ?? '' })
-  }, [id, name, description, reset, isDirty])
-
   const handleCancel = () => {
     onCancel()
-    reset()
+    reset(undefined, { keepDirtyValues: false })
   }
 
   return (
@@ -185,7 +182,7 @@ export const RenameQueryModal = ({
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItemLayout name="name" layout="vertical" label={$t('Name')}>
+                  <FormItemLayout name="name" layout="vertical" label={'Name'}>
                     <FormControl>
                       <Input {...field} id="name" />
                     </FormControl>
@@ -228,13 +225,13 @@ export const RenameQueryModal = ({
                 control={form.control}
                 name="description"
                 render={({ field }) => (
-                  <FormItemLayout name="description" layout="vertical" label={$t('Description')}>
+                  <FormItemLayout name="description" layout="vertical" label={'Description'}>
                     <FormControl>
                       <Textarea
                         {...field}
                         id="description"
                         rows={4}
-                        placeholder={$t('Describe query')}
+                        placeholder={'Describe query'}
                         className="resize-none"
                       />
                     </FormControl>
@@ -244,13 +241,11 @@ export const RenameQueryModal = ({
             </DialogSection>
             <DialogFooter>
               <Button type="reset" variant="default" onClick={handleCancel} disabled={isSubmitting}>
-                
-                                              {$t('Cancel')}
-                                            </Button>
+                {$t('Cancel')}
+              </Button>
               <Button type="submit" loading={isSubmitting} disabled={isSubmitting || !isDirty}>
-                
-                                              {$t('Rename query')}
-                                            </Button>
+                {$t('Rename query')}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

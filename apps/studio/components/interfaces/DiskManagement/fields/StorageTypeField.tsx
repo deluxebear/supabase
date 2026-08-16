@@ -46,7 +46,7 @@ export function StorageTypeField({ form, disableInput }: StorageTypeFieldProps) 
       name="storageType"
       control={control}
       render={({ field }) => (
-        <FormItemLayout layout="horizontal" label={$t('Storage type')}>
+        <FormItemLayout layout="flex-row-reverse" label={$t('Storage type')} id={field.name}>
           <Select
             {...field}
             onValueChange={async (e: DiskType) => {

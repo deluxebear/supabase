@@ -17,7 +17,6 @@ import { CreateProjectForm } from './ProjectCreation.schema'
 import { InlineLink } from '@/components/ui/InlineLink'
 import Panel from '@/components/ui/Panel'
 import { instanceSizeSpecs } from '@/data/projects/new-project.constants'
-import { getCloudProviderArchitecture } from '@/lib/cloudprovider-utils'
 import { DOCS_URL } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 
@@ -80,11 +79,7 @@ export const ComputeSizeSelector = ({ form }: ComputeSizeSelectorProps) => {
                             <div className="text-sm">
                               <span className="text-foreground">
                                 {instanceSizeSpecs[option].ram} {$t('RAM /')}{' '}
-                                {instanceSizeSpecs[option].cpu}{' '}
-                                {getCloudProviderArchitecture(
-                                  form.getValues('cloudProvider') as CloudProvider
-                                )}{' '}
-                                CPU
+                                {instanceSizeSpecs[option].cpu} CPU
                               </span>
                               <p
                                 translate="no"

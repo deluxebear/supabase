@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
@@ -8,6 +7,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { STORED_SECRET_PLACEHOLDER } from '../DestinationForm.constants'
 import type { DestinationPanelSchemaType } from '../DestinationForm.schema'
+import { t as $t } from '@/lib/i18n'
 
 export const SnowflakeFields = ({
   form,
@@ -25,9 +25,8 @@ export const SnowflakeFields = ({
       <div className="flex flex-col gap-y-1">
         <p className="text-sm font-medium text-foreground">{$t('Connection')}</p>
         <p className="text-sm text-foreground-light">
-          
-                            {$t('Configure the Snowflake account, user, and target namespace for replicated data.')}
-                          </p>
+          {$t('Configure the Snowflake account, user, and target namespace for replicated data.')}
+        </p>
       </div>
 
       <div className="flex flex-col gap-y-4">
@@ -115,9 +114,8 @@ export const SnowflakeFields = ({
       <div className="flex flex-col gap-y-1">
         <p className="text-sm font-medium text-foreground">{$t('Authentication')}</p>
         <p className="text-sm text-foreground-light">
-          
-                            {$t('Use the RSA private key whose public key is registered on the Snowflake user.')}
-                          </p>
+          {$t('Use the RSA private key whose public key is registered on the Snowflake user.')}
+        </p>
       </div>
 
       <div className="flex flex-col gap-y-4">
@@ -176,6 +174,10 @@ export const SnowflakeFields = ({
                       <Button
                         variant="default"
                         className="w-7"
+                        title={showPrivateKeyPassphrase ? 'Hide passphrase' : 'Show passphrase'}
+                        aria-label={
+                          showPrivateKeyPassphrase ? 'Hide passphrase' : 'Show passphrase'
+                        }
                         icon={showPrivateKeyPassphrase ? <Eye /> : <EyeOff />}
                         onClick={() => setShowPrivateKeyPassphrase(!showPrivateKeyPassphrase)}
                       />

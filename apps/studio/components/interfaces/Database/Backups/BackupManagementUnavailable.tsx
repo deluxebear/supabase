@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Button } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 
 import type { BackupManagementAvailability } from '@/lib/api/self-platform/backup-management-availability-schema'
 import { t as $t } from '@/lib/i18n'

@@ -16,8 +16,8 @@ import {
 } from 'ui'
 import { DialogDescription, DialogHeader } from 'ui/src/components/shadcn/ui/dialog'
 
+import { Admonition } from '../Admonition'
 import { uiT } from '../lib/i18n'
-import { Admonition } from './../admonition'
 
 export interface ConfirmationModalProps {
   loading?: boolean

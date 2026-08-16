@@ -1,9 +1,8 @@
-import { t as $t } from '@/lib/i18n';
 import { Monaco, OnMount } from '@monaco-editor/react'
 import { LOCAL_STORAGE_KEYS } from 'common'
 import { noop } from 'lodash'
 import { RefObject, useRef } from 'react'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 
 import type { IStandaloneCodeEditor } from './SQLEditor.types'
 import { useSnippetEditor } from './useSnippetEditor'
@@ -11,6 +10,7 @@ import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/L
 import { getEditorSelectionParts } from '@/components/ui/AIEditor/utils'
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useIsShortcutEnabled } from '@/state/shortcuts/useIsShortcutEnabled'
@@ -25,8 +25,6 @@ export type MonacoEditorProps = {
   monacoRef: RefObject<Monaco | null>
   autoFocus?: boolean
   executeQuery: () => void
-  executeExplainQuery: () => void
-  showExplainAction?: boolean
   prettifyQuery: () => void
   onHasSelection: (value: boolean) => void
   onMount?: (editor: IStandaloneCodeEditor) => void
@@ -49,8 +47,6 @@ export const MonacoEditor = ({
   placeholder = '',
   className,
   executeQuery,
-  executeExplainQuery,
-  showExplainAction = true,
   prettifyQuery,
   onHasSelection,
   onPrompt,
@@ -72,9 +68,6 @@ export const MonacoEditor = ({
   // mount-time closure.
   const snippetRef = useRef(snippet)
   snippetRef.current = snippet
-
-  const executeExplainQueryRef = useRef(executeExplainQuery)
-  executeExplainQueryRef.current = executeExplainQuery
 
   const prettifyQueryRef = useRef(prettifyQuery)
   prettifyQueryRef.current = prettifyQuery
@@ -115,19 +108,6 @@ export const MonacoEditor = ({
         '!inlineSuggestionVisible',
       ].join(' && ')
     )
-
-    if (showExplainAction) {
-      editor.addAction({
-        id: 'run-explain-query',
-        label: 'Run EXPLAIN ANALYZE',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter],
-        contextMenuGroupId: 'operation',
-        contextMenuOrder: 1,
-        run: () => {
-          executeExplainQueryRef.current()
-        },
-      })
-    }
 
     editor.addAction({
       id: 'save-query',
@@ -212,7 +192,9 @@ export const MonacoEditor = ({
           type="default"
           className="rounded-none border-0 border-b"
           title={$t('Read-only snippet')}
-          description={$t('This snippet has been shared to the project and is only editable by the owner who created this snippet. You may duplicate this snippet into a personal copy by right clicking on the snippet and selecting “Duplicate query”.')}
+          description={$t(
+            'This snippet has been shared to the project and is only editable by the owner who created this snippet. You may duplicate this snippet into a personal copy by right clicking on the snippet and selecting “Duplicate query”.'
+          )}
         />
       )}
       <CodeEditor

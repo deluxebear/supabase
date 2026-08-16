@@ -17,6 +17,7 @@ import { CustomDomainsConfigureHostname } from './CustomDomainsConfigureHostname
 import { CustomDomainsShimmerLoader } from './CustomDomainsShimmerLoader'
 import { CustomDomainVerify } from './CustomDomainVerify'
 import { SupportLink } from '@/components/interfaces/Support/SupportLink'
+import { HighAvailabilityDisabledEmptyState } from '@/components/ui/HighAvailability/HighAvailabilityDisabledEmptyState'
 import { InlineLinkClassName } from '@/components/ui/InlineLink'
 import { UpgradeToPro } from '@/components/ui/UpgradeToPro'
 import {
@@ -24,6 +25,7 @@ import {
   type CustomDomainsData,
 } from '@/data/custom-domains/custom-domains-query'
 import { useProjectAddonsQuery } from '@/data/subscriptions/project-addons-query'
+import { useHighAvailability } from '@/hooks/misc/useHighAvailability'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { t as $t } from '@/lib/i18n'
@@ -31,6 +33,7 @@ import { t as $t } from '@/lib/i18n'
 export const CustomDomainConfig = () => {
   const { ref } = useParams()
   const { data: project } = useSelectedProjectQuery()
+  const { isHighAvailability, isPending: isHighAvailabilityPending } = useHighAvailability()
   const { data: organization } = useSelectedOrganizationQuery()
   const isBranch = Boolean(project?.parent_project_ref)
   const entityLabel = isBranch ? 'branch' : 'project'
@@ -38,8 +41,12 @@ export const CustomDomainConfig = () => {
   const customDomainsDisabledDueToQuota = useFlag('customDomainsDisabledDueToQuota')
 
   const plan = organization?.plan?.id
+  const canLoadCustomDomains = !isHighAvailability && !isHighAvailabilityPending
 
-  const { data: addons, isPending: isLoadingAddons } = useProjectAddonsQuery({ projectRef: ref })
+  const { data: addons, isPending: isLoadingAddons } = useProjectAddonsQuery(
+    { projectRef: ref },
+    { enabled: canLoadCustomDomains }
+  )
   const hasCustomDomainAddon = !!addons?.selected_addons.find((x) => x.type === 'custom_domain')
 
   const {
@@ -51,6 +58,7 @@ export const CustomDomainConfig = () => {
   } = useCustomDomainsQuery(
     { projectRef: ref },
     {
+      enabled: canLoadCustomDomains,
       refetchInterval: (query) => {
         const data = query.state.data
         // while setting up the ssl certificate, we want to poll every 5 seconds
@@ -65,6 +73,30 @@ export const CustomDomainConfig = () => {
 
   const { status } = customDomainData || {}
 
+  if (isHighAvailability) {
+    return (
+      <PageSection id="custom-domains">
+        <PageSectionMeta>
+          <PageSectionSummary>
+            <PageSectionTitle>{$t('Custom domains')}</PageSectionTitle>
+            <PageSectionDescription>
+              {$t('Present a branded experience to your users')}
+            </PageSectionDescription>
+          </PageSectionSummary>
+        </PageSectionMeta>
+        <PageSectionContent>
+          <HighAvailabilityDisabledEmptyState
+            title={$t('Custom domains unavailable on High Availability projects')}
+            description={$t(
+              "We're working to bring custom domains to High Availability projects. Contact support if this is blocking your work."
+            )}
+            className="max-w-none mx-0 py-6"
+          />
+        </PageSectionContent>
+      </PageSection>
+    )
+  }
+
   return (
     <PageSection id="custom-domains">
       <PageSectionMeta>
@@ -76,7 +108,7 @@ export const CustomDomainConfig = () => {
         </PageSectionSummary>
       </PageSectionMeta>
       <PageSectionContent>
-        {isLoadingAddons ? (
+        {isHighAvailabilityPending || isLoadingAddons ? (
           <Card>
             <CardContent className="space-y-6">
               <CustomDomainsShimmerLoader />

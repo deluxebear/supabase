@@ -20,7 +20,7 @@ export const TOTPFactors = () => {
       <section className="space-y-3">
         <p className="text-sm text-foreground-light">
           {$t(
-            'Use an authenticator app (like 1Password or Authy) to verify your identity at sign-in.'
+            'Use an authenticator app (like Google Authenticator or 1Password) to protect your account.'
           )}
         </p>
         <div>
@@ -40,7 +40,7 @@ export const TOTPFactors = () => {
                       </p>
                       <div className="flex items-center gap-4">
                         <p className="text-sm text-foreground-light">
-                          {$t('Added on')} {dayjs(factor.updated_at).format(DATETIME_FORMAT)}
+                          {$t('Added on')} {dayjs(factor.created_at).format(DATETIME_FORMAT)}
                         </p>
                         <Button
                           size="tiny"

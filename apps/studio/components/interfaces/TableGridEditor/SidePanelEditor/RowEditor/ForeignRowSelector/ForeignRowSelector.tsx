@@ -2,7 +2,7 @@ import { keepPreviousData } from '@tanstack/react-query'
 import { useParams } from 'common'
 import { Loader2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Button, SidePanel } from 'ui'
+import { Button, SidePanel, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
 import { ForeignKey } from '../../ForeignKeySelector/ForeignKeySelector.types'
 import { convertByteaToHex } from '../RowEditor.utils'
@@ -176,7 +176,18 @@ export const ForeignRowSelector = ({
                 <p className="text-xs text-foreground-light">{$t('Saving')}</p>
               </div>
             )}
-            <Button variant="text" icon={<X />} className="w-7" onClick={closePanel} />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="text"
+                  icon={<X />}
+                  className="w-7"
+                  onClick={closePanel}
+                  aria-label={$t('Close panel')}
+                />
+              </TooltipTrigger>
+              <TooltipContent side="bottom">{$t('Close panel')}</TooltipContent>
+            </Tooltip>
           </div>
         </div>
       }

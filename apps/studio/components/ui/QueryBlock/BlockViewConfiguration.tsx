@@ -52,6 +52,7 @@ export const BlockViewConfiguration = ({
         <form className="grid gap-2">
           <ToggleGroup
             type="single"
+            variant="outline"
             value={view}
             className="w-full"
             onValueChange={(view: 'chart' | 'table') => {

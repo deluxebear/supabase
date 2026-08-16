@@ -2,7 +2,7 @@ import { keepPreviousData } from '@tanstack/react-query'
 import { useDebounce } from '@uidotdev/usehooks'
 import { LOCAL_STORAGE_KEYS, useParams } from 'common'
 import { parseAsArrayOf, parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs'
-import { ReactNode, useMemo } from 'react'
+import { useMemo } from 'react'
 import {
   Card,
   cn,
@@ -41,19 +41,9 @@ import type { Organization } from '@/types'
 export interface ProjectListProps {
   organization?: Organization
   rewriteHref?: (projectRef: string) => string
-  /**
-   * Optional content rendered as the first `<li>` inside the grid view, before the
-   * project cards. Used by the upgrade CTA placement experiment to slot a card-shaped
-   * usage tile in the project list. Ignored in table view.
-   */
-  prependCard?: ReactNode
 }
 
-export const ProjectList = ({
-  organization: organization_,
-  rewriteHref,
-  prependCard,
-}: ProjectListProps) => {
+export const ProjectList = ({ organization: organization_, rewriteHref }: ProjectListProps) => {
   const { slug: urlSlug } = useParams()
   const { data: selectedOrganization } = useSelectedOrganizationQuery()
 
@@ -161,11 +151,7 @@ export const ProjectList = ({
   }
 
   if (isLoadingPermissions || isLoadingProjects || !organization) {
-    return viewMode === 'table' ? (
-      <LoadingTableView />
-    ) : (
-      <LoadingCardView prependCard={prependCard} />
-    )
+    return viewMode === 'table' ? <LoadingTableView /> : <LoadingCardView />
   }
 
   if (isEmpty) {
@@ -310,7 +296,6 @@ export const ProjectList = ({
               'sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'
             )}
           >
-            {prependCard}
             {orgProjects?.map((project) => (
               <ProjectCard
                 key={project.ref}

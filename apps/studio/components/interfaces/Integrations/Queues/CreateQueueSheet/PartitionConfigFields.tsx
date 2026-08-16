@@ -1,4 +1,4 @@
-import { UseFormReturn } from 'react-hook-form'
+import { UseFormReturn, useWatch } from 'react-hook-form'
 import {
   FormField,
   InputGroup,
@@ -14,7 +14,7 @@ import { CreateQueueForm } from './CreateQueueSheet.schema'
 import { t as $t } from '@/lib/i18n'
 
 export function PartitionConfigFields({ form }: { form: UseFormReturn<CreateQueueForm> }) {
-  const queueType = form.watch('values.type')
+  const queueType = useWatch({ control: form.control, name: 'values.type' })
 
   if (queueType !== 'partitioned') return null
 

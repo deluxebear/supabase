@@ -12,11 +12,9 @@ function ClaudeAuthenticateContent(_props: StepContentProps) {
         hideLineNumbers
         language="bash"
       />
-      <p className="text-sm text-foreground-light">
-        {$t('Select the')}{' '}
-        <code className="text-xs bg-surface-300 px-1 py-0.5 rounded-sm">supabase</code>{' '}
-        {$t('server, then')} <span className="font-medium">{$t('Authenticate')}</span>{' '}
-        {$t('to begin the flow.')}
+      <p className="text-sm text-foreground-lighter">
+        {$t('Select the')} <code className="text-code-inline">supabase</code> {$t('server, then')}{' '}
+        <code className="text-code-inline">{$t('Authenticate')}</code> {$t('to begin the flow.')}
       </p>
     </div>
   )

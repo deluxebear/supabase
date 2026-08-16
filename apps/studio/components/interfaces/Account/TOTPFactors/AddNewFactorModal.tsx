@@ -60,42 +60,45 @@ interface FirstStepProps {
   onClose: () => void
 }
 
+const ENROLL_FORM_ID = 'add-totp-factor-form'
+
+const EnrollFormSchema = z.object({
+  name: z.string().trim().min(1, 'Name is required'),
+})
+type EnrollFormValues = z.infer<typeof EnrollFormSchema>
+
+const enrollFormDefaultValues: EnrollFormValues = { name: '' }
+
 const FirstStep = ({ visible, isEnrolling, enroll, onClose }: FirstStepProps) => {
-  const FormSchema = z.object({
-    name: z.string().min(1, $t('Please provide a name to identify this app')),
-  })
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: { name: '' },
+  const form = useForm<EnrollFormValues>({
+    resolver: zodResolver(EnrollFormSchema),
+    defaultValues: enrollFormDefaultValues,
     mode: 'onChange',
   })
 
-  const onSubmit: SubmitHandler<z.infer<typeof FormSchema>> = async (values) => {
+  const onSubmit: SubmitHandler<EnrollFormValues> = async (values) => {
     enroll({ factorType: 'totp', friendlyName: values.name })
   }
 
   useEffect(() => {
-    if (!visible) {
-      // Generate a name with a number between 0 and 1000
-      form.reset({ name: `App ${Math.floor(Math.random() * 1000)}` })
-    }
+    if (visible) form.reset(enrollFormDefaultValues)
   }, [form, visible])
 
   return (
     <ConfirmationModal
       size="medium"
       visible={visible}
-      title={$t('Add a new authenticator app as a factor')}
-      cancelLabel={$t('Cancel')}
-      confirmLabel={$t('Generate QR')}
-      confirmLabelLoading={$t('Generating QR')}
+      title={'Add a new authenticator app as a factor'}
+      cancelLabel={'Cancel'}
+      confirmLabel={'Generate QR'}
+      confirmLabelLoading={'Generating QR'}
       loading={isEnrolling}
       onCancel={onClose}
       onConfirm={form.handleSubmit(onSubmit)}
     >
       <Form {...form}>
         <form
-          id="verify-otp-form"
+          id={ENROLL_FORM_ID}
           className="flex flex-col gap-4"
           onSubmit={form.handleSubmit(onSubmit)}
         >
@@ -106,11 +109,13 @@ const FirstStep = ({ visible, isEnrolling, enroll, onClose }: FirstStepProps) =>
             render={({ field }) => (
               <FormItemLayout
                 name="name"
-                label={$t('Provide a name to identify this app')}
-                description={$t('A string will be randomly generated if a name is not provided')}
+                label={$t('Authenticator app name')}
+                description={$t(
+                  'Used to identify the app in your account settings and during sign-in.'
+                )}
               >
                 <FormControl>
-                  <Input id="name" {...field} />
+                  <Input placeholder={$t('e.g.: Google Authenticator')} autoFocus {...field} />
                 </FormControl>
               </FormItemLayout>
             )}
@@ -144,7 +149,7 @@ const SecondStep = ({
   const { lastVisitedOrganization } = useLastVisitedOrganization()
 
   const FormSchema = z.object({
-    code: z.string().min(1, $t('Please provide a code from your authenticator app')),
+    code: z.string().min(1, 'Please provide a code from your authenticator app'),
   })
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -157,7 +162,7 @@ const SecondStep = ({
   const { mutate: unenroll } = useMfaUnenrollMutation({ onSuccess: () => onClose() })
   const { mutate: challengeAndVerify, isPending: isVerifying } = useMfaChallengeAndVerifyMutation({
     onError: (error) => {
-      toast.error(`${$t('Failed to add a second factor authentication')}:  ${error?.message}`)
+      toast.error(`${'Failed to add a second factor authentication'}:  ${error?.message}`)
     },
     onSuccess: async () => {
       if (lastVisitedOrganization) {
@@ -190,10 +195,10 @@ const SecondStep = ({
       size="medium"
       visible={visible}
       className="py-5"
-      title={`${$t('Verify new factor')} ${factorName}`}
-      cancelLabel={$t('Cancel')}
-      confirmLabel={$t('Confirm')}
-      confirmLabelLoading={$t('Confirming')}
+      title={`${'Verify new factor'} ${factorName}`}
+      cancelLabel={'Cancel'}
+      confirmLabel={'Confirm'}
+      confirmLabelLoading={'Confirming'}
       loading={isVerifying}
       onCancel={() => {
         // If a factor has been created (but not verified), unenroll it. This will be run as a
@@ -224,11 +229,11 @@ const SecondStep = ({
           </div>
 
           <InformationBox
-            title={$t('Unable to scan?')}
+            title={'Unable to scan?'}
             description={
               <FormItemLayout
                 isReactForm={false}
-                label={$t('You can also enter this secret key into your authenticator app')}
+                label={'You can also enter this secret key into your authenticator app'}
               >
                 <PasswordInput copy disabled id="ref" size="small" value={factor.totp.secret} />
               </FormItemLayout>
@@ -246,7 +251,7 @@ const SecondStep = ({
                 name="code"
                 control={form.control}
                 render={({ field }) => (
-                  <FormItemLayout name="code" label={$t('Authentication code')}>
+                  <FormItemLayout name="code" label={'Authentication code'}>
                     <FormControl>
                       <Input
                         id="code"

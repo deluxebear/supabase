@@ -1,7 +1,7 @@
 import { useParams } from 'common'
 import Link from 'next/link'
 import { Button } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 import {
   PageSection,
   PageSectionContent,
@@ -11,6 +11,7 @@ import {
 } from 'ui-patterns/PageSection'
 
 import { DocsButton } from '../../ui/DocsButton'
+import { getInfrastructurePath } from '@/components/interfaces/Settings/Infrastructure/Infrastructure.utils'
 import { DOCS_URL } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 
@@ -32,13 +33,11 @@ export function DiskManagementPanelForm() {
           layout="responsive"
           title={$t('Disk Management has moved')}
           description={$t(
-            'Disk configuration is now managed alongside Project Compute on the new Compute and Disk page.'
+            'Disk configuration is now managed alongside Project Compute on the Infrastructure page.'
           )}
           actions={
             <Button variant="default" asChild>
-              <Link href={`/project/${projectRef}/settings/compute-and-disk`}>
-                {$t('Go to Compute and Disk')}
-              </Link>
+              <Link href={getInfrastructurePath(projectRef)}>{$t('Go to Infrastructure')}</Link>
             </Button>
           }
         />

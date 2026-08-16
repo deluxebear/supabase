@@ -1,10 +1,9 @@
-import { t as $t } from '@/lib/i18n';
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import {
   Button,
@@ -18,7 +17,7 @@ import {
   Input,
   Switch,
 } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import * as z from 'zod'
@@ -42,6 +41,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface GitHubIntegrationConnectionFormProps {
   connection?: GitHubConnection
@@ -175,9 +175,18 @@ export const GitHubIntegrationConnectionForm = ({
     },
   })
 
-  const enableProductionSync = githubSettingsForm.watch('enableProductionSync')
-  const newBranchPerPr = githubSettingsForm.watch('new_branch_per_pr')
-  const currentRepositoryId = githubSettingsForm.watch('repositoryId')
+  const enableProductionSync = useWatch({
+    control: githubSettingsForm.control,
+    name: 'enableProductionSync',
+  })
+  const newBranchPerPr = useWatch({
+    control: githubSettingsForm.control,
+    name: 'new_branch_per_pr',
+  })
+  const currentRepositoryId = useWatch({
+    control: githubSettingsForm.control,
+    name: 'repositoryId',
+  })
 
   const handleCreateOrUpdateConnection = async (data: z.infer<typeof GitHubSettingsSchema>) => {
     if (!selectedProject?.ref || !selectedOrganization?.id) return
@@ -432,16 +441,14 @@ export const GitHubIntegrationConnectionForm = ({
                           label={$t('Working directory')}
                           description={
                             <>
-                              
-                                                                {$t('Relative path to the directory containing your')}{' '}
+                              {$t('Relative path to the directory containing your')}{' '}
                               <code className="text-code-inline whitespace-nowrap">supabase/</code>{' '}
                               folder.{' '}
                               <InlineLink
                                 href={`${DOCS_URL}/guides/deployment/branching/github-integration#set-the-working-directory`}
                               >
-                                
-                                                                      {$t('Learn more')}
-                                                                    </InlineLink>
+                                {$t('Learn more')}
+                              </InlineLink>
                             </>
                           }
                         >
@@ -467,7 +474,9 @@ export const GitHubIntegrationConnectionForm = ({
                           <FormItemLayout
                             layout="flex-row-reverse"
                             label={$t('Deploy to production')}
-                            description={$t('Apply changes to your production database when you merge into your configured production GitHub branch')}
+                            description={$t(
+                              'Apply changes to your production database when you merge into your configured production GitHub branch'
+                            )}
                           >
                             <FormControl>
                               <Switch
@@ -493,7 +502,9 @@ export const GitHubIntegrationConnectionForm = ({
                             <FormItemLayout
                               layout="flex-row-reverse"
                               label={$t('Production branch name')}
-                              description={$t('The GitHub branch to sync with your production database (e.g., main, master)')}
+                              description={$t(
+                                'The GitHub branch to sync with your production database (e.g., main, master)'
+                              )}
                             >
                               <div className="relative w-full">
                                 <FormControl>
@@ -517,15 +528,19 @@ export const GitHubIntegrationConnectionForm = ({
                   </CardContent>
                   <CardContent>
                     {hasAccessToBranching ? (
-                      <Admonition type="warning" title={$t('Branching and billing')} className="mb-4">
-                        
-                                                                      {$t('Branching Compute is not covered by your organization&apos;s Spend Cap. Costs should be closely monitored, as they may be incurred.')}{' '}
+                      <Admonition
+                        type="warning"
+                        title={$t('Branching and billing')}
+                        className="mb-4"
+                      >
+                        {$t(
+                          'Branching Compute is not covered by your organization&apos;s Spend Cap. Costs should be closely monitored, as they may be incurred.'
+                        )}{' '}
                         <InlineLink
                           href={`${DOCS_URL}/guides/platform/cost-control#usage-items-not-covered-by-the-spend-cap`}
                         >
-                          
-                                                                            {$t('Learn more')}
-                                                                          </InlineLink>
+                          {$t('Learn more')}
+                        </InlineLink>
                       </Admonition>
                     ) : (
                       <UpgradeToPro
@@ -631,9 +646,8 @@ export const GitHubIntegrationConnectionForm = ({
                           disabled={isDeletingConnection || isCheckingBranch}
                           loading={isDeletingConnection}
                         >
-                          
-                                                                            {$t('Disable integration')}
-                                                                          </Button>
+                          {$t('Disable integration')}
+                        </Button>
                       )}
                     </div>
                     <div className="flex space-x-2">
@@ -643,9 +657,8 @@ export const GitHubIntegrationConnectionForm = ({
                           onClick={() => githubSettingsForm.reset()}
                           disabled={!canUpdateGitHubConnection || isCheckingBranch}
                         >
-                          
-                                                                            {$t('Cancel')}
-                                                                          </Button>
+                          {$t('Cancel')}
+                        </Button>
                       )}
                       <Button
                         variant="primary"
@@ -683,9 +696,10 @@ export const GitHubIntegrationConnectionForm = ({
         loading={isUpdatingConnection}
       >
         <p className="text-sm text-foreground-light">
-          
-                            {$t('Open pull requests will only update your Supabase project on merge if the git base branch matches this new production git branch.')}
-                          </p>
+          {$t(
+            'Open pull requests will only update your Supabase project on merge if the git base branch matches this new production git branch.'
+          )}
+        </p>
       </ConfirmationModal>
 
       <ConfirmationModal
@@ -700,9 +714,10 @@ export const GitHubIntegrationConnectionForm = ({
       >
         <div className="space-y-3">
           <p className="text-sm text-foreground-light">
-            
-                                  {$t('This will disconnect your current repository and create a new connection with the selected repository. All existing Supabase branches that are connected to the old repository will no longer be synced.')}
-                                </p>
+            {$t(
+              'This will disconnect your current repository and create a new connection with the selected repository. All existing Supabase branches that are connected to the old repository will no longer be synced.'
+            )}
+          </p>
         </div>
       </ConfirmationModal>
     </>

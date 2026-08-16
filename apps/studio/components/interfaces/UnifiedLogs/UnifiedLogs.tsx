@@ -38,11 +38,12 @@ import { ServiceFlowPanel } from './ServiceFlowPanel'
 import { SEARCH_PARAMS_PARSER } from './UnifiedLogs.constants'
 import { filterFields as defaultFilterFields } from './UnifiedLogs.fields'
 import {
+  buildDefaultColumnFilters,
   buildFilterSearchUpdate,
-  logsFiltersToColumnFilters,
   parseLogsFilterUrlParams,
 } from './UnifiedLogs.filters'
 import { useLiveMode, useResetFocus } from './UnifiedLogs.hooks'
+import { isUserFilterUnreachable } from './UnifiedLogs.queries'
 import { ColumnSchema } from './UnifiedLogs.schema'
 import { QuerySearchParamsType } from './UnifiedLogs.types'
 import {
@@ -67,6 +68,7 @@ import { useUnifiedLogsCountQuery } from '@/data/logs/unified-logs-count-query'
 import { useUnifiedLogsInfiniteQuery } from '@/data/logs/unified-logs-infinite-query'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { useShowMultigresLogs } from '@/hooks/misc/useShowMultigresLogs'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -95,7 +97,7 @@ export const UnifiedLogs = () => {
 
   const defaultColumnSorting = search.sort ? [search.sort] : []
   const defaultColumnVisibility = { uuid: false }
-  const defaultColumnFilters = logsFiltersToColumnFilters(parseLogsFilterUrlParams(search.filter))
+  const defaultColumnFilters = buildDefaultColumnFilters(search)
 
   const [topBarHeight, setTopBarHeight] = useState(0)
   const topBarRef = useRef<HTMLDivElement>(null)
@@ -483,6 +485,18 @@ export const UnifiedLogs = () => {
                     setColumnOrder={setColumnOrder}
                     setColumnVisibility={setColumnVisibility}
                     searchParamsParser={SEARCH_PARAMS_PARSER}
+                    emptyStateMessage={
+                      isUserFilterUnreachable(search) ? (
+                        <div className="text-sm flex flex-col gap-y-1">
+                          <p className="text-foreground-light">{$t('No results found')}</p>
+                          <p className="text-foreground-lighter">
+                            {$t(
+                              'Filtering by user is only supported for Auth and Postgres log types'
+                            )}
+                          </p>
+                        </div>
+                      ) : undefined
+                    }
                   />
                 </div>
               </ResizablePanel>

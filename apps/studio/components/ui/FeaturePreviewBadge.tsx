@@ -15,6 +15,7 @@ export const FeaturePreviewBadge = ({ featureKey, className }: FeaturePreviewBad
   return (
     <button
       type="button"
+      tabIndex={0}
       onClick={() => selectFeaturePreview(featureKey)}
       className="group flex items-center"
       title={$t('Feature preview — click to manage')}

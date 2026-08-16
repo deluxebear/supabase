@@ -1,4 +1,3 @@
-import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
 import dayjs from 'dayjs'
 import { partition, uniqBy } from 'lodash'
@@ -14,7 +13,6 @@ import {
   Marker,
   ZoomableGroup,
 } from 'react-simple-maps'
-import type { AWS_REGIONS_KEYS } from 'shared-data'
 import {
   Badge,
   Button,
@@ -25,32 +23,19 @@ import {
   DropdownMenuTrigger,
   ScrollArea,
 } from 'ui'
+import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 
-import { AVAILABLE_REPLICA_REGIONS, REPLICA_STATUS } from './InstanceConfiguration.constants'
+import { AVAILABLE_REPLICA_REGIONS } from './InstanceConfiguration.constants'
 import GeographyData from './MapData.json'
-import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
-import { DropdownMenuItemTooltip } from '@/components/ui/DropdownMenuItemTooltip'
-import { Database, useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
+import { REPLICA_STATUS } from '@/components/interfaces/Settings/Infrastructure/ReadReplicas/ReadReplicas.constants'
+import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { formatDatabaseID } from '@/data/read-replicas/replicas.utils'
-import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { BASE_PATH } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 
-// [Joshen] Foresee that we'll skip this view for initial launch
-
-interface MapViewProps {
-  onSelectDeployNewReplica: (region: AWS_REGIONS_KEYS) => void
-  onSelectRestartReplica: (database: Database) => void
-  onSelectDropReplica: (database: Database) => void
-}
-
-const MapView = ({
-  onSelectDeployNewReplica,
-  onSelectRestartReplica,
-  onSelectDropReplica,
-}: MapViewProps) => {
+const MapView = () => {
   const { ref } = useParams()
   const dbSelectorState = useDatabaseSelectorStateSnapshot()
   const { projectHomepageShowInstanceSize } = useIsFeatureEnabled([
@@ -65,7 +50,6 @@ const MapView = ({
     y: number
     region: { key: string; country?: string; name?: string; region?: string }
   }>()
-  const { can: canManageReplicas } = useAsyncCheckPermissions(PermissionAction.CREATE, 'projects')
   const [, setShowConnect] = useQueryState('showConnect', parseAsBoolean.withDefault(false))
 
   const { data } = useReadReplicasQuery({ projectRef: ref })
@@ -261,7 +245,7 @@ const MapView = ({
             <ScrollArea style={{ height: databasesInSelectedRegion.length > 2 ? '180px' : 'auto' }}>
               <ul className={`flex flex-col divide-y`}>
                 {databasesInSelectedRegion.map((database) => {
-                  const created = dayjs(database.inserted_at).format('DD MMM YYYY, HH:mm:ss (ZZ)')
+                  const created = dayjs(database.inserted_at).format('DD MMM YYYY')
 
                   return (
                     <li
@@ -288,14 +272,17 @@ const MapView = ({
                             <Badge variant="warning">{$t('Unhealthy')}</Badge>
                           )}
                         </p>
-                        <p className="text-xs text-foreground-light">
-                          AWS{projectHomepageShowInstanceSize ? ` • ${database.size}` : ''}
-                        </p>
-                        {database.identifier !== ref && (
+                        <div>
                           <p className="text-xs text-foreground-light">
-                            {$t('Created on:')} {created}
+                            AWS{projectHomepageShowInstanceSize ? ` • ${database.size}` : ''}
                           </p>
-                        )}
+                          {database.identifier !== ref && (
+                            <p className="text-xs text-foreground-light">
+                              {$t('Created on:')}{' '}
+                              <TimestampInfo label={created} utcTimestamp={database.inserted_at} />
+                            </p>
+                          )}
+                        </div>
                       </div>
                       {database.identifier !== ref && (
                         <DropdownMenu>
@@ -313,40 +300,16 @@ const MapView = ({
                             >
                               {$t('View connection string')}
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="gap-x-2"
-                              disabled={database.status !== REPLICA_STATUS.ACTIVE_HEALTHY}
-                            >
-                              <Link
-                                href={`/project/${ref}/observability/database?db=${database.identifier}&chart=replication-lag`}
-                              >
-                                {$t('View replication lag')}
-                              </Link>
-                            </DropdownMenuItem>
 
                             <DropdownMenuSeparator />
 
-                            <DropdownMenuItem
-                              className="gap-x-2"
-                              onClick={() => onSelectRestartReplica(database)}
-                              disabled={database.status !== REPLICA_STATUS.ACTIVE_HEALTHY}
-                            >
-                              {$t('Restart replica')}
+                            <DropdownMenuItem className="gap-x-2">
+                              <Link
+                                href={`/project/${ref}/database/replication/replica/${database.identifier}`}
+                              >
+                                {$t('Manage replica')}
+                              </Link>
                             </DropdownMenuItem>
-
-                            <DropdownMenuItemTooltip
-                              className="gap-x-2 pointer-events-auto!"
-                              disabled={!canManageReplicas}
-                              onClick={() => onSelectDropReplica(database)}
-                              tooltip={{
-                                content: {
-                                  side: 'left',
-                                  text: 'You need additional permissions to drop replicas',
-                                },
-                              }}
-                            >
-                              {$t('Drop replica')}
-                            </DropdownMenuItemTooltip>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       )}
@@ -358,25 +321,10 @@ const MapView = ({
           )}
 
           <div
-            className={`flex items-center justify-end gap-x-2 px-4 py-4 ${
+            className={`flex items-center justify-end gap-x-2 px-4 py-2 ${
               databasesInSelectedRegion.length > 0 ? 'border-t' : ''
             }`}
           >
-            <ButtonTooltip
-              variant="default"
-              disabled={!canManageReplicas}
-              onClick={() => onSelectDeployNewReplica(selectedRegion.key)}
-              tooltip={{
-                content: {
-                  side: 'bottom',
-                  text: !canManageReplicas
-                    ? 'You need additional permissions to deploy replicas'
-                    : undefined,
-                },
-              }}
-            >
-              {$t('Deploy new replica here')}
-            </ButtonTooltip>
             <Button
               variant="default"
               onClick={() => {

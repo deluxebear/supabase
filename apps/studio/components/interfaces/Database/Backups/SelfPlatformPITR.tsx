@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
 import { Badge, Button, Card, CardContent } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { BackupManagementUnavailable } from './BackupManagementUnavailable'

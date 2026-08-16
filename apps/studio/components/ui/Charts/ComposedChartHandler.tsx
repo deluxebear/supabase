@@ -19,6 +19,11 @@ import { t as $t } from '@/lib/i18n'
 import type { UpdateDateRange } from '@/pages/project/[ref]/observability/database'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 
+const parseChartTimestamp = (value: string) => {
+  const asNumber = Number(value)
+  return value !== '' && Number.isFinite(asNumber) ? dayjs(asNumber) : dayjs(value)
+}
+
 export interface ComposedChartHandlerProps {
   id?: string
   label: string
@@ -251,7 +256,9 @@ const ComposedChartHandler = ({
         onSelect: ({ start, end }) => {
           const projectRef = ref as string
           if (!projectRef) return
-          const url = `/project/${projectRef}/logs/postgres-logs?its=${start}&ite=${end}`
+          const its = parseChartTimestamp(start).toISOString()
+          const ite = parseChartTimestamp(end).toISOString()
+          const url = `/project/${projectRef}/logs/postgres-logs?its=${its}&ite=${ite}`
           router.push(url)
         },
       },

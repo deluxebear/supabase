@@ -205,7 +205,7 @@ export const EdgeFunctionRecentErrors = ({
           <div className="flex flex-col gap-6">
             <PageSectionMeta>
               <PageSectionSummary>
-                <PageSectionTitle>{$t('Errors since last deploy')}</PageSectionTitle>
+                <PageSectionTitle>{$t('Errors in the last 24h')}</PageSectionTitle>
               </PageSectionSummary>
               <PageSectionAside>
                 <Button

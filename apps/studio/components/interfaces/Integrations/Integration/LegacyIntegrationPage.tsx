@@ -9,7 +9,7 @@ import {
   NavMenu,
   NavMenuItem,
 } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 import { PageContainer } from 'ui-patterns/PageContainer'
 import {
   PageHeader,
@@ -90,9 +90,7 @@ const LegacyIntegrationPage = () => {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>
-                {$t(integration?.name || 'Integration not found')}
-              </BreadcrumbPage>
+              <BreadcrumbPage>{$t(integration?.name || 'Integration not found')}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </PageHeaderBreadcrumb>

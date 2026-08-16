@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
@@ -21,7 +20,7 @@ import {
   Switch,
   Textarea,
 } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import {
   PageSection,
@@ -40,6 +39,7 @@ import {
 } from '@/data/database/database-security-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 const settingsSchema = z
   .object({
@@ -178,7 +178,9 @@ export const FleetDatabaseSecurity = () => {
                       <FormItemLayout
                         layout="flex-row-reverse"
                         label={$t('Enforce SSL')}
-                        description={$t('Require TLS at Supavisor and verify the upstream database certificate.')}
+                        description={$t(
+                          'Require TLS at Supavisor and verify the upstream database certificate.'
+                        )}
                       >
                         <FormControl>
                           <Switch
@@ -216,7 +218,9 @@ export const FleetDatabaseSecurity = () => {
                       <FormItemLayout
                         layout="flex-row-reverse"
                         label={$t('Network restrictions')}
-                        description={$t('Canonical IPv4 or IPv6 CIDRs, one per line. Leave empty to allow all networks.')}
+                        description={$t(
+                          'Canonical IPv4 or IPv6 CIDRs, one per line. Leave empty to allow all networks.'
+                        )}
                       >
                         <FormControl>
                           <Textarea
@@ -329,7 +333,9 @@ export const FleetDatabaseSecurity = () => {
                       <FormItemLayout
                         layout="flex-row-reverse"
                         label={$t('New password')}
-                        description={$t('The password is encrypted before durable storage and is never returned by the API.')}
+                        description={$t(
+                          'The password is encrypted before durable storage and is never returned by the API.'
+                        )}
                       >
                         <FormControl>
                           <Input {...field} type="password" autoComplete="new-password" />

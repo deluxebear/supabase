@@ -12,14 +12,11 @@ export const RESTRICTION_MESSAGES = {
       const label = dayjs(date).format('DD MMM, YYYY')
       return (
         <>
-          {$t('You have a grace period until')}{' '}
-          <TimestampInfo className="text-sm" utcTimestamp={date} label={label} />
-          {$t(
-            '. After that, your projects will be restricted while your organization is over quota.'
-          )}{' '}
+          {$t('Projects will be restricted from')}{' '}
+          <TimestampInfo className="text-sm" utcTimestamp={date} label={label} />{' '}
+          {$t('if your organization remains over quota.')}{' '}
           <InlineLink href={`/org/${slug}/usage`}>{$t('Review usage')}</InlineLink> or{' '}
-          <InlineLink href={`/org/${slug}/billing`}>{$t('manage your plan')}</InlineLink>{' '}
-          {$t('to avoid restrictions.')}
+          <InlineLink href={`/org/${slug}/billing`}>billing</InlineLink>.
         </>
       )
     },

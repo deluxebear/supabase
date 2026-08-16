@@ -1,4 +1,21 @@
 import type { ConnectionStringPooler, DeploymentMode } from './Connect.types'
+import { appendConnectionStringParams } from './ConnectionString.utils'
+
+/**
+ * Multigres (high-availability) projects only accept TLS connections with
+ * direct SSL negotiation — without these params clients fail with
+ * "server closed the connection unexpectedly".
+ */
+export const HIGH_AVAILABILITY_SSL_PARAMS = 'sslmode=require&sslnegotiation=direct'
+
+/**
+ * No-op when the URI already carries `sslnegotiation`, so the params are never
+ * double-appended.
+ */
+export const appendHighAvailabilitySslParams = (uri: string) =>
+  uri.includes('sslnegotiation=')
+    ? uri
+    : appendConnectionStringParams(uri, HIGH_AVAILABILITY_SSL_PARAMS)
 
 type ConnectionStrings = {
   psql: string
@@ -229,6 +246,7 @@ export const buildConnectionStringPooler = ({
   connectionStringsDedicated,
   sessionShared,
   ipv4Addon,
+  isHighAvailability,
 }: {
   deploymentMode: DeploymentMode
   connectionInfo: { db_host: string; db_port: number | string }
@@ -236,6 +254,7 @@ export const buildConnectionStringPooler = ({
   connectionStringsDedicated?: { direct: ConnectionStrings; pooler: ConnectionStrings }
   sessionShared?: string
   ipv4Addon: boolean
+  isHighAvailability: boolean
 }): ConnectionStringPooler => {
   if (deploymentMode.isSelfHosted) {
     const dbHost = connectionInfo.db_host
@@ -257,6 +276,20 @@ export const buildConnectionStringPooler = ({
     // CLI exposes postgres directly; no pooler is available, so any code path
     // that reaches for a pooler URI falls back to the direct connection.
     const directUri = connectionStringsShared.direct.uri
+    return {
+      transactionShared: directUri,
+      sessionShared: directUri,
+      transactionDedicated: undefined,
+      sessionDedicated: undefined,
+      ipv4SupportedForDedicatedPooler: false,
+      direct: directUri,
+    }
+  }
+
+  if (isHighAvailability) {
+    // Multigres has no pooler (neither Supavisor nor PgBouncer), so every slot
+    // falls back to the direct connection.
+    const directUri = appendHighAvailabilitySslParams(connectionStringsShared.direct.uri)
     return {
       transactionShared: directUri,
       sessionShared: directUri,

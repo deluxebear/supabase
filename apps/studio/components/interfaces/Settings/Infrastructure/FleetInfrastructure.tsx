@@ -1,7 +1,7 @@
 import { useParams } from 'common'
 import { CheckCircle2, CircleSlash2, RefreshCw, XCircle } from 'lucide-react'
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, cn } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { useRuntimeInventoryQuery } from '@/data/infrastructure/runtime-inventory-query'
@@ -92,12 +92,17 @@ export const FleetInfrastructure = () => {
           <CardContent>
             <div className="mb-4">
               <div className="mb-1 flex justify-between text-sm">
-                <span>{bytes(data.disk.filesystemUsedBytes)} {$t('used')}</span>
+                <span>
+                  {bytes(data.disk.filesystemUsedBytes)} {$t('used')}
+                </span>
                 <span>{bytes(data.disk.filesystemSizeBytes)}</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-surface-200">
                 <div
-                  className={cn('h-full bg-brand transition-all', diskPercent >= 90 && 'bg-warning')}
+                  className={cn(
+                    'h-full bg-brand transition-all',
+                    diskPercent >= 90 && 'bg-warning'
+                  )}
                   style={{ width: `${diskPercent}%` }}
                 />
               </div>
@@ -157,7 +162,9 @@ export const FleetInfrastructure = () => {
                   </td>
                   <td className="px-6 py-3">
                     <span className="flex items-center gap-2">
-                      <StatusIcon state={item.health === 'not-configured' ? item.state : item.health} />
+                      <StatusIcon
+                        state={item.health === 'not-configured' ? item.state : item.health}
+                      />
                       {item.health === 'not-configured' ? item.state : item.health}
                     </span>
                   </td>

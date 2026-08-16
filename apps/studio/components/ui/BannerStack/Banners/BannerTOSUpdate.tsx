@@ -20,11 +20,6 @@ import { useBannerStack } from '../BannerStackProvider'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { t as $t } from '@/lib/i18n'
 
-/**
- * [Joshen] TOS update takes place from 6th June onwards, can remove from 4th July onwards as
- * previously stated in the NoticeBanner
- */
-
 export const BannerTOSUpdate = () => {
   const { dismissBanner } = useBannerStack()
   const [, setTOSUpdateAcknowledged] = useLocalStorageQuery(
@@ -45,9 +40,11 @@ export const BannerTOSUpdate = () => {
         </Badge>
 
         <div className="flex flex-col gap-y-1 mb-2">
-          <p className="text-sm font-medium">{$t("We've updated our Terms of Service")}</p>
+          <p className="text-sm font-medium">{$t("We're updating our Terms of Service")}</p>
           <p className="text-xs text-foreground-lighter text-balance">
-            {$t('Updates define the responsibilities of both you and Supabase in the use of AI.')}
+            {$t(
+              'Our Data Processing Addendum is now built into the Terms, effective August 1, 2026.'
+            )}
           </p>
         </div>
         <UpdatedTermsOfServiceDialog />
@@ -73,37 +70,49 @@ const UpdatedTermsOfServiceDialog = () => {
         <DialogHeader>
           <DialogTitle>{$t('Terms of Service update')}</DialogTitle>
           <DialogDescription>
-            {$t(
-              "We've updated our Terms of Service to better define the responsibilities of both you and Supabase in the use of AI."
-            )}
+            {$t("We're updating our Terms of Service, effective August 1, 2026.")}
           </DialogDescription>
         </DialogHeader>
 
         <DialogSectionSeparator />
 
         <DialogSection className="text-sm flex flex-col gap-y-2">
-          <p>
-            {$t(
-              "We've clarified how we use AI in our customer support tooling, introduced guidelines for the responsible use of AI by our users, and updated our indemnification terms to clarify the allocation of responsibility for claims arising from AI-generated inputs and outputs."
-            )}
-          </p>
+          <p>{$t("What's changing:")}</p>
+
+          <ul className="list-disc pl-4 flex flex-col gap-y-2">
+            <li>
+              {$t('Our')}{' '}
+              <InlineLink href="https://supabase.com/legal/customer-resources/data-processing-addendum">
+                {$t('Data Processing Addendum')}
+              </InlineLink>{' '}
+              {$t(
+                'is now built into the Terms, so all customers get its protections automatically. No separate signed DPA is needed.'
+              )}
+            </li>
+            <li>
+              {$t('Our subprocessor list now lives at')}{' '}
+              <InlineLink href="https://supabase.com/legal/customer-resources/subprocessor-list">
+                supabase.com/legal/customer-resources/subprocessor-list
+              </InlineLink>
+              {$t(', where you can subscribe to receive updates to the list.')}
+            </li>
+            <li>
+              {$t(
+                "We've added provisions to our fees section relevant to fraud prevention and the rights of EU and UK consumers."
+              )}
+            </li>
+          </ul>
 
           <p>
             {$t(
-              "Additionally, we've made an explicit commitment that Supabase will never use the data you submit to the Supabase services to train or improve any AI without your prior written consent."
-            )}
-          </p>
-
-          <p>
-            {$t(
-              'The updated Terms (Version 2) will take effect on June 6, 2026. By continuing to use the Services after that date, you agree to the updated Terms. You can review the changes'
+              'The updated Terms (Version 3) take effect on August 1, 2026. By continuing to use the Services after that date, you agree to the updated Terms. You can review the changes'
             )}{' '}
             <InlineLink href="https://supabase.com/terms">here</InlineLink>.
           </p>
 
           <p>
             {$t(
-              "This notice applies to users on Supabase's standard Terms of Service only. If you are on an Enterprise plan or with a separately negotiated agreement, your existing terms continue to govern your use of the Services."
+              'If you have a separate signed subscription agreement or DPA with us, that agreement continues to govern your use of our Services.'
             )}
           </p>
         </DialogSection>

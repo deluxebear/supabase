@@ -22,7 +22,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 import { CodeBlock } from 'ui-patterns/CodeBlock'
 
 import { useS3VectorsWrapperExtension } from '../useS3VectorsWrapper'
@@ -63,7 +63,7 @@ export const VectorBucketTableExamplesSheet = ({ index }: VectorBucketTableExamp
           {$t('Insert vectors')}
         </Button>
       </SheetTrigger>
-      <SheetContent tabIndex={undefined}>
+      <SheetContent>
         <div className="flex flex-col h-full" tabIndex={-1}>
           <SheetHeader>
             <SheetTitle>

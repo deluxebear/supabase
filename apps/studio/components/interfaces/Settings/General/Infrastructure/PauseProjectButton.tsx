@@ -114,7 +114,9 @@ export const PauseProjectButton = () => {
             <AlertDialogDescription>
               {$t('This')} {entityLabel} {$t('will be unavailable while paused. Paused')}{' '}
               {entityLabel}{' '}
-              {$t('can be resumed for 90 days. After that, backups remain available to download.')}
+              {$t(
+                'can be resumed for up to 1 year. After that, backups remain available to download.'
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

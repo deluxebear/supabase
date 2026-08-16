@@ -13,18 +13,33 @@ import {
   DialogTitle,
   DialogTrigger,
 } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 
 import { DestinationType } from './DestinationPanel/DestinationPanel.types'
 import { DocsButton } from '@/components/ui/DocsButton'
+import { InlineLink } from '@/components/ui/InlineLink'
 import { UpgradePlanButton } from '@/components/ui/UpgradePlanButton'
 import { useCreateTenantSourceMutation } from '@/data/replication/create-tenant-source-mutation'
+import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { DOCS_URL } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 
-const EnablePipelinesModal = () => {
+type EnablePipelinesModalProps =
+  | { open: boolean; onOpenChange: (open: boolean) => void }
+  | { open?: never; onOpenChange?: never }
+
+export const EnablePipelinesModal = ({
+  open: extOpen,
+  onOpenChange,
+}: EnablePipelinesModalProps) => {
   const { ref: projectRef } = useParams()
-  const [open, setOpen] = useState(false)
+  const [_open, _setOpen] = useState(false)
+
+  const open = extOpen ?? _open
+  const setOpen = onOpenChange ?? _setOpen
+  const hideTrigger = extOpen !== undefined && onOpenChange !== undefined
+
+  const { hasAccess } = useCheckEntitlements('replication.etl')
 
   const { mutate: createTenantSource, isPending: creatingTenantSource } =
     useCreateTenantSourceMutation({
@@ -44,12 +59,14 @@ const EnablePipelinesModal = () => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="primary" className="w-min">
-          {$t('Enable Pipelines')}
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
+      {!hideTrigger && (
+        <DialogTrigger asChild>
+          <Button variant="primary" className="w-min">
+            {$t('Enable Pipelines')}
+          </Button>
+        </DialogTrigger>
+      )}
+      <DialogContent aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>{$t('Enable Pipelines')}</DialogTitle>
         </DialogHeader>
@@ -58,27 +75,47 @@ const EnablePipelinesModal = () => {
           <Admonition
             type="warning"
             className="rounded-none border-0"
-            title={$t('Pipelines is currently in alpha')}
+            title={$t('Pipelines is currently in public alpha')}
           >
-            <p className="text-sm leading-normal!">
-              {$t(
-                'Alpha features can be unstable and may introduce breaking changes while we evaluate the product direction, refine the feature set, and incorporate customer feedback.'
-              )}
-            </p>
-            <p className="text-sm leading-normal!">
-              {$t(
-                "Pricing is not finalized. You can enable Pipelines now; we'll announce pricing later and notify you before any charges apply."
-              )}
-            </p>
+            {hasAccess ? (
+              <>
+                <p className="text-sm leading-normal!">
+                  {$t(
+                    'Public alpha features may change as we refine the product and incorporate customer feedback.'
+                  )}
+                </p>
+                <p className="text-sm leading-normal!">
+                  {$t(
+                    'Pipelines is billed for configured pipeline hours and Postgres row data processed during initial sync and ongoing replication. Review the'
+                  )}{' '}
+                  <InlineLink href={`${DOCS_URL}/guides/platform/manage-your-usage/pipelines`}>
+                    {$t('Pipelines pricing')}
+                  </InlineLink>{' '}
+                  {$t('before enabling it.')}
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-foreground-light">
+                {$t(
+                  'Supabase Pipelines replicates database changes to supported destination systems.'
+                )}{' '}
+                {hasAccess ? 'Enable Pipelines for your project' : 'Upgrade to the Pro plan'}{' '}
+                {$t('to replicate database changes to data warehouses and analytics platforms.')}
+              </p>
+            )}
           </Admonition>
         </DialogSection>
         <DialogFooter>
           <Button variant="default" disabled={creatingTenantSource} onClick={() => setOpen(false)}>
             {$t('Cancel')}
           </Button>
-          <Button variant="primary" loading={creatingTenantSource} onClick={onEnablePipelines}>
-            {$t('Enable Pipelines')}
-          </Button>
+          {hasAccess ? (
+            <Button variant="primary" loading={creatingTenantSource} onClick={onEnablePipelines}>
+              {$t('Enable Pipelines')}
+            </Button>
+          ) : (
+            <UpgradePlanButton source="replication" featureProposition="use replication" />
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -88,22 +125,21 @@ const EnablePipelinesModal = () => {
 export const EnablePipelinesCallout = ({
   type,
   className,
-  hasAccess,
 }: {
   type?: DestinationType | null
   className?: string
-  hasAccess: boolean
 }) => {
+  const { hasAccess } = useCheckEntitlements('replication.etl')
+
   return (
     <div className={cn('border rounded-md p-4 md:p-12 flex flex-col gap-y-4', className)}>
       <div className="flex flex-col gap-y-1">
         <h4>{$t('Enable Pipelines')}</h4>
         <p className="text-sm text-foreground-light">
-          {$t(
-            'Pipelines creates managed replication pipelines that stream database changes to destination systems.'
-          )}{' '}
+          {$t('Supabase Pipelines replicates database changes to supported destination systems.')}{' '}
           {hasAccess ? 'Enable Pipelines for your project' : 'Upgrade to the Pro plan'}{' '}
-          {$t('to stream database changes to')} {type ?? 'data warehouses and analytics platforms'}.
+          {$t('to replicate database changes to')}{' '}
+          {type ?? 'data warehouses and analytics platforms'}.
         </p>
       </div>
       <div className="flex gap-x-2">

@@ -63,26 +63,17 @@ export const AdvancedSettings = ({
                 <FormItemLayout
                   layout="horizontal"
                   label={$t('Batch wait time')}
-                  description={
-                    <>
-                      <p>
-                        {$t(
-                          'Maximum time pipeline waits to collect additional changes before flushing a batch.'
-                        )}
-                      </p>
-                      <p>
-                        {$t(
-                          'Lower values reduce replication latency, higher values improve batching efficiency.'
-                        )}
-                      </p>
-                    </>
-                  }
+                  description={$t(
+                    'How long the pipeline waits before sending a partially filled batch.'
+                  )}
                 >
                   <FormControl>
                     <InputGroup>
                       <FormInputGroupInput
                         {...field}
                         type="number"
+                        min={0}
+                        step={1}
                         value={field.value ?? ''}
                         onChange={handleNumberChange(field)}
                         placeholder={`Default: ${DEFAULT_MAX_FILL_MS}`}
@@ -103,26 +94,15 @@ export const AdvancedSettings = ({
                 <FormItemLayout
                   label={$t('Table sync workers')}
                   layout="horizontal"
-                  description={
-                    <>
-                      <p>
-                        {$t(
-                          'Number of tables copied in parallel during the initial snapshot phase.'
-                        )}
-                      </p>
-                      <p>
-                        {$t(
-                          'Each worker uses one replication slot (up to N + 1 total while syncing).'
-                        )}
-                      </p>
-                    </>
-                  }
+                  description={$t('Maximum number of tables synced at the same time.')}
                 >
                   <FormControl>
                     <InputGroup>
                       <FormInputGroupInput
                         {...field}
                         type="number"
+                        min={1}
+                        step={1}
                         value={field.value ?? ''}
                         onChange={handleNumberChange(field)}
                         placeholder={`Default: ${DEFAULT_MAX_TABLE_SYNC_WORKERS}`}
@@ -141,28 +121,19 @@ export const AdvancedSettings = ({
               name="maxCopyConnectionsPerTable"
               render={({ field }) => (
                 <FormItemLayout
-                  label={$t('Copy connections per table')}
+                  label={$t('Initial sync connections per table')}
                   layout="horizontal"
-                  description={
-                    <>
-                      <p>
-                        {$t(
-                          'Number of parallel connections each table copy can use during initial sync.'
-                        )}
-                      </p>
-                      <p>
-                        {$t(
-                          'More connections speed up large table copies, but use more database connections.'
-                        )}
-                      </p>
-                    </>
-                  }
+                  description={$t(
+                    'Maximum number of source connections used to sync existing rows for each table.'
+                  )}
                 >
                   <FormControl>
                     <InputGroup>
                       <FormInputGroupInput
                         {...field}
                         type="number"
+                        min={1}
+                        step={1}
                         value={field.value ?? ''}
                         onChange={handleNumberChange(field)}
                         placeholder={`Default: ${DEFAULT_MAX_COPY_CONNECTIONS_PER_TABLE}`}
@@ -183,7 +154,9 @@ export const AdvancedSettings = ({
                 <FormItemLayout
                   label={$t('Invalidated slot behavior')}
                   layout="horizontal"
-                  description={$t("Behavior of the pipeline's replication slot when invalidated.")}
+                  description={$t(
+                    'What the pipeline does when its replication slot becomes invalid.'
+                  )}
                 >
                   <FormControl>
                     <Select value={field.value ?? 'error'} onValueChange={field.onChange}>
@@ -198,7 +171,9 @@ export const AdvancedSettings = ({
                         <SelectItem value="recreate" className="[&>span]:top-2.5">
                           <p>{$t('Recreate')}</p>
                           <p className="text-foreground-lighter">
-                            {$t('Rebuilds the slot and restarts replication from scratch.')}
+                            {$t(
+                              'Replaces destination tables and runs a new, billable initial sync.'
+                            )}
                           </p>
                         </SelectItem>
                       </SelectContent>
@@ -222,22 +197,17 @@ export const AdvancedSettings = ({
                         </div>
                       }
                       layout="horizontal"
-                      description={
-                        <>
-                          <p>{$t('Size of the BigQuery Storage Write API connection pool.')}</p>
-                          <p>
-                            {$t(
-                              'More connections allow more parallel writes, but consume more resources.'
-                            )}
-                          </p>
-                        </>
-                      }
+                      description={$t(
+                        'Number of BigQuery connections used for destination writes.'
+                      )}
                     >
                       <FormControl>
                         <InputGroup>
                           <FormInputGroupInput
                             {...field}
                             type="number"
+                            min={1}
+                            step={1}
                             value={field.value ?? ''}
                             onChange={handleNumberChange(field)}
                             placeholder={`Default: ${DEFAULT_CONNECTION_POOL_SIZE}`}
@@ -263,29 +233,20 @@ export const AdvancedSettings = ({
                         </div>
                       }
                       layout="horizontal"
-                      description={
-                        <>
-                          <p>
-                            {$t(
-                              'Maximum allowed age for BigQuery cached metadata before reading base tables.'
-                            )}
-                          </p>
-                          <p>
-                            {$t(
-                              'Lower values improve freshness, higher values can reduce query cost and latency.'
-                            )}
-                          </p>
-                        </>
-                      }
+                      description={$t(
+                        'How old query results can be while BigQuery applies ongoing changes.'
+                      )}
                     >
                       <FormControl>
                         <InputGroup>
                           <FormInputGroupInput
                             {...field}
                             type="number"
+                            min={0}
+                            step={1}
                             value={field.value ?? ''}
                             onChange={handleNumberChange(field)}
-                            placeholder={$t('Default: None (No staleness limit)')}
+                            placeholder={$t('Default: None (Freshest results)')}
                           />
                           <InputGroupAddon align="inline-end">
                             <InputGroupText>minutes</InputGroupText>

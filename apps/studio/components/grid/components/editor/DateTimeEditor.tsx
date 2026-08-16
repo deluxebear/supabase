@@ -12,6 +12,9 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from 'ui'
 import { Input } from 'ui-patterns/DataInputs/Input'
 import { TimestampInfo, timestampLocalFormatter } from 'ui-patterns/TimestampInfo'
@@ -152,13 +155,19 @@ function BaseEditor<TRow, TSummaryRow = unknown>({
                   {$t('Set NULL')}
                 </Button>
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="default"
-                      icon={<ChevronDown />}
-                      className="px-1 rounded-l-none border-l-0"
-                    />
-                  </DropdownMenuTrigger>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          aria-label={$t('Date options')}
+                          variant="default"
+                          icon={<ChevronDown />}
+                          className="px-1 rounded-l-none border-l-0"
+                        />
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">{$t('Date options')}</TooltipContent>
+                  </Tooltip>
                   <DropdownMenuContent className="w-20" align="end">
                     <DropdownMenuItem onClick={setToNow}>{$t('Set to NOW')}</DropdownMenuItem>
                   </DropdownMenuContent>

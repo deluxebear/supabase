@@ -18,6 +18,7 @@ import { AlertError } from '@/components/ui/AlertError'
 import { ResourceList } from '@/components/ui/Resource/ResourceList'
 import { HorizontalShimmerWithIcon } from '@/components/ui/Shimmers'
 import { useAuthConfigQuery } from '@/data/auth/auth-config-query'
+import { DOCS_URL } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 
 export const AuthProvidersForm = () => {
@@ -60,7 +61,7 @@ export const AuthProvidersForm = () => {
                       )}
                     </p>
                     <Button asChild variant="default" className="w-min" icon={<ExternalLink />}>
-                      <Link href="https://supabase.com/docs/guides/platform/going-into-prod#security">
+                      <Link href={`${DOCS_URL}/guides/platform/going-into-prod#security`}>
                         {$t('View security recommendations')}
                       </Link>
                     </Button>
@@ -90,17 +91,17 @@ export const AuthProvidersForm = () => {
                       : provider
                   let isActive = false
                   if (providerSchema.title === 'SAML 2.0') {
-                    isActive = authConfig && (authConfig as any)['SAML_ENABLED']
+                    isActive = authConfig && authConfig['SAML_ENABLED']
                   } else if (providerSchema.title === 'LinkedIn (OIDC)') {
-                    isActive = authConfig && (authConfig as any)['EXTERNAL_LINKEDIN_OIDC_ENABLED']
+                    isActive = authConfig && authConfig['EXTERNAL_LINKEDIN_OIDC_ENABLED']
                   } else if (providerSchema.title === 'Slack (OIDC)') {
-                    isActive = authConfig && (authConfig as any)['EXTERNAL_SLACK_OIDC_ENABLED']
+                    isActive = authConfig && authConfig['EXTERNAL_SLACK_OIDC_ENABLED']
                   } else if (providerSchema.title.includes('Web3')) {
-                    isActive = authConfig && (authConfig as any)['EXTERNAL_WEB3_SOLANA_ENABLED']
+                    isActive = authConfig && authConfig['EXTERNAL_WEB3_SOLANA_ENABLED']
                   } else if (providerSchema.title.includes('X / Twitter (OAuth 2.0)')) {
                     isActive = authConfig && (authConfig as any)['EXTERNAL_X_ENABLED']
                   } else if (providerSchema.title === 'Twitter (Deprecated)') {
-                    isActive = authConfig && (authConfig as any)['EXTERNAL_TWITTER_ENABLED']
+                    isActive = authConfig && authConfig['EXTERNAL_TWITTER_ENABLED']
                   } else {
                     isActive =
                       authConfig &&

@@ -135,7 +135,7 @@ export const VectorsBuckets = () => {
                               return (
                                 <TableRow
                                   key={id}
-                                  className="relative cursor-pointer h-16 inset-focus"
+                                  className="relative cursor-pointer h-16 focus-inset"
                                   onClick={handleBucketNavigation}
                                   onAuxClick={handleBucketNavigation}
                                   onKeyDown={handleBucketNavigation}

@@ -3,7 +3,8 @@ import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { Form, FormControl, FormField } from '@ui/components/shadcn/ui/form'
 import { useParams } from 'common'
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
+import { useInView } from 'react-intersection-observer'
 import { toast } from 'sonner'
 import { FormMessage, Input } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
@@ -52,8 +53,10 @@ const BillingEmail = () => {
     'organizations'
   )
 
+  const { ref, inView } = useInView({ triggerOnce: true })
+
   const { data: billingCustomer, isPending: loadingBillingCustomer } =
-    useOrganizationCustomerProfileQuery({ slug }, { enabled: canReadBillingEmail })
+    useOrganizationCustomerProfileQuery({ slug }, { enabled: canReadBillingEmail && inView })
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,7 +65,10 @@ const BillingEmail = () => {
       additionalBillingEmails: billingCustomer?.additional_emails ?? [],
     },
   })
-  const { additionalBillingEmails } = form.watch()
+  const additionalBillingEmails = useWatch({
+    control: form.control,
+    name: 'additionalBillingEmails',
+  })
   const { errors } = form.formState
   const additionalEmailsError = errors.additionalBillingEmails ?? []
 
@@ -101,7 +107,7 @@ const BillingEmail = () => {
   }, [billingCustomer])
 
   return (
-    <ScaffoldSection>
+    <ScaffoldSection ref={ref}>
       <ScaffoldSectionDetail>
         <div className="sticky space-y-2 top-12">
           <p className="text-foreground text-base m-0">{$t('Email Recipient')}</p>

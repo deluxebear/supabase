@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Pencil, ThumbsDown, ThumbsUp, Trash2 } from 'lucide-react'
+import { Check, Copy, Pencil, Split, ThumbsDown, ThumbsUp, Trash2 } from 'lucide-react'
 import { useEffect, useState, type PropsWithChildren } from 'react'
 import { useForm } from 'react-hook-form'
 import {
@@ -65,6 +65,42 @@ function MessageActionsDelete({ onClick }: { onClick: () => void }) {
   )
 }
 MessageActions.Delete = MessageActionsDelete
+
+function MessageActionsBranch({ onClick }: { onClick: () => void }) {
+  return (
+    <ButtonTooltip
+      variant="text"
+      icon={<Split size={14} strokeWidth={1.5} />}
+      onClick={onClick}
+      className="text-foreground-light hover:text-foreground p-1 rounded-sm"
+      title={$t('Branch in new chat')}
+      aria-label={$t('Branch in new chat')}
+      tooltip={{ content: { side: 'bottom', text: 'Branch in new chat' } }}
+    />
+  )
+}
+MessageActions.Branch = MessageActionsBranch
+
+function MessageActionsCopy({ onClick }: { onClick: (onSuccess: () => void) => void }) {
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (copied) setTimeout(() => setCopied(false), 1000)
+  }, [copied])
+
+  return (
+    <ButtonTooltip
+      variant="text"
+      icon={copied ? <Check size={14} strokeWidth={2} /> : <Copy size={14} strokeWidth={1.5} />}
+      onClick={() => onClick(() => setCopied(true))}
+      className="text-foreground-light hover:text-foreground p-1 rounded-sm"
+      title={$t('Copy response')}
+      aria-label={$t('Copy response')}
+      tooltip={{ content: { side: 'bottom', text: 'Copy response' } }}
+    />
+  )
+}
+MessageActions.Copy = MessageActionsCopy
 
 function MessageActionsThumbsUp({
   onClick,

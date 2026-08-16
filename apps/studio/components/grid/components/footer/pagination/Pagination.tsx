@@ -1,7 +1,7 @@
 import { THRESHOLD_COUNT } from '@supabase/pg-meta'
 import { keepPreviousData } from '@tanstack/react-query'
 import { useParams } from 'common'
-import { AlertCircle, ArrowLeft, ArrowRight, HelpCircle, Loader2 } from 'lucide-react'
+import { AlertCircle, ArrowLeft, ArrowRight, HelpCircle } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 import { Input } from 'ui-patterns/DataInputs/Input'
@@ -40,12 +40,7 @@ const RowCountSelector = ({
   }))
 
   return (
-    <DropdownControl
-      options={options}
-      onSelect={onRowsPerPageChange}
-      side="top"
-      align="start"
-    >
+    <DropdownControl options={options} onSelect={onRowsPerPageChange} side="top" align="start">
       <Button asChild variant="outline" style={{ padding: '3px 10px' }}>
         <span>{$t('{{count}} rows', { count: tableEditorSnap.rowsPerPage })}</span>
       </Button>
@@ -300,11 +295,7 @@ export const Pagination = ({ enableForeignRowsQuery = true }: PaginationProps) =
       </div>
 
       {isLoading ? (
-        <Button
-          variant="text"
-          className="w-7"
-          icon={<Loader2 size={12} className="animate-spin" />}
-        />
+        <Button variant="text" className="w-7" loading aria-label={$t('Get exact row count')} />
       ) : isError ? (
         <Tooltip>
           <TooltipTrigger asChild>
@@ -314,6 +305,8 @@ export const Pagination = ({ enableForeignRowsQuery = true }: PaginationProps) =
               className="w-7"
               loading={isFetching}
               icon={<AlertCircle />}
+              aria-label={$t('Get exact row count')}
+              disabled
             />
           </TooltipTrigger>
           <TooltipContent side="top">
@@ -338,6 +331,7 @@ export const Pagination = ({ enableForeignRowsQuery = true }: PaginationProps) =
                   className="w-7"
                   loading={isFetching}
                   icon={<HelpCircle />}
+                  aria-label={$t('Get exact row count')}
                   onClick={() => {
                     // Show warning if either NOT a table entity, or table rows estimate is beyond threshold
                     if (rowsCountEstimate === null || count === -1 || count > THRESHOLD_COUNT) {

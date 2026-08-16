@@ -2,7 +2,7 @@ import type { OAuthClient } from '@supabase/supabase-js'
 import { X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 import { Input } from 'ui-patterns/DataInputs/Input'
 
 import { t as $t } from '@/lib/i18n'

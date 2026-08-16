@@ -201,7 +201,7 @@ const LogDrainsSettings: NextPageWithLayout = () => {
     return (
       <PageLayout
         title={$t('Log Drains')}
-        subtitle={$t('Send your project logs to third party destinations')}
+        subtitle="Send your project logs to third party destinations"
         primaryActions={
           <>
             {!(logDrains?.length === 0) && (
@@ -217,7 +217,7 @@ const LogDrainsSettings: NextPageWithLayout = () => {
                     disabled={!hasAccessToLogDrains || !canManageLogDrains}
                     onClick={handleAddDestinationClick}
                     variant="primary"
-                    className="rounded-r-none px-3"
+                    className="rounded-r-none px-3 hover:z-10 focus-visible:z-10"
                   >
                     {$t('Add destination')}
                   </Button>
@@ -227,7 +227,7 @@ const LogDrainsSettings: NextPageWithLayout = () => {
                     <Button
                       variant="primary"
                       title={$t('Choose token scope')}
-                      className="rounded-l-none px-[4px] py-[5px]"
+                      className="-ml-px rounded-l-none px-[4px] py-[5px] focus-visible:z-10"
                       icon={<ChevronDown />}
                     />
                   </DropdownMenuTrigger>

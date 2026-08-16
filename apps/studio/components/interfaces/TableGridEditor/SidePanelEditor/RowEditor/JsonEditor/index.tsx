@@ -18,6 +18,8 @@ import { useGetCellValueMutation } from '@/data/table-rows/get-cell-value-mutati
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { minifyJSON, prettifyJSON, removeJSONTrailingComma, tryParseJson } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
+import { RoleImpersonationState } from '@/lib/role-impersonation'
+import { useRoleImpersonationStateSnapshot } from '@/state/role-impersonation-state'
 
 interface JsonEditProps {
   row?: { [key: string]: any }
@@ -61,6 +63,7 @@ export const JsonEditor = ({
   const isTruncated = isValueTruncated(jsonString, columnFormat)
 
   const { mutate: getCellValue, isPending, isSuccess, reset } = useGetCellValueMutation()
+  const roleImpersonationState = useRoleImpersonationStateSnapshot()
 
   const validateJSON = useCallback(
     async (nextValue: string, resolve: () => void) => {
@@ -118,6 +121,7 @@ export const JsonEditor = ({
         pkMatch,
         projectRef: project?.ref,
         connectionString: project?.connectionString,
+        roleImpersonationState: roleImpersonationState as RoleImpersonationState,
       },
       {
         onSuccess: (data: unknown | undefined) => {

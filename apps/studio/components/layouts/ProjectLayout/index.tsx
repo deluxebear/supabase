@@ -27,11 +27,10 @@ import {
 import { useEditorType } from '../editors/EditorsLayout.hooks'
 import { useMainScrollContainer, useSetMainScrollContainer } from '../MainScrollContainerContext'
 import { useMobileSheet } from '../Navigation/NavigationBar/MobileSheetContext'
-import ProductMenuBar from '../Navigation/ProductMenuBar'
+import { ProductMenuBar } from '../Navigation/ProductMenuBar'
 import BuildingState from './BuildingState'
 import ConnectingState from './ConnectingState'
 import { getSectionKeyFromPathname, MobileMenuContent } from './LayoutHeader/MobileMenuContent'
-import { LoadingState } from './LoadingState'
 import { ProjectPausedState } from './PausedState/ProjectPausedState'
 import { PauseFailedState } from './PauseFailedState'
 import { PausingState } from './PausingState'
@@ -357,7 +356,7 @@ export const ProjectLayout = forwardRef<HTMLDivElement, PropsWithChildren<Projec
                     </div>
                   </div>
                 ) : (
-                  <ContentWrapper isLoading={isLoading} isBlocking={isBlocking}>
+                  <ContentWrapper>
                     <ResourceExhaustionWarningBanner />
                     {children}
                   </ContentWrapper>
@@ -405,8 +404,6 @@ const MenuBarWrapper = ({
 }
 
 interface ContentWrapperProps {
-  isLoading: boolean
-  isBlocking?: boolean
   children: ReactNode
 }
 
@@ -422,7 +419,7 @@ interface ContentWrapperProps {
  *
  * [TODO] Next iteration should scrape long polling and just listen to the project's status
  */
-const ContentWrapper = ({ isLoading, isBlocking = true, children }: ContentWrapperProps) => {
+const ContentWrapper = ({ children }: ContentWrapperProps) => {
   const router = useRouter()
   const { ref } = useParams()
   const state = useDatabaseSelectorStateSnapshot()
@@ -432,7 +429,6 @@ const ContentWrapper = ({ isLoading, isBlocking = true, children }: ContentWrapp
 
   const requiresDbConnection = !routesToIgnoreDBConnection.some((x) => router.pathname.includes(x))
   const requiresPostgrestConnection = !routesToIgnorePostgrestConnection.includes(router.pathname)
-  const requiresProjectDetails = !routesToIgnoreProjectDetailsRequest.includes(router.pathname)
 
   const isRestarting = selectedProject?.status === PROJECT_STATUS.RESTARTING
   const isResizing = selectedProject?.status === PROJECT_STATUS.RESIZING
@@ -466,10 +462,6 @@ const ContentWrapper = ({ isLoading, isBlocking = true, children }: ContentWrapp
   useEffect(() => {
     if (ref) state.setSelectedDatabaseId(ref)
   }, [ref])
-
-  if (isBlocking && (isLoading || (requiresProjectDetails && selectedProject === undefined))) {
-    return router.pathname.endsWith('[ref]') ? <LoadingState /> : <LogoLoader />
-  }
 
   if (isRestarting && !isBackupsPage) {
     return <RestartingState />

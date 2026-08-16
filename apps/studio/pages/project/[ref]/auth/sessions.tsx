@@ -35,7 +35,7 @@ const SessionsPage: NextPageWithLayout = () => {
           <PageHeaderSummary>
             <PageHeaderTitle>{$t('User Sessions')}</PageHeaderTitle>
             <PageHeaderDescription>
-              {$t('Configure settings for user sessions and refresh tokens')}
+              {$t('Configure settings for access tokens, refresh tokens, and user sessions')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>

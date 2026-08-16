@@ -3,7 +3,7 @@ import { AlertTriangle, RotateCcw } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { Badge, Button, Card, CardContent, CardFooter, Input, Progress } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { BackupManagementUnavailable } from './BackupManagementUnavailable'

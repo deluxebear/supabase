@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 
 import { useDeleteReplicationTenantMutation } from '@/data/replication/delete-tenant-mutation'
 import { t as $t } from '@/lib/i18n'
@@ -41,8 +41,12 @@ export const DisablePipelinesDialog = ({ open, setOpen }: DisablePipelinesDialog
     try {
       if (!projectRef) throw new Error('Project ref is required')
       await deleteReplicationTenant({ projectRef })
-    } catch (error: any) {
-      setError(error.message ?? 'An unknown error occurred')
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'An unknown error occurred while disabling Pipelines'
+      )
       throw error
     }
   }
@@ -52,14 +56,14 @@ export const DisablePipelinesDialog = ({ open, setOpen }: DisablePipelinesDialog
       <AlertDialogContent size="small">
         <AlertDialogHeader>
           <AlertDialogTitle>{$t('Disable Pipelines')}</AlertDialogTitle>
-          <AlertDialogDescription className="space-y-2 text-sm">
-            <p>
+          <AlertDialogDescription className="flex flex-col gap-y-2 text-sm">
+            <span>
               {$t('This will remove the')} <code className="text-code-inline">etl</code>{' '}
               {$t(
-                'schema and all connected resources from your database. Any active replication pipelines sending changes to external destinations will stop.'
+                'schema and all Pipelines-managed resources from your database. Data already written to destination systems is not deleted.'
               )}
-            </p>
-            <p>{$t('Read replicas are not affected.')}</p>
+            </span>
+            <span>{$t('Read replicas are not affected.')}</span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && (

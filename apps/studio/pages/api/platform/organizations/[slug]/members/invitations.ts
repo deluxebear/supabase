@@ -82,11 +82,12 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse, claims?: Jw
   const body = (req.body ?? {}) as Partial<CreateInvitationBody>
 
   // Normalize emails: emails[] wins, fall back to the deprecated single email.
+  const legacyEmail = (body as { email?: string }).email
   const rawEmails =
     Array.isArray(body.emails) && body.emails.length > 0
       ? body.emails
-      : typeof body.email === 'string'
-        ? [body.email]
+      : typeof legacyEmail === 'string'
+        ? [legacyEmail]
         : []
   if (rawEmails.length === 0 || rawEmails.some((e) => typeof e !== 'string')) {
     return res.status(400).json({ message: 'emails must be a non-empty list' })

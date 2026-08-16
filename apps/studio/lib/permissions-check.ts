@@ -44,7 +44,7 @@ export function doPermissionsCheck(
   resource: string,
   data?: object,
   organizationSlug?: string,
-  projectRef?: string
+  projectRef?: string | null
 ) {
   if (!permissions || !Array.isArray(permissions)) {
     return false

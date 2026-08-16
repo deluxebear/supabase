@@ -5,15 +5,16 @@ import Link from 'next/link'
 import { cn, HoverCard, HoverCardContent, HoverCardTrigger, InfoIcon } from 'ui'
 
 import { useUnifiedLogsPreview } from '../App/FeaturePreview/FeaturePreviewContext'
+import { resolveRealtimeServiceStatus, type ProjectServiceStatus } from './ServiceStatus.utils'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { SingleStat } from '@/components/ui/SingleStat'
 import { useBranchesQuery } from '@/data/branches/branches-query'
 import { useEdgeFunctionServiceStatusQuery } from '@/data/service-status/edge-functions-status-query'
 import {
   useProjectServiceStatusQuery,
-  type ProjectServiceStatus as APIProjectServiceStatus,
   type ServiceHealthResponse,
 } from '@/data/service-status/service-status-query'
+import { useHighAvailability } from '@/hooks/misc/useHighAvailability'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
@@ -21,8 +22,6 @@ import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 
 const SERVICE_STATUS_THRESHOLD = 5 // minutes
-
-type ProjectServiceStatus = APIProjectServiceStatus | 'DISABLED'
 
 const iconProps = {
   size: 18,
@@ -103,6 +102,7 @@ const extractDbSchema = (response: ServiceHealthResponse | undefined) => {
 export const ServiceStatus = () => {
   const { ref } = useParams()
   const { data: project } = useSelectedProjectQuery()
+  const { isHighAvailability } = useHighAvailability()
   const { isEnabled: isUnifiedLogsEnabled } = useUnifiedLogsPreview()
 
   const {
@@ -138,6 +138,9 @@ export const ServiceStatus = () => {
       refetchInterval: (query) => {
         const data = query.state.data
         const isServiceUnhealthy = data?.some((service) => {
+          if (isHighAvailability && service.name === 'realtime') {
+            return false
+          }
           // if the postgrest service has an empty schema, postgrest has been disabled
           if (service.name === 'rest' && extractDbSchema(service) === '') {
             return false
@@ -220,7 +223,7 @@ export const ServiceStatus = () => {
             error: realtimeStatus?.error,
             docsUrl: undefined,
             isLoading,
-            status: realtimeStatus?.status ?? 'UNHEALTHY',
+            status: resolveRealtimeServiceStatus(isHighAvailability, realtimeStatus?.status),
             logsUrl: isUnifiedLogsEnabled
               ? '/logs?filter=log_type:eq:realtime'
               : '/logs/realtime-logs',

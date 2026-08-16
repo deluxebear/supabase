@@ -2,7 +2,7 @@ import { ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import { PropsWithChildren } from 'react'
 import { Badge, Button } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 
 import { BASE_PATH } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
@@ -22,7 +22,7 @@ export const AlphaNotice = ({
   return (
     <Admonition
       showIcon={false}
-      type="tip"
+      type="note"
       layout="horizontal"
       actions={
         <Button

@@ -71,18 +71,14 @@ export const BucketsPolicies = ({
               )}
             </PageSectionDescription>
           </PageSectionSummary>
-          <CollapsibleTrigger asChild>
-            <button>
-              <span className="sr-only">{$t('Toggle bucket list')}</span>
-              <ChevronUp
-                size={14}
-                className={cn(
-                  !expanded && 'rotate-180',
-                  'transition',
-                  'text-foreground-light hover:text-foreground'
-                )}
-              />
-            </button>
+          <CollapsibleTrigger
+            aria-label={$t('Toggle bucket list')}
+            className={cn(
+              'rounded-md p-1 text-foreground-light hover:text-foreground',
+              'focus-ring'
+            )}
+          >
+            <ChevronUp size={14} className={cn(!expanded && 'rotate-180', 'transition')} />
           </CollapsibleTrigger>
         </PageSectionMeta>
         <CollapsibleContent>
@@ -167,7 +163,6 @@ const BucketsPoliciesVirtualizedList = ({
   })
   useEffect(() => {
     fetchNext()
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- useEffectEvent fn intentionally not a dep (eslint-plugin-react-hooks v5 doesn't recognize stable useEffectEvent yet)
   }, [lastItem])
 
   return (

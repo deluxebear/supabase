@@ -40,6 +40,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
 
   const rows = await listMembers(org.orgId)
   const response: Member[] = rows.map((row) => ({
+    avatar_url: null,
     gotrue_id: row.gotrue_id,
     is_sso_user: false,
     metadata: {},

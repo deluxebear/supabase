@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { Checkbox } from '@ui/components/shadcn/ui/checkbox'
 import { CommandGroup } from '@ui/components/shadcn/ui/command'
 import { Label } from '@ui/components/shadcn/ui/label'
@@ -8,9 +7,12 @@ import { useEffect, useState } from 'react'
 import { Button, cn, Command, CommandEmpty, CommandInput, CommandItem, CommandList } from 'ui'
 import { z } from 'zod'
 
+import { t as $t } from '@/lib/i18n'
+
 export interface ReportSelectOption {
   label: React.ReactNode
   value: string
+  quantity?: number
   description?: string
 }
 
@@ -24,6 +26,7 @@ interface ReportsSelectFilterProps {
   onChange: (value: SelectFilters) => void
   isLoading?: boolean
   className?: string
+  popoverClassName?: string
   showSearch?: boolean
 }
 
@@ -34,6 +37,7 @@ export const ReportsSelectFilter = ({
   onChange,
   isLoading = false,
   className,
+  popoverClassName,
   showSearch = false,
 }: ReportsSelectFilterProps) => {
   const [open, setOpen] = useState(false)
@@ -48,7 +52,7 @@ export const ReportsSelectFilter = ({
   }, [open, value])
 
   const handleApply = () => {
-    onChange(tempValue)
+    onChange([...tempValue].sort())
     setOpen(false)
   }
 
@@ -81,9 +85,9 @@ export const ReportsSelectFilter = ({
           </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="p-0 w-72">
+      <PopoverContent align="start" className={cn('p-0 w-72', popoverClassName)}>
         <Command>
-          {showSearch && <CommandInput placeholder={$t('Search...')} />}
+          {showSearch && <CommandInput placeholder={$t('Search...')} className="text-xs" />}
           <CommandList className="max-h-72">
             <CommandEmpty>{$t('No options found.')}</CommandEmpty>
             <CommandGroup>
@@ -91,9 +95,7 @@ export const ReportsSelectFilter = ({
                 <CommandItem key={option.value}>
                   <Label
                     key={option.value}
-                    className={
-                      'flex items-center overflow-hidden p-1 rounded-xs gap-x-3 w-full h-full'
-                    }
+                    className={'flex items-center overflow-hidden rounded-xs gap-x-3 w-full h-full'}
                   >
                     <Checkbox
                       id={`${label}-${option.value}`}
@@ -107,10 +109,15 @@ export const ReportsSelectFilter = ({
                       }}
                       onKeyDown={handleKeyDown}
                     />
-                    <div className="flex flex-col text-xs">
-                      {option.label}
-                      {option.description && (
-                        <span className="text-foreground-lighter">{option.description}</span>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex flex-col text-xs">
+                        <span className="flex items-center gap-x-2">{option.label}</span>
+                        {option.description && (
+                          <span className="text-foreground-lighter">{option.description}</span>
+                        )}
+                      </div>
+                      {!!option.quantity && (
+                        <code className="p-0 px-1 text-code-inline">{option.quantity}</code>
                       )}
                     </div>
                   </Label>
@@ -122,9 +129,8 @@ export const ReportsSelectFilter = ({
 
         <div className="flex items-center justify-end gap-2 border-t border-default p-2">
           <Button size="tiny" variant="outline" onClick={handleClearAll} disabled={isLoading}>
-            
-                                  {$t('Clear')}
-                                </Button>
+            {$t('Clear')}
+          </Button>
           <Button
             loading={isLoading}
             size="tiny"
@@ -132,9 +138,8 @@ export const ReportsSelectFilter = ({
             onClick={handleApply}
             type="button"
           >
-            
-                                  {$t('Apply')}
-                                </Button>
+            {$t('Apply')}
+          </Button>
         </div>
       </PopoverContent>
     </Popover>

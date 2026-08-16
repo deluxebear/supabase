@@ -37,16 +37,11 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { CreateCronJobForm } from './CreateCronJobSheet/CreateCronJobSheet.constants'
 import { useEdgeFunctionsQuery } from '@/data/edge-functions/edge-functions-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { buildDatabaseEdgeFunctionUrl } from '@/lib/api/edgeFunctions'
 import { t as $t } from '@/lib/i18n'
 
 interface HTTPRequestFieldsProps {
   form: UseFormReturn<CreateCronJobForm>
-}
-
-const buildFunctionUrl = (slug: string, projectRef: string, restUrl?: string) => {
-  const restUrlTld = restUrl ? new URL(restUrl).hostname.split('.').pop() : 'co'
-  const functionUrl = `https://${projectRef}.supabase.${restUrlTld}/functions/v1/${slug}`
-  return functionUrl
 }
 
 export const EdgeFunctionSection = ({ form }: HTTPRequestFieldsProps) => {
@@ -63,7 +58,11 @@ export const EdgeFunctionSection = ({ form }: HTTPRequestFieldsProps) => {
     () =>
       functions?.map((fn) => ({
         ...fn,
-        url: buildFunctionUrl(fn.slug, selectedProject?.ref || '', selectedProject?.restUrl),
+        url: buildDatabaseEdgeFunctionUrl(
+          fn.slug,
+          selectedProject?.ref || '',
+          selectedProject?.restUrl
+        ),
       })) ?? [],
     [functions, selectedProject]
   )

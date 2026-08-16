@@ -6,6 +6,7 @@ import { ComputeBadge } from 'ui-patterns/ComputeBadge'
 
 import { BannerCard } from '../BannerCard'
 import { BANNER_ID, useBannerStack } from '../BannerStackProvider'
+import { getInfrastructurePath } from '@/components/interfaces/Settings/Infrastructure/Infrastructure.utils'
 import { ChevronsUpAnimated } from '@/components/ui/ComputeBadgeWrapper'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { t as $t } from '@/lib/i18n'
@@ -60,7 +61,7 @@ export const BannerFreeMicroUpgrade = () => {
               track('free_micro_upgrade_banner_cta_clicked')
             }}
           >
-            <Link href={`/project/${ref}/settings/compute-and-disk?upgrade=micro`}>
+            <Link href={`${getInfrastructurePath(ref)}?upgrade=micro`}>
               {$t('Upgrade for free')}
             </Link>
           </Button>

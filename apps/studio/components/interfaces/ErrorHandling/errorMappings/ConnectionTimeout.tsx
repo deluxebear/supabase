@@ -5,6 +5,7 @@ import {
   TroubleshootingGuideSection,
 } from '../TroubleshootingSections'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
+import { DOCS_URL } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -31,7 +32,7 @@ export function ConnectionTimeoutTroubleshooting() {
       <TroubleshootingGuideSection
         number={2}
         errorType={ERROR_TYPE}
-        href="https://supabase.com/docs/guides/troubleshooting/failed-to-run-sql-query-connection-terminated-due-to-connection-timeout"
+        href={`${DOCS_URL}/guides/troubleshooting/failed-to-run-sql-query-connection-terminated-due-to-connection-timeout`}
         description={$t(
           'Follow step-by-step instructions for diagnosing connection timeout issues.'
         )}

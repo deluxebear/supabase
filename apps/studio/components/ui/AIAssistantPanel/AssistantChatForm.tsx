@@ -5,11 +5,12 @@ import { ExpandingTextArea } from 'ui'
 import { cn } from 'ui/src/lib/utils'
 
 import { ButtonTooltip } from '../ButtonTooltip'
-import { type SqlSnippet } from './AIAssistant.types'
+import { formatAttachedSnippets } from './AIAssistant.utils'
 import { ModelSelector } from './ModelSelector'
-import { getSnippetContent, SnippetRow } from './SnippetRow'
+import { SnippetRow } from './SnippetRow'
 import type { AssistantModelId } from '@/lib/ai/model.utils'
 import { t as $t } from '@/lib/i18n'
+import { type SqlSnippet } from '@/state/ai-assistant-state'
 
 export interface FormProps {
   /* The ref for the textarea, optional. Exposed for the CommandsPopover to attach events. */
@@ -84,10 +85,7 @@ const AssistantChatFormComponent = forwardRef<HTMLFormElement, FormProps>(
 
       let finalMessage = value
       if (includeSnippetsInMessage && sqlSnippets && sqlSnippets.length > 0) {
-        const sqlSnippetsString = sqlSnippets
-          .map((snippet: SqlSnippet) => '```sql\n' + getSnippetContent(snippet) + '\n```')
-          .join('\n')
-        finalMessage = [value, sqlSnippetsString].filter(Boolean).join('\n\n')
+        finalMessage = [value, formatAttachedSnippets(sqlSnippets)].filter(Boolean).join('\n\n')
       }
 
       onSubmit(finalMessage)
@@ -157,6 +155,7 @@ const AssistantChatFormComponent = forwardRef<HTMLFormElement, FormProps>(
               ) : (
                 <ButtonTooltip
                   type="submit"
+                  variant={canSubmit ? 'primary' : 'default'}
                   aria-label={$t('Send message')}
                   icon={<ArrowUp />}
                   disabled={!canSubmit}

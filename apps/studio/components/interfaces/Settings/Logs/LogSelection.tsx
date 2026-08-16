@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { Check, Copy, MousePointerClick, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button, cn, copyToClipboard, Tabs, TabsContent, TabsList, TabsTrigger } from 'ui'
@@ -9,6 +8,7 @@ import type { LogData, PreviewLogData, QueryType } from './Logs.types'
 import { apiKey, role as extractRole, jwtAPIKey, parseMultigresEventMessage } from './Logs.utils'
 import DefaultPreviewSelectionRenderer from './LogSelectionRenderers/DefaultPreviewSelectionRenderer'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 
 export interface LogSelectionProps {
   log?: LogData
@@ -93,15 +93,13 @@ const LogSelection = ({ log, onClose, queryType, isLoading, error }: LogSelectio
     <div className="relative flex h-full grow flex-col overflow-y-scroll bg-surface-100 border-t">
       <div className="relative grow flex flex-col h-full">
         <Tabs defaultValue="details" className="flex flex-col h-full">
-          <TabsList className="px-2 pt-2 relative">
+          <TabsList className="px-2 pt-2 sticky top-0 z-10 bg-surface-100">
             <TabsTrigger className="px-3" value="details">
-              
-                                        {$t('Details')}
-                                      </TabsTrigger>
+              {$t('Details')}
+            </TabsTrigger>
             <TabsTrigger disabled={!log} className="px-3" value="raw">
-              
-                                        {$t('Raw')}
-                                      </TabsTrigger>
+              {$t('Raw')}
+            </TabsTrigger>
 
             <div className="*:px-1.5 *:text-foreground-lighter ml-auto flex gap-1 absolute right-2 top-2">
               <ButtonTooltip

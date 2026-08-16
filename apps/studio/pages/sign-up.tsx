@@ -9,11 +9,14 @@ import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useEnabledIdentityProviders } from '@/hooks/misc/useEnabledIdentityProviders'
 import { useInboundBranding } from '@/hooks/misc/useInboundBranding'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { useSiwcQueryParamOptIn } from '@/hooks/misc/useSiwcQueryParamOptIn'
 import type { ExternalIdentityProviderConfig } from '@/lib/external-identity-providers'
 import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 const SignUpPage: NextPageWithLayout = () => {
+  useSiwcQueryParamOptIn()
+
   const [showOtherOptions, setShowOtherOptions] = useState(false)
   const { dashboardAuthSignUp: signUpEnabled } = useIsFeatureEnabled(['dashboard_auth:sign_up'])
 

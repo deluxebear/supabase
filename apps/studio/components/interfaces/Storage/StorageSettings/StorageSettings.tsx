@@ -21,7 +21,7 @@ import {
   SelectValue,
   Switch,
 } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { PageContainer } from 'ui-patterns/PageContainer'
 import { PageSection, PageSectionContent } from 'ui-patterns/PageSection'
@@ -57,12 +57,6 @@ import { formatBytes } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
 
 const formId = 'storage-settings-form'
-
-interface StorageSettingsState {
-  fileSizeLimit: number
-  unit: StorageSizeUnits
-  imageTransformationEnabled: boolean
-}
 
 export const StorageSettings = () => {
   const { ref: projectRef } = useParams()
@@ -118,11 +112,6 @@ export const StorageSettings = () => {
     !hasAccessToFileSizeConfiguration
 
   const [isUpdating, setIsUpdating] = useState(false)
-  const [initialValues, setInitialValues] = useState<StorageSettingsState>({
-    fileSizeLimit: 0,
-    unit: StorageSizeUnits.MB,
-    imageTransformationEnabled: false,
-  })
 
   const maxBytes = useMemo(() => {
     if (
@@ -163,12 +152,15 @@ export const StorageSettings = () => {
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
-    defaultValues: initialValues,
+    defaultValues: {
+      fileSizeLimit: 0,
+      unit: StorageSizeUnits.MB,
+      imageTransformationEnabled: false,
+    },
     mode: 'onSubmit',
     reValidateMode: 'onSubmit',
   })
 
-  const { unit: storageUnit } = form.watch()
   const fileSizeLimitError = form.formState.errors.fileSizeLimit
 
   const { mutate: updateStorageConfig } = useProjectStorageConfigUpdateUpdateMutation({
@@ -235,27 +227,17 @@ export const StorageSettings = () => {
   }
 
   useEffect(() => {
-    if (isSuccess && config && !isLoading) {
-      const { fileSizeLimit, features } = config
-      const { value, unit } = convertFromBytes(fileSizeLimit ?? 0)
-      const imageTransformationEnabled =
-        features?.imageTransformation?.enabled ?? hasAccessToImageTransformations
+    if (!isSuccess || !config || isLoading) return
 
-      setInitialValues({
-        fileSizeLimit: value,
-        unit: unit,
-        imageTransformationEnabled,
-      })
+    const { value, unit } = convertFromBytes(config.fileSizeLimit ?? 0)
 
-      // Reset the form values when the config values load
-      form.reset({
-        fileSizeLimit: value,
-        unit: unit,
-        imageTransformationEnabled,
-      })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccess, config, isLoading, hasAccessToImageTransformations])
+    form.reset({
+      fileSizeLimit: value,
+      unit,
+      imageTransformationEnabled:
+        config.features?.imageTransformation?.enabled ?? hasAccessToImageTransformations,
+    })
+  }, [isSuccess, config, isLoading, hasAccessToImageTransformations, form])
 
   return (
     <PageContainer>
@@ -265,10 +247,8 @@ export const StorageSettings = () => {
             {!IS_PLATFORM ? (
               <Admonition
                 type="default"
-                title={$t('Storage settings are not available for self-hosted projects')}
-                description={$t(
-                  'Storage settings are only available for Supabase Platform projects.'
-                )}
+                title={'Storage settings are not available for self-hosted projects'}
+                description={'Storage settings are only available for Supabase Platform projects.'}
               />
             ) : isLoading ? (
               <GenericSkeletonLoader />
@@ -293,7 +273,7 @@ export const StorageSettings = () => {
                           render={({ field }) => (
                             <FormItemLayout
                               layout="flex-row-reverse"
-                              label={$t('Enable image transformation')}
+                              label={'Enable image transformation'}
                               description={
                                 <>
                                   {$t('Optimize and resize images on the fly.')}{' '}
@@ -329,7 +309,7 @@ export const StorageSettings = () => {
                             <FormItemLayout
                               hideMessage
                               layout="flex-row-reverse"
-                              label={$t('Global file size limit')}
+                              label={'Global file size limit'}
                               description={
                                 <>
                                   {$t('Restrict the size of files uploaded across all buckets.')}{' '}
@@ -368,6 +348,7 @@ export const StorageSettings = () => {
                                     name="unit"
                                     render={({ field: unitField }) => (
                                       <Select
+                                        key={unitField.value}
                                         value={unitField.value}
                                         onValueChange={(val) => {
                                           unitField.onChange(val)
@@ -379,9 +360,7 @@ export const StorageSettings = () => {
                                         }
                                       >
                                         <SelectTrigger className="w-[90px] text-xs font-mono rounded-l-none bg-surface-300">
-                                          <SelectValue placeholder={$t('Choose a prefix')}>
-                                            {storageUnit}
-                                          </SelectValue>
+                                          <SelectValue placeholder={$t('Choose a prefix')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                           {Object.values(StorageSizeUnits).map((unit: string) => (

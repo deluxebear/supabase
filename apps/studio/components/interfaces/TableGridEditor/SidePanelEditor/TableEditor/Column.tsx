@@ -127,6 +127,7 @@ export const Column = ({
           ref={setActivatorNodeRef}
           {...attributes}
           {...listeners}
+          tabIndex={0}
           className="opacity-50 hover:opacity-100 disabled:hover:opacity-50 transition cursor-grab text-foreground"
           type="button"
         >
@@ -164,6 +165,7 @@ export const Column = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
+                    tabIndex={0}
                     onClick={() => {
                       const SENSITIVE_DATA_MARKER = '[SENSITIVE]'
 
@@ -456,7 +458,13 @@ export const Column = ({
       </div>
       {!hasImportContent && (
         <div className="flex w-[5%] justify-end">
-          <button className="cursor-pointer" onClick={() => onRemoveColumn()}>
+          <button
+            type="button"
+            tabIndex={0}
+            aria-label={$t('Remove column')}
+            className="cursor-pointer"
+            onClick={() => onRemoveColumn()}
+          >
             <X size={16} strokeWidth={1} />
           </button>
         </div>

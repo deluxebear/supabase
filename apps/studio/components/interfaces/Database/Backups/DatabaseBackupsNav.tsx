@@ -13,7 +13,7 @@ type Props = {
 
 function DatabaseBackupsNav({ active }: Props) {
   const router = useRouter()
-  const { ref, cloud_provider } = useSelectedProjectQuery()?.data || {}
+  const { ref } = useSelectedProjectQuery()?.data || {}
   const projectRef = ref ?? (typeof router.query.ref === 'string' ? router.query.ref : undefined)
   const { databaseRestoreToNewProject } = useIsFeatureEnabled(['database:restore_to_new_project'])
 
@@ -21,17 +21,17 @@ function DatabaseBackupsNav({ active }: Props) {
     {
       enabled: true,
       id: 'scheduled',
-      label: $t('Scheduled backups'),
+      label: 'Scheduled backups',
       href: projectRef ? `/project/${projectRef}/database/backups/scheduled` : router.asPath,
     },
     {
       enabled: true,
       id: 'pitr',
-      label: $t('Point in time'),
+      label: 'Point in time',
       href: projectRef ? `/project/${projectRef}/database/backups/pitr` : router.asPath,
     },
     {
-      enabled: databaseRestoreToNewProject && cloud_provider !== 'FLY' && !IS_SELF_PLATFORM,
+      enabled: databaseRestoreToNewProject && !IS_SELF_PLATFORM,
       id: 'rtnp',
       label: (
         <div className="flex items-center gap-2">

@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
 import { useEffect, useState } from 'react'
-import { SubmitHandler, useForm } from 'react-hook-form'
+import { SubmitHandler, useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import {
   Alert,
@@ -171,6 +171,7 @@ export const MfaAuthSettingsForm = () => {
     },
   })
   const { reset: resetPhoneForm } = phoneForm
+  const mfaPhoneValue = useWatch({ control: phoneForm.control, name: 'MFA_PHONE' })
 
   const securityForm = useForm<SecurityFormValues>({
     resolver: zodResolver(securitySchema),
@@ -330,8 +331,7 @@ export const MfaAuthSettingsForm = () => {
     )
   }
 
-  const phoneMFAIsEnabled =
-    phoneForm.watch('MFA_PHONE') === 'Enabled' || phoneForm.watch('MFA_PHONE') === 'Verify Enabled'
+  const phoneMFAIsEnabled = mfaPhoneValue === 'Enabled' || mfaPhoneValue === 'Verify Enabled'
   const hasUpgradedPhoneMFA =
     authConfig && !authConfig.MFA_PHONE_VERIFY_ENABLED && phoneMFAIsEnabled
 

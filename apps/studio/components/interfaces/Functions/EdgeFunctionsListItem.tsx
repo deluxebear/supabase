@@ -112,7 +112,7 @@ export const EdgeFunctionsListItem = ({
       onAuxClick={handleNavigation}
       onKeyDown={handleNavigation}
       tabIndex={0}
-      className="cursor-pointer inset-focus"
+      className="cursor-pointer focus-inset"
     >
       <TableCell>
         <p className="text-sm text-foreground whitespace-nowrap py-2">{item.name}</p>
@@ -124,6 +124,7 @@ export const EdgeFunctionsListItem = ({
           </p>
           <button
             type="button"
+            tabIndex={0}
             className="text-foreground-lighter hover:text-foreground transition"
             onClick={(event: MouseEvent<HTMLButtonElement>) => {
               function onCopy(value: string) {

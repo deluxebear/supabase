@@ -10,7 +10,7 @@ import {
   DialogSectionSeparator,
   DialogTitle,
 } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 
 import { isBeforeFreeTierTemplateBlockCutoff } from '@/components/interfaces/Auth/EmailTemplates/EmailTemplates.utils'
 import { getComputeSize, OrgProject } from '@/data/projects/org-projects-infinite-query'
@@ -45,12 +45,11 @@ const ProjectDowngradeListItem = ({ projectAddon }: { projectAddon: ProjectAddon
 
   return (
     <li className="list-disc ml-6">
-      {projectAddon.name}: {addonNames.join(', ')} {$t('will be removed.')}
+      {projectAddon.name}: {addonNames.join(', ')} {'will be removed.'}
       {needsRestart ? (
         <>
-          {' '}
-          {$t('Project will also')} <span className="font-bold">{$t('need to be restarted')}</span>{' '}
-          {$t('due to change in compute instance')}
+          {'Project will also'} <span className="font-bold">{$t('need to be restarted')}</span>
+          {'due to change in compute instance'}
         </>
       ) : (
         ''
@@ -108,16 +107,16 @@ export const DowngradeModal = ({
           <div className="flex flex-col space-y-2">
             <Admonition
               type="warning"
-              title={$t(
+              title={
                 "Downgrading to the Free Plan will lead to reductions in your organization's quota"
-              )}
-              description={$t(
+              }
+              description={
                 "If you're already past the limits of the Free Plan, your projects could become\n                  unresponsive or enter read only mode."
-              )}
+              }
             />
 
             {((previousProjectAddons.length ?? 0) > 0 || hasInstancesOnMicro) && (
-              <Admonition type="warning" title={$t('Projects affected by the downgrade')}>
+              <Admonition type="warning" title={'Projects affected by the downgrade'}>
                 <ul className="space-y-1 max-h-[100px] overflow-y-auto">
                   {previousProjectAddons.map((project) => (
                     <ProjectDowngradeListItem key={project.ref} projectAddon={project} />
@@ -131,7 +130,7 @@ export const DowngradeModal = ({
                     .map((project) => (
                       <li className="list-disc ml-6" key={project.ref}>
                         {project.name}
-                        {$t(': Compute will be downgraded. Project will also')}{' '}
+                        {': Compute will be downgraded. Project will also'}{' '}
                         <span className="font-bold">{$t('need to be restarted')}</span>.
                       </li>
                     ))}
@@ -144,10 +143,10 @@ export const DowngradeModal = ({
             <Admonition
               type="warning"
               className="mt-2"
-              title={$t('Any custom email templates will be reset')}
-              description={$t(
+              title={'Any custom email templates will be reset'}
+              description={
                 'Downgrading will reset your custom email templates to their defaults. You won’t be able to edit them unless you set up custom SMTP after downgrading.'
-              )}
+              }
             />
           )}
 
@@ -167,7 +166,7 @@ export const DowngradeModal = ({
             <li className="flex gap-3">
               <div>
                 <strong>
-                  {$t('Before you downgrade to the')} {selectedPlan?.name} {$t('plan, consider:')}
+                  {$t('Before you downgrade to the')} {selectedPlan?.name} {'plan, consider:'}
                 </strong>
                 <ul className="space-y-2 mt-2">
                   <li className="list-disc ml-6 text-foreground-light">
@@ -175,7 +174,7 @@ export const DowngradeModal = ({
                   </li>
                   <li className="list-disc ml-6 text-foreground-light">
                     {$t('Your resource consumption are well within the')} {selectedPlan?.name}{' '}
-                    {$t("plan's quota.")}
+                    {"plan's quota."}
                   </li>
                   <li className="list-disc ml-6 text-foreground-light">
                     {$t('Alternatively, you may also transfer projects across organizations.')}
@@ -184,12 +183,6 @@ export const DowngradeModal = ({
               </div>
             </li>
           </ul>
-
-          {subscription?.billing_via_partner === true && subscription.billing_partner === 'fly' && (
-            <p className="mt-4 text-sm">
-              {$t('Your organization will be downgraded at the end of your current billing cycle.')}
-            </p>
-          )}
         </div>
         <DialogFooter>
           <Button variant={'default'} onClick={onClose}>

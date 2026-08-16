@@ -33,9 +33,7 @@ export const MarkdownContent = ({
 
   // Translate the full English overview first so expanded/collapsed slices stay consistent.
   const translatedContent = content.length > 0 ? $t(content.trim()) : ''
-  const displayContent = isExpanded
-    ? translatedContent
-    : translatedContent.slice(0, CHAR_LIMIT)
+  const displayContent = isExpanded ? translatedContent : translatedContent.slice(0, CHAR_LIMIT)
   const supportExpanding =
     translatedContent.length > CHAR_LIMIT || (translatedContent.match(/\n/g) || []).length > 1
 
@@ -64,6 +62,8 @@ export const MarkdownContent = ({
         {supportExpanding && (
           <div className={cn('bottom-0', !isExpanded ? 'absolute' : 'relative mt-3')}>
             <button
+              type="button"
+              tabIndex={0}
               className="text-foreground-light hover:text-foreground underline text-sm"
               onClick={() => setIsExpanded(!isExpanded)}
             >

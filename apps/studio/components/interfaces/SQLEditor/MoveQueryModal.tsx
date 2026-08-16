@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { zodResolver } from '@hookform/resolvers/zod'
 import { IS_PLATFORM, useParams } from 'common'
 import { Check, Code, Plus } from 'lucide-react'
@@ -38,11 +37,12 @@ import {
 } from 'ui'
 import * as z from 'zod'
 
-import { getContentById } from '@/data/content/content-id-query'
+import { getSqlSnippetById } from '@/data/content/content-id-query'
 import { useContentUpsertMutation } from '@/data/content/content-upsert-mutation'
 import { useSQLSnippetFolderCreateMutation } from '@/data/content/sql-folder-create-mutation'
 import { Snippet } from '@/data/content/sql-folders-query'
 import type { SnippetWithContent } from '@/data/content/sql-folders-query'
+import { t as $t } from '@/lib/i18n'
 import { useSnippetFolders, useSqlEditorV2StateSnapshot } from '@/state/sql-editor/sql-editor-state'
 import { createTabId, useTabsStateSnapshot } from '@/state/tabs'
 
@@ -137,10 +137,9 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
         snippets.map(async (snippet) => {
           let snippetContent = (snippet as SnippetWithContent)?.content
           if (snippetContent === undefined) {
-            const { content } = await getContentById({ projectRef: ref, id: snippet.id })
-            if ('unchecked_sql' in content) {
-              snippetContent = content
-            }
+            // Move only ever operates on database SQL snippets
+            const { content } = await getSqlSnippetById({ projectRef: ref, id: snippet.id })
+            snippetContent = content
           }
 
           if (snippetContent === undefined) {
@@ -157,7 +156,7 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
                 project_id: snippet.project_id,
                 owner_id: snippet.owner_id,
                 folder_id: selectedId === 'root' ? null : folderId,
-                content: snippetContent as any,
+                content: snippetContent,
               },
             })
             if (IS_PLATFORM) {
@@ -215,13 +214,13 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
           <form id="move-snippet" onSubmit={form.handleSubmit(onConfirmMove)}>
             <DialogHeader>
               <DialogTitle>
-                
-                                              {$t('Move')} {snippets.length === 1 ? `"${snippets[0].name}"` : `${snippets.length}`}{' '}
-                snippet{snippets.length > 1 ? 's' : ''}  {$t('to a folder')}
-                                            </DialogTitle>
+                {$t('Move')}{' '}
+                {snippets.length === 1 ? `"${snippets[0].name}"` : `${snippets.length}`} snippet
+                {snippets.length > 1 ? 's' : ''} {$t('to a folder')}
+              </DialogTitle>
               <DialogDescription>
-                
-                                              {$t('Select which folder to move your quer')}{snippets.length > 1 ? 'ies' : 'y'} to
+                {$t('Select which folder to move your quer')}
+                {snippets.length > 1 ? 'ies' : 'y'} to
               </DialogDescription>
             </DialogHeader>
 
@@ -272,9 +271,8 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
                               }}
                             >
                               <span>
-                                
-                                                                                              {$t('Root of the editor')}
-                                                                                              {snippets.length === 1 &&
+                                {$t('Root of the editor')}
+                                {snippets.length === 1 &&
                                   snippets[0].folder_id === null &&
                                   ` (Current)`}
                               </span>
@@ -358,18 +356,16 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
                 disabled={isMovingSnippet || isCreatingFolder}
                 onClick={() => onClose()}
               >
-                
-                                              {$t('Cancel')}
-                                            </Button>
+                {$t('Cancel')}
+              </Button>
               <Button
                 variant="primary"
                 type="submit"
                 disabled={isMovingToSameFolder}
                 loading={isMovingSnippet || isCreatingFolder}
               >
-                
-                                              {$t('Move file')}
-                                            </Button>
+                {$t('Move file')}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

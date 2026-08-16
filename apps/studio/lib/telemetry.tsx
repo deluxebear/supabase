@@ -7,6 +7,7 @@ import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { API_URL } from '@/lib/constants'
 import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
+import { IS_SESSION_REPLAY_ENABLED, SESSION_REPLAY_CONFIG } from '@/lib/session-replay'
 
 export function Telemetry() {
   const { hasAcceptedConsent } = useConsentToast()
@@ -68,6 +69,7 @@ export function Telemetry() {
       hasAcceptedConsent={hasAcceptedConsent}
       enabled={STUDIO_CAPABILITIES.hostedTelemetry}
       organizationSlug={organization?.slug}
+      sessionReplay={IS_SESSION_REPLAY_ENABLED ? SESSION_REPLAY_CONFIG : undefined}
     />
   )
 }

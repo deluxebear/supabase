@@ -15,6 +15,11 @@ import { ChartHighlight } from './useChartHighlight'
 import { useFormatDateTime } from '@/lib/datetime'
 import { t as $t } from '@/lib/i18n'
 
+const toFormattableDate = (value: string): string | number => {
+  const asNumber = Number(value)
+  return value !== '' && Number.isFinite(asNumber) ? asNumber : value
+}
+
 export type UpdateDateRange = (from: string, to: string) => void
 
 export type ChartHighlightActionContext = {
@@ -49,7 +54,7 @@ export const ChartHighlightActions = ({
   const formatChartDate = useFormatDateTime()
 
   useEffect(() => {
-    setIsOpen(!!chartHighlight?.popoverPosition && selectedRangeStart !== selectedRangeEnd)
+    setIsOpen(!!chartHighlight?.popoverPosition)
   }, [chartHighlight?.popoverPosition])
 
   const ctx: ChartHighlightActionContext | undefined =
@@ -81,8 +86,12 @@ export const ChartHighlightActions = ({
     return [...defaultActions, ...provided]
   }, [defaultActions, actions])
 
+  const positionKey = chartHighlight?.popoverPosition
+    ? `${chartHighlight.popoverPosition.x}-${chartHighlight.popoverPosition.y}`
+    : 'closed'
+
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu key={positionKey} open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger
         className="w-auto p-0"
         style={{
@@ -92,7 +101,7 @@ export const ChartHighlightActions = ({
         }}
       />
       <DropdownMenuContent
-        className="flex flex-col gap-1 p-1 w-fit text-left"
+        className="flex flex-col gap-1 p-1 w-fit text-left data-[state=open]:animate-none! data-[state=closed]:animate-none!"
         onEscapeKeyDown={() => clearHighlight?.()}
         onInteractOutside={(e) => {
           const target = e.target as Element | null
@@ -103,9 +112,9 @@ export const ChartHighlightActions = ({
         }}
       >
         <DropdownMenuLabel className="flex items-center justify-center text-foreground-light font-mono gap-x-2 text-xs">
-          <span>{formatChartDate(selectedRangeStart!, 'MMM D, H:mm')}</span>
+          <span>{formatChartDate(toFormattableDate(selectedRangeStart!), 'MMM D, H:mm')}</span>
           <ArrowRight size={10} />
-          <span>{formatChartDate(selectedRangeEnd!, 'MMM D, H:mm')}</span>
+          <span>{formatChartDate(toFormattableDate(selectedRangeEnd!), 'MMM D, H:mm')}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="my-0" />
         {allActions.map((action) => {
@@ -126,6 +135,7 @@ export const ChartHighlightActions = ({
             <DropdownMenuItem asChild key={action.id} disabled={disabled} className={cn('group')}>
               <button
                 disabled={disabled}
+                tabIndex={-1}
                 onClick={() => ctx && action.onSelect({ ...ctx })}
                 className="w-full flex items-center gap-1.5"
               >

@@ -34,9 +34,8 @@ export function HighAvailabilityBadge({ size = 'default' }: HighAvailabilityBadg
         <Separator />
         <div className="flex flex-col gap-1 p-3 px-5">
           <p className="text-sm text-foreground-light">
-            {$t('Driven by')} <span className="text-foreground">{$t('Multigres')}</span>
             {$t(
-              ', a horizontally scalable Postgres architecture that supports highly-available and globally distributed deployments.'
+              'A horizontally scalable Postgres architecture that supports highly-available and globally distributed deployments.'
             )}
           </p>
           <Link

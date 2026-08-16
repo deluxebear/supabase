@@ -10,11 +10,14 @@ import {
   DropdownMenuTrigger,
 } from 'ui'
 
+import { formatDatabaseID } from '@/data/read-replicas/replicas.utils'
 import { t as $t } from '@/lib/i18n'
 
 interface AWSPrivateLinkAccountItemProps {
   aws_account_id: string
   account_name?: string
+  database_type?: 'PRIMARY' | 'READ_REPLICA'
+  database_identifier?: string
   status:
     | 'CREATING'
     | 'READY'
@@ -30,10 +33,17 @@ interface AWSPrivateLinkAccountItemProps {
 export const AWSPrivateLinkAccountItem = ({
   aws_account_id,
   account_name,
+  database_type,
+  database_identifier,
   status,
   onEdit,
   onDelete,
 }: AWSPrivateLinkAccountItemProps) => {
+  const databaseTarget =
+    database_type === 'READ_REPLICA'
+      ? `Read replica (ID: ${database_identifier ? formatDatabaseID(database_identifier) : 'Unknown identifier'})`
+      : 'Primary database'
+
   const getStatusBadge = () => {
     switch (status) {
       case 'ASSOCIATION_ACCEPTED':
@@ -57,6 +67,7 @@ export const AWSPrivateLinkAccountItem = ({
     <CardContent className="flex items-center justify-between text-sm gap-4">
       <div className="flex-1">
         <div>{aws_account_id}</div>
+        <div className="text-xs text-foreground-lighter">{databaseTarget}</div>
         <div className="text-sm text-foreground-lighter">{account_name || 'No description'}</div>
       </div>
 

@@ -14,7 +14,7 @@ import {
   SheetFooter,
   SheetSection,
 } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import z from 'zod'
 
@@ -24,6 +24,7 @@ import {
   reservedSuffixes,
   validBucketNameRegex,
 } from './CreateAnalyticsBucketForm.utils'
+import { getServiceVersionsPath } from '@/components/interfaces/Settings/General/ServiceVersions/ServiceVersions.utils'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { useDatabaseExtensionEnableMutation } from '@/data/database-extensions/database-extension-enable-mutation'
 import { useAnalyticsBucketCreateMutation } from '@/data/storage/analytics-bucket-create-mutation'
@@ -229,7 +230,7 @@ export const CreateAnalyticsBucketForm = ({
                 <p className="prose max-w-full text-sm leading-normal!">
                   {$t('Update the')} <code className="text-code-inline">wrappers</code>{' '}
                   {$t('extension by upgrading your project from your')}{' '}
-                  <InlineLink href={`/project/${ref}/settings/infrastructure`}>
+                  <InlineLink href={getServiceVersionsPath(ref)}>
                     {$t('project settings')}
                   </InlineLink>{' '}
                   {$t('before creating an Analytics bucket.')}{' '}

@@ -1,7 +1,4 @@
 import { useParams } from 'common'
-import Link from 'next/link'
-import { Button } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
 
 import { EnvRow } from '../common/EnvRow'
 import { SecretEnvRow } from '../common/SecretRow'
@@ -10,6 +7,7 @@ import {
   useConnectServerEnv,
 } from '@/components/interfaces/ConnectSheet/useConnectServerEnv'
 import CopyButton from '@/components/ui/CopyButton'
+import { InlineLink } from '@/components/ui/InlineLink'
 import { t as $t } from '@/lib/i18n'
 
 function ServerEnvContent() {
@@ -18,13 +16,14 @@ function ServerEnvContent() {
     useConnectServerEnv()
 
   return (
-    <div className="flex flex-col gap-y-4">
-      <div className="overflow-hidden rounded-lg border bg-surface-100">
-        <div className="flex items-center justify-between border-b bg-surface-200 px-4 py-2">
+    <div className="flex flex-col gap-y-2">
+      <div className="overflow-hidden rounded-lg border bg-surface-75">
+        <div className="flex items-center justify-between border-b bg-surface-100 py-2 pl-4 pr-2">
           <span className="font-mono text-xs text-foreground-light">.env</span>
           <CopyButton
             variant="default"
             size="tiny"
+            copyLabel="Copy all"
             asyncText={buildEnv}
             aria-label={$t('Copy all variables')}
             disabled={!canReadAPIKeys}
@@ -63,22 +62,22 @@ function ServerEnvContent() {
         </div>
       </div>
 
-      <Admonition
-        variant="default"
-        title={$t('On Supabase Edge Functions these are injected automatically')}
-        description={$t(
-          'No setup is needed for Edge Functions. For other runtimes, copy the values above into your environment. Need a secret key? Create or manage them in API Keys settings.'
+      <p className="text-sm text-foreground-lighter">
+        {$t(
+          'On Edge Functions these are injected automatically. For other runtimes, copy the values above'
         )}
-        actions={
-          ref
-            ? [
-                <Button asChild key="api-keys" variant="default">
-                  <Link href={`/project/${ref}/settings/api-keys`}>{$t('View API keys')}</Link>
-                </Button>,
-              ]
-            : undefined
-        }
-      />
+        {ref ? (
+          <>
+            {$t('. Manage keys in')}{' '}
+            <InlineLink href={`/project/${ref}/settings/api-keys`}>
+              {$t('API Keys settings')}
+            </InlineLink>
+            .
+          </>
+        ) : (
+          '.'
+        )}
+      </p>
     </div>
   )
 }

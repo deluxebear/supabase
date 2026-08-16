@@ -24,6 +24,7 @@ import { useReplicationSourcesQuery } from '@/data/replication/sources-query'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useShowMultigresLogs } from '@/hooks/misc/useShowMultigresLogs'
+import { useShowPostgresUpgradeLogs } from '@/hooks/misc/useShowPostgresUpgradeLogs'
 import { t as $t } from '@/lib/i18n'
 
 export function SidebarCollapsible({
@@ -88,6 +89,7 @@ export function LogsSidebarMenuV2() {
 
   const { hasAccess: hasDedicatedPooler } = useCheckEntitlements('dedicated_pooler')
   const showMultigresLogs = useShowMultigresLogs()
+  const showPostgresUpgradeLogs = useShowPostgresUpgradeLogs()
 
   const { data: savedQueriesRes, isPending: savedQueriesLoading } = useContentQuery({
     projectRef: ref,
@@ -104,19 +106,19 @@ export function LogsSidebarMenuV2() {
 
   const BASE_COLLECTIONS = [
     {
-      name: $t('API Gateway'),
+      name: 'API Gateway',
       key: 'edge-logs',
       url: `/project/${ref}/logs/edge-logs`,
       items: [],
     },
     {
-      name: $t('Postgres'),
+      name: 'Postgres',
       key: 'postgres-logs',
       url: `/project/${ref}/logs/postgres-logs`,
       items: [],
     },
     {
-      name: $t('PostgREST'),
+      name: 'PostgREST',
       key: 'postgrest-logs',
       url: `/project/${ref}/logs/postgrest-logs`,
       items: [],
@@ -131,7 +133,7 @@ export function LogsSidebarMenuV2() {
       : null,
     hasDedicatedPooler && IS_PLATFORM
       ? {
-          name: $t('Dedicated Pooler'),
+          name: 'Dedicated Pooler',
           key: 'dedicated-pooler-logs',
           url: `/project/${ref}/logs/dedicated-pooler-logs`,
           items: [],
@@ -139,7 +141,7 @@ export function LogsSidebarMenuV2() {
       : null,
     authEnabled
       ? {
-          name: $t('Auth'),
+          name: 'Auth',
           key: 'auth-logs',
           url: `/project/${ref}/logs/auth-logs`,
           items: [],
@@ -147,7 +149,7 @@ export function LogsSidebarMenuV2() {
       : null,
     storageEnabled
       ? {
-          name: $t('Storage'),
+          name: 'Storage',
           key: 'storage-logs',
           url: `/project/${ref}/logs/storage-logs`,
           items: [],
@@ -155,27 +157,27 @@ export function LogsSidebarMenuV2() {
       : null,
     realtimeEnabled
       ? {
-          name: $t('Realtime'),
+          name: 'Realtime',
           key: 'realtime-logs',
           url: `/project/${ref}/logs/realtime-logs`,
           items: [],
         }
       : null,
     {
-      name: $t('Edge Functions'),
+      name: 'Edge Functions',
       key: 'edge-functions-logs',
       url: `/project/${ref}/logs/edge-functions-logs`,
       items: [],
     },
     {
-      name: $t('Cron'),
+      name: 'Cron',
       key: 'pg_cron',
       url: `/project/${ref}/logs/pgcron-logs`,
       items: [],
     },
     showETLLogs
       ? {
-          name: $t('Replication'),
+          name: 'Replication',
           key: 'replication_logs',
           url: `/project/${ref}/logs/replication-logs`,
           items: [],
@@ -183,7 +185,7 @@ export function LogsSidebarMenuV2() {
       : null,
     showMultigresLogs
       ? {
-          name: $t('Multigres'),
+          name: 'Multigres',
           key: 'multigres-logs',
           url: `/project/${ref}/logs/multigres-logs`,
           items: [],
@@ -191,16 +193,17 @@ export function LogsSidebarMenuV2() {
       : null,
   ].filter((x) => x !== null)
 
-  const OPERATIONAL_COLLECTIONS = IS_PLATFORM
-    ? [
-        {
-          name: $t('Postgres Version Upgrade'),
-          key: 'pg-upgrade-logs',
-          url: `/project/${ref}/logs/pg-upgrade-logs`,
-          items: [],
-        },
-      ]
-    : []
+  const OPERATIONAL_COLLECTIONS =
+    IS_PLATFORM && showPostgresUpgradeLogs
+      ? [
+          {
+            name: 'Postgres Version Upgrade',
+            key: 'pg-upgrade-logs',
+            url: `/project/${ref}/logs/pg-upgrade-logs`,
+            items: [],
+          },
+        ]
+      : []
 
   const filteredLogs = BASE_COLLECTIONS.filter((collection) => {
     return collection?.name.toLowerCase().includes(searchText.toLowerCase())
@@ -296,9 +299,7 @@ export function LogsSidebarMenuV2() {
             className="mx-4"
             title={$t('No queries created yet')}
             description={
-              IS_PLATFORM
-                ? $t('Create and save your queries to use them in the explorer')
-                : undefined
+              IS_PLATFORM ? 'Create and save your queries to use them in the explorer' : undefined
             }
             actions={
               <Button asChild variant="default">

@@ -1,6 +1,7 @@
 import { ReactFlowProvider } from '@xyflow/react'
 import Link from 'next/link'
 import { Badge, cn, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
+import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { InstanceConfiguration } from '../Settings/Infrastructure/InfrastructureConfiguration/InstanceConfiguration'
 import { ActivityStats } from '@/components/interfaces/ProjectHome/ActivityStats'
@@ -16,7 +17,7 @@ import { t as $t } from '@/lib/i18n'
 
 export const TopSection = () => {
   const isOrioleDb = useIsOrioleDb()
-  const { data: project } = useSelectedProjectQuery()
+  const { data: project, isLoading } = useSelectedProjectQuery()
   const { data: parentProject } = useProjectDetailQuery({ ref: project?.parent_project_ref })
 
   const { data: branches } = useBranchesQuery({
@@ -59,7 +60,11 @@ export const TopSection = () => {
                 </Link>
               )}
               <div className="flex items-center gap-x-2">
-                <h1 className="text-3xl">{projectName}</h1>
+                {isLoading ? (
+                  <ShimmeringLoader className="w-32 py-0 h-[33.6px]" />
+                ) : (
+                  <h1 className="text-3xl">{projectName}</h1>
+                )}
                 {isOrioleDb && (
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -94,7 +99,7 @@ export const TopSection = () => {
               )}
             >
               <ReactFlowProvider>
-                <InstanceConfiguration diagramOnly />
+                <InstanceConfiguration />
               </ReactFlowProvider>
             </div>
           </div>

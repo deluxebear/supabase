@@ -1,10 +1,10 @@
-import { t as $t } from '@/lib/i18n';
 import type { UseFormReturn } from 'react-hook-form'
 import { FormControl, FormField, Input, TextArea } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { STORED_SECRET_PLACEHOLDER } from '../DestinationForm.constants'
 import type { DestinationPanelSchemaType } from '../DestinationForm.schema'
+import { t as $t } from '@/lib/i18n'
 
 export const BigQueryFields = ({
   form,
@@ -23,8 +23,8 @@ export const BigQueryFields = ({
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label={$t('Project ID')}
-              description={$t('The Google Cloud project ID where data will be sent')}
+              label={'Project ID'}
+              description={'The Google Cloud project ID where data will be sent'}
             >
               <FormControl>
                 <Input {...field} placeholder="my-gcp-project" />
@@ -38,9 +38,9 @@ export const BigQueryFields = ({
           name="datasetId"
           render={({ field }) => (
             <FormItemLayout
-              label={$t('Dataset ID')}
+              label={'Dataset ID'}
               layout="horizontal"
-              description={$t('The BigQuery dataset where replicated tables will be created')}
+              description={'The BigQuery dataset where replicated tables will be created'}
             >
               <FormControl>
                 <Input {...field} placeholder="my_dataset" />
@@ -55,7 +55,7 @@ export const BigQueryFields = ({
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label={$t('Service Account Key')}
+              label={$t('Service account key')}
               description={
                 editMode
                   ? 'Stored credentials are hidden. Enter new credentials to replace them.'

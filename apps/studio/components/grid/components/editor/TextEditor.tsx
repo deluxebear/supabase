@@ -27,6 +27,8 @@ import { isTableLike } from '@/data/table-editor/table-editor-types'
 import { useGetCellValueMutation } from '@/data/table-rows/get-cell-value-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { t as $t } from '@/lib/i18n'
+import { RoleImpersonationState } from '@/lib/role-impersonation'
+import { useRoleImpersonationStateSnapshot } from '@/state/role-impersonation-state'
 
 export const TextEditor = <TRow, TSummaryRow = unknown>({
   row,
@@ -59,6 +61,7 @@ export const TextEditor = <TRow, TSummaryRow = unknown>({
   const applyChangesLabel = isQueueEnabled ? 'Queue changes' : 'Save changes'
 
   const { mutate: getCellValue, isPending, isSuccess } = useGetCellValueMutation()
+  const roleImpersonationState = useRoleImpersonationStateSnapshot()
 
   const isTruncated = isValueTruncated(initialValue)
 
@@ -79,6 +82,7 @@ export const TextEditor = <TRow, TSummaryRow = unknown>({
         pkMatch,
         projectRef: project?.ref,
         connectionString: project?.connectionString,
+        roleImpersonationState: roleImpersonationState as RoleImpersonationState,
       },
       { onSuccess: (data) => setValue(data) }
     )

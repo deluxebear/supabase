@@ -11,8 +11,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 
+import { InlineLink } from '@/components/ui/InlineLink'
 import { useAuthorizedAppRevokeMutation } from '@/data/oauth/authorized-app-revoke-mutation'
 import type { AuthorizedApp } from '@/data/oauth/authorized-apps-query'
 import { t as $t } from '@/lib/i18n'
@@ -50,15 +51,15 @@ export const RevokeAppModal = ({
         <AlertDialogHeader>
           <AlertDialogTitle>{`Revoke access for ${selectedApp?.name}?`}</AlertDialogTitle>
           <AlertDialogDescription>
-            <div className="flex flex-col space-y-2">
+            <div className="flex flex-col space-y-4">
               <Admonition
                 type="warning"
                 title={$t('This action cannot be undone')}
                 description={`${selectedApp?.name} will no longer have access to your organization's settings
           and projects.`}
               />
-              <ul className="space-y-5">
-                <li className="flex gap-3 text-sm">
+              <div className="space-y-5">
+                <div className="flex gap-2 text-sm">
                   <Lock size={14} className="shrink-0" />
                   <div>
                     <strong>{$t('Before you remove this app, consider:')}</strong>
@@ -78,10 +79,20 @@ export const RevokeAppModal = ({
                           'Restoring access will require an organization administrator to re-authorize the application.'
                         )}
                       </li>
+                      <li className="list-disc ml-4">
+                        {$t('The application may also have a')}{' '}
+                        <strong>{$t('Secret API key')}</strong> {$t('with access. Navigate to')}{' '}
+                        <InlineLink href={`/dashboard/project/_/integrations`}>
+                          {$t('Integrations')}
+                        </InlineLink>{' '}
+                        {$t(
+                          'on the project this app was installed, and remove any listed Secret API key in the "Settings" tab of the integration to fully revoke its access.'
+                        )}
+                      </li>
                     </ul>
                   </div>
-                </li>
-              </ul>
+                </div>
+              </div>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>

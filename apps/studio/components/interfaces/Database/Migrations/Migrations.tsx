@@ -16,7 +16,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 import { Input } from 'ui-patterns/DataInputs/Input'
 import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 import { TimestampInfo } from 'ui-patterns/TimestampInfo'
@@ -33,7 +33,7 @@ import { formatMigrationVersionLabel, parseMigrationVersion } from '@/lib/migrat
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
-const Migrations = () => {
+export const Migrations = () => {
   const [search, setSearch] = useState('')
   const [selectedMigration, setSelectedMigration] = useState<DatabaseMigration>()
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -120,7 +120,7 @@ const Migrations = () => {
                   placeholder={$t('Search for a migration')}
                   value={search}
                   className="w-full lg:w-52"
-                  onChange={(e: any) => setSearch(e.target.value)}
+                  onChange={(e) => setSearch(e.target.value)}
                   icon={<Search />}
                 />
                 <Card>
@@ -228,10 +228,14 @@ const Migrations = () => {
         <div className="h-full">
           <div className="relative h-full">
             <CodeEditor
+              // The CodeEditor does not react to content only changes,
+              // specifically when two projects have migrations with the same version but different content.
+              // Setting the key ensure it always update when the migration changes
+              key={`${project?.ref}-${selectedMigration?.version}`}
               isReadOnly
               id={selectedMigration?.version ?? ''}
               language="pgsql"
-              defaultValue={
+              value={
                 selectedMigration?.statements?.join(';\n') +
                 (selectedMigration?.statements?.length ? ';' : '')
               }
@@ -242,5 +246,3 @@ const Migrations = () => {
     </>
   )
 }
-
-export default Migrations

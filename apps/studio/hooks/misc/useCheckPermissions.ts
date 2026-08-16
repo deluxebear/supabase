@@ -24,7 +24,7 @@ export function useGetPermissions(
 function useGetProjectPermissions(
   permissionsOverride?: Permission[],
   organizationSlugOverride?: string,
-  projectRefOverride?: string,
+  projectRefOverride?: string | null,
   enabled = true
 ) {
   const {
@@ -90,7 +90,7 @@ export function useAsyncCheckPermissions(
   data?: object,
   overrides?: {
     organizationSlug?: string
-    projectRef?: string
+    projectRef?: string | null
     permissions?: Permission[]
   }
 ) {

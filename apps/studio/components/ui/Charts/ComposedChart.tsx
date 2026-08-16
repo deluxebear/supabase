@@ -38,6 +38,7 @@ import {
   calculateTotalChartAggregate,
   CustomLabel,
   CustomTooltip,
+  getStackId,
   MultiAttribute,
 } from './ComposedChart.utils'
 import NoDataPlaceholder from './NoDataPlaceholder'
@@ -218,6 +219,10 @@ export function ComposedChart({
   function formatHighlightedValue(value: any) {
     if (typeof value !== 'number') {
       return value
+    }
+
+    if (typeof format === 'function') {
+      return format(value)
     }
 
     if (shouldFormatBytes) {
@@ -491,9 +496,22 @@ export function ComposedChart({
 
             const activeTimestamp =
               data[activeTooltipIndex]?.[xAxisKey] ?? data[activeTooltipIndex]?.timestamp
+
+            const next = data[activeTooltipIndex + 1]
+            const prev = data[activeTooltipIndex - 1]
+            const prevTimestamp = prev?.[xAxisKey] ?? prev?.timestamp
+            const nextTimestamp =
+              next?.[xAxisKey] ??
+              next?.timestamp ??
+              (prevTimestamp != null && activeTimestamp != null
+                ? Number(activeTimestamp) + (Number(activeTimestamp) - Number(prevTimestamp))
+                : undefined)
+
             chartHighlight?.handleMouseDown({
               activeLabel: activeTimestamp?.toString(),
               coordinates: activeLabel,
+              nextLabel: nextTimestamp?.toString(),
+              nextCoordinate: nextTimestamp,
             })
           }}
           onMouseUp={chartHighlight?.handleMouseUp}
@@ -548,7 +566,7 @@ export function ComposedChart({
                 <Bar
                   key={attribute.name}
                   dataKey={attribute.name}
-                  stackId={attributes?.find((a) => a.attribute === attribute?.name)?.stackId ?? '1'}
+                  stackId={getStackId(attributes, attribute?.name, '1')}
                   fill={attribute.color}
                   radius={0.75}
                   opacity={1}
@@ -564,7 +582,7 @@ export function ComposedChart({
                   key={attribute.name}
                   type="linear"
                   dataKey={attribute.name}
-                  stackId="1"
+                  stackId={getStackId(attributes, attribute.name, attribute.name)}
                   fill={`url(#gradient-${attribute.name})`}
                   fillOpacity={1}
                   stroke={attribute.color}

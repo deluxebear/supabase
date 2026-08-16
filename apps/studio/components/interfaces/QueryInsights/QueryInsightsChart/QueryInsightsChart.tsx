@@ -104,6 +104,7 @@ export const QueryInsightsChart = ({
               <button
                 key={item.dataKey}
                 type="button"
+                tabIndex={0}
                 onClick={() => toggleSeries(item.dataKey)}
                 className={cn(
                   'flex items-center gap-1.5 text-[11px] transition-colors cursor-pointer',
@@ -125,6 +126,7 @@ export const QueryInsightsChart = ({
             {hasSelection && (
               <button
                 type="button"
+                tabIndex={0}
                 onClick={() => toggleSeries(selDataKey)}
                 className={cn(
                   'flex items-center gap-1.5 text-[11px] transition-colors cursor-pointer',

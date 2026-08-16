@@ -12,14 +12,22 @@ import {
 } from 'ui'
 
 import { PipelineStatusName } from './Replication.constants'
+import { RestartCostEstimate } from './RestartCostEstimate'
+import {
+  shouldCopyTable,
+  type ReplicationTableIdentity,
+  type TableSyncCopyConfig,
+} from './TableSyncCopy.utils'
 import { useRollbackTablesMutation } from '@/data/replication/rollback-tables-mutation'
 import { t as $t } from '@/lib/i18n'
 
 interface RestartTableDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  tableId: number
-  tableName: string
+  table: ReplicationTableIdentity
+  tableSyncCopy?: TableSyncCopyConfig
+  sourceId?: number
+  publicationName?: string
   pipelineStatusName?: PipelineStatusName
   onRestartStart?: () => void
   onRestartComplete?: () => void
@@ -28,14 +36,18 @@ interface RestartTableDialogProps {
 export const RestartTableDialog = ({
   open,
   onOpenChange,
-  tableId,
-  tableName,
+  table,
+  tableSyncCopy,
+  sourceId,
+  publicationName,
   pipelineStatusName,
   onRestartStart,
   onRestartComplete,
 }: RestartTableDialogProps) => {
   const { ref: projectRef, pipelineId: _pipelineId } = useParams()
   const pipelineId = Number(_pipelineId)
+  const tableName = `${table.schema}.${table.name}`
+  const willCopyTable = shouldCopyTable(tableSyncCopy, table.id)
 
   const { mutate: rollbackTables, isPending: isResetting } = useRollbackTablesMutation({
     onSuccess: () => {
@@ -60,7 +72,7 @@ export const RestartTableDialog = ({
     rollbackTables({
       projectRef,
       pipelineId,
-      target: { type: 'single_table', table_id: tableId },
+      target: { type: 'single_table', table_id: table.id },
       rollbackType: 'full',
       pipelineStatusName,
     })
@@ -80,10 +92,21 @@ export const RestartTableDialog = ({
                 <code className="text-code-inline">{tableName}</code> {$t('from scratch:')}
               </p>
               <ul className="list-disc list-inside space-y-1.5 pl-2">
-                <li>
-                  <strong>{$t('The table copy will be re-initialized.')}</strong>{' '}
-                  {$t('All data will be copied again from the source.')}
-                </li>
+                {willCopyTable ? (
+                  <li>
+                    <strong>{$t("The table's initial sync will restart.")}</strong>{' '}
+                    {$t(
+                      'Existing source rows will be synced again. Data successfully processed during this initial sync is billed again.'
+                    )}
+                  </li>
+                ) : (
+                  <li>
+                    <strong>{$t('The table will skip initial sync.')}</strong>{' '}
+                    {$t(
+                      'Replication will resume with new changes only, without syncing existing source rows. There is no additional initial sync charge.'
+                    )}
+                  </li>
+                )}
                 <li>
                   <strong>{$t('Existing downstream data will be deleted.')}</strong>{' '}
                   {$t('Any replicated data for this table will be removed.')}
@@ -100,6 +123,13 @@ export const RestartTableDialog = ({
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
+        <RestartCostEstimate
+          open={open}
+          projectRef={projectRef}
+          sourceId={sourceId}
+          publicationName={publicationName}
+          tables={willCopyTable ? [table] : []}
+        />
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isResetting}>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction disabled={isResetting} onClick={handleReset} variant="warning">

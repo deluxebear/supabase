@@ -4,26 +4,23 @@ import Link from 'next/link'
 import { Button } from 'ui'
 
 import RecentQueriesItem from '@/components/interfaces/Settings/Logs/RecentQueriesItem'
+import { useRecentLogSqlSnippets } from '@/components/interfaces/Settings/Logs/useRecentLogSqlSnippets'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import LogsLayout from '@/components/layouts/LogsLayout/LogsLayout'
 import Table from '@/components/to-be-cleaned/Table'
 import LogsExplorerHeader from '@/components/ui/Logs/LogsExplorerHeader'
-import { useLocalStorage } from '@/hooks/misc/useLocalStorage'
 import { t as $t } from '@/lib/i18n'
-import type { LogSqlSnippets, NextPageWithLayout } from '@/types'
+import type { NextPageWithLayout } from '@/types'
 
 export const LogsSavedPage: NextPageWithLayout = () => {
   const { ref } = useParams()
 
-  const [recentLogSnippets, setRecentLogSnippets] = useLocalStorage<LogSqlSnippets.Content[]>(
-    `project-content-${ref}-recent-log-sql`,
-    []
-  )
+  const [recentLogSnippets, setRecentLogSnippets] = useRecentLogSqlSnippets(ref)
   const recent = recentLogSnippets.slice().reverse()
 
   return (
     <div className="mx-auto w-full px-5 py-6 h-full">
-      <LogsExplorerHeader subtitle={$t('Recent Queries')} />
+      <LogsExplorerHeader subtitle="Recent Queries" />
       {recent.length > 0 && (
         <Table
           head={
@@ -36,8 +33,8 @@ export const LogsSavedPage: NextPageWithLayout = () => {
               </Table.th>
             </>
           }
-          body={recent.map((item: LogSqlSnippets.Content) => (
-            <RecentQueriesItem key={item.sql} item={item} />
+          body={recent.map((item) => (
+            <RecentQueriesItem key={item.unchecked_sql} item={item} />
           ))}
         />
       )}

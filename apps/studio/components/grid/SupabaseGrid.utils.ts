@@ -284,7 +284,7 @@ export function useSyncTableEditorStateFromLocalStorageWithUrl({
   }, [urlParams, table, projectRef])
 }
 
-export const handleCellKeyDown = <TRow extends SupaRow = SupaRow>(
+export const handleCellKeyDown = <TRow extends Record<string, unknown> = SupaRow>(
   args: CellKeyDownArgs<TRow, unknown>,
   event: CellKeyboardEvent,
   context?: {

@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/Forms/FormSection'
 import { useEdgeFunctionsQuery } from '@/data/edge-functions/edge-functions-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { buildDatabaseEdgeFunctionUrl } from '@/lib/api/edgeFunctions'
 import { t as $t } from '@/lib/i18n'
 
 interface HTTPRequestConfigProps {
@@ -119,8 +120,7 @@ export const HTTPRequestConfig = ({ form }: HTTPRequestConfigProps) => {
                   <SelectContent>
                     {edgeFunctions.map((fn) => {
                       const restUrl = selectedProject?.restUrl
-                      const restUrlTld = restUrl ? new URL(restUrl).hostname.split('.').pop() : 'co'
-                      const functionUrl = `https://${ref}.supabase.${restUrlTld}/functions/v1/${fn.slug}`
+                      const functionUrl = buildDatabaseEdgeFunctionUrl(fn.slug, ref ?? '', restUrl)
 
                       return (
                         <SelectItem key={fn.id} value={functionUrl}>

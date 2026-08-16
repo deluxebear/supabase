@@ -157,7 +157,7 @@ export const DisplayApiSettings = ({
                   ))}
                   {x.tags === 'service_role' && (
                     <>
-                      <code className="text-code-inline bg-destructive! text-white! border-destructive!">
+                      <code className="text-code-inline bg-destructive! text-destructive-foreground! border-destructive!">
                         secret
                       </code>
                     </>

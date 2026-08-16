@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
+import { Admonition } from 'ui-patterns/Admonition'
 
 import { usePgPartmanStatus } from '../usePgPartmanStatus'
 import { EnableExtensionModal } from '@/components/interfaces/Database/Extensions/EnableExtensionModal'
@@ -15,7 +15,7 @@ export function PgPartmanCallout() {
   return (
     <div className="mx-5 my-2">
       <Admonition
-        type="tip"
+        type="note"
         title={$t('pg_partman is now available')}
         description={$t(
           'Unlock partitioned queues for automatic data retention, lower storage costs, and faster performance at scale.'
