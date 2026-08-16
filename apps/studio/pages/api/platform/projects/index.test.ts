@@ -5,7 +5,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { handler } from './index'
 import { listAllProjectsV2 } from '@/lib/api/self-platform/list-user-projects'
 import { getMemberContext } from '@/lib/api/self-platform/members'
-import { DEFAULT_PROJECT } from '@/lib/constants/api'
 
 vi.hoisted(() => {
   process.env.NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE = 'fleet'
@@ -61,19 +60,27 @@ describe('GET /platform/projects (self-platform)', () => {
     expect(body.projects[0]).toMatchObject({ ref: 'proj-a', organization_slug: 'acme' })
   })
 
-  it('keeps the legacy V1 array without the header, unchanged', async () => {
+  it('uses the registry-backed response in Fleet even without the Version header', async () => {
+    vi.mocked(listAllProjectsV2).mockResolvedValue({
+      pagination: { count: 0, limit: 100, offset: 0 },
+      projects: [],
+    } as any)
     const { req, res } = createMocks({ method: 'GET' })
     await handler(req as any, res as any, claimsOf('g-1'))
     expect(res._getStatusCode()).toBe(200)
-    expect(res._getJSONData()).toEqual([DEFAULT_PROJECT])
-    expect(listAllProjectsV2).not.toHaveBeenCalled()
+    expect(res._getJSONData()).toEqual({
+      pagination: { count: 0, limit: 100, offset: 0 },
+      projects: [],
+    })
+    expect(getMemberContext).toHaveBeenCalledWith('g-1')
+    expect(listAllProjectsV2).toHaveBeenCalledWith(ORG_CTX, 100, 0)
   })
 
-  it('V1 request without claims still returns 200 [DEFAULT_PROJECT] (claims-independence)', async () => {
+  it('requires claims in Fleet even without the Version header', async () => {
     const { req, res } = createMocks({ method: 'GET' })
     await handler(req as any, res as any, undefined)
-    expect(res._getStatusCode()).toBe(200)
-    expect(res._getJSONData()).toEqual([DEFAULT_PROJECT])
+    expect(res._getStatusCode()).toBe(401)
+    expect(res._getJSONData()).toEqual({ message: 'Unauthorized: missing token claims' })
     expect(getMemberContext).not.toHaveBeenCalled()
     expect(listAllProjectsV2).not.toHaveBeenCalled()
   })

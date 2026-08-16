@@ -80,6 +80,27 @@ insert into platform.project_capabilities (
   ('stack-a', 'project.connection.update', 'available', 'direct', 'preflight', 'v1',
    repeat('a', 64), now(), '[]'::jsonb);
 
+select * from platform.commit_desired_configuration(
+  'stack-a', 'auth', 'auth.config.apply', 0, 'stack-a-applied', 'target-a', 'binding-a',
+  'supabase.fleet.auth.config.apply.v1', 'stack-a-applied-idem', '{"enabled":true}'::jsonb,
+  '{}'::jsonb, 'acceptance-owner', 'stack-a-applied-correlation'
+);
+select * from platform.commit_desired_configuration(
+  'stack-a', 'storage', 'storage.config.apply', 0, 'stack-a-observed', 'target-a', 'binding-a',
+  'supabase.fleet.storage.config.apply.v1', 'stack-a-observed-idem', '{"enabled":true}'::jsonb,
+  '{}'::jsonb, 'acceptance-owner', 'stack-a-observed-correlation'
+);
+update platform.operation_outbox
+set delivery_state = 'dispatched'
+where operation_id in ('stack-a-applied', 'stack-a-observed');
+update platform.operation_summaries
+set state = case operation_id
+  when 'stack-a-applied' then 'applied'
+  else 'observed'
+end,
+control_state = 'succeeded'
+where operation_id in ('stack-a-applied', 'stack-a-observed');
+
 select * from platform.detach_project('stack-a', 'acceptance-owner', 'acceptance-detach');
 
 do $$
@@ -123,6 +144,23 @@ insert into platform.stack_bindings (
   'stack-b', repeat('a', 64), 'verified', 1, 'legacy-jwt', 'active', 'healthy',
   'unconfigured', 'unknown', 'idle'
 );
+
+select * from platform.commit_desired_configuration(
+  'stack-b', 'auth', 'auth.config.apply', 0, 'stack-b-queued', 'target-b', 'binding-b',
+  'supabase.fleet.auth.config.apply.v1', 'stack-b-queued-idem', '{"enabled":true}'::jsonb,
+  '{}'::jsonb, 'acceptance-owner', 'stack-b-queued-correlation'
+);
+
+do $$
+begin
+  begin
+    perform platform.detach_project('stack-b', 'acceptance-owner', 'acceptance-active-operation');
+    raise exception 'detach accepted an active queued operation';
+  exception when sqlstate '55000' then
+    if sqlerrm <> 'operation_conflict' then raise; end if;
+  end;
+end;
+$$;
 SQL
 
 echo "T6 honest attachment acceptance passed"

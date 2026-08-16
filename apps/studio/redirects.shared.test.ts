@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
-import { matchRedirect, preserveQueryAndHash } from './redirects.shared'
+import { FLEET_REDIRECTS, matchRedirect, preserveQueryAndHash } from './redirects.shared'
+
+describe('Fleet redirects', () => {
+  it('keeps the Fleet control plane out of default-project routes', () => {
+    expect(FLEET_REDIRECTS).toEqual([
+      { source: '/project/default', destination: '/org', permanent: false },
+      { source: '/project/default/:path*', destination: '/org', permanent: false },
+    ])
+  })
+})
 
 describe('preserveQueryAndHash', () => {
   it('carries incoming query params onto the destination', () => {

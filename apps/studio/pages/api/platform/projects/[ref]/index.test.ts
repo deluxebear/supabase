@@ -114,6 +114,15 @@ beforeEach(() => {
 })
 
 describe('GET /platform/projects/[ref] (self-platform)', () => {
+  it('does not expose the Fleet control plane as the default project', async () => {
+    const { req, res } = createMocks({ method: 'GET', query: { ref: 'default' } })
+    await handler(req as any, res as any, claimsOf('g-1'))
+    expect(res._getStatusCode()).toBe(404)
+    expect(res._getJSONData()).toEqual({ message: 'Project not found' })
+    expect(resolveProjectIdentity).not.toHaveBeenCalled()
+    expect(checkPermission).not.toHaveBeenCalled()
+  })
+
   it('returns project metadata without a Fleet connectionString', async () => {
     vi.mocked(resolveProjectIdentity).mockResolvedValue(resolved as any)
     const { req, res } = createMocks({ method: 'GET', query: { ref: 'proj-b' } })

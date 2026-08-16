@@ -63,8 +63,20 @@ do $$
 declare
   old_revision uuid;
   current_revision uuid;
+  claimed_operation_id text;
   applied boolean;
 begin
+  if (select state from platform.operation_summaries where operation_id='op-1') <> 'superseded' then
+    raise exception 'older queued operation was not superseded';
+  end if;
+  select operation_id into claimed_operation_id
+  from platform.claim_operation_outbox('acceptance-worker', 30);
+  if claimed_operation_id <> 'op-2' then
+    raise exception 'dispatcher claimed %, expected current operation op-2', claimed_operation_id;
+  end if;
+  if not platform.complete_operation_dispatch('op-2', 'acceptance-worker', 'queued') then
+    raise exception 'current operation dispatch completion failed';
+  end if;
   select desired_revision into old_revision from platform.operation_outbox where operation_id='op-1';
   select desired_revision into current_revision from platform.operation_outbox where operation_id='op-2';
   select platform.apply_configuration_observation(
@@ -104,15 +116,15 @@ select * from platform.commit_desired_configuration(
   '{}'::jsonb,'user-a','request-3'
 );
 select * from platform.commit_desired_configuration(
-  'project-a','auth','auth.config.apply',3,'op-4','target-a','binding-a',
-  'supabase.fleet.auth.config.apply.v1','idem-4','{"enabled":false}'::jsonb,
+  'project-a','storage','storage.config.apply',0,'op-4','target-a','binding-a',
+  'supabase.fleet.storage.config.apply.v1','idem-4','{"enabled":false}'::jsonb,
   '{}'::jsonb,'user-a','request-4'
 );
 do $$
 begin
   perform platform.commit_desired_configuration(
-    'project-a','auth','auth.config.apply',4,'op-5','target-a','binding-a',
-    'supabase.fleet.auth.config.apply.v1','idem-5','{"enabled":true}'::jsonb,
+    'project-a','realtime','realtime.config.apply',0,'op-5','target-a','binding-a',
+    'supabase.fleet.realtime.config.apply.v1','idem-5','{"enabled":true}'::jsonb,
     '{}'::jsonb,'user-a','request-5'
   );
   raise exception 'target capacity limit was not enforced';

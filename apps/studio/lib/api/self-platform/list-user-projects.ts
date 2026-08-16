@@ -1,7 +1,7 @@
 // [self-platform] Project-list assembly: registry rows → the api-types
-// list shapes (org-scoped + global V2). Falls back to the single
-// DEFAULT_PROJECT when the registry is empty — preserves M1 behavior for a
-// freshly bootstrapped deployment with nothing registered yet.
+// list shapes (org-scoped + global V2). Embedded deployments fall back to the
+// single DEFAULT_PROJECT when the registry is empty; Fleet deployments expose
+// the registry truthfully and therefore return an empty list.
 import type { components } from 'api-types'
 
 import { isOrgScopedRole, type MemberContext } from './members'
@@ -16,6 +16,10 @@ import {
   type PlatformProjectRow,
 } from './projects'
 import { DEFAULT_PROJECT } from '@/lib/constants/api'
+import {
+  STUDIO_DEPLOYMENT_PROFILE,
+  type StudioDeploymentProfile,
+} from '@/lib/constants/deployment-profile'
 
 export type OrganizationProjectsResponse = components['schemas']['OrganizationProjectsResponse']
 export type ListProjectsPaginatedResponse = components['schemas']['ListProjectsPaginatedResponse']
@@ -149,7 +153,8 @@ export async function listOrgProjectsV2(
   ctx: MemberContext,
   slug: string,
   limit = 100,
-  offset = 0
+  offset = 0,
+  deploymentProfile: StudioDeploymentProfile = STUDIO_DEPLOYMENT_PROFILE
 ): Promise<OrganizationProjectsResponse | null> {
   const org = await getOrganizationBySlug(slug)
   if (!org) return null
@@ -173,8 +178,9 @@ export async function listOrgProjectsV2(
         ])
 
   if (total === 0) {
-    if (scope !== 'all') {
+    if (scope !== 'all' || deploymentProfile === 'fleet') {
       // Derived scope pointing at removed projects — nothing visible.
+      // Fleet is also registry-only: its control plane is not a managed project.
       return { pagination: { count: 0, limit, offset }, projects: [] }
     }
     // Empty registry + role-holding member: single default-project fallback
@@ -197,7 +203,8 @@ export async function listOrgProjectsV2(
 export async function listAllProjectsV2(
   ctx: MemberContext,
   limit = 100,
-  offset = 0
+  offset = 0,
+  deploymentProfile: StudioDeploymentProfile = STUDIO_DEPLOYMENT_PROFILE
 ): Promise<ListProjectsPaginatedResponse> {
   // Fold per-org scopes into one visibility query: org-scoped roles
   // contribute whole orgs, derived roles contribute explicit project ids.
@@ -223,9 +230,11 @@ export async function listAllProjectsV2(
   const slugById = new Map(orgs.map((org) => [org.id, org.slug]))
 
   if (total === 0) {
-    if (orgIds.length === 0) {
+    if (orgIds.length === 0 || deploymentProfile === 'fleet') {
       // Purely-derived visibility whose project ids no longer resolve —
-      // fail closed, never the default fallback (spec §8).
+      // fail closed, never the default fallback (spec §8). Fleet likewise
+      // reports the empty registry instead of treating its control plane as a
+      // managed data-plane project.
       return { pagination: { count: 0, limit, offset }, projects: [] }
     }
     return {

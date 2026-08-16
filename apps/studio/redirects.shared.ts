@@ -30,6 +30,13 @@ export const PLATFORM_REDIRECTS: StudioRedirect[] = [
   { source: '/project/:ref/building', destination: '/project/:ref', permanent: false },
 ]
 
+// Fleet Studio is a control plane only. Its own `default` ref is not a
+// data-plane project and must never be opened as one.
+export const FLEET_REDIRECTS: StudioRedirect[] = [
+  { source: '/project/default', destination: '/org', permanent: false },
+  { source: '/project/default/:path*', destination: '/org', permanent: false },
+]
+
 export const SELF_HOSTED_REDIRECTS: StudioRedirect[] = [
   { source: '/', destination: '/project/default', permanent: false },
   { source: '/register', destination: '/project/default', permanent: false },

@@ -7,6 +7,7 @@ import type { NextConfig } from 'next'
 import { getCSP } from './csp'
 import { STUDIO_DEPLOYMENT_PROFILE } from './lib/constants/deployment-profile'
 import {
+  FLEET_REDIRECTS,
   getMaintenanceRedirects,
   PLATFORM_REDIRECTS,
   SELF_HOSTED_REDIRECTS,
@@ -83,6 +84,7 @@ const nextConfig = {
     // via `basePath: false`.
     const maintenance = process.env.MAINTENANCE_MODE === 'true'
     return [
+      ...(STUDIO_DEPLOYMENT_PROFILE === 'fleet' ? FLEET_REDIRECTS : []),
       ...(isPlatformProfile ? PLATFORM_REDIRECTS : SELF_HOSTED_REDIRECTS),
       ...SHARED_REDIRECTS,
       ...(process.env.NEXT_PUBLIC_BASE_PATH?.length

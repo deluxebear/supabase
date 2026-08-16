@@ -54,6 +54,9 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
         .json({ ...DEFAULT_PROJECT, connectionString: '', restUrl: PROJECT_REST_URL })
     }
     const ref = String(req.query.ref)
+    if (STUDIO_DEPLOYMENT_PROFILE === 'fleet' && ref === DEFAULT_PROJECT.ref) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
     try {
       const project = await resolveProjectIdentity(ref)
       // [self-platform] Visibility guard (spec §8): resolver 404 has already won

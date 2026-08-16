@@ -29,12 +29,12 @@ export default (req: NextApiRequest, res: NextApiResponse) =>
 // [self-platform] exported for handler-level tests.
 export async function handler(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
   if (req.method === 'GET') {
-    // Legacy V1 (no Version:2 header, or not self-platform) stays the hardcoded
-    // [DEFAULT_PROJECT] array, byte-identical to M1 — it returns BEFORE any
-    // claims handling so plain self-hosted never sees a 401 here. The V2 branch
-    // is registry-backed (M2) and role-filtered (M3.0).
-    const wantsV2 = IS_SELF_PLATFORM && req.headers['version'] === '2'
-    if (!wantsV2) {
+    // Plain embedded Studio keeps the historical hardcoded [DEFAULT_PROJECT]
+    // response. Fleet is always registry-backed, even for legacy clients that
+    // omit Version:2, so its control plane cannot appear as a managed project.
+    const wantsRegistryProjects =
+      IS_SELF_PLATFORM && (STUDIO_DEPLOYMENT_PROFILE === 'fleet' || req.headers['version'] === '2')
+    if (!wantsRegistryProjects) {
       return res.status(200).json([DEFAULT_PROJECT])
     }
 

@@ -229,6 +229,16 @@ describe('listOrgProjectsV2', () => {
     expect(result?.projects).toEqual([])
   })
 
+  it('returns the real empty registry in Fleet instead of synthesizing a default project', async () => {
+    vi.mocked(getOrganizationBySlug).mockResolvedValue(org)
+    vi.mocked(listProjectsByOrgId).mockResolvedValue([])
+    vi.mocked(countProjectsByOrgId).mockResolvedValue(0)
+
+    const result = await listOrgProjectsV2(ORG_CTX, 'acme', 100, 0, 'fleet')
+
+    expect(result).toEqual({ pagination: { count: 0, limit: 100, offset: 0 }, projects: [] })
+  })
+
   it('returns null when the org is not found', async () => {
     vi.mocked(getOrganizationBySlug).mockResolvedValue(null)
 
@@ -357,6 +367,16 @@ describe('listAllProjectsV2', () => {
 
     expect(result.pagination).toEqual({ count: 1, limit: 100, offset: 1 })
     expect(result.projects).toEqual([])
+  })
+
+  it('returns the real empty registry in Fleet instead of synthesizing a default project', async () => {
+    vi.mocked(listProjectsVisible).mockResolvedValue([])
+    vi.mocked(countProjectsVisible).mockResolvedValue(0)
+    vi.mocked(listOrganizations).mockResolvedValue([])
+
+    const result = await listAllProjectsV2(ORG_CTX, 100, 0, 'fleet')
+
+    expect(result).toEqual({ pagination: { count: 0, limit: 100, offset: 0 }, projects: [] })
   })
 
   it('derived-scope member: folds project ids (not org ids) into the visibility query', async () => {
