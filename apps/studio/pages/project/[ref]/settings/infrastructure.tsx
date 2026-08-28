@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   PageHeader,
   PageHeaderDescription,
@@ -9,6 +10,9 @@ import {
 import { DiskManagementForm } from '@/components/interfaces/DiskManagement/DiskManagementForm'
 import { SelfPlatformLifecyclePanel } from '@/components/interfaces/SelfPlatform/SelfPlatformLifecyclePanel'
 import { FleetInfrastructure } from '@/components/interfaces/Settings/Infrastructure/FleetInfrastructure'
+import { InfrastructureTopology } from '@/components/interfaces/Settings/Infrastructure/InfrastructureTopology'
+import { ReadReplicasSection } from '@/components/interfaces/Settings/Infrastructure/ReadReplicas/ReadReplicasSection'
+import type { RecommendedComputeForReadReplicas } from '@/components/interfaces/Settings/Infrastructure/ReadReplicas/recommendCompute'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import SettingsLayout from '@/components/layouts/ProjectSettingsLayout/SettingsLayout'
 import {
@@ -23,6 +27,9 @@ import type { NextPageWithLayout } from '@/types'
 
 const InfrastructureSettings: NextPageWithLayout = () => {
   const isFleet = STUDIO_DEPLOYMENT_PROFILE === 'fleet'
+  const [recommendedCompute, setRecommendedCompute] =
+    useState<RecommendedComputeForReadReplicas | null>(null)
+
   return (
     <>
       {isFleet && (
@@ -52,12 +59,17 @@ const InfrastructureSettings: NextPageWithLayout = () => {
               <PageHeaderSummary>
                 <PageHeaderTitle>{$t('Infrastructure')}</PageHeaderTitle>
                 <PageHeaderDescription>
-                  {$t('View and configure compute and disk for your project.')}
+                  {$t('Configure compute, disk, and read replicas for your project.')}
                 </PageHeaderDescription>
               </PageHeaderSummary>
             </PageHeaderMeta>
           </PageHeader>
-          <DiskManagementForm />
+          <DiskManagementForm
+            overviewExtra={<InfrastructureTopology />}
+            beforeScaling={<ReadReplicasSection onRecommendCompute={setRecommendedCompute} />}
+            recommendedCompute={recommendedCompute}
+            onRecommendedComputeApplied={() => setRecommendedCompute(null)}
+          />
         </>
       )}
     </>

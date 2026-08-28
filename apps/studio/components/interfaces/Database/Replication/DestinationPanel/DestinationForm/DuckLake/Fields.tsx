@@ -83,10 +83,8 @@ const DuckLakeModeSelector = ({
             onClick={() => onChange(option.value)}
             className={cn(
               'relative flex flex-col gap-y-3 rounded-md border p-4 text-left transition',
-              'hover:border-foreground-muted',
-              selected
-                ? 'border-foreground-muted bg-surface-300 ring-1 ring-border'
-                : 'border-default bg-surface-100'
+              'hover:border-control-hover',
+              selected ? 'border-control-hover bg-surface-300' : 'border-default bg-surface-100'
             )}
           >
             <div className="flex items-start justify-between">
@@ -157,7 +155,7 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
     const name = newBucketName.trim()
     if (!name || !ducklakeStorageProjectRef) return
     if (name.includes('/')) {
-      return toast.error($t('Bucket name cannot contain "/"'))
+      return toast.error($t('Bucket name cannot contain "/".'))
     }
 
     createBucket({
@@ -203,7 +201,7 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
                 {renderRegionWarning(field.value)}
                 <span>
                   {$t(
-                    "Warehouse connects to this project's Postgres instance to store the DuckLake catalog"
+                    "Pipelines connects to this project's Postgres instance to store the DuckLake catalog"
                   )}
                 </span>
               </div>

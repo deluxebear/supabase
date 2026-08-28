@@ -29,6 +29,7 @@ export function toOrganizationResponse(
     organization_missing_tax_id: false,
     organization_requires_mfa: false,
     plan: ENTERPRISE_PLAN,
+    requires_indirect_tax_declaration: false, // Self-platform has no hosted billing.
     restriction_data: null,
     restriction_status: null,
     stripe_customer_id: null,

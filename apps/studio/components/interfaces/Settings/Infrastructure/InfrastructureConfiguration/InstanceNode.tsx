@@ -22,6 +22,7 @@ import {
 } from 'ui'
 import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 
+import { ComputeMetricsFooter } from './ComputeMetricsFooter'
 import {
   ERROR_STATES,
   INIT_PROGRESS,
@@ -33,8 +34,9 @@ import {
   ReplicaNodeData,
 } from './InstanceConfiguration.constants'
 import { formatSeconds } from './InstanceConfiguration.utils'
-import { metricColor } from './InstanceNode.utils'
+import { getReadReplicaPath } from '@/components/interfaces/Settings/Infrastructure/Infrastructure.utils'
 import { REPLICA_STATUS } from '@/components/interfaces/Settings/Infrastructure/ReadReplicas/ReadReplicas.constants'
+import { RegionFlag } from '@/components/ui/RegionFlag'
 import { SparkBar } from '@/components/ui/SparkBar'
 import {
   DatabaseInitEstimations,
@@ -42,9 +44,7 @@ import {
   useReadReplicasStatusesQuery,
 } from '@/data/read-replicas/replicas-status-query'
 import { formatDatabaseID } from '@/data/read-replicas/replicas.utils'
-import { useComputeMetrics } from '@/hooks/analytics/useComputeMetrics'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
-import { BASE_PATH } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 
@@ -93,24 +93,10 @@ export const LoadBalancerNode = ({ data }: NodeProps<Node<LoadBalancerData>>) =>
 export const PrimaryNode = ({ data }: NodeProps<Node<PrimaryNodeData>>) => {
   // [Joshen] Just FYI Handles cannot be conditionally rendered
   const { region, computeSize, numReplicas, numRegions, hasLoadBalancer } = data
-  const { ref } = useParams()
 
   const { projectHomepageShowInstanceSize } = useIsFeatureEnabled([
     'project_homepage:show_instance_size',
   ])
-
-  const {
-    cpu,
-    disk,
-    memory,
-    connections,
-    isLoading: metricsLoading,
-    isError: metricsError,
-  } = useComputeMetrics({
-    projectRef: ref,
-  })
-
-  const observabilityUrl = `/project/${ref}/observability/database`
 
   return (
     <>
@@ -160,11 +146,7 @@ export const PrimaryNode = ({ data }: NodeProps<Node<PrimaryNodeData>>) => {
             </div>
           </div>
           {Object.values(AWS_REGIONS).some((r) => r.code === region.region) && (
-            <img
-              alt={$t('region icon')}
-              className="w-8 rounded-xs mt-0.5"
-              src={`${BASE_PATH}/img/regions/${region.region}.svg`}
-            />
+            <RegionFlag className="mt-0.5 w-8" region={region.region} />
           )}
         </div>
         {numReplicas > 0 && (
@@ -180,43 +162,7 @@ export const PrimaryNode = ({ data }: NodeProps<Node<PrimaryNodeData>>) => {
             </p>
           </div>
         )}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link
-              href={observabilityUrl}
-              className="border-t px-3 py-2 hover:bg-surface-200 transition flex items-center gap-x-3 text-xs"
-            >
-              {metricsLoading ? (
-                <div className="h-3 w-44 rounded-sm bg-surface-300 animate-pulse" />
-              ) : metricsError ? (
-                <span className="text-foreground-lighter">{$t('Metrics unavailable')}</span>
-              ) : (
-                <>
-                  <span>
-                    CPU <span className={metricColor(cpu)}>{cpu.toFixed(0)}%</span>
-                  </span>
-                  <span className="text-foreground-lighter">·</span>
-                  <span>
-                    {$t('Disk')} <span className={metricColor(disk)}>{disk.toFixed(0)}%</span>
-                  </span>
-                  <span className="text-foreground-lighter">·</span>
-                  <span>
-                    RAM <span className={metricColor(memory)}>{memory.toFixed(0)}%</span>
-                  </span>
-                  {connections.max > 0 && (
-                    <>
-                      <span className="text-foreground-lighter">·</span>
-                      <span className="text-foreground-light">
-                        {connections.peak}/{connections.max} conns
-                      </span>
-                    </>
-                  )}
-                </>
-              )}
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">{$t('Go to Database Report')}</TooltipContent>
-        </Tooltip>
+        <ComputeMetricsFooter />
       </div>
       <Handle
         type="source"
@@ -426,10 +372,8 @@ export const ReplicaNode = ({ data }: NodeProps<Node<ReplicaNodeData>>) => {
               {$t('View connection string')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-x-2">
-              <Link href={`/project/${ref}/database/replication/replica/${id}`}>
-                {$t('Manage replica')}
-              </Link>
+            <DropdownMenuItem className="gap-x-2" asChild>
+              <Link href={getReadReplicaPath(ref, id)}>{$t('Manage replica')}</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -450,11 +394,7 @@ export const RegionNode = ({ data }: any) => {
     >
       <div className="absolute bottom-2 flex items-center justify-between gap-x-2">
         {Object.values(AWS_REGIONS).some((r) => r.code === region.region) && (
-          <img
-            alt={$t('region icon')}
-            className="w-5 rounded-xs"
-            src={`${BASE_PATH}/img/regions/${region.region}.svg`}
-          />
+          <RegionFlag className="w-5" region={region.region} />
         )}
         <p className="text-sm">{region.name}</p>
       </div>

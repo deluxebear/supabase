@@ -52,7 +52,7 @@ export const SortableSection = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="group relative will-change-transform flex items-start gap-x-4"
+      className="group relative will-change-transform flex items-start gap-x-4 min-w-0"
     >
       <div className={cn('flex items-center', gripClassName)}>
         {actions}
@@ -89,7 +89,7 @@ export const SortableSection = ({
           {gripDropdownContent}
         </DropdownMenu>
       </div>
-      <div className={cn('w-full', isDragging && 'opacity-70')}>{children}</div>
+      <div className={cn('w-full min-w-0', isDragging && 'opacity-70')}>{children}</div>
     </div>
   )
 }

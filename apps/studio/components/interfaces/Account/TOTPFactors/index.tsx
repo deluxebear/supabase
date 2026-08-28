@@ -1,6 +1,17 @@
 import dayjs from 'dayjs'
+import { Plus } from 'lucide-react'
 import { useState } from 'react'
-import { Button } from 'ui'
+import { Button, Card, CardContent } from 'ui'
+import { Admonition } from 'ui-patterns/Admonition'
+import {
+  PageSection,
+  PageSectionAside,
+  PageSectionContent,
+  PageSectionDescription,
+  PageSectionMeta,
+  PageSectionSummary,
+  PageSectionTitle,
+} from 'ui-patterns/PageSection'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { AddNewFactorModal } from './AddNewFactorModal'
@@ -15,56 +26,91 @@ export const TOTPFactors = () => {
   const [factorToBeDeleted, setFactorToBeDeleted] = useState<string | null>(null)
   const { data, isPending: isLoading, isError, isSuccess, error } = useMfaListFactorsQuery()
 
+  const totpFactors = data?.totp ?? []
+  const canAddApp = isSuccess && totpFactors.length < 2
+  const shouldShowLockoutWarning = isSuccess && totpFactors.length === 1
+
+  const handleAddNewApp = () => setIsAddNewFactorOpen(true)
+
   return (
     <>
-      <section className="space-y-3">
-        <p className="text-sm text-foreground-light">
-          {$t(
-            'Use an authenticator app (like Google Authenticator or 1Password) to protect your account.'
+      <PageSection>
+        <PageSectionMeta>
+          <PageSectionSummary>
+            <PageSectionTitle>{$t('Multi-factor authentication')}</PageSectionTitle>
+            <PageSectionDescription>
+              {$t(
+                'Use an authenticator app (like Google Authenticator or 1Password) to protect your account.'
+              )}
+            </PageSectionDescription>
+          </PageSectionSummary>
+          {canAddApp && (
+            <PageSectionAside>
+              <Button variant="primary" icon={<Plus />} onClick={handleAddNewApp}>
+                {$t('Add app')}
+              </Button>
+            </PageSectionAside>
           )}
-        </p>
-        <div>
-          {isLoading && <GenericSkeletonLoader />}
+        </PageSectionMeta>
+        <PageSectionContent className="flex flex-col gap-4">
+          {shouldShowLockoutWarning && (
+            <Admonition
+              type="danger"
+              layout="responsive"
+              title={$t('Avoid being locked out')}
+              description={$t(
+                'Add a backup authenticator app now. Losing access to your only app will permanently lock you out of your account.'
+              )}
+              actions={
+                <Button variant="default" icon={<Plus />} onClick={handleAddNewApp}>
+                  {$t('Add another app')}
+                </Button>
+              }
+            />
+          )}
+          {isLoading && (
+            <Card>
+              <CardContent>
+                <GenericSkeletonLoader />
+              </CardContent>
+            </Card>
+          )}
           {isError && (
             <AlertError error={error} subject="Failed to retrieve account security information" />
           )}
           {isSuccess && (
-            <>
-              <div>
-                {data.totp.map((factor) => {
-                  return (
-                    <div key={factor.id} className="flex flex-row justify-between py-2">
-                      <p className="text-sm text-foreground flex items-center space-x-2">
-                        <span className="text-foreground-light">{$t('Name:')}</span>{' '}
-                        <span>{factor.friendly_name ?? 'No name provided'}</span>
-                      </p>
-                      <div className="flex items-center gap-4">
-                        <p className="text-sm text-foreground-light">
+            <Card>
+              {totpFactors.length === 0 ? (
+                <CardContent>
+                  <p className="text-sm text-foreground-lighter">
+                    {$t('No authenticator apps yet.')}
+                  </p>
+                </CardContent>
+              ) : (
+                <div className="divide-y">
+                  {totpFactors.map((factor) => (
+                    <CardContent key={factor.id} className="flex justify-between items-center py-4">
+                      <div>
+                        <p className="text-sm">{factor.friendly_name ?? 'No name provided'}</p>
+                        <p className="text-sm text-foreground-lighter">
                           {$t('Added on')} {dayjs(factor.created_at).format(DATETIME_FORMAT)}
                         </p>
-                        <Button
-                          size="tiny"
-                          variant="default"
-                          onClick={() => setFactorToBeDeleted(factor.id)}
-                        >
-                          {$t('Remove')}
-                        </Button>
                       </div>
-                    </div>
-                  )
-                })}
-              </div>
-              {data.totp.length < 2 ? (
-                <>
-                  <div className="pt-2">
-                    <Button onClick={() => setIsAddNewFactorOpen(true)}>{$t('Add new app')}</Button>
-                  </div>
-                </>
-              ) : null}
-            </>
+                      <Button
+                        size="tiny"
+                        variant="default"
+                        onClick={() => setFactorToBeDeleted(factor.id)}
+                      >
+                        {$t('Delete')}{' '}
+                      </Button>
+                    </CardContent>
+                  ))}
+                </div>
+              )}
+            </Card>
           )}
-        </div>
-      </section>
+        </PageSectionContent>
+      </PageSection>
       <AddNewFactorModal
         visible={isAddNewFactorOpen}
         onClose={() => setIsAddNewFactorOpen(false)}
@@ -72,7 +118,7 @@ export const TOTPFactors = () => {
       <DeleteFactorModal
         visible={factorToBeDeleted !== null}
         factorId={factorToBeDeleted}
-        lastFactorToBeDeleted={data?.totp.length === 1}
+        lastFactorToBeDeleted={totpFactors.length === 1}
         onClose={() => setFactorToBeDeleted(null)}
       />
     </>

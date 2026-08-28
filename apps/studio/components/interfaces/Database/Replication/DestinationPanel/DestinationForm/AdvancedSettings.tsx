@@ -29,6 +29,11 @@ import {
 import { type DestinationPanelSchemaType } from './DestinationForm.schema'
 import { t as $t } from '@/lib/i18n'
 
+const INVALIDATED_SLOT_BEHAVIOR_LABELS = {
+  error: 'Block startup',
+  recreate: 'Recreate slot',
+}
+
 export const AdvancedSettings = ({
   type,
   form,
@@ -160,16 +165,18 @@ export const AdvancedSettings = ({
                 >
                   <FormControl>
                     <Select value={field.value ?? 'error'} onValueChange={field.onChange}>
-                      <SelectTrigger className="capitalize">{field.value ?? 'error'}</SelectTrigger>
+                      <SelectTrigger>
+                        {INVALIDATED_SLOT_BEHAVIOR_LABELS[field.value ?? 'error']}
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="error" className="[&>span]:top-2.5">
-                          <p>{$t('Error')}</p>
+                          <p>{$t('Block startup')}</p>
                           <p className="text-foreground-lighter">
                             {$t('Blocks startup for manual recovery.')}
                           </p>
                         </SelectItem>
                         <SelectItem value="recreate" className="[&>span]:top-2.5">
-                          <p>{$t('Recreate')}</p>
+                          <p>{$t('Recreate slot')}</p>
                           <p className="text-foreground-lighter">
                             {$t(
                               'Replaces destination tables and runs a new, billable initial sync.'
@@ -234,7 +241,7 @@ export const AdvancedSettings = ({
                       }
                       layout="horizontal"
                       description={$t(
-                        'How old query results can be while BigQuery applies ongoing changes.'
+                        'Set the maximum age of query results while BigQuery applies ongoing changes, or leave blank for the freshest results.'
                       )}
                     >
                       <FormControl>
@@ -246,7 +253,6 @@ export const AdvancedSettings = ({
                             step={1}
                             value={field.value ?? ''}
                             onChange={handleNumberChange(field)}
-                            placeholder={$t('Default: None (Freshest results)')}
                           />
                           <InputGroupAddon align="inline-end">
                             <InputGroupText>minutes</InputGroupText>

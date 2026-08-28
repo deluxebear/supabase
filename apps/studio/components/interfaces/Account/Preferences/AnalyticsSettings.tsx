@@ -77,6 +77,7 @@ export const AnalyticsSettings = () => {
                     description={$t(
                       'By opting in to sharing telemetry data, Supabase can analyze usage patterns to enhance user experience and use it for marketing and advertising purposes'
                     )}
+                    id="telemetry"
                   >
                     <FormControl>
                       <Switch
@@ -85,6 +86,7 @@ export const AnalyticsSettings = () => {
                           field.onChange(value)
                           handleToggle(value)
                         }}
+                        id="telemetry"
                       />
                     </FormControl>
                   </FormItemLayout>

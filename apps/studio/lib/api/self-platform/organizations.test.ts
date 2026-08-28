@@ -26,6 +26,7 @@ describe('toOrganizationResponse', () => {
       plan: { id: 'enterprise', name: 'Enterprise' },
       opt_in_tags: [],
       billing_email: null,
+      requires_indirect_tax_declaration: false,
       restriction_status: null,
     })
   })
@@ -39,6 +40,7 @@ describe('toOrganizationResponse', () => {
       plan: { id: 'enterprise', name: 'Enterprise' },
       opt_in_tags: [],
       billing_email: null,
+      requires_indirect_tax_declaration: false,
       restriction_status: null,
     })
   })

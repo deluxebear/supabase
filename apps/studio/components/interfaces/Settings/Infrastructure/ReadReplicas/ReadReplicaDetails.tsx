@@ -20,13 +20,13 @@ import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 import { REPLICA_STATUS } from './ReadReplicas.constants'
 import { REPORT_DATERANGE_HELPER_LABELS } from '@/components/interfaces/Reports/Reports.constants'
 import { ScaffoldContainer, ScaffoldSection } from '@/components/layouts/Scaffold'
+import { RegionFlag } from '@/components/ui/RegionFlag'
 import { useInfraMonitoringAttributesQuery } from '@/data/analytics/infra-monitoring-query'
 import { useLoadBalancersQuery } from '@/data/read-replicas/load-balancers-query'
 import { useReplicationLagQuery } from '@/data/read-replicas/replica-lag-query'
 import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { useReadReplicasStatusesQuery } from '@/data/read-replicas/replicas-status-query'
 import { useReportDateRange } from '@/hooks/misc/useReportDateRange'
-import { BASE_PATH } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 
 const attribute = 'physical_replication_lag_physical_replication_lag_seconds'
@@ -154,13 +154,7 @@ export const ReadReplicaDetails = () => {
                       readOnly
                       className="input-mono"
                       value={regionLabel}
-                      icon={
-                        <img
-                          alt={$t('region icon')}
-                          className="w-5 rounded-xs"
-                          src={`${BASE_PATH}/img/regions/${region ?? ''}.svg`}
-                        />
-                      }
+                      icon={<RegionFlag className="w-5" region={region ?? ''} />}
                     />
                   </FormItemLayout>
                   <FormItemLayout

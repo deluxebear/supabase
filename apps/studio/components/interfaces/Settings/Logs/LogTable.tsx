@@ -70,6 +70,7 @@ interface Props {
   selectedLogError?: LogQueryError | ResponseError
   onSelectedLogChange?: (log: LogData | null) => void
   sqlQuery?: string
+  columnRenderers?: Column<LogData>[]
 }
 type LogMap = { [id: string]: LogData }
 
@@ -99,6 +100,7 @@ export const LogTable = ({
   selectedLogError,
   onSelectedLogChange,
   sqlQuery,
+  columnRenderers,
 }: Props) => {
   const { ref } = useParams()
   const { profile } = useProfile()
@@ -246,7 +248,9 @@ export const LogTable = ({
 
   let columns = DEFAULT_COLUMNS
 
-  if (!queryType) {
+  if (columnRenderers) {
+    columns = columnRenderers
+  } else if (!queryType) {
     columns
   } else {
     switch (queryType) {
@@ -617,7 +621,7 @@ export const LogTable = ({
                 'data-grid--logs-explorer': !queryType,
               })}
               rowHeight={40}
-              headerRowHeight={queryType ? 0 : 28}
+              headerRowHeight={queryType || columnRenderers ? 0 : 28}
               columns={columns}
               rowClass={(row: LogData) => {
                 const key = getRowKey(row)

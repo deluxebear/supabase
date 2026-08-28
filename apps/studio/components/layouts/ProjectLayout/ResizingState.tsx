@@ -29,13 +29,10 @@ export const ResizingState = () => {
               <Loader2 className="animate-spin text-foreground-light" size={18} />
             </div>
             <div className="flex flex-col gap-1">
-              <p>{$t('Resizing Project Compute size')}</p>
-              <p className="text-sm text-foreground-light">
-                {$t('Your project is being restarted to apply compute size changes.')}
-              </p>
+              <p>{$t('Resizing project')}</p>
               <p className="text-sm text-foreground-light">
                 {$t(
-                  'This can take a few minutes. Project will be offline while it is being restarted.'
+                  'Your project is being restarted to apply compute size changes. It will remain offline until fully restarted. This can take a few minutes.'
                 )}
               </p>
             </div>

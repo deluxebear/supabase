@@ -44,7 +44,11 @@ export function ClientLibraryInfo({ form, category, library }: ClientLibraryInfo
           <FormItemLayout layout="vertical" label={$t('Which library are you having issues with')}>
             <FormControl>
               <Select {...field} defaultValue={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className="w-full" aria-label={$t('Select a library')}>
+                <SelectTrigger
+                  data-support-field="library"
+                  className="w-full"
+                  aria-label={$t('Select a library')}
+                >
                   <SelectValue placeholder={$t('Select a library')} />
                 </SelectTrigger>
                 <SelectContent>

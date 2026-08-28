@@ -86,7 +86,7 @@ export const ProjectClaimConfirm = ({
               }}
             >
               {!requester.icon && (
-                <p className="text-foreground-light text-lg">{requester.name[0]}</p>
+                <p className="text-foreground-light text-lg">{requester.name?.[0] ?? '?'}</p>
               )}
             </div>
 

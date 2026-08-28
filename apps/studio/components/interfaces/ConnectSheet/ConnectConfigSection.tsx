@@ -127,12 +127,14 @@ export function ConnectConfigSection({
                 layout="horizontal"
                 label={$t(field.label)}
                 description={field.description ? $t(field.description) : undefined}
+                name={`connect-${field.id}`}
               >
                 <Select
                   value={String(value ?? '')}
                   onValueChange={(v) => onFieldChange(field.id, v)}
                 >
                   <SelectTrigger
+                    id={`connect-${field.id}`}
                     size="small"
                     className="[&>span:first-child]:flex [&>span:first-child]:items-center [&>span:first-child]:gap-x-2"
                   >
@@ -168,6 +170,7 @@ export function ConnectConfigSection({
                 layout="horizontal"
                 label={$t(field.label)}
                 description={field.description ? $t(field.description) : undefined}
+                name={field.id}
                 className="[&>div>label>span]:break-keep! [&>div>label>span]:text-balance"
               >
                 <Switch
@@ -186,12 +189,14 @@ export function ConnectConfigSection({
                 layout="horizontal"
                 label={$t(field.label)}
                 description={field.description ? $t(field.description) : undefined}
+                name={`connect-${field.id}`}
               >
                 <MultiSelector
                   values={Array.isArray(value) ? value : []}
                   onValuesChange={(v) => onFieldChange(field.id, v)}
                 >
                   <MultiSelectorTrigger
+                    id={`connect-${field.id}`}
                     className="w-full"
                     label={$t('Select features')}
                     badgeLimit="wrap"

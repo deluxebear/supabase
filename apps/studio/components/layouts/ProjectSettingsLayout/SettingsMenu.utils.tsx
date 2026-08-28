@@ -15,6 +15,7 @@ export const useGenerateSettingsMenu = () => {
   const { data: project, isPending } = useSelectedProjectQuery()
   const { data: organization } = useSelectedOrganizationQuery()
   const showDashboardPreferences = useFlag('dashboardPreferences')
+  const showConfigDrift = useFlag('ConfigDrift') && IS_PLATFORM
 
   const platformWebhooksEnabled = useIsPlatformWebhooksEnabled()
 
@@ -108,6 +109,16 @@ export const useGenerateSettingsMenu = () => {
           items: [],
           shortcutId: SHORTCUT_IDS.NAV_PROJECT_SETTINGS_GENERAL,
         },
+        ...(showConfigDrift
+          ? [
+              {
+                name: 'Code configuration',
+                key: 'code-configuration',
+                url: `/project/${ref}/settings/code-configuration`,
+                items: [],
+              },
+            ]
+          : []),
         {
           name: 'Infrastructure',
           key: 'infrastructure',

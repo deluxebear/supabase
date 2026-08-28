@@ -31,9 +31,9 @@ export function DiskManagementPanelForm() {
         <Admonition
           type="default"
           layout="responsive"
-          title={$t('Disk Management has moved')}
+          title={$t('Disk management has moved')}
           description={$t(
-            'Disk configuration is now managed alongside Project Compute on the Infrastructure page.'
+            'Disk configuration is now managed alongside project compute on the Infrastructure page.'
           )}
           actions={
             <Button variant="default" asChild>

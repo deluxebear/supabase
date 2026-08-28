@@ -4,11 +4,13 @@ import { PropsWithChildren } from 'react'
 import { PageLayout } from '@/components/layouts/PageLayout/PageLayout'
 import { ScaffoldContainer } from '@/components/layouts/Scaffold'
 import { DocsButton } from '@/components/ui/DocsButton'
+import { useHighAvailability } from '@/hooks/misc/useHighAvailability'
 import { DOCS_URL } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 
 const ApiKeysLayout = ({ children }: PropsWithChildren) => {
   const { ref: projectRef } = useParams()
+  const { isHighAvailability } = useHighAvailability()
 
   const navigationItems = [
     {
@@ -16,11 +18,15 @@ const ApiKeysLayout = ({ children }: PropsWithChildren) => {
       href: `/project/${projectRef}/settings/api-keys`,
       id: 'new-keys',
     },
-    {
-      label: $t('Legacy anon, service_role API keys'),
-      href: `/project/${projectRef}/settings/api-keys/legacy`,
-      id: 'legacy-keys',
-    },
+    ...(isHighAvailability
+      ? []
+      : [
+          {
+            label: $t('Legacy anon, service_role API keys'),
+            href: `/project/${projectRef}/settings/api-keys/legacy`,
+            id: 'legacy-keys',
+          },
+        ]),
   ]
 
   return (

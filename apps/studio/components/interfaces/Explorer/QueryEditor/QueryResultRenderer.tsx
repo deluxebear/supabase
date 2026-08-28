@@ -1,0 +1,37 @@
+import { type QueryResult } from '../types'
+import { QueryResultChart } from './QueryResultChart'
+import { QueryResultError } from './QueryResultError'
+import { DataGridResults } from '@/components/ui/DataGridResults'
+import { type ChartConfig } from '@/data/content/notebooks/notebook-schema'
+import { t as $t } from '@/lib/i18n'
+
+interface QueryResultRendererProps {
+  result?: QueryResult
+  view?: 'table' | 'chart'
+  chart?: ChartConfig
+}
+
+export const QueryResultRenderer = ({ result, view, chart }: QueryResultRendererProps) => {
+  const { rows, error, autoLimit } = result ?? {}
+
+  if (!result) {
+    return (
+      <p className="text-xs text-foreground-lighter py-8">{$t('Run the query to see results')}</p>
+    )
+  }
+
+  if (error) {
+    return <QueryResultError error={error} autoLimit={autoLimit} />
+  }
+
+  if ((rows ?? []).length === 0) {
+    return <p className="text-xs text-foreground-lighter py-8">{$t('Success. No rows returned')}</p>
+  }
+
+  if (rows && rows.length > 0) {
+    if (view === 'table') return <DataGridResults rows={rows} />
+    if (view === 'chart') return <QueryResultChart chart={chart} result={result} />
+  }
+
+  return null
+}

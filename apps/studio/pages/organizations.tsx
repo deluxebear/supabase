@@ -1,8 +1,7 @@
 import { Plus, Search } from 'lucide-react'
 import Head from 'next/head'
 import Link from 'next/link'
-import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Button, Skeleton } from 'ui'
 import { Input } from 'ui-patterns/DataInputs/Input'
 
@@ -23,7 +22,6 @@ import { buildStudioPageTitle } from '@/lib/page-title'
 import type { NextPageWithLayout } from '@/types'
 
 const OrganizationsPage: NextPageWithLayout = () => {
-  const router = useRouter()
   const { appTitle } = useCustomContent(['app:title'])
   const [search, setSearch] = useState('')
   const pageTitle = buildStudioPageTitle({
@@ -46,13 +44,6 @@ const OrganizationsPage: NextPageWithLayout = () => {
       : organizations?.filter(
           (x) => x.name.toLowerCase().includes(search) || x.slug.toLowerCase().includes(search)
         )
-
-  useEffect(() => {
-    // If there are no organizations, force the user to create one
-    if (isSuccess && organizations.length <= 0) {
-      router.push('/new')
-    }
-  }, [isSuccess, organizations])
 
   return (
     <>
@@ -110,7 +101,7 @@ const OrganizationsPage: NextPageWithLayout = () => {
 OrganizationsPage.getLayout = (page) => (
   <AppLayout>
     <DefaultLayout hideMobileMenu headerTitle="Organizations">
-      <PageLayout title={$t('Your Organizations')} className="max-w-[1200px] lg:px-6 mx-auto">
+      <PageLayout title={$t('Your organizations')} className="max-w-[1200px] lg:px-6 mx-auto">
         {page}
       </PageLayout>
     </DefaultLayout>

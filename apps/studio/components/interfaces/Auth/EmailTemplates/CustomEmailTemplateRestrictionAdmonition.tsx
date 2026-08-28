@@ -31,7 +31,7 @@ export const CustomEmailTemplateRestrictionAdmonition = () => {
           <Button
             asChild
             variant="default"
-            className="flex-1 rounded-r-none px-3 @lg:flex-none hover:z-10 focus-visible:z-10"
+            className="flex-1 rounded-r-none px-3 @lg:flex-none hover:z-10 focus-visible:z-10 focus-visible:rounded-r-sm"
           >
             <Link href={`/project/${projectRef}/auth/smtp`}>{$t('Set up SMTP')}</Link>
           </Button>
@@ -40,7 +40,7 @@ export const CustomEmailTemplateRestrictionAdmonition = () => {
               <Button
                 variant="default"
                 aria-label={$t('More email template editing options')}
-                className="shrink-0 rounded-l-none px-[4px] py-[5px] -ml-px focus-visible:z-10"
+                className="shrink-0 rounded-l-none px-[4px] py-[5px] -ml-px focus-visible:z-10 focus-visible:rounded-l-sm"
                 icon={<ChevronDown />}
               />
             </DropdownMenuTrigger>

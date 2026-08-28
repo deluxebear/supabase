@@ -43,7 +43,7 @@ import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useRefreshHandler, useReportDateRange } from '@/hooks/misc/useReportDateRange'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
-import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { useIsHighAvailability, useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
 import { formatBytes } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
@@ -75,6 +75,7 @@ const DatabaseUsage = () => {
   const { db, chart, ref } = useParams()
   const { data: project } = useSelectedProjectQuery()
   const { data: org } = useSelectedOrganizationQuery()
+  const isHighAvailability = useIsHighAvailability()
 
   const {
     selectedDateRange,
@@ -241,6 +242,7 @@ const DatabaseUsage = () => {
               side="bottom"
             >
               <Button
+                aria-label={$t('Refresh report')}
                 variant="default"
                 disabled={isRefreshing}
                 icon={<RefreshCw className={isRefreshing ? 'animate-spin' : ''} />}
@@ -372,21 +374,27 @@ const DatabaseUsage = () => {
                   </div>
 
                   <div className="ml-auto">
-                    {project?.cloud_provider === 'AWS' ? (
+                    {/*
+                      [Joshen] TODO: Check if this check is still relevant
+                      The DiskSizeConfigurationModal is old and might be obsolete
+                     */}
+                    {project?.cloud_provider === 'AWS' && !isHighAvailability ? (
                       <Button asChild variant="default">
                         <Link href={getInfrastructurePath(ref)}>{$t('Increase disk size')}</Link>
                       </Button>
                     ) : (
                       <ButtonTooltip
                         variant="default"
-                        disabled={!canUpdateDiskSizeConfig}
+                        disabled={!canUpdateDiskSizeConfig || isHighAvailability}
                         onClick={() => setshowIncreaseDiskSizeModal(true)}
                         tooltip={{
                           content: {
                             side: 'bottom',
                             text: !canUpdateDiskSizeConfig
                               ? 'You need additional permissions to increase the disk size'
-                              : undefined,
+                              : isHighAvailability
+                                ? 'Disk size management is unavailable for High Availability projects'
+                                : undefined,
                           },
                         }}
                       >
@@ -437,31 +445,7 @@ const DatabaseUsage = () => {
               </div>
             )
           }}
-          append={() => (
-            <div className="px-6 pb-6">
-              <Alert variant="default" className="mt-4">
-                <AlertDescription>
-                  <div className="space-y-2">
-                    <p>
-                      {$t(
-                        'New Supabase projects have a database size of ~40-60mb. This space includes pre-installed extensions, schemas, and default Postgres data. Additional database size is used when installing extensions, even if those extensions are inactive.'
-                      )}
-                    </p>
-
-                    <Button asChild variant="default" icon={<ExternalLink />}>
-                      <Link
-                        href={`${DOCS_URL}/guides/platform/database-size#disk-space-usage`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {$t('Read about database size')}
-                      </Link>
-                    </Button>
-                  </div>
-                </AlertDescription>
-              </Alert>
-            </div>
-          )}
+          append={renderDatabaseSizeAdditionalInfo}
         />
         <DiskSizeConfigurationModal
           visible={showIncreaseDiskSizeModal}
@@ -473,5 +457,33 @@ const DatabaseUsage = () => {
         <ObservabilityLink />
       </div>
     </>
+  )
+}
+
+const renderDatabaseSizeAdditionalInfo = () => {
+  return (
+    <div className="px-6 pb-6">
+      <Alert variant="default" className="mt-4">
+        <AlertDescription>
+          <div className="space-y-2">
+            <p>
+              {$t(
+                'New Supabase projects have a database size of ~40-60mb. This space includes pre-installed extensions, schemas, and default Postgres data. Additional database size is used when installing extensions, even if those extensions are inactive.'
+              )}
+            </p>
+
+            <Button asChild variant="default" icon={<ExternalLink />}>
+              <Link
+                href={`${DOCS_URL}/guides/platform/database-size#disk-space-usage`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {$t('Read about database size')}
+              </Link>
+            </Button>
+          </div>
+        </AlertDescription>
+      </Alert>
+    </div>
   )
 }

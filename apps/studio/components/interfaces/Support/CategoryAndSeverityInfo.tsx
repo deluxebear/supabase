@@ -94,7 +94,11 @@ function CategorySelector({ form }: CategorySelectorProps) {
           <FormItemLayout hideMessage layout="vertical" label={$t('What issue are you having?')}>
             <FormControl>
               <Select {...fieldWithoutRef} defaultValue={field.value} onValueChange={onValueChange}>
-                <SelectTrigger aria-label={$t('Select an issue')} className="w-full">
+                <SelectTrigger
+                  data-support-field="category"
+                  aria-label={$t('Select an issue')}
+                  className="w-full"
+                >
                   <SelectValue placeholder={$t('Select an issue')}>
                     {field.value
                       ? CATEGORY_OPTIONS.find((o) => o.value === field.value)?.label

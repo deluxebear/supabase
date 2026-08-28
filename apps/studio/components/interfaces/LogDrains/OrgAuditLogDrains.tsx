@@ -161,7 +161,7 @@ export function OrgAuditLogDrains() {
                 disabled={!canManageLogDrains}
                 onClick={handleAddDestinationClick}
                 variant="primary"
-                className="rounded-r-none px-3 hover:z-10 focus-visible:z-10"
+                className="rounded-r-none px-3 hover:z-10 focus-visible:z-10 focus-visible:rounded-r-sm"
               >
                 {$t('Add destination')}
               </Button>
@@ -170,8 +170,8 @@ export function OrgAuditLogDrains() {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="primary"
-                  title={$t('Choose destination type')}
-                  className="-ml-px rounded-l-none px-[4px] py-[5px] focus-visible:z-10"
+                  aria-label={$t('Choose destination type')}
+                  className="shrink-0 rounded-l-none px-[4px] py-[5px] -ml-px focus-visible:z-10 focus-visible:rounded-l-sm"
                   icon={<ChevronDown />}
                 />
               </DropdownMenuTrigger>

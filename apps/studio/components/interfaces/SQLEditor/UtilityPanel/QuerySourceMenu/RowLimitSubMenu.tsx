@@ -8,11 +8,14 @@ import {
 
 import { ROWS_PER_PAGE_OPTIONS } from '../../SQLEditor.constants'
 import { t as $t } from '@/lib/i18n'
-import { useSqlEditorSessionSnapshot } from '@/state/sql-editor/sql-editor-session-state'
 
-export const RowLimitSubMenu = () => {
-  const sessionSnap = useSqlEditorSessionSnapshot()
-  const currentLabel = ROWS_PER_PAGE_OPTIONS.find((opt) => opt.value === sessionSnap.limit)?.label
+interface RowLimitSubMenuProps {
+  value: number
+  onValueChange: (value: string) => void
+}
+
+export const RowLimitSubMenu = ({ value, onValueChange }: RowLimitSubMenuProps) => {
+  const currentLabel = ROWS_PER_PAGE_OPTIONS.find((opt) => opt.value === value)?.label
 
   return (
     <DropdownMenuSub>
@@ -23,10 +26,7 @@ export const RowLimitSubMenu = () => {
         </div>
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent className="w-40">
-        <DropdownMenuRadioGroup
-          value={sessionSnap.limit.toString()}
-          onValueChange={(val) => sessionSnap.setLimit(Number(val))}
-        >
+        <DropdownMenuRadioGroup value={value.toString()} onValueChange={onValueChange}>
           {ROWS_PER_PAGE_OPTIONS.map((option) => (
             <DropdownMenuRadioItem key={option.label} value={option.value.toString()}>
               {option.label}

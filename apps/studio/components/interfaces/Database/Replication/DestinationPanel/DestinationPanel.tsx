@@ -24,7 +24,6 @@ import { useIsETLPrivateAlpha } from '../useIsETLPrivateAlpha'
 import { DestinationForm } from './DestinationForm'
 import { DestinationType } from './DestinationPanel.types'
 import { DestinationTypeSelection } from './DestinationTypeSelection'
-import { ReadReplicaForm } from '@/components/interfaces/Settings/Infrastructure/ReadReplicas/ReadReplicaForm'
 import { DiscardChangesConfirmationDialog } from '@/components/ui-patterns/Dialogs/DiscardChangesConfirmationDialog'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { useReplicationDestinationsQuery } from '@/data/replication/destinations-query'
@@ -33,11 +32,7 @@ import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
 import { DOCS_URL } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 
-interface DestinationPanelProps {
-  onSuccessCreateReadReplica?: () => void
-}
-
-export const DestinationPanel = ({ onSuccessCreateReadReplica }: DestinationPanelProps) => {
+export const DestinationPanel = () => {
   const { ref: projectRef } = useParams()
   const enablePgReplicate = useIsETLPrivateAlpha()
   const { error: destinationsError } = useReplicationDestinationsQuery({ projectRef })
@@ -46,7 +41,6 @@ export const DestinationPanel = ({ onSuccessCreateReadReplica }: DestinationPane
   const [urlDestinationType, setDestinationType] = useQueryState(
     'destinationType',
     parseAsStringEnum<DestinationType>([
-      'Read Replica',
       'BigQuery',
       'Analytics Bucket',
       'DuckLake',
@@ -151,7 +145,7 @@ export const DestinationPanel = ({ onSuccessCreateReadReplica }: DestinationPane
                 <SheetDescription>
                   {editMode
                     ? 'Update the configuration for this destination.'
-                    : 'Add a read replica or an external destination.'}
+                    : 'Connect an external destination for analytics workloads.'}
                 </SheetDescription>
               </div>
               <DocsButton
@@ -160,15 +154,7 @@ export const DestinationPanel = ({ onSuccessCreateReadReplica }: DestinationPane
               />
             </SheetHeader>
 
-            {destinationType === 'Read Replica' ? (
-              <ReadReplicaForm
-                typeSelection={typeSelection}
-                checkIsDirtyRef={checkIsDirtyRef}
-                onClose={onClose}
-                onCancel={confirmOnClose}
-                onSuccess={() => onSuccessCreateReadReplica?.()}
-              />
-            ) : !enablePgReplicate ? (
+            {!enablePgReplicate ? (
               <div className="grow overflow-auto min-h-0">
                 {pipelinesTypeSelection}
                 <SheetSection>
@@ -179,7 +165,7 @@ export const DestinationPanel = ({ onSuccessCreateReadReplica }: DestinationPane
                         {$t('Pipelines is in')}{' '}
                         <span className="text-foreground">{$t('public alpha')}</span>{' '}
                         {$t(
-                          'and being rolled out gradually. Request access below to join the waitlist. Read replicas are available now.'
+                          'and being rolled out gradually. Request access below to join the waitlist.'
                         )}
                       </p>
                     </div>
@@ -212,7 +198,7 @@ export const DestinationPanel = ({ onSuccessCreateReadReplica }: DestinationPane
             ) : (
               <DestinationForm
                 visible={visible}
-                selectedType={destinationType ?? 'Read Replica'}
+                selectedType={destinationType ?? 'BigQuery'}
                 existingDestination={existingDestination}
                 typeSelection={pipelinesTypeSelection}
                 checkIsDirtyRef={checkIsDirtyRef}

@@ -20,13 +20,18 @@ import { ComputeBadge } from 'ui-patterns/ComputeBadge'
 
 import { DiskStorageSchemaType } from '../DiskManagement.schema'
 import { ComputeInstanceAddonVariantId, InfraInstanceSize } from '../DiskManagement.types'
-import { ComputeAddonVariant, getAvailableComputeOptions } from '../DiskManagement.utils'
+import {
+  ComputeAddonVariant,
+  getAvailableComputeOptions,
+  mapComputeSizeNameToAddonVariantId,
+} from '../DiskManagement.utils'
 import { BillingChangeBadge } from '../ui/BillingChangeBadge'
 import FormMessage from '../ui/FormMessage'
 import { useShowMicroUpgradeBadge } from './useShowMicroUpgradeBadge'
 import { SupportLink } from '@/components/interfaces/Support/SupportLink'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { useProjectAddonsQuery } from '@/data/subscriptions/project-addons-query'
+import { useHighAvailability } from '@/hooks/misc/useHighAvailability'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { t as $t } from '@/lib/i18n'
@@ -76,6 +81,13 @@ export function ComputeSizeField({ form, disabled }: ComputeSizeFieldProps) {
   const { data: org } = useSelectedOrganizationQuery()
   const { project, isProjectLoading, isEntitlementLoading, showMicroUpgradeBadge } =
     useShowMicroUpgradeBadge()
+  const { isHighAvailability } = useHighAvailability()
+
+  // High Availability projects run on a fixed compute size during Alpha,
+  // so every option other than the project's current size is locked
+  const currentComputeVariantId = project?.infra_compute_size
+    ? mapComputeSizeNameToAddonVariantId(project.infra_compute_size)
+    : undefined
 
   const showComputePrice = useIsFeatureEnabled('project_addons:show_compute_price')
 
@@ -114,7 +126,7 @@ export function ComputeSizeField({ form, disabled }: ComputeSizeFieldProps) {
       render={({ field }) => (
         <div className="@container">
           <RadioGroupCard
-            {...field}
+            value={field.value}
             onValueChange={(value: ComputeInstanceAddonVariantId) => {
               setValue('computeSize', value, {
                 shouldDirty: true,
@@ -123,7 +135,6 @@ export function ComputeSizeField({ form, disabled }: ComputeSizeFieldProps) {
               trigger('provisionedIOPS')
               trigger('throughput')
             }}
-            defaultValue={field.value}
             disabled={disabled}
             className={cn(
               !addonsError && 'grid grid-cols-2 gap-4 @[680px]:grid-cols-3 @[900px]:grid-cols-4'
@@ -147,8 +158,11 @@ export function ComputeSizeField({ form, disabled }: ComputeSizeFieldProps) {
                     org?.plan.id !== 'free' &&
                     project?.infra_compute_size !== 'nano' &&
                     compute.identifier === 'ci_nano'
+                  const lockedDueToHighAvailability =
+                    isHighAvailability && compute.identifier !== currentComputeVariantId
 
-                  const lockedOption = lockedNanoDueToPlan || lockedMicroDueToPITR
+                  const lockedOption =
+                    lockedNanoDueToPlan || lockedMicroDueToPITR || lockedDueToHighAvailability
 
                   // Nano on a paid plan is billed at the Micro rate
                   const isNanoBilledAsMicro =
@@ -217,7 +231,7 @@ export function ComputeSizeField({ form, disabled }: ComputeSizeFieldProps) {
                                 </HoverCard>
                               )}
                               <div className="w-full flex flex-col gap-3 justify-between">
-                                <div className="relative px-3 opacity-50 group-data-checked:opacity-100 flex justify-between">
+                                <div className="relative px-3 opacity-50 group-data-[state=checked]:opacity-100 flex justify-between">
                                   <ComputeBadge
                                     className="inline-flex font-semibold"
                                     infraComputeSize={compute.name as InfraInstanceSize}
@@ -272,7 +286,14 @@ export function ComputeSizeField({ form, disabled }: ComputeSizeFieldProps) {
                               </div>
                             </div>
                           </TooltipTrigger>
-                          {lockedMicroDueToPITR && (
+                          {lockedDueToHighAvailability && (
+                            <TooltipContent side="bottom" className="w-64 text-center">
+                              {$t(
+                                "Compute size can't be changed on High Availability projects during Alpha"
+                              )}
+                            </TooltipContent>
+                          )}
+                          {!lockedDueToHighAvailability && lockedMicroDueToPITR && (
                             <TooltipContent side="bottom" className="w-64 text-center">
                               {$t(
                                 'Project has PITR enabled which requires a minimum of Small compute. Please'
@@ -288,50 +309,54 @@ export function ComputeSizeField({ form, disabled }: ComputeSizeFieldProps) {
                     />
                   )
                 })}
-                <div
-                  className={cn(
-                    'relative text-sm text-left flex flex-col gap-0 px-0 py-3 w-full h-[110px]',
-                    'bg-overlay rounded-md border p-2 hover:border-foreground-muted'
-                  )}
-                >
-                  <SupportLink
-                    queryParams={{
-                      projectRef: ref,
-                      category: SupportCategories.SALES_ENQUIRY,
-                      subject: 'Enquiry about larger instance sizes',
-                    }}
+                {!isHighAvailability && (
+                  <div
+                    className={cn(
+                      'relative text-sm text-left flex flex-col gap-0 px-0 py-3 w-full h-[110px]',
+                      'bg-overlay rounded-md border p-2 hover:border-control-hover'
+                    )}
                   >
-                    <div className="w-full flex flex-col gap-3 justify-between">
-                      <div className="relative px-3 flex justify-between">
-                        <ComputeBadge infraComputeSize=">16XL" />
+                    <SupportLink
+                      queryParams={{
+                        projectRef: ref,
+                        category: SupportCategories.SALES_ENQUIRY,
+                        subject: 'Enquiry about larger instance sizes',
+                      }}
+                    >
+                      <div className="w-full flex flex-col gap-3 justify-between">
+                        <div className="relative px-3 flex justify-between">
+                          <ComputeBadge infraComputeSize=">16XL" />
 
-                        <div className="flex items-center space-x-1 opacity-50 ">
-                          <span className="text-foreground-light text-sm">{$t('Contact Us')}</span>
-                        </div>
-                      </div>
-                      <div className="w-full">
-                        <div className="px-3 text-sm flex flex-col gap-1">
-                          <div className="text-foreground-light flex gap-2 items-center">
-                            <Microchip
-                              strokeWidth={1}
-                              size={14}
-                              className="text-foreground-lighter"
-                            />
-                            <span>{$t('Custom memory')}</span>
-                          </div>
-                          <div className="text-foreground-light flex gap-2 items-center">
-                            <CpuIcon
-                              strokeWidth={1}
-                              size={14}
-                              className="text-foreground-lighter"
-                            />
-                            <span>{$t('Custom CPU')}</span>
+                          <div className="flex items-center space-x-1 opacity-50 ">
+                            <span className="text-foreground-light text-sm">
+                              {$t('Contact Us')}
+                            </span>
                           </div>
                         </div>
+                        <div className="w-full">
+                          <div className="px-3 text-sm flex flex-col gap-1">
+                            <div className="text-foreground-light flex gap-2 items-center">
+                              <Microchip
+                                strokeWidth={1}
+                                size={14}
+                                className="text-foreground-lighter"
+                              />
+                              <span>{$t('Custom memory')}</span>
+                            </div>
+                            <div className="text-foreground-light flex gap-2 items-center">
+                              <CpuIcon
+                                strokeWidth={1}
+                                size={14}
+                                className="text-foreground-lighter"
+                              />
+                              <span>{$t('Custom CPU')}</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </SupportLink>
-                </div>
+                    </SupportLink>
+                  </div>
+                )}
               </>
             )}
           </RadioGroupCard>

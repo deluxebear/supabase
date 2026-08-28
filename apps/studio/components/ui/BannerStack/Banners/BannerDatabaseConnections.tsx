@@ -1,10 +1,14 @@
 import { LOCAL_STORAGE_KEYS } from 'common'
 import { useParams } from 'common/hooks'
+import Link from 'next/link'
 import { Badge, Button, WarningIcon } from 'ui'
 
 import { BannerCard } from '../BannerCard'
 import { useBannerStack } from '../BannerStackProvider'
-import { useFeaturePreviewModal } from '@/components/interfaces/App/FeaturePreview/FeaturePreviewContext'
+import {
+  useFeaturePreviewModal,
+  useIsDatabaseConnectionsEnabled,
+} from '@/components/interfaces/App/FeaturePreview/FeaturePreviewContext'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
@@ -19,6 +23,8 @@ export const BannerDatabaseConnections = () => {
     LOCAL_STORAGE_KEYS.DATABASE_CONNECTIONS_BANNER_DISMISSED(ref ?? ''),
     false
   )
+
+  const { enabled: isEnabled } = useIsDatabaseConnectionsEnabled()
 
   return (
     <BannerCard
@@ -75,16 +81,33 @@ export const BannerDatabaseConnections = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="default"
-            size="tiny"
-            onClick={() => {
-              track('database_connections_banner_cta_button_clicked', { isEnabled: false })
-              selectFeaturePreview(LOCAL_STORAGE_KEYS.UI_PREVIEW_DATABASE_CONNECTIONS)
-            }}
-          >
-            {$t('Enable Database Connections')}
-          </Button>
+          {isEnabled ? (
+            <Button
+              asChild
+              variant="default"
+              size="tiny"
+              onClick={() => {
+                setIsDismissed(true)
+                dismissBanner('database-connections-banner')
+                track('database_connections_banner_cta_button_clicked', { isEnabled })
+              }}
+            >
+              <Link href={`/project/${ref}/observability/connections`}>
+                {$t('Explore Database Connections')}
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              variant="default"
+              size="tiny"
+              onClick={() => {
+                selectFeaturePreview(LOCAL_STORAGE_KEYS.UI_PREVIEW_DATABASE_CONNECTIONS)
+                track('database_connections_banner_cta_button_clicked', { isEnabled: false })
+              }}
+            >
+              {$t('Enable Database Connections')}
+            </Button>
+          )}
         </div>
       </div>
     </BannerCard>

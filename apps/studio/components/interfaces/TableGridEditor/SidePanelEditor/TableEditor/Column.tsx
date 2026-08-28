@@ -60,6 +60,7 @@ interface ColumnProps {
   isNewRecord: boolean
   hasForeignKeys: boolean
   hasImportContent: boolean
+  shouldAutoFocusName?: boolean
   onUpdateColumn: (changes: Partial<ColumnField>) => void
   onRemoveColumn: () => void
   onEditForeignKey: (relation?: ForeignKey) => void
@@ -72,6 +73,7 @@ export const Column = ({
   isNewRecord = false,
   hasForeignKeys = false,
   hasImportContent = false,
+  shouldAutoFocusName = false,
   onUpdateColumn,
   onRemoveColumn,
   onEditForeignKey,
@@ -138,6 +140,7 @@ export const Column = ({
         <div className="flex w-[95%] items-center justify-between">
           <div className="h-4 w-px bg-border" />
           <Input
+            autoFocus={shouldAutoFocusName}
             aria-label={$t('Column name')}
             size="small"
             value={column.name}

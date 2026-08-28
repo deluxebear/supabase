@@ -4,6 +4,7 @@ import { type CloudProvider } from 'shared-data'
 import { Badge, FormControl, FormField, Switch, useWatch } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
+import { HIGH_AVAILABILITY_INSTANCE_SIZE } from './ProjectCreation.constants'
 import { CreateProjectForm } from './ProjectCreation.schema'
 import Panel from '@/components/ui/Panel'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
@@ -29,10 +30,12 @@ export const HighAvailabilityInput = ({
     cloudProvider: CloudProvider | undefined
     postgresVersionSelection: string | undefined
     dbRegion: string | null
+    instanceSize: string | null
   }>({
     cloudProvider: undefined,
     postgresVersionSelection: undefined,
     dbRegion: null,
+    instanceSize: null,
   })
 
   const handleHighAvailabilityChange = (checked: boolean) => {
@@ -56,6 +59,12 @@ export const HighAvailabilityInput = ({
         beforeHighAvailability.current.dbRegion = currentRegion ?? null
         setValue('dbRegion', highAvailabilityRegionName)
       }
+
+      const currentInstanceSize = getValues('instanceSize')
+      if (currentInstanceSize !== HIGH_AVAILABILITY_INSTANCE_SIZE) {
+        beforeHighAvailability.current.instanceSize = currentInstanceSize ?? null
+        setValue('instanceSize', HIGH_AVAILABILITY_INSTANCE_SIZE)
+      }
     } else {
       if (beforeHighAvailability.current.cloudProvider !== undefined) {
         setValue('cloudProvider', beforeHighAvailability.current.cloudProvider)
@@ -73,6 +82,11 @@ export const HighAvailabilityInput = ({
       if (beforeHighAvailability.current.dbRegion !== null) {
         setValue('dbRegion', beforeHighAvailability.current.dbRegion)
         beforeHighAvailability.current.dbRegion = null
+      }
+
+      if (beforeHighAvailability.current.instanceSize !== null) {
+        setValue('instanceSize', beforeHighAvailability.current.instanceSize)
+        beforeHighAvailability.current.instanceSize = null
       }
     }
   }

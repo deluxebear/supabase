@@ -35,7 +35,7 @@ export const DropReplicaConfirmationModal = ({
         <span>
           {$t('Remove the replica')}{' '}
           <InlineLink href={`/project/${projectRef}/settings/integrations`}>
-            {$t('PrivateLink association')}
+            {$t('PrivateLink connection')}
           </InlineLink>{' '}
           {$t('before dropping this read replica')}
         </span>

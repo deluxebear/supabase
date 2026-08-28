@@ -435,7 +435,7 @@ export const SchemaGraph = () => {
                 <div className="flex items-center gap-0">
                   <ButtonTooltip
                     variant="default"
-                    className="rounded-r-none border-r-0"
+                    className="rounded-r-none hover:z-10 focus-visible:z-10 focus-visible:rounded-r-sm"
                     icon={copied ? <Check data-testid="copy-sql-ready" /> : <Copy />}
                     onClick={copyAsSQL}
                     tooltip={{
@@ -461,11 +461,10 @@ export const SchemaGraph = () => {
                       <Button
                         variant="default"
                         size="tiny"
-                        className="rounded-l-none pl-1 pr-0"
+                        aria-label={$t('Export options')}
+                        className="shrink-0 rounded-l-none px-[4px] py-[5px] -ml-px focus-visible:z-10 focus-visible:rounded-l-sm"
                         icon={<ChevronDown size={12} />}
-                      >
-                        <span className="sr-only">{$t('Export options')}</span>
-                      </Button>
+                      />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-44">
                       <DropdownMenuItem

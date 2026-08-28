@@ -10,7 +10,7 @@
 //   pending row means an email went out).
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import type { JwtPayload } from '@supabase/supabase-js'
-import type { components } from 'api-types'
+import type { components, operations } from 'api-types'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
@@ -28,7 +28,9 @@ import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 type InvitationResponse = components['schemas']['InvitationResponse']
 type CreateInvitationBody = components['schemas']['CreateInvitationBody']
-type CreateInvitationResponse = components['schemas']['CreateInvitationResponse']
+type CreateInvitationResponse = NonNullable<
+  operations['InvitationsController_createInvitation']['responses'][201]['content']['application/json']
+>
 
 export default (req: NextApiRequest, res: NextApiResponse) =>
   apiWrapper(req, res, handler, { withAuth: true })

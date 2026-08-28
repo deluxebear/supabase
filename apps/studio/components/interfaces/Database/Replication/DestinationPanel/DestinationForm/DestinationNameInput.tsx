@@ -15,9 +15,21 @@ export const DestinationNameInput = ({ form }: DestinationNameInputProps) => {
       control={form.control}
       name="name"
       render={({ field }) => (
-        <FormItemLayout label={$t('Name')} layout="horizontal">
+        <FormItemLayout
+          label={$t('Name')}
+          layout="horizontal"
+          description={$t('Used to identify this pipeline in Supabase.')}
+        >
           <FormControl>
-            <Input {...field} placeholder={$t('My destination')} />
+            <Input
+              {...field}
+              autoFocus
+              placeholder={$t('My destination')}
+              data-1p-ignore
+              data-lpignore="true"
+              data-form-type="other"
+              data-bwignore
+            />
           </FormControl>
         </FormItemLayout>
       )}

@@ -17,7 +17,7 @@ export const NewTokenButton = ({ onCreateToken }: NewAccessTokenButtonProps) => 
     <>
       <div className="flex items-center">
         <Button
-          className="rounded-r-none px-3 hover:z-10 focus-visible:z-10"
+          className="rounded-r-none px-3 hover:z-10 focus-visible:z-10 focus-visible:rounded-r-sm"
           onClick={() => setVisible(true)}
         >
           {$t('Generate new token')}

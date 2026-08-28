@@ -18,6 +18,7 @@ import {
 
 import { ButtonTooltip } from '../ui/ButtonTooltip'
 import { useFeaturePreviewModal } from './App/FeaturePreview/FeaturePreviewContext'
+import { DevToolbarMenuGroup } from './DevToolbarMenuGroup'
 import { ProfileImage } from '@/components/ui/ProfileImage'
 import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
@@ -77,6 +78,7 @@ export const LocalDropdown = ({
           {$t('Feature previews')}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        <DevToolbarMenuGroup />
         <DropdownMenuGroup>
           <DropdownMenuLabel>{$t('Theme')}</DropdownMenuLabel>
           <DropdownMenuRadioGroup

@@ -7,13 +7,13 @@ import {
   CommandEmpty,
   CommandGroup,
   CommandInput,
-  CommandItem,
   CommandList,
   CommandSeparator,
   ScrollArea,
 } from 'ui'
 
 import { OrgCommandItem } from './OrgCommandItem'
+import { CommandItemLink } from '@/components/ui/CommandItemLink'
 import { t as $t } from '@/lib/i18n'
 import type { Organization } from '@/types'
 
@@ -110,22 +110,26 @@ export function OrganizationDropdownCommandContent({
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup>
-          <CommandItem className="cursor-pointer w-full" onSelect={() => onClose()}>
-            <Link href="/organizations" className="flex items-center gap-2 w-full">
-              {$t('All Organizations')}
-            </Link>
-          </CommandItem>
+          <CommandItemLink
+            href="/organizations"
+            className="cursor-pointer w-full gap-2"
+            onSelect={onClose}
+          >
+            {$t('All Organizations')}
+          </CommandItemLink>
         </CommandGroup>
         {organizationCreationEnabled && (
           <>
             <CommandSeparator />
             <CommandGroup>
-              <CommandItem className="cursor-pointer w-full" onSelect={() => onClose()}>
-                <Link href="/new" className="flex items-center gap-2 w-full">
-                  <Plus size={14} strokeWidth={1.5} />
-                  <p>{$t('New organization')}</p>
-                </Link>
-              </CommandItem>
+              <CommandItemLink
+                href="/new"
+                className="cursor-pointer w-full gap-2"
+                onSelect={onClose}
+              >
+                <Plus size={14} strokeWidth={1.5} />
+                <p>{$t('New organization')}</p>
+              </CommandItemLink>
             </CommandGroup>
           </>
         )}
