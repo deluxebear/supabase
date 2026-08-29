@@ -38,7 +38,7 @@
     "framer-motion": "^11.18.2",
     "icons": "workspace:*",
     "jotai": "^2.8.0",
-    "lucide-react": "*",
+    "lucide-react": "0.436.0",
     "monaco-editor": "catalog:",
     "next": "catalog:",
     "next-contentlayer2": "0.4.6",

@@ -91,7 +91,7 @@
     "katex": "^0.16.21",
     "libpg-query": "15.2.0",
     "lodash-es": "catalog:",
-    "lucide-react": "*",
+    "lucide-react": "0.436.0",
     "mdast": "^3.0.0",
     "mdast-util-from-markdown": "^1.2.0",
     "mdast-util-gfm": "^2.0.2",

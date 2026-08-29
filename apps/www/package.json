@@ -58,7 +58,7 @@
     "gray-matter": "^4.0.3",
     "gsap": "^3.13.0",
     "icons": "workspace:*",
-    "lucide-react": "*",
+    "lucide-react": "0.436.0",
     "markdown-toc": "^1.2.0",
     "marketing": "workspace:*",
     "mdast-util-from-markdown": "^2.0.2",

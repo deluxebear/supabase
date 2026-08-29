@@ -222,8 +222,8 @@ importers:
         specifier: ^2.8.0
         version: 2.20.2(@babel/core@7.29.7(supports-color@8.1.1))(@babel/template@7.29.7)(@types/react@19.2.14)(react@19.2.6)
       lucide-react:
-        specifier: '*'
-        version: 1.31.0(react@19.2.6)
+        specifier: 0.436.0
+        version: 0.436.0(react@19.2.6)
       markdown-wasm:
         specifier: ^1.2.0
         version: 1.2.0
@@ -463,8 +463,8 @@ importers:
         specifier: ^4.18.1
         version: 4.18.1
       lucide-react:
-        specifier: '*'
-        version: 1.31.0(react@19.2.6)
+        specifier: 0.436.0
+        version: 0.436.0(react@19.2.6)
       mdast:
         specifier: ^3.0.0
         version: 3.0.0
@@ -1508,8 +1508,8 @@ importers:
         specifier: ^2.8.0
         version: 2.20.2(@babel/core@7.29.7(supports-color@8.1.1))(@babel/template@7.29.7)(@types/react@19.2.14)(react@19.2.6)
       lucide-react:
-        specifier: '*'
-        version: 1.31.0(react@19.2.6)
+        specifier: 0.436.0
+        version: 0.436.0(react@19.2.6)
       monaco-editor:
         specifier: 0.52.2
         version: 0.52.2
@@ -1788,8 +1788,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/icons
       lucide-react:
-        specifier: '*'
-        version: 1.31.0(react@19.2.6)
+        specifier: 0.436.0
+        version: 0.436.0(react@19.2.6)
       markdown-toc:
         specifier: ^1.2.0
         version: 1.2.0
