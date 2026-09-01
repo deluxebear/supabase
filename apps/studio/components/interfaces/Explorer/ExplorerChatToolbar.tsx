@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n'
 import { Clipboard, MessageSquare, MoreVertical, Settings, Trash } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -21,7 +22,6 @@ import {
 import { AIAssistantMetadataWarning } from '@/components/ui/AIAssistantPanel/AIAssistantMetadataWarning'
 import type { AssistantChatHeaderProps } from '@/components/ui/AIAssistantPanel/AssistantChat'
 import { ShortcutPills } from '@/components/ui/ShortcutTooltip'
-import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { SHORTCUT_DEFINITIONS, SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -70,7 +70,7 @@ export const ExplorerChatToolbar = ({
     <div className="z-30 sticky top-0">
       <ExplorerToolbar aria-label={$t('Chat toolbar')}>
         <ExplorerToolbarIcon>
-          <MessageSquare />
+          <MessageSquare size={16} strokeWidth={2} />
         </ExplorerToolbarIcon>
         <ExplorerToolbarTitle onSaveTitle={handleSaveName}>{chat?.name ?? ''}</ExplorerToolbarTitle>
         <ExplorerToolbarActions>
@@ -78,7 +78,7 @@ export const ExplorerChatToolbar = ({
             <DropdownMenuTrigger asChild>
               <ExplorerToolbarAction
                 aria-label={$t('More options')}
-                icon={<MoreVertical />}
+                icon={<MoreVertical size={16} strokeWidth={2} />}
                 disabled={isChatLoading}
               />
             </DropdownMenuTrigger>

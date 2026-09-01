@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { Edit, Trash } from 'lucide-react'
@@ -47,7 +48,6 @@ import { useSchemaCreateMutation } from '@/data/database/schema-create-mutation'
 import { invalidateSchemasQuery, useSchemasQuery } from '@/data/database/schemas-query'
 import { useFDWCreateMutation } from '@/data/fdw/fdw-create-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import type { ResponseError } from '@/types'
 
@@ -289,7 +289,6 @@ export const CreateWrapperSheet = ({
                       <FormItemLayout
                         layout="vertical"
                         label={$t('Wrapper Name')}
-                        name="wrapper_name"
                         description={
                           wrapper_name.length > 0 ? (
                             <>
@@ -302,7 +301,7 @@ export const CreateWrapperSheet = ({
                         }
                       >
                         <FormControl>
-                          <Input id="wrapper_name" {...field} />
+                          <Input {...field} />
                         </FormControl>
                       </FormItemLayout>
                     )}

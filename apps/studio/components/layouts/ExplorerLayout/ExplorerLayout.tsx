@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Home, MessageCirclePlus, NotebookText, Plus, SquareCode } from 'lucide-react'
 import { ComponentProps, ReactNode, useEffect, useEffectEvent, useState } from 'react'
@@ -23,7 +24,6 @@ import {
   useCreateNotebook,
   useCreateQuery,
 } from '@/components/interfaces/Explorer/hooks'
-import { t as $t } from '@/lib/i18n'
 import {
   editorEntityTypes,
   EXPLORER_HOME_TAB,
@@ -154,7 +154,7 @@ const NewTabButton = () => {
       <DropdownMenuContent className="w-40" align="end">
         <DropdownMenuItem className="gap-x-2" onClick={() => createQuery()}>
           <SquareCode size={14} />
-          <span>{$t('New query')}</span>
+          <span>{$t('Run SQL')}</span>
         </DropdownMenuItem>
         <DropdownMenuItem className="gap-x-2" onClick={() => createNotebook()}>
           <NotebookText size={14} />

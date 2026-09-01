@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n'
 import type { UIMessage as MessageType } from '@ai-sdk/react'
 import { useChat } from '@ai-sdk/react'
 import { lastAssistantMessageIsCompleteWithApprovalResponses } from 'ai'
@@ -47,7 +48,6 @@ import {
 } from '@/lib/ai/model.utils'
 import { IS_PLATFORM } from '@/lib/constants'
 import { uuidv4 } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import type { AssistantModel, SqlSnippet } from '@/state/ai-assistant-state'
 import { useAiAssistantState, useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
@@ -463,6 +463,19 @@ export const AssistantChat = ({
     }
   }, [composerContext?.initialInput])
 
+  let placeholder: string
+  if (hasMessages && isSupportChat) {
+    placeholder = 'Share details so the assistant can help with your support request...'
+  } else if (hasMessages) {
+    placeholder = 'Ask a follow up question...'
+  } else if ((composerContext?.sqlSnippets ?? []).length > 0) {
+    placeholder = 'Ask a question or make a change...'
+  } else if (isSupportChat) {
+    placeholder = 'Describe your support issue...'
+  } else {
+    placeholder = 'Chat to Postgres...'
+  }
+
   return (
     <ErrorBoundary
       message="Something went wrong with the AI Assistant"
@@ -615,102 +628,89 @@ export const AssistantChat = ({
           )}
         </AnimatePresence>
 
-        <div className="px-3 pb-3 z-20 relative w-full max-w-3xl mx-auto flex flex-col gap-y-3">
-          {isSupportChat && !isSupportChatClosed && (
-            <div>
-              <div className="mb-3 border-t" />
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="tiny"
-                  disabled={!supportConversationId}
-                  onClick={() => state.setSupportLifecycleStatus(chatId, 'escalated')}
-                >
-                  {$t('Escalate to human')}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="tiny"
-                  disabled={!supportConversationId}
-                  onClick={() => state.setSupportLifecycleStatus(chatId, 'user_resolved')}
-                >
-                  {$t('Resolve')}
-                </Button>
+        <div className="relative z-20 w-full px-7 pb-3">
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-y-3">
+            {isSupportChat && !isSupportChatClosed && (
+              <div>
+                <div className="mb-3 border-t" />
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="tiny"
+                    disabled={!supportConversationId}
+                    onClick={() => state.setSupportLifecycleStatus(chatId, 'escalated')}
+                  >
+                    {$t('Escalate to human')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="tiny"
+                    disabled={!supportConversationId}
+                    onClick={() => state.setSupportLifecycleStatus(chatId, 'user_resolved')}
+                  >
+                    {$t('Resolve')}
+                  </Button>
+                </div>
               </div>
-            </div>
-          )}
-
-          {disablePrompts && (
-            <Admonition
-              showIcon={false}
-              type="default"
-              title={$t('Assistant has been temporarily disabled')}
-              description={$t("We're currently looking into getting it back online")}
-            />
-          )}
-
-          {isSuccess && !isApiKeySet && (
-            <Admonition
-              type="default"
-              title={$t('OpenAI API key not set')}
-              description={
-                <Markdown
-                  content={
-                    'Add your `OPENAI_API_KEY` to your environment variables to use the AI Assistant.'
-                  }
-                />
-              }
-            />
-          )}
-
-          <AssistantChatForm
-            textAreaRef={inputRef}
-            className={cn(
-              'z-20',
-              '[&>form>textarea]:text-base [&>form>textarea]:md:text-sm [&>form>textarea]:border',
-              '[&>form>textarea]:rounded-md [&>form>textarea]:outline-hidden!',
-              '[&>form>textarea]:ring-offset-0! [&>form>textarea]:ring-0!'
             )}
-            loading={isChatLoading}
-            isEditing={!!editingMessageId}
-            disabled={isChatInputDisabled}
-            placeholder={
-              hasMessages
-                ? isSupportChat
-                  ? 'Share details so the assistant can help with your support request...'
-                  : 'Ask a follow up question...'
-                : (composerContext?.sqlSnippets ?? []).length > 0
-                  ? 'Ask a question or make a change...'
-                  : isSupportChat
-                    ? 'Describe your support issue...'
-                    : 'Chat to Postgres...'
-            }
-            value={value}
-            onValueChange={(e) => {
-              setValue(e.target.value)
-              onInputChange?.(e.target.value)
-            }}
-            onSubmit={(finalMessage) => {
-              sendMessageToAssistant(finalMessage)
-            }}
-            onStop={() => {
-              stop()
-              // to save partial responses from the AI
-              const lastMessage = chatMessages[chatMessages.length - 1]
-              if (lastMessage && lastMessage.role === 'assistant') {
-                state.updateMessage(lastMessage, chatId)
-              }
-            }}
-            sqlSnippets={composerContext?.sqlSnippets}
-            onRemoveSnippet={(index) => {
-              const newSnippets = [...(composerContext?.sqlSnippets ?? [])]
-              newSnippets.splice(index, 1)
-              composerContext?.onSetSqlSnippets?.(newSnippets)
-            }}
-            includeSnippetsInMessage={includeSnippetsInMessage}
-            selectedModel={selectedModel}
-            onSelectModel={(model) => snap.setModel(model)}
-          />
+
+            {disablePrompts && (
+              <Admonition
+                showIcon={false}
+                type="default"
+                title={$t('Assistant has been temporarily disabled')}
+                description={$t("We're currently looking into getting it back online")}
+              />
+            )}
+
+            {isSuccess && !isApiKeySet && (
+              <Admonition
+                type="default"
+                title={$t('OpenAI API key not set')}
+                description={
+                  <Markdown
+                    content={
+                      'Add your `OPENAI_API_KEY` to your environment variables to use the AI Assistant.'
+                    }
+                  />
+                }
+              />
+            )}
+
+            <AssistantChatForm
+              textAreaRef={inputRef}
+              className="z-20"
+              loading={isChatLoading}
+              isEditing={!!editingMessageId}
+              disabled={isChatInputDisabled}
+              placeholder={placeholder}
+              value={value}
+              onValueChange={(e) => {
+                setValue(e.target.value)
+                onInputChange?.(e.target.value)
+              }}
+              onSubmit={(finalMessage) => {
+                sendMessageToAssistant(finalMessage)
+              }}
+              onStop={() => {
+                stop()
+                // to save partial responses from the AI
+                const lastMessage = chatMessages[chatMessages.length - 1]
+                if (lastMessage && lastMessage.role === 'assistant') {
+                  state.updateMessage(lastMessage, chatId)
+                }
+              }}
+              sqlSnippets={composerContext?.sqlSnippets}
+              onRemoveSnippet={(index) => {
+                const newSnippets = [...(composerContext?.sqlSnippets ?? [])]
+                newSnippets.splice(index, 1)
+                composerContext?.onSetSqlSnippets?.(newSnippets)
+              }}
+              includeSnippetsInMessage={includeSnippetsInMessage}
+              selectedModel={selectedModel}
+              onSelectModel={(model) => snap.setModel(model)}
+            />
+          </div>
         </div>
       </div>
     </ErrorBoundary>

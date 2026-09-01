@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n'
 import dayjs from 'dayjs'
 import type { Control, UseFormSetValue } from 'react-hook-form'
 import {
@@ -28,7 +29,6 @@ import {
   getDefaultCustomExpiryDate,
   type TokenFormValues,
 } from './NewScopedTokenForm.utils'
-import { t as $t } from '@/lib/i18n'
 
 interface TokenDetailsProps {
   control: Control<TokenFormValues>
@@ -62,7 +62,7 @@ export const TokenDetails = ({ control, setValue }: TokenDetailsProps) => {
         render={({ field }) => (
           <FormItemLayout name="tokenName" label={$t('Name')} layout="flex-row-reverse">
             <FormControl>
-              <Input id="tokenName" {...field} placeholder={$t('e.g. CI deploy token')} />
+              <Input {...field} placeholder={$t('e.g. CI deploy token')} />
             </FormControl>
           </FormItemLayout>
         )}
@@ -73,11 +73,11 @@ export const TokenDetails = ({ control, setValue }: TokenDetailsProps) => {
         name="expiresAt"
         control={control}
         render={({ field }) => (
-          <FormItemLayout name="expiresAt" label={$t('Expires in')} layout="flex-row-reverse">
+          <FormItemLayout id="expiresAt" label={$t('Expires in')} layout="flex-row-reverse">
             <div className="flex gap-2 w-full">
               <FormControl className="grow">
                 <Select value={field.value} onValueChange={handleExpiryChange}>
-                  <SelectTrigger>
+                  <SelectTrigger id="expiresAt">
                     <SelectValue placeholder={$t('Select an expiry')} />
                   </SelectTrigger>
                   <SelectContent>

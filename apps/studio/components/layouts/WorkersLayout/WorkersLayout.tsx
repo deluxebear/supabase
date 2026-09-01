@@ -27,6 +27,12 @@ const useGenerateWorkersMenu = (): ProductMenuGroup[] => {
             url: `/project/${projectRef}/workers`,
             items: [],
           },
+          {
+            name: 'Secrets',
+            key: 'secrets',
+            url: `/project/${projectRef}/workers/secrets`,
+            items: [],
+          },
         ],
       },
     ],

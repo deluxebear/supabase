@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n'
 import { MessageSquarePlus, NotebookText, SquareCode } from 'lucide-react'
 import { useState } from 'react'
 
@@ -5,7 +6,6 @@ import { useCreateChat, useCreateNotebook, useCreateQuery } from './hooks'
 import { CHAT_TEMPLATES, NOTEBOOK_TEMPLATES } from './templates'
 import { ActionCard } from '@/components/layouts/Tabs/ActionCard'
 import { AssistantChatForm } from '@/components/ui/AIAssistantPanel/AssistantChatForm'
-import { t as $t } from '@/lib/i18n'
 import type { AssistantModel } from '@/state/ai-assistant-state'
 
 export const ExplorerHomeTab = () => {
@@ -40,18 +40,18 @@ export const ExplorerHomeTab = () => {
         <section className="mt-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <ActionCard
+              icon={<SquareCode className="h-4 w-4 text-foreground" strokeWidth={1.5} />}
+              title={$t('Run SQL')}
+              description={$t('Write and run an ad-hoc query')}
+              bgColor="bg-blue-500"
+              onClick={() => createQuery()}
+            />
+            <ActionCard
               icon={<NotebookText className="h-4 w-4 text-foreground" strokeWidth={1.5} />}
               title={$t('Create a notebook')}
               description={$t('Combine notes, queries, and results')}
               bgColor="bg-blue-500"
               onClick={() => createNotebook()}
-            />
-            <ActionCard
-              icon={<SquareCode className="h-4 w-4 text-foreground" strokeWidth={1.5} />}
-              title={$t('Run SQL')}
-              description={$t('Write and run an ad-hoc query')}
-              bgColor="bg-blue-500"
-              onClick={createQuery}
             />
           </div>
         </section>

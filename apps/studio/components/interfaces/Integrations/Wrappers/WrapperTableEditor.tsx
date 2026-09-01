@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Check, ChevronsUpDown, XIcon } from 'lucide-react'
 import { useEffect, useId, useMemo, useState } from 'react'
@@ -53,8 +54,6 @@ import { ActionBar } from '@/components/interfaces/TableGridEditor/SidePanelEdit
 import { useSchemasQuery } from '@/data/database/schemas-query'
 import { useSchemasFilteredForHighAvailability } from '@/hooks/misc/useHighAvailability'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
-
 export type WrapperTableEditorProps = {
   visible: boolean
   onCancel: () => void
@@ -195,7 +194,7 @@ const Option = ({ option, control }: { option: TableOption; control: Control<Fie
         name={option.name}
         defaultValue={option.defaultValue}
         render={({ field }) => (
-          <FormItemLayout layout="vertical" label={option.label} name={option.name}>
+          <FormItemLayout layout="vertical" label={option.label}>
             <FormControl>
               <Select value={field.value} onValueChange={field.onChange}>
                 <SelectTrigger>
@@ -223,9 +222,9 @@ const Option = ({ option, control }: { option: TableOption; control: Control<Fie
       name={option.name}
       defaultValue={option.defaultValue ?? ''}
       render={({ field }) => (
-        <FormItemLayout layout="vertical" label={option.label} name={option.name}>
+        <FormItemLayout layout="vertical" label={option.label}>
           <FormControl>
-            <Input {...field} id={option.name} placeholder={option.placeholder ?? ''} />
+            <Input {...field} placeholder={option.placeholder ?? ''} />
           </FormControl>
         </FormItemLayout>
       )}
@@ -352,7 +351,6 @@ const TableForm = ({
             <FormItemLayout layout="vertical" label={$t('Select a schema for the foreign table')}>
               <FormControl>
                 <Select
-                  name="schema"
                   value={field.value}
                   onValueChange={(schema) => {
                     field.onChange(schema)
@@ -383,9 +381,9 @@ const TableForm = ({
             control={form.control}
             name="schema_name"
             render={({ field }) => (
-              <FormItemLayout name="schema_name" layout="vertical" label={$t('Schema name')}>
+              <FormItemLayout layout="vertical" label={$t('Schema name')}>
                 <FormControl>
-                  <Input {...field} id="schema_name" />
+                  <Input {...field} />
                 </FormControl>
               </FormItemLayout>
             )}
@@ -398,12 +396,11 @@ const TableForm = ({
           render={({ field }) => (
             <FormItemLayout
               layout="vertical"
-              name="table_name"
               label={$t('Table name')}
               description={$t('You can query from this table after the wrapper is enabled.')}
             >
               <FormControl>
-                <Input {...field} id="table_name" />
+                <Input {...field} />
               </FormControl>
             </FormItemLayout>
           )}
@@ -475,13 +472,9 @@ const TableForm = ({
                   control={form.control}
                   name={`columns.${columnIndex}.name`}
                   render={({ field }) => (
-                    <FormItemLayout
-                      layout="vertical"
-                      name={`columns.${columnIndex}.name`}
-                      label={$t('Name')}
-                    >
+                    <FormItemLayout layout="vertical" label={$t('Name')}>
                       <FormControl>
-                        <Input {...field} id={`columns.${columnIndex}.name`} />
+                        <Input {...field} />
                       </FormControl>
                     </FormItemLayout>
                   )}

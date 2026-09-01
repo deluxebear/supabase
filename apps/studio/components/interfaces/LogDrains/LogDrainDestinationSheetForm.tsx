@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { IS_PLATFORM } from 'common'
 import Link from 'next/link'
@@ -56,7 +57,6 @@ import { TaxDisclaimer } from '@/components/interfaces/Billing/TaxDisclaimer'
 import { Shortcut } from '@/components/ui/Shortcut'
 import { LogDrainData } from '@/data/log-drains/log-drains-query'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
 import { httpEndpointUrlSchema } from '@/lib/validation/http-url'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -503,16 +503,8 @@ export function LogDrainDestinationSheetForm({
                                 onValueChange={field.onChange}
                                 value={field.value}
                               >
-                                <FormItem asChild>
-                                  <FormControl>
-                                    <RadioGroupCardItem value="http1" label={$t('HTTP/1')} />
-                                  </FormControl>
-                                </FormItem>
-                                <FormItem asChild>
-                                  <FormControl>
-                                    <RadioGroupCardItem value="http2" label={$t('HTTP/2')} />
-                                  </FormControl>
-                                </FormItem>
+                                <RadioGroupCardItem value="http1" label={$t('HTTP/1')} />
+                                <RadioGroupCardItem value="http2" label={$t('HTTP/2')} />
                               </RadioGroupCard>
                             </FormControl>
                           </FormItemLayout>

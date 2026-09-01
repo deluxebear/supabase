@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n'
 import {
   DndContext,
   DragEndEvent,
@@ -72,7 +73,6 @@ import {
 import { useUpsertNotebookMutation } from '@/data/content/notebooks/notebook-upsert-mutation'
 import { acceptUntrustedLogsSql } from '@/data/logs/safe-analytics-sql'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
-import { t as $t } from '@/lib/i18n'
 import {
   getNotebooksStateSnapshot,
   useCurrentNotebook,
@@ -360,12 +360,18 @@ export const ExplorerNotebookTab = () => {
     <div className="flex flex-col h-full bg-surface-100">
       <ExplorerToolbar className="px-4">
         <ExplorerToolbarIcon>
-          <NotebookText size={14} className="text-foreground-light" />
+          <NotebookText size={16} strokeWidth={2} />
         </ExplorerToolbarIcon>
         <ExplorerToolbarTitle onSaveTitle={handleSaveTitle}>{name ?? ''}</ExplorerToolbarTitle>
         <ExplorerToolbarActions>
           <ExplorerToolbarAction
-            icon={<AiIconAnimation size={16} />}
+            className="group"
+            icon={
+              <AiIconAnimation
+                size={16}
+                className="text-tertiary-foreground group-hover:text-brand"
+              />
+            }
             loading={isCreating}
             disabled={cells.length === 0}
             tooltip={cells.length === 0 ? 'Add a cell to the notebook to analyze it' : undefined}
@@ -375,7 +381,7 @@ export const ExplorerNotebookTab = () => {
           </ExplorerToolbarAction>
           <ExplorerToolbarAction
             aria-label={$t('Save changes')}
-            icon={<Save />}
+            icon={<Save size={16} strokeWidth={2} />}
             tooltip={$t('Save changes')}
             loading={isUpdating}
             onClick={handleSaveNotebook}
@@ -383,7 +389,10 @@ export const ExplorerNotebookTab = () => {
           <ExplorerToolbarActions>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <ExplorerToolbarAction aria-label={$t('More options')} icon={<MoreVertical />} />
+                <ExplorerToolbarAction
+                  aria-label={$t('More options')}
+                  icon={<MoreVertical size={16} strokeWidth={2} />}
+                />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem
@@ -406,7 +415,7 @@ export const ExplorerNotebookTab = () => {
           </ExplorerToolbarActions>
           <ExplorerToolbarAction
             aria-label={$t('Run notebook')}
-            icon={<Play />}
+            icon={<Play size={16} strokeWidth={2} />}
             tooltip={$t('Run notebook')}
             loading={isRunningNotebook}
             disabled={queryCellIds.length === 0}
@@ -450,6 +459,7 @@ export const ExplorerNotebookTab = () => {
                           key={cell._id}
                           cell={cell}
                           onEdit={persistNotebookTab}
+                          onPrettifyQuery={() => queryCellRefs.current.get(cell._id)?.prettify()}
                           ref={(instance) => {
                             if (instance) queryCellRefs.current.set(cell._id, instance)
                             else queryCellRefs.current.delete(cell._id)

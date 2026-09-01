@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n'
 import Link from 'next/link'
 import { Button, Card, CardContent } from 'ui'
 import {
@@ -16,8 +17,6 @@ import { useProjectPauseStatusQuery } from '@/data/projects/project-pause-status
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
-
 export const Project = () => {
   const { data: project } = useSelectedProjectQuery()
   const isBranch = Boolean(project?.parent_project_ref)
@@ -73,7 +72,7 @@ export const Project = () => {
                 <div>
                   <p className="text-sm">{primaryActionLabel}</p>
                   <div className="max-w-[420px]">
-                    <p className="text-sm text-foreground-light">{primaryActionDescription}</p>
+                    <p className="text-sm text-foreground-lighter">{primaryActionDescription}</p>
                   </div>
                 </div>
                 {isPaused ? (
@@ -101,7 +100,7 @@ export const Project = () => {
                       {$t('Pause')} {entityLabel}
                     </p>
                     <div className="max-w-[420px]">
-                      <p className="text-sm text-foreground-light">
+                      <p className="text-sm text-foreground-lighter">
                         {$t('Your')} {entityLabel}{' '}
                         {$t('will not be accessible while it is paused.')}
                       </p>

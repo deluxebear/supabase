@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n'
 import { BarChart2, LineChart, Settings2, Table } from 'lucide-react'
 import { useEffect, useEffectEvent, useMemo } from 'react'
 import {
@@ -29,7 +30,6 @@ import { ExplorerToolbarAction } from '../ExplorerToolbar'
 import { type QueryDisplay, type QueryResult } from '../types'
 import { checkHasNonPositiveValues } from '@/components/ui/QueryBlock/QueryBlock.utils'
 import { MAX_CHART_Y_SERIES, type ChartConfig } from '@/data/content/notebooks/notebook-schema'
-import { t as $t } from '@/lib/i18n'
 
 interface DisplaySettingsButtonProps {
   display: QueryDisplay
@@ -107,7 +107,7 @@ export const DisplaySettingsButton = ({
       <PopoverTrigger asChild>
         <ExplorerToolbarAction
           disabled={disabled}
-          icon={<Settings2 />}
+          icon={<Settings2 size={16} strokeWidth={2} />}
           tooltip={$t('Result settings')}
         />
       </PopoverTrigger>

@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n'
 import { Copy, Expand } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import DataGrid, { CalculatedColumn, RenderCellProps } from 'react-data-grid'
@@ -18,8 +19,6 @@ import {
 } from './DataGridResults.utils'
 import { ResultCell } from './ResultCell'
 import { handleCellKeyDown } from '@/components/grid/SupabaseGrid.utils'
-import { t as $t } from '@/lib/i18n'
-
 export const DataGridResults = ({ rows }: { rows: readonly ResultRow[] }) => {
   const [expandedCell, setExpandedCell] = useState<{ column: string; value: unknown } | null>(null)
   const contextMenuCellRef = useRef<{ column: string; value: unknown } | null>(null)
@@ -44,7 +43,11 @@ export const DataGridResults = ({ rows }: { rows: readonly ResultRow[] }) => {
   }, [])
 
   const columnRender = (name: string) => {
-    return <div className="flex h-full items-center justify-center font-mono text-xs">{name}</div>
+    return (
+      <div className="flex h-full items-center overflow-hidden text-ellipsis text-xs select-text text-foreground">
+        {name}
+      </div>
+    )
   }
 
   const columns: CalculatedColumn<ResultRow>[] = useMemo(
@@ -81,7 +84,7 @@ export const DataGridResults = ({ rows }: { rows: readonly ResultRow[] }) => {
   return (
     <>
       {rows.length === 0 ? (
-        <p className="px-4 py-3 font-mono text-sm text-foreground-light">
+        <p className="px-4 py-3 font-sans text-sm text-foreground-light">
           {$t('Success. No rows returned')}
         </p>
       ) : (

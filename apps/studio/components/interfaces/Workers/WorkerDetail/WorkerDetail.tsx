@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'common'
 import { Container, Package } from 'lucide-react'
@@ -34,8 +35,6 @@ import { AlertError } from '@/components/ui/AlertError'
 import type { WorkerLogStream } from '@/data/workers/worker-logs-query'
 import { workerQueryOptions } from '@/data/workers/worker-query'
 import { PRODUCT_NAME } from '@/lib/constants/workers'
-import { t as $t } from '@/lib/i18n'
-
 type WorkerTab = 'overview' | 'invocations' | 'logs' | 'activity'
 const WORKER_TABS: WorkerTab[] = ['overview', 'invocations', 'logs', 'activity']
 
@@ -123,7 +122,7 @@ export const WorkerDetail = () => {
               {worker.imageVersion !== undefined && (
                 <span className="flex items-center gap-2 text-foreground-light">
                   <Package size={14} strokeWidth={1.5} className="text-foreground-lighter" />
-                  {$t('Image')} {worker.imageVersion}
+                  {$t('Version')} {worker.imageVersion}
                 </span>
               )}
             </PageHeaderDescription>

@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff } from 'lucide-react'
 import { parseAsString, useQueryState } from 'nuqs'
@@ -27,7 +28,6 @@ import { useVaultSecretDecryptedValueQuery } from '@/data/vault/vault-secret-dec
 import { useVaultSecretUpdateMutation } from '@/data/vault/vault-secret-update-mutation'
 import { useVaultSecretsQuery } from '@/data/vault/vault-secrets-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
 import type { VaultSecret } from '@/types'
 
 const SecretSchema = z.object({
@@ -147,7 +147,7 @@ export const EditSecretModal = () => {
                     render={({ field }) => (
                       <FormItemLayout name="name" label={$t('Name')}>
                         <FormControl>
-                          <Input id="name" {...field} />
+                          <Input {...field} />
                         </FormControl>
                       </FormItemLayout>
                     )}
@@ -163,7 +163,7 @@ export const EditSecretModal = () => {
                         labelOptional="Optional"
                       >
                         <FormControl>
-                          <Input id="description" {...field} data-lpignore="true" />
+                          <Input {...field} data-lpignore="true" />
                         </FormControl>
                       </FormItemLayout>
                     )}
@@ -174,10 +174,9 @@ export const EditSecretModal = () => {
                     control={form.control}
                     render={({ field }) => (
                       <FormItemLayout name="secret" label={$t('Secret value')}>
-                        <FormControl>
-                          <div className="relative">
+                        <div className="relative">
+                          <FormControl>
                             <Textarea
-                              id="secret"
                               {...field}
                               rows={1}
                               ref={(el) => {
@@ -201,18 +200,16 @@ export const EditSecretModal = () => {
                                   Math.max(40, e.currentTarget.scrollHeight) + 'px'
                               }}
                             />
-                            <Button
-                              variant="default"
-                              title={showSecretValue ? `Hide secret value` : `Show secret value`}
-                              aria-label={
-                                showSecretValue ? `Hide secret value` : `Show secret value`
-                              }
-                              className="absolute right-1 top-1 w-7"
-                              icon={showSecretValue ? <EyeOff /> : <Eye />}
-                              onClick={() => setShowSecretValue(!showSecretValue)}
-                            />
-                          </div>
-                        </FormControl>
+                          </FormControl>
+                          <Button
+                            variant="default"
+                            title={showSecretValue ? `Hide secret value` : `Show secret value`}
+                            aria-label={showSecretValue ? `Hide secret value` : `Show secret value`}
+                            className="absolute right-1 top-1 w-7"
+                            icon={showSecretValue ? <EyeOff /> : <Eye />}
+                            onClick={() => setShowSecretValue(!showSecretValue)}
+                          />
+                        </div>
                       </FormItemLayout>
                     )}
                   />

@@ -1,3 +1,4 @@
+import { t as $t } from '@/lib/i18n'
 import { ReactNode } from 'react'
 import { Badge } from 'ui'
 import { Admonition } from 'ui-patterns/Admonition'
@@ -18,9 +19,8 @@ import { LISTENING_PORT, WORKERS_REGION_LABEL } from '../Workers.constants'
 import type { Worker } from '../Workers.types'
 import { formatSize, getRuntimeMeta } from '../Workers.utils'
 import { buildWorkerCliCommands } from '../workerSnippets'
-import { WorkerSnippetTabs } from '../WorkerSnippetTabs'
+import { WORKER_CALL_TABS, WorkerSnippetTabs } from '../WorkerSnippetTabs'
 import { CLI_NAME } from '@/lib/constants/workers'
-import { t as $t } from '@/lib/i18n'
 
 interface WorkerOverviewTabProps {
   worker: Worker
@@ -157,7 +157,7 @@ export const WorkerOverviewTab = ({ worker }: WorkerOverviewTabProps) => {
               <RuntimeBadge runtime={worker.runtime} />
             </SettingsRow>
             {worker.imageVersion !== undefined && (
-              <SettingsRow label={$t('Image version')}>
+              <SettingsRow label={$t('Version')}>
                 <span className="font-mono text-xs text-foreground-light">
                   {worker.imageVersion}
                 </span>
@@ -217,9 +217,7 @@ export const WorkerOverviewTab = ({ worker }: WorkerOverviewTabProps) => {
           <PageSectionSummary>
             <PageSectionTitle>{$t('How to call')}</PageSectionTitle>
             <PageSectionDescription>
-              {$t(
-                'Call the worker over its gateway URL. Pass your project API key as a bearer token.'
-              )}
+              {$t('Call the worker over its gateway URL.')}
             </PageSectionDescription>
           </PageSectionSummary>
         </PageSectionMeta>
@@ -232,7 +230,7 @@ export const WorkerOverviewTab = ({ worker }: WorkerOverviewTabProps) => {
               access: worker.access,
               instances: worker.declaredInstances,
             }}
-            tabs={['cli', 'js', 'python']}
+            tabs={WORKER_CALL_TABS}
           />
         </PageSectionContent>
       </PageSection>

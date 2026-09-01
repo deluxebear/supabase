@@ -1,5 +1,6 @@
+import { t as $t } from '@/lib/i18n'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import { useParams } from 'common'
+import { useFlag, useParams } from 'common'
 import { Search } from 'lucide-react'
 import { parseAsString, useQueryState } from 'nuqs'
 import { useEffect, useMemo, useState } from 'react'
@@ -24,10 +25,9 @@ import { useSecretsDeleteMutation } from '@/data/secrets/secrets-delete-mutation
 import { useSecretsQuery } from '@/data/secrets/secrets-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
-
 export const EdgeFunctionSecrets = () => {
   const { ref: projectRef } = useParams()
+  const workersEnabled = useFlag('workers')
   const [searchString, setSearchString] = useState('')
 
   const { can: canReadSecrets, isLoading: isLoadingSecretsPermissions } = useAsyncCheckPermissions(
@@ -236,11 +236,19 @@ export const EdgeFunctionSecrets = () => {
           }
         }}
       >
-        <p className="text-sm">
-          {$t(
-            'Ensure none of your edge functions are actively using this secret before deleting it. This action cannot be undone.'
-          )}
-        </p>
+        {workersEnabled ? (
+          <p className="text-sm">
+            {$t('Ensure none of your')} <span className="font-medium">{$t('edge functions')}</span>{' '}
+            or <span className="font-medium">workers</span>{' '}
+            {$t('are actively using this secret before deleting it. This action cannot be undone.')}
+          </p>
+        ) : (
+          <p className="text-sm">
+            {$t(
+              'Ensure none of your edge functions are actively using this secret before deleting it. This action cannot be undone.'
+            )}
+          </p>
+        )}
       </ConfirmationModal>
     </>
   )
