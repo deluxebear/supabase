@@ -86,7 +86,6 @@ export const RowSelectionHeader = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <ButtonTooltip
-                    variant="default"
                     size="tiny"
                     icon={<Copy size={12} />}
                     className="w-7"

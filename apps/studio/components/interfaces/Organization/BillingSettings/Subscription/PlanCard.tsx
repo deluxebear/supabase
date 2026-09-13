@@ -65,7 +65,7 @@ export function PlanCard({
   const gaps: GapFeature[] = hasPlanGaps(variant) ? (GAPS_BY_PLAN_ID[plan.id] ?? []) : []
 
   const ctaButton = isCurrentPlan ? (
-    <Button block disabled variant="default">
+    <Button block disabled>
       {$t('Current plan')}
     </Button>
   ) : !canUpdateSubscription &&

@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { safeSql, type SafeSqlFragment } from '@supabase/pg-meta'
 import { wrapWithRollback } from '@supabase/pg-meta/src/query'
 import { useParams } from 'common'
@@ -31,6 +30,7 @@ import { FilterPopover } from '@/components/ui/FilterPopover'
 import { TwoOptionToggle } from '@/components/ui/TwoOptionToggle'
 import { useExecuteSqlMutation } from '@/data/sql/execute-sql-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -368,20 +368,20 @@ export const QueryInsightsTable = ({
               <Tabs value={filter} onValueChange={(v) => setFilter(v as IssueFilter)}>
                 <TabsList className="flex gap-x-4 rounded-none mt-0! pt-0 border-none!">
                   <TabsTrigger value="all" className="text-xs py-3 border-b font-mono uppercase">
-                    
-                                                          {$t('All')}{triageItems.length > 0 && ` (${triageItems.length})`}
+                    {$t('All')}
+                    {triageItems.length > 0 && ` (${triageItems.length})`}
                   </TabsTrigger>
                   <TabsTrigger value="error" className="text-xs py-3 border-b font-mono uppercase">
-                    
-                                                          {$t('Errors')}{errorCount > 0 && ` (${errorCount})`}
+                    {$t('Errors')}
+                    {errorCount > 0 && ` (${errorCount})`}
                   </TabsTrigger>
                   <TabsTrigger value="index" className="text-xs py-3 border-b font-mono uppercase">
-                    
-                                                          {$t('Index')}{indexCount > 0 && ` (${indexCount})`}
+                    {$t('Index')}
+                    {indexCount > 0 && ` (${indexCount})`}
                   </TabsTrigger>
                   <TabsTrigger value="slow" className="text-xs py-3 border-b font-mono uppercase">
-                    
-                                                          {$t('Slow')}{slowCount > 0 && ` (${slowCount})`}
+                    {$t('Slow')}
+                    {slowCount > 0 && ` (${slowCount})`}
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -428,14 +428,12 @@ export const QueryInsightsTable = ({
           ].join(' ')}
         >
           <Button
-            variant="default"
             size="tiny"
             className="rounded-full shadow-md"
             onClick={() => onCurrentSelectQuery?.(null)}
           >
-            
-                                  {$t('Clear query')}
-                                </Button>
+            {$t('Clear query')}
+          </Button>
         </div>
         {isLoading ? (
           <div className="px-6 py-4">

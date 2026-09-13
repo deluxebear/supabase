@@ -60,7 +60,9 @@ export const CreateNewAPIKeysButton = () => {
 
   return (
     <AlertDialog open={createKeysDialogOpen} onOpenChange={setCreateKeysDialogOpen}>
-      <Button onClick={() => setCreateKeysDialogOpen(true)}>{$t('Create new API keys')}</Button>
+      <Button variant="primary" onClick={() => setCreateKeysDialogOpen(true)}>
+        {$t('Create new API keys')}
+      </Button>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{$t('Create new API keys')}</AlertDialogTitle>

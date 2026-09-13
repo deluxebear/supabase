@@ -273,7 +273,7 @@ export function flagInvalidFileImport(file: File): boolean {
       <div className="space-y-1">
         <p>{$t('The dashboard currently only supports importing of CSVs below 100MB.')}</p>
         <p>{$t('For bulk data loading, we recommend doing so directly through the database.')}</p>
-        <Button asChild variant="default" icon={<ExternalLink />} className="mt-2!">
+        <Button asChild icon={<ExternalLink />} className="mt-2!">
           <Link
             href={`${DOCS_URL}/guides/database/tables#bulk-data-loading`}
             target="_blank"

@@ -1,9 +1,9 @@
-import { t as $t } from '@/lib/i18n'
 import { Expand } from 'lucide-react'
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
 import { formatCellValue, isLargeValue } from './DataGridResults.utils'
 import { NullValue } from '@/components/grid/components/common/NullValue'
+import { t as $t } from '@/lib/i18n'
 
 interface ResultCellProps {
   column: string
@@ -28,7 +28,6 @@ export const ResultCell = ({ column, value, onContextMenu, onExpand }: ResultCel
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="default"
               size="tiny"
               className="absolute right-1 top-1/2 -translate-y-1/2 px-1 opacity-0 group-hover/cell:opacity-100 focus-visible:opacity-100"
               icon={<Expand size={10} />}

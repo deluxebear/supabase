@@ -21,7 +21,7 @@ export type ProjectServiceStatusVariables = {
 
 // Omit the 'healthy' field as it's equivalent to status = 'ACTIVE_HEALTHY'
 export type ServiceHealthResponse = Omit<
-  components['schemas']['V1ServiceHealthResponse'],
+  components['schemas']['V1ServiceHealthResponse_Output'],
   'healthy'
 >
 export type ProjectServiceStatus = ServiceHealthResponse['status']

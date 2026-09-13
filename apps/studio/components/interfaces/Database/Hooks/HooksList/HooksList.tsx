@@ -83,6 +83,7 @@ export const HooksList = () => {
         <div className="flex items-center gap-x-2">
           <DocsButton href={`${DOCS_URL}/guides/database/webhooks`} />
           <ButtonTooltip
+            variant="primary"
             onClick={() => setShowCreateHookForm(true)}
             disabled={!isPermissionsLoaded || !canCreateWebhooks}
             tooltip={{

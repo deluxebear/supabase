@@ -149,8 +149,8 @@ const CloudPITRSidePanel = () => {
       visible={visible}
       onCancel={closePanel}
       onConfirm={onConfirm}
-      cancelText={$t('Cancel')}
-      confirmText={$t('Confirm')}
+      cancelText="Cancel"
+      confirmText="Confirm"
       loading={isLoading || isSubmitting}
       disabled={
         !hasAccessToPitrVariants ||
@@ -159,7 +159,7 @@ const CloudPITRSidePanel = () => {
         isSubmitting ||
         !canUpdatePitr ||
         (!!selectedPitr && !hasSufficientCompute) ||
-        blockDowngradeDueToHipaa
+        (blockDowngradeDueToHipaa ?? undefined)
       }
       tooltip={
         blockDowngradeDueToHipaa
@@ -261,7 +261,7 @@ const CloudPITRSidePanel = () => {
                 )}
               </AlertDescription>
               <div className="mt-4">
-                <Button variant="default" asChild>
+                <Button asChild>
                   <SupportLink>{$t('Contact support')}</SupportLink>
                 </Button>
               </div>
@@ -282,10 +282,8 @@ const CloudPITRSidePanel = () => {
                 <UpgradeToPro
                   className="mb-4"
                   addon="computeSize"
-                  primaryText={$t(
-                    'Project needs to be at least on a Small compute size to enable PITR'
-                  )}
-                  secondaryText={$t('This ensures enough resources to execute PITR successfully.')}
+                  primaryText="Project needs to be at least on a Small compute size to enable PITR"
+                  secondaryText="This ensures enough resources to execute PITR successfully."
                   featureProposition="enable PITR"
                 />
               ) : null}

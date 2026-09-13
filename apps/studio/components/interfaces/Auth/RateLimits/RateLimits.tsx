@@ -273,7 +273,7 @@ export const RateLimits = () => {
                                     {$t('Enable email-based logins to update this rate limit')}
                                   </p>
                                   <div className="mt-3">
-                                    <Button asChild variant="default" size="tiny">
+                                    <Button asChild size="tiny">
                                       <Link href={`/project/${projectRef}/auth/providers`}>
                                         {$t('View auth providers')}
                                       </Link>
@@ -293,12 +293,12 @@ export const RateLimits = () => {
                                     )}
                                   </p>
                                   <div className="mt-3 flex gap-2">
-                                    <Button asChild variant="default" size="tiny">
+                                    <Button asChild size="tiny">
                                       <Link href={`/project/${projectRef}/auth/smtp`}>
                                         {$t('View SMTP settings')}
                                       </Link>
                                     </Button>
-                                    <Button asChild variant="default" size="tiny">
+                                    <Button asChild size="tiny">
                                       <Link href={`/project/${projectRef}/auth/hooks`}>
                                         {$t('View hooks')}
                                       </Link>
@@ -351,7 +351,7 @@ export const RateLimits = () => {
                                 {$t('Enable phone-based logins to update this rate limit')}
                               </p>
                               <div className="mt-3">
-                                <Button asChild variant="default" size="tiny">
+                                <Button asChild size="tiny">
                                   <Link href={`/project/${projectRef}/auth/providers`}>
                                     {$t('View auth providers')}
                                   </Link>
@@ -503,7 +503,7 @@ export const RateLimits = () => {
                                 )}
                               </p>
                               <div className="mt-3">
-                                <Button asChild variant="default" size="tiny">
+                                <Button asChild size="tiny">
                                   <Link href={`/project/${projectRef}/auth/providers`}>
                                     {$t('View auth settings')}
                                   </Link>
@@ -604,7 +604,7 @@ export const RateLimits = () => {
                                 )}
                               </p>
                               <div className="mt-3">
-                                <Button asChild variant="default" size="tiny">
+                                <Button asChild size="tiny">
                                   <Link href={`/project/${projectRef}/auth/providers`}>
                                     {$t('View Auth provider settings')}
                                   </Link>
@@ -620,9 +620,7 @@ export const RateLimits = () => {
 
                 <CardFooter className="justify-end space-x-2">
                   {rateLimitForm.formState.isDirty && (
-                    <Button variant="default" onClick={() => rateLimitForm.reset()}>
-                      {$t('Cancel')}
-                    </Button>
+                    <Button onClick={() => rateLimitForm.reset()}>{$t('Cancel')}</Button>
                   )}
                   <Button
                     variant="primary"
@@ -686,9 +684,7 @@ export const RateLimits = () => {
                 </CardContent>
                 <CardFooter className="justify-end space-x-2">
                   {ipForwardingForm.formState.isDirty && (
-                    <Button variant="default" onClick={() => ipForwardingForm.reset()}>
-                      {$t('Cancel')}
-                    </Button>
+                    <Button onClick={() => ipForwardingForm.reset()}>{$t('Cancel')}</Button>
                   )}
                   <Button
                     variant="primary"

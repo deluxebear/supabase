@@ -135,9 +135,7 @@ export const PlatformWebhooksEndpointList = ({
           title={$t('No endpoints yet')}
           description={$t('Create an endpoint to start receiving webhook deliveries.')}
         >
-          <Button variant="default" onClick={onCreateEndpoint}>
-            {$t('Create endpoint')}
-          </Button>
+          <Button onClick={onCreateEndpoint}>{$t('Create endpoint')}</Button>
         </EmptyStatePresentational>
       ) : (
         <Card className="overflow-hidden">
@@ -216,11 +214,7 @@ export const PlatformWebhooksEndpointList = ({
                       >
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="default"
-                              icon={<MoreVertical />}
-                              className="w-7 hit-area-2"
-                            />
+                            <Button icon={<MoreVertical />} className="w-7 hit-area-2" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent side="bottom" align="end" className="w-40">
                             <DropdownMenuItem

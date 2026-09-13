@@ -125,7 +125,7 @@ export const ColumnType = ({
               className={className}
             >
               <FormControl>
-                <Input {...field} id={name} disabled readOnly />
+                <Input {...field} disabled readOnly />
               </FormControl>
             </FormItemLayout>
           )
@@ -136,29 +136,31 @@ export const ColumnType = ({
               {$t('Type')}
             </FormLabel>
             <Popover modal open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  role="combobox"
-                  size={'small'}
-                  aria-expanded={open}
-                  aria-controls={listboxId}
-                  className={cn(
-                    'w-full justify-between bg-background-control',
-                    !field.value && 'text-foreground-lighter'
-                  )}
-                  iconRight={<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />}
-                  title={field.value && field.value.replaceAll('"', '')}
-                >
-                  {field.value ? (
-                    <div className="flex gap-2 items-center">
-                      <span>{inferIcon(getOptionByName(field.value)?.type ?? '')}</span>
-                      <span className="block truncate">{field.value.replaceAll('"', '')}</span>
-                    </div>
-                  ) : (
-                    'Choose a column type...'
-                  )}
-                </Button>
-              </PopoverTrigger>
+              <FormControl>
+                <PopoverTrigger asChild>
+                  <Button
+                    role="combobox"
+                    size={'small'}
+                    aria-expanded={open}
+                    aria-controls={listboxId}
+                    className={cn(
+                      'w-full justify-between bg-background-control',
+                      !field.value && 'text-foreground-lighter'
+                    )}
+                    iconRight={<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />}
+                    title={field.value && field.value.replaceAll('"', '')}
+                  >
+                    {field.value ? (
+                      <div className="flex gap-2 items-center">
+                        <span>{inferIcon(getOptionByName(field.value)?.type ?? '')}</span>
+                        <span className="block truncate">{field.value.replaceAll('"', '')}</span>
+                      </div>
+                    ) : (
+                      'Choose a column type...'
+                    )}
+                  </Button>
+                </PopoverTrigger>
+              </FormControl>
               <PopoverContent id={listboxId} className="w-[460px] p-0" side="bottom" align="center">
                 <Command>
                   <CommandInput
@@ -272,7 +274,7 @@ export const ColumnType = ({
                     {$t('unless you have a very specific use case.')}
                   </p>
                   <div className="flex items-center space-x-2 mt-3">
-                    <Button asChild variant="default" icon={<ExternalLink />}>
+                    <Button asChild icon={<ExternalLink />}>
                       <Link href={recommendation.reference} target="_blank" rel="noreferrer">
                         {$t('Read more')}
                       </Link>

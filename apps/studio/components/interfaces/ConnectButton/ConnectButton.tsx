@@ -42,6 +42,7 @@ export const ConnectButton = ({
       >
         <Button
           variant={buttonVariant}
+          aria-label={$t('Connect')}
           disabled={!isActiveHealthy}
           className={cn('rounded-full', className)}
           icon={<Plug className="rotate-90" />}
@@ -51,7 +52,7 @@ export const ConnectButton = ({
             setShowConnect(true)
           }}
         >
-          <span className={cn({ 'sr-only': iconOnly })}>{$t('Connect')}</span>
+          {!iconOnly && <span>{$t('Connect')}</span>}
         </Button>
       </ShortcutTooltip>
     )
@@ -71,7 +72,7 @@ export const ConnectButton = ({
       tooltip={{
         content: {
           side: 'bottom',
-          text: $t('Project is currently not active and cannot be connected'),
+          text: 'Project is currently not active and cannot be connected',
         },
       }}
     >

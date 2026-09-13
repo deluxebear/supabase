@@ -115,9 +115,7 @@ export const ForeignKeysManagement = ({
               })}
             </div>
             <div className="flex items-center justify-center rounded-sm border border-strong border-dashed py-3">
-              <Button variant="default" onClick={() => setOpen(true)}>
-                {$t('Add foreign key relation')}
-              </Button>
+              <Button onClick={() => setOpen(true)}>{$t('Add foreign key relation')}</Button>
             </div>
           </>
         )}

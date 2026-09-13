@@ -151,7 +151,7 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
                 id: snippet.id,
                 type: 'sql',
                 name: snippet.name,
-                description: snippet.description,
+                description: snippet.description ?? undefined,
                 visibility: snippet.visibility,
                 project_id: snippet.project_id,
                 owner_id: snippet.owner_id,
@@ -234,7 +234,6 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
                     <Button
                       block
                       size="small"
-                      variant="default"
                       className="pr-2 justify-between"
                       iconRight={
                         <Code
@@ -351,11 +350,7 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
             </DialogSection>
 
             <DialogFooter>
-              <Button
-                variant="default"
-                disabled={isMovingSnippet || isCreatingFolder}
-                onClick={() => onClose()}
-              >
+              <Button disabled={isMovingSnippet || isCreatingFolder} onClick={() => onClose()}>
                 {$t('Cancel')}
               </Button>
               <Button

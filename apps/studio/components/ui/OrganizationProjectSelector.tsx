@@ -283,7 +283,6 @@ export const OrganizationProjectSelector = ({
         ) : (
           <Button
             block
-            variant="default"
             role="combobox"
             size="small"
             aria-expanded={open}

@@ -78,9 +78,7 @@ function DatePickerOption({ onChange, onCancel, search }: CustomOptionProps) {
         className="w-full"
       />
       <div className="flex justify-end gap-2 py-3 px-4 border-t">
-        <Button variant="default" onClick={onCancel}>
-          {$t('Cancel')}
-        </Button>
+        <Button onClick={onCancel}>{$t('Cancel')}</Button>
         <Button variant="primary" onClick={() => onChange(date ? format(date, 'yyyy-MM-dd') : '')}>
           {$t('Apply')}
         </Button>
@@ -204,7 +202,7 @@ export const FilterPopoverNew = ({
     () => [
       {
         value: 'ai-filter',
-        label: $t('Filter by AI'),
+        label: 'Filter by AI',
         onSelect: async (
           inputValue: string,
           context: { path: number[]; activeFilters: FilterGroup }

@@ -137,9 +137,7 @@ export const LogsQueryPanel = ({
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="default" iconRight={<ChevronDown />}>
-                  {$t('Insert source')}
-                </Button>
+                <Button iconRight={<ChevronDown />}>{$t('Insert source')}</Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 side="bottom"
@@ -162,9 +160,7 @@ export const LogsQueryPanel = ({
             {logsTemplates && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="default" iconRight={<ChevronDown />}>
-                    {$t('Templates')}
-                  </Button>
+                  <Button iconRight={<ChevronDown />}>{$t('Templates')}</Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="bottom" align="start">
                   {templates
@@ -287,7 +283,6 @@ export const LogsQueryPanel = ({
                   <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
                       <Button
-                        variant="default"
                         role="combobox"
                         size={'small'}
                         aria-expanded={open}

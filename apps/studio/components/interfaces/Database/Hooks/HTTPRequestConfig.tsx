@@ -96,7 +96,7 @@ export const HTTPRequestConfig = ({ form }: HTTPRequestConfigProps) => {
             </p>
             <div className="px-4 py-4 border rounded-sm bg-surface-300 border-strong flex items-center justify-between space-x-4">
               <p className="text-sm">{$t('No edge functions created yet')}</p>
-              <Button asChild>
+              <Button variant="primary" asChild>
                 <Link href={`/project/${ref}/functions`}>{$t('Create an edge function')}</Link>
               </Button>
             </div>

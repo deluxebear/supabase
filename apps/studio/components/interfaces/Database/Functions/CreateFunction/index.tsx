@@ -30,6 +30,9 @@ import {
   SheetFooter,
   SheetSection,
   Switch,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import z from 'zod'
@@ -245,7 +248,7 @@ export const CreateFunction = ({
                         defaultValue={field.value}
                       >
                         <SelectTrigger className="col-span-8">
-                          {field.value === 'function' ? $t('Function') : $t('Stored procedure')}
+                          {field.value === 'function' ? 'Function' : 'Stored procedure'}
                         </SelectTrigger>
                         <SelectContent align="end">
                           <SelectItem value="function">
@@ -459,10 +462,11 @@ export const CreateFunction = ({
             </form>
           </Form>
           <SheetFooter>
-            <Button disabled={isCreating || isUpdating} variant="default" onClick={confirmOnClose}>
+            <Button disabled={isCreating || isUpdating} onClick={confirmOnClose}>
               {$t('Cancel')}
             </Button>
             <Button
+              variant="primary"
               form={FORM_ID}
               type="submit"
               disabled={isCreating || isUpdating}
@@ -549,12 +553,19 @@ const FormFieldArgs = ({ readonly }: FormFieldConfigParamsProps) => {
               />
 
               {!readonly && (
-                <Button
-                  variant="default"
-                  icon={<Trash size={12} />}
-                  onClick={() => remove(index)}
-                  className="h-[34px] w-[34px]"
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      icon={<Trash size={12} />}
+                      onClick={() => remove(index)}
+                      className="h-[34px] w-[34px]"
+                      aria-label={$t('Remove argument')}
+                      // Tooltip repeats the label; the description would read the name twice
+                      aria-describedby={undefined}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">{$t('Remove')} </TooltipContent>
+                </Tooltip>
               )}
             </div>
           )
@@ -562,7 +573,6 @@ const FormFieldArgs = ({ readonly }: FormFieldConfigParamsProps) => {
 
         {!readonly && (
           <Button
-            variant="default"
             icon={<Plus size={12} />}
             onClick={() => append({ name: '', type: 'integer' })}
             disabled={readonly}

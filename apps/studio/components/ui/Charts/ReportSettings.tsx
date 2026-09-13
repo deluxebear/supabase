@@ -1,10 +1,10 @@
-import { t as $t } from '@/lib/i18n';
 import { Settings } from 'lucide-react'
 import { useState } from 'react'
 import { Label, Popover, PopoverContent, PopoverTrigger, Switch } from 'ui'
 
 import { useChartHoverState } from './useChartHoverState'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 
 interface ReportSettingsProps {
   chartId: string
@@ -18,7 +18,6 @@ export const ReportSettings = ({ chartId }: ReportSettingsProps) => {
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <ButtonTooltip
-          variant="default"
           icon={<Settings />}
           className="w-7"
           tooltip={{ content: { side: 'bottom', text: 'Report settings' } }}
@@ -29,9 +28,8 @@ export const ReportSettings = ({ chartId }: ReportSettingsProps) => {
           <Label htmlFor="sync-hover" className="text-xs">
             <p>{$t('Sync chart headers')}</p>
             <p className="text-xs text-foreground-light mt-1 text-balance">
-              
-                                        {$t('Hovering over any chart will update headers across all charts')}
-                                      </p>
+              {$t('Hovering over any chart will update headers across all charts')}
+            </p>
           </Label>
           <Switch id="sync-hover" checked={syncHover} onCheckedChange={setSyncHover} />
         </div>
@@ -41,9 +39,8 @@ export const ReportSettings = ({ chartId }: ReportSettingsProps) => {
             <Label htmlFor="sync-tooltips" className="text-xs">
               <p>{$t('Sync tooltips')}</p>
               <p className="text-xs text-foreground-light mt-1 text-balance">
-                
-                                              {$t('Shows tooltips on all charts')}
-                                            </p>
+                {$t('Shows tooltips on all charts')}
+              </p>
             </Label>
             <Switch
               id="sync-tooltips"

@@ -40,7 +40,7 @@ export const BannerLogsAllDeprecation = () => {
             {$t('Management API endpoint need to migrate. Dashboard logs are unchanged.')}
           </p>
         </div>
-        <Button variant="default" size="tiny" className="w-min" asChild>
+        <Button size="tiny" className="w-min" asChild>
           <a href={MIGRATION_GUIDE_URL} target="_blank" rel="noreferrer noopener">
             {$t('Learn more')}
           </a>

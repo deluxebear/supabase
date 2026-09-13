@@ -46,7 +46,7 @@ export const UserManagement = ({ selectedLang, showApiKey }: UserManagementProps
             </p>
             <p>
               {$t(
-                'Supabase already has built in the routes to sign up, login, and log out for managing users in your apps and websites.'
+                'Supabase already has built in the routes to sign up, sign in, and sign out for managing users in your apps and websites.'
               )}
             </p>
           </>
@@ -74,13 +74,13 @@ export const UserManagement = ({ selectedLang, showApiKey }: UserManagementProps
       />
 
       <DocSection
-        title={$t('Log in with Email/Password')}
+        title={$t('Sign in with email/password')}
         content={
           <>
-            <p>{$t('If an account is created, users can login to your app.')}</p>
+            <p>{$t('If an account is created, users can sign in to your app.')}</p>
             <p>
               {$t(
-                'After they have logged in, all interactions using the Supabase JS client will be performed as "that user".'
+                'After they have signed in, all interactions using the Supabase JS client will be performed as "that user".'
               )}
             </p>
           </>
@@ -116,7 +116,7 @@ export const UserManagement = ({ selectedLang, showApiKey }: UserManagementProps
       />
 
       <DocSection
-        title={$t('Sign Up with Phone/Password')}
+        title={$t('Sign up with Phone/Password')}
         content={
           <>
             <p>
@@ -145,7 +145,7 @@ export const UserManagement = ({ selectedLang, showApiKey }: UserManagementProps
       />
 
       <DocSection
-        title={$t('Login via SMS OTP')}
+        title={$t('Sign in via SMS OTP')}
         content={
           <>
             <p>
@@ -155,7 +155,7 @@ export const UserManagement = ({ selectedLang, showApiKey }: UserManagementProps
             </p>
             <p>
               {$t(
-                'You must enter your own twilio credentials on the auth settings page to enable SMS-based Logins.'
+                'You must enter your own twilio credentials on the auth settings page to enable SMS-based sign-in.'
               )}
             </p>
           </>
@@ -194,12 +194,12 @@ export const UserManagement = ({ selectedLang, showApiKey }: UserManagementProps
 
       {authenticationSignInProviders && (
         <DocSection
-          title={$t('Log in with Third Party OAuth')}
+          title={$t('Sign in with third-party OAuth')}
           content={
             <>
               <p>
                 {$t(
-                  'Users can log in with Third Party OAuth like Google, Facebook, GitHub, and more. You must first enable each of these in the Auth Providers settings'
+                  'Users can sign in with third-party OAuth like Google, Facebook, GitHub, and more. You must first enable each of these in the Auth Providers settings'
                 )}{' '}
                 <span className="text-green-500">
                   <InlineLink key={'AUTH'} href={`/project/${projectRef}/auth/providers`}>
@@ -216,7 +216,7 @@ export const UserManagement = ({ selectedLang, showApiKey }: UserManagementProps
               </p>
               <p>
                 {$t(
-                  'After they have logged in, all interactions using the Supabase JS client will be performed as "that user".'
+                  'After they have signed in, all interactions using the Supabase JS client will be performed as "that user".'
                 )}
               </p>
               <p>
@@ -254,7 +254,7 @@ export const UserManagement = ({ selectedLang, showApiKey }: UserManagementProps
 
       <DocSection
         title={$t('User')}
-        content={<p>{$t('Get the JSON object for the logged in user.')}</p>}
+        content={<p>{$t('Get the JSON object for the signed-in user.')}</p>}
         snippets={
           <CodeSnippet
             selectedLang={selectedLang}
@@ -268,7 +268,7 @@ export const UserManagement = ({ selectedLang, showApiKey }: UserManagementProps
         content={
           <p>
             {$t(
-              'Sends the user a log in link via email. Once logged in you should direct the user to a new password form. And use "Update User" below to save the new password.'
+              'Sends the user a sign-in link via email. Once signed in you should direct the user to a new password form. And use "Update User" below to save the new password.'
             )}
           </p>
         }
@@ -298,11 +298,11 @@ export const UserManagement = ({ selectedLang, showApiKey }: UserManagementProps
       />
 
       <DocSection
-        title={$t('Log out')}
+        title={$t('Sign out')}
         content={
           <p>
             {$t(
-              'After calling log out, all interactions using the Supabase JS client will be "anonymous".'
+              'After calling sign out, all interactions using the Supabase JS client will be "anonymous".'
             )}
           </p>
         }
@@ -318,7 +318,9 @@ export const UserManagement = ({ selectedLang, showApiKey }: UserManagementProps
         title={$t('Send a User an Invite over Email')}
         content={
           <>
-            <p>{$t('Send a user a passwordless link which they can use to sign up and log in.')}</p>
+            <p>
+              {$t('Send a user a passwordless link which they can use to sign up and sign in.')}
+            </p>
             <p>
               {$t(
                 'After they have clicked the link, all interactions using the Supabase JS client will be performed as "that user".'

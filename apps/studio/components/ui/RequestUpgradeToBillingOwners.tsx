@@ -238,10 +238,10 @@ export const RequestUpgradeToBillingOwners = ({
             </DialogSection>
 
             <DialogFooter>
-              <Button variant="default" disabled={isSubmitting} onClick={() => setOpen(false)}>
+              <Button disabled={isSubmitting} onClick={() => setOpen(false)}>
                 {$t('Cancel')}
               </Button>
-              <Button type="submit" form={formId} loading={isSubmitting}>
+              <Button variant="primary" type="submit" form={formId} loading={isSubmitting}>
                 {$t('Submit request')}
               </Button>
             </DialogFooter>

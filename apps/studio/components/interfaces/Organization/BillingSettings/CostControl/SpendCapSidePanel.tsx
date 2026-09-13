@@ -107,7 +107,7 @@ const SpendCapSidePanel = () => {
       header={
         <div className="flex items-center justify-between w-full">
           <h4>{$t('Spend cap')}</h4>
-          <Button asChild variant="default" icon={<ExternalLink strokeWidth={1.5} />}>
+          <Button asChild icon={<ExternalLink strokeWidth={1.5} />}>
             <Link
               href={`${DOCS_URL}/guides/platform/cost-control#spend-cap`}
               target="_blank"
@@ -196,7 +196,7 @@ const SpendCapSidePanel = () => {
               title={$t('Toggling of the spend cap is only available on the Pro Plan')}
               description={$t('Upgrade your plan to disable the spend cap')}
               actions={
-                <Button variant="default" onClick={() => snap.setPanelKey('subscriptionPlan')}>
+                <Button onClick={() => snap.setPanelKey('subscriptionPlan')}>
                   {$t('View available plans')}
                 </Button>
               }
@@ -249,7 +249,7 @@ const SpendCapSidePanel = () => {
               type="warning"
               title={$t('Your projects could become unresponsive or enter read only mode')}
               description={$t(
-                'Exceeding the included quota allowance with spend cap enabled can cause your projects\n              to become unresponsive or enter read only mode.'
+                'Exceeding the included quota allowance with spend cap enabled can cause your projects\\n              to become unresponsive or enter read only mode.'
               )}
             />
           ) : (
@@ -257,7 +257,7 @@ const SpendCapSidePanel = () => {
               type="note"
               title={$t('Charges apply for usage beyond included quota allowance')}
               description={$t(
-                'Your projects will always remain responsive and active, and charges only apply when\n              exceeding the included quota limit.'
+                'Your projects will always remain responsive and active, and charges only apply when\\n              exceeding the included quota limit.'
               )}
             />
           )}

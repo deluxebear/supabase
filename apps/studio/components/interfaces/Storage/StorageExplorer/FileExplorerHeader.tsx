@@ -119,9 +119,7 @@ const NavigateDialog = ({
           </FieldDescription>
         </DialogSection>
         <DialogFooter>
-          <Button variant="default" onClick={onCancel}>
-            {$t('Cancel')}
-          </Button>
+          <Button onClick={onCancel}>{$t('Cancel')}</Button>
           <Button variant="primary" onClick={onSubmit}>
             {$t('Navigate')}
           </Button>

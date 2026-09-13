@@ -36,7 +36,6 @@ const LanguageSelector = ({ simplifiedVersion = false }: LanguageSelectorProps) 
       <Popover modal={false} open={showLanguage} onOpenChange={setShowLanguage}>
         <PopoverTrigger asChild>
           <Button
-            variant="default"
             className={simplifiedVersion ? 'px-1' : ''}
             icon={
               simplifiedVersion ? (

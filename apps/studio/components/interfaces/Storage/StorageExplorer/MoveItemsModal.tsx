@@ -90,9 +90,7 @@ export const MoveItemsModal = ({
           </form>
         </DialogSection>
         <DialogFooter>
-          <Button variant="default" onClick={onSelectCancel}>
-            {$t('Cancel')}
-          </Button>
+          <Button onClick={onSelectCancel}>{$t('Cancel')}</Button>
           <Button variant="primary" loading={moving} onClick={onConfirmMove}>
             {moving ? 'Moving files' : 'Move files'}
           </Button>

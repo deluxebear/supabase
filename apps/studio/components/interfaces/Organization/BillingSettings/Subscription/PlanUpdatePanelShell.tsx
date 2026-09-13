@@ -31,7 +31,7 @@ export function PlanUpdateSheetShell({
           <h4>
             {$t('Change subscription plan for')} {organizationName}
           </h4>
-          <Button asChild variant="default" icon={<ExternalLink />}>
+          <Button asChild icon={<ExternalLink />}>
             <a href="https://supabase.com/pricing" target="_blank" rel="noreferrer">
               {$t('Pricing')}
             </a>
@@ -79,7 +79,7 @@ export function PlanUpdateFullScreenShell({
             {$t('Pricing FAQ')}
           </a>
         </Button>
-        <Button asChild variant="default" iconRight={<ExternalLink />}>
+        <Button asChild iconRight={<ExternalLink />}>
           <a href="https://supabase.com/pricing#compare-plans" target="_blank" rel="noreferrer">
             {$t('Compare plans')}
           </a>

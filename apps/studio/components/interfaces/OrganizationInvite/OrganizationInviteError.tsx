@@ -67,7 +67,7 @@ export const OrganizationInviteError = ({
             )
           }
         />
-        <Button variant="default" block onClick={handleSignOut}>
+        <Button block onClick={handleSignOut}>
           {$t('Sign out')}
         </Button>
       </div>

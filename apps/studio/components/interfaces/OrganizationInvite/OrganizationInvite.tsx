@@ -117,8 +117,8 @@ export const OrganizationInvite = () => {
           <Link href={loginRedirectLink}>{$t('Sign in')}</Link>
         </Button>
         {isSignUpEnabled && (
-          <Button asChild variant="default" block>
-            <Link href={signupRedirectLink}>{$t('Create an account')}</Link>
+          <Button asChild block>
+            <Link href={signupRedirectLink}>{$t('Sign up')}</Link>
           </Button>
         )}
       </div>
@@ -152,7 +152,7 @@ export const OrganizationInvite = () => {
           type="warning"
           description={$t('This invite has already been accepted or declined.')}
         />
-        <Button variant="default" block asChild>
+        <Button block asChild>
           <Link href="/">{$t('Back to dashboard')}</Link>
         </Button>
       </div>
@@ -162,7 +162,7 @@ export const OrganizationInvite = () => {
   if (mfaRequiredError) {
     return withLayout(
       <div className="flex flex-col gap-3">
-        <Button variant="default" block asChild>
+        <Button block asChild>
           <Link href="/account/security">{$t('Go to account settings')}</Link>
         </Button>
       </div>

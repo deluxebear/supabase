@@ -100,15 +100,11 @@ export const CustomDomainActivate = ({ projectRef, customDomain }: CustomDomainA
           <div className="flex items-center justify-between">
             <DocsButton href={`${DOCS_URL}/guides/platform/custom-domains`} />
             <div className="flex items-center space-x-2">
-              <Button
-                variant="default"
-                className="self-end"
-                onClick={onCancelCustomDomain}
-                loading={isDeleting}
-              >
+              <Button className="self-end" onClick={onCancelCustomDomain} loading={isDeleting}>
                 {$t('Cancel')}
               </Button>
               <Button
+                variant="primary"
                 disabled={isDeleting}
                 onClick={() => setIsActivateConfirmModalVisible(true)}
                 className="self-end"

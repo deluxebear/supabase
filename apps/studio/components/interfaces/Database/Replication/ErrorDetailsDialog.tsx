@@ -62,7 +62,7 @@ export const ErrorDetailsDialog = ({
         </DialogSection>
         <DialogFooter>
           <DialogClose>
-            <Button variant="default">{$t('Close')}</Button>
+            <Button>{$t('Close')}</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

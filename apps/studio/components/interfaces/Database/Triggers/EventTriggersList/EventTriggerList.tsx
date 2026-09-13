@@ -169,7 +169,6 @@ export const EventTriggerList = ({
                   <DropdownMenuTrigger asChild>
                     <Button
                       aria-label={$t('More options')}
-                      variant="default"
                       className="px-1"
                       icon={<MoreVertical />}
                     />
@@ -206,7 +205,6 @@ export const EventTriggerList = ({
               ) : (
                 <ButtonTooltip
                   disabled
-                  variant="default"
                   className="px-1"
                   icon={<MoreVertical />}
                   tooltip={{

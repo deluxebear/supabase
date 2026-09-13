@@ -161,7 +161,6 @@ export function OrganizationSelector({
                     setSearch('')
                     setShowAll(true)
                   }}
-                  variant="default"
                 >
                   {$t('Show all organizations')}
                 </Button>
@@ -175,7 +174,7 @@ export function OrganizationSelector({
           <CardHeader className="border-none">
             <CardTitle>{$t('Need a new organization?')}</CardTitle>
           </CardHeader>
-          <Button size="small" className="" asChild variant="default">
+          <Button size="small" className="" asChild>
             <Link href={`/new?${searchParams.toString()}`}>{$t('New Organization')}</Link>
           </Button>
         </Card>

@@ -62,9 +62,7 @@ const UpdatedTermsOfServiceDialog = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="default" className="w-min">
-          {$t('Learn more')}
-        </Button>
+        <Button className="w-min">{$t('Learn more')}</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -119,11 +117,7 @@ const UpdatedTermsOfServiceDialog = () => {
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button
-              variant="default"
-              className="opacity-100"
-              onClick={() => setTOSUpdateAcknowledged(true)}
-            >
+            <Button className="opacity-100" onClick={() => setTOSUpdateAcknowledged(true)}>
               {$t('Understood')}
             </Button>
           </DialogClose>

@@ -347,7 +347,7 @@ const PrivilegesPage: NextPageWithLayout = () => {
                     )}
                   </p>
                   {selectedSchema === 'public' && (
-                    <Button asChild className="mt-4">
+                    <Button variant="primary" asChild className="mt-4">
                       <Link href={`/project/${ref}/editor`}>{$t('Create a new table')}</Link>
                     </Button>
                   )}
@@ -367,7 +367,7 @@ const PrivilegesPage: NextPageWithLayout = () => {
                 {$t('You may access this feature by enabling it under dashboard feature previews.')}
               </AlertDescription>
               <div className="mt-4">
-                <Button variant="default" onClick={() => toggleFeaturePreviewModal(true)}>
+                <Button onClick={() => toggleFeaturePreviewModal(true)}>
                   {$t('View feature previews')}
                 </Button>
               </div>

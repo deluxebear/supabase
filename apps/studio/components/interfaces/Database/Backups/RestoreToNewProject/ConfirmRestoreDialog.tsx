@@ -73,7 +73,9 @@ export const ConfirmRestoreDialog = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {$t('Cancel')}
           </Button>
-          <Button onClick={() => onSelectContinue()}>{$t('Continue')}</Button>
+          <Button variant="primary" onClick={() => onSelectContinue()}>
+            {$t('Continue')}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

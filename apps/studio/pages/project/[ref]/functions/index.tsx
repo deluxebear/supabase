@@ -206,24 +206,14 @@ const EdgeFunctionsPage: NextPageWithLayout = () => {
                         shortcutId={SHORTCUT_IDS.FUNCTIONS_LIST_REFRESH}
                         side="bottom"
                       >
-                        <Button
-                          variant="default"
-                          icon={<RefreshCw />}
-                          loading={isFetching}
-                          onClick={() => refetch()}
-                        >
+                        <Button icon={<RefreshCw />} loading={isFetching} onClick={() => refetch()}>
                           {$t('Refresh')}
                         </Button>
                       </ShortcutTooltip>
                       <span className="border-l border-default pl-2 text-xs text-foreground-light">
                         {search && filteredFunctions.length !== functionCount
-                          ? $t('Viewing {{count}} of {{total}} functions in total', {
-                              count: filteredFunctions.length,
-                              total: functionCount,
-                            })
-                          : $t('Viewing {{count}} functions in total', {
-                              count: functionCount,
-                            })}
+                          ? 'Viewing {{count}} of {{total}} functions in total'
+                          : 'Viewing {{count}} functions in total'}
                       </span>
                     </div>
                     <Card>
@@ -306,7 +296,7 @@ export const EdgeFunctionsIndexPageWrapper = ({ children }: PropsWithChildren) =
           </PageHeaderSummary>
           <PageHeaderAside>
             <DocsButton href={`${DOCS_URL}/guides/functions`} />
-            <Button asChild variant="default" icon={<ExternalLink />}>
+            <Button asChild icon={<ExternalLink />}>
               <a
                 target="_blank"
                 rel="noreferrer"

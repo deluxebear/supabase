@@ -307,7 +307,7 @@ const DeleteConfirmationDialogs = ({
                 )}
               </AlertTitle>
               <AlertDescription>
-                <Button asChild size="tiny" variant="default" icon={<ExternalLink />}>
+                <Button asChild size="tiny" icon={<ExternalLink />}>
                   <Link
                     href="https://www.postgresql.org/docs/current/ddl-depend.html"
                     target="_blank"
@@ -371,7 +371,7 @@ const DeleteConfirmationDialogs = ({
                 )}
               </AlertDescription>
               <AlertDescription className="mt-4">
-                <Button asChild size="tiny" variant="default" icon={<ExternalLink />}>
+                <Button asChild size="tiny" icon={<ExternalLink />}>
                   <Link
                     href="https://www.postgresql.org/docs/current/ddl-depend.html"
                     target="_blank"
@@ -506,7 +506,7 @@ const DropEntityConfirmationModal = ({
               )}
             </AlertDescription>
             <AlertDescription className="mt-4">
-              <Button asChild size="tiny" variant="default" icon={<ExternalLink />}>
+              <Button asChild size="tiny" icon={<ExternalLink />}>
                 <Link
                   href="https://www.postgresql.org/docs/current/ddl-depend.html"
                   target="_blank"

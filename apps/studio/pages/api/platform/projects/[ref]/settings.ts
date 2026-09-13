@@ -13,10 +13,10 @@ import {
 } from '@/lib/api/self-platform/resolve-connection'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
-type ProjectAppConfig = components['schemas']['ProjectSettingsResponse']['app_config'] & {
+type ProjectAppConfig = components['schemas']['ProjectSettingsResponse_Output']['app_config'] & {
   protocol?: string
 }
-export type ProjectSettings = components['schemas']['ProjectSettingsResponse'] & {
+export type ProjectSettings = components['schemas']['ProjectSettingsResponse_Output'] & {
   app_config?: ProjectAppConfig
 }
 

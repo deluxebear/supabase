@@ -28,6 +28,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import {
   useIsAwsK8sCloudProvider,
+  useIsHighAvailability,
   useIsOrioleDb,
   useSelectedProjectQuery,
 } from '@/hooks/misc/useSelectedProject'
@@ -42,6 +43,7 @@ export const RestoreToNewProject = () => {
     useCheckEntitlements('backup.restore_to_new_project')
   const isOrioleDb = useIsOrioleDb()
   const isAwsK8s = useIsAwsK8sCloudProvider()
+  const isHighAvailability = useIsHighAvailability()
 
   const [refetchInterval, setRefetchInterval] = useState<number | false>(false)
   const [selectedBackupId, setSelectedBackupId] = useState<number | null>(null)
@@ -131,6 +133,18 @@ export const RestoreToNewProject = () => {
         title={$t('Restoring to new projects are not available for OrioleDB')}
         description={$t(
           'OrioleDB is currently in public alpha and projects created are strictly ephemeral with no database backups'
+        )}
+      />
+    )
+  }
+
+  if (isHighAvailability) {
+    return (
+      <Admonition
+        type="default"
+        title={$t('Restoring to a new project is unavailable on High Availability projects')}
+        description={$t(
+          "We're working to bring restores to High Availability projects. Contact support if this is blocking your work."
         )}
       />
     )
@@ -277,7 +291,7 @@ export const RestoreToNewProject = () => {
                 "is currently being created. You'll be able to restore again once the project is ready."
               )}
             </p>
-            <Button asChild variant="default" className="mt-2">
+            <Button asChild className="mt-2">
               <Link href={`/project/${restoringClone?.target_project?.ref ?? '_'}`}>
                 {$t('Go to new project')}
               </Link>

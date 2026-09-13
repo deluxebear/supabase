@@ -56,7 +56,6 @@ export const IntegrationInstalledActions = ({
           </ButtonTooltip>
         )}
         <ButtonTooltip
-          variant="default"
           onClick={() => setShowUninstallModal(true)}
           disabled={disabled}
           loading={uninstalling}
@@ -124,7 +123,7 @@ export const IntegrationNotInstalledActions = ({
         </ButtonTooltip>
       )}
       {installError && (
-        <Button variant="default" loading={isUninstallRequested} onClick={handleUninstall}>
+        <Button loading={isUninstallRequested} onClick={handleUninstall}>
           {$t('Uninstall')}
         </Button>
       )}

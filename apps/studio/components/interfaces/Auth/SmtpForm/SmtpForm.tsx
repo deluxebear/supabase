@@ -39,6 +39,7 @@ import { useAuthConfigUpdateMutation } from '@/data/auth/auth-config-update-muta
 import { useAuthTemplateResetMutation } from '@/data/auth/auth-template-reset-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { preprocessEmptyNumberInput } from '@/lib/forms/zod-number-input'
 import { t as $t } from '@/lib/i18n'
 
 const smtpEnabledSchema = z.object({
@@ -54,8 +55,7 @@ const smtpEnabledSchema = z.object({
     .trim()
     .min(1, 'Host URL is required')
     .regex(urlRegex({ excludeSimpleDomains: false }), 'Must be a valid URL or IP address'),
-  SMTP_PORT: z.preprocess(
-    (val) => (val === '' || val == null ? undefined : val),
+  SMTP_PORT: preprocessEmptyNumberInput(
     z.coerce
       .number({
         required_error: 'Port number is required',
@@ -64,8 +64,7 @@ const smtpEnabledSchema = z.object({
       .min(1, 'Must be a valid port number more than 0')
       .max(65535, 'Must be a valid port number no more than 65535')
   ),
-  SMTP_MAX_FREQUENCY: z.preprocess(
-    (val) => (val === '' || val == null ? undefined : val),
+  SMTP_MAX_FREQUENCY: preprocessEmptyNumberInput(
     z.coerce
       .number({
         required_error: 'Rate limit is required',
@@ -83,14 +82,8 @@ const smtpDisabledSchema = z.object({
   SMTP_ADMIN_EMAIL: z.string().optional(),
   SMTP_SENDER_NAME: z.string().optional(),
   SMTP_HOST: z.string().optional(),
-  SMTP_PORT: z.preprocess(
-    (val) => (val === '' || val == null ? undefined : val),
-    z.coerce.number().optional()
-  ),
-  SMTP_MAX_FREQUENCY: z.preprocess(
-    (val) => (val === '' || val == null ? undefined : val),
-    z.coerce.number().optional()
-  ),
+  SMTP_PORT: preprocessEmptyNumberInput(z.coerce.number().optional()),
+  SMTP_MAX_FREQUENCY: preprocessEmptyNumberInput(z.coerce.number().optional()),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
 })
@@ -522,7 +515,6 @@ export const SmtpForm = () => {
                 <div className="flex items-center gap-x-2">
                   {isDirty && (
                     <Button
-                      variant="default"
                       onClick={() => {
                         form.reset()
                       }}

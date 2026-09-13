@@ -29,7 +29,7 @@ export function AdvisorsSidebarMenu({ page }: AdvisorsSidebarMenuProps) {
         )}
         illustration={<Badge variant="success">{$t('New')}</Badge>}
         actions={
-          <Button size="tiny" variant="default" onClick={handleOpenAdvisor}>
+          <Button size="tiny" onClick={handleOpenAdvisor}>
             {$t('Try it now')}
           </Button>
         }

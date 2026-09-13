@@ -84,12 +84,7 @@ export function JitDbAccessRulesTable({
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="inline-flex">
-                <Button
-                  variant="default"
-                  icon={<Plus />}
-                  onClick={onAddRule}
-                  disabled={addDisabled}
-                >
+                <Button icon={<Plus />} onClick={onAddRule} disabled={addDisabled}>
                   {$t('Add rule')}
                 </Button>
               </span>
@@ -174,7 +169,6 @@ export function JitDbAccessRulesTable({
                           <Button
                             icon={<EllipsisVertical />}
                             aria-label={$t('More actions')}
-                            variant="default"
                             size="tiny"
                             className="w-7 hit-area-2"
                             disabled={!canUpdate || disableActions}

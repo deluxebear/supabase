@@ -59,7 +59,7 @@ export const VectorBucketTableExamplesSheet = ({ index }: VectorBucketTableExamp
     <Sheet open={open} onOpenChange={setOpen}>
       {/* Move into overflow menu after vectors added */}
       <SheetTrigger asChild>
-        <Button variant="default" icon={<ListPlus size={12} className="text-foreground-lighter" />}>
+        <Button icon={<ListPlus size={12} className="text-foreground-lighter" />}>
           {$t('Insert vectors')}
         </Button>
       </SheetTrigger>
@@ -220,7 +220,6 @@ const result = await index.putVectors({
                   {$t('Language')}
                 </span>
                 <Button
-                  variant="default"
                   iconRight={<ChevronDown size={14} strokeWidth={2} />}
                   className="rounded-l-none"
                 >
@@ -272,9 +271,7 @@ const result = await index.putVectors({
               'Data from vector tables can be queried and inserted from Postgres with the S3 Vectors Wrapper as foreign tables.'
             )}
             actions={
-              <Button variant="default" onClick={onSelectQueryFromPostgres}>
-                {$t('Query from Postgres')}
-              </Button>
+              <Button onClick={onSelectQueryFromPostgres}>{$t('Query from Postgres')}</Button>
             }
           />
         ) : (
@@ -287,11 +284,7 @@ const result = await index.putVectors({
               value={sqlCode}
             />
             <div className="flex justify-end">
-              <Button
-                variant="default"
-                asChild
-                icon={<SqlEditor size={12} className="text-foreground-lighter" />}
-              >
+              <Button asChild icon={<SqlEditor size={12} className="text-foreground-lighter" />}>
                 <Link
                   target="_blank"
                   rel="noreferrer"

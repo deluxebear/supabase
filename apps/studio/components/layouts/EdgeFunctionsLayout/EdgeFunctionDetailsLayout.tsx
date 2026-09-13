@@ -119,7 +119,7 @@ const EdgeFunctionDetailsLayout = ({
 
   const breadcrumbItems = [
     {
-      label: $t('Edge Functions'),
+      label: 'Edge Functions',
       href: `/project/${ref}/functions`,
     },
     {
@@ -133,25 +133,25 @@ const EdgeFunctionDetailsLayout = ({
         ...(IS_PLATFORM
           ? [
               {
-                label: $t('Overview'),
+                label: 'Overview',
                 href: `/project/${ref}/functions/${functionSlug}`,
               },
               {
-                label: $t('Invocations'),
+                label: 'Invocations',
                 href: `/project/${ref}/functions/${functionSlug}/invocations`,
               },
               {
-                label: $t('Logs'),
+                label: 'Logs',
                 href: `/project/${ref}/functions/${functionSlug}/logs`,
               },
             ]
           : []),
         {
-          label: $t('Code'),
+          label: 'Code',
           href: `/project/${ref}/functions/${functionSlug}/code`,
         },
         {
-          label: $t('Settings'),
+          label: 'Settings',
           href: `/project/${ref}/functions/${functionSlug}/details`,
         },
       ]
@@ -287,9 +287,7 @@ const EdgeFunctionDetailsLayout = ({
                       open={isDownloadOpen ? false : undefined}
                     >
                       <PopoverTrigger asChild>
-                        <Button variant="default" icon={<Download />}>
-                          {$t('Download')}
-                        </Button>
+                        <Button icon={<Download />}>{$t('Download')}</Button>
                       </PopoverTrigger>
                     </ShortcutTooltip>
                     <PopoverContent align="end" className="p-0">
@@ -328,7 +326,7 @@ const EdgeFunctionDetailsLayout = ({
                       shortcutId={SHORTCUT_IDS.FUNCTION_DETAIL_OPEN_TEST}
                       side="bottom"
                     >
-                      <Button variant="default" icon={<Send />} onClick={openTestSheet}>
+                      <Button icon={<Send />} onClick={openTestSheet}>
                         {$t('Test')}
                       </Button>
                     </ShortcutTooltip>

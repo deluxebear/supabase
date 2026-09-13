@@ -27,7 +27,7 @@ import { checkPermission, guardOrgRoute } from '@/lib/api/self-platform/rbac/enf
 import { getOrgProjectIdsByRefs } from '@/lib/api/self-platform/roles'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
-type InvitationByTokenResponse = components['schemas']['InvitationByTokenResponse']
+type InvitationByTokenResponse = components['schemas']['InvitationByTokenResponse_Output']
 
 const CONSUMED_MESSAGE = 'Failed to retrieve organization invitation'
 const MFA_JOIN_MESSAGE = 'MFA required to join this organization'

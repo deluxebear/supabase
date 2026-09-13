@@ -55,7 +55,7 @@ const Error500: NextPage = () => {
       </div>
       <div className="flex items-center space-x-4">
         {router.pathname !== '/organizations' ? (
-          <Button asChild>
+          <Button variant="primary" asChild>
             <Link
               href={
                 !!lastVisitedOrganization ? `/org/${lastVisitedOrganization}` : '/organizations'
@@ -65,7 +65,9 @@ const Error500: NextPage = () => {
             </Link>
           </Button>
         ) : (
-          <Button onClick={onClickLogout}>{$t('Head back')}</Button>
+          <Button variant="primary" onClick={onClickLogout}>
+            {$t('Head back')}
+          </Button>
         )}
         <Button variant="secondary" asChild>
           <SupportLink>{$t('Submit a support request')}</SupportLink>

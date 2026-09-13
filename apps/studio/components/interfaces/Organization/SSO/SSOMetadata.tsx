@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { Upload } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -17,6 +16,7 @@ import {
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { SSOConfigFormSchema } from './SSOConfig'
+import { t as $t } from '@/lib/i18n'
 
 export const SSOMetadata = ({
   form,
@@ -76,9 +76,8 @@ export const SSOMetadata = ({
               URL
             </TabsTrigger>
             <TabsTrigger className=" " value="file">
-              
-                                        {$t('Upload file')}
-                                      </TabsTrigger>
+              {$t('Upload file')}
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="url">
             <FormField
@@ -111,13 +110,11 @@ export const SSOMetadata = ({
                       onChange={handleFileChange}
                     />
                     <Button
-                      variant="default"
                       icon={<Upload className="w-4 h-4" />}
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      
-                                                    {$t('Upload XML')}
-                                                  </Button>
+                      {$t('Upload XML')}
+                    </Button>
                     {fileName && <span className="text-xs text-foreground-light">{fileName}</span>}
                   </div>
                   <FormMessage />

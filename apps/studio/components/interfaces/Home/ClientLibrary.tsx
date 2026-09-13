@@ -46,14 +46,12 @@ export const ClientLibrary = ({
         <div className="flex gap-2">
           {docsUrl && (
             <a href={docsUrl} target="_blank" rel="noreferrer">
-              <Button icon={<BookOpen />} variant="default">
-                {$t('Docs')}
-              </Button>
+              <Button icon={<BookOpen />}>{$t('Docs')}</Button>
             </a>
           )}
           {gitUrl && (
             <a href={gitUrl} target="_blank" rel="noreferrer">
-              <Button icon={<Github />} variant="default">
+              <Button icon={<Github />}>
                 <span className="hidden md:inline">{$t('See')}</span> {$t('GitHub')}
               </Button>
             </a>

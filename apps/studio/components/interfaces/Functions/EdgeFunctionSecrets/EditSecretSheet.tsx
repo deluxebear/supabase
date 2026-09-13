@@ -165,10 +165,16 @@ export function EditSecretSheet({ secret, visible, onClose }: EditSecretSheetPro
         </SheetSection>
 
         <SheetFooter>
-          <Button disabled={isUpdating} variant="default" onClick={confirmOnClose}>
+          <Button disabled={isUpdating} onClick={confirmOnClose}>
             {$t('Cancel')}
           </Button>
-          <Button form={FORM_ID} type="submit" disabled={!isValid} loading={isUpdating}>
+          <Button
+            variant="primary"
+            form={FORM_ID}
+            type="submit"
+            disabled={!isValid}
+            loading={isUpdating}
+          >
             {$t('Save')}
           </Button>
         </SheetFooter>

@@ -9,9 +9,9 @@ import {
   EntityTypeIcon,
   getLocalizedLintDescription,
   getLocalizedLintDetail,
-  lintInfoMap,
   LintCTA,
   LintEntity,
+  lintInfoMap,
 } from '@/components/interfaces/Linter/Linter.utils'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
@@ -103,7 +103,7 @@ export const LintDetail = ({
           <Link
             href={
               lintInfoMap.find((item) => item.name === lint.name)?.docsLink ||
-              `${DOCS_URL}/guides/database/database-linter`
+              `${DOCS_URL}/guides/observability/advisors`
             }
             target="_blank"
             rel="noreferrer"

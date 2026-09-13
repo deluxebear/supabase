@@ -234,7 +234,6 @@ export function LogsSidebarMenuV2() {
 
         <ButtonTooltip
           asChild
-          variant="default"
           icon={<Plus className="text-foreground" />}
           className="w-[26px]"
           tooltip={{ content: { text: 'New query', side: 'bottom' } }}
@@ -302,7 +301,7 @@ export function LogsSidebarMenuV2() {
               IS_PLATFORM ? 'Create and save your queries to use them in the explorer' : undefined
             }
             actions={
-              <Button asChild variant="default">
+              <Button asChild>
                 <Link href={`/project/${ref}/logs/explorer`}>{$t('Create query')}</Link>
               </Button>
             }
@@ -329,7 +328,7 @@ export function LogsSidebarMenuV2() {
           </div>
         }
         actions={
-          <Button asChild variant="default">
+          <Button asChild>
             <Link href={`/project/${ref}/settings/log-drains`}>{$t('Go to Log Drains')}</Link>
           </Button>
         }

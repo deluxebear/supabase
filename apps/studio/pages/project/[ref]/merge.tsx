@@ -403,7 +403,6 @@ const MergePageContent = () => {
                 overrideAction={
                   hasCurrentWorkflowFailed ? (
                     <Button
-                      variant="default"
                       asChild
                       icon={<GitBranchIcon size={16} strokeWidth={1.5} />}
                       className="shrink-0"
@@ -414,7 +413,6 @@ const MergePageContent = () => {
                     </Button>
                   ) : hasCurrentWorkflowCompleted ? (
                     <Button
-                      variant="default"
                       onClick={handleCloseBranch}
                       loading={isDeleting}
                       icon={<X size={16} strokeWidth={1.5} />}

@@ -54,7 +54,6 @@ export const SSODomains = ({ form }: { form: ReturnType<typeof useForm<SSOConfig
               />
 
               <Button
-                variant="default"
                 icon={<Trash size={12} />}
                 className="h-[34px] w-[34px]"
                 onClick={() => remove(idx)}
@@ -63,7 +62,6 @@ export const SSODomains = ({ form }: { form: ReturnType<typeof useForm<SSOConfig
           ))}
           <div>
             <Button
-              variant="default"
               icon={<Plus className="w-4 h-4" />}
               size="tiny"
               onClick={() => append({ value: '' })}

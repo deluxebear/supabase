@@ -778,7 +778,7 @@ export const ProjectCreationForm = ({
                           </p>
 
                           <div>
-                            <Button asChild variant="default">
+                            <Button asChild>
                               <Link href={`/org/${slug}/billing#invoices`}>
                                 {$t('View invoices')}
                               </Link>

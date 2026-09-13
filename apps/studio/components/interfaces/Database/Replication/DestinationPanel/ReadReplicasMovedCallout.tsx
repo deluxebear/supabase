@@ -34,7 +34,7 @@ export const ReadReplicasMovedCallout = ({ className }: { className?: string }) 
         )}
         actions={
           <>
-            <Button asChild variant="default" size="tiny">
+            <Button asChild size="tiny">
               <Link href={getInfrastructurePath(projectRef)}>{$t('Go to Infrastructure')}</Link>
             </Button>
             <ButtonTooltip

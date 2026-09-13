@@ -29,7 +29,7 @@ export function DataTableResetButton({ onReset }: DataTableResetButtonProps) {
       label={$t('Reset filters')}
       side="left"
     >
-      <Button variant="default" size="tiny" onClick={reset} icon={<X />}>
+      <Button size="tiny" onClick={reset} icon={<X />}>
         {$t('Reset')}
       </Button>
     </ShortcutTooltip>

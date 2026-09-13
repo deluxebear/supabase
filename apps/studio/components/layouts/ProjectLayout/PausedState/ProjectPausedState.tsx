@@ -151,7 +151,7 @@ export const ProjectPausedState = ({ product }: ProjectPausedStateProps) => {
             {isFreePlan ? (
               <UpgradePlanButton source="projectPausedStateRestore" />
             ) : (
-              <Button asChild variant="default">
+              <Button asChild>
                 <Link href={`/project/${ref}/settings/general`}>{$t('View project settings')}</Link>
               </Button>
             )}

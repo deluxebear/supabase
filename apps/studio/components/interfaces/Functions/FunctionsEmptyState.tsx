@@ -65,7 +65,6 @@ export const FunctionsEmptyState = () => {
                   )}
                 </p>
                 <Button
-                  variant="default"
                   onClick={() => {
                     router.push(`/project/${ref}/functions/new`)
                     track('edge_function_via_editor_button_clicked', {
@@ -89,7 +88,6 @@ export const FunctionsEmptyState = () => {
                   )}
                 </p>
                 <Button
-                  variant="default"
                   onClick={() => {
                     openSidebar(SIDEBAR_KEYS.AI_ASSISTANT)
                     aiSnap.newChat({
@@ -141,7 +139,6 @@ export const FunctionsEmptyState = () => {
               </p>
 
               <Button
-                variant="default"
                 onClick={() => {
                   setCreateMethod('cli')
                   track('edge_function_via_cli_button_clicked', { origin: 'no_functions_block' })

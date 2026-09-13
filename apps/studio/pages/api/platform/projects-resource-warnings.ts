@@ -8,7 +8,10 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
 import { executePlatformQuery } from '@/lib/api/self-platform/db'
-import { listAllProjectsV2 } from '@/lib/api/self-platform/list-user-projects'
+import {
+  listAllProjectsV2,
+  type ListProjectsPaginatedResponse,
+} from '@/lib/api/self-platform/list-user-projects'
 import { getMemberContext } from '@/lib/api/self-platform/members'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
@@ -49,7 +52,9 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
   // so the default 100-row page never silently truncates the fleet (an internal
   // multi-team platform can exceed 100 registered projects).
   const visible = await listAllProjectsV2(ctx, 10_000)
-  let refs = visible.projects.map((p) => p.ref)
+  let refs = visible.projects.map(
+    (project: ListProjectsPaginatedResponse['projects'][number]) => project.ref
+  )
   const refFilter = typeof req.query.ref === 'string' ? req.query.ref : undefined
   if (refFilter !== undefined) refs = refs.filter((r) => r === refFilter)
   if (refs.length === 0) return res.status(200).json([])

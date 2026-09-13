@@ -302,13 +302,7 @@ export const EditHookPanel = () => {
         onCancel={confirmOnClose}
         customFooter={
           <div className="flex w-full justify-end space-x-3 border-t border-default px-3 py-4">
-            <Button
-              size="tiny"
-              variant="default"
-              type="button"
-              onClick={confirmOnClose}
-              disabled={isSubmitting}
-            >
+            <Button size="tiny" type="button" onClick={confirmOnClose} disabled={isSubmitting}>
               {$t('Cancel')}
             </Button>
             <Button

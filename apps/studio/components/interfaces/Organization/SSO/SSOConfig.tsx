@@ -248,12 +248,8 @@ export const SSOConfig = () => {
           <UpgradeToPro
             plan="Team"
             source="organizationSso"
-            primaryText={$t(
-              'Organization Single Sign-on (SSO) is available from Team plan and above'
-            )}
-            secondaryText={$t(
-              'SSO as a login option provides additional account security for your team by enforcing the use of an identity provider when logging into Supabase. Upgrade to Team or above to set up SSO for your organization.'
-            )}
+            primaryText="Organization Single Sign-on (SSO) is available from Team plan and above"
+            secondaryText="SSO as a login option provides additional account security for your team by enforcing the use of an identity provider when logging into Supabase. Upgrade to Team or above to set up SSO for your organization."
             featureProposition="enable Single Sign-on (SSO)"
           />
         ) : isSuccess || isSSOProviderNotFound ? (
@@ -389,11 +385,7 @@ export const SSOConfig = () => {
                     </div>
                     <div className="flex space-x-2">
                       {form.formState.isDirty && (
-                        <Button
-                          variant="default"
-                          disabled={isCreating || isUpdating}
-                          onClick={() => form.reset()}
-                        >
+                        <Button disabled={isCreating || isUpdating} onClick={() => form.reset()}>
                           {$t('Cancel')}
                         </Button>
                       )}

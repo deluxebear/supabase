@@ -62,7 +62,7 @@ export const BannerTableEditorQueueOperations = () => {
             {$t('Batch multiple row edits and review them before saving to your database')}
           </p>
         </div>
-        <Button asChild variant="default" className="w-min">
+        <Button asChild className="w-min">
           <Link href={DASHBOARD_SETTINGS_URL}>
             {isQueueOperationsEnabled ? $t('View preferences') : $t('Enable in preferences')}
           </Link>

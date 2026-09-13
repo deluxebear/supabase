@@ -45,7 +45,7 @@ export interface PlatformProjectRow {
   endpoint_document?: unknown
 }
 
-type ProjectDetailResponse = components['schemas']['ProjectDetailResponse']
+type ProjectDetailResponse = components['schemas']['ProjectDetailResponse_Output']
 
 export const PROJECT_SELECT_COLUMNS = `
   id, ref, organization_id, name, status, cloud_provider, region,

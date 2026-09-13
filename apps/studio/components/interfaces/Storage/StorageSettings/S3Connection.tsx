@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import { AlertTitle } from '@ui/components/shadcn/ui/alert'
 import { useParams } from 'common'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -9,6 +8,7 @@ import { toast } from 'sonner'
 import {
   Alert,
   AlertDescription,
+  AlertTitle,
   Button,
   Card,
   CardContent,
@@ -223,7 +223,6 @@ export const S3Connection = () => {
                     <CardFooter className="justify-end space-x-2">
                       {form.formState.isDirty && (
                         <Button
-                          variant="default"
                           type="reset"
                           onClick={() => form.reset()}
                           disabled={
@@ -253,7 +252,7 @@ export const S3Connection = () => {
                       {$t('To connect to your S3 bucket, you need to restore your project.')}
                     </AlertDescription>
                     <div className="mt-3 flex items-center space-x-2">
-                      <Button asChild variant="default">
+                      <Button asChild>
                         <Link href={`/project/${projectRef}`}>{$t('Restore project')}</Link>
                       </Button>
                     </div>
@@ -290,7 +289,7 @@ export const S3Connection = () => {
                   {$t('To fetch your S3 access keys, you need to restore your project.')}
                 </AlertDescription>
                 <AlertDescription>
-                  <Button asChild variant="default" className="mt-3">
+                  <Button asChild className="mt-3">
                     <Link href={`/project/${projectRef}`}>{$t('Restore project')}</Link>
                   </Button>
                 </AlertDescription>

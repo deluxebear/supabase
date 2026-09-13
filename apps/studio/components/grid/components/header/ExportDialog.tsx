@@ -155,9 +155,7 @@ pg_dump -h ${db_host} -p ${db_port} -d ${db_name} -U ${db_user} --table="${table
           )}
         </DialogSection>
         <DialogFooter>
-          <Button variant="default" onClick={() => onOpenChange(false)}>
-            {$t('Close')}
-          </Button>
+          <Button onClick={() => onOpenChange(false)}>{$t('Close')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -5,11 +5,11 @@ import { assertSelfHosted } from './util'
 import type { ResolvedConnection } from '@/lib/api/self-platform/resolve-connection'
 import { PROJECT_DB_HOST, PROJECT_ENDPOINT, PROJECT_ENDPOINT_PROTOCOL } from '@/lib/constants/api'
 
-type ProjectAppConfig = components['schemas']['ProjectSettingsResponse']['app_config'] & {
+type ProjectAppConfig = components['schemas']['ProjectSettingsResponse_Output']['app_config'] & {
   protocol?: string
 }
 
-export type ProjectSettings = components['schemas']['ProjectSettingsResponse'] & {
+export type ProjectSettings = components['schemas']['ProjectSettingsResponse_Output'] & {
   app_config?: ProjectAppConfig
 }
 

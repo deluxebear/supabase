@@ -79,7 +79,7 @@ const NoticeBox = () => {
         title={$t('Only functions that return a trigger will be displayed below')}
         description={`You can make functions by using the Database Functions`}
         button={
-          <Button asChild variant="default">
+          <Button asChild>
             <Link href={`/project/${ref}/database/functions`}>{$t('Go to Functions')}</Link>
           </Button>
         }

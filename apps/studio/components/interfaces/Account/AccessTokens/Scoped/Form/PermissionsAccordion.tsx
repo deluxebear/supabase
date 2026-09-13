@@ -13,8 +13,6 @@ import { getActivePreset, type PermissionPreset } from '../../AccessToken.preset
 import type { TokenAccessEvaluation } from '../../AccessToken.roles'
 import { PermissionPresetSelect } from './PermissionPresetSelect'
 import { PermissionRow } from './PermissionRow'
-import { InlineLink } from '@/components/ui/InlineLink'
-import { DOCS_URL } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 
 interface PermissionsAccordionProps {
@@ -43,12 +41,8 @@ export const PermissionsAccordion = ({
         description={
           <p className="text-foreground-lighter text-sm">
             {$t(
-              "Grant the minimum access this token needs. Everything defaults to None. Permissions follow your role in the organizations and projects you're a member of — see"
-            )}{' '}
-            <InlineLink href={`${DOCS_URL}/guides/platform/access-control`}>
-              {$t('access control')}
-            </InlineLink>{' '}
-            {$t('for how roles work.')}
+              "Grant the minimum access this token needs. Everything defaults to None. Permissions follow your role in the organizations and projects you're a member of."
+            )}
           </p>
         }
       >

@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useFlag, useParams } from 'common'
 import { Search } from 'lucide-react'
@@ -25,9 +24,11 @@ import { useSecretsDeleteMutation } from '@/data/secrets/secrets-delete-mutation
 import { useSecretsQuery } from '@/data/secrets/secrets-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
+
 export const EdgeFunctionSecrets = () => {
   const { ref: projectRef } = useParams()
-  const workersEnabled = useFlag('workers')
+  const computeEnabled = useFlag('compute')
   const [searchString, setSearchString] = useState('')
 
   const { can: canReadSecrets, isLoading: isLoadingSecretsPermissions } = useAsyncCheckPermissions(
@@ -236,10 +237,10 @@ export const EdgeFunctionSecrets = () => {
           }
         }}
       >
-        {workersEnabled ? (
+        {computeEnabled ? (
           <p className="text-sm">
             {$t('Ensure none of your')} <span className="font-medium">{$t('edge functions')}</span>{' '}
-            or <span className="font-medium">workers</span>{' '}
+            or <span className="font-medium">{$t('compute instances')}</span>{' '}
             {$t('are actively using this secret before deleting it. This action cannot be undone.')}
           </p>
         ) : (

@@ -178,10 +178,11 @@ export const AddNewSecretModal = () => {
           </Form>
         </DialogSection>
         <DialogFooter>
-          <Button variant="default" disabled={isSubmitting} onClick={handleClose}>
+          <Button disabled={isSubmitting} onClick={handleClose}>
             {$t('Cancel')}
           </Button>
           <Button
+            variant="primary"
             form={formId}
             type="submit"
             disabled={!isDirty || isSubmitting}

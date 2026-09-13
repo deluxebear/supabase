@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { Edit, Trash } from 'lucide-react'
@@ -48,6 +47,7 @@ import { useSchemaCreateMutation } from '@/data/database/schema-create-mutation'
 import { invalidateSchemasQuery, useSchemasQuery } from '@/data/database/schemas-query'
 import { useFDWCreateMutation } from '@/data/fdw/fdw-create-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import type { ResponseError } from '@/types'
 
@@ -440,7 +440,6 @@ export const CreateWrapperSheet = ({
                             </div>
                             <div className="flex items-center space-x-2">
                               <Button
-                                variant="default"
                                 className="px-1"
                                 icon={<Edit />}
                                 onClick={() => {
@@ -448,7 +447,6 @@ export const CreateWrapperSheet = ({
                                 }}
                               />
                               <Button
-                                variant="default"
                                 className="px-1"
                                 icon={<Trash />}
                                 onClick={() => {
@@ -461,7 +459,7 @@ export const CreateWrapperSheet = ({
                       })}
 
                       <div className="flex justify-end">
-                        <Button variant="default" onClick={() => setSelectedTableToEdit(NewTable)}>
+                        <Button onClick={() => setSelectedTableToEdit(NewTable)}>
                           {$t('Add foreign table')}
                         </Button>
                       </div>
@@ -520,7 +518,6 @@ export const CreateWrapperSheet = ({
             <SheetFooter>
               <Button
                 size="tiny"
-                variant="default"
                 type="button"
                 onClick={onCloseWithConfirmation}
                 disabled={isSubmitting}

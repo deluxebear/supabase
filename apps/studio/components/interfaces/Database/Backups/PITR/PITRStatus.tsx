@@ -61,15 +61,14 @@ const PITRStatus = ({
               </span>
             </div>
             <ButtonTooltip
+              variant="primary"
               disabled={IS_SELF_PLATFORM || hasReadReplicas || !canTriggerPhysicalBackup}
               onClick={() => onSetConfiguration()}
               tooltip={{
                 content: {
                   side: 'left',
                   text: IS_SELF_PLATFORM
-                    ? $t(
-                        'PITR restore from Studio is not available on self-hosted. Restore using the pgBackRest CLI runbook.'
-                      )
+                    ? 'PITR restore from Studio is not available on self-hosted. Restore using the pgBackRest CLI runbook.'
                     : hasReadReplicas
                       ? 'You will need to remove all read replicas first to trigger a PITR recovery'
                       : !canTriggerPhysicalBackup

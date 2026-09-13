@@ -1,3 +1,4 @@
+import { useDebounce } from '@uidotdev/usehooks'
 import { useParams } from 'common'
 import { Search } from 'lucide-react'
 import { useState } from 'react'
@@ -5,7 +6,7 @@ import { Admonition } from 'ui-patterns/Admonition'
 import { Input } from 'ui-patterns/DataInputs/Input'
 
 import { InviteMemberButton } from './InviteMemberButton'
-import MembersView from './MembersView'
+import { MembersView } from './MembersView'
 import {
   ScaffoldActionsContainer,
   ScaffoldActionsGroup,
@@ -25,6 +26,8 @@ export const TeamSettings = () => {
   const { slug } = useParams()
   const [searchString, setSearchString] = useState('')
 
+  const debouncedSearch = useDebounce(searchString, 500)
+
   const { data: roles } = useOrganizationRolesV2Query({ slug })
   const hasProjectScopedRoles = (roles?.project_scoped_roles ?? []).length > 0
 
@@ -43,7 +46,7 @@ export const TeamSettings = () => {
               autoComplete="off"
               icon={<Search />}
               value={searchString}
-              onChange={(e: any) => setSearchString(e.target.value)}
+              onChange={(e) => setSearchString(e.target.value)}
               name="email"
               id="email"
               placeholder={$t('Filter members')}
@@ -67,7 +70,9 @@ export const TeamSettings = () => {
           )}
 
           <ScaffoldSectionContent className="w-full">
-            <MembersView searchString={searchString} />
+            <MembersView
+              searchString={searchString.length === 0 ? searchString : debouncedSearch}
+            />
           </ScaffoldSectionContent>
         </ScaffoldFilterAndContent>
       </ScaffoldSection>

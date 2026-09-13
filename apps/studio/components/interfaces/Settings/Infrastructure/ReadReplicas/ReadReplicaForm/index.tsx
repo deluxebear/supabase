@@ -141,10 +141,15 @@ export const ReadReplicaForm = ({
       )}
 
       <DialogFooter className="border-t-0">
-        <Button disabled={isSettingUp} variant="default" onClick={onClose}>
+        <Button disabled={isSettingUp} onClick={onClose}>
           {$t('Cancel')}
         </Button>
-        <Button disabled={!canDeployReplica} loading={isSettingUp} onClick={onSubmit}>
+        <Button
+          variant="primary"
+          disabled={!canDeployReplica}
+          loading={isSettingUp}
+          onClick={onSubmit}
+        >
           {$t('Add replica')}
         </Button>
       </DialogFooter>

@@ -151,9 +151,7 @@ export const CustomExpiryModal = () => {
             )}
           </DialogSection>
           <DialogFooter>
-            <Button variant="default" onClick={handleClose}>
-              {$t('Cancel')}
-            </Button>
+            <Button onClick={handleClose}>{$t('Cancel')}</Button>
             <Button
               form={formId}
               disabled={!isDirty || isSubmitting}

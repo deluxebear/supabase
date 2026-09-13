@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import type { PGTable } from '@supabase/pg-meta'
 import { ArrowRight } from 'lucide-react'
 import type { PropsWithChildren } from 'react'
@@ -16,6 +15,7 @@ import { useTableEditorQuery } from '@/data/table-editor/table-editor-query'
 import { isTableLike } from '@/data/table-editor/table-editor-types'
 import { useTableQuery } from '@/data/tables/table-retrieve-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 import { useTableEditorTableStateSnapshot } from '@/state/table-editor-table'
 
 interface Props extends PropsWithChildren<RenderCellProps<SupaRow, unknown>> {
@@ -85,7 +85,6 @@ export const ForeignKeyFormatter = (props: Props) => {
             <Popover>
               <PopoverTrigger asChild>
                 <ButtonTooltip
-                  variant="default"
                   className="w-6 h-6"
                   aria-label={$t('View referencing record')}
                   icon={<ArrowRight />}

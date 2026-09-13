@@ -156,7 +156,6 @@ export const CreditCodeRedemption = ({
       {!modalVisible && (
         <DialogTrigger asChild>
           <ButtonTooltip
-            variant="default"
             className="pointer-events-auto"
             disabled={codeRedemptionDisabled}
             tooltip={{
@@ -238,7 +237,7 @@ export const CreditCodeRedemption = ({
                   )}
 
                   {!router.pathname.includes('/org/') && (
-                    <Button asChild variant="default">
+                    <Button asChild>
                       <Link href={`/org/${org?.slug}`}>{$t('Go to organization')}</Link>
                     </Button>
                   )}

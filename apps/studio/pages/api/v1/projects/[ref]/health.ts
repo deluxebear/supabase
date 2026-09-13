@@ -15,7 +15,7 @@ import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 type HealthResponse =
   paths['/v1/projects/{ref}/health']['get']['responses']['200']['content']['application/json']
-type ServiceName = components['schemas']['V1ServiceHealthResponse']['name']
+type ServiceName = components['schemas']['V1ServiceHealthResponse_Output']['name']
 
 export default (req: NextApiRequest, res: NextApiResponse) =>
   apiWrapper(req, res, handler, { withAuth: true })

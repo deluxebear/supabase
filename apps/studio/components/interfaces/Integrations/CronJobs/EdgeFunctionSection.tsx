@@ -105,13 +105,13 @@ export const EdgeFunctionSection = ({ form }: HTTPRequestFieldsProps) => {
             {$t('Select which edge function to trigger')}
           </p>
           {isLoading ? (
-            <Button variant="default" className="justify-start" block size="small" loading>
+            <Button className="justify-start" block size="small" loading>
               {$t('Loading edge functions...')}
             </Button>
           ) : (
             <div className="px-4 py-4 border rounded-sm bg-surface-300 border-strong flex items-center justify-between space-x-4">
               <p className="text-sm">{$t('No edge functions created yet')}</p>
-              <Button asChild>
+              <Button variant="primary" asChild>
                 <Link href={`/project/${ref}/functions`}>{$t('Create an edge function')}</Link>
               </Button>
             </div>
@@ -131,7 +131,6 @@ export const EdgeFunctionSection = ({ form }: HTTPRequestFieldsProps) => {
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
-                        variant="default"
                         role="combobox"
                         aria-expanded={open}
                         aria-controls={listboxId}

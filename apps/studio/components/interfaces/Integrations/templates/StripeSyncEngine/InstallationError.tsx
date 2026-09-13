@@ -33,12 +33,7 @@ export const InstallationError = ({
           'There was an error during the uninstallation of the Stripe Sync Engine, please try again. If the problem persists, contact support.'
         )}
         additionalActions={
-          <Button
-            variant="default"
-            onClick={handleUninstall}
-            disabled={uninstalling}
-            loading={uninstalling}
-          >
+          <Button onClick={handleUninstall} disabled={uninstalling} loading={uninstalling}>
             {$t('Retry uninstallation')}
           </Button>
         }
@@ -61,12 +56,7 @@ export const InstallationError = ({
             : 'There was an error during the installation of the Stripe Sync Engine, please try reinstalling the integration. If the problem persists, contact support.'
         }
         additionalActions={
-          <Button
-            variant="default"
-            onClick={handleOpenInstallSheet}
-            disabled={installing}
-            loading={installing}
-          >
+          <Button onClick={handleOpenInstallSheet} disabled={installing} loading={installing}>
             {isUpgrade ? 'Retry upgrade' : 'Retry installation'}
           </Button>
         }

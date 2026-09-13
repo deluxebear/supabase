@@ -157,6 +157,7 @@ const CreateUserModal = ({ visible, setVisible }: CreateUserModalProps) => {
             </FormLabel>
 
             <Button
+              variant="primary"
               block
               size="small"
               type="submit"

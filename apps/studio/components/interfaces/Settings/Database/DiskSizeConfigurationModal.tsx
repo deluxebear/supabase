@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { zodResolver } from '@hookform/resolvers/zod'
 import { SupportCategories } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
@@ -42,6 +41,7 @@ import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export interface DiskSizeConfigurationProps {
   visible: boolean
@@ -160,10 +160,10 @@ const DiskSizeConfigurationModal = ({
                 <AlertTitle>{$t('Maximum manual disk size increase reached')}</AlertTitle>
                 <AlertDescription>
                   <p>
-                    
-                                                                  {$t('You cannot manually expand the disk size any more than')} {maxDiskSize}{$t('GB. If you need more than this, contact us via support for help.')}
-                                                                </p>
-                  <Button asChild variant="default" className="mt-3">
+                    {$t('You cannot manually expand the disk size any more than')} {maxDiskSize}
+                    {$t('GB. If you need more than this, contact us via support for help.')}
+                  </p>
+                  <Button asChild className="mt-3">
                     <SupportLink
                       queryParams={{
                         projectRef,
@@ -171,9 +171,8 @@ const DiskSizeConfigurationModal = ({
                         subject: 'Increase disk size beyond 200GB',
                       }}
                     >
-                      
-                                                                        {$t('Contact support')}
-                                                                      </SupportLink>
+                      {$t('Contact support')}
+                    </SupportLink>
                   </Button>
                 </AlertDescription>
               </Alert>
@@ -183,9 +182,8 @@ const DiskSizeConfigurationModal = ({
                   <Alert variant={isAbleToResizeDatabase ? 'default' : 'warning'}>
                     <Info size={16} />
                     <AlertTitle>
-                      
-                                                                            {$t('Disk modifications are limited to 4 per rolling 24-hour window')}
-                                                                          </AlertTitle>
+                      {$t('Disk modifications are limited to 4 per rolling 24-hour window')}
+                    </AlertTitle>
                     <AlertDescription>
                       <div className="mb-4">
                         {isAbleToResizeDatabase
@@ -194,11 +192,10 @@ const DiskSizeConfigurationModal = ({
                               'DD MMM YYYY, HH:mm (ZZ)'
                             )}. You've reached the disk modification limit for now — you can resize again in approximately ${formattedTimeTillNextAvailableResize}.`}
                       </div>
-                      <Button asChild variant="default" iconRight={<ExternalLink size={14} />}>
+                      <Button asChild iconRight={<ExternalLink size={14} />}>
                         <Link href={`${DOCS_URL}/guides/platform/database-size#disk-management`}>
-                          
-                                                                                        {$t('Read more about disk management')}
-                                                                                      </Link>
+                          {$t('Read more about disk management')}
+                        </Link>
                       </Button>
                     </AlertDescription>
                   </Alert>
@@ -229,10 +226,7 @@ const DiskSizeConfigurationModal = ({
                   </Form>
                 </DialogSection>
                 <DialogFooter>
-                  <Button variant="default" onClick={() => hideModal(false)}>
-                    
-                                                                      {$t('Cancel')}
-                                                                    </Button>
+                  <Button onClick={() => hideModal(false)}>{$t('Cancel')}</Button>
                   <Button
                     form={formId}
                     type="submit"
@@ -240,9 +234,8 @@ const DiskSizeConfigurationModal = ({
                     disabled={!isAbleToResizeDatabase || isUpdatingDiskSize || !isDirty || loading}
                     loading={isUpdatingDiskSize || loading}
                   >
-                    
-                                                                      {$t('Update disk size')}
-                                                                    </Button>
+                    {$t('Update disk size')}
+                  </Button>
                 </DialogFooter>
               </>
             )}
@@ -258,16 +251,18 @@ const DiskSizeConfigurationModal = ({
             <AlertDescription>
               {hasAccessToDiskModifications === false ? (
                 <p>
-                  
-                                                            {$t('If you are intending to use more than 500MB of disk space, then you will need to upgrade to at least the Pro Plan.')}
-                                                          </p>
+                  {$t(
+                    'If you are intending to use more than 500MB of disk space, then you will need to upgrade to at least the Pro Plan.'
+                  )}
+                </p>
               ) : (
                 <p>
-                  
-                                                                {$t('If you are intending to use more than 8GB of disk space, then you will need to disable your spend cap.')}
-                                                              </p>
+                  {$t(
+                    'If you are intending to use more than 8GB of disk space, then you will need to disable your spend cap.'
+                  )}
+                </p>
               )}
-              <Button asChild variant="default" className="mt-3">
+              <Button asChild className="mt-3">
                 <Link
                   href={`/org/${organization?.slug}/billing?panel=${
                     hasAccessToDiskModifications === false ? 'subscriptionPlan' : 'costControl'

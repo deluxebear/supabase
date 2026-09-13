@@ -72,7 +72,6 @@ export const ForeignProjectSelector = ({
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         <Button
-          variant="default"
           block
           disabled={loadingForeignProjects}
           loading={loadingForeignProjects}
@@ -203,7 +202,6 @@ export const SupabaseProjectSelector = ({
       renderTrigger={() => {
         return (
           <Button
-            variant="default"
             block
             disabled={defaultSupabaseProject !== undefined || loadingSupabaseProjects}
             loading={loadingSupabaseProjects}

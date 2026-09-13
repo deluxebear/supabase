@@ -160,10 +160,8 @@ export const AuditLogs = () => {
           <UpgradeToPro
             plan="Team"
             source="organizationAuditLogs"
-            primaryText={$t('Organization Audit Logs are not available on Free or Pro plans')}
-            secondaryText={$t(
-              'Upgrade to Team or Enterprise to view up to 62 days of Audit Logs for your organization.'
-            )}
+            primaryText="Organization Audit Logs are not available on Free or Pro plans"
+            secondaryText="Upgrade to Team or Enterprise to view up to 62 days of Audit Logs for your organization."
             featureProposition="enable audit logs"
           />
         </ScaffoldSection>
@@ -246,7 +244,6 @@ export const AuditLogs = () => {
                   )}
                 </div>
                 <Button
-                  variant="default"
                   disabled={isLoading || isRefetching}
                   icon={<RefreshCw className={isRefetching ? 'animate-spin' : ''} />}
                   onClick={() => refetch()}
@@ -428,7 +425,7 @@ export const AuditLogs = () => {
                               )}
                             </Table.td>
                             <Table.td align="right">
-                              <Button variant="default">{$t('View details')}</Button>
+                              <Button>{$t('View details')}</Button>
                             </Table.td>
                           </Table.tr>
                         )

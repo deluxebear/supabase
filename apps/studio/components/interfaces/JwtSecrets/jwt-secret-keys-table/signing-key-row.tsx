@@ -31,7 +31,7 @@ import { JWTSigningKey } from '@/data/jwt-signing-keys/jwt-signing-keys-query'
 import { t as $t } from '@/lib/i18n'
 
 interface SigningKeyRowProps {
-  signingKey: components['schemas']['SigningKeyResponse']
+  signingKey: components['schemas']['SigningKeyResponse_Output']
   setSelectedKey: (key?: JWTSigningKey) => void
   setShownDialog: (dialog?: 'key-details' | 'revoke' | 'delete') => void
   handlePreviouslyUsedKey: (keyId: string) => void

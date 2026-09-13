@@ -139,7 +139,12 @@ export const IndexSuggestionIcon = ({
           >
             {$t('View details')}
           </Button>
-          <Button onClick={handleCreateIndex} loading={isCreatingIndex} disabled={isCreatingIndex}>
+          <Button
+            variant="primary"
+            onClick={handleCreateIndex}
+            loading={isCreatingIndex}
+            disabled={isCreatingIndex}
+          >
             {$t('Create index')}
           </Button>
         </div>

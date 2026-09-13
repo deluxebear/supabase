@@ -23,6 +23,7 @@ export function SubmitButton({
   return (
     <div className={cn('flex flex-col gap-3', className)}>
       <Button
+        variant="primary"
         type="submit"
         size="small"
         block

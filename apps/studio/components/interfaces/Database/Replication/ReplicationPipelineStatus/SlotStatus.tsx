@@ -37,7 +37,7 @@ export const SlotStatusBadge = ({
   status,
   context = 'pipeline',
 }: {
-  status?: SlotWalStatus
+  status?: SlotWalStatus | null
   context?: SlotStatusContext
 }) => {
   const meta = getWalStatusMeta(status)

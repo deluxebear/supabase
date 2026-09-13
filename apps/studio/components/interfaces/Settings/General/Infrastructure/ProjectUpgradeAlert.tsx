@@ -194,7 +194,7 @@ export const ProjectUpgradeAlert = () => {
                           </p>
 
                           <div>
-                            <Button size="tiny" variant="default" asChild>
+                            <Button size="tiny" asChild>
                               <Link
                                 href={`${DOCS_URL}/guides/platform/migrating-and-upgrading-projects#caveats`}
                                 target="_blank"
@@ -242,7 +242,7 @@ export const ProjectUpgradeAlert = () => {
                             </div>
                           </div>
                           <div>
-                            <Button size="tiny" variant="default" asChild>
+                            <Button size="tiny" asChild>
                               <Link
                                 href={`${DOCS_URL}/guides/platform/migrating-and-upgrading-projects#caveats`}
                                 target="_blank"
@@ -294,14 +294,15 @@ export const ProjectUpgradeAlert = () => {
                   </div>
                 </DialogSection>
                 <DialogFooter>
-                  <Button
-                    variant="default"
-                    onClick={() => setShowUpgradeModal(false)}
-                    disabled={isUpgrading}
-                  >
+                  <Button onClick={() => setShowUpgradeModal(false)} disabled={isUpgrading}>
                     {$t('Cancel')}
                   </Button>
-                  <Button type="submit" disabled={isUpgrading} loading={isUpgrading}>
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    disabled={isUpgrading}
+                    loading={isUpgrading}
+                  >
                     {$t('Confirm upgrade')}
                   </Button>
                 </DialogFooter>

@@ -403,7 +403,7 @@ export const FileExplorerAndEditor = ({
             {$t('Files')}
           </h3>
           {IS_PLATFORM && (
-            <Button size="tiny" variant="default" icon={<Plus size={14} />} onClick={addNewFile}>
+            <Button size="tiny" icon={<Plus size={14} />} onClick={addNewFile}>
               {$t('Add File')}
             </Button>
           )}

@@ -18,8 +18,18 @@ export type PermissionGrant = {
   restrictive?: boolean | null
 }
 
-const toRegexpString = (actionOrResource: string) =>
-  `^${actionOrResource.replace('.', '\\.').replace('%', '.*')}$`
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+const regexpCache = new Map<string, RegExp>()
+const getActionResourceRegexp = (actionOrResource: string) => {
+  let regexp = regexpCache.get(actionOrResource)
+  if (!regexp) {
+    const pattern = actionOrResource.split('%').map(escapeRegExp).join('.*')
+    regexp = new RegExp(`^${pattern}$`)
+    regexpCache.set(actionOrResource, regexp)
+  }
+  return regexp
+}
 
 export function doPermissionConditionCheck(permissions: PermissionGrant[], data?: object) {
   const isRestricted = permissions
@@ -55,9 +65,9 @@ export function doPermissionsCheck(
       (permission) =>
         permission.organization_slug === organizationSlug &&
         (permission.actions ?? []).some((act) =>
-          action ? action.match(toRegexpString(act)) : null
+          action ? getActionResourceRegexp(act).test(action) : null
         ) &&
-        (permission.resources ?? []).some((res) => resource.match(toRegexpString(res))) &&
+        (permission.resources ?? []).some((res) => getActionResourceRegexp(res).test(resource)) &&
         permission.project_refs?.includes(projectRef)
     )
     if (projectPermissions.length > 0) {
@@ -72,9 +82,9 @@ export function doPermissionsCheck(
       (permission) =>
         permission.organization_slug === organizationSlug &&
         (permission.actions ?? []).some((act) =>
-          action ? action.match(toRegexpString(act)) : null
+          action ? getActionResourceRegexp(act).test(action) : null
         ) &&
-        (permission.resources ?? []).some((res) => resource.match(toRegexpString(res)))
+        (permission.resources ?? []).some((res) => getActionResourceRegexp(res).test(resource))
     )
   return doPermissionConditionCheck(orgPermissions, { resource_name: resource, ...data })
 }

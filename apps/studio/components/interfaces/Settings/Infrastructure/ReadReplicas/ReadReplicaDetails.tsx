@@ -163,7 +163,7 @@ export const ReadReplicaDetails = () => {
                     label={$t('Compute Size')}
                     description={$t('Size of replica will be identical to the primary database.')}
                   >
-                    <Input readOnly className="input-mono" value={size} />
+                    <Input readOnly className="input-mono" value={size ?? undefined} />
                   </FormItemLayout>
                 </CardContent>
               </>

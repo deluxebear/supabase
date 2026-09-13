@@ -149,7 +149,6 @@ function ConfigurationDriftItem({ row }: { row: ConfigurationDriftRow }) {
         <Button
           asChild
           type="button"
-          variant="default"
           size="tiny"
           className="w-full shrink-0 sm:w-auto"
           icon={<ArrowRight className="h-3.5 w-3.5" />}
@@ -294,7 +293,7 @@ export function ConfigurationDriftPage() {
         )}
         error={error}
         additionalActions={
-          <Button variant="default" size="small" loading={isFetching} onClick={() => refetch()}>
+          <Button size="small" loading={isFetching} onClick={() => refetch()}>
             {$t('Refresh')}
           </Button>
         }

@@ -45,7 +45,7 @@ export const SecurityDefinerViewPopover = ({
                 {$t('Autofix')}
               </Button>
             )}
-            <Button variant="default" asChild>
+            <Button asChild>
               <Link
                 target="_blank"
                 rel="noopener noreferrer"

@@ -69,12 +69,7 @@ const EdgeFunctionSecret = ({ secret, onSelectEdit, onSelectDelete }: EdgeFuncti
         <div className="flex items-center justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                aria-label={$t('More options')}
-                variant="default"
-                className="px-1"
-                icon={<MoreVertical />}
-              />
+              <Button aria-label={$t('More options')} className="px-1" icon={<MoreVertical />} />
             </DropdownMenuTrigger>
             <DropdownMenuContent side="bottom" align="end" className="w-52">
               <DropdownMenuItem asChild>

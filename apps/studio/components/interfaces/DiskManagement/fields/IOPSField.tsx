@@ -57,7 +57,6 @@ export function IOPSField({ form, disableInput }: IOPSFieldProps) {
                   form={form}
                   actions={
                     <Button
-                      variant="default"
                       onClick={() => {
                         setValue('computeSize', reccomendedComputeSize ?? 'ci_nano')
                         trigger('provisionedIOPS')

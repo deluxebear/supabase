@@ -1,4 +1,3 @@
-import { Popover, PopoverContent, PopoverTrigger } from '@ui/components/shadcn/ui/popover'
 import { useParams } from 'common'
 import { Auth, Realtime, Storage } from 'icons'
 import { ChevronDown, Database, Network, Plus, RefreshCw, X } from 'lucide-react'
@@ -13,6 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Select,
   SelectContent,
   SelectGroup,
@@ -237,7 +239,6 @@ const ReportFilterBar = ({
             side="bottom"
           >
             <Button
-              variant="default"
               disabled={isLoading}
               icon={<RefreshCw className={isLoading ? 'animate-spin' : ''} />}
               className="w-7"
@@ -264,13 +265,12 @@ const ReportFilterBar = ({
             >
               <DropdownMenuTrigger asChild>
                 <Button
-                  variant="default"
                   className="inline-flex flex-row gap-2"
                   iconRight={<ChevronDown size={14} />}
                 >
                   <span>
                     {currentProductFilter === null
-                      ? $t('All Requests')
+                      ? 'All Requests'
                       : $t(currentProductFilter.label)}
                   </span>
                 </Button>
@@ -346,11 +346,7 @@ const ReportFilterBar = ({
             open={showAdder ? false : undefined}
           >
             <PopoverTrigger asChild>
-              <Button
-                variant="default"
-                size="tiny"
-                icon={<Plus className={`text-foreground-light `} />}
-              >
+              <Button size="tiny" icon={<Plus className={`text-foreground-light `} />}>
                 {$t('Add filter')}
               </Button>
             </PopoverTrigger>

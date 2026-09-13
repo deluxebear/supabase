@@ -126,7 +126,7 @@ const BuildingState = () => {
                             "If your dashboard hasn't connected within 2 minutes, you can open a support ticket."
                           )}
                         </p>
-                        <Button asChild variant="default">
+                        <Button asChild>
                           <SupportLink>{$t('Contact support team')}</SupportLink>
                         </Button>
                       </>

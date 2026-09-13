@@ -48,7 +48,7 @@ export const IntrospectionDisabledNotice = ({
             )}
           </span>
           <div className="flex items-center gap-1">
-            <Button variant="default" size="tiny" onClick={() => setShowConfirm(true)}>
+            <Button size="tiny" onClick={() => setShowConfirm(true)}>
               {$t('Enable introspection')}
             </Button>
             <Button
@@ -81,9 +81,7 @@ export const IntrospectionDisabledNotice = ({
               .
             </p>
             <div className="mt-3">
-              <Button variant="default" onClick={() => setShowConfirm(true)}>
-                {$t('Enable introspection')}
-              </Button>
+              <Button onClick={() => setShowConfirm(true)}>{$t('Enable introspection')}</Button>
             </div>
           </Admonition>
           <Button

@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useReducedMotion } from 'common'
 import { ChevronRight, X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import {
@@ -44,21 +44,36 @@ const DEFAULT_VALUES: TokenFormValues = {
   permissions: {},
 }
 
-export const NewScopedTokenForm = ({
-  isPending,
-  onCreateToken,
-  onCancel,
-}: {
-  isPending: boolean
-  onCreateToken: (values: TokenFormValues) => void
-  onCancel: () => void
-}) => {
+export interface NewScopedTokenFormHandle {
+  getAbandonmentContext: () => {
+    resourceAccess: TokenFormValues['resourceAccess']
+    formStep: 'form' | 'review'
+    isFormTouched: boolean
+  }
+}
+
+export const NewScopedTokenForm = forwardRef<
+  NewScopedTokenFormHandle,
+  {
+    isPending: boolean
+    onCreateToken: (values: TokenFormValues) => void
+    onCancel: () => void
+  }
+>(({ isPending, onCreateToken, onCancel }, ref) => {
   const form = useForm<TokenFormValues>({
     resolver: zodResolver(TokenFormSchema),
     defaultValues: DEFAULT_VALUES,
     mode: 'onChange',
   })
   const [step, setStep] = useState<'form' | 'review'>('form')
+  const { isDirty } = form.formState
+  useImperativeHandle(ref, () => ({
+    getAbandonmentContext: () => ({
+      resourceAccess: form.getValues('resourceAccess'),
+      formStep: step,
+      isFormTouched: isDirty,
+    }),
+  }))
   const [formValues, setFormValues] = useState<TokenFormValues>(DEFAULT_VALUES)
   const [isCreateHintDismissed, setIsCreateHintDismissed] = useState(false)
   const [missingPermissionsAttempts, setMissingPermissionsAttempts] = useState(0)
@@ -90,13 +105,15 @@ export const NewScopedTokenForm = ({
   const isReducedMotionPreferred = useReducedMotion()
   const isReducedMotionPreferredRef = useRef(isReducedMotionPreferred)
   isReducedMotionPreferredRef.current = isReducedMotionPreferred
+  const onCancelRef = useRef(onCancel)
+  onCancelRef.current = onCancel
 
   useEffect(() => {
     if (isError) {
       toast.error($t('Something went wrong, try again'))
-      onCancel()
+      onCancelRef.current()
     }
-  }, [onCancel, isError])
+  }, [isError])
 
   useEffect(() => {
     if (missingPermissionsAttempts === 0) return
@@ -218,27 +235,31 @@ export const NewScopedTokenForm = ({
         )}
         <div className="flex items-center gap-2">
           {step === 'review' && (
-            <Button variant="default" disabled={isPending} onClick={() => setStep('form')}>
+            <Button disabled={isPending} onClick={() => setStep('form')}>
               {$t('Back')}
             </Button>
           )}
           <SheetClose asChild disabled={isPending}>
-            <Button variant="default">{$t('Cancel')}</Button>
+            <Button>{$t('Cancel')}</Button>
           </SheetClose>
           {step === 'form' && isClassicMode && (
-            <Button type="submit" form={FORM_ID} loading={isPending}>
+            <Button variant="primary" type="submit" form={FORM_ID} loading={isPending}>
               {$t('Generate token')}
             </Button>
           )}
           {step === 'form' && !isClassicMode && (
-            <Button type="submit" form={FORM_ID} iconRight={<ChevronRight />}>
+            <Button variant="primary" type="submit" form={FORM_ID} iconRight={<ChevronRight />}>
               {$t('Review access')}
             </Button>
           )}
           {step === 'review' && (
             <Popover open={!isCreateHintDismissed}>
               <PopoverAnchor asChild>
-                <Button loading={isPending} onClick={() => onCreateToken(formValues)}>
+                <Button
+                  variant="primary"
+                  loading={isPending}
+                  onClick={() => onCreateToken(formValues)}
+                >
                   {$t('Create token')}
                 </Button>
               </PopoverAnchor>
@@ -270,4 +291,6 @@ export const NewScopedTokenForm = ({
       </SheetFooter>
     </>
   )
-}
+})
+
+NewScopedTokenForm.displayName = 'NewScopedTokenForm'

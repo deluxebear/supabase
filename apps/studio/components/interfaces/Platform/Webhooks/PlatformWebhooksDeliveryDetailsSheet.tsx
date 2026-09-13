@@ -220,11 +220,7 @@ export const PlatformWebhooksDeliveryDetailsSheet = ({
               id={SHORTCUT_IDS.PLATFORM_WEBHOOKS_RETRY_DELIVERY}
               onTrigger={() => onRetryDelivery(retryableDelivery.id)}
             >
-              <Button
-                variant="default"
-                icon={<RotateCcw />}
-                onClick={() => onRetryDelivery(retryableDelivery.id)}
-              >
+              <Button icon={<RotateCcw />} onClick={() => onRetryDelivery(retryableDelivery.id)}>
                 {$t('Retry delivery')}
               </Button>
             </Shortcut>

@@ -64,7 +64,6 @@ export const Introduction = ({ showKeys, language, apikey, endpoint }: ContentPr
                 actions={[
                   <Button
                     key="copy"
-                    variant="default"
                     icon={<Copy />}
                     onClick={() => {
                       setCopied('anon')
@@ -105,7 +104,6 @@ export const Introduction = ({ showKeys, language, apikey, endpoint }: ContentPr
                 actions={[
                   <Button
                     key="copy"
-                    variant="default"
                     icon={<Copy />}
                     onClick={() => {
                       setCopied('service')

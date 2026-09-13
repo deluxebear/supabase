@@ -14,7 +14,6 @@ import {
 import {
   EXCLUDED_CATEGORY_SLUGS,
   FEATURED_INTEGRATION_IDS,
-  formatCategoryLabel,
   getMarketplaceSource,
   getMarketplaceType,
   INTEGRATION_TYPES,
@@ -209,20 +208,11 @@ export const MarketplaceIndex = () => {
 
   const activeFilters = [category, type, source].filter(Boolean)
   const pageTitle = useMemo(() => {
-    if (activeFilters.length !== 1) return $t('Extend your database')
-    if (category)
-      return $t('Integrations: {{label}}', {
-        label: formatCategoryLabel(category, categoryOptions),
-      })
-    if (type)
-      return $t('Integrations: {{label}}s', {
-        label: INTEGRATION_TYPES.find((t) => t.key === type)?.label ?? type,
-      })
-    if (source)
-      return $t('Integrations: {{label}}', {
-        label: MARKETPLACE_SOURCES.find((s) => s.key === source)?.label ?? source,
-      })
-    return $t('Integrations')
+    if (activeFilters.length !== 1) return 'Extend your database'
+    if (category) return 'Integrations: {{label}}'
+    if (type) return 'Integrations: {{label}}s'
+    if (source) return 'Integrations: {{label}}'
+    return 'Integrations'
   }, [activeFilters.length, category, type, source, categoryOptions])
 
   return (
@@ -290,9 +280,7 @@ export const MarketplaceIndex = () => {
 
             {filtered.length === 0 && (
               <EmptyStatePresentational title={$t('No results found')}>
-                <Button variant="default" onClick={clearAll}>
-                  {$t('Clear filters')}
-                </Button>
+                <Button onClick={clearAll}>{$t('Clear filters')}</Button>
               </EmptyStatePresentational>
             )}
 

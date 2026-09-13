@@ -44,9 +44,7 @@ export const DeleteMessageConfirmModal = ({
         </DialogSection>
 
         <DialogFooter padding="small">
-          <Button variant="default" onClick={onCancel}>
-            {$t('Cancel')}
-          </Button>
+          <Button onClick={onCancel}>{$t('Cancel')}</Button>
           <Button variant="danger" onClick={onConfirm}>
             {$t('Delete')}
           </Button>

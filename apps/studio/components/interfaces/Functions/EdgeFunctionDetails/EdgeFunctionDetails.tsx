@@ -217,9 +217,7 @@ export const EdgeFunctionDetails = () => {
 
                     <CardFooter className="flex justify-end space-x-2">
                       {form.formState.isDirty && (
-                        <Button variant="default" onClick={() => form.reset()}>
-                          {$t('Cancel')}
-                        </Button>
+                        <Button onClick={() => form.reset()}>{$t('Cancel')}</Button>
                       )}
                       <Button
                         variant="primary"
@@ -261,7 +259,6 @@ export const EdgeFunctionDetails = () => {
                   ))}
                   {selectedTab === 'curl' && (
                     <Button
-                      variant="default"
                       className="ml-auto -translate-y-2 translate-x-3"
                       onClick={() => setShowKey(!showKey)}
                     >
@@ -373,17 +370,16 @@ export const EdgeFunctionDetails = () => {
             visible={showDeleteModal}
             loading={isDeleting}
             variant="destructive"
-            confirmLabel={$t('Delete')}
-            confirmLabelLoading={$t('Deleting')}
-            title={`${$t('Confirm to delete')} ${selectedFunction?.name}`}
+            confirmLabel="Delete"
+            confirmLabelLoading="Deleting"
+            title={`${'Confirm to delete'} ${selectedFunction?.name}`}
             onCancel={() => setShowDeleteModal(false)}
             onConfirm={onConfirmDelete}
             alert={{
               base: { variant: 'destructive' },
-              title: $t('This action cannot be undone'),
-              description: $t(
-                'Ensure that you have made a backup if you want to restore your edge function'
-              ),
+              title: 'This action cannot be undone',
+              description:
+                'Ensure that you have made a backup if you want to restore your edge function',
             }}
           />
         </>

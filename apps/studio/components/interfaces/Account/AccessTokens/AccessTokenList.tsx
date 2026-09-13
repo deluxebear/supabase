@@ -8,9 +8,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  TableCell,
+  TableRow,
 } from 'ui'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
-import { TableCell, TableRow } from 'ui/src/components/shadcn/ui/table'
 
 import {
   ACCESS_TOKEN_SORT_VALUES,
@@ -151,7 +152,6 @@ export const AccessTokenList = ({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
-                      variant="default"
                       aria-label={$t('More options')}
                       className="w-7"
                       icon={<MoreVertical />}

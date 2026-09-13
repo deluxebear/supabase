@@ -353,12 +353,7 @@ const RowHeader = ({ rows: visibleRows, tableQueriesEnabled = true }: RowHeaderP
           {!snap.allRowsSelected ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="default"
-                  size="tiny"
-                  iconRight={<ChevronDown />}
-                  loading={isCopying}
-                >
+                <Button size="tiny" iconRight={<ChevronDown />} loading={isCopying}>
                   {$t('Copy')}
                 </Button>
               </DropdownMenuTrigger>
@@ -377,7 +372,6 @@ const RowHeader = ({ rows: visibleRows, tableQueriesEnabled = true }: RowHeaderP
           ) : (
             <ButtonTooltip
               disabled
-              variant="default"
               tooltip={{
                 content: {
                   side: 'bottom',
@@ -392,12 +386,7 @@ const RowHeader = ({ rows: visibleRows, tableQueriesEnabled = true }: RowHeaderP
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="default"
-                size="tiny"
-                iconRight={<ChevronDown />}
-                loading={isExporting}
-              >
+              <Button size="tiny" iconRight={<ChevronDown />} loading={isExporting}>
                 {$t('Export')}
               </Button>
             </DropdownMenuTrigger>

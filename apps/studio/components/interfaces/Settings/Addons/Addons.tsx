@@ -31,9 +31,9 @@ import {
   getAddons,
   subscriptionHasHipaaAddon,
 } from '@/components/interfaces/Billing/Subscription/Subscription.utils'
-import { ProjectUpdateDisabledTooltip } from '@/components/interfaces/Organization/BillingSettings/ProjectUpdateDisabledTooltip'
 import { SupportLink } from '@/components/interfaces/Support/SupportLink'
 import { AlertError } from '@/components/ui/AlertError'
+import { HighAvailabilityDisabledSectionNotice } from '@/components/ui/HighAvailability/HighAvailabilityDisabledSectionNotice'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { ResourceItem } from '@/components/ui/Resource/ResourceItem'
 import { ResourceList } from '@/components/ui/Resource/ResourceList'
@@ -46,6 +46,7 @@ import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import {
   useIsAwsCloudProvider,
+  useIsHighAvailability,
   useIsOrioleDbInAws,
   useIsProjectActive,
   useSelectedProjectQuery,
@@ -64,6 +65,7 @@ export const Addons = () => {
   const isAws = useIsAwsCloudProvider()
   const isProjectActive = useIsProjectActive()
   const isOrioleDbInAws = useIsOrioleDbInAws() === true
+  const isHighAvailability = useIsHighAvailability()
 
   const { projectSettingsCustomDomains, projectAddonsDedicatedIpv4Address } = useIsFeatureEnabled([
     'project_settings:custom_domains',
@@ -114,15 +116,20 @@ export const Addons = () => {
   const showDedicatedIPv4 = STUDIO_CAPABILITIES.dedicatedIPv4 && projectAddonsDedicatedIpv4Address
 
   const canOpenIPv4 =
-    isAws && isProjectActive && !projectUpdateDisabled && (canUpdateIPv4 || ipv4Enabled)
+    isAws &&
+    isProjectActive &&
+    !projectUpdateDisabled &&
+    (canUpdateIPv4 || ipv4Enabled) &&
+    !isHighAvailability
   const canOpenPITR = IS_SELF_PLATFORM
-    ? !isBackupOperatorStatusError
+    ? !isBackupOperatorStatusError && !isHighAvailability
     : isProjectActive &&
       !projectUpdateDisabled &&
       sufficientPgVersion &&
       !hasHipaaAddon &&
-      !isOrioleDbInAws
-  const canOpenCustomDomain = isProjectActive && !projectUpdateDisabled
+      !isOrioleDbInAws &&
+      !isHighAvailability
+  const canOpenCustomDomain = isProjectActive && !projectUpdateDisabled && !isHighAvailability
 
   const ipv4DisabledReason = getIPv4DisabledReason({
     isAws,
@@ -130,6 +137,7 @@ export const Addons = () => {
     projectUpdateDisabled,
     canUpdateIPv4,
     ipv4Enabled,
+    isHighAvailability,
   })
 
   const pitrDisabledReason = IS_SELF_PLATFORM
@@ -140,11 +148,13 @@ export const Addons = () => {
         hasHipaaAddon,
         sufficientPgVersion,
         isOrioleDbInAws,
+        isHighAvailability,
       })
 
   const customDomainDisabledReason = getCustomDomainDisabledReason({
     isProjectActive,
     projectUpdateDisabled,
+    isHighAvailability,
   })
   const pitrAlertState = IS_SELF_PLATFORM
     ? undefined
@@ -170,7 +180,7 @@ export const Addons = () => {
           )}
         </AlertDescription>
         <div className="mt-4">
-          <Button variant="default" asChild>
+          <Button asChild>
             <SupportLink>{$t('Contact support')}</SupportLink>
           </Button>
         </div>
@@ -184,7 +194,7 @@ export const Addons = () => {
           <p className="text-sm leading-normal mb-2">
             {$t("Reach out to us via support if you're interested")}
           </p>
-          <Button asChild variant="default">
+          <Button asChild>
             <SupportLink
               queryParams={{
                 projectRef,
@@ -212,6 +222,13 @@ export const Addons = () => {
   return (
     <PageContainer size="default">
       <PageSection className="last:pb-0 gap-0">
+        <HighAvailabilityDisabledSectionNotice
+          className="mb-4"
+          title={$t('Add-ons unavailable on High Availability projects')}
+          description={$t(
+            "We're working to bring add-ons to High Availability projects. Contact support if this is blocking your work."
+          )}
+        />
         {isBranch && (
           <Admonition
             type="default"
@@ -251,7 +268,7 @@ export const Addons = () => {
         {IS_SELF_PLATFORM && isBackupOperatorStatusError && (
           <AlertError
             error={backupOperatorStatusError}
-            subject={$t('Failed to retrieve Backup Operator status')}
+            subject="Failed to retrieve Backup Operator status"
             hideContactSupport
           />
         )}
@@ -277,17 +294,19 @@ export const Addons = () => {
                 }
                 meta={
                   <div className="flex items-center gap-4">
-                    <ProjectUpdateDisabledTooltip
-                      projectUpdateDisabled={projectUpdateDisabled}
-                      projectNotActive={!isProjectActive}
-                      tooltip={ipv4DisabledReason}
-                    >
-                      {ipv4Enabled ? (
-                        <Badge variant="success">{$t('Enabled')}</Badge>
-                      ) : (
-                        <Badge variant="default">{$t('Disabled')}</Badge>
-                      )}
-                    </ProjectUpdateDisabledTooltip>
+                    {ipv4Enabled ? (
+                      <Badge variant="success">{$t('Enabled')}</Badge>
+                    ) : (
+                      <Badge variant="default">{$t('Disabled')}</Badge>
+                    )}
+                    {!canOpenIPv4 && ipv4DisabledReason && (
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Lock strokeWidth={1.5} className="text-foreground-light" size={16} />
+                        </TooltipTrigger>
+                        <TooltipContent>{ipv4DisabledReason}</TooltipContent>
+                      </Tooltip>
+                    )}
                   </div>
                 }
               >
@@ -425,9 +444,13 @@ export const Addons = () => {
           </ResourceList>
         )}
 
-        <PITRSidePanel />
-        <CustomDomainSidePanel />
-        {showDedicatedIPv4 && <IPv4SidePanel />}
+        {(IS_SELF_PLATFORM || !isHighAvailability) && (
+          <>
+            <PITRSidePanel />
+            <CustomDomainSidePanel />
+            {showDedicatedIPv4 && <IPv4SidePanel />}
+          </>
+        )}
       </PageSection>
     </PageContainer>
   )

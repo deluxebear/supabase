@@ -160,7 +160,6 @@ export const AuditLogs = () => {
                 )}
               </div>
               <Button
-                variant="default"
                 disabled={isLoading || isRefetching}
                 icon={<RefreshCw className={isRefetching ? 'animate-spin' : ''} />}
                 onClick={() => refetch()}
@@ -289,7 +288,7 @@ export const AuditLogs = () => {
                                 <TimestampInfo className="text-sm" utcTimestamp={isoTimestamp} />
                               </Table.td>
                               <Table.td align="right">
-                                <Button variant="default">{$t('View details')}</Button>
+                                <Button>{$t('View details')}</Button>
                               </Table.td>
                             </Table.tr>
                           )

@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useParams } from 'common'
 import { useEffect, useRef, useState } from 'react'
@@ -39,6 +38,7 @@ import { useProjectStorageConfigQuery } from '@/data/config/project-storage-conf
 import { useBucketUpdateMutation } from '@/data/storage/bucket-update-mutation'
 import { Bucket } from '@/data/storage/buckets-query'
 import { DOCS_URL, IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export interface EditBucketModalProps {
   visible: boolean
@@ -416,10 +416,10 @@ export const EditBucketModal = ({ visible, bucket, onClose }: EditBucketModalPro
         </Form>
 
         <DialogFooter>
-          <Button variant="default" disabled={isUpdating} onClick={closeModal}>
+          <Button disabled={isUpdating} onClick={closeModal}>
             {$t('Cancel')}
           </Button>
-          <Button form={formId} type="submit" loading={isUpdating}>
+          <Button variant="primary" form={formId} type="submit" loading={isUpdating}>
             {$t('Save')}
           </Button>
         </DialogFooter>

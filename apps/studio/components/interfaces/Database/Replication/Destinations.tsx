@@ -140,7 +140,6 @@ export const Destinations = () => {
     destinations.length === 0 &&
     pipelines.length === 0
 
-  const isLoading = isDestinationsLoading
   const isLocalETLNotSetUp = checkLocalETLNotSetUp(destinationsError)
   const hasErrorsFetchingData = !isLocalETLNotSetUp && isDestinationsError
 
@@ -210,12 +209,7 @@ export const Destinations = () => {
         <div className="flex items-center gap-x-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                aria-label={$t('More actions')}
-                variant="default"
-                icon={<MoreVertical />}
-                className="px-1"
-              />
+              <Button aria-label={$t('More actions')} icon={<MoreVertical />} className="px-1" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
               <DropdownMenuItem asChild>
@@ -245,7 +239,7 @@ export const Destinations = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button asChild variant="default" icon={<MessageSquare />}>
+          <Button asChild icon={<MessageSquare />}>
             <a href={PIPELINES_FEEDBACK_URL} target="_blank" rel="noreferrer noopener">
               {$t('Leave feedback')}
             </a>
@@ -276,7 +270,7 @@ export const Destinations = () => {
           <AlertError error={destinationsError} subject="Failed to retrieve destinations" />
         )}
 
-        {isLoading ? (
+        {isDestinationsLoading ? (
           <GenericSkeletonLoader />
         ) : hasDestinations ? (
           <Card>
@@ -303,24 +297,26 @@ export const Destinations = () => {
                     <DestinationRow key={destination.id} destinationId={destination.id} />
                   ))}
 
-                  {!isLoading && filteredDestinations.length === 0 && hasDestinations && (
-                    <TableRow>
-                      <TableCell colSpan={6}>
-                        <p>{$t('No results found')}</p>
-                        <p className="text-foreground-light">
-                          {$t('Your search for "')}
-                          {filterString}
-                          {$t('" did not return any results.')}
-                        </p>
-                      </TableCell>
-                    </TableRow>
-                  )}
+                  {!isDestinationsLoading &&
+                    filteredDestinations.length === 0 &&
+                    hasDestinations && (
+                      <TableRow>
+                        <TableCell colSpan={6}>
+                          <p>{$t('No results found')}</p>
+                          <p className="text-foreground-light">
+                            {$t('Your search for "')}
+                            {filterString}
+                            {$t('" did not return any results.')}
+                          </p>
+                        </TableCell>
+                      </TableRow>
+                    )}
                 </TableBody>
               </Table>
             </CardContent>
           </Card>
         ) : (
-          !isLoading &&
+          !isDestinationsLoading &&
           !hasErrorsFetchingData && (
             <EmptyStatePresentational
               icon={Workflow}
@@ -328,7 +324,6 @@ export const Destinations = () => {
               description={$t('Connect an external destination for analytics workloads.')}
             >
               <Button
-                variant="default"
                 icon={<Plus />}
                 disabled={!newDestinationDefaultType}
                 onClick={openDestinationPanel}

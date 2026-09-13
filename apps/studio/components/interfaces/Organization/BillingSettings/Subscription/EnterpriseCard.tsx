@@ -49,7 +49,6 @@ export const EnterpriseCard = ({ plan, isCurrentPlan, variants }: EnterpriseCard
         <Button
           block
           asChild
-          variant="default"
           size="tiny"
           onClick={() =>
             track('studio_pricing_plan_cta_clicked', {
@@ -85,7 +84,6 @@ export const EnterpriseCard = ({ plan, isCurrentPlan, variants }: EnterpriseCard
         <Button
           block
           asChild
-          variant="default"
           size="tiny"
           onClick={() =>
             track('studio_pricing_plan_cta_clicked', {

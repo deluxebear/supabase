@@ -52,7 +52,7 @@ export const PoolingModesModal = () => {
             <div className="w-full flex items-center justify-between">
               <p className="max-w-2xl">{$t('Which pooling mode should I use?')}</p>
               <DocsButton
-                href={`${DOCS_URL}/guides/database/connecting-to-postgres#how-connection-pooling-works`}
+                href={`${DOCS_URL}/guides/database/connecting-to-postgres/pooling-and-limits#how-connection-pooling-works`}
               />
             </div>
           </DialogTitle>
@@ -114,7 +114,7 @@ This mode is similar to connecting to your database directly. There is full supp
         )}
         <DialogFooter>
           <DialogClose onClick={() => snap.setShowPoolingModeHelper(false)}>
-            <Button variant="default">{$t('Close')}</Button>
+            <Button>{$t('Close')}</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

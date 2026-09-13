@@ -554,7 +554,6 @@ export const UsersV2 = () => {
                 icon={<WandSparklesIcon />}
                 onClick={() => setShowCreateIndexesModal(true)}
                 loading={isUpdatingAuthConfig}
-                variant="default"
               >
                 {$t('Upgrade search')}
               </Button>
@@ -588,11 +587,10 @@ export const UsersV2 = () => {
         <div className="bg-surface-200 py-3 px-4 md:px-6 flex flex-col lg:flex-row lg:items-start justify-between gap-2">
           {selectedUsers.size > 0 ? (
             <div className="flex items-center gap-x-2">
-              <Button variant="default" icon={<Trash />} onClick={() => setShowDeleteModal(true)}>
+              <Button icon={<Trash />} onClick={() => setShowDeleteModal(true)}>
                 {$t('Delete')} {selectedUsers.size} users
               </Button>
               <ButtonTooltip
-                variant="default"
                 icon={<X />}
                 className="px-1.5"
                 onClick={() => setSelectedUsers(new Set([]))}
@@ -688,7 +686,7 @@ export const UsersV2 = () => {
                 <div className="border-r border-strong h-6" />
 
                 <FilterPopover
-                  name={selectedColumns.length === 0 ? $t('All columns') : $t('Columns')}
+                  name={selectedColumns.length === 0 ? 'All columns' : 'Columns'}
                   title={$t('Select columns to show')}
                   buttonType={selectedColumns.length === 0 ? 'dashed' : 'default'}
                   options={userTableColumns.slice(1)} // Ignore user image column
@@ -696,7 +694,7 @@ export const UsersV2 = () => {
                   valueKey="id"
                   labelClass="text-xs"
                   maxHeightClass="h-[190px]"
-                  clearButtonText={$t('Reset')}
+                  clearButtonText="Reset"
                   activeOptions={selectedColumns}
                   onSaveFilters={(value) => {
                     // When adding back hidden columns:
@@ -761,11 +759,10 @@ export const UsersV2 = () => {
                 <ButtonTooltip
                   size="tiny"
                   icon={<RefreshCw />}
-                  variant="default"
                   className="w-7"
                   loading={isRefetching && !isFetchingNextPage}
                   onClick={handleRefresh}
-                  tooltip={{ content: { side: 'bottom', text: $t('Refresh') } }}
+                  tooltip={{ content: { side: 'bottom', text: 'Refresh' } }}
                   aria-label={$t('Refresh')}
                 />
                 <AddUserDropdown />
@@ -862,13 +859,13 @@ export const UsersV2 = () => {
                       <div className="text-center">
                         <p className="text-foreground">
                           {filterUserType !== 'all' || filterKeywords.length > 0
-                            ? $t('No users found')
-                            : $t('No users in your project')}
+                            ? 'No users found'
+                            : 'No users in your project'}
                         </p>
                         <p className="text-foreground-light">
                           {filterUserType !== 'all' || filterKeywords.length > 0
-                            ? $t('There are currently no users based on the filters applied')
-                            : $t('There are currently no users who signed up to your project')}
+                            ? 'There are currently no users based on the filters applied'
+                            : 'There are currently no users who signed up to your project'}
                         </p>
                       </div>
                     </div>

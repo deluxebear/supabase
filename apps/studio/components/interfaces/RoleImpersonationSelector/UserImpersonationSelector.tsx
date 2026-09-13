@@ -432,7 +432,6 @@ const ImpersonationControl = ({
           id="run-as-user"
           type="button"
           size="tiny"
-          variant="default"
           role="combobox"
           aria-label={$t('Find user')}
           aria-expanded={isUserComboboxOpen}

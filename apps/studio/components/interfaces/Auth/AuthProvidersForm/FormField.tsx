@@ -119,8 +119,8 @@ const FormField = ({
                     ) : null
                   }
                 >
-                  <FormControl>
-                    <Popover>
+                  <Popover>
+                    <FormControl>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
@@ -131,18 +131,18 @@ const FormField = ({
                           {field.value ? format(new Date(field.value), 'PPP') : 'Pick a date'}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={(date) => {
-                            field.onChange(date?.toISOString())
-                          }}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </FormControl>
+                    </FormControl>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={(date) => {
+                          field.onChange(date?.toISOString())
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </FormItemLayout>
               )}
             />
@@ -171,16 +171,9 @@ const FormField = ({
                 >
                   <FormControl className="col-span-6">
                     {properties.isSecret ? (
-                      <DataInput
-                        {...field}
-                        id={name}
-                        size="small"
-                        copy
-                        reveal
-                        readOnly={readOnly}
-                      />
+                      <DataInput {...field} size="small" copy reveal readOnly={readOnly} />
                     ) : (
-                      <Input {...field} id={name} readOnly={readOnly} />
+                      <Input {...field} readOnly={readOnly} />
                     )}
                   </FormControl>
                 </FormItemLayout>
@@ -212,7 +205,6 @@ const FormField = ({
                   <FormControl className="col-span-6">
                     <Textarea
                       {...field}
-                      id={name}
                       rows={4}
                       placeholder={$t('Enter multi-line text')}
                       className="resize-none"
@@ -245,12 +237,11 @@ const FormField = ({
                     ) : null
                   }
                 >
-                  <FormControl className="col-span-6">
-                    {properties.units ? (
+                  {properties.units ? (
+                    <FormControl className="col-span-6">
                       <InputGroup>
                         <FormInputGroupInput
                           {...field}
-                          id={name}
                           type="number"
                           onChange={(e) =>
                             field.onChange(e.target.value === '' ? '' : Number(e.target.value))
@@ -263,18 +254,19 @@ const FormField = ({
                           </ReactMarkdown>
                         </InputGroupAddon>
                       </InputGroup>
-                    ) : (
+                    </FormControl>
+                  ) : (
+                    <FormControl className="col-span-6">
                       <Input
                         {...field}
-                        id={name}
                         type="number"
                         onChange={(e) =>
                           field.onChange(e.target.value === '' ? '' : Number(e.target.value))
                         }
                         readOnly={readOnly}
                       />
-                    )}
-                  </FormControl>
+                    </FormControl>
+                  )}
                 </FormItemLayout>
               )}
             />
@@ -300,7 +292,7 @@ const FormField = ({
                       {description ? <Markdown content={description} /> : null}
                       {properties.link && (
                         <span>
-                          <Button asChild variant="default" size="tiny" icon={<ExternalLink />}>
+                          <Button asChild size="tiny" icon={<ExternalLink />}>
                             <a href={properties.link} target="_blank" rel="noreferrer noopener">
                               {$t('Documentation')}
                             </a>
@@ -311,12 +303,7 @@ const FormField = ({
                   }
                 >
                   <FormControl className="col-span-6">
-                    <Switch
-                      id={name}
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      size="small"
-                    />
+                    <Switch checked={field.value} onCheckedChange={field.onChange} size="small" />
                   </FormControl>
                 </FormItemLayout>
               )}
@@ -348,33 +335,33 @@ const FormField = ({
                     ) : null
                   }
                 >
-                  <FormControl className="col-span-6">
-                    <Select
-                      defaultValue={properties.enum[0]?.value}
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
+                  <Select
+                    defaultValue={properties.enum[0]?.value}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <FormControl className="col-span-6">
                       <SelectTrigger>
                         <SelectValue placeholder={$t('Select an option')} />
                       </SelectTrigger>
-                      <SelectContent>
-                        {properties.enum.map((option: Enum) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            <span className="flex gap-2 items-center">
-                              {option.icon ? (
-                                <img
-                                  alt={`${option.label} icon`}
-                                  className="h-6 w-6"
-                                  src={`${BASE_PATH}/img/icons/${option.icon}`}
-                                />
-                              ) : null}
-                              {option.label}
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
+                    </FormControl>
+                    <SelectContent>
+                      {properties.enum.map((option: Enum) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          <span className="flex gap-2 items-center">
+                            {option.icon ? (
+                              <img
+                                alt={`${option.label} icon`}
+                                className="h-6 w-6"
+                                src={`${BASE_PATH}/img/icons/${option.icon}`}
+                              />
+                            ) : null}
+                            {option.label}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormItemLayout>
               )}
             />

@@ -55,7 +55,6 @@ export const OAuthSecrets = ({ selectedApp }: Props) => {
 
         {canManageSecrets && (
           <ButtonTooltip
-            variant="default"
             disabled={!appId || secrets.length >= 5}
             onClick={handleCreateSecret}
             loading={isCreatingSecret}

@@ -17,9 +17,9 @@ export const ProjectNameInput = ({ form }: ProjectNameInputProps) => {
         control={form.control}
         name="projectName"
         render={({ field }) => (
-          <FormItemLayout id="projectName" label={$t('Project name')} layout="horizontal">
+          <FormItemLayout label={$t('Project name')} layout="horizontal">
             <FormControl>
-              <Input {...field} id="projectName" placeholder={$t('Project name')} />
+              <Input {...field} placeholder={$t('Project name')} />
             </FormControl>
           </FormItemLayout>
         )}

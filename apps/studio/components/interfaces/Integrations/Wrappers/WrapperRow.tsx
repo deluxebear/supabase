@@ -128,7 +128,6 @@ export const WrapperRow = ({ wrapper }: WrapperRowProps) => {
         <div className="flex items-center gap-x-2">
           <ButtonTooltip
             disabled={!canManageWrappers}
-            variant="default"
             icon={<Edit strokeWidth={1.5} />}
             className="px-1.5"
             onClick={() => setSelectedWrapperToEdit(wrapper.id.toString())}
@@ -142,7 +141,6 @@ export const WrapperRow = ({ wrapper }: WrapperRowProps) => {
             }}
           />
           <ButtonTooltip
-            variant="default"
             disabled={!canManageWrappers}
             icon={<Trash strokeWidth={1.5} />}
             className="px-1.5"

@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Check, ChevronsUpDown, XIcon } from 'lucide-react'
 import { useEffect, useId, useMemo, useState } from 'react'
@@ -54,6 +53,8 @@ import { ActionBar } from '@/components/interfaces/TableGridEditor/SidePanelEdit
 import { useSchemasQuery } from '@/data/database/schemas-query'
 import { useSchemasFilteredForHighAvailability } from '@/hooks/misc/useHighAvailability'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
+
 export type WrapperTableEditorProps = {
   visible: boolean
   onCancel: () => void
@@ -122,7 +123,6 @@ const WrapperTableEditor = ({
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
                 <Button
-                  variant="default"
                   role="combobox"
                   aria-expanded={open}
                   aria-controls={listboxId}
@@ -495,11 +495,7 @@ const TableForm = ({
                 />
               </div>
             ))}
-            <Button
-              variant="default"
-              onClick={() => appendColumn({ name: '', type: 'text' })}
-              className="self-start"
-            >
+            <Button onClick={() => appendColumn({ name: '', type: 'text' })} className="self-start">
               {$t('Add column')}
             </Button>
             {errors.columns != null && errors.columns.message != null && (

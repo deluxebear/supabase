@@ -247,7 +247,7 @@ export const EnableExtensionModal = ({
                       name="name"
                       control={form.control}
                       render={({ field }) => (
-                        <FormItemLayout name="name" label={$t('Schema name')}>
+                        <FormItemLayout label={$t('Schema name')}>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -262,10 +262,11 @@ export const EnableExtensionModal = ({
         </DialogSection>
 
         <DialogFooter>
-          <Button variant="default" disabled={isEnabling} onClick={() => onCancel()}>
+          <Button disabled={isEnabling} onClick={() => onCancel()}>
             {$t('Cancel')}
           </Button>
           <Button
+            variant="primary"
             type="submit"
             form="enable-extensions-form"
             loading={isEnabling}

@@ -97,7 +97,6 @@ export function DiskSizeField({ form, disableInput }: DiskSizeFieldProps) {
                 form={form}
                 actions={
                   <Button
-                    variant="default"
                     onClick={() => {
                       setValue('storageType', 'io2', { shouldDirty: true })
                       trigger('provisionedIOPS')

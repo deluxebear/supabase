@@ -1,5 +1,5 @@
 import { useParams } from 'common'
-import { BarChart, Shield } from 'lucide-react'
+import { Shield } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { AiIconAnimation, Badge, Button, Card, CardContent, CardHeader, CardTitle, cn } from 'ui'
 import { Row } from 'ui-patterns/Row'
@@ -7,23 +7,22 @@ import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { Markdown } from '../Markdown'
 import { LINTER_LEVELS } from '@/components/interfaces/Linter/Linter.constants'
-import {
-  createLintSummaryPrompt,
-  getLocalizedLintDetail,
-} from '@/components/interfaces/Linter/Linter.utils'
+import { createLintSummaryPrompt } from '@/components/interfaces/Linter/Linter.utils'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import type { AdvisorItem } from '@/components/ui/AdvisorPanel/AdvisorPanel.types'
 import {
+  advisorCategoryIcons,
   createAdvisorLintItems,
   getAdvisorItemDisplayTitle,
+  getAdvisorItemTelemetryCategory,
   MAX_HOMEPAGE_ADVISOR_ITEMS,
   severityBadgeVariants,
   severityColorClasses,
-  severityLabels,
   sortAdvisorItems,
 } from '@/components/ui/AdvisorPanel/AdvisorPanel.utils'
 import { useAdvisorSignals } from '@/components/ui/AdvisorPanel/useAdvisorSignals'
 import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
+import { useProjectHealthLintsQuery } from '@/data/lint/health-lints-query'
 import { useProjectLintsQuery } from '@/data/lint/lint-query'
 import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
@@ -43,15 +42,21 @@ export const AdvisorSection = ({ showEmptyState = false }: { showEmptyState?: bo
     { enabled: !showEmptyState }
   )
 
+  const { data: healthLints } = useProjectHealthLintsQuery(
+    { projectRef },
+    { enabled: !showEmptyState }
+  )
+
   const { data: signalItems } = useAdvisorSignals({ projectRef, enabled: !showEmptyState })
 
   const advisorItems = useMemo<AdvisorItem[]>(() => {
-    const criticalLintItems = createAdvisorLintItems(lints).filter(
-      (item) => item.source === 'lint' && item.original.level === LINTER_LEVELS.ERROR
-    )
+    const criticalLintItems = createAdvisorLintItems([
+      ...(lints ?? []),
+      ...(healthLints ?? []),
+    ]).filter((item) => item.source === 'lint' && item.original.level === LINTER_LEVELS.ERROR)
 
     return sortAdvisorItems([...criticalLintItems, ...signalItems])
-  }, [lints, signalItems])
+  }, [lints, healthLints, signalItems])
 
   const visibleAdvisorItems = useMemo(
     () => advisorItems.slice(0, MAX_HOMEPAGE_ADVISOR_ITEMS),
@@ -63,11 +68,11 @@ export const AdvisorSection = ({ showEmptyState = false }: { showEmptyState?: bo
 
   const titleContent = useMemo(() => {
     if (totalIssues === 0) return <h2>{$t('Advisor found no issues')}</h2>
+    const issuesText = totalIssues === 1 ? 'issue' : 'issues'
+    const numberDisplay = totalIssues.toString()
     return (
       <h2>
-        {$t('Advisor found {{count}} issue(s)', {
-          count: totalIssues,
-        })}
+        {$t('Advisor found')} {numberDisplay} {issuesText}
       </h2>
     )
   }, [totalIssues])
@@ -85,12 +90,7 @@ export const AdvisorSection = ({ showEmptyState = false }: { showEmptyState?: bo
       setSelectedItem(item.id, item.source)
       openSidebar(SIDEBAR_KEYS.ADVISOR_PANEL)
 
-      const advisorCategory =
-        item.source === 'lint'
-          ? item.original.categories[0]
-          : item.source === 'signal'
-            ? 'SECURITY'
-            : undefined
+      const advisorCategory = getAdvisorItemTelemetryCategory(item)
       const advisorType =
         item.source === 'signal'
           ? item.type
@@ -124,7 +124,7 @@ export const AdvisorSection = ({ showEmptyState = false }: { showEmptyState?: bo
       ) : (
         <div className="flex justify-between items-center mb-6">
           {titleContent}
-          <Button variant="default" icon={<AiIconAnimation />} onClick={handleAskAssistant}>
+          <Button icon={<AiIconAnimation />} onClick={handleAskAssistant}>
             {$t('Ask Assistant')}
           </Button>
         </div>
@@ -141,14 +141,12 @@ export const AdvisorSection = ({ showEmptyState = false }: { showEmptyState?: bo
           <Row maxColumns={4} minWidth={280}>
             {visibleAdvisorItems.map((item) => {
               const isLint = item.source === 'lint'
-              const categoryLabel = $t(item.tab === 'performance' ? 'PERFORMANCE' : 'SECURITY')
+              // Only security, performance and health items reach the homepage row
+              const categoryLabel = $t(item.category.toUpperCase())
+              const CategoryIcon = advisorCategoryIcons[item.category]
               const title = getAdvisorItemDisplayTitle(item)
               const description =
-                item.source === 'signal'
-                  ? $t(item.summary)
-                  : isLint
-                    ? getLocalizedLintDetail(item.original)
-                    : ''
+                item.source === 'signal' ? item.summary : isLint ? item.original.detail : ''
               const cardClasses =
                 item.severity === 'critical'
                   ? 'bg-destructive-200 border-destructive-400'
@@ -169,24 +167,16 @@ export const AdvisorSection = ({ showEmptyState = false }: { showEmptyState?: bo
                 >
                   <CardHeader className="border-b-0 shrink-0 flex flex-row gap-2 space-y-0 justify-between items-center">
                     <div className="flex flex-row items-center gap-3">
-                      {item.tab === 'security' ? (
-                        <Shield
-                          size={16}
-                          strokeWidth={1.5}
-                          className={severityColorClasses[item.severity]}
-                        />
-                      ) : (
-                        <BarChart
-                          size={16}
-                          strokeWidth={1.5}
-                          className={severityColorClasses[item.severity]}
-                        />
-                      )}
+                      <CategoryIcon
+                        size={16}
+                        strokeWidth={1.5}
+                        className={severityColorClasses[item.severity]}
+                      />
                       <CardTitle className="text-foreground-light">{categoryLabel}</CardTitle>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant={severityBadgeVariants[item.severity]} className="w-fit">
-                        {$t(severityLabels[item.severity])}
+                        {$t(item.severity.toUpperCase())}
                       </Badge>
                       {isLint && (
                         <div
@@ -208,7 +198,7 @@ export const AdvisorSection = ({ showEmptyState = false }: { showEmptyState?: bo
                               })
                               track('advisor_assistant_button_clicked', {
                                 origin: 'homepage',
-                                advisorCategory: item.original.categories[0],
+                                advisorCategory: getAdvisorItemTelemetryCategory(item),
                                 advisorType: item.original.name,
                                 advisorLevel: item.original.level,
                               })
@@ -253,7 +243,7 @@ function EmptyState() {
       <CardContent className="flex flex-col items-center justify-center gap-2 p-16 h-full">
         <Shield size={20} strokeWidth={1.5} className="text-foreground-muted" />
         <p className="text-sm text-foreground-light text-center">
-          {$t('No security or performance issues found')}
+          {$t('No security, performance or health issues found')}
         </p>
       </CardContent>
     </Card>

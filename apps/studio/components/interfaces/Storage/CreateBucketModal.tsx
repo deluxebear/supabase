@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useParams } from 'common'
 import { useState } from 'react'
@@ -36,6 +35,7 @@ import { InlineLink } from '@/components/ui/InlineLink'
 import { useProjectStorageConfigQuery } from '@/data/config/project-storage-config-query'
 import { useBucketCreateMutation } from '@/data/storage/bucket-create-mutation'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const FormSchema = z
@@ -376,10 +376,11 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
         </Form>
 
         <DialogFooter>
-          <Button variant="default" disabled={isCreatingBucket} onClick={() => onOpenChange(false)}>
+          <Button disabled={isCreatingBucket} onClick={() => onOpenChange(false)}>
             {$t('Cancel')}
           </Button>
           <Button
+            variant="primary"
             form={formId}
             type="submit"
             loading={isCreatingBucket}

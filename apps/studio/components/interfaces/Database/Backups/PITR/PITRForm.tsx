@@ -109,7 +109,6 @@ export function PITRForm({
         footer={
           <div className="flex items-center justify-end gap-3 p-6">
             <ButtonTooltip
-              variant="default"
               disabled={disabled || !selectedDate || !isWithinRange}
               onClick={handleSubmit}
               tooltip={{

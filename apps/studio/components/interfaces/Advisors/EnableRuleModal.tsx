@@ -43,7 +43,7 @@ export const EnableRuleModal = ({ lint, rule }: EnableRuleModalProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="default">{$t('Enable rule')}</Button>
+        <Button>{$t('Enable rule')}</Button>
       </DialogTrigger>
       <DialogContent size="small">
         <DialogHeader>
@@ -60,7 +60,7 @@ export const EnableRuleModal = ({ lint, rule }: EnableRuleModalProps) => {
           </p>
         </DialogSection>
         <DialogFooter>
-          <Button disabled={isDeleting} variant="default" onClick={() => setOpen(false)}>
+          <Button disabled={isDeleting} onClick={() => setOpen(false)}>
             {$t('Cancel')}
           </Button>
           <Button loading={isDeleting} variant="primary" onClick={onDeleteRule}>

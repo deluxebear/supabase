@@ -264,9 +264,7 @@ export const InstallIntegrationSheet = ({ integration }: InstallIntegrationSheet
 
             <SheetFooter>
               <SheetClose asChild>
-                <Button variant="default" disabled={isInstalling}>
-                  {$t('Cancel')}
-                </Button>
+                <Button disabled={isInstalling}>{$t('Cancel')}</Button>
               </SheetClose>
               <Button
                 form={formId}

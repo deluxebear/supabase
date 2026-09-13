@@ -40,7 +40,7 @@ values (
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="default">{$t('Insert data')}</Button>
+        <Button>{$t('Insert data')}</Button>
       </DialogTrigger>
       <DialogContent aria-describedby={undefined}>
         <DialogHeader>
@@ -79,7 +79,7 @@ values (
           <DocsButton
             href={`${DOCS_URL}/guides/database/extensions/wrappers/iceberg#data-insertion`}
           />
-          <Button asChild variant="default" icon={<SqlEditor />}>
+          <Button asChild icon={<SqlEditor />}>
             <Link href={`/project/${ref}/sql/new?content=${encodeURIComponent(sql)}`}>
               {$t('Open in SQL Editor')}
             </Link>

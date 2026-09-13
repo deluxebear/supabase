@@ -119,9 +119,7 @@ export const TerminalInstructions = forwardRef<
                 {$t('You can create a secure access token in your account section')}
               </p>
             </div>
-            <Button variant="default" onClick={() => router.push('/account/tokens')}>
-              {$t('Access tokens')}
-            </Button>
+            <Button onClick={() => router.push('/account/tokens')}>{$t('Access tokens')}</Button>
           </div>
         ) : (
           <div className="py-4 space-y-3 border-t">
@@ -133,7 +131,7 @@ export const TerminalInstructions = forwardRef<
             </div>
             <div className="flex gap-2">
               <DocsButton href={`${DOCS_URL}/guides/functions`} />
-              <Button asChild variant="default" icon={<ExternalLink />}>
+              <Button asChild icon={<ExternalLink />}>
                 <a
                   target="_blank"
                   rel="noreferrer"

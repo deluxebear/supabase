@@ -209,7 +209,6 @@ export const EdgeFunctionRecentErrors = ({
               </PageSectionSummary>
               <PageSectionAside>
                 <Button
-                  variant="default"
                   size="tiny"
                   icon={<ExternalLink size={14} />}
                   onClick={() =>

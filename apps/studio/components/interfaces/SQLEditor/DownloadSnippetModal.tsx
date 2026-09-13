@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { snakeCase } from 'lodash'
 import { ExternalLink } from 'lucide-react'
 import Link from 'next/link'
@@ -28,6 +27,7 @@ import {
 } from './SQLEditor.utils'
 import { TwoOptionToggle } from '@/components/ui/TwoOptionToggle'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor/sql-editor-state'
 
 const CLI_DOCS_URL = `${DOCS_URL}/guides/cli/local-development`
@@ -53,8 +53,10 @@ export const DownloadSnippetModal = ({ id, ...props }: DownloadSnippetModalProps
       label: 'Migration',
       caption: (
         <>
-          
-                        {$t('Run this command from your project directory to download the snippet in a new migration named')} <code className="text-code-inline break-normal">{migrationName}</code>.
+          {$t(
+            'Run this command from your project directory to download the snippet in a new migration named'
+          )}{' '}
+          <code className="text-code-inline break-normal">{migrationName}</code>.
         </>
       ),
       docLink: {
@@ -69,8 +71,9 @@ export const DownloadSnippetModal = ({ id, ...props }: DownloadSnippetModalProps
       label: 'Seed file',
       caption: (
         <>
-          
-                        {$t('Run this command from your project directory to download the snippet. If your query consists of sample data, append it to the end of')}{' '}
+          {$t(
+            'Run this command from your project directory to download the snippet. If your query consists of sample data, append it to the end of'
+          )}{' '}
           <code className="text-code-inline break-normal">supabase/seed.sql</code>.
         </>
       ),
@@ -86,8 +89,10 @@ export const DownloadSnippetModal = ({ id, ...props }: DownloadSnippetModalProps
       label: 'SQL file',
       caption: (
         <>
-          
-                        {$t('Run this command from your project directory to download the snippet into a new SQL file named')} <code className="text-code-inline break-normal">{migrationName}.sql</code>.
+          {$t(
+            'Run this command from your project directory to download the snippet into a new SQL file named'
+          )}{' '}
+          <code className="text-code-inline break-normal">{migrationName}.sql</code>.
         </>
       ),
       cli: generateFileCliCommand(id, migrationName),
@@ -154,18 +159,17 @@ export const DownloadSnippetModal = ({ id, ...props }: DownloadSnippetModalProps
         <DialogSection>
           <div className="flex items-center justify-start gap-x-2">
             {selectedSnippet.docLink && (
-              <Button asChild variant="default" icon={<ExternalLink />}>
+              <Button asChild icon={<ExternalLink />}>
                 <Link href={selectedSnippet.docLink.href} target="_blank" rel="noreferrer">
                   {selectedSnippet.docLink.label}
                 </Link>
               </Button>
             )}
 
-            <Button asChild variant="default" icon={<ExternalLink />}>
+            <Button asChild icon={<ExternalLink />}>
               <Link href={CLI_DOCS_URL} target="_blank" rel="noreferrer">
-                
-                                              {$t('About CLI')}
-                                            </Link>
+                {$t('About CLI')}
+              </Link>
             </Button>
           </div>
         </DialogSection>

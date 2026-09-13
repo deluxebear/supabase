@@ -9,7 +9,7 @@ import {
 } from '@/lib/api/self-platform/resolve-connection'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
-type StorageConfigResponse = components['schemas']['StorageConfigResponse']
+type StorageConfigResponse = components['schemas']['StorageConfigResponse_Output']
 
 // [self-platform] Storage config is shared-stack-level: the self-hosted storage
 // service reads its limits/features from env at boot, so the management plane
@@ -34,8 +34,7 @@ const buildStorageConfig = (): StorageConfigResponse => {
       icebergCatalog: { enabled: false, maxCatalogs: 0, maxNamespaces: 0, maxTables: 0 },
       vectorBuckets: { enabled: false, maxBuckets: 0, maxIndexes: 0 },
     },
-    capabilities: { iceberg_catalog: false, list_v2: false },
-    databasePoolMode: '',
+    capabilities: { iceberg_catalog: false, list_v2: false, object_versioning: false },
     external: { upstreamTarget: 'main' },
     migrationVersion: '',
   }

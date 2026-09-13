@@ -127,9 +127,9 @@ export const CreateReportModal = ({ visible, onCancel, afterSubmit }: CreateRepo
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItemLayout name="name" layout="vertical" label={$t('Name')}>
+                  <FormItemLayout layout="vertical" label={$t('Name')}>
                     <FormControl>
-                      <Input {...field} id="name" />
+                      <Input {...field} />
                     </FormControl>
                   </FormItemLayout>
                 )}
@@ -140,11 +140,10 @@ export const CreateReportModal = ({ visible, onCancel, afterSubmit }: CreateRepo
                 control={form.control}
                 name="description"
                 render={({ field }) => (
-                  <FormItemLayout name="description" layout="vertical" label={$t('Description')}>
+                  <FormItemLayout layout="vertical" label={$t('Description')}>
                     <FormControl>
                       <Textarea
                         {...field}
-                        id="description"
                         rows={4}
                         placeholder={$t('Describe your custom report')}
                         className="resize-none"
@@ -155,10 +154,15 @@ export const CreateReportModal = ({ visible, onCancel, afterSubmit }: CreateRepo
               />
             </DialogSection>
             <DialogFooter>
-              <Button type="reset" variant="default" onClick={handleCancel} disabled={isCreating}>
+              <Button type="reset" onClick={handleCancel} disabled={isCreating}>
                 {$t('Cancel')}
               </Button>
-              <Button type="submit" loading={isCreating} disabled={isCreating || !isDirty}>
+              <Button
+                variant="primary"
+                type="submit"
+                loading={isCreating}
+                disabled={isCreating || !isDirty}
+              >
                 {$t('Create report')}
               </Button>
             </DialogFooter>

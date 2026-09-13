@@ -93,7 +93,6 @@ export const OutOfDateNotice = ({
           <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <AlertDialogTrigger asChild>
               <Button
-                variant="default"
                 loading={isPushing}
                 icon={<GitBranchIcon size={16} strokeWidth={1.5} />}
                 className="shrink-0"
@@ -122,7 +121,6 @@ export const OutOfDateNotice = ({
           </AlertDialog>
         ) : (
           <Button
-            variant="default"
             loading={isPushing}
             onClick={() => handleUpdate()}
             icon={<GitBranchIcon size={16} strokeWidth={1.5} />}

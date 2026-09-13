@@ -23,7 +23,7 @@ export const MigrationAdmonition = () => {
       actions={
         <>
           {/* Awaiting correct documentation link */}
-          <Button asChild variant="default" size="tiny">
+          <Button asChild size="tiny">
             <Link href={`${DOCS_URL}/guides/api`} target="_blank" rel="noreferrer">
               {$t('Learn more')}
             </Link>

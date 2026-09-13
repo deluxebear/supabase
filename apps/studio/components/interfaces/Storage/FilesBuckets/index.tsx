@@ -146,7 +146,7 @@ export const FilesBuckets = () => {
                         </ShortcutTooltip>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="default" icon={<ArrowDownNarrowWide />}>
+                            <Button icon={<ArrowDownNarrowWide />}>
                               {$t('Sorted by')}{' '}
                               {sortBucket === 'alphabetical' ? 'name' : 'created at'}
                             </Button>
@@ -170,7 +170,6 @@ export const FilesBuckets = () => {
                           side="bottom"
                         >
                           <Button
-                            variant="default"
                             icon={<RefreshCw />}
                             loading={isFetchingBuckets}
                             onClick={handleRefresh}

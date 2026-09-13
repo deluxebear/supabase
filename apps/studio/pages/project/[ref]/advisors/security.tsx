@@ -77,7 +77,7 @@ const ProjectLints: NextPageWithLayout = () => {
       <FormHeader
         className="py-4 px-6 -mb-px!"
         title={$t('Security Advisor')}
-        docsUrl={`${DOCS_URL}/guides/database/database-linter`}
+        docsUrl={`${DOCS_URL}/guides/observability/advisors`}
       />
       <LintPageTabs
         activeLints={activeLints}

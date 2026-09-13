@@ -105,7 +105,6 @@ export const DownloadLogsButton = ({ searchParameters }: DownloadLogsButtonProps
         <ShortcutTooltip shortcutId={SHORTCUT_IDS.UNIFIED_LOGS_DOWNLOAD} side="bottom">
           <DropdownMenuTrigger asChild>
             <Button
-              variant="default"
               className="w-[26px]"
               icon={<Download className="text-foreground" />}
               aria-label={$t('Download logs')}
@@ -177,11 +176,7 @@ export const DownloadLogsButton = ({ searchParameters }: DownloadLogsButtonProps
             )}
           </DialogSection>
           <DialogFooter>
-            <Button
-              variant="default"
-              disabled={isPending}
-              onClick={() => setSelectedFormat(undefined)}
-            >
+            <Button disabled={isPending} onClick={() => setSelectedFormat(undefined)}>
               {$t('Cancel')}
             </Button>
             <Button variant="primary" loading={isPending} onClick={onExportData}>

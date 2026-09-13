@@ -212,10 +212,8 @@ export const PerformanceSettingsForm = () => {
           <UpgradeToPro
             source="authPerformance"
             featureProposition="configure advanced Auth server settings"
-            primaryText={$t('Only available on the Pro Plan and above')}
-            secondaryText={$t(
-              'Upgrade to the Pro Plan to configure Auth server performance settings.'
-            )}
+            primaryText="Only available on the Pro Plan and above"
+            secondaryText="Upgrade to the Pro Plan to configure Auth server performance settings."
           />
         )}
       </ScaffoldSection>
@@ -254,7 +252,7 @@ export const PerformanceSettingsForm = () => {
                                 disabled={!canUpdateConfig || promptUpgrade}
                               />
                               <InputGroupAddon align="inline-end">
-                                <InputGroupText>{$t('seconds')}</InputGroupText>
+                                <InputGroupText>seconds</InputGroupText>
                               </InputGroupAddon>
                             </InputGroup>
                           </FormControl>
@@ -271,9 +269,7 @@ export const PerformanceSettingsForm = () => {
 
               <CardFooter className="justify-end space-x-2">
                 {requestDurationForm.formState.isDirty && (
-                  <Button variant="default" onClick={() => requestDurationForm.reset()}>
-                    {$t('Cancel')}
-                  </Button>
+                  <Button onClick={() => requestDurationForm.reset()}>{$t('Cancel')}</Button>
                 )}
                 <Button
                   variant={promptUpgrade ? 'default' : 'primary'}
@@ -341,7 +337,7 @@ export const PerformanceSettingsForm = () => {
                         >
                           <SelectTrigger size="small" disabled={!canUpdateConfig || promptUpgrade}>
                             <SelectValue>
-                              {field.value === 'percent' ? $t('Percentage') : $t('Absolute')}
+                              {field.value === 'percent' ? 'Percentage' : 'Absolute'}
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent align="end">
@@ -389,7 +385,7 @@ export const PerformanceSettingsForm = () => {
                               />
                               <InputGroupAddon align="inline-end">
                                 <InputGroupText>
-                                  {chosenUnit === 'percent' ? '%' : $t('connections')}
+                                  {chosenUnit === 'percent' ? '%' : 'connections'}
                                 </InputGroupText>
                               </InputGroupAddon>
                             </InputGroup>
@@ -417,9 +413,7 @@ export const PerformanceSettingsForm = () => {
 
               <CardFooter className="justify-end space-x-2">
                 {databaseForm.formState.isDirty && (
-                  <Button variant="default" onClick={() => databaseForm.reset()}>
-                    {$t('Cancel')}
-                  </Button>
+                  <Button onClick={() => databaseForm.reset()}>{$t('Cancel')}</Button>
                 )}
                 <Button
                   variant={promptUpgrade ? 'default' : 'primary'}

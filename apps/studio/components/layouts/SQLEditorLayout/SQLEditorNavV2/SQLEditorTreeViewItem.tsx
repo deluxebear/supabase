@@ -44,6 +44,7 @@ import {
   isFolderSaving,
   type FolderStatus,
 } from '@/state/sql-editor/sql-editor-lifecycle'
+import { useSqlEditorSaveCoordinator } from '@/state/sql-editor/sql-editor-save-coordinator'
 import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor/sql-editor-state'
 
 interface SQLEditorTreeViewItemProps extends Omit<
@@ -108,6 +109,7 @@ export const SQLEditorTreeViewItem = ({
   const { data: project } = useSelectedProjectQuery()
   const { className, onClick } = getNodeProps()
   const snapV2 = useSqlEditorV2StateSnapshot()
+  const { saveFavorite } = useSqlEditorSaveCoordinator()
 
   const isOwner = profile?.id === element?.metadata.owner_id
   const isSharedSnippet = element.metadata.visibility === 'project'
@@ -202,8 +204,7 @@ export const SQLEditorTreeViewItem = ({
       snapV2.setSnippet(projectRef, snippet)
     }
 
-    if (isFavorite) snapV2.removeFavorite(snippetId)
-    else snapV2.addFavorite(snippetId)
+    saveFavorite(snippetId, !isFavorite)
   }
 
   const onSelectDuplicate = async () => {

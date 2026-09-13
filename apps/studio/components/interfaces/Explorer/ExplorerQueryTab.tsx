@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n'
 import { type Hotkey } from '@tanstack/react-hotkeys'
 import { useDebounce } from '@uidotdev/usehooks'
 import { LOCAL_STORAGE_KEYS, useParams } from 'common'
@@ -34,6 +33,7 @@ import { getNotebook } from '@/data/content/notebooks/notebook-query'
 import { useNotebooksInfiniteQuery } from '@/data/content/notebooks/notebooks-infinite-query'
 import { toQuerySourceBinding } from '@/data/query-sources/query-source-registry'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
+import { t as $t } from '@/lib/i18n'
 import { explorerQueryState, useExplorerQueryStateSnapshot } from '@/state/explorer-query'
 import { useNotebooksStateSnapshot } from '@/state/notebooks/notebooks-state'
 import { useControlledRoleImpersonationState } from '@/state/role-impersonation-state'
@@ -81,6 +81,7 @@ export const ExplorerQueryTab = () => {
   const draft = stateDraft?.projectRef === ref ? stateDraft : undefined
   const result = draft && id ? querySnap.results[id] : undefined
   const queryKey = id && ref ? `${ref}:${id}` : undefined
+  const isDraftReady = !!queryKey && restoredQueryKey === queryKey
 
   const roleImpersonationState = useControlledRoleImpersonationState(
     draft?._tag === 'database' ? draft.role : undefined,
@@ -99,6 +100,13 @@ export const ExplorerQueryTab = () => {
     explorerQueryState.restoreDraft({ id, projectRef: ref })
     setRestoredQueryKey(`${ref}:${id}`)
   }, [id, ref])
+
+  useEffect(() => {
+    if (!id || !isDraftReady || !draft?.pendingAutoRun) return
+
+    queryEditorRef.current?.run()
+    explorerQueryState.clearPendingAutoRun({ id })
+  }, [id, isDraftReady, draft?.pendingAutoRun])
 
   if (!queryKey || restoredQueryKey !== queryKey) {
     return (
@@ -122,7 +130,7 @@ export const ExplorerQueryTab = () => {
             {$t('This local draft may have been closed or cleared from this browser.')}
           </p>
         </div>
-        <Button onClick={() => router.push(`/project/${ref}/explorer`)}>
+        <Button variant="primary" onClick={() => router.push(`/project/${ref}/explorer`)}>
           {$t('Back to Explorer')}
         </Button>
       </div>
@@ -192,7 +200,7 @@ export const ExplorerQueryTab = () => {
       roleImpersonationState={roleImpersonationState}
       onTitleChange={(value) => {
         persistTab()
-        const name = value.trim() || 'Untitled query'
+        const name = value.trim() || 'Run SQL'
         explorerQueryState.updateDraft({ id, name })
         tabs.updateTab(createTabId('query', { id }), { label: name })
       }}

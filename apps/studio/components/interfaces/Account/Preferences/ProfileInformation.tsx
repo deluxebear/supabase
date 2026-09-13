@@ -134,8 +134,8 @@ export const ProfileInformation = () => {
                       label={$t('Primary email')}
                       description={
                         profile?.is_sso_user
-                          ? $t('Managed by your SSO provider and cannot be changed here')
-                          : $t('Used for account notifications')
+                          ? 'Managed by your SSO provider and cannot be changed here'
+                          : 'Used for account notifications'
                       }
                       layout="flex-row-reverse"
                     >
@@ -173,8 +173,8 @@ export const ProfileInformation = () => {
                       label={$t('Username')}
                       description={
                         profile?.is_sso_user
-                          ? $t('Managed by your SSO provider and cannot be changed here')
-                          : $t('Display name used across dashboard')
+                          ? 'Managed by your SSO provider and cannot be changed here'
+                          : 'Display name used across dashboard'
                       }
                       layout="flex-row-reverse"
                     >
@@ -194,9 +194,7 @@ export const ProfileInformation = () => {
               </CardContent>
               <CardFooter className="justify-end space-x-2">
                 {form.formState.isDirty && (
-                  <Button variant="default" onClick={() => form.reset()}>
-                    {$t('Cancel')}
-                  </Button>
+                  <Button onClick={() => form.reset()}>{$t('Cancel')}</Button>
                 )}
                 <Button
                   variant="primary"

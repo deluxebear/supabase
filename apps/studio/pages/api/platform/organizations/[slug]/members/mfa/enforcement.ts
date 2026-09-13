@@ -15,7 +15,7 @@ import { getOrgMfaEnforced, setOrgMfaEnforced } from '@/lib/api/self-platform/or
 import { guardOrgRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
-type MfaStatusResponse = components['schemas']['MfaStatusResponse']
+type MfaStatusResponse = components['schemas']['MfaStatusResponse_Output']
 type ChangeMFAEnforcementStateRequest = components['schemas']['ChangeMFAEnforcementStateRequest']
 
 export default (req: NextApiRequest, res: NextApiResponse) =>

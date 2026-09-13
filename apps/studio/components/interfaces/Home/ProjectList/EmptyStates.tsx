@@ -85,7 +85,7 @@ export const NoProjectsState = ({ slug }: { slug: string }) => {
       description={$t('Launch a complete backend built on Postgres.')}
     >
       {projectCreationEnabled && (
-        <Button size="tiny" variant="default" asChild icon={<Plus />}>
+        <Button size="tiny" asChild icon={<Plus />}>
           <Link href={`/new/${slug}`}>{$t('New project')}</Link>
         </Button>
       )}

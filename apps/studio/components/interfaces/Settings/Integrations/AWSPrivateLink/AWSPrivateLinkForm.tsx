@@ -260,7 +260,7 @@ export const AWSPrivateLinkForm = ({
                   <Button type="button" variant="danger" onClick={onDelete}>
                     {$t('Delete')}
                   </Button>
-                  <Button type="button" variant="default" onClick={() => handleOpenChange(false)}>
+                  <Button type="button" onClick={() => handleOpenChange(false)}>
                     {$t('Close')}
                   </Button>
                 </>
@@ -268,13 +268,12 @@ export const AWSPrivateLinkForm = ({
                 <>
                   <Button
                     type="button"
-                    variant="default"
                     disabled={isPending}
                     onClick={() => handleOpenChange(false)}
                   >
                     {$t('Cancel')}
                   </Button>
-                  <Button form={FORM_ID} type="submit" loading={isPending}>
+                  <Button variant="primary" form={FORM_ID} type="submit" loading={isPending}>
                     {$t('Add connection')}
                   </Button>
                 </>

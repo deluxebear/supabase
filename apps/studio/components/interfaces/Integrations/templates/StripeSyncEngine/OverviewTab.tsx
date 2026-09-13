@@ -306,7 +306,7 @@ const StripeSyncContent = ({ hideInstallCTA = false }: { hideInstallCTA?: boolea
                   />
 
                   <div className="flex items-center gap-x-2">
-                    <Button asChild variant="default" icon={<ExternalLink />}>
+                    <Button asChild icon={<ExternalLink />}>
                       <Link
                         target="_blank"
                         rel="noopener noreferrer"
@@ -315,7 +315,7 @@ const StripeSyncContent = ({ hideInstallCTA = false }: { hideInstallCTA?: boolea
                         {$t('Get Stripe API key')}
                       </Link>
                     </Button>
-                    <Button asChild variant="default" icon={<ExternalLink />}>
+                    <Button asChild icon={<ExternalLink />}>
                       <Link
                         target="_blank"
                         rel="noopener noreferrer"
@@ -338,7 +338,6 @@ const StripeSyncContent = ({ hideInstallCTA = false }: { hideInstallCTA?: boolea
 
               <SheetFooter>
                 <Button
-                  variant="default"
                   disabled={isInstallRequested}
                   onClick={() => handleCloseInstallSheet(false)}
                 >

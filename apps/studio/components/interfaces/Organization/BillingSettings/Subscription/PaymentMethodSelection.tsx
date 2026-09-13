@@ -238,7 +238,6 @@ const PaymentMethodSelection = forwardRef(function PaymentMethodSelection(
               {$t('Update your billing address or tax ID before upgrading your plan.')}
             </p>
             <Button
-              variant="default"
               className="mt-2"
               onClick={() => {
                 if (onClose) {

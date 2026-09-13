@@ -2,49 +2,69 @@ import { useParams } from 'common'
 import { ArrowUpRight } from 'lucide-react'
 
 import { useIsAdvisorRulesEnabled } from '@/components/interfaces/App/FeaturePreview/FeaturePreviewContext'
-import type { ProductMenuGroup } from '@/components/ui/ProductMenu/ProductMenu.types'
+import type {
+  ProductMenuGroup,
+  ProductMenuGroupItem,
+} from '@/components/ui/ProductMenu/ProductMenu.types'
 import { IS_PLATFORM } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
-export const useGenerateAdvisorsMenu = (): ProductMenuGroup[] => {
-  const { ref } = useParams()
-  const isAdvisorRulesEnabled = useIsAdvisorRulesEnabled()
+export const generateAdvisorsMenu = ({
+  ref,
+  isAdvisorRulesEnabled,
+  isPlatform,
+}: {
+  ref: string | undefined
+  isAdvisorRulesEnabled: boolean
+  isPlatform: boolean
+}): ProductMenuGroup[] => {
+  const advisorItems: ProductMenuGroupItem[] = [
+    ...(isPlatform
+      ? [
+          {
+            name: 'Health Advisor',
+            key: 'health',
+            url: `/project/${ref}/advisors/health`,
+            items: [],
+            shortcutId: SHORTCUT_IDS.NAV_ADVISORS_HEALTH,
+          },
+        ]
+      : []),
+    {
+      name: 'Security Advisor',
+      key: 'security',
+      url: `/project/${ref}/advisors/security`,
+      items: [],
+      shortcutId: SHORTCUT_IDS.NAV_ADVISORS_SECURITY,
+    },
+    {
+      name: 'Performance Advisor',
+      key: 'performance',
+      url: `/project/${ref}/advisors/performance`,
+      items: [],
+      shortcutId: SHORTCUT_IDS.NAV_ADVISORS_PERFORMANCE,
+    },
+    {
+      name: 'Query Performance',
+      key: 'query-performance',
+      url: `/project/${ref}/observability/query-performance`,
+      items: [],
+      rightIcon: <ArrowUpRight size={14} strokeWidth={1.5} className="h-4 w-4" />,
+    },
+  ]
 
   return [
     {
-      title: $t('Advisors'),
-      items: [
-        {
-          name: $t('Security Advisor'),
-          key: 'security',
-          url: `/project/${ref}/advisors/security`,
-          items: [],
-          shortcutId: SHORTCUT_IDS.NAV_ADVISORS_SECURITY,
-        },
-        {
-          name: $t('Performance Advisor'),
-          key: 'performance',
-          url: `/project/${ref}/advisors/performance`,
-          items: [],
-          shortcutId: SHORTCUT_IDS.NAV_ADVISORS_PERFORMANCE,
-        },
-        {
-          name: $t('Query Performance'),
-          key: 'query-performance',
-          url: `/project/${ref}/observability/query-performance`,
-          items: [],
-          rightIcon: <ArrowUpRight size={14} strokeWidth={1.5} className="h-4 w-4" />,
-        },
-      ],
+      title: 'Advisors',
+      items: advisorItems,
     },
-    ...(IS_PLATFORM && isAdvisorRulesEnabled
+    ...(isPlatform && isAdvisorRulesEnabled
       ? [
           {
-            title: $t('Configuration'),
+            title: 'Configuration',
             items: [
               {
-                name: $t('Settings'),
+                name: 'Settings',
                 key: 'rules',
                 url: `/project/${ref}/advisors/rules/security`,
                 items: [],
@@ -55,4 +75,15 @@ export const useGenerateAdvisorsMenu = (): ProductMenuGroup[] => {
         ]
       : []),
   ]
+}
+
+export const useGenerateAdvisorsMenu = (): ProductMenuGroup[] => {
+  const { ref } = useParams()
+  const isAdvisorRulesEnabled = useIsAdvisorRulesEnabled()
+
+  return generateAdvisorsMenu({
+    ref,
+    isAdvisorRulesEnabled,
+    isPlatform: IS_PLATFORM,
+  })
 }

@@ -131,7 +131,6 @@ export const TableGridEditor = ({
             >
               {!!tabId ? (
                 <Button
-                  variant="default"
                   className="mt-2"
                   onClick={() => {
                     tabs.handleTabClose({
@@ -145,23 +144,13 @@ export const TableGridEditor = ({
                   {$t('Close tab')}
                 </Button>
               ) : openTabs.length > 0 ? (
-                <Button
-                  asChild
-                  variant="default"
-                  className="mt-2"
-                  onClick={() => setLastVisitedTable(undefined)}
-                >
+                <Button asChild className="mt-2" onClick={() => setLastVisitedTable(undefined)}>
                   <Link href={`/project/${projectRef}/editor/${openTabs[0].split('-')[1]}`}>
                     {$t('Close tab')}
                   </Link>
                 </Button>
               ) : (
-                <Button
-                  asChild
-                  variant="default"
-                  className="mt-2"
-                  onClick={() => setLastVisitedTable(undefined)}
-                >
+                <Button asChild className="mt-2" onClick={() => setLastVisitedTable(undefined)}>
                   <Link href={`/project/${projectRef}/editor`}>{$t('Head back')}</Link>
                 </Button>
               )}

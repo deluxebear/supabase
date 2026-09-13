@@ -56,12 +56,7 @@ const PrivilegesHead = ({
       </div>
 
       <div className="flex items-center gap-2">
-        <Button
-          variant="default"
-          size="tiny"
-          onClick={resetChanges}
-          disabled={!hasChanges || isApplyingChanges}
-        >
+        <Button size="tiny" onClick={resetChanges} disabled={!hasChanges || isApplyingChanges}>
           {$t('Reset')}
         </Button>
         <Button

@@ -127,7 +127,7 @@ export const DownloadBackupsSection = () => {
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="default" icon={<Download />} iconRight={<ChevronDown />}>
+          <Button icon={<Download />} iconRight={<ChevronDown />}>
             {$t('Download backups')}
           </Button>
         </DropdownMenuTrigger>

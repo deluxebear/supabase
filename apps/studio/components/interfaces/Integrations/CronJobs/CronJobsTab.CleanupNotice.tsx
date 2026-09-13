@@ -78,7 +78,7 @@ const CronJobRunDetailsOverflowDialog = ({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="default">{$t('Learn more')}</Button>
+        <Button>{$t('Learn more')}</Button>
       </DialogTrigger>
       <DialogContent
         aria-describedby={undefined}
@@ -166,11 +166,7 @@ const CronJobRunDetailsOverflowDialog = ({
                     </SelectContent>
                   </Select>
                 </div>
-                <Button
-                  variant="default"
-                  disabled={isBusy}
-                  onClick={() => runBatchedDeletion(cleanupInterval)}
-                >
+                <Button disabled={isBusy} onClick={() => runBatchedDeletion(cleanupInterval)}>
                   {$t('Delete rows now')}
                 </Button>
               </div>
@@ -198,7 +194,6 @@ const CronJobRunDetailsOverflowDialog = ({
                 <Button
                   block
                   size="small"
-                  variant="default"
                   className="mt-1"
                   loading={isScheduling}
                   disabled={isScheduling}
@@ -276,7 +271,7 @@ const DeletionError = ({ error, onRetry }: DeletionErrorProps) => (
         {$t('Deletion failed:')} {error}
       </span>
     </div>
-    <Button variant="default" size="small" onClick={onRetry}>
+    <Button size="small" onClick={onRetry}>
       {$t('Retry')}
     </Button>
   </div>

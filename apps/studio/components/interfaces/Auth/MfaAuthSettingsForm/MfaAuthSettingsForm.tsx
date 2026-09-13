@@ -48,6 +48,7 @@ import { useAuthConfigUpdateMutation } from '@/data/auth/auth-config-update-muta
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { IS_PLATFORM } from '@/lib/constants'
+import { preprocessEmptyNumberInput } from '@/lib/forms/zod-number-input'
 import { t as $t } from '@/lib/i18n'
 
 function determineMFAStatus(verifyEnabled: boolean, enrollEnabled: boolean) {
@@ -79,8 +80,7 @@ const MfaStatusToState = (status: (typeof MFAFactorSelectionOptions)[number]['va
 
 const totpSchema = z.object({
   MFA_TOTP: z.string().min(1, 'Required'),
-  MFA_MAX_ENROLLED_FACTORS: z.preprocess(
-    (val) => (val === '' || val == null ? undefined : val),
+  MFA_MAX_ENROLLED_FACTORS: preprocessEmptyNumberInput(
     z.coerce
       .number({ required_error: 'Required', invalid_type_error: 'Required' })
       .min(0, 'Must be a value 0 or larger')
@@ -92,8 +92,7 @@ type TotpFormValues = z.infer<typeof totpSchema>
 
 const phoneSchema = z.object({
   MFA_PHONE: z.string().min(1, 'Required'),
-  MFA_PHONE_OTP_LENGTH: z.preprocess(
-    (val) => (val === '' || val == null ? undefined : val),
+  MFA_PHONE_OTP_LENGTH: preprocessEmptyNumberInput(
     z.coerce
       .number({ required_error: 'Required', invalid_type_error: 'Required' })
       .min(6, 'Must be a value 6 or larger')
@@ -423,9 +422,7 @@ export const MfaAuthSettingsForm = () => {
 
                 <CardFooter className="justify-end space-x-2">
                   {totpForm.formState.isDirty && (
-                    <Button variant="default" onClick={() => totpForm.reset()}>
-                      {$t('Cancel')}
-                    </Button>
+                    <Button onClick={() => totpForm.reset()}>{$t('Cancel')}</Button>
                   )}
                   <Button
                     variant="primary"
@@ -565,16 +562,14 @@ export const MfaAuthSettingsForm = () => {
                     fullWidth
                     source="authSmsMfa"
                     featureProposition="configure settings for SMS MFA"
-                    primaryText={$t('SMS MFA is only available on the Pro Plan and above')}
-                    secondaryText={$t('Upgrade to the Pro plan to configure settings for SMS MFA.')}
+                    primaryText="SMS MFA is only available on the Pro Plan and above"
+                    secondaryText="Upgrade to the Pro plan to configure settings for SMS MFA."
                   />
                 )}
 
                 <CardFooter className="justify-end space-x-2">
                   {phoneForm.formState.isDirty && (
-                    <Button variant="default" onClick={() => phoneForm.reset()}>
-                      {$t('Cancel')}
-                    </Button>
+                    <Button onClick={() => phoneForm.reset()}>{$t('Cancel')}</Button>
                   )}
                   <Button
                     variant={promptProPlanUpgrade ? 'default' : 'primary'}
@@ -658,18 +653,14 @@ export const MfaAuthSettingsForm = () => {
                     fullWidth
                     source="authEnhancedSecurity"
                     featureProposition="configure settings for Enhanced MFA Security"
-                    primaryText={$t('Enhanced MFA Security is not available on your plan')}
-                    secondaryText={$t(
-                      'Upgrade your plan to configure settings for Enhanced MFA Security'
-                    )}
-                    buttonText={$t('Upgrade')}
+                    primaryText="Enhanced MFA Security is not available on your plan"
+                    secondaryText="Upgrade your plan to configure settings for Enhanced MFA Security"
+                    buttonText="Upgrade"
                   />
                 )}
                 <CardFooter className="justify-end space-x-2">
                   {securityForm.formState.isDirty && (
-                    <Button variant="default" onClick={() => securityForm.reset()}>
-                      {$t('Cancel')}
-                    </Button>
+                    <Button onClick={() => securityForm.reset()}>{$t('Cancel')}</Button>
                   )}
                   <Button
                     variant="primary"

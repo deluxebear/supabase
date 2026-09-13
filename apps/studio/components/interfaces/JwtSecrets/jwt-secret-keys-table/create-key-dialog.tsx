@@ -244,6 +244,7 @@ export const CreateKeyDialog = ({
           side="top"
         >
           <Button
+            variant="primary"
             onClick={() => handleAddNewStandbyKey()}
             disabled={
               isPendingMutation || !!privateKeyMessage || (isBYOK && privateKey.trim().length === 0)

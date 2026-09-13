@@ -60,7 +60,7 @@ export const AuthProvidersForm = () => {
                         'We have detected that you have enabled the email provider with the OTP expiry set to more than an hour. It is recommended to set this value to less than an hour.'
                       )}
                     </p>
-                    <Button asChild variant="default" className="w-min" icon={<ExternalLink />}>
+                    <Button asChild className="w-min" icon={<ExternalLink />}>
                       <Link href={`${DOCS_URL}/guides/platform/going-into-prod#security`}>
                         {$t('View security recommendations')}
                       </Link>

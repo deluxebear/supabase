@@ -307,9 +307,7 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
       >
         <SheetHeader className="py-3 flex flex-row justify-between items-center border-b-0">
           <SheetTitle className="truncate">
-            {isCreating
-              ? $t('Add {{hook}}', { hook: $t(title ?? '') })
-              : $t('Update {{hook}}', { hook: $t(title ?? '') })}
+            {isCreating ? 'Add {{hook}}' : 'Update {{hook}}'}
           </SheetTitle>
           <DocsButton href={`${DOCS_URL}/guides/auth/auth-hooks/${hook.docSlug}`} />
         </SheetHeader>
@@ -329,10 +327,10 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
                   <FormItemLayout
                     layout="flex-row-reverse"
                     className="px-5 [&>div:first-child]:xl:w-1/5"
-                    label={$t('Enable {{hook}}', { hook: $t(hookType) })}
+                    label={$t('Enable {{hook}}')}
                     description={
                       hookType === 'Send SMS hook'
-                        ? $t('SMS Provider settings will be disabled in favor of SMS hooks')
+                        ? 'SMS Provider settings will be disabled in favor of SMS hooks'
                         : undefined
                     }
                   >
@@ -415,7 +413,6 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
                           <SchemaSelector
                             size="small"
                             showError={false}
-                            stopScrollPropagation
                             selectedSchemaName={field.value}
                             onSelectSchema={(name) => field.onChange(name)}
                             disabled={field.disabled}
@@ -442,7 +439,6 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
                             size="small"
                             schema={postgresValues.schema}
                             value={field.value}
-                            stopScrollPropagation
                             onChange={field.onChange}
                             disabled={field.disabled}
                             filterFunction={(func) => {
@@ -539,7 +535,6 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
                           <div className="flex flex-row">
                             <Input {...field} className="rounded-r-none border-r-0" />
                             <Button
-                              variant="default"
                               className="rounded-l-none text-xs h-auto"
                               onClick={() => {
                                 const authHookSecret = generateAuthHookSecret()
@@ -569,16 +564,17 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
             </div>
           )}
 
-          <Button disabled={isUpdatingAuthHooks} variant="default" onClick={confirmOnClose}>
+          <Button disabled={isUpdatingAuthHooks} onClick={confirmOnClose}>
             {$t('Cancel')}
           </Button>
           <Button
+            variant="primary"
             form={FORM_ID}
             type="submit"
             disabled={isUpdatingAuthHooks}
             loading={isUpdatingAuthHooks}
           >
-            {isCreating ? $t('Create hook') : $t('Update hook')}
+            {isCreating ? 'Create hook' : 'Update hook'}
           </Button>
         </SheetFooter>
       </SheetContent>

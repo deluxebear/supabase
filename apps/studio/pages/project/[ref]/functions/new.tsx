@@ -310,7 +310,6 @@ const NewFunctionPage = () => {
             <PopoverTrigger asChild>
               <Button
                 size="tiny"
-                variant="default"
                 role="combobox"
                 aria-expanded={open}
                 aria-controls={templatesListboxId}
@@ -357,12 +356,7 @@ const NewFunctionPage = () => {
               </Command>
             </PopoverContent>
           </Popover>
-          <Button
-            size="tiny"
-            variant="default"
-            onClick={handleChat}
-            icon={<AiIconAnimation size={16} />}
-          >
+          <Button size="tiny" onClick={handleChat} icon={<AiIconAnimation size={16} />}>
             {$t('Chat')}
           </Button>
         </>
@@ -420,6 +414,7 @@ const NewFunctionPage = () => {
             />
           </div>
           <Button
+            variant="primary"
             loading={isDeploying}
             size="medium"
             disabled={files.length === 0 || isDeploying || isDeployCapabilityUnavailable}

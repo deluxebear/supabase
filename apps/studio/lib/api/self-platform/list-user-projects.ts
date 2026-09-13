@@ -21,8 +21,10 @@ import {
   type StudioDeploymentProfile,
 } from '@/lib/constants/deployment-profile'
 
-export type OrganizationProjectsResponse = components['schemas']['OrganizationProjectsResponse']
-export type ListProjectsPaginatedResponse = components['schemas']['ListProjectsPaginatedResponse']
+export type OrganizationProjectsResponse =
+  components['schemas']['OrganizationProjectsResponse_Output']
+export type ListProjectsPaginatedResponse =
+  components['schemas']['ListProjectsPaginatedResponse_Output']
 type OrgProjectItem = OrganizationProjectsResponse['projects'][number]
 type GlobalProjectItem = ListProjectsPaginatedResponse['projects'][number]
 

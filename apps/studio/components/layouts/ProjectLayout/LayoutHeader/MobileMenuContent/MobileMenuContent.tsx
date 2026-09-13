@@ -19,6 +19,7 @@ import {
   useGenerateOtherRoutes,
   useGenerateToolRoutes,
 } from '@/components/layouts/Navigation/NavigationBar/NavigationBar.utils'
+import { ProductMenuBarHeader } from '@/components/layouts/Navigation/ProductMenuBar'
 import type { Route } from '@/components/ui/ui.types'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
@@ -27,6 +28,7 @@ import { getPathnameWithoutQuery, getPathSegment } from '@/lib/pathname.utils'
 
 export interface MobileMenuContentProps {
   currentProductMenu: React.ReactNode
+  currentProductMenuHeader?: React.ReactNode
   currentProduct: string
   currentSectionKey: string | null
   onCloseSheet?: () => void
@@ -34,6 +36,7 @@ export interface MobileMenuContentProps {
 
 export function MobileMenuContent({
   currentProductMenu,
+  currentProductMenuHeader,
   currentProduct,
   currentSectionKey,
   onCloseSheet,
@@ -63,7 +66,7 @@ export function MobileMenuContent({
     'realtime:all',
   ])
   const authOverviewPageEnabled = useFlag('authOverviewPage')
-  const workersEnabled = useFlag('workers')
+  const computeEnabled = useFlag('compute')
 
   const toolRoutes = useGenerateToolRoutes()
   const productRoutes = useMemo(
@@ -74,7 +77,7 @@ export function MobileMenuContent({
         storage: storageEnabled,
         realtime: realtimeEnabled,
         authOverviewPage: authOverviewPageEnabled,
-        workers: workersEnabled,
+        compute: computeEnabled,
       }),
     [
       ref,
@@ -84,7 +87,7 @@ export function MobileMenuContent({
       storageEnabled,
       realtimeEnabled,
       authOverviewPageEnabled,
-      workersEnabled,
+      computeEnabled,
     ]
   )
   const otherRoutes = useGenerateOtherRoutes()
@@ -114,6 +117,8 @@ export function MobileMenuContent({
   })
 
   const SectionMenuContent = sectionKeyToShow ? getProductMenuComponent(sectionKeyToShow) : null
+  const hasCurrentProductHeader =
+    viewLevel === 'section' && sectionKeyToShow === currentSectionKey && !!currentProductMenuHeader
   const pageSegment = getPathSegment(pathname, 4)
 
   const renderRoute = (route: Route, isActive: boolean) => (
@@ -147,7 +152,15 @@ export function MobileMenuContent({
           </Button>
         </div>
       )}
-      <div className="flex-1 overflow-y-auto pb-8 text-sidebar-foreground">
+      {hasCurrentProductHeader && (
+        <ProductMenuBarHeader>{currentProductMenuHeader}</ProductMenuBarHeader>
+      )}
+      <div
+        className={cn(
+          'flex-1 overflow-y-auto pb-8 text-sidebar-foreground',
+          hasCurrentProductHeader && 'min-h-0 flex flex-col'
+        )}
+      >
         {viewLevel === 'top' && (
           <nav className="flex flex-col gap-2 p-1" aria-label={$t('Project menu')}>
             <SidebarMenu>
@@ -175,7 +188,7 @@ export function MobileMenuContent({
           </nav>
         )}
         {viewLevel === 'section' && sectionKeyToShow && (
-          <div className="p-1">
+          <div className={cn('p-1', hasCurrentProductHeader && 'min-h-0 flex-1 p-0')}>
             {sectionKeyToShow === currentSectionKey && currentProductMenu ? (
               currentProductMenu
             ) : SectionMenuContent ? (

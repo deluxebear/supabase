@@ -21,12 +21,7 @@ export function PgPartmanCallout() {
           'Unlock partitioned queues for automatic data retention, lower storage costs, and faster performance at scale.'
         )}
       >
-        <Button
-          variant="default"
-          size="tiny"
-          className="mt-2"
-          onClick={() => setShowEnableModal(true)}
-        >
+        <Button size="tiny" className="mt-2" onClick={() => setShowEnableModal(true)}>
           {$t('Enable pg_partman')}
         </Button>
       </Admonition>

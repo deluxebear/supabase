@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
 import { isEqual } from 'lodash'
@@ -19,6 +18,7 @@ import ShimmerLine from '@/components/ui/ShimmerLine'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -42,11 +42,7 @@ const NoResultAlert = ({
     'service_api_keys'
   )
 
-  const broadcastButton = (
-    <Button variant="default" onClick={showSendMessage}>
-      {$t('Broadcast a message')}
-    </Button>
-  )
+  const broadcastButton = <Button onClick={showSendMessage}>{$t('Broadcast a message')}</Button>
 
   return (
     <div className="w-full max-w-md flex items-center flex-col">
@@ -95,9 +91,7 @@ const NoResultAlert = ({
                 </p>
               </div>
               <Link href={`/project/${ref}/realtime/inspector`} target="_blank" rel="noreferrer">
-                <Button variant="default" iconRight={<ExternalLink />}>
-                  {$t('Open inspector')}
-                </Button>
+                <Button iconRight={<ExternalLink />}>{$t('Open inspector')}</Button>
               </Link>
             </div>
 
@@ -113,9 +107,7 @@ const NoResultAlert = ({
                 </p>
               </div>
               <Link href={`/project/${ref}/database/publications`} target="_blank" rel="noreferrer">
-                <Button variant="default" iconRight={<ExternalLink />}>
-                  {$t('Publications settings')}
-                </Button>
+                <Button iconRight={<ExternalLink />}>{$t('Publications settings')}</Button>
               </Link>
             </div>
             <div className="w-full px-5 py-4 items-center gap-4 inline-flex rounded-b-md bg-studio">
@@ -190,11 +182,7 @@ const MessagesTable = ({
                     </div>
                   </div>
                   <ShortcutTooltip shortcutId={SHORTCUT_IDS.INSPECTOR_BROADCAST} side="bottom">
-                    <Button
-                      variant="default"
-                      onClick={showSendMessage}
-                      icon={<Megaphone strokeWidth={1.5} />}
-                    >
+                    <Button onClick={showSendMessage} icon={<Megaphone strokeWidth={1.5} />}>
                       <span>{$t('Broadcast a message')}</span>
                     </Button>
                   </ShortcutTooltip>

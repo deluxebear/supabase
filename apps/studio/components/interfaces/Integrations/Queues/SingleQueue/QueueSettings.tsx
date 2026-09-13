@@ -381,7 +381,7 @@ export const QueueSettings = ({}: QueueSettingsProps) => {
           </Table>
         </SheetSection>
         <SheetFooter>
-          <Button variant="default" disabled={isSaving} onClick={() => setOpen(false)}>
+          <Button disabled={isSaving} onClick={() => setOpen(false)}>
             {$t('Cancel')}
           </Button>
           <Button variant="primary" loading={isSaving} onClick={onSaveConfiguration}>

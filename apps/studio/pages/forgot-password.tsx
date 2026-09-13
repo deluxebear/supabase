@@ -15,7 +15,7 @@ const ForgotPasswordPage: NextPageWithLayout = () => {
       <div className="my-8 self-center text-sm">
         <span className="text-foreground-light">{$t('Already have an account?')}</span>{' '}
         <Link href="/sign-in" className="underline hover:text-foreground-light">
-          {$t('Sign In')}
+          {$t('Sign in')}
         </Link>
       </div>
     </>

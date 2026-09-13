@@ -17,7 +17,7 @@ import { useBackupRestoreMutation } from '@/data/database/backup-restore-mutatio
 import { DatabaseBackup, useBackupsQuery } from '@/data/database/backups-query'
 import { useSetProjectStatus } from '@/data/projects/project-detail-query'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
-import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { useIsHighAvailability, useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
@@ -31,6 +31,7 @@ export const BackupsList = () => {
   const { setProjectStatus } = useSetProjectStatus()
   const { data: selectedProject } = useSelectedProjectQuery()
   const isHealthy = selectedProject?.status === PROJECT_STATUS.ACTIVE_HEALTHY
+  const isHighAvailability = useIsHighAvailability()
 
   const { data: backups } = useBackupsQuery({ projectRef })
   const {
@@ -90,6 +91,7 @@ export const BackupsList = () => {
                     backup={x}
                     index={i}
                     isHealthy={isHealthy}
+                    isHighAvailability={isHighAvailability}
                     onSelectBackup={() => setSelectedBackup(x)}
                   />
                 )

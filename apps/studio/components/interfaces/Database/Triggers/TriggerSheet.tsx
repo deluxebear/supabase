@@ -98,22 +98,22 @@ export const TriggerSheet = ({
   const { mutate: createDatabaseTrigger, isPending: isCreating } = useDatabaseTriggerCreateMutation(
     {
       onSuccess: () => {
-        toast.success($t('Successfully created trigger'))
+        toast.success(`Successfully created trigger`)
         onClose()
       },
       onError: (error) => {
-        toast.error($t('Failed to create trigger: {{error}}', { error: error.message }))
+        toast.error(`Failed to create trigger: ${error.message}`)
       },
     }
   )
   const { mutate: updateDatabaseTrigger, isPending: isUpdating } = useDatabaseTriggerUpdateMutation(
     {
       onSuccess: () => {
-        toast.success($t('Successfully updated trigger'))
+        toast.success(`Successfully updated trigger`)
         onClose()
       },
       onError: (error) => {
-        toast.error($t('Failed to update trigger: {{error}}', { error: error.message }))
+        toast.error(`Failed to update trigger: ${error.message}`)
       },
     }
   )
@@ -201,10 +201,10 @@ export const TriggerSheet = ({
           <SheetHeader>
             <SheetTitle>
               {isDuplicatingTrigger
-                ? $t('Duplicate trigger')
+                ? 'Duplicate trigger'
                 : isEditing
-                  ? $t('Edit database trigger: {{name}}', { name: selectedTrigger.name })
-                  : $t('Create a new database trigger')}
+                  ? `Edit database trigger: ${selectedTrigger.name}`
+                  : 'Create a new database trigger'}
             </SheetTitle>
           </SheetHeader>
 
@@ -247,16 +247,16 @@ export const TriggerSheet = ({
                       <FormControl>
                         <Select defaultValue={field.value} onValueChange={field.onChange}>
                           <SelectTrigger className="col-span-8">
-                            {$t(
+                            {
                               TRIGGER_ENABLED_MODES.find((option) => option.value === field.value)
-                                ?.label ?? ''
-                            )}
+                                ?.label
+                            }
                           </SelectTrigger>
                           <SelectContent>
                             {TRIGGER_ENABLED_MODES.map((option) => (
                               <SelectItem key={option.value} value={option.value}>
-                                <p className="text-foreground">{$t(option.label)}</p>
-                                <p className="text-foreground-lighter">{$t(option.description)}</p>
+                                <p className="text-foreground">{option.label}</p>
+                                <p className="text-foreground-lighter">{option.description}</p>
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -330,8 +330,8 @@ export const TriggerSheet = ({
                               <FormItemLayout
                                 hideMessage
                                 layout="flex"
-                                label={$t(event.label)}
-                                description={$t(event.description)}
+                                label={event.label}
+                                description={event.description}
                               >
                                 <FormControl>
                                   <Checkbox
@@ -367,18 +367,13 @@ export const TriggerSheet = ({
                         <FormControl>
                           <Select defaultValue={field.value} onValueChange={field.onChange}>
                             <SelectTrigger className="col-span-8">
-                              {$t(
-                                TRIGGER_TYPES.find((option) => option.value === field.value)
-                                  ?.label ?? ''
-                              )}
+                              {TRIGGER_TYPES.find((option) => option.value === field.value)?.label}
                             </SelectTrigger>
                             <SelectContent>
                               {TRIGGER_TYPES.map((option) => (
                                 <SelectItem key={option.value} value={option.value}>
-                                  <p className="text-foreground">{$t(option.label)}</p>
-                                  <p className="text-foreground-lighter">
-                                    {$t(option.description)}
-                                  </p>
+                                  <p className="text-foreground">{option.label}</p>
+                                  <p className="text-foreground-lighter">{option.description}</p>
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -403,18 +398,16 @@ export const TriggerSheet = ({
                         <FormControl>
                           <Select defaultValue={field.value} onValueChange={field.onChange}>
                             <SelectTrigger className="col-span-8">
-                              {$t(
+                              {
                                 TRIGGER_ORIENTATIONS.find((option) => option.value === field.value)
-                                  ?.label ?? ''
-                              )}
+                                  ?.label
+                              }
                             </SelectTrigger>
                             <SelectContent>
                               {TRIGGER_ORIENTATIONS.map((option) => (
                                 <SelectItem key={option.value} value={option.value}>
-                                  <p className="text-foreground">{$t(option.label)}</p>
-                                  <p className="text-foreground-lighter">
-                                    {$t(option.description)}
-                                  </p>
+                                  <p className="text-foreground">{option.label}</p>
+                                  <p className="text-foreground-lighter">{option.description}</p>
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -447,7 +440,7 @@ export const TriggerSheet = ({
                               >
                                 <FormBoxEmpty
                                   icon={<Terminal size={14} strokeWidth={2} />}
-                                  text={$t('Choose a function to trigger')}
+                                  text="Choose a function to trigger"
                                 />
                               </button>
                             ) : (
@@ -470,10 +463,7 @@ export const TriggerSheet = ({
                                     <span className="text-sm text-foreground">{function_name}</span>
                                   </p>
                                 </div>
-                                <Button
-                                  variant="default"
-                                  onClick={() => setShowFunctionSelector(true)}
-                                >
+                                <Button onClick={() => setShowFunctionSelector(true)}>
                                   {$t('Change function')}
                                 </Button>
                               </div>
@@ -489,15 +479,15 @@ export const TriggerSheet = ({
           </Form>
 
           <SheetFooter className="shrink-0">
-            <Button
-              variant="default"
-              type="reset"
-              disabled={isCreating || isUpdating}
-              onClick={confirmOnClose}
-            >
+            <Button type="reset" disabled={isCreating || isUpdating} onClick={confirmOnClose}>
               {$t('Cancel')}
             </Button>
-            <Button form={formId} type="submit" loading={isCreating || isUpdating}>
+            <Button
+              variant="primary"
+              form={formId}
+              type="submit"
+              loading={isCreating || isUpdating}
+            >
               {isEditing ? $t('Save trigger') : $t('Create trigger')}
             </Button>
           </SheetFooter>

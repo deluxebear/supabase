@@ -1,7 +1,7 @@
 import { useParams } from 'common'
 import { partition } from 'lodash'
 import { AlertCircle } from 'lucide-react'
-import { useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
   Card,
   Loading,
@@ -17,9 +17,18 @@ import { Admonition } from 'ui-patterns/Admonition'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { MemberRow } from './MemberRow'
+import { TeamSettingsDataProvider } from './TeamSettingsDataContext'
+import { UpdateRolesPanel } from './UpdateRolesPanel/UpdateRolesPanel'
 import { AlertError } from '@/components/ui/AlertError'
 import { useOrganizationRolesV2Query } from '@/data/organization-members/organization-roles-query'
-import { useOrganizationMembersQuery } from '@/data/organizations/organization-members-query'
+import {
+  useOrganizationMembersQuery,
+  type OrganizationMember,
+} from '@/data/organizations/organization-members-query'
+import { usePermissionsQuery } from '@/data/permissions/permissions-query'
+import { useOrgProjectsInfiniteQuery } from '@/data/projects/org-projects-infinite-query'
+import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 
@@ -27,9 +36,16 @@ export interface MembersViewProps {
   searchString: string
 }
 
-const MembersView = ({ searchString }: MembersViewProps) => {
+export const MembersView = ({ searchString }: MembersViewProps) => {
   const { slug } = useParams()
   const { profile } = useProfile()
+
+  const { data: selectedOrganization } = useSelectedOrganizationQuery()
+  const { data: permissions } = usePermissionsQuery()
+  const organizationMembersDeletionEnabled = useIsFeatureEnabled('organization_members:delete')
+
+  const [memberForRoleUpdate, setMemberForRoleUpdate] = useState<OrganizationMember>()
+  const [showRoleUpdatePanel, setShowRoleUpdatePanel] = useState(false)
 
   const {
     data: members = [],
@@ -41,11 +57,18 @@ const MembersView = ({ searchString }: MembersViewProps) => {
   const {
     data: roles,
     error: rolesError,
+    isPending: isLoadingRoles,
     isSuccess: isSuccessRoles,
     isError: isErrorRoles,
   } = useOrganizationRolesV2Query({
     slug,
   })
+
+  const { data: projectsData } = useOrgProjectsInfiniteQuery({ slug })
+  const orgProjects = useMemo(
+    () => projectsData?.pages.flatMap((page) => page.projects) ?? [],
+    [projectsData?.pages]
+  )
 
   const filteredMembers = useMemo(() => {
     return !searchString
@@ -63,26 +86,44 @@ const MembersView = ({ searchString }: MembersViewProps) => {
         })
   }, [members, searchString])
 
-  const [[user], _otherMembers] = partition(
-    filteredMembers,
-    (m) => m.gotrue_id === profile?.gotrue_id
-  )
+  const handleManageAccess = useCallback((member: OrganizationMember) => {
+    setMemberForRoleUpdate(member)
+    setShowRoleUpdatePanel(true)
+  }, [])
 
   const userMember = members.find((m) => m.gotrue_id === profile?.gotrue_id)
   const orgScopedRoleIds = (roles?.org_scoped_roles ?? []).map((r) => r.id)
   const isOrgScopedRole = orgScopedRoleIds.includes(userMember?.role_ids?.[0] ?? -1)
 
-  // [Joshen] Temp wait on API level changes but I think it makes sense to hide invites for
-  // project scoped users since they can't see other members to begin with. Not a security issue nonetheless
-  const otherMembers = isOrgScopedRole
-    ? _otherMembers
-    : _otherMembers.filter((x) => !('invited_id' in x))
-  const sortedMembers = otherMembers.sort((a, b) =>
-    (a.primary_email ?? '').localeCompare(b.primary_email ?? '')
-  )
+  const { user, sortedMembers } = useMemo(() => {
+    const [[currentUser], _otherMembers] = partition(
+      filteredMembers,
+      (m) => m.gotrue_id === profile?.gotrue_id
+    )
+
+    // [Joshen] Temp wait on API level changes but I think it makes sense to hide invites for
+    // project scoped users since they can't see other members to begin with. Not a security issue nonetheless
+    const otherMembers = isOrgScopedRole
+      ? _otherMembers
+      : _otherMembers.filter((x) => !('invited_id' in x))
+    const sorted = [...otherMembers].sort((a, b) =>
+      (a.primary_email ?? '').localeCompare(b.primary_email ?? '')
+    )
+
+    return { user: currentUser, sortedMembers: sorted }
+  }, [filteredMembers, profile?.gotrue_id, isOrgScopedRole])
 
   return (
-    <>
+    <TeamSettingsDataProvider
+      members={members}
+      roles={roles}
+      isLoadingRoles={isLoadingRoles}
+      orgProjects={orgProjects}
+      permissions={permissions}
+      selectedOrganization={selectedOrganization}
+      organizationMembersDeletionEnabled={organizationMembersDeletionEnabled}
+      onManageAccess={handleManageAccess}
+    >
       {isLoadingMembers && <GenericSkeletonLoader />}
 
       {isErrorMembers && (
@@ -149,12 +190,7 @@ const MembersView = ({ searchString }: MembersViewProps) => {
                 <TableFooter className="font-normal">
                   <TableRow className="border-b-0 [&>td]:hover:bg-inherit">
                     <TableCell colSpan={4} className="text-foreground-muted">
-                      {searchString
-                        ? $t('{{filtered}} of {{total}} members', {
-                            filtered: filteredMembers.length,
-                            total: members.length,
-                          })
-                        : $t('{{count}} members', { count: members.length || 0 })}
+                      {searchString ? '{{filtered}} of {{total}} members' : '{{count}} members'}
                     </TableCell>
                   </TableRow>
                 </TableFooter>
@@ -163,8 +199,14 @@ const MembersView = ({ searchString }: MembersViewProps) => {
           </Card>
         </div>
       )}
-    </>
+
+      {memberForRoleUpdate && (
+        <UpdateRolesPanel
+          visible={showRoleUpdatePanel}
+          member={memberForRoleUpdate}
+          onClose={() => setShowRoleUpdatePanel(false)}
+        />
+      )}
+    </TeamSettingsDataProvider>
   )
 }
-
-export default MembersView

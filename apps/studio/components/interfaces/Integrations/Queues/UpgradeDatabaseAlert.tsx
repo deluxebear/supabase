@@ -28,7 +28,7 @@ export const UpgradeDatabaseAlert = ({ minimumVersion = '15.6' }: UpgradeDatabas
           {minimumVersion} {$t('and higher.')}
         </p>
       </div>
-      <Button color="primary" className="w-fit">
+      <Button variant="primary" color="primary" className="w-fit">
         <Link href={getServiceVersionsPath(project?.ref)}>{$t('Upgrade database')}</Link>
       </Button>
     </Admonition>

@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n'
 import dayjs from 'dayjs'
 import type { Control, UseFormSetValue } from 'react-hook-form'
 import {
@@ -29,6 +28,7 @@ import {
   getDefaultCustomExpiryDate,
   type TokenFormValues,
 } from './NewScopedTokenForm.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface TokenDetailsProps {
   control: Control<TokenFormValues>
@@ -60,7 +60,7 @@ export const TokenDetails = ({ control, setValue }: TokenDetailsProps) => {
         name="tokenName"
         control={control}
         render={({ field }) => (
-          <FormItemLayout name="tokenName" label={$t('Name')} layout="flex-row-reverse">
+          <FormItemLayout label={$t('Name')} layout="flex-row-reverse">
             <FormControl>
               <Input {...field} placeholder={$t('e.g. CI deploy token')} />
             </FormControl>
@@ -73,27 +73,25 @@ export const TokenDetails = ({ control, setValue }: TokenDetailsProps) => {
         name="expiresAt"
         control={control}
         render={({ field }) => (
-          <FormItemLayout id="expiresAt" label={$t('Expires in')} layout="flex-row-reverse">
+          <FormItemLayout label={$t('Expires in')} layout="flex-row-reverse">
             <div className="flex gap-2 w-full">
-              <FormControl className="grow">
-                <Select value={field.value} onValueChange={handleExpiryChange}>
-                  <SelectTrigger id="expiresAt">
+              <Select value={field.value} onValueChange={handleExpiryChange}>
+                <FormControl className="grow">
+                  <SelectTrigger>
                     <SelectValue placeholder={$t('Select an expiry')} />
                   </SelectTrigger>
-                  <SelectContent>
-                    {EXPIRY_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        <span className="flex items-center gap-2">
-                          {option.label}
-                          {option.recommended && (
-                            <Badge variant="success">{$t('Recommended')}</Badge>
-                          )}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormControl>
+                </FormControl>
+                <SelectContent>
+                  {EXPIRY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      <span className="flex items-center gap-2">
+                        {option.label}
+                        {option.recommended && <Badge variant="success">{$t('Recommended')}</Badge>}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
               {field.value === 'custom' && (
                 <FormField

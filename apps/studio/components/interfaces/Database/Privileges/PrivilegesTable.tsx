@@ -1,4 +1,4 @@
-import { Switch } from 'ui'
+import { Label, Switch } from 'ui'
 
 import {
   ALL_PRIVILEGE_TYPES,
@@ -52,13 +52,17 @@ const PrivilegesTable = ({
         </Table.th>,
         ...ALL_PRIVILEGE_TYPES.map((privilege) => {
           const checked = tableCheckedStates[privilege]
+          const switchThId = `privilege-th-${privilege}`
 
           return (
             <Table.th key={`header-${privilege}`}>
               <div className="inline-flex items-center gap-2">
-                <span>{privilege.charAt(0) + privilege.slice(1).toLowerCase()}</span>
+                <Label htmlFor={switchThId}>
+                  {privilege.charAt(0) + privilege.slice(1).toLowerCase()}
+                </Label>
 
                 <Switch
+                  id={switchThId}
                   checked={checked}
                   onCheckedChange={() => {
                     toggleTablePrivilege(privilege)
@@ -89,6 +93,7 @@ const PrivilegesTable = ({
                 {COLUMN_PRIVILEGE_TYPES.includes(privilege as any) && (
                   <div className="ml-5 inline-flex">
                     <Switch
+                      aria-label={`${privilege} privilege for ${column.column_name}`}
                       checked={checked}
                       onCheckedChange={() => {
                         toggleColumnPrivilege(column.column_id, privilege)

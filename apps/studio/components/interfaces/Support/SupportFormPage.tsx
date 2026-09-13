@@ -140,7 +140,7 @@ function SupportFormHeader() {
       </div>
 
       <div className="flex items-center gap-x-3">
-        <Button asChild variant="default" icon={<Wrench />}>
+        <Button asChild icon={<Wrench />}>
           <Link
             href={`${DOCS_URL}/guides/troubleshooting?products=platform`}
             target="_blank"
@@ -153,7 +153,6 @@ function SupportFormHeader() {
           <TooltipTrigger asChild>
             <Button
               asChild
-              variant="default"
               icon={
                 isLoading ? (
                   <Loader2 className="animate-spin" />

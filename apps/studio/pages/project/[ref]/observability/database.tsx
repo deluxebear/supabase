@@ -243,7 +243,6 @@ const DatabaseUsage = () => {
             >
               <Button
                 aria-label={$t('Refresh report')}
-                variant="default"
                 disabled={isRefreshing}
                 icon={<RefreshCw className={isRefreshing ? 'animate-spin' : ''} />}
                 className="w-7"
@@ -379,12 +378,11 @@ const DatabaseUsage = () => {
                       The DiskSizeConfigurationModal is old and might be obsolete
                      */}
                     {project?.cloud_provider === 'AWS' && !isHighAvailability ? (
-                      <Button asChild variant="default">
+                      <Button asChild>
                         <Link href={getInfrastructurePath(ref)}>{$t('Increase disk size')}</Link>
                       </Button>
                     ) : (
                       <ButtonTooltip
-                        variant="default"
                         disabled={!canUpdateDiskSizeConfig || isHighAvailability}
                         onClick={() => setshowIncreaseDiskSizeModal(true)}
                         tooltip={{
@@ -472,7 +470,7 @@ const renderDatabaseSizeAdditionalInfo = () => {
               )}
             </p>
 
-            <Button asChild variant="default" icon={<ExternalLink />}>
+            <Button asChild icon={<ExternalLink />}>
               <Link
                 href={`${DOCS_URL}/guides/platform/database-size#disk-space-usage`}
                 target="_blank"

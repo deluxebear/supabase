@@ -226,7 +226,6 @@ const AuthUsage = () => {
                 side="bottom"
               >
                 <Button
-                  variant="default"
                   disabled={isRefreshing}
                   icon={<RefreshCw className={isRefreshing ? 'animate-spin' : ''} />}
                   className="w-7"

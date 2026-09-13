@@ -456,7 +456,6 @@ export const TemplateEditor = ({ template, isReadOnly = false }: TemplateEditorP
               <div className="ml-auto flex flex-row gap-2">
                 {hasChanges && (
                   <Button
-                    variant="default"
                     type="button"
                     onClick={() => {
                       form.reset(INITIAL_VALUES)

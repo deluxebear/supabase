@@ -65,7 +65,7 @@ export const SessionTimeoutModal = ({
                       'Try a different browser or disable extensions that block network requests. If the problem persists:'
                     )}
                   </p>
-                  <Button variant="default" size="tiny" onClick={handleClearStorage}>
+                  <Button size="tiny" onClick={handleClearStorage}>
                     {$t('Clear site data and reload')}
                   </Button>
                   <p>

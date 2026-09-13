@@ -275,7 +275,7 @@ export const PublishAppSidePanel = ({
                         <div className="absolute bottom-1 right-1">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="default" className="px-1">
+                              <Button className="px-1">
                                 <Edit />
                               </Button>
                             </DropdownMenuTrigger>
@@ -338,10 +338,7 @@ export const PublishAppSidePanel = ({
                       {$t('All URLs must use HTTPS, except for localhost')}
                     </p>
                   </div>
-                  <Button
-                    variant="default"
-                    onClick={() => appendCallbackUrl({ id: uuidv4(), value: '' })}
-                  >
+                  <Button onClick={() => appendCallbackUrl({ id: uuidv4(), value: '' })}>
                     {$t('Add URL')}
                   </Button>
                 </div>
@@ -416,14 +413,13 @@ export const PublishAppSidePanel = ({
             <SidePanel.Content>
               <div className="pt-2 pb-3 flex items-center justify-between">
                 <Button
-                  variant="default"
                   onClick={() => setShowPreview(true)}
                   disabled={name.length === 0 || website.length === 0}
                 >
                   {$t('Preview consent for users')}
                 </Button>
                 <div className="flex items-center space-x-2">
-                  <Button variant="default" disabled={isSubmitting} onClick={() => onClose()}>
+                  <Button disabled={isSubmitting} onClick={() => onClose()}>
                     {$t('Cancel')}
                   </Button>
                   <Shortcut
@@ -432,7 +428,12 @@ export const PublishAppSidePanel = ({
                     options={{ enabled: visible && !isSubmitting }}
                     side="top"
                   >
-                    <Button type="submit" loading={isSubmitting} disabled={isSubmitting}>
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      loading={isSubmitting}
+                      disabled={isSubmitting}
+                    >
                       {$t('Confirm')}
                     </Button>
                   </Shortcut>

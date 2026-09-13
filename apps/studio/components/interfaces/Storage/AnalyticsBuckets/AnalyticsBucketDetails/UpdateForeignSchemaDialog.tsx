@@ -92,7 +92,7 @@ export const UpdateForeignSchemaDialog = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="default">{$t('Update schema tables')}</Button>
+        <Button>{$t('Update schema tables')}</Button>
       </DialogTrigger>
       <DialogContent size="medium" aria-describedby={undefined}>
         <Form {...form}>
@@ -158,7 +158,7 @@ export const UpdateForeignSchemaDialog = ({
             <DialogFooter className="justify-between!">
               <DocsButton href={`${DOCS_URL}/guides/storage/analytics/query-with-postgres`} />
               <div className="flex items-center gap-x-2">
-                <Button variant="default" disabled={isUpdating} onClick={() => setIsOpen(false)}>
+                <Button disabled={isUpdating} onClick={() => setIsOpen(false)}>
                   {$t('Cancel')}
                 </Button>
                 <Button type="submit" variant="primary" loading={isUpdating}>

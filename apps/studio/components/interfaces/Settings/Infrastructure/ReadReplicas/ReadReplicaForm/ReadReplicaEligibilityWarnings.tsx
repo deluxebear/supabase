@@ -85,7 +85,7 @@ export const ReadReplicaEligibilityWarnings = ({
         <p>
           {$t('Please resolve all outstanding invoices first before deploying a new read replica.')}
         </p>
-        <Button asChild variant="default" className="mt-2">
+        <Button asChild className="mt-2">
           <Link href={`/org/${org?.slug}/billing#invoices`}>{$t('View invoices')}</Link>
         </Button>
       </Admonition>
@@ -148,7 +148,7 @@ export const ReadReplicaEligibilityWarnings = ({
         )}
       >
         <p>{$t("If you'd like to use read replicas, please contact us via support.")}</p>
-        <Button asChild variant="default" className="mt-2">
+        <Button asChild className="mt-2">
           <SupportLink
             queryParams={{
               projectRef,
@@ -191,7 +191,6 @@ export const ReadReplicaEligibilityWarnings = ({
           />
         ) : (
           <Button
-            variant="default"
             className="mt-2"
             onClick={() => onRecommendCompute(RECOMMENDED_COMPUTE_FOR_READ_REPLICAS.minimum)}
           >
@@ -238,7 +237,6 @@ export const ReadReplicaEligibilityWarnings = ({
         {refetchInterval === false && (
           <div className="flex items-center gap-x-2 mt-2">
             <Button
-              variant="default"
               loading={isEnabling}
               disabled={isEnabling}
               onClick={() => {
@@ -296,7 +294,6 @@ export const ReadReplicaEligibilityWarnings = ({
               {$t('replicas if your project is on an XL compute or higher.')}
             </p>
             <Button
-              variant="default"
               className="mt-2"
               onClick={() =>
                 onRecommendCompute(RECOMMENDED_COMPUTE_FOR_READ_REPLICAS.unlockMaxReplicas)

@@ -33,7 +33,7 @@ export const FormActions = ({
     >
       {helper && <span className="text-sm text-foreground-lighter">{helper}</span>}
       <div className="flex items-center gap-2">
-        <Button disabled={isDisabled} variant="default" type="reset" onClick={() => handleReset()}>
+        <Button disabled={isDisabled} type="reset" onClick={() => handleReset()}>
           {$t('Cancel')}
         </Button>
         <Button
@@ -43,7 +43,7 @@ export const FormActions = ({
           disabled={isDisabled}
           loading={isSubmitting}
         >
-          {submitText ?? $t('Save')}
+          {submitText ?? 'Save'}
         </Button>
       </div>
     </div>

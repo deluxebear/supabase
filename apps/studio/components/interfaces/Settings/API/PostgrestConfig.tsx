@@ -543,7 +543,7 @@ export const PostgrestConfig = () => {
                                   type="number"
                                 />
                                 <InputGroupAddon align="inline-end">
-                                  <InputGroupText>{$t('rows')}</InputGroupText>
+                                  <InputGroupText>rows</InputGroupText>
                                 </InputGroupAddon>
                               </InputGroup>
                             </FormControl>
@@ -581,7 +581,7 @@ export const PostgrestConfig = () => {
                                   value={field.value === null ? '' : field.value}
                                 />
                                 <InputGroupAddon align="inline-end">
-                                  <InputGroupText>{$t('connections')}</InputGroupText>
+                                  <InputGroupText>connections</InputGroupText>
                                 </InputGroupAddon>
                               </InputGroup>
                             </FormControl>
@@ -619,7 +619,7 @@ export const PostgrestConfig = () => {
                 description={$t('Expose a custom schema instead of the public schema')}
               >
                 <div className="flex gap-2 items-center justify-end">
-                  <Button variant="default" icon={<Lock />} onClick={() => setShowModal(true)}>
+                  <Button icon={<Lock />} onClick={() => setShowModal(true)}>
                     {$t('Harden Data API')}
                   </Button>
                 </div>

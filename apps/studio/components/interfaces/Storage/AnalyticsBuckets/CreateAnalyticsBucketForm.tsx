@@ -261,10 +261,11 @@ export const CreateAnalyticsBucketForm = ({
       </Section>
 
       <Footer>
-        <Button variant="default" disabled={isCreating} onClick={() => onOpenChange(false)}>
+        <Button disabled={isCreating} onClick={() => onOpenChange(false)}>
           {$t('Cancel')}
         </Button>
         <Button
+          variant="primary"
           form={formId}
           type="submit"
           loading={isCreating}

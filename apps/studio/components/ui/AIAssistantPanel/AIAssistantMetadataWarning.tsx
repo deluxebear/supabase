@@ -48,7 +48,7 @@ export const AIAssistantMetadataWarning = ({
         className="border-0 border-b rounded-none bg-background"
       >
         {!isHipaaProjectDisallowed && (
-          <Button variant="default" className="w-fit mt-4" onClick={() => onVisibleChange(true)}>
+          <Button className="w-fit mt-4" onClick={() => onVisibleChange(true)}>
             {$t('Permission settings')}
           </Button>
         )}

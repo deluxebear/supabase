@@ -131,8 +131,7 @@ export const SecretsManagement = () => {
                 <SelectTrigger size="tiny" className="w-44">
                   <SelectValue asChild>
                     <>
-                      {$t('Sort by')}{' '}
-                      {selectedSort === 'updated_at' ? $t('Last updated') : $t('Name')}
+                      {$t('Sort by')} {selectedSort === 'updated_at' ? 'Last updated' : 'Name'}
                     </>
                   </SelectValue>
                 </SelectTrigger>
@@ -148,12 +147,7 @@ export const SecretsManagement = () => {
             </div>
 
             <div className="flex items-center gap-x-2">
-              <Button
-                variant="default"
-                icon={<RefreshCw />}
-                loading={isRefetching}
-                onClick={() => refetch()}
-              >
+              <Button icon={<RefreshCw />} loading={isRefetching} onClick={() => refetch()}>
                 {$t('Refresh')}
               </Button>
               <DocsButton href={`${DOCS_URL}/guides/database/vault`} />
@@ -165,7 +159,7 @@ export const SecretsManagement = () => {
                   content: {
                     side: 'bottom',
                     text: !canManageSecrets
-                      ? $t('You need additional permissions to add secrets')
+                      ? 'You need additional permissions to add secrets'
                       : undefined,
                   },
                 }}
@@ -179,7 +173,7 @@ export const SecretsManagement = () => {
 
           {isError ? (
             <div className="grow p-4">
-              <AlertError error={error} subject={$t('Failed to load secrets')} />
+              <AlertError error={error} subject="Failed to load secrets" />
             </div>
           ) : (
             <DataGrid
@@ -208,14 +202,12 @@ export const SecretsManagement = () => {
             <div className="absolute top-32 px-6 w-full">
               <div className="text-center text-sm flex flex-col gap-y-1">
                 <p className="text-foreground">
-                  {searchValue ? $t('No secrets found') : $t('No secrets added yet')}
+                  {searchValue ? 'No secrets found' : 'No secrets added yet'}
                 </p>
                 <p className="text-foreground-light">
                   {searchValue
-                    ? $t('There are currently no secrets based on the search "{{search}}"', {
-                        search: searchValue,
-                      })
-                    : $t('The Vault allows you to store sensitive information like API keys')}
+                    ? 'There are currently no secrets based on the search "{{search}}"'
+                    : 'The Vault allows you to store sensitive information like API keys'}
                 </p>
               </div>
             </div>

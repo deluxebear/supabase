@@ -87,7 +87,7 @@ export function FilterSideBar({
             </div>
           }
           actions={
-            <Button asChild variant="default">
+            <Button asChild>
               <Link href={`/project/${ref}/settings/log-drains`}>{$t('Go to Log Drains')}</Link>
             </Button>
           }

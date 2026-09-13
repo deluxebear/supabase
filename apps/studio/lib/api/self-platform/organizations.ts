@@ -7,8 +7,8 @@ import { executePlatformQuery } from './db'
 
 export type PlatformOrganizationRow = { id: number; slug: string; name: string }
 
-type OrganizationResponse = components['schemas']['OrganizationResponse']
-type OrganizationSlugResponse = components['schemas']['OrganizationSlugResponse']
+type OrganizationResponse = components['schemas']['OrganizationResponse_Output']
+type OrganizationSlugResponse = components['schemas']['OrganizationSlugResponse_Output']
 
 const ENTERPRISE_PLAN = { id: 'enterprise' as const, name: 'Enterprise' }
 

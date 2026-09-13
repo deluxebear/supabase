@@ -15,11 +15,7 @@ const PolicyEditorFooter = ({
   onReviewPolicy = noop,
 }: PolicyEditorFooterProps) => (
   <DialogFooter>
-    {showTemplates && (
-      <Button variant="default" onClick={onViewTemplates}>
-        {$t('View templates')}
-      </Button>
-    )}
+    {showTemplates && <Button onClick={onViewTemplates}>{$t('View templates')}</Button>}
     <Button variant="primary" onClick={onReviewPolicy}>
       {$t('Review')}
     </Button>

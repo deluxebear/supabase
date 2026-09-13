@@ -11,7 +11,7 @@ import { listMembers } from '@/lib/api/self-platform/members'
 import { guardOrgRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
-type Member = components['schemas']['Member']
+type Member = components['schemas']['Member_Output']
 
 export default (req: NextApiRequest, res: NextApiResponse) =>
   apiWrapper(req, res, handler, { withAuth: true })

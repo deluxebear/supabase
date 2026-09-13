@@ -479,9 +479,7 @@ export const InviteMemberButton = () => {
           </Form>
         </SheetSection>
         <SheetFooter>
-          <Button variant="default" onClick={confirmOnClose}>
-            {$t('Cancel')}
-          </Button>
+          <Button onClick={confirmOnClose}>{$t('Cancel')}</Button>
           <Shortcut
             id={SHORTCUT_IDS.ORG_TEAM_INVITE_SUBMIT}
             onTrigger={() => form.handleSubmit(onInviteMember)()}

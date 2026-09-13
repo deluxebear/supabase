@@ -28,7 +28,7 @@ export const TruncatedWarningOverlay = ({
           )}
         </p>
       </div>
-      <Button variant="default" loading={isLoading} onClick={loadFullValue}>
+      <Button loading={isLoading} onClick={loadFullValue}>
         {$t('Load full value')}
       </Button>
     </div>

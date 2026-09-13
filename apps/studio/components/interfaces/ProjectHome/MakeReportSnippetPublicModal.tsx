@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { Eye, Unlock } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -6,6 +5,7 @@ import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 
 import { getContentById } from '@/data/content/content-id-query'
 import { useContentUpsertMutation } from '@/data/content/content-upsert-mutation'
+import { t as $t } from '@/lib/i18n'
 
 type ReportSnippet = { id: string; name: string }
 
@@ -38,7 +38,12 @@ export const MakeReportSnippetPublicModal = ({
       upsertContent(
         {
           projectRef,
-          payload: { ...item, visibility: 'project', folder_id: null },
+          payload: {
+            ...item,
+            description: item.description ?? undefined,
+            visibility: 'project',
+            folder_id: null,
+          },
         },
         {
           onSuccess: () => {

@@ -26,7 +26,7 @@ import { guardOrgRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { getOrgProjectIdsByRefs, getRoleInOrg } from '@/lib/api/self-platform/roles'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
-type InvitationResponse = components['schemas']['InvitationResponse']
+type InvitationResponse = components['schemas']['InvitationResponse_Output']
 type CreateInvitationBody = components['schemas']['CreateInvitationBody']
 type CreateInvitationResponse = NonNullable<
   operations['InvitationsController_createInvitation']['responses'][201]['content']['application/json']

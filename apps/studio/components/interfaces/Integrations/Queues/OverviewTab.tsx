@@ -39,7 +39,7 @@ const QueuesContent = () => {
       </p>
 
       {isQueuesInstalled && (
-        <Button asChild variant="default" className="mt-2">
+        <Button asChild className="mt-2">
           <Link href={`/project/${ref}/integrations/queues/settings`}>
             {$t('Manage queues settings')}
           </Link>

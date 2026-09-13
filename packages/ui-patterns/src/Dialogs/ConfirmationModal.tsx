@@ -10,11 +10,12 @@ import {
   cn,
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogHeader,
   DialogSection,
   DialogSectionSeparator,
   DialogTitle,
 } from 'ui'
-import { DialogDescription, DialogHeader } from 'ui/src/components/shadcn/ui/dialog'
 
 import { Admonition } from '../Admonition'
 import { uiT } from '../lib/i18n'
@@ -140,7 +141,6 @@ export const ConfirmationModal = forwardRef<
             <Button
               size="medium"
               block
-              variant="default"
               disabled={loading}
               onClick={() => (onAdditionalAction ?? onCancel)()}
             >

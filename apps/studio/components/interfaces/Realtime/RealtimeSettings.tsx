@@ -432,7 +432,7 @@ export const RealtimeSettings = () => {
                                   </p>
                                 }
                                 actions={
-                                  <Button asChild variant="default">
+                                  <Button asChild>
                                     <Link href={`/project/${projectRef}/realtime/policies`}>
                                       {$t('Create policy')}
                                     </Link>
@@ -468,7 +468,7 @@ export const RealtimeSettings = () => {
                                   value={field.value || ''}
                                 />
                                 <InputGroupAddon align="inline-end">
-                                  <InputGroupText>{$t('connections')}</InputGroupText>
+                                  <InputGroupText>connections</InputGroupText>
                                 </InputGroupAddon>
                               </InputGroup>
                             </FormControl>
@@ -543,7 +543,7 @@ export const RealtimeSettings = () => {
                                 value={field.value || ''}
                               />
                               <InputGroupAddon align="inline-end">
-                                <InputGroupText>{$t('clients')}</InputGroupText>
+                                <InputGroupText>clients</InputGroupText>
                               </InputGroupAddon>
                             </InputGroup>
                           </FormControl>
@@ -574,7 +574,7 @@ export const RealtimeSettings = () => {
                                 value={field.value || ''}
                               />
                               <InputGroupAddon align="inline-end">
-                                <InputGroupText>{$t('events/s')}</InputGroupText>
+                                <InputGroupText>events/s</InputGroupText>
                               </InputGroupAddon>
                             </InputGroup>
                           </FormControl>
@@ -634,7 +634,7 @@ export const RealtimeSettings = () => {
                                 value={field.value || ''}
                               />
                               <InputGroupAddon align="inline-end">
-                                <InputGroupText>{$t('events/s')}</InputGroupText>
+                                <InputGroupText>events/s</InputGroupText>
                               </InputGroupAddon>
                             </InputGroup>
                           </FormControl>
@@ -744,9 +744,7 @@ export const RealtimeSettings = () => {
                 </div>
                 <div className="flex items-center gap-x-2">
                   {form.formState.isDirty && (
-                    <Button variant="default" onClick={() => form.reset(formValues)}>
-                      {$t('Cancel')}
-                    </Button>
+                    <Button onClick={() => form.reset(formValues)}>{$t('Cancel')}</Button>
                   )}
                   <Button
                     variant="primary"

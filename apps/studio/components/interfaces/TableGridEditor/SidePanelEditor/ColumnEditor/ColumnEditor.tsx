@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { safeSql } from '@supabase/pg-meta'
 import { useParams } from 'common'
 import { isEmpty, noop } from 'lodash'
@@ -34,7 +33,7 @@ import type {
   CreateColumnPayload,
   UpdateColumnPayload,
 } from '../SidePanelEditor.types'
-import ColumnDefaultValue from './ColumnDefaultValue'
+import { ColumnDefaultValue } from './ColumnDefaultValue'
 import {
   generateColumnField,
   generateColumnFieldFromPGColumn,
@@ -66,6 +65,7 @@ import type { RetrieveTableResult } from '@/data/tables/table-retrieve-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useProtectedSchemas } from '@/hooks/useProtectedSchemas'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { SafePostgresColumn } from '@/lib/postgres-types'
 import type { DeepReadonly } from '@/lib/type-helpers'
 
@@ -263,8 +263,9 @@ export const ColumnEditor = ({
                 label={$t('Name')}
                 description={
                   <>
-                    
-                                            {$t('Recommended to use lowercase and use an underscore to separate words e.g.')}{' '}
+                    {$t(
+                      'Recommended to use lowercase and use an underscore to separate words e.g.'
+                    )}{' '}
                     <code className="text-code-inline">column_name</code>
                   </>
                 }
@@ -302,32 +303,29 @@ export const ColumnEditor = ({
                 className="lg:col-span-4!"
                 description={
                   <div className="space-y-2">
-                    <Button asChild variant="default" icon={<Plus />}>
+                    <Button asChild icon={<Plus />}>
                       <Link
                         target="_blank"
                         rel="noreferrer"
                         href={`/project/${ref}/database/types`}
                       >
-                        
-                                                        {$t('Create enum types')}
-                                                      </Link>
+                        {$t('Create enum types')}
+                      </Link>
                     </Button>
-                    <Button asChild variant="default" icon={<ExternalLink />}>
+                    <Button asChild icon={<ExternalLink />}>
                       <Link
                         target="_blank"
                         rel="noreferrer"
                         href={`${DOCS_URL}/guides/database/tables#data-types`}
                       >
-                        
-                                                        {$t('About data types')}
-                                                      </Link>
+                        {$t('About data types')}
+                      </Link>
                     </Button>
                   </div>
                 }
               >
-                
-                                              {$t('Data Type')}
-                                            </FormSectionLabel>
+                {$t('Data Type')}
+              </FormSectionLabel>
             }
           >
             <FormSectionContent loading={false} className="lg:col-span-8!">
@@ -358,7 +356,9 @@ export const ColumnEditor = ({
                       layout="flex"
                       label={$t('Is Identity')}
                       id="isIdentity"
-                      description={$t('Automatically assign a sequential unique number to the column')}
+                      description={$t(
+                        'Automatically assign a sequential unique number to the column'
+                      )}
                     >
                       <Checkbox
                         id="isIdentity"
@@ -377,7 +377,9 @@ export const ColumnEditor = ({
                       layout="flex"
                       id="isArray"
                       label={$t('Define as Array')}
-                      description={$t('Allow column to be defined as variable-length multidimensional arrays')}
+                      description={$t(
+                        'Allow column to be defined as variable-length multidimensional arrays'
+                      )}
                     >
                       <Checkbox
                         id="isArray"
@@ -403,7 +405,9 @@ export const ColumnEditor = ({
           <SidePanel.Separator />
 
           <FormSection
-            header={<FormSectionLabel className="lg:col-span-4!">{$t('Foreign Keys')}</FormSectionLabel>}
+            header={
+              <FormSectionLabel className="lg:col-span-4!">{$t('Foreign Keys')}</FormSectionLabel>
+            }
           >
             <FormSectionContent loading={false} className="lg:col-span-8!">
               <ColumnForeignKey
@@ -427,7 +431,9 @@ export const ColumnEditor = ({
           </FormSection>
           <SidePanel.Separator />
           <FormSection
-            header={<FormSectionLabel className="lg:col-span-4!">{$t('Constraints')}</FormSectionLabel>}
+            header={
+              <FormSectionLabel className="lg:col-span-4!">{$t('Constraints')}</FormSectionLabel>
+            }
           >
             <FormSectionContent loading={false} className="lg:col-span-8!">
               <FormItemLayout
@@ -435,7 +441,9 @@ export const ColumnEditor = ({
                 layout="flex"
                 id="isPrimaryKey"
                 label={$t('Is Primary Key')}
-                description={$t('A primary key indicates that a column or group of columns can be used as a unique identifier for rows in the table')}
+                description={$t(
+                  'A primary key indicates that a column or group of columns can be used as a unique identifier for rows in the table'
+                )}
               >
                 <Switch
                   id="isPrimaryKey"
@@ -460,7 +468,9 @@ export const ColumnEditor = ({
                       layout="flex"
                       id="isNullable"
                       label={$t('Allow Nullable')}
-                      description={$t('Allow the column to assume a NULL value if no value is provided')}
+                      description={$t(
+                        'Allow the column to assume a NULL value if no value is provided'
+                      )}
                     >
                       <Switch
                         id="isNullable"
@@ -476,9 +486,8 @@ export const ColumnEditor = ({
                 </TooltipTrigger>
                 {columnFields.isPrimaryKey && (
                   <TooltipContent side="left" align="start">
-                    
-                                                          {$t('Column is a primary key and hence cannot be NULL')}
-                                                        </TooltipContent>
+                    {$t('Column is a primary key and hence cannot be NULL')}
+                  </TooltipContent>
                 )}
               </Tooltip>
 
@@ -505,13 +514,16 @@ export const ColumnEditor = ({
                 </TooltipTrigger>
                 {columnFields.isPrimaryKey && (
                   <TooltipContent side="left" align="start">
-                    
-                                                          {$t('Column is a primary key and hence already unique')}
-                                                        </TooltipContent>
+                    {$t('Column is a primary key and hence already unique')}
+                  </TooltipContent>
                 )}
               </Tooltip>
 
-              <FormItemLayout isReactForm={false} label={$t('CHECK constraint')} labelOptional="Optional">
+              <FormItemLayout
+                isReactForm={false}
+                label={$t('CHECK constraint')}
+                labelOptional="Optional"
+              >
                 <SafeSqlInput
                   type="text"
                   placeholder={placeholder}
@@ -526,7 +538,9 @@ export const ColumnEditor = ({
           <SidePanel.Separator />
 
           <FormSection
-            header={<FormSectionLabel className="lg:col-span-4!">{$t('Data Privacy')}</FormSectionLabel>}
+            header={
+              <FormSectionLabel className="lg:col-span-4!">{$t('Data Privacy')}</FormSectionLabel>
+            }
           >
             <FormSectionContent loading={false} className="lg:col-span-8!">
               <FormItemLayout
@@ -569,9 +583,8 @@ export const ColumnEditor = ({
                   className="text-foreground-light text-sm cursor-pointer select-none"
                   onClick={() => setCreateMore(!createMore)}
                 >
-                  
-                                                    {$t('Create more')}
-                                                  </label>
+                  {$t('Create more')}
+                </label>
               </div>
             )}
           </ActionBar>

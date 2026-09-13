@@ -64,7 +64,7 @@ export const DisableRuleModal = ({ lint }: DisableRuleModalProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="default">{$t('Disable rule')}</Button>
+        <Button>{$t('Disable rule')}</Button>
       </DialogTrigger>
       <DialogContent size="small">
         <DialogHeader>
@@ -81,7 +81,7 @@ export const DisableRuleModal = ({ lint }: DisableRuleModalProps) => {
           </p>
         </DialogSection>
         <DialogFooter>
-          <Button disabled={isCreating} variant="default" onClick={() => setOpen(false)}>
+          <Button disabled={isCreating} onClick={() => setOpen(false)}>
             {$t('Cancel')}
           </Button>
           <Button loading={isCreating} variant="primary" onClick={onCreateRule}>

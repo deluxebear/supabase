@@ -83,12 +83,7 @@ export const ISO27001 = () => {
           </div>
         ) : (
           <div className="@lg:flex items-center justify-center h-full">
-            <Button
-              variant="default"
-              icon={<Download />}
-              onClick={handleDownloadClick}
-              disabled={!slug}
-            >
+            <Button icon={<Download />} onClick={handleDownloadClick} disabled={!slug}>
               {$t('Download ISO 27001 Certificate')}
             </Button>
           </div>

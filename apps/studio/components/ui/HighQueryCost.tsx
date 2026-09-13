@@ -122,9 +122,7 @@ const HighQueryCostDialog = ({ error, suggestions = [] }: HighQueryCostErrorProp
             href={`${DOCS_URL}/guides/troubleshooting/understanding-postgresql-explain-output-Un9dqX`}
           />
           <DialogClose asChild>
-            <Button variant="default" className="opacity-100">
-              {$t('Understood')}
-            </Button>
+            <Button className="opacity-100">{$t('Understood')}</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>
@@ -144,7 +142,7 @@ const LoadDataWarningDialog = ({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="default">{$t('Load data')}</Button>
+        <Button>{$t('Load data')}</Button>
       </DialogTrigger>
       <DialogContent onOpenAutoFocus={(event) => event.preventDefault()}>
         <DialogHeader>
@@ -184,9 +182,7 @@ const LoadDataWarningDialog = ({
         </DialogSection>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="default" className="opacity-100">
-              {$t('Cancel')}
-            </Button>
+            <Button className="opacity-100">{$t('Cancel')}</Button>
           </DialogClose>
           <DialogClose asChild>
             <Button variant="warning" onClick={() => onSelectLoadData()}>

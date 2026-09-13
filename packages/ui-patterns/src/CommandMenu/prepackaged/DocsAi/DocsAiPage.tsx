@@ -326,7 +326,7 @@ function ErrorState({ handleReset }: { handleReset: () => void }) {
       <p className="text-sm text-foreground-lighter text-center">
         {uiT('Please try again in a bit.')}
       </p>
-      <Button size="tiny" variant="default" onClick={handleReset}>
+      <Button size="tiny" onClick={handleReset}>
         {uiT('Try again?')}
       </Button>
     </div>

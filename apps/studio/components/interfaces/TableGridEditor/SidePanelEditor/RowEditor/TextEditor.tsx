@@ -187,7 +187,7 @@ export const TextEditor = ({
                 )}
               </p>
             </div>
-            <Button variant="default" loading={isPending} onClick={loadFullValue}>
+            <Button loading={isPending} onClick={loadFullValue}>
               {$t('Load full text data')}
             </Button>
           </div>

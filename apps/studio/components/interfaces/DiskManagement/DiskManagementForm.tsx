@@ -590,12 +590,7 @@ export function DiskManagementForm({
                   beforePrice={totalBeforePrice}
                   afterPrice={totalAfterPrice}
                 />
-                <Button
-                  variant="default"
-                  onClick={() => form.reset()}
-                  disabled={!isDirty}
-                  size="medium"
-                >
+                <Button onClick={() => form.reset()} disabled={!isDirty} size="medium">
                   {$t('Cancel')}
                 </Button>
                 <DiskManagementReviewAndSubmitDialog

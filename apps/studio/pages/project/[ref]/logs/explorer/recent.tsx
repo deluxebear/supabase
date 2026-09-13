@@ -27,7 +27,7 @@ export const LogsSavedPage: NextPageWithLayout = () => {
             <>
               <Table.th>{$t('Snippets')}</Table.th>
               <Table.th className="w-24">
-                <Button size="tiny" variant="default" onClick={() => setRecentLogSnippets([])}>
+                <Button size="tiny" onClick={() => setRecentLogSnippets([])}>
                   {$t('Clear history')}
                 </Button>
               </Table.th>

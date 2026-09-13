@@ -214,7 +214,6 @@ export const WithStatements = ({
             >
               <Button
                 aria-label={$t('Refresh')}
-                variant="default"
                 size="tiny"
                 icon={<RefreshCw />}
                 onClick={handleRefresh}
@@ -228,7 +227,6 @@ export const WithStatements = ({
             >
               <Button
                 aria-label={$t('Reset report')}
-                variant="default"
                 size="tiny"
                 icon={<RotateCcw />}
                 onClick={() => setShowResetgPgStatStatements(true)}
@@ -278,11 +276,7 @@ export const WithStatements = ({
           <p className="text-xs text-foreground-light">
             {$t('Consider resetting the analysis after optimizing any queries')}
           </p>
-          <Button
-            variant="default"
-            className="mt-3! w-min"
-            onClick={() => setShowResetgPgStatStatements(true)}
-          >
+          <Button className="mt-3! w-min" onClick={() => setShowResetgPgStatStatements(true)}>
             {$t('Reset report')}
           </Button>
         </div>
@@ -291,12 +285,7 @@ export const WithStatements = ({
           <p>{$t('How is this report generated?')}</p>
           <Markdown
             className="text-xs"
-            content={$t(
-              'This report uses the pg_stat_statements table, and pg_stat_statements extension. [Learn more here]({{url}}).',
-              {
-                url: `${DOCS_URL}/guides/platform/performance#examining-query-performance`,
-              }
-            )}
+            content="This report uses the pg_stat_statements table, and pg_stat_statements extension. [Learn more here]({{url}})."
           />
         </div>
 
@@ -306,7 +295,7 @@ export const WithStatements = ({
             className="text-xs"
             content={$t(
               'The Supabase CLI comes with a range of tools to help inspect your Postgres instances for potential issues. [Learn more here]({{url}}).',
-              { url: `${DOCS_URL}/guides/database/inspect` }
+              { url: `${DOCS_URL}/guides/observability/inspect` }
             )}
           />
         </div>
@@ -317,8 +306,8 @@ export const WithStatements = ({
         size="medium"
         variant="destructive"
         title={$t('Reset query performance analysis')}
-        confirmLabel={$t('Reset report')}
-        confirmLabelLoading={$t('Resetting report')}
+        confirmLabel="Reset report"
+        confirmLabelLoading="Resetting report"
         onCancel={() => setShowResetgPgStatStatements(false)}
         onConfirm={async () => {
           const connectionString = databases?.find(

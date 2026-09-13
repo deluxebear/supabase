@@ -45,6 +45,7 @@ describe('GET /platform/organizations/{slug}/members (self-platform)', () => {
     expect(res._getStatusCode()).toBe(200)
     expect(res._getJSONData()).toEqual([
       {
+        avatar_url: null,
         gotrue_id: 'g-1',
         is_sso_user: false,
         metadata: {},

@@ -12,7 +12,7 @@ import { guardOrgRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { listRolesV2 } from '@/lib/api/self-platform/roles'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
-type OrganizationRoleResponse = components['schemas']['OrganizationRoleResponse']
+type OrganizationRoleResponse = components['schemas']['OrganizationRoleResponse_Output']
 
 export default (req: NextApiRequest, res: NextApiResponse) =>
   apiWrapper(req, res, handler, { withAuth: true })

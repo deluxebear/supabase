@@ -147,11 +147,7 @@ function BaseEditor<TRow, TSummaryRow = unknown>({
           <div className="flex">
             {isNullable ? (
               <>
-                <Button
-                  variant="default"
-                  className="rounded-r-none"
-                  onClick={() => saveChanges(null)}
-                >
+                <Button className="rounded-r-none" onClick={() => saveChanges(null)}>
                   {$t('Set NULL')}
                 </Button>
                 <DropdownMenu>
@@ -160,7 +156,6 @@ function BaseEditor<TRow, TSummaryRow = unknown>({
                       <DropdownMenuTrigger asChild>
                         <Button
                           aria-label={$t('Date options')}
-                          variant="default"
                           icon={<ChevronDown />}
                           className="px-1 rounded-l-none border-l-0"
                         />
@@ -174,9 +169,7 @@ function BaseEditor<TRow, TSummaryRow = unknown>({
                 </DropdownMenu>
               </>
             ) : (
-              <Button variant="default" onClick={setToNow}>
-                {$t('Set to NOW')}
-              </Button>
+              <Button onClick={setToNow}>{$t('Set to NOW')}</Button>
             )}
           </div>
         </div>

@@ -148,7 +148,7 @@ export const SendMessageModal = ({ visible, onClose }: SendMessageModalProps) =>
           </Form>
         </DialogSection>
         <DialogFooter>
-          <Button variant="default" onClick={onClose} disabled={isPending}>
+          <Button onClick={onClose} disabled={isPending}>
             {$t('Cancel')}
           </Button>
           <Button

@@ -106,7 +106,7 @@ export const EnablePipelinesModal = ({
           </Admonition>
         </DialogSection>
         <DialogFooter>
-          <Button variant="default" disabled={creatingTenantSource} onClick={() => setOpen(false)}>
+          <Button disabled={creatingTenantSource} onClick={() => setOpen(false)}>
             {$t('Cancel')}
           </Button>
           {hasAccess ? (

@@ -48,9 +48,7 @@ export const ProtectedSchemaDialog = ({ onClose }: { onClose: () => void }) => {
       </DialogSection>
       <DialogFooter>
         <div className="flex items-center justify-end space-x-2">
-          <Button variant="default" onClick={onClose}>
-            {$t('Understood')}
-          </Button>
+          <Button onClick={onClose}>{$t('Understood')}</Button>
         </div>
       </DialogFooter>
     </>
@@ -108,7 +106,7 @@ export const ProtectedSchemaWarning = ({
         showLearnMoreDialog && (
           <Dialog open={showModal} onOpenChange={setShowModal}>
             <DialogTrigger asChild>
-              <Button variant="default" size="tiny" onClick={() => setShowModal(true)}>
+              <Button size="tiny" onClick={() => setShowModal(true)}>
                 {$t('Learn more')}
               </Button>
             </DialogTrigger>

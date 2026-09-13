@@ -63,7 +63,7 @@ const handleFleetGetAll = async (projectRef: string, res: NextApiResponse) => {
   )
 }
 
-type EdgeFunctionsResponse = components['schemas']['FunctionResponse']
+type EdgeFunctionsResponse = components['schemas']['FunctionResponse_Output']
 
 const handleGetAll = async (_req: NextApiRequest, res: NextApiResponse) => {
   const store = getFunctionsArtifactStore()

@@ -36,7 +36,7 @@ export function DiskManagementPanelForm() {
             'Disk configuration is now managed alongside project compute on the Infrastructure page.'
           )}
           actions={
-            <Button variant="default" asChild>
+            <Button asChild>
               <Link href={getInfrastructurePath(projectRef)}>{$t('Go to Infrastructure')}</Link>
             </Button>
           }

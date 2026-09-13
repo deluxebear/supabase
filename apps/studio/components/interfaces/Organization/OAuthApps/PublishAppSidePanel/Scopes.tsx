@@ -77,7 +77,7 @@ const Scope = ({
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="default" iconRight={<ChevronDown />}>
+          <Button iconRight={<ChevronDown />}>
             <p>{accessDescription}</p>
           </Button>
         </DropdownMenuTrigger>

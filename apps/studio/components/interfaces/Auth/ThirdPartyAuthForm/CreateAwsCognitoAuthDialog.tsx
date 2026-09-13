@@ -147,7 +147,6 @@ export const CreateAwsCognitoAuthIntegrationDialog = ({
                   <FormItemLayout label={$t('Amazon Cognito User Pool ID')}>
                     <div className="flex flex-row">
                       <Button
-                        variant="default"
                         size="small"
                         className="px-2 text-foreground-light rounded-r-none"
                         onClick={() => form.setFocus('awsCognitoUserPoolId')}
@@ -182,10 +181,16 @@ export const CreateAwsCognitoAuthIntegrationDialog = ({
             </div>
           )}
 
-          <Button disabled={isPending} variant="default" onClick={() => onClose()}>
+          <Button disabled={isPending} onClick={() => onClose()}>
             {$t('Cancel')}
           </Button>
-          <Button form={FORM_ID} type="submit" disabled={isPending} loading={isPending}>
+          <Button
+            variant="primary"
+            form={FORM_ID}
+            type="submit"
+            disabled={isPending}
+            loading={isPending}
+          >
             {isCreating ? 'Create connection' : 'Update connection'}
           </Button>
         </DialogFooter>

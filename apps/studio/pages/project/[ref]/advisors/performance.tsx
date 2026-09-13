@@ -74,7 +74,7 @@ const ProjectLints: NextPageWithLayout = () => {
       <FormHeader
         className="py-4 px-6 mb-0!"
         title={$t('Performance Advisor')}
-        docsUrl={`${DOCS_URL}/guides/database/database-linter`}
+        docsUrl={`${DOCS_URL}/guides/observability/advisors`}
       />
       <LintPageTabs
         activeLints={activeLints}

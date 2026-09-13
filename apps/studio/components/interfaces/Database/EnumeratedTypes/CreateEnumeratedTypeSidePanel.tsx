@@ -138,8 +138,8 @@ const CreateEnumeratedTypeSidePanel = ({
       disabled={!isDirty}
       visible={visible}
       onCancel={closePanel}
-      header={$t('Create a new enumerated type')}
-      confirmText={$t('Create type')}
+      header="Create a new enumerated type"
+      confirmText="Create type"
       onConfirm={() => {
         if (submitRef.current) submitRef.current.click()
       }}
@@ -193,12 +193,7 @@ const CreateEnumeratedTypeSidePanel = ({
                       'You will need to delete and recreate the enumerated type with the updated values instead.'
                     )}
                   </p>
-                  <Button
-                    asChild
-                    variant="default"
-                    icon={<ExternalLink strokeWidth={1.5} />}
-                    className="mt-2"
-                  >
+                  <Button asChild icon={<ExternalLink strokeWidth={1.5} />} className="mt-2">
                     <Link
                       href="https://www.postgresql.org/message-id/21012.1459434338%40sss.pgh.pa.us"
                       target="_blank"
@@ -230,15 +225,11 @@ const CreateEnumeratedTypeSidePanel = ({
               </DndContext>
             </div>
 
-            <Button
-              variant="default"
-              icon={<Plus strokeWidth={1.5} />}
-              onClick={() => append({ value: '' })}
-            >
+            <Button icon={<Plus strokeWidth={1.5} />} onClick={() => append({ value: '' })}>
               {$t('Add value')}
             </Button>
 
-            <Button ref={submitRef} type="submit" variant="default" className="hidden">
+            <Button ref={submitRef} type="submit" className="hidden">
               {$t('Update')}
             </Button>
           </form>

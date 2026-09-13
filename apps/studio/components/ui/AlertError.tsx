@@ -32,7 +32,7 @@ export const ContactSupportButton = ({
   error?: { message: string } | null
 }) => {
   return (
-    <Button asChild variant="default" className="w-min">
+    <Button asChild className="w-min">
       <SupportLink
         queryParams={{
           category: SupportCategories.DASHBOARD_BUG,

@@ -103,8 +103,8 @@ export const GitHubSection = ({ isProjectScoped }: { isProjectScoped: boolean })
   })
 
   const description = isProjectScoped
-    ? $t('Preview branches and production deploys from a connected GitHub repository.')
-    : $t('Preview branches and production deploys from connected GitHub repositories.')
+    ? 'Preview branches and production deploys from a connected GitHub repository.'
+    : 'Preview branches and production deploys from connected GitHub repositories.'
 
   const onDeleteGitHubConnection = useCallback(
     async (connection: IntegrationProjectConnection) => {
@@ -204,7 +204,6 @@ function GitHubOrgEmptyState({ disabled, onClick }: { disabled: boolean; onClick
           {disabled ? (
             <ButtonTooltip
               icon={<Plus />}
-              variant="default"
               size="tiny"
               disabled
               tooltip={{
@@ -217,7 +216,7 @@ function GitHubOrgEmptyState({ disabled, onClick }: { disabled: boolean; onClick
               {$t('Add connection')}
             </ButtonTooltip>
           ) : (
-            <Button icon={<Plus />} variant="default" size="tiny" type="button" onClick={onClick}>
+            <Button icon={<Plus />} size="tiny" type="button" onClick={onClick}>
               {$t('Add connection')}
             </Button>
           )}

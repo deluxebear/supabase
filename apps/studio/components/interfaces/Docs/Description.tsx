@@ -100,7 +100,6 @@ const Description = ({ content, metadata, onChange = noop }: DescrptionProps) =>
         } ${animateCss}`}
       >
         <Button
-          variant="default"
           disabled={!hasChanged}
           onClick={() => {
             setValue(contentText)
@@ -109,7 +108,7 @@ const Description = ({ content, metadata, onChange = noop }: DescrptionProps) =>
         >
           {$t('Cancel')}
         </Button>
-        <Button disabled={!hasChanged} onClick={updateDescription}>
+        <Button variant="primary" disabled={!hasChanged} onClick={updateDescription}>
           {isUpdating ? (
             <Loader className="mx-auto animate-spin" size={14} strokeWidth={2} />
           ) : (

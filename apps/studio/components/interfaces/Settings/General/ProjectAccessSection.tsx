@@ -100,21 +100,16 @@ export const ProjectAccessSection = () => {
       : $t('Restricted project access')
 
   const projectAccessDescription = hasLimitedVisibility
-    ? $t(
-        "Your access is limited to specific projects, so you can’t see all members or settings."
-      )
+    ? $t('Your access is limited to specific projects, so you can’t see all members or settings.')
     : shouldShowOrgComparison
       ? hasOrganizationWideAccess
         ? $t('All {{count}} organization members can access this project.', {
             count: organizationMemberCount,
           })
-        : $t(
-            '{{projectCount}} of {{orgCount}} organization members can access this project.',
-            {
-              projectCount: projectMemberCount,
-              orgCount: organizationMemberCount,
-            }
-          )
+        : $t('{{projectCount}} of {{orgCount}} organization members can access this project.', {
+            projectCount: projectMemberCount,
+            orgCount: organizationMemberCount,
+          })
       : projectMemberCount === 1
         ? $t('{{count}} project member currently has access.', {
             count: projectMemberCount,
@@ -151,7 +146,7 @@ export const ProjectAccessSection = () => {
                       <p className="text-sm text-foreground-light">{projectAccessDescription}</p>
                     </div>
                     {!!organization?.slug && (
-                      <Button asChild variant="default">
+                      <Button asChild>
                         <Link href={`/org/${organization.slug}/team`}>
                           {hasLimitedVisibility ? $t('View team') : $t('Manage members')}
                         </Link>

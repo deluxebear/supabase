@@ -153,12 +153,7 @@ export const ReadReplicasSection = ({ onRecommendCompute }: ReadReplicasSectionP
               description={$t('All reads and writes currently go to the primary.')}
             >
               {!isHighAvailability && (
-                <Button
-                  type="button"
-                  variant="default"
-                  icon={<Plus />}
-                  onClick={() => setAddReplica(true)}
-                >
+                <Button type="button" icon={<Plus />} onClick={() => setAddReplica(true)}>
                   {$t('Add read replica')}
                 </Button>
               )}

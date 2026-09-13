@@ -92,10 +92,9 @@ const InviteUserModal = ({ visible, setVisible }: InviteUserModalProps) => {
           </DialogSection>
 
           <DialogFooter>
-            <Button variant="default" onClick={handleToggle}>
-              {$t('Cancel')}
-            </Button>
+            <Button onClick={handleToggle}>{$t('Cancel')}</Button>
             <Button
+              variant="primary"
               form={formId}
               type="submit"
               loading={isInviting}

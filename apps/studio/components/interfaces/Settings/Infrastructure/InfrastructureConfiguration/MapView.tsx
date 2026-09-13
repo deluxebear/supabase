@@ -317,7 +317,6 @@ const MapView = () => {
             }`}
           >
             <Button
-              variant="default"
               onClick={() => {
                 setCenter([14, 7])
                 setZoom(1.5)

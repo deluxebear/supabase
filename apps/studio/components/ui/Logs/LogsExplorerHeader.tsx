@@ -84,11 +84,7 @@ const LogsExplorerHeader = ({ subtitle }: LogsExplorerHeaderProps) => {
           onCancel={() => setShowReference(false)}
           hideFooter
           triggerElement={
-            <Button
-              variant="default"
-              onClick={() => setShowReference(true)}
-              icon={<BookOpen strokeWidth={1.5} />}
-            >
+            <Button onClick={() => setShowReference(true)} icon={<BookOpen strokeWidth={1.5} />}>
               <span>{$t('Field Reference')}</span>
             </Button>
           }
@@ -131,7 +127,6 @@ const LogsExplorerHeader = ({ subtitle }: LogsExplorerHeaderProps) => {
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
                 <Button
-                  variant="default"
                   role="combobox"
                   size={'small'}
                   aria-expanded={open}

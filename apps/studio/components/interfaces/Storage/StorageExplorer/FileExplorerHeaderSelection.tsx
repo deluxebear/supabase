@@ -33,7 +33,6 @@ export const FileExplorerHeaderSelection = () => {
       <div className="ml-auto flex items-center gap-1">
         <ShortcutTooltip shortcutId={SHORTCUT_IDS.STORAGE_EXPLORER_DOWNLOAD_SELECTED} side="bottom">
           <Button
-            variant="default"
             size="tiny"
             icon={<Download size={12} />}
             onClick={async () => {
@@ -54,7 +53,6 @@ export const FileExplorerHeaderSelection = () => {
           open={!canUpdateFiles ? false : undefined}
         >
           <ButtonTooltip
-            variant="default"
             size="tiny"
             icon={<Trash2 size={12} />}
             disabled={!canUpdateFiles}
@@ -78,7 +76,6 @@ export const FileExplorerHeaderSelection = () => {
           open={!canUpdateFiles ? false : undefined}
         >
           <ButtonTooltip
-            variant="default"
             size="tiny"
             icon={<Move size={12} />}
             disabled={!canUpdateFiles}

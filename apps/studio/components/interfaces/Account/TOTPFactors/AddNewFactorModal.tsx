@@ -88,10 +88,9 @@ const FirstStep = ({ visible, isEnrolling, enroll, onClose }: FirstStepProps) =>
     <ConfirmationModal
       size="medium"
       visible={visible}
-      title={'Add a new authenticator app as a factor'}
-      cancelLabel={'Cancel'}
-      confirmLabel={'Generate QR'}
-      confirmLabelLoading={'Generating QR'}
+      title={$t('Add a new authenticator app as a factor')}
+      confirmLabel="Generate QR"
+      confirmLabelLoading="Generating QR"
       loading={isEnrolling}
       onCancel={onClose}
       onConfirm={form.handleSubmit(onSubmit)}
@@ -162,7 +161,7 @@ const SecondStep = ({
   const { mutate: unenroll } = useMfaUnenrollMutation({ onSuccess: () => onClose() })
   const { mutate: challengeAndVerify, isPending: isVerifying } = useMfaChallengeAndVerifyMutation({
     onError: (error) => {
-      toast.error(`${'Failed to add a second factor authentication'}:  ${error?.message}`)
+      toast.error(`Failed to add a second factor authentication:  ${error?.message}`)
     },
     onSuccess: async () => {
       if (lastVisitedOrganization) {
@@ -170,7 +169,7 @@ const SecondStep = ({
           queryKey: organizationKeys.members(lastVisitedOrganization),
         })
       }
-      toast.success($t('Successfully added a second factor authentication'))
+      toast.success(`Successfully added a second factor authentication`)
       onClose()
     },
   })
@@ -195,10 +194,9 @@ const SecondStep = ({
       size="medium"
       visible={visible}
       className="py-5"
-      title={`${'Verify new factor'} ${factorName}`}
-      cancelLabel={'Cancel'}
-      confirmLabel={'Confirm'}
-      confirmLabelLoading={'Confirming'}
+      title={`Verify new factor ${factorName}`}
+      confirmLabel="Confirm"
+      confirmLabelLoading="Confirming"
       loading={isVerifying}
       onCancel={() => {
         // If a factor has been created (but not verified), unenroll it. This will be run as a
@@ -229,11 +227,11 @@ const SecondStep = ({
           </div>
 
           <InformationBox
-            title={'Unable to scan?'}
+            title={$t('Unable to scan?')}
             description={
               <FormItemLayout
                 isReactForm={false}
-                label={'You can also enter this secret key into your authenticator app'}
+                label={$t('You can also enter this secret key into your authenticator app')}
               >
                 <PasswordInput copy disabled id="ref" size="small" value={factor.totp.secret} />
               </FormItemLayout>
@@ -251,15 +249,9 @@ const SecondStep = ({
                 name="code"
                 control={form.control}
                 render={({ field }) => (
-                  <FormItemLayout name="code" label={'Authentication code'}>
+                  <FormItemLayout label={$t('Authentication code')}>
                     <FormControl>
-                      <Input
-                        id="code"
-                        autoFocus
-                        {...field}
-                        placeholder="XXXXXX"
-                        className="font-mono"
-                      />
+                      <Input autoFocus {...field} placeholder="XXXXXX" className="font-mono" />
                     </FormControl>
                   </FormItemLayout>
                 )}

@@ -19,7 +19,7 @@ export const UnknownInterface = ({
         title={$t('Looking for something?')}
         description={$t("We couldn't find the page that you're looking for")}
       >
-        <Button asChild variant="default" className="mt-2">
+        <Button asChild className="mt-2">
           <Link href={urlBack}>{$t('Head back')}</Link>
         </Button>
       </Admonition>

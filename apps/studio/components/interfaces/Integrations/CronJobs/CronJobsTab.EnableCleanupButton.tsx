@@ -86,7 +86,7 @@ export const EnableCleanupButton = ({ onScheduled }: EnableCleanupButtonProps) =
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="default">{$t('Enable cleanup')}</Button>
+        <Button>{$t('Enable cleanup')}</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -134,10 +134,10 @@ export const EnableCleanupButton = ({ onScheduled }: EnableCleanupButtonProps) =
           />
         </DialogSection>
         <DialogFooter>
-          <Button variant="default" disabled={isScheduling} onClick={() => setOpen(false)}>
+          <Button disabled={isScheduling} onClick={() => setOpen(false)}>
             {$t('Cancel')}
           </Button>
-          <Button loading={isScheduling} onClick={onConfirm}>
+          <Button variant="primary" loading={isScheduling} onClick={onConfirm}>
             {$t('Enable cleanup')}
           </Button>
         </DialogFooter>

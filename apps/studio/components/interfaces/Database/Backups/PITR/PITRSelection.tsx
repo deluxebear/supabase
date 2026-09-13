@@ -104,7 +104,7 @@ export const PITRSelection = () => {
                 )}
               </AlertDescription>
               <div className="flex items-center gap-x-2 mt-2">
-                <Button asChild variant="default">
+                <Button asChild>
                   <Link href={`/project/${ref}/database/replication`}>
                     {$t('Manage read replicas')}
                   </Link>

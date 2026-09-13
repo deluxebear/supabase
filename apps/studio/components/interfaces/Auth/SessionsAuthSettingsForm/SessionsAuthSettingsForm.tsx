@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
@@ -46,6 +45,7 @@ import { useAuthConfigUpdateMutation } from '@/data/auth/auth-config-update-muta
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 function HoursOrNeverText({ value }: { value: number }) {
   if (value === 0) {
@@ -367,9 +367,7 @@ export const SessionsAuthSettingsForm = () => {
 
                 <CardFooter className="justify-end space-x-2">
                   {userSessionsForm.formState.isDirty && (
-                    <Button variant="default" onClick={() => userSessionsForm.reset()}>
-                      {$t('Cancel')}
-                    </Button>
+                    <Button onClick={() => userSessionsForm.reset()}>{$t('Cancel')}</Button>
                   )}
                   <Button
                     variant={promptProPlanUpgrade ? 'default' : 'primary'}
@@ -434,9 +432,7 @@ export const SessionsAuthSettingsForm = () => {
                 </CardContent>
                 <CardFooter className="justify-end space-x-2">
                   {accessTokenForm.formState.isDirty && (
-                    <Button variant="default" onClick={() => accessTokenForm.reset()}>
-                      {$t('Cancel')}
-                    </Button>
+                    <Button onClick={() => accessTokenForm.reset()}>{$t('Cancel')}</Button>
                   )}
                   <Button
                     variant="primary"
@@ -522,9 +518,7 @@ export const SessionsAuthSettingsForm = () => {
                 </CardContent>
                 <CardFooter className="justify-end space-x-2">
                   {refreshTokenForm.formState.isDirty && (
-                    <Button variant="default" onClick={() => refreshTokenForm.reset()}>
-                      {$t('Cancel')}
-                    </Button>
+                    <Button onClick={() => refreshTokenForm.reset()}>{$t('Cancel')}</Button>
                   )}
                   <Button
                     variant="primary"

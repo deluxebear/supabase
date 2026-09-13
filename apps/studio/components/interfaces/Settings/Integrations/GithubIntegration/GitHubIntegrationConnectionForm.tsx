@@ -656,7 +656,6 @@ export const GitHubIntegrationConnectionForm = ({
                     <div className="flex space-x-2">
                       {githubSettingsForm.formState.isDirty && (
                         <Button
-                          variant="default"
                           onClick={() => githubSettingsForm.reset()}
                           disabled={!canUpdateGitHubConnection || isCheckingBranch}
                         >

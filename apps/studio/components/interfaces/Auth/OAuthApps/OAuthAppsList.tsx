@@ -244,7 +244,7 @@ export const OAuthAppsList = () => {
               'Enable OAuth Server to make your project act as an identity provider for third-party applications.'
             )}
             actions={
-              <Button asChild variant="default">
+              <Button asChild>
                 <Link href={`/project/${projectRef}/auth/oauth-server`}>
                   {$t('OAuth Server Settings')}
                 </Link>
@@ -268,7 +268,7 @@ export const OAuthAppsList = () => {
               </InputGroupAddon>
             </InputGroup>
             <FilterPopover
-              name={$t('Registration Type')}
+              name="Registration Type"
               options={OAUTH_APP_REGISTRATION_TYPE_OPTIONS}
               labelKey="name"
               valueKey="value"
@@ -280,7 +280,7 @@ export const OAuthAppsList = () => {
               onSaveFilters={setFilteredRegistrationTypes}
             />
             <FilterPopover
-              name={$t('Client Type')}
+              name="Client Type"
               options={OAUTH_APP_CLIENT_TYPE_OPTIONS}
               labelKey="name"
               valueKey="value"
@@ -292,13 +292,7 @@ export const OAuthAppsList = () => {
               onSaveFilters={setFilteredClientTypes}
             />
             {hasActiveFilters && (
-              <Button
-                variant="default"
-                size="tiny"
-                className="px-1"
-                icon={<X />}
-                onClick={handleResetFilters}
-              />
+              <Button size="tiny" className="px-1" icon={<X />} onClick={handleResetFilters} />
             )}
           </div>
           <div className="flex items-center gap-x-2">
@@ -320,6 +314,7 @@ export const OAuthAppsList = () => {
               </Shortcut>
             ) : (
               <ButtonTooltip
+                variant="primary"
                 disabled
                 icon={<Plus />}
                 onClick={() => setShowCreateSheet(true)}
@@ -417,7 +412,7 @@ export const OAuthAppsList = () => {
                         <div className="absolute top-0 right-0 left-0 bottom-0 flex items-center justify-center border-l @[944px]:border-l-0">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="default" className="px-1" icon={<MoreVertical />} />
+                              <Button className="px-1" icon={<MoreVertical />} />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent side="bottom" align="end" className="w-48">
                               <DropdownMenuItem
@@ -510,6 +505,7 @@ export const OAuthAppsList = () => {
         <p className="text-sm text-foreground-light">
           {$t('Are you sure you wish to regenerate the client secret for "')}
           {selectedApp?.client_name}
+
           {$t(
             '"? You\'ll need to update it in all applications that use it. This action cannot be undone.'
           )}

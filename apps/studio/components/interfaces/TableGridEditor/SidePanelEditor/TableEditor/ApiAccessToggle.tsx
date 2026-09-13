@@ -332,7 +332,7 @@ export const ApiAccessToggle = ({
               disabled={isDisabled}
             />
           ) : (
-            <Button asChild variant="default" icon={<ExternalLink />}>
+            <Button asChild icon={<ExternalLink />}>
               <Link
                 target="_blank"
                 rel="noopener noreferrer"
