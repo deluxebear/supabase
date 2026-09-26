@@ -18,5 +18,5 @@
     "strictNullChecks": true
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "public/deno/*.ts", "dist"]
+  "exclude": ["node_modules", "public/deno/*.ts", "dist", ".next/types/validator.ts"]
 }

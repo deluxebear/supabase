@@ -1,7 +1,7 @@
 import { ReactFlowProvider } from '@xyflow/react'
 
 import { SchemaGraph } from '@/components/interfaces/Database/Schemas/SchemaGraph'
-import DatabaseLayout from '@/components/layouts/DatabaseLayout/DatabaseLayout'
+import { DatabaseLayout } from '@/components/layouts/DatabaseLayout/DatabaseLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'

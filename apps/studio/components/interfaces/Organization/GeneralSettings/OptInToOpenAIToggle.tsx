@@ -9,6 +9,7 @@ import {
 } from 'ui'
 
 import { InlineLink } from '@/components/ui/InlineLink'
+import { DOCS_URL } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 
 export const OptInToOpenAIToggle = () => {
@@ -41,8 +42,12 @@ export const OptInToOpenAIToggle = () => {
 
           <p>
             {$t(
-              'For organizations with HIPAA compliance enabled in their Supabase configuration, any consented information will only be shared with third-party AI providers with whom Supabase has established a Business Associate Agreement (BAA).'
-            )}
+              "For organizations with HIPAA compliance enabled in their Supabase configuration, any consented information will only be shared with third-party AI providers with whom Supabase has established a Business Associate Agreement (BAA). Don't input personal data unless you've"
+            )}{' '}
+            <InlineLink href={`${DOCS_URL}/guides/deployment/shared-responsibility-model`}>
+              {$t('obtained consent')}
+            </InlineLink>{' '}
+            {$t('from the individuals it relates to.')}
           </p>
 
           <p>

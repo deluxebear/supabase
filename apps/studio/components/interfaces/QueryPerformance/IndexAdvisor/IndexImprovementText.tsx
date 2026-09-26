@@ -22,7 +22,7 @@ export const IndexImprovementText = ({
   return (
     <p className={cn('text-sm text-foreground-light mb-3', className)} {...props}>
       {$t("Query's performance can be improved by")}{' '}
-      <span className="text-brand">{improvement.toFixed(2)}%</span> {$t('by creating this')}{' '}
+      <span className="text-primary">{improvement.toFixed(2)}%</span> {$t('by creating this')}{' '}
       {indexStatements.length > 1 ? 'indexes' : 'index'}:
     </p>
   )

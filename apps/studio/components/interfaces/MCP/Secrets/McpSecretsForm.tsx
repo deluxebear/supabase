@@ -18,7 +18,7 @@ import { Admonition } from 'ui-patterns/Admonition'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import z from 'zod'
 
-import { InterstitialShell } from '../InterstitialShell'
+import { InterstitialFooter, InterstitialShell } from '../InterstitialShell'
 import type { SecretRequest } from './McpSecrets.types'
 import {
   getOverwriteWarning,
@@ -164,7 +164,7 @@ export const McpSecretsForm = ({
       {providerHint && (
         <>
           <Separator />
-          <p className="text-xs text-foreground-light">
+          <InterstitialFooter>
             {`Don't have your key? Create one in the `}
             {providerHint.dashboardUrl ? (
               <a
@@ -179,7 +179,7 @@ export const McpSecretsForm = ({
               `${providerHint.name} dashboard`
             )}
             .
-          </p>
+          </InterstitialFooter>
         </>
       )}
     </InterstitialShell>

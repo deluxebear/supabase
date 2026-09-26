@@ -90,7 +90,7 @@ export const ComputeSizeSelector = ({ form }: ComputeSizeSelectorProps) => {
                           <div className="text-sm">
                             <span className="text-foreground">
                               {instanceSizeSpecs[option].ram} {$t('RAM /')}{' '}
-                              {instanceSizeSpecs[option].cpu} CPU
+                              {instanceSizeSpecs[option].cpu}
                             </span>
                             <p
                               translate="no"
@@ -121,7 +121,7 @@ export const ComputeSizeSelector = ({ form }: ComputeSizeSelectorProps) => {
                   {!highAvailability && (
                     <SelectItem key={'disabled'} value={'disabled'} disabled>
                       <div className="flex items-center justify-center w-full">
-                        <span>{$t('Larger instance sizes available after creation')}</span>
+                        <span>{$t('Larger, dedicated compute available after creation')}</span>
                       </div>
                     </SelectItem>
                   )}

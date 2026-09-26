@@ -123,7 +123,7 @@ export const ProjectPausedState = ({ product }: ProjectPausedStateProps) => {
                   {product !== undefined ? (
                     <>
                       {$t('Resume this project to access the')}{' '}
-                      <span className="text-brand">{product}</span> page.
+                      <span className="text-primary">{product}</span> page.
                     </>
                   ) : !isRestoreDisabled ? (
                     'Resume this project and get back to building!'

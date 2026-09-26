@@ -230,7 +230,7 @@ export const AdvancedSettings = ({
                       label={$t('Maximum staleness')}
                       layout="horizontal"
                       description={$t(
-                        'Set the maximum age of query results while BigQuery applies ongoing changes, or leave blank for the freshest results.'
+                        'Maximum age of BigQuery query results for newly created or recreated tables; leave blank for the freshest results.'
                       )}
                     >
                       <FormControl>

@@ -439,7 +439,7 @@ export const SubscriptionPlanUpdateDialog = ({
                             {' '}
                             <Link
                               href={`/org/${selectedOrganization?.slug}/billing#breakdown`}
-                              className="text-sm text-brand hover:text-brand-600 transition"
+                              className="text-sm text-primary hover:text-primary-hover transition"
                               target="_blank"
                             >
                               {$t('+ current spend')}
@@ -570,7 +570,7 @@ export const SubscriptionPlanUpdateDialog = ({
                           className="flex items-center gap-2"
                         >
                           <div className="w-4">
-                            <Check className="h-3 w-3 text-brand" strokeWidth={3} />
+                            <Check className="h-3 w-3 text-primary" strokeWidth={3} />
                           </div>
                           <div className="text-sm">
                             <p>{typeof feature === 'string' ? feature : feature[0]}</p>

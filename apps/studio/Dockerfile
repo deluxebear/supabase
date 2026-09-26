@@ -103,8 +103,7 @@ COPY --from=builder /app/apps/studio/.next/static ./apps/studio/.next/static
 # image's own entrypoint — our script never ran. Copy it onto PATH (overriding node's)
 # so the runtime NEXT_PUBLIC_* substitution and file_env secret handling execute at
 # container start.
-COPY --chmod=0755 apps/studio/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-EXPOSE 3000
+COPY --chmod=0755 apps/studio/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.shEXPOSE 3000
 ENTRYPOINT ["docker-entrypoint.sh"]
 HEALTHCHECK --interval=5s --timeout=5s --retries=3 CMD node -e "fetch('http://localhost:3000/api/get-utc-time').then((r) => {if (r.status !== 200) throw new Error(r.status)})"
 CMD ["node", "apps/studio/server.js"]

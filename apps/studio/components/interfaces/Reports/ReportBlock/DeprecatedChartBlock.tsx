@@ -45,7 +45,7 @@ export const DeprecatedChartBlock = ({ label, attribute, actions }: DeprecatedCh
       actions={actions}
     >
       <div className="flex flex-col justify-center flex-1">
-        <p className="text-xs text-foreground-lightr">
+        <p className="text-xs text-foreground-lighter">
           {$t('This chart is not longer available, and can be removed from your report')}
         </p>
         <p className="text-xs text-foreground-lighter">

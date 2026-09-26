@@ -1,12 +1,10 @@
 import { Check, ChevronDown, ChevronUp, PanelBottom, PanelRight, X } from 'lucide-react'
-import { useCallback, useMemo } from 'react'
 import {
   Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  Separator,
 } from 'ui'
 
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
@@ -14,6 +12,7 @@ import { useDataTable } from '@/components/ui/DataTable/providers/DataTableProvi
 import { Shortcut } from '@/components/ui/Shortcut'
 import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
+import { useShortcut } from '@/state/shortcuts/useShortcut'
 
 interface ServiceFlowPanelControlsProps {
   dock: 'bottom' | 'right'
@@ -24,38 +23,30 @@ export const ServiceFlowPanelControls = ({
   dock = 'bottom',
   setDock,
 }: ServiceFlowPanelControlsProps) => {
-  const { table, openRowId, setOpenRowId, isLoading } = useDataTable()
+  const { table, openRowId, setOpenRowId, onSelectRow } = useDataTable()
+  const rows = table.getRowModel().rows
+  const index = rows.findIndex((row) => row.id === openRowId)
+  const prevId = rows[index - 1]?.id
+  const nextId = rows[index + 1]?.id
 
-  const selectedRowData = useMemo(() => {
-    if (isLoading && !openRowId) return
-    return table.getCoreRowModel().flatRows.find((row) => row.id === openRowId)
-  }, [openRowId, isLoading, table])
+  const handleNavigate = (id: string | undefined, shiftKey = false) => {
+    if (!id) return
+    if (onSelectRow) onSelectRow(id, { shiftKey })
+    else setOpenRowId(id)
+    const row = document.getElementById(id)
+    row?.scrollIntoView({ block: 'nearest' })
+    if (document.activeElement?.closest('tbody')) row?.focus({ preventScroll: true })
+  }
+  const onPrev = () => handleNavigate(prevId)
+  const onNext = () => handleNavigate(nextId)
+  const onClose = () => setOpenRowId(undefined)
 
-  const index = table.getCoreRowModel().flatRows.findIndex((row) => row.id === selectedRowData?.id)
-
-  const nextId = useMemo(
-    () => table.getCoreRowModel().flatRows[index + 1]?.id,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [index, isLoading, table]
-  )
-
-  const prevId = useMemo(
-    () => table.getCoreRowModel().flatRows[index - 1]?.id,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [index, isLoading, table]
-  )
-
-  const onPrev = useCallback(() => {
-    if (prevId) setOpenRowId(prevId)
-  }, [prevId, setOpenRowId])
-
-  const onNext = useCallback(() => {
-    if (nextId) setOpenRowId(nextId)
-  }, [nextId, setOpenRowId])
-
-  const onClose = useCallback(() => {
-    setOpenRowId(undefined)
-  }, [setOpenRowId])
+  useShortcut(SHORTCUT_IDS.UNIFIED_LOGS_EXTEND_PREV_ROW, () => handleNavigate(prevId, true), {
+    enabled: !!prevId,
+  })
+  useShortcut(SHORTCUT_IDS.UNIFIED_LOGS_EXTEND_NEXT_ROW, () => handleNavigate(nextId, true), {
+    enabled: !!nextId,
+  })
 
   return (
     <div className="flex h-7 items-center gap-1">
@@ -68,6 +59,7 @@ export const ServiceFlowPanelControls = ({
         <Button
           size="tiny"
           variant="text"
+          aria-label={$t('Previous log')}
           disabled={!prevId}
           onClick={onPrev}
           className="px-1"
@@ -84,14 +76,13 @@ export const ServiceFlowPanelControls = ({
         <Button
           size="tiny"
           variant="text"
+          aria-label={$t('Next log')}
           disabled={!nextId}
           onClick={onNext}
           className="px-1"
           icon={<ChevronDown />}
         />
       </Shortcut>
-
-      <Separator orientation="vertical" className="mx-1 h-4" />
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -108,14 +99,14 @@ export const ServiceFlowPanelControls = ({
               <PanelBottom size={14} />
               <span>{$t('Dock to bottom')}</span>
             </div>
-            {dock === 'bottom' && <Check size={14} className="text-brand" />}
+            {dock === 'bottom' && <Check size={14} className="text-primary" />}
           </DropdownMenuItem>
           <DropdownMenuItem className="justify-between" onClick={() => setDock('right')}>
             <div className="flex items-center gap-x-2">
               <PanelRight size={14} />
               <span>{$t('Dock to right')}</span>
             </div>
-            {dock === 'right' && <Check size={14} className="text-brand" />}
+            {dock === 'right' && <Check size={14} className="text-primary" />}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -126,7 +117,14 @@ export const ServiceFlowPanelControls = ({
         options={{ conflictBehavior: 'allow' }}
         side="top"
       >
-        <Button size="tiny" variant="text" onClick={onClose} className="px-1" icon={<X />} />
+        <Button
+          aria-label={$t('Clear selection')}
+          size="tiny"
+          variant="text"
+          onClick={onClose}
+          className="px-1"
+          icon={<X />}
+        />
       </Shortcut>
     </div>
   )

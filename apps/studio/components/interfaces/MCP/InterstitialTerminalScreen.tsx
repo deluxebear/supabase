@@ -1,6 +1,8 @@
+import { Button, Separator } from 'ui'
 import { Admonition } from 'ui-patterns/Admonition'
 
 import { InterstitialFooter, InterstitialShell } from './InterstitialShell'
+import { t as $t } from '@/lib/i18n'
 
 export type InterstitialTerminalCopy = {
   title: string
@@ -8,6 +10,7 @@ export type InterstitialTerminalCopy = {
   calloutTitle: string
   calloutBody: string
   footer: string
+  projectRef?: string
 }
 
 export const InterstitialTerminalScreen = ({
@@ -16,9 +19,21 @@ export const InterstitialTerminalScreen = ({
   calloutTitle,
   calloutBody,
   footer,
+  projectRef,
 }: InterstitialTerminalCopy) => (
   <InterstitialShell title={title} subtitle={subtitle}>
     <Admonition type="note" title={calloutTitle} description={calloutBody} className="mb-0" />
+
+    {projectRef && (
+      <Button block variant="default" asChild>
+        <a href={`/project/${projectRef}/functions/secrets`}>
+          {$t('Go to Edge Functions secrets')}
+        </a>
+      </Button>
+    )}
+
+    <Separator />
+
     <InterstitialFooter>{footer}</InterstitialFooter>
   </InterstitialShell>
 )

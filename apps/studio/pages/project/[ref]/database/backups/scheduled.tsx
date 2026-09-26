@@ -16,7 +16,7 @@ import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 import { BackupsList } from '@/components/interfaces/Database/Backups/BackupsList'
 import DatabaseBackupsNav from '@/components/interfaces/Database/Backups/DatabaseBackupsNav'
 import { SelfPlatformBackupOperator } from '@/components/interfaces/Database/Backups/SelfPlatformBackupOperator'
-import DatabaseLayout from '@/components/layouts/DatabaseLayout/DatabaseLayout'
+import { DatabaseLayout } from '@/components/layouts/DatabaseLayout/DatabaseLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { AlertError } from '@/components/ui/AlertError'
 import { DocsButton } from '@/components/ui/DocsButton'
@@ -149,7 +149,7 @@ const ScheduledBackups = () => {
                     'Your project uses PITR and full daily backups are no longer taken. PITR lets you restore to a specific time (down to the second) within your selected PITR retention period.'
                   )}{' '}
                   <a
-                    className="text-brand transition-colors hover:text-brand-600"
+                    className="text-primary transition-colors hover:text-primary-hover"
                     href={`${DOCS_URL}/guides/platform/backups`}
                   >
                     {$t('Learn more')}

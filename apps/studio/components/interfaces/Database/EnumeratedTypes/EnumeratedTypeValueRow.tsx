@@ -82,7 +82,7 @@ const EnumeratedTypeValueRow = <TFieldValues extends FieldValues>({
                     className="px-2"
                     onClick={() => onRemoveValue()}
                     aria-label={$t('Remove value')}
-                    // Tooltip repeats the label; the description would read the name twice
+                    // Tooltip repeats the label; screen readers would read it twice
                     aria-describedby={undefined}
                   />
                 </TooltipTrigger>

@@ -1,10 +1,10 @@
+import { useFlag } from 'common'
 import { X } from 'lucide-react'
 import { z } from 'zod'
 
 import { advisorCategoryLabels } from './AdvisorPanel.utils'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { FilterPopover } from '@/components/ui/FilterPopover'
-import { t as $t } from '@/lib/i18n'
 import {
   AdvisorCategory,
   advisorCategorySchema,
@@ -59,17 +59,10 @@ export const AdvisorFilters = ({
   onClose,
   isPlatform = false,
 }: AdvisorFiltersProps) => {
-  const categoryOptions = (isPlatform ? platformCategories : selfHostedCategories).map(
-    (category) => ({ label: $t(advisorCategoryLabels[category]), value: category })
-  )
-  const translatedSeverityOptions = severityOptions.map((option) => ({
-    ...option,
-    label: $t(option.label),
-  }))
-  const translatedStatusOptions = statusOptions.map((option) => ({
-    ...option,
-    label: $t(option.label),
-  }))
+  const isHealthAdvisorEnabled = useFlag('healthAdvisor')
+  const categoryOptions = (isPlatform ? platformCategories : selfHostedCategories)
+    .filter((category) => category !== 'health' || isHealthAdvisorEnabled)
+    .map((category) => ({ label: advisorCategoryLabels[category], value: category }))
 
   return (
     <div className="border-b overflow-x-auto">
@@ -89,7 +82,7 @@ export const AdvisorFilters = ({
           {isPlatform && (
             <FilterPopover
               name="Status"
-              options={translatedStatusOptions}
+              options={statusOptions}
               activeOptions={[...statusFilters]}
               valueKey="value"
               labelKey="label"
@@ -99,7 +92,7 @@ export const AdvisorFilters = ({
           )}
           <FilterPopover
             name="Severity"
-            options={translatedSeverityOptions}
+            options={severityOptions}
             activeOptions={[...severityFilters]}
             valueKey="value"
             labelKey="label"

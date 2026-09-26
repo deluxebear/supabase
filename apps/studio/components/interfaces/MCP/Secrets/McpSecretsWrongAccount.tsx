@@ -28,7 +28,7 @@ export const McpSecretsWrongAccount = ({
 
     <Separator />
 
-    <InterstitialFooter align="start">
+    <InterstitialFooter>
       {$t('After switching, ask your agent to run the tool again. Nothing has been stored.')}
     </InterstitialFooter>
   </InterstitialShell>

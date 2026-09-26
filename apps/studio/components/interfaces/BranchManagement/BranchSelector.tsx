@@ -90,7 +90,7 @@ export const BranchSelector = ({
                       </span>
                     </div>
                     {selectedBranch?.id === branch.id && (
-                      <Check size={14} strokeWidth={1.5} className="text-brand" />
+                      <Check size={14} strokeWidth={1.5} className="text-primary" />
                     )}
                     {branch.git_branch && <span>{$t('Synced to a Git branch')}</span>}
                     {branch.review_requested_at && <span>{$t('Merge request opened')}</span>}

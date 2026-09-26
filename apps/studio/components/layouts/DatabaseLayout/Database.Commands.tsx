@@ -90,9 +90,9 @@ export function useDatabaseGotoCommands(options?: CommandOptions) {
         ? [
             {
               id: 'nav-database-replication',
-              name: 'Replication',
-              value: 'Database: Replication',
-              route: `/project/${ref}/database/replication`,
+              name: 'Pipelines',
+              value: 'Database: Pipelines',
+              route: `/project/${ref}/database/pipelines`,
               defaultHidden: true,
             } as IRouteCommand,
           ]

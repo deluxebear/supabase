@@ -195,7 +195,7 @@ export const Usage = () => {
                           className="justify-between w-[180px]"
                           iconRight={<ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />}
                         >
-                          {!selectedProject ? $t('All projects') : selectedProject?.name}
+                          {!selectedProject ? 'All projects' : selectedProject?.name}
                         </Button>
                       )
                     }}
@@ -234,7 +234,7 @@ export const Usage = () => {
                 <div className="flex items-center gap-2">
                   <p className={cn('text-sm transition', isLoadingSubscription && 'opacity-50')}>
                     {$t('Organization is on the')}{' '}
-                    <span className="font-medium text-brand">
+                    <span className="font-medium text-primary">
                       {subscription.plan.name} {$t('Plan')}
                     </span>
                   </p>
@@ -269,7 +269,7 @@ export const Usage = () => {
           <ScaffoldSection isFullWidth className="pb-0">
             <AlertError
               error={orgDailyStatsError}
-              subject={$t('Failed to retrieve usage statistics for organization')}
+              subject="Failed to retrieve usage statistics for organization"
             />
           </ScaffoldSection>
         </ScaffoldContainer>
@@ -359,18 +359,16 @@ export const Usage = () => {
         isLoadingOrgDailyStats={isLoadingOrgDailyStats}
       />
 
-      {subscription?.plan.id === 'platform' && (
-        <OrgLogUsage
-          orgSlug={slug as string}
-          projectRef={selectedProjectRef}
-          subscription={subscription}
-          startDate={startDate}
-          endDate={endDate}
-          currentBillingCycleSelected={currentBillingCycleSelected}
-          orgDailyStats={orgDailyStats}
-          isLoadingOrgDailyStats={isLoadingOrgDailyStats}
-        />
-      )}
+      <OrgLogUsage
+        orgSlug={slug as string}
+        projectRef={selectedProjectRef}
+        subscription={subscription}
+        startDate={startDate}
+        endDate={endDate}
+        currentBillingCycleSelected={currentBillingCycleSelected}
+        orgDailyStats={orgDailyStats}
+        isLoadingOrgDailyStats={isLoadingOrgDailyStats || isLoadingSubscription}
+      />
 
       <Pipelines
         orgSlug={slug as string}

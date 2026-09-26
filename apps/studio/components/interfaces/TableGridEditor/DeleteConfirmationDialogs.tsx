@@ -278,7 +278,7 @@ const DeleteConfirmationDialogs = ({
               'Are you sure you want to delete the selected column? This action cannot be undone.'
             )}
           </p>
-          <div className="items-top flex space-x-2">
+          <div className="items-start flex space-x-2">
             <Checkbox
               id="checkbox-cascade"
               checked={isDeleteWithCascade}
@@ -342,7 +342,7 @@ const DeleteConfirmationDialogs = ({
               'Are you sure you want to delete the selected table? This action cannot be undone.'
             )}
           </p>
-          <div className="items-top flex space-x-2">
+          <div className="items-start flex space-x-2">
             <Checkbox
               id="checkbox-cascade"
               checked={isDeleteWithCascade}
@@ -477,7 +477,7 @@ const DropEntityConfirmationModal = ({
           {$t('Are you sure you want to delete this')} {entityLabel}
           {$t('? This action cannot be undone.')}
         </p>
-        <div className="items-top flex space-x-2">
+        <div className="items-start flex space-x-2">
           <Checkbox
             id={checkboxId}
             checked={isDeleteWithCascade}

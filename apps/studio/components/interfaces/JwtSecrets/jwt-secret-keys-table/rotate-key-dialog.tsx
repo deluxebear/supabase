@@ -63,7 +63,7 @@ export function RotateKeyDialog({
           {$t(
             'Change the key used by Supabase Auth to create new JSON Web Tokens. Non-expired tokens remain'
           )}{' '}
-          <span className="text-brand">{$t('valid and accepted')}</span>!
+          <span className="text-primary">{$t('valid and accepted')}</span>!
         </DialogDescription>
       </DialogHeader>
       <DialogSectionSeparator />
@@ -147,7 +147,7 @@ export function RotateKeyDialog({
 
             <Label
               htmlFor="understands-standby"
-              className="flex items-top gap-4 text-sm leading-none"
+              className="flex items-start gap-4 text-sm leading-none"
             >
               <Checkbox
                 id="understands-standby"
@@ -184,7 +184,7 @@ export function RotateKeyDialog({
 
             <Label
               htmlFor="understands-previously-used"
-              className="flex items-top gap-4 text-sm leading-none"
+              className="flex items-start gap-4 text-sm leading-none"
             >
               <Checkbox
                 className="mt-0.5"
@@ -208,7 +208,7 @@ export function RotateKeyDialog({
                         {$t(
                           'Rotating the signing key only changes what key is used by Supabase Auth to issue'
                         )}{' '}
-                        <em className="text-brand not-italic">{$t('new tokens')}</em>
+                        <em className="text-primary not-italic">{$t('new tokens')}</em>
                         .<br />
                         <br />
                         {$t(
@@ -266,9 +266,9 @@ export function RotateKeyDialog({
                         <p>
                           {$t('Some of your Edge Functions are set up to require a JWT in the')}{' '}
                           <code>{$t('Authorization')}</code> {$t('header signed with the')}{' '}
-                          <em className="text-brand not-italic">{$t('legacy JWT secret')}</em>
+                          <em className="text-primary not-italic">{$t('legacy JWT secret')}</em>
                           {$t('. Rotation causes')}{' '}
-                          <em className="text-brand not-italic">
+                          <em className="text-primary not-italic">
                             {$t('invocations by signed-in users')}
                           </em>{' '}
                           {$t(

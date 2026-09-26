@@ -21,10 +21,8 @@ import { getManagedByFromOrganizationPartner } from '@/data/organizations/manage
 import { ProjectIndexPageLink } from '@/data/prefetchers/project.$ref'
 import { getComputeSize, OrgProject } from '@/data/projects/org-projects-infinite-query'
 import type { ResourceWarning } from '@/data/usage/resource-warnings-query'
-import { useCustomContent } from '@/hooks/custom-content/useCustomContent'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { BASE_PATH } from '@/lib/constants'
-import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 import type { Organization } from '@/types'
 
@@ -48,18 +46,6 @@ export const ProjectCard = ({
 }: ProjectCardProps) => {
   const router = useRouter()
   const { name, ref: projectRef } = project
-
-  const { infraAwsNimbusLabel } = useCustomContent(['infra:aws_nimbus_label'])
-  // [self-platform] registry rows carry a placeholder cloud_provider ('AWS')
-  // only to satisfy the upstream type — showing it would misattribute a
-  // self-hosted stack to a cloud vendor.
-  const providerLabel = IS_SELF_PLATFORM
-    ? $t('Self-hosted')
-    : project.cloud_provider === 'AWS_NIMBUS'
-      ? infraAwsNimbusLabel
-      : project.cloud_provider
-
-  const desc = `${providerLabel} | ${project.region}`
 
   const { projectHomepageShowInstanceSize } = useIsFeatureEnabled([
     'project_homepage:show_instance_size',
@@ -128,7 +114,7 @@ export const ProjectCard = ({
                     </DropdownMenu>
                   </div>
                 </div>
-                <p className="text-sm text-foreground-lighter">{desc}</p>
+                <p className="text-sm text-foreground-lighter">{project.region}</p>
               </div>
               <div className="flex items-center gap-x-1.5 relative overflow-hidden">
                 {project.status !== 'INACTIVE' && projectHomepageShowInstanceSize && (

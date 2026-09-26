@@ -56,14 +56,10 @@ export const DisablePipelinesDialog = ({ open, setOpen }: DisablePipelinesDialog
       <AlertDialogContent size="small">
         <AlertDialogHeader>
           <AlertDialogTitle>{$t('Disable Pipelines')}</AlertDialogTitle>
-          <AlertDialogDescription className="flex flex-col gap-y-2 text-sm">
-            <span>
-              {$t('This will remove the')} <code className="text-code-inline">etl</code>{' '}
-              {$t(
-                'schema and all Pipelines-managed resources from your database. Data already written to destination systems is not deleted.'
-              )}
-            </span>
-            <span>{$t('Read replicas are not affected.')}</span>
+          <AlertDialogDescription>
+            {$t(
+              'This removes the etl schema and all Pipelines-managed resources from your database. Data already at destinations is kept. Read replicas are not affected.'
+            )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && (
@@ -78,7 +74,7 @@ export const DisablePipelinesDialog = ({ open, setOpen }: DisablePipelinesDialog
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isSubmitting}>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction variant="danger" loading={isSubmitting} onClick={onConfirm}>
-            {$t('Disable')}
+            {$t('Disable Pipelines')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -324,8 +324,8 @@ export const EdgeFunctionDetails = () => {
                         description: 'Download the function to your local machine',
                         jsx: () => (
                           <>
-                            <span className="text-brand">supabase</span> {$t('functions download')}{' '}
-                            {selectedFunction?.slug}
+                            <span className="text-primary">supabase</span>{' '}
+                            {$t('functions download')} {selectedFunction?.slug}
                           </>
                         ),
                         comment: '1. Download the function',
@@ -372,7 +372,7 @@ export const EdgeFunctionDetails = () => {
             variant="destructive"
             confirmLabel="Delete"
             confirmLabelLoading="Deleting"
-            title={`${'Confirm to delete'} ${selectedFunction?.name}`}
+            title={`Confirm to delete ${selectedFunction?.name}`}
             onCancel={() => setShowDeleteModal(false)}
             onConfirm={onConfirmDelete}
             alert={{

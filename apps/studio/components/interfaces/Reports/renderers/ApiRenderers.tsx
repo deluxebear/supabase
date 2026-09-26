@@ -2,6 +2,7 @@ import { geoCentroid } from 'd3-geo'
 import sumBy from 'lodash/sumBy'
 import { ChevronRight } from 'lucide-react'
 import { useTheme } from 'next-themes'
+import Link from 'next/link'
 import { Fragment, useRef, useState, type ReactNode } from 'react'
 import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from 'react-simple-maps'
 import {
@@ -39,7 +40,8 @@ import { AlertError } from '@/components/ui/AlertError'
 import BarChart from '@/components/ui/Charts/BarChart'
 import { DataTableColumnStatusCode } from '@/components/ui/DataTable/DataTableColumn/DataTableColumnStatusCode'
 import { useFillTimeseriesSorted } from '@/hooks/analytics/useFillTimeseriesSorted'
-import { BASE_PATH } from '@/lib/constants'
+import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { BASE_PATH, IS_PLATFORM } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
@@ -47,20 +49,19 @@ export const NetworkTrafficRenderer = (
   props: ReportWidgetProps<{
     timestamp: string
     ingress: number
-    egress: number
   }>
 ) => {
+  const { data: organization } = useSelectedOrganizationQuery({ enabled: IS_PLATFORM })
   const { data, error, isError } = useFillTimeseriesSorted({
     data: props.data,
     timestampKey: 'timestamp',
-    valueKey: ['ingress_mb', 'egress_mb'],
+    valueKey: 'ingress_mb',
     defaultValue: 0,
     startDate: props.params?.iso_timestamp_start,
     endDate: props.params?.iso_timestamp_end,
   })
 
   const totalIngress = sumBy(props.data, 'ingress_mb')
-  const totalEgress = sumBy(props.data, 'egress_mb')
 
   function determinePrecision(valueInMb: number) {
     return valueInMb < 0.001 ? 7 : totalIngress > 1 ? 2 : 4
@@ -70,7 +71,7 @@ export const NetworkTrafficRenderer = (
     const error = (
       typeof props.error === 'string' ? { message: props.error } : props.error
     ) as ResponseError
-    return <AlertError subject={$t('Failed to retrieve network traffic')} error={error} />
+    return <AlertError subject="Failed to retrieve network traffic" error={error} />
   } else if (isError) {
     return (
       <Alert variant="warning">
@@ -96,18 +97,19 @@ export const NetworkTrafficRenderer = (
         displayDateInUtc
       />
 
-      <BarChart
-        size="small"
-        title={$t('Egress')}
-        highlightedValue={totalEgress}
-        format="MB"
-        valuePrecision={determinePrecision(totalEgress)}
-        className="w-full"
-        data={data}
-        yAxisKey="egress_mb"
-        xAxisKey="timestamp"
-        displayDateInUtc
-      />
+      {organization && (
+        <div className="flex items-center justify-between gap-4 rounded border border-default bg-surface-200 px-4 py-3">
+          <div>
+            <p className="text-sm text-foreground">{$t('Billable egress')}</p>
+            <p className="text-sm text-foreground-light">
+              {$t('View your organization&apos;s Usage page for billable egress.')}
+            </p>
+          </div>
+          <Button asChild variant="default" size="tiny">
+            <Link href={`/org/${organization.slug}/usage#egress`}>{$t('View Usage')}</Link>
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
@@ -134,7 +136,7 @@ export const TotalRequestsChartRenderer = (
     const error = (
       typeof props.error === 'string' ? { message: props.error } : props.error
     ) as ResponseError
-    return <AlertError subject={$t('Failed to retrieve total requests')} error={error} />
+    return <AlertError subject="Failed to retrieve total requests" error={error} />
   } else if (isError) {
     return (
       <Alert variant="warning">
@@ -264,7 +266,7 @@ export const ErrorCountsChartRenderer = (
     const error = (
       typeof props.error === 'string' ? { message: props.error } : props.error
     ) as ResponseError
-    return <AlertError subject={$t('Failed to retrieve request errors')} error={error} />
+    return <AlertError subject="Failed to retrieve request errors" error={error} />
   } else if (isError) {
     return (
       <Alert variant="warning">
@@ -315,7 +317,7 @@ export const ResponseSpeedChartRenderer = (
     const error = (
       typeof props.error === 'string' ? { message: props.error } : props.error
     ) as ResponseError
-    return <AlertError subject={$t('Failed to retrieve response speeds')} error={error} />
+    return <AlertError subject="Failed to retrieve response speeds" error={error} />
   } else if (isError) {
     return (
       <Alert variant="warning">
@@ -429,7 +431,7 @@ export const RequestsByCountryMapRenderer = (
         ? { success: true, data: { message: props.error } }
         : AlertErrorSchema.safeParse(props.error)
     const alertError = parsed.success ? parsed.data : null
-    return <AlertError subject={$t('Failed to retrieve requests by geography')} error={alertError} />
+    return <AlertError subject="Failed to retrieve requests by geography" error={alertError} />
   }
 
   return (

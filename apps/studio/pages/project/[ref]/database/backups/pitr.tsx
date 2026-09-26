@@ -18,7 +18,7 @@ import DatabaseBackupsNav from '@/components/interfaces/Database/Backups/Databas
 import { PITRNotice } from '@/components/interfaces/Database/Backups/PITR/PITRNotice'
 import { PITRSelection } from '@/components/interfaces/Database/Backups/PITR/PITRSelection'
 import { SelfPlatformPITR } from '@/components/interfaces/Database/Backups/SelfPlatformPITR'
-import DatabaseLayout from '@/components/layouts/DatabaseLayout/DatabaseLayout'
+import { DatabaseLayout } from '@/components/layouts/DatabaseLayout/DatabaseLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { AlertError } from '@/components/ui/AlertError'
 import { DocsButton } from '@/components/ui/DocsButton'

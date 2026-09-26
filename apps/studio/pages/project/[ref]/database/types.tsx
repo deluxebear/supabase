@@ -9,7 +9,7 @@ import {
 import { PageSection, PageSectionContent } from 'ui-patterns/PageSection'
 
 import { EnumeratedTypes } from '@/components/interfaces/Database/EnumeratedTypes/EnumeratedTypes'
-import DatabaseLayout from '@/components/layouts/DatabaseLayout/DatabaseLayout'
+import { DatabaseLayout } from '@/components/layouts/DatabaseLayout/DatabaseLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'

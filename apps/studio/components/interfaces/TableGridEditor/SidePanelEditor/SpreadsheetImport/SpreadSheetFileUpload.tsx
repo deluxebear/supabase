@@ -101,7 +101,7 @@ function DropZone({ onDrop: onDropFromParent, onClickUpload }: DropZoneProps) {
       onClick={onClickUpload}
     >
       <p className="text-sm">
-        {$t('Drag and drop, or')} <span className="text-brand">browse</span> {$t('your files')}
+        {$t('Drag and drop, or')} <span className="text-primary">browse</span> {$t('your files')}
       </p>
     </div>
   )

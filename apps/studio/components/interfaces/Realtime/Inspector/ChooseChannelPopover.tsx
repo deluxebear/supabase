@@ -103,9 +103,7 @@ export const ChooseChannelPopover = ({
           className="max-w-[120px] truncate"
           title={config.channelName.length > 0 ? config.channelName : ''}
         >
-          {config.channelName.length > 0
-            ? $t('Channel: {{name}}', { name: config.channelName })
-            : $t('Join a channel')}
+          {config.channelName.length > 0 ? `Channel: ${config.channelName}` : 'Join a channel'}
         </p>
       </Button>
     </PopoverTrigger>
@@ -212,7 +210,7 @@ export const ChooseChannelPopover = ({
               <div className="flex items-center gap-x-2">
                 <p className="text-foreground text-xs">
                   {$t('Currently joined')}{' '}
-                  <span className={config.isChannelPrivate ? 'text-brand' : 'text-warning'}>
+                  <span className={config.isChannelPrivate ? 'text-primary' : 'text-warning'}>
                     {config.isChannelPrivate ? 'private' : 'public'}
                   </span>{' '}
                   channel:

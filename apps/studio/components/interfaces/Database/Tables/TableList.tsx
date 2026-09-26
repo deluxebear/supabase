@@ -54,6 +54,7 @@ import { DropdownMenuItemTooltip } from '@/components/ui/DropdownMenuItemTooltip
 import { EntityTypeIcon } from '@/components/ui/EntityTypeIcon'
 import { SchemaSelector } from '@/components/ui/SchemaSelector'
 import { Shortcut } from '@/components/ui/Shortcut'
+import { TableRowNoResults } from '@/components/ui/TableRowNoResults'
 import { useDatabasePublicationsQuery } from '@/data/database-publications/database-publications-query'
 import { ENTITY_TYPE } from '@/data/entity-types/entity-type-constants'
 import { useForeignTablesQuery } from '@/data/foreign-tables/foreign-tables-query'
@@ -432,16 +433,7 @@ export const TableList = ({
                     </TableRow>
                   )}
                   {entities.length === 0 && filterString.length > 0 && (
-                    <TableRow key={selectedSchema}>
-                      <TableCell colSpan={7}>
-                        <p className="text-sm text-foreground">{$t('No results found')}</p>
-                        <p className="text-sm text-foreground-light">
-                          {$t('Your search for "')}
-                          {filterString}
-                          {$t('" did not return any results')}
-                        </p>
-                      </TableCell>
-                    </TableRow>
+                    <TableRowNoResults key={selectedSchema} colSpan={7} search={filterString} />
                   )}
                   {entities.length > 0 &&
                     entities.map((x) => (
@@ -509,7 +501,7 @@ export const TableList = ({
                             (table) => table.id === x.id
                           ) ? (
                             <div className="flex items-center gap-x-2">
-                              <Check size={16} strokeWidth={2} className="text-brand-link" />
+                              <Check size={16} strokeWidth={2} className="text-primary" />
                               <p className="text-foreground-light">{$t('Enabled')}</p>
                             </div>
                           ) : (

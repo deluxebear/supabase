@@ -376,7 +376,7 @@ export const ColumnEditor = ({
                       isReactForm={false}
                       layout="flex"
                       id="isArray"
-                      label={$t('Define as Array')}
+                      label={$t('Define as array')}
                       description={$t(
                         'Allow column to be defined as variable-length multidimensional arrays'
                       )}
@@ -499,7 +499,7 @@ export const ColumnEditor = ({
                       isReactForm={false}
                       layout="flex"
                       id="isUnique"
-                      label={$t('Is Unique')}
+                      label={$t('Is unique')}
                       description={$t('Enforce values in the column to be unique across rows')}
                     >
                       <Switch

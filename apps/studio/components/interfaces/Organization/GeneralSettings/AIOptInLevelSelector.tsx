@@ -4,8 +4,10 @@ import { FormField, RadioGroup, RadioGroupItem } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { OptInToOpenAIToggle } from './OptInToOpenAIToggle'
+import { InlineLink } from '@/components/ui/InlineLink'
 import { AIOptInFormValues } from '@/hooks/forms/useAIOptInForm'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { DOCS_URL } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 
 interface AIOptInLevelSelectorProps {
@@ -89,8 +91,12 @@ export const AIOptInLevelSelector = ({
           </p>
           <p>
             {$t(
-              'For organizations with HIPAA compliance enabled in their Supabase configuration, any consented information will only be shared with third-party AI providers with whom Supabase has established a Business Associate Agreement (BAA).'
-            )}
+              "For organizations with HIPAA compliance enabled in their Supabase configuration, any consented information will only be shared with third-party AI providers with whom Supabase has established a Business Associate Agreement (BAA). Don't input personal data unless you've"
+            )}{' '}
+            <InlineLink href={`${DOCS_URL}/guides/deployment/shared-responsibility-model`}>
+              {$t('obtained consent')}
+            </InlineLink>{' '}
+            {$t('from the individuals it relates to.')}
           </p>
           <OptInToOpenAIToggle />
         </div>
@@ -118,8 +124,8 @@ export const AIOptInLevelSelector = ({
                     htmlFor={`ai-opt-in-${item.value}`}
                     className="cursor-pointer flex flex-col"
                   >
-                    <span className="text-sm font-medium text-foreground">{$t(item.title)}</span>
-                    <span className="text-sm text-foreground-light">{$t(item.description)}</span>
+                    <span className="text-sm font-medium text-foreground">{item.title}</span>
+                    <span className="text-sm text-foreground-light">{item.description}</span>
                   </label>
                 </div>
               ))}

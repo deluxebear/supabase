@@ -120,7 +120,7 @@ export const HardenAPIModal = ({ visible, onClose }: HardenAPIModalProps) => {
               "schema is used to generate API routes. In some cases, it's better to use a custom schema. This is important if you use tools that generate tables in the"
             )}{' '}
             <code className="text-code-inline">public</code> {$t('schema to')}{' '}
-            <span className="text-brand">{$t('prevent accidental exposure of data')}</span>.
+            <span className="text-primary">{$t('prevent accidental exposure of data')}</span>.
           </p>
           <DocsButton
             abbrev={false}
@@ -138,7 +138,7 @@ export const HardenAPIModal = ({ visible, onClose }: HardenAPIModalProps) => {
               {$t('schema and expose it')}
             </p>
             {hasAPISchema && isAPISchemaExposed ? (
-              <Check size={16} className="text-brand" />
+              <Check size={16} className="text-primary" />
             ) : (
               <ChevronDown
                 size={16}
@@ -228,7 +228,7 @@ export const HardenAPIModal = ({ visible, onClose }: HardenAPIModalProps) => {
               {$t('schema from the exposed schemas')}
             </p>
             {!isPublicSchemaExposed ? (
-              <Check size={16} className="text-brand" />
+              <Check size={16} className="text-primary" />
             ) : (
               <ChevronDown
                 size={16}

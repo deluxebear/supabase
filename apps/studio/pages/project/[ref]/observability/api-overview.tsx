@@ -182,7 +182,7 @@ export const ApiReport: NextPageWithLayout = () => {
           params={params.networkTraffic}
           error={error.networkTraffic}
           title={$t('Network Traffic')}
-          tooltip={$t('Ingress and egress of requests and responses respectively')}
+          tooltip={$t('Ingress is measured from request logs.')}
           data={data.networkTraffic || []}
           renderer={NetworkTrafficRenderer}
         />

@@ -48,7 +48,7 @@ const colorClassMap: Record<string, string> = {
   muted: 'bg-gray-500',
   destructive: 'bg-destructive',
   warning: 'bg-warning',
-  brand: 'bg-brand',
+  brand: 'bg-brand-default',
 }
 
 const LEVEL_CHART_CONFIG: ChartConfig = {

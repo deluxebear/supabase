@@ -103,7 +103,7 @@ export const PipelineCostDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent size="large">
         <DialogHeader>
-          <DialogTitle>{$t('Confirm to create and start pipeline')}</DialogTitle>
+          <DialogTitle>{$t('Create and start pipeline')}</DialogTitle>
           <DialogDescription>
             {$t('Review the estimated costs before you create and start the pipeline.')}
           </DialogDescription>

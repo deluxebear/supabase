@@ -9,6 +9,7 @@ import { InputWithAddons } from '../primitives/InputWithAddons'
 import { useDataTable } from '../providers/DataTableProvider'
 import { DataTableFilterCheckboxLoader } from './DataTableFilterCheckboxLoader'
 import { SEARCH_PARAMS_PARSER } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.constants'
+import { isLogsFilterColumnValue } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.filters'
 import { t as $t } from '@/lib/i18n'
 
 export function DataTableFilterCheckbox<TData>({
@@ -50,8 +51,8 @@ export function DataTableFilterCheckbox<TData>({
       (option) => inputValue === '' || option.label.toLowerCase().includes(inputValue.toLowerCase())
     ) || []
 
-  // CHECK: it could be filterValue or searchValue
-  const filters = filterValue ? (Array.isArray(filterValue) ? filterValue : [filterValue]) : []
+  // Column filter values are always the wrapped `{ operator, values }` shape.
+  const filters = isLogsFilterColumnValue(filterValue) ? filterValue.values : []
 
   // REMINDER: if no options are defined, while fetching data, we should show a skeleton
   if (isLoading && !filterOptions?.length) return <DataTableFilterCheckboxLoader />
@@ -104,10 +105,12 @@ export function DataTableFilterCheckbox<TData>({
                     id={`${value}-${option.value}`}
                     checked={checked}
                     onCheckedChange={(checked) => {
-                      const newValue = checked
-                        ? [...(filters || []), option.value]
-                        : filters?.filter((value) => option.value !== value)
-                      column?.setFilterValue(newValue?.length ? newValue : undefined)
+                      const newValues = checked
+                        ? [...filters, option.value]
+                        : filters.filter((value) => option.value !== value)
+                      column?.setFilterValue(
+                        newValues.length ? { operator: '=', values: newValues } : undefined
+                      )
                     }}
                   />
                   <Label
@@ -150,7 +153,9 @@ export function DataTableFilterCheckbox<TData>({
                     <button
                       type="button"
                       tabIndex={0}
-                      onClick={() => column?.setFilterValue([option.value])}
+                      onClick={() =>
+                        column?.setFilterValue({ operator: '=', values: [option.value] })
+                      }
                       className={cn(
                         'text-xs text-muted-foreground hover:text-foreground',
                         'absolute inset-y-0 right-0 hidden bg-surface-100 group-hover:flex group-focus-within:flex items-center cursor-pointer',

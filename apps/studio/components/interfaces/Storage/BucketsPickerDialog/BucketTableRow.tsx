@@ -13,29 +13,6 @@ import { t as $t } from '@/lib/i18n'
 
 type BucketTableMode = 'standard' | 'virtualized'
 
-type BucketTableEmptyStateProps = {
-  mode: BucketTableMode
-  filterString: string
-}
-
-export const BucketTableEmptyState = ({ mode, filterString }: BucketTableEmptyStateProps) => {
-  const BucketTableRow = mode === 'standard' ? TableRow : VirtualizedTableRow
-  const BucketTableCell = mode === 'standard' ? TableCell : VirtualizedTableCell
-
-  return (
-    <BucketTableRow className="[&>td]:hover:bg-inherit">
-      <BucketTableCell colSpan={5}>
-        <p className="text-sm text-foreground">{$t('No results found')}</p>
-        <p className="text-sm text-foreground-lighter">
-          {$t('Your search for “')}
-          {filterString}
-          {$t('” did not return any results')}
-        </p>
-      </BucketTableCell>
-    </BucketTableRow>
-  )
-}
-
 type BucketTableRowProps = {
   mode: BucketTableMode
   bucket: Bucket
@@ -124,7 +101,7 @@ export const BucketTableRow = ({
             >
               {bucket.file_size_limit
                 ? formatBytes(bucket.file_size_limit)
-                : `${$t('Unset')} (${formattedGlobalUploadLimit})`}
+                : `Unset (${formattedGlobalUploadLimit})`}
             </p>
           </BucketTableCell>
 
@@ -134,7 +111,7 @@ export const BucketTableRow = ({
                 bucket.allowed_mime_types ? 'text-foreground-light' : 'text-foreground-muted'
               }
             >
-              {bucket.allowed_mime_types ? bucket.allowed_mime_types.join(', ') : $t('Any')}
+              {bucket.allowed_mime_types ? bucket.allowed_mime_types.join(', ') : 'Any'}
             </p>
           </BucketTableCell>
 

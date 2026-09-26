@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import { parseAsBoolean, parseAsString, useQueryState } from 'nuqs'
 import { useMemo, useRef, useState } from 'react'
 import DataGrid, { Row } from 'react-data-grid'
-import { Button, cn, LoadingLine } from 'ui'
+import { Button, cn, LoadingLine, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 import { Input } from 'ui-patterns/DataInputs/Input'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
@@ -97,14 +97,22 @@ export const QueuesTab = () => {
               }}
               actions={[
                 search && (
-                  <Button
-                    key="clear"
-                    size="tiny"
-                    variant="text"
-                    icon={<X />}
-                    onClick={clearSearch}
-                    className="p-0 h-5 w-5"
-                  />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        key="clear"
+                        size="tiny"
+                        variant="text"
+                        icon={<X />}
+                        onClick={clearSearch}
+                        className="p-0 h-5 w-5"
+                        aria-label={$t('Clear search')}
+                        // Tooltip repeats the label; screen readers would read it twice
+                        aria-describedby={undefined}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">{$t('Clear search')}</TooltipContent>
+                  </Tooltip>
                 ),
               ]}
             />

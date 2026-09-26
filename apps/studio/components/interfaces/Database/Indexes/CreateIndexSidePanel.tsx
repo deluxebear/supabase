@@ -260,7 +260,7 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
                                 >
                                   <Check
                                     className={cn(
-                                      'text-brand',
+                                      'text-primary',
                                       schema.name === field.value ? 'opacity-100' : 'opacity-0'
                                     )}
                                     strokeWidth={2}
@@ -372,7 +372,7 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
                                 >
                                   <Check
                                     className={cn(
-                                      'text-brand',
+                                      'text-primary',
                                       entity.name === field.value ? 'opacity-100' : 'opacity-0'
                                     )}
                                     strokeWidth={2}

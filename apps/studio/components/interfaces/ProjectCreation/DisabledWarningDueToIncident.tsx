@@ -20,7 +20,7 @@ export const DisabledWarningDueToIncident = ({ title }: DisabledWarningDueToInci
           <div className="space-y-3">
             <p className="text-sm leading-normal">
               {$t('Our engineers are currently working on a fix. You can follow updates on')}{' '}
-              <a className="text-brand" href="https://status.supabase.com/">
+              <a className="text-primary" href="https://status.supabase.com/">
                 https://status.supabase.com/
               </a>
             </p>

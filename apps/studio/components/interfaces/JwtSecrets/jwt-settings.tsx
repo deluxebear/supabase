@@ -465,7 +465,7 @@ export const JWTSettings = () => {
       >
         <ul className="space-y-4 text-sm">
           <li className="flex gap-2 bg border rounded-md p-4">
-            <Lightbulb size={24} className="shrink-0 text-brand" />
+            <Lightbulb size={24} className="shrink-0 text-primary" />
 
             <div className="flex flex-col gap-2">
               <p>{$t('Use new JWT Signing Keys and API Keys instead')}</p>
@@ -473,7 +473,7 @@ export const JWTSettings = () => {
                 {$t(
                   'Consider using a combination of the JWT Signing Keys and API Keys features to achieve the same effect.'
                 )}{' '}
-                <em className="text-brand not-italic">
+                <em className="text-primary not-italic">
                   {$t(
                     'Some or all of the warnings listed below might not apply when using these features'
                   )}

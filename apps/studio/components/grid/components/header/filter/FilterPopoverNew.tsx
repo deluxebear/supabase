@@ -229,7 +229,7 @@ export const FilterPopoverNew = ({
     <AiIconAnimation size={16} loading />
   ) : isRefetching ? (
     <Loader2
-      className="animate-spin text-brand h-4 w-4 shrink-0"
+      className="animate-spin text-primary h-4 w-4 shrink-0"
       aria-label={$t('Loading table data')}
     />
   ) : null

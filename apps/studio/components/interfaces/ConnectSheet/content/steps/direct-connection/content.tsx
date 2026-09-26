@@ -189,7 +189,7 @@ function DirectConnectionContent({ state, deploymentMode }: StepContentProps) {
               <Check size={16} className="text-brand shrink-0" />
               <span>{$t('New password shown until refresh.')}</span>
             </div>
-          )}
+          )}{' '}
       </div>
       {showPasswordPlaceholder && <PasswordEncodingNote />}
       {/* Persistent live region so screen readers announce the read-only state

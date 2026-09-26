@@ -15,9 +15,10 @@ import { t as $t } from '@/lib/i18n'
 
 interface WrapperRowProps {
   wrapper: FDW
+  isShared: boolean
 }
 
-export const WrapperRow = ({ wrapper }: WrapperRowProps) => {
+export const WrapperRow = ({ wrapper, isShared }: WrapperRowProps) => {
   const { ref, id } = useParams()
   const { can: canManageWrappers } = useAsyncCheckPermissions(
     PermissionAction.TENANT_SQL_ADMIN_WRITE,
@@ -44,11 +45,46 @@ export const WrapperRow = ({ wrapper }: WrapperRowProps) => {
   )
 
   const _tables = formatWrapperTables(wrapper, integration?.meta)
+  const canEdit = canManageWrappers && !isShared
+  let editTooltip = 'Edit wrapper'
+  if (!canManageWrappers) editTooltip = 'You need additional permissions to edit wrappers'
+  else if (isShared) editTooltip = 'Shared wrappers cannot be edited in the dashboard'
 
   return (
     <TableRow>
       <TableCell className="gap-2 align-top py-3! min-w-80">
         {wrapper.name}
+        <p className="text-sm text-foreground-light">
+          {$t('Connection:')} <code className="text-code-inline">{wrapper.server_name}</code>
+        </p>
+        {isShared && (
+          <p className="text-sm text-foreground-light">
+            {$t('This wrapper is shared. To edit this connection, use')}{' '}
+            <code>{$t('ALTER SERVER')}</code> on{' '}
+            <code className="text-code-inline">{wrapper.server_name}</code> or{' '}
+            <code>{$t('ALTER FOREIGN TABLE')}</code> {$t('in the')}{' '}
+            <Link
+              href={`/project/${ref}/sql/new?skip=true`}
+              className="underline underline-offset-2"
+            >
+              {$t('SQL Editor')}
+            </Link>
+            .
+            {encryptedMetadata.length > 0 && (
+              <>
+                {' '}
+                {$t('Edit this server&apos;s credentials in')}{' '}
+                <Link
+                  href={`/project/${ref}/settings/vault/secrets`}
+                  className="underline underline-offset-2"
+                >
+                  {$t('Vault')}
+                </Link>
+                {$t('. Changes to a secret used by other connections affect them too.')}
+              </>
+            )}
+          </p>
+        )}
 
         {visibleMetadata.map((metadata) => (
           <div
@@ -127,16 +163,14 @@ export const WrapperRow = ({ wrapper }: WrapperRowProps) => {
       <TableCell className="flex-nowrap">
         <div className="flex items-center gap-x-2">
           <ButtonTooltip
-            disabled={!canManageWrappers}
+            disabled={!canEdit}
             icon={<Edit strokeWidth={1.5} />}
             className="px-1.5"
             onClick={() => setSelectedWrapperToEdit(wrapper.id.toString())}
             tooltip={{
               content: {
                 side: 'bottom',
-                text: !canManageWrappers
-                  ? 'You need additional permissions to edit wrappers'
-                  : 'Edit wrapper',
+                text: editTooltip,
               },
             }}
           />
@@ -150,7 +184,7 @@ export const WrapperRow = ({ wrapper }: WrapperRowProps) => {
                 side: 'bottom',
                 text: !canManageWrappers
                   ? 'You need additional permissions to delete wrappers'
-                  : 'Delete wrapper',
+                  : 'Delete connection',
               },
             }}
           />

@@ -6,6 +6,7 @@ import {
   cn,
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogSection,
@@ -13,7 +14,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from 'ui'
-import { Admonition } from 'ui-patterns/Admonition'
 
 import { DestinationType } from './DestinationPanel/DestinationPanel.types'
 import { DocsButton } from '@/components/ui/DocsButton'
@@ -66,45 +66,34 @@ export const EnablePipelinesModal = ({
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent aria-describedby={undefined}>
+      <DialogContent size="small">
         <DialogHeader>
           <DialogTitle>{$t('Enable Pipelines')}</DialogTitle>
+          <DialogDescription>
+            {hasAccess
+              ? 'Enabling creates Pipelines resources for this project.'
+              : 'Upgrade to the Pro plan to replicate database changes to data warehouses and analytics platforms.'}
+          </DialogDescription>
         </DialogHeader>
-        <DialogSectionSeparator />
-        <DialogSection className="flex flex-col gap-y-2 p-0!">
-          <Admonition
-            type="warning"
-            className="rounded-none border-0"
-            title={$t('Pipelines is currently in public alpha')}
-          >
-            {hasAccess ? (
-              <>
-                <p className="text-sm leading-normal!">
-                  {$t(
-                    'Public alpha features may change as we refine the product and incorporate customer feedback.'
-                  )}
-                </p>
-                <p className="text-sm leading-normal!">
-                  {$t(
-                    'Pipelines is billed for configured pipeline hours and Postgres row data processed during initial sync and ongoing replication. Review the'
-                  )}{' '}
-                  <InlineLink href={`${DOCS_URL}/guides/platform/manage-your-usage/pipelines`}>
-                    {$t('Pipelines pricing')}
-                  </InlineLink>{' '}
-                  {$t('before enabling it.')}
-                </p>
-              </>
-            ) : (
+        {hasAccess && (
+          <>
+            <DialogSectionSeparator />
+            <DialogSection className="flex flex-col gap-y-3">
+              <p className="text-sm text-foreground-light">
+                {$t('Pipelines is in public alpha and may change as we refine it.')}
+              </p>
               <p className="text-sm text-foreground-light">
                 {$t(
-                  'Supabase Pipelines replicates database changes to supported destination systems.'
+                  'You’ll be billed for configured pipeline hours and for Postgres row data processed during initial sync and ongoing replication. Review'
                 )}{' '}
-                {hasAccess ? 'Enable Pipelines for your project' : 'Upgrade to the Pro plan'}{' '}
-                {$t('to replicate database changes to data warehouses and analytics platforms.')}
+                <InlineLink href={`${DOCS_URL}/guides/platform/manage-your-usage/pipelines`}>
+                  {$t('Pipelines pricing')}
+                </InlineLink>{' '}
+                {$t('before enabling.')}
               </p>
-            )}
-          </Admonition>
-        </DialogSection>
+            </DialogSection>
+          </>
+        )}
         <DialogFooter>
           <Button disabled={creatingTenantSource} onClick={() => setOpen(false)}>
             {$t('Cancel')}

@@ -46,7 +46,7 @@ export const DeleteWrapperModal = () => {
 
   const { mutateAsync: deleteFDW, isSuccess: isSuccessDelete } = useFDWDeleteMutation({
     onSuccess: () => {
-      toast.success(`Successfully disabled ${selectedWrapper?.name} foreign data wrapper`)
+      toast.success($t('Connection deleted'))
       setSelectedWrapperToDelete(null)
     },
   })
@@ -85,16 +85,17 @@ export const DeleteWrapperModal = () => {
     >
       <AlertDialogContent size="medium">
         <AlertDialogHeader>
-          <AlertDialogTitle>{`Confirm to disable ${selectedWrapper?.name}`}</AlertDialogTitle>
+          <AlertDialogTitle>{`Delete connection ${selectedWrapper?.server_name}?`}</AlertDialogTitle>
           <AlertDialogDescription>
-            {$t('Are you sure you want to disable')} {selectedWrapper?.name}
-            {$t('? This will also remove all tables created with this wrapper.')}
+            {$t(
+              'This deletes this connection and its foreign tables. If this is the last connection using the wrapper, its Vault secret and wrapper are also removed.'
+            )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction variant="danger" onClick={onConfirmDelete}>
-            {$t('Confirm')}
+            {$t('Delete connection')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

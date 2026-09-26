@@ -50,8 +50,8 @@ export const BannerTableEditorQueueOperations = () => {
               </div>
 
               <div className="flex gap-2 py-0.5">
-                <span className="text-brand-link select-none font-medium">+</span>
-                <span className="text-brand-link truncate max-w-full">{$t('Blue')}</span>
+                <span className="text-primary select-none font-medium">+</span>
+                <span className="text-primary truncate max-w-full">{$t('Blue')}</span>
               </div>
             </CardContent>
           </Card>
@@ -64,7 +64,7 @@ export const BannerTableEditorQueueOperations = () => {
         </div>
         <Button asChild className="w-min">
           <Link href={DASHBOARD_SETTINGS_URL}>
-            {isQueueOperationsEnabled ? $t('View preferences') : $t('Enable in preferences')}
+            {isQueueOperationsEnabled ? 'View' : 'Enable in'} preferences
           </Link>
         </Button>
       </div>

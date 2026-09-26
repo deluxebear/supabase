@@ -46,7 +46,7 @@ import { t as $t } from '@/lib/i18n'
 const formId = 'realtime-configuration-form'
 
 const REALTIME_SOFT_LIMITS = {
-  max_concurrent_users: 50_000,
+  max_concurrent_users: 300_000,
   max_events_per_second: 50_000,
   max_presence_events_per_second: 5_000,
   max_payload_size_in_kb: 3_000,

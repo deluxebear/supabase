@@ -30,7 +30,7 @@ export const getIntegrationTypeDescription = (type: INTEGRATION_TYPES) => {
           <code>authenticated</code>{' '}
           {$t('role to all your present and future users. You can read more in the')}{' '}
           <a
-            className="hover:decoration-brand underline hover:text-foreground transition"
+            className="hover:decoration-primary underline hover:text-foreground transition"
             href={`${DOCS_URL}/guides/auth`}
           >
             documentation
@@ -46,7 +46,7 @@ export const getIntegrationTypeDescription = (type: INTEGRATION_TYPES) => {
             'Allow users to use Supabase with Auth0 project. Additional setup may be required. You can read more in the'
           )}{' '}
           <a
-            className="hover:decoration-brand underline hover:text-foreground transition"
+            className="hover:decoration-primary underline hover:text-foreground transition"
             href={`${DOCS_URL}/guides/auth`}
           >
             documentation
@@ -61,7 +61,7 @@ export const getIntegrationTypeDescription = (type: INTEGRATION_TYPES) => {
             'Allow users to use Supabase with an Amazon Cognito. Additional setup may be required. You can read more in the'
           )}{' '}
           <a
-            className="hover:decoration-brand underline hover:text-foreground transition"
+            className="hover:decoration-primary underline hover:text-foreground transition"
             href={`${DOCS_URL}/guides/auth/third-party/aws-cognito`}
           >
             documentation
@@ -77,7 +77,7 @@ export const getIntegrationTypeDescription = (type: INTEGRATION_TYPES) => {
             'Allow users to use Supabase with Clerk. Additional setup may be required. You can read more in the'
           )}{' '}
           <a
-            className="hover:decoration-brand underline hover:text-foreground transition"
+            className="hover:decoration-primary underline hover:text-foreground transition"
             href={`${DOCS_URL}/guides/auth/third-party/clerk`}
           >
             documentation
@@ -93,7 +93,7 @@ export const getIntegrationTypeDescription = (type: INTEGRATION_TYPES) => {
             'Allow users to use Supabase with WorkOS. Additional setup may be required. You can read more in the'
           )}{' '}
           <a
-            className="hover:decoration-brand underline hover:text-foreground transition"
+            className="hover:decoration-primary underline hover:text-foreground transition"
             href={`${DOCS_URL}/guides/auth/third-party/workos`}
           >
             documentation
@@ -215,7 +215,7 @@ export const IntegrationCard = ({
         <div className="shrink-0">
           {true ? (
             <Badge className="space-x-1" variant="success">
-              <div className="h-3.5 w-3.5 bg-brand rounded-full flex justify-center items-center">
+              <div className="h-3.5 w-3.5 bg-brand-default rounded-full flex justify-center items-center">
                 <Check className="h-2 w-2 text-background-overlay" strokeWidth={6} />
               </div>
               <span>{$t('Enabled')}</span>

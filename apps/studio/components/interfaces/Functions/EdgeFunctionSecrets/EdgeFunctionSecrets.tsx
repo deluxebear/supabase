@@ -20,6 +20,7 @@ import { EditSecretSheet } from './EditSecretSheet'
 import { AlertError } from '@/components/ui/AlertError'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { NoPermission } from '@/components/ui/NoPermission'
+import { TableRowNoResults } from '@/components/ui/TableRowNoResults'
 import { useSecretsDeleteMutation } from '@/data/secrets/secrets-delete-mutation'
 import { useSecretsQuery } from '@/data/secrets/secrets-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
@@ -184,16 +185,11 @@ export const EdgeFunctionSecrets = () => {
                           </TableCell>
                         </TableRow>
                       ) : (
-                        <TableRow className="[&>td]:hover:bg-inherit">
-                          <TableCell colSpan={headers.length}>
-                            <p className="text-sm text-foreground">{$t('No results found')}</p>
-                            <p className="text-sm text-foreground-light">
-                              {$t('Your search for "')}
-                              {searchString}
-                              {$t('" did not return any results')}
-                            </p>
-                          </TableCell>
-                        </TableRow>
+                        <TableRowNoResults
+                          className="[&>td]:hover:bg-inherit"
+                          colSpan={headers.length}
+                          search={searchString}
+                        />
                       )}
                     </TableBody>
                   </Table>

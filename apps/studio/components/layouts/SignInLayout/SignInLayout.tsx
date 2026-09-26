@@ -107,6 +107,10 @@ export const SignInLayout = ({
 
           if (data) {
             // we're already where we need to be
+            if (router.pathname === '/sign-in-recovery-code') {
+              return
+            }
+            // we're already where we need to be
             if (router.pathname === '/sign-in-mfa') {
               return
             }

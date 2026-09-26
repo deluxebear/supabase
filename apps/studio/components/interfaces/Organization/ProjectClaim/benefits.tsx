@@ -19,8 +19,9 @@ export const ProjectClaimBenefits = ({
     <ProjectClaimLayout
       title={
         <>
-          {$t('Claim a project')} <span className="text-brand">{projectClaim?.project?.name}</span>{' '}
-          from <span className="text-brand">{requester?.name}</span>
+          {$t('Claim a project')}{' '}
+          <span className="text-primary">{projectClaim?.project?.name}</span> from{' '}
+          <span className="text-primary">{requester?.name}</span>
         </>
       }
     >
@@ -29,7 +30,7 @@ export const ProjectClaimBenefits = ({
           <h3 className="">{$t('Why manage your database project on Supabase?')}</h3>
           <ul className="space-y-3">
             <li className="flex space-x-2">
-              <CheckCircle2 className="text-brand w-5 h-5" />
+              <CheckCircle2 className="text-primary w-5 h-5" />
               <span>
                 <span className="text-foreground-light">{$t('Excellent Technical Support')}</span>
                 <span className="block text-foreground-lighter">
@@ -40,7 +41,7 @@ export const ProjectClaimBenefits = ({
               </span>
             </li>
             <li className="flex space-x-2">
-              <CheckCircle2 className="text-brand w-5 h-5" />
+              <CheckCircle2 className="text-primary w-5 h-5" />
               <span>
                 <span className="text-foreground-light">{$t('Unrestricted usage.')}</span>
                 <span className="block text-foreground-lighter">
@@ -51,7 +52,7 @@ export const ProjectClaimBenefits = ({
               </span>
             </li>
             <li className="flex space-x-2">
-              <CheckCircle2 className="text-brand w-5 h-5" />
+              <CheckCircle2 className="text-primary w-5 h-5" />
               <span>
                 <span className="text-foreground-light">{$t('Visibility into your data.')}</span>
                 <span className="block text-foreground-lighter">
@@ -62,7 +63,7 @@ export const ProjectClaimBenefits = ({
               </span>
             </li>
             <li className="flex space-x-2">
-              <CheckCircle2 className="text-brand w-5 h-5" />
+              <CheckCircle2 className="text-primary w-5 h-5" />
               <span>
                 <span className="text-foreground-light">
                   {$t('Observability and easy debugging.')}
@@ -74,7 +75,7 @@ export const ProjectClaimBenefits = ({
             </li>
             <li className="flex space-x-2">
               <div>
-                <CheckCircle2 className="text-brand w-5 h-5" />
+                <CheckCircle2 className="text-primary w-5 h-5" />
               </div>
               <span>
                 <span className="text-foreground-light">{$t('Easy Compute Scaling.')}</span>

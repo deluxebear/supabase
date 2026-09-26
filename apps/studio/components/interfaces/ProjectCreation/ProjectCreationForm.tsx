@@ -30,16 +30,20 @@ import {
 } from './ProjectCreation.constants'
 import { FormSchema } from './ProjectCreation.schema'
 import {
+  getAvailableRegions,
   getHighAvailabilityRegionCode,
   instanceLabel,
   monthlyInstancePrice,
   resolveDefaultDbRegion,
+  resolveSelectedRegionOptionType,
   smartRegionToExactRegion,
 } from './ProjectCreation.utils'
 import { ProjectCreationFooter } from './ProjectCreationFooter'
 import { ProjectNameInput } from './ProjectNameInput'
 import { RegionSelector } from './RegionSelector'
+import { getRegionRestrictionMessage } from './RegionSelector.utils'
 import { SecurityOptions } from './SecurityOptions'
+import { useRegionRestriction } from './useRegionRestriction'
 import { AUTO_ENABLE_RLS_EVENT_TRIGGER_SQL } from '@/components/interfaces/Database/Triggers/EventTriggersList/EventTriggers.constants'
 import {
   GitHubRepositoryField,
@@ -137,6 +141,16 @@ export const ProjectCreationForm = ({
   const projectCreationDisabled = useFlag('disableProjectCreationAndUpdate')
   const showInternalOnlyConfiguration =
     useFlag('newProjectInternalOnlyConfiguration') && !isVercelIntegrationFlow
+  const { getRegionRestriction } = useRegionRestriction()
+
+  // [Joshen] Temp experiment - to clean up once completed
+  const showBestAvailableRegionFeature = useIsFeatureEnabled(
+    'project_creation:show_best_available_region'
+  )
+  const showBestAvailableRegionFlag = useFlag('showBestAvailableRegion')
+  const showBestAvailableRegionOption =
+    showBestAvailableRegionFeature && showBestAvailableRegionFlag && isFreePlan
+  const [isBestAvailableSelected, setIsBestAvailableSelected] = useState(false)
 
   // Read the raw flag for telemetry — coerce-undefined-to-false would record false for
   // users whose flags haven't loaded yet. The raw value preserves undefined (omitted from
@@ -163,6 +177,8 @@ export const ProjectCreationForm = ({
       highAvailability: false,
       postgresVersion: '',
       instanceType: '',
+      kubernetesClusterId: '',
+      kubernetesClusterForce: false,
       cloudProvider: PROVIDERS[defaultProvider].id,
       dbPass: '',
       dbPassStrength: 0,
@@ -180,7 +196,7 @@ export const ProjectCreationForm = ({
       shouldRunMigrations: true,
     },
   })
-  const { getFieldState, resetField, setValue } = form
+  const { getFieldState, resetField, setError, setValue } = form
   const {
     instanceSize: watchedInstanceSize,
     cloudProvider,
@@ -189,6 +205,8 @@ export const ProjectCreationForm = ({
     organization,
     projectName: watchedProjectName,
     highAvailability,
+    kubernetesClusterId: watchedKubernetesClusterId,
+    kubernetesClusterForce: watchedKubernetesClusterForce,
   } = useWatch({ control: form.control })
   const { dirtyFields } = useFormState(form)
   const isDbRegionDirty = dirtyFields.dbRegion
@@ -335,6 +353,15 @@ export const ProjectCreationForm = ({
   } = useProjectCreateMutation({
     onSuccess: (res) => {
       setProjectCreationError(undefined)
+      const { smartGroup = [], specific = [] } = availableRegionsData?.all ?? {}
+      const submittedDbRegion = form.getValues('dbRegion')
+      const selectedRegionOption = isBestAvailableSelected ? 'best_available' : submittedDbRegion
+      const selectedRegionOptionType = resolveSelectedRegionOptionType({
+        isBestAvailableSelected,
+        dbRegion: submittedDbRegion,
+        smartGroupRegions: smartGroup,
+        specificRegions: specific,
+      })
       track(
         'project_creation_simple_version_submitted',
         {
@@ -347,6 +374,7 @@ export const ProjectCreationForm = ({
           ...(dataApiRevokeOnCreateDefaultFlag !== undefined && {
             dataApiRevokeOnCreateDefaultEnabled: dataApiRevokeOnCreateDefaultFlag,
           }),
+          ...(showBestAvailableRegionOption && { selectedRegionOption, selectedRegionOptionType }),
         },
         {
           project: res.ref,
@@ -406,6 +434,8 @@ export const ProjectCreationForm = ({
       dbRegion,
       postgresVersion,
       instanceType,
+      kubernetesClusterId,
+      kubernetesClusterForce,
       instanceSize,
       dataApi,
       dataApiDefaultPrivileges,
@@ -464,6 +494,29 @@ export const ProjectCreationForm = ({
       return toast.error(
         `High Availability projects are not available in the required region (${highAvailabilityRegionCode})`
       )
+    }
+
+    const selectedSpecificRegion = specific.find((x) => x.name === dbRegion)
+    const selectedStaticRegion = smartRegionEnabled
+      ? undefined
+      : Object.values(getAvailableRegions(cloudProvider as CloudProvider)).find(
+          (region) => region.displayName === dbRegion
+        )
+    const selectedRegionRestriction = getRegionRestriction(
+      selectedSpecificRegion ?? selectedStaticRegion
+    )
+    if (selectedRegionRestriction !== undefined) {
+      setError(
+        'dbRegion',
+        { type: 'manual', message: getRegionRestrictionMessage(selectedRegionRestriction) },
+        { shouldFocus: true }
+      )
+      trackFunnelError(
+        'project_creation',
+        { errorCategory: 'validation', errorReason: 'region_unavailable' },
+        'form'
+      )
+      return
     }
     const parsedGitHubRepositoryId =
       githubRepositoryId.length > 0 ? Number(githubRepositoryId) : undefined
@@ -528,14 +581,19 @@ export const ProjectCreationForm = ({
         : {}),
     }
 
-    if (customPostgresVersion || instanceType) {
+    if (customPostgresVersion || instanceType || kubernetesClusterId) {
       data['customSupabaseRequest'] = {
-        ami: {
-          ...(customPostgresVersion && {
-            search_tags: { 'tag:postgresVersion': customPostgresVersion },
-          }),
-          ...(instanceType && { instance_type: instanceType }),
-        },
+        ...((customPostgresVersion || instanceType) && {
+          ami: {
+            ...(customPostgresVersion && {
+              search_tags: { 'tag:postgresVersion': customPostgresVersion },
+            }),
+            ...(instanceType && { instance_type: instanceType }),
+          },
+        }),
+        ...(kubernetesClusterId && { kubernetes_cluster_id: kubernetesClusterId }),
+        ...(kubernetesClusterId &&
+          kubernetesClusterForce && { kubernetes_cluster_force: kubernetesClusterForce }),
       }
     }
 
@@ -593,6 +651,16 @@ export const ProjectCreationForm = ({
       })
     }
   }, [instanceSize, watchedInstanceSize, setValue])
+
+  useEffect(() => {
+    const isK8sProvider = cloudProvider === 'AWS_K8S' || cloudProvider === 'AWS_NIMBUS'
+    if (!isK8sProvider && watchedKubernetesClusterId) {
+      setValue('kubernetesClusterId', '', { shouldDirty: false, shouldValidate: false })
+    }
+    if ((!isK8sProvider || !watchedKubernetesClusterId) && watchedKubernetesClusterForce) {
+      setValue('kubernetesClusterForce', false, { shouldDirty: false, shouldValidate: false })
+    }
+  }, [cloudProvider, watchedKubernetesClusterId, watchedKubernetesClusterForce, setValue])
 
   useEffect(() => {
     if (!githubRepositoryName) return
@@ -728,6 +796,9 @@ export const ProjectCreationForm = ({
                     <RegionSelector
                       form={form}
                       instanceSize={instanceSize as DesiredInstanceSize}
+                      showBestAvailableRegionOption={showBestAvailableRegionOption}
+                      isBestAvailableSelected={isBestAvailableSelected}
+                      onBestAvailableSelectedChange={setIsBestAvailableSelected}
                     />
 
                     {isVercelIntegrationFlow && !!externalId && <DataSeeding form={form} />}

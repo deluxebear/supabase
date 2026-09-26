@@ -20,7 +20,7 @@ export const generateCLICommands = ({
       jsx: () => {
         return (
           <>
-            <span className="text-brand">supabase</span> {$t('functions deploy')}{' '}
+            <span className="text-primary">supabase</span> {$t('functions deploy')}{' '}
             {selectedFunction?.slug}
           </>
         )
@@ -33,7 +33,7 @@ export const generateCLICommands = ({
       jsx: () => {
         return (
           <>
-            <span className="text-brand">supabase</span> {$t('functions delete')}{' '}
+            <span className="text-primary">supabase</span> {$t('functions delete')}{' '}
             {selectedFunction?.slug}
           </>
         )
@@ -49,7 +49,7 @@ export const generateCLICommands = ({
       jsx: () => {
         return (
           <>
-            <span className="text-brand">supabase</span> {$t('secrets list')}
+            <span className="text-primary">supabase</span> {$t('secrets list')}
           </>
         )
       },
@@ -61,7 +61,7 @@ export const generateCLICommands = ({
       jsx: () => {
         return (
           <>
-            <span className="text-brand">supabase</span>{' '}
+            <span className="text-primary">supabase</span>{' '}
             {$t('secrets set NAME1=VALUE1 NAME2=VALUE2')}
           </>
         )
@@ -74,7 +74,7 @@ export const generateCLICommands = ({
       jsx: () => {
         return (
           <>
-            <span className="text-brand">supabase</span> {$t('secrets unset NAME1 NAME2')}
+            <span className="text-primary">supabase</span> {$t('secrets unset NAME1 NAME2')}
           </>
         )
       },
@@ -91,7 +91,7 @@ export const generateCLICommands = ({
       jsx: () => {
         return (
           <>
-            <span className="text-brand">curl</span> {$t("-L -X POST '")}
+            <span className="text-primary">curl</span> {$t("-L -X POST '")}
             {functionUrl}'{' '}
             {selectedFunction?.verify_jwt
               ? `-H

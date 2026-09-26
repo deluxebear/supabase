@@ -14,6 +14,7 @@ import {
 
 import { PUBLIC_BUCKET_TOOLTIP } from '@/components/interfaces/Storage/Storage.constants'
 import { useBucketPolicyCount } from '@/components/interfaces/Storage/useBucketPolicyCount'
+import { TableRowNoResults } from '@/components/ui/TableRowNoResults'
 import {
   VirtualizedTableCell,
   VirtualizedTableHead,
@@ -65,21 +66,24 @@ type BucketTableEmptyStateProps = {
 }
 
 export const BucketTableEmptyState = ({ mode, filterString }: BucketTableEmptyStateProps) => {
-  const BucketTableRow = mode === 'standard' ? TableRow : VirtualizedTableRow
-  const BucketTableCell = mode === 'standard' ? TableCell : VirtualizedTableCell
-
-  return (
-    <BucketTableRow className="[&>td]:hover:bg-inherit">
-      <BucketTableCell colSpan={5}>
-        <p className="text-sm text-foreground">{$t('No results found')}</p>
-        <p className="text-sm text-foreground-lighter">
-          {$t('Your search for “')}
-          {filterString}
-          {$t('” did not return any results')}
-        </p>
-      </BucketTableCell>
-    </BucketTableRow>
-  )
+  if (mode === 'standard') {
+    return (
+      <TableRowNoResults className="[&>td]:hover:bg-inherit" colSpan={5} search={filterString} />
+    )
+  } else {
+    return (
+      <VirtualizedTableRow className="[&>td]:hover:bg-inherit">
+        <VirtualizedTableCell colSpan={5}>
+          <p className="text-sm text-foreground">{$t('No results found')}</p>
+          <p className="text-sm text-foreground-lighter">
+            {$t('Your search for “')}
+            {filterString}
+            {$t('” did not return any results')}
+          </p>
+        </VirtualizedTableCell>
+      </VirtualizedTableRow>
+    )
+  }
 }
 
 type BucketTableRowProps = {
@@ -149,7 +153,7 @@ export const BucketTableRow = ({
         >
           {bucket.file_size_limit
             ? formatBytes(bucket.file_size_limit)
-            : `${$t('Unset')} (${formattedGlobalUploadLimit})`}
+            : `Unset (${formattedGlobalUploadLimit})`}
         </p>
       </BucketTableCell>
 
@@ -157,7 +161,7 @@ export const BucketTableRow = ({
         <p
           className={bucket.allowed_mime_types ? 'text-foreground-light' : 'text-foreground-muted'}
         >
-          {bucket.allowed_mime_types ? bucket.allowed_mime_types.join(', ') : $t('Any')}
+          {bucket.allowed_mime_types ? bucket.allowed_mime_types.join(', ') : 'Any'}
         </p>
       </BucketTableCell>
 

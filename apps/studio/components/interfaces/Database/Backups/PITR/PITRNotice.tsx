@@ -57,7 +57,7 @@ export const PITRNotice = () => {
             {$t('Database changes are logged every')}{' '}
             <span className="text-foreground">{$t('2 minutes')}</span>
             {$t(', with a total recovery period of up to')}{' '}
-            <span className="text-brand">{retentionPeriod} days</span>.
+            <span className="text-primary">{retentionPeriod} days</span>.
           </p>
         </div>
       </div>

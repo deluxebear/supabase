@@ -11,9 +11,9 @@ import {
 } from 'ui-patterns/MetricCard'
 
 import {
-  parseConnectionsData,
-  parseInfrastructureMetrics,
-} from './DatabaseInfrastructureSection.utils'
+  DatabaseInfrastructureMetric,
+  INFRASTRUCTURE_METRIC_ATTRIBUTES,
+} from './DatabaseInfrastructureMetric'
 import { useInfraMonitoringAttributesQuery } from '@/data/analytics/infra-monitoring-query'
 import { useMaxConnectionsQuery } from '@/data/database/max-connections-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
@@ -67,43 +67,18 @@ export const DatabaseInfrastructureSection = ({
     return { startDate: start, endDate: end, infraInterval }
   }, [interval, refreshKey])
 
-  const {
-    data: infraData,
-    isLoading: infraLoading,
-    error: infraError,
-  } = useInfraMonitoringAttributesQuery({
+  const infraQuery = useInfraMonitoringAttributesQuery({
     projectRef,
-    attributes: [
-      'avg_cpu_usage',
-      'ram_usage',
-      'disk_fs_used_system',
-      'disk_fs_used_wal',
-      'pg_database_size',
-      'disk_fs_size',
-      'disk_io_consumption',
-      'pg_stat_database_num_backends',
-    ],
+    attributes: INFRASTRUCTURE_METRIC_ATTRIBUTES,
     startDate,
     endDate,
     interval: infraInterval,
   })
 
-  const { data: maxConnectionsData } = useMaxConnectionsQuery({
+  const maxConnectionsQuery = useMaxConnectionsQuery({
     projectRef,
     connectionString: project?.connectionString,
   })
-
-  const metrics = useMemo(() => parseInfrastructureMetrics(infraData), [infraData])
-
-  const connections = useMemo(
-    () => parseConnectionsData(infraData, maxConnectionsData),
-    [infraData, maxConnectionsData]
-  )
-
-  const errorMessage =
-    infraError && typeof infraError === 'object' && 'message' in infraError
-      ? String(infraError.message)
-      : 'Error loading data'
 
   // Generate database report URL with time range parameters
   const getDatabaseReportUrl = () => {
@@ -167,118 +142,15 @@ export const DatabaseInfrastructureSection = ({
           </MetricCard>
         </Link>
 
-        <Link href={databaseReportUrl} className="block group">
-          <MetricCard isLoading={infraLoading}>
-            <MetricCardHeader linkTooltip="Go to database report">
-              <MetricCardLabel
-                tooltip={$t(
-                  'Highest concurrent database connections observed in the selected window, against the connection limit. Monitor to avoid connection exhaustion.'
-                )}
-              >
-                {$t('Peak Connections')}
-              </MetricCardLabel>
-            </MetricCardHeader>
-            <MetricCardContent>
-              {infraError ? (
-                <div className="text-xs text-destructive wrap-break-word">{errorMessage}</div>
-              ) : connections.max > 0 ? (
-                <MetricCardValue>
-                  {connections.peak}/{connections.max}
-                </MetricCardValue>
-              ) : (
-                <MetricCardValue>--</MetricCardValue>
-              )}
-            </MetricCardContent>
-          </MetricCard>
-        </Link>
-
-        <Link href={databaseReportUrl} className="block group">
-          <MetricCard isLoading={infraLoading}>
-            <MetricCardHeader linkTooltip="Go to database report">
-              <MetricCardLabel tooltip={$t('Disk usage percentage of total disk space used')}>
-                {$t('Disk Usage')}
-              </MetricCardLabel>
-            </MetricCardHeader>
-            <MetricCardContent>
-              {infraError ? (
-                <div className="text-xs text-destructive wrap-break-word">{errorMessage}</div>
-              ) : metrics ? (
-                <MetricCardValue>{metrics.disk.current.toFixed(0)}%</MetricCardValue>
-              ) : (
-                <MetricCardValue>--</MetricCardValue>
-              )}
-            </MetricCardContent>
-          </MetricCard>
-        </Link>
-
-        <Link href={databaseReportUrl} className="block group">
-          <MetricCard isLoading={infraLoading}>
-            <MetricCardHeader linkTooltip="Go to database report">
-              <MetricCardLabel
-                tooltip={$t(
-                  'Disk I/O consumption percentage. High values may indicate disk bottlenecks'
-                )}
-              >
-                {$t('Disk IO')}
-              </MetricCardLabel>
-            </MetricCardHeader>
-            <MetricCardContent>
-              {infraError ? (
-                <div className="text-xs text-destructive wrap-break-word">{errorMessage}</div>
-              ) : metrics ? (
-                <MetricCardValue>{metrics.diskIo.current.toFixed(0)}%</MetricCardValue>
-              ) : (
-                <MetricCardValue>--</MetricCardValue>
-              )}
-            </MetricCardContent>
-          </MetricCard>
-        </Link>
-
-        <Link href={databaseReportUrl} className="block group">
-          <MetricCard isLoading={infraLoading}>
-            <MetricCardHeader linkTooltip="Go to database report">
-              <MetricCardLabel
-                tooltip={$t(
-                  'RAM usage percentage. Sustained high usage may indicate memory pressure'
-                )}
-              >
-                {$t('Memory')}
-              </MetricCardLabel>
-            </MetricCardHeader>
-            <MetricCardContent>
-              {infraError ? (
-                <div className="text-xs text-destructive wrap-break-word">{errorMessage}</div>
-              ) : metrics ? (
-                <MetricCardValue>{metrics.ram.current.toFixed(0)}%</MetricCardValue>
-              ) : (
-                <MetricCardValue>--</MetricCardValue>
-              )}
-            </MetricCardContent>
-          </MetricCard>
-        </Link>
-
-        <Link href={databaseReportUrl} className="block group">
-          <MetricCard isLoading={infraLoading}>
-            <MetricCardHeader linkTooltip="Go to database report">
-              <MetricCardLabel
-                tooltip={$t(
-                  'CPU usage percentage. High values may suggest CPU-intensive queries or workloads'
-                )}
-              >
-                CPU
-              </MetricCardLabel>
-            </MetricCardHeader>
-            <MetricCardContent>
-              {infraError ? (
-                <div className="text-xs text-destructive wrap-break-word">{errorMessage}</div>
-              ) : metrics ? (
-                <MetricCardValue>{metrics.cpu.current.toFixed(0)}%</MetricCardValue>
-              ) : (
-                <MetricCardValue>--</MetricCardValue>
-              )}
-            </MetricCardContent>
-          </MetricCard>
-        </Link>
+        {(['connections', 'disk', 'diskIo', 'ram', 'cpu'] as const).map((metric) => (
+          <DatabaseInfrastructureMetric
+            key={metric}
+            metric={metric}
+            infraQuery={infraQuery}
+            href={databaseReportUrl}
+            maxConnectionsQuery={maxConnectionsQuery}
+          />
+        ))}
       </div>
     </div>
   )

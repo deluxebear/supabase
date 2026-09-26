@@ -6,7 +6,7 @@ import {
   PageHeaderTitle,
 } from 'ui-patterns/PageHeader'
 
-import { AuditLogs } from '@/components/interfaces/Account/AuditLogs'
+import { AuditLogs } from '@/components/interfaces/Account/AuditLogs/AuditLogs'
 import AccountLayout from '@/components/layouts/AccountLayout/AccountLayout'
 import { AppLayout } from '@/components/layouts/AppLayout/AppLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
@@ -15,25 +15,27 @@ import type { NextPageWithLayout } from '@/types'
 
 const Audit: NextPageWithLayout = () => {
   return (
-    <>
-      <PageHeader size="default">
+    <div className="flex flex-col h-full">
+      <PageHeader size="full">
         <PageHeaderMeta>
           <PageHeaderSummary>
             <PageHeaderTitle>{$t('Audit Logs')}</PageHeaderTitle>
             <PageHeaderDescription>
-              {$t('View a detailed history of account activities and security events.')}
+              {$t('Detailed history of your account activities and security events.')}
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>
       </PageHeader>
-      <AuditLogs />
-    </>
+      <div className="flex-1 min-h-0">
+        <AuditLogs />
+      </div>
+    </div>
   )
 }
 
 Audit.getLayout = (page) => (
   <AppLayout>
-    <DefaultLayout headerTitle={$t('Account')}>
+    <DefaultLayout headerTitle="Account">
       <AccountLayout title={$t('Audit Logs')}>{page}</AccountLayout>
     </DefaultLayout>
   </AppLayout>

@@ -14,7 +14,6 @@ import {
 } from './DestinationForm.utils'
 import { useCreateDestinationPipelineMutation } from '@/data/replication/create-destination-pipeline-mutation'
 import type { ReplicationPipelineByIdData } from '@/data/replication/pipeline-by-id-query'
-import { useRestartPipelineHelper } from '@/data/replication/restart-pipeline-helper'
 import { useReplicationSourcesQuery } from '@/data/replication/sources-query'
 import { useStartPipelineMutation } from '@/data/replication/start-pipeline-mutation'
 import { type BatchConfig } from '@/data/replication/types'
@@ -35,8 +34,7 @@ import { type ResponseError } from '@/types'
 
 export const useDestinationForm = ({ selectedType }: { selectedType: DestinationType }) => {
   const { ref: projectRef } = useParams()
-  const { setRequestStatus } = usePipelineRequestStatus()
-  const { restartPipeline } = useRestartPipelineHelper()
+  const { runWithRequestStatus } = usePipelineRequestStatus()
 
   const [hasRunValidation, setHasRunValidation] = useState(false)
   const [destinationValidationFailures, setDestinationValidationFailures] = useState<
@@ -71,7 +69,9 @@ export const useDestinationForm = ({ selectedType }: { selectedType: Destination
       onError: () => {},
     })
 
-  const { mutateAsync: startPipeline, isPending: startingPipeline } = useStartPipelineMutation()
+  const { mutateAsync: startPipeline, isPending: startingPipeline } = useStartPipelineMutation({
+    onError: () => {},
+  })
 
   const isValidating = isValidatingDestination || isValidatingPipeline
 
@@ -170,7 +170,7 @@ export const useDestinationForm = ({ selectedType }: { selectedType: Destination
       const rejected = results.find((r): r is PromiseRejectedResult => r.status === 'rejected')
       const reason =
         rejected?.reason instanceof Error ? rejected.reason.message : 'Please try again.'
-      toast.error(`Failed to validate configuration: ${reason}`)
+      toast.error($t('Failed to validate configuration: {{reason}}', { reason }))
       setHasRunValidation(false)
       return { canContinue: false, warnings: [] }
     }
@@ -251,41 +251,35 @@ export const useDestinationForm = ({ selectedType }: { selectedType: Destination
       }
 
       if (editMode && existingDestination) {
-        if (!existingDestination.pipelineId) return console.error('Pipeline id is required')
+        const pipelineId = existingDestination.pipelineId
+        if (!pipelineId) return console.error('Pipeline id is required')
 
-        await updateDestinationPipeline(
-          {
-            destinationId: existingDestination.destinationId,
-            pipelineId: existingDestination.pipelineId,
-            projectRef,
-            destinationName: data.name,
-            destinationConfig,
-            pipelineConfig,
-            sourceId,
-          },
-          { onSuccess }
+        const update = () =>
+          updateDestinationPipeline(
+            {
+              destinationId: existingDestination.destinationId,
+              pipelineId,
+              projectRef,
+              destinationName: data.name,
+              destinationConfig,
+              pipelineConfig,
+              sourceId,
+            },
+            { onSuccess }
+          )
+
+        await runWithRequestStatus(
+          pipelineId,
+          existingDestination.enabled
+            ? PipelineStatusRequestStatus.StopRequested
+            : PipelineStatusRequestStatus.None,
+          update
         )
-
-        // Set request status only right before starting, then fire and close
-        const snapshot =
-          existingDestination.statusName ?? (existingDestination.enabled ? 'started' : 'stopped')
-        if (existingDestination.enabled) {
-          setRequestStatus(
-            existingDestination.pipelineId,
-            PipelineStatusRequestStatus.RestartRequested,
-            snapshot
-          )
-          toast.success($t('Settings applied. Restarting the pipeline...'))
-          restartPipeline({ projectRef, pipelineId: existingDestination.pipelineId })
-        } else {
-          setRequestStatus(
-            existingDestination.pipelineId,
-            PipelineStatusRequestStatus.StartRequested,
-            snapshot
-          )
-          toast.success($t('Settings applied. Starting the pipeline...'))
-          startPipeline({ projectRef, pipelineId: existingDestination.pipelineId })
-        }
+        toast.success(
+          existingDestination.enabled
+            ? $t('Settings applied.')
+            : $t('Settings applied. The pipeline remains stopped.')
+        )
         onClose()
       } else {
         const { pipeline_id: pipelineId } = await createDestinationPipeline(
@@ -298,19 +292,27 @@ export const useDestinationForm = ({ selectedType }: { selectedType: Destination
           },
           { onSuccess }
         )
-        // Set request status only right before starting, then fire and close
-        setRequestStatus(pipelineId, PipelineStatusRequestStatus.StartRequested, undefined)
-        toast.success($t('Pipeline created. Starting the pipeline...'))
-        startPipeline({ projectRef, pipelineId })
+        // Creation has committed. Close the form even if starting fails, so retrying cannot
+        // create a duplicate pipeline; the new row offers its own start action.
         onClose()
+        await runWithRequestStatus(pipelineId, PipelineStatusRequestStatus.StartRequested, () =>
+          startPipeline({ projectRef, pipelineId })
+        )
+        toast.success($t('Pipeline created. Starting…'))
       }
     } catch (error) {
-      const action = editMode
-        ? existingDestination?.enabled
-          ? 'apply changes and restart pipeline'
-          : 'apply changes and start pipeline'
-        : 'create and start pipeline'
-      toast.error(`Failed to ${action}: ${(error as ResponseError).message}`)
+      let action = $t('create and start pipeline')
+      if (editMode) {
+        action = existingDestination?.enabled
+          ? $t('apply changes and restart pipeline')
+          : $t('apply changes')
+      }
+      toast.error(
+        $t('Failed to {{action}}: {{message}}', {
+          action,
+          message: (error as ResponseError).message,
+        })
+      )
     }
   }
 

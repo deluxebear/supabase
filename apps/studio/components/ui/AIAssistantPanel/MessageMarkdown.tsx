@@ -131,7 +131,7 @@ const baseMarkdownComponents = {
   ),
 }
 
-export function MessageMarkdown({
+export const MessageMarkdown = memo(function MessageMarkdown({
   id,
   isLoading,
   readOnly,
@@ -174,7 +174,7 @@ export function MessageMarkdown({
       {markdownSource}
     </Streamdown>
   )
-}
+})
 
 export const MarkdownPre = ({
   children,

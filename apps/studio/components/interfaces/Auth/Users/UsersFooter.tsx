@@ -75,8 +75,8 @@ export const UsersFooter = ({
                 {countData?.is_estimate
                   ? formatEstimatedCount(totalUsers)
                   : totalUsers.toLocaleString()}{' '}
-                {$t('users')}
-                {countData?.is_estimate && ' ' + $t('(estimated)')}
+                user{totalUsers !== 1 ? 's' : ''}
+                {countData?.is_estimate && ' (estimated)'}
               </span>
               {countData?.is_estimate && (
                 <Tooltip>
@@ -99,7 +99,7 @@ export const UsersFooter = ({
                         {$t('This is an estimated value as your project has more than')}{' '}
                         {THRESHOLD_COUNT.toLocaleString()} users.
                         <br />
-                        <span className="text-brand">
+                        <span className="text-primary">
                           {$t('Click to retrieve the exact count.')}
                         </span>{' '}
                       </>

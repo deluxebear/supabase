@@ -80,7 +80,7 @@ export const UpgradingState = () => {
             {isCompleted ? (
               <div className="grid gap-4">
                 <div className="relative mx-auto max-w-[300px]">
-                  <CheckCircle className="text-brand" size={40} strokeWidth={1.5} />
+                  <CheckCircle className="text-primary" size={40} strokeWidth={1.5} />
                 </div>
                 <div className="space-y-2">
                   <p className="text-center">{$t('Upgrade completed!')}</p>

@@ -151,7 +151,7 @@ const TableSelector = ({
                         >
                           <span>{$t('All tables')}</span>
                           {selectedSchemaName === '*' && (
-                            <Check className="text-brand" strokeWidth={2} />
+                            <Check className="text-primary" strokeWidth={2} />
                           )}
                         </CommandItem>
                       )}
@@ -170,7 +170,7 @@ const TableSelector = ({
                         >
                           <span>{table.name}</span>
                           {selectedSchemaName === table.name && (
-                            <Check className="text-brand" strokeWidth={2} />
+                            <Check className="text-primary" strokeWidth={2} />
                           )}
                         </CommandItem>
                       ))}

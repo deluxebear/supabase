@@ -41,7 +41,7 @@ interface EdgeFunctionInvocationsSectionProps {
   isErrorChart: boolean
   chartErrorMessage?: string
   chartData: InvocationChartDatum[]
-  onChartClick: () => void
+  onChartClick: (timestamp: string) => void
   updateAnnotation?: InvocationUpdateAnnotation
 }
 

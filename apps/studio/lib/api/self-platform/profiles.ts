@@ -12,7 +12,7 @@ export type PlatformProfileRow = {
   last_name: string | null
 }
 
-type ProfileResponse = components['schemas']['ProfileResponse']
+type ProfileResponse = components['schemas']['ProfileResponse_Output']
 
 export function toProfileResponse(row: PlatformProfileRow): ProfileResponse {
   return {

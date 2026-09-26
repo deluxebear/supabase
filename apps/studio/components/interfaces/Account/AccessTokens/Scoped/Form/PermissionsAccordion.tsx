@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Control } from 'react-hook-form'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, cn } from 'ui'
 import { Admonition } from 'ui-patterns/Admonition'
 import { FormLayout } from 'ui-patterns/form/Layout/FormLayout'
@@ -11,11 +12,13 @@ import {
 } from '../../AccessToken.permissions'
 import { getActivePreset, type PermissionPreset } from '../../AccessToken.presets'
 import type { TokenAccessEvaluation } from '../../AccessToken.roles'
+import { TokenFormValues } from './NewScopedTokenForm.utils'
 import { PermissionPresetSelect } from './PermissionPresetSelect'
 import { PermissionRow } from './PermissionRow'
 import { t as $t } from '@/lib/i18n'
 
 interface PermissionsAccordionProps {
+  control: Control<TokenFormValues>
   selection: PermissionSelection
   onChange: (key: string, mode: PermissionMode) => void
   onApplyPreset: (preset: PermissionPreset) => void
@@ -23,6 +26,7 @@ interface PermissionsAccordionProps {
 }
 
 export const PermissionsAccordion = ({
+  control,
   selection,
   onChange,
   onApplyPreset,
@@ -90,6 +94,7 @@ export const PermissionsAccordion = ({
                   {category.entries.map((entry) => (
                     <div className="px-4" key={entry.key}>
                       <PermissionRow
+                        control={control}
                         entry={entry}
                         mode={selection[entry.key] ?? 'none'}
                         onChange={(mode) => onChange(entry.key, mode)}

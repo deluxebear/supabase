@@ -10,6 +10,7 @@ import { useTrack } from '@/lib/telemetry/track'
 
 export interface AlertErrorProps {
   projectRef?: string
+  orgSlug?: string
   subject?: string
   description?: string
   error?: { message: string } | null
@@ -24,10 +25,12 @@ export interface AlertErrorProps {
 
 export const ContactSupportButton = ({
   projectRef,
+  orgSlug,
   subject,
   error,
 }: {
   projectRef?: string
+  orgSlug?: string
   subject?: string
   error?: { message: string } | null
 }) => {
@@ -37,6 +40,7 @@ export const ContactSupportButton = ({
         queryParams={{
           category: SupportCategories.DASHBOARD_BUG,
           projectRef,
+          orgSlug,
           subject,
           error: error?.message,
         }}
@@ -50,6 +54,7 @@ export const ContactSupportButton = ({
 // [Joshen] To standardize the language for all error UIs
 export const AlertError = ({
   projectRef,
+  orgSlug,
   subject,
   description,
   error,
@@ -107,16 +112,19 @@ export const AlertError = ({
         </>
       }
       actions={
-        hideContactSupport ? (
-          (additionalActions ?? null)
-        ) : additionalActions ? (
+        additionalActions || !hideContactSupport ? (
           <>
             {additionalActions}
-            <ContactSupportButton projectRef={projectRef} subject={subject} error={error} />
+            {!hideContactSupport && (
+              <ContactSupportButton
+                projectRef={projectRef}
+                orgSlug={orgSlug}
+                subject={subject}
+                error={error}
+              />
+            )}
           </>
-        ) : (
-          <ContactSupportButton projectRef={projectRef} subject={subject} error={error} />
-        )
+        ) : null
       }
       className={className}
     />

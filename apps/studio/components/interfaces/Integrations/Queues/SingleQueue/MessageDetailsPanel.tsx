@@ -1,11 +1,21 @@
-import { t as $t } from '@/lib/i18n';
 import { useEscapeKeydown } from '@radix-ui/react-use-escape-keydown'
 import { useParams } from 'common'
 import dayjs from 'dayjs'
 import { isNil } from 'lodash'
 import { Archive, Clock12, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
-import { Button, ResizablePanel, Separator, Tabs, TabsContent, TabsList, TabsTrigger } from 'ui'
+import {
+  Button,
+  ResizablePanel,
+  Separator,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from 'ui'
 
 import { RowAction, RowData } from '@/components/interfaces/Auth/Users/UserOverview'
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
@@ -15,6 +25,7 @@ import { PostgresQueueMessage } from '@/data/database-queues/database-queue-mess
 import { useDatabaseQueueMessageReadMutation } from '@/data/database-queues/database-queue-messages-read-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { prettifyJSON } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 export const DATE_FORMAT = 'DD MMM, YYYY HH:mm'
 
@@ -81,12 +92,20 @@ export const MessageDetailsPanel = ({
       }}
       className="bg-studio border-t pointer-events-auto"
     >
-      <Button
-        variant="text"
-        className="absolute top-3 right-3 px-1"
-        icon={<X />}
-        onClick={() => setSelectedMessage(null)}
-      />
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="text"
+            className="absolute top-3 right-3 px-1"
+            icon={<X />}
+            onClick={() => setSelectedMessage(null)}
+            aria-label={$t('Close panel')}
+            // Tooltip repeats the label; screen readers would read it twice
+            aria-describedby={undefined}
+          />
+        </TooltipTrigger>
+        <TooltipContent side="bottom">{$t('Close panel')}</TooltipContent>
+      </Tooltip>
 
       <Tabs
         value={view}
@@ -100,9 +119,8 @@ export const MessageDetailsPanel = ({
             value="details"
             className="px-0 pb-0 h-full text-xs  data-[state=active]:bg-transparent shadow-none!"
           >
-            
-                                  {$t('Overview')}
-                                </TabsTrigger>
+            {$t('Overview')}
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="details" className="w-full mt-0 overflow-y-auto grow">
           <div className="flex flex-col px-4 py-4 text-sm">
@@ -135,7 +153,9 @@ export const MessageDetailsPanel = ({
               <>
                 <RowAction
                   title={$t('Postpone message')}
-                  description={$t('The message will be postponed and won\'t show up in reads for 60 seconds.')}
+                  description={$t(
+                    "The message will be postponed and won't show up in reads for 60 seconds."
+                  )}
                   button={{
                     icon: <Clock12 />,
                     text: 'Postpone',
@@ -161,7 +181,9 @@ export const MessageDetailsPanel = ({
                 />
                 <RowAction
                   title={$t('Archive message')}
-                  description={$t('The message will be marked as archived and hidden from future reads by consumers. You can still access the message later.')}
+                  description={$t(
+                    'The message will be marked as archived and hidden from future reads by consumers. You can still access the message later.'
+                  )}
                   button={{
                     icon: <Archive />,
                     text: 'Archive',

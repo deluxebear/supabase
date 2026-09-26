@@ -25,6 +25,7 @@ import { MigrationsEmptyState } from './MigrationsEmptyState'
 import { SupportLink } from '@/components/interfaces/Support/SupportLink'
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
 import { InlineLink } from '@/components/ui/InlineLink'
+import { TableRowNoResults } from '@/components/ui/TableRowNoResults'
 import { DatabaseMigration, useMigrationsQuery } from '@/data/database/migrations-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
@@ -189,16 +190,7 @@ export const Migrations = () => {
                           )
                         })
                       ) : (
-                        <TableRow>
-                          <TableCell colSpan={3}>
-                            <p className="text-sm text-foreground">{$t('No results found')}</p>
-                            <p className="text-sm text-foreground-light">
-                              {$t('Your search for "')}
-                              {search}
-                              {$t('" did not return any results')}
-                            </p>
-                          </TableCell>
-                        </TableRow>
+                        <TableRowNoResults colSpan={3} search={search} />
                       )}
                     </TableBody>
                   </Table>

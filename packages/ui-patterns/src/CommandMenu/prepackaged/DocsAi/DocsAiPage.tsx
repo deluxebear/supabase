@@ -262,7 +262,7 @@ function AiMessages({ messages }: { messages: Array<Message> }) {
                                 href={source.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-sm text-brand hover:underline"
+                                className="text-sm text-primary hover:underline"
                               >
                                 {source.url}
                               </a>

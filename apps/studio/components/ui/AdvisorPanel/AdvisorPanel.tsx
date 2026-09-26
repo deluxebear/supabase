@@ -1,3 +1,4 @@
+import { useFlag } from 'common'
 import { useMemo, useRef } from 'react'
 
 import { AdvisorDetail } from './AdvisorDetail'
@@ -27,8 +28,9 @@ import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
 export const AdvisorPanel = () => {
   const track = useTrack()
+  const isHealthAdvisorEnabled = useFlag('healthAdvisor')
   const {
-    categoryFilters,
+    categoryFilters: savedCategoryFilters,
     severityFilters,
     selectedItemId,
     selectedItemSource,
@@ -41,6 +43,11 @@ export const AdvisorPanel = () => {
     clearFilters,
     clearNarrowingFilters,
   } = useAdvisorStateSnapshot()
+  const categoryFilters = useMemo(
+    () =>
+      savedCategoryFilters.filter((category) => category !== 'health' || isHealthAdvisorEnabled),
+    [savedCategoryFilters, isHealthAdvisorEnabled]
+  )
   const { data: project } = useSelectedProjectQuery()
   const { activeSidebar, closeSidebar } = useSidebarManagerSnapshot()
 
@@ -55,7 +62,8 @@ export const AdvisorPanel = () => {
   const canLoadProjectData = isSidebarOpen && hasProjectRef
   const shouldLoadLints =
     canLoadProjectData && (isCategorySelected('security') || isCategorySelected('performance'))
-  const shouldLoadHealthLints = canLoadProjectData && isCategorySelected('health')
+  const shouldLoadHealthLints =
+    isHealthAdvisorEnabled && canLoadProjectData && isCategorySelected('health')
   const shouldLoadSignals = canLoadProjectData && isCategorySelected('security')
 
   const {
@@ -133,8 +141,11 @@ export const AdvisorPanel = () => {
   }
 
   const lintItems = useMemo<AdvisorItem[]>(() => {
-    return createAdvisorLintItems([...(lintData ?? []), ...(healthLintData ?? [])])
-  }, [lintData, healthLintData])
+    return createAdvisorLintItems([
+      ...(lintData ?? []),
+      ...(isHealthAdvisorEnabled ? (healthLintData ?? []) : []),
+    ])
+  }, [lintData, healthLintData, isHealthAdvisorEnabled])
 
   const notificationItems = useMemo<AdvisorItem[]>(() => {
     if (!IS_PLATFORM) return []
@@ -180,7 +191,9 @@ export const AdvisorPanel = () => {
   const isLoading =
     isLintsActuallyLoading || isNotificationsActuallyLoading || isHealthLintsActuallyLoading
   const isError =
-    isLintsError || isNotificationsError || (isHealthLintsError && isShowingHealthOnly)
+    isLintsError ||
+    isNotificationsError ||
+    (shouldLoadHealthLints && isHealthLintsError && isShowingHealthOnly)
 
   const handleBackToList = () => {
     setSelectedItem(undefined)

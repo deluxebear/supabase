@@ -69,8 +69,9 @@ export const ProjectClaimConfirm = ({
     <ProjectClaimLayout
       title={
         <>
-          {$t('Claim a project')} <span className="text-brand">{projectClaim?.project?.name}</span>{' '}
-          from <span className="text-brand">{requester?.name}</span>
+          {$t('Claim a project')}{' '}
+          <span className="text-primary">{projectClaim?.project?.name}</span> from{' '}
+          <span className="text-primary">{requester?.name}</span>
         </>
       }
     >
@@ -119,7 +120,7 @@ export const ProjectClaimConfirm = ({
           <ul className="space-y-3">
             <li className="flex space-x-2">
               <span>
-                <CheckCircle2 className="text-brand h-5 w-5" />
+                <CheckCircle2 className="text-primary h-5 w-5" />
               </span>
               <span>
                 {$t('The project will be transferred to your Supabase organization')}{' '}
@@ -135,7 +136,7 @@ export const ProjectClaimConfirm = ({
             </li>
             <li className="flex space-x-2">
               <span>
-                <CheckCircle2 className="text-brand h-5 w-5" />
+                <CheckCircle2 className="text-primary h-5 w-5" />
               </span>
               <span>
                 <span className="text-foreground">{requester?.name}</span>{' '}
@@ -146,7 +147,7 @@ export const ProjectClaimConfirm = ({
             </li>
             <li className="flex space-x-2">
               <span>
-                <CheckCircle2 className="text-brand h-5 w-5" />
+                <CheckCircle2 className="text-primary h-5 w-5" />
               </span>
               <span>
                 {$t(

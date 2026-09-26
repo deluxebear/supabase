@@ -24,6 +24,7 @@ import { stripInArgModePrefixes } from '../Functions.utils'
 import { getDatabaseTriggersHref, getFilteredFunctions } from './FunctionList.utils'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { TableRowNoResults } from '@/components/ui/TableRowNoResults'
 import {
   useDatabaseFunctionsQuery,
   type SavedDatabaseFunction,
@@ -93,18 +94,7 @@ export const FunctionList = ({
   }
 
   if (_functions.length === 0 && filterString.length > 0) {
-    return (
-      <TableRow key={schema}>
-        <TableCell colSpan={5}>
-          <p className="text-sm text-foreground">{$t('No results found')}</p>
-          <p className="text-sm text-foreground-light">
-            {$t('Your search for "')}
-            {filterString}
-            {$t('" did not return any results')}
-          </p>
-        </TableCell>
-      </TableRow>
-    )
+    return <TableRowNoResults key={schema} colSpan={5} search={filterString} />
   }
 
   return (

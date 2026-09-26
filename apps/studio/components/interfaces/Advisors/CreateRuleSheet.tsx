@@ -164,7 +164,7 @@ export const CreateRuleSheet = ({ lint, open, onOpenChange }: CreateRuleSheetPro
                           {$t(
                             'Assign this rule to a specific project member before toggling this option off. This will then configure the rule to'
                           )}{' '}
-                          <span className="text-brand">{$t('only be visible')}</span>{' '}
+                          <span className="text-primary">{$t('only be visible')}</span>{' '}
                           {$t('to that member in the advisor reports.')}
                         </TooltipContent>
                       )}

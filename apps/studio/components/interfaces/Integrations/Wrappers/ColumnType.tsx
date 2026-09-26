@@ -194,7 +194,7 @@ export const ColumnType = ({
                             </div>
                             <span className="absolute right-3 top-2">
                               {option.name === field.value ? (
-                                <Check className="text-brand" size={14} />
+                                <Check className="text-primary" size={14} />
                               ) : (
                                 ''
                               )}
@@ -245,7 +245,7 @@ export const ColumnType = ({
                                   )}
                                   {option.format === field.value && (
                                     <span className="absolute right-3 top-2">
-                                      <Check className="text-brand" size={14} />
+                                      <Check className="text-primary" size={14} />
                                     </span>
                                   )}
                                 </div>
