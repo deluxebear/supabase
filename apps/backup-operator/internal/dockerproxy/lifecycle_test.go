@@ -232,10 +232,45 @@ func TestLifecycleValidatesContainerCreate(t *testing.T) {
 		"npipe mount": host(func(h map[string]any) {
 			h["Mounts"] = []map[string]string{{"Type": "npipe", "Source": "x"}}
 		}),
+		"volume bind driver": host(func(h map[string]any) {
+			h["Mounts"] = []map[string]any{{"Type": "volume", "Source": "managed-a_x", "VolumeOptions": map[string]any{
+				"DriverConfig": map[string]any{"Name": "local", "Options": map[string]string{"type": "none", "o": "bind", "device": "/"}},
+			}}}
+		}),
+		"volume plugin":        host(func(h map[string]any) { h["VolumeDriver"] = "sshfs" }),
+		"device cgroup rule":   host(func(h map[string]any) { h["DeviceCgroupRules"] = []string{"b *:* rwm"} }),
+		"unmasked paths":       host(func(h map[string]any) { h["MaskedPaths"] = []string{} }),
+		"writable proc":        host(func(h map[string]any) { h["ReadonlyPaths"] = []string{} }),
+		"capability set":       host(func(h map[string]any) { h["Capabilities"] = []string{"CAP_SYS_ADMIN"} }),
+		"cgroup parent":        host(func(h map[string]any) { h["CgroupParent"] = "/" }),
+		"other runtime":        host(func(h map[string]any) { h["Runtime"] = "kata" }),
+		"selinux disabled":     host(func(h map[string]any) { h["SecurityOpt"] = []string{"label=disable"} }),
+		"selinux disabled old": host(func(h map[string]any) { h["SecurityOpt"] = []string{"label:disable"} }),
+		"selinux type":         host(func(h map[string]any) { h["SecurityOpt"] = []string{"label=type:spc_t"} }),
+		"seccomp profile":      host(func(h map[string]any) { h["SecurityOpt"] = []string{"seccomp={}"} }),
+		"shared bind":          host(func(h map[string]any) { h["Binds"] = []string{"/srv/fleet/functions:/x:rshared"} }),
+		"shared mount": host(func(h map[string]any) {
+			h["Mounts"] = []map[string]any{{"Type": "bind", "Source": "/srv/fleet/functions", "BindOptions": map[string]string{"Propagation": "rshared"}}}
+		}),
 	}
 	for name, mutate := range rejected {
 		if status := send(t, http.MethodPost, server.URL+"/containers/create", createBody(t, mutate)); status != http.StatusForbidden {
 			t.Fatalf("%s create = %d, want 403", name, status)
+		}
+	}
+	accepted := map[string]func(map[string]any){
+		"no new privileges": host(func(h map[string]any) { h["SecurityOpt"] = []string{"no-new-privileges:true"} }),
+		"null isolation keys": host(func(h map[string]any) {
+			h["MaskedPaths"], h["DeviceCgroupRules"], h["Runtime"] = nil, nil, "runc"
+		}),
+		"plain project volume": host(func(h map[string]any) {
+			h["Mounts"] = []map[string]any{{"Type": "volume", "Source": "managed-a_x", "VolumeOptions": map[string]any{"NoCopy": true}}}
+		}),
+		"read-only bind": host(func(h map[string]any) { h["Binds"] = []string{"/srv/fleet/functions:/x:ro"} }),
+	}
+	for name, mutate := range accepted {
+		if status := send(t, http.MethodPost, server.URL+"/containers/create", createBody(t, mutate)); status != http.StatusOK {
+			t.Fatalf("%s create = %d, want 200", name, status)
 		}
 	}
 	if status := send(t, http.MethodPost, server.URL+"/containers/create", "not json"); status != http.StatusForbidden {

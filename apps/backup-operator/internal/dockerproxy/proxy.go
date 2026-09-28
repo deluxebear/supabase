@@ -387,10 +387,34 @@ type createRequest struct {
 		Binds          []string          `json:"Binds"`
 		VolumesFrom    []string          `json:"VolumesFrom"`
 		Mounts         []struct {
-			Type   string `json:"Type"`
-			Source string `json:"Source"`
+			Type          string `json:"Type"`
+			Source        string `json:"Source"`
+			VolumeOptions *struct {
+				DriverConfig *struct {
+					Name    string            `json:"Name"`
+					Options map[string]string `json:"Options"`
+				} `json:"DriverConfig"`
+			} `json:"VolumeOptions"`
+			BindOptions *struct {
+				Propagation string `json:"Propagation"`
+			} `json:"BindOptions"`
 		} `json:"Mounts"`
 	} `json:"HostConfig"`
+}
+
+// isolationKeys are HostConfig fields that weaken container isolation when
+// set at all: device cgroup rules allow mknod on host devices, empty masked
+// or read-only path lists expose /proc and /sys, a capability set replaces
+// the default one, and a volume driver, runtime, or cgroup parent reaches
+// outside Docker's defaults. Compose sets none of them for the managed
+// services, so any value is refused.
+var isolationKeys = []string{"DeviceCgroupRules", "MaskedPaths", "ReadonlyPaths", "Capabilities", "VolumeDriver", "CgroupParent"}
+
+// allowedSecurityOptions is the complete set of accepted SecurityOpt values.
+// Everything else, including label=disable, custom seccomp or AppArmor
+// profiles, and SELinux types, is refused.
+var allowedSecurityOptions = map[string]struct{}{
+	"no-new-privileges": {}, "no-new-privileges:true": {}, "no-new-privileges=true": {},
 }
 
 func (p *Proxy) validateCreate(body []byte) error {
@@ -403,6 +427,9 @@ func (p *Proxy) validateCreate(body []byte) error {
 	}
 	if _, ok := p.services[create.Labels[composeServiceLabel]]; !ok {
 		return errors.New("Created containers must belong to an allowlisted Compose service")
+	}
+	if err := validateIsolationKeys(body); err != nil {
+		return err
 	}
 	host := create.HostConfig
 	if host.Privileged || len(host.CapAdd) > 0 || len(host.Devices) > 0 || len(host.DeviceRequests) > 0 || len(host.VolumesFrom) > 0 {
@@ -422,14 +449,22 @@ func (p *Proxy) validateCreate(body []byte) error {
 		}
 	}
 	for _, option := range host.SecurityOpt {
-		if strings.Contains(strings.ToLower(option), "unconfined") || strings.HasPrefix(strings.ToLower(option), "no-new-privileges=false") || strings.HasPrefix(strings.ToLower(option), "no-new-privileges:false") {
+		if _, ok := allowedSecurityOptions[strings.ToLower(strings.TrimSpace(option))]; !ok {
 			return fmt.Errorf("Created containers may not use security option %q", option)
 		}
 	}
 	for _, bind := range host.Binds {
-		source := strings.SplitN(bind, ":", 2)[0]
+		parts := strings.Split(bind, ":")
+		source := parts[0]
 		if err := p.validateMountSource(source, !strings.HasPrefix(source, "/")); err != nil {
 			return err
+		}
+		if len(parts) > 2 {
+			for _, option := range strings.Split(parts[len(parts)-1], ",") {
+				if err := validatePropagation(option); err != nil {
+					return err
+				}
+			}
 		}
 	}
 	for _, mount := range host.Mounts {
@@ -438,14 +473,65 @@ func (p *Proxy) validateCreate(body []byte) error {
 			if err := p.validateMountSource(mount.Source, false); err != nil {
 				return err
 			}
+			if mount.BindOptions != nil {
+				if err := validatePropagation(mount.BindOptions.Propagation); err != nil {
+					return err
+				}
+			}
 		case "volume":
 			if err := p.validateMountSource(mount.Source, true); err != nil {
 				return err
+			}
+			// Docker creates a missing volume from these options, so a local
+			// driver with type=none,o=bind,device=/ would bind any host path.
+			if mount.VolumeOptions != nil && mount.VolumeOptions.DriverConfig != nil && (mount.VolumeOptions.DriverConfig.Name != "" || len(mount.VolumeOptions.DriverConfig.Options) > 0) {
+				return errors.New("Created containers may not set volume driver options")
 			}
 		case "tmpfs":
 		default:
 			return fmt.Errorf("Created containers may not use %q mounts", mount.Type)
 		}
+	}
+	return nil
+}
+
+// validateIsolationKeys refuses any non-null value for isolationKeys. It
+// reads the raw body because an empty list is itself the dangerous value for
+// MaskedPaths and ReadonlyPaths, and Runtime accepts only runc.
+func validateIsolationKeys(body []byte) error {
+	var raw struct {
+		HostConfig map[string]json.RawMessage `json:"HostConfig"`
+	}
+	if err := json.Unmarshal(body, &raw); err != nil {
+		return errors.New("Container create body is not valid JSON")
+	}
+	for _, key := range isolationKeys {
+		if value, ok := raw.HostConfig[key]; ok && !isEmptyJSON(value) {
+			return fmt.Errorf("Created containers may not set %s", key)
+		}
+	}
+	if value, ok := raw.HostConfig["Runtime"]; ok {
+		var runtime string
+		if json.Unmarshal(value, &runtime) != nil || (runtime != "" && runtime != "runc") {
+			return errors.New("Created containers must use the default runc runtime")
+		}
+	}
+	return nil
+}
+
+// isEmptyJSON is true for null and "" only. An empty list is a value: for
+// MaskedPaths it unmasks every path.
+func isEmptyJSON(value json.RawMessage) bool {
+	trimmed := strings.TrimSpace(string(value))
+	return trimmed == "null" || trimmed == `""`
+}
+
+// validatePropagation refuses shared propagation, which lets mounts made in
+// the container appear on the host.
+func validatePropagation(option string) error {
+	switch strings.ToLower(strings.TrimSpace(option)) {
+	case "shared", "rshared":
+		return fmt.Errorf("Created containers may not use %q mount propagation", option)
 	}
 	return nil
 }
