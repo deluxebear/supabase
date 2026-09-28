@@ -193,7 +193,8 @@ Kubernetes sealed secrets status (2026-09-28): implemented, pending live accepta
 Open items:
 
 - Auth on Kubernetes: done. `11-core.yaml` keeps only wiring in `env`; configurable `GOTRUE_*` defaults come from the `auth-defaults` Secret (built by `deploy.sh` from `docker/.env`) and the Fleet Secret `supabase-fleet-auth-secrets` follows it in `envFrom`. Studio seals all Auth settings, not only secrets, into that Secret, and a Studio test fails if `env` sets a variable an Auth field could deliver.
-- Fleet Agent on Kubernetes: `docker/k8s/fleet-agent` deploys it (RBAC, state volume, one-time enrollment Job, Agent Deployment) with `deploy.sh`; a Go test decodes the manifests strictly. It enables sealed secrets only; function deployment on Kubernetes still needs a shared artifact volume.
+- Fleet Agent on Kubernetes: `docker/k8s/fleet-agent` deploys it (RBAC, state volume, one-time enrollment Job, Agent Deployment) with `deploy.sh`; a Go test decodes the manifests strictly. It enables sealed secrets and Edge Function deployment.
+- Edge Function deployment on Kubernetes: done. The Kubernetes provider used a layout (`<slug>/current`) the Edge Runtime main service cannot serve; both adapters now share one implementation and the Compose layout (`.fleet-artifacts/<slug>/revisions` plus a `.fleet-runtime-revision` marker read per request), so Kubernetes deploys need no Edge Runtime restart. The PVC `fleet-functions` is shared by the Agent and the patched `functions` Deployment, pinned to one node while it is `ReadWriteOnce`.
 
 ### Phase 3: backups on Fleet Compose stacks (3–4 weeks, parallel)
 

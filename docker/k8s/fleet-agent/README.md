@@ -17,8 +17,10 @@ Deployments. Fleet Control never sees them in plaintext.
 | -------------------- | ------------------------------------------------------------------------------------------------------ |
 | `10-rbac.yaml`       | ServiceAccount, Role, RoleBinding `fleet-agent`: the Fleet-owned Secrets and the `functions` and `auth` Deployments |
 | `20-state.yaml`      | PVC `fleet-agent-state` (trust, journal, lock, secret recipient key) and the enrollment capabilities   |
+| `25-functions-volume.yaml` | PVC `fleet-functions`: Edge Function revisions, shared with the `functions` pods |
 | `30-enroll-job.yaml` | One-time enrollment Job (run by `deploy.sh` only until it succeeds)                                    |
 | `40-agent.yaml`      | Deployment `fleet-agent`: one replica, `Recreate`, non-root, read-only root filesystem                 |
+| `functions-patch.yaml` | Patch `deploy.sh` applies to the single-project `functions` Deployment to serve the shared volume |
 
 `deploy.sh` creates the ConfigMap `fleet-agent-identity` and, during
 enrollment, the Secret `fleet-agent-enrollment` from your local
@@ -64,15 +66,39 @@ after the Agent was revoked, delete the Deployment, the PVC
 key, so apply sealed secrets from Studio again afterwards; envelopes sealed to
 the old key fail with `sealed_secret_recipient_mismatch`.
 
+## Edge Function deployment
+
+`functions.deploy` writes to the PVC `fleet-functions`, which the Agent and the
+`functions` pods share:
+
+- The Agent writes each revision once under
+  `<project key>/.fleet-artifacts/<slug>/revisions/<digest>`, activates it as
+  `<project key>/<slug>` with a `.fleet-runtime-revision` marker, waits for the
+  `functions` Deployment to be available, and invokes the function through
+  Kong with the service role key. A failed probe restores the previous
+  revision.
+- `deploy.sh` patches the `functions` Deployment (`functions-patch.yaml`) to
+  mount `<project key>` of that volume at `/home/deno/functions` and to set
+  `FUNCTIONS_NO_MODULE_CACHE=true`. The main service reads the marker on every
+  request, so a deploy needs no restart. `main/index.ts` still comes from the
+  `functions-main` ConfigMap. The project key is the first 12 bytes of
+  SHA-256 of the project ref, in hex.
+- The volume is `ReadWriteOnce`, so the patch pins the `functions` pods to the
+  Agent's node with pod affinity, and an init container gives the Agent (uid
+  65532) the project directory. With a `ReadWriteMany` storage class, change
+  `accessModes` in `25-functions-volume.yaml` and remove the affinity from
+  `functions-patch.yaml` to spread the pods.
+
+Re-running `../single-project/deploy.sh` keeps the patch: `kubectl apply` only
+removes fields it applied itself.
+
 ## Not included
 
-- Edge Function deployment (`functions.deploy`): it needs an artifact volume
-  shared between the Agent and the `functions` pods, and the Edge Runtime probe
-  settings. The single-project stack serves functions from a ConfigMap.
 - Database security, runtime inventory, and lifecycle actions: their providers
   are Compose-only.
 
 `apps/backup-operator/cmd/fleet-agent/manifests_test.go` decodes these
 manifests strictly against the Kubernetes API types and checks that every
-`FLEET_AGENT_*` variable is one the Agent reads and that the Role covers the
-allowlisted services.
+`FLEET_AGENT_*` variable is one the Agent reads, that the Role covers the
+allowlisted services, and that the Agent and the patched `functions` Deployment
+mount the same function volume.
