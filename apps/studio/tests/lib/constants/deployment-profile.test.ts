@@ -103,6 +103,12 @@ describe('getStudioCapabilities', () => {
     })
   })
 
+  it('reports Auth settings as applied only where saving reaches the Auth service', () => {
+    expect(getStudioCapabilities('cloud').appliedAuthConfiguration).toBe(true)
+    expect(getStudioCapabilities('fleet').appliedAuthConfiguration).toBe(false)
+    expect(getStudioCapabilities('embedded').appliedAuthConfiguration).toBe(false)
+  })
+
   it('keeps hosted management capabilities cloud-only', () => {
     expect(getStudioCapabilities('cloud').cloudManagementApi).toBe(true)
     expect(getStudioCapabilities('fleet').cloudManagementApi).toBe(false)

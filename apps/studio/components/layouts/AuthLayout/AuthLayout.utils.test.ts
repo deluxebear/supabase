@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { generateAuthMenu, GenerateAuthMenuOptions } from './AuthLayout.utils'
+import {
+  generateAuthMenu,
+  GenerateAuthMenuOptions,
+  isAuthConfigurationPage,
+} from './AuthLayout.utils'
 
 const allFeaturesEnabled: GenerateAuthMenuOptions = {
   ref: 'test-ref',
@@ -154,5 +158,19 @@ describe('generateAuthMenu', () => {
       features: { ...allFeaturesEnabled.features, passkeys: false },
     })
     expect(flatItemNames(menu)).not.toContain('Passkeys')
+  })
+})
+
+describe('isAuthConfigurationPage', () => {
+  it('matches pages backed by the Auth configuration', () => {
+    for (const page of ['providers', 'smtp', 'templates', 'url-configuration', 'hooks', 'mfa']) {
+      expect(isAuthConfigurationPage(page)).toBe(true)
+    }
+  })
+
+  it('excludes pages that work with Auth data directly', () => {
+    for (const page of ['users', 'overview', 'oauth-apps', undefined]) {
+      expect(isAuthConfigurationPage(page)).toBe(false)
+    }
   })
 })

@@ -6,6 +6,8 @@ import { authKeys } from './keys'
 import type { components } from '@/data/api'
 import { handleError, patch } from '@/data/fetchers'
 import { lintKeys } from '@/data/lint/keys'
+import { IS_AUTH_CONFIGURATION_DESIRED_STATE_ONLY } from '@/lib/constants/deployment-profile'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type AuthConfigUpdateVariables = {
@@ -52,6 +54,15 @@ export const useAuthConfigUpdateMutation = ({
       }
 
       await onSuccess?.(data, variables, context)
+
+      // [self-platform] Fleet records Auth settings as desired state only. The
+      // caller's success toast confirms the save; this one says it is not live.
+      if (IS_AUTH_CONFIGURATION_DESIRED_STATE_ONLY) {
+        toast.info($t('Saved in Fleet, not applied'), {
+          id: 'auth-config-desired-state-only',
+          description: $t("The project's Auth service keeps its current configuration."),
+        })
+      }
 
       Promise.all([
         queryClient.invalidateQueries({ queryKey: lintKeys.lint(projectRef) }),

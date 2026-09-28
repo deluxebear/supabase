@@ -6,6 +6,12 @@ export interface StudioCapabilities {
   localFunctionsDirectory: boolean
   remoteFunctionsDeployment: boolean
   runtimeConfiguration: boolean
+  /**
+   * Saving Auth settings changes the running Auth service. False in Fleet until
+   * runtime configuration reaches managed stacks: Fleet stores the settings as
+   * desired state only, because GoTrue reads its configuration at boot.
+   */
+  appliedAuthConfiguration: boolean
   lifecycleManagement: boolean
   backupManagement: boolean
   cloudManagementApi: boolean
@@ -42,6 +48,7 @@ const PROFILE_CAPABILITIES: Record<StudioDeploymentProfile, StudioCapabilities> 
     localFunctionsDirectory: false,
     remoteFunctionsDeployment: true,
     runtimeConfiguration: true,
+    appliedAuthConfiguration: true,
     lifecycleManagement: true,
     backupManagement: true,
     cloudManagementApi: true,
@@ -67,6 +74,7 @@ const PROFILE_CAPABILITIES: Record<StudioDeploymentProfile, StudioCapabilities> 
     localFunctionsDirectory: true,
     remoteFunctionsDeployment: false,
     runtimeConfiguration: false,
+    appliedAuthConfiguration: false,
     lifecycleManagement: false,
     backupManagement: false,
     cloudManagementApi: false,
@@ -92,6 +100,7 @@ const PROFILE_CAPABILITIES: Record<StudioDeploymentProfile, StudioCapabilities> 
     localFunctionsDirectory: false,
     remoteFunctionsDeployment: true,
     runtimeConfiguration: true,
+    appliedAuthConfiguration: false,
     lifecycleManagement: true,
     backupManagement: true,
     cloudManagementApi: false,
@@ -117,6 +126,7 @@ const PROFILE_CAPABILITIES: Record<StudioDeploymentProfile, StudioCapabilities> 
     localFunctionsDirectory: true,
     remoteFunctionsDeployment: false,
     runtimeConfiguration: false,
+    appliedAuthConfiguration: false,
     lifecycleManagement: false,
     backupManagement: false,
     cloudManagementApi: false,
@@ -218,6 +228,13 @@ export const STUDIO_DEPLOYMENT_PROFILE = resolveStudioDeploymentProfile({
 })
 
 export const STUDIO_CAPABILITIES = getStudioCapabilities(STUDIO_DEPLOYMENT_PROFILE)
+
+/**
+ * True where saving Auth settings only records desired state (Fleet today), so
+ * the UI must not present a save as a change to the running Auth service.
+ */
+export const IS_AUTH_CONFIGURATION_DESIRED_STATE_ONLY =
+  STUDIO_CAPABILITIES.platformIdentity && !STUDIO_CAPABILITIES.appliedAuthConfiguration
 
 if (
   typeof window === 'undefined' &&

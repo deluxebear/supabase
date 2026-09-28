@@ -10,6 +10,29 @@ import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
 const ExternalLinkIcon = createElement(ArrowUpRight, { strokeWidth: 1, className: 'h-4 w-4' })
 
+// Auth pages whose settings are stored in the project's GoTrue configuration,
+// as opposed to pages that read or write Auth data directly (users, OAuth apps).
+const AUTH_CONFIGURATION_PAGES = new Set([
+  'audit-logs',
+  'hooks',
+  'mfa',
+  'oauth-server',
+  'passkeys',
+  'performance',
+  'protection',
+  'providers',
+  'rate-limits',
+  'sessions',
+  'smtp',
+  'templates',
+  'third-party',
+  'url-configuration',
+])
+
+export function isAuthConfigurationPage(page: string | undefined): boolean {
+  return page !== undefined && AUTH_CONFIGURATION_PAGES.has(page)
+}
+
 export interface GenerateAuthMenuOptions {
   ref?: string
   isPlatform: boolean

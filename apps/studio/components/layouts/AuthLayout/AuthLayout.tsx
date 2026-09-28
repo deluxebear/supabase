@@ -3,11 +3,13 @@ import { useRouter } from 'next/router'
 import type { PropsWithChildren } from 'react'
 
 import { ProjectLayout } from '../ProjectLayout'
-import { useGenerateAuthMenu } from './AuthLayout.utils'
+import { isAuthConfigurationPage, useGenerateAuthMenu } from './AuthLayout.utils'
+import { AuthConfigDesiredStateNotice } from '@/components/interfaces/Auth/AuthConfigDesiredStateNotice'
 import { ProductMenu } from '@/components/ui/ProductMenu'
 import { ProductMenuShortcuts } from '@/components/ui/ProductMenu/ProductMenuShortcuts'
 import { useAuthConfigPrefetch } from '@/data/auth/auth-config-query'
 import { withAuth } from '@/hooks/misc/withAuth'
+import { IS_AUTH_CONFIGURATION_DESIRED_STATE_ONLY } from '@/lib/constants/deployment-profile'
 
 export const AuthProductMenu = () => {
   const router = useRouter()
@@ -27,6 +29,8 @@ const AuthLayout = ({ title, children }: PropsWithChildren<{ title: string }>) =
   useAuthConfigPrefetch({ projectRef })
   const page = router.pathname.split('/')[4]
   const menu = useGenerateAuthMenu()
+  const shouldShowDesiredStateNotice =
+    IS_AUTH_CONFIGURATION_DESIRED_STATE_ONLY && isAuthConfigurationPage(page)
 
   return (
     <ProjectLayout
@@ -36,6 +40,7 @@ const AuthLayout = ({ title, children }: PropsWithChildren<{ title: string }>) =
       isBlocking={false}
     >
       <ProductMenuShortcuts menu={menu} />
+      {shouldShowDesiredStateNotice && <AuthConfigDesiredStateNotice />}
       {children}
     </ProjectLayout>
   )
