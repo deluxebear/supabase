@@ -53,6 +53,7 @@ func main() {
 	allowedKubernetesFields := flag.String("kubernetes-allowed-field-prefixes", envOr("FLEET_AGENT_KUBERNETES_ALLOWED_FIELD_PREFIXES", "/metadata/labels/supabase.com~1fleet-revision,/metadata/annotations/supabase.com~1fleet-revision,/spec/template/metadata/annotations/supabase.com~1fleet-revision,/spec/template/spec/containers"), "comma-separated JSON pointer prefixes Fleet may own")
 	kubernetesSecretServices := flag.String("kubernetes-secret-services", os.Getenv("FLEET_AGENT_KUBERNETES_SECRET_SERVICES"), "comma-separated Deployments in --kubernetes-namespace that may receive sealed secrets as supabase-fleet-<name>-secrets")
 	kubernetesRolloutTimeout := flag.Duration("kubernetes-rollout-timeout", envDuration("FLEET_AGENT_KUBERNETES_ROLLOUT_TIMEOUT", 3*time.Minute), "how long a Deployment may take to roll out after its sealed secrets change")
+	kubernetesLifecycleServices := flag.String("kubernetes-lifecycle-services", os.Getenv("FLEET_AGENT_KUBERNETES_LIFECYCLE_SERVICES"), "comma-separated Deployments in --kubernetes-namespace that lifecycle actions may restart, roll out, or scale")
 	lifecyclePlugin := flag.String("lifecycle-plugin", os.Getenv("FLEET_AGENT_LIFECYCLE_PLUGIN"), "operator-managed typed lifecycle provider executable")
 	lifecycleCapabilities := flag.String("lifecycle-capabilities", os.Getenv("FLEET_AGENT_LIFECYCLE_CAPABILITIES"), "comma-separated lifecycle capabilities explicitly provided by the plugin")
 	lifecycleVersionsJSON := flag.String("lifecycle-component-versions", os.Getenv("FLEET_AGENT_LIFECYCLE_COMPONENT_VERSIONS"), "complete discovered component-version JSON used for lifecycle compatibility")
@@ -151,8 +152,10 @@ func main() {
 		capabilities = append(capabilities, fleetfunctions.CapabilityDeploy)
 	}
 	if strings.TrimSpace(*lifecyclePlugin) != "" || strings.TrimSpace(*lifecycleCapabilities) != "" || strings.TrimSpace(*lifecycleVersionsJSON) != "" {
-		if strings.TrimSpace(*lifecyclePlugin) == "" || strings.TrimSpace(*lifecycleCapabilities) == "" || strings.TrimSpace(*lifecycleVersionsJSON) == "" {
-			log.Fatal("Fleet lifecycle plugin, explicit capabilities, and complete component versions must be configured together")
+		// Kubernetes has a built-in runtime; Compose needs the operator's plugin.
+		isKubernetes := *adapter == string(fleetlifecycle.Kubernetes)
+		if strings.TrimSpace(*lifecycleCapabilities) == "" || strings.TrimSpace(*lifecycleVersionsJSON) == "" || (!isKubernetes && strings.TrimSpace(*lifecyclePlugin) == "") {
+			log.Fatal("Fleet lifecycle capabilities and complete component versions, plus a plugin on Compose, must be configured together")
 		}
 		actions, err := fleetlifecycle.ParseActions(splitNonEmpty(*lifecycleCapabilities))
 		if err != nil {
@@ -165,7 +168,23 @@ func main() {
 		if err := lifecycleVersions.Validate(); err != nil {
 			log.Fatal(err)
 		}
-		lifecycleProviders, err = fleetlifecycle.NewRegistry(fleetlifecycle.DefaultMatrix(), fleetlifecycle.ManagedProvider{Kind: fleetlifecycle.Adapter(*adapter), Supported: actions, Runtime: fleetlifecycle.PluginRuntime{Executable: *lifecyclePlugin}})
+		var lifecycleRuntime fleetlifecycle.Runtime = fleetlifecycle.PluginRuntime{Executable: *lifecyclePlugin}
+		if isKubernetes {
+			if strings.TrimSpace(*lifecyclePlugin) != "" || *kubernetesNamespace == "" || len(splitNonEmpty(*kubernetesLifecycleServices)) == 0 {
+				log.Fatal("Kubernetes lifecycle actions need --kubernetes-namespace and --kubernetes-lifecycle-services, and no plugin")
+			}
+			for _, action := range actions {
+				if !hasAction(fleetlifecycle.KubernetesActions, action) {
+					log.Fatalf("Kubernetes lifecycle does not provide %s", action)
+				}
+			}
+			client, err := kubernetesClient(*kubeconfig)
+			if err != nil {
+				log.Fatal(err)
+			}
+			lifecycleRuntime = fleetlifecycle.KubernetesRuntime{Client: client, Namespace: *kubernetesNamespace, Services: splitNonEmpty(*kubernetesLifecycleServices)}
+		}
+		lifecycleProviders, err = fleetlifecycle.NewRegistry(fleetlifecycle.DefaultMatrix(), fleetlifecycle.ManagedProvider{Kind: fleetlifecycle.Adapter(*adapter), Supported: actions, Runtime: lifecycleRuntime})
 		if err != nil {
 			log.Fatal(err)
 		}

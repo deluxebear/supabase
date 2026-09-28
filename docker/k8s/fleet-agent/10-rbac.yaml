@@ -12,7 +12,12 @@
 # ResourceQuotas in the namespace (read-only), and reads the node that runs
 # the database when no ResourceQuota sets the namespace's compute.
 #
-# Keep resourceNames in step with FLEET_AGENT_KUBERNETES_SECRET_SERVICES.
+# Lifecycle actions: the Agent patches the pod template annotation that
+# restarts a Deployment, or its replica count, for the Deployments in
+# FLEET_AGENT_KUBERNETES_LIFECYCLE_SERVICES.
+#
+# Keep resourceNames in step with FLEET_AGENT_KUBERNETES_SECRET_SERVICES and
+# FLEET_AGENT_KUBERNETES_LIFECYCLE_SERVICES.
 apiVersion: v1
 kind: ServiceAccount
 metadata: { name: fleet-agent, namespace: supabase, labels: { app: fleet-agent } }
@@ -30,7 +35,7 @@ rules:
     verbs: [get, patch]
   - apiGroups: [apps]
     resources: [deployments]
-    resourceNames: [functions, auth]
+    resourceNames: [functions, auth, rest, realtime, storage, imgproxy, meta, supavisor]
     verbs: [get, patch]
   - apiGroups: [""]
     resources: [pods, persistentvolumeclaims, resourcequotas]

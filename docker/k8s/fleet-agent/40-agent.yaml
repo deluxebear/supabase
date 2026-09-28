@@ -13,6 +13,9 @@
 #   TLS CA files come from the ConfigMap fleet-database-tls-ca.
 # - runtime.observe: workloads, volumes, compute, and Postgres sizes and
 #   version from the cluster API and the database, read-only.
+# - runtime.restart, runtime.rollout, runtime.scale for the Deployments in
+#   FLEET_AGENT_KUBERNETES_LIFECYCLE_SERVICES, built in (no plugin). The
+#   component versions must equal Studio's FLEET_LIFECYCLE_COMPONENT_VERSIONS.
 apiVersion: apps/v1
 kind: Deployment
 metadata: { name: fleet-agent, namespace: supabase, labels: { app: fleet-agent } }
@@ -65,6 +68,7 @@ spec:
             - { name: FLEET_AGENT_RUNTIME_ADMIN_DSN, value: "postgres://supabase_admin:$(POSTGRES_PASSWORD)@db:$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable" }
             - { name: FLEET_AGENT_KUBERNETES_DATABASE_CLAIM, value: data-supabase-db-0 }
             - { name: FLEET_AGENT_KUBERNETES_DATABASE_SERVICE, value: supabase-db }
+            - { name: FLEET_AGENT_LIFECYCLE_CAPABILITIES, value: "runtime.restart,runtime.rollout,runtime.scale" }
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true

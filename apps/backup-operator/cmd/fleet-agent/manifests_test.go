@@ -225,6 +225,11 @@ func TestKubernetesAgentManifests(t *testing.T) {
 		}
 	}
 
+	for _, service := range strings.Split(identity["FLEET_AGENT_KUBERNETES_LIFECYCLE_SERVICES"], ",") {
+		if service == "supabase-db" || !roleAllows(role, "apps", "deployments", service, "get", "patch") {
+			t.Fatalf("the Role must allow lifecycle actions on Deployment %q, and never the database", service)
+		}
+	}
 	services := strings.Split(identity["FLEET_AGENT_KUBERNETES_SECRET_SERVICES"], ",")
 	for _, service := range services {
 		if !roleAllows(role, "", "secrets", "supabase-fleet-"+service+"-secrets", "get", "patch") || !roleAllows(role, "apps", "deployments", service, "get", "patch") {
@@ -302,7 +307,7 @@ func envExampleKeys(t *testing.T) map[string]string {
 			continue
 		}
 		name, value, _ := strings.Cut(line, "=")
-		values[name] = value
+		values[name] = strings.Trim(value, "'")
 	}
 	return values
 }
