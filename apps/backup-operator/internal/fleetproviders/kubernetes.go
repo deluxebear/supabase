@@ -2,12 +2,14 @@ package fleetproviders
 
 import (
 	"context"
+	"crypto/ecdh"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
 const KubernetesFieldManager = "supabase-fleet"
@@ -25,10 +27,20 @@ type KubernetesClient interface {
 type KubernetesProvider struct {
 	Client               KubernetesClient
 	AllowedFieldPrefixes []string
+	// Sealed secrets: written to Secrets in SecretNamespace for the
+	// allowlisted SecretServices (Deployment names), opened with
+	// SecretRecipient.
+	Workloads           KubernetesWorkloadClient
+	SecretRecipient     *ecdh.PrivateKey
+	SecretNamespace     string
+	SecretServices      []string
+	RolloutTimeout      time.Duration
+	RolloutPollInterval time.Duration
 }
 
 type kubernetesObservation struct {
 	Resources []kubernetesResourceObservation `json:"resources"`
+	Secrets   []kubernetesSecretObservation   `json:"secrets,omitempty"`
 }
 
 type kubernetesResourceObservation struct {
@@ -44,8 +56,13 @@ func (p KubernetesProvider) Reconcile(ctx context.Context, request Request) (Evi
 	if err := request.Validate(); err != nil {
 		return Evidence{}, err
 	}
-	if request.Document.Adapter != AdapterKubernetes || p.Client == nil || len(p.AllowedFieldPrefixes) == 0 {
+	hasResources := len(request.Document.Kubernetes.Resources) > 0
+	if request.Document.Adapter != AdapterKubernetes || (hasResources && (p.Client == nil || len(p.AllowedFieldPrefixes) == 0)) {
 		return Evidence{}, errors.New("Kubernetes provider is not configured")
+	}
+	secrets, err := p.openKubernetesSecrets(request)
+	if err != nil {
+		return Evidence{}, err
 	}
 	observation := kubernetesObservation{Resources: make([]kubernetesResourceObservation, 0, len(request.Document.Kubernetes.Resources))}
 	conflicts := make([]Conflict, 0)
@@ -73,6 +90,12 @@ func (p KubernetesProvider) Reconcile(ctx context.Context, request Request) (Evi
 		}
 		observation.Resources = append(observation.Resources, kubernetesResourceObservation{Resource: identity, OwnedFields: append([]string(nil), resource.OwnedFields...), DesiredMatch: matches, PatchDigest: digestBytes(resource.DesiredObject)})
 	}
+	secretPlans, secretConflicts, err := p.planKubernetesSecrets(ctx, secrets)
+	if err != nil {
+		return Evidence{}, err
+	}
+	conflicts = append(conflicts, secretConflicts...)
+	observation.Secrets = sortedSecretObservations(secretPlans)
 	if len(conflicts) > 0 {
 		evidence, err := NewEvidence(request, observation, "ownership-conflict", false, conflicts)
 		if err != nil {
@@ -84,9 +107,13 @@ func (p KubernetesProvider) Reconcile(ctx context.Context, request Request) (Evi
 	for _, resource := range observation.Resources {
 		drifted = drifted || !resource.DesiredMatch
 	}
+	secretsDrifted := false
+	for _, secret := range observation.Secrets {
+		secretsDrifted = secretsDrifted || !secret.DesiredMatch
+	}
 	if request.ObservationOnly || request.Document.OwnershipMode != DirectManaged {
 		state := "in-sync"
-		if drifted {
+		if drifted || secretsDrifted {
 			state = "drifted"
 		}
 		return NewEvidence(request, observation, state, false, nil)
@@ -111,6 +138,23 @@ func (p KubernetesProvider) Reconcile(ctx context.Context, request Request) (Evi
 		applied = true
 		for index := range observation.Resources {
 			observation.Resources[index].DesiredMatch = true
+		}
+	}
+	if secretsDrifted {
+		if err := p.applyKubernetesSecrets(ctx, secretPlans); err != nil {
+			var ownership *OwnershipConflictError
+			if errors.As(err, &ownership) {
+				evidence, evidenceErr := NewEvidence(request, observation, "ownership-conflict", false, ownership.Conflicts)
+				if evidenceErr != nil {
+					return Evidence{}, evidenceErr
+				}
+				return evidence, err
+			}
+			return Evidence{}, err
+		}
+		applied = true
+		for index := range observation.Secrets {
+			observation.Secrets[index].DesiredMatch = true
 		}
 	}
 	return NewEvidence(request, observation, "in-sync", applied, nil)

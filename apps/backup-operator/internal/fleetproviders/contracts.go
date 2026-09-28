@@ -21,6 +21,9 @@ const (
 
 var composeServicePattern = regexp.MustCompile(`^[a-z][a-z0-9-]{0,62}$`)
 
+// Deployment names Fleet may deliver sealed secrets to (DNS-1123 labels).
+var kubernetesServicePattern = regexp.MustCompile(`^[a-z]([a-z0-9-]{0,38}[a-z0-9])?$`)
+
 type OwnershipMode string
 
 const (
@@ -70,6 +73,17 @@ type SealedContent struct {
 
 type KubernetesDocument struct {
 	Resources []KubernetesResource `json:"resources"`
+	// Secrets are environment variables for a workload, sealed to the Agent.
+	Secrets []KubernetesSealedSecret `json:"secrets,omitempty"`
+}
+
+// KubernetesSealedSecret delivers environment variables to one workload in
+// the Agent's namespace. The Agent writes them to the Secret
+// supabase-fleet-<service>-secrets and restarts Deployment <service>. The
+// envelope plaintext is a JSON object of variable names to values.
+type KubernetesSealedSecret struct {
+	Service string        `json:"service"`
+	Sealed  SealedContent `json:"sealed"`
 }
 
 type KubernetesResource struct {
@@ -191,8 +205,21 @@ func (d ConfigurationDocument) Validate() error {
 			services[service] = struct{}{}
 		}
 	case AdapterKubernetes:
-		if d.Kubernetes == nil || d.Compose != nil || len(d.Kubernetes.Resources) == 0 || len(d.Kubernetes.Resources) > 64 {
-			return errors.New("Kubernetes reconciliation requires between 1 and 64 resources and no Compose document")
+		if d.Kubernetes == nil || d.Compose != nil || len(d.Kubernetes.Resources) > 64 || len(d.Kubernetes.Secrets) > 8 || len(d.Kubernetes.Resources)+len(d.Kubernetes.Secrets) == 0 {
+			return errors.New("Kubernetes reconciliation requires up to 64 resources and 8 sealed secrets, at least one in total, and no Compose document")
+		}
+		services := make(map[string]struct{}, len(d.Kubernetes.Secrets))
+		for _, secret := range d.Kubernetes.Secrets {
+			if !kubernetesServicePattern.MatchString(secret.Service) {
+				return fmt.Errorf("Kubernetes sealed secret service %q is invalid", secret.Service)
+			}
+			if _, exists := services[secret.Service]; exists {
+				return fmt.Errorf("duplicate Kubernetes sealed secret service %q", secret.Service)
+			}
+			services[secret.Service] = struct{}{}
+			if secret.Sealed.Envelope.Schema != sealedsecret.Schema || secret.Sealed.Envelope.RecipientKeyID == "" || secret.Sealed.Envelope.Ciphertext == "" || len(secret.Sealed.Fingerprint) > 128 {
+				return fmt.Errorf("Kubernetes sealed secret %q has an invalid envelope", secret.Service)
+			}
 		}
 		seen := make(map[string]struct{}, len(d.Kubernetes.Resources))
 		for _, resource := range d.Kubernetes.Resources {

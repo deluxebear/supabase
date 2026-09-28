@@ -51,6 +51,8 @@ func main() {
 	kubernetesDeployment := flag.String("kubernetes-edge-runtime-deployment", os.Getenv("FLEET_AGENT_KUBERNETES_EDGE_RUNTIME_DEPLOYMENT"), "allowlisted Edge Runtime Kubernetes Deployment")
 	kubeconfig := flag.String("kubeconfig", os.Getenv("FLEET_AGENT_KUBECONFIG"), "Kubernetes kubeconfig; empty uses in-cluster configuration")
 	allowedKubernetesFields := flag.String("kubernetes-allowed-field-prefixes", envOr("FLEET_AGENT_KUBERNETES_ALLOWED_FIELD_PREFIXES", "/metadata/labels/supabase.com~1fleet-revision,/metadata/annotations/supabase.com~1fleet-revision,/spec/template/metadata/annotations/supabase.com~1fleet-revision,/spec/template/spec/containers"), "comma-separated JSON pointer prefixes Fleet may own")
+	kubernetesSecretServices := flag.String("kubernetes-secret-services", os.Getenv("FLEET_AGENT_KUBERNETES_SECRET_SERVICES"), "comma-separated Deployments in --kubernetes-namespace that may receive sealed secrets as supabase-fleet-<name>-secrets")
+	kubernetesRolloutTimeout := flag.Duration("kubernetes-rollout-timeout", envDuration("FLEET_AGENT_KUBERNETES_ROLLOUT_TIMEOUT", 3*time.Minute), "how long a Deployment may take to roll out after its sealed secrets change")
 	lifecyclePlugin := flag.String("lifecycle-plugin", os.Getenv("FLEET_AGENT_LIFECYCLE_PLUGIN"), "operator-managed typed lifecycle provider executable")
 	lifecycleCapabilities := flag.String("lifecycle-capabilities", os.Getenv("FLEET_AGENT_LIFECYCLE_CAPABILITIES"), "comma-separated lifecycle capabilities explicitly provided by the plugin")
 	lifecycleVersionsJSON := flag.String("lifecycle-component-versions", os.Getenv("FLEET_AGENT_LIFECYCLE_COMPONENT_VERSIONS"), "complete discovered component-version JSON used for lifecycle compatibility")
@@ -168,7 +170,11 @@ func main() {
 	if *secretGroupID < 0 {
 		log.Fatal("Fleet Agent secret group id must not be negative")
 	}
-	provider, err := buildProvider(*adapter, *ownedRoot, *kubeconfig, splitNonEmpty(*allowedKubernetesFields), rollouter, secretRecipient, *secretGroupID)
+	provider, err := buildProvider(providerConfig{
+		adapter: *adapter, ownedRoot: *ownedRoot, kubeconfig: *kubeconfig, allowedFields: splitNonEmpty(*allowedKubernetesFields),
+		rollouter: rollouter, secretRecipient: secretRecipient, secretGroupID: *secretGroupID,
+		secretNamespace: *kubernetesNamespace, secretServices: splitNonEmpty(*kubernetesSecretServices), rolloutTimeout: *kubernetesRolloutTimeout,
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -249,13 +255,25 @@ func hasAction(actions []fleetlifecycle.Action, wanted fleetlifecycle.Action) bo
 	return false
 }
 
-func buildProvider(adapter, ownedRoot, kubeconfig string, allowedFields []string, rollouter fleetproviders.Rollouter, secretRecipient *ecdh.PrivateKey, secretGroupID int) (fleetproviders.Provider, error) {
+type providerConfig struct {
+	adapter, ownedRoot, kubeconfig string
+	allowedFields                  []string
+	rollouter                      fleetproviders.Rollouter
+	secretRecipient                *ecdh.PrivateKey
+	secretGroupID                  int
+	secretNamespace                string
+	secretServices                 []string
+	rolloutTimeout                 time.Duration
+}
+
+func buildProvider(cfg providerConfig) (fleetproviders.Provider, error) {
+	adapter, ownedRoot, kubeconfig, allowedFields := cfg.adapter, cfg.ownedRoot, cfg.kubeconfig, cfg.allowedFields
 	switch adapter {
 	case string(fleetproviders.AdapterCompose):
 		if strings.TrimSpace(ownedRoot) == "" {
 			return nil, errors.New("Fleet-owned Compose root is required")
 		}
-		return fleetproviders.ComposeProvider{OwnedRoot: ownedRoot, Rollout: rollouter, SecretRecipient: secretRecipient, SecretGroupID: secretGroupID}, nil
+		return fleetproviders.ComposeProvider{OwnedRoot: ownedRoot, Rollout: cfg.rollouter, SecretRecipient: cfg.secretRecipient, SecretGroupID: cfg.secretGroupID}, nil
 	case string(fleetproviders.AdapterKubernetes):
 		if len(allowedFields) == 0 {
 			return nil, errors.New("Kubernetes owned-field allowlist is required")
@@ -274,7 +292,15 @@ func buildProvider(adapter, ownedRoot, kubeconfig string, allowedFields []string
 		if err != nil {
 			return nil, err
 		}
-		return fleetproviders.KubernetesProvider{Client: fleetproviders.DynamicKubernetesClient{Client: client}, AllowedFieldPrefixes: allowedFields}, nil
+		if len(cfg.secretServices) > 0 && cfg.secretNamespace == "" {
+			return nil, errors.New("Kubernetes sealed secrets require --kubernetes-namespace")
+		}
+		dynamicClient := fleetproviders.DynamicKubernetesClient{Client: client}
+		return fleetproviders.KubernetesProvider{
+			Client: dynamicClient, AllowedFieldPrefixes: allowedFields,
+			Workloads: dynamicClient, SecretRecipient: cfg.secretRecipient, SecretNamespace: cfg.secretNamespace,
+			SecretServices: cfg.secretServices, RolloutTimeout: cfg.rolloutTimeout,
+		}, nil
 	default:
 		return nil, fmt.Errorf("unsupported Fleet reconciliation adapter %q", adapter)
 	}
