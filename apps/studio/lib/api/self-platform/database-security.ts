@@ -91,11 +91,18 @@ async function requireDatabaseBinding(projectRef: string, actor: string, correla
   if (
     binding.state !== 'active' ||
     binding.targetState !== 'active' ||
-    binding.deploymentKind !== 'compose'
+    !isDatabaseSecurityAdapter(binding.deploymentKind)
   ) {
-    throw new Error('An active Compose management binding and database Agent are required')
+    throw new Error(
+      'An active Compose or Kubernetes management binding and database Agent are required'
+    )
   }
-  return binding
+  return { ...binding, deploymentKind: binding.deploymentKind }
+}
+
+// The Agent's database runtime works over the network on both.
+function isDatabaseSecurityAdapter(kind: string): kind is 'compose' | 'kubernetes' {
+  return kind === 'compose' || kind === 'kubernetes'
 }
 
 async function reserveGeneration(
@@ -202,7 +209,7 @@ async function executeDatabaseSecurityOperation(input: {
     operationId
   )
   const document = {
-    adapter: 'compose' as const,
+    adapter: binding.deploymentKind,
     ssl: input.policy.ssl,
     network: input.policy.network,
     pooler: input.policy.pooler,

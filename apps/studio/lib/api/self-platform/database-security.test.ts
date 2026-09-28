@@ -1,10 +1,14 @@
 import { generateKeyPairSync } from 'node:crypto'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { rotateDatabasePassword } from './database-security'
+import { rotateDatabasePassword, updateDatabaseSecurity } from './database-security'
 import { executePlatformQuery } from './db'
 import { getFleetOperation } from './fleet-operations'
-import { getAgentSecretRecipient, requestManagementDomain } from './management-trust'
+import {
+  getAgentSecretRecipient,
+  requestManagementDomain,
+  syncProjectManagementBinding,
+} from './management-trust'
 import { sealedSecretKeyId } from './sealed-secret'
 
 vi.mock('./attachment', () => ({ requireProjectCapability: vi.fn() }))
@@ -163,5 +167,41 @@ describe('Fleet database password rotation', () => {
         .mocked(executePlatformQuery)
         .mock.calls.some(([value]) => value.query.includes("'applying'"))
     ).toBe(false)
+  })
+
+  it('sends the Kubernetes adapter for a Kubernetes binding and refuses other targets', async () => {
+    const binding = {
+      id: 'binding-1',
+      state: 'active',
+      targetState: 'active',
+      managementTargetId: 'target-1',
+    }
+    const value = {
+      expectedGeneration: 2,
+      ssl: { enforced: false, caReference: '' },
+      network: { allowedCidrs: [] },
+      pooler: { defaultPoolSize: 15, maxClientConnections: 200 },
+    }
+    const input = {
+      projectRef: 'project-a',
+      value,
+      idempotencyKey: 'k',
+      actor: 'u',
+      correlationId: 'c',
+    }
+    vi.mocked(syncProjectManagementBinding).mockResolvedValueOnce({
+      ...binding,
+      deploymentKind: 'kubernetes',
+    } as never)
+    await updateDatabaseSecurity(input)
+    expect(vi.mocked(requestManagementDomain).mock.calls[0][2].body).toMatchObject({
+      typedInput: { adapter: 'kubernetes' },
+    })
+
+    vi.mocked(syncProjectManagementBinding).mockResolvedValueOnce({
+      ...binding,
+      deploymentKind: 'systemd',
+    } as never)
+    await expect(updateDatabaseSecurity(input)).rejects.toThrow('Compose or Kubernetes')
   })
 })
