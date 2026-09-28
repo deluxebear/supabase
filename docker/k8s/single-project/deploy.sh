@@ -24,6 +24,39 @@ echo "==> Secret supabase-env (from docker/.env — all keys; consumed via secre
 kubectl create secret generic supabase-env -n "$NS" \
   --from-env-file="$ENV_FILE" --dry-run=client -o yaml | kubectl apply -f -
 
+echo "==> Secret auth-defaults (configurable GoTrue settings; a Fleet Agent may override them)"
+# Maps docker/.env keys to the GoTrue variables that 11-core.yaml used to set
+# with `env`. Values are copied verbatim, as --from-env-file does. A key missing
+# from docker/.env is left out, so GoTrue uses its own default.
+AUTH_DEFAULTS="$(mktemp)"
+trap 'rm -f "$AUTH_DEFAULTS"' EXIT
+while read -r target source; do
+  line="$(grep -E "^${source}=" "$ENV_FILE" | tail -1 || true)"
+  if [ -n "$line" ]; then printf '%s=%s\n' "$target" "${line#*=}" >> "$AUTH_DEFAULTS"; fi
+done <<'MAP'
+GOTRUE_SITE_URL SITE_URL
+GOTRUE_URI_ALLOW_LIST ADDITIONAL_REDIRECT_URLS
+GOTRUE_DISABLE_SIGNUP DISABLE_SIGNUP
+GOTRUE_JWT_EXP JWT_EXPIRY
+GOTRUE_EXTERNAL_EMAIL_ENABLED ENABLE_EMAIL_SIGNUP
+GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED ENABLE_ANONYMOUS_USERS
+GOTRUE_MAILER_AUTOCONFIRM ENABLE_EMAIL_AUTOCONFIRM
+GOTRUE_SMTP_ADMIN_EMAIL SMTP_ADMIN_EMAIL
+GOTRUE_SMTP_HOST SMTP_HOST
+GOTRUE_SMTP_PORT SMTP_PORT
+GOTRUE_SMTP_USER SMTP_USER
+GOTRUE_SMTP_PASS SMTP_PASS
+GOTRUE_SMTP_SENDER_NAME SMTP_SENDER_NAME
+GOTRUE_MAILER_URLPATHS_INVITE MAILER_URLPATHS_INVITE
+GOTRUE_MAILER_URLPATHS_CONFIRMATION MAILER_URLPATHS_CONFIRMATION
+GOTRUE_MAILER_URLPATHS_RECOVERY MAILER_URLPATHS_RECOVERY
+GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE MAILER_URLPATHS_EMAIL_CHANGE
+GOTRUE_EXTERNAL_PHONE_ENABLED ENABLE_PHONE_SIGNUP
+GOTRUE_SMS_AUTOCONFIRM ENABLE_PHONE_AUTOCONFIRM
+MAP
+kubectl create secret generic auth-defaults -n "$NS" \
+  --from-env-file="$AUTH_DEFAULTS" --dry-run=client -o yaml | kubectl apply -f -
+
 echo "==> ConfigMap db-init (init SQL keyed by target filename, mounted via subPath)"
 kubectl create configmap db-init -n "$NS" \
   --from-file=99-realtime.sql="$DOCKER_DIR/volumes/db/realtime.sql" \

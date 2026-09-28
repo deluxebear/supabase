@@ -22,11 +22,11 @@ rules:
     verbs: [create]
   - apiGroups: [""]
     resources: [secrets]
-    resourceNames: [supabase-fleet-functions-secrets]
+    resourceNames: [supabase-fleet-functions-secrets, supabase-fleet-auth-secrets]
     verbs: [get, patch]
   - apiGroups: [apps]
     resources: [deployments]
-    resourceNames: [functions]
+    resourceNames: [functions, auth]
     verbs: [get, patch]
 ---
 apiVersion: rbac.authorization.k8s.io/v1

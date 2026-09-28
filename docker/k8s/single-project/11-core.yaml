@@ -103,6 +103,14 @@ spec:
           image: supabase/gotrue:v2.189.0
           imagePullPolicy: IfNotPresent
           ports: [{ name: http, containerPort: 9999 }]
+          # Configurable GoTrue settings come from `envFrom`, in order: the
+          # defaults deploy.sh builds from docker/.env, then the settings a
+          # Fleet Agent delivers (sealed in Studio). The later source wins for a
+          # repeated name. `env` holds only wiring that Fleet must not change,
+          # because `env` wins over every `envFrom` source.
+          envFrom:
+            - secretRef: { name: auth-defaults }
+            - secretRef: { name: supabase-fleet-auth-secrets, optional: true }
           env:
             - { name: POSTGRES_PASSWORD, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PASSWORD } } }
             - { name: POSTGRES_PORT, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PORT } } }
@@ -112,30 +120,11 @@ spec:
             - { name: API_EXTERNAL_URL, valueFrom: { secretKeyRef: { name: supabase-env, key: API_EXTERNAL_URL } } }
             - { name: GOTRUE_DB_DRIVER, value: postgres }
             - { name: GOTRUE_DB_DATABASE_URL, value: "postgres://supabase_auth_admin:$(POSTGRES_PASSWORD)@db:$(POSTGRES_PORT)/$(POSTGRES_DB)" }
-            - { name: GOTRUE_SITE_URL, valueFrom: { secretKeyRef: { name: supabase-env, key: SITE_URL } } }
-            - { name: GOTRUE_URI_ALLOW_LIST, valueFrom: { secretKeyRef: { name: supabase-env, key: ADDITIONAL_REDIRECT_URLS } } }
-            - { name: GOTRUE_DISABLE_SIGNUP, valueFrom: { secretKeyRef: { name: supabase-env, key: DISABLE_SIGNUP } } }
             - { name: GOTRUE_JWT_ADMIN_ROLES, value: service_role }
             - { name: GOTRUE_JWT_AUD, value: authenticated }
             - { name: GOTRUE_JWT_DEFAULT_GROUP_NAME, value: authenticated }
-            - { name: GOTRUE_JWT_EXP, valueFrom: { secretKeyRef: { name: supabase-env, key: JWT_EXPIRY } } }
             - { name: GOTRUE_JWT_SECRET, valueFrom: { secretKeyRef: { name: supabase-env, key: JWT_SECRET } } }
             - { name: GOTRUE_JWT_ISSUER, valueFrom: { secretKeyRef: { name: supabase-env, key: API_EXTERNAL_URL } } }
-            - { name: GOTRUE_EXTERNAL_EMAIL_ENABLED, valueFrom: { secretKeyRef: { name: supabase-env, key: ENABLE_EMAIL_SIGNUP } } }
-            - { name: GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED, valueFrom: { secretKeyRef: { name: supabase-env, key: ENABLE_ANONYMOUS_USERS } } }
-            - { name: GOTRUE_MAILER_AUTOCONFIRM, valueFrom: { secretKeyRef: { name: supabase-env, key: ENABLE_EMAIL_AUTOCONFIRM } } }
-            - { name: GOTRUE_SMTP_ADMIN_EMAIL, valueFrom: { secretKeyRef: { name: supabase-env, key: SMTP_ADMIN_EMAIL } } }
-            - { name: GOTRUE_SMTP_HOST, valueFrom: { secretKeyRef: { name: supabase-env, key: SMTP_HOST } } }
-            - { name: GOTRUE_SMTP_PORT, valueFrom: { secretKeyRef: { name: supabase-env, key: SMTP_PORT } } }
-            - { name: GOTRUE_SMTP_USER, valueFrom: { secretKeyRef: { name: supabase-env, key: SMTP_USER } } }
-            - { name: GOTRUE_SMTP_PASS, valueFrom: { secretKeyRef: { name: supabase-env, key: SMTP_PASS } } }
-            - { name: GOTRUE_SMTP_SENDER_NAME, valueFrom: { secretKeyRef: { name: supabase-env, key: SMTP_SENDER_NAME } } }
-            - { name: GOTRUE_MAILER_URLPATHS_INVITE, valueFrom: { secretKeyRef: { name: supabase-env, key: MAILER_URLPATHS_INVITE } } }
-            - { name: GOTRUE_MAILER_URLPATHS_CONFIRMATION, valueFrom: { secretKeyRef: { name: supabase-env, key: MAILER_URLPATHS_CONFIRMATION } } }
-            - { name: GOTRUE_MAILER_URLPATHS_RECOVERY, valueFrom: { secretKeyRef: { name: supabase-env, key: MAILER_URLPATHS_RECOVERY } } }
-            - { name: GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE, valueFrom: { secretKeyRef: { name: supabase-env, key: MAILER_URLPATHS_EMAIL_CHANGE } } }
-            - { name: GOTRUE_EXTERNAL_PHONE_ENABLED, valueFrom: { secretKeyRef: { name: supabase-env, key: ENABLE_PHONE_SIGNUP } } }
-            - { name: GOTRUE_SMS_AUTOCONFIRM, valueFrom: { secretKeyRef: { name: supabase-env, key: ENABLE_PHONE_AUTOCONFIRM } } }
           readinessProbe:
             httpGet: { path: /health, port: 9999 }
             initialDelaySeconds: 10
