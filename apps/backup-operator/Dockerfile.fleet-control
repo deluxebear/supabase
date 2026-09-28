@@ -1,3 +1,8 @@
+# Compose CLI used by fleet-lifecycle-compose for runtime.rollout. Pin the
+# version here and verify it in the release workflow's image smoke test.
+ARG COMPOSE_VERSION=v2.29.7
+FROM docker/compose-bin:${COMPOSE_VERSION} AS compose
+
 FROM golang:1.24-bookworm AS build
 WORKDIR /src
 COPY go.mod go.sum ./
@@ -12,7 +17,8 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldfl
     && CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w -X github.com/supabase/supabase/apps/backup-operator/internal/version.Version=${VERSION} -X github.com/supabase/supabase/apps/backup-operator/internal/version.Commit=${COMMIT}" -o /out/fleet-agent ./cmd/fleet-agent \
     && CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w -X github.com/supabase/supabase/apps/backup-operator/internal/version.Version=${VERSION} -X github.com/supabase/supabase/apps/backup-operator/internal/version.Commit=${COMMIT}" -o /out/fleet-agent-bootstrap ./cmd/fleet-agent-bootstrap \
     && CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w -X github.com/supabase/supabase/apps/backup-operator/internal/version.Version=${VERSION} -X github.com/supabase/supabase/apps/backup-operator/internal/version.Commit=${COMMIT}" -o /out/fleet-compose-observer ./cmd/fleet-compose-observer \
-    && CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w -X github.com/supabase/supabase/apps/backup-operator/internal/version.Version=${VERSION} -X github.com/supabase/supabase/apps/backup-operator/internal/version.Commit=${COMMIT}" -o /out/fleet-docker-proxy ./cmd/fleet-docker-proxy
+    && CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w -X github.com/supabase/supabase/apps/backup-operator/internal/version.Version=${VERSION} -X github.com/supabase/supabase/apps/backup-operator/internal/version.Commit=${COMMIT}" -o /out/fleet-docker-proxy ./cmd/fleet-docker-proxy \
+    && CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w -X github.com/supabase/supabase/apps/backup-operator/internal/version.Version=${VERSION} -X github.com/supabase/supabase/apps/backup-operator/internal/version.Commit=${COMMIT}" -o /out/fleet-lifecycle-compose ./cmd/fleet-lifecycle-compose
 
 FROM gcr.io/distroless/static-debian12:nonroot
 ARG VERSION=dev
@@ -31,5 +37,7 @@ COPY --from=build /out/fleet-agent /usr/local/bin/fleet-agent
 COPY --from=build /out/fleet-agent-bootstrap /usr/local/bin/fleet-agent-bootstrap
 COPY --from=build /out/fleet-compose-observer /usr/local/bin/fleet-compose-observer
 COPY --from=build /out/fleet-docker-proxy /usr/local/bin/fleet-docker-proxy
+COPY --from=build /out/fleet-lifecycle-compose /usr/local/bin/fleet-lifecycle-compose
+COPY --from=compose /docker-compose /usr/local/bin/docker-compose
 USER nonroot:nonroot
 ENTRYPOINT ["/usr/local/bin/fleet-control"]

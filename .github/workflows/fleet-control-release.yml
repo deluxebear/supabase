@@ -50,6 +50,23 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build smoke-test image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/backup-operator
+          file: apps/backup-operator/Dockerfile.fleet-control
+          platforms: linux/amd64
+          load: true
+          tags: fleet-control:smoke
+      - name: Smoke-test image binaries
+        working-directory: .
+        run: |
+          docker run --rm --entrypoint /usr/local/bin/docker-compose fleet-control:smoke version
+          for binary in fleet-control fleet-agent fleet-docker-proxy; do
+            docker run --rm --entrypoint "/usr/local/bin/$binary" fleet-control:smoke -version
+          done
+          docker run --rm --entrypoint /usr/local/bin/fleet-lifecycle-compose fleet-control:smoke --protocol invalid 2>&1 \
+            | grep -q 'unsupported plugin protocol'
       - name: Build and push multi-architecture image
         id: image
         uses: docker/build-push-action@v6

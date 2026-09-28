@@ -1,0 +1,94 @@
+# Opt-in overlay: enables runtime.restart and runtime.rollout for this managed
+# stack through the reference Compose lifecycle plugin.
+#
+# Add it after the Fleet-managed override:
+#   docker compose -p supabase-managed-a \
+#     --env-file docker/self-platform/.env \
+#     --env-file docker/fleet-managed/project-a.env \
+#     -f docker/docker-compose.yml \
+#     -f docker/fleet-managed/docker-compose.override.yml \
+#     -f docker/fleet-managed/docker-compose.lifecycle.yml \
+#     --profile agent up -d
+#
+# The Fleet Agent runs fleet-lifecycle-compose, which reaches Docker only through
+# fleet-docker-proxy-lifecycle. That proxy lets the plugin restart and recreate
+# the allowlisted services of this Compose project and nothing else: no image
+# pulls, no new networks or volumes, no privileged or host-namespace containers,
+# and bind mounts only under FLEET_LIFECYCLE_BIND_PREFIXES.
+#
+# Compose sends bind-mount sources to the Docker daemon as host paths, so the
+# plugin must see the Compose files at their host paths. The overlay mounts only
+# the Compose files, read-only, at FLEET_HOST_COMPOSE_DIRECTORY. The env files
+# are created with mode 0600, so fleet-lifecycle-init copies them into a volume
+# that only the Agent user can read; it runs again on every `up`, so edits to
+# the env files reach the plugin after the next `up`.
+
+services:
+  fleet-lifecycle-init:
+    image: alpine:3.22
+    profiles: [agent]
+    restart: "no"
+    command:
+      - /bin/sh
+      - -ceu
+      - |
+        install -o 65532 -g 65532 -m 0400 /source/supabase.env /lifecycle-env/supabase.env
+        install -o 65532 -g 65532 -m 0400 /source/project.env /lifecycle-env/project.env
+    volumes:
+      - ${FLEET_LIFECYCLE_SOURCE_ENV_FILE:?set FLEET_LIFECYCLE_SOURCE_ENV_FILE}:/source/supabase.env:ro
+      - ${FLEET_LIFECYCLE_PROJECT_ENV_FILE:?set FLEET_LIFECYCLE_PROJECT_ENV_FILE}:/source/project.env:ro
+      - fleet-lifecycle-env:/lifecycle-env
+    network_mode: none
+
+  fleet-docker-proxy-lifecycle:
+    image: ${FLEET_AGENT_IMAGE:?set FLEET_AGENT_IMAGE}
+    profiles: [agent]
+    restart: unless-stopped
+    user: "0:0"
+    entrypoint: [/usr/local/bin/fleet-docker-proxy]
+    environment:
+      FLEET_DOCKER_PROXY_COMPOSE_PROJECT: ${COMPOSE_PROJECT_NAME}
+      FLEET_DOCKER_PROXY_POLICY: lifecycle
+      FLEET_DOCKER_PROXY_LISTEN: 0.0.0.0:2375
+      FLEET_DOCKER_PROXY_SERVICES: ${FLEET_LIFECYCLE_SERVICES:-auth,rest,realtime,storage,imgproxy,meta,functions,supavisor}
+      FLEET_DOCKER_PROXY_EXTERNAL_NETWORKS: ${FLEET_MANAGEMENT_NETWORK_NAME:-fleet-management}
+      FLEET_DOCKER_PROXY_BIND_PREFIXES: ${FLEET_LIFECYCLE_BIND_PREFIXES:?set FLEET_LIFECYCLE_BIND_PREFIXES}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    read_only: true
+    security_opt: [no-new-privileges:true]
+    networks: [docker-lifecycle]
+
+  fleet-agent:
+    depends_on:
+      fleet-lifecycle-init:
+        condition: service_completed_successfully
+      fleet-docker-proxy-lifecycle:
+        condition: service_started
+    environment:
+      FLEET_AGENT_LIFECYCLE_PLUGIN: /usr/local/bin/fleet-lifecycle-compose
+      FLEET_AGENT_LIFECYCLE_CAPABILITIES: runtime.restart,runtime.rollout
+      # Must equal the Studio server's FLEET_LIFECYCLE_COMPONENT_VERSIONS; the
+      # Agent rejects plans built from different component versions.
+      FLEET_AGENT_LIFECYCLE_COMPONENT_VERSIONS: ${FLEET_LIFECYCLE_COMPONENT_VERSIONS:?set FLEET_LIFECYCLE_COMPONENT_VERSIONS}
+      FLEET_LIFECYCLE_COMPOSE_PROJECT: ${COMPOSE_PROJECT_NAME}
+      FLEET_LIFECYCLE_SERVICES: ${FLEET_LIFECYCLE_SERVICES:-auth,rest,realtime,storage,imgproxy,meta,functions,supavisor}
+      FLEET_LIFECYCLE_DOCKER_ENDPOINT: http://fleet-docker-proxy-lifecycle:2375
+      FLEET_LIFECYCLE_PROJECT_DIRECTORY: ${FLEET_HOST_COMPOSE_DIRECTORY:?set FLEET_HOST_COMPOSE_DIRECTORY}
+      FLEET_LIFECYCLE_COMPOSE_FILES: ${FLEET_HOST_COMPOSE_DIRECTORY}/docker-compose.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.override.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.lifecycle.yml
+      FLEET_LIFECYCLE_ENV_FILES: /var/lib/fleet-lifecycle/env/supabase.env,/var/lib/fleet-lifecycle/env/project.env
+      FLEET_LIFECYCLE_VERIFY_TIMEOUT: ${FLEET_LIFECYCLE_VERIFY_TIMEOUT:-2m}
+    volumes:
+      - ${FLEET_HOST_COMPOSE_DIRECTORY}/docker-compose.yml:${FLEET_HOST_COMPOSE_DIRECTORY}/docker-compose.yml:ro
+      - ${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.override.yml:${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.override.yml:ro
+      - ${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.lifecycle.yml:${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.lifecycle.yml:ro
+      - fleet-lifecycle-env:/var/lib/fleet-lifecycle/env:ro
+    networks:
+      docker-lifecycle: {}
+
+networks:
+  docker-lifecycle:
+    internal: true
+
+volumes:
+  fleet-lifecycle-env:

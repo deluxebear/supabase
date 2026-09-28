@@ -42,6 +42,13 @@ pg_meta_crypto_key="$(
   echo "ERROR: PG_META_CRYPTO_KEY is missing from $control_env and $source_env" >&2
   exit 1
 }
+lifecycle_versions="$(
+  if [ -f "$control_env" ]; then
+    envval_from "$control_env" FLEET_LIFECYCLE_COMPONENT_VERSIONS || true
+  fi
+)"
+output_env_abs="$(cd "$(dirname "$output_env")" && pwd)/$(basename "$output_env")"
+source_env_abs="$(cd "$(dirname "$source_env")" && pwd)/$(basename "$source_env")"
 temporary="$(mktemp "${output_env}.tmp.XXXXXX")"
 trap 'rm -f "$temporary"' EXIT
 umask 077
@@ -105,6 +112,12 @@ NODE
   printf 'FLEET_AGENT_EXECUTION_TARGET=compose-%s\n' "$project_ref"
   printf 'FLEET_AGENT_ID=agent-%s\n' "$project_ref"
   printf 'FLEET_AGENT_NODE_ID=node-%s\n' "$project_ref"
+  # Used only by docker-compose.lifecycle.yml (opt-in runtime.restart/rollout).
+  printf 'FLEET_HOST_COMPOSE_DIRECTORY=%s\n' "$repo_docker_dir"
+  printf 'FLEET_LIFECYCLE_SOURCE_ENV_FILE=%s\n' "$source_env_abs"
+  printf 'FLEET_LIFECYCLE_PROJECT_ENV_FILE=%s\n' "$output_env_abs"
+  printf 'FLEET_LIFECYCLE_BIND_PREFIXES=%s,%s\n' "$repo_docker_dir/volumes/pooler" "$root_dir/state/$project_ref/functions"
+  printf 'FLEET_LIFECYCLE_COMPONENT_VERSIONS=%s\n' "$lifecycle_versions"
 } > "$temporary"
 
 chmod 0600 "$temporary"

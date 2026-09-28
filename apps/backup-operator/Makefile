@@ -1,7 +1,7 @@
 .PHONY: build test generate check-generated release-snapshot validate-deployments
 
 build:
-	go build ./cmd/backup-operator ./cmd/backupctl ./cmd/fleet-control ./cmd/fleet-agent ./cmd/fleet-agent-bootstrap ./cmd/fleet-compose-observer ./cmd/fleet-docker-proxy
+	go build ./cmd/backup-operator ./cmd/backupctl ./cmd/fleet-control ./cmd/fleet-agent ./cmd/fleet-agent-bootstrap ./cmd/fleet-compose-observer ./cmd/fleet-docker-proxy ./cmd/fleet-lifecycle-compose
 
 test:
 	go test ./...
