@@ -129,9 +129,34 @@ read-only:
   otherwise the allocatable resources of the database node. Reading the node
   is the Agent's only cluster-scoped permission (`get nodes`).
 
+## Lifecycle actions
+
+`runtime.restart`, `runtime.rollout`, and `runtime.scale` are built into the
+Agent on Kubernetes; no plugin is installed. They act only on the Deployments
+in `FLEET_AGENT_KUBERNETES_LIFECYCLE_SERVICES` (default: `auth`, `rest`,
+`realtime`, `storage`, `imgproxy`, `meta`, `functions`, `supavisor`; never the
+database StatefulSet):
+
+- Restart and rollout both set the pod template annotation
+  `kubectl.kubernetes.io/restartedAt`, as `kubectl rollout restart` does, so
+  Kubernetes replaces the pods. Scale sets `spec.replicas`. Both are merge
+  patches (field manager `supabase-fleet-lifecycle`), so the manifests keep
+  ownership of their fields.
+- The Agent waits until every replica is updated and available. If that fails,
+  it restores the previous annotation or replica count and waits again; if the
+  restored Deployment does not become available either, the operation ends in
+  manual intervention.
+- `FLEET_AGENT_LIFECYCLE_COMPONENT_VERSIONS` must equal the Studio server's
+  `FLEET_LIFECYCLE_COMPONENT_VERSIONS`; the Agent rejects plans built from other
+  versions. As on Compose, Studio also needs the project's `runtime` ownership
+  policy to be direct-managed.
+
+A `kubectl apply` of a manifest that sets `replicas` resets a scaled
+Deployment to the manifest's value.
+
 ## Not included
 
-- Lifecycle actions (restart, rollout, upgrades): their provider is Compose-only.
+- PostgreSQL major upgrades, read replicas, and branching: no provider yet.
 
 `apps/backup-operator/cmd/fleet-agent/manifests_test.go` decodes these
 manifests strictly against the Kubernetes API types and checks that every

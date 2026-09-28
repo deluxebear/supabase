@@ -235,7 +235,7 @@ These wait until Phases 0–3 are in production use:
 
 - PostgreSQL major-upgrade provider
 - Read replicas and branching providers
-- Kubernetes lifecycle actions (restart, rollout, major upgrade). Database security and runtime inventory already have Kubernetes providers.
+- PostgreSQL major upgrades on either adapter. Kubernetes restart, rollout, and scale are built into the Agent (`fleetlifecycle.KubernetesRuntime`), and database security and runtime inventory have Kubernetes providers.
 - The T12 compact control-plane packaging, which stays deferred per the alignment matrix
 
 ## 4. Dependency view
