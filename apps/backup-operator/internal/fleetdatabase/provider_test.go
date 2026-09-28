@@ -69,3 +69,20 @@ func TestDatabaseSecurityDocumentRejectsUnsafeInput(t *testing.T) {
 		})
 	}
 }
+
+func TestDatabaseSecurityProviderServesKubernetesDocuments(t *testing.T) {
+	runtime := &fakeRuntime{}
+	registry, err := NewRegistry(ManagedProvider{Kind: AdapterKubernetes, Runtime: runtime})
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := Request{OperationID: "op-k", ProjectRef: "project-a", TargetID: "target-a", BindingID: "binding-a", ExpectedGeneration: 2, DesiredDigest: strings.Repeat("a", 64), Document: validDocument()}
+	if _, err := registry.Reconcile(context.Background(), request); err == nil {
+		t.Fatal("a Kubernetes Agent must not apply a Compose document")
+	}
+	request.Document.Adapter = AdapterKubernetes
+	evidence, err := registry.Reconcile(context.Background(), request)
+	if err != nil || !evidence.Applied || evidence.Adapter != AdapterKubernetes || !evidence.PasswordRotated {
+		t.Fatalf("evidence = %#v err=%v", evidence, err)
+	}
+}

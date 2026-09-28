@@ -14,9 +14,15 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// ComposeRuntime owns only the database settings explicitly represented by the
+// PostgresRuntime owns only the database settings explicitly represented by the
 // database security contract. Credentials are never written to the state file.
-type ComposeRuntime struct {
+//
+// It works on any deployment that gives the Agent network access to Postgres
+// and the Supavisor catalog (`_supabase._supavisor.tenants`): Compose reaches
+// them on the project network, Kubernetes through the `db` and `supavisor`
+// Services. StateRoot is Agent-owned storage and TLSCARoot an operator-managed
+// directory of allowlisted CA files.
+type PostgresRuntime struct {
 	AdminDSN     string
 	PoolerDSN    string
 	StateRoot    string
@@ -31,7 +37,7 @@ type persistedState struct {
 	Pooler  PoolerPolicy  `json:"pooler"`
 }
 
-func (r ComposeRuntime) Snapshot(ctx context.Context) (RuntimeSnapshot, error) {
+func (r PostgresRuntime) Snapshot(ctx context.Context) (RuntimeSnapshot, error) {
 	if err := r.validate(); err != nil {
 		return RuntimeSnapshot{}, err
 	}
@@ -67,7 +73,7 @@ func (r ComposeRuntime) Snapshot(ctx context.Context) (RuntimeSnapshot, error) {
 	return RuntimeSnapshot{SSL: ssl, Network: NetworkPolicy{AllowedCIDRs: cidrs}, Pooler: pooler}, nil
 }
 
-func (r ComposeRuntime) Apply(ctx context.Context, document Document) error {
+func (r PostgresRuntime) Apply(ctx context.Context, document Document) error {
 	if err := r.validate(); err != nil {
 		return err
 	}
@@ -112,7 +118,7 @@ func (r ComposeRuntime) Apply(ctx context.Context, document Document) error {
 	return nil
 }
 
-func (r ComposeRuntime) Probe(ctx context.Context, document Document) error {
+func (r PostgresRuntime) Probe(ctx context.Context, document Document) error {
 	connection, err := pgx.Connect(ctx, r.AdminDSN)
 	if err != nil {
 		return errors.New("database health probe failed")
@@ -139,7 +145,7 @@ func (r ComposeRuntime) Probe(ctx context.Context, document Document) error {
 	return nil
 }
 
-func (r ComposeRuntime) probePoolerWithRetry(ctx context.Context, dsn string) error {
+func (r PostgresRuntime) probePoolerWithRetry(ctx context.Context, dsn string) error {
 	var err error
 	for attempt := 0; attempt < 20; attempt++ {
 		if err = r.probeRole(ctx, "", "", dsn); err == nil {
@@ -156,8 +162,8 @@ func (r ComposeRuntime) probePoolerWithRetry(ctx context.Context, dsn string) er
 	return err
 }
 
-func (r ComposeRuntime) Restore(ctx context.Context, snapshot RuntimeSnapshot, rotation *PasswordChange) error {
-	document := Document{Adapter: AdapterCompose, SSL: snapshot.SSL, Network: snapshot.Network, Pooler: snapshot.Pooler}
+func (r PostgresRuntime) Restore(ctx context.Context, snapshot RuntimeSnapshot, rotation *PasswordChange) error {
+	document := Document{SSL: snapshot.SSL, Network: snapshot.Network, Pooler: snapshot.Pooler}
 	if err := r.Apply(ctx, document); err != nil {
 		return err
 	}
@@ -169,21 +175,21 @@ func (r ComposeRuntime) Restore(ctx context.Context, snapshot RuntimeSnapshot, r
 	return nil
 }
 
-func (r ComposeRuntime) validate() error {
+func (r PostgresRuntime) validate() error {
 	if strings.TrimSpace(r.AdminDSN) == "" || strings.TrimSpace(r.StateRoot) == "" || strings.TrimSpace(r.PrimaryRole) == "" || strings.TrimSpace(r.ReadOnlyRole) == "" {
-		return errors.New("complete Compose database runtime configuration is required")
+		return errors.New("complete database runtime configuration is required")
 	}
 	return nil
 }
 
-func (r ComposeRuntime) role(role PasswordRole) string {
+func (r PostgresRuntime) role(role PasswordRole) string {
 	if role == PasswordRoleReadOnly {
 		return r.ReadOnlyRole
 	}
 	return r.PrimaryRole
 }
 
-func (r ComposeRuntime) rotate(ctx context.Context, role PasswordRole, current, next string) error {
+func (r PostgresRuntime) rotate(ctx context.Context, role PasswordRole, current, next string) error {
 	name := r.role(role)
 	if err := r.probeRole(ctx, name, current, r.AdminDSN); err != nil {
 		return errors.New("current database credential verification failed")
@@ -203,7 +209,7 @@ func (r ComposeRuntime) rotate(ctx context.Context, role PasswordRole, current, 
 	return nil
 }
 
-func (r ComposeRuntime) probeRole(ctx context.Context, role, password, dsn string) error {
+func (r PostgresRuntime) probeRole(ctx context.Context, role, password, dsn string) error {
 	if role != "" {
 		dsn = withCredential(dsn, role, password)
 	}
@@ -242,11 +248,11 @@ func withPassword(dsn, password string) string {
 	return parsed.String()
 }
 
-func (r ComposeRuntime) statePath() string {
+func (r PostgresRuntime) statePath() string {
 	return filepath.Join(r.StateRoot, "database-security.json")
 }
 
-func (r ComposeRuntime) readState() (persistedState, error) {
+func (r PostgresRuntime) readState() (persistedState, error) {
 	raw, err := os.ReadFile(r.statePath())
 	if err != nil {
 		return persistedState{}, err
@@ -258,7 +264,7 @@ func (r ComposeRuntime) readState() (persistedState, error) {
 	return state, nil
 }
 
-func (r ComposeRuntime) writeState(state persistedState) error {
+func (r PostgresRuntime) writeState(state persistedState) error {
 	if err := os.MkdirAll(r.StateRoot, 0o700); err != nil {
 		return errors.New("create database security state root")
 	}
@@ -276,7 +282,7 @@ func (r ComposeRuntime) writeState(state persistedState) error {
 	return nil
 }
 
-func (r ComposeRuntime) readCA(reference string) ([]byte, error) {
+func (r PostgresRuntime) readCA(reference string) ([]byte, error) {
 	if strings.TrimSpace(r.TLSCARoot) == "" || filepath.Base(reference) != reference || strings.Contains(reference, "..") {
 		return nil, errors.New("TLS CA reference is outside the operator allowlist")
 	}
@@ -287,7 +293,7 @@ func (r ComposeRuntime) readCA(reference string) ([]byte, error) {
 	return raw, nil
 }
 
-func (r ComposeRuntime) persistedCAReference() string {
+func (r PostgresRuntime) persistedCAReference() string {
 	state, err := r.readState()
 	if err == nil {
 		return state.SSL.CAReference
@@ -295,6 +301,6 @@ func (r ComposeRuntime) persistedCAReference() string {
 	return ""
 }
 
-func (r ComposeRuntime) String() string {
-	return fmt.Sprintf("compose database runtime (%s, %s)", r.PrimaryRole, r.ReadOnlyRole)
+func (r PostgresRuntime) String() string {
+	return fmt.Sprintf("database runtime (%s, %s)", r.PrimaryRole, r.ReadOnlyRole)
 }

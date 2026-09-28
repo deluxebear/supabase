@@ -107,10 +107,11 @@ func main() {
 	}
 	databaseConfigured := []bool{strings.TrimSpace(*databaseAdminDSN) != "", strings.TrimSpace(*databaseStateRoot) != "", strings.TrimSpace(*databaseTLSCARoot) != ""}
 	if databaseConfigured[0] || databaseConfigured[1] || databaseConfigured[2] {
-		if !databaseConfigured[0] || !databaseConfigured[1] || !databaseConfigured[2] || *adapter != string(fleetdatabase.AdapterCompose) {
-			log.Fatal("Fleet database administration DSN, state root, TLS CA root, and Compose adapter must be configured together")
+		databaseAdapter := fleetdatabase.Adapter(*adapter)
+		if !databaseConfigured[0] || !databaseConfigured[1] || !databaseConfigured[2] || (databaseAdapter != fleetdatabase.AdapterCompose && databaseAdapter != fleetdatabase.AdapterKubernetes) {
+			log.Fatal("Fleet database administration DSN, state root, TLS CA root, and a Compose or Kubernetes adapter must be configured together")
 		}
-		databaseProviders, err = fleetdatabase.NewRegistry(fleetdatabase.ManagedProvider{Kind: fleetdatabase.AdapterCompose, Runtime: fleetdatabase.ComposeRuntime{
+		databaseProviders, err = fleetdatabase.NewRegistry(fleetdatabase.ManagedProvider{Kind: databaseAdapter, Runtime: fleetdatabase.PostgresRuntime{
 			AdminDSN: *databaseAdminDSN, PoolerDSN: *databasePoolerDSN, StateRoot: *databaseStateRoot, TLSCARoot: *databaseTLSCARoot,
 			PrimaryRole: *databasePrimaryRole, ReadOnlyRole: *databaseReadOnlyRole,
 		}})

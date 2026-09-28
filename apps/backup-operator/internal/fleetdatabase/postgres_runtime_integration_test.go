@@ -11,13 +11,13 @@ import (
 
 // This opt-in test is used by the disposable Fleet Compose acceptance drill.
 // It intentionally never prints the configured DSN or credentials.
-func TestComposeRuntimeIntegration(t *testing.T) {
+func TestPostgresRuntimeIntegration(t *testing.T) {
 	dsn := os.Getenv("FLEET_DATABASE_INTEGRATION_DSN")
 	stateRoot := os.Getenv("FLEET_DATABASE_INTEGRATION_STATE_ROOT")
 	if dsn == "" || stateRoot == "" {
 		t.Skip("Fleet database integration runtime is not configured")
 	}
-	runtime := ComposeRuntime{
+	runtime := PostgresRuntime{
 		AdminDSN: dsn, PoolerDSN: os.Getenv("FLEET_DATABASE_INTEGRATION_POOLER_DSN"), StateRoot: stateRoot, TLSCARoot: t.TempDir(),
 		PrimaryRole: "postgres", ReadOnlyRole: "supabase_read_only_user",
 	}
@@ -37,14 +37,14 @@ func TestComposeRuntimeIntegration(t *testing.T) {
 	}
 }
 
-func TestComposeRuntimePoolerAfterRotationIntegration(t *testing.T) {
+func TestPostgresRuntimePoolerAfterRotationIntegration(t *testing.T) {
 	dsn := os.Getenv("FLEET_DATABASE_INTEGRATION_DSN")
 	poolerDSN := os.Getenv("FLEET_DATABASE_INTEGRATION_POOLER_DSN")
 	current := os.Getenv("FLEET_DATABASE_INTEGRATION_PASSWORD")
 	if dsn == "" || poolerDSN == "" || current == "" {
 		t.Skip("Fleet database pooler rotation integration runtime is not configured")
 	}
-	runtime := ComposeRuntime{AdminDSN: dsn, PoolerDSN: poolerDSN, PrimaryRole: "postgres", ReadOnlyRole: "supabase_read_only_user"}
+	runtime := PostgresRuntime{AdminDSN: dsn, PoolerDSN: poolerDSN, PrimaryRole: "postgres", ReadOnlyRole: "supabase_read_only_user"}
 	random := make([]byte, 24)
 	if _, err := rand.Read(random); err != nil {
 		t.Fatal("generate disposable password")
@@ -69,13 +69,13 @@ func TestComposeRuntimePoolerAfterRotationIntegration(t *testing.T) {
 	t.Fatalf("pooler did not accept the rotated credential: %v", lastErr)
 }
 
-func TestComposeRuntimePasswordRotationIntegration(t *testing.T) {
+func TestPostgresRuntimePasswordRotationIntegration(t *testing.T) {
 	dsn := os.Getenv("FLEET_DATABASE_INTEGRATION_DSN")
 	current := os.Getenv("FLEET_DATABASE_INTEGRATION_PASSWORD")
 	if dsn == "" || current == "" {
 		t.Skip("Fleet database password integration runtime is not configured")
 	}
-	runtime := ComposeRuntime{AdminDSN: dsn, PrimaryRole: "postgres", ReadOnlyRole: "supabase_read_only_user"}
+	runtime := PostgresRuntime{AdminDSN: dsn, PrimaryRole: "postgres", ReadOnlyRole: "supabase_read_only_user"}
 	for _, item := range []struct {
 		name string
 		role PasswordRole

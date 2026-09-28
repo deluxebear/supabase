@@ -7,6 +7,10 @@
 #   state volume and never leaves the pod.
 # - functions.deploy onto the shared fleet-functions volume, probed through
 #   Kong with the service role key.
+# - database.security.reconcile: Supavisor SSL, CIDR allowlist, and pool
+#   limits in _supabase._supavisor.tenants, and role password rotation, over
+#   the `db` and `supavisor` Services. Its state lives on the state volume;
+#   TLS CA files come from the ConfigMap fleet-database-tls-ca.
 apiVersion: apps/v1
 kind: Deployment
 metadata: { name: fleet-agent, namespace: supabase, labels: { app: fleet-agent } }
@@ -33,6 +37,11 @@ spec:
           envFrom:
             - configMapRef: { name: fleet-agent-identity }
           env:
+            # Only used to build the database DSNs below with $(NAME).
+            - { name: POSTGRES_PASSWORD, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PASSWORD } } }
+            - { name: POSTGRES_PORT, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PORT } } }
+            - { name: POSTGRES_DB, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_DB } } }
+            - { name: POOLER_TENANT_ID, valueFrom: { secretKeyRef: { name: supabase-env, key: POOLER_TENANT_ID } } }
             - { name: FLEET_AGENT_ADAPTER, value: kubernetes }
             - { name: FLEET_AGENT_CLIENT_CERT, value: /var/lib/fleet-agent/trust/agent-cert.pem }
             - { name: FLEET_AGENT_CLIENT_KEY, value: /var/lib/fleet-agent/trust/agent-key.pem }
@@ -45,6 +54,12 @@ spec:
             - { name: FLEET_AGENT_FUNCTION_ARTIFACT_ROOT, value: /var/lib/supabase-fleet/functions }
             - { name: FLEET_AGENT_FUNCTION_PROBE_URL, value: "http://kong:8000/functions/v1" }
             - { name: FLEET_AGENT_FUNCTION_PROBE_TOKEN, valueFrom: { secretKeyRef: { name: supabase-env, key: SERVICE_ROLE_KEY } } }
+            - { name: FLEET_AGENT_DATABASE_ADMIN_DSN, value: "postgres://supabase_admin:$(POSTGRES_PASSWORD)@db:$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable" }
+            - { name: FLEET_AGENT_DATABASE_POOLER_DSN, value: "postgres://postgres.$(POOLER_TENANT_ID):$(POSTGRES_PASSWORD)@supavisor:5432/$(POSTGRES_DB)?sslmode=disable" }
+            - { name: FLEET_AGENT_DATABASE_STATE_ROOT, value: /var/lib/fleet-agent/database }
+            - { name: FLEET_AGENT_DATABASE_TLS_CA_ROOT, value: /etc/fleet-agent/tls-ca }
+            - { name: FLEET_AGENT_DATABASE_PRIMARY_ROLE, value: postgres }
+            - { name: FLEET_AGENT_DATABASE_READ_ONLY_ROLE, value: supabase_read_only_user }
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -55,6 +70,9 @@ spec:
           volumeMounts:
             - { name: state, mountPath: /var/lib/fleet-agent }
             - { name: functions, mountPath: /var/lib/supabase-fleet/functions }
+            - { name: tls-ca, mountPath: /etc/fleet-agent/tls-ca, readOnly: true }
       volumes:
         - { name: state, persistentVolumeClaim: { claimName: fleet-agent-state } }
         - { name: functions, persistentVolumeClaim: { claimName: fleet-functions } }
+        - name: tls-ca
+          configMap: { name: fleet-database-tls-ca, optional: true }

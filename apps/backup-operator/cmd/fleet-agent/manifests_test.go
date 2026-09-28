@@ -19,6 +19,14 @@ import (
 
 const manifestDirectory = "../../../../docker/k8s/fleet-agent"
 
+var interpolation = regexp.MustCompile(`\$\(([A-Z0-9_]+)\)`)
+
+// Read by deploy.sh, not by the Agent.
+var deployScriptOnly = map[string]bool{
+	"FLEET_AGENT_IMAGE": true, "FLEET_AGENT_ENROLLMENT_CA_FILE": true,
+	"FLEET_AGENT_ENROLLMENT_TOKEN": true, "FLEET_AGENT_DATABASE_TLS_CA_DIR": true,
+}
+
 // decodeManifests strictly decodes every document, so unknown or misspelled
 // fields fail the test instead of being dropped by the API server.
 func decodeManifests(t *testing.T) []runtime.Object {
@@ -191,15 +199,28 @@ func TestKubernetesAgentManifests(t *testing.T) {
 			if container.SecurityContext == nil || container.SecurityContext.ReadOnlyRootFilesystem == nil || !*container.SecurityContext.ReadOnlyRootFilesystem {
 				t.Fatalf("container %s must use a read-only root filesystem", container.Name)
 			}
+			defined := map[string]struct{}{}
+			referenced := map[string]struct{}{}
 			for _, env := range container.Env {
-				if _, ok := known[env.Name]; !ok {
+				for _, match := range interpolation.FindAllStringSubmatch(env.Value, -1) {
+					if _, ok := defined[match[1]]; !ok {
+						t.Fatalf("container %s uses $(%s) before defining it", container.Name, match[1])
+					}
+					referenced[match[1]] = struct{}{}
+				}
+				defined[env.Name] = struct{}{}
+			}
+			for _, env := range container.Env {
+				_, isRead := known[env.Name]
+				_, isHelper := referenced[env.Name]
+				if !isRead && !isHelper {
 					t.Fatalf("container %s sets %s, which the Agent does not read", container.Name, env.Name)
 				}
 			}
 		}
 	}
 	for name := range identity {
-		if _, ok := known[name]; !ok && name != "FLEET_AGENT_IMAGE" && name != "FLEET_AGENT_ENROLLMENT_CA_FILE" && name != "FLEET_AGENT_ENROLLMENT_TOKEN" {
+		if _, ok := known[name]; !ok && !deployScriptOnly[name] {
 			t.Fatalf("fleet-agent.env.example sets %s, which the Agent does not read", name)
 		}
 	}

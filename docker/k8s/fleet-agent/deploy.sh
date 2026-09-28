@@ -59,6 +59,16 @@ kubectl create configmap fleet-agent-identity -n "$NS" \
   --from-literal=FLEET_AGENT_KUBERNETES_SECRET_SERVICES="$FLEET_AGENT_KUBERNETES_SECRET_SERVICES" \
   --dry-run=client -o yaml | kubectl apply -f -
 
+echo "==> ConfigMap fleet-database-tls-ca (CA files Supavisor may verify Postgres with)"
+# Studio refers to a CA by file name; only files in this ConfigMap are allowed.
+if [ -n "${FLEET_AGENT_DATABASE_TLS_CA_DIR:-}" ]; then
+  case "$FLEET_AGENT_DATABASE_TLS_CA_DIR" in /*) CA_DIR="$FLEET_AGENT_DATABASE_TLS_CA_DIR" ;; *) CA_DIR="$(dirname "$ENV_FILE")/$FLEET_AGENT_DATABASE_TLS_CA_DIR" ;; esac
+  kubectl create configmap fleet-database-tls-ca -n "$NS" --from-file="$CA_DIR" \
+    --dry-run=client -o yaml | kubectl apply -f -
+else
+  kubectl create configmap fleet-database-tls-ca -n "$NS" --dry-run=client -o yaml | kubectl apply -f -
+fi
+
 echo "==> RBAC, state and function volumes, capabilities"
 kubectl apply -f "$SCRIPT_DIR/10-rbac.yaml" -f "$SCRIPT_DIR/20-state.yaml" -f "$SCRIPT_DIR/25-functions-volume.yaml"
 
