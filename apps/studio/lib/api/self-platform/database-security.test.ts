@@ -1,9 +1,11 @@
+import { generateKeyPairSync } from 'node:crypto'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { rotateDatabasePassword } from './database-security'
 import { executePlatformQuery } from './db'
 import { getFleetOperation } from './fleet-operations'
-import { requestManagementDomain } from './management-trust'
+import { getAgentSecretRecipient, requestManagementDomain } from './management-trust'
+import { sealedSecretKeyId } from './sealed-secret'
 
 vi.mock('./attachment', () => ({ requireProjectCapability: vi.fn() }))
 vi.mock('./db', () => ({ executePlatformQuery: vi.fn() }))
@@ -11,7 +13,10 @@ vi.mock('./fleet-operations', async (importOriginal) => {
   const original = await importOriginal<typeof import('./fleet-operations')>()
   return { ...original, getFleetOperation: vi.fn() }
 })
-vi.mock('./management-trust', () => ({
+vi.mock('./management-trust', async (importOriginal) => ({
+  ManagementTrustConflict: (await importOriginal<typeof import('./management-trust')>())
+    .ManagementTrustConflict,
+  getAgentSecretRecipient: vi.fn(),
   syncProjectManagementBinding: vi.fn().mockResolvedValue({
     id: 'binding-1',
     state: 'active',
@@ -34,6 +39,11 @@ vi.mock('./secrets', () => ({
   ),
   encryptSecret: vi.fn(() => 'enc-next'),
 }))
+
+const recipientPublicKey = (
+  generateKeyPairSync('x25519').publicKey.export({ format: 'der', type: 'spki' }) as Buffer
+).subarray(12)
+const recipient = { keyId: sealedSecretKeyId(recipientPublicKey), publicKey: recipientPublicKey }
 
 const policyRow = {
   generation: 2,
@@ -93,6 +103,7 @@ describe('Fleet database password rotation', () => {
     vi.mocked(getFleetOperation).mockImplementation(async ({ operationId }) =>
       operation(operationId)
     )
+    vi.mocked(getAgentSecretRecipient).mockResolvedValue(recipient)
   })
 
   it('updates the platform connection only after success and never returns either password', async () => {
@@ -105,16 +116,25 @@ describe('Fleet database password rotation', () => {
     })
 
     const request = vi.mocked(requestManagementDomain).mock.calls[0][2]
-    expect(request.body).toMatchObject({
+    const body = request.body as {
+      operationId: string
+      typedInput: { rotation?: unknown; sealedRotation: { role: string; envelope: unknown } }
+    }
+    expect(body).toMatchObject({
       capability: 'database.security.reconcile',
       typedInput: {
-        rotation: {
+        sealedRotation: {
           role: 'primary',
-          currentPassword: 'current-password-value',
-          newPassword: 'next-password-value',
+          envelope: {
+            schema: 'supabase.fleet.sealed-secret.v1',
+            recipientKeyId: recipient.keyId,
+          },
         },
       },
     })
+    expect(body.typedInput.rotation).toBeUndefined()
+    expect(JSON.stringify(request.body)).not.toContain('current-password-value')
+    expect(JSON.stringify(request.body)).not.toContain('next-password-value')
     expect(JSON.stringify(result)).not.toContain('current-password-value')
     expect(JSON.stringify(result)).not.toContain('next-password-value')
 
@@ -124,5 +144,24 @@ describe('Fleet database password rotation', () => {
         value.query.includes('update platform.projects set db_pass_enc')
       )
     expect(platformSecretUpdate?.[0].parameters).toEqual(['project-a', 'enc-next', ['db_pass_enc']])
+  })
+
+  it('refuses to rotate without an Agent key, before reserving a generation', async () => {
+    vi.mocked(getAgentSecretRecipient).mockResolvedValue(null)
+    await expect(
+      rotateDatabasePassword({
+        projectRef: 'project-a',
+        value: { expectedGeneration: 2, role: 'read-only', newPassword: 'next-password-value' },
+        idempotencyKey: 'password-rotation-2',
+        actor: 'user-1',
+        correlationId: 'correlation-2',
+      })
+    ).rejects.toMatchObject({ code: 'secret_recipient_unavailable' })
+    expect(requestManagementDomain).not.toHaveBeenCalled()
+    expect(
+      vi
+        .mocked(executePlatformQuery)
+        .mock.calls.some(([value]) => value.query.includes("'applying'"))
+    ).toBe(false)
   })
 })

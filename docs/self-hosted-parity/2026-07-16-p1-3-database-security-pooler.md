@@ -30,6 +30,8 @@ Fleet Database Settings now renders connection profiles followed by real setting
 
 After a successful password operation, Studio encrypts the new credential into both `platform.projects` and the active connection revision before returning success. API responses never contain the current or new password.
 
+Update (2026-09-28): passwords reach the Agent as a sealed envelope (`sealedRotation`, `supabase.fleet.sealed-secret.v1`) sealed to the Agent's recipient key and bound to the operation ID. Fleet Control rejects plaintext rotations with `sealed_rotation_required`, so neither its database nor its encryption key can recover a password. Studio refuses the rotation with `secret_recipient_unavailable` when the Agent has not published a key. See the secret delivery channel in the [Fleet completion roadmap](./2026-09-28-fleet-completion-roadmap.md).
+
 ## Verification completed
 
 - Go unit tests cover strict validation, successful evidence, failed-probe rollback, encrypted Fleet storage, claim-time decryption, and fail-closed missing encryption keys.

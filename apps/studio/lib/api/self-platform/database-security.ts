@@ -4,8 +4,14 @@ import { z } from 'zod'
 import { requireProjectCapability } from './attachment'
 import { executePlatformQuery } from './db'
 import { fleetOperationSchema, getFleetOperation } from './fleet-operations'
-import { requestManagementDomain, syncProjectManagementBinding } from './management-trust'
+import {
+  getAgentSecretRecipient,
+  ManagementTrustConflict,
+  requestManagementDomain,
+  syncProjectManagementBinding,
+} from './management-trust'
 import { getProjectByRef } from './projects'
+import { sealSecret } from './sealed-secret'
 import { decryptSecret, encryptSecret } from './secrets'
 
 export const databaseSecurityPolicySchema = z.object({
@@ -173,6 +179,22 @@ async function executeDatabaseSecurityOperation(input: {
   correlationId: string
 }) {
   const binding = await requireDatabaseBinding(input.projectRef, input.actor, input.correlationId)
+  // Passwords travel sealed to the Fleet Agent, so Fleet Control and its
+  // database never hold them. Checked before reserving a generation.
+  const recipient =
+    input.rotation === undefined
+      ? null
+      : await getAgentSecretRecipient({
+          projectRef: input.projectRef,
+          actor: input.actor,
+          correlationId: input.correlationId,
+        })
+  if (input.rotation !== undefined && recipient === null) {
+    throw new ManagementTrustConflict(
+      'secret_recipient_unavailable',
+      "This stack's Fleet Agent has not published a key for receiving secrets. Upgrade the Agent before rotating database passwords."
+    )
+  }
   const operationId = `database_${randomUUID()}`
   const generation = await reserveGeneration(
     input.projectRef,
@@ -184,7 +206,27 @@ async function executeDatabaseSecurityOperation(input: {
     ssl: input.policy.ssl,
     network: input.policy.network,
     pooler: input.policy.pooler,
-    ...(input.rotation === undefined ? {} : { rotation: input.rotation }),
+    ...(input.rotation === undefined || recipient === null
+      ? {}
+      : {
+          sealedRotation: {
+            role: input.rotation.role,
+            // Bound to this operation, so the envelope cannot be replayed.
+            envelope: sealSecret({
+              recipientPublicKey: recipient.publicKey,
+              context: {
+                projectRef: input.projectRef,
+                bindingId: binding.id,
+                domain: 'fleet.database',
+                path: `rotation/${input.rotation.role}/${operationId}`,
+              },
+              plaintext: JSON.stringify({
+                currentPassword: input.rotation.currentPassword,
+                newPassword: input.rotation.newPassword,
+              }),
+            }),
+          },
+        }),
   }
   const snapshotCanonical = JSON.stringify(document)
   const desiredDigest = createHash('sha256').update(snapshotCanonical).digest('hex')

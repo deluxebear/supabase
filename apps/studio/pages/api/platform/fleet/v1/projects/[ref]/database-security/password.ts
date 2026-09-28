@@ -9,7 +9,10 @@ import {
   rotateDatabasePassword,
   rotateDatabasePasswordSchema,
 } from '@/lib/api/self-platform/database-security'
-import { ManagementTrustDownstreamError } from '@/lib/api/self-platform/management-trust'
+import {
+  ManagementTrustConflict,
+  ManagementTrustDownstreamError,
+} from '@/lib/api/self-platform/management-trust'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 
@@ -42,13 +45,11 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
       .json({ code: 'validation_failed', message: 'Idempotency-Key is required' })
   const parsed = rotateDatabasePasswordSchema.safeParse(req.body)
   if (!parsed.success)
-    return res
-      .status(400)
-      .json({
-        code: 'validation_failed',
-        message: 'Password rotation input is invalid',
-        details: parsed.error.flatten(),
-      })
+    return res.status(400).json({
+      code: 'validation_failed',
+      message: 'Password rotation input is invalid',
+      details: parsed.error.flatten(),
+    })
   try {
     const result = await rotateDatabasePassword({
       projectRef,
@@ -67,6 +68,8 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
       return res
         .status(409)
         .json({ code: 'capability_unavailable', message: error.message, blockers: error.blockers })
+    if (error instanceof ManagementTrustConflict)
+      return res.status(409).json({ code: error.code, message: error.message })
     if (error instanceof ManagementTrustDownstreamError)
       return res.status(error.status).json({ code: error.code, message: error.message })
     throw error

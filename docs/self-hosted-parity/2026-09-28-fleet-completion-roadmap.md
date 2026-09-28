@@ -161,7 +161,7 @@ Studio seals each secret file to the target Agent's own key, so the secret trave
 Next uses of the same channel:
 
 - Edge Function secrets: done, see below.
-- Database password rotation still uses Fleet Control's sensitive operation path, where Fleet Control can decrypt. Moving it to envelopes removes that exposure.
+- Database password rotation: done. Studio seals the current and new passwords into `sealedRotation`, bound to the operation ID so an envelope cannot be replayed into a later rotation. The Agent opens it in memory before running the task. Fleet Control rejects plaintext rotations (`sealed_rotation_required`) and no longer uses its sensitive-operation encryption for new operations; the Agent still accepts plaintext rotations only for operations queued before the upgrade. Studio refuses a rotation (`secret_recipient_unavailable`) when the Agent has no recipient key. The sensitive-operation storage in Fleet Control can be removed once no such operations remain.
 - Recipient key rotation is by Agent replacement today. A planned rotation needs the Agent to keep the old key until Studio has resealed every domain.
 
 Edge Function secrets status (2026-09-28): implemented for Compose targets, pending live acceptance.
