@@ -14,12 +14,15 @@
 #    Deployment, the PVC fleet-agent-state, and that ConfigMap, then re-run
 #    with a new token. A new volume also means a new secret recipient key, so
 #    apply sealed secrets again from Studio afterwards.
-# 4. The Agent Deployment.
+# 4. The Agent Deployment, then the functions Deployment patched to serve the
+#    shared function volume on the Agent's node.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ENV_FILE="${1:-$SCRIPT_DIR/fleet-agent.env}"
 NS=supabase
+PATCH_FILE="$(mktemp)"
+trap 'rm -f "$PATCH_FILE"' EXIT
 
 [ -f "$ENV_FILE" ] || { echo "ERROR: $ENV_FILE not found (copy fleet-agent.env.example first)" >&2; exit 1; }
 set -a
@@ -56,8 +59,8 @@ kubectl create configmap fleet-agent-identity -n "$NS" \
   --from-literal=FLEET_AGENT_KUBERNETES_SECRET_SERVICES="$FLEET_AGENT_KUBERNETES_SECRET_SERVICES" \
   --dry-run=client -o yaml | kubectl apply -f -
 
-echo "==> RBAC, state volume, capabilities"
-kubectl apply -f "$SCRIPT_DIR/10-rbac.yaml" -f "$SCRIPT_DIR/20-state.yaml"
+echo "==> RBAC, state and function volumes, capabilities"
+kubectl apply -f "$SCRIPT_DIR/10-rbac.yaml" -f "$SCRIPT_DIR/20-state.yaml" -f "$SCRIPT_DIR/25-functions-volume.yaml"
 
 if kubectl get configmap fleet-agent-enrollment-state -n "$NS" >/dev/null 2>&1; then
   echo "==> already enrolled (ConfigMap fleet-agent-enrollment-state exists)"
@@ -93,4 +96,11 @@ fi
 echo "==> Agent"
 render "$SCRIPT_DIR/40-agent.yaml" | kubectl apply -f -
 kubectl rollout status -n "$NS" deployment/fleet-agent --timeout=180s
+
+echo "==> functions Deployment serves the shared function volume"
+# The Agent's per-project directory: the first 12 bytes of SHA-256(project ref).
+PROJECT_KEY="$(printf '%s' "$FLEET_AGENT_PROJECT_REF" | sha256sum | cut -c1-24)"
+sed "s|FLEET_FUNCTION_PROJECT_KEY|${PROJECT_KEY}|g" "$SCRIPT_DIR/functions-patch.yaml" > "$PATCH_FILE"
+kubectl patch deployment functions -n "$NS" --type=strategic --patch-file="$PATCH_FILE"
+kubectl rollout status -n "$NS" deployment/functions --timeout=180s
 echo "Fleet Agent is running. Check Studio: the project binding should report the Agent online."

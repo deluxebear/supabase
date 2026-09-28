@@ -30,6 +30,9 @@ func decodeManifests(t *testing.T) []runtime.Object {
 	}
 	objects := make([]runtime.Object, 0)
 	for _, path := range paths {
+		if filepath.Base(path) == "functions-patch.yaml" {
+			continue
+		}
 		raw, err := os.ReadFile(path)
 		if err != nil {
 			t.Fatal(err)
@@ -46,6 +49,73 @@ func decodeManifests(t *testing.T) []runtime.Object {
 		}
 	}
 	return objects
+}
+
+// decodeFunctionsPatch decodes the strategic merge patch as a Deployment, so
+// its fields are checked against the API types too.
+func decodeFunctionsPatch(t *testing.T) *appsv1.Deployment {
+	t.Helper()
+	raw, err := os.ReadFile(filepath.Join(manifestDirectory, "functions-patch.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	decoder := serializer.NewCodecFactory(scheme.Scheme, serializer.EnableStrict).UniversalDeserializer()
+	object, _, err := decoder.Decode([]byte("apiVersion: apps/v1\nkind: Deployment\nmetadata: { name: functions }\n"+string(raw)), nil, nil)
+	if err != nil {
+		t.Fatalf("functions-patch.yaml: %v", err)
+	}
+	return object.(*appsv1.Deployment)
+}
+
+func TestFunctionsPatchSharesTheAgentVolume(t *testing.T) {
+	var agent *appsv1.Deployment
+	claims := map[string]struct{}{}
+	for _, object := range decodeManifests(t) {
+		switch typed := object.(type) {
+		case *appsv1.Deployment:
+			agent = typed
+		case *corev1.PersistentVolumeClaim:
+			claims[typed.Name] = struct{}{}
+		}
+	}
+	patch := decodeFunctionsPatch(t)
+	agentClaim := mountedClaim(agent.Spec.Template.Spec, agent.Spec.Template.Spec.Containers[0], "/var/lib/supabase-fleet/functions")
+	patchClaim := mountedClaim(patch.Spec.Template.Spec, patch.Spec.Template.Spec.Containers[0], "/home/deno/functions")
+	if agentClaim == "" || agentClaim != patchClaim {
+		t.Fatalf("the Agent (%q) and the Edge Runtime (%q) must mount the same claim", agentClaim, patchClaim)
+	}
+	if _, ok := claims[agentClaim]; !ok {
+		t.Fatalf("claim %q is not defined", agentClaim)
+	}
+	for _, mount := range patch.Spec.Template.Spec.Containers[0].VolumeMounts {
+		if mount.MountPath == "/home/deno/functions" && mount.SubPath != "FLEET_FUNCTION_PROJECT_KEY" {
+			t.Fatalf("the Edge Runtime must serve only the project directory, got subPath %q", mount.SubPath)
+		}
+	}
+	affinity := patch.Spec.Template.Spec.Affinity
+	if affinity == nil || affinity.PodAffinity == nil || len(affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution) != 1 {
+		t.Fatal("the Edge Runtime must be pinned to the Agent's node for a ReadWriteOnce volume")
+	}
+	selector := affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution[0].LabelSelector.MatchLabels
+	for key, value := range selector {
+		if agent.Spec.Template.Labels[key] != value {
+			t.Fatalf("pod affinity %s=%s does not select the Agent pod", key, value)
+		}
+	}
+}
+
+func mountedClaim(spec corev1.PodSpec, container corev1.Container, mountPath string) string {
+	for _, mount := range container.VolumeMounts {
+		if mount.MountPath != mountPath {
+			continue
+		}
+		for _, volume := range spec.Volumes {
+			if volume.Name == mount.Name && volume.PersistentVolumeClaim != nil {
+				return volume.PersistentVolumeClaim.ClaimName
+			}
+		}
+	}
+	return ""
 }
 
 func stripComments(document string) string {

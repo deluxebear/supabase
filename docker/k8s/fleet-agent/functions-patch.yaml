@@ -1,0 +1,34 @@
+# Strategic merge patch that deploy.sh applies to the single-project
+# `functions` Deployment (../single-project/19-functions.yaml). It serves the
+# project's directory of the shared fleet-functions volume as
+# /home/deno/functions; FLEET_FUNCTION_PROJECT_KEY is replaced with the
+# Agent's per-project directory name. main/index.ts still comes from the
+# functions-main ConfigMap. `kubectl apply` of 19-functions.yaml keeps these
+# fields because they are not in its last-applied configuration.
+spec:
+  template:
+    spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector: { matchLabels: { app: fleet-agent } }
+              topologyKey: kubernetes.io/hostname
+      initContainers:
+        # The Agent (uid 65532) writes the project directory; kubelet would
+        # otherwise create the subPath as root.
+        - name: fleet-functions-init
+          image: alpine:3.22
+          command: [/bin/sh, -ceu, 'mkdir -p "/volume/$KEY" && chown 65532:65532 "/volume/$KEY" && chmod 0750 "/volume/$KEY"']
+          env:
+            - { name: KEY, value: FLEET_FUNCTION_PROJECT_KEY }
+          volumeMounts:
+            - { name: fleet-functions, mountPath: /volume }
+      containers:
+        - name: functions
+          env:
+            # Resolve the Fleet revision marker on every request.
+            - { name: FUNCTIONS_NO_MODULE_CACHE, value: "true" }
+          volumeMounts:
+            - { name: fleet-functions, mountPath: /home/deno/functions, subPath: FLEET_FUNCTION_PROJECT_KEY }
+      volumes:
+        - { name: fleet-functions, persistentVolumeClaim: { claimName: fleet-functions } }

@@ -1,0 +1,15 @@
+# Edge Function artifacts, shared by the Fleet Agent (writes immutable
+# revisions and activates them) and the Edge Runtime pods (serve them). The
+# layout is the one docker/volumes/functions/main/index.ts reads, so a deploy
+# takes effect on the next request without restarting the Edge Runtime.
+#
+# ReadWriteOnce works on any cluster (k3s local-path included) because
+# deploy.sh pins the functions pods to the Agent's node. On a cluster with a
+# ReadWriteMany storage class, set accessModes to [ReadWriteMany] and drop the
+# pod affinity from functions-patch.yaml to let them spread.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: { name: fleet-functions, namespace: supabase, labels: { app: fleet-agent } }
+spec:
+  accessModes: [ReadWriteOnce]
+  resources: { requests: { storage: 5Gi } }

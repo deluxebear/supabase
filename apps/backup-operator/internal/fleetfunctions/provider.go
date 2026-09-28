@@ -51,7 +51,7 @@ func (f ProbeFunc) Probe(ctx context.Context, slug string, shouldExist bool) err
 	return f(ctx, slug, shouldExist)
 }
 
+// RolloutRuntime reports whether the Edge Runtime workload is available.
 type RolloutRuntime interface {
-	Activate(context.Context, string, string) error
 	WaitForRollout(context.Context, string, string) error
 }

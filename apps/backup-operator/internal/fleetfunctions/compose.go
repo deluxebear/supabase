@@ -28,77 +28,7 @@ func (p ComposeProvider) Deploy(ctx context.Context, request Request) (Evidence,
 	if p.Root == "" || p.Prober == nil {
 		return Evidence{}, errors.New("Compose function provider is not configured")
 	}
-	projectRoot := filepath.Join(p.Root, projectKey(request.ProjectRef))
-	root := filepath.Join(projectRoot, ".fleet-artifacts", request.Deployment.Slug)
-	if request.Deployment.Action == ActionDeploy {
-		if _, err := prepareRevision(root, request); err != nil {
-			return Evidence{}, err
-		}
-	} else if err := verifyOrCreateOwner(root, ownerMarker{ProjectRef: request.ProjectRef, TargetID: request.TargetID, BindingID: request.BindingID, Slug: request.Deployment.Slug}); err != nil {
-		return Evidence{}, err
-	}
-	previous, err := currentDigest(root)
-	if err != nil {
-		return Evidence{}, err
-	}
-	switcher := p.Switch
-	if switcher == nil {
-		switcher = switchPointer
-	}
-	desired := request.Deployment.ArtifactDigest
-	if request.Deployment.Action == ActionDelete {
-		desired = ""
-	}
-	if err := switcher(root, desired); err != nil {
-		return Evidence{}, err
-	}
-	var rolloutErr error
-	if request.Deployment.Action == ActionDeploy {
-		rolloutErr = activateComposeRuntime(projectRoot, root, request.Deployment.Slug, desired)
-	} else {
-		rolloutErr = removeComposeRuntime(projectRoot, root, request.Deployment.Slug)
-	}
-	now := time.Now
-	if p.Now != nil {
-		now = p.Now
-	}
-	evidence := Evidence{Schema: EvidenceSchemaV1, Status: "active", Adapter: AdapterCompose, Slug: request.Deployment.Slug, ArtifactDigest: desired, PreviousDigest: previous, ObservedGeneration: request.ExpectedGeneration, ActivatedAt: now().UTC()}
-	if request.Deployment.Action == ActionDelete {
-		evidence.Status = "deleted"
-	}
-	shouldExist := request.Deployment.Action == ActionDeploy
-	if rolloutErr == nil {
-		if prober, ok := p.Prober.(RevisionProber); ok {
-			rolloutErr = prober.ProbeRevision(ctx, request.Deployment.Slug, shouldExist, desired)
-		} else {
-			rolloutErr = p.Prober.Probe(ctx, request.Deployment.Slug, shouldExist)
-		}
-	}
-	if rolloutErr == nil {
-		evidence.Probe = ProbeEvidence{Succeeded: true}
-		return evidence, nil
-	} else {
-		evidence.Probe = ProbeEvidence{Succeeded: false, Message: rolloutErr.Error()}
-	}
-	if rollbackErr := switcher(root, previous); rollbackErr == nil {
-		if previous == "" {
-			rollbackErr = removeComposeRuntime(projectRoot, root, request.Deployment.Slug)
-		} else {
-			rollbackErr = activateComposeRuntime(projectRoot, root, request.Deployment.Slug, previous)
-		}
-		if rollbackErr != nil {
-			evidence.Status = "manual-intervention"
-			evidence.Remediation = "Restore the function current pointer to the previous immutable revision and verify Edge Runtime before releasing the operation."
-			return evidence, &DeploymentError{Code: "manual_intervention_required", Evidence: evidence}
-		}
-		evidence.Status = "rolled-back"
-		evidence.ArtifactDigest = previous
-		evidence.Remediation = "Inspect the immutable artifact and Edge Runtime logs, then deploy a corrected revision."
-		return evidence, &DeploymentError{Code: "rollout_probe_failed", Evidence: evidence}
-	}
-	evidence.Status = "manual-intervention"
-	evidence.Remediation = "Restore the function current pointer to the previous immutable revision and verify Edge Runtime before releasing the operation."
-	return evidence, &DeploymentError{Code: "manual_intervention_required", Evidence: evidence}
+	return deployOnSharedRoot(ctx, request, sharedRootDeployment{Root: p.Root, Adapter: AdapterCompose, Prober: p.Prober, Switch: p.Switch, Now: p.Now})
 }
 
 const (

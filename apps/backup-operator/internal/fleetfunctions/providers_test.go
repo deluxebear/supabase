@@ -182,40 +182,51 @@ func TestComposeProviderDeleteRequiresAbsentProbe(t *testing.T) {
 }
 
 type fakeKubernetesRuntime struct {
-	activations []string
-	rolloutErr  error
-}
-
-func (r *fakeKubernetesRuntime) Activate(_ context.Context, _, digest string) error {
-	r.activations = append(r.activations, digest)
-	return nil
+	waits      int
+	rolloutErr error
 }
 
 func (r *fakeKubernetesRuntime) WaitForRollout(context.Context, string, string) error {
+	r.waits++
 	return r.rolloutErr
 }
 
-func TestKubernetesLargeArtifactUsesImmutableVolumeNotConfigMap(t *testing.T) {
+func TestKubernetesDeploysOntoTheSharedEdgeRuntimeLayout(t *testing.T) {
 	content := strings.Repeat("x", 2<<20)
 	request := deploymentRequest(t, AdapterKubernetes, content)
 	runtime := &fakeKubernetesRuntime{}
 	root := t.TempDir()
 	provider := KubernetesProvider{ArtifactRoot: root, Runtime: runtime, Prober: ProbeFunc(func(context.Context, string, bool) error { return nil })}
 	evidence, err := provider.Deploy(context.Background(), request)
-	if err != nil || evidence.Status != "active" || len(runtime.activations) != 1 || runtime.activations[0] != request.Deployment.ArtifactDigest {
-		t.Fatalf("large deployment = %+v, activations=%v, err=%v", evidence, runtime.activations, err)
+	if err != nil || evidence.Status != "active" || evidence.Adapter != AdapterKubernetes || runtime.waits != 1 {
+		t.Fatalf("large deployment = %+v, waits=%d, err=%v", evidence, runtime.waits, err)
 	}
-	payload, err := os.ReadFile(filepath.Join(root, projectKey("project-a"), "hello", "revisions", request.Deployment.ArtifactDigest, "index.ts"))
+	projectRoot := filepath.Join(root, projectKey("project-a"))
+	// The immutable revision, larger than a ConfigMap can hold.
+	payload, err := os.ReadFile(filepath.Join(projectRoot, ".fleet-artifacts", "hello", "revisions", request.Deployment.ArtifactDigest, "index.ts"))
 	if err != nil || len(payload) != len(content) {
-		t.Fatalf("immutable PVC artifact size = %d, %v", len(payload), err)
+		t.Fatalf("immutable artifact size = %d, %v", len(payload), err)
+	}
+	// The marker docker/volumes/functions/main/index.ts reads on each request.
+	marker, err := os.ReadFile(filepath.Join(projectRoot, "hello", ".fleet-runtime-revision"))
+	if err != nil || string(marker) != request.Deployment.ArtifactDigest {
+		t.Fatalf("runtime revision marker = %q, %v", marker, err)
 	}
 }
 
-func TestKubernetesRevisionAnnotationIsBoundedAndStable(t *testing.T) {
-	key := kubernetesRevisionAnnotation(strings.Repeat("a", 63))
-	parts := strings.SplitN(key, "/", 2)
-	if len(parts) != 2 || len(parts[1]) > 63 || key != kubernetesRevisionAnnotation(strings.Repeat("a", 63)) {
-		t.Fatalf("invalid Kubernetes annotation key %q", key)
+func TestKubernetesRollsBackWhenTheEdgeRuntimeIsUnavailable(t *testing.T) {
+	request := deploymentRequest(t, AdapterKubernetes, "export default 1")
+	runtime := &fakeKubernetesRuntime{rolloutErr: errors.New("deployment unavailable")}
+	root := t.TempDir()
+	probes := 0
+	provider := KubernetesProvider{ArtifactRoot: root, Runtime: runtime, Prober: ProbeFunc(func(context.Context, string, bool) error { probes++; return nil })}
+	evidence, err := provider.Deploy(context.Background(), request)
+	var typed *DeploymentError
+	if !errors.As(err, &typed) || evidence.Status != "rolled-back" || probes != 0 {
+		t.Fatalf("evidence=%+v probes=%d err=%v", evidence, probes, err)
+	}
+	if _, err := os.Stat(filepath.Join(root, projectKey("project-a"), "hello")); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("a first deployment that fails must leave no active function: %v", err)
 	}
 }
 
