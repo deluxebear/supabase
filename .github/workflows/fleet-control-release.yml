@@ -1,0 +1,88 @@
+name: Fleet Control release
+
+# Publishes the Fleet image built from apps/backup-operator/Dockerfile.fleet-control.
+# One image carries fleet-control, fleet-agent, fleet-agent-bootstrap, and
+# fleet-compose-observer, so it serves both FLEET_CONTROL_IMAGE and
+# FLEET_AGENT_IMAGE.
+
+on:
+  push:
+    tags: ['fleet-control/v*']
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/backup-operator
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/backup-operator/go.mod
+          cache-dependency-path: apps/backup-operator/go.sum
+      - name: Resolve release version
+        id: version
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#fleet-control/}"
+          if [[ ! "$version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "invalid fleet-control release tag: $GITHUB_REF_NAME" >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Test
+        run: go test -race ./...
+      - name: Validate generated contracts and deployments
+        run: |
+          ./scripts/check-generated.sh
+          ./scripts/validate-deployments.sh
+      - uses: sigstore/cosign-installer@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push multi-architecture image
+        id: image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/backup-operator
+          file: apps/backup-operator/Dockerfile.fleet-control
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/fleet-control:${{ steps.version.outputs.version }}
+            ghcr.io/${{ github.repository_owner }}/fleet-control:latest
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
+            COMMIT=${{ github.sha }}
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+          provenance: mode=max
+          sbom: true
+      - name: Sign OCI image
+        working-directory: .
+        run: cosign sign --yes "ghcr.io/${GITHUB_REPOSITORY_OWNER}/fleet-control@${{ steps.image.outputs.digest }}"
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ghcr.io/${{ github.repository_owner }}/fleet-control
+          subject-digest: ${{ steps.image.outputs.digest }}
+          push-to-registry: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: Fleet Control ${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          body: |
+            Image: `ghcr.io/${{ github.repository_owner }}/fleet-control:${{ steps.version.outputs.version }}`
+            (digest `${{ steps.image.outputs.digest }}`).
+
+            Use it for both `FLEET_CONTROL_IMAGE` (control plane) and `FLEET_AGENT_IMAGE`
+            (managed stacks). It contains `fleet-control`, `fleet-agent`,
+            `fleet-agent-bootstrap`, and `fleet-compose-observer`.

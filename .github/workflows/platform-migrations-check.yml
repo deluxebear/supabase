@@ -1,0 +1,27 @@
+name: Platform Migrations Check
+
+on:
+  pull_request:
+    paths:
+      - docker/volumes/platform/migrations/**
+      - docker/self-platform/scripts/check-platform-migration-names.sh
+      - docker/self-platform/scripts/run-platform-migrations.sh
+      - .github/workflows/platform-migrations-check.yml
+  push:
+    branches: [master, main, custom/main]
+    paths:
+      - docker/volumes/platform/migrations/**
+      - docker/self-platform/scripts/check-platform-migration-names.sh
+      - docker/self-platform/scripts/run-platform-migrations.sh
+      - .github/workflows/platform-migrations-check.yml
+
+permissions:
+  contents: read
+
+jobs:
+  names:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check platform migration filenames
+        run: bash docker/self-platform/scripts/check-platform-migration-names.sh docker/volumes/platform/migrations

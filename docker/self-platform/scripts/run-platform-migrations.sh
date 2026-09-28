@@ -20,6 +20,8 @@ if [[ ! -d "$MIGRATIONS_DIR" ]]; then
   exit 2
 fi
 
+bash "$(dirname "${BASH_SOURCE[0]}")/check-platform-migration-names.sh" "$MIGRATIONS_DIR"
+
 mapfile -d '' migration_files < <(
   find "$MIGRATIONS_DIR" -maxdepth 1 -type f -name '*.sql' -print0 | sort -z
 )

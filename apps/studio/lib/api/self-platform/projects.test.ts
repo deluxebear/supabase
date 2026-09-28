@@ -74,19 +74,55 @@ describe('listProjectsByOrgId', () => {
 })
 
 describe('mappers', () => {
-  it('toProjectDetailResponse carries metadata and omits the Fleet connection string', () => {
-    const res = toProjectDetailResponse(row)
+  it('toProjectDetailResponse carries metadata and public endpoints, omitting the Fleet connection string', () => {
+    const res = toProjectDetailResponse({
+      ...row,
+      endpoint_document: {
+        contractVersion: 'v1',
+        public: {
+          apiUrl: 'https://b.example.test',
+          restUrl: 'https://b.example.test/rest/v1/',
+          authUrl: 'https://b.example.test/auth/v1',
+          storageUrl: 'https://b.example.test/storage/v1',
+          realtimeUrl: 'https://b.example.test/realtime/v1',
+          functionsUrl: 'https://b.example.test/functions/v1',
+          s3Url: 'https://b.example.test/storage/v1/s3',
+          directPostgres: {
+            host: 'db.b.example.test',
+            port: 5432,
+            database: 'postgres',
+            user: 'postgres',
+            tlsMode: 'require',
+          },
+          supavisor: {
+            host: 'pooler.b.example.test',
+            transactionPort: 6543,
+            sessionPort: 5432,
+            database: 'postgres',
+            user: 'postgres',
+            tenantId: 'proj-b',
+            tlsMode: 'require',
+          },
+        },
+      },
+    })
     expect(res).toMatchObject({
       ref: 'proj-b',
       organization_id: 1,
       name: 'Project B',
       status: 'ACTIVE_HEALTHY',
-      db_host: 'db-b',
-      restUrl: 'http://kong-b:8000/rest/v1/',
+      db_host: 'db.b.example.test',
+      restUrl: 'https://b.example.test/rest/v1/',
       cloud_provider: 'AWS',
       region: 'local',
     })
     expect(res).not.toHaveProperty('connectionString')
+  })
+
+  it('toProjectDetailResponse never exposes Docker-internal hosts from legacy rows', () => {
+    const res = toProjectDetailResponse(row)
+    expect(res.db_host).toBe('')
+    expect(res.restUrl).toBe('')
   })
 })
 

@@ -55,6 +55,7 @@ services:
     volumes:
       - ../volumes/platform/migrations:/platform-migrations:ro
       - ./scripts/run-platform-migrations.sh:/usr/local/bin/run-platform-migrations:ro
+      - ./scripts/check-platform-migration-names.sh:/usr/local/bin/check-platform-migration-names.sh:ro
     entrypoint: [/bin/bash, /usr/local/bin/run-platform-migrations]
     command: [migrate]
     networks: [control]

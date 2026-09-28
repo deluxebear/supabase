@@ -54,6 +54,12 @@ docker compose -p supabase-managed-a \
   --profile agent up -d fleet-agent
 ```
 
+`capabilities.json` does not advertise `runtime.config.reconcile`. The Agent
+can write Fleet-owned configuration revisions, but no managed service consumes
+them yet, so advertising the capability would report changes as applied when
+they are not. It returns with the runtime-configuration work in the
+[Fleet completion roadmap](../../docs/self-hosted-parity/2026-09-28-fleet-completion-roadmap.md).
+
 Do not mount the Docker socket into the generic Fleet Agent. Lifecycle actions
 remain unavailable until a versioned, allowlisted provider is installed. Backup
 also remains explicitly unconfigured until a target-local Backup Agent and

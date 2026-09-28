@@ -59,6 +59,7 @@ func main() {
 	runtimeObserverURL := flag.String("runtime-observer-url", os.Getenv("FLEET_AGENT_RUNTIME_OBSERVER_URL"), "project-local read-only Compose inventory observer URL")
 	runtimeAdminDSN := flag.String("runtime-admin-dsn", os.Getenv("FLEET_AGENT_RUNTIME_ADMIN_DSN"), "operator-only PostgreSQL inventory DSN")
 	runtimeUpgradeTargets := flag.String("runtime-upgrade-targets", os.Getenv("FLEET_AGENT_RUNTIME_UPGRADE_TARGETS"), "comma-separated locally approved PostgreSQL upgrade targets")
+	advertiseConfigReconcile := flag.Bool("advertise-config-reconcile", envBool("FLEET_AGENT_ADVERTISE_CONFIG_RECONCILE"), "advertise runtime.config.reconcile; enable only when a managed service consumes the Fleet-owned configuration root")
 	journalPath := flag.String("journal", envOr("FLEET_AGENT_JOURNAL", "/var/lib/supabase-fleet/agent-journal.db"), "durable Fleet Agent execution journal")
 	lockPath := flag.String("lock", envOr("FLEET_AGENT_LOCK", "/var/lib/supabase-fleet/agent.lock"), "Fleet Agent singleton lock")
 	heartbeat := flag.Duration("heartbeat", envDuration("FLEET_AGENT_HEARTBEAT", 10*time.Second), "Fleet Agent heartbeat interval")
@@ -91,7 +92,10 @@ func main() {
 	var databaseProviders *fleetdatabase.Registry
 	var inventoryProvider fleetinventory.Provider
 	var lifecycleVersions fleetlifecycle.ComponentVersions
-	capabilities := []string{fleetproviders.CapabilityReconcileConfiguration}
+	capabilities := make([]string, 0)
+	if *advertiseConfigReconcile {
+		capabilities = append(capabilities, fleetproviders.CapabilityReconcileConfiguration)
+	}
 	if strings.TrimSpace(*runtimeObserverURL) != "" || strings.TrimSpace(*runtimeAdminDSN) != "" {
 		if strings.TrimSpace(*runtimeObserverURL) == "" || strings.TrimSpace(*runtimeAdminDSN) == "" || *adapter != "compose" {
 			log.Fatal("Fleet runtime observer URL, administration DSN, and Compose adapter must be configured together")
@@ -145,6 +149,9 @@ func main() {
 		for _, action := range actions {
 			capabilities = append(capabilities, string(action))
 		}
+	}
+	if len(capabilities) == 0 {
+		log.Fatal("Fleet Agent has no configured capabilities; configure at least one provider")
 	}
 	journal, err := agentjournal.Open(ctx, *journalPath)
 	if err != nil {
@@ -252,6 +259,10 @@ func envOr(name, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func envBool(name string) bool {
+	return strings.EqualFold(strings.TrimSpace(os.Getenv(name)), "true")
 }
 
 func envDuration(name string, fallback time.Duration) time.Duration {

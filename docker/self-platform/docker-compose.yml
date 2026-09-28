@@ -550,6 +550,7 @@ services:
     volumes:
       - ../volumes/platform/migrations:/platform-migrations:ro,z
       - ./scripts/run-platform-migrations.sh:/usr/local/bin/run-platform-migrations:ro,z
+      - ./scripts/check-platform-migration-names.sh:/usr/local/bin/check-platform-migration-names.sh:ro,z
     entrypoint: [/bin/bash, /usr/local/bin/run-platform-migrations]
     command: [migrate]
 

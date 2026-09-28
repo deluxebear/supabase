@@ -155,12 +155,12 @@ Phase 0 ──► Phase 1 (lifecycle plugin) ──► Phase 2 (runtime config)
    └──► Phase 5 (API gaps)
 ```
 
-## 5. Open decisions
+## 5. Decisions (accepted 2026-09-28)
 
-1. **Auth downtime on apply.** A rollout recreates the `auth` container, which causes a few seconds of Auth unavailability. The options are to accept this with an explicit impact plan and AAL2 confirmation (recommended, matching the lifecycle contract) or to run a second `auth` replica behind Kong for zero downtime.
-2. **Rollout mechanism.** The options are the `docker compose` CLI inside the plugin (recommended, because it keeps Compose semantics and `env_file` handling) or recreating through the Docker Engine API directly, which avoids shipping the Compose CLI but reimplements Compose merge logic.
-3. **Backup repository.** The options are S3-compatible object storage per project (recommended) or a shared repository with per-project stanzas.
-4. **Scope of runtime config in Phase 2.** The options are Auth only first (recommended) or Auth, PostgREST, Realtime, and Storage together.
+1. **Auth downtime on apply:** accept a few seconds of Auth unavailability per rollout. Every apply goes through an impact plan and AAL2 confirmation, matching the lifecycle contract. A second `auth` replica for zero downtime is not planned.
+2. **Rollout mechanism:** the plugin runs the `docker compose` CLI (fixed arguments, no shell) so Compose merge and `env_file` semantics stay intact. Recreating through the Docker Engine API directly was rejected.
+3. **Backup repository:** one S3-compatible repository per project. A shared repository with per-project stanzas was rejected.
+4. **Phase 2 scope:** Auth first. PostgREST, Realtime, and Storage follow on the same producer once Auth passes its acceptance.
 
 ## 6. Release checkpoint
 
