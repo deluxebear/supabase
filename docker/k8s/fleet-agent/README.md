@@ -111,9 +111,27 @@ uses the same runtime as on Compose, over the `db` and `supavisor` Services:
   `POSTGRES_PASSWORD` there before the next `deploy.sh`, or services that read
   it (and this Agent's DSNs) keep the old password after a restart.
 
+## Runtime inventory
+
+`runtime.observe` reads the namespace through the cluster API and Postgres,
+read-only:
+
+- Workloads: pods of Deployments, StatefulSets, and DaemonSets (not Jobs, not
+  the Agent), with image, image digest, state, readiness, and limits. The
+  Postgres pods (`FLEET_AGENT_KUBERNETES_DATABASE_SERVICE`, default
+  `supabase-db`) are reported as service `db`.
+- Disk: the capacity of the database PVC
+  (`FLEET_AGENT_KUBERNETES_DATABASE_CLAIM`, default `data-supabase-db-0`) is
+  the filesystem size; used bytes come from Postgres database, WAL, and
+  tablespace sizes. Other PVCs are listed with their storage class but no
+  usage, which Kubernetes does not report without node metrics access.
+- Compute: a ResourceQuota in the namespace if it sets CPU and memory,
+  otherwise the allocatable resources of the database node. Reading the node
+  is the Agent's only cluster-scoped permission (`get nodes`).
+
 ## Not included
 
-- Runtime inventory and lifecycle actions: their providers are Compose-only.
+- Lifecycle actions (restart, rollout, upgrades): their provider is Compose-only.
 
 `apps/backup-operator/cmd/fleet-agent/manifests_test.go` decodes these
 manifests strictly against the Kubernetes API types and checks that every

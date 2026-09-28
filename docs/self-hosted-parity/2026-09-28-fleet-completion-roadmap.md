@@ -18,7 +18,7 @@ What reaches a managed stack and has an effect today:
 | Data plane (SQL, tables, Auth users, Storage, REST, Realtime)                     | per-ref BFF proxies                                                                                                                                           | Works                                                  |
 | Edge Function deploy                                                              | `fleetfunctions/compose.go` writes into the bind mount that `functions` serves (`docker/fleet-managed/docker-compose.override.yml:69-80`), probes, rolls back | **Works end to end**                                   |
 | Database security (pooler SSL, CIDR allowlist, pool size, role password rotation) | `fleetdatabase/postgres_runtime.go` updates `_supavisor.tenants`, `ALTER ROLE`, then syncs the registry                                                       | **Works** (Compose and Kubernetes)                     |
-| Runtime inventory                                                                 | `fleet-compose-observer` (Docker API reads) + PostgreSQL queries                                                                                              | Works (read-only)                                      |
+| Runtime inventory                                                                 | Compose: `fleet-compose-observer` (Docker API reads); Kubernetes: `fleetinventory.KubernetesObserver` (cluster API reads); both + PostgreSQL queries          | Works (read-only, Compose and Kubernetes)              |
 
 What looks present but has no effect:
 
@@ -235,7 +235,7 @@ These wait until Phases 0–3 are in production use:
 
 - PostgreSQL major-upgrade provider
 - Read replicas and branching providers
-- Kubernetes parity for runtime inventory (database security is done: the runtime only needs network access, so Compose and Kubernetes share `PostgresRuntime`)
+- Kubernetes lifecycle actions (restart, rollout, major upgrade). Database security and runtime inventory already have Kubernetes providers.
 - The T12 compact control-plane packaging, which stays deferred per the alignment matrix
 
 ## 4. Dependency view
