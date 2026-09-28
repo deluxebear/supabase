@@ -129,3 +129,4 @@ mv "$temporary" "$output_env"
 trap - EXIT
 echo "Created managed instance environment at $output_env"
 "$root_dir/scripts/bootstrap-config-domain.sh" "$root_dir/state/$project_ref/config" auth
+"$root_dir/scripts/bootstrap-config-domain.sh" "$root_dir/state/$project_ref/config" functions

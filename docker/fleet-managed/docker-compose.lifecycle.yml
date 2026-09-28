@@ -87,7 +87,7 @@ services:
       FLEET_LIFECYCLE_SERVICES: ${FLEET_LIFECYCLE_SERVICES:-auth,rest,realtime,storage,imgproxy,meta,functions,supavisor}
       FLEET_LIFECYCLE_DOCKER_ENDPOINT: http://fleet-docker-proxy-lifecycle:2375
       FLEET_LIFECYCLE_PROJECT_DIRECTORY: ${FLEET_HOST_COMPOSE_DIRECTORY:?set FLEET_HOST_COMPOSE_DIRECTORY}
-      FLEET_LIFECYCLE_COMPOSE_FILES: ${FLEET_HOST_COMPOSE_DIRECTORY}/docker-compose.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.override.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.lifecycle.yml,${FLEET_HOST_CONFIG_ROOT:?set FLEET_HOST_CONFIG_ROOT}/auth/current/compose.yml,${FLEET_HOST_CONFIG_ROOT}/auth/current/secrets.compose.yml
+      FLEET_LIFECYCLE_COMPOSE_FILES: ${FLEET_HOST_COMPOSE_DIRECTORY}/docker-compose.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.override.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.lifecycle.yml,${FLEET_HOST_CONFIG_ROOT:?set FLEET_HOST_CONFIG_ROOT}/auth/current/compose.yml,${FLEET_HOST_CONFIG_ROOT}/auth/current/secrets.compose.yml,${FLEET_HOST_CONFIG_ROOT}/functions/current/secrets.compose.yml
       FLEET_LIFECYCLE_ENV_FILES: /var/lib/fleet-lifecycle/env/supabase.env,/var/lib/fleet-lifecycle/env/project.env
       FLEET_LIFECYCLE_VERIFY_TIMEOUT: ${FLEET_LIFECYCLE_VERIFY_TIMEOUT:-2m}
     volumes:

@@ -17,6 +17,7 @@ import {
 } from './DefaultEdgeFunctionSecrets.utils'
 import EdgeFunctionSecret from './EdgeFunctionSecret'
 import { EditSecretSheet } from './EditSecretSheet'
+import { FunctionSecretsApplyNotice } from './FunctionSecretsApplyNotice'
 import { AlertError } from '@/components/ui/AlertError'
 import { DocsButton } from '@/components/ui/DocsButton'
 import { NoPermission } from '@/components/ui/NoPermission'
@@ -134,6 +135,9 @@ export const EdgeFunctionSecrets = () => {
 
           {isSuccess && (
             <div className="space-y-10">
+              {projectRef !== undefined && (
+                <FunctionSecretsApplyNotice projectRef={projectRef} canApply={canUpdateSecrets} />
+              )}
               {canUpdateSecrets ? (
                 <AddNewSecretForm />
               ) : (

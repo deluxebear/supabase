@@ -116,16 +116,18 @@ docker compose -p supabase-managed-a \
   -f docker/fleet-managed/docker-compose.lifecycle.yml \
   -f docker/fleet-managed/state/project-a/config/auth/current/compose.yml \
   -f docker/fleet-managed/state/project-a/config/auth/current/secrets.compose.yml \
+  -f docker/fleet-managed/state/project-a/config/functions/current/secrets.compose.yml \
   --profile agent up -d
 ```
 
-`scripts/init-instance-env.sh` creates both files as empty placeholders for new
-instances. For an existing instance, add `FLEET_HOST_CONFIG_ROOT` (the absolute
+`scripts/init-instance-env.sh` creates these files as empty placeholders for new
+instances. The `functions` file carries Edge Function secrets (see below). For an existing instance, add `FLEET_HOST_CONFIG_ROOT` (the absolute
 path of its `FLEET_CONFIG_ROOT`) and `FLEET_OPERATOR_GID` (the output of
 `id -g` for the user who runs `docker compose`) to its env file and run
-`scripts/bootstrap-config-domain.sh "$FLEET_HOST_CONFIG_ROOT" auth` once. If the
-script warns that `secrets.compose.yml` is missing, apply the Auth settings from
-Studio once before adding the file to your commands.
+`scripts/bootstrap-config-domain.sh "$FLEET_HOST_CONFIG_ROOT" auth` and
+`scripts/bootstrap-config-domain.sh "$FLEET_HOST_CONFIG_ROOT" functions` once. If
+the script warns that `secrets.compose.yml` is missing, apply the Auth settings
+from Studio once before adding the file to your commands.
 
 ### Secret Auth settings
 
@@ -148,6 +150,27 @@ to the old key then fail with `sealed_secret_recipient_mismatch`; apply the Auth
 settings again and Studio seals them to the new key. An Agent without a
 recipient key, such as an older release, gets the non-secret settings only, and
 Studio lists the secrets it did not deliver.
+
+## Edge Function secrets
+
+Edge Function secrets saved in Studio or with `supabase secrets set` use the
+same channel. The Edge Runtime main service passes its environment to every
+function worker, so Fleet delivers the secrets as environment variables of the
+`functions` service: Studio seals them into
+`$FLEET_HOST_CONFIG_ROOT/functions/current/secrets.compose.yml`, and the Agent
+recreates `functions`. Function requests fail for a few seconds during the
+restart.
+
+Saving a secret does not restart anything. The Edge Function secrets page shows
+that saved secrets are not applied yet and offers "Apply to Edge Functions",
+which needs secret write access, a recent MFA verification, and, the first time,
+confirmation that Fleet manages the `functions` domain. That is the same
+ownership policy function deployments use.
+
+Names the runtime reads itself are rejected: `JWT_SECRET`, `VERIFY_JWT`,
+`HOME`, `HOSTNAME`, `PATH`, and names starting with `SUPABASE_`,
+`EDGE_RUNTIME_`, `DENO_`, or `FUNCTIONS_`. Such secrets stored before this check
+are never delivered, and the page lists them.
 
 Do not mount the Docker socket into the generic Fleet Agent. Lifecycle actions
 remain unavailable until a versioned, allowlisted provider is installed. Backup

@@ -160,9 +160,25 @@ Studio seals each secret file to the target Agent's own key, so the secret trave
 
 Next uses of the same channel:
 
-- Edge Function secrets: seal `platform.function_secrets` to the Agent under the `functions` domain, closing the gap where they are stored but never delivered.
+- Edge Function secrets: done, see below.
 - Database password rotation still uses Fleet Control's sensitive operation path, where Fleet Control can decrypt. Moving it to envelopes removes that exposure.
 - Recipient key rotation is by Agent replacement today. A planned rotation needs the Agent to keep the old key until Studio has resealed every domain.
+
+Edge Function secrets status (2026-09-28): implemented for Compose targets, pending live acceptance.
+
+| Piece    | State                                                                                                                                                                                                                                                                                                                                    |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Delivery | `platform.function_secrets` are decrypted in Studio, rendered as environment variables of the `functions` service, and sealed into `secrets.compose.yml` of the `functions` configuration domain. The Edge Runtime main service passes its environment to every worker, so functions read them with `Deno.env.get`.                      |
+| Apply    | `GET/POST /api/platform/projects/[ref]/functions/secrets/apply`, with the same mechanics as the Auth apply (shared in `lib/api/self-platform/compose-domain-apply.ts`): `secrets:Write`, recent AAL2, explicit ownership confirmation for the `functions` policy, and a `runtime.config.reconcile` commit with `rollout: ["functions"]`. |
+| UI       | The Edge Function secrets page shows whether saved secrets are applied and offers the apply. Saving a secret refreshes that status.                                                                                                                                                                                                      |
+| Names    | Names the runtime reads itself (`SUPABASE_*`, `JWT_SECRET`, `VERIFY_JWT`, `EDGE_RUNTIME_*`, `DENO_*`, `FUNCTIONS_*`, and a few process variables) are rejected on write and never delivered.                                                                                                                                             |
+| Target   | The lifecycle overlay loads `functions/current/secrets.compose.yml`; `init-instance-env.sh` bootstraps the `functions` domain.                                                                                                                                                                                                           |
+
+Deviations and open items:
+
+- Applying is explicit, not part of saving. Every apply recreates the Edge Runtime, so a save would otherwise restart functions for each secret the CLI sets.
+- Kubernetes targets are not wired. They need a Secret provider for the same envelopes.
+- Changed secrets reach functions only after an apply, unlike the hosted platform where they apply on the next invocation.
 
 ### Phase 3: backups on Fleet Compose stacks (3–4 weeks, parallel)
 

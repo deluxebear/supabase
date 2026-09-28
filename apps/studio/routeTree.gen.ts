@@ -314,6 +314,7 @@ import { Route as ApiPlatformProjectsRefAnalyticsLogDrainsRouteImport } from './
 import { Route as ApiPlatformOrganizationsSlugManagementTargetsTargetIdRouteImport } from './routes/api/platform/organizations/$slug/management-targets/$targetId'
 import { Route as ApiPlatformOrganizationsSlugBillingSubscriptionRouteImport } from './routes/api/platform/organizations/$slug/billing/subscription'
 import { Route as ApiPlatformDatabaseRefBackupOperatorStatusRouteImport } from './routes/api/platform/database/$ref/backup-operator/status'
+import { Route as ApiPlatformAuthRefConfigApplyRouteImport } from './routes/api/platform/auth/$ref/config/apply'
 import { Route as ProjectRefIntegrationsIdPageIdChildIdIndexRouteImport } from './routes/project/$ref/integrations/$id/$pageId/$childId/index'
 import { Route as ApiV1ProjectsRefFunctionsSlugIndexRouteImport } from './routes/api/v1/projects/$ref/functions/$slug/index'
 import { Route as ApiPlatformStorageRefVectorBucketsIdIndexRouteImport } from './routes/api/platform/storage/$ref/vector-buckets/$id/index'
@@ -322,6 +323,7 @@ import { Route as ApiPlatformProjectsRefContentFoldersIndexRouteImport } from '.
 import { Route as ApiPlatformAuthRefUsersIdIndexRouteImport } from './routes/api/platform/auth/$ref/users/$id/index'
 import { Route as ApiV1ProjectsRefFunctionsSlugBodyRouteImport } from './routes/api/v1/projects/$ref/functions/$slug/body'
 import { Route as ApiPlatformStorageRefBucketsIdEmptyRouteImport } from './routes/api/platform/storage/$ref/buckets/$id/empty'
+import { Route as ApiPlatformProjectsRefFunctionsSecretsApplyRouteImport } from './routes/api/platform/projects/$ref/functions/secrets/apply'
 import { Route as ApiPlatformProjectsRefContentItemIdRouteImport } from './routes/api/platform/projects/$ref/content/item/$id'
 import { Route as ApiPlatformProjectsRefContentFoldersIdRouteImport } from './routes/api/platform/projects/$ref/content/folders/$id'
 import { Route as ApiPlatformProjectsRefConfigSecretsUpdateStatusRouteImport } from './routes/api/platform/projects/$ref/config/secrets/update-status'
@@ -2039,6 +2041,12 @@ const ApiPlatformDatabaseRefBackupOperatorStatusRoute =
     path: '/api/platform/database/$ref/backup-operator/status',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPlatformAuthRefConfigApplyRoute =
+  ApiPlatformAuthRefConfigApplyRouteImport.update({
+    id: '/api/platform/auth/$ref/config/apply',
+    path: '/api/platform/auth/$ref/config/apply',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ProjectRefIntegrationsIdPageIdChildIdIndexRoute =
   ProjectRefIntegrationsIdPageIdChildIdIndexRouteImport.update({
     id: '/$id/$pageId/$childId/',
@@ -2085,6 +2093,12 @@ const ApiPlatformStorageRefBucketsIdEmptyRoute =
   ApiPlatformStorageRefBucketsIdEmptyRouteImport.update({
     id: '/api/platform/storage/$ref/buckets/$id/empty',
     path: '/api/platform/storage/$ref/buckets/$id/empty',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPlatformProjectsRefFunctionsSecretsApplyRoute =
+  ApiPlatformProjectsRefFunctionsSecretsApplyRouteImport.update({
+    id: '/api/platform/projects/$ref/functions/secrets/apply',
+    path: '/api/platform/projects/$ref/functions/secrets/apply',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPlatformProjectsRefContentItemIdRoute =
@@ -2474,6 +2488,7 @@ export interface FileRoutesByFullPath {
   '/project/$ref/storage/analytics/': typeof ProjectRefStorageAnalyticsIndexRoute
   '/project/$ref/storage/files/': typeof ProjectRefStorageFilesIndexRoute
   '/project/$ref/storage/vectors/': typeof ProjectRefStorageVectorsIndexRoute
+  '/api/platform/auth/$ref/config/apply': typeof ApiPlatformAuthRefConfigApplyRoute
   '/api/platform/database/$ref/backup-operator/status': typeof ApiPlatformDatabaseRefBackupOperatorStatusRoute
   '/api/platform/organizations/$slug/billing/subscription': typeof ApiPlatformOrganizationsSlugBillingSubscriptionRoute
   '/api/platform/organizations/$slug/management-targets/$targetId': typeof ApiPlatformOrganizationsSlugManagementTargetsTargetIdRoute
@@ -2512,6 +2527,7 @@ export interface FileRoutesByFullPath {
   '/api/platform/projects/$ref/config/secrets/update-status': typeof ApiPlatformProjectsRefConfigSecretsUpdateStatusRoute
   '/api/platform/projects/$ref/content/folders/$id': typeof ApiPlatformProjectsRefContentFoldersIdRoute
   '/api/platform/projects/$ref/content/item/$id': typeof ApiPlatformProjectsRefContentItemIdRoute
+  '/api/platform/projects/$ref/functions/secrets/apply': typeof ApiPlatformProjectsRefFunctionsSecretsApplyRoute
   '/api/platform/storage/$ref/buckets/$id/empty': typeof ApiPlatformStorageRefBucketsIdEmptyRoute
   '/api/v1/projects/$ref/functions/$slug/body': typeof ApiV1ProjectsRefFunctionsSlugBodyRoute
   '/api/platform/auth/$ref/users/$id/': typeof ApiPlatformAuthRefUsersIdIndexRoute
@@ -2791,6 +2807,7 @@ export interface FileRoutesByTo {
   '/project/$ref/storage/analytics': typeof ProjectRefStorageAnalyticsIndexRoute
   '/project/$ref/storage/files': typeof ProjectRefStorageFilesIndexRoute
   '/project/$ref/storage/vectors': typeof ProjectRefStorageVectorsIndexRoute
+  '/api/platform/auth/$ref/config/apply': typeof ApiPlatformAuthRefConfigApplyRoute
   '/api/platform/database/$ref/backup-operator/status': typeof ApiPlatformDatabaseRefBackupOperatorStatusRoute
   '/api/platform/organizations/$slug/billing/subscription': typeof ApiPlatformOrganizationsSlugBillingSubscriptionRoute
   '/api/platform/organizations/$slug/management-targets/$targetId': typeof ApiPlatformOrganizationsSlugManagementTargetsTargetIdRoute
@@ -2829,6 +2846,7 @@ export interface FileRoutesByTo {
   '/api/platform/projects/$ref/config/secrets/update-status': typeof ApiPlatformProjectsRefConfigSecretsUpdateStatusRoute
   '/api/platform/projects/$ref/content/folders/$id': typeof ApiPlatformProjectsRefContentFoldersIdRoute
   '/api/platform/projects/$ref/content/item/$id': typeof ApiPlatformProjectsRefContentItemIdRoute
+  '/api/platform/projects/$ref/functions/secrets/apply': typeof ApiPlatformProjectsRefFunctionsSecretsApplyRoute
   '/api/platform/storage/$ref/buckets/$id/empty': typeof ApiPlatformStorageRefBucketsIdEmptyRoute
   '/api/v1/projects/$ref/functions/$slug/body': typeof ApiV1ProjectsRefFunctionsSlugBodyRoute
   '/api/platform/auth/$ref/users/$id': typeof ApiPlatformAuthRefUsersIdIndexRoute
@@ -3126,6 +3144,7 @@ export interface FileRoutesById {
   '/project/$ref/storage/analytics/': typeof ProjectRefStorageAnalyticsIndexRoute
   '/project/$ref/storage/files/': typeof ProjectRefStorageFilesIndexRoute
   '/project/$ref/storage/vectors/': typeof ProjectRefStorageVectorsIndexRoute
+  '/api/platform/auth/$ref/config/apply': typeof ApiPlatformAuthRefConfigApplyRoute
   '/api/platform/database/$ref/backup-operator/status': typeof ApiPlatformDatabaseRefBackupOperatorStatusRoute
   '/api/platform/organizations/$slug/billing/subscription': typeof ApiPlatformOrganizationsSlugBillingSubscriptionRoute
   '/api/platform/organizations/$slug/management-targets/$targetId': typeof ApiPlatformOrganizationsSlugManagementTargetsTargetIdRoute
@@ -3164,6 +3183,7 @@ export interface FileRoutesById {
   '/api/platform/projects/$ref/config/secrets/update-status': typeof ApiPlatformProjectsRefConfigSecretsUpdateStatusRoute
   '/api/platform/projects/$ref/content/folders/$id': typeof ApiPlatformProjectsRefContentFoldersIdRoute
   '/api/platform/projects/$ref/content/item/$id': typeof ApiPlatformProjectsRefContentItemIdRoute
+  '/api/platform/projects/$ref/functions/secrets/apply': typeof ApiPlatformProjectsRefFunctionsSecretsApplyRoute
   '/api/platform/storage/$ref/buckets/$id/empty': typeof ApiPlatformStorageRefBucketsIdEmptyRoute
   '/api/v1/projects/$ref/functions/$slug/body': typeof ApiV1ProjectsRefFunctionsSlugBodyRoute
   '/api/platform/auth/$ref/users/$id/': typeof ApiPlatformAuthRefUsersIdIndexRoute
@@ -3460,6 +3480,7 @@ export interface FileRouteTypes {
     | '/project/$ref/storage/analytics/'
     | '/project/$ref/storage/files/'
     | '/project/$ref/storage/vectors/'
+    | '/api/platform/auth/$ref/config/apply'
     | '/api/platform/database/$ref/backup-operator/status'
     | '/api/platform/organizations/$slug/billing/subscription'
     | '/api/platform/organizations/$slug/management-targets/$targetId'
@@ -3498,6 +3519,7 @@ export interface FileRouteTypes {
     | '/api/platform/projects/$ref/config/secrets/update-status'
     | '/api/platform/projects/$ref/content/folders/$id'
     | '/api/platform/projects/$ref/content/item/$id'
+    | '/api/platform/projects/$ref/functions/secrets/apply'
     | '/api/platform/storage/$ref/buckets/$id/empty'
     | '/api/v1/projects/$ref/functions/$slug/body'
     | '/api/platform/auth/$ref/users/$id/'
@@ -3777,6 +3799,7 @@ export interface FileRouteTypes {
     | '/project/$ref/storage/analytics'
     | '/project/$ref/storage/files'
     | '/project/$ref/storage/vectors'
+    | '/api/platform/auth/$ref/config/apply'
     | '/api/platform/database/$ref/backup-operator/status'
     | '/api/platform/organizations/$slug/billing/subscription'
     | '/api/platform/organizations/$slug/management-targets/$targetId'
@@ -3815,6 +3838,7 @@ export interface FileRouteTypes {
     | '/api/platform/projects/$ref/config/secrets/update-status'
     | '/api/platform/projects/$ref/content/folders/$id'
     | '/api/platform/projects/$ref/content/item/$id'
+    | '/api/platform/projects/$ref/functions/secrets/apply'
     | '/api/platform/storage/$ref/buckets/$id/empty'
     | '/api/v1/projects/$ref/functions/$slug/body'
     | '/api/platform/auth/$ref/users/$id'
@@ -4111,6 +4135,7 @@ export interface FileRouteTypes {
     | '/project/$ref/storage/analytics/'
     | '/project/$ref/storage/files/'
     | '/project/$ref/storage/vectors/'
+    | '/api/platform/auth/$ref/config/apply'
     | '/api/platform/database/$ref/backup-operator/status'
     | '/api/platform/organizations/$slug/billing/subscription'
     | '/api/platform/organizations/$slug/management-targets/$targetId'
@@ -4149,6 +4174,7 @@ export interface FileRouteTypes {
     | '/api/platform/projects/$ref/config/secrets/update-status'
     | '/api/platform/projects/$ref/content/folders/$id'
     | '/api/platform/projects/$ref/content/item/$id'
+    | '/api/platform/projects/$ref/functions/secrets/apply'
     | '/api/platform/storage/$ref/buckets/$id/empty'
     | '/api/v1/projects/$ref/functions/$slug/body'
     | '/api/platform/auth/$ref/users/$id/'
@@ -4254,6 +4280,7 @@ export interface RootRouteChildren {
   ApiPlatformPropsOrgSlugRoute: typeof ApiPlatformPropsOrgSlugRoute
   ApiV1ProjectsRefApiKeysRoute: typeof ApiV1ProjectsRefApiKeysRouteWithChildren
   ApiPlatformProjectsRefIndexRoute: typeof ApiPlatformProjectsRefIndexRoute
+  ApiPlatformAuthRefConfigApplyRoute: typeof ApiPlatformAuthRefConfigApplyRoute
   ApiPlatformDatabaseRefBackupOperatorStatusRoute: typeof ApiPlatformDatabaseRefBackupOperatorStatusRoute
   ApiPlatformOrganizationsSlugBillingSubscriptionRoute: typeof ApiPlatformOrganizationsSlugBillingSubscriptionRoute
   ApiPlatformOrganizationsSlugManagementTargetsTargetIdRoute: typeof ApiPlatformOrganizationsSlugManagementTargetsTargetIdRoute
@@ -4285,6 +4312,7 @@ export interface RootRouteChildren {
   ApiPlatformProjectsRefConfigSecretsUpdateStatusRoute: typeof ApiPlatformProjectsRefConfigSecretsUpdateStatusRoute
   ApiPlatformProjectsRefContentFoldersIdRoute: typeof ApiPlatformProjectsRefContentFoldersIdRoute
   ApiPlatformProjectsRefContentItemIdRoute: typeof ApiPlatformProjectsRefContentItemIdRoute
+  ApiPlatformProjectsRefFunctionsSecretsApplyRoute: typeof ApiPlatformProjectsRefFunctionsSecretsApplyRoute
   ApiPlatformStorageRefBucketsIdEmptyRoute: typeof ApiPlatformStorageRefBucketsIdEmptyRoute
   ApiV1ProjectsRefFunctionsSlugBodyRoute: typeof ApiV1ProjectsRefFunctionsSlugBodyRoute
   ApiPlatformAuthRefUsersIdIndexRoute: typeof ApiPlatformAuthRefUsersIdIndexRoute
@@ -6444,6 +6472,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPlatformDatabaseRefBackupOperatorStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/platform/auth/$ref/config/apply': {
+      id: '/api/platform/auth/$ref/config/apply'
+      path: '/api/platform/auth/$ref/config/apply'
+      fullPath: '/api/platform/auth/$ref/config/apply'
+      preLoaderRoute: typeof ApiPlatformAuthRefConfigApplyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/project/$ref/integrations/$id/$pageId/$childId/': {
       id: '/project/$ref/integrations/$id/$pageId/$childId/'
       path: '/$id/$pageId/$childId'
@@ -6498,6 +6533,13 @@ declare module '@tanstack/react-router' {
       path: '/api/platform/storage/$ref/buckets/$id/empty'
       fullPath: '/api/platform/storage/$ref/buckets/$id/empty'
       preLoaderRoute: typeof ApiPlatformStorageRefBucketsIdEmptyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/platform/projects/$ref/functions/secrets/apply': {
+      id: '/api/platform/projects/$ref/functions/secrets/apply'
+      path: '/api/platform/projects/$ref/functions/secrets/apply'
+      fullPath: '/api/platform/projects/$ref/functions/secrets/apply'
+      preLoaderRoute: typeof ApiPlatformProjectsRefFunctionsSecretsApplyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/platform/projects/$ref/content/item/$id': {
@@ -7460,6 +7502,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPlatformPropsOrgSlugRoute: ApiPlatformPropsOrgSlugRoute,
   ApiV1ProjectsRefApiKeysRoute: ApiV1ProjectsRefApiKeysRouteWithChildren,
   ApiPlatformProjectsRefIndexRoute: ApiPlatformProjectsRefIndexRoute,
+  ApiPlatformAuthRefConfigApplyRoute: ApiPlatformAuthRefConfigApplyRoute,
   ApiPlatformDatabaseRefBackupOperatorStatusRoute:
     ApiPlatformDatabaseRefBackupOperatorStatusRoute,
   ApiPlatformOrganizationsSlugBillingSubscriptionRoute:
@@ -7513,6 +7556,8 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPlatformProjectsRefContentFoldersIdRoute,
   ApiPlatformProjectsRefContentItemIdRoute:
     ApiPlatformProjectsRefContentItemIdRoute,
+  ApiPlatformProjectsRefFunctionsSecretsApplyRoute:
+    ApiPlatformProjectsRefFunctionsSecretsApplyRoute,
   ApiPlatformStorageRefBucketsIdEmptyRoute:
     ApiPlatformStorageRefBucketsIdEmptyRoute,
   ApiV1ProjectsRefFunctionsSlugBodyRoute:

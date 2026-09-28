@@ -4,7 +4,7 @@ import { Button } from 'ui'
 import { Admonition } from 'ui-patterns/Admonition'
 
 import { AuthConfigApplyDialog } from './AuthConfigApplyDialog'
-import { getAuthApplyNotice } from './AuthConfigDesiredStateNotice.utils'
+import { getConfigApplyNotice } from '@/components/interfaces/SelfPlatform/ConfigApplyNotice.utils'
 import { authConfigApplyStatusQueryOptions } from '@/data/auth/auth-config-apply'
 import { t as $t } from '@/lib/i18n'
 
@@ -16,7 +16,7 @@ const NOTICE_CLASS_NAME = 'rounded-none border-x-0 border-t-0 px-6'
 export const AuthConfigDesiredStateNotice = ({ projectRef }: { projectRef: string }) => {
   const [isApplyDialogOpen, setIsApplyDialogOpen] = useState(false)
   const { data: status } = useQuery(authConfigApplyStatusQueryOptions({ projectRef }))
-  const notice = getAuthApplyNotice(status)
+  const notice = getConfigApplyNotice(status)
 
   if (notice.kind === 'hidden') return null
 

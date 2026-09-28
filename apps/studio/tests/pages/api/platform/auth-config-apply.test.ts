@@ -2,13 +2,11 @@ import type { JwtPayload } from '@supabase/supabase-js'
 import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import {
-  applyAuthConfig,
-  AuthApplyConflict,
-  getAuthApplyStatus,
-} from '@/lib/api/self-platform/auth-apply'
+import { applyAuthConfig, getAuthApplyStatus } from '@/lib/api/self-platform/auth-apply'
+import { ComposeApplyConflict } from '@/lib/api/self-platform/compose-domain-apply'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
-import { handler, hasRecentAal2 } from '@/pages/api/platform/auth/[ref]/config/apply'
+import { hasRecentAal2 } from '@/lib/api/self-platform/recent-aal2'
+import { handler } from '@/pages/api/platform/auth/[ref]/config/apply'
 
 vi.hoisted(() => {
   process.env.NEXT_PUBLIC_STUDIO_DEPLOYMENT_PROFILE = 'fleet'
@@ -101,7 +99,7 @@ describe('/platform/auth/[ref]/config/apply', () => {
 
   it('POST maps apply conflicts to 409 with their code', async () => {
     vi.mocked(applyAuthConfig).mockRejectedValue(
-      new AuthApplyConflict('ownership_confirmation_required', 'Confirm ownership')
+      new ComposeApplyConflict('ownership_confirmation_required', 'Confirm ownership')
     )
     const { req, res } = post({ expectedGeneration: 0 })
     await handler(req as never, res as never, aal2)

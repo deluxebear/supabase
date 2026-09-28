@@ -3,13 +3,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { executePlatformQuery } from './db'
 import {
   deleteFunctionSecrets,
+  functionSecretInputSchema,
+  isReservedFunctionSecretName,
   listFunctionSecretMetadata,
+  readFunctionSecretValues,
   upsertFunctionSecrets,
 } from './function-secrets'
 import { encryptSecret } from './secrets'
 
 vi.mock('./db', () => ({ executePlatformQuery: vi.fn() }))
-vi.mock('./secrets', () => ({ encryptSecret: vi.fn((value: string) => `encrypted:${value}`) }))
+vi.mock('./secrets', () => ({
+  encryptSecret: vi.fn((value: string) => `encrypted:${value}`),
+  decryptSecret: vi.fn((value: string) => value.replace(/^encrypted:/, '')),
+}))
 
 describe('Fleet function secrets', () => {
   beforeEach(() => {
@@ -82,5 +88,27 @@ describe('Fleet function secrets', () => {
       'operator',
       'request-b',
     ])
+  })
+
+  it('rejects names reserved by the Edge Functions runtime', () => {
+    for (const name of ['SUPABASE_URL', 'supabase_url', 'JWT_SECRET', 'VERIFY_JWT', 'DENO_DIR']) {
+      expect(isReservedFunctionSecretName(name)).toBe(true)
+      expect(functionSecretInputSchema.safeParse({ name, value: 'x' }).success).toBe(false)
+    }
+    for (const name of ['STRIPE_KEY', 'MY_SUPABASE_URL', 'jwt']) {
+      expect(isReservedFunctionSecretName(name)).toBe(false)
+      expect(functionSecretInputSchema.safeParse({ name, value: 'x' }).success).toBe(true)
+    }
+  })
+
+  it('decrypts stored values for sealing', async () => {
+    vi.mocked(executePlatformQuery).mockResolvedValue({
+      data: [{ name: 'STRIPE_KEY', value_ciphertext: 'encrypted:sk_test' }],
+      error: undefined,
+    })
+    await expect(readFunctionSecretValues('project-a')).resolves.toEqual({
+      STRIPE_KEY: 'sk_test',
+    })
+    expect(vi.mocked(executePlatformQuery).mock.calls[0]?.[0].parameters).toEqual(['project-a'])
   })
 })

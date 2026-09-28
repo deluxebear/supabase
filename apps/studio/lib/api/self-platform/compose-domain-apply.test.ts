@@ -2,31 +2,32 @@ import { createHash } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
 
 import {
-  deriveAuthApplyState,
+  deriveComposeApplyState,
+  plainFilesKey,
   sealedSecretsFile,
   sealedSecretsMarker,
-  type AuthApplyOperation,
-} from './auth-apply'
+  type ComposeApplyOperation,
+} from './compose-domain-apply'
 import { sealedSecretFingerprint, type SealedSecretContext } from './sealed-secret'
 
-const operation = (state: string): AuthApplyOperation => ({
+const operation = (state: string): ComposeApplyOperation => ({
   id: 'auth_apply_1',
   state,
   errorCode: null,
   updatedAt: '2026-09-28T00:00:00Z',
 })
 
-describe('deriveAuthApplyState', () => {
+describe('deriveComposeApplyState', () => {
   const planned = 'services:\n  auth:\n    environment: {}\n'
 
   it('reports nothing to apply before anything was stored or applied', () => {
     expect(
-      deriveAuthApplyState({
-        plannedContent: planned,
+      deriveComposeApplyState({
+        plannedPlain: planned,
         plannedSecrets: null,
         desiredSecrets: null,
-        hasOverrides: false,
-        desiredContent: null,
+        hasSettings: false,
+        desiredPlain: null,
         operation: null,
       })
     ).toBe('nothing-to-apply')
@@ -34,22 +35,22 @@ describe('deriveAuthApplyState', () => {
 
   it('reports pending when stored settings differ from the desired revision', () => {
     expect(
-      deriveAuthApplyState({
-        plannedContent: planned,
+      deriveComposeApplyState({
+        plannedPlain: planned,
         plannedSecrets: null,
         desiredSecrets: null,
-        hasOverrides: true,
-        desiredContent: null,
+        hasSettings: true,
+        desiredPlain: null,
         operation: null,
       })
     ).toBe('pending')
     expect(
-      deriveAuthApplyState({
-        plannedContent: planned,
+      deriveComposeApplyState({
+        plannedPlain: planned,
         plannedSecrets: null,
         desiredSecrets: null,
-        hasOverrides: true,
-        desiredContent: 'older',
+        hasSettings: true,
+        desiredPlain: 'older',
         operation: operation('applied'),
       })
     ).toBe('pending')
@@ -57,12 +58,12 @@ describe('deriveAuthApplyState', () => {
 
   it('reports cleared overrides as pending so they can be applied', () => {
     expect(
-      deriveAuthApplyState({
-        plannedContent: planned,
+      deriveComposeApplyState({
+        plannedPlain: planned,
         plannedSecrets: null,
         desiredSecrets: null,
-        hasOverrides: false,
-        desiredContent: 'older',
+        hasSettings: false,
+        desiredPlain: 'older',
         operation: null,
       })
     ).toBe('pending')
@@ -70,46 +71,46 @@ describe('deriveAuthApplyState', () => {
 
   it('follows the operation for the current revision', () => {
     const base = {
-      plannedContent: planned,
+      plannedPlain: planned,
       plannedSecrets: null,
-      hasOverrides: true,
-      desiredContent: planned,
+      hasSettings: true,
+      desiredPlain: planned,
       desiredSecrets: null,
     }
-    expect(deriveAuthApplyState({ ...base, operation: operation('queued') })).toBe('applying')
-    expect(deriveAuthApplyState({ ...base, operation: operation('applied') })).toBe('applied')
-    expect(deriveAuthApplyState({ ...base, operation: operation('failed') })).toBe('failed')
-    expect(deriveAuthApplyState({ ...base, operation: operation('superseded') })).toBe('pending')
-    expect(deriveAuthApplyState({ ...base, operation: null })).toBe('pending')
+    expect(deriveComposeApplyState({ ...base, operation: operation('queued') })).toBe('applying')
+    expect(deriveComposeApplyState({ ...base, operation: operation('applied') })).toBe('applied')
+    expect(deriveComposeApplyState({ ...base, operation: operation('failed') })).toBe('failed')
+    expect(deriveComposeApplyState({ ...base, operation: operation('superseded') })).toBe('pending')
+    expect(deriveComposeApplyState({ ...base, operation: null })).toBe('pending')
   })
 
   it('reports changed or re-keyed sealed secrets as pending', () => {
     const base = {
-      plannedContent: planned,
-      hasOverrides: true,
-      desiredContent: planned,
+      plannedPlain: planned,
+      hasSettings: true,
+      desiredPlain: planned,
       operation: operation('applied'),
     }
     const secrets = { fingerprint: 'f1', recipientKeyId: 'k1' }
     const same = sealedSecretsMarker(secrets)
-    expect(deriveAuthApplyState({ ...base, plannedSecrets: same, desiredSecrets: same })).toBe(
+    expect(deriveComposeApplyState({ ...base, plannedSecrets: same, desiredSecrets: same })).toBe(
       'applied'
     )
     expect(
-      deriveAuthApplyState({
+      deriveComposeApplyState({
         ...base,
         plannedSecrets: sealedSecretsMarker({ ...secrets, fingerprint: 'f2' }),
         desiredSecrets: same,
       })
     ).toBe('pending')
     expect(
-      deriveAuthApplyState({
+      deriveComposeApplyState({
         ...base,
         plannedSecrets: sealedSecretsMarker({ ...secrets, recipientKeyId: 'k2' }),
         desiredSecrets: same,
       })
     ).toBe('pending')
-    expect(deriveAuthApplyState({ ...base, plannedSecrets: null, desiredSecrets: same })).toBe(
+    expect(deriveComposeApplyState({ ...base, plannedSecrets: null, desiredSecrets: same })).toBe(
       'pending'
     )
   })
@@ -157,5 +158,15 @@ describe('sealedSecretsFile', () => {
     )
     expect(changed.sealed.envelope).not.toEqual(first.sealed.envelope)
     expect(changed.sealed.fingerprint).not.toBe(first.sealed.fingerprint)
+  })
+})
+
+describe('plainFilesKey', () => {
+  it('ignores file order and changes with content', () => {
+    const a = { path: 'compose.yml', content: 'a' }
+    const b = { path: 'secrets.compose.yml', content: 'b' }
+    expect(plainFilesKey([a, b])).toBe(plainFilesKey([b, a]))
+    expect(plainFilesKey([a, b])).not.toBe(plainFilesKey([a, { ...b, content: 'c' }]))
+    expect(plainFilesKey([a])).not.toBe(plainFilesKey([a, b]))
   })
 })

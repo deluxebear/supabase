@@ -2,15 +2,32 @@ import { createHash } from 'node:crypto'
 import { z } from 'zod'
 
 import { executePlatformQuery } from './db'
-import { encryptSecret } from './secrets'
+import { decryptSecret, encryptSecret } from './secrets'
 
 export const functionSecretNameSchema = z
   .string()
   .regex(/^[A-Za-z_][A-Za-z0-9_]{0,127}$/, 'Secret names must use environment variable syntax')
 
+// Names the Edge Runtime container sets or its main service reads. A secret
+// with one of these names would change how every function is served, so it is
+// rejected. `SUPABASE_` matches the platform rule.
+const RESERVED_SECRET_NAMES = new Set(['JWT_SECRET', 'VERIFY_JWT', 'HOME', 'HOSTNAME', 'PATH'])
+const RESERVED_SECRET_PREFIXES = ['SUPABASE_', 'EDGE_RUNTIME_', 'DENO_', 'FUNCTIONS_']
+
+export function isReservedFunctionSecretName(name: string): boolean {
+  const upper = name.toUpperCase()
+  return (
+    RESERVED_SECRET_NAMES.has(upper) ||
+    RESERVED_SECRET_PREFIXES.some((prefix) => upper.startsWith(prefix))
+  )
+}
+
 export const functionSecretInputSchema = z
   .object({
-    name: functionSecretNameSchema,
+    name: functionSecretNameSchema.refine(
+      (name) => !isReservedFunctionSecretName(name),
+      'This secret name is reserved by the Edge Functions runtime'
+    ),
     value: z.string().min(1).max(65_536),
   })
   .strict()
@@ -112,4 +129,24 @@ export async function deleteFunctionSecrets(input: {
     parameters: [input.projectRef, names, input.actor, input.correlationId],
   })
   if (result.error) throw result.error
+}
+
+// [self-platform] Decrypted secret values, for sealing to the Fleet Agent
+// only. Never return these from an API route.
+export async function readFunctionSecretValues(
+  projectRef: string
+): Promise<Record<string, string>> {
+  const result = await executePlatformQuery({
+    query: `select name, value_ciphertext from platform.function_secrets
+      where project_ref = $1 order by name`,
+    parameters: [projectRef],
+  })
+  if (result.error) throw result.error
+  const rowSchema = z.object({ name: functionSecretNameSchema, value_ciphertext: z.string() })
+  return Object.fromEntries(
+    (result.data ?? []).map((value) => {
+      const row = rowSchema.parse(value)
+      return [row.name, decryptSecret(row.value_ciphertext)]
+    })
+  )
 }

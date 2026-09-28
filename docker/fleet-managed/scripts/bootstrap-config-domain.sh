@@ -16,7 +16,7 @@ if [ -e "$domain_dir" ]; then
   echo "Fleet configuration domain already exists: $domain_dir"
   if [ ! -e "$domain_dir/current/secrets.compose.yml" ]; then
     echo "WARNING: $domain_dir/current has no secrets.compose.yml. It was applied before" >&2
-    echo "Fleet delivered secrets; apply the $domain settings from Studio once." >&2
+    echo "Fleet delivered secrets; apply the $domain domain from Studio once." >&2
   fi
   exit 0
 fi
