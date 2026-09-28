@@ -52,6 +52,12 @@ allowlist. The desired document must declare each owned field. A field outside
 the allowlist or already owned by another manager returns `ownership_conflict`;
 Fleet does not steal it. Observe-only and GitOps modes never call apply.
 
+Update (2026-09-28): the Kubernetes document can also carry sealed secrets
+for allowlisted Deployments (`--kubernetes-secret-services`). The Agent writes
+them to `supabase-fleet-<service>-secrets` with a separate field manager,
+`supabase-fleet-secrets`, and restarts the Deployment. See the secret delivery
+channel in the [Fleet completion roadmap](./2026-09-28-fleet-completion-roadmap.md).
+
 ## Deployment
 
 Fleet Control schema 4 adds durable Agent task/evidence/error state. Its Agent

@@ -169,7 +169,7 @@ Edge Function secrets status (2026-09-28): implemented for Compose targets, pend
 | Piece    | State                                                                                                                                                                                                                                                                                                                                    |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Delivery | `platform.function_secrets` are decrypted in Studio, rendered as environment variables of the `functions` service, and sealed into `secrets.compose.yml` of the `functions` configuration domain. The Edge Runtime main service passes its environment to every worker, so functions read them with `Deno.env.get`.                      |
-| Apply    | `GET/POST /api/platform/projects/[ref]/functions/secrets/apply`, with the same mechanics as the Auth apply (shared in `lib/api/self-platform/compose-domain-apply.ts`): `secrets:Write`, recent AAL2, explicit ownership confirmation for the `functions` policy, and a `runtime.config.reconcile` commit with `rollout: ["functions"]`. |
+| Apply    | `GET/POST /api/platform/projects/[ref]/functions/secrets/apply`, with the same mechanics as the Auth apply (shared in `lib/api/self-platform/service-config-apply.ts`): `secrets:Write`, recent AAL2, explicit ownership confirmation for the `functions` policy, and a `runtime.config.reconcile` commit with `rollout: ["functions"]`. |
 | UI       | The Edge Function secrets page shows whether saved secrets are applied and offers the apply. Saving a secret refreshes that status.                                                                                                                                                                                                      |
 | Names    | Names the runtime reads itself (`SUPABASE_*`, `JWT_SECRET`, `VERIFY_JWT`, `EDGE_RUNTIME_*`, `DENO_*`, `FUNCTIONS_*`, and a few process variables) are rejected on write and never delivered.                                                                                                                                             |
 | Target   | The lifecycle overlay loads `functions/current/secrets.compose.yml`; `init-instance-env.sh` bootstraps the `functions` domain.                                                                                                                                                                                                           |
@@ -177,8 +177,23 @@ Edge Function secrets status (2026-09-28): implemented for Compose targets, pend
 Deviations and open items:
 
 - Applying is explicit, not part of saving. Every apply recreates the Edge Runtime, so a save would otherwise restart functions for each secret the CLI sets.
-- Kubernetes targets are not wired. They need a Secret provider for the same envelopes.
+- Kubernetes targets: done, see "Kubernetes sealed secrets" below.
 - Changed secrets reach functions only after an apply, unlike the hosted platform where they apply on the next invocation.
+
+Kubernetes sealed secrets status (2026-09-28): implemented, pending live acceptance on a cluster.
+
+| Piece      | State                                                                                                                                                                                                                                                                                                                                                                                   |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Document   | The Kubernetes reconciliation document carries `secrets`: per service, an envelope of a JSON environment map bound to `kubernetes/secrets/<service>`.                                                                                                                                                                                                                                   |
+| Agent      | Opens every envelope before touching the cluster, server-side applies the Opaque Secret `supabase-fleet-<service>-secrets` in `--kubernetes-namespace` (field manager `supabase-fleet-secrets`, never forced), restarts Deployment `<service>` through a pod template digest annotation, waits for the rollout, and restores the previous Secret and annotation when the rollout fails. |
+| Guardrails | Only Deployments in `--kubernetes-secret-services` receive secrets. A Secret whose data another field manager owns is an ownership conflict. Evidence reports only the envelope digest. `fleet-agent-rbac.example.yaml` limits the Agent to the Fleet-owned Secret and the Deployment.                                                                                                  |
+| Studio     | Edge Function secrets apply to Kubernetes bindings (an empty set is sealed too, so deleting the last secret clears the Secret). Kubernetes targets need `runtime.config.reconcile` and an Agent key.                                                                                                                                                                                    |
+| Manifests  | `19-functions.yaml` reads the Secret with an optional `envFrom`.                                                                                                                                                                                                                                                                                                                        |
+
+Open items:
+
+- Auth on Kubernetes: `11-core.yaml` sets `GOTRUE_*` with `env`, which wins over `envFrom`. Delivering Auth settings needs those defaults moved into an `envFrom` source listed before the Fleet Secret.
+- There is no Fleet Agent Deployment manifest for Kubernetes in this repository yet; the RBAC example assumes one.
 
 ### Phase 3: backups on Fleet Compose stacks (3–4 weeks, parallel)
 

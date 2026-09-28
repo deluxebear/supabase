@@ -24,6 +24,13 @@ spec:
           # edge-runtime image ENTRYPOINT=[edge-runtime]; these are ARGS, not a
           # command override (k8s command: replaces ENTRYPOINT → "start" not found).
           args: ["start", "--main-service", "/home/deno/functions/main"]
+          # Edge Function secrets delivered by a Fleet Agent (sealed in Studio,
+          # opened by the Agent). Optional: absent until the first apply. The
+          # main service passes its environment to every function worker.
+          # Entries under `env` win over this, which is why Fleet rejects
+          # secret names that the entries below use.
+          envFrom:
+            - secretRef: { name: supabase-fleet-functions-secrets, optional: true }
           env:
             - { name: POSTGRES_PASSWORD, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PASSWORD } } }
             - { name: POSTGRES_PORT, valueFrom: { secretKeyRef: { name: supabase-env, key: POSTGRES_PORT } } }

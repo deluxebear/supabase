@@ -57,6 +57,28 @@ Note: `GET /rest/v1/` (OpenAPI root) is **admin-only** in `kong.yml` → an anon
 returns `403 "You cannot consume this service"`. That is expected; anon reaches data
 via `/rest/v1/<table>`.
 
+## Fleet-delivered secrets
+
+When a Fleet Agent manages this namespace, Edge Function secrets saved in
+Studio reach the `functions` Deployment without passing through Fleet Control
+in plaintext:
+
+- Studio seals the secrets to the Agent's recipient key.
+- The Agent opens them, writes the Secret `supabase-fleet-functions-secrets`
+  with server-side apply (field manager `supabase-fleet-secrets`), and restarts
+  `functions` by setting the pod template annotation
+  `supabase.com/fleet-secrets-digest`. It waits for the rollout and restores
+  the previous Secret if the new pods do not become available.
+- `19-functions.yaml` reads that Secret with an optional `envFrom`.
+
+Run the Agent with `--adapter=kubernetes --kubernetes-namespace=supabase
+--kubernetes-secret-services=functions --advertise-config-reconcile`, under a
+service account limited as in `fleet-agent-rbac.example.yaml`. The Agent never
+takes over a Secret whose data another field manager owns.
+
+Auth settings are not delivered this way yet: `11-core.yaml` sets `GOTRUE_*`
+with `env`, which wins over `envFrom`.
+
 ## compose → k8s gotchas (each cost real debugging)
 
 1. **`command:` vs `args:`** — compose `command:` maps to k8s **`args:`** for images
