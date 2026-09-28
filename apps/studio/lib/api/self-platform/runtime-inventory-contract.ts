@@ -4,7 +4,7 @@ const nonnegativeInteger = z.number().int().nonnegative()
 
 export const runtimeInventorySchema = z.object({
   schema: z.literal('supabase.fleet.runtime.observe.evidence.v1'),
-  adapter: z.literal('compose'),
+  adapter: z.enum(['compose', 'kubernetes']),
   status: z.literal('healthy'),
   observedGeneration: z.number().int().positive(),
   observedAt: z.string().datetime({ offset: true }),
@@ -58,9 +58,7 @@ export const runtimeInventorySchema = z.object({
         message: z.string(),
       })
     ),
-    blockers: z.array(
-      z.object({ code: z.string(), message: z.string(), remediation: z.string() })
-    ),
+    blockers: z.array(z.object({ code: z.string(), message: z.string(), remediation: z.string() })),
     plan: z.array(z.string()).min(1),
     rollback: z.array(z.string()).min(1),
     recovery: z.array(z.string()).min(1),

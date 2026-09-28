@@ -92,9 +92,11 @@ export async function getRuntimeInventory(input: {
   if (
     binding.state !== 'active' ||
     binding.targetState !== 'active' ||
-    binding.deploymentKind !== 'compose'
+    (binding.deploymentKind !== 'compose' && binding.deploymentKind !== 'kubernetes')
   ) {
-    throw new Error('An active Compose management binding and runtime inventory Agent are required')
+    throw new Error(
+      'An active Compose or Kubernetes management binding and runtime inventory Agent are required'
+    )
   }
   const operationId = `inventory_${randomUUID()}`
   const generation = await reserveGeneration(input.projectRef, operationId)

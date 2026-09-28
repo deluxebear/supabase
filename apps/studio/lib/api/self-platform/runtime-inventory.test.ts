@@ -68,7 +68,7 @@ const evidence = {
   },
 }
 
-function operation() {
+function operation(adapter: 'compose' | 'kubernetes' = 'compose') {
   const now = new Date().toISOString()
   return {
     id: 'inventory-op',
@@ -86,7 +86,7 @@ function operation() {
     inputSchema: 'supabase.fleet.runtime.observe.v1',
     fencingToken: 1,
     evidenceSchema: 'supabase.fleet.runtime.observe.evidence.v1',
-    evidence,
+    evidence: { ...evidence, adapter },
     attempts: 1,
     correlationId: 'correlation-a',
     deadlineAt: now,
@@ -157,5 +157,30 @@ describe('Fleet runtime inventory projection', () => {
         .mocked(executePlatformQuery)
         .mock.calls.some(([value]) => value.query.includes("state = 'ready', evidence = $3::jsonb"))
     ).toBe(true)
+  })
+
+  it('observes Kubernetes bindings and refuses other deployment kinds', async () => {
+    vi.mocked(syncProjectManagementBinding).mockResolvedValueOnce({
+      id: 'binding-a',
+      projectRef: 'project-a',
+      managementTargetId: 'target-a',
+      deploymentKind: 'kubernetes',
+      state: 'active',
+      targetState: 'active',
+    } as never)
+    vi.mocked(getFleetOperation).mockResolvedValue(operation('kubernetes'))
+    const input = { projectRef: 'project-a', actor: 'user-a', correlationId: 'c', force: true }
+    const result = await getRuntimeInventory(input)
+    expect(result.adapter).toBe('kubernetes')
+
+    vi.mocked(syncProjectManagementBinding).mockResolvedValueOnce({
+      id: 'binding-a',
+      projectRef: 'project-a',
+      managementTargetId: 'target-a',
+      deploymentKind: 'systemd',
+      state: 'active',
+      targetState: 'active',
+    } as never)
+    await expect(getRuntimeInventory(input)).rejects.toThrow('Compose or Kubernetes')
   })
 })
