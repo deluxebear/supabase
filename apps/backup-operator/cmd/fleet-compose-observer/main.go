@@ -16,14 +16,15 @@ import (
 
 func main() {
 	listen := flag.String("listen", envOr("FLEET_OBSERVER_LISTEN", "0.0.0.0:8093"), "HTTP listen address")
-	socket := flag.String("docker-socket", envOr("FLEET_OBSERVER_DOCKER_SOCKET", "/var/run/docker.sock"), "Docker Engine Unix socket")
+	endpoint := flag.String("docker-endpoint", os.Getenv("FLEET_OBSERVER_DOCKER_ENDPOINT"), "http:// base URL of the policy-limited Fleet Docker proxy; preferred over the raw socket")
+	socket := flag.String("docker-socket", envOr("FLEET_OBSERVER_DOCKER_SOCKET", "/var/run/docker.sock"), "Docker Engine Unix socket, used only when no endpoint is set")
 	project := flag.String("compose-project", os.Getenv("FLEET_OBSERVER_COMPOSE_PROJECT"), "allowlisted Compose project label")
 	databasePath := flag.String("database-path", envOr("FLEET_OBSERVER_DATABASE_PATH", "/inventory/database"), "read-only database volume mount")
 	flag.Parse()
 	if *project == "" {
 		log.Fatal("Fleet observer Compose project is required")
 	}
-	observer := fleetinventory.DockerObserver{SocketPath: *socket, ComposeProject: *project, DatabasePath: *databasePath}
+	observer := fleetinventory.DockerObserver{DockerEndpoint: *endpoint, SocketPath: *socket, ComposeProject: *project, DatabasePath: *databasePath}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /readyz", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

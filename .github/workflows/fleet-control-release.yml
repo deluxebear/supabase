@@ -1,8 +1,8 @@
 name: Fleet Control release
 
 # Publishes the Fleet image built from apps/backup-operator/Dockerfile.fleet-control.
-# One image carries fleet-control, fleet-agent, fleet-agent-bootstrap, and
-# fleet-compose-observer, so it serves both FLEET_CONTROL_IMAGE and
+# One image carries fleet-control, fleet-agent, fleet-agent-bootstrap,
+# fleet-compose-observer, and fleet-docker-proxy, so it serves both FLEET_CONTROL_IMAGE and
 # FLEET_AGENT_IMAGE.
 
 on:
@@ -85,4 +85,4 @@ jobs:
 
             Use it for both `FLEET_CONTROL_IMAGE` (control plane) and `FLEET_AGENT_IMAGE`
             (managed stacks). It contains `fleet-control`, `fleet-agent`,
-            `fleet-agent-bootstrap`, and `fleet-compose-observer`.
+            `fleet-agent-bootstrap`, `fleet-compose-observer`, and `fleet-docker-proxy`.

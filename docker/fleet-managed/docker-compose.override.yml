@@ -192,31 +192,57 @@ services:
       default: {}
       management: {}
 
-  # This target-local observer is the only process with Docker socket access.
-  # Its HTTP surface exposes bounded GET-only inventory scoped to the current
-  # Compose project; the generic Fleet Agent never receives the socket.
+  # The only process with Docker socket access. Mounting the socket read-only
+  # does not restrict the Docker API, so this proxy enforces the policy instead:
+  # GET-only inventory endpoints, container listings forced to this Compose
+  # project, and container inspection limited to this project's containers.
+  # It is reachable only on the private docker-api network.
+  fleet-docker-proxy:
+    image: ${FLEET_AGENT_IMAGE:?set FLEET_AGENT_IMAGE}
+    profiles: [agent]
+    restart: unless-stopped
+    user: "0:0"
+    entrypoint: [/usr/local/bin/fleet-docker-proxy]
+    environment:
+      FLEET_DOCKER_PROXY_COMPOSE_PROJECT: ${COMPOSE_PROJECT_NAME}
+      FLEET_DOCKER_PROXY_POLICY: inventory-read
+      FLEET_DOCKER_PROXY_LISTEN: 0.0.0.0:2375
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    read_only: true
+    security_opt: [no-new-privileges:true]
+    networks: [docker-api]
+
+  # Target-local observer with a bounded GET-only inventory API. It reaches
+  # Docker only through fleet-docker-proxy; the generic Fleet Agent never
+  # receives Docker access.
   fleet-compose-observer:
     image: ${FLEET_AGENT_IMAGE:?set FLEET_AGENT_IMAGE}
     profiles: [agent]
     restart: unless-stopped
     user: "0:0"
     entrypoint: [/usr/local/bin/fleet-compose-observer]
+    depends_on:
+      fleet-docker-proxy:
+        condition: service_started
     environment:
       FLEET_OBSERVER_COMPOSE_PROJECT: ${COMPOSE_PROJECT_NAME}
       FLEET_OBSERVER_DATABASE_PATH: /inventory/database
+      FLEET_OBSERVER_DOCKER_ENDPOINT: http://fleet-docker-proxy:2375
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
       - managed-db-data:/inventory/database:ro
     read_only: true
     tmpfs:
       - /tmp:size=16m,mode=1777
     security_opt: [no-new-privileges:true]
-    networks: [default]
+    networks: [default, docker-api]
 
 networks:
   management:
     name: ${FLEET_MANAGEMENT_NETWORK_NAME:-fleet-management}
     external: true
+  docker-api:
+    internal: true
 
 volumes:
   managed-db-data:

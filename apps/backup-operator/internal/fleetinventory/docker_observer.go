@@ -16,6 +16,9 @@ import (
 )
 
 type DockerObserver struct {
+	// DockerEndpoint is an http:// base URL of a policy-limited Docker API
+	// proxy. When set it takes precedence over SocketPath.
+	DockerEndpoint string
 	SocketPath     string
 	ComposeProject string
 	DatabasePath   string
@@ -68,10 +71,10 @@ func (o DockerObserver) Observe(ctx context.Context) (ObserverSnapshot, error) {
 	if strings.TrimSpace(o.ComposeProject) == "" || strings.TrimSpace(o.DatabasePath) == "" {
 		return ObserverSnapshot{}, errors.New("Compose project and database path are required")
 	}
-	client := o.client()
+	client, base := o.client()
 	filters, _ := json.Marshal(map[string][]string{"label": {"com.docker.compose.project=" + o.ComposeProject}})
 	var listed []dockerContainer
-	if err := dockerGet(ctx, client, "/containers/json?all=1&filters="+url.QueryEscape(string(filters)), &listed); err != nil {
+	if err := dockerGet(ctx, client, base+"/containers/json?all=1&filters="+url.QueryEscape(string(filters)), &listed); err != nil {
 		return ObserverSnapshot{}, err
 	}
 	if len(listed) == 0 || len(listed) > 128 {
@@ -80,7 +83,7 @@ func (o DockerObserver) Observe(ctx context.Context) (ObserverSnapshot, error) {
 	containers := make([]ContainerInventory, 0, len(listed))
 	for _, value := range listed {
 		var inspect dockerContainerInspect
-		if err := dockerGet(ctx, client, "/containers/"+url.PathEscape(value.ID)+"/json", &inspect); err != nil {
+		if err := dockerGet(ctx, client, base+"/containers/"+url.PathEscape(value.ID)+"/json", &inspect); err != nil {
 			return ObserverSnapshot{}, err
 		}
 		name := strings.TrimPrefix(first(value.Names), "/")
@@ -102,11 +105,11 @@ func (o DockerObserver) Observe(ctx context.Context) (ObserverSnapshot, error) {
 		})
 	}
 	var info dockerInfo
-	if err := dockerGet(ctx, client, "/info", &info); err != nil {
+	if err := dockerGet(ctx, client, base+"/info", &info); err != nil {
 		return ObserverSnapshot{}, err
 	}
 	var usage dockerDiskUsage
-	if err := dockerGet(ctx, client, "/system/df?type=volume", &usage); err != nil {
+	if err := dockerGet(ctx, client, base+"/system/df?type=volume", &usage); err != nil {
 		return ObserverSnapshot{}, err
 	}
 	volumes := make([]VolumeInventory, 0)
@@ -145,7 +148,10 @@ func isRuntimeInventoryService(service string) bool {
 	return service != "fleet-agent-init"
 }
 
-func (o DockerObserver) client() *http.Client {
+func (o DockerObserver) client() (*http.Client, string) {
+	if endpoint := strings.TrimRight(strings.TrimSpace(o.DockerEndpoint), "/"); endpoint != "" {
+		return &http.Client{Timeout: 10 * time.Second}, endpoint
+	}
 	socket := o.SocketPath
 	if socket == "" {
 		socket = "/var/run/docker.sock"
@@ -153,11 +159,14 @@ func (o DockerObserver) client() *http.Client {
 	transport := &http.Transport{DialContext: func(ctx context.Context, _, _ string) (net.Conn, error) {
 		return (&net.Dialer{Timeout: 5 * time.Second}).DialContext(ctx, "unix", socket)
 	}}
-	return &http.Client{Transport: transport, Timeout: 10 * time.Second}
+	return &http.Client{Transport: transport, Timeout: 10 * time.Second}, "http://docker"
 }
 
-func dockerGet(ctx context.Context, client *http.Client, path string, target any) error {
-	request, _ := http.NewRequestWithContext(ctx, http.MethodGet, "http://docker"+path, nil)
+func dockerGet(ctx context.Context, client *http.Client, requestURL string, target any) error {
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
+	if err != nil {
+		return errors.New("Docker inventory API request is invalid")
+	}
 	response, err := client.Do(request)
 	if err != nil {
 		return errors.New("Docker inventory API is unavailable")

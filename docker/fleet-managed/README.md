@@ -60,6 +60,12 @@ them yet, so advertising the capability would report changes as applied when
 they are not. It returns with the runtime-configuration work in the
 [Fleet completion roadmap](../../docs/self-hosted-parity/2026-09-28-fleet-completion-roadmap.md).
 
+Only `fleet-docker-proxy` mounts the Docker socket. A read-only socket mount
+does not restrict the Docker API, so the proxy enforces the policy: GET-only
+inventory endpoints, container listings forced to this Compose project, and
+container inspection limited to this project's containers. It listens only on
+the internal `docker-api` network, which `fleet-compose-observer` joins.
+
 Do not mount the Docker socket into the generic Fleet Agent. Lifecycle actions
 remain unavailable until a versioned, allowlisted provider is installed. Backup
 also remains explicitly unconfigured until a target-local Backup Agent and
