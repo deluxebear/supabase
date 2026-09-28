@@ -86,6 +86,8 @@ export function toComposeOverrideYaml(
 export type AuthRuntimeApplyPlan = {
   /** Compose override content for the `auth` service. */
   content: string
+  /** The same settings as GoTrue environment variables. */
+  env: Record<string, string>
   /** Stored non-secret fields that the override applies, sorted. */
   appliedFields: string[]
   /** Stored secret fields that this apply cannot deliver, sorted. */
@@ -115,6 +117,7 @@ export function planAuthRuntimeApply(input: {
     .sort()
   return {
     content: toComposeOverrideYaml(input.service ?? 'auth', env),
+    env,
     appliedFields,
     skippedSecretFields: [...new Set(input.storedSecretFields)].sort(),
   }

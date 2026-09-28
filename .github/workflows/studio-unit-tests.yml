@@ -8,6 +8,8 @@ on:
     branches: [master, studio]
     paths:
       - 'apps/studio/**'
+      # Checked against Studio's Auth fields by auth-apply.kubernetes.test.ts.
+      - 'docker/k8s/single-project/11-core.yaml'
       - 'packages/common/sentry.ts'
       - 'packages/common/sentry.test.ts'
       - 'packages/ui/**'
@@ -55,6 +57,7 @@ jobs:
               - 'packages/ui/**'
               - 'packages/ui-patterns/**'
               - 'apps/studio/**'
+              - 'docker/k8s/single-project/11-core.yaml'
               - 'packages/common/sentry.ts'
               - 'packages/common/sentry.test.ts'
               - 'pnpm-lock.yaml'

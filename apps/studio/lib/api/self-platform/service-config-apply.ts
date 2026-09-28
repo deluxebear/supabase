@@ -9,9 +9,10 @@
 //
 // - Compose: plain settings go to Compose override files, and secrets to
 //   `secrets.compose.yml`.
-// - Kubernetes: secrets go to the Secret supabase-fleet-<service>-secrets,
-//   which the Deployment reads with an optional envFrom. Only services whose
-//   spec allows it; there are no plain override files.
+// - Kubernetes: plain settings and secrets together go to the Secret
+//   supabase-fleet-<service>-secrets, which the Deployment reads with an
+//   optional envFrom. There are no plain override files. Only services whose
+//   spec allows it.
 //
 // Auth settings (auth-apply.ts) and Edge Function secrets
 // (function-secrets-apply.ts) use this module.
@@ -373,6 +374,8 @@ export async function loadServiceConfigApplyPlan(input: {
   isStrict: boolean
   /** Plain Compose override files. Kubernetes targets have none. */
   plainFiles: PlainComposeFile[]
+  /** The plain settings as environment variables, sealed with the secrets on Kubernetes. */
+  plainEnv?: Record<string, string>
   /** Secret environment variables for the service, or null when there are none. */
   secretsEnv: Record<string, string> | null
   /** Whether the plain files carry any stored settings. */
@@ -390,10 +393,11 @@ export async function loadServiceConfigApplyPlan(input: {
   const isKubernetes = binding?.deploymentKind === 'kubernetes'
   const hasSecrets = input.secretsEnv !== null && Object.keys(input.secretsEnv).length > 0
 
-  // Kubernetes always seals the service's secrets, even an empty set, so
-  // removing the last secret clears the Secret. Compose uses a placeholder.
+  // Kubernetes always seals the service's settings, even an empty set, so
+  // removing the last one clears the Secret. Compose uses a placeholder.
   let plaintext: string | null = null
-  if (isKubernetes) plaintext = kubernetesSecretsPlaintext(input.secretsEnv ?? {})
+  if (isKubernetes)
+    plaintext = kubernetesSecretsPlaintext({ ...input.plainEnv, ...input.secretsEnv })
   else if (hasSecrets && input.secretsEnv !== null)
     plaintext = toComposeOverrideYaml(spec.service, input.secretsEnv, spec.secretsHeader)
 
