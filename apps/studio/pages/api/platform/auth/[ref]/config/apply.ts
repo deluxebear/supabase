@@ -66,9 +66,13 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
   })
   if (!allowed) return
 
+  const correlationId =
+    (typeof req.headers['x-correlation-id'] === 'string' && req.headers['x-correlation-id']) ||
+    randomUUID()
+  const actor = claims?.sub ?? 'unknown'
   try {
     if (req.method === 'GET') {
-      return res.status(200).json(await getAuthApplyStatus(projectRef))
+      return res.status(200).json(await getAuthApplyStatus(projectRef, { actor, correlationId }))
     }
 
     const parsed = applyBodySchema.safeParse(req.body)
@@ -87,15 +91,12 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
         message: 'A recent AAL2 session is required to apply Auth settings',
       })
     }
-    const correlationId =
-      (typeof req.headers['x-correlation-id'] === 'string' && req.headers['x-correlation-id']) ||
-      randomUUID()
     const operation = await applyAuthConfig({
       projectRef,
       expectedGeneration: parsed.data.expectedGeneration,
       confirmOwnership: parsed.data.confirmOwnership,
       idempotencyKey,
-      actor: claims?.sub ?? 'unknown',
+      actor,
       correlationId,
       aal: claims?.aal,
       aalAuthenticatedAt: claims?.iat,

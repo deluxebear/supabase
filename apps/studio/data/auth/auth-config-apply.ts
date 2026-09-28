@@ -29,6 +29,7 @@ const authConfigApplyStatusSchema = z.object({
   state: z.enum(['nothing-to-apply', 'pending', 'applying', 'applied', 'failed']),
   isOwnedByFleet: z.boolean(),
   appliedFields: z.array(z.string()),
+  sealedSecretFields: z.array(z.string()),
   skippedSecretFields: z.array(z.string()),
   expectedGeneration: z.number().int().nonnegative(),
   operation: operationSchema.nullable(),

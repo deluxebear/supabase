@@ -100,10 +100,11 @@ Without the overlay, lifecycle actions stay unavailable and Studio says so.
 With the lifecycle overlay, Studio can apply saved Auth settings to this
 stack. Fleet renders them into a Compose override at
 `$FLEET_HOST_CONFIG_ROOT/auth/current/compose.yml`, and the Agent recreates
-`auth` so the running container uses it. Settings in a Compose override win over
+`auth` so the running container uses it. Secret settings go to
+`secrets.compose.yml` in the same directory. Settings in a Compose override win over
 the upstream `environment:` values; an `env_file` would not.
 
-Every `docker compose` command for this stack must include that file after the
+Every `docker compose` command for this stack must include both files after the
 other files, or a manual `up` recreates `auth` with the upstream values:
 
 ```bash
@@ -114,17 +115,39 @@ docker compose -p supabase-managed-a \
   -f docker/fleet-managed/docker-compose.override.yml \
   -f docker/fleet-managed/docker-compose.lifecycle.yml \
   -f docker/fleet-managed/state/project-a/config/auth/current/compose.yml \
+  -f docker/fleet-managed/state/project-a/config/auth/current/secrets.compose.yml \
   --profile agent up -d
 ```
 
-`scripts/init-instance-env.sh` creates that file as an empty placeholder for new
+`scripts/init-instance-env.sh` creates both files as empty placeholders for new
 instances. For an existing instance, add `FLEET_HOST_CONFIG_ROOT` (the absolute
-path of its `FLEET_CONFIG_ROOT`) to its env file and run
-`scripts/bootstrap-config-domain.sh "$FLEET_HOST_CONFIG_ROOT" auth` once.
+path of its `FLEET_CONFIG_ROOT`) and `FLEET_OPERATOR_GID` (the output of
+`id -g` for the user who runs `docker compose`) to its env file and run
+`scripts/bootstrap-config-domain.sh "$FLEET_HOST_CONFIG_ROOT" auth` once. If the
+script warns that `secrets.compose.yml` is missing, apply the Auth settings from
+Studio once before adding the file to your commands.
 
-Secret Auth settings (OAuth client secrets, SMTP password, and similar) are not
-applied yet: Fleet has no channel that delivers secrets to the Agent without
-placing them in the operation record. Set those in the stack's env files.
+### Secret Auth settings
+
+Secret Auth settings (OAuth client secrets, SMTP password, and similar) are
+sealed in Studio to this stack's Fleet Agent:
+
+- The Agent creates an X25519 recipient key next to its journal
+  (`secret-recipient.key`, mode 0600) and publishes only the public key to Fleet
+  Control when it connects.
+- Studio decrypts the stored secrets, renders them into a Compose override, and
+  seals it to that key (`supabase.fleet.sealed-secret.v1`: X25519, HKDF-SHA256,
+  AES-256-GCM). The ciphertext is bound to the project, binding, configuration
+  domain, and file path. The platform database, the operation record, Fleet
+  Control, and the Agent's evidence carry only ciphertext and its digest.
+- The Agent decrypts it before writing anything and writes
+  `secrets.compose.yml` with mode 0640 and group `FLEET_OPERATOR_GID`.
+
+Replacing the Agent's state volume creates a new recipient key. Envelopes sealed
+to the old key then fail with `sealed_secret_recipient_mismatch`; apply the Auth
+settings again and Studio seals them to the new key. An Agent without a
+recipient key, such as an older release, gets the non-secret settings only, and
+Studio lists the secrets it did not deliver.
 
 Do not mount the Docker socket into the generic Fleet Agent. Lifecycle actions
 remain unavailable until a versioned, allowlisted provider is installed. Backup

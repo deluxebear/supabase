@@ -5,6 +5,7 @@ import path from 'node:path'
 import { z } from 'zod'
 
 import { executePlatformQuery } from './db'
+import { sealedSecretKeyId } from './sealed-secret'
 
 const MANAGEMENT_REQUEST_TIMEOUT_MS = 10_000
 const MANAGEMENT_RESPONSE_LIMIT_BYTES = 1 << 20
@@ -191,6 +192,13 @@ const fleetBindingStatusSchema = z.object({
       unavailableAt: z.string().datetime({ offset: true }),
       sessionState: z.enum(['online', 'stale', 'unavailable']),
       capabilities: z.array(z.unknown()).default([]),
+      secretRecipient: z
+        .object({
+          keyId: z.string().regex(/^[0-9a-f]{32}$/),
+          publicKey: z.string().min(1),
+          updatedAt: z.string().datetime({ offset: true }),
+        })
+        .optional(),
     })
     .nullable(),
   capabilities: z.array(projectedCapabilitySchema).default([]),
@@ -573,6 +581,50 @@ export async function issueProjectEnrollmentToken(input: {
   })
   if (updated.error) throw updated.error
   return token
+}
+
+export type AgentSecretRecipient = { keyId: string; publicKey: Buffer }
+
+/**
+ * Reads the bound Agent's sealed-secret key straight from Fleet Control, so a
+ * seal always targets the key the Agent reported most recently. Returns null
+ * when the Agent has no key (it predates sealed secrets or is not enrolled).
+ */
+export async function getAgentSecretRecipient(input: {
+  projectRef: string
+  actor: string
+  correlationId: string
+}): Promise<AgentSecretRecipient | null> {
+  const binding = await getProjectManagementBinding(input.projectRef)
+  if (!binding) return null
+  const raw = await requestManagementDomain(binding, 'fleet-control', {
+    method: 'GET',
+    path: `/platform/fleet/v1/projects/${encodeURIComponent(binding.projectRef)}/management-bindings/${encodeURIComponent(binding.id)}`,
+    scopes: ['fleet.read'],
+    actor: input.actor,
+    correlationId: input.correlationId,
+  })
+  const observed = fleetBindingStatusSchema.parse(raw)
+  if (
+    observed.binding.bindingId !== binding.id ||
+    observed.binding.projectRef !== binding.projectRef
+  ) {
+    throw new ManagementTrustConflict(
+      'binding_mismatch',
+      'Fleet Control returned evidence for a different management binding.'
+    )
+  }
+  const recipient = observed.agent?.secretRecipient
+  if (!recipient) return null
+  const publicKey = Buffer.from(recipient.publicKey, 'base64')
+  // The key id is derived from the key; a mismatch means corrupted evidence.
+  if (publicKey.length !== 32 || sealedSecretKeyId(publicKey) !== recipient.keyId) {
+    throw new ManagementTrustConflict(
+      'binding_mismatch',
+      'Fleet Control returned an inconsistent Agent secret recipient key.'
+    )
+  }
+  return { keyId: recipient.keyId, publicKey }
 }
 
 export async function syncProjectManagementBinding(input: {

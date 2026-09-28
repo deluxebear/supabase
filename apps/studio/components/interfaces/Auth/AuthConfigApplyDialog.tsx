@@ -19,7 +19,7 @@ type AuthConfigApplyDialogProps = {
 }
 
 // [self-platform] Confirms applying stored Auth settings: explains the Auth
-// restart, what is and is not applied, and asks the operator to hand the Auth
+// restart, what is applied (secrets sealed to the Agent) and what is not, and asks the operator to hand the Auth
 // service configuration to Fleet if it does not own it yet.
 export const AuthConfigApplyDialog = ({
   projectRef,
@@ -74,12 +74,23 @@ export const AuthConfigApplyDialog = ({
             count: status.appliedFields.length,
           })}
         </p>
+        {status.sealedSecretFields.length > 0 && (
+          <p className="text-foreground-light">
+            {$t(
+              "{{count}} secret settings are encrypted for this stack's Fleet Agent and applied: {{fields}}",
+              {
+                count: status.sealedSecretFields.length,
+                fields: status.sealedSecretFields.join(', '),
+              }
+            )}
+          </p>
+        )}
         {status.skippedSecretFields.length > 0 && (
           <Admonition
             type="warning"
             title={$t('Secret settings are not applied')}
             description={$t(
-              'Fleet cannot deliver secrets to the managed stack yet. Set these in the stack environment: {{fields}}',
+              "This stack's Fleet Agent has not published a key for receiving secrets. Upgrade the Agent, or set these in the stack environment: {{fields}}",
               { fields: status.skippedSecretFields.join(', ') }
             )}
           />

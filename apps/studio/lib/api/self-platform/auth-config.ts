@@ -5,7 +5,7 @@
 import type { components } from 'api-types'
 
 import { executePlatformQuery } from './db'
-import { encryptSecret } from './secrets'
+import { decryptSecret, encryptSecret } from './secrets'
 
 type GoTrueConfigResponse = components['schemas']['GoTrueConfigResponse']
 type UpdateGoTrueConfigBody = components['schemas']['UpdateGoTrueConfigBody']
@@ -368,6 +368,15 @@ export async function readStoredAuthOverrides(
 ): Promise<{ config: Record<string, unknown>; secretFields: string[] }> {
   const row = await loadRow(projectRef)
   return { config: row.config, secretFields: Object.keys(row.secrets) }
+}
+
+// [self-platform] Decrypted stored secret overrides, for sealing to the Fleet
+// Agent only. Never return these from an API route.
+export async function readStoredAuthSecrets(projectRef: string): Promise<Record<string, string>> {
+  const row = await loadRow(projectRef)
+  return Object.fromEntries(
+    Object.entries(row.secrets).map(([field, ciphertext]) => [field, decryptSecret(ciphertext)])
+  )
 }
 
 export async function readAuthConfig(projectRef: string): Promise<GoTrueConfigResponse> {

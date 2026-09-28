@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   SEALED_SECRET_SCHEMA,
   sealedSecretDigest,
+  sealedSecretFingerprint,
   sealedSecretKeyId,
   sealSecret,
 } from './sealed-secret'
@@ -59,5 +60,18 @@ describe('sealSecret', () => {
       sealSecret({ recipientPublicKey, context: { ...context, domain: 'a\nb' }, plaintext })
     ).toThrow()
     expect(() => sealSecret({ recipientPublicKey, context, plaintext: '' })).toThrow()
+  })
+
+  it('fingerprints plaintext with a Studio key and the sealing context', () => {
+    const fingerprint = (overrides: Partial<Parameters<typeof sealedSecretFingerprint>[0]>) =>
+      sealedSecretFingerprint({ studioKey: 'studio-key', context, plaintext, ...overrides })
+    expect(fingerprint({})).toBe(fingerprint({}))
+    expect(fingerprint({})).toMatch(/^[0-9a-f]{64}$/)
+    expect(fingerprint({ studioKey: 'other-key' })).not.toBe(fingerprint({}))
+    expect(fingerprint({ plaintext: 'other' })).not.toBe(fingerprint({}))
+    expect(fingerprint({ context: { ...context, bindingId: 'binding-2' } })).not.toBe(
+      fingerprint({})
+    )
+    expect(() => fingerprint({ studioKey: '' })).toThrow()
   })
 })

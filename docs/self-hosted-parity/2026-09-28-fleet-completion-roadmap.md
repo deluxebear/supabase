@@ -140,10 +140,29 @@ Phase 2 status (2026-09-28): Auth implemented for non-secret settings, pending l
 
 Deviations from the original Phase 2 plan:
 
-- Secrets are not applied. No channel delivers them to the Agent: the outbox payload is plaintext, and `platform.function_secrets` is stored but never delivered either. The UI names each skipped secret. A secret channel (encrypted per target, fetched by the Agent over mTLS) is the next Phase 2 item and also closes the Edge Function secrets gap.
+- Secrets use sealed envelopes instead of a `platform.runtime_secrets` table fetched over mTLS. See "Secret delivery channel" below.
 - Instead of a separate linked `runtime.rollout` operation, the configuration task rolls the service out itself. This keeps write, rollout, verification, and rollback in one journaled task, so a failed rollout cannot leave new files on disk. No outbox migration was needed.
 - Phase 1 had a gap this closes: lifecycle actions require the `runtime` ownership policy to be direct-managed, but setting it requires `runtime.config.reconcile`, which Phase 0 stopped advertising. The lifecycle overlay advertises it again now that a consumer exists. Studio still has no control for the `runtime` policy since the ownership panel was removed, so the lifecycle panel needs the same explicit confirmation the Auth apply uses.
 - PostgREST, Realtime, and Storage are not wired yet. Each needs its own stored settings mapped to service environment names, and the same producer and domain pattern.
+
+Secret delivery channel status (2026-09-28): implemented for Auth, pending live acceptance.
+
+Studio seals each secret file to the target Agent's own key, so the secret travels inside the ordinary desired document and the durable outbox. Only the Agent can open it; the platform database, the outbox payload, Fleet Control, and evidence carry ciphertext and digests only. This replaces the planned `platform.runtime_secrets` table and mTLS fetch endpoint: nothing on the platform side can decrypt, and no second delivery path needs its own retries and audit.
+
+| Piece      | State                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Envelope   | `supabase.fleet.sealed-secret.v1`: ephemeral X25519, HKDF-SHA256, AES-256-GCM. The additional data binds project, binding, domain, file path, and recipient key id. Go (`internal/sealedsecret`) and TypeScript (`lib/api/self-platform/sealed-secret.ts`) check one shared test vector.                                                                                                       |
+| Agent key  | The Agent creates `secret-recipient.key` (mode 0600) next to its journal and sends the public key in `AgentHello`. Fleet Control stores it (migration 011, `agent_secret_recipients`) and returns it as `agent.secretRecipient` in the binding status.                                                                                                                                         |
+| Compose    | A `sealed` Compose file carries an envelope instead of content. The provider decrypts every sealed file before writing anything, writes it with mode 0640 and the operator group, and reports `sealed:<envelope digest>` as its observed digest. A replaced Agent key fails with `sealed_secret_recipient_mismatch` and writes nothing.                                                        |
+| Studio     | The Auth apply decrypts the stored secret overrides, renders `secrets.compose.yml`, and seals it to the Agent key. A keyed fingerprint (HMAC from `PLATFORM_ENCRYPTION_KEY`) lets Studio reuse the envelope while the secrets and key are unchanged, and detect changed secrets without decrypting. Without an Agent key, only non-secret settings apply and the UI names the skipped secrets. |
+| Target     | The lifecycle overlay adds `secrets.compose.yml` to the Compose files, gives the Agent the operator group (`FLEET_OPERATOR_GID`, written by `init-instance-env.sh`), and `bootstrap-config-domain.sh` creates the placeholder. `fleet-agent-init` no longer resets the group of Fleet-owned configuration files.                                                                               |
+| Acceptance | Go unit tests cover decrypt-before-write, mode and group, evidence without plaintext, wrong key, and wrong domain. The full Studio → Fleet Control → Agent path still needs a live run.                                                                                                                                                                                                        |
+
+Next uses of the same channel:
+
+- Edge Function secrets: seal `platform.function_secrets` to the Agent under the `functions` domain, closing the gap where they are stored but never delivered.
+- Database password rotation still uses Fleet Control's sensitive operation path, where Fleet Control can decrypt. Moving it to envelopes removes that exposure.
+- Recipient key rotation is by Agent replacement today. A planned rotation needs the Agent to keep the old key until Studio has resealed every domain.
 
 ### Phase 3: backups on Fleet Compose stacks (3–4 weeks, parallel)
 

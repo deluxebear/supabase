@@ -119,6 +119,9 @@ NODE
   printf 'FLEET_LIFECYCLE_BIND_PREFIXES=%s,%s\n' "$repo_docker_dir/volumes/pooler" "$root_dir/state/$project_ref/functions"
   printf 'FLEET_LIFECYCLE_COMPONENT_VERSIONS=%s\n' "$lifecycle_versions"
   printf 'FLEET_HOST_CONFIG_ROOT=%s\n' "$root_dir/state/$project_ref/config"
+  # Group of files holding delivered secrets, so the operator who runs
+  # `docker compose` for this stack can read them and other users cannot.
+  printf 'FLEET_OPERATOR_GID=%s\n' "$(id -g)"
 } > "$temporary"
 
 chmod 0600 "$temporary"

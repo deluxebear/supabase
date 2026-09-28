@@ -3150,7 +3150,6 @@
   "Fleet Control API URL": "Fleet Control API URL",
   "Fleet Control audience": "Fleet Control 受众",
   "Fleet attachment status": "Fleet 挂载状态",
-  "Fleet cannot deliver secrets to the managed stack yet. Set these in the stack environment: {{fields}}": "Fleet 目前还无法把密钥下发到被管理栈。请在栈的环境变量中设置：{{fields}}",
   "Fleet is recreating the project's Auth service with the saved settings. This page updates when it finishes.": "Fleet 正在使用已保存的设置重建项目的 Auth 服务。完成后此页面会自动更新。",
   "Fleet recreates the project's Auth service with the saved settings. Sign-ins and token refreshes fail for a few seconds while it restarts. If the new settings keep Auth from starting, Fleet restores the previous settings.": "Fleet 会使用已保存的设置重建项目的 Auth 服务。重启期间的几秒内，登录和令牌刷新会失败。如果新设置导致 Auth 无法启动，Fleet 会恢复之前的设置。",
   "Fleet stores these settings for this project, but the project's Auth service keeps running with its current configuration. To change it now, update the Auth environment on the managed stack and restart the Auth service.": "Fleet 已为此项目保存这些设置，但项目的 Auth 服务仍按当前配置运行。如需立即生效，请在被管理栈上更新 Auth 环境变量并重启 Auth 服务。",
@@ -9575,5 +9574,7 @@
   "— applied on": "— 应用于",
   "— no unnesting joins needed.": "— 不需要嵌套联接。",
   "“Auto Renewal” is turned OFF for your AWS Marketplace subscription": "\"自动续订\"对于您的 AWS Marketplace 订阅已关闭",
-  "” did not return any results": "未返回任何结果"
+  "” did not return any results": "未返回任何结果",
+  "{{count}} secret settings are encrypted for this stack's Fleet Agent and applied: {{fields}}": "{{count}} 项机密设置将加密发送给此栈的 Fleet Agent 并应用：{{fields}}",
+  "This stack's Fleet Agent has not published a key for receiving secrets. Upgrade the Agent, or set these in the stack environment: {{fields}}": "此栈的 Fleet Agent 尚未发布用于接收机密的密钥。请升级 Agent，或在栈环境中设置以下项：{{fields}}"
 }

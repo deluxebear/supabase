@@ -5,7 +5,7 @@ import crypto from 'crypto-js'
 
 export const PLATFORM_ENCRYPTION_KEY = process.env.PLATFORM_ENCRYPTION_KEY || ''
 
-function requireKey(): string {
+export function requirePlatformEncryptionKey(): string {
   if (!PLATFORM_ENCRYPTION_KEY) {
     throw new Error('PLATFORM_ENCRYPTION_KEY is not set')
   }
@@ -13,11 +13,13 @@ function requireKey(): string {
 }
 
 export function encryptSecret(plaintext: string): string {
-  return crypto.AES.encrypt(plaintext, requireKey()).toString()
+  return crypto.AES.encrypt(plaintext, requirePlatformEncryptionKey()).toString()
 }
 
 export function decryptSecret(ciphertext: string): string {
-  const out = crypto.AES.decrypt(ciphertext, requireKey()).toString(crypto.enc.Utf8)
+  const out = crypto.AES.decrypt(ciphertext, requirePlatformEncryptionKey()).toString(
+    crypto.enc.Utf8
+  )
   if (!out) {
     throw new Error('failed to decrypt platform secret')
   }

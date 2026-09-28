@@ -6,6 +6,7 @@
 import {
   createCipheriv,
   createHash,
+  createHmac,
   createPrivateKey,
   createPublicKey,
   diffieHellman,
@@ -132,4 +133,26 @@ export function sealedSecretDigest(envelope: SealedSecretEnvelope): string {
     ciphertext: envelope.ciphertext,
   }
   return createHash('sha256').update(JSON.stringify(ordered)).digest('hex')
+}
+
+/**
+ * Studio-only fingerprint of sealed plaintext. Lets Studio tell whether the
+ * secrets behind an envelope changed without opening it, and reuse the
+ * envelope while they have not. Keyed, so it cannot be used to guess the
+ * plaintext without Studio's platform key.
+ */
+export function sealedSecretFingerprint(input: {
+  studioKey: string
+  context: SealedSecretContext
+  plaintext: string
+}): string {
+  if (!input.studioKey) throw new Error('A Studio key is required to fingerprint sealed secrets')
+  validateContext(input.context)
+  const key = createHash('sha256')
+    .update(`supabase.fleet.sealed-fingerprint.v1\0${input.studioKey}`)
+    .digest()
+  const { projectRef, bindingId, domain, path } = input.context
+  return createHmac('sha256', key)
+    .update([projectRef, bindingId, domain, path, input.plaintext].join('\n'))
+    .digest('hex')
 }

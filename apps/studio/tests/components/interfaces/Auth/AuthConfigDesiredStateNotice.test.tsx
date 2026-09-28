@@ -28,6 +28,7 @@ const status = (overrides: Record<string, unknown> = {}) => ({
   state: 'pending',
   isOwnedByFleet: false,
   appliedFields: ['JWT_EXP', 'SITE_URL'],
+  sealedSecretFields: [],
   skippedSecretFields: ['SMTP_PASS'],
   expectedGeneration: 2,
   operation: null,

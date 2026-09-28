@@ -22,6 +22,11 @@
 # are created with mode 0600, so fleet-lifecycle-init copies them into a volume
 # that only the Agent user can read; it runs again on every `up`, so edits to
 # the env files reach the plugin after the next `up`.
+#
+# Secret settings arrive sealed to this Agent's recipient key and are written to
+# <config-root>/<domain>/current/secrets.compose.yml with mode 0640 and group
+# FLEET_OPERATOR_GID, so the operator's own `docker compose` commands can read
+# them and other host users cannot.
 
 services:
   fleet-lifecycle-init:
@@ -60,6 +65,9 @@ services:
     networks: [docker-lifecycle]
 
   fleet-agent:
+    # Lets the Agent give files holding delivered secrets the operator group.
+    group_add:
+      - ${FLEET_OPERATOR_GID:?set FLEET_OPERATOR_GID}
     depends_on:
       fleet-lifecycle-init:
         condition: service_completed_successfully
@@ -67,6 +75,7 @@ services:
         condition: service_started
     environment:
       FLEET_AGENT_LIFECYCLE_PLUGIN: /usr/local/bin/fleet-lifecycle-compose
+      FLEET_AGENT_SECRET_GROUP_ID: ${FLEET_OPERATOR_GID}
       # Fleet-owned configuration now reaches running containers: the Agent
       # writes a revision, then rolls the service out through the plugin.
       FLEET_AGENT_ADVERTISE_CONFIG_RECONCILE: "true"
@@ -78,7 +87,7 @@ services:
       FLEET_LIFECYCLE_SERVICES: ${FLEET_LIFECYCLE_SERVICES:-auth,rest,realtime,storage,imgproxy,meta,functions,supavisor}
       FLEET_LIFECYCLE_DOCKER_ENDPOINT: http://fleet-docker-proxy-lifecycle:2375
       FLEET_LIFECYCLE_PROJECT_DIRECTORY: ${FLEET_HOST_COMPOSE_DIRECTORY:?set FLEET_HOST_COMPOSE_DIRECTORY}
-      FLEET_LIFECYCLE_COMPOSE_FILES: ${FLEET_HOST_COMPOSE_DIRECTORY}/docker-compose.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.override.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.lifecycle.yml,${FLEET_HOST_CONFIG_ROOT:?set FLEET_HOST_CONFIG_ROOT}/auth/current/compose.yml
+      FLEET_LIFECYCLE_COMPOSE_FILES: ${FLEET_HOST_COMPOSE_DIRECTORY}/docker-compose.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.override.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.lifecycle.yml,${FLEET_HOST_CONFIG_ROOT:?set FLEET_HOST_CONFIG_ROOT}/auth/current/compose.yml,${FLEET_HOST_CONFIG_ROOT}/auth/current/secrets.compose.yml
       FLEET_LIFECYCLE_ENV_FILES: /var/lib/fleet-lifecycle/env/supabase.env,/var/lib/fleet-lifecycle/env/project.env
       FLEET_LIFECYCLE_VERIFY_TIMEOUT: ${FLEET_LIFECYCLE_VERIFY_TIMEOUT:-2m}
     volumes:

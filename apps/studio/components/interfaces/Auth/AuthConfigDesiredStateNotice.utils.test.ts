@@ -8,6 +8,7 @@ const status = (overrides: Partial<AuthConfigApplyStatus>): AuthConfigApplyStatu
   state: 'pending',
   isOwnedByFleet: true,
   appliedFields: ['SITE_URL'],
+  sealedSecretFields: [],
   skippedSecretFields: [],
   expectedGeneration: 1,
   operation: null,

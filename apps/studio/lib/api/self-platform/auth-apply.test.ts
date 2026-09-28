@@ -1,6 +1,13 @@
+import { createHash } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
 
-import { deriveAuthApplyState, type AuthApplyOperation } from './auth-apply'
+import {
+  deriveAuthApplyState,
+  sealedSecretsFile,
+  sealedSecretsMarker,
+  type AuthApplyOperation,
+} from './auth-apply'
+import { sealedSecretFingerprint, type SealedSecretContext } from './sealed-secret'
 
 const operation = (state: string): AuthApplyOperation => ({
   id: 'auth_apply_1',
@@ -16,6 +23,8 @@ describe('deriveAuthApplyState', () => {
     expect(
       deriveAuthApplyState({
         plannedContent: planned,
+        plannedSecrets: null,
+        desiredSecrets: null,
         hasOverrides: false,
         desiredContent: null,
         operation: null,
@@ -27,6 +36,8 @@ describe('deriveAuthApplyState', () => {
     expect(
       deriveAuthApplyState({
         plannedContent: planned,
+        plannedSecrets: null,
+        desiredSecrets: null,
         hasOverrides: true,
         desiredContent: null,
         operation: null,
@@ -35,6 +46,8 @@ describe('deriveAuthApplyState', () => {
     expect(
       deriveAuthApplyState({
         plannedContent: planned,
+        plannedSecrets: null,
+        desiredSecrets: null,
         hasOverrides: true,
         desiredContent: 'older',
         operation: operation('applied'),
@@ -46,6 +59,8 @@ describe('deriveAuthApplyState', () => {
     expect(
       deriveAuthApplyState({
         plannedContent: planned,
+        plannedSecrets: null,
+        desiredSecrets: null,
         hasOverrides: false,
         desiredContent: 'older',
         operation: null,
@@ -54,11 +69,93 @@ describe('deriveAuthApplyState', () => {
   })
 
   it('follows the operation for the current revision', () => {
-    const base = { plannedContent: planned, hasOverrides: true, desiredContent: planned }
+    const base = {
+      plannedContent: planned,
+      plannedSecrets: null,
+      hasOverrides: true,
+      desiredContent: planned,
+      desiredSecrets: null,
+    }
     expect(deriveAuthApplyState({ ...base, operation: operation('queued') })).toBe('applying')
     expect(deriveAuthApplyState({ ...base, operation: operation('applied') })).toBe('applied')
     expect(deriveAuthApplyState({ ...base, operation: operation('failed') })).toBe('failed')
     expect(deriveAuthApplyState({ ...base, operation: operation('superseded') })).toBe('pending')
     expect(deriveAuthApplyState({ ...base, operation: null })).toBe('pending')
+  })
+
+  it('reports changed or re-keyed sealed secrets as pending', () => {
+    const base = {
+      plannedContent: planned,
+      hasOverrides: true,
+      desiredContent: planned,
+      operation: operation('applied'),
+    }
+    const secrets = { fingerprint: 'f1', recipientKeyId: 'k1' }
+    const same = sealedSecretsMarker(secrets)
+    expect(deriveAuthApplyState({ ...base, plannedSecrets: same, desiredSecrets: same })).toBe(
+      'applied'
+    )
+    expect(
+      deriveAuthApplyState({
+        ...base,
+        plannedSecrets: sealedSecretsMarker({ ...secrets, fingerprint: 'f2' }),
+        desiredSecrets: same,
+      })
+    ).toBe('pending')
+    expect(
+      deriveAuthApplyState({
+        ...base,
+        plannedSecrets: sealedSecretsMarker({ ...secrets, recipientKeyId: 'k2' }),
+        desiredSecrets: same,
+      })
+    ).toBe('pending')
+    expect(deriveAuthApplyState({ ...base, plannedSecrets: null, desiredSecrets: same })).toBe(
+      'pending'
+    )
+  })
+})
+
+describe('sealedSecretsFile', () => {
+  const context: SealedSecretContext = {
+    projectRef: 'project-a',
+    bindingId: 'binding-1',
+    domain: 'auth',
+    path: 'secrets.compose.yml',
+  }
+  const recipient = (seed: number) => {
+    const publicKey = Buffer.alloc(32, seed)
+    // Any 32 bytes are a valid X25519 public key.
+    return { keyId: createHash('sha256').update(publicKey).digest('hex').slice(0, 32), publicKey }
+  }
+  const plaintext = 'services:\n  auth:\n    environment:\n      GOTRUE_SMTP_PASS: "hunter2"\n'
+  const plan = (seed = 9, text = plaintext) => ({
+    context,
+    plaintext: text,
+    fingerprint: sealedSecretFingerprint({ studioKey: 'studio-key', context, plaintext: text }),
+    recipient: recipient(seed),
+  })
+
+  it('seals a group-readable file whose document carries only ciphertext', () => {
+    const file = sealedSecretsFile(plan(), null)
+    expect(file).toMatchObject({ path: 'secrets.compose.yml', content: '', mode: 0o640 })
+    expect(file.sealed.envelope.recipientKeyId).toBe(recipient(9).keyId)
+    expect(JSON.stringify(file)).not.toContain('hunter2')
+    expect(file.sealed.fingerprint).not.toContain(
+      createHash('sha256').update(plaintext).digest('hex')
+    )
+  })
+
+  it('reuses the envelope only for the same secrets and recipient', () => {
+    const first = sealedSecretsFile(plan(), null)
+    expect(sealedSecretsFile(plan(), first.sealed).sealed.envelope).toBe(first.sealed.envelope)
+    expect(sealedSecretsFile(plan(10), first.sealed).sealed.envelope).not.toEqual(
+      first.sealed.envelope
+    )
+    const changed = sealedSecretsFile(
+      plan(9, plaintext.replace('hunter2', 'hunter3')),
+      first.sealed
+    )
+    expect(changed.sealed.envelope).not.toEqual(first.sealed.envelope)
+    expect(changed.sealed.fingerprint).not.toBe(first.sealed.fingerprint)
   })
 })

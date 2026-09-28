@@ -4,16 +4,38 @@
 // the `auth` service and commits it as the desired state of the `auth`
 // configuration domain. The Agent writes the revision, recreates `auth`, and
 // reports the revision applied only once the service is healthy.
+//
+// Stored secrets travel in a second override, `secrets.compose.yml`, sealed to
+// the Fleet Agent's recipient key. The platform database, the operation
+// record, and Fleet Control see only ciphertext.
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 
 import { CapabilityUnavailable, requireProjectCapability } from './attachment'
-import { readStoredAuthOverrides, SECRET_FIELDS } from './auth-config'
-import { planAuthRuntimeApply } from './auth-runtime'
+import { readStoredAuthOverrides, readStoredAuthSecrets, SECRET_FIELDS } from './auth-config'
+import {
+  EMPTY_AUTH_SECRETS_OVERRIDE,
+  planAuthRuntimeApply,
+  renderAuthSecretsOverride,
+  renderGotrueEnv,
+} from './auth-runtime'
 import { executePlatformQuery } from './db'
 import { commitDesiredConfiguration } from './desired-state'
-import { getProjectManagementBinding } from './management-trust'
+import {
+  getAgentSecretRecipient,
+  getProjectManagementBinding,
+  type AgentSecretRecipient,
+  type ManagementBinding,
+} from './management-trust'
 import { listProjectOwnershipPolicies, setProjectOwnershipPolicy } from './ownership-policy'
+import {
+  SEALED_SECRET_SCHEMA,
+  sealedSecretFingerprint,
+  sealSecret,
+  type SealedSecretContext,
+  type SealedSecretEnvelope,
+} from './sealed-secret'
+import { requirePlatformEncryptionKey } from './secrets'
 
 export const AUTH_CONFIG_DOMAIN = 'auth'
 const RECONCILE_CAPABILITY = 'runtime.config.reconcile'
@@ -23,6 +45,9 @@ const OVERRIDE_PATH = 'compose.yml'
 // World-readable: the override holds no secrets, and operators run
 // `docker compose` on the host as their own user.
 const OVERRIDE_MODE = 0o644
+const SECRETS_PATH = 'secrets.compose.yml'
+// Readable by the operator group only; the Agent sets the group on the target.
+const SECRETS_MODE = 0o640
 
 export type AuthApplyAvailability =
   | { isAvailable: true }
@@ -42,6 +67,9 @@ export type AuthApplyStatus = {
   state: AuthApplyState
   isOwnedByFleet: boolean
   appliedFields: string[]
+  /** Stored secret fields delivered sealed to the Fleet Agent, sorted. */
+  sealedSecretFields: string[]
+  /** Stored secret fields that cannot be delivered, sorted. */
   skippedSecretFields: string[]
   expectedGeneration: number
   operation: AuthApplyOperation | null
@@ -68,12 +96,17 @@ export class AuthApplyConflict extends Error {
  */
 export function deriveAuthApplyState(input: {
   plannedContent: string
+  /** Identifies the planned sealed secrets, or null when none are delivered. */
+  plannedSecrets: string | null
   hasOverrides: boolean
   desiredContent: string | null
+  desiredSecrets: string | null
   operation: AuthApplyOperation | null
 }): AuthApplyState {
   const matchesDesired =
-    input.desiredContent !== null && input.desiredContent === input.plannedContent
+    input.desiredContent !== null &&
+    input.desiredContent === input.plannedContent &&
+    input.desiredSecrets === input.plannedSecrets
   if (!matchesDesired)
     return input.hasOverrides || input.desiredContent !== null ? 'pending' : 'nothing-to-apply'
   switch (input.operation?.state) {
@@ -94,11 +127,34 @@ const desiredRowSchema = z.object({
   desired_document: z.unknown(),
 })
 
+const sealedEnvelopeSchema = z.object({
+  schema: z.literal(SEALED_SECRET_SCHEMA),
+  recipientKeyId: z.string(),
+  ephemeralPublicKey: z.string(),
+  nonce: z.string(),
+  ciphertext: z.string(),
+})
+
 const overrideDocumentSchema = z.object({
   compose: z.object({
-    files: z.array(z.object({ path: z.string(), content: z.string() })),
+    files: z.array(
+      z.object({
+        path: z.string(),
+        content: z.string().default(''),
+        sealed: z.object({ envelope: sealedEnvelopeSchema, fingerprint: z.string() }).optional(),
+      })
+    ),
   }),
 })
+
+type DesiredSealedSecrets = { envelope: SealedSecretEnvelope; fingerprint: string }
+
+/** Compares sealed secrets by plaintext fingerprint and recipient key. */
+export function sealedSecretsMarker(
+  secrets: { fingerprint: string; recipientKeyId: string } | null
+): string | null {
+  return secrets === null ? null : `${secrets.fingerprint}:${secrets.recipientKeyId}`
+}
 
 const operationRowSchema = z.object({
   operation_id: z.string(),
@@ -115,13 +171,14 @@ async function readDesired(projectRef: string) {
   })
   if (result.error) throw result.error
   const row = result.data?.[0]
-  if (row === undefined) return { generation: 0, content: null }
+  if (row === undefined) return { generation: 0, content: null, secrets: null }
   const parsed = desiredRowSchema.parse(row)
   const document = overrideDocumentSchema.safeParse(parsed.desired_document)
-  const content = document.success
-    ? (document.data.compose.files.find((file) => file.path === OVERRIDE_PATH)?.content ?? null)
-    : null
-  return { generation: parsed.generation, content }
+  const files = document.success ? document.data.compose.files : []
+  const content = files.find((file) => file.path === OVERRIDE_PATH)?.content ?? null
+  const secrets: DesiredSealedSecrets | null =
+    files.find((file) => file.path === SECRETS_PATH)?.sealed ?? null
+  return { generation: parsed.generation, content, secrets }
 }
 
 async function readLatestApplyOperation(projectRef: string): Promise<AuthApplyOperation | null> {
@@ -147,8 +204,10 @@ async function readLatestApplyOperation(projectRef: string): Promise<AuthApplyOp
   }
 }
 
-async function checkAvailability(projectRef: string): Promise<AuthApplyAvailability> {
-  const binding = await getProjectManagementBinding(projectRef)
+async function checkAvailability(
+  binding: ManagementBinding | null,
+  projectRef: string
+): Promise<AuthApplyAvailability> {
   if (!binding || binding.state !== 'active' || binding.targetState !== 'active') {
     return {
       isAvailable: false,
@@ -178,12 +237,58 @@ async function checkAvailability(projectRef: string): Promise<AuthApplyAvailabil
   return { isAvailable: true }
 }
 
-export async function getAuthApplyStatus(projectRef: string): Promise<AuthApplyStatus> {
-  const [overrides, desired, operation, availability, policies] = await Promise.all([
+type ApplyRequest = { actor: string; correlationId: string }
+
+type SecretsPlan = {
+  context: SealedSecretContext
+  plaintext: string
+  fingerprint: string
+  recipient: AgentSecretRecipient
+}
+
+/**
+ * Plans the sealed secrets override. Returns null when there is nothing to
+ * seal or no Agent recipient key to seal to.
+ */
+function planSecrets(input: {
+  binding: ManagementBinding
+  secrets: Record<string, string>
+  recipient: AgentSecretRecipient | null
+}): SecretsPlan | null {
+  if (input.recipient === null || Object.keys(renderGotrueEnv(input.secrets)).length === 0) {
+    return null
+  }
+  const context = {
+    projectRef: input.binding.projectRef,
+    bindingId: input.binding.id,
+    domain: AUTH_CONFIG_DOMAIN,
+    path: SECRETS_PATH,
+  }
+  const plaintext = renderAuthSecretsOverride(input.secrets)
+  return {
+    context,
+    plaintext,
+    fingerprint: sealedSecretFingerprint({
+      studioKey: requirePlatformEncryptionKey(),
+      context,
+      plaintext,
+    }),
+    recipient: input.recipient,
+  }
+}
+
+async function loadApplyPlan(
+  projectRef: string,
+  request: ApplyRequest,
+  options: { isStrict: boolean }
+) {
+  const binding = await getProjectManagementBinding(projectRef)
+  const [overrides, secrets, desired, operation, availability, policies] = await Promise.all([
     readStoredAuthOverrides(projectRef),
+    readStoredAuthSecrets(projectRef),
     readDesired(projectRef),
     readLatestApplyOperation(projectRef),
-    checkAvailability(projectRef),
+    checkAvailability(binding, projectRef),
     listProjectOwnershipPolicies(projectRef),
   ])
   const plan = planAuthRuntimeApply({
@@ -191,20 +296,80 @@ export async function getAuthApplyStatus(projectRef: string): Promise<AuthApplyS
     storedSecretFields: overrides.secretFields,
     secretFieldNames: SECRET_FIELDS,
   })
+
+  let recipient: AgentSecretRecipient | null = null
+  if (binding && availability.isAvailable && plan.skippedSecretFields.length > 0) {
+    try {
+      recipient = await getAgentSecretRecipient({ projectRef, ...request })
+    } catch (error) {
+      // Status degrades to "secrets skipped"; an apply must not silently drop them.
+      if (options.isStrict) throw error
+    }
+  }
+  const secretsPlan = binding ? planSecrets({ binding, secrets, recipient }) : null
+  const sealedSecretFields = secretsPlan === null ? [] : plan.skippedSecretFields
   const policy = policies.find((item) => item.domain === AUTH_CONFIG_DOMAIN)
-  return {
+  const status: AuthApplyStatus = {
     availability,
     state: deriveAuthApplyState({
       plannedContent: plan.content,
-      hasOverrides: plan.appliedFields.length > 0,
+      plannedSecrets: sealedSecretsMarker(
+        secretsPlan && {
+          fingerprint: secretsPlan.fingerprint,
+          recipientKeyId: secretsPlan.recipient.keyId,
+        }
+      ),
+      hasOverrides: plan.appliedFields.length > 0 || secretsPlan !== null,
       desiredContent: desired.content,
+      desiredSecrets: sealedSecretsMarker(
+        desired.secrets && {
+          fingerprint: desired.secrets.fingerprint,
+          recipientKeyId: desired.secrets.envelope.recipientKeyId,
+        }
+      ),
       operation,
     }),
     isOwnedByFleet: policy?.ownershipMode === 'direct-managed',
     appliedFields: plan.appliedFields,
-    skippedSecretFields: plan.skippedSecretFields,
+    sealedSecretFields,
+    skippedSecretFields: secretsPlan === null ? plan.skippedSecretFields : [],
     expectedGeneration: desired.generation,
     operation,
+  }
+  return { binding, status, plan, secretsPlan, desired }
+}
+
+export async function getAuthApplyStatus(
+  projectRef: string,
+  request: ApplyRequest
+): Promise<AuthApplyStatus> {
+  return (await loadApplyPlan(projectRef, request, { isStrict: false })).status
+}
+
+/**
+ * Reuses the desired envelope while the secrets and recipient are unchanged,
+ * so the desired digest stays stable; otherwise seals again.
+ */
+export function sealedSecretsFile(
+  plan: SecretsPlan,
+  previous: DesiredSealedSecrets | null
+): { path: string; content: string; mode: number; sealed: DesiredSealedSecrets } {
+  const canReuse =
+    previous !== null &&
+    previous.fingerprint === plan.fingerprint &&
+    previous.envelope.recipientKeyId === plan.recipient.keyId
+  const envelope = canReuse
+    ? previous.envelope
+    : sealSecret({
+        recipientPublicKey: plan.recipient.publicKey,
+        context: plan.context,
+        plaintext: plan.plaintext,
+      })
+  return {
+    path: SECRETS_PATH,
+    content: '',
+    mode: SECRETS_MODE,
+    sealed: { envelope, fingerprint: plan.fingerprint },
   }
 }
 
@@ -218,7 +383,11 @@ export async function applyAuthConfig(input: {
   aal?: string
   aalAuthenticatedAt?: number
 }) {
-  const status = await getAuthApplyStatus(input.projectRef)
+  const { binding, status, plan, secretsPlan, desired } = await loadApplyPlan(
+    input.projectRef,
+    { actor: input.actor, correlationId: input.correlationId },
+    { isStrict: true }
+  )
   if (!status.availability.isAvailable) {
     throw new AuthApplyConflict('apply_unavailable', status.availability.message)
   }
@@ -228,7 +397,6 @@ export async function applyAuthConfig(input: {
   if (status.state === 'applied' || status.state === 'nothing-to-apply') {
     throw new AuthApplyConflict('nothing_to_apply', 'The Auth service already uses these settings.')
   }
-  const binding = await getProjectManagementBinding(input.projectRef)
   if (!binding) {
     throw new AuthApplyConflict('apply_unavailable', 'The project management binding is missing.')
   }
@@ -257,12 +425,12 @@ export async function applyAuthConfig(input: {
     })
   }
 
-  const overrides = await readStoredAuthOverrides(input.projectRef)
-  const plan = planAuthRuntimeApply({
-    config: overrides.config,
-    storedSecretFields: overrides.secretFields,
-    secretFieldNames: SECRET_FIELDS,
-  })
+  // Compose loads the secrets override on every start, so it always exists;
+  // without secrets to deliver it is an empty, non-secret placeholder.
+  const secretsFile =
+    secretsPlan === null
+      ? { path: SECRETS_PATH, content: EMPTY_AUTH_SECRETS_OVERRIDE, mode: OVERRIDE_MODE }
+      : sealedSecretsFile(secretsPlan, desired.secrets)
   return commitDesiredConfiguration({
     projectRef: input.projectRef,
     domain: AUTH_CONFIG_DOMAIN,
@@ -277,7 +445,7 @@ export async function applyAuthConfig(input: {
       ownershipMode: 'direct-managed',
       adapter: 'compose',
       compose: {
-        files: [{ path: OVERRIDE_PATH, content: plan.content, mode: OVERRIDE_MODE }],
+        files: [{ path: OVERRIDE_PATH, content: plan.content, mode: OVERRIDE_MODE }, secretsFile],
         rollout: ['auth'],
       },
     },

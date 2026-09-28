@@ -48,6 +48,10 @@ describe('/platform/auth/[ref]/config/apply', () => {
     })
     expect(res._getStatusCode()).toBe(200)
     expect(res._getJSONData()).toEqual({ state: 'pending' })
+    expect(vi.mocked(getAuthApplyStatus).mock.calls[0]).toEqual([
+      'project-a',
+      { actor: 'user-1', correlationId: expect.any(String) },
+    ])
   })
 
   it('POST requires update permission, an idempotency key, and a recent AAL2 session', async () => {
