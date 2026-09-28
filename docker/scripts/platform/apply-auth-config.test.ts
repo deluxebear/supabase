@@ -2,11 +2,10 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  maskSecretValues,
-  parseArgs,
   renderGotrueEnv,
   toComposeOverrideYaml,
-} from './apply-auth-config'
+} from '../../../apps/studio/lib/api/self-platform/auth-runtime'
+import { maskSecretValues, parseArgs } from './apply-auth-config'
 
 describe('parseArgs', () => {
   it('reads the ref, --target, and --dry-run', () => {

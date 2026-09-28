@@ -127,6 +127,24 @@ Done when:
 - Secrets never appear in `snapshot_canonical`. An assertion in `verify-ownership-reconciliation.sh` checks this.
 - GitOps and observe-only ownership modes report drift and never write.
 
+Phase 2 status (2026-09-28): Auth implemented for non-secret settings, pending live acceptance.
+
+| Piece      | State                                                                                                                                                                                                                                                                                                                               |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rendering  | `lib/api/self-platform/auth-runtime.ts` renders only stored overrides as `GOTRUE_<FIELD>` into a Compose override for `auth`, escaping `$` for Compose interpolation. The operator CLI `docker/scripts/platform/apply-auth-config.ts` now uses the same module.                                                                     |
+| Apply API  | `GET/POST /api/platform/auth/[ref]/config/apply`: status (nothing to apply, pending, applying, applied, failed), RBAC on `custom_config_gotrue`, recent AAL2 for POST, explicit ownership confirmation that sets the `auth` policy to direct-managed (A16), and a `runtime.config.reconcile` commit with `rollout: ["auth"]`.       |
+| Agent      | The Compose provider writes the revision, recreates `auth` through the lifecycle plugin, and reports it applied only once healthy. A failed rollout restores the previous revision and converges back, or ends in manual intervention. A rollout marker covers a crash between writing and rolling out.                             |
+| Target     | The lifecycle overlay advertises `runtime.config.reconcile` and adds `$FLEET_HOST_CONFIG_ROOT/auth/current/compose.yml` to the Compose files. `init-instance-env.sh` creates the placeholder; `bootstrap-config-domain.sh` does it for existing instances. Operators must include that file in their own `docker compose` commands. |
+| UI         | The Auth notice follows the apply status and offers "Apply to Auth service" with an impact explanation, the list of skipped secret settings, the ownership confirmation, and an MFA step-up when the server asks for AAL2.                                                                                                          |
+| Acceptance | `verify-compose-lifecycle.sh` step 4 proves an override plus rollout replaces a base `environment:` value and preserves an escaped `$`. The full Studio → Fleet Control → Agent path still needs a live run.                                                                                                                        |
+
+Deviations from the original Phase 2 plan:
+
+- Secrets are not applied. No channel delivers them to the Agent: the outbox payload is plaintext, and `platform.function_secrets` is stored but never delivered either. The UI names each skipped secret. A secret channel (encrypted per target, fetched by the Agent over mTLS) is the next Phase 2 item and also closes the Edge Function secrets gap.
+- Instead of a separate linked `runtime.rollout` operation, the configuration task rolls the service out itself. This keeps write, rollout, verification, and rollback in one journaled task, so a failed rollout cannot leave new files on disk. No outbox migration was needed.
+- Phase 1 had a gap this closes: lifecycle actions require the `runtime` ownership policy to be direct-managed, but setting it requires `runtime.config.reconcile`, which Phase 0 stopped advertising. The lifecycle overlay advertises it again now that a consumer exists. Studio still has no control for the `runtime` policy since the ownership panel was removed, so the lifecycle panel needs the same explicit confirmation the Auth apply uses.
+- PostgREST, Realtime, and Storage are not wired yet. Each needs its own stored settings mapped to service environment names, and the same producer and domain pattern.
+
 ### Phase 3: backups on Fleet Compose stacks (3–4 weeks, parallel)
 
 Goal: meet release gate 5 (a real backup and restore drill) on a Fleet-managed stack.

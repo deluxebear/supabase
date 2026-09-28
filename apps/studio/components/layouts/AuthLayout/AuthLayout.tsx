@@ -40,7 +40,7 @@ const AuthLayout = ({ title, children }: PropsWithChildren<{ title: string }>) =
       isBlocking={false}
     >
       <ProductMenuShortcuts menu={menu} />
-      {shouldShowDesiredStateNotice && <AuthConfigDesiredStateNotice />}
+      {shouldShowDesiredStateNotice && <AuthConfigDesiredStateNotice projectRef={projectRef} />}
       {children}
     </ProjectLayout>
   )

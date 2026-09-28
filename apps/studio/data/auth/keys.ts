@@ -31,6 +31,9 @@ export const authKeys = {
     ['projects', projectRef, 'users-index-statuses'] as const,
   indexWorkerStatus: (projectRef: string | undefined) =>
     ['projects', projectRef, 'index-worker-status'] as const,
+  // [self-platform] Whether the running Auth service uses the stored settings.
+  authConfigApply: (projectRef: string | undefined) =>
+    ['projects', projectRef, 'auth-config-apply'] as const,
   authConfig: (projectRef: string | undefined) => ['projects', projectRef, 'auth-config'] as const,
   accessToken: () => ['access-token'] as const,
   overviewMetrics: (projectRef: string | undefined) =>

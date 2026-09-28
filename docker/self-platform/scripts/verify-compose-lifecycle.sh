@@ -40,6 +40,8 @@ services:
     image: alpine:3.22
     command: [sleep, infinity]
     env_file: [service.env]
+    environment:
+      AUTH_SETTING: upstream
     healthcheck:
       test: ["CMD", "sh", "-c", "[ \"\$\$HEALTH\" = ok ]"]
       interval: 1s
@@ -66,7 +68,14 @@ networks:
     internal: true
 YAML
 
-compose() { docker compose -p "$PROJECT" -f "$WORK_DIR/compose.yml" --project-directory "$WORK_DIR" "$@"; }
+mkdir -p "$WORK_DIR/config/auth/revisions/bootstrap"
+printf 'services: {}\n' > "$WORK_DIR/config/auth/revisions/bootstrap/compose.yml"
+ln -s revisions/bootstrap "$WORK_DIR/config/auth/current"
+
+compose() {
+  docker compose -p "$PROJECT" -f "$WORK_DIR/compose.yml" -f "$WORK_DIR/config/auth/current/compose.yml" \
+    --project-directory "$WORK_DIR" "$@"
+}
 compose up -d --wait auth db
 compose up -d fleet-docker-proxy-lifecycle
 
@@ -80,7 +89,7 @@ plugin() {
       -e FLEET_LIFECYCLE_SERVICES=auth \
       -e FLEET_LIFECYCLE_DOCKER_ENDPOINT=http://fleet-docker-proxy-lifecycle:2375 \
       -e FLEET_LIFECYCLE_PROJECT_DIRECTORY="$WORK_DIR" \
-      -e FLEET_LIFECYCLE_COMPOSE_FILES="$WORK_DIR/compose.yml" \
+      -e FLEET_LIFECYCLE_COMPOSE_FILES="$WORK_DIR/compose.yml,$WORK_DIR/config/auth/current/compose.yml" \
       -e FLEET_LIFECYCLE_VERIFY_TIMEOUT=30s \
       --entrypoint /usr/local/bin/fleet-lifecycle-compose "$IMAGE" \
       --protocol "$PROTOCOL" --phase "$phase" --action "$action"
@@ -121,7 +130,17 @@ if plugin rollback runtime.rollout >/dev/null 2>&1; then fail "rollback claimed 
 printf 'HEALTH=ok\n' > "$WORK_DIR/service.env"
 plugin rollback runtime.rollout >/dev/null || fail "rollback did not recover once the definition was healthy"
 
-echo "4. proxy boundaries"
+echo "4. a Fleet-owned override wins over the base environment after rollout"
+mkdir -p "$WORK_DIR/config/auth/revisions/r1"
+printf 'services:\n  auth:\n    environment:\n      AUTH_SETTING: "fleet$$value"\n' \
+  > "$WORK_DIR/config/auth/revisions/r1/compose.yml"
+ln -sfn revisions/r1 "$WORK_DIR/config/auth/current"
+plugin apply runtime.rollout >/dev/null
+plugin verify runtime.rollout >/dev/null
+docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$(container_id auth)" | grep -q '^AUTH_SETTING=fleet\$value$' ||
+  fail "the Fleet override did not replace the base environment value (or \$\$ was not unescaped)"
+
+echo "5. proxy boundaries"
 if plugin observe runtime.restart db >/dev/null 2>&1; then fail "plugin accepted a non-allowlisted service"; fi
 [ "$(proxy_status POST "/containers/$(container_id db)/restart")" = 403 ] || fail "proxy allowed restarting db"
 [ "$(proxy_status POST /containers/create "{\"Labels\":{\"com.docker.compose.project\":\"$PROJECT\",\"com.docker.compose.service\":\"auth\"},\"HostConfig\":{\"Privileged\":true}}")" = 403 ] ||

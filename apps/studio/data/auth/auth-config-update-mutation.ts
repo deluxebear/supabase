@@ -60,7 +60,9 @@ export const useAuthConfigUpdateMutation = ({
       if (IS_AUTH_CONFIGURATION_DESIRED_STATE_ONLY) {
         toast.info($t('Saved in Fleet, not applied'), {
           id: 'auth-config-desired-state-only',
-          description: $t("The project's Auth service keeps its current configuration."),
+          description: $t(
+            "The project's Auth service keeps its current configuration until you apply the saved settings."
+          ),
         })
       }
 

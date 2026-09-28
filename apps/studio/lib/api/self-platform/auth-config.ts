@@ -361,6 +361,15 @@ async function loadRow(projectRef: string): Promise<StoredRow> {
   return data?.[0] ?? EMPTY_ROW
 }
 
+// [self-platform] The operator's explicit overrides only, without Studio's
+// defaults: non-secret values, and the names of stored secrets (never values).
+export async function readStoredAuthOverrides(
+  projectRef: string
+): Promise<{ config: Record<string, unknown>; secretFields: string[] }> {
+  const row = await loadRow(projectRef)
+  return { config: row.config, secretFields: Object.keys(row.secrets) }
+}
+
 export async function readAuthConfig(projectRef: string): Promise<GoTrueConfigResponse> {
   const row = await loadRow(projectRef)
   const merged: Record<string, unknown> = {
