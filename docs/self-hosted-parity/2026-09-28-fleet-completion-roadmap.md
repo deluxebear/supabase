@@ -63,6 +63,18 @@ Rough sizes assume one developer. Phases 0 → 1 → 2 are sequential. Phases 3,
 | 0.6 | Add a release workflow for `Dockerfile.fleet-control` modeled on `backup-operator-release.yml` (multi-arch, OCI labels, cosign)                                                                                                                               | `.github/workflows/fleet-control-release.yml`                                         | Tagged `fleet-control/v*` publishes a signed image; env examples reference it                   |
 | 0.7 | Re-run the QA crawl. Verify the attach wizard fix, enforce the canonical Studio origin (redirect non-canonical hosts), and fix the `'default'` ref fallback                                                                                                   | `data/reports/*`, Kong or Studio origin config                                        | Crawl has no hard FAIL; attach wizard passes                                                    |
 
+Phase 0 status (2026-09-28):
+
+| ID  | Status                                                                                                                                                                                                                                     |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0.1 | Done: `appliedAuthConfiguration` capability, Auth configuration notice in `AuthLayout`, deduplicated info toast in the shared mutation                                                                                                     |
+| 0.2 | Done: removed from `capabilities.json`, and `fleet-agent` only advertises it behind `--advertise-config-reconcile`. The Agent hello replaces enrollment capabilities, so the file change alone was not enough.                             |
+| 0.3 | Done                                                                                                                                                                                                                                       |
+| 0.4 | Done: `fleet-docker-proxy` (`internal/dockerproxy`) enforces GET-only rules, forces the project label filter, and rejects other projects' containers. Covered by Go tests against a fake Docker Engine. Not yet run against a live daemon. |
+| 0.5 | Done: `check-platform-migration-names.sh`, run by the migration runner and the `Platform Migrations Check` workflow                                                                                                                        |
+| 0.6 | Done: `fleet-control-release.yml`                                                                                                                                                                                                          |
+| 0.7 | Partly done: the `'default'` ref request was fixed upstream (`eb738d2b`) and arrived with the 2026-09-26 sync. The canonical-origin redirect and the 91-route crawl need a live environment.                                               |
+
 ### Phase 1: Compose lifecycle reference plugin (2–3 weeks)
 
 Goal: make `runtime.restart` and `runtime.rollout` real for Compose targets. Phase 2 depends on this.
