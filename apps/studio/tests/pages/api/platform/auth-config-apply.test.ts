@@ -3,7 +3,7 @@ import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { applyAuthConfig, getAuthApplyStatus } from '@/lib/api/self-platform/auth-apply'
-import { ComposeApplyConflict } from '@/lib/api/self-platform/compose-domain-apply'
+import { ServiceConfigApplyConflict } from '@/lib/api/self-platform/service-config-apply'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { hasRecentAal2 } from '@/lib/api/self-platform/recent-aal2'
 import { handler } from '@/pages/api/platform/auth/[ref]/config/apply'
@@ -99,7 +99,7 @@ describe('/platform/auth/[ref]/config/apply', () => {
 
   it('POST maps apply conflicts to 409 with their code', async () => {
     vi.mocked(applyAuthConfig).mockRejectedValue(
-      new ComposeApplyConflict('ownership_confirmation_required', 'Confirm ownership')
+      new ServiceConfigApplyConflict('ownership_confirmation_required', 'Confirm ownership')
     )
     const { req, res } = post({ expectedGeneration: 0 })
     await handler(req as never, res as never, aal2)

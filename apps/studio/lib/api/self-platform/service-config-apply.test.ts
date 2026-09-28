@@ -1,28 +1,29 @@
 import { createHash } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
 
+import { sealedSecretFingerprint, type SealedSecretContext } from './sealed-secret'
 import {
-  deriveComposeApplyState,
+  deriveServiceConfigApplyState,
+  kubernetesSecretsPlaintext,
   plainFilesKey,
   sealedSecretsFile,
   sealedSecretsMarker,
-  type ComposeApplyOperation,
-} from './compose-domain-apply'
-import { sealedSecretFingerprint, type SealedSecretContext } from './sealed-secret'
+  type ServiceConfigApplyOperation,
+} from './service-config-apply'
 
-const operation = (state: string): ComposeApplyOperation => ({
+const operation = (state: string): ServiceConfigApplyOperation => ({
   id: 'auth_apply_1',
   state,
   errorCode: null,
   updatedAt: '2026-09-28T00:00:00Z',
 })
 
-describe('deriveComposeApplyState', () => {
+describe('deriveServiceConfigApplyState', () => {
   const planned = 'services:\n  auth:\n    environment: {}\n'
 
   it('reports nothing to apply before anything was stored or applied', () => {
     expect(
-      deriveComposeApplyState({
+      deriveServiceConfigApplyState({
         plannedPlain: planned,
         plannedSecrets: null,
         desiredSecrets: null,
@@ -35,7 +36,7 @@ describe('deriveComposeApplyState', () => {
 
   it('reports pending when stored settings differ from the desired revision', () => {
     expect(
-      deriveComposeApplyState({
+      deriveServiceConfigApplyState({
         plannedPlain: planned,
         plannedSecrets: null,
         desiredSecrets: null,
@@ -45,7 +46,7 @@ describe('deriveComposeApplyState', () => {
       })
     ).toBe('pending')
     expect(
-      deriveComposeApplyState({
+      deriveServiceConfigApplyState({
         plannedPlain: planned,
         plannedSecrets: null,
         desiredSecrets: null,
@@ -58,7 +59,7 @@ describe('deriveComposeApplyState', () => {
 
   it('reports cleared overrides as pending so they can be applied', () => {
     expect(
-      deriveComposeApplyState({
+      deriveServiceConfigApplyState({
         plannedPlain: planned,
         plannedSecrets: null,
         desiredSecrets: null,
@@ -77,11 +78,19 @@ describe('deriveComposeApplyState', () => {
       desiredPlain: planned,
       desiredSecrets: null,
     }
-    expect(deriveComposeApplyState({ ...base, operation: operation('queued') })).toBe('applying')
-    expect(deriveComposeApplyState({ ...base, operation: operation('applied') })).toBe('applied')
-    expect(deriveComposeApplyState({ ...base, operation: operation('failed') })).toBe('failed')
-    expect(deriveComposeApplyState({ ...base, operation: operation('superseded') })).toBe('pending')
-    expect(deriveComposeApplyState({ ...base, operation: null })).toBe('pending')
+    expect(deriveServiceConfigApplyState({ ...base, operation: operation('queued') })).toBe(
+      'applying'
+    )
+    expect(deriveServiceConfigApplyState({ ...base, operation: operation('applied') })).toBe(
+      'applied'
+    )
+    expect(deriveServiceConfigApplyState({ ...base, operation: operation('failed') })).toBe(
+      'failed'
+    )
+    expect(deriveServiceConfigApplyState({ ...base, operation: operation('superseded') })).toBe(
+      'pending'
+    )
+    expect(deriveServiceConfigApplyState({ ...base, operation: null })).toBe('pending')
   })
 
   it('reports changed or re-keyed sealed secrets as pending', () => {
@@ -93,26 +102,26 @@ describe('deriveComposeApplyState', () => {
     }
     const secrets = { fingerprint: 'f1', recipientKeyId: 'k1' }
     const same = sealedSecretsMarker(secrets)
-    expect(deriveComposeApplyState({ ...base, plannedSecrets: same, desiredSecrets: same })).toBe(
-      'applied'
-    )
     expect(
-      deriveComposeApplyState({
+      deriveServiceConfigApplyState({ ...base, plannedSecrets: same, desiredSecrets: same })
+    ).toBe('applied')
+    expect(
+      deriveServiceConfigApplyState({
         ...base,
         plannedSecrets: sealedSecretsMarker({ ...secrets, fingerprint: 'f2' }),
         desiredSecrets: same,
       })
     ).toBe('pending')
     expect(
-      deriveComposeApplyState({
+      deriveServiceConfigApplyState({
         ...base,
         plannedSecrets: sealedSecretsMarker({ ...secrets, recipientKeyId: 'k2' }),
         desiredSecrets: same,
       })
     ).toBe('pending')
-    expect(deriveComposeApplyState({ ...base, plannedSecrets: null, desiredSecrets: same })).toBe(
-      'pending'
-    )
+    expect(
+      deriveServiceConfigApplyState({ ...base, plannedSecrets: null, desiredSecrets: same })
+    ).toBe('pending')
   })
 })
 
@@ -168,5 +177,12 @@ describe('plainFilesKey', () => {
     expect(plainFilesKey([a, b])).toBe(plainFilesKey([b, a]))
     expect(plainFilesKey([a, b])).not.toBe(plainFilesKey([a, { ...b, content: 'c' }]))
     expect(plainFilesKey([a])).not.toBe(plainFilesKey([a, b]))
+  })
+})
+
+describe('kubernetesSecretsPlaintext', () => {
+  it('is stable regardless of key order', () => {
+    expect(kubernetesSecretsPlaintext({ B: '2', A: '1' })).toBe('{"A":"1","B":"2"}')
+    expect(kubernetesSecretsPlaintext({})).toBe('{}')
   })
 })

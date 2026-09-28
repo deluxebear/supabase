@@ -11,7 +11,7 @@ import { z } from 'zod'
 import apiWrapper from '@/lib/api/apiWrapper'
 import { CapabilityUnavailable } from '@/lib/api/self-platform/attachment'
 import { applyAuthConfig, getAuthApplyStatus } from '@/lib/api/self-platform/auth-apply'
-import { ComposeApplyConflict } from '@/lib/api/self-platform/compose-domain-apply'
+import { ServiceConfigApplyConflict } from '@/lib/api/self-platform/service-config-apply'
 import {
   CapacityExceededError,
   ConfigurationConflictError,
@@ -91,7 +91,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
     })
     return res.status(202).json({ operation })
   } catch (error) {
-    if (error instanceof ComposeApplyConflict) {
+    if (error instanceof ServiceConfigApplyConflict) {
       return res.status(409).json({ code: error.code, message: error.message })
     }
     if (error instanceof CapabilityUnavailable) {

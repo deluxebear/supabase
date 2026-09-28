@@ -2,7 +2,7 @@ import type { JwtPayload } from '@supabase/supabase-js'
 import { createMocks } from 'node-mocks-http'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { ComposeApplyConflict } from '@/lib/api/self-platform/compose-domain-apply'
+import { ServiceConfigApplyConflict } from '@/lib/api/self-platform/service-config-apply'
 import {
   applyFunctionSecrets,
   getFunctionSecretsApplyStatus,
@@ -84,7 +84,7 @@ describe('/platform/projects/[ref]/functions/secrets/apply', () => {
     })
 
     vi.mocked(applyFunctionSecrets).mockRejectedValue(
-      new ComposeApplyConflict('secrets_too_large', 'Too large')
+      new ServiceConfigApplyConflict('secrets_too_large', 'Too large')
     )
     const conflict = post({ expectedGeneration: 4 })
     await handler(conflict.req as never, conflict.res as never, aal2)
