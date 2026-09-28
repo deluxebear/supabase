@@ -2,6 +2,7 @@ package fleetproviders
 
 import (
 	"context"
+	"crypto/ecdh"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -12,6 +13,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/supabase/supabase/apps/backup-operator/internal/sealedsecret"
 )
 
 const (
@@ -33,7 +36,24 @@ type Rollouter interface {
 type ComposeProvider struct {
 	OwnedRoot string
 	Rollout   Rollouter
+	// SecretRecipient opens sealed files. Without it, documents with sealed
+	// files fail before anything is written.
+	SecretRecipient *ecdh.PrivateKey
+	// SecretGroupID, when positive, owns sealed files (mode 0640) and their
+	// revision directories, so operators in that group can run `docker compose`.
+	SecretGroupID int
 }
+
+// materializedFile is a Compose file ready to write: plain content as given,
+// or sealed content decrypted for this project, binding, domain, and path.
+type materializedFile struct {
+	Path         string
+	Content      []byte
+	Mode         fs.FileMode
+	SealedDigest string
+}
+
+const sealedDigestDirectory = ".fleet-sealed"
 
 type composeOwner struct {
 	ProjectRef string `json:"projectRef"`
@@ -101,7 +121,11 @@ func (p ComposeProvider) Reconcile(ctx context.Context, request Request) (Eviden
 	previous := current.ActiveRevision
 	changedFiles := !inSync
 	if changedFiles {
-		if err := applyComposeRevision(domainRoot, owner, request.DesiredDigest, request.Document.Compose.Files); err != nil {
+		files, err := p.materialize(request)
+		if err != nil {
+			return Evidence{}, err
+		}
+		if err := applyComposeRevision(domainRoot, owner, request.DesiredDigest, files, p.SecretGroupID); err != nil {
 			return Evidence{}, err
 		}
 	}
@@ -119,6 +143,40 @@ func (p ComposeProvider) Reconcile(ctx context.Context, request Request) (Eviden
 		return Evidence{}, err
 	}
 	return NewEvidence(request, observed, "in-sync", true, nil)
+}
+
+// materialize decrypts sealed files. It runs before anything is written, so
+// an envelope sealed to another key or another context changes nothing.
+func (p ComposeProvider) materialize(request Request) ([]materializedFile, error) {
+	files := make([]materializedFile, 0, len(request.Document.Compose.Files))
+	for _, file := range request.Document.Compose.Files {
+		mode := fs.FileMode(file.Mode)
+		if file.Sealed == nil {
+			if mode == 0 {
+				mode = 0o600
+			}
+			files = append(files, materializedFile{Path: file.Path, Content: []byte(file.Content), Mode: mode})
+			continue
+		}
+		if p.SecretRecipient == nil {
+			return nil, errors.New("sealed_secret_unavailable: this Agent has no secret recipient key")
+		}
+		plaintext, err := sealedsecret.Open(p.SecretRecipient, sealedsecret.Context{
+			ProjectRef: request.ProjectRef, BindingID: request.BindingID, Domain: request.Domain, Path: file.Path,
+		}, file.Sealed.Envelope)
+		if err != nil {
+			return nil, err
+		}
+		if mode == 0 {
+			mode = 0o640
+		}
+		files = append(files, materializedFile{Path: file.Path, Content: plaintext, Mode: mode, SealedDigest: sealedsecret.Digest(file.Sealed.Envelope)})
+	}
+	return files, nil
+}
+
+func sealedDigestPath(root, filePath string) string {
+	return filepath.Join(root, sealedDigestDirectory, strings.ReplaceAll(filePath, "/", "__")+".digest")
 }
 
 func (p ComposeProvider) rolloutServices(ctx context.Context, domainRoot string, services []string, revision string) error {
@@ -226,6 +284,22 @@ func observeCompose(domainRoot string, files []ComposeFile) (composeObservation,
 	}
 	for _, file := range files {
 		path := filepath.Join(domainRoot, "current", filepath.FromSlash(file.Path))
+		if file.Sealed != nil {
+			// Never digest sealed plaintext: report which envelope produced it.
+			if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
+				observation.Files[file.Path] = "missing"
+				continue
+			} else if err != nil {
+				return observation, err
+			}
+			recorded, err := os.ReadFile(sealedDigestPath(filepath.Join(domainRoot, "current"), file.Path))
+			if err != nil {
+				observation.Files[file.Path] = "sealed:unknown"
+				continue
+			}
+			observation.Files[file.Path] = "sealed:" + strings.TrimSpace(string(recorded))
+			continue
+		}
 		payload, err := os.ReadFile(path)
 		if errors.Is(err, fs.ErrNotExist) {
 			observation.Files[file.Path] = "missing"
@@ -243,6 +317,10 @@ func observeCompose(domainRoot string, files []ComposeFile) (composeObservation,
 func composeDigests(files []ComposeFile) map[string]string {
 	result := make(map[string]string, len(files))
 	for _, file := range files {
+		if file.Sealed != nil {
+			result[file.Path] = "sealed:" + sealedsecret.Digest(file.Sealed.Envelope)
+			continue
+		}
 		digest := sha256.Sum256([]byte(file.Content))
 		result[file.Path] = hex.EncodeToString(digest[:])
 	}
@@ -274,13 +352,24 @@ func digestMap(values map[string]string) string {
 	return hex.EncodeToString(hash.Sum(nil))
 }
 
-func applyComposeRevision(domainRoot string, owner composeOwner, revision string, files []ComposeFile) error {
+func applyComposeRevision(domainRoot string, owner composeOwner, revision string, files []materializedFile, secretGroupID int) error {
 	// Operators run `docker compose` on the host as their own user, so a
 	// revision whose files are all world-readable gets traversable directories.
-	// Revisions holding restricted files keep group-only directories.
+	// Revisions holding restricted files keep group-only directories, owned by
+	// the operator group when one is configured.
 	dirMode := fs.FileMode(0o750)
 	if allWorldReadable(files) {
 		dirMode = 0o755
+	}
+	hasSealed := false
+	for _, file := range files {
+		hasSealed = hasSealed || file.SealedDigest != ""
+	}
+	shareWithGroup := func(path string) error {
+		if !hasSealed || secretGroupID <= 0 {
+			return nil
+		}
+		return os.Chown(path, -1, secretGroupID)
 	}
 	if err := os.MkdirAll(domainRoot, dirMode); err != nil {
 		return err
@@ -305,6 +394,11 @@ func applyComposeRevision(domainRoot string, owner composeOwner, revision string
 	if err := os.Chmod(revisionRoot, dirMode); err != nil {
 		return err
 	}
+	for _, directory := range []string{domainRoot, filepath.Join(domainRoot, "revisions"), revisionRoot} {
+		if err := shareWithGroup(directory); err != nil {
+			return fmt.Errorf("share Fleet revision with the operator group: %w", err)
+		}
+	}
 	for _, file := range files {
 		path := filepath.Join(revisionRoot, filepath.FromSlash(file.Path))
 		if !strings.HasPrefix(path, revisionRoot+string(filepath.Separator)) {
@@ -313,18 +407,27 @@ func applyComposeRevision(domainRoot string, owner composeOwner, revision string
 		if err := os.MkdirAll(filepath.Dir(path), dirMode); err != nil {
 			return err
 		}
-		mode := fs.FileMode(file.Mode)
-		if mode == 0 {
-			mode = 0o600
+		if err := writeAtomic(path, file.Content, file.Mode); err != nil {
+			return err
 		}
-		if err := writeAtomic(path, []byte(file.Content), mode); err != nil {
+		if file.SealedDigest == "" {
+			continue
+		}
+		if err := shareWithGroup(path); err != nil {
+			return fmt.Errorf("share sealed file with the operator group: %w", err)
+		}
+		digestPath := sealedDigestPath(revisionRoot, file.Path)
+		if err := os.MkdirAll(filepath.Dir(digestPath), 0o700); err != nil {
+			return err
+		}
+		if err := writeAtomic(digestPath, []byte(file.SealedDigest), 0o600); err != nil {
 			return err
 		}
 	}
 	return pointCurrent(domainRoot, revision)
 }
 
-func allWorldReadable(files []ComposeFile) bool {
+func allWorldReadable(files []materializedFile) bool {
 	for _, file := range files {
 		if file.Mode != 0o644 {
 			return false

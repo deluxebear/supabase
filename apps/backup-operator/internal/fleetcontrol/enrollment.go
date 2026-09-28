@@ -2,12 +2,16 @@ package fleetcontrol
 
 import (
 	"context"
+	"crypto/ecdh"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/supabase/supabase/apps/backup-operator/internal/sealedsecret"
 )
 
 var (
@@ -57,6 +61,15 @@ type AgentRecord struct {
 	UnavailableAt             time.Time               `json:"unavailableAt"`
 	SessionState              string                  `json:"sessionState"`
 	Capabilities              []CapabilityObservation `json:"capabilities"`
+	// SecretRecipient is the Agent's sealed-secret public key, when it has one.
+	SecretRecipient *SecretRecipient `json:"secretRecipient,omitempty"`
+}
+
+// SecretRecipient is an Agent's X25519 public key for sealed secrets.
+type SecretRecipient struct {
+	KeyID     string    `json:"keyId"`
+	PublicKey string    `json:"publicKey"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type BindingStatus struct {
@@ -380,6 +393,11 @@ WHERE a.binding_id=? AND a.state IN ('online','offline','incompatible') ORDER BY
 		agent.UnavailableAt = agent.LeaseExpiresAt.Add(policy.StaleGrace)
 	}
 	agent.SessionState = sessionState(s.now().UTC(), agent.LeaseExpiresAt, policy.StaleGrace)
+	recipient, err := s.agentSecretRecipient(ctx, agent.ID)
+	if err != nil {
+		return BindingStatus{}, err
+	}
+	agent.SecretRecipient = recipient
 	capabilityQuery := "SELECT domain,name,contract_version,input_schema,evidence_schema,observed_at_ms,valid_until_ms FROM agent_capabilities WHERE agent_id=? ORDER BY name"
 	if s.dialect == FleetPostgres {
 		capabilityQuery = strings.ReplaceAll(capabilityQuery, "?", "$1")
@@ -694,4 +712,50 @@ func validateCapabilityObservations(capabilities []CapabilityObservation, allowe
 		seen[capability.Name] = struct{}{}
 	}
 	return nil
+}
+
+// RecordAgentSecretRecipient stores the key an Agent reported in its hello. An
+// empty key removes the record, so Studio stops sealing to a key the Agent no
+// longer holds.
+func (s *Store) RecordAgentSecretRecipient(ctx context.Context, agentID string, publicKey []byte) error {
+	if agentID == "" {
+		return errors.New("Agent id is required")
+	}
+	if len(publicKey) == 0 {
+		query := "DELETE FROM agent_secret_recipients WHERE agent_id=?"
+		if s.dialect == FleetPostgres {
+			query = "DELETE FROM agent_secret_recipients WHERE agent_id=$1"
+		}
+		_, err := s.db.ExecContext(ctx, query, agentID)
+		return err
+	}
+	if _, err := ecdh.X25519().NewPublicKey(publicKey); err != nil {
+		return fmt.Errorf("Agent secret recipient key is invalid: %w", err)
+	}
+	query := `INSERT INTO agent_secret_recipients(agent_id,public_key,key_id,updated_at_ms) VALUES(?,?,?,?)
+ON CONFLICT(agent_id) DO UPDATE SET public_key=excluded.public_key,key_id=excluded.key_id,updated_at_ms=excluded.updated_at_ms`
+	if s.dialect == FleetPostgres {
+		query = `INSERT INTO agent_secret_recipients(agent_id,public_key,key_id,updated_at_ms) VALUES($1,$2,$3,$4)
+ON CONFLICT(agent_id) DO UPDATE SET public_key=excluded.public_key,key_id=excluded.key_id,updated_at_ms=excluded.updated_at_ms`
+	}
+	_, err := s.db.ExecContext(ctx, query, agentID, base64.StdEncoding.EncodeToString(publicKey), sealedsecret.KeyID(publicKey), s.now().UTC().UnixMilli())
+	return err
+}
+
+func (s *Store) agentSecretRecipient(ctx context.Context, agentID string) (*SecretRecipient, error) {
+	query := "SELECT public_key,key_id,updated_at_ms FROM agent_secret_recipients WHERE agent_id=?"
+	if s.dialect == FleetPostgres {
+		query = "SELECT public_key,key_id,updated_at_ms FROM agent_secret_recipients WHERE agent_id=$1"
+	}
+	var recipient SecretRecipient
+	var updated int64
+	err := s.db.QueryRowContext(ctx, query, agentID).Scan(&recipient.PublicKey, &recipient.KeyID, &updated)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	recipient.UpdatedAt = time.UnixMilli(updated).UTC()
+	return &recipient, nil
 }

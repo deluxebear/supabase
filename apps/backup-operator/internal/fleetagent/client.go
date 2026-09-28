@@ -26,9 +26,12 @@ type Client struct {
 	Capabilities      []string
 	Executor          *Executor
 	HeartbeatInterval time.Duration
-	MinBackoff        time.Duration
-	MaxBackoff        time.Duration
-	Jitter            func(time.Duration) time.Duration
+	// SecretRecipientPublicKey is reported in every hello so Studio can seal
+	// secrets to this Agent.
+	SecretRecipientPublicKey []byte
+	MinBackoff               time.Duration
+	MaxBackoff               time.Duration
+	Jitter                   func(time.Duration) time.Duration
 }
 
 func (c Client) Run(ctx context.Context) error {
@@ -94,6 +97,7 @@ func (c Client) connect(ctx context.Context) error {
 	if err := stream.Send(&fleetagentv1.ConnectRequest{Payload: &fleetagentv1.ConnectRequest_Hello{Hello: &fleetagentv1.AgentHello{
 		AgentId: c.AgentID, TargetId: c.TargetID, BindingId: c.BindingID, NodeId: c.NodeID,
 		Protocol: &transportv1.ProtocolVersion{Major: 1, Minor: 0}, Build: c.Build, Capabilities: c.Capabilities,
+		SecretRecipientPublicKey: c.SecretRecipientPublicKey,
 	}}}); err != nil {
 		return err
 	}

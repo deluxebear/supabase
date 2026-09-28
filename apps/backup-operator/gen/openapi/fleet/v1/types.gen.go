@@ -135,7 +135,10 @@ type Agent struct {
 	LastSeenAt                time.Time               `json:"lastSeenAt"`
 	ProtocolMajor             int                     `json:"protocolMajor"`
 	ProtocolMinor             int                     `json:"protocolMinor"`
-	State                     AgentState              `json:"state"`
+
+	// SecretRecipient The Agent's X25519 public key for sealed secrets, reported in every hello. Studio seals secret material to it; the private key never leaves the target.
+	SecretRecipient *SecretRecipient `json:"secretRecipient,omitempty"`
+	State           AgentState       `json:"state"`
 }
 
 // AgentState defines model for Agent.State.
@@ -442,6 +445,15 @@ type ProjectedCapabilityMode string
 
 // ProjectedCapabilityState defines model for ProjectedCapability.State.
 type ProjectedCapabilityState string
+
+// SecretRecipient The Agent's X25519 public key for sealed secrets, reported in every hello. Studio seals secret material to it; the private key never leaves the target.
+type SecretRecipient struct {
+	KeyId string `json:"keyId"`
+
+	// PublicKey Base64 raw 32-byte X25519 public key
+	PublicKey string    `json:"publicKey"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
 
 // AgentId defines model for AgentId.
 type AgentId = string

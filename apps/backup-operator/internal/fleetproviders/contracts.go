@@ -9,6 +9,8 @@ import (
 	"io"
 	"regexp"
 	"strings"
+
+	"github.com/supabase/supabase/apps/backup-operator/internal/sealedsecret"
 )
 
 const (
@@ -53,6 +55,17 @@ type ComposeFile struct {
 	Path    string `json:"path"`
 	Content string `json:"content"`
 	Mode    uint32 `json:"mode,omitempty"`
+	// Sealed replaces Content for files holding secrets. The Agent decrypts it
+	// with its recipient key; the document, Fleet Control, and evidence carry
+	// only ciphertext.
+	Sealed *SealedContent `json:"sealed,omitempty"`
+}
+
+// SealedContent is a sealed file body plus Studio's opaque fingerprint of the
+// plaintext, which lets Studio reuse an envelope for unchanged secrets.
+type SealedContent struct {
+	Envelope    sealedsecret.Envelope `json:"envelope"`
+	Fingerprint string                `json:"fingerprint"`
 }
 
 type KubernetesDocument struct {
@@ -148,6 +161,20 @@ func (d ConfigurationDocument) Validate() error {
 			seen[file.Path] = struct{}{}
 			if file.Mode != 0 && file.Mode != 0o600 && file.Mode != 0o640 && file.Mode != 0o644 {
 				return fmt.Errorf("Compose file %q has a disallowed mode", file.Path)
+			}
+			if file.Sealed != nil {
+				if file.Content != "" {
+					return fmt.Errorf("Compose file %q cannot have both content and sealed content", file.Path)
+				}
+				if file.Mode == 0o644 {
+					return fmt.Errorf("sealed Compose file %q cannot be world-readable", file.Path)
+				}
+				if file.Sealed.Envelope.Schema != sealedsecret.Schema || file.Sealed.Envelope.RecipientKeyID == "" || file.Sealed.Envelope.Ciphertext == "" {
+					return fmt.Errorf("sealed Compose file %q has an invalid envelope", file.Path)
+				}
+				if len(file.Sealed.Fingerprint) > 128 {
+					return fmt.Errorf("sealed Compose file %q has an invalid fingerprint", file.Path)
+				}
 			}
 		}
 		if len(d.Compose.Rollout) > 8 {

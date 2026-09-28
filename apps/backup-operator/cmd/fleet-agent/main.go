@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/ecdh"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -9,6 +10,8 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -21,6 +24,7 @@ import (
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetinventory"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetlifecycle"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
+	"github.com/supabase/supabase/apps/backup-operator/internal/sealedsecret"
 	"github.com/supabase/supabase/apps/backup-operator/internal/version"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
@@ -61,6 +65,8 @@ func main() {
 	runtimeUpgradeTargets := flag.String("runtime-upgrade-targets", os.Getenv("FLEET_AGENT_RUNTIME_UPGRADE_TARGETS"), "comma-separated locally approved PostgreSQL upgrade targets")
 	advertiseConfigReconcile := flag.Bool("advertise-config-reconcile", envBool("FLEET_AGENT_ADVERTISE_CONFIG_RECONCILE"), "advertise runtime.config.reconcile; enable only when a managed service consumes the Fleet-owned configuration root")
 	journalPath := flag.String("journal", envOr("FLEET_AGENT_JOURNAL", "/var/lib/supabase-fleet/agent-journal.db"), "durable Fleet Agent execution journal")
+	secretRecipientKeyPath := flag.String("secret-recipient-key", os.Getenv("FLEET_AGENT_SECRET_RECIPIENT_KEY"), "Agent X25519 key for sealed secrets; created on first start (default: next to the journal)")
+	secretGroupID := flag.Int("secret-group-id", envInt("FLEET_AGENT_SECRET_GROUP_ID"), "group that owns sealed Compose files (mode 0640) so operators can run docker compose; 0 keeps the Agent's group")
 	lockPath := flag.String("lock", envOr("FLEET_AGENT_LOCK", "/var/lib/supabase-fleet/agent.lock"), "Fleet Agent singleton lock")
 	heartbeat := flag.Duration("heartbeat", envDuration("FLEET_AGENT_HEARTBEAT", 10*time.Second), "Fleet Agent heartbeat interval")
 	minBackoff := flag.Duration("reconnect-min-backoff", envDuration("FLEET_AGENT_RECONNECT_MIN_BACKOFF", time.Second), "minimum randomized reconnect backoff")
@@ -145,6 +151,13 @@ func main() {
 			capabilities = append(capabilities, string(action))
 		}
 	}
+	if *secretRecipientKeyPath == "" {
+		*secretRecipientKeyPath = filepath.Join(filepath.Dir(*journalPath), "secret-recipient.key")
+	}
+	secretRecipient, err := sealedsecret.LoadOrCreateRecipientKey(*secretRecipientKeyPath)
+	if err != nil {
+		log.Fatalf("Fleet Agent secret recipient key: %v", err)
+	}
 	// Configuration that must reach running containers is rolled out through
 	// the lifecycle plugin, so it is available only when the plugin provides
 	// runtime.rollout on a Compose target.
@@ -152,7 +165,10 @@ func main() {
 	if lifecycleProviders != nil && *adapter == string(fleetproviders.AdapterCompose) && hasAction(lifecycleActions, fleetlifecycle.RuntimeRollout) {
 		rollouter = fleetlifecycle.ServiceRollouter{Runtime: fleetlifecycle.PluginRuntime{Executable: *lifecyclePlugin}}
 	}
-	provider, err := buildProvider(*adapter, *ownedRoot, *kubeconfig, splitNonEmpty(*allowedKubernetesFields), rollouter)
+	if *secretGroupID < 0 {
+		log.Fatal("Fleet Agent secret group id must not be negative")
+	}
+	provider, err := buildProvider(*adapter, *ownedRoot, *kubeconfig, splitNonEmpty(*allowedKubernetesFields), rollouter, secretRecipient, *secretGroupID)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -185,6 +201,7 @@ func main() {
 		Address: *address, TLS: tlsConfig, AgentID: *agentID, TargetID: *targetID, BindingID: *bindingID, NodeID: *nodeID,
 		Build: version.String(), Capabilities: capabilities, Executor: executor, HeartbeatInterval: *heartbeat,
 		MinBackoff: *minBackoff, MaxBackoff: *maxBackoff,
+		SecretRecipientPublicKey: secretRecipient.PublicKey().Bytes(),
 	}
 	if err := client.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
 		log.Fatal(err)
@@ -232,13 +249,13 @@ func hasAction(actions []fleetlifecycle.Action, wanted fleetlifecycle.Action) bo
 	return false
 }
 
-func buildProvider(adapter, ownedRoot, kubeconfig string, allowedFields []string, rollouter fleetproviders.Rollouter) (fleetproviders.Provider, error) {
+func buildProvider(adapter, ownedRoot, kubeconfig string, allowedFields []string, rollouter fleetproviders.Rollouter, secretRecipient *ecdh.PrivateKey, secretGroupID int) (fleetproviders.Provider, error) {
 	switch adapter {
 	case string(fleetproviders.AdapterCompose):
 		if strings.TrimSpace(ownedRoot) == "" {
 			return nil, errors.New("Fleet-owned Compose root is required")
 		}
-		return fleetproviders.ComposeProvider{OwnedRoot: ownedRoot, Rollout: rollouter}, nil
+		return fleetproviders.ComposeProvider{OwnedRoot: ownedRoot, Rollout: rollouter, SecretRecipient: secretRecipient, SecretGroupID: secretGroupID}, nil
 	case string(fleetproviders.AdapterKubernetes):
 		if len(allowedFields) == 0 {
 			return nil, errors.New("Kubernetes owned-field allowlist is required")
@@ -278,6 +295,14 @@ func envOr(name, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func envInt(name string) int {
+	value, err := strconv.Atoi(strings.TrimSpace(os.Getenv(name)))
+	if err != nil {
+		return 0
+	}
+	return value
 }
 
 func envBool(name string) bool {

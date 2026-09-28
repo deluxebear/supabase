@@ -35,6 +35,10 @@ message AgentHello {
   supabase.agent.transport.v1.ProtocolVersion protocol = 5;
   string build = 6;
   repeated string capabilities = 7;
+  // Raw 32-byte X25519 public key for sealed secrets. Studio seals secret
+  // material to it; the private key stays on the target. Empty from Agents
+  // that predate sealed secrets.
+  bytes secret_recipient_public_key = 8;
 }
 
 message TypedTask {

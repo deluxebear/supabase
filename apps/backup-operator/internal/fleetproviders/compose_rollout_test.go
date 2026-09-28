@@ -121,7 +121,11 @@ func TestComposeRolloutRetriesAfterCrashBeforeRollout(t *testing.T) {
 	request := authRequest("services:\n  auth:\n    environment:\n      GOTRUE_DISABLE_SIGNUP: \"true\"\n")
 	// Simulate a crash between writing the revision and rolling out: the files
 	// are current but no rollout marker names this revision.
-	if err := applyComposeRevision(filepath.Join(root, "auth"), composeOwner{ProjectRef: "project-a", TargetID: "target", BindingID: "binding", Domain: "auth"}, request.DesiredDigest, request.Document.Compose.Files); err != nil {
+	files, err := (ComposeProvider{}).materialize(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := applyComposeRevision(filepath.Join(root, "auth"), composeOwner{ProjectRef: "project-a", TargetID: "target", BindingID: "binding", Domain: "auth"}, request.DesiredDigest, files, 0); err != nil {
 		t.Fatal(err)
 	}
 	rollouter := &fakeRollouter{root: root}

@@ -219,16 +219,20 @@ func (*ConnectResponse_Task) isConnectResponse_Payload() {}
 func (*ConnectResponse_Acknowledgement) isConnectResponse_Payload() {}
 
 type AgentHello struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AgentId       string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
-	TargetId      string                 `protobuf:"bytes,2,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
-	BindingId     string                 `protobuf:"bytes,3,opt,name=binding_id,json=bindingId,proto3" json:"binding_id,omitempty"`
-	NodeId        string                 `protobuf:"bytes,4,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
-	Protocol      *v1.ProtocolVersion    `protobuf:"bytes,5,opt,name=protocol,proto3" json:"protocol,omitempty"`
-	Build         string                 `protobuf:"bytes,6,opt,name=build,proto3" json:"build,omitempty"`
-	Capabilities  []string               `protobuf:"bytes,7,rep,name=capabilities,proto3" json:"capabilities,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	AgentId      string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	TargetId     string                 `protobuf:"bytes,2,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
+	BindingId    string                 `protobuf:"bytes,3,opt,name=binding_id,json=bindingId,proto3" json:"binding_id,omitempty"`
+	NodeId       string                 `protobuf:"bytes,4,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	Protocol     *v1.ProtocolVersion    `protobuf:"bytes,5,opt,name=protocol,proto3" json:"protocol,omitempty"`
+	Build        string                 `protobuf:"bytes,6,opt,name=build,proto3" json:"build,omitempty"`
+	Capabilities []string               `protobuf:"bytes,7,rep,name=capabilities,proto3" json:"capabilities,omitempty"`
+	// Raw 32-byte X25519 public key for sealed secrets. Studio seals secret
+	// material to it; the private key stays on the target. Empty from Agents
+	// that predate sealed secrets.
+	SecretRecipientPublicKey []byte `protobuf:"bytes,8,opt,name=secret_recipient_public_key,json=secretRecipientPublicKey,proto3" json:"secret_recipient_public_key,omitempty"`
+	unknownFields            protoimpl.UnknownFields
+	sizeCache                protoimpl.SizeCache
 }
 
 func (x *AgentHello) Reset() {
@@ -306,6 +310,13 @@ func (x *AgentHello) GetBuild() string {
 func (x *AgentHello) GetCapabilities() []string {
 	if x != nil {
 		return x.Capabilities
+	}
+	return nil
+}
+
+func (x *AgentHello) GetSecretRecipientPublicKey() []byte {
+	if x != nil {
+		return x.SecretRecipientPublicKey
 	}
 	return nil
 }
@@ -1412,7 +1423,7 @@ const file_supabase_fleet_agent_v1_fleet_proto_rawDesc = "" +
 	"\x0fConnectResponse\x128\n" +
 	"\x04task\x18\x01 \x01(\v2\".supabase.fleet.agent.v1.TypedTaskH\x00R\x04task\x12T\n" +
 	"\x0facknowledgement\x18\x02 \x01(\v2(.supabase.fleet.agent.v1.AcknowledgementH\x00R\x0facknowledgementB\t\n" +
-	"\apayload\"\x80\x02\n" +
+	"\apayload\"\xbf\x02\n" +
 	"\n" +
 	"AgentHello\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12\x1b\n" +
@@ -1422,7 +1433,8 @@ const file_supabase_fleet_agent_v1_fleet_proto_rawDesc = "" +
 	"\anode_id\x18\x04 \x01(\tR\x06nodeId\x12H\n" +
 	"\bprotocol\x18\x05 \x01(\v2,.supabase.agent.transport.v1.ProtocolVersionR\bprotocol\x12\x14\n" +
 	"\x05build\x18\x06 \x01(\tR\x05build\x12\"\n" +
-	"\fcapabilities\x18\a \x03(\tR\fcapabilities\"\xd7\x06\n" +
+	"\fcapabilities\x18\a \x03(\tR\fcapabilities\x12=\n" +
+	"\x1bsecret_recipient_public_key\x18\b \x01(\fR\x18secretRecipientPublicKey\"\xd7\x06\n" +
 	"\tTypedTask\x12J\n" +
 	"\bidentity\x18\x01 \x01(\v2..supabase.agent.transport.v1.OperationIdentityR\bidentity\x12\x16\n" +
 	"\x06domain\x18\x02 \x01(\tR\x06domain\x12\x1e\n" +

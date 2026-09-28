@@ -515,6 +515,17 @@ components:
         capabilities:
           type: array
           items: { $ref: '#/components/schemas/CapabilityObservation' }
+        secretRecipient: { $ref: '#/components/schemas/SecretRecipient' }
+    SecretRecipient:
+      type: object
+      description: >-
+        The Agent's X25519 public key for sealed secrets, reported in every hello.
+        Studio seals secret material to it; the private key never leaves the target.
+      required: [keyId, publicKey, updatedAt]
+      properties:
+        keyId: { type: string, minLength: 32, maxLength: 32 }
+        publicKey: { type: string, description: Base64 raw 32-byte X25519 public key }
+        updatedAt: { type: string, format: date-time }
     ManagementBinding:
       type: object
       required:

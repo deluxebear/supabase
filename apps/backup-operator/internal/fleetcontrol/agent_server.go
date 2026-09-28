@@ -109,6 +109,9 @@ func (s *AgentServer) Connect(stream fleetagentv1.FleetAgentControlService_Conne
 	if err != nil || s.Store.RefreshAgentCapabilities(stream.Context(), binding, agent.ID, observations) != nil {
 		return status.Error(codes.PermissionDenied, "Fleet Agent capabilities exceed the control or binding allowlist")
 	}
+	if err := s.Store.RecordAgentSecretRecipient(stream.Context(), agent.ID, hello.GetSecretRecipientPublicKey()); err != nil {
+		return status.Error(codes.InvalidArgument, "Fleet Agent secret recipient key is invalid")
+	}
 	identity := AgentSessionIdentity{AgentID: agent.ID, ProjectRef: binding.ProjectRef, TargetID: binding.TargetID, BindingID: binding.BindingID, Capabilities: append([]string(nil), hello.GetCapabilities()...)}
 	if s.Sessions == nil {
 		return status.Error(codes.FailedPrecondition, "Fleet Agent session limiter is required")
