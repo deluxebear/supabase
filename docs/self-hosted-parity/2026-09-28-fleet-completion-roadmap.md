@@ -17,7 +17,7 @@ What reaches a managed stack and has an effect today:
 | Attach, preflight, rollback, detach                                               | migrations 13, 21–23, 32                                                                                                                                      | Works; P0 wizard fix (`f5f75a2`) not re-verified by QA |
 | Data plane (SQL, tables, Auth users, Storage, REST, Realtime)                     | per-ref BFF proxies                                                                                                                                           | Works                                                  |
 | Edge Function deploy                                                              | `fleetfunctions/compose.go` writes into the bind mount that `functions` serves (`docker/fleet-managed/docker-compose.override.yml:69-80`), probes, rolls back | **Works end to end**                                   |
-| Database security (pooler SSL, CIDR allowlist, pool size, role password rotation) | `fleetdatabase/compose_runtime.go` updates `_supavisor.tenants`, `ALTER ROLE`, then syncs the registry                                                        | **Works** (Compose only)                               |
+| Database security (pooler SSL, CIDR allowlist, pool size, role password rotation) | `fleetdatabase/postgres_runtime.go` updates `_supavisor.tenants`, `ALTER ROLE`, then syncs the registry                                                       | **Works** (Compose and Kubernetes)                     |
 | Runtime inventory                                                                 | `fleet-compose-observer` (Docker API reads) + PostgreSQL queries                                                                                              | Works (read-only)                                      |
 
 What looks present but has no effect:
@@ -235,7 +235,7 @@ These wait until Phases 0–3 are in production use:
 
 - PostgreSQL major-upgrade provider
 - Read replicas and branching providers
-- Kubernetes parity for database security and inventory
+- Kubernetes parity for runtime inventory (database security is done: the runtime only needs network access, so Compose and Kubernetes share `PostgresRuntime`)
 - The T12 compact control-plane packaging, which stays deferred per the alignment matrix
 
 ## 4. Dependency view

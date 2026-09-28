@@ -9,7 +9,8 @@ What it enables today: `runtime.config.reconcile` with sealed secrets.
 Edge Function secrets and Auth settings saved in Studio are sealed to this
 Agent, written to the Secrets `supabase-fleet-functions-secrets` and
 `supabase-fleet-auth-secrets`, and rolled out to the `functions` and `auth`
-Deployments. Fleet Control never sees them in plaintext.
+Deployments. Fleet Control never sees them in plaintext. It also deploys Edge
+Functions onto a shared volume and manages database security.
 
 ## What gets deployed
 
@@ -92,10 +93,27 @@ the old key fail with `sealed_secret_recipient_mismatch`.
 Re-running `../single-project/deploy.sh` keeps the patch: `kubectl apply` only
 removes fields it applied itself.
 
+## Database security
+
+`database.security.reconcile` sets Supavisor SSL enforcement and upstream CA,
+the network CIDR allowlist, and pool limits in `_supabase._supavisor.tenants`,
+and rotates the `postgres` and `supabase_read_only_user` passwords. The Agent
+uses the same runtime as on Compose, over the `db` and `supavisor` Services:
+
+- The admin and pooler DSNs are built from `supabase-env`.
+- Its state (`database-security.json`, no credentials) lives on the state
+  volume.
+- CA files come from the ConfigMap `fleet-database-tls-ca`, which `deploy.sh`
+  builds from `FLEET_AGENT_DATABASE_TLS_CA_DIR`. Studio refers to a CA by file
+  name, and only files in that ConfigMap are accepted.
+- Password rotations arrive sealed to the Agent. A rotation changes the role
+  in Postgres and Studio's stored connection, not `supabase-env`: update
+  `POSTGRES_PASSWORD` there before the next `deploy.sh`, or services that read
+  it (and this Agent's DSNs) keep the old password after a restart.
+
 ## Not included
 
-- Database security, runtime inventory, and lifecycle actions: their providers
-  are Compose-only.
+- Runtime inventory and lifecycle actions: their providers are Compose-only.
 
 `apps/backup-operator/cmd/fleet-agent/manifests_test.go` decodes these
 manifests strictly against the Kubernetes API types and checks that every
