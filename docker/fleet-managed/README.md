@@ -95,6 +95,37 @@ server uses: the Agent rejects plans built from different component versions.
 
 Without the overlay, lifecycle actions stay unavailable and Studio says so.
 
+## Applied Auth settings
+
+With the lifecycle overlay, Studio can apply saved Auth settings to this
+stack. Fleet renders them into a Compose override at
+`$FLEET_HOST_CONFIG_ROOT/auth/current/compose.yml`, and the Agent recreates
+`auth` so the running container uses it. Settings in a Compose override win over
+the upstream `environment:` values; an `env_file` would not.
+
+Every `docker compose` command for this stack must include that file after the
+other files, or a manual `up` recreates `auth` with the upstream values:
+
+```bash
+docker compose -p supabase-managed-a \
+  --env-file docker/self-platform/.env \
+  --env-file docker/fleet-managed/project-a.env \
+  -f docker/docker-compose.yml \
+  -f docker/fleet-managed/docker-compose.override.yml \
+  -f docker/fleet-managed/docker-compose.lifecycle.yml \
+  -f docker/fleet-managed/state/project-a/config/auth/current/compose.yml \
+  --profile agent up -d
+```
+
+`scripts/init-instance-env.sh` creates that file as an empty placeholder for new
+instances. For an existing instance, add `FLEET_HOST_CONFIG_ROOT` (the absolute
+path of its `FLEET_CONFIG_ROOT`) to its env file and run
+`scripts/bootstrap-config-domain.sh "$FLEET_HOST_CONFIG_ROOT" auth` once.
+
+Secret Auth settings (OAuth client secrets, SMTP password, and similar) are not
+applied yet: Fleet has no channel that delivers secrets to the Agent without
+placing them in the operation record. Set those in the stack's env files.
+
 Do not mount the Docker socket into the generic Fleet Agent. Lifecycle actions
 remain unavailable until a versioned, allowlisted provider is installed. Backup
 also remains explicitly unconfigured until a target-local Backup Agent and

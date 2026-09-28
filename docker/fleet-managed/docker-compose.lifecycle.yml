@@ -67,6 +67,9 @@ services:
         condition: service_started
     environment:
       FLEET_AGENT_LIFECYCLE_PLUGIN: /usr/local/bin/fleet-lifecycle-compose
+      # Fleet-owned configuration now reaches running containers: the Agent
+      # writes a revision, then rolls the service out through the plugin.
+      FLEET_AGENT_ADVERTISE_CONFIG_RECONCILE: "true"
       FLEET_AGENT_LIFECYCLE_CAPABILITIES: runtime.restart,runtime.rollout
       # Must equal the Studio server's FLEET_LIFECYCLE_COMPONENT_VERSIONS; the
       # Agent rejects plans built from different component versions.
@@ -75,7 +78,7 @@ services:
       FLEET_LIFECYCLE_SERVICES: ${FLEET_LIFECYCLE_SERVICES:-auth,rest,realtime,storage,imgproxy,meta,functions,supavisor}
       FLEET_LIFECYCLE_DOCKER_ENDPOINT: http://fleet-docker-proxy-lifecycle:2375
       FLEET_LIFECYCLE_PROJECT_DIRECTORY: ${FLEET_HOST_COMPOSE_DIRECTORY:?set FLEET_HOST_COMPOSE_DIRECTORY}
-      FLEET_LIFECYCLE_COMPOSE_FILES: ${FLEET_HOST_COMPOSE_DIRECTORY}/docker-compose.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.override.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.lifecycle.yml
+      FLEET_LIFECYCLE_COMPOSE_FILES: ${FLEET_HOST_COMPOSE_DIRECTORY}/docker-compose.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.override.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.lifecycle.yml,${FLEET_HOST_CONFIG_ROOT:?set FLEET_HOST_CONFIG_ROOT}/auth/current/compose.yml
       FLEET_LIFECYCLE_ENV_FILES: /var/lib/fleet-lifecycle/env/supabase.env,/var/lib/fleet-lifecycle/env/project.env
       FLEET_LIFECYCLE_VERIFY_TIMEOUT: ${FLEET_LIFECYCLE_VERIFY_TIMEOUT:-2m}
     volumes:
@@ -83,6 +86,9 @@ services:
       - ${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.override.yml:${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.override.yml:ro
       - ${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.lifecycle.yml:${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.lifecycle.yml:ro
       - fleet-lifecycle-env:/var/lib/fleet-lifecycle/env:ro
+      # Fleet-owned revisions, visible at their host path so Compose resolves
+      # the same files the operator's own `docker compose` commands use.
+      - ${FLEET_HOST_CONFIG_ROOT}:${FLEET_HOST_CONFIG_ROOT}:ro
     networks:
       docker-lifecycle: {}
 

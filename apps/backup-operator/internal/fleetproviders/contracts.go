@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 )
 
@@ -15,6 +16,8 @@ const (
 	InputSchemaV1                    = "supabase.fleet.runtime.config.reconcile.v1"
 	EvidenceSchemaV1                 = "supabase.fleet.runtime.config.evidence.v1"
 )
+
+var composeServicePattern = regexp.MustCompile(`^[a-z][a-z0-9-]{0,62}$`)
 
 type OwnershipMode string
 
@@ -40,6 +43,10 @@ type ConfigurationDocument struct {
 
 type ComposeDocument struct {
 	Files []ComposeFile `json:"files"`
+	// Rollout lists Compose services to recreate after the files change, so
+	// running containers pick up the new configuration. Applying is reported
+	// only after every listed service is recreated and healthy.
+	Rollout []string `json:"rollout,omitempty"`
 }
 
 type ComposeFile struct {
@@ -142,6 +149,19 @@ func (d ConfigurationDocument) Validate() error {
 			if file.Mode != 0 && file.Mode != 0o600 && file.Mode != 0o640 && file.Mode != 0o644 {
 				return fmt.Errorf("Compose file %q has a disallowed mode", file.Path)
 			}
+		}
+		if len(d.Compose.Rollout) > 8 {
+			return errors.New("Compose rollout lists at most 8 services")
+		}
+		services := make(map[string]struct{}, len(d.Compose.Rollout))
+		for _, service := range d.Compose.Rollout {
+			if !composeServicePattern.MatchString(service) {
+				return fmt.Errorf("Compose rollout service %q is invalid", service)
+			}
+			if _, exists := services[service]; exists {
+				return fmt.Errorf("duplicate Compose rollout service %q", service)
+			}
+			services[service] = struct{}{}
 		}
 	case AdapterKubernetes:
 		if d.Kubernetes == nil || d.Compose != nil || len(d.Kubernetes.Resources) == 0 || len(d.Kubernetes.Resources) > 64 {

@@ -82,3 +82,25 @@ type ExecutionError struct {
 
 func (e *ExecutionError) Error() string { return e.Code + ": " + e.Cause.Error() }
 func (e *ExecutionError) Unwrap() error { return e.Cause }
+
+// ServiceRollouter recreates one service through a lifecycle runtime and waits
+// until it verifies. Configuration reconciliation uses it so a changed Compose
+// revision is applied only once the running containers use it.
+type ServiceRollouter struct {
+	Runtime Runtime
+}
+
+func (r ServiceRollouter) Rollout(ctx context.Context, service string) error {
+	if r.Runtime == nil {
+		return errors.New("lifecycle runtime is unavailable")
+	}
+	parameters := Parameters{Service: service}
+	if err := validateParameters(RuntimeRollout, parameters); err != nil {
+		return err
+	}
+	if err := r.Runtime.Apply(ctx, RuntimeRollout, parameters); err != nil {
+		return err
+	}
+	_, err := r.Runtime.Verify(ctx, RuntimeRollout, parameters)
+	return err
+}

@@ -118,9 +118,11 @@ NODE
   printf 'FLEET_LIFECYCLE_PROJECT_ENV_FILE=%s\n' "$output_env_abs"
   printf 'FLEET_LIFECYCLE_BIND_PREFIXES=%s,%s\n' "$repo_docker_dir/volumes/pooler" "$root_dir/state/$project_ref/functions"
   printf 'FLEET_LIFECYCLE_COMPONENT_VERSIONS=%s\n' "$lifecycle_versions"
+  printf 'FLEET_HOST_CONFIG_ROOT=%s\n' "$root_dir/state/$project_ref/config"
 } > "$temporary"
 
 chmod 0600 "$temporary"
 mv "$temporary" "$output_env"
 trap - EXIT
 echo "Created managed instance environment at $output_env"
+"$root_dir/scripts/bootstrap-config-domain.sh" "$root_dir/state/$project_ref/config" auth

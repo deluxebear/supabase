@@ -14,10 +14,25 @@ import (
 	"strings"
 )
 
-const composeOwnerFile = ".fleet-owner.json"
+const (
+	composeOwnerFile = ".fleet-owner.json"
+	// composeBootstrapFile marks a domain directory that the target's init
+	// step created so Compose can always load `current/`, before any Fleet
+	// binding has claimed it. The first applied revision claims it.
+	composeBootstrapFile = ".fleet-bootstrap.json"
+	// composeRolloutMarker records the revision whose rollout completed, so a
+	// revision written just before a crash is not reported as applied.
+	composeRolloutMarker = ".fleet-rolled-out"
+)
+
+// Rollouter recreates one Compose service and returns once it is healthy.
+type Rollouter interface {
+	Rollout(ctx context.Context, service string) error
+}
 
 type ComposeProvider struct {
 	OwnedRoot string
+	Rollout   Rollouter
 }
 
 type composeOwner struct {
@@ -76,17 +91,72 @@ func (p ComposeProvider) Reconcile(ctx context.Context, request Request) (Eviden
 		}
 		return NewEvidence(request, current, state, false, nil)
 	}
-	if inSync {
+	rollout := request.Document.Compose.Rollout
+	if len(rollout) > 0 && p.Rollout == nil {
+		return Evidence{}, errors.New("rollout_unavailable: the Compose configuration requires a service rollout, but no lifecycle runtime is configured on this Agent")
+	}
+	if inSync && (len(rollout) == 0 || rolledOut(domainRoot, current.ActiveRevision)) {
 		return NewEvidence(request, current, "in-sync", false, nil)
 	}
-	if err := applyComposeRevision(domainRoot, owner, request.DesiredDigest, request.Document.Compose.Files); err != nil {
-		return Evidence{}, err
+	previous := current.ActiveRevision
+	changedFiles := !inSync
+	if changedFiles {
+		if err := applyComposeRevision(domainRoot, owner, request.DesiredDigest, request.Document.Compose.Files); err != nil {
+			return Evidence{}, err
+		}
+	}
+	if len(rollout) > 0 {
+		revision := current.ActiveRevision
+		if changedFiles {
+			revision = request.DesiredDigest
+		}
+		if err := p.rolloutServices(ctx, domainRoot, rollout, revision); err != nil {
+			return Evidence{}, p.recover(ctx, domainRoot, previous, changedFiles, rollout, err)
+		}
 	}
 	observed, err := observeCompose(domainRoot, request.Document.Compose.Files)
 	if err != nil {
 		return Evidence{}, err
 	}
 	return NewEvidence(request, observed, "in-sync", true, nil)
+}
+
+func (p ComposeProvider) rolloutServices(ctx context.Context, domainRoot string, services []string, revision string) error {
+	for _, service := range services {
+		if err := p.Rollout.Rollout(ctx, service); err != nil {
+			return fmt.Errorf("rollout %s: %w", service, err)
+		}
+	}
+	return writeAtomic(filepath.Join(domainRoot, composeRolloutMarker), []byte(revision), 0o600)
+}
+
+// recover restores the previous revision after a failed rollout and converges
+// the services back onto it. It always returns an error: the desired revision
+// was not applied.
+func (p ComposeProvider) recover(ctx context.Context, domainRoot, previous string, changedFiles bool, services []string, cause error) error {
+	if !changedFiles || previous == "" {
+		return fmt.Errorf("manual_intervention_required: %w; no earlier Fleet revision exists to restore", cause)
+	}
+	if err := pointCurrent(domainRoot, previous); err != nil {
+		return fmt.Errorf("manual_intervention_required: %w; restoring revision %s failed: %v", cause, previous, err)
+	}
+	for _, service := range services {
+		if err := p.Rollout.Rollout(ctx, service); err != nil {
+			return fmt.Errorf("manual_intervention_required: %w; %s did not recover on revision %s: %v", cause, service, previous, err)
+		}
+	}
+	if err := writeAtomic(filepath.Join(domainRoot, composeRolloutMarker), []byte(previous), 0o600); err != nil {
+		return fmt.Errorf("manual_intervention_required: %w; recording the restored revision failed: %v", cause, err)
+	}
+	return fmt.Errorf("rollout_failed: %w; restored revision %s", cause, previous)
+}
+
+func rolledOut(domainRoot, revision string) bool {
+	if revision == "" {
+		return false
+	}
+	payload, err := os.ReadFile(filepath.Join(domainRoot, composeRolloutMarker))
+	return err == nil && string(payload) == revision
 }
 
 func verifyComposeOwnership(domainRoot string, wanted composeOwner) ([]Conflict, error) {
@@ -106,7 +176,7 @@ func verifyComposeOwnership(domainRoot string, wanted composeOwner) ([]Conflict,
 		if readErr != nil {
 			return nil, readErr
 		}
-		if len(entries) == 0 {
+		if len(entries) == 0 || isUnclaimedBootstrap(domainRoot, wanted.Domain, entries) {
 			return nil, nil
 		}
 		return []Conflict{composeConflict(domainRoot, "The Compose directory contains files not owned by Fleet")}, nil
@@ -119,6 +189,26 @@ func verifyComposeOwnership(domainRoot string, wanted composeOwner) ([]Conflict,
 		return []Conflict{composeConflict(domainRoot, "The Compose directory belongs to a different project, target, binding, or domain")}, nil
 	}
 	return nil, nil
+}
+
+// isUnclaimedBootstrap accepts a directory that holds only the init step's
+// bootstrap marker, revisions, and current pointer for the wanted domain.
+func isUnclaimedBootstrap(domainRoot, domain string, entries []fs.DirEntry) bool {
+	var marker struct {
+		Domain string `json:"domain"`
+	}
+	payload, err := os.ReadFile(filepath.Join(domainRoot, composeBootstrapFile))
+	if err != nil || json.Unmarshal(payload, &marker) != nil || marker.Domain != domain {
+		return false
+	}
+	for _, entry := range entries {
+		switch entry.Name() {
+		case composeBootstrapFile, composeRolloutMarker, "current", "revisions":
+		default:
+			return false
+		}
+	}
+	return true
 }
 
 func composeConflict(resource, message string) Conflict {
@@ -185,7 +275,14 @@ func digestMap(values map[string]string) string {
 }
 
 func applyComposeRevision(domainRoot string, owner composeOwner, revision string, files []ComposeFile) error {
-	if err := os.MkdirAll(domainRoot, 0o750); err != nil {
+	// Operators run `docker compose` on the host as their own user, so a
+	// revision whose files are all world-readable gets traversable directories.
+	// Revisions holding restricted files keep group-only directories.
+	dirMode := fs.FileMode(0o750)
+	if allWorldReadable(files) {
+		dirMode = 0o755
+	}
+	if err := os.MkdirAll(domainRoot, dirMode); err != nil {
 		return err
 	}
 	ownerPayload, err := json.Marshal(owner)
@@ -201,7 +298,11 @@ func applyComposeRevision(domainRoot string, owner composeOwner, revision string
 		return err
 	}
 	revisionRoot := filepath.Join(domainRoot, "revisions", revision)
-	if err := os.MkdirAll(revisionRoot, 0o750); err != nil {
+	if err := os.MkdirAll(revisionRoot, dirMode); err != nil {
+		return err
+	}
+	// MkdirAll applies the umask and leaves existing directories alone.
+	if err := os.Chmod(revisionRoot, dirMode); err != nil {
 		return err
 	}
 	for _, file := range files {
@@ -209,7 +310,7 @@ func applyComposeRevision(domainRoot string, owner composeOwner, revision string
 		if !strings.HasPrefix(path, revisionRoot+string(filepath.Separator)) {
 			return errors.New("Compose file escaped the Fleet revision directory")
 		}
-		if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
+		if err := os.MkdirAll(filepath.Dir(path), dirMode); err != nil {
 			return err
 		}
 		mode := fs.FileMode(file.Mode)
@@ -219,6 +320,23 @@ func applyComposeRevision(domainRoot string, owner composeOwner, revision string
 		if err := writeAtomic(path, []byte(file.Content), mode); err != nil {
 			return err
 		}
+	}
+	return pointCurrent(domainRoot, revision)
+}
+
+func allWorldReadable(files []ComposeFile) bool {
+	for _, file := range files {
+		if file.Mode != 0o644 {
+			return false
+		}
+	}
+	return len(files) > 0
+}
+
+// pointCurrent atomically points current/ at revisions/<revision>.
+func pointCurrent(domainRoot, revision string) error {
+	if revision == "" || strings.ContainsAny(revision, `/\`) || revision == "." || revision == ".." {
+		return errors.New("invalid Compose revision name")
 	}
 	temporaryLink := filepath.Join(domainRoot, ".current-"+revision)
 	_ = os.Remove(temporaryLink)

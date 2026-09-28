@@ -79,19 +79,13 @@ func main() {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	provider, err := buildProvider(*adapter, *ownedRoot, *kubeconfig, splitNonEmpty(*allowedKubernetesFields))
-	if err != nil {
-		log.Fatal(err)
-	}
-	providers, err := fleetproviders.NewRegistry(provider)
-	if err != nil {
-		log.Fatal(err)
-	}
 	var functionProviders *fleetfunctions.Registry
 	var lifecycleProviders *fleetlifecycle.Registry
 	var databaseProviders *fleetdatabase.Registry
 	var inventoryProvider fleetinventory.Provider
 	var lifecycleVersions fleetlifecycle.ComponentVersions
+	var lifecycleActions []fleetlifecycle.Action
+	var err error
 	capabilities := make([]string, 0)
 	if *advertiseConfigReconcile {
 		capabilities = append(capabilities, fleetproviders.CapabilityReconcileConfiguration)
@@ -136,6 +130,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		lifecycleActions = actions
 		if err := json.Unmarshal([]byte(*lifecycleVersionsJSON), &lifecycleVersions); err != nil {
 			log.Fatal("Fleet lifecycle component versions must be valid JSON")
 		}
@@ -149,6 +144,21 @@ func main() {
 		for _, action := range actions {
 			capabilities = append(capabilities, string(action))
 		}
+	}
+	// Configuration that must reach running containers is rolled out through
+	// the lifecycle plugin, so it is available only when the plugin provides
+	// runtime.rollout on a Compose target.
+	var rollouter fleetproviders.Rollouter
+	if lifecycleProviders != nil && *adapter == string(fleetproviders.AdapterCompose) && hasAction(lifecycleActions, fleetlifecycle.RuntimeRollout) {
+		rollouter = fleetlifecycle.ServiceRollouter{Runtime: fleetlifecycle.PluginRuntime{Executable: *lifecyclePlugin}}
+	}
+	provider, err := buildProvider(*adapter, *ownedRoot, *kubeconfig, splitNonEmpty(*allowedKubernetesFields), rollouter)
+	if err != nil {
+		log.Fatal(err)
+	}
+	providers, err := fleetproviders.NewRegistry(provider)
+	if err != nil {
+		log.Fatal(err)
 	}
 	if len(capabilities) == 0 {
 		log.Fatal("Fleet Agent has no configured capabilities; configure at least one provider")
@@ -213,13 +223,22 @@ func buildFunctionProvider(adapter, root, probeURL, probeToken, kubeconfig, name
 	}
 }
 
-func buildProvider(adapter, ownedRoot, kubeconfig string, allowedFields []string) (fleetproviders.Provider, error) {
+func hasAction(actions []fleetlifecycle.Action, wanted fleetlifecycle.Action) bool {
+	for _, action := range actions {
+		if action == wanted {
+			return true
+		}
+	}
+	return false
+}
+
+func buildProvider(adapter, ownedRoot, kubeconfig string, allowedFields []string, rollouter fleetproviders.Rollouter) (fleetproviders.Provider, error) {
 	switch adapter {
 	case string(fleetproviders.AdapterCompose):
 		if strings.TrimSpace(ownedRoot) == "" {
 			return nil, errors.New("Fleet-owned Compose root is required")
 		}
-		return fleetproviders.ComposeProvider{OwnedRoot: ownedRoot}, nil
+		return fleetproviders.ComposeProvider{OwnedRoot: ownedRoot, Rollout: rollouter}, nil
 	case string(fleetproviders.AdapterKubernetes):
 		if len(allowedFields) == 0 {
 			return nil, errors.New("Kubernetes owned-field allowlist is required")
