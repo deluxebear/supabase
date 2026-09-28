@@ -356,9 +356,6 @@ func (h *Handler) createOperation(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	sensitive := false
-	var redactedTypedInput json.RawMessage
-	redactedSnapshotCanonical := ""
 	if request.Capability == fleetdatabase.CapabilityReconcile {
 		document, err := fleetdatabase.ParseDocument(request.TypedInput)
 		if err != nil {
@@ -369,14 +366,11 @@ func (h *Handler) createOperation(w http.ResponseWriter, r *http.Request) {
 			writeFleetError(w, r, http.StatusConflict, "capability_unavailable", "The database security adapter does not match the bound deployment kind", false, map[string]any{})
 			return
 		}
-		if document.ContainsSecrets() {
-			redactedTypedInput, err = json.Marshal(document.Redacted())
-			if err != nil {
-				writeFleetError(w, r, http.StatusInternalServerError, "downstream_unavailable", "Fleet Control could not redact the database security operation", true, map[string]any{})
-				return
-			}
-			redactedSnapshotCanonical = string(redactedTypedInput)
-			sensitive = true
+		// Passwords reach the Agent sealed to its recipient key; Fleet Control
+		// never stores or forwards them in plaintext.
+		if document.Rotation != nil {
+			writeFleetError(w, r, http.StatusBadRequest, "sealed_rotation_required", "Database password rotations must be sealed to the Fleet Agent", false, map[string]any{})
+			return
 		}
 	}
 	if request.Capability == fleetinventory.CapabilityObserve {
@@ -415,7 +409,7 @@ func (h *Handler) createOperation(w http.ResponseWriter, r *http.Request) {
 		writeFleetError(w, r, http.StatusUnauthorized, "unauthenticated", "Fleet operation actor context is missing", false, map[string]any{})
 		return
 	}
-	operation, created, err := h.Store.CreateOperation(r.Context(), CreateOperationInput{Operation: Operation{ID: request.OperationID, ProjectRef: projectRef, TargetID: request.TargetID, BindingID: request.BindingID, Domain: request.Domain, Capability: request.Capability, ProtocolMajor: request.ProtocolMajor, ProtocolMinor: request.ProtocolMinor, ExpectedGeneration: request.ExpectedGeneration, DesiredRevision: request.DesiredRevision, DesiredDigest: request.DesiredDigest, InputSchema: request.InputSchema}, IdempotencyKey: idempotencyKey, TypedInput: request.TypedInput, SnapshotCanonical: request.SnapshotCanonical, Preconditions: request.Preconditions, Actor: actor.Subject, CorrelationID: r.Header.Get(CorrelationHeader), Sensitive: sensitive, RedactedTypedInput: redactedTypedInput, RedactedSnapshotCanonical: redactedSnapshotCanonical})
+	operation, created, err := h.Store.CreateOperation(r.Context(), CreateOperationInput{Operation: Operation{ID: request.OperationID, ProjectRef: projectRef, TargetID: request.TargetID, BindingID: request.BindingID, Domain: request.Domain, Capability: request.Capability, ProtocolMajor: request.ProtocolMajor, ProtocolMinor: request.ProtocolMinor, ExpectedGeneration: request.ExpectedGeneration, DesiredRevision: request.DesiredRevision, DesiredDigest: request.DesiredDigest, InputSchema: request.InputSchema}, IdempotencyKey: idempotencyKey, TypedInput: request.TypedInput, SnapshotCanonical: request.SnapshotCanonical, Preconditions: request.Preconditions, Actor: actor.Subject, CorrelationID: r.Header.Get(CorrelationHeader)})
 	if err != nil {
 		if errors.Is(err, ErrCapacityExceeded) {
 			w.Header().Set("Retry-After", "5")

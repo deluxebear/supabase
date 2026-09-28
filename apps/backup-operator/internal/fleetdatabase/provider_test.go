@@ -41,9 +41,6 @@ func TestDatabaseSecurityProviderAppliesWithoutExposingPasswords(t *testing.T) {
 	if err != nil || !evidence.Applied || !evidence.PasswordRotated || evidence.Status != "succeeded" || strings.Contains(strings.TrimSpace(evidence.Remediation), "password-456") {
 		t.Fatalf("evidence = %#v err=%v", evidence, err)
 	}
-	if redacted := validDocument().Redacted(); redacted.Rotation.CurrentPassword != "[redacted]" || redacted.Rotation.NewPassword != "[redacted]" {
-		t.Fatalf("redacted = %#v", redacted)
-	}
 }
 
 func TestDatabaseSecurityProviderRollsBackFailedProbe(t *testing.T) {

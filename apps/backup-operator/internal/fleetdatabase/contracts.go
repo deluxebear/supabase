@@ -1,12 +1,15 @@
 package fleetdatabase
 
 import (
+	"crypto/ecdh"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/netip"
 	"strings"
+
+	"github.com/supabase/supabase/apps/backup-operator/internal/sealedsecret"
 )
 
 const (
@@ -30,11 +33,33 @@ const (
 )
 
 type Document struct {
-	Adapter  Adapter         `json:"adapter"`
-	SSL      SSLPolicy       `json:"ssl"`
-	Network  NetworkPolicy   `json:"network"`
-	Pooler   PoolerPolicy    `json:"pooler"`
+	Adapter Adapter       `json:"adapter"`
+	SSL     SSLPolicy     `json:"ssl"`
+	Network NetworkPolicy `json:"network"`
+	Pooler  PoolerPolicy  `json:"pooler"`
+	// Rotation carries plaintext passwords. Fleet Control no longer accepts it
+	// from Studio; the Agent still reads it for operations queued before
+	// sealed rotations, and fills it in memory from SealedRotation.
 	Rotation *PasswordChange `json:"rotation,omitempty"`
+	// SealedRotation carries the passwords sealed to the Agent's recipient
+	// key, so Fleet Control and its database see only ciphertext.
+	SealedRotation *SealedPasswordChange `json:"sealedRotation,omitempty"`
+}
+
+// SealedPasswordChange is a PasswordChange whose passwords are sealed. The
+// envelope plaintext is {"currentPassword":"…","newPassword":"…"}.
+type SealedPasswordChange struct {
+	Role     PasswordRole          `json:"role"`
+	Envelope sealedsecret.Envelope `json:"envelope"`
+}
+
+// SealedRotationDomain is the sealed-secret context domain of rotations.
+const SealedRotationDomain = "fleet.database"
+
+// SealedRotationContext binds a sealed rotation to one operation, so an
+// envelope cannot be replayed into a later rotation.
+func SealedRotationContext(projectRef, bindingID, operationID string, role PasswordRole) sealedsecret.Context {
+	return sealedsecret.Context{ProjectRef: projectRef, BindingID: bindingID, Domain: SealedRotationDomain, Path: "rotation/" + string(role) + "/" + operationID}
 }
 
 type SSLPolicy struct {
@@ -128,6 +153,17 @@ func (d Document) Validate() error {
 	if d.Pooler.DefaultPoolSize < 1 || d.Pooler.DefaultPoolSize > 1000 || d.Pooler.MaxClientConnections < 10 || d.Pooler.MaxClientConnections > 100000 {
 		return errors.New("Supavisor pool size or maximum clients is outside the safe range")
 	}
+	if d.Rotation != nil && d.SealedRotation != nil {
+		return errors.New("database security document has both a plaintext and a sealed rotation")
+	}
+	if d.SealedRotation != nil {
+		if d.SealedRotation.Role != PasswordRolePrimary && d.SealedRotation.Role != PasswordRoleReadOnly {
+			return errors.New("database password rotation role is invalid")
+		}
+		if d.SealedRotation.Envelope.Schema != sealedsecret.Schema {
+			return errors.New("sealed database password rotation envelope is invalid")
+		}
+	}
 	if d.Rotation != nil {
 		if d.Rotation.Role != PasswordRolePrimary && d.Rotation.Role != PasswordRoleReadOnly {
 			return errors.New("database password rotation role is invalid")
@@ -152,17 +188,36 @@ func validatePassword(value string) error {
 	return nil
 }
 
-func (d Document) ContainsSecrets() bool { return d.Rotation != nil }
-
-func (d Document) Redacted() Document {
-	copy := d
-	if d.Rotation != nil {
-		rotation := *d.Rotation
-		rotation.CurrentPassword = "[redacted]"
-		rotation.NewPassword = "[redacted]"
-		copy.Rotation = &rotation
+// OpenSealedRotation decrypts SealedRotation with the Agent's recipient key
+// and returns the document with the plaintext Rotation in memory only.
+func (d Document) OpenSealedRotation(recipient *ecdh.PrivateKey, projectRef, bindingID, operationID string) (Document, error) {
+	if d.SealedRotation == nil {
+		return d, nil
 	}
-	return copy
+	if recipient == nil {
+		return Document{}, errors.New("sealed_secret_unavailable: this Agent has no secret recipient key")
+	}
+	role := d.SealedRotation.Role
+	plaintext, err := sealedsecret.Open(recipient, SealedRotationContext(projectRef, bindingID, operationID, role), d.SealedRotation.Envelope)
+	if err != nil {
+		return Document{}, err
+	}
+	decoder := json.NewDecoder(strings.NewReader(string(plaintext)))
+	decoder.DisallowUnknownFields()
+	var passwords struct {
+		CurrentPassword string `json:"currentPassword"`
+		NewPassword     string `json:"newPassword"`
+	}
+	if err := decoder.Decode(&passwords); err != nil {
+		return Document{}, errors.New("sealed_secret_invalid: the sealed rotation is not a password change")
+	}
+	opened := d
+	opened.SealedRotation = nil
+	opened.Rotation = &PasswordChange{Role: role, CurrentPassword: passwords.CurrentPassword, NewPassword: passwords.NewPassword}
+	if err := opened.Validate(); err != nil {
+		return Document{}, err
+	}
+	return opened, nil
 }
 
 func (r Request) Validate() error {

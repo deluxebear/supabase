@@ -196,7 +196,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	executor := &fleetagent.Executor{Journal: journal, Providers: providers, FunctionProviders: functionProviders, LifecycleProviders: lifecycleProviders, DatabaseProviders: databaseProviders, InventoryProvider: inventoryProvider, LifecycleVersions: lifecycleVersions, ProjectRef: *projectRef, TargetID: *targetID, BindingID: *bindingID}
+	executor := &fleetagent.Executor{Journal: journal, Providers: providers, FunctionProviders: functionProviders, LifecycleProviders: lifecycleProviders, DatabaseProviders: databaseProviders, SecretRecipient: secretRecipient, InventoryProvider: inventoryProvider, LifecycleVersions: lifecycleVersions, ProjectRef: *projectRef, TargetID: *targetID, BindingID: *bindingID}
 	client := fleetagent.Client{
 		Address: *address, TLS: tlsConfig, AgentID: *agentID, TargetID: *targetID, BindingID: *bindingID, NodeID: *nodeID,
 		Build: version.String(), Capabilities: capabilities, Executor: executor, HeartbeatInterval: *heartbeat,

@@ -2,9 +2,11 @@ package fleetagent
 
 import (
 	"context"
+	"crypto/ecdh"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	transportv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/agent/transport/v1"
@@ -15,6 +17,7 @@ import (
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetinventory"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetlifecycle"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
+	"github.com/supabase/supabase/apps/backup-operator/internal/sealedsecret"
 )
 
 type Executor struct {
@@ -23,12 +26,14 @@ type Executor struct {
 	FunctionProviders  *fleetfunctions.Registry
 	LifecycleProviders *fleetlifecycle.Registry
 	DatabaseProviders  *fleetdatabase.Registry
-	InventoryProvider  fleetinventory.Provider
-	LifecycleVersions  fleetlifecycle.ComponentVersions
-	ProjectRef         string
-	TargetID           string
-	BindingID          string
-	Now                func() time.Time
+	// SecretRecipient opens secrets Studio sealed to this Agent.
+	SecretRecipient   *ecdh.PrivateKey
+	InventoryProvider fleetinventory.Provider
+	LifecycleVersions fleetlifecycle.ComponentVersions
+	ProjectRef        string
+	TargetID          string
+	BindingID         string
+	Now               func() time.Time
 }
 
 type storedResult struct {
@@ -99,6 +104,10 @@ func (e *Executor) ExecuteWithArtifacts(ctx context.Context, task *fleetagentv1.
 		database, err = fleetdatabase.ParseDocument(input.GetDocumentJson())
 		if err != nil {
 			return failed(identity.GetTaskId(), "validation_failed", err.Error())
+		}
+		database, err = database.OpenSealedRotation(e.SecretRecipient, identity.GetProjectRef(), identity.GetBindingId(), identity.GetOperationId())
+		if err != nil {
+			return failed(identity.GetTaskId(), sealedSecretErrorCode(err), err.Error())
 		}
 	case task.GetInputSchema() == fleetlifecycle.InputSchemaV1 && task.GetExecuteLifecycle() != nil && e.LifecycleProviders != nil:
 		var err error
@@ -307,5 +316,16 @@ func journalErrorCode(err error) string {
 		return "orphaned_task"
 	default:
 		return "journal_failed"
+	}
+}
+
+func sealedSecretErrorCode(err error) string {
+	switch {
+	case errors.Is(err, sealedsecret.ErrWrongRecipient):
+		return "sealed_secret_recipient_mismatch"
+	case strings.HasPrefix(err.Error(), "sealed_secret_unavailable"):
+		return "sealed_secret_unavailable"
+	default:
+		return "sealed_secret_invalid"
 	}
 }
