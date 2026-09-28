@@ -4,7 +4,7 @@ import { Check, Circle, Copy, ExternalLink, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import {
   Alert,
@@ -67,10 +67,38 @@ export function refSuggestion(name: string): string {
   return /^[a-z]/.test(slug) ? slug : `p-${slug}`.slice(0, 30)
 }
 
+// [self-platform] Deployment kinds a Fleet Agent can manage: an independent
+// Compose stack (docker/fleet-managed) or a Kubernetes namespace
+// (docker/k8s/fleet-agent).
+const DEPLOYMENT_KINDS = ['compose', 'kubernetes'] as const
+type DeploymentKind = (typeof DEPLOYMENT_KINDS)[number]
+const deploymentKindSchema = z.enum(DEPLOYMENT_KINDS)
+
+const DeploymentKindSelect = ({
+  value,
+  onChange,
+}: {
+  value: DeploymentKind
+  onChange: (value: DeploymentKind) => void
+}) => (
+  <Select value={value} onValueChange={(next) => onChange(deploymentKindSchema.parse(next))}>
+    <FormControl>
+      <SelectTrigger>
+        <SelectValue />
+      </SelectTrigger>
+    </FormControl>
+    <SelectContent>
+      <SelectItem value="compose">{$t('Compose stack')}</SelectItem>
+      <SelectItem value="kubernetes">{$t('Kubernetes namespace')}</SelectItem>
+    </SelectContent>
+  </Select>
+)
+
 const attachSchema = z
   .object({
     managementTargetId: z.string().uuid($t('Select a management target')),
     executionTarget: z.string().trim().min(1, $t('Execution target is required')).max(255),
+    deploymentKind: deploymentKindSchema,
     name: z.string().trim().min(1, $t('Project name is required')).max(64),
     ref: z
       .string()
@@ -121,9 +149,22 @@ type EnrollmentToken = { token: string; expiresAt: string }
 const bindingSchema = z.object({
   managementTargetId: z.string().uuid($t('Select a management target')),
   executionTarget: z.string().trim().min(1, $t('Execution target is required')).max(255),
+  deploymentKind: deploymentKindSchema,
 })
 
 type BindingFormValues = z.infer<typeof bindingSchema>
+
+/** Where the operator puts the enrollment token for each deployment kind. */
+export function getEnrollmentHint(kind: string | undefined): string {
+  if (kind === 'kubernetes') {
+    return $t(
+      'Set it as FLEET_AGENT_ENROLLMENT_TOKEN in docker/k8s/fleet-agent/fleet-agent.env and run deploy.sh there.'
+    )
+  }
+  return $t(
+    "Set it as FLEET_AGENT_ENROLLMENT_TOKEN in the stack's env file and run the Compose enroll profile."
+  )
+}
 
 const stepLabels = [$t('Connect stack'), $t('Enroll Agent'), $t('Activate project')]
 
@@ -199,6 +240,7 @@ export const SelfPlatformProjectCreate = () => {
     defaultValues: {
       managementTargetId: '',
       executionTarget: '',
+      deploymentKind: 'compose',
       name: '',
       ref: '',
       dbHost: '',
@@ -226,10 +268,10 @@ export const SelfPlatformProjectCreate = () => {
       publicTenantId: '',
     },
   })
-  const keyMode = form.watch('keyMode')
+  const keyMode = useWatch({ control: form.control, name: 'keyMode' })
   const bindingForm = useForm<BindingFormValues>({
     resolver: zodResolver(bindingSchema),
-    defaultValues: { managementTargetId: '', executionTarget: '' },
+    defaultValues: { managementTargetId: '', executionTarget: '', deploymentKind: 'compose' },
   })
   const currentStep = projectRef
     ? binding.data?.binding?.agentSessionState === 'online'
@@ -240,7 +282,10 @@ export const SelfPlatformProjectCreate = () => {
   useEffect(() => {
     if (!projectRef) return
     if (!bindingForm.getValues('executionTarget')) {
-      bindingForm.setValue('executionTarget', `compose://${projectRef}`)
+      bindingForm.setValue(
+        'executionTarget',
+        `${bindingForm.getValues('deploymentKind')}://${projectRef}`
+      )
     }
     if (!bindingForm.getValues('managementTargetId') && activeTargets.length === 1) {
       bindingForm.setValue('managementTargetId', activeTargets[0].id)
@@ -315,6 +360,7 @@ export const SelfPlatformProjectCreate = () => {
       bindingForm.reset({
         managementTargetId: values.managementTargetId,
         executionTarget: values.executionTarget,
+        deploymentKind: values.deploymentKind,
       })
       await setWizardUrl(result.ref, 'enroll')
       await bind.mutateAsync({
@@ -322,7 +368,7 @@ export const SelfPlatformProjectCreate = () => {
         payload: {
           managementTargetId: values.managementTargetId,
           executionTarget: values.executionTarget,
-          deploymentKind: 'compose',
+          deploymentKind: values.deploymentKind,
           allowedCapabilityPrefixes: ['backup.', 'runtime.', 'database.', 'functions.'],
         },
       })
@@ -340,7 +386,7 @@ export const SelfPlatformProjectCreate = () => {
       payload: {
         managementTargetId: values.managementTargetId,
         executionTarget: values.executionTarget,
-        deploymentKind: 'compose',
+        deploymentKind: values.deploymentKind,
         allowedCapabilityPrefixes: ['backup.', 'runtime.', 'database.', 'functions.'],
       },
     })
@@ -451,16 +497,25 @@ export const SelfPlatformProjectCreate = () => {
                   {field(
                     'executionTarget',
                     $t('Execution target'),
-                    $t('For example compose://project-b')
+                    $t('For example compose://project-b or kubernetes://supabase')
                   )}
                   <CardContent>
-                    <FormItemLayout
-                      layout="flex-row-reverse"
-                      label={$t('Deployment kind')}
-                      description={$t('Fleet Attach currently supports independent Compose stacks')}
-                    >
-                      <Input value="compose" disabled />
-                    </FormItemLayout>
+                    <FormField
+                      control={form.control}
+                      name="deploymentKind"
+                      render={({ field: input }) => (
+                        <FormItemLayout
+                          name="deploymentKind"
+                          layout="flex-row-reverse"
+                          label={$t('Deployment kind')}
+                          description={$t(
+                            'Where the Fleet Agent runs: next to an independent Compose stack, or in the Kubernetes namespace of the project'
+                          )}
+                        >
+                          <DeploymentKindSelect value={input.value} onChange={input.onChange} />
+                        </FormItemLayout>
+                      )}
+                    />
                   </CardContent>
                 </Card>
 
@@ -673,6 +728,19 @@ export const SelfPlatformProjectCreate = () => {
                       />
                       <FormField
                         control={bindingForm.control}
+                        name="deploymentKind"
+                        render={({ field: input }) => (
+                          <FormItemLayout
+                            name="deploymentKind"
+                            layout="flex-row-reverse"
+                            label={$t('Deployment kind')}
+                          >
+                            <DeploymentKindSelect value={input.value} onChange={input.onChange} />
+                          </FormItemLayout>
+                        )}
+                      />
+                      <FormField
+                        control={bindingForm.control}
                         name="executionTarget"
                         render={({ field: input }) => (
                           <FormItemLayout
@@ -700,6 +768,7 @@ export const SelfPlatformProjectCreate = () => {
                         {$t('This token is shown once and expires at')}{' '}
                         {new Date(token.expiresAt).toLocaleString()}.
                       </p>
+                      <p>{getEnrollmentHint(binding.data?.binding?.deploymentKind)}</p>
                       <div className="flex gap-2">
                         <Input value={token.token} readOnly className="font-mono" />
                         <Button

@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 import {
   FLEET_ATTACH_DEFAULT_TLS_MODE,
+  getEnrollmentHint,
   SelfPlatformProjectCreate,
 } from './SelfPlatformProjectCreate'
 import type {
@@ -141,7 +142,8 @@ describe('SelfPlatformProjectCreate', () => {
     customRender(<SelfPlatformProjectCreate />)
 
     await waitFor(() => expect(screen.getByDisplayValue('compose://project-a')).toBeInTheDocument())
-    await userEvent.click(screen.getByRole('combobox'))
+    const [targetSelect] = screen.getAllByRole('combobox')
+    await userEvent.click(targetSelect)
     await userEvent.click(await screen.findByRole('option', { name: TARGET.name }))
     fireEvent.click(await screen.findByRole('button', { name: 'Retry management binding' }))
 
@@ -153,6 +155,41 @@ describe('SelfPlatformProjectCreate', () => {
         allowedCapabilityPrefixes: ['backup.', 'runtime.', 'database.', 'functions.'],
       })
     )
+  })
+
+  test('binds a Kubernetes namespace when the operator picks that deployment kind', async () => {
+    routerMock.setCurrentUrl('/new/default?project=project-a&step=enroll')
+    mockNoBinding()
+    let requestBody: unknown
+    mswServer.use(
+      http.put(`${API_URL}/platform/projects/:ref/management-binding`, async ({ request }) => {
+        requestBody = await request.json()
+        return HttpResponse.json({ binding: binding('unavailable') }, { status: 201 })
+      })
+    )
+    customRender(<SelfPlatformProjectCreate />)
+
+    const executionTarget = await screen.findByDisplayValue('compose://project-a')
+    const [targetSelect, kindSelect] = screen.getAllByRole('combobox')
+    await userEvent.click(targetSelect)
+    await userEvent.click(await screen.findByRole('option', { name: TARGET.name }))
+    await userEvent.click(kindSelect)
+    await userEvent.click(await screen.findByRole('option', { name: 'Kubernetes namespace' }))
+    await userEvent.clear(executionTarget)
+    await userEvent.type(executionTarget, 'kubernetes://supabase')
+    fireEvent.click(await screen.findByRole('button', { name: 'Retry management binding' }))
+
+    await waitFor(() =>
+      expect(requestBody).toMatchObject({
+        executionTarget: 'kubernetes://supabase',
+        deploymentKind: 'kubernetes',
+      })
+    )
+  })
+
+  test('tells the operator where the enrollment token goes for each deployment kind', () => {
+    expect(getEnrollmentHint('kubernetes')).toContain('docker/k8s/fleet-agent')
+    expect(getEnrollmentHint('compose')).toContain('Compose enroll profile')
   })
 
   test('rolls back only the staged Fleet record and returns to the wizard start', async () => {

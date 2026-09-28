@@ -4,6 +4,11 @@ import { Badge, Button, Card, CardContent, CardHeader, CardTitle, cn } from 'ui'
 import { Admonition } from 'ui-patterns/Admonition'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
+import {
+  formatComputeSource,
+  formatVolumeUsage,
+  getInventoryCopy,
+} from './FleetInfrastructure.utils'
 import { useRuntimeInventoryQuery } from '@/data/infrastructure/runtime-inventory-query'
 import { t as $t } from '@/lib/i18n'
 
@@ -53,6 +58,7 @@ export const FleetInfrastructure = () => {
       </Admonition>
     )
 
+  const copy = getInventoryCopy(data.adapter)
   const diskPercent = Math.min(
     100,
     (data.disk.filesystemUsedBytes / data.disk.filesystemSizeBytes) * 100
@@ -66,9 +72,7 @@ export const FleetInfrastructure = () => {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-medium">{$t('Capacity and runtime inventory')}</h2>
-          <p className="text-sm text-foreground-light">
-            {$t('Observed by the project Agent from the Compose host and PostgreSQL runtime.')}
-          </p>
+          <p className="text-sm text-foreground-light">{copy.description}</p>
         </div>
         <Button type="button" disabled={isFetching} loading={isFetching} onClick={() => refetch()}>
           <RefreshCw className="mr-2 size-4" />
@@ -127,7 +131,10 @@ export const FleetInfrastructure = () => {
               value={`${data.compute.cpuCores} ${$t('shared cores')}`}
             />
             <InventoryRow label={$t('Memory capacity')} value={bytes(data.compute.memoryBytes)} />
-            <InventoryRow label={$t('Allocation source')} value={data.compute.source} />
+            <InventoryRow
+              label={$t('Allocation source')}
+              value={formatComputeSource(data.compute.source)}
+            />
             <InventoryRow label={$t('Containers')} value={String(data.containers.length)} />
             <InventoryRow label={$t('Volumes')} value={String(data.volumes.length)} />
             <InventoryRow
@@ -239,7 +246,7 @@ export const FleetInfrastructure = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>{$t('Compose containers and volumes')}</CardTitle>
+          <CardTitle>{copy.workloadsTitle}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-6 lg:grid-cols-2">
           <div>
@@ -255,7 +262,11 @@ export const FleetInfrastructure = () => {
           <div>
             <h4 className="mb-2 text-sm font-medium">{$t('Volumes')}</h4>
             {data.volumes.map((item) => (
-              <InventoryRow key={item.name} label={item.name} value={bytes(item.usedBytes)} />
+              <InventoryRow
+                key={item.name}
+                label={item.name}
+                value={formatVolumeUsage(data.adapter, item, bytes)}
+              />
             ))}
           </div>
         </CardContent>
