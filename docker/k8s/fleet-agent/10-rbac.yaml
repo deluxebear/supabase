@@ -8,6 +8,10 @@
 # Deployments: the Agent reads them and patches the pod template annotation
 # that restarts them.
 #
+# Runtime inventory: the Agent lists pods, PersistentVolumeClaims, and
+# ResourceQuotas in the namespace (read-only), and reads the node that runs
+# the database when no ResourceQuota sets the namespace's compute.
+#
 # Keep resourceNames in step with FLEET_AGENT_KUBERNETES_SECRET_SERVICES.
 apiVersion: v1
 kind: ServiceAccount
@@ -28,10 +32,30 @@ rules:
     resources: [deployments]
     resourceNames: [functions, auth]
     verbs: [get, patch]
+  - apiGroups: [""]
+    resources: [pods, persistentvolumeclaims, resourcequotas]
+    verbs: [list]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata: { name: fleet-agent, namespace: supabase, labels: { app: fleet-agent } }
 roleRef: { apiGroup: rbac.authorization.k8s.io, kind: Role, name: fleet-agent }
+subjects:
+  - { kind: ServiceAccount, name: fleet-agent, namespace: supabase }
+---
+# Nodes are cluster-scoped. Read-only, and only used for the database node's
+# allocatable CPU and memory.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata: { name: fleet-agent-nodes, labels: { app: fleet-agent } }
+rules:
+  - apiGroups: [""]
+    resources: [nodes]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata: { name: fleet-agent-nodes, labels: { app: fleet-agent } }
+roleRef: { apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: fleet-agent-nodes }
 subjects:
   - { kind: ServiceAccount, name: fleet-agent, namespace: supabase }

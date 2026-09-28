@@ -136,7 +136,7 @@ func (i Input) Validate() error {
 }
 
 func (e Evidence) Validate() error {
-	if e.Schema != EvidenceSchemaV1 || e.Adapter != "compose" || e.Status != "healthy" || e.ObservedGeneration < 1 {
+	if e.Schema != EvidenceSchemaV1 || (e.Adapter != "compose" && e.Adapter != "kubernetes") || e.Status != "healthy" || e.ObservedGeneration < 1 {
 		return errors.New("runtime inventory identity or status is invalid")
 	}
 	if _, err := time.Parse(time.RFC3339Nano, e.ObservedAt); err != nil {

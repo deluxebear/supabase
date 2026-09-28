@@ -77,11 +77,17 @@ func (p ComposeProvider) Observe(ctx context.Context, request Request) (Evidence
 	if json.Unmarshal(raw, &snapshot) != nil || snapshot.Adapter != "compose" || snapshot.Disk.FilesystemSizeBytes <= 0 || snapshot.Compute.CPUCores <= 0 || snapshot.Compute.MemoryBytes <= 0 || len(snapshot.Containers) == 0 {
 		return Evidence{}, errors.New("Compose runtime observer evidence is incomplete")
 	}
-	readDatabase := p.DatabaseInventory
+	return completeEvidence(ctx, request, snapshot, p.AdminDSN, p.UpgradeTargets, p.DatabaseInventory)
+}
+
+// completeEvidence adds what only Postgres knows (version, database and WAL
+// sizes) to an observer snapshot and assesses upgrades. Compose and Kubernetes
+// share it.
+func completeEvidence(ctx context.Context, request Request, snapshot ObserverSnapshot, adminDSN string, upgradeTargets []string, readDatabase func(context.Context, string) (string, int64, int64, int64, error)) (Evidence, error) {
 	if readDatabase == nil {
 		readDatabase = databaseInventory
 	}
-	postgresVersion, databaseBytes, walBytes, tablespaceBytes, err := readDatabase(ctx, p.AdminDSN)
+	postgresVersion, databaseBytes, walBytes, tablespaceBytes, err := readDatabase(ctx, adminDSN)
 	if err != nil {
 		return Evidence{}, err
 	}
@@ -92,11 +98,15 @@ func (p ComposeProvider) Observe(ctx context.Context, request Request) (Evidence
 		snapshot.Disk.FilesystemUsedBytes = max64(tablespaceBytes+walBytes, databaseBytes+walBytes)
 		snapshot.Disk.SystemBytes = max64(0, snapshot.Disk.FilesystemUsedBytes-databaseBytes-walBytes)
 	}
+	if snapshot.Disk.FilesystemAvailableBytes == 0 {
+		// Only the volume size is observable (Kubernetes PVC capacity).
+		snapshot.Disk.FilesystemAvailableBytes = max64(0, snapshot.Disk.FilesystemSizeBytes-snapshot.Disk.FilesystemUsedBytes)
+	}
 	containers := FilterServices(snapshot.Containers, request.Input.Services)
 	versions := serviceVersions(containers, postgresVersion)
-	upgrade := upgradeAssessment(postgresVersion, postgresImage(containers), p.UpgradeTargets, snapshot.Disk)
+	upgrade := upgradeAssessment(postgresVersion, postgresImage(containers), upgradeTargets, snapshot.Disk)
 	evidence := Evidence{
-		Schema: EvidenceSchemaV1, Adapter: "compose", Status: "healthy", ObservedGeneration: request.ExpectedGeneration,
+		Schema: EvidenceSchemaV1, Adapter: snapshot.Adapter, Status: "healthy", ObservedGeneration: request.ExpectedGeneration,
 		ObservedAt: time.Now().UTC().Format(time.RFC3339Nano), Disk: snapshot.Disk, Compute: snapshot.Compute,
 		Containers: containers, Volumes: snapshot.Volumes, Versions: versions, Upgrade: upgrade,
 	}
@@ -178,9 +188,9 @@ func upgradeAssessment(currentVersion, currentImage string, configured []string,
 	checks := []UpgradeCheck{
 		{Code: "inventory_fresh", State: "passed", Message: "Container, volume, disk, and service versions were observed in one Agent operation."},
 		{Code: "disk_headroom", State: map[bool]string{true: "passed", false: "failed"}[headroom], Message: "A recovery copy requires free space at least equal to current project volume usage."},
-		{Code: "provider_registration", State: "blocked", Message: "This Compose target has no allowlisted PostgreSQL major-upgrade executor."},
+		{Code: "provider_registration", State: "blocked", Message: "This target has no allowlisted PostgreSQL major-upgrade executor."},
 	}
-	blockers := []UpgradeBlocker{{Code: "provider_not_registered", Message: "PostgreSQL major upgrade execution is unavailable for this Compose target.", Remediation: "Install and validate an operator-managed upgrade provider with an isolated recovery point before execution."}}
+	blockers := []UpgradeBlocker{{Code: "provider_not_registered", Message: "PostgreSQL major upgrade execution is unavailable for this target.", Remediation: "Install and validate an operator-managed upgrade provider with an isolated recovery point before execution."}}
 	if len(targets) == 0 {
 		blockers = append(blockers, UpgradeBlocker{Code: "no_approved_target", Message: "No newer PostgreSQL target is approved by the local compatibility catalog.", Remediation: "Publish a tested target image and compatibility entry before creating an upgrade operation."})
 	}

@@ -11,6 +11,8 @@
 #   limits in _supabase._supavisor.tenants, and role password rotation, over
 #   the `db` and `supavisor` Services. Its state lives on the state volume;
 #   TLS CA files come from the ConfigMap fleet-database-tls-ca.
+# - runtime.observe: workloads, volumes, compute, and Postgres sizes and
+#   version from the cluster API and the database, read-only.
 apiVersion: apps/v1
 kind: Deployment
 metadata: { name: fleet-agent, namespace: supabase, labels: { app: fleet-agent } }
@@ -60,6 +62,9 @@ spec:
             - { name: FLEET_AGENT_DATABASE_TLS_CA_ROOT, value: /etc/fleet-agent/tls-ca }
             - { name: FLEET_AGENT_DATABASE_PRIMARY_ROLE, value: postgres }
             - { name: FLEET_AGENT_DATABASE_READ_ONLY_ROLE, value: supabase_read_only_user }
+            - { name: FLEET_AGENT_RUNTIME_ADMIN_DSN, value: "postgres://supabase_admin:$(POSTGRES_PASSWORD)@db:$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable" }
+            - { name: FLEET_AGENT_KUBERNETES_DATABASE_CLAIM, value: data-supabase-db-0 }
+            - { name: FLEET_AGENT_KUBERNETES_DATABASE_SERVICE, value: supabase-db }
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true

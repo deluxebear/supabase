@@ -64,6 +64,8 @@ func main() {
 	databaseReadOnlyRole := flag.String("database-read-only-role", envOr("FLEET_AGENT_DATABASE_READ_ONLY_ROLE", "supabase_read_only_user"), "allowlisted read-only database role")
 	runtimeObserverURL := flag.String("runtime-observer-url", os.Getenv("FLEET_AGENT_RUNTIME_OBSERVER_URL"), "project-local read-only Compose inventory observer URL")
 	runtimeAdminDSN := flag.String("runtime-admin-dsn", os.Getenv("FLEET_AGENT_RUNTIME_ADMIN_DSN"), "operator-only PostgreSQL inventory DSN")
+	kubernetesDatabaseClaim := flag.String("kubernetes-database-claim", envOr("FLEET_AGENT_KUBERNETES_DATABASE_CLAIM", "data-supabase-db-0"), "PersistentVolumeClaim of the Postgres data directory, for runtime inventory")
+	kubernetesDatabaseService := flag.String("kubernetes-database-service", envOr("FLEET_AGENT_KUBERNETES_DATABASE_SERVICE", "supabase-db"), "app label of the Postgres pods, for runtime inventory")
 	runtimeUpgradeTargets := flag.String("runtime-upgrade-targets", os.Getenv("FLEET_AGENT_RUNTIME_UPGRADE_TARGETS"), "comma-separated locally approved PostgreSQL upgrade targets")
 	advertiseConfigReconcile := flag.Bool("advertise-config-reconcile", envBool("FLEET_AGENT_ADVERTISE_CONFIG_RECONCILE"), "advertise runtime.config.reconcile; enable only when a managed service consumes the Fleet-owned configuration root")
 	journalPath := flag.String("journal", envOr("FLEET_AGENT_JOURNAL", "/var/lib/supabase-fleet/agent-journal.db"), "durable Fleet Agent execution journal")
@@ -98,7 +100,24 @@ func main() {
 	if *advertiseConfigReconcile {
 		capabilities = append(capabilities, fleetproviders.CapabilityReconcileConfiguration)
 	}
-	if strings.TrimSpace(*runtimeObserverURL) != "" || strings.TrimSpace(*runtimeAdminDSN) != "" {
+	switch {
+	case *adapter == "kubernetes" && strings.TrimSpace(*runtimeAdminDSN) != "":
+		if strings.TrimSpace(*runtimeObserverURL) != "" || *kubernetesNamespace == "" {
+			log.Fatal("Kubernetes runtime inventory reads the cluster API: set --kubernetes-namespace and no observer URL")
+		}
+		client, err := kubernetesClient(*kubeconfig)
+		if err != nil {
+			log.Fatal(err)
+		}
+		inventoryProvider = fleetinventory.KubernetesProvider{
+			Source: fleetinventory.KubernetesObserver{
+				Client: client, Namespace: *kubernetesNamespace, DatabaseClaim: *kubernetesDatabaseClaim,
+				DatabaseService: *kubernetesDatabaseService, ExcludedServices: []string{"fleet-agent"},
+			},
+			AdminDSN: *runtimeAdminDSN, UpgradeTargets: fleetinventory.ParseTargets(*runtimeUpgradeTargets),
+		}
+		capabilities = append(capabilities, fleetinventory.CapabilityObserve)
+	case strings.TrimSpace(*runtimeObserverURL) != "" || strings.TrimSpace(*runtimeAdminDSN) != "":
 		if strings.TrimSpace(*runtimeObserverURL) == "" || strings.TrimSpace(*runtimeAdminDSN) == "" || *adapter != "compose" {
 			log.Fatal("Fleet runtime observer URL, administration DSN, and Compose adapter must be configured together")
 		}
@@ -343,4 +362,18 @@ func envDuration(name string, fallback time.Duration) time.Duration {
 		}
 	}
 	return fallback
+}
+
+func kubernetesClient(kubeconfig string) (dynamic.Interface, error) {
+	var config *rest.Config
+	var err error
+	if kubeconfig == "" {
+		config, err = rest.InClusterConfig()
+	} else {
+		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return dynamic.NewForConfig(config)
 }

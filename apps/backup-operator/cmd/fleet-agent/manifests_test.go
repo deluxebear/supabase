@@ -231,14 +231,36 @@ func TestKubernetesAgentManifests(t *testing.T) {
 			t.Fatalf("the Role must allow the Secret and Deployment of service %q", service)
 		}
 	}
+	readOnlyInventory := map[string]bool{"pods": true, "persistentvolumeclaims": true, "resourcequotas": true}
 	for _, rule := range role.Rules {
 		for _, verb := range rule.Verbs {
-			if verb == "*" || verb == "delete" || verb == "list" || verb == "watch" {
-				t.Fatalf("the Role grants %q; the Agent needs only get, create, and patch", verb)
+			if verb == "*" || verb == "delete" || verb == "watch" {
+				t.Fatalf("the Role grants %q; the Agent needs only get, list, create, and patch", verb)
 			}
 		}
-		if len(rule.ResourceNames) == 0 && !(len(rule.Verbs) == 1 && rule.Verbs[0] == "create") {
-			t.Fatalf("only create may be granted without resourceNames: %+v", rule)
+		isInventory := len(rule.Verbs) == 1 && rule.Verbs[0] == "list"
+		for _, resource := range rule.Resources {
+			if isInventory && !readOnlyInventory[resource] {
+				t.Fatalf("list is granted on %s; only inventory resources may be listed", resource)
+			}
+		}
+		if contains(rule.Verbs, "list") && !isInventory {
+			t.Fatalf("list must be granted alone: %+v", rule)
+		}
+		isCreate := len(rule.Verbs) == 1 && rule.Verbs[0] == "create"
+		if len(rule.ResourceNames) == 0 && !isCreate && !isInventory {
+			t.Fatalf("only create and inventory list may be granted without resourceNames: %+v", rule)
+		}
+	}
+	for _, object := range objects {
+		clusterRole, ok := object.(*rbacv1.ClusterRole)
+		if !ok {
+			continue
+		}
+		for _, rule := range clusterRole.Rules {
+			if len(rule.Resources) != 1 || rule.Resources[0] != "nodes" || len(rule.Verbs) != 1 || rule.Verbs[0] != "get" {
+				t.Fatalf("cluster-wide access must stay read-only on nodes: %+v", rule)
+			}
 		}
 	}
 }
