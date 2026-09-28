@@ -59,25 +59,31 @@ via `/rest/v1/<table>`.
 
 ## Fleet-delivered secrets
 
-When a Fleet Agent manages this namespace, Edge Function secrets saved in
-Studio reach the `functions` Deployment without passing through Fleet Control
-in plaintext:
+When a Fleet Agent manages this namespace, Edge Function secrets and Auth
+settings saved in Studio reach the `functions` and `auth` Deployments without
+passing through Fleet Control in plaintext:
 
 - Studio seals the secrets to the Agent's recipient key.
-- The Agent opens them, writes the Secret `supabase-fleet-functions-secrets`
+- The Agent opens them, writes the Secret `supabase-fleet-<service>-secrets`
   with server-side apply (field manager `supabase-fleet-secrets`), and restarts
-  `functions` by setting the pod template annotation
+  the Deployment by setting the pod template annotation
   `supabase.com/fleet-secrets-digest`. It waits for the rollout and restores
   the previous Secret if the new pods do not become available.
-- `19-functions.yaml` reads that Secret with an optional `envFrom`.
+- `19-functions.yaml` and `11-core.yaml` read that Secret with an optional
+  `envFrom`. For Auth, Studio seals every saved setting, not only secrets,
+  because Kubernetes has no plain override file.
 
 Run the Agent with `--adapter=kubernetes --kubernetes-namespace=supabase
---kubernetes-secret-services=functions --advertise-config-reconcile`, under a
+--kubernetes-secret-services=functions,auth --advertise-config-reconcile`, under a
 service account limited as in [`../fleet-agent`](../fleet-agent/README.md), which deploys it. The Agent never
 takes over a Secret whose data another field manager owns.
 
-Auth settings are not delivered this way yet: `11-core.yaml` sets `GOTRUE_*`
-with `env`, which wins over `envFrom`.
+Entries under `env` win over every `envFrom` source. So `auth` sets only
+wiring Fleet must not change (database URL, listen address, external URL, JWT
+secret and claims) with `env`. Its configurable `GOTRUE_*` defaults come from the
+Secret `auth-defaults`, which `deploy.sh` builds from `docker/.env` and which
+`envFrom` lists before the Fleet Secret. `auth-apply.kubernetes.test.ts` in
+Studio fails if `env` sets a variable an Auth setting could deliver.
 
 ## compose → k8s gotchas (each cost real debugging)
 
