@@ -1,0 +1,37 @@
+# Least-privilege identity for the Fleet Agent in the `supabase` namespace.
+#
+# Secrets: the Agent reads and server-side applies only the Fleet-owned Secret
+# of each service in FLEET_AGENT_KUBERNETES_SECRET_SERVICES. Kubernetes cannot
+# limit `create` by name, and server-side apply creates the Secret on the first
+# apply, so `create` is namespace-wide; the Agent itself only ever writes
+# supabase-fleet-<service>-secrets.
+# Deployments: the Agent reads them and patches the pod template annotation
+# that restarts them.
+#
+# Keep resourceNames in step with FLEET_AGENT_KUBERNETES_SECRET_SERVICES.
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: fleet-agent, namespace: supabase, labels: { app: fleet-agent } }
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata: { name: fleet-agent, namespace: supabase, labels: { app: fleet-agent } }
+rules:
+  - apiGroups: [""]
+    resources: [secrets]
+    verbs: [create]
+  - apiGroups: [""]
+    resources: [secrets]
+    resourceNames: [supabase-fleet-functions-secrets]
+    verbs: [get, patch]
+  - apiGroups: [apps]
+    resources: [deployments]
+    resourceNames: [functions]
+    verbs: [get, patch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: { name: fleet-agent, namespace: supabase, labels: { app: fleet-agent } }
+roleRef: { apiGroup: rbac.authorization.k8s.io, kind: Role, name: fleet-agent }
+subjects:
+  - { kind: ServiceAccount, name: fleet-agent, namespace: supabase }

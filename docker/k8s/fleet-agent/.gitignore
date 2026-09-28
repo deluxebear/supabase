@@ -1,0 +1,3 @@
+# Local enrollment inputs: binding identity, single-use token, and CA.
+fleet-agent.env
+*.crt

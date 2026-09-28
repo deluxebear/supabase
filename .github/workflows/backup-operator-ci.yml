@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - apps/backup-operator/**
+      - docker/k8s/fleet-agent/**
       - apps/studio/components/interfaces/Database/Backups/**
       - apps/studio/data/backup-operator/**
       - apps/studio/lib/api/self-platform/backup-operator-client*
@@ -15,6 +16,7 @@ on:
     branches: [master, main, custom/main]
     paths:
       - apps/backup-operator/**
+      - docker/k8s/fleet-agent/**
       - apps/studio/components/interfaces/Database/Backups/**
       - apps/studio/data/backup-operator/**
       - apps/studio/lib/api/self-platform/backup-operator-client*

@@ -73,7 +73,7 @@ in plaintext:
 
 Run the Agent with `--adapter=kubernetes --kubernetes-namespace=supabase
 --kubernetes-secret-services=functions --advertise-config-reconcile`, under a
-service account limited as in `fleet-agent-rbac.example.yaml`. The Agent never
+service account limited as in [`../fleet-agent`](../fleet-agent/README.md), which deploys it. The Agent never
 takes over a Secret whose data another field manager owns.
 
 Auth settings are not delivered this way yet: `11-core.yaml` sets `GOTRUE_*`

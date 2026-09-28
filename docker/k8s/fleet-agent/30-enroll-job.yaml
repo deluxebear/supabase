@@ -1,0 +1,49 @@
+# One-time enrollment. Exchanges the single-use token for the Agent's mTLS
+# certificate and writes it to the state volume. deploy.sh runs it only when
+# the Agent has not enrolled yet. The image is distroless, so this is a Job
+# rather than an init step of the Agent.
+apiVersion: batch/v1
+kind: Job
+metadata: { name: fleet-agent-enroll, namespace: supabase, labels: { app: fleet-agent } }
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata: { labels: { app: fleet-agent-enroll } }
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: enroll
+          image: FLEET_AGENT_IMAGE
+          command: [/usr/local/bin/fleet-agent-bootstrap]
+          envFrom:
+            - configMapRef: { name: fleet-agent-identity }
+          env:
+            - { name: FLEET_AGENT_DEPLOYMENT_KIND, value: kubernetes }
+            - { name: FLEET_AGENT_ENROLLMENT_TOKEN, valueFrom: { secretKeyRef: { name: fleet-agent-enrollment, key: token } } }
+            - { name: FLEET_AGENT_ENROLLMENT_SERVER_CA, value: /etc/fleet-agent/enrollment/ca.crt }
+            - { name: FLEET_AGENT_CAPABILITIES_FILE, value: /etc/fleet-agent/capabilities.json }
+            - { name: FLEET_AGENT_TRUST_OUTPUT, value: /var/lib/fleet-agent/trust }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          resources:
+            requests: { cpu: 10m, memory: 32Mi }
+            limits: { memory: 64Mi }
+          volumeMounts:
+            - { name: state, mountPath: /var/lib/fleet-agent }
+            - { name: capabilities, mountPath: /etc/fleet-agent/capabilities.json, subPath: capabilities.json, readOnly: true }
+            - { name: enrollment, mountPath: /etc/fleet-agent/enrollment, readOnly: true }
+      volumes:
+        - { name: state, persistentVolumeClaim: { claimName: fleet-agent-state } }
+        - { name: capabilities, configMap: { name: fleet-agent-capabilities } }
+        - name: enrollment
+          secret: { secretName: fleet-agent-enrollment, items: [{ key: ca.crt, path: ca.crt }] }

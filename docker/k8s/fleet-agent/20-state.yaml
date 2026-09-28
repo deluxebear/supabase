@@ -1,0 +1,26 @@
+# Durable Agent state: mTLS trust from enrollment, the execution journal, the
+# singleton lock, and the X25519 key that opens sealed secrets. Losing it means
+# enrolling again and re-applying sealed secrets for the new key.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: { name: fleet-agent-state, namespace: supabase, labels: { app: fleet-agent } }
+spec:
+  accessModes: [ReadWriteOnce]
+  resources: { requests: { storage: 1Gi } }
+---
+# Capabilities declared at enrollment. The Agent advertises what it actually
+# runs on every connection; Fleet Control accepts only registered capabilities.
+apiVersion: v1
+kind: ConfigMap
+metadata: { name: fleet-agent-capabilities, namespace: supabase, labels: { app: fleet-agent } }
+data:
+  capabilities.json: |
+    [
+      {
+        "domain": "fleet.runtime",
+        "name": "runtime.config.reconcile",
+        "contractVersion": "v1",
+        "inputSchema": "supabase.fleet.runtime.config.reconcile.v1",
+        "evidenceSchema": "supabase.fleet.runtime.config.evidence.v1"
+      }
+    ]
