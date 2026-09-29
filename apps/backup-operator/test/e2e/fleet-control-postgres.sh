@@ -15,4 +15,4 @@ trap cleanup EXIT
 (cd "$root" && \
   FLEET_CONTROL_TEST_POSTGRES_DSN="postgres://fleet_control:fleet-control-test@127.0.0.1:${port}/fleet_control?sslmode=disable" \
     go test ./internal/fleetcontrol -run '^TestFleetPostgresStoreCompatibility$' -count=1)
-printf 'RESULT=PASS fleet_store=postgres schema_version=7 lifecycle_plan=exact-single-use backup_domain_tables=absent\n'
+printf 'RESULT=PASS fleet_store=postgres schema_version=current lifecycle_plan=exact-single-use backup_domain_tables=absent\n'

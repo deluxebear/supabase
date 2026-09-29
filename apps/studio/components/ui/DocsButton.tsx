@@ -1,6 +1,8 @@
 import { BookOpen } from 'lucide-react'
 import { Button } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface DocsButtonProps {
   href: string
   abbrev?: boolean
@@ -25,7 +27,7 @@ export const DocsButton = ({ href, abbrev = true, className, topic, label }: Doc
         href={href}
         aria-label={topic ? `${topic} documentation (opens in new tab)` : undefined}
       >
-        {label ?? (abbrev ? 'Docs' : 'Documentation')}
+        {label ?? (abbrev ? $t('Docs') : $t('Documentation'))}
       </a>
     </Button>
   )

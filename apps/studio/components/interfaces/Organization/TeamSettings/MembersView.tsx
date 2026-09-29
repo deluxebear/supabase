@@ -190,7 +190,12 @@ export const MembersView = ({ searchString }: MembersViewProps) => {
                 <TableFooter className="font-normal">
                   <TableRow className="border-b-0 [&>td]:hover:bg-inherit">
                     <TableCell colSpan={4} className="text-foreground-muted">
-                      {searchString ? '{{filtered}} of {{total}} members' : '{{count}} members'}
+                      {searchString
+                        ? $t('{{filtered}} of {{total}} members', {
+                            filtered: filteredMembers.length,
+                            total: members.length,
+                          })
+                        : $t('{{count}} members', { count: members.length })}
                     </TableCell>
                   </TableRow>
                 </TableFooter>

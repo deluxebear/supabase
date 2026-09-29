@@ -235,7 +235,7 @@ export const LayoutHeader = ({
                 <div className="flex items-center gap-1 md:gap-2">
                   <CommandMenuTriggerInput
                     showShortcut={commandMenuEnabled}
-                    placeholder={'Search...'}
+                    placeholder={$t('Search...')}
                     className={cn(
                       'hidden md:flex md:min-w-32 xl:min-w-32 rounded-full',
                       '[&_.command-shortcut]:border-none',
