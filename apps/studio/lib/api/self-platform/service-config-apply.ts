@@ -26,6 +26,7 @@ import { commitDesiredConfiguration, type JsonValue } from './desired-state'
 import {
   getAgentSecretRecipient,
   getProjectManagementBinding,
+  syncProjectManagementBinding,
   type AgentSecretRecipient,
   type ManagementBinding,
 } from './management-trust'
@@ -382,7 +383,12 @@ export async function loadServiceConfigApplyPlan(input: {
   hasPlainSettings: boolean
 }) {
   const { spec, projectRef } = input
-  const binding = await getProjectManagementBinding(projectRef)
+  const storedBinding = await getProjectManagementBinding(projectRef)
+  // Capability observations expire even while the Agent remains connected.
+  // Refresh before checking availability, including when a stale binding recovers.
+  const binding = storedBinding
+    ? await syncProjectManagementBinding({ projectRef, ...input.request })
+    : null
   const [desired, operation, checkedAvailability, policies] = await Promise.all([
     readDesired(projectRef, spec),
     readLatestApplyOperation(projectRef, spec.domain),

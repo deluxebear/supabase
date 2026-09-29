@@ -1,10 +1,15 @@
 import { generateKeyPairSync } from 'node:crypto'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { CapabilityUnavailable, requireProjectCapability } from './attachment'
 import { executePlatformQuery } from './db'
 import { commitDesiredConfiguration } from './desired-state'
 import { applyFunctionSecrets, getFunctionSecretsApplyStatus } from './function-secrets-apply'
-import { getAgentSecretRecipient, getProjectManagementBinding } from './management-trust'
+import {
+  getAgentSecretRecipient,
+  getProjectManagementBinding,
+  syncProjectManagementBinding,
+} from './management-trust'
 import { sealedSecretKeyId } from './sealed-secret'
 
 vi.mock('./attachment', async (importOriginal) => ({
@@ -19,6 +24,7 @@ vi.mock('./desired-state', async (importOriginal) => ({
 vi.mock('./management-trust', () => ({
   getProjectManagementBinding: vi.fn(),
   getAgentSecretRecipient: vi.fn(),
+  syncProjectManagementBinding: vi.fn(),
 }))
 vi.mock('./ownership-policy', () => ({
   listProjectOwnershipPolicies: vi
@@ -40,6 +46,7 @@ const publicKey = (
 const request = { actor: 'user-1', correlationId: 'correlation-1' }
 
 beforeEach(() => {
+  vi.mocked(requireProjectCapability).mockReset().mockResolvedValue(undefined)
   vi.mocked(executePlatformQuery).mockResolvedValue({ data: [], error: undefined })
   vi.mocked(commitDesiredConfiguration).mockReset()
   vi.mocked(getProjectManagementBinding).mockResolvedValue({
@@ -50,6 +57,13 @@ beforeEach(() => {
     deploymentKind: 'kubernetes',
     managementTargetId: 'target-1',
   } as never)
+  vi.mocked(syncProjectManagementBinding)
+    .mockReset()
+    .mockImplementation(async ({ projectRef }) => {
+      const binding = await getProjectManagementBinding(projectRef)
+      if (!binding) throw new Error('No binding')
+      return binding
+    })
   vi.mocked(getAgentSecretRecipient).mockResolvedValue({
     keyId: sealedSecretKeyId(publicKey),
     publicKey,
@@ -128,5 +142,62 @@ describe('Edge Function secrets on Kubernetes targets', () => {
         ...request,
       })
     ).rejects.toThrow('Fleet Control unavailable')
+  })
+})
+
+describe('Edge Function secret capability freshness', () => {
+  it('refreshes expired observations and a stale Compose binding before checking capabilities', async () => {
+    const activeBinding = await getProjectManagementBinding('project-a')
+    if (!activeBinding) throw new Error('Missing test binding')
+    vi.mocked(getProjectManagementBinding).mockResolvedValue({
+      ...activeBinding,
+      state: 'stale',
+      deploymentKind: 'compose',
+    })
+    let refreshed = false
+    vi.mocked(syncProjectManagementBinding).mockImplementation(async () => {
+      refreshed = true
+      return { ...activeBinding, deploymentKind: 'compose' }
+    })
+    vi.mocked(requireProjectCapability).mockImplementation(async (_, capability) => {
+      if (!refreshed) throw new CapabilityUnavailable(capability, [])
+    })
+
+    const status = await getFunctionSecretsApplyStatus('project-a', request)
+
+    expect(syncProjectManagementBinding).toHaveBeenCalledWith({
+      projectRef: 'project-a',
+      ...request,
+    })
+    expect(requireProjectCapability).toHaveBeenCalledWith('project-a', 'runtime.config.reconcile')
+    expect(requireProjectCapability).toHaveBeenCalledWith('project-a', 'runtime.rollout')
+    expect(status).toMatchObject({ availability: { isAvailable: true }, state: 'pending' })
+  })
+
+  it('does not commit secrets when capability synchronization fails', async () => {
+    vi.mocked(syncProjectManagementBinding).mockRejectedValue(
+      new Error('Fleet Control unavailable')
+    )
+    await expect(
+      applyFunctionSecrets({
+        projectRef: 'project-a',
+        expectedGeneration: 0,
+        confirmOwnership: false,
+        idempotencyKey: 'unavailable',
+        ...request,
+      })
+    ).rejects.toThrow('Fleet Control unavailable')
+    expect(requireProjectCapability).not.toHaveBeenCalled()
+    expect(commitDesiredConfiguration).not.toHaveBeenCalled()
+  })
+
+  it('keeps an unbound project unavailable without requesting synchronization', async () => {
+    vi.mocked(getProjectManagementBinding).mockResolvedValue(null)
+    const status = await getFunctionSecretsApplyStatus('project-a', request)
+    expect(status.availability).toMatchObject({
+      isAvailable: false,
+      code: 'management_target_unbound',
+    })
+    expect(syncProjectManagementBinding).not.toHaveBeenCalled()
   })
 })

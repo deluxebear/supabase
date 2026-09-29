@@ -8,7 +8,11 @@ import { DEFAULTS, SECRET_FIELDS } from './auth-config'
 import { authEnvName } from './auth-runtime'
 import { executePlatformQuery } from './db'
 import { commitDesiredConfiguration } from './desired-state'
-import { getAgentSecretRecipient, getProjectManagementBinding } from './management-trust'
+import {
+  getAgentSecretRecipient,
+  getProjectManagementBinding,
+  syncProjectManagementBinding,
+} from './management-trust'
 import { sealedSecretKeyId, sealSecret } from './sealed-secret'
 
 vi.mock('./attachment', async (importOriginal) => ({
@@ -23,6 +27,7 @@ vi.mock('./desired-state', async (importOriginal) => ({
 vi.mock('./management-trust', () => ({
   getProjectManagementBinding: vi.fn(),
   getAgentSecretRecipient: vi.fn(),
+  syncProjectManagementBinding: vi.fn(),
 }))
 vi.mock('./ownership-policy', () => ({
   listProjectOwnershipPolicies: vi
@@ -63,6 +68,13 @@ beforeEach(() => {
     deploymentKind: 'kubernetes',
     managementTargetId: 'target-1',
   } as never)
+  vi.mocked(syncProjectManagementBinding)
+    .mockReset()
+    .mockImplementation(async ({ projectRef }) => {
+      const binding = await getProjectManagementBinding(projectRef)
+      if (!binding) throw new Error('No binding')
+      return binding
+    })
   vi.mocked(getAgentSecretRecipient).mockResolvedValue({
     keyId: sealedSecretKeyId(publicKey),
     publicKey,

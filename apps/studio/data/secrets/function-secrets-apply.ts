@@ -10,6 +10,7 @@ import { z } from 'zod'
 import { secretsKeys } from './keys'
 import { constructHeaders } from '@/data/fetchers'
 import { STUDIO_CAPABILITIES, STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
+import { uuidv4 } from '@/lib/helpers'
 import { ResponseError } from '@/types'
 
 // [self-platform] Whether stored Edge Function secrets reach the project's
@@ -102,7 +103,7 @@ async function applyFunctionSecrets({
     method: 'POST',
     headers: await constructHeaders({
       'Content-Type': 'application/json',
-      'Idempotency-Key': crypto.randomUUID(),
+      'Idempotency-Key': uuidv4(),
     }),
     body: JSON.stringify({ expectedGeneration, confirmOwnership }),
   })
