@@ -39,6 +39,10 @@ const SignInMfaPage: NextPageWithLayout = () => {
 
   // This useEffect redirects the user to MFA if they're already halfway signed in
   useEffect(() => {
+    // On a direct visit, Next.js hydrates query parameters after the first
+    // render. Wait so a reauthentication request cannot be treated as a login.
+    if (!router.isReady) return
+
     auth
       .initialize()
       .then(async ({ error }) => {
@@ -89,7 +93,7 @@ const SignInMfaPage: NextPageWithLayout = () => {
         router.push({ pathname: '/sign-in', query: router.query })
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [forceReauthentication])
+  }, [router.isReady, forceReauthentication])
 
   if (loading) {
     return (
