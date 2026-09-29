@@ -36,8 +36,9 @@ interface EdgeFunctionsSortDropdownProps {
 }
 
 function getSortLabel(value: EdgeFunctionsSort) {
-  const [sortCol] = value.split(':')
-  return sortCol.replace('_', ' ')
+  if (value.startsWith('name:')) return $t('Name')
+  if (value.startsWith('created_at:')) return $t('Created at')
+  return $t('Updated at')
 }
 
 export const EdgeFunctionsSortDropdown = ({ value, onChange }: EdgeFunctionsSortDropdownProps) => {
