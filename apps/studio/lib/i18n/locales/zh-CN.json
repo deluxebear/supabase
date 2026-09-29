@@ -1578,6 +1578,7 @@
   "Clear the stored metrics token": "清除已保存的指标端点令牌",
   "Clear the stored publishable key": "清除已保存的 publishable 密钥",
   "Clear the stored secret key": "清除已保存的 secret 密钥",
+  "Clear time range": "清除时间范围",
   "Clear user filter": "清除用户筛选",
   "Clear user selection": "清除用户选择",
   "Clear your browser storage": "清除您的浏览器存储",

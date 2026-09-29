@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import { enUS, zhCN } from 'date-fns/locale'
 import { Clock, HistoryIcon, Lock } from 'lucide-react'
 import type { PropsWithChildren } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -25,6 +26,7 @@ import { TimeSplitInput } from '@/components/ui/DatePicker/TimeSplitInput'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { t as $t } from '@/lib/i18n'
+import { useLocale } from '@/lib/i18n/I18nProvider'
 import type { ShortcutId } from '@/state/shortcuts/registry'
 
 export type DatePickerValue = {
@@ -72,6 +74,8 @@ export const LogsDatePicker = ({
   shortcutId,
   variant = 'popover',
 }: PropsWithChildren<LogsDatePickerProps>) => {
+  const { locale } = useLocale()
+  const calendarLocale = locale === 'zh-CN' ? zhCN : enUS
   const [internalOpen, setInternalOpen] = useState(false)
   const isControlled = openProp !== undefined
   const open = variant === 'inline' || (isControlled ? openProp : internalOpen)
@@ -288,7 +292,7 @@ export const LogsDatePicker = ({
   const triggerButton = (
     <PopoverTrigger asChild>
       <Button icon={<Clock size={12} />} {...buttonTriggerProps}>
-        {value.isHelper ? value.text : formatDateRange(value.from, value.to)}
+        {value.isHelper && value.text ? $t(value.text) : formatDateRange(value.from, value.to)}
       </Button>
     </PopoverTrigger>
   )
@@ -325,7 +329,7 @@ export const LogsDatePicker = ({
                 disabled={helper.disabled}
                 aria-disabled={helper.disabled}
               />
-              {helper.text}
+              {$t(helper.text)}
               {showHelperBadge(helper) ? (
                 <Lock size={12} className="text-foreground-muted" />
               ) : null}
@@ -369,7 +373,7 @@ export const LogsDatePicker = ({
             <ButtonTooltip
               tooltip={{
                 content: {
-                  text: 'Clear time range',
+                  text: $t('Clear time range'),
                 },
               }}
               icon={<HistoryIcon size={14} />}
@@ -385,6 +389,7 @@ export const LogsDatePicker = ({
         </div>
         <div className="border-t">
           <Calendar
+            locale={calendarLocale}
             mode="range"
             month={currentMonth}
             onMonthChange={(month) => setCurrentMonth(new Date(month))}
