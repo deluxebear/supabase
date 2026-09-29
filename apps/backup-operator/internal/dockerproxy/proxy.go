@@ -576,6 +576,19 @@ func forceProjectFilter(query url.Values, project string) (url.Values, error) {
 			return nil, errors.New("Docker filters must be a JSON object")
 		}
 	}
+	// Docker decodes the entire filter object as either lists or sets. Mixing
+	// an injected label list with Compose's other set filters is invalid.
+	for name, raw := range filters {
+		values, err := decodeFilterValues(raw)
+		if err != nil {
+			return nil, err
+		}
+		encoded, err := json.Marshal(values)
+		if err != nil {
+			return nil, err
+		}
+		filters[name] = encoded
+	}
 	labels, err := decodeFilterValues(filters["label"])
 	if err != nil {
 		return nil, err

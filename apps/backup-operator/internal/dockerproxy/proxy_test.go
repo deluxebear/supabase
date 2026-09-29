@@ -156,6 +156,22 @@ func TestForceProjectFilterKeepsOtherLabels(t *testing.T) {
 	}
 }
 
+func TestForceProjectFilterNormalizesComposeSets(t *testing.T) {
+	query, err := forceProjectFilter(map[string][]string{"filters": {`{"label":{"com.docker.compose.project=managed-a":true},"status":{"running":true,"paused":false}}`}}, "managed-a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Docker accepts a uniform map of lists, but rejects a mixture of lists
+	// and sets even when every individual filter is valid.
+	var filters map[string][]string
+	if err := json.Unmarshal([]byte(query.Get("filters")), &filters); err != nil {
+		t.Fatalf("filters are not a uniform Docker encoding: %v", err)
+	}
+	if len(filters["label"]) != 1 || filters["label"][0] != composeProjectLabel+"=managed-a" || len(filters["status"]) != 1 || filters["status"][0] != "running" {
+		t.Fatalf("unexpected filters %v", filters)
+	}
+}
+
 func TestNewRequiresConfiguration(t *testing.T) {
 	if _, err := New(Config{ComposeProject: "a", Rules: ReadOnlyInventoryRules()}); err == nil {
 		t.Fatal("expected missing socket error")
