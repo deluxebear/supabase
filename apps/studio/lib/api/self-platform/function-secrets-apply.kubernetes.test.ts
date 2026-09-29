@@ -108,4 +108,25 @@ describe('Edge Function secrets on Kubernetes targets', () => {
     ).rejects.toMatchObject({ code: 'apply_unavailable' })
     expect(commitDesiredConfiguration).not.toHaveBeenCalled()
   })
+
+  it('says a failed key lookup is temporary instead of asking for an Agent upgrade', async () => {
+    vi.mocked(getAgentSecretRecipient).mockRejectedValue(new Error('Fleet Control unavailable'))
+    const status = await getFunctionSecretsApplyStatus('project-a', request)
+    expect(status.availability).toMatchObject({
+      isAvailable: false,
+      code: 'secret_recipient_lookup_failed',
+    })
+    if (!status.availability.isAvailable) {
+      expect(status.availability.message).not.toContain('Upgrade')
+    }
+    await expect(
+      applyFunctionSecrets({
+        projectRef: 'project-a',
+        expectedGeneration: 0,
+        confirmOwnership: false,
+        idempotencyKey: 'key-3',
+        ...request,
+      })
+    ).rejects.toThrow('Fleet Control unavailable')
+  })
 })

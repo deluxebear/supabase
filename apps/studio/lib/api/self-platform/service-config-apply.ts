@@ -402,15 +402,25 @@ export async function loadServiceConfigApplyPlan(input: {
     plaintext = toComposeOverrideYaml(spec.service, input.secretsEnv, spec.secretsHeader)
 
   let recipient: AgentSecretRecipient | null = null
+  let isRecipientLookupFailed = false
   if (binding && availability.isAvailable && plaintext !== null) {
     try {
       recipient = await getAgentSecretRecipient({ projectRef, ...input.request })
     } catch (error) {
-      // Status degrades to "secrets skipped"; an apply must not silently drop them.
+      // An apply must not silently drop secrets; the status explains instead.
       if (input.isStrict) throw error
+      isRecipientLookupFailed = true
     }
   }
-  if (isKubernetes && availability.isAvailable && recipient === null) {
+  if (availability.isAvailable && isRecipientLookupFailed) {
+    // Apply would fail the same lookup, so neither adapter can apply now.
+    availability = {
+      isAvailable: false,
+      code: 'secret_recipient_lookup_failed',
+      message:
+        "Studio could not read the Fleet Agent's key for receiving secrets from Fleet Control. Try again shortly.",
+    }
+  } else if (isKubernetes && availability.isAvailable && recipient === null) {
     availability = {
       isAvailable: false,
       code: 'secret_recipient_unavailable',
