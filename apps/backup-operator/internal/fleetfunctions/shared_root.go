@@ -38,6 +38,10 @@ func deployOnSharedRoot(ctx context.Context, request Request, p sharedRootDeploy
 	if err != nil {
 		return Evidence{}, err
 	}
+	previousVerifyJWT, err := runtimeVerifyJWT(projectRoot, request.Deployment.Slug)
+	if err != nil {
+		return Evidence{}, err
+	}
 	switcher := p.Switch
 	if switcher == nil {
 		switcher = switchPointer
@@ -51,7 +55,7 @@ func deployOnSharedRoot(ctx context.Context, request Request, p sharedRootDeploy
 	}
 	var rolloutErr error
 	if request.Deployment.Action == ActionDeploy {
-		rolloutErr = activateComposeRuntime(projectRoot, root, request.Deployment.Slug, desired)
+		rolloutErr = activateComposeRuntime(projectRoot, root, request.Deployment.Slug, desired, &request.Deployment.VerifyJWT)
 	} else {
 		rolloutErr = removeComposeRuntime(projectRoot, root, request.Deployment.Slug)
 	}
@@ -84,7 +88,7 @@ func deployOnSharedRoot(ctx context.Context, request Request, p sharedRootDeploy
 		if previous == "" {
 			rollbackErr = removeComposeRuntime(projectRoot, root, request.Deployment.Slug)
 		} else {
-			rollbackErr = activateComposeRuntime(projectRoot, root, request.Deployment.Slug, previous)
+			rollbackErr = activateComposeRuntime(projectRoot, root, request.Deployment.Slug, previous, previousVerifyJWT)
 		}
 		if rollbackErr != nil {
 			evidence.Status = "manual-intervention"

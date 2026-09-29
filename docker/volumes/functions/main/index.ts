@@ -165,8 +165,50 @@ async function isValidHybridJWT(jwt: string): Promise<AuthFailure | null> {
   }
 }
 
+async function shouldVerifyJWT(serviceName: string | undefined): Promise<boolean> {
+  if (!serviceName || serviceName === '__fleet_probe') return VERIFY_JWT
+  if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,62}$/.test(serviceName)) return VERIFY_JWT
+
+  const runtimePath = `/home/deno/functions/${serviceName}`
+  let revision: string
+  try {
+    revision = (await Deno.readTextFile(`${runtimePath}/.fleet-runtime-revision`)).trim()
+  } catch (error) {
+    if (error instanceof Deno.errors.NotFound) return VERIFY_JWT
+    throw error
+  }
+  if (!/^[0-9a-f]{64}$/.test(revision)) {
+    throw new Error('Fleet function runtime revision is invalid')
+  }
+
+  let setting: string
+  try {
+    setting = (await Deno.readTextFile(`${runtimePath}/.fleet-runtime-verify-jwt`)).trim()
+  } catch (error) {
+    // Existing Fleet deployments predate per-function settings.
+    if (error instanceof Deno.errors.NotFound) return VERIFY_JWT
+    throw error
+  }
+  if (setting === 'true') return true
+  if (setting === 'false') return false
+  throw new Error('Fleet function runtime JWT setting is invalid')
+}
+
 Deno.serve(async (req: Request) => {
-  if (req.method !== 'OPTIONS' && VERIFY_JWT) {
+  const url = new URL(req.url)
+  const { pathname } = url
+  const path_parts = pathname.split('/')
+  const service_name = path_parts[1]
+
+  let verifyJWT: boolean
+  try {
+    verifyJWT = await shouldVerifyJWT(service_name)
+  } catch (error) {
+    console.error(error)
+    return Response.json({ msg: 'Function runtime configuration is invalid' }, { status: 500 })
+  }
+
+  if (req.method !== 'OPTIONS' && verifyJWT) {
     try {
       const token = getAuthToken(req)
       if (typeof token !== 'string') {
@@ -184,11 +226,6 @@ Deno.serve(async (req: Request) => {
       })
     }
   }
-
-  const url = new URL(req.url)
-  const { pathname } = url
-  const path_parts = pathname.split('/')
-  const service_name = path_parts[1]
 
   // Fleet checks the active revision without invoking user code. A function may
   // accept only POST requests or require a request body, so its handler is not

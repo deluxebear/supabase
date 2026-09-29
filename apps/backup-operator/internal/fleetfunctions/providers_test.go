@@ -97,6 +97,42 @@ func TestComposeProviderActivatesImmutableRevisionAndRollsBackFailedProbe(t *tes
 	}
 }
 
+func TestComposeProviderAppliesFunctionJWTSettingAndRestoresItOnRollback(t *testing.T) {
+	root := t.TempDir()
+	request := deploymentRequest(t, AdapterCompose, "export default 1")
+	request.Deployment.VerifyJWT = true
+	provider := ComposeProvider{Root: root, Prober: ProbeFunc(func(context.Context, string, bool) error { return nil })}
+	settingsPath := filepath.Join(root, projectKey(request.ProjectRef), request.Deployment.Slug, composeRuntimeVerifyJWTFile)
+	assertSetting := func(want string) {
+		t.Helper()
+		value, err := os.ReadFile(settingsPath)
+		if err != nil || string(value) != want {
+			t.Fatalf("runtime JWT setting = %q, %v; want %q", value, err, want)
+		}
+	}
+	if _, err := provider.Deploy(context.Background(), request); err != nil {
+		t.Fatal(err)
+	}
+	assertSetting("true")
+
+	request.ExpectedGeneration = 2
+	request.Deployment.VerifyJWT = false
+	if _, err := provider.Deploy(context.Background(), request); err != nil {
+		t.Fatal(err)
+	}
+	assertSetting("false")
+
+	request.ExpectedGeneration = 3
+	request.Deployment.VerifyJWT = true
+	provider.Prober = ProbeFunc(func(context.Context, string, bool) error { return errors.New("probe failed") })
+	evidence, err := provider.Deploy(context.Background(), request)
+	var deploymentErr *DeploymentError
+	if !errors.As(err, &deploymentErr) || evidence.Status != "rolled-back" {
+		t.Fatalf("failed settings rollout = %+v, %v", evidence, err)
+	}
+	assertSetting("false")
+}
+
 func TestComposeProviderEntersManualInterventionWhenRollbackPointerFails(t *testing.T) {
 	request := deploymentRequest(t, AdapterCompose, "unsafe")
 	calls := 0

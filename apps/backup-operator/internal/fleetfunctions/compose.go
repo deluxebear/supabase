@@ -32,11 +32,32 @@ func (p ComposeProvider) Deploy(ctx context.Context, request Request) (Evidence,
 }
 
 const (
-	composeRuntimeOwnerFile    = ".fleet-runtime-owner.json"
-	composeRuntimeRevisionFile = ".fleet-runtime-revision"
+	composeRuntimeOwnerFile     = ".fleet-runtime-owner.json"
+	composeRuntimeRevisionFile  = ".fleet-runtime-revision"
+	composeRuntimeVerifyJWTFile = ".fleet-runtime-verify-jwt"
 )
 
-func activateComposeRuntime(projectRoot, artifactRoot, slug, digest string) error {
+func runtimeVerifyJWT(projectRoot, slug string) (*bool, error) {
+	value, err := os.ReadFile(filepath.Join(projectRoot, slug, composeRuntimeVerifyJWTFile))
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	switch string(value) {
+	case "true":
+		verify := true
+		return &verify, nil
+	case "false":
+		verify := false
+		return &verify, nil
+	default:
+		return nil, errors.New("function runtime JWT setting is invalid")
+	}
+}
+
+func activateComposeRuntime(projectRoot, artifactRoot, slug, digest string, verifyJWT *bool) error {
 	if err := os.MkdirAll(projectRoot, 0o750); err != nil {
 		return err
 	}
@@ -62,6 +83,20 @@ func activateComposeRuntime(projectRoot, artifactRoot, slug, digest string) erro
 	}
 	if err := os.WriteFile(filepath.Join(stage, composeRuntimeRevisionFile), []byte(digest), 0o600); err != nil {
 		return err
+	}
+	settingsPath := filepath.Join(stage, composeRuntimeVerifyJWTFile)
+	if verifyJWT == nil {
+		if err := os.Remove(settingsPath); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+	} else {
+		value := "false"
+		if *verifyJWT {
+			value = "true"
+		}
+		if err := os.WriteFile(settingsPath, []byte(value), 0o600); err != nil {
+			return err
+		}
 	}
 	previous, err := os.MkdirTemp(projectRoot, ".runtime-previous-"+slug+"-")
 	if err != nil {
