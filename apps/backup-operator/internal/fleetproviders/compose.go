@@ -142,7 +142,27 @@ func (p ComposeProvider) Reconcile(ctx context.Context, request Request) (Eviden
 	if err != nil {
 		return Evidence{}, err
 	}
+	pruneRevisions(domainRoot, observed.ActiveRevision)
 	return NewEvidence(request, observed, "in-sync", true, nil)
+}
+
+// pruneRevisions removes every Fleet revision except the active one and the
+// operator's bootstrap placeholder, once the active one is in place. Old
+// revisions can hold decrypted secrets, including ones that were rotated
+// away, so none are kept. Failure only leaves files behind, so it is ignored.
+func pruneRevisions(domainRoot, active string) {
+	if active == "" {
+		return
+	}
+	entries, err := os.ReadDir(filepath.Join(domainRoot, "revisions"))
+	if err != nil {
+		return
+	}
+	for _, entry := range entries {
+		if name := entry.Name(); name != active && name != "bootstrap" {
+			_ = os.RemoveAll(filepath.Join(domainRoot, "revisions", name))
+		}
+	}
 }
 
 // materialize decrypts sealed files. It runs before anything is written, so
@@ -192,8 +212,11 @@ func (p ComposeProvider) rolloutServices(ctx context.Context, domainRoot string,
 // the services back onto it. It always returns an error: the desired revision
 // was not applied.
 func (p ComposeProvider) recover(ctx context.Context, domainRoot, previous string, changedFiles bool, services []string, cause error) error {
-	if !changedFiles || previous == "" {
-		return fmt.Errorf("manual_intervention_required: %w; no earlier Fleet revision exists to restore", cause)
+	if !changedFiles {
+		return fmt.Errorf("manual_intervention_required: %w; the configuration files were already in place, so there is nothing to restore; fix the service and apply again", cause)
+	}
+	if previous == "" {
+		return fmt.Errorf("manual_intervention_required: %w; this was the first Fleet revision, so there is no earlier one to restore", cause)
 	}
 	if err := pointCurrent(domainRoot, previous); err != nil {
 		return fmt.Errorf("manual_intervention_required: %w; restoring revision %s failed: %v", cause, previous, err)
@@ -206,6 +229,7 @@ func (p ComposeProvider) recover(ctx context.Context, domainRoot, previous strin
 	if err := writeAtomic(filepath.Join(domainRoot, composeRolloutMarker), []byte(previous), 0o600); err != nil {
 		return fmt.Errorf("manual_intervention_required: %w; recording the restored revision failed: %v", cause, err)
 	}
+	pruneRevisions(domainRoot, previous)
 	return fmt.Errorf("rollout_failed: %w; restored revision %s", cause, previous)
 }
 

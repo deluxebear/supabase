@@ -170,6 +170,9 @@ func (p KubernetesProvider) planKubernetesSecrets(ctx context.Context, secrets [
 // and waits for the rollout. A failed rollout restores the previous Secret
 // and pod template annotation.
 func (p KubernetesProvider) applyKubernetesSecrets(ctx context.Context, plans []kubernetesSecretPlan) error {
+	// done holds the services already switched to their new secrets, so a
+	// later failure restores them too and the document applies all or nothing.
+	done := make([]kubernetesSecretPlan, 0, len(plans))
 	for _, plan := range plans {
 		if !plan.needsApply && !plan.needsRollout {
 			continue
@@ -177,10 +180,11 @@ func (p KubernetesProvider) applyKubernetesSecrets(ctx context.Context, plans []
 		name := KubernetesSecretName(plan.secret.Service)
 		if plan.needsApply {
 			if err := p.Workloads.ApplySecret(ctx, p.SecretNamespace, name, plan.secret.Data, plan.secret.Digest); err != nil {
-				if isKubernetesOwnershipConflict(err) {
+				restoreErr := p.restoreKubernetesSecrets(ctx, done)
+				if isKubernetesOwnershipConflict(err) && restoreErr == nil {
 					return &OwnershipConflictError{Conflicts: []Conflict{kubernetesConflict("core/v1/secrets/"+p.SecretNamespace+"/"+name, "/data", "unknown", "Kubernetes rejected server-side apply because field ownership changed")}}
 				}
-				return fmt.Errorf("apply Secret %s: %w", name, err)
+				return withRestoreOutcome(fmt.Errorf("apply Secret %s: %w", name, err), restoreErr)
 			}
 		}
 		rolloutErr := p.Workloads.RestartDeployment(ctx, p.SecretNamespace, plan.secret.Service, plan.secret.Digest)
@@ -188,14 +192,33 @@ func (p KubernetesProvider) applyKubernetesSecrets(ctx context.Context, plans []
 			rolloutErr = p.waitForRollout(ctx, plan.secret.Service)
 		}
 		if rolloutErr == nil {
+			done = append(done, plan)
 			continue
 		}
-		if restoreErr := p.restoreKubernetesSecret(ctx, plan); restoreErr != nil {
-			return fmt.Errorf("kubernetes_rollout_failed: Deployment %s did not become available (%v), and restoring the previous secrets failed (%v); restore them manually", plan.secret.Service, rolloutErr, restoreErr)
-		}
-		return fmt.Errorf("kubernetes_rollout_failed: Deployment %s did not become available with the new secrets and was restored: %w", plan.secret.Service, rolloutErr)
+		restoreErr := p.restoreKubernetesSecrets(ctx, append(done, plan))
+		return withRestoreOutcome(fmt.Errorf("kubernetes_rollout_failed: Deployment %s did not become available with the new secrets: %w", plan.secret.Service, rolloutErr), restoreErr)
 	}
 	return nil
+}
+
+// restoreKubernetesSecrets restores plans newest first and reports the first
+// failure; it keeps going so as many services as possible return to their
+// previous secrets.
+func (p KubernetesProvider) restoreKubernetesSecrets(ctx context.Context, plans []kubernetesSecretPlan) error {
+	var failures []error
+	for index := len(plans) - 1; index >= 0; index-- {
+		if err := p.restoreKubernetesSecret(ctx, plans[index]); err != nil {
+			failures = append(failures, fmt.Errorf("%s: %w", plans[index].secret.Service, err))
+		}
+	}
+	return errors.Join(failures...)
+}
+
+func withRestoreOutcome(cause, restoreErr error) error {
+	if restoreErr != nil {
+		return fmt.Errorf("manual_intervention_required: %w; restoring the previous secrets failed (%v); restore them manually", cause, restoreErr)
+	}
+	return fmt.Errorf("%w; every service was restored to its previous secrets", cause)
 }
 
 func (p KubernetesProvider) restoreKubernetesSecret(ctx context.Context, plan kubernetesSecretPlan) error {

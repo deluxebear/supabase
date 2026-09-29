@@ -194,3 +194,59 @@ func TestDeploymentRolledOut(t *testing.T) {
 		}
 	}
 }
+
+// multiWorkloads keeps one Secret and pod digest per service.
+type multiWorkloads struct {
+	secrets     map[string]KubernetesSecretState
+	podDigests  map[string]string
+	unavailable map[string]bool
+}
+
+func (w *multiWorkloads) GetSecret(_ context.Context, _, name string) (KubernetesSecretState, error) {
+	return w.secrets[name], nil
+}
+
+func (w *multiWorkloads) ApplySecret(_ context.Context, _, name string, data map[string][]byte, digest string) error {
+	w.secrets[name] = KubernetesSecretState{Exists: true, Type: "Opaque", Data: data, Digest: digest, ManagedFields: map[string][]string{KubernetesSecretFieldManager: {"/data"}}}
+	return nil
+}
+
+func (w *multiWorkloads) GetDeploymentDigest(_ context.Context, _, name string) (string, error) {
+	return w.podDigests[name], nil
+}
+
+func (w *multiWorkloads) RestartDeployment(_ context.Context, _, name, digest string) error {
+	w.podDigests[name] = digest
+	return nil
+}
+
+func (w *multiWorkloads) DeploymentRolledOut(_ context.Context, _, name string) (bool, error) {
+	// The failing service recovers once it is back on its previous secrets.
+	return !w.unavailable[name] || w.podDigests[name] == "old", nil
+}
+
+func TestKubernetesSealedSecretsRestoreEveryServiceWhenOneFails(t *testing.T) {
+	recipient, _ := ecdh.X25519().GenerateKey(rand.Reader)
+	old := func() KubernetesSecretState {
+		return KubernetesSecretState{Exists: true, Type: "Opaque", Data: map[string][]byte{"KEY": []byte("old")}, Digest: "old", ManagedFields: map[string][]string{KubernetesSecretFieldManager: {"/data"}}}
+	}
+	workloads := &multiWorkloads{
+		secrets:     map[string]KubernetesSecretState{KubernetesSecretName("auth"): old(), KubernetesSecretName("functions"): old()},
+		podDigests:  map[string]string{"auth": "old", "functions": "old"},
+		unavailable: map[string]bool{"functions": true},
+	}
+	provider := KubernetesProvider{Workloads: workloads, SecretRecipient: recipient, SecretNamespace: "supabase", SecretServices: []string{"auth", "functions"}, RolloutTimeout: 20 * time.Millisecond, RolloutPollInterval: time.Millisecond}
+	request := sealedKubernetesRequest(t, recipient, "auth", `{"KEY":"new"}`)
+	second := sealedKubernetesRequest(t, recipient, "functions", `{"KEY":"new"}`)
+	request.Document.Kubernetes.Secrets = append(request.Document.Kubernetes.Secrets, second.Document.Kubernetes.Secrets...)
+
+	_, err := provider.Reconcile(context.Background(), request)
+	if err == nil || !strings.Contains(err.Error(), "every service was restored") {
+		t.Fatalf("error = %v", err)
+	}
+	for _, service := range []string{"auth", "functions"} {
+		if got := string(workloads.secrets[KubernetesSecretName(service)].Data["KEY"]); got != "old" || workloads.podDigests[service] != "old" {
+			t.Fatalf("%s kept the new secrets: data=%q pod=%q", service, got, workloads.podDigests[service])
+		}
+	}
+}

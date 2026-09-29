@@ -208,3 +208,64 @@ func TestComposeRevisionPermissions(t *testing.T) {
 		t.Fatalf("restricted revision directory mode = %v, %v", info.Mode().Perm(), err)
 	}
 }
+
+func revisionNames(t *testing.T, root string) []string {
+	t.Helper()
+	entries, err := os.ReadDir(filepath.Join(root, "auth", "revisions"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	names := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		names = append(names, entry.Name())
+	}
+	return names
+}
+
+func TestComposeKeepsOnlyTheActiveRevision(t *testing.T) {
+	root := t.TempDir()
+	bootstrap(t, root)
+	provider := ComposeProvider{OwnedRoot: root, Rollout: &fakeRollouter{root: root}}
+	first := authRequest("services:\n  auth:\n    environment:\n      GOTRUE_SMTP_PASS: \"old\"\n")
+	second := authRequest("services:\n  auth:\n    environment:\n      GOTRUE_SMTP_PASS: \"new\"\n")
+	for _, request := range []Request{first, second} {
+		if _, err := provider.Reconcile(context.Background(), request); err != nil {
+			t.Fatal(err)
+		}
+	}
+	names := revisionNames(t, root)
+	if len(names) != 2 || !containsString(names, "bootstrap") || !containsString(names, second.DesiredDigest) {
+		t.Fatalf("revisions = %v, want only bootstrap and the active one", names)
+	}
+}
+
+func TestComposeRecoveryRemovesTheFailedRevision(t *testing.T) {
+	root := t.TempDir()
+	bootstrap(t, root)
+	rollouter := &fakeRollouter{root: root, failures: map[int]bool{0: true}}
+	request := authRequest("services:\n  auth:\n    environment:\n      GOTRUE_SMTP_PASS: \"leaked\"\n")
+	if _, err := (ComposeProvider{OwnedRoot: root, Rollout: rollouter}).Reconcile(context.Background(), request); err == nil {
+		t.Fatal("expected the rollout to fail")
+	}
+	if names := revisionNames(t, root); len(names) != 1 || names[0] != "bootstrap" {
+		t.Fatalf("revisions = %v, the failed revision must not stay on disk", names)
+	}
+}
+
+func TestComposeRolloutFailureOnUnchangedFilesSaysSo(t *testing.T) {
+	root := t.TempDir()
+	bootstrap(t, root)
+	request := authRequest("services:\n  auth: {}\n")
+	files, err := (ComposeProvider{}).materialize(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := applyComposeRevision(filepath.Join(root, "auth"), composeOwner{ProjectRef: "project-a", TargetID: "target", BindingID: "binding", Domain: "auth"}, request.DesiredDigest, files, 0); err != nil {
+		t.Fatal(err)
+	}
+	rollouter := &fakeRollouter{root: root, failures: map[int]bool{0: true}}
+	_, err = (ComposeProvider{OwnedRoot: root, Rollout: rollouter}).Reconcile(context.Background(), request)
+	if err == nil || !strings.Contains(err.Error(), "already in place") || strings.Contains(err.Error(), "no earlier Fleet revision") {
+		t.Fatalf("error = %v", err)
+	}
+}
