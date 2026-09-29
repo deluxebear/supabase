@@ -21,7 +21,13 @@ async function loadGenDefaultQuery(platform: string, selfPlatform: string) {
   vi.stubEnv('NEXT_PUBLIC_SELF_PLATFORM', selfPlatform)
   const constants = await import('./Logs.constants')
   const utils = await import('./Logs.utils')
-  return { LogsTableName: constants.LogsTableName, genDefaultQuery: utils.genDefaultQuery }
+  return {
+    LogsTableName: constants.LogsTableName,
+    genDefaultQuery: utils.genDefaultQuery,
+    genCountQuery: utils.genCountQuery,
+    genChartQuery: utils.genChartQuery,
+    genSingleLogQuery: utils.genSingleLogQuery,
+  }
 }
 
 afterEach(() => {
@@ -32,25 +38,53 @@ const CLOUD = ['true', ''] as const
 const PG_SELF_PLATFORM = ['true', 'true'] as const
 
 describe('Logs.utils genDefaultQuery dialect', () => {
-  it('self-platform: function invocations select populated fields and filter by function ID', async () => {
+  it('self-platform: function invocations use the normalized message and exact path', async () => {
     const { LogsTableName, genDefaultQuery } = await loadGenDefaultQuery(...PG_SELF_PLATFORM)
     const sql = genDefaultQuery(LogsTableName.FN_EDGE, {
-      'metadata.function_id': 'project-d:quick-endpoint',
+      function_invocation_path: '/functions/v1/quick-endpoint',
     })
 
-    expect(sql).toContain('response.status_code, request.method, request.pathname, m.function_id')
-    expect(sql).toContain("m.function_id = 'project-d:quick-endpoint'")
-    expect(sql).not.toContain('m.execution_time_ms')
-    expect(sql).not.toContain('m.deployment_id')
+    expect(sql).toContain("split_part(event_message, ' | ', 2) as status_code")
+    expect(sql).toContain("split_part(event_message, ' | ', 3) = '/functions/v1/quick-endpoint'")
+    expect(sql).not.toContain('unnest')
   })
 
-  it('self-platform: function ID filter escapes SQL literals', async () => {
+  it('self-platform: function path filter escapes SQL literals', async () => {
     const { LogsTableName, genDefaultQuery } = await loadGenDefaultQuery(...PG_SELF_PLATFORM)
     const sql = genDefaultQuery(LogsTableName.FN_EDGE, {
-      'metadata.function_id': "project-d:it's-safe",
+      function_invocation_path: "/functions/v1/it's-safe",
     })
 
-    expect(sql).toContain("m.function_id = 'project-d:it''s-safe'")
+    expect(sql).toContain("= '/functions/v1/it''s-safe'")
+  })
+
+  it('self-platform: count, chart, and single-log queries avoid unavailable metadata', async () => {
+    const { LogsTableName, genCountQuery, genChartQuery, genSingleLogQuery } =
+      await loadGenDefaultQuery(...PG_SELF_PLATFORM)
+    const filters = {
+      function_invocation_path: '/functions/v1/quick-endpoint',
+      __timestamp_start: '1790697600',
+      __timestamp_end: '1790702400',
+    }
+    const countSql = genCountQuery(LogsTableName.FN_EDGE, filters)
+    const chartSql = genChartQuery(
+      LogsTableName.FN_EDGE,
+      {
+        iso_timestamp_start: '2026-09-29T00:00:00Z',
+        iso_timestamp_end: '2026-09-29T01:00:00Z',
+      },
+      filters
+    )
+    const singleSql = genSingleLogQuery(LogsTableName.FN_EDGE, 'log-1')
+
+    expect(countSql).not.toContain('unnest')
+    expect(countSql).toContain('extract(epoch from timestamp) >= 1790697600')
+    expect(countSql).toContain('extract(epoch from timestamp) < 1790702400')
+    expect(chartSql).toContain("date_trunc('minute', t.timestamp)")
+    expect(chartSql).toContain("split_part(event_message, ' | ', 2) like '5__'")
+    expect(chartSql).not.toContain('unnest')
+    expect(chartSql).not.toContain('t.timestamp >')
+    expect(singleSql).not.toContain('metadata')
   })
 
   it('cloud: edge_logs keeps the identifier column byte-identically', async () => {

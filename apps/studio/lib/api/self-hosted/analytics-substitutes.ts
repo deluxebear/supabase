@@ -55,6 +55,7 @@ const INTERVALS: Record<string, { trunc: 'minute' | 'hour' | 'day'; spanMs: numb
   '5min': { trunc: 'minute', spanMs: 5 * 60_000 },
   '15min': { trunc: 'minute', spanMs: 15 * 60_000 },
   '1hr': { trunc: 'minute', spanMs: 60 * 60_000 },
+  '3hr': { trunc: 'minute', spanMs: 3 * 60 * 60_000 },
   '1day': { trunc: 'hour', spanMs: 24 * 60 * 60_000 },
   '7day': { trunc: 'day', spanMs: 7 * 24 * 60 * 60_000 },
 }
@@ -325,8 +326,9 @@ const buildAuthMetrics: Builder = (projectRef, params) => {
 }
 
 // ---------------------------------------------------------------------------
-// functions.combined-stats — function_edge_logs + function_logs, merged by
-// bucket. function_id is validated against FUNCTION_ID_RE before interpolation.
+// functions.combined-stats — request counts from function_edge_logs. The
+// self-hosted Logflare source retains the normalized invocation message but
+// does not expose the function metadata fields to SQL.
 // ---------------------------------------------------------------------------
 // [self-platform] M6.3 fold-in rider ③: row shapes per each SQL's own select
 // list (functionEdgeSql / functionLogsSql below), and the merged-by-bucket
@@ -339,15 +341,7 @@ interface FunctionEdgeLogsRow {
   client_err_count?: number
   server_err_count?: number
 }
-interface FunctionLogsRow {
-  timestamp: number
-  log_count?: number
-  log_info_count?: number
-  log_warn_count?: number
-  log_error_count?: number
-}
-type FunctionsCombinedStatsBucket = { timestamp: string } & Omit<FunctionEdgeLogsRow, 'timestamp'> &
-  Omit<FunctionLogsRow, 'timestamp'>
+type FunctionsCombinedStatsBucket = { timestamp: string } & Omit<FunctionEdgeLogsRow, 'timestamp'>
 
 const buildFunctionsCombinedStats: Builder = (projectRef, params) => {
   const functionId = params.function_id
@@ -355,39 +349,30 @@ const buildFunctionsCombinedStats: Builder = (projectRef, params) => {
     throw new InvalidAnalyticsParams(`Invalid function_id: ${functionId}`)
   }
   const { trunc, spanMs } = resolveInterval(params.interval)
-  const isoStart = new Date(Date.now() - spanMs).toISOString()
+  const startMs = Date.now() - spanMs
+  const isoStart = new Date(startMs).toISOString()
+  const startEpoch = startMs / 1000
+  const functionSlug = functionId.includes(':')
+    ? functionId.slice(functionId.indexOf(':') + 1)
+    : functionId
+  const pathname = `/functions/v1/${functionSlug}`
 
-  // Request counts come from Kong access logs, normalized by Vector into
-  // function_edge_logs events. Kong's
-  // combined access format has no execution duration, so execution, CPU, and
-  // memory metrics are omitted and remain zero-filled in the UI.
-  const functionEdgeSql = `select timestamp_trunc(t.timestamp, ${trunc}) as timestamp, count(t.id) as requests_count, countif(resp.status_code >= 200 and resp.status_code < 300) as success_count, countif(resp.status_code >= 300 and resp.status_code < 400) as redirect_count, countif(resp.status_code >= 400 and resp.status_code < 500) as client_err_count, countif(resp.status_code >= 500) as server_err_count from function_edge_logs t cross join unnest(t.metadata) as m cross join unnest(m.response) as resp where m.function_id = '${functionId}' group by 1 order by 1 asc`
-
-  const functionLogsSql = `select timestamp_trunc(t.timestamp, ${trunc}) as timestamp, count(t.id) as log_count, countif(m.level = 'info' or m.level = 'log') as log_info_count, countif(m.level = 'warning') as log_warn_count, countif(m.level = 'error') as log_error_count from function_logs t cross join unnest(t.metadata) as m where m.function_id = '${functionId}' group by 1 order by 1 asc`
+  // Vector writes "METHOD | STATUS | PATH" to event_message. Logflare's PG
+  // backend accepts date_trunc but fails on timestamp_trunc for this source.
+  // Kong does not record execution, CPU, memory, or attributable runtime logs.
+  const status = "split_part(t.event_message, ' | ', 2)"
+  const functionEdgeSql = `select date_trunc('${trunc}', t.timestamp) as timestamp, count(t.id) as requests_count, countif(${status} like '2__') as success_count, countif(${status} like '3__') as redirect_count, countif(${status} like '4__') as client_err_count, countif(${status} like '5__') as server_err_count from function_edge_logs t where split_part(t.event_message, ' | ', 3) = '${pathname}' and extract(epoch from t.timestamp) >= ${startEpoch} group by 1 order by 1 asc`
 
   return async () => {
-    const [edgeResult, logsResult] = await Promise.all([
-      retrieveAnalyticsData({
-        name: 'logs.all',
-        projectRef,
-        params: { sql: functionEdgeSql, iso_timestamp_start: isoStart },
-      }),
-      retrieveAnalyticsData({
-        name: 'logs.all',
-        projectRef,
-        params: { sql: functionLogsSql, iso_timestamp_start: isoStart },
-      }),
-    ])
+    const edgeResult = await retrieveAnalyticsData({
+      name: 'logs.all',
+      projectRef,
+      params: { sql: functionEdgeSql, iso_timestamp_start: isoStart },
+    })
     if (edgeResult.error) return { data: undefined, error: edgeResult.error }
-    if (logsResult.error) return { data: undefined, error: logsResult.error }
 
     const buckets = new Map<string, FunctionsCombinedStatsBucket>()
     for (const row of (edgeResult.data?.result ?? []) as FunctionEdgeLogsRow[]) {
-      const { timestamp, ...rest } = row
-      const iso = microsToIso(timestamp)
-      buckets.set(iso, { ...(buckets.get(iso) ?? {}), timestamp: iso, ...rest })
-    }
-    for (const row of (logsResult.data?.result ?? []) as FunctionLogsRow[]) {
       const { timestamp, ...rest } = row
       const iso = microsToIso(timestamp)
       buckets.set(iso, { ...(buckets.get(iso) ?? {}), timestamp: iso, ...rest })

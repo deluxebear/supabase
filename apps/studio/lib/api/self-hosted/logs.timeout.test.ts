@@ -20,6 +20,25 @@ afterEach(() => {
 })
 
 describe('retrieveAnalyticsData timeout (M6.2 D6)', () => {
+  it('treats a successful HTTP response with a Logflare error body as a failed query', async () => {
+    const mod = await loadModule()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ error: 'Backend error! Retry your query.' }),
+      })
+    )
+
+    const { data, error } = await mod.retrieveAnalyticsData({
+      name: 'logs.all',
+      projectRef: 'default',
+      params: {},
+    })
+    expect(data).toBeUndefined()
+    expect(error?.message).toBe('Backend error! Retry your query.')
+  })
+
   it('fetch carries an AbortSignal; an abort resolves to the error shape (no throw)', async () => {
     const mod = await loadModule()
     const fetchMock = vi

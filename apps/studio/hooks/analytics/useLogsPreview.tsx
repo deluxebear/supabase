@@ -33,6 +33,7 @@ import {
 } from '@/components/interfaces/Settings/Logs/Logs.utils.otel'
 import { executeAnalyticsSql } from '@/data/logs/execute-analytics-sql'
 import { logsAllEndpointUrl, pickLogsQueryBuilder } from '@/data/logs/logs-endpoint'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 interface LogsPreviewHook {
   logData: LogData[]
@@ -84,14 +85,31 @@ function useLogsPreview({
     () => urlTimestampEnd || defaultHelper.calcTo(),
     [urlTimestampEnd, defaultHelper]
   )
+  const isSelfPlatformInvocationQuery =
+    IS_SELF_PLATFORM && table === LogsTableName.FN_EDGE && !useOtel
+  const startEpoch = Date.parse(timestampStart) / 1000
+  const endEpoch = Date.parse(timestampEnd) / 1000
 
   const mergedFilters = useMemo(
     () => ({
       ...urlFilters,
       ...filterOverride,
       ...(search ? { search_query: search } : {}),
+      ...(isSelfPlatformInvocationQuery && Number.isFinite(startEpoch)
+        ? { __timestamp_start: String(startEpoch) }
+        : {}),
+      ...(isSelfPlatformInvocationQuery && Number.isFinite(endEpoch)
+        ? { __timestamp_end: String(endEpoch) }
+        : {}),
     }),
-    [JSON.stringify(urlFilters), JSON.stringify(filterOverride), search]
+    [
+      JSON.stringify(urlFilters),
+      JSON.stringify(filterOverride),
+      search,
+      isSelfPlatformInvocationQuery,
+      startEpoch,
+      endEpoch,
+    ]
   )
 
   const defaultSql = useMemo(
@@ -130,10 +148,18 @@ function useLogsPreview({
   } = useInfiniteQuery({
     queryKey,
     queryFn: async ({ signal, pageParam }) => {
+      const pageSql =
+        isSelfPlatformInvocationQuery && pageParam
+          ? genDefaultQuery(
+              table,
+              { ...mergedFilters, __timestamp_end: String(Date.parse(pageParam) / 1000) },
+              limit
+            )
+          : defaultSql
       const data = await executeAnalyticsSql({
         projectRef,
         endpoint: logsAllEndpointUrl(useOtel),
-        sql: defaultSql,
+        sql: pageSql,
         iso_timestamp_start: params.iso_timestamp_start ?? '',
         iso_timestamp_end: (pageParam || params.iso_timestamp_end) ?? '',
         method: 'get',

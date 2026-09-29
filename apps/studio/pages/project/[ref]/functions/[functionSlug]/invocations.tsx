@@ -4,6 +4,7 @@ import { LogsPreviewer } from '@/components/interfaces/Settings/Logs/LogsPreview
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import EdgeFunctionDetailsLayout from '@/components/layouts/EdgeFunctionsLayout/EdgeFunctionDetailsLayout'
 import { useEdgeFunctionQuery } from '@/data/edge-functions/edge-function-query'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
@@ -22,7 +23,11 @@ export const LogPage: NextPageWithLayout = () => {
         condensedLayout
         projectRef={ref as string}
         queryType="fn_edge"
-        filterOverride={{ 'metadata.function_id': selectedFunction.id }}
+        filterOverride={
+          IS_SELF_PLATFORM
+            ? { function_invocation_path: `/functions/v1/${selectedFunction.slug}` }
+            : { 'metadata.function_id': selectedFunction.id }
+        }
       />
     </div>
   )

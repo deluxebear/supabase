@@ -116,9 +116,11 @@ export async function retrieveAnalyticsData({
 
     const result = await response.json()
 
-    if (!response.ok) {
+    if (!response.ok || result?.error) {
+      const reportedError =
+        typeof result?.error === 'string' ? result.error : result?.error?.message
       const error = new Error(
-        result?.error?.message ?? `Failed to retrieve analytics data: ${response.statusText}`
+        reportedError ?? `Failed to retrieve analytics data: ${response.statusText}`
       )
       return { data: undefined, error }
     }

@@ -10,6 +10,7 @@ import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 import { parseEdgeFunctionEventMessage } from './EdgeFunctionRecentInvocations.utils'
 import { LOGS_TABLES } from '@/components/interfaces/Settings/Logs/Logs.constants'
 import useLogsPreview from '@/hooks/analytics/useLogsPreview'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 
 interface EdgeFunctionRecentInvocationsProps {
@@ -29,7 +30,9 @@ export const EdgeFunctionRecentInvocations = ({
   const { logData, isLoading, isSuccess, refresh } = useLogsPreview({
     projectRef: ref as string,
     table: LOGS_TABLES.fn_edge,
-    filterOverride: { function_id: functionId },
+    filterOverride: IS_SELF_PLATFORM
+      ? { function_invocation_path: `/functions/v1/${functionSlug}` }
+      : { function_id: functionId },
     limit: 10,
     enabled,
   })

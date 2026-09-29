@@ -24,6 +24,7 @@ import {
   safeSql,
   type SafeLogSqlFragment,
 } from '@/data/logs/safe-analytics-sql'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 /**
  * Convert a micro timestamp from number/string to iso timestamp
@@ -227,11 +228,13 @@ limit ${limitLit}
     `
 
     case 'function_edge_logs':
-      if (USE_LOGFLARE_PG_SQL) {
+      if (IS_SELF_PLATFORM) {
         return safeSql`
-select id, function_edge_logs.timestamp, event_message, response.status_code, request.method, request.pathname, m.function_id
+select id, function_edge_logs.timestamp, event_message,
+  split_part(event_message, ' | ', 2) as status_code,
+  split_part(event_message, ' | ', 1) as method,
+  split_part(event_message, ' | ', 3) as pathname
 from function_edge_logs
-${joins}
 ${where}
 ${orderBy}
 limit ${limitLit}
@@ -297,6 +300,7 @@ const genCrossJoinUnnests = (table: LogsTableName): SafeLogSqlFragment => {
       return safeSql`cross join unnest(metadata) as metadata`
 
     case 'function_edge_logs':
+      if (IS_SELF_PLATFORM) return safeSql``
       return safeSql`cross join unnest(metadata) as m
   cross join unnest(m.response) as response
   cross join unnest(m.request) as request`
@@ -333,7 +337,10 @@ export const LOG_TABLE_SQL: Record<LogsTableName, SafeLogSqlFragment> = {
  */
 export const genSingleLogQuery = (table: LogsTableName, id: string): SafeLogSqlFragment => {
   // multigres logs have no metadata column
-  const metadataColumn = table === LogsTableName.MULTIGRES ? safeSql`` : safeSql`, metadata`
+  const metadataColumn =
+    table === LogsTableName.MULTIGRES || (IS_SELF_PLATFORM && table === LogsTableName.FN_EDGE)
+      ? safeSql``
+      : safeSql`, metadata`
   return safeSql`select id, timestamp, event_message${metadataColumn} from ${LOG_TABLE_SQL[table]} where id = ${analyticsLiteral(id)} limit 1`
 }
 
@@ -439,14 +446,22 @@ export const genChartQuery = (
 
   const joins = genCrossJoinUnnests(table)
   const tsLit = analyticsLiteral(startOffset.toISOString())
-  const whereFragment: SafeLogSqlFragment = where
-    ? safeSql`${where} and t.timestamp > ${tsLit}`
-    : safeSql`where t.timestamp > ${tsLit}`
+  // The self-platform invocation filter already compares numeric epoch values.
+  // Comparing its timestamp column with an ISO string fails in Logflare SQL.
+  const isSelfPlatformInvocationChart = IS_SELF_PLATFORM && table === LogsTableName.FN_EDGE
+  const whereFragment = isSelfPlatformInvocationChart
+    ? where
+    : where
+      ? safeSql`${where} and t.timestamp > ${tsLit}`
+      : safeSql`where t.timestamp > ${tsLit}`
+  const timestampBucket = isSelfPlatformInvocationChart
+    ? safeSql`date_trunc(${analyticsLiteral(trunc)}, t.timestamp)`
+    : safeSql`timestamp_trunc(t.timestamp, ${TRUNC_SQL[trunc]})`
 
   return safeSql`
 SELECT
 -- log-event-chart
-  timestamp_trunc(t.timestamp, ${TRUNC_SQL[trunc]}) as timestamp,
+  ${timestampBucket} as timestamp,
   count(CASE WHEN NOT (${errorCondition} OR ${warningCondition}) THEN 1 END) as ok_count,
   count(CASE WHEN ${errorCondition} THEN 1 END) as error_count,
   count(CASE WHEN ${warningCondition} THEN 1 END) as warning_count,
@@ -757,7 +772,9 @@ function getErrorCondition(table: LogsTableName): SafeLogSqlFragment {
     case 'auth_logs':
       return AUTH_LOG_ERROR_CONDITION
     case 'function_edge_logs':
-      return safeSql`response.status_code >= 500`
+      return IS_SELF_PLATFORM
+        ? safeSql`split_part(event_message, ' | ', 2) like '5__'`
+        : safeSql`response.status_code >= 500`
     case 'function_logs':
       return safeSql`metadata.level IN ('error', 'fatal')`
     case 'pg_cron_logs':
@@ -778,7 +795,9 @@ function getWarningCondition(table: LogsTableName): SafeLogSqlFragment {
     case 'auth_logs':
       return AUTH_LOG_WARNING_CONDITION
     case 'function_edge_logs':
-      return safeSql`response.status_code >= 400 AND response.status_code < 500`
+      return IS_SELF_PLATFORM
+        ? safeSql`split_part(event_message, ' | ', 2) like '4__'`
+        : safeSql`response.status_code >= 400 AND response.status_code < 500`
     case 'function_logs':
       return safeSql`metadata.level IN ('warning')`
     case 'multigres_logs':

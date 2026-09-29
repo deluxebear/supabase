@@ -283,44 +283,50 @@ describe('functions.combined-stats substitute', () => {
     ).rejects.toBeInstanceOf(InvalidAnalyticsParams)
     expect(retrieveAnalyticsData).not.toHaveBeenCalled()
   })
-  it('two queries (function_edge_logs + function_logs) merge by bucket; missing metrics omitted (frontend zero-fills)', async () => {
-    retrieveAnalyticsData.mockImplementation(async ({ params }: RetrieveAnalyticsDataOptions) =>
-      params.sql?.includes('from function_edge_logs')
-        ? ok([
-            {
-              timestamp: 1783263600000000,
-              requests_count: 4,
-              success_count: 4,
-              redirect_count: 0,
-              client_err_count: 0,
-              server_err_count: 0,
-              avg_execution_time: 12.5,
-              max_execution_time: 30,
-            },
-          ])
-        : ok([
-            {
-              timestamp: 1783263600000000,
-              log_count: 6,
-              log_info_count: 5,
-              log_warn_count: 1,
-              log_error_count: 0,
-            },
-          ])
+  it('counts normalized invocation messages by function without querying unavailable metadata', async () => {
+    vi.useFakeTimers().setSystemTime(new Date('2026-07-05T15:10:00.000Z'))
+    retrieveAnalyticsData.mockResolvedValue(
+      ok([
+        {
+          timestamp: 1783263600000000,
+          requests_count: 4,
+          success_count: 3,
+          redirect_count: 0,
+          client_err_count: 1,
+          server_err_count: 0,
+        },
+      ])
     )
     const { data } = await retrieveSubstitutedAnalyticsData({
       name: 'functions.combined-stats',
       projectRef: 'default',
       params: { function_id: 'project-d:rapid-task', interval: '1hr' },
     })
-    expect(retrieveAnalyticsData).toHaveBeenCalledTimes(2)
-    for (const [{ params }] of retrieveAnalyticsData.mock.calls as [RetrieveAnalyticsDataOptions][])
-      expect(params.sql).toContain("'project-d:rapid-task'")
+    expect(retrieveAnalyticsData).toHaveBeenCalledTimes(1)
+    const [{ params }] = retrieveAnalyticsData.mock.calls[0] as [RetrieveAnalyticsDataOptions]
+    expect(params.sql).toContain("date_trunc('minute', t.timestamp)")
+    expect(params.sql).toContain(
+      "split_part(t.event_message, ' | ', 3) = '/functions/v1/rapid-task'"
+    )
+    expect(params.sql).toContain('extract(epoch from t.timestamp) >= 1783260600')
+    expect(params.sql).not.toContain('unnest')
     const row = data?.result?.[0]
     expect(row.timestamp).toBe('2026-07-05T15:00:00.000Z')
     expect(row.requests_count).toBe(4)
-    expect(row.log_count).toBe(6)
+    expect(row.client_err_count).toBe(1)
+    expect(row.log_count).toBeUndefined()
     expect(row.avg_cpu_time_used).toBeUndefined() // not derivable self-hosted; useFillTimeseriesSorted defaults 0
+  })
+
+  it('accepts the three-hour interval used by the function overview', async () => {
+    vi.useFakeTimers().setSystemTime(new Date('2026-07-05T15:10:00.000Z'))
+    await retrieveSubstitutedAnalyticsData({
+      name: 'functions.combined-stats',
+      projectRef: 'default',
+      params: { function_id: 'project-d:rapid-task', interval: '3hr' },
+    })
+    const [{ params }] = retrieveAnalyticsData.mock.calls[0] as [RetrieveAnalyticsDataOptions]
+    expect(params.sql).toContain('extract(epoch from t.timestamp) >= 1783253400')
   })
 })
 

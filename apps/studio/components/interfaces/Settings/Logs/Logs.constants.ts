@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import type { DatetimeHelper, FilterTableSet, LogTemplate } from './Logs.types'
 import { analyticsLiteral, safeSql, type SafeLogSqlFragment } from '@/data/logs/safe-analytics-sql'
 import { DOCS_URL } from '@/lib/constants'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export const LOGS_EXPLORER_DOCS_URL = `${DOCS_URL}/guides/platform/logs#querying-with-the-logs-explorer`
 
@@ -485,9 +486,27 @@ export const SQL_FILTER_TEMPLATES: Record<string, Record<string, SqlFilterEntry>
   function_edge_logs: {
     ..._SQL_FILTER_COMMON,
     'metadata.function_id': (value: string) => safeSql`m.function_id = ${analyticsLiteral(value)}`,
-    'status_code.error': safeSql`response.status_code between 500 and 599`,
-    'status_code.success': safeSql`response.status_code between 200 and 299`,
-    'status_code.warning': safeSql`response.status_code between 400 and 499`,
+    __timestamp_start: (value: string) =>
+      Number.isFinite(Number(value))
+        ? safeSql`extract(epoch from timestamp) >= ${analyticsLiteral(Number(value))}`
+        : safeSql`false`,
+    __timestamp_end: (value: string) =>
+      Number.isFinite(Number(value))
+        ? safeSql`extract(epoch from timestamp) < ${analyticsLiteral(Number(value))}`
+        : safeSql`false`,
+    function_invocation_path: (value: string) =>
+      IS_SELF_PLATFORM
+        ? safeSql`split_part(event_message, ' | ', 3) = ${analyticsLiteral(value)}`
+        : safeSql`request.pathname = ${analyticsLiteral(value)}`,
+    'status_code.error': IS_SELF_PLATFORM
+      ? safeSql`split_part(event_message, ' | ', 2) like '5__'`
+      : safeSql`response.status_code between 500 and 599`,
+    'status_code.success': IS_SELF_PLATFORM
+      ? safeSql`split_part(event_message, ' | ', 2) like '2__'`
+      : safeSql`response.status_code between 200 and 299`,
+    'status_code.warning': IS_SELF_PLATFORM
+      ? safeSql`split_part(event_message, ' | ', 2) like '4__'`
+      : safeSql`response.status_code between 400 and 499`,
   },
   function_logs: {
     ..._SQL_FILTER_COMMON,

@@ -183,7 +183,12 @@ const OTEL_SOURCES: Record<LogsTableName, OtelSourceDescriptor> = {
       col('deployment_id', safeSql`deployment_id`),
       col('version', safeSql`version`),
     ],
-    filterTemplates: { ...COMMON_FILTERS, ...STATUS_CODE_FILTERS },
+    filterTemplates: {
+      ...COMMON_FILTERS,
+      ...STATUS_CODE_FILTERS,
+      function_invocation_path: (value: string) =>
+        safeSql`endsWith(event_message, ${lit(` | ${value}`)})`,
+    },
     error: HTTP_ERROR,
     warning: HTTP_WARNING,
   },
