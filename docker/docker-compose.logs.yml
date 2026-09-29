@@ -94,6 +94,7 @@ services:
         condition: service_healthy
     environment:
       LOGFLARE_PUBLIC_ACCESS_TOKEN: ${LOGFLARE_PUBLIC_ACCESS_TOKEN}
+      FUNCTIONS_PROJECT_REF: ${MANAGED_PROJECT_REF:-default}
       PROCFS_ROOT: /host/proc
       SYSFS_ROOT: /host/sys
       METRICS_SCRAPE_TOKEN: ${ANON_KEY}

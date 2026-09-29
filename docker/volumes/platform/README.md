@@ -1651,25 +1651,16 @@ stack changes nothing about that invariant.
   erroring, same honest-empty precedent as the rest of this document, just a flatline instead of
   an error because nothing is actually broken about the request, only about a field the pipeline
   never populates.
-- **`functions.combined-stats` and the edge functions list page's last-hour stats are both
-  broken on self-hosted for the same underlying reason, but in different ways.** Neither can
-  work because the self-hosted vector pipeline's `functions_logs` transform
-  (`docker/volumes/logs/vector.yml`, lines 130-134 — shipped to the `logflare_functions` sink's
-  `deno-relay-logs` Logflare source) never attaches a `function_id` to function log events in the
-  first place. The substituted `functions.combined-stats` endpoint (above) filters on
-  `function_id` inside an unnested `metadata` field, which is valid SQL that simply never
-  matches any row — it returns a correctly-shaped, honestly empty result, and the same substitute
-  omits the `execution_time_ms` aggregates for the identical reason (zero-filled client-side, same
-  precedent as elsewhere). The edge functions list page's own last-hour-stats query
-  (`apps/studio/data/edge-functions/edge-functions-last-hour-stats-query.ts`) references a bare,
-  un-nested `function_id` column in its `WHERE` and per-function `GROUP BY` instead, which is not
-  merely empty but 500s categorically on the Logflare postgres translator — that page surfaces
-  the existing chart error state, not an empty one. Neither is a SQL-dialect problem this
-  milestone's rewrites can fix; a real fix needs vector to populate `function_id` at ingestion, or
-  a server-side substitution mirroring `functions.combined-stats`'s own pattern — left as a
-  follow-up, out of scope for M6.2. **Superseded in M6.3:** the edge-functions list last-hour
-  stats now route through a server-side substitute (honest empty — function_id is structurally
-  never populated self-hosted).
+- **Self-hosted per-function analytics are partial.** Vector now turns Kong access records for
+  `/functions/v1/<slug>` into the `deno-relay-logs` source, which Studio maps to `function_edge_logs`, with the Fleet function ID
+  (`<project-ref>:<slug>`), and mirrors a concise invocation entry into `function_logs`, so the
+  function detail page can show each request in its Logs tab. Structured runtime log events retain
+  their `function_id` when present; plain console messages do not contain enough context to assign
+  one reliably. Kong's `combined` access format has no execution duration, so execution-time, CPU,
+  and memory metrics remain zero-filled. The
+  edge-functions list page's last-hour-stats endpoint still returns an honest empty result on
+  self-hosted; its upstream query expects a bare `function_id` column that this Logflare schema
+  does not expose.
 - **The Unified Logs feature preview requires a BigQuery-backed Logflare and will not work
   against this stack.** Its queries lean on `UNION ALL` across service tables, which is
   categorically broken on the Logflare postgres translator (the same reason the `service-health`

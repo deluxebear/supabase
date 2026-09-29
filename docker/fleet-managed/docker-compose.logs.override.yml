@@ -1,0 +1,16 @@
+# Attach the per-project analytics service to the control-plane network so
+# Studio can query it without publishing Logflare's unauthenticated dashboard
+# port on the host.
+services:
+  analytics:
+    ports: !override []
+    networks:
+      default: {}
+      management:
+        aliases:
+          - analytics-${MANAGED_PROJECT_REF:?set MANAGED_PROJECT_REF}
+
+networks:
+  management:
+    name: ${FLEET_MANAGEMENT_NETWORK_NAME:-fleet-management}
+    external: true

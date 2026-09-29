@@ -70,13 +70,13 @@ transforms:
     inputs:
       - project_logs
     route:
-      kong: '.appname == "supabase-kong" || .appname == "supabase-envoy"'
-      auth: '.appname == "supabase-auth"'
-      rest: '.appname == "supabase-rest"'
-      realtime: '.appname == "realtime-dev.supabase-realtime"'
-      storage: '.appname == "supabase-storage"'
-      functions: '.appname == "supabase-edge-functions"'
-      db: '.appname == "supabase-db"'
+      kong: '.appname == "supabase-kong" || .appname == "supabase-envoy" || ends_with(string!(.appname), "-kong")'
+      auth: '.appname == "supabase-auth" || ends_with(string!(.appname), "-auth")'
+      rest: '.appname == "supabase-rest" || ends_with(string!(.appname), "-rest")'
+      realtime: '.appname == "realtime-dev.supabase-realtime" || starts_with(string!(.appname), "realtime-dev.")'
+      storage: '.appname == "supabase-storage" || ends_with(string!(.appname), "-storage")'
+      functions: '.appname == "supabase-edge-functions" || ends_with(string!(.appname), "-functions")'
+      db: '.appname == "supabase-db" || ends_with(string!(.appname), "-db")'
   # Ignores non nginx errors since they are related with kong booting up
   kong_logs:
     type: remap
@@ -172,7 +172,61 @@ transforms:
     inputs:
       - router.functions
     source: |-
-      .metadata.project_ref = del(.project)
+      metadata = {}
+      if is_object(.metadata) {
+        metadata = .metadata
+      }
+      parsed, err = parse_json(.event_message)
+      if err == null && is_object(parsed) {
+        if is_array(parsed.metadata) && length!(parsed.metadata) > 0 {
+          metadata = merge!(metadata, parsed.metadata[0])
+        } else if is_object(parsed.metadata) {
+          metadata = merge!(metadata, parsed.metadata)
+        }
+        if parsed.event_message != null {
+          .event_message = parsed.event_message
+        }
+        if parsed.timestamp != null {
+          .timestamp = parsed.timestamp
+        }
+      }
+      metadata.project_ref = .project
+      .metadata = metadata
+  # Kong's access log is the request-level signal available in a self-hosted
+  # stack. Fleet function IDs are stable as project-ref plus slug, matching
+  # the ID returned by Studio's Fleet function detail API.
+  function_invocation_logs:
+    type: remap
+    inputs:
+      - kong_logs
+    source: |-
+      request_path = to_string!(.metadata.request.path)
+      request_path_parts = split(request_path, "?")
+      pathname = request_path_parts[0]
+      path_parts = split!(pathname, "/")
+      if length(path_parts) < 4 || path_parts[1] != "functions" || path_parts[2] != "v1" {
+        abort
+      }
+      function_slug = path_parts[3]
+      if function_slug == "" {
+        abort
+      }
+      method = to_string!(.metadata.request.method)
+      status_code = to_string!(.metadata.response.status_code)
+      .event_message = method + " | " + status_code + " | " + pathname
+      .metadata = {
+        "project_ref": .project,
+        "function_id": "${FUNCTIONS_PROJECT_REF}:" + function_slug,
+        "event_type": "Invocation",
+        "level": "info",
+        "request": {
+          "method": method,
+          "pathname": pathname
+        },
+        "response": {
+          "status_code": .metadata.response.status_code
+        }
+      }
   # Storage logs may contain json objects so we parse them for completeness
   storage_logs:
     type: remap
@@ -282,6 +336,20 @@ sinks:
     type: 'http'
     inputs:
       - functions_logs
+      - function_invocation_logs
+    encoding:
+      codec: 'json'
+    method: 'post'
+    request:
+      retry_max_duration_secs: 30
+      retry_initial_backoff_secs: 1
+      headers:
+        x-api-key: ${LOGFLARE_PUBLIC_ACCESS_TOKEN?LOGFLARE_PUBLIC_ACCESS_TOKEN is required}
+    uri: 'http://analytics:4000/api/logs?source_name=deno-subhosting-events'
+  logflare_function_edge:
+    type: 'http'
+    inputs:
+      - function_invocation_logs
     encoding:
       codec: 'json'
     method: 'post'
