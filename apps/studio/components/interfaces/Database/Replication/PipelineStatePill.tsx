@@ -79,7 +79,7 @@ export const PipelineStatePill = ({
             isPulsing={!shouldShowError && type === 'loading'}
             labelClassName={cn('text-foreground-light', TOOLTIP_UNDERLINE_CLASS_NAME)}
           >
-            {shouldShowError ? 'Unknown' : label}
+            {shouldShowError ? $t('Unknown') : label}
           </StateDot>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="max-w-xs">

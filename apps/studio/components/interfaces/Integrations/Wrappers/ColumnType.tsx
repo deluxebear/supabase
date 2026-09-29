@@ -44,7 +44,7 @@ import {
 } from '@/components/interfaces/TableGridEditor/SidePanelEditor/SidePanelEditor.constants'
 import type { PostgresDataTypeOption } from '@/components/interfaces/TableGridEditor/SidePanelEditor/SidePanelEditor.types'
 import type { EnumeratedType } from '@/data/enumerated-types/enumerated-types-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface ColumnTypeProps {
   name: string
@@ -190,7 +190,9 @@ export const ColumnType = ({
                             <div className="flex items-center gap-2 pr-6">
                               <span>{inferIcon(option.type)}</span>
                               <span className="text-foreground">{option.name}</span>
-                              <span className="text-foreground-lighter">{option.description}</span>
+                              <span className="text-foreground-lighter">
+                                {$tValue(option.description)}
+                              </span>
                             </div>
                             <span className="absolute right-3 top-2">
                               {option.name === field.value ? (

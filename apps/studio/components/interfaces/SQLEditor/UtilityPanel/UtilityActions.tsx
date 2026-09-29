@@ -32,7 +32,7 @@ import { DropdownMenuItemTooltip } from '@/components/ui/DropdownMenuItemTooltip
 import { type QuerySourceBinding } from '@/data/query-sources/query-source-registry'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { IS_PLATFORM } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { hotkeyToKeys } from '@/state/shortcuts/formatShortcut'
 import { SHORTCUT_DEFINITIONS, SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useSqlEditorSaveCoordinator } from '@/state/sql-editor/sql-editor-save-coordinator'
@@ -146,7 +146,7 @@ export const UtilityActions = ({
                       : 'fill-none stroke-foreground-light'
                   }
                 />
-                {isFavorite ? 'Remove from' : 'Add to'} favorites
+                {isFavorite ? $t('Remove from') : $t('Add to')} favorites
               </DropdownMenuItem>
             </>
           )}
@@ -218,7 +218,7 @@ export const UtilityActions = ({
               )}
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              {isFavorite ? 'Remove from' : 'Add to'} favorites
+              {isFavorite ? $t('Remove from') : $t('Add to')} favorites
             </TooltipContent>
           </Tooltip>
         )}
@@ -275,7 +275,9 @@ export const UtilityActions = ({
               <DropdownMenuTrigger asChild>
                 <Button iconRight={<ChevronDown size={14} className="text-foreground-light" />}>
                   <span className="text-foreground-light">{$t('Limit')}</span>{' '}
-                  {ROWS_PER_PAGE_OPTIONS.find((opt) => opt.value === sessionSnap.limit)?.label}
+                  {$tValue(
+                    ROWS_PER_PAGE_OPTIONS.find((opt) => opt.value === sessionSnap.limit)?.label
+                  )}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-40" align="end">
@@ -285,7 +287,7 @@ export const UtilityActions = ({
                 >
                   {ROWS_PER_PAGE_OPTIONS.map((option) => (
                     <DropdownMenuRadioItem key={option.label} value={option.value.toString()}>
-                      {option.label}
+                      {$tValue(option.label)}
                     </DropdownMenuRadioItem>
                   ))}
                 </DropdownMenuRadioGroup>

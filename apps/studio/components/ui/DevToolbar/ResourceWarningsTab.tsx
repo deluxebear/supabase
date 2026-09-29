@@ -249,7 +249,9 @@ export const ResourceWarningsTab = () => {
         <h4>{$t('Project warnings')}</h4>
         {isDisabled && (
           <p className="text-xs text-foreground-muted">
-            {!ref ? 'Navigate to a project page to use this tab.' : 'Loading org context...'}
+            {!ref
+              ? $t('Navigate to a project page to use this tab.')
+              : $t('Loading org context...')}
           </p>
         )}
       </div>

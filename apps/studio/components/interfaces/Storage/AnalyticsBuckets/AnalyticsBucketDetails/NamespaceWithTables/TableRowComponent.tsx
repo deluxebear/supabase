@@ -333,7 +333,7 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
                     {isReplicating
                       ? `Table data is currently replicating${!!inferredPostgresTable ? ` from ${inferredPostgresTable.schema}.${inferredPostgresTable.name}` : ''}`
                       : !isTableUnderReplicationPublication
-                        ? 'Replication is disabled for this table'
+                        ? $t('Replication is disabled for this table')
                         : undefined}
                   </TooltipContent>
                 )}

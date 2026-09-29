@@ -103,7 +103,7 @@ export const ChooseChannelPopover = ({
           className="max-w-[120px] truncate"
           title={config.channelName.length > 0 ? config.channelName : ''}
         >
-          {config.channelName.length > 0 ? `Channel: ${config.channelName}` : 'Join a channel'}
+          {config.channelName.length > 0 ? `Channel: ${config.channelName}` : $t('Join a channel')}
         </p>
       </Button>
     </PopoverTrigger>

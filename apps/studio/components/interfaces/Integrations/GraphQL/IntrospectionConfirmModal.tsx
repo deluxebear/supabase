@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { CodeBlock } from 'ui-patterns/CodeBlock'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 type IntrospectionMode = 'enable' | 'disable'
 
@@ -75,7 +75,7 @@ export const IntrospectionConfirmModal = ({
     <ConfirmationModal
       visible={visible}
       size="large"
-      title={copy.title}
+      title={$tValue(copy.title)}
       confirmLabel={copy.confirmLabel}
       confirmLabelLoading={copy.confirmLabelLoading}
       cancelLabel="Cancel"

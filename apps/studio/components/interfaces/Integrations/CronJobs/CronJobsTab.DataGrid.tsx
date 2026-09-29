@@ -5,6 +5,7 @@ import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { AlertError } from '@/components/ui/AlertError'
 import type { CronJob } from '@/data/database-cron-jobs/database-cron-jobs-infinite-query'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 interface CronJobsTabDataGridProps {
@@ -38,12 +39,12 @@ export const CronJobsTabDataGrid = ({
     <div className="absolute top-32 px-6 w-full">
       <div className="text-center text-sm flex flex-col gap-y-1">
         <p className="text-foreground">
-          {!!searchQuery ? 'No cron jobs found' : 'No cron jobs in your project'}
+          {!!searchQuery ? $t('No cron jobs found') : $t('No cron jobs in your project')}
         </p>
         <p className="text-foreground-light">
           {!!searchQuery
-            ? 'There are currently no cron jobs based on the search applied'
-            : 'There are currently no cron jobs created yet in your project'}
+            ? $t('There are currently no cron jobs based on the search applied')
+            : $t('There are currently no cron jobs created yet in your project')}
         </p>
       </div>
     </div>

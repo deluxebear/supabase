@@ -37,7 +37,7 @@ import { useHasEntitlementAccess } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { BASE_PATH } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface ProviderFormProps {
   config: components['schemas']['GoTrueConfigResponse']
@@ -203,7 +203,7 @@ export const ProviderForm = ({ config, provider, isActive }: ProviderFormProps) 
           )
         }
       >
-        {provider.title}
+        {$tValue(provider.title)}
       </ResourceItem>
 
       <Sheet open={open} onOpenChange={handleOpenChange}>
@@ -215,7 +215,7 @@ export const ProviderForm = ({ config, provider, isActive }: ProviderFormProps) 
               height={18}
               alt={`${provider.title} auth icon`}
             />
-            <SheetTitle>{provider.title}</SheetTitle>
+            <SheetTitle>{$tValue(provider.title)}</SheetTitle>
           </SheetHeader>
           <Form {...form}>
             <form
@@ -225,7 +225,7 @@ export const ProviderForm = ({ config, provider, isActive }: ProviderFormProps) 
               onSubmit={form.handleSubmit(onSubmit)}
             >
               <AuthAlert
-                title={provider.title}
+                title={$tValue(provider.title)}
                 isHookSendSMSEnabled={config.HOOK_SEND_SMS_ENABLED}
               />
 
@@ -251,8 +251,10 @@ export const ProviderForm = ({ config, provider, isActive }: ProviderFormProps) 
                 <SheetSection>
                   <Admonition
                     type="warning"
-                    title={provider.misc.alert.title}
-                    description={<ReactMarkdown>{provider.misc.alert.description}</ReactMarkdown>}
+                    title={$tValue(provider.misc.alert.title)}
+                    description={
+                      <ReactMarkdown>{$tValue(provider.misc.alert.description)}</ReactMarkdown>
+                    }
                   />
                 </SheetSection>
               )}

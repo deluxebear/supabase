@@ -23,7 +23,7 @@ import {
 import type { SupportFormValues } from './SupportForm.schema'
 import { NO_PROJECT_MARKER } from './SupportForm.utils'
 import { InlineLink } from '@/components/ui/InlineLink'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface CategoryAndSeverityInfoProps {
   form: UseFormReturn<SupportFormValues>
@@ -101,7 +101,7 @@ function CategorySelector({ form }: CategorySelectorProps) {
                 >
                   <SelectValue placeholder={$t('Select an issue')}>
                     {field.value
-                      ? CATEGORY_OPTIONS.find((o) => o.value === field.value)?.label
+                      ? $tValue(CATEGORY_OPTIONS.find((o) => o.value === field.value)?.label)
                       : null}
                   </SelectValue>
                 </SelectTrigger>
@@ -109,9 +109,9 @@ function CategorySelector({ form }: CategorySelectorProps) {
                   <SelectGroup>
                     {CATEGORY_OPTIONS.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
-                        {option.label}
+                        {$tValue(option.label)}
                         <span className="block text-xs text-foreground-lighter">
-                          {option.description}
+                          {$tValue(option.description)}
                         </span>
                       </SelectItem>
                     ))}
@@ -152,9 +152,9 @@ function SeveritySelector({ form }: SeveritySelectorProps) {
                   <SelectGroup>
                     {SEVERITY_OPTIONS.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
-                        {option.label}
+                        {$tValue(option.label)}
                         <span className="block text-xs text-foreground-lighter">
-                          {option.description}
+                          {$tValue(option.description)}
                         </span>
                       </SelectItem>
                     ))}

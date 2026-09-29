@@ -132,8 +132,11 @@ function merge() {
   const remaining = keys.filter((k) => !(k in sorted))
   mkdirSync(workdir, { recursive: true })
   writeFileSync(join(workdir, 'remaining.json'), JSON.stringify(remaining, null, 2) + '\n')
-  const coverage = ((Object.keys(sorted).length / keys.length) * 100).toFixed(1)
-  console.log(`added: ${added} | catalog: ${Object.keys(sorted).length} | coverage: ${coverage}%`)
+  const translatedKeys = keys.filter((key) => key in sorted).length
+  const coverage = ((translatedKeys / keys.length) * 100).toFixed(1)
+  console.log(
+    `added: ${added} | catalog: ${Object.keys(sorted).length} | active keys: ${translatedKeys}/${keys.length} (${coverage}%)`
+  )
   console.log(`remaining (fall back to English): ${remaining.length} -> ${workdir}/remaining.json`)
 }
 

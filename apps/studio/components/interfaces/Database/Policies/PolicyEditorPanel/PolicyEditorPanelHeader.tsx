@@ -120,10 +120,10 @@ export const PolicyEditorPanelHeader = ({
             ) : (
               <PanelRightClose size={19} strokeWidth={1} />
             )}
-            <span className="sr-only">{showTools ? 'Hide' : 'Show'} tools</span>
+            <span className="sr-only">{showTools ? $t('Hide') : $t('Show')} tools</span>
           </button>
         </TooltipTrigger>
-        <TooltipContent side="left">{showTools ? 'Hide' : 'Show'} tools</TooltipContent>
+        <TooltipContent side="left">{showTools ? $t('Hide') : $t('Show')} tools</TooltipContent>
       </Tooltip>
     </SheetHeader>
   )

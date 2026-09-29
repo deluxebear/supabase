@@ -174,9 +174,9 @@ export const ExtensionRow = ({ extension }: ExtensionRowProps) => {
                 {disabled && (
                   <TooltipContent side="bottom">
                     {!canUpdateExtensions
-                      ? 'You need additional permissions to toggle extensions'
+                      ? $t('You need additional permissions to toggle extensions')
                       : orioleDbCheck
-                        ? 'Project is using OrioleDB and cannot be disabled'
+                        ? $t('Project is using OrioleDB and cannot be disabled')
                         : null}
                   </TooltipContent>
                 )}

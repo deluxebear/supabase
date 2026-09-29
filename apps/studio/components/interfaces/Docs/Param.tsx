@@ -48,7 +48,7 @@ const Param = ({
         <h3 className="heading-default text-foreground mb-0 mt-0">{name}</h3>
 
         <Badge variant={required ? 'warning' : 'default'}>
-          {required ? 'Required' : 'Optional'}
+          {required ? $t('Required') : $t('Optional')}
         </Badge>
       </div>
       {format && (

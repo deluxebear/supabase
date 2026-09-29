@@ -340,7 +340,7 @@ export const ColumnEditor = ({
                 error={errors.format}
                 description={
                   lockColumnType
-                    ? 'Column type cannot be changed as it has a foreign key relation'
+                    ? $t('Column type cannot be changed as it has a foreign key relation')
                     : ''
                 }
                 disabled={lockColumnType}

@@ -9,7 +9,7 @@ import {
   WelcomeWireframe,
 } from './ExplorerOnboardingWireframes'
 import { useExplorerPreferences } from '@/components/interfaces/Account/Preferences/useExplorerPreferences'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const ONBOARDING_STEPS: Array<{
   Wireframe: ComponentType
@@ -60,10 +60,12 @@ export const ExplorerOnboarding = () => {
           <Wireframe />
           <div className="min-h-24 space-y-2">
             <div className="flex items-center gap-2">
-              <h1 className="heading-section">{step.title}</h1>
+              <h1 className="heading-section">{$tValue(step.title)}</h1>
               {step.isPreview && <Badge variant="default">{$t('Preview')}</Badge>}
             </div>
-            <p className="text-base leading-relaxed text-foreground-light">{step.description}</p>
+            <p className="text-base leading-relaxed text-foreground-light">
+              {$tValue(step.description)}
+            </p>
           </div>
         </div>
 

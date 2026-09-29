@@ -256,8 +256,8 @@ export const ConnectionPooling = () => {
             {!isHighAvailability && connectionPoolingUnavailable && (
               <Admonition
                 type="default"
-                title={'Unable to retrieve pooling configuration'}
-                description={'Please start a new project to enable this feature'}
+                title={$t('Unable to retrieve pooling configuration')}
+                description={$t('Please start a new project to enable this feature')}
               />
             )}
             {(isHighAvailability ||
@@ -268,8 +268,8 @@ export const ConnectionPooling = () => {
                     <h5 className="text-foreground font-normal">{$t('Connection poolers')}</h5>
                     <p className="text-foreground-lighter">
                       {isHighAvailability
-                        ? 'One pooler runs for each Postgres pod in the cluster.'
-                        : 'Configuration is shared across all connection poolers.'}
+                        ? $t('One pooler runs for each Postgres pod in the cluster.')
+                        : $t('Configuration is shared across all connection poolers.')}
                     </p>
                   </div>
                   <div className="flex flex-row gap-1 items-center">
@@ -296,7 +296,7 @@ export const ConnectionPooling = () => {
                       render={({ field }) => (
                         <FormItemLayout
                           layout="flex-row-reverse"
-                          label={'Connection pool size'}
+                          label={$t('Connection pool size')}
                           description={
                             isHighAvailability ? (
                               <p>
@@ -326,7 +326,7 @@ export const ConnectionPooling = () => {
                                 value={isHighAvailability ? '' : (field.value ?? '')}
                                 placeholder={
                                   isHighAvailability
-                                    ? 'Managed automatically'
+                                    ? $t('Managed automatically')
                                     : defaultPoolSize.toString()
                                 }
                                 onChange={(event) =>
@@ -351,7 +351,7 @@ export const ConnectionPooling = () => {
                                 <AlertTitle className="text-foreground">
                                   {$t('Pool size is greater than 80% of the max connections (')}
                                   {maxConnData.maxConnections}
-                                  {') on your database'}
+                                  {$t(') on your database')}
                                 </AlertTitle>
                                 <AlertDescription>
                                   {$t(
@@ -373,7 +373,7 @@ export const ConnectionPooling = () => {
                       render={({ field }) => (
                         <FormItemLayout
                           layout="flex-row-reverse"
-                          label={'Max client connections'}
+                          label={$t('Max client connections')}
                           className="[&>div]:md:w-1/2 [&>div]:xl:w-2/5 [&>div>div]:w-full"
                           description={
                             isHighAvailability ? (
@@ -389,8 +389,8 @@ export const ConnectionPooling = () => {
                                 {$t(
                                   'The maximum number of concurrent client connections allowed. This value is fixed at'
                                 )}{' '}
-                                {defaultMaxClientConn} {'based on your compute size of'}{' '}
-                                {computeSize} {'and cannot be changed.'}{' '}
+                                {defaultMaxClientConn} {$t('based on your compute size of')}{' '}
+                                {computeSize} {$t('and cannot be changed.')}{' '}
                                 <InlineLink
                                   href={`${DOCS_URL}/guides/database/connection-management#configuring-supavisors-pool-size`}
                                 >

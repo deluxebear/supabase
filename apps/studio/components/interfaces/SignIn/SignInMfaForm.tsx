@@ -226,7 +226,7 @@ export const SignInMfaForm = ({ context = 'sign-in' }: SignInMfaFormProps) => {
                 disabled={isVerifying || isSuccess}
                 loading={isVerifying || isSuccess}
               >
-                {isVerifying ? 'Verifying' : isSuccess ? 'Signing in' : 'Verify'}
+                {isVerifying ? $t('Verifying') : isSuccess ? $t('Signing in') : $t('Verify')}
               </Button>
             </div>
           </form>

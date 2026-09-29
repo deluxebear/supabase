@@ -184,8 +184,10 @@ Read more about [disk management](${DOCS_URL}/guides/platform/database-size#disk
               <InfoIcon />
               <AlertTitle>
                 {hasAccessToDiskSizeConfig === false
-                  ? 'Disk size configuration is not available for projects on the Free Plan'
-                  : 'Disk size configuration is only available when the spend cap has been disabled'}
+                  ? $t('Disk size configuration is not available for projects on the Free Plan')
+                  : $t(
+                      'Disk size configuration is only available when the spend cap has been disabled'
+                    )}
               </AlertTitle>
               <AlertDescription>
                 {hasAccessToDiskSizeConfig === false ? (
@@ -209,8 +211,8 @@ Read more about [disk management](${DOCS_URL}/guides/platform/database-size#disk
                     target="_blank"
                   >
                     {hasAccessToDiskSizeConfig === false
-                      ? 'Upgrade subscription'
-                      : 'Disable spend cap'}
+                      ? $t('Upgrade subscription')
+                      : $t('Disable spend cap')}
                   </Link>
                 </Button>
               </AlertDescription>

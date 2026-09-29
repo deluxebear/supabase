@@ -3,6 +3,7 @@ import { SimpleCodeBlock } from 'ui-patterns/SimpleCodeBlock'
 
 import { Markdown } from '../Markdown'
 import { DocsButton } from '@/components/ui/DocsButton'
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 interface ResourceContentProps {
@@ -28,7 +29,7 @@ const ResourceContent = ({ selectedLanguage, snippet, codeSnippets }: ResourceCo
     <div id={snippet.key} className="space-y-4 py-6">
       <div className="px-4 space-y-2">
         <div className="flex items-center justify-between">
-          <h2 className="doc-heading">{snippet.title}</h2>
+          <h2 className="doc-heading">{$tValue(snippet.title)}</h2>
           {snippet.docsUrl !== undefined && <DocsButton abbrev={false} href={snippet.docsUrl} />}
         </div>
         {snippet.description !== undefined && (
@@ -44,7 +45,7 @@ const ResourceContent = ({ selectedLanguage, snippet, codeSnippets }: ResourceCo
       </div>
       {codeSnippets.map((codeSnippet) => (
         <div key={codeSnippet.key} className="px-4 space-y-2">
-          <p className="text-sm text-foreground-light">{codeSnippet.title}</p>
+          <p className="text-sm text-foreground-light">{$tValue(codeSnippet.title)}</p>
           <div className="codeblock-container">
             <div className="bg rounded-sm p-2">
               <SimpleCodeBlock

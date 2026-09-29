@@ -34,7 +34,7 @@ import { InlineLink } from '@/components/ui/InlineLink'
 import { useAnalyticsBucketsQuery } from '@/data/storage/analytics-buckets-query'
 import { useIcebergNamespacesQuery } from '@/data/storage/iceberg-namespaces-query'
 import { useStorageCredentialsQuery } from '@/data/storage/s3-access-key-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 /**
  * [Joshen] JFYI I'd foresee a possible UX friction point here regarding S3 access key IDs and secret access keys
@@ -294,7 +294,7 @@ export const AnalyticsBucketFields = ({
                 disabled
                 value={field.value}
                 type={showCatalogToken ? 'text' : 'password'}
-                placeholder={editMode ? STORED_SECRET_PLACEHOLDER : 'Auto-populated'}
+                placeholder={editMode ? STORED_SECRET_PLACEHOLDER : $t('Auto-populated')}
                 actions={
                   field.value ? (
                     <div className="flex items-center justify-center">
@@ -375,7 +375,7 @@ export const AnalyticsBucketFields = ({
                       {s3Keys.map((key) => (
                         <SelectItem key={key.id} value={key.access_key}>
                           {key.access_key}
-                          <p className="text-foreground-lighter">{key.description}</p>
+                          <p className="text-foreground-lighter">{$tValue(key.description)}</p>
                         </SelectItem>
                       ))}
                       <SelectSeparator />
@@ -401,8 +401,8 @@ export const AnalyticsBucketFields = ({
                 className="relative"
                 description={
                   editMode
-                    ? 'Stored secret access key is hidden. Enter a new secret to replace it.'
-                    : 'The secret key corresponding to your selected access key ID.'
+                    ? $t('Stored secret access key is hidden. Enter a new secret to replace it.')
+                    : $t('The secret key corresponding to your selected access key ID.')
                 }
               >
                 <FormControl>
@@ -411,7 +411,7 @@ export const AnalyticsBucketFields = ({
                     type={showSecretAccessKey ? 'text' : 'password'}
                     value={field.value ?? ''}
                     placeholder={
-                      editMode ? STORED_SECRET_PLACEHOLDER : 'Provide the secret access key'
+                      editMode ? STORED_SECRET_PLACEHOLDER : $t('Provide the secret access key')
                     }
                   />
                 </FormControl>

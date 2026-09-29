@@ -3,6 +3,7 @@ import { useEffect, useState, type RefObject } from 'react'
 import { copyToClipboard } from 'ui'
 
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 
 interface CopyPromptButtonProps {
   stepsContainerRef: RefObject<HTMLDivElement | null>
@@ -152,10 +153,10 @@ export function CopyPromptButton({ stepsContainerRef, customPrompt }: CopyPrompt
           },
         }}
       >
-        {showCopied ? 'Copied' : 'Copy prompt'}
+        {showCopied ? $t('Copied') : $t('Copy prompt')}
       </ButtonTooltip>
       <span className="sr-only" role="status" aria-live="polite">
-        {showCopied ? 'Copied' : ''}
+        {showCopied ? $t('Copied') : ''}
       </span>
     </>
   )

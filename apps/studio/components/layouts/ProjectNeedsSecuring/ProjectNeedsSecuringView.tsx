@@ -216,13 +216,15 @@ export const ProjectNeedsSecuringView = ({
                           <TableCell>
                             <StatusCell
                               enabled={table.dataApiAccessible}
-                              label={table.dataApiAccessible ? 'Accessible' : 'Not accessible'}
+                              label={
+                                table.dataApiAccessible ? $t('Accessible') : $t('Not accessible')
+                              }
                             />
                           </TableCell>
                           <TableCell>
                             <StatusCell
                               enabled={table.rlsEnabled}
-                              label={table.rlsEnabled ? 'Enabled' : 'Disabled'}
+                              label={table.rlsEnabled ? $t('Enabled') : $t('Disabled')}
                             />
                           </TableCell>
                         </TableRow>

@@ -17,7 +17,7 @@ import {
 } from 'ui'
 import { z } from 'zod'
 
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export interface ReportSelectOption {
   label: React.ReactNode
@@ -121,9 +121,11 @@ export const ReportsSelectFilter = ({
                     />
                     <div className="flex items-center justify-between w-full">
                       <div className="flex flex-col text-xs">
-                        <span className="flex items-center gap-x-2">{option.label}</span>
+                        <span className="flex items-center gap-x-2">{$tValue(option.label)}</span>
                         {option.description && (
-                          <span className="text-foreground-lighter">{option.description}</span>
+                          <span className="text-foreground-lighter">
+                            {$tValue(option.description)}
+                          </span>
                         )}
                       </div>
                       {!!option.quantity && (

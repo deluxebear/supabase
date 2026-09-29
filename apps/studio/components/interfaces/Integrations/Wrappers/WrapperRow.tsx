@@ -11,7 +11,7 @@ import { convertKVStringArrayToJson, formatWrapperTables } from './Wrappers.util
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import type { FDW } from '@/data/fdw/fdws-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface WrapperRowProps {
   wrapper: FDW
@@ -91,7 +91,7 @@ export const WrapperRow = ({ wrapper, isShared }: WrapperRowProps) => {
             key={metadata.name}
             className="flex items-center space-x-2 text-sm text-foreground-light"
           >
-            <span className="text-foreground-lighter text-nowrap">{metadata.label}:</span>
+            <span className="text-foreground-lighter text-nowrap">{$tValue(metadata.label)}:</span>
             <span className="truncate max-w-72" title={serverOptions[metadata.name]}>
               {serverOptions[metadata.name]}
             </span>
@@ -150,8 +150,8 @@ export const WrapperRow = ({ wrapper, isShared }: WrapperRowProps) => {
               )}`}
               className="transition text-foreground-light hover:text-foreground flex items-center space-x-2 max-w-28"
             >
-              <span className="truncate" title={metadata.label}>
-                {metadata.label}
+              <span className="truncate" title={$tValue(metadata.label)}>
+                {$tValue(metadata.label)}
               </span>
               <div>
                 <ExternalLink size={12} strokeWidth={1.5} className="text-foreground-lighter" />

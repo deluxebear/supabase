@@ -35,7 +35,7 @@ import { usePlatformAppDeleteMutation } from '@/data/platform-apps/platform-app-
 import { usePlatformAppInstallationCreateMutation } from '@/data/platform-apps/platform-app-installation-create-mutation'
 import { usePlatformAppSigningKeyCreateMutation } from '@/data/platform-apps/platform-app-signing-key-create-mutation'
 import { useCopyToClipboard } from '@/hooks/ui/useCopyToClipboard'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 type CreatePlatformAppResponse = components['schemas']['CreatePlatformAppResponse_Output']
 type CreatePlatformAppSigningKeyResponse =
@@ -222,7 +222,7 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                                         />
                                         <Key size={12} className="text-foreground-lighter" />
                                         <span className="font-medium text-foreground">
-                                          {perm.label}
+                                          {$tValue(perm.label)}
                                         </span>
                                       </div>
                                     </CommandItem>
@@ -250,10 +250,10 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                           <div key={id}>
                             <div className="flex items-center gap-3 p-3">
                               <div className="flex-1">
-                                <p className="text-sm font-medium">{perm?.label}</p>
+                                <p className="text-sm font-medium">{$tValue(perm?.label)}</p>
                                 {perm?.description && (
                                   <p className="text-xs text-foreground-lighter">
-                                    {perm.description}
+                                    {$tValue(perm.description)}
                                   </p>
                                 )}
                               </div>
@@ -292,10 +292,14 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                   title={$t('Signing key')}
                   description={
                     isCreatingKey
-                      ? 'Generating your signing key...'
+                      ? $t('Generating your signing key...')
                       : keyRevealed
-                        ? 'This is the only time you can view this key. Copy or download it and store it securely.'
-                        : "A signing key will be generated automatically when you create the app. You'll only be able to view it once."
+                        ? $t(
+                            'This is the only time you can view this key. Copy or download it and store it securely.'
+                          )
+                        : $t(
+                            "A signing key will be generated automatically when you create the app. You'll only be able to view it once."
+                          )
                   }
                   isLast
                   disabled={createdApp === null && !isLoading}
@@ -408,8 +412,8 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
       >
         <p className="text-sm text-foreground-light py-2">
           {createdApp
-            ? 'The app will be deleted and your signing key will be permanently lost.'
-            : 'Any progress you have made will be lost.'}
+            ? $t('The app will be deleted and your signing key will be permanently lost.')
+            : $t('Any progress you have made will be lost.')}
         </p>
       </ConfirmationModal>
     </>

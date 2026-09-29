@@ -49,7 +49,7 @@ import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { IS_PLATFORM } from '@/lib/constants'
 import { preprocessEmptyNumberInput } from '@/lib/forms/zod-number-input'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 function determineMFAStatus(verifyEnabled: boolean, enrollEnabled: boolean) {
   return verifyEnabled ? (enrollEnabled ? 'Enabled' : 'Verify Enabled') : 'Disabled'
@@ -376,7 +376,7 @@ export const MfaAuthSettingsForm = () => {
                             <SelectContent>
                               {MFAFactorSelectionOptions.map((option) => (
                                 <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
+                                  {$tValue(option.label)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -476,7 +476,7 @@ export const MfaAuthSettingsForm = () => {
                             <SelectContent>
                               {MFAFactorSelectionOptions.map((option) => (
                                 <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
+                                  {$tValue(option.label)}
                                 </SelectItem>
                               ))}
                             </SelectContent>

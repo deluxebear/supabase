@@ -122,7 +122,9 @@ export const OrganizationSelector = ({
         {hasOverflow && (
           <Collapsible open={showMore} onOpenChange={setShowMore}>
             <CollapsibleTrigger className={CONNECT_DISCLOSURE_TRIGGER_CLASSNAME}>
-              <span>{showMore ? 'Show fewer' : `Show ${overflowOrganizations.length} more`}</span>
+              <span>
+                {showMore ? $t('Show fewer') : `Show ${overflowOrganizations.length} more`}
+              </span>
               <ChevronDown className="size-3.5 transition-transform" />
             </CollapsibleTrigger>
             <CollapsibleContent className="data-closed:animate-collapsible-up data-open:animate-collapsible-down overflow-hidden">

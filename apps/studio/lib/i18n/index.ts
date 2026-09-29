@@ -37,6 +37,12 @@ i18n.use(initReactI18next).init({
 
 export const t = i18n.t.bind(i18n) as (key: string, vars?: Record<string, unknown>) => string
 
+// Static UI configs keep their English values for matching and persistence.
+// Translate them only when a component renders a display field.
+export function translateDisplayValue<T>(value: T): T {
+  return typeof value === 'string' ? (t(value) as T) : value
+}
+
 // Bridge the studio translator into ui-patterns so its cross-package components
 // (CommandMenu, ConfirmationModal, …) localize their hard-coded strings and
 // host-provided labels. `t` reads the live i18n instance, so this survives

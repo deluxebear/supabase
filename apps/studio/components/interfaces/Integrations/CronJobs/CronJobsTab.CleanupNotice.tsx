@@ -29,7 +29,7 @@ import {
 } from './CronJobsTab.useCleanupActions'
 import { InlineLinkClassName } from '@/components/ui/InlineLink'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface CronJobRunDetailsOverflowNoticeV2Props {
   queryCost?: number
@@ -160,7 +160,7 @@ const CronJobRunDetailsOverflowDialog = ({
                     <SelectContent>
                       {CLEANUP_INTERVALS.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
-                          {option.label}
+                          {$tValue(option.label)}
                         </SelectItem>
                       ))}
                     </SelectContent>

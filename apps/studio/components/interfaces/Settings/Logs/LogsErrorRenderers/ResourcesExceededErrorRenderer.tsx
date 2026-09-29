@@ -23,8 +23,10 @@ const ResourcesExceededErrorRenderer: React.FC<ErrorRendererProps> = ({ error, i
         <p>{$t('This query requires too much memory to be executed.')}</p>
         <p>
           {isCustomQuery
-            ? 'Avoid selecting entire objects and instead select specific keys using dot notation.'
-            : 'Avoid querying across a large datetime range.'}
+            ? $t(
+                'Avoid selecting entire objects and instead select specific keys using dot notation.'
+              )
+            : $t('Avoid querying across a large datetime range.')}
         </p>
         {!isCustomQuery && <p>{$t('Please contact support if this error persists.')}</p>}
       </div>
@@ -47,7 +49,7 @@ const ResourcesExceededErrorRenderer: React.FC<ErrorRendererProps> = ({ error, i
                     }, 3000)
                   }}
                 >
-                  {copied ? 'Copied' : 'Copy'}
+                  {copied ? $t('Copied') : $t('Copy')}
                 </InputGroupButton>
               </InputGroupAddon>
             </InputGroup>

@@ -42,7 +42,11 @@ export function AffectedServicesSelector({ form, category }: AffectedServicesSel
             >
               <MultiSelectorTrigger
                 mode="inline-combobox"
-                label={field.value.length === 0 ? 'No particular service' : 'Search for a service'}
+                label={
+                  field.value.length === 0
+                    ? $t('No particular service')
+                    : $t('Search for a service')
+                }
                 deletableBadge
                 badgeLimit="wrap"
                 showIcon={false}

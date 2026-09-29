@@ -10,7 +10,7 @@ import { PricingMetric } from '@/data/analytics/org-daily-stats-query'
 import type { OrgSubscription } from '@/data/subscriptions/types'
 import type { OrgUsageResponse } from '@/data/usage/org-usage-query'
 import { formatCurrency } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export interface BillingMetricProps {
   idx: number
@@ -202,7 +202,7 @@ export const BillingMetric = ({
                     target="_blank"
                     className="transition text-primary hover:text-primary-hover underline"
                   >
-                    {metric.docLink.title}
+                    {$tValue(metric.docLink.title)}
                   </Link>
                 )}
               </p>

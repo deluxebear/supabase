@@ -32,7 +32,7 @@ import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { usePreventNavigationOnUnsavedChanges } from '@/hooks/ui/usePreventNavigationOnUnsavedChanges'
 import { Metric, TIME_PERIODS_REPORTS } from '@/lib/constants/metrics'
 import { uuidv4 } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { useTrack } from '@/lib/telemetry/track'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
@@ -383,7 +383,7 @@ const Reports = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1>{reportTitle}</h1>
-            <p className="text-foreground-light">{currentReport?.description}</p>
+            <p className="text-foreground-light">{$tValue(currentReport?.description)}</p>
           </div>
           {hasEdits && (
             <div className="flex items-center gap-x-2">

@@ -27,8 +27,8 @@ const NoProjectNotice = () => {
         <p className="heading-default">{$t('Project required')}</p>
         <p className="text-foreground-light text-sm">
           {isHealthAdvisorEnabled
-            ? 'Select a project to view its security, performance and health advisories'
-            : 'Select a project to view its security and performance advisories'}
+            ? $t('Select a project to view its security, performance and health advisories')
+            : $t('Select a project to view its security and performance advisories')}
         </p>
       </div>
     </div>

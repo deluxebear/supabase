@@ -31,7 +31,7 @@ import { filterComputeInstances, formatResources, getPage } from './Compute.util
 import { ComputeInstanceStatePill } from './ComputeInstanceStatePill'
 import { RuntimeBadge } from './RuntimeBadge'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface ComputeListProps {
   projectRef: string
@@ -112,7 +112,7 @@ export const ComputeList = ({
           <SelectContent>
             {STATE_FILTERS.map((option) => (
               <SelectItem key={option.value} value={option.value}>
-                {option.label}
+                {$tValue(option.label)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -130,7 +130,7 @@ export const ComputeList = ({
           <SelectContent>
             {ACCESS_FILTERS.map((option) => (
               <SelectItem key={option.value} value={option.value}>
-                {option.label}
+                {$tValue(option.label)}
               </SelectItem>
             ))}
           </SelectContent>

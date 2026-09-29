@@ -511,7 +511,7 @@ export const InviteMemberButton = () => {
               type="submit"
               loading={isInviting}
             >
-              {emailCount >= 2 ? 'Send invitations' : 'Send invitation'}
+              {emailCount >= 2 ? $t('Send invitations') : $t('Send invitation')}
             </Button>
           </Shortcut>
         </SheetFooter>

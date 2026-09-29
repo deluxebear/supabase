@@ -247,7 +247,7 @@ export const CreateAnalyticsBucketForm = ({
               >
                 <p className="leading-normal!">
                   {$t('Supabase will install the')}{' '}
-                  {wrappersExtensionState !== 'installed' ? 'Wrappers extension and ' : ''}
+                  {wrappersExtensionState !== 'installed' ? $t('Wrappers extension and ') : ''}
                   {$t('Iceberg Wrapper integration on your behalf.')}{' '}
                   <InlineLink href={`${DOCS_URL}/guides/database/extensions/wrappers/iceberg`}>
                     {$t('Learn more')}

@@ -65,7 +65,7 @@ export const BranchSelector = ({
             },
           }}
         >
-          {isUpdating ? 'Creating...' : 'New merge request'}
+          {isUpdating ? $t('Creating...') : $t('New merge request')}
         </ButtonTooltip>
       </PopoverTrigger>
       <PopoverContent className="p-0 w-80" side="bottom" align="end">

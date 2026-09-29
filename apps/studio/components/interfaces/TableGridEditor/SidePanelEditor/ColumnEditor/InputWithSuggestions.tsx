@@ -23,6 +23,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import type { Suggestion } from './ColumnEditor.types'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const MAX_SUGGESTIONS = 3
 
@@ -126,7 +127,7 @@ const InputWithSuggestions = ({
                       onClick={() => onSelectSuggestion(suggestion)}
                     >
                       <p>{suggestion.name}</p>
-                      <p className="text-foreground-lighter">{suggestion.description}</p>
+                      <p className="text-foreground-lighter">{$tValue(suggestion.description)}</p>
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>

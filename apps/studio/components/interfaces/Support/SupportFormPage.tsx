@@ -168,14 +168,14 @@ function SupportFormHeader() {
             >
               <Link href="https://status.supabase.com/" target="_blank" rel="noreferrer">
                 {isLoading
-                  ? 'Checking status'
+                  ? $t('Checking status')
                   : isError
-                    ? 'Failed to check status'
+                    ? $t('Failed to check status')
                     : isIncident
-                      ? 'Active incident ongoing'
+                      ? $t('Active incident ongoing')
                       : isMaintenance
-                        ? 'Scheduled maintenance'
-                        : 'All systems operational'}
+                        ? $t('Scheduled maintenance')
+                        : $t('All systems operational')}
               </Link>
             </Button>
           </TooltipTrigger>

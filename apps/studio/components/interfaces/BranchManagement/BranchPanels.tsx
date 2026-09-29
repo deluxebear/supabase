@@ -10,6 +10,7 @@ import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 import { WorkflowLogs } from './WorkflowLogs'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import type { Branch } from '@/data/branches/branches-query'
+import { t as $t } from '@/lib/i18n'
 
 interface BranchManagementSectionProps {
   header: string | ReactNode
@@ -131,12 +132,12 @@ export const BranchRow = ({
         {branch.deletion_scheduled_at ? (
           <p className="text-xs text-foreground-lighter">
             {isDeletionPending
-              ? 'Deletion pending...'
+              ? $t('Deletion pending...')
               : `Will be deleted in ${willBeDeletedIn} minutes`}
           </p>
         ) : (
           <p className="text-xs text-foreground-lighter">
-            {daysFromNow > 1 ? 'Updated on' : 'Updated'}{' '}
+            {daysFromNow > 1 ? $t('Updated on') : $t('Updated')}{' '}
             <TimestampInfo
               utcTimestamp={branch.updated_at}
               label={daysFromNow <= 1 ? formattedTimeFromNow : undefined}

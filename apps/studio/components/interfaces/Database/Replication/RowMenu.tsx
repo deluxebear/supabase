@@ -163,7 +163,9 @@ export const RowMenu = ({
             <Button
               variant="default"
               className="px-1.25 hit-area-2"
-              aria-label={hasUpdate ? 'Pipeline options, update available' : 'Pipeline options'}
+              aria-label={
+                hasUpdate ? $t('Pipeline options, update available') : $t('Pipeline options')
+              }
               icon={<MoreVertical />}
             />
             {hasUpdate && (

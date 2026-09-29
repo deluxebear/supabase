@@ -160,7 +160,7 @@ export const RedirectUrls = () => {
             <AlertDialogFooter className="flex items-center gap-x-2">
               <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
               <AlertDialogAction variant="warning" onClick={() => onConfirmDeleteUrl(selectedUrls)}>
-                {isUpdatingConfig ? 'Removing...' : 'Remove URL'}
+                {isUpdatingConfig ? $t('Removing...') : $t('Remove URL')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

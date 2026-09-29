@@ -7,7 +7,7 @@ import {
 } from 'ui'
 
 import { ROWS_PER_PAGE_OPTIONS } from '../../SQLEditor.constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface RowLimitSubMenuProps {
   value: number
@@ -29,7 +29,7 @@ export const RowLimitSubMenu = ({ value, onValueChange }: RowLimitSubMenuProps) 
         <DropdownMenuRadioGroup value={value.toString()} onValueChange={onValueChange}>
           {ROWS_PER_PAGE_OPTIONS.map((option) => (
             <DropdownMenuRadioItem key={option.label} value={option.value.toString()}>
-              {option.label}
+              {$tValue(option.label)}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>

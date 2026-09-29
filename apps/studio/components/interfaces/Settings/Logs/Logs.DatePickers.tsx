@@ -407,7 +407,7 @@ export const LogsDatePicker = ({
               onClick={handleCopy}
               className={cn({ 'text-brand-link': copied || pasted })}
             >
-              {copied ? 'Copied!' : pasted ? 'Pasted!' : 'Copy range'}
+              {copied ? $t('Copied!') : pasted ? $t('Pasted!') : $t('Copy range')}
             </Button>
           ) : null}
 

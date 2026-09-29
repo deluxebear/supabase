@@ -23,6 +23,47 @@ describe('transformSourceFile', () => {
     expect(text).toContain(`placeholder={$t('Search tables')}`)
   })
 
+  it('wraps string expressions and conditional text attributes', () => {
+    const source = `export const C = ({ busy }: { busy: boolean }) => (
+      <div title={busy ? 'Loading data' : 'Show data'}>
+        {'Save changes'}
+        <input placeholder={'Search tables'} className={busy ? 'Loading data' : 'ready'} />
+      </div>
+    )`
+    const { text, keys } = run(source)
+
+    expect(text).toContain(`title={busy ? $t('Loading data') : $t('Show data')}`)
+    expect(text).toContain(`{$t('Save changes')}`)
+    expect(text).toContain(`placeholder={$t('Search tables')}`)
+    expect(text).toContain(`className={busy ? 'Loading data' : 'ready'}`)
+    expect(keys).toEqual(['Loading data', 'Show data', 'Save changes', 'Search tables'])
+
+    const project = new Project({ useInMemoryFileSystem: true })
+    const sf = project.createSourceFile('C.tsx', text)
+    expect(transformSourceFile(sf).changed).toBe(false)
+  })
+
+  it('translates dynamic display fields when rendered', () => {
+    const { text } = run(
+      `export const C = ({ item }) => <div title={item.title}>{item.description}</div>`
+    )
+    expect(text).toContain(`translateDisplayValue as $tValue`)
+    expect(text).toContain(`title={$tValue(item.title)}`)
+    expect(text).toContain(`{$tValue(item.description)}`)
+
+    const project = new Project({ useInMemoryFileSystem: true })
+    const sf = project.createSourceFile('C.tsx', text)
+    expect(transformSourceFile(sf).changed).toBe(false)
+  })
+
+  it('keeps the static translator import for dynamic translation calls', () => {
+    const source = `import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
+export const C = ({ item }) => <div>{$t(item.name)}{$tValue(item.title)}</div>`
+    const { text } = run(source)
+    expect(text).toContain(`t as $t`)
+    expect(text).toContain(`$t(item.name)`)
+  })
+
   it('leaves structural attributes alone', () => {
     const { text } = run(`export const C = () => <div className="Save changes" />`)
     expect(text).toContain(`className="Save changes"`)

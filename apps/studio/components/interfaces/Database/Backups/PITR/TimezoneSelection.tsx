@@ -49,7 +49,7 @@ export const TimezoneSelection = ({
               <span className="truncate">
                 {selectedTimezone
                   ? timezoneOptions.find((option) => option === selectedTimezone.text)
-                  : 'Select timezone...'}
+                  : $t('Select timezone...')}
               </span>
             </span>
           </ComboboxTrigger>

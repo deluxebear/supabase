@@ -63,7 +63,9 @@ export const HelpPanel = ({
               tooltip={{ content: { side: 'bottom', text: $t('Back') } }}
             />
           )}
-          <span className="truncate">{isSupportView ? 'Contact support' : 'Help & Support'}</span>
+          <span className="truncate">
+            {isSupportView ? $t('Contact support') : $t('Help & Support')}
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <SupportFormStatusButton />

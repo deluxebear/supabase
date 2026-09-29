@@ -214,8 +214,8 @@ const EdgeFunctionsPage: NextPageWithLayout = () => {
                       </ShortcutTooltip>
                       <span className="border-l border-default pl-2 text-xs text-foreground-light">
                         {search && filteredFunctions.length !== functionCount
-                          ? 'Viewing {{count}} of {{total}} functions in total'
-                          : 'Viewing {{count}} functions in total'}
+                          ? $t('Viewing {{count}} of {{total}} functions in total')
+                          : $t('Viewing {{count}} functions in total')}
                       </span>
                     </div>
                     <Card>

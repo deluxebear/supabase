@@ -159,14 +159,14 @@ export const AddNewSecretModal = () => {
                               variant="text"
                               className="absolute right-1 top-1 px-1"
                               aria-label={
-                                isSecretVisible ? 'Hide secret value' : 'Show secret value'
+                                isSecretVisible ? $t('Hide secret value') : $t('Show secret value')
                               }
                               icon={isSecretVisible ? <EyeOff /> : <Eye />}
                               onClick={() => setIsSecretVisible((prev) => !prev)}
                             />
                           </TooltipTrigger>
                           <TooltipContent side="bottom">
-                            {isSecretVisible ? 'Hide value' : 'Show value'}
+                            {isSecretVisible ? $t('Hide value') : $t('Show value')}
                           </TooltipContent>
                         </Tooltip>
                       </div>

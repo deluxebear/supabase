@@ -177,7 +177,9 @@ export const TableCopySelection = ({ form, editMode }: TableCopySelectionProps) 
                         </span>
                       )
                     }
-                    label={publicationName ? 'Select tables...' : 'Select a publication first'}
+                    label={
+                      publicationName ? $t('Select tables...') : $t('Select a publication first')
+                    }
                   />
                   <MultiSelector.Content>
                     <MultiSelector.List

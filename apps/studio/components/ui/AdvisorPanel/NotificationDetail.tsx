@@ -6,7 +6,7 @@ import { Markdown } from '@/components/interfaces/Markdown'
 import { Notification, NotificationData } from '@/data/notifications/notifications-v2-query'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface NotificationDetailProps {
   notification: Notification
@@ -82,14 +82,14 @@ export const NotificationDetail = ({ notification, onUpdateStatus }: Notificatio
             return (
               <Button key={key} icon={<ExternalLink strokeWidth={1.5} />} asChild>
                 <Link href={url} target="_blank" rel="noreferrer">
-                  {action.label}
+                  {$tValue(action.label)}
                 </Link>
               </Button>
             )
           } else if (action.action_type !== undefined) {
             return (
               <Button key={key} onClick={() => onButtonAction(action.action_type)}>
-                {action.label}
+                {$tValue(action.label)}
               </Button>
             )
           } else {

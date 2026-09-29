@@ -226,9 +226,13 @@ export const RequestUpgradeToBillingOwners = ({
                         placeholder={
                           !!addon
                             ? addon === 'spendCap'
-                              ? 'e.g. We need to disabled spend cap on this project to do something'
-                              : 'e.g. We need to enable this add-on to do something with the project'
-                            : 'e.g. We need to upgrade to the Pro plan to use this feature'
+                              ? $t(
+                                  'e.g. We need to disabled spend cap on this project to do something'
+                                )
+                              : $t(
+                                  'e.g. We need to enable this add-on to do something with the project'
+                                )
+                            : $t('e.g. We need to upgrade to the Pro plan to use this feature')
                         }
                       />
                     </FormControl>

@@ -307,7 +307,7 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
       >
         <SheetHeader className="py-3 flex flex-row justify-between items-center border-b-0">
           <SheetTitle className="truncate">
-            {isCreating ? 'Add {{hook}}' : 'Update {{hook}}'}
+            {isCreating ? $t('Add {{hook}}') : $t('Update {{hook}}')}
           </SheetTitle>
           <DocsButton href={`${DOCS_URL}/guides/auth/auth-hooks/${hook.docSlug}`} />
         </SheetHeader>
@@ -330,7 +330,7 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
                     label={$t('Enable {{hook}}')}
                     description={
                       hookType === 'Send SMS hook'
-                        ? 'SMS Provider settings will be disabled in favor of SMS hooks'
+                        ? $t('SMS Provider settings will be disabled in favor of SMS hooks')
                         : undefined
                     }
                   >
@@ -458,7 +458,7 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
                                 <br />
                                 {$t('and JSON/B')}
                                 {definition.enabledKey === 'HOOK_SEND_EMAIL_ENABLED'
-                                  ? ' or void'
+                                  ? $t(' or void')
                                   : ''}{' '}
                                 {$t('return type found in this schema.')}
                               </span>
@@ -574,7 +574,7 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
             disabled={isUpdatingAuthHooks}
             loading={isUpdatingAuthHooks}
           >
-            {isCreating ? 'Create hook' : 'Update hook'}
+            {isCreating ? $t('Create hook') : $t('Update hook')}
           </Button>
         </SheetFooter>
       </SheetContent>

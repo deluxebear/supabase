@@ -225,7 +225,9 @@ export const SupabaseProjectSelector = ({
                 </div>
               )}
               <span className="truncate">
-                {selectedSupabaseProject ? selectedSupabaseProject.name : 'Choose Supabase project'}
+                {selectedSupabaseProject
+                  ? selectedSupabaseProject.name
+                  : $t('Choose Supabase project')}
               </span>
             </div>
           </Button>

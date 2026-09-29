@@ -15,7 +15,7 @@ import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { withAuth } from '@/hooks/misc/withAuth'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { buildStudioPageTitle } from '@/lib/page-title'
 
 interface OrganizationLayoutProps {
@@ -155,8 +155,8 @@ const OrganizationLayoutContent = ({
         >
           <PartnerIcon organization={selectedOrganization} showTooltip={false} size="medium" />
           <div className="flex-1">
-            <AlertTitle>{bannerConfig.title}</AlertTitle>
-            <AlertDescription>{bannerConfig.description}</AlertDescription>
+            <AlertTitle>{$tValue(bannerConfig.title)}</AlertTitle>
+            <AlertDescription>{$tValue(bannerConfig.description)}</AlertDescription>
           </div>
           <div className="flex items-center gap-2">
             {selectedRedirectQuery?.data?.url && (

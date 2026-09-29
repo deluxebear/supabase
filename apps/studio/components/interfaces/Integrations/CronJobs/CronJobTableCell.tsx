@@ -235,7 +235,7 @@ export const CronJobTableCell = ({
           >
             <DialogHeader>
               <DialogTitle>
-                {active ? 'Disable' : 'Enable'} {$t('cron job')}
+                {active ? $t('Disable') : $t('Enable')} {$t('cron job')}
               </DialogTitle>
             </DialogHeader>
             <DialogSectionSeparator />
@@ -254,7 +254,7 @@ export const CronJobTableCell = ({
                 loading={isToggling}
                 onClick={onConfirmToggle}
               >
-                {active ? 'Disable' : 'Enable'}
+                {active ? $t('Disable') : $t('Enable')}
               </Button>
             </DialogFooter>
           </DialogContent>

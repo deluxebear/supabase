@@ -91,7 +91,7 @@ export const FileExplorerAndEditorRow = ({
                       {state === 'new' ? 'U' : 'M'}
                     </TooltipTrigger>
                     <TooltipContent side="bottom">
-                      {state === 'new' ? 'Unsaved' : 'Modified'}
+                      {state === 'new' ? $t('Unsaved') : $t('Modified')}
                     </TooltipContent>
                   </Tooltip>
                 </div>

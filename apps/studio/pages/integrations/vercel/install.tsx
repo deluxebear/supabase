@@ -329,7 +329,9 @@ const VercelIntegration: NextPageWithLayout = () => {
                   loading={dataLoading}
                   onClick={onInstall}
                 >
-                  {selectedOrg && installed[selectedOrg.slug] ? 'Continue' : 'Install integration'}
+                  {selectedOrg && installed[selectedOrg.slug]
+                    ? $t('Continue')
+                    : $t('Install integration')}
                 </Button>
                 <InterstitialActionError error={actionError} />
               </div>

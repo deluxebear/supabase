@@ -186,7 +186,7 @@ export const PlatformWebhooksEndpointList = ({
                   >
                     <TableCell>
                       <Badge variant={endpoint.enabled ? 'success' : 'default'}>
-                        {endpoint.enabled ? 'Enabled' : 'Disabled'}
+                        {endpoint.enabled ? $t('Enabled') : $t('Disabled')}
                       </Badge>
                     </TableCell>
                     <TableCell className="max-w-[420px]">

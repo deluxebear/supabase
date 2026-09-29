@@ -195,7 +195,7 @@ export const Usage = () => {
                           className="justify-between w-[180px]"
                           iconRight={<ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />}
                         >
-                          {!selectedProject ? 'All projects' : selectedProject?.name}
+                          {!selectedProject ? $t('All projects') : selectedProject?.name}
                         </Button>
                       )
                     }}

@@ -1,5 +1,7 @@
 import { Fragment } from 'react'
 
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
+
 interface BreadcrumbsViewProps {
   defaultValue: any
 }
@@ -34,7 +36,7 @@ export const BreadcrumbsView = ({ defaultValue: breadcrumbs }: BreadcrumbsViewPr
                   breadcrumb.onClick ? 'cursor-pointer hover:text-white' : ''
                 }`}
               >
-                {breadcrumb.label}
+                {$tValue(breadcrumb.label)}
               </a>
             </Fragment>
           ))

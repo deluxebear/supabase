@@ -7,7 +7,7 @@ import {
   PERMISSION_PRESETS,
   type PermissionPreset,
 } from '../../AccessToken.presets'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface PermissionPresetSelectProps {
   selection: PermissionSelection
@@ -53,13 +53,13 @@ export const PermissionPresetSelect = ({
               className="items-start"
             >
               <span className="flex flex-col gap-0.5">
-                <span>{preset.label}</span>
+                <span>{$tValue(preset.label)}</span>
                 {preset.description !== undefined && (
                   <span
                     id={`preset-${preset.id}-description`}
                     className="text-xs text-foreground-lighter"
                   >
-                    {preset.description}
+                    {$tValue(preset.description)}
                   </span>
                 )}
               </span>

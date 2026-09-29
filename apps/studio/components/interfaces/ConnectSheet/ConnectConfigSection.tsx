@@ -38,7 +38,7 @@ import {
   getConnectModeButtonCornerVariants,
   getConnectModeEmptySlotClasses,
 } from './ConnectModeButton'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface ConnectConfigSectionProps {
   activeFields: ResolvedField[]
@@ -75,8 +75,8 @@ export function ConnectConfigSection({
                 key={field.id}
                 isReactForm={false}
                 layout="horizontal"
-                label={field.label}
-                description={field.description}
+                label={$tValue(field.label)}
+                description={$tValue(field.description)}
                 name={`connect-${field.id}`}
               >
                 <ConnectCombobox
@@ -149,10 +149,10 @@ export function ConnectConfigSection({
                       label={
                         <span className="flex min-w-0 items-center gap-2">
                           {option.icon && <ConnectionIcon icon={option.icon} />}
-                          <span className="truncate">{option.label}</span>
+                          <span className="truncate">{$tValue(option.label)}</span>
                         </span>
                       }
-                      description={option.description}
+                      description={$tValue(option.description)}
                     />
                   ))}
                 </RadioGroupStacked>
@@ -366,7 +366,7 @@ function ConnectCombobox({
                       <ConnectionIcon icon={option.icon} />
                     </span>
                   )}
-                  <span className="truncate">{option.label}</span>
+                  <span className="truncate">{$tValue(option.label)}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -405,8 +405,8 @@ export function ModeSelector({ modes, selected, onChange }: ModeSelectorProps) {
           <ConnectModeButton
             key={mode.id}
             modeId={mode.id}
-            label={mode.label}
-            description={mode.description}
+            label={$tValue(mode.label)}
+            description={$tValue(mode.description)}
             selected={selected === mode.id}
             onClick={() => onChange(mode.id)}
             {...getConnectModeButtonCornerVariants({ index, count, emptySlots })}

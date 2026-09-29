@@ -121,7 +121,8 @@ export const BucketsPicker = ({
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button icon={<ArrowDownNarrowWide />}>
-                        {$t('Sorted by')} {sortBucket === 'alphabetical' ? 'name' : 'created at'}
+                        {$t('Sorted by')}{' '}
+                        {sortBucket === 'alphabetical' ? 'name' : $t('created at')}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-40">

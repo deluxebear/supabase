@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 
 import { EmptyState, SkeletonResults } from './ContextSearchResults.shared'
 import type { SearchContextValue } from './SearchContext.types'
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const TableSearchResults = dynamic(
   () => import('./TableSearchResults').then((mod) => ({ default: mod.TableSearchResults })),
@@ -119,7 +120,7 @@ export function ContextSearchResults({
 
   return (
     <div className="flex-1 min-h-0 flex flex-col">
-      <EmptyState icon={config.icon} label={config.label} query={query} />
+      <EmptyState icon={config.icon} label={$tValue(config.label)} query={query} />
     </div>
   )
 }

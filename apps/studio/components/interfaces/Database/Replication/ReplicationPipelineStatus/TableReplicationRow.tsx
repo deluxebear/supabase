@@ -18,7 +18,7 @@ import { getStatusConfig, getTableSyncLagLabel } from './ReplicationPipelineStat
 import { DropdownMenuItemTooltip } from '@/components/ui/DropdownMenuItemTooltip'
 import { StateDot } from '@/components/ui/StateDot'
 import { ReplicationPipelineTableStatus } from '@/data/replication/pipeline-replication-status-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface TableReplicationRowProps {
   table: ReplicationPipelineTableStatus
@@ -81,7 +81,7 @@ export const TableReplicationRow = ({
             isPulsing={statusConfig.isPulsing}
             pulseDelayMs={statusConfig.isPulsing ? (table.id % 8) * 55 : undefined}
           >
-            {statusConfig.label}
+            {$tValue(statusConfig.label)}
           </StateDot>
         )}
       </TableCell>
@@ -95,7 +95,7 @@ export const TableReplicationRow = ({
           <p className="text-sm text-foreground-lighter">{disabledStateMessage}</p>
         ) : isErrorState ? (
           <div className="flex flex-col gap-y-3 text-sm text-foreground-lighter">
-            <p>{statusConfig.description}.</p>
+            <p>{$tValue(statusConfig.description)}.</p>
             <ErroredTableDetails table={table} />
           </div>
         ) : (

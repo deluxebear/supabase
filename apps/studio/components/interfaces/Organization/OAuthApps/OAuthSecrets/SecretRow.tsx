@@ -125,8 +125,10 @@ export const SecretRow = ({ secret, appId }: SecretRowProps) => {
       >
         <p className="text-sm text-foreground-light">
           {isLast
-            ? 'The last client secret cannot be deleted. Please generate a new secret before deleting this one.'
-            : 'Are you sure you want to delete this client secret?'}
+            ? $t(
+                'The last client secret cannot be deleted. Please generate a new secret before deleting this one.'
+              )
+            : $t('Are you sure you want to delete this client secret?')}
         </p>
       </ConfirmationModal>
     </>

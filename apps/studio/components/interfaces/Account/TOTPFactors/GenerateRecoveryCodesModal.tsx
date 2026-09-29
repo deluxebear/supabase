@@ -23,7 +23,7 @@ export const GenerateRecoveryCodesModal = () => {
       actions={
         <>
           <span aria-live="polite" className="sr-only">
-            {recoveryCodesGenerateMutation.isPending ? 'Generating your recovery codes...' : ''}
+            {recoveryCodesGenerateMutation.isPending ? $t('Generating your recovery codes...') : ''}
           </span>
           <Button
             onClick={() => {

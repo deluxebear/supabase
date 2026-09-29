@@ -4,7 +4,7 @@ import { cn } from 'ui'
 
 import { useChangedSync } from '@/hooks/misc/useChanged'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 function useDocsSuggestions(subject: string) {
   const { handleDocsSearchDebounced, resetSearch, searchState } = useDocsSearch()
@@ -83,7 +83,7 @@ function DocsSuggestions_Results({ results, isStale }: DocsSuggestions_ResultsPr
                 rel="noreferrer"
                 className="text-sm text-foreground-light hover:text-foreground transition"
               >
-                {page.title}
+                {$tValue(page.title)}
               </a>
             </li>
           )

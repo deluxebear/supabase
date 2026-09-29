@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from 'ui'
 
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 type SortOption = {
   label: string
@@ -42,7 +42,7 @@ export const SortDropdown = ({ options, value, setValue }: SortDropdownProps) =>
             return (
               <DropdownMenuSub key={option.value}>
                 <DropdownMenuSubTrigger>
-                  {$t('Sort by')} {option.label}
+                  {$t('Sort by')} {$tValue(option.label)}
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent>
                   <DropdownMenuRadioItem value={`${option.value}_asc`}>

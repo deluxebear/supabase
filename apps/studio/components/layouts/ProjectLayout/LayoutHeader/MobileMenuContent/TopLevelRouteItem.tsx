@@ -3,6 +3,7 @@ import { cn, sidebarMenuButtonVariants, SidebarMenuItem } from 'ui'
 
 import { isDirectLinkAtTopLevel } from './useMobileMenuNavigation'
 import type { Route } from '@/components/ui/ui.types'
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export interface TopLevelRouteItemProps {
   route: Route
@@ -27,7 +28,7 @@ export function TopLevelRouteItem({
           {route.icon}
         </span>
       )}
-      <span className="truncate">{route.label}</span>
+      <span className="truncate">{$tValue(route.label)}</span>
     </>
   )
   const menuButtonClass = cn(

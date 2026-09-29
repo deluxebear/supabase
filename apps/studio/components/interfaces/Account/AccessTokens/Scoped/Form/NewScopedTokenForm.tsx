@@ -30,7 +30,7 @@ import { StepIndicator } from './StepIndicator'
 import { TokenDetails } from './TokenDetails'
 import { InlineLinkClassName } from '@/components/ui/InlineLink'
 import { useGetEnabledEndpointsForCapability } from '@/data/scoped-access-tokens/permission-scope-map-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const FORM_ID = 'scoped-token-form'
 
@@ -167,8 +167,8 @@ export const NewScopedTokenForm = forwardRef<
                   <Admonition
                     type="warning"
                     className="mb-0"
-                    title={CLASSIC_TOKEN_WARNING.title}
-                    description={CLASSIC_TOKEN_WARNING.description}
+                    title={$tValue(CLASSIC_TOKEN_WARNING.title)}
+                    description={$tValue(CLASSIC_TOKEN_WARNING.description)}
                   />
                 </div>
               )}

@@ -226,7 +226,7 @@ export const FleetDatabaseSecurity = () => {
                           <Textarea
                             {...field}
                             rows={4}
-                            placeholder={'203.0.113.0/24\n2001:db8::/48'}
+                            placeholder={$t('203.0.113.0/24\n2001:db8::/48')}
                           />
                         </FormControl>
                       </FormItemLayout>

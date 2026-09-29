@@ -4,9 +4,10 @@
   translations; upstream never touches it, so a merge can never overwrite or
   delete a translation.
 - **Wrap:** `pnpm exec tsx scripts/i18n/wrap.ts` (idempotent) — walks
-  `components/**/*.tsx` and `pages/**/*.tsx`, wraps user-facing UI strings with
-  `t()` (injecting `import { t as $t } from '@/lib/i18n'` and calling `$t(...)`
-  where needed), and writes the full key list to `scripts/i18n/keys.json`.
+  component and page sources, wraps user-facing JSX text, attrs, expressions,
+  and toasts with `$t(...)`. Rendered `label`, `title`, and `description` object
+  fields use `$tValue(...)` so static config keeps its English values until
+  render time. The script writes the full key list to `scripts/i18n/keys.json`.
   Running it again on already-wrapped source is a no-op.
 - **Translate:** `pnpm exec tsx scripts/i18n/translate.ts` reads
   `scripts/i18n/keys.json` and `lib/i18n/locales/zh-CN.json`, and only

@@ -21,7 +21,7 @@ import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { sqlKeys } from '@/data/sql/keys'
 import { applyAutoLimit } from '@/data/sql/utils'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 import type { Dashboards, SqlSnippets } from '@/types'
 
@@ -159,7 +159,7 @@ export const ReportBlock = ({
   if (isLogsSnippet) {
     return (
       <LogsSnippetReportBlock
-        label={item.label}
+        label={$tValue(item.label)}
         actions={
           !disableUpdate ? (
             <ButtonTooltip
@@ -182,7 +182,7 @@ export const ReportBlock = ({
           blockWriteQueries
           portalTooltip
           id={item.id}
-          label={item.label}
+          label={$tValue(item.label)}
           chartConfig={chartConfig}
           sql={sql}
           results={rows}
@@ -215,7 +215,7 @@ export const ReportBlock = ({
         />
       ) : isUnavailableBurstChart ? (
         <UnavailableChartBlock
-          label={item.label}
+          label={$tValue(item.label)}
           actions={
             !disableUpdate ? (
               <ButtonTooltip

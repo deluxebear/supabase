@@ -57,7 +57,7 @@ export const ForeignKeyRow = ({
               </Badge>
             )}
             <p className="text-sm text-foreground-light">
-              {foreignKey.columns.length > 1 ? 'Composite foreign' : 'Foreign'}{' '}
+              {foreignKey.columns.length > 1 ? $t('Composite foreign') : $t('Foreign')}{' '}
               {$t('key relation to:')}
             </p>
             <Button

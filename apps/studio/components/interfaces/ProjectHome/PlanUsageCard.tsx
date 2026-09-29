@@ -6,7 +6,7 @@ import { UpgradePlanButton } from '@/components/ui/UpgradePlanButton'
 import { PricingMetric } from '@/data/analytics/org-daily-stats-query'
 import { OrgMetricsUsage, useOrgUsageQuery } from '@/data/usage/org-usage-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 type MetricUnit = 'gigabytes' | 'count'
@@ -140,7 +140,7 @@ const CompactMetricRow = ({
       <div className="flex items-center justify-between gap-2 py-2 border-0">
         <div className="flex items-center gap-2 min-w-0">
           <ProgressRing ratio={ratio} isOver={isOver} isApproaching={isApproaching} />
-          <span className="text-xs text-foreground-light truncate">{config.label}</span>
+          <span className="text-xs text-foreground-light truncate">{$tValue(config.label)}</span>
         </div>
         <div className="flex items-center shrink-0">
           <span className="text-xs whitespace-nowrap">
@@ -223,7 +223,9 @@ export const PlanUsageCard = () => {
                   orgSlug={organization?.slug ?? '_'}
                 />
               ))
-            : METRICS.map((config) => <SkeletonMetricRow key={config.key} label={config.label} />)}
+            : METRICS.map((config) => (
+                <SkeletonMetricRow key={config.key} label={$tValue(config.label)} />
+              ))}
         </div>
       </div>
     </li>

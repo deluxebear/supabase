@@ -120,7 +120,9 @@ export const DisplayApiSettings = ({
         <div className="flex items-center justify-center py-8 space-x-2">
           <AlertCircle size={16} strokeWidth={1.5} />
           <p className="text-sm text-foreground-light">
-            {isProjectSettingsError ? 'Failed to retrieve API keys' : 'Failed to update JWT secret'}
+            {isProjectSettingsError
+              ? $t('Failed to retrieve API keys')
+              : $t('Failed to update JWT secret')}
           </p>
         </div>
       ) : isApiKeysEmpty || isProjectSettingsLoading || isJwtSecretUpdateStatusLoading ? (
@@ -128,8 +130,8 @@ export const DisplayApiSettings = ({
           <Loader2 className="animate-spin" size={16} strokeWidth={1.5} />
           <p className="text-sm text-foreground-light">
             {isProjectSettingsLoading || isApiKeysEmpty
-              ? 'Retrieving API keys'
-              : 'JWT secret is being updated'}
+              ? $t('Retrieving API keys')
+              : $t('JWT secret is being updated')}
           </p>
         </div>
       ) : (
@@ -224,10 +226,10 @@ export const DisplayApiSettings = ({
                 data-invisible={isLoadingLastUsed}
               >
                 {isLastUsedError
-                  ? 'Unable to load requests from the past 24 hours.'
+                  ? $t('Unable to load requests from the past 24 hours.')
                   : lastUsedAPIKeys[x.api_key]
                     ? `Last request was ${lastUsedAPIKeys[x.api_key]} ago.`
-                    : 'No requests in the past 24 hours.'}
+                    : $t('No requests in the past 24 hours.')}
               </div>
             )}
           </Panel.Content>

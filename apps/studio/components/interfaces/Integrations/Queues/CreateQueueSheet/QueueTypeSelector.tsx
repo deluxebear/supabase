@@ -12,7 +12,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { QUEUE_TYPES } from '../Queues.constants'
 import { usePgPartmanStatus } from '../usePgPartmanStatus'
 import { CreateQueueForm } from './CreateQueueSheet.schema'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export function QueueTypeSelector({ form }: { form: UseFormReturn<CreateQueueForm> }) {
   const { isInstalled } = usePgPartmanStatus()
@@ -49,13 +49,15 @@ export function QueueTypeSelector({ form }: { form: UseFormReturn<CreateQueueFor
                         <div className="text-foreground">{definition.icon}</div>
                         <div className="flex flex-col gap-y-1">
                           <div className="flex items-center gap-x-2">
-                            <p className="text-foreground text-left">{definition.label}</p>
+                            <p className="text-foreground text-left">{$tValue(definition.label)}</p>
                             {isPartitioned && <Badge variant="success">{$t('Recommended')}</Badge>}
                           </div>
                           <p className="text-foreground-lighter text-left">
                             {isPartitioned
-                              ? 'Automatically manages data retention and improves performance for high-volume queues via pg_partman.'
-                              : definition.description}
+                              ? $t(
+                                  'Automatically manages data retention and improves performance for high-volume queues via pg_partman.'
+                                )
+                              : $tValue(definition.description)}
                           </p>
                         </div>
                       </div>

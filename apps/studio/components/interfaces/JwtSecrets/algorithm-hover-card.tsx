@@ -2,7 +2,7 @@ import { ExternalLink, HelpCircle, LockKeyholeOpen, RectangleEllipsis } from 'lu
 import { HoverCard, HoverCardContent, HoverCardTrigger } from 'ui'
 
 import { AlgorithmDetail, algorithmDetails } from './algorithm-details'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface AlgorithmHoverCardProps {
   algorithm: keyof typeof algorithmDetails
@@ -28,7 +28,7 @@ export const AlgorithmHoverCard = ({ algorithm, legacy }: AlgorithmHoverCardProp
           <div className="flex-1">
             <h4 className="font-semibold truncate">{details.name}</h4>
             <div className="flex flex-col gap-2 text-sm text-foreground-light">
-              <p>{details.description}</p>
+              <p>{$tValue(details.description)}</p>
               <p>
                 {$t('Pros:')}
                 <ul className="list-disc pl-6">
@@ -57,7 +57,7 @@ export const AlgorithmHoverCard = ({ algorithm, legacy }: AlgorithmHoverCardProp
                   className="text-xs text-primary hover:text-primary-hover flex items-center"
                 >
                   <ExternalLink className="w-3 h-3 mr-1 shrink-0" />
-                  <span className="truncate">{link.label}</span>
+                  <span className="truncate">{$tValue(link.label)}</span>
                 </a>
               ))}
             </div>

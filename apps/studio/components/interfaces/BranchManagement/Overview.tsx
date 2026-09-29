@@ -388,7 +388,7 @@ const PreviewBranchActions = ({
                   },
                 }}
               >
-                <Redo size={14} /> {branch.git_branch ? 'Resync branch' : 'Rebase branch'}
+                <Redo size={14} /> {branch.git_branch ? $t('Resync branch') : $t('Rebase branch')}
               </DropdownMenuItemTooltip>
               <DropdownMenuItemTooltip
                 className="gap-x-2"
@@ -545,15 +545,15 @@ const PreviewBranchActions = ({
         variant="default"
         visible={showConfirmRetriggersModal}
         confirmLabel={branch.git_branch ? 'Resync' : 'Rebase'}
-        title={branch.git_branch ? 'Confirm branch resync' : 'Confirm branch rebase'}
+        title={branch.git_branch ? $t('Confirm branch resync') : $t('Confirm branch rebase')}
         loading={isRetriggering}
         onCancel={() => setShowConfirmRetriggersModal(false)}
         onConfirm={onRetriggerBranch}
       >
         <p className="text-sm text-foreground-light">
           {branch.git_branch
-            ? 'This will re-run all steps of the workflow based on the latest git branch state.'
-            : 'This will re-run all steps of the workflow based on the latest dashboard state.'}
+            ? $t('This will re-run all steps of the workflow based on the latest git branch state.')
+            : $t('This will re-run all steps of the workflow based on the latest dashboard state.')}
         </p>
       </ConfirmationModal>
 

@@ -169,8 +169,8 @@ const VercelIntegration: NextPageWithLayout = () => {
         <div className="space-y-3" role="status">
           <p className="text-sm text-foreground-light">
             {isConnecting
-              ? 'Connecting your project to Vercel'
-              : 'Waiting for your project to be ready'}
+              ? $t('Connecting your project to Vercel')
+              : $t('Waiting for your project to be ready')}
           </p>
           <ShimmeringLoader className="h-2 w-full rounded-full py-0" />
         </div>

@@ -161,7 +161,7 @@ export const BucketTableRow = ({
         <p
           className={bucket.allowed_mime_types ? 'text-foreground-light' : 'text-foreground-muted'}
         >
-          {bucket.allowed_mime_types ? bucket.allowed_mime_types.join(', ') : 'Any'}
+          {bucket.allowed_mime_types ? bucket.allowed_mime_types.join(', ') : $t('Any')}
         </p>
       </BucketTableCell>
 

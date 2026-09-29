@@ -279,7 +279,7 @@ export const TableOptions = ({ control }: TableOptionsProps) => {
                 <Table2 size={16} strokeWidth={1.5} className="shrink-0 text-foreground-lighter" />
                 <span className="flex min-w-0 flex-col gap-0.5">
                   <span className="truncate text-sm font-medium text-foreground">
-                    {sourceTable ? tableLabel(sourceTable) : 'Previously configured table'}
+                    {sourceTable ? tableLabel(sourceTable) : $t('Previously configured table')}
                   </span>
                   <span className="text-sm text-destructive-600">
                     {$t('No longer in publication')}

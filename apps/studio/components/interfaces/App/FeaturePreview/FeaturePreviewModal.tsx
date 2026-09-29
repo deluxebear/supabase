@@ -244,8 +244,8 @@ export const FeaturePreviewModal = () => {
                         </TooltipTrigger>
                         <TooltipContent side="bottom" className="max-w-64 text-center">
                           {hasRoute
-                            ? 'Enables the feature and takes you to where you can try it out'
-                            : 'Enables this preview across the dashboard'}
+                            ? $t('Enables the feature and takes you to where you can try it out')
+                            : $t('Enables this preview across the dashboard')}
                         </TooltipContent>
                       </Tooltip>
                     )}

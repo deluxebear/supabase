@@ -83,6 +83,7 @@ import {
 import { API_URL, BASE_PATH, IS_PLATFORM, useDefaultProvider } from '@/lib/constants'
 import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
 import { TimezoneProvider, useTimezone } from '@/lib/datetime'
+import { I18nProvider } from '@/lib/i18n/I18nProvider'
 import { splitInternalUrl } from '@/lib/internal-url'
 // Custom adapter instead of `nuqs/adapters/tanstack-router` — the stock one
 // injects a trailing slash before the query on every nuqs write (see module).
@@ -372,57 +373,59 @@ function RootComponent() {
   useEffect(registerMonacoCancellationHandler, [])
 
   return (
-    <ErrorBoundary FallbackComponent={GlobalErrorBoundaryState} onError={errorBoundaryHandler}>
-      <NuqsAdapter>
-        <AuthProvider>
-          <FeatureFlagProviderWithOrgContext
-            API_URL={API_URL}
-            enabled={STUDIO_CAPABILITIES.hostedFeatureFlags}
-          >
-            <ProfileProvider>
-              <TimezoneProvider>
-                <TimestampInfoTimezoneBridge>
-                  <DynamicTitle />
-                  <TooltipProvider>
-                    <RouteValidationWrapper>
-                      <ThemeProvider>
-                        <DevToolbarProvider apiUrl={API_URL}>
-                          <AiAssistantStateContextProvider>
-                            <CommandProvider>
-                              <BannerStackProvider>
-                                <FeaturePreviewContextProvider>
-                                  <MainScrollContainerProvider>
-                                    <ClientOnly fallback={<ShellFallback />}>
-                                      <Outlet />
-                                    </ClientOnly>
-                                  </MainScrollContainerProvider>
-                                  <GlobalShortcuts />
-                                  <StudioCommandMenu />
-                                  <FeaturePreviewModal />
-                                  <IndirectTaxDeclarationModal />
-                                </FeaturePreviewContextProvider>
-                              </BannerStackProvider>
-                              <Toaster />
-                              <ToastErrorTracker />
-                              <MonacoThemeProvider />
-                              <AppearanceSettingsProvider />
-                            </CommandProvider>
-                          </AiAssistantStateContextProvider>
-                          <DevToolbar extraTabs={devToolbarExtraTabs} />
-                          <DevToolbarTrigger />
-                        </DevToolbarProvider>
-                      </ThemeProvider>
-                    </RouteValidationWrapper>
-                  </TooltipProvider>
-                  {STUDIO_CAPABILITIES.hostedTelemetry && <Telemetry />}
-                </TimestampInfoTimezoneBridge>
-              </TimezoneProvider>
-            </ProfileProvider>
-          </FeatureFlagProviderWithOrgContext>
-        </AuthProvider>
-      </NuqsAdapter>
-      {STUDIO_CAPABILITIES.hostedTelemetry && <TelemetryTagManager />}
-    </ErrorBoundary>
+    <I18nProvider>
+      <ErrorBoundary FallbackComponent={GlobalErrorBoundaryState} onError={errorBoundaryHandler}>
+        <NuqsAdapter>
+          <AuthProvider>
+            <FeatureFlagProviderWithOrgContext
+              API_URL={API_URL}
+              enabled={STUDIO_CAPABILITIES.hostedFeatureFlags}
+            >
+              <ProfileProvider>
+                <TimezoneProvider>
+                  <TimestampInfoTimezoneBridge>
+                    <DynamicTitle />
+                    <TooltipProvider>
+                      <RouteValidationWrapper>
+                        <ThemeProvider>
+                          <DevToolbarProvider apiUrl={API_URL}>
+                            <AiAssistantStateContextProvider>
+                              <CommandProvider>
+                                <BannerStackProvider>
+                                  <FeaturePreviewContextProvider>
+                                    <MainScrollContainerProvider>
+                                      <ClientOnly fallback={<ShellFallback />}>
+                                        <Outlet />
+                                      </ClientOnly>
+                                    </MainScrollContainerProvider>
+                                    <GlobalShortcuts />
+                                    <StudioCommandMenu />
+                                    <FeaturePreviewModal />
+                                    <IndirectTaxDeclarationModal />
+                                  </FeaturePreviewContextProvider>
+                                </BannerStackProvider>
+                                <Toaster />
+                                <ToastErrorTracker />
+                                <MonacoThemeProvider />
+                                <AppearanceSettingsProvider />
+                              </CommandProvider>
+                            </AiAssistantStateContextProvider>
+                            <DevToolbar extraTabs={devToolbarExtraTabs} />
+                            <DevToolbarTrigger />
+                          </DevToolbarProvider>
+                        </ThemeProvider>
+                      </RouteValidationWrapper>
+                    </TooltipProvider>
+                    {STUDIO_CAPABILITIES.hostedTelemetry && <Telemetry />}
+                  </TimestampInfoTimezoneBridge>
+                </TimezoneProvider>
+              </ProfileProvider>
+            </FeatureFlagProviderWithOrgContext>
+          </AuthProvider>
+        </NuqsAdapter>
+        {STUDIO_CAPABILITIES.hostedTelemetry && <TelemetryTagManager />}
+      </ErrorBoundary>
+    </I18nProvider>
   )
 }
 

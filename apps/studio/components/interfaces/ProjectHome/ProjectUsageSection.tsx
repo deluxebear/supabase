@@ -21,7 +21,7 @@ import { fillTimeseriesSorted } from '@/hooks/analytics/useFillTimeseriesSorted'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 type LogsBarChartDatum = {
@@ -251,7 +251,7 @@ export const ProjectUsageSection = () => {
                           })
                         }}
                       >
-                        {s.title}
+                        {$tValue(s.title)}
                       </Link>
                     ) : (
                       s.title

@@ -17,7 +17,7 @@ import { AlertError } from '@/components/ui/AlertError'
 import { type OrganizationBillingSubscriptionPreviewQueryResult } from '@/data/organizations/organization-billing-subscription-preview'
 import { DOCS_URL } from '@/lib/constants'
 import { formatCurrency } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const CELL_CLASSNAME = 'py-2 px-0'
 
@@ -109,7 +109,9 @@ export const InvoiceEstimateTooltip = ({
                     <>
                       {planItem && (
                         <TableRow className="text-foreground-light">
-                          <TableCell className={CELL_CLASSNAME}>{planItem.description}</TableCell>
+                          <TableCell className={CELL_CLASSNAME}>
+                            {$tValue(planItem.description)}
+                          </TableCell>
                           <TableCell
                             className={cn(CELL_CLASSNAME, 'text-foreground text-right')}
                             translate="no"
@@ -183,7 +185,7 @@ export const InvoiceEstimateTooltip = ({
                               {item.breakdown && item.breakdown.length > 0 && (
                                 <InfoTooltip className="max-w-sm">
                                   <p>
-                                    {$t('Projects using')} {item.description}:
+                                    {$t('Projects using')} {$tValue(item.description)}:
                                   </p>
                                   <ul className="ml-6 list-disc">
                                     {item.breakdown.map((breakdown) => (

@@ -10,7 +10,7 @@ import {
 } from 'ui'
 
 import type { Permission } from '../Apps.constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface ViewAppSheetPermissionsProps {
   permissions: Permission[]
@@ -50,10 +50,12 @@ export function ViewAppSheetPermissions({ permissions, isLoading }: ViewAppSheet
                   permissions.map((p) => (
                     <TableRow key={p.id}>
                       <TableCell>
-                        <p className="text-sm truncate">{p.label}</p>
+                        <p className="text-sm truncate">{$tValue(p.label)}</p>
                       </TableCell>
                       <TableCell>
-                        <p className="text-foreground-light text-sm truncate">{p.description}</p>
+                        <p className="text-foreground-light text-sm truncate">
+                          {$tValue(p.description)}
+                        </p>
                       </TableCell>
                     </TableRow>
                   ))

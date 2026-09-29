@@ -37,7 +37,7 @@ import { getTableDefinition } from '@/data/database/table-definition-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { formatSql } from '@/lib/formatSql'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 // ReactFlow is scaling everything by the factor of 2
 export const TABLE_NODE_WIDTH = 320
@@ -115,7 +115,7 @@ const TableNodeComponent = ({
                       <TooltipTrigger asChild className="cursor-default ">
                         <InfoIcon size={10} className="text-light" />
                       </TooltipTrigger>
-                      <TooltipContent side="top">{data.description}</TooltipContent>
+                      <TooltipContent side="top">{$tValue(data.description)}</TooltipContent>
                     </Tooltip>
                   )}
 

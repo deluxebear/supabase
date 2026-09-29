@@ -209,7 +209,7 @@ export const DatabaseSelector = ({
                       <div className="w-full flex items-center justify-between">
                         <p>
                           {database.identifier === projectRef
-                            ? 'Primary database'
+                            ? $t('Primary database')
                             : `Read replica (${region} - ${id})`}
                         </p>
                         {database.identifier === selectedDatabaseId && <Check size={16} />}

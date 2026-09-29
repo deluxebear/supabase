@@ -53,7 +53,7 @@ import { useOtelLogKeysQuery } from '@/data/logs/otel-log-keys-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useShowMultigresLogs } from '@/hooks/misc/useShowMultigresLogs'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface LogsQueryPanelProps {
   templates?: LogTemplate[]
@@ -170,7 +170,7 @@ export const LogsQueryPanel = ({
                         key={template.label}
                         onClick={() => onSelectTemplate(template)}
                       >
-                        <p>{template.label}</p>
+                        <p>{$tValue(template.label)}</p>
                       </DropdownMenuItem>
                     ))}
                 </DropdownMenuContent>
@@ -289,7 +289,7 @@ export const LogsQueryPanel = ({
                         className="w-full justify-between"
                         iconRight={<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />}
                       >
-                        {value ? selectedSchema?.name : 'Select source...'}
+                        {value ? selectedSchema?.name : $t('Select source...')}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="p-0" sameWidthAsTrigger>

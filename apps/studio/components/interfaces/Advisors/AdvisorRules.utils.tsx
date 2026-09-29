@@ -1,7 +1,7 @@
 import { lintInfoMap } from '../Linter/Linter.utils'
 import { LintException } from '@/data/lint/lint-rules-query'
 import { Member } from '@/data/organizations/organization-members-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export const generateRuleText = (e: LintException, member?: Member) => {
   const lintName = lintInfoMap.find((x) => x.name === e.lint_name)?.title
@@ -30,7 +30,7 @@ export const generateRuleDescription = ({
       </p>
       <p className="mb-0!">
         {$t('The "')}
-        {lint?.title}
+        {$tValue(lint?.title)}
         {$t('" lint will be')}{' '}
         {disabled
           ? `ignored for ${!!member ? `this user only` : 'this project'}`

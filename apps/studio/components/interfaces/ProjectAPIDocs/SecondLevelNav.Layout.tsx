@@ -14,7 +14,7 @@ import {
 import { navigateToSection } from './Content/Content.utils'
 import { DOCS_RESOURCE_CONTENT } from './ProjectAPIDocs.constants'
 import { DocsButton } from '@/components/ui/DocsButton'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useAppStateSnapshot } from '@/state/app-state'
 
 type DocsResourceContentItem = (typeof DOCS_RESOURCE_CONTENT)[keyof typeof DOCS_RESOURCE_CONTENT]
@@ -157,7 +157,7 @@ const MenuItems = ({ category, menuItemFilter }: MenuItemsProps) => {
           className="w-full text-left text-sm text-foreground-light px-4 hover:text-foreground"
           onClick={() => navigateToSection(item.key)}
         >
-          {item.title}
+          {$tValue(item.title)}
         </button>
       ))}
     </div>

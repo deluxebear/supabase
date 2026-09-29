@@ -22,7 +22,7 @@ import { useLegacyJWTSigningKeyQuery } from '@/data/jwt-signing-keys/legacy-jwt-
 import { useAuthorizedAppsQuery } from '@/data/oauth/authorized-apps-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export const ToggleLegacyApiKeysPanel = () => {
   const { ref: projectRef } = useParams()
@@ -97,12 +97,16 @@ export const ToggleLegacyApiKeysPanel = () => {
           <div className="flex justify-between">
             <div className="flex flex-col gap-2">
               <p className="text-sm">
-                {isLegacyKeysEnabled ? 'Disable legacy API keys' : 'Re-enabling legacy API keys'}
+                {isLegacyKeysEnabled
+                  ? $t('Disable legacy API keys')
+                  : $t('Re-enabling legacy API keys')}
               </p>
               <p className="text-foreground-light text-sm">
                 {isLegacyKeysEnabled
-                  ? 'Make sure you are no longer using your legacy API keys before proceeding.'
-                  : 'We recommend you use the new API keys whenever possible, but re-enabling is an option.'}
+                  ? $t('Make sure you are no longer using your legacy API keys before proceeding.')
+                  : $t(
+                      'We recommend you use the new API keys whenever possible, but re-enabling is an option.'
+                    )}
               </p>
             </div>
             <div className="flex items-center">
@@ -128,8 +132,8 @@ export const ToggleLegacyApiKeysPanel = () => {
                 }}
               >
                 {legacyAPIKeysStatusData.enabled
-                  ? 'Disable JWT-based API keys'
-                  : 'Re-enable JWT-based API keys'}
+                  ? $t('Disable JWT-based API keys')
+                  : $t('Re-enable JWT-based API keys')}
               </ButtonTooltip>
             </div>
           </div>
@@ -145,8 +149,8 @@ export const ToggleLegacyApiKeysPanel = () => {
       <AlertDialog open={isAppsWarningOpen} onOpenChange={(value) => setIsAppsWarningOpen(value)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{appsWarning.title}</AlertDialogTitle>
-            <AlertDialogDescription>{appsWarning.description}</AlertDialogDescription>
+            <AlertDialogTitle>{$tValue(appsWarning.title)}</AlertDialogTitle>
+            <AlertDialogDescription>{$tValue(appsWarning.description)}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
@@ -199,7 +203,7 @@ const ToggleApiKeysModal = ({
       visible={visible}
       onCancel={() => onClose()}
       onConfirm={onToggleLegacyAPIKeysEnabled}
-      title={isLegacyKeysEnabled ? 'Disable JWT-based keys' : 'Re-enable JWT-based keys'}
+      title={isLegacyKeysEnabled ? $t('Disable JWT-based keys') : $t('Re-enable JWT-based keys')}
       confirmString={isLegacyKeysEnabled ? 'disable' : 're-enable'}
       confirmLabel={`Confirm to ${isLegacyKeysEnabled ? 'disable' : 're-enable'} anon and service_role`}
       confirmPlaceholder={isLegacyKeysEnabled ? 'disable' : 're-enable'}

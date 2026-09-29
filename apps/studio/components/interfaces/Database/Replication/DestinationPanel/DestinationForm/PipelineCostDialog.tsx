@@ -261,7 +261,9 @@ export const PipelineCostDialog = ({
                       className="shrink-0 text-right font-mono text-lg font-semibold text-foreground"
                       translate="no"
                     >
-                      {copyEstimate?.isComplete ? formatCurrency(initialSyncTotal) : 'Unavailable'}
+                      {copyEstimate?.isComplete
+                        ? formatCurrency(initialSyncTotal)
+                        : $t('Unavailable')}
                       {copyEstimate?.isComplete && hasRowFilteredTables ? '*' : null}
                     </span>
                   </div>

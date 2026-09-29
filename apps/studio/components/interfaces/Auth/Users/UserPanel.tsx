@@ -122,7 +122,7 @@ export const UserPanel = () => {
                   <Input
                     autoFocus
                     type="text"
-                    placeholder={'Filter...'}
+                    placeholder={$t('Filter...')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="mr-2"

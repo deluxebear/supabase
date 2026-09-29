@@ -25,7 +25,7 @@ import { useEnabledLogDrainTypes } from './useEnabledLogDrainTypes'
 import { VoteLink } from './VoteLink'
 import { AlertError } from '@/components/ui/AlertError'
 import { LogDrainData } from '@/data/log-drains/log-drains-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 export function LogDrainsList({
@@ -82,7 +82,7 @@ export function LogDrainsList({
             <LogDrainsCard
               key={src.value}
               title={src.name}
-              description={src.description}
+              description={$tValue(src.description)}
               icon={src.icon}
               rightLabel={IS_PLATFORM ? 'Additional $60' : undefined}
               onClick={() => {
@@ -124,7 +124,7 @@ export function LogDrainsList({
                       'truncate max-w-96',
                       drain.description ? 'text-foreground-light' : 'text-foreground-muted'
                     )}
-                    title={drain.description}
+                    title={$tValue(drain.description)}
                   >
                     {drain.description || '-'}
                   </TableCell>

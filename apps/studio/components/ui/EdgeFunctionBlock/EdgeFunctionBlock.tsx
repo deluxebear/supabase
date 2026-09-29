@@ -100,7 +100,7 @@ export const EdgeFunctionBlock = ({
               disabled={disabled || isDeploying}
               onClick={onDeploy}
             >
-              {isDeploying ? 'Deploying...' : 'Deploy'}
+              {isDeploying ? $t('Deploying...') : $t('Deploy')}
             </Button>
 
             {actions}

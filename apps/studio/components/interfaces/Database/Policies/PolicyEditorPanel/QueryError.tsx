@@ -57,7 +57,7 @@ export const QueryError = ({
                   variant="outline"
                   className={cn('group', styles['ai-icon__container--allow-hover-effect'])}
                 >
-                  {open ? 'Hide error details' : 'Show error details'}
+                  {open ? $t('Hide error details') : $t('Show error details')}
                 </Button>
               </CollapsibleTrigger>
             </div>

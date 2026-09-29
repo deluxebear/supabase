@@ -67,7 +67,7 @@ export const SortDropdown = ({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button icon={sortOrder === 'desc' ? <ArrowDownWideNarrow /> : <ArrowDownNarrowWide />}>
-          {$t('Sorted by')} {sortColumn === 'id' ? 'user ID' : sortColumn.replaceAll('_', ' ')}
+          {$t('Sorted by')} {sortColumn === 'id' ? $t('user ID') : sortColumn.replaceAll('_', ' ')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-44" align="start">

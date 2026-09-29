@@ -52,7 +52,7 @@ export const ConnectLoadingCards = () => (
         </div>
       </CardContent>
     </Card>
-    <section className="space-y-2" aria-label={'Organizations'}>
+    <section className="space-y-2" aria-label={$t('Organizations')}>
       <ShimmeringLoader className="h-3 w-24 py-0" />
       {Array.from({ length: 3 }).map((_, index) => (
         <Card key={index} className="shadow-none">
@@ -130,10 +130,10 @@ export function ContractIneligibilityNotice({
       return (
         <Admonition
           type="success"
-          title={'No action required'}
-          description={
+          title={$t('No action required')}
+          description={$t(
             'Your existing Supabase organization remains linked to AWS Marketplace and your projects will continue to run as usual.'
-          }
+          )}
         />
       )
     case 'NO_CONTRACT_FOUND':
@@ -141,10 +141,10 @@ export function ContractIneligibilityNotice({
       return (
         <Admonition
           type="warning"
-          title={'Still syncing'}
-          description={
+          title={$t('Still syncing')}
+          description={$t(
             'Thanks for purchasing Supabase through AWS Marketplace. It can take a few minutes before the subscription is ready to link. Try again shortly.'
-          }
+          )}
         />
       )
     case 'CONTRACT_INACTIVE':
@@ -168,6 +168,8 @@ export function ContractIneligibilityNotice({
         />
       )
     default:
-      return <Admonition type="default" description={'If the problem persists, contact support.'} />
+      return (
+        <Admonition type="default" description={$t('If the problem persists, contact support.')} />
+      )
   }
 }

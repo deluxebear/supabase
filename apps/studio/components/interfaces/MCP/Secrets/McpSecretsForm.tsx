@@ -121,7 +121,7 @@ export const McpSecretsForm = ({
                         type="button"
                         className="size-6 shrink-0 p-0"
                         aria-pressed={isRevealed}
-                        aria-label={isRevealed ? 'Hide secret value' : 'Show secret value'}
+                        aria-label={isRevealed ? $t('Hide secret value') : $t('Show secret value')}
                         icon={isRevealed ? <EyeOff /> : <Eye />}
                         onClick={() => setIsRevealed(!isRevealed)}
                       />
@@ -152,7 +152,7 @@ export const McpSecretsForm = ({
 
           <div className="flex flex-col gap-2">
             <Button block variant="primary" type="submit" loading={isSaving} disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Save'}
+              {isSaving ? $t('Saving...') : $t('Save')}
             </Button>
             <Button block variant="text" type="button" disabled={isSaving} onClick={onCancel}>
               {$t('Cancel')}

@@ -18,7 +18,7 @@ import { ROLE_PERMISSIONS } from './Roles.constants'
 import { FormActions } from '@/components/ui/Forms/FormActions'
 import { useDatabaseRoleCreateMutation } from '@/data/database-roles/database-role-create-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface CreateRolePanelProps {
   visible: boolean
@@ -138,7 +138,7 @@ export const CreateRolePanel = ({ visible, onClose }: CreateRolePanelProps) => {
                           <FormControl className="col-span-8 flex items-center gap-4">
                             <div className="w-full text-sm">
                               <Switch checked={field.value} onCheckedChange={field.onChange} />
-                              <FormLabel>{permission.description}</FormLabel>
+                              <FormLabel>{$tValue(permission.description)}</FormLabel>
                             </div>
                           </FormControl>
                           <FormMessage className="col-start-5 col-span-8" />
@@ -174,7 +174,7 @@ export const CreateRolePanel = ({ visible, onClose }: CreateRolePanelProps) => {
                                   disabled
                                   aria-readonly
                                 />
-                                <FormLabel>{permission.description}</FormLabel>
+                                <FormLabel>{$tValue(permission.description)}</FormLabel>
                               </div>
                             </FormControl>
                             <FormMessage className="col-start-5 col-span-8" />

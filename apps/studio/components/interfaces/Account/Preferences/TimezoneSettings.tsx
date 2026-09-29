@@ -79,7 +79,7 @@ export const TimezoneSettings = () => {
               description={
                 isAutoDetected
                   ? `Auto detected from your browser (${browserTimezone}).`
-                  : 'Pick "Auto detect" to follow your browser timezone again.'
+                  : $t('Pick "Auto detect" to follow your browser timezone again.')
               }
             >
               <Popover open={open} onOpenChange={setOpen}>

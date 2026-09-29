@@ -191,8 +191,10 @@ export const ResumeProjectButton = ({
         <div className={cn(newProjectInternalOnlyConfiguration && 'flex flex-col gap-y-4')}>
           <p className="text-sm">
             {isFreePlan
-              ? 'Your project’s data will be restored to when it was initially paused.'
-              : 'Your project’s data will be restored and billing will resume based on compute size and hours active.'}
+              ? $t('Your project’s data will be restored to when it was initially paused.')
+              : $t(
+                  'Your project’s data will be restored and billing will resume based on compute size and hours active.'
+                )}
           </p>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onConfirmRestore)}>

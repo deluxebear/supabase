@@ -30,7 +30,7 @@ import { TabPreview } from './TabPreview'
 import { useTabsScroll } from './Tabs.utils'
 import { DiscardChangesConfirmationDialog } from '@/components/ui-patterns/Dialogs/DiscardChangesConfirmationDialog'
 import { useDashboardHistory } from '@/hooks/misc/useDashboardHistory'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import {
   editorEntityTypes,
   useTabsStateSnapshot,
@@ -331,7 +331,7 @@ export const EditorTabs = ({
           setPendingConfirmation(null)
         }}
         title={pendingConfirmation?.title ?? 'Unsaved changes'}
-        description={pendingConfirmation?.description}
+        description={$tValue(pendingConfirmation?.description)}
       />
     </>
   )

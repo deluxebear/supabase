@@ -24,7 +24,7 @@ import { useContentQuery } from '@/data/content/content-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { Metric, METRIC_CATEGORIES, METRICS } from '@/lib/constants/metrics'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { editorPanelState } from '@/state/editor-panel-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -81,7 +81,7 @@ export const MetricOptions = ({ config, handleChartSelection }: MetricOptionsPro
           <DropdownMenuSub key={cat.key}>
             <DropdownMenuSubTrigger className="space-x-2">
               {cat.icon ? cat.icon() : <Home size={14} />}
-              <p>{cat.label}</p>
+              <p>{$tValue(cat.label)}</p>
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
@@ -99,7 +99,7 @@ export const MetricOptions = ({ config, handleChartSelection }: MetricOptionsPro
                       onCheckedChange={(e) => handleChartSelection({ metric, isAddingChart: e })}
                     >
                       <div className="flex flex-col space-y-0">
-                        <span>{metric.label}</span>
+                        <span>{$tValue(metric.label)}</span>
                       </div>
                     </DropdownMenuCheckboxItem>
                   )

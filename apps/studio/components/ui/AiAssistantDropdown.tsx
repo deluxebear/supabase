@@ -18,7 +18,7 @@ import {
   TooltipTrigger,
 } from 'ui'
 
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 type TelemetrySource = AiAssistantSource
@@ -158,7 +158,7 @@ export function AiAssistantDropdown({
         <DropdownMenuContent align="end" className="w-44">
           <DropdownMenuItem onClick={handleCopyPrompt} className="gap-2">
             {showCopied ? <Check size={14} className="text-primary" /> : <Copy size={14} />}
-            {showCopied ? 'Copied!' : copyLabel}
+            {showCopied ? $t('Copied!') : copyLabel}
           </DropdownMenuItem>
 
           {showExternalAI && (
@@ -171,7 +171,7 @@ export function AiAssistantDropdown({
                   onClick={() => handleOpenExternalAI(tool)}
                 >
                   <tool.icon size={14} />
-                  {tool.label}
+                  {$tValue(tool.label)}
                 </DropdownMenuItem>
               ))}
             </>
@@ -185,12 +185,12 @@ export function AiAssistantDropdown({
                   {item.href ? (
                     <Link href={item.href} target="_blank" rel="noreferrer">
                       {item.icon}
-                      {item.label}
+                      {$tValue(item.label)}
                     </Link>
                   ) : (
                     <>
                       {item.icon}
-                      {item.label}
+                      {$tValue(item.label)}
                     </>
                   )}
                 </DropdownMenuItem>

@@ -138,11 +138,11 @@ export const ProjectLinker = ({
           <div className="text-sm text-foreground-lighter text-balance">
             {$t('No')} {missingEntity} {$t('projects found. Create a')} {missingEntity}{' '}
             {$t('project to link to a')} {oppositeMissingEntity} project
-            {onSkip !== undefined ? ', or skip and connect later.' : '.'}
+            {onSkip !== undefined ? $t(', or skip and connect later.') : '.'}
           </div>
         ) : (
           <>
-            <section className="space-y-2" aria-label={'Supabase project'}>
+            <section className="space-y-2" aria-label={$t('Supabase project')}>
               <p className="text-xs font-medium uppercase tracking-wider text-foreground-light">
                 {$t('Supabase project')}
               </p>
@@ -158,7 +158,7 @@ export const ProjectLinker = ({
               />
             </section>
 
-            <section className="space-y-2" aria-label={'Vercel project'}>
+            <section className="space-y-2" aria-label={$t('Vercel project')}>
               <p className="text-xs font-medium uppercase tracking-wider text-foreground-light">
                 {$t('Vercel project')}
               </p>
@@ -213,7 +213,7 @@ export const ProjectLinker = ({
         ) : showNoEntitiesState && (noSupabaseProjects || noForeignProjects) ? (
           <div className="text-center">
             <h5 className="text-foreground">
-              {$t('No')} {missingEntity} {'Projects found'}
+              {$t('No')} {missingEntity} {$t('Projects found')}
             </h5>
             <p className="text-foreground-light text-sm">
               {$t('You will need to create a')} {missingEntity} {$t('Project to link to a')}{' '}
@@ -231,7 +231,11 @@ export const ProjectLinker = ({
           <div className="flex justify-center gap-0 w-full relative">
             <Panel>
               <div className="bg-white shadow-sm border rounded-sm p-1 w-12 h-12 flex justify-center items-center">
-                <img src={`${BASE_PATH}/img/supabase-logo.svg`} alt={'Supabase'} className="w-6" />
+                <img
+                  src={`${BASE_PATH}/img/supabase-logo.svg`}
+                  alt={$t('Supabase')}
+                  className="w-6"
+                />
               </div>
 
               <SupabaseProjectSelector

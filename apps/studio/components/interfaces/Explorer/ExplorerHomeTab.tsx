@@ -12,7 +12,7 @@ import { ActionCard } from '@/components/layouts/Tabs/ActionCard'
 import { CHAT_TEMPLATES } from '@/components/ui/AIAssistantPanel/AIAssistant.prompts'
 import { AssistantAgentHarnessFooter } from '@/components/ui/AIAssistantPanel/AssistantAgentHarnessFooter'
 import { AssistantChatForm } from '@/components/ui/AIAssistantPanel/AssistantChatForm'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export const ExplorerHomeTab = () => {
   const { home, hasCompletedOnboarding, isReady } = useExplorerPreferences()
@@ -118,8 +118,8 @@ const ExplorerHomeContent = () => {
                 <ActionCard
                   key={template.title}
                   icon={<NotebookText className="h-4 w-4 text-foreground" strokeWidth={1.5} />}
-                  title={template.title}
-                  description={template.description}
+                  title={$tValue(template.title)}
+                  description={$tValue(template.description)}
                   bgColor="bg-blue-500"
                   onClick={() =>
                     createNotebook({ name: template.title, cells: template.buildCells() })
@@ -130,7 +130,7 @@ const ExplorerHomeContent = () => {
                 <ActionCard
                   key={template.title}
                   icon={<template.icon className="h-4 w-4 text-foreground" strokeWidth={1.5} />}
-                  title={template.title}
+                  title={$tValue(template.title)}
                   bgColor="bg-blue-500"
                   onClick={() =>
                     createChat({ name: template.title, initialMessage: template.initialMessage })

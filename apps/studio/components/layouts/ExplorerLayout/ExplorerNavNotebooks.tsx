@@ -16,6 +16,7 @@ import {
   NotebookRow,
   useNotebooksInfiniteQuery,
 } from '@/data/content/notebooks/notebooks-infinite-query'
+import { t as $t } from '@/lib/i18n'
 import { createTabId, useTabsStateSnapshot } from '@/state/tabs'
 
 const NOTEBOOK_ROW_HEIGHT = 28
@@ -90,7 +91,7 @@ export const ExplorerNavNotebooks = () => {
           <GenericSkeletonLoader />
         ) : notebooks.length === 0 ? (
           <p className="px-2 py-2 text-xs text-foreground-lighter">
-            {search ? 'No notebooks found' : 'No notebooks created yet'}
+            {search ? $t('No notebooks found') : $t('No notebooks created yet')}
           </p>
         ) : (
           <InfiniteListDefault

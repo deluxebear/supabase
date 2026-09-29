@@ -4,7 +4,7 @@ import { ReactNode } from 'react'
 import { Button, cn, Collapsible, CollapsibleContent, CollapsibleTrigger, WarningIcon } from 'ui'
 
 import { IS_PLATFORM } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const IPv4StatusIcon = ({ className, active }: { className?: string; active: boolean }) => {
   return (
@@ -96,10 +96,12 @@ export function IPv4StatusPanel({ method, ipv4Status, projectRef }: IPv4StatusPa
               <IPv4StatusIcon active={ipv4Status.type === 'success'} />
             </div>
             <div className="flex flex-col">
-              <span className="text-xs text-foreground">{ipv4Status.title}</span>
+              <span className="text-xs text-foreground">{$tValue(ipv4Status.title)}</span>
               {ipv4Status.description &&
                 (typeof ipv4Status.description === 'string' ? (
-                  <span className="text-xs text-foreground-lighter">{ipv4Status.description}</span>
+                  <span className="text-xs text-foreground-lighter">
+                    {$tValue(ipv4Status.description)}
+                  </span>
                 ) : (
                   ipv4Status.description
                 ))}

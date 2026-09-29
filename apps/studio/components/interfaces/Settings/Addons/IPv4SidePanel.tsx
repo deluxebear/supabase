@@ -18,7 +18,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsAwsCloudProvider } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
 import { formatCurrency } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useAddonsPagePanel } from '@/state/addons-page'
 
 const IPv4SidePanel = () => {
@@ -135,9 +135,9 @@ const IPv4SidePanel = () => {
       }
       tooltip={
         !hasAccessToIPv4
-          ? 'Unable to enable IPv4 on a Free Plan'
+          ? $t('Unable to enable IPv4 on a Free Plan')
           : !canUpdateIPv4
-            ? 'You do not have permission to update IPv4'
+            ? $t('You do not have permission to update IPv4')
             : undefined
       }
       header={
@@ -188,8 +188,10 @@ const IPv4SidePanel = () => {
                     )}
                   >
                     <div className="px-4 py-3">
-                      <p className="text-sm font-medium">{option.title}</p>
-                      <p className="text-foreground-light text-sm mt-1">{option.description}</p>
+                      <p className="text-sm font-medium">{$tValue(option.title)}</p>
+                      <p className="text-foreground-light text-sm mt-1">
+                        {$tValue(option.description)}
+                      </p>
                       <div
                         className={cn(
                           'flex items-center space-x-1 text-sm',

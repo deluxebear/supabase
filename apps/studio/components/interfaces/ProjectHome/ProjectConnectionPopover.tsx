@@ -23,7 +23,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsHighAvailability } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
 import { pluckObjectFields } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const DB_FIELDS = ['db_host', 'db_name', 'db_port', 'db_user'] as const
 const EMPTY_CONNECTION_INFO = {
@@ -216,7 +216,7 @@ export const ProjectConnectionPopover = ({ projectRef }: ProjectConnectionPopove
                       {copiedItem !== item.label ? (
                         <span className="sr-only">{$t('Copy')}</span>
                       ) : null}
-                      {item.label}
+                      {$tValue(item.label)}
                       {copiedItem === item.label ? (
                         <span className="sr-only">{$t('copied to your clipboard')}</span>
                       ) : null}

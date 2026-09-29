@@ -31,7 +31,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
 import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useIsShortcutEnabled } from '@/state/shortcuts/useIsShortcutEnabled'
@@ -134,7 +134,7 @@ export const LayoutHeader = ({
                   }}
                 >
                   <LayoutHeaderDivider />
-                  <span className="text-foreground">{headerTitle}</span>
+                  <span className="text-foreground">{$tValue(headerTitle)}</span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -201,7 +201,7 @@ export const LayoutHeader = ({
                   }}
                 >
                   <LayoutHeaderDivider />
-                  <span className="text-foreground">{headerTitle}</span>
+                  <span className="text-foreground">{$tValue(headerTitle)}</span>
                 </motion.div>
               )}
             </AnimatePresence>

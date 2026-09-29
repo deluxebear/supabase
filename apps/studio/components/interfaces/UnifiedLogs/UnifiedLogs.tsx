@@ -445,7 +445,7 @@ export const UnifiedLogs = () => {
                     icon={isFilterBarOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
                     onClick={() => setIsFilterBarOpen((prev) => !prev)}
                     className="hidden w-[26px] sm:flex"
-                    aria-label={isFilterBarOpen ? 'Hide filters' : 'Show filters'}
+                    aria-label={isFilterBarOpen ? $t('Hide filters') : $t('Show filters')}
                   />
                 </ShortcutTooltip>
 

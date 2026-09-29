@@ -93,7 +93,7 @@ const TableSelector = ({
               <div className="w-full flex space-x-3">
                 <p className="text-xs text-light">table</p>
                 <p className="text-xs">
-                  {selectedTableName === '*' ? 'All tables' : selectedTableName}
+                  {selectedTableName === '*' ? $t('All tables') : selectedTableName}
                 </p>
               </div>
             ) : (

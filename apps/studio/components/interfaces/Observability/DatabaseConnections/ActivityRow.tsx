@@ -276,7 +276,7 @@ export const ActivityRow = ({
                   !activity.query ? 'text-foreground-lighter' : 'font-mono tracking-tighter'
                 )}
               >
-                {!!activity.query ? activity.query : 'No query'}
+                {!!activity.query ? activity.query : $t('No query')}
               </p>
             </HoverCardTrigger>
             {activity.query && (

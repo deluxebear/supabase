@@ -39,7 +39,7 @@ import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
 import { uuidv4 } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const EMPTY_STATE: ForeignKey = {
   id: undefined,
@@ -395,7 +395,8 @@ export const ForeignKeySelector = ({
                     </label>
                     <div className="grid grid-cols-10 gap-y-2">
                       <div className="col-span-5 text-xs">
-                        {selectedSchema}.{table.name.length > 0 ? table.name : '[unnamed table]'}
+                        {selectedSchema}.
+                        {table.name.length > 0 ? table.name : $t('[unnamed table]')}
                       </div>
                       <div className="col-span-4 text-xs text-right">
                         {fk.schema}.{fk.table}
@@ -625,7 +626,7 @@ export const ForeignKeySelector = ({
                             ['no-action', 'cascade', 'restrict'].includes(option.key)
                           ).map((option) => (
                             <SelectItem key={option.key} value={option.value}>
-                              {option.label}
+                              {$tValue(option.label)}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -658,7 +659,7 @@ export const ForeignKeySelector = ({
                         <SelectContent>
                           {FOREIGN_KEY_CASCADE_OPTIONS.map((option) => (
                             <SelectItem key={option.key} value={option.value}>
-                              {option.label}
+                              {$tValue(option.label)}
                             </SelectItem>
                           ))}
                         </SelectContent>

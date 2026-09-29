@@ -159,7 +159,9 @@ export const USAGE_CATEGORIES: (subscription?: OrgSubscription) => CategoryMeta[
               <Admonition
                 type={isExceededLimit ? 'danger' : 'warning'}
                 title={
-                  isExceededLimit ? 'Exceeding database size limit' : 'Nearing database size limit'
+                  isExceededLimit
+                    ? $t('Exceeding database size limit')
+                    : $t('Nearing database size limit')
                 }
               >
                 <div className="flex w-full items-center flex-col justify-center space-y-2 md:flex-row md:justify-between">
@@ -168,8 +170,10 @@ export const USAGE_CATEGORIES: (subscription?: OrgSubscription) => CategoryMeta[
                       'When you reach your database size limit, your project can go into read-only mode.'
                     )}{' '}
                     {onFreePlan
-                      ? 'Please upgrade your Plan.'
-                      : "Disable your spend cap to scale seamlessly, and pay for over-usage beyond your Plan's quota."}
+                      ? $t('Please upgrade your Plan.')
+                      : $t(
+                          "Disable your spend cap to scale seamlessly, and pay for over-usage beyond your Plan's quota."
+                        )}
                   </div>
                 </div>
               </Admonition>

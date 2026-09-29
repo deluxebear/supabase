@@ -6,7 +6,7 @@ import { parseDetailLines } from './ExplainVisualizer.parser'
 import { RowCountIndicator } from './ExplainVisualizer.RowCountIndicator'
 import type { ExplainNode } from './ExplainVisualizer.types'
 import { formatNodeDuration, getScanBarColor, getScanBorderColor } from './ExplainVisualizer.utils'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface ExplainNodeRowProps {
   node: ExplainNode
@@ -57,7 +57,7 @@ export function ExplainNodeRow({ node, depth, maxDuration }: ExplainNodeRowProps
                 'flex items-center justify-center w-5 h-5 rounded-sm border border-border-muted shrink-0',
                 canExpand ? 'hover:bg-surface-200 cursor-pointer' : 'opacity-30 cursor-default'
               )}
-              aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
+              aria-label={isExpanded ? $t('Collapse details') : $t('Expand details')}
             >
               {isExpanded ? (
                 <ChevronDown size={12} className="text-foreground-light" />
@@ -133,7 +133,9 @@ export function ExplainNodeRow({ node, depth, maxDuration }: ExplainNodeRowProps
             <div className="px-0 py-3 space-y-2 font-mono text-xs">
               {detailLines.map((line, idx) => (
                 <div key={idx} className="flex items-start gap-1">
-                  {line.label && <span className="text-foreground-muted">{line.label}</span>}
+                  {line.label && (
+                    <span className="text-foreground-muted">{$tValue(line.label)}</span>
+                  )}
                   <span className="text-foreground-light break-all">{line.value}</span>
                 </div>
               ))}

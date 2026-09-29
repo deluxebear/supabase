@@ -14,7 +14,7 @@ import {
 } from 'ui'
 
 import { getMoveBreadcrumbs, type MoveBreadcrumb } from './MoveItemsModal.utils'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const CRUMB_CLASS = 'max-w-20 truncate text-xs md:max-w-none'
 
@@ -33,11 +33,11 @@ const Crumb = ({
 }) => (
   <BreadcrumbItem className="min-w-0">
     {crumb.isCurrent ? (
-      <BreadcrumbPage className={CRUMB_CLASS}>{crumb.label}</BreadcrumbPage>
+      <BreadcrumbPage className={CRUMB_CLASS}>{$tValue(crumb.label)}</BreadcrumbPage>
     ) : (
       <BreadcrumbLink asChild className={CRUMB_CLASS}>
         <button type="button" tabIndex={0} onClick={() => onNavigate(crumb.pathSegments)}>
-          {crumb.label}
+          {$tValue(crumb.label)}
         </button>
       </BreadcrumbLink>
     )}
@@ -78,7 +78,7 @@ export const MoveItemsFolderPickerBreadcrumb = ({
                       key={crumb.pathSegments.join('/')}
                       onSelect={() => onNavigate(crumb.pathSegments)}
                     >
-                      {crumb.label}
+                      {$tValue(crumb.label)}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>

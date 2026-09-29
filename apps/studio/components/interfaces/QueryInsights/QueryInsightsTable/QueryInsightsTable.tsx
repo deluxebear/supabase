@@ -488,8 +488,8 @@ export const QueryInsightsTable = ({
                       <p className="text-foreground">{$t('No issues found')}</p>
                       <p className="text-foreground-light">
                         {data.length === 0
-                          ? 'No query data available yet'
-                          : 'No issues detected for the selected filter'}
+                          ? $t('No query data available yet')
+                          : $t('No issues detected for the selected filter')}
                       </p>
                     </div>
                   </div>
@@ -544,8 +544,8 @@ export const QueryInsightsTable = ({
                       <p className="text-foreground">{$t('No queries found')}</p>
                       <p className="text-foreground-light">
                         {searchQuery.trim()
-                          ? 'No queries match your search criteria'
-                          : 'No query data available yet'}
+                          ? $t('No queries match your search criteria')
+                          : $t('No query data available yet')}
                       </p>
                     </div>
                   </div>

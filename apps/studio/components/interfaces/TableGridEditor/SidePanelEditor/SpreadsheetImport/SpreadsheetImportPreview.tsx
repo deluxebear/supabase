@@ -129,9 +129,9 @@ export const SpreadsheetImportPreview = ({
                 <AlertCircle size={16} strokeWidth={1.5} className="text-foreground-light" />
                 <p className="text-sm text-foreground-light">
                   {previewHeaders.length === 0
-                    ? 'No headers have been selected'
+                    ? $t('No headers have been selected')
                     : previewRows.length === 0
-                      ? 'Your CSV contains no data'
+                      ? $t('Your CSV contains no data')
                       : ''}
                 </p>
               </div>

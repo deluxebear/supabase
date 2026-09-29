@@ -167,7 +167,7 @@ const EntityList = ({ entities }: { entities: Array<ExposedEntity> }) => {
         >
           <div className="flex items-center gap-1">
             {open ? <ChevronUp size={12} /> : <ChevronRight size={12} />}
-            <span>{open ? 'Show less' : `Show ${hiddenEntities.length} more`}</span>
+            <span>{open ? $t('Show less') : `Show ${hiddenEntities.length} more`}</span>
           </div>
         </Button>
       </CollapsibleTrigger>

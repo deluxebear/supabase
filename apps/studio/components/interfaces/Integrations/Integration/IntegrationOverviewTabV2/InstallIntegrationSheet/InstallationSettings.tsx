@@ -6,7 +6,7 @@ import { Input } from 'ui-patterns/DataInputs/Input'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { type InstallIntegrationSheetProps } from './InstallIntegrationSheet'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export const InstallationSettings = <
   TFieldValues extends FieldValues = FieldValues,
@@ -49,7 +49,7 @@ export const InstallationSettings = <
                       <FormControl>
                         <Input
                           type={type}
-                          placeholder={required ? 'Provide a value' : undefined}
+                          placeholder={required ? $t('Provide a value') : undefined}
                           {...field}
                         />
                       </FormControl>
@@ -72,7 +72,7 @@ export const InstallationSettings = <
                             target={isExternal ? '_blank' : undefined}
                             rel={isExternal ? 'noopener noreferrer' : undefined}
                           >
-                            {action.label}
+                            {$tValue(action.label)}
                           </Link>
                         </Button>
                       )

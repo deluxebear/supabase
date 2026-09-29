@@ -6,6 +6,7 @@ import { Badge, Button, cn, NavMenu, NavMenuItem } from 'ui'
 
 import { ScaffoldContainer } from '../Scaffold'
 import { PageHeader } from './PageHeader'
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export interface NavigationItem {
   id?: string
@@ -121,7 +122,7 @@ export const PageLayout = ({
                       onClick={item.onClick}
                     >
                       {item.icon && <span>{item.icon}</span>}
-                      {item.label}
+                      {$tValue(item.label)}
                       {item.badge && <Badge variant="default">{item.badge}</Badge>}
                     </Link>
                   ) : (
@@ -131,7 +132,7 @@ export const PageLayout = ({
                       className={cn(isActive && 'text-foreground font-medium')}
                     >
                       {item.icon && <span className="mr-2">{item.icon}</span>}
-                      {item.label}
+                      {$tValue(item.label)}
                       {item.badge && <Badge variant="default">{item.badge}</Badge>}
                     </Button>
                   )}

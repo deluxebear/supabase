@@ -30,11 +30,13 @@ export function collectDynamicLabelKeys(project: Project): string[] {
       if (!Node.isPropertyAssignment(node)) return
       const init = node.getInitializer()
       if (!init || !Node.isStringLiteral(init)) return
+      const value = init.getLiteralValue()
+      if (value.trim().length === 0) return
       const isTextProp = DYNAMIC_TEXT_PROPS.has(node.getNameNode().getText())
       const labelsObject = node.getFirstAncestor(
         (a) => Node.isVariableDeclaration(a) && /LABELS$/.test(a.getName())
       )
-      if (isTextProp || labelsObject) keys.add(init.getLiteralValue())
+      if (isTextProp || labelsObject) keys.add(value)
     })
   }
   return [...keys]
@@ -44,22 +46,27 @@ export function wrapProject(opts: {
   tsConfigFilePath: string
   globs: string[]
   dryRun?: boolean
-}): { filesChanged: number; keys: string[] } {
+}): { filesChanged: number; keys: string[]; dynamicKeyCount: number } {
   const project = new Project({
     tsConfigFilePath: opts.tsConfigFilePath,
     skipAddingFilesFromTsConfig: true,
   })
   project.addSourceFilesAtPaths(opts.globs)
   const result = collectFromProject(project)
+  const dynamicKeys = collectDynamicLabelKeys(project)
   if (!opts.dryRun) project.saveSync()
-  return result
+  return {
+    ...result,
+    keys: [...new Set([...result.keys, ...dynamicKeys])],
+    dynamicKeyCount: dynamicKeys.length,
+  }
 }
 
 // CLI: pnpm --filter studio exec tsx scripts/i18n/wrap.ts [--dry]
 if (process.argv[1] && process.argv[1].endsWith('wrap.ts')) {
   const dryRun = process.argv.includes('--dry')
   const cwd = process.cwd() // apps/studio
-  const { filesChanged, keys } = wrapProject({
+  const { filesChanged, keys, dynamicKeyCount } = wrapProject({
     tsConfigFilePath: join(cwd, 'tsconfig.json'),
     globs: [
       // .ts files carry no JSX, but they do carry user-facing sonner toasts
@@ -93,7 +100,7 @@ if (process.argv[1] && process.argv[1].endsWith('wrap.ts')) {
   writeFileSync(join(cwd, 'scripts/i18n/keys.json'), JSON.stringify(allKeys, null, 2) + '\n')
   console.log(
     `i18n wrap: ${filesChanged} files changed, ${allKeys.length} unique keys ` +
-      `(${dynamicKeys.length} dynamic labels)` +
+      `(${dynamicKeyCount + dynamicKeys.length} dynamic labels)` +
       (dryRun ? ' (dry run, nothing written)' : '')
   )
 }

@@ -71,8 +71,10 @@ export const Restriction = () => {
             <p>
               {$t('Your projects can become unresponsive or enter read-only mode.')}{' '}
               {org.plan.id === 'free'
-                ? 'Please upgrade to the Pro Plan to ensure that your projects remain available.'
-                : 'Please disable spend cap to ensure that your projects remain available.'}
+                ? $t(
+                    'Please upgrade to the Pro Plan to ensure that your projects remain available.'
+                  )
+                : $t('Please disable spend cap to ensure that your projects remain available.')}
             </p>
             <div className="flex items-center gap-x-2 mt-3">
               <Button key="upgrade-button" asChild>
@@ -81,7 +83,7 @@ export const Restriction = () => {
                     org.plan.id === 'free' ? 'subscriptionPlan' : 'costControl'
                   }`}
                 >
-                  {org.plan.id === 'free' ? 'Upgrade plan' : 'Change spend cap'}
+                  {org.plan.id === 'free' ? $t('Upgrade plan') : $t('Change spend cap')}
                 </Link>
               </Button>
               {!isUsagePage && (
@@ -113,7 +115,7 @@ export const Restriction = () => {
               {$t(
                 '. After that, the Fair Use Policy will apply. If you plan to maintain this level of usage,'
               )}{' '}
-              {org.plan.id === 'free' ? 'upgrade your plan' : 'disable spend cap'}{' '}
+              {org.plan.id === 'free' ? $t('upgrade your plan') : $t('disable spend cap')}{' '}
               {$t(
                 'to avoid any restrictions. If restrictions are applied, requests to your projects will return a 402 status code.'
               )}
@@ -127,7 +129,7 @@ export const Restriction = () => {
                       : 'costControl&source=fairUseGracePeriodStarted'
                   }`}
                 >
-                  {org.plan.id === 'free' ? 'Upgrade plan' : 'Disable spend cap'}
+                  {org.plan.id === 'free' ? $t('Upgrade plan') : $t('Disable spend cap')}
                 </Link>
               </Button>
 
@@ -159,7 +161,7 @@ export const Restriction = () => {
               {$t(
                 '. Fair Use Policy applies now. If your organization is over its quota, your projects can be restricted and requests will respond with a 402 status code.'
               )}{' '}
-              {org.plan.id === 'free' ? 'Upgrade your plan' : 'Disable spend cap'}{' '}
+              {org.plan.id === 'free' ? $t('Upgrade your plan') : $t('Disable spend cap')}{' '}
               {$t("if you expect to exceed your plan's quota.")}
             </p>
             <div className="flex items-center gap-x-2 mt-3">
@@ -171,7 +173,7 @@ export const Restriction = () => {
                       : 'costControl&source=fairUseGracePeriodOver'
                   }`}
                 >
-                  {org.plan.id === 'free' ? 'Upgrade plan' : 'Disable spend cap'}
+                  {org.plan.id === 'free' ? $t('Upgrade plan') : $t('Disable spend cap')}
                 </Link>
               </Button>
               {!isUsagePage && (
@@ -198,7 +200,7 @@ export const Restriction = () => {
                 "Fair Use Policy applies and your service is restricted. Your projects are not able to serve requests and will respond with a 402 status code. You have exceeded your plan's quota"
               )}
               {violationLabels && ` ${violationLabels}`}.{' '}
-              {org.plan.id === 'free' ? 'Upgrade your plan' : 'Disable spend cap'}{' '}
+              {org.plan.id === 'free' ? $t('Upgrade your plan') : $t('Disable spend cap')}{' '}
               {$t(
                 'to lift restrictions immediately, or wait until the start of your next billing period. Note that there may be a short delay after your billing period resets before restrictions are fully lifted.'
               )}
@@ -212,7 +214,7 @@ export const Restriction = () => {
                       : 'costControl&source=fairUseRestricted'
                   }`}
                 >
-                  {org.plan.id === 'free' ? 'Upgrade plan' : 'Disable spend cap'}
+                  {org.plan.id === 'free' ? $t('Upgrade plan') : $t('Disable spend cap')}
                 </Link>
               </Button>
               {!isUsagePage && (

@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { applyLocale, getInitialLocale, i18n, LOCALE_STORAGE_KEY, t } from './index'
+import {
+  applyLocale,
+  getInitialLocale,
+  i18n,
+  LOCALE_STORAGE_KEY,
+  t,
+  translateDisplayValue,
+} from './index'
 
 describe('i18n core', () => {
   beforeEach(async () => {
@@ -16,6 +23,14 @@ describe('i18n core', () => {
     i18n.addResource('zh-CN', 'translation', 'Save changes', '保存更改')
     await applyLocale('zh-CN')
     expect(t('Save changes')).toBe('保存更改')
+  })
+
+  it('translates display strings at render time and preserves other values', async () => {
+    expect(translateDisplayValue('Save changes')).toBe('Save changes')
+    await applyLocale('zh-CN')
+    expect(translateDisplayValue('Save changes')).toBe('保存更改')
+    expect(translateDisplayValue(42)).toBe(42)
+    expect(translateDisplayValue(null)).toBeNull()
   })
 
   it('interpolates variables with the {{var}} syntax', async () => {

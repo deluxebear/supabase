@@ -550,13 +550,15 @@ export const SchemaGraph = () => {
               <Admonition
                 type="default"
                 className="max-w-md"
-                title={'No tables in schema'}
+                title={$t('No tables in schema')}
                 description={
                   isSchemaLocked
-                    ? 'The “{{schema}}” schema is managed by Supabase and is read-only through the dashboard.'
+                    ? $t(
+                        'The “{{schema}}” schema is managed by Supabase and is read-only through the dashboard.'
+                      )
                     : !canUpdateTables
-                      ? 'You need additional permissions to create tables'
-                      : 'The “{{schema}}” schema doesn’t have any tables.'
+                      ? $t('You need additional permissions to create tables')
+                      : $t('The “{{schema}}” schema doesn’t have any tables.')
                 }
               >
                 {canAddTables && (

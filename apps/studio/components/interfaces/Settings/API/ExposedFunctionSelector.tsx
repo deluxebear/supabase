@@ -161,7 +161,7 @@ export const ExposedFunctionSelector = ({
                 <>
                   {functions.length === 0 && (
                     <p className="text-xs text-center text-foreground-lighter py-3">
-                      {search.length > 0 ? 'No functions found' : 'No functions available'}
+                      {search.length > 0 ? $t('No functions found') : $t('No functions available')}
                     </p>
                   )}
                   <ScrollArea

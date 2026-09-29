@@ -194,8 +194,8 @@ export const CreateKeyDialog = ({
           <Label htmlFor="byok" className="flex items-center gap-x-2">
             <Checkbox id="byok" checked={isBYOK} onCheckedChange={(value) => setBYOK(!!value)} />
             {newKeyAlgorithm === 'HS256'
-              ? 'Import an existing secret'
-              : 'Import an existing private key'}
+              ? $t('Import an existing secret')
+              : $t('Import an existing private key')}
           </Label>
           {isBYOK && (
             <div className="flex flex-col gap-2">
@@ -203,8 +203,8 @@ export const CreateKeyDialog = ({
                 className="font-mono"
                 placeholder={
                   newKeyAlgorithm === 'HS256'
-                    ? 'Type in your JWT secret'
-                    : 'Add a private key in JWK (JSON Web Key) format'
+                    ? $t('Type in your JWT secret')
+                    : $t('Add a private key in JWK (JSON Web Key) format')
                 }
                 value={privateKey}
                 onChange={(e: any) => {

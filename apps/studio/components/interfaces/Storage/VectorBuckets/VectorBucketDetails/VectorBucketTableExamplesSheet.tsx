@@ -223,7 +223,7 @@ const result = await index.putVectors({
                   iconRight={<ChevronDown size={14} strokeWidth={2} />}
                   className="rounded-l-none"
                 >
-                  {language === 'javascript' ? 'JavaScript' : 'SQL'}
+                  {language === 'javascript' ? $t('JavaScript') : 'SQL'}
                 </Button>
               </div>
             </PopoverTrigger>

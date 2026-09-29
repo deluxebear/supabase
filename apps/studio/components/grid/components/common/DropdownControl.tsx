@@ -2,7 +2,7 @@ import { PropsWithChildren } from 'react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from 'ui'
 
 import { DropdownMenuItemTooltip } from '@/components/ui/DropdownMenuItemTooltip'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface DropdownControlProps {
   options: {
@@ -43,7 +43,7 @@ export const DropdownControl = ({
               >
                 <div className="flex items-center gap-2">
                   {x.preLabel && <span className="grow text-foreground-lighter">{x.preLabel}</span>}
-                  <span>{x.label}</span>
+                  <span>{$tValue(x.label)}</span>
                   {x.postLabel && <span className="text-foreground-lighter">{x.postLabel}</span>}
                 </div>
               </DropdownMenuItemTooltip>

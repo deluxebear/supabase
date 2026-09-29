@@ -305,7 +305,7 @@ export const ColumnList = ({
                           fill={column.is_nullable ? 'none' : 'currentColor'}
                         />
                       }
-                      label={column.is_nullable ? 'Nullable' : 'Non-nullable'}
+                      label={column.is_nullable ? $t('Nullable') : $t('Non-nullable')}
                       variant="secondary"
                     />,
                   ].filter(Boolean)
@@ -390,7 +390,7 @@ export const ColumnList = ({
                                 </TooltipTrigger>
                                 <TooltipContent side="bottom">
                                   {!canUpdateColumns
-                                    ? 'Additional permissions required to delete column'
+                                    ? $t('Additional permissions required to delete column')
                                     : `Delete ${column.name} column`}
                                 </TooltipContent>
                               </Tooltip>

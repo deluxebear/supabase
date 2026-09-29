@@ -18,7 +18,7 @@ import {
 } from '@/components/interfaces/Linter/Linter.utils'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { Lint } from '@/data/lint/lint-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -51,7 +51,11 @@ export const LinterDataGrid = ({
           <span className="shrink-0">
             {lintInfoMap.find((item) => row.name === item.name)?.icon}
           </span>
-          {<h3 className="text-xs">{lintInfoMap.find((item) => row.name === item.name)?.title}</h3>}
+          {
+            <h3 className="text-xs">
+              {$tValue(lintInfoMap.find((item) => row.name === item.name)?.title)}
+            </h3>
+          }
         </div>
       ),
     },
@@ -76,7 +80,7 @@ export const LinterDataGrid = ({
       minWidth: 400,
       value: (row: any) => (
         <div className="text-xs">
-          <ReactMarkdown>{row.description}</ReactMarkdown>
+          <ReactMarkdown>{$tValue(row.description)}</ReactMarkdown>
         </div>
       ),
     },

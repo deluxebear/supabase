@@ -50,7 +50,7 @@ export const ConnectToGitHub = () => {
         </p>
       </div>
       <Button icon={<Github />} onClick={onClick}>
-        {showAuthorizeCta ? 'Authorize' : 'Configure'}
+        {showAuthorizeCta ? $t('Authorize') : $t('Configure')}
       </Button>
     </div>
   )

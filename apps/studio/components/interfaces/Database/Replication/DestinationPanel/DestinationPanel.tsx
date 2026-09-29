@@ -141,11 +141,11 @@ export const DestinationPanel = () => {
           <div className="flex flex-col h-full min-h-0" tabIndex={-1}>
             <SheetHeader className="flex items-center justify-between">
               <div>
-                <SheetTitle>{editMode ? 'Edit pipeline' : 'Add pipeline'}</SheetTitle>
+                <SheetTitle>{editMode ? $t('Edit pipeline') : $t('Add pipeline')}</SheetTitle>
                 <SheetDescription>
                   {editMode
-                    ? 'Update how this pipeline sends data to its destination.'
-                    : 'Send tables to an external destination for analytics workloads.'}
+                    ? $t('Update how this pipeline sends data to its destination.')
+                    : $t('Send tables to an external destination for analytics workloads.')}
                 </SheetDescription>
               </div>
               <DocsButton

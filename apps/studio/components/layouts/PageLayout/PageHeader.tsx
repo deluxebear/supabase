@@ -13,6 +13,7 @@ import {
 } from 'ui'
 
 import { ScaffoldDescription, ScaffoldTitle } from '../Scaffold'
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface PageHeaderProps {
   title?: string | ReactNode
@@ -65,7 +66,7 @@ export const PageHeader = ({
                               {breadcrumbs.length === 1 && !isCompact && (
                                 <ChevronLeft size={16} strokeWidth={1.5} />
                               )}
-                              {item.label}
+                              {$tValue(item.label)}
                             </Link>
                           </BreadcrumbLink>
                         ) : (
@@ -73,7 +74,7 @@ export const PageHeader = ({
                             {breadcrumbs.length === 1 && (
                               <ChevronLeft size={16} strokeWidth={1.5} />
                             )}
-                            {item.label}
+                            {$tValue(item.label)}
                           </BreadcrumbPageItem>
                         )}
                       </BreadcrumbItem>

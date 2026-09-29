@@ -302,7 +302,9 @@ export const Column = ({
             className="table-editor-column-type lg:gap-0 "
             disabled={hasForeignKeys}
             description={
-              hasForeignKeys ? 'Column type cannot be changed as it has a foreign key relation' : ''
+              hasForeignKeys
+                ? $t('Column type cannot be changed as it has a foreign key relation')
+                : ''
             }
             onOptionSelect={({ format, formatSchema }) => {
               const defaultValue = format === 'uuid' ? 'gen_random_uuid()' : null

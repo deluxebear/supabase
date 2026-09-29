@@ -15,7 +15,7 @@ import { useOrgSubscriptionQuery } from '@/data/subscriptions/org-subscription-q
 import { useOrgSubscriptionUpdateMutation } from '@/data/subscriptions/org-subscription-update-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { BASE_PATH, DOCS_URL, PRICING_TIER_PRODUCT_IDS } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useOrgSettingsPageStateSnapshot } from '@/state/organization-settings'
 
 const SPEND_CAP_OPTIONS: {
@@ -118,7 +118,9 @@ const SpendCapSidePanel = () => {
           </Button>
         </div>
       }
-      tooltip={!canUpdateSpendCap ? 'You do not have permission to update spend cap' : undefined}
+      tooltip={
+        !canUpdateSpendCap ? $t('You do not have permission to update spend cap') : undefined
+      }
     >
       <SidePanel.Content>
         <div className="py-6 space-y-4">
@@ -162,7 +164,7 @@ const SpendCapSidePanel = () => {
                     <>
                       <Table.tr key={categoryId}>
                         <Table.td>
-                          <p className="text-xs text-foreground">{category.title}</p>
+                          <p className="text-xs text-foreground">{$tValue(category.title)}</p>
                         </Table.td>
                         <Table.td>{null}</Table.td>
                       </Table.tr>
@@ -170,7 +172,7 @@ const SpendCapSidePanel = () => {
                         return (
                           <Table.tr key={item.title}>
                             <Table.td>
-                              <p className="text-xs pl-4">{item.title}</p>
+                              <p className="text-xs pl-4">{$tValue(item.title)}</p>
                             </Table.td>
                             <Table.td>
                               <p className="text-xs pl-4">
@@ -266,8 +268,12 @@ const SpendCapSidePanel = () => {
             <>
               <p className="text-sm">
                 {selectedOption === 'on'
-                  ? 'Upon clicking confirm, spend cap will be enabled for your organization and you will no longer be charged any extra for usage.'
-                  : 'Upon clicking confirm, spend cap will be disabled for your organization and you will be charged for any usage beyond the included quota.'}
+                  ? $t(
+                      'Upon clicking confirm, spend cap will be enabled for your organization and you will no longer be charged any extra for usage.'
+                    )
+                  : $t(
+                      'Upon clicking confirm, spend cap will be disabled for your organization and you will be charged for any usage beyond the included quota.'
+                    )}
               </p>
               <p className="text-sm">
                 {$t(

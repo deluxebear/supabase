@@ -61,7 +61,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH, IS_PLATFORM } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAppStateSnapshot } from '@/state/app-state'
 
@@ -321,11 +321,11 @@ export const CreateBranchModal = () => {
                 control={form.control}
                 name="branchName"
                 render={({ field }) => (
-                  <FormItemLayout label={'Preview branch name'}>
+                  <FormItemLayout label={$t('Preview branch name')}>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder={'e.g. staging, dev-feature-x'}
+                        placeholder={$t('e.g. staging, dev-feature-x')}
                         autoComplete="off"
                       />
                     </FormControl>
@@ -381,7 +381,7 @@ export const CreateBranchModal = () => {
                         labelOptional="Optional"
                         description={
                           githubAuthorization
-                            ? 'Automatically deploy changes on every commit'
+                            ? $t('Automatically deploy changes on every commit')
                             : undefined
                         }
                       >
@@ -389,7 +389,7 @@ export const CreateBranchModal = () => {
                           <FormControl>
                             <Input
                               {...field}
-                              placeholder={'e.g. main, feat/some-feature'}
+                              placeholder={$t('e.g. main, feat/some-feature')}
                               autoComplete="off"
                               onChange={(e) => {
                                 field.onChange(e)
@@ -428,7 +428,7 @@ export const CreateBranchModal = () => {
                       }
                       layout="flex-row-reverse"
                       className="[&>div>label]:mb-1"
-                      description={'Clone production data into this branch'}
+                      description={$t('Clone production data into this branch')}
                     >
                       <FormControl>
                         <Switch
@@ -474,32 +474,32 @@ export const CreateBranchModal = () => {
                               {$t('Branch disk size will incur additional cost per month')}
                             </p>
                             <p className="text-sm text-foreground-light">
-                              {
+                              {$t(
                                 "The additional cost and time taken to create a data branch is relative to the size of your database. We are unable to provide an estimate as we were unable to retrieve your project's disk configuration"
-                              }
+                              )}
                             </p>
                           </>
                         ) : (
                           <>
                             <p className="text-sm text-foreground">
                               {$t('Branch disk size is billed at $')}
-                              {estimatedDiskCost.total.toFixed(2)} {'per month'}
+                              {estimatedDiskCost.total.toFixed(2)} {$t('per month')}
                             </p>
                             <p className="text-sm text-foreground-light">
                               {$t('Creating a data branch will take about')}{' '}
                               <span className="text-foreground">
                                 {estimateRestoreTime(branchDiskAttributes).toFixed()} minutes
                               </span>
-                              {'and costs'}{' '}
+                              {$t('and costs')}{' '}
                               <span className="text-foreground">
                                 ${estimatedDiskCost.total.toFixed(2)}
                               </span>
-                              {'per month based on your current target database volume size of'}{' '}
-                              {branchDiskAttributes.size_gb} {'GB and your'}{' '}
+                              {$t('per month based on your current target database volume size of')}{' '}
+                              {branchDiskAttributes.size_gb} {$t('GB and your')}{' '}
                               <Tooltip>
                                 <TooltipTrigger>
                                   <span className={InlineLinkClassName}>
-                                    {"project's disk configuration"}
+                                    {$t("project's disk configuration")}
                                   </span>
                                 </TooltipTrigger>
                                 <TooltipContent side="bottom">
@@ -523,7 +523,7 @@ export const CreateBranchModal = () => {
                                     <div className="flex items-center gap-x-2">
                                       <p className="w-24">{$t('Throughput:')}</p>
                                       <p className="w-16">
-                                        {branchDiskAttributes.throughput_mbps} {'MB/s'}
+                                        {branchDiskAttributes.throughput_mbps} {$t('MB/s')}
                                       </p>
                                       <p>(${estimatedDiskCost.throughput.toFixed(2)})</p>
                                     </div>
@@ -560,8 +560,8 @@ export const CreateBranchModal = () => {
                   <div className="flex flex-col gap-y-1">
                     <p className="text-sm text-foreground">
                       {prodBranch?.git_branch
-                        ? 'Merging to production enabled'
-                        : 'Merging to production disabled'}
+                        ? $t('Merging to production enabled')
+                        : $t('Merging to production disabled')}
                     </p>
                     <p className="text-sm text-foreground-light">
                       {prodBranch?.git_branch ? (
@@ -596,15 +596,15 @@ export const CreateBranchModal = () => {
                     {withData
                       ? branchComputeSize.priceHourly
                       : instanceSizeSpecs.micro.priceHourly}{' '}
-                    {'per hour'}
+                    {$t('per hour')}
                   </p>
                   <p className="text-sm text-foreground-light">
                     {withData ? (
                       <>
-                        <code className="text-code-inline">{branchComputeSize.label}</code>
-                        {
+                        <code className="text-code-inline">{$tValue(branchComputeSize.label)}</code>
+                        {$t(
                           'compute size is automatically selected to match your production branch. You may downgrade after creation or pause the branch when not in use to save cost.'
-                        }
+                        )}
                       </>
                     ) : (
                       <>

@@ -77,7 +77,7 @@ export const ProjectAPIDocs = () => {
               {!isEntityDocs && <LanguageSelector simplifiedVersion />}
               {isIntroduction && (
                 <Button onClick={() => setShowKeys(!showKeys)}>
-                  {showKeys ? 'Hide keys' : 'Show keys'}
+                  {showKeys ? $t('Hide keys') : $t('Show keys')}
                 </Button>
               )}
             </div>

@@ -7,7 +7,7 @@ import { IntegrationLogo } from '../Integration/IntegrationLogo'
 import { getMarketplaceSource, MarketplaceSourceBadge } from './Marketplace.constants'
 import type { IntegrationDefinition } from '@/components/interfaces/Integrations/Landing/Integrations.constants'
 import { BASE_PATH } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const FEATURED_INTEGRATION_IMAGES: Record<string, { dark: string; light?: string }> = {
   cron: {
@@ -132,7 +132,7 @@ export const MarketplaceFeaturedHeroGrid = ({
                   </div>
                   {primaryIntegration.description && (
                     <p className="line-clamp-3 text-xs leading-snug text-foreground-light text-balance">
-                      {primaryIntegration.description}
+                      {$tValue(primaryIntegration.description)}
                     </p>
                   )}
                   <div className="text-xs flex items-center gap-1 text-foreground-lighter shrink-0 mt-4">

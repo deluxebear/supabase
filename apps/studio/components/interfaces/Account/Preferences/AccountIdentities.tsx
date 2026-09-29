@@ -252,7 +252,7 @@ export const AccountIdentities = () => {
               <DialogTitle>
                 {selectedProviderUpdateEmail !== 'email'
                   ? `Updating email address for ${getProviderName(selectedProviderUpdateEmail)} identity`
-                  : 'Update email address'}
+                  : $t('Update email address')}
               </DialogTitle>
             </DialogHeader>
             {selectedProviderUpdateEmail === 'github' ? (

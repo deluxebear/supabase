@@ -4,7 +4,7 @@ import { ErrorInfo } from 'react'
 import { ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary'
 import { Alert, AlertDescription, AlertTitle, Button } from 'ui'
 
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface ErrorFallbackProps {
   error: Error
@@ -37,7 +37,7 @@ const ErrorFallback = ({
           </Button>
           {actions?.map((action, index) => (
             <Button key={index} onClick={action.onClick} className="text-sm">
-              {action.label}
+              {$tValue(action.label)}
             </Button>
           ))}
         </div>

@@ -181,7 +181,7 @@ export const SignInRecoveryCodeForm = () => {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <InputGroupButton
-                            aria-label={isCodeRevealed ? 'Hide code' : 'Show code'}
+                            aria-label={isCodeRevealed ? $t('Hide code') : $t('Show code')}
                             aria-describedby={undefined}
                             onClick={() => setIsCodeRevealed((previous) => !previous)}
                           >
@@ -193,7 +193,7 @@ export const SignInRecoveryCodeForm = () => {
                           </InputGroupButton>
                         </TooltipTrigger>
                         <TooltipContent>
-                          {isCodeRevealed ? 'Hide code' : 'Show code'}
+                          {isCodeRevealed ? $t('Hide code') : $t('Show code')}
                         </TooltipContent>
                       </Tooltip>
                     </InputGroupAddon>
@@ -221,7 +221,7 @@ export const SignInRecoveryCodeForm = () => {
                 size="large"
                 loading={isVerifying || isSuccess}
               >
-                {isVerifying ? 'Verifying' : isSuccess ? 'Signing in' : 'Verify'}
+                {isVerifying ? $t('Verifying') : isSuccess ? $t('Signing in') : $t('Verify')}
               </Button>
             </div>
           </form>

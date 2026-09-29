@@ -42,7 +42,7 @@ import { DataTableColumnStatusCode } from '@/components/ui/DataTable/DataTableCo
 import { useFillTimeseriesSorted } from '@/hooks/analytics/useFillTimeseriesSorted'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { BASE_PATH, IS_PLATFORM } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 export const NetworkTrafficRenderer = (
@@ -236,7 +236,7 @@ export const TopApiRoutesRenderer = (
             props.data.length <= 3 ? 'hidden' : '',
           ].join(' ')}
         >
-          {!showMore ? 'Show more' : 'Show less'}
+          {!showMore ? $t('Show more') : $t('Show less')}
         </Button>
       </div>
     </>
@@ -636,7 +636,7 @@ export const RequestsByCountryMapRenderer = (
           className="pointer-events-none absolute z-10 rounded-sm bg-surface-100 p-1.5 border border-surface-200 text-sm"
           style={{ left: hoverInfo.x, top: hoverInfo.y }}
         >
-          <h3 className="text-foreground-lighter text-sm">{hoverInfo.title}</h3>
+          <h3 className="text-foreground-lighter text-sm">{$tValue(hoverInfo.title)}</h3>
           <p className="text-foreground text-sm">{hoverInfo.subtitle}</p>
         </div>
       )}

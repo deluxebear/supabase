@@ -36,7 +36,7 @@ import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useEdgeFunctionsQuery } from '@/data/edge-functions/edge-functions-query'
 import { edgeFunctionReports } from '@/data/reports/v2/edge-functions.config'
 import { useRefreshHandler, useReportDateRange } from '@/hooks/misc/useReportDateRange'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 import type { NextPageWithLayout } from '@/types'
@@ -247,7 +247,7 @@ const EdgeFunctionsUsage = () => {
                     <div className="flex items-center gap-x-2">
                       <RegionFlag className="w-4" region={region.key} />
                       <div className="flex flex-wrap gap-x-2 items-center">
-                        <span className="text-foreground text-xs">{region.label}</span>
+                        <span className="text-foreground text-xs">{$tValue(region.label)}</span>
                         <span className="text-foreground-lighter text-xs">{region.key}</span>
                       </div>
                     </div>

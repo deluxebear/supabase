@@ -40,7 +40,7 @@ import { QueryPerformanceRow } from './QueryPerformance.types'
 import { formatDuration } from './QueryPerformance.utils'
 import { NumericFilter } from '@/components/interfaces/Reports/v2/ReportsNumericFilter'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface QueryPerformanceGridProps {
   aggregatedData: QueryPerformanceRow[]
@@ -330,10 +330,10 @@ export const QueryPerformanceGrid = ({
                 <span className="flex items-center gap-x-1">
                   <p className="font-mono text-xs">{value}</p>
                   <InfoTooltip align="end" alignOffset={-12} className="w-56">
-                    {
+                    {$tValue(
                       QUERY_PERFORMANCE_ROLE_DESCRIPTION.find((role) => role.name === value)
                         ?.description
-                    }
+                    )}
                   </InfoTooltip>
                 </span>
               ) : (

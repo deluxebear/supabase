@@ -63,7 +63,7 @@ import { applyAutoLimit } from '@/data/sql/utils'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { editorPanelState, useEditorPanelStateSnapshot } from '@/state/editor-panel-state'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
@@ -449,7 +449,7 @@ export const EditorPanel = () => {
                                 <div className="flex-1">
                                   <h4 className="text-foreground flex-1">{template.name}</h4>
                                   <p className="text-xs text-foreground-light">
-                                    {template.description}
+                                    {$tValue(template.description)}
                                   </p>
                                 </div>
                               </div>
@@ -475,7 +475,7 @@ export const EditorPanel = () => {
             variant="text"
             className="w-7 h-7 p-0"
             icon={<Maximize strokeWidth={1.5} />}
-            aria-label={isExplorerEnabled ? 'Open in Explorer' : 'Open in SQL editor'}
+            aria-label={isExplorerEnabled ? $t('Open in Explorer') : $t('Open in SQL editor')}
             tooltip={{
               content: {
                 side: 'bottom',
@@ -597,7 +597,7 @@ export const EditorPanel = () => {
                 {results.length} rows{results.length >= 100 && ` (Limited to only 100 rows)`}
               </span>
               <Button size="tiny" className="ml-2" onClick={() => setShowResults((prev) => !prev)}>
-                {showResults ? 'Hide Results' : 'Show Results'}
+                {showResults ? $t('Hide Results') : $t('Show Results')}
               </Button>
             </div>
           </div>
@@ -624,10 +624,10 @@ export const EditorPanel = () => {
               {saveStatus === 'error' && <AlertCircle size={13} />}
               <span>
                 {isUpserting
-                  ? 'Saving...'
+                  ? $t('Saving...')
                   : saveStatus === 'success'
-                    ? 'Snippet updated'
-                    : 'Failed to save snippet'}
+                    ? $t('Snippet updated')
+                    : $t('Failed to save snippet')}
               </span>
             </div>
           )}
@@ -674,7 +674,7 @@ export const EditorPanel = () => {
                 }
               }}
             >
-              {activeSnippet ? 'Update snippet' : 'Save as snippet'}
+              {activeSnippet ? $t('Update snippet') : $t('Save as snippet')}
             </Button>
           )}
 

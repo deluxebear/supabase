@@ -28,7 +28,7 @@ import { ROLE_PERMISSIONS } from './Roles.constants'
 import { useDatabaseRoleUpdateMutation } from '@/data/database-roles/database-role-update-mutation'
 import type { PgRole } from '@/data/database-roles/database-roles-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface RoleRowProps {
   role: PgRole
@@ -205,7 +205,7 @@ export const RoleRow = ({ role, disabled = false, onSelectDelete }: RoleRowProps
                       <FormItemLayout
                         id={`${role.id}-${permission}`}
                         layout="flex"
-                        label={ROLE_PERMISSIONS[permission].description}
+                        label={$tValue(ROLE_PERMISSIONS[permission].description)}
                       >
                         <FormControl>
                           <Switch

@@ -50,7 +50,7 @@ import { useSchemaCreateMutation } from '@/data/database/schema-create-mutation'
 import { invalidateSchemasQuery, useSchemasQuery } from '@/data/database/schemas-query'
 import { useFDWCreateMutation } from '@/data/fdw/fdw-create-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import type { ResponseError } from '@/types'
 
@@ -263,7 +263,7 @@ export const CreateWrapperSheet = ({
           >
             <SheetHeader>
               <SheetTitle>
-                {$t('Create a')} {wrapperMeta.label} wrapper
+                {$t('Create a')} {$tValue(wrapperMeta.label)} wrapper
               </SheetTitle>
             </SheetHeader>
             <div className="grow overflow-y-auto">
@@ -315,7 +315,7 @@ export const CreateWrapperSheet = ({
               <FormSection
                 header={
                   <FormSectionLabel>
-                    {wrapperMeta.label} {$t('Configuration')}
+                    {$tValue(wrapperMeta.label)} {$t('Configuration')}
                   </FormSectionLabel>
                 }
               >
@@ -351,7 +351,7 @@ export const CreateWrapperSheet = ({
                                 <div className="flex flex-col">
                                   <p className="text-foreground-light text-left">
                                     {$t('Create foreign tables to query data from')}{' '}
-                                    {wrapperMeta.label}.
+                                    {$tValue(wrapperMeta.label)}.
                                   </p>
                                 </div>
                               </div>
@@ -376,8 +376,8 @@ export const CreateWrapperSheet = ({
                               <div className="flex  gap-x-5">
                                 <div className="flex flex-col">
                                   <p className="text-foreground-light text-left">
-                                    {$t('Create all foreign tables from')} {wrapperMeta.label}{' '}
-                                    {$t('in a specified schema.')}
+                                    {$t('Create all foreign tables from')}{' '}
+                                    {$tValue(wrapperMeta.label)} {$t('in a specified schema.')}
                                   </p>
                                 </div>
                               </div>

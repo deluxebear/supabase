@@ -46,8 +46,10 @@ export const InsertBeforeRemoveChildErrorHandler = ({
             {$t('We highly recommend')}{' '}
             <span className="text-foreground">
               {browser === 'Chrome'
-                ? 'disabling Chrome Translate or certain browser extensions'
-                : 'avoiding the use of browser translation tools or disabling certain extensions'}
+                ? $t('disabling Chrome Translate or certain browser extensions')
+                : $t(
+                    'avoiding the use of browser translation tools or disabling certain extensions'
+                  )}
             </span>{' '}
             {$t(
               'while using the Supabase Dashboard to avoid running into this error. Try to refresh the browser to see if it occurs again.'

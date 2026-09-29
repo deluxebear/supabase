@@ -23,7 +23,7 @@ import {
 import type { InvocationChartDatum, InvocationUpdateAnnotation } from './EdgeFunctionOverview.utils'
 import { toAlertError } from './EdgeFunctionRecentErrors.utils'
 import { AlertError } from '@/components/ui/AlertError'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import type { ChartIntervals } from '@/types'
 
 interface EdgeFunctionInvocationsSectionProps {
@@ -110,7 +110,7 @@ export const EdgeFunctionInvocationsSection = ({
                           EDGE_FUNCTION_CHART_INTERVALS.length
                         )}
                       >
-                        {item.label}
+                        {$tValue(item.label)}
                       </Button>
                     )
                   })}
@@ -136,8 +136,8 @@ export const EdgeFunctionInvocationsSection = ({
                   <ChartLoadingState />
                 ) : isErrorChart || chartData.length === 0 ? (
                   <EdgeFunctionChartEmptyState
-                    title={emptyStateCopy.title}
-                    description={emptyStateCopy.description}
+                    title={$tValue(emptyStateCopy.title)}
+                    description={$tValue(emptyStateCopy.description)}
                   />
                 ) : (
                   <EdgeFunctionInvocationsChart

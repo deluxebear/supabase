@@ -420,7 +420,9 @@ const RowHeader = ({ rows: visibleRows, tableQueriesEnabled = true }: RowHeaderP
                 side="bottom"
               >
                 <Button variant="text" onClick={onToggleSelectAllInTable}>
-                  {snap.allRowsSelected ? 'Deselect all rows in table' : 'Select all rows in table'}
+                  {snap.allRowsSelected
+                    ? $t('Deselect all rows in table')
+                    : $t('Select all rows in table')}
                 </Button>
               </Shortcut>
             </>

@@ -258,8 +258,8 @@ function EmptyState({ canShowHealthAdvisor }: { canShowHealthAdvisor: boolean })
         <Shield size={20} strokeWidth={1.5} className="text-foreground-muted" />
         <p className="text-sm text-foreground-light text-center">
           {canShowHealthAdvisor
-            ? 'No security, performance or health issues found'
-            : 'No security or performance issues found'}
+            ? $t('No security, performance or health issues found')
+            : $t('No security or performance issues found')}
         </p>
       </CardContent>
     </Card>

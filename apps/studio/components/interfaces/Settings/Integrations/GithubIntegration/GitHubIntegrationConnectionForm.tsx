@@ -676,7 +676,7 @@ export const GitHubIntegrationConnectionForm = ({
                         }
                         loading={isLoading}
                       >
-                        {connection ? 'Save changes' : 'Enable integration'}
+                        {connection ? $t('Save changes') : $t('Enable integration')}
                       </Button>
                     </div>
                   </CardFooter>

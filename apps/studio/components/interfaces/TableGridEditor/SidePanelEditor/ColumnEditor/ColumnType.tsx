@@ -39,7 +39,7 @@ import {
 } from '../SidePanelEditor.constants'
 import type { PostgresDataTypeOption } from '../SidePanelEditor.types'
 import type { EnumeratedType } from '@/data/enumerated-types/enumerated-types-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export type ColumnTypeSelection = { format: string; formatSchema?: string }
 
@@ -133,7 +133,7 @@ const ColumnType = ({
         <TooltipTrigger>
           <FormItemLayout
             layout={showLabel ? layout : undefined}
-            label={showLabel ? 'Type' : ''}
+            label={showLabel ? $t('Type') : ''}
             description={showLabel ? unsupportedDataTypeText : undefined}
             isReactForm={false}
           >
@@ -160,7 +160,7 @@ const ColumnType = ({
         <TooltipTrigger>
           <FormItemLayout
             layout={showLabel ? layout : undefined}
-            label={showLabel ? 'Type' : ''}
+            label={showLabel ? $t('Type') : ''}
             description={showLabel ? unsupportedDataTypeText : undefined}
             isReactForm={false}
           >
@@ -230,7 +230,9 @@ const ColumnType = ({
                         <div className="flex items-center gap-2 pr-6">
                           <span>{inferIcon(option.type)}</span>
                           <span className="text-foreground">{option.name}</span>
-                          <span className="text-foreground-lighter">{option.description}</span>
+                          <span className="text-foreground-lighter">
+                            {$tValue(option.description)}
+                          </span>
                         </div>
                         <span className="absolute right-3 top-2">
                           {isSelected ? <Check className="text-primary" size={14} /> : ''}

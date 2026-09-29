@@ -273,7 +273,7 @@ export const CreateOrUpdateOAuthAppSheet = ({
                 <span className="sr-only">{$t('Close')}</span>
               </SheetClose>
               <SheetTitle className="truncate">
-                {isEditMode ? 'Update OAuth app' : 'Create a new OAuth app'}
+                {isEditMode ? $t('Update OAuth app') : $t('Create a new OAuth app')}
               </SheetTitle>
             </div>
           </SheetHeader>
@@ -308,7 +308,7 @@ export const CreateOrUpdateOAuthAppSheet = ({
                                   className={cn(
                                     'flex items-center justify-center h-10 w-10 shrink-0 text-foreground-lighter overflow-hidden rounded-full bg-cover border'
                                   )}
-                                  title={logoUrl ? undefined : 'No image selected'}
+                                  title={logoUrl ? undefined : $t('No image selected')}
                                   style={{
                                     backgroundImage: logoUrl ? `url("${logoUrl}")` : 'none',
                                   }}
@@ -527,7 +527,7 @@ export const CreateOrUpdateOAuthAppSheet = ({
               form={FORM_ID}
               loading={isCreating || isUpdating}
             >
-              {isEditMode ? 'Update app' : 'Create app'}
+              {isEditMode ? $t('Update app') : $t('Create app')}
             </Button>
           </SheetFooter>
         </SheetContent>

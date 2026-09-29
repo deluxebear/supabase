@@ -23,7 +23,7 @@ import {
 
 import type { JitUserRule } from './JitDbAccess.types'
 import { getJitStatusDisplay } from './JitDbAccess.utils'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface JitDbAccessRulesTableProps {
   users: JitUserRule[]
@@ -157,7 +157,7 @@ export function JitDbAccessRulesTable({
                         <span className="flex flex-wrap gap-1.5">
                           {statusDisplay.badges.map((badge) => (
                             <Badge key={badge.label} variant={badge.variant}>
-                              {badge.label}
+                              {$tValue(badge.label)}
                             </Badge>
                           ))}
                         </span>

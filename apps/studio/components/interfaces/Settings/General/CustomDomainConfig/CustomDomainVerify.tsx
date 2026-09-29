@@ -94,8 +94,10 @@ export const CustomDomainVerify = () => {
                 type="note"
                 title={
                   isNotVerifiedYet
-                    ? 'Unable to verify records from DNS provider yet.'
-                    : 'Please note that it may take up to 24 hours for the DNS records to propagate.'
+                    ? $t('Unable to verify records from DNS provider yet.')
+                    : $t(
+                        'Please note that it may take up to 24 hours for the DNS records to propagate.'
+                      )
                 }
               >
                 <p>

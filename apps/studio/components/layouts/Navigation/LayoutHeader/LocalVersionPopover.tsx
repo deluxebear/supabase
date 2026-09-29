@@ -60,7 +60,7 @@ export const LocalVersionPopover = () => {
     >
       <PopoverTrigger className="flex items-center">
         <Badge variant={isBeta ? 'warning' : hasUpdate ? 'success' : 'default'}>
-          {isBeta ? 'Beta' : hasUpdate ? 'Update available' : 'Latest'}
+          {isBeta ? $t('Beta') : hasUpdate ? $t('Update available') : $t('Latest')}
         </Badge>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 px-0">

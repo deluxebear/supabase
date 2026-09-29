@@ -48,7 +48,7 @@ import {
   type ReplicationPipelineTableStatus,
 } from '@/data/replication/pipeline-replication-status-query'
 import { useReplicationPipelineStatusQuery } from '@/data/replication/pipeline-status-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import {
   PipelineStatusRequestStatus,
@@ -233,7 +233,7 @@ export const ReplicationPipelineStatus = () => {
     <>
       <PageContainer size="large">
         <p className="sr-only" role="status" aria-live="polite">
-          {isLoading ? 'Loading pipeline details' : ''}
+          {isLoading ? $t('Loading pipeline details') : ''}
         </p>
 
         {isPipelineError && (
@@ -252,8 +252,8 @@ export const ReplicationPipelineStatus = () => {
               <Admonition
                 type={stateNotice.type}
                 layout="responsive"
-                title={stateNotice.title}
-                description={stateNotice.description}
+                title={$tValue(stateNotice.title)}
+                description={$tValue(stateNotice.description)}
                 actions={
                   stateNotice.showLogsLink ? (
                     <Button asChild variant="default">
@@ -270,7 +270,7 @@ export const ReplicationPipelineStatus = () => {
                 layout="responsive"
                 title={
                   erroredTables.length === 1
-                    ? '1 table stopped replicating'
+                    ? $t('1 table stopped replicating')
                     : `${erroredTables.length} tables stopped replicating`
                 }
                 description={$t(
@@ -489,8 +489,8 @@ export const ReplicationPipelineStatus = () => {
               {!hasTableData && (
                 <EmptyStatePresentational
                   icon={Activity}
-                  title={emptyState.title}
-                  description={emptyState.description}
+                  title={$tValue(emptyState.title)}
+                  description={$tValue(emptyState.description)}
                 />
               )}
             </PageSectionContent>

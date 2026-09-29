@@ -15,7 +15,7 @@ import { ResourceList } from '@/components/ui/Resource/ResourceList'
 import { useDeploymentMode } from '@/hooks/misc/useDeploymentMode'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { DOCS_URL, IS_PLATFORM } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -171,7 +171,7 @@ export const FunctionsEmptyState = () => {
               >
                 <Link href={`/project/${ref}/functions/new?template=${template.value}`}>
                   <p>{template.name}</p>
-                  <p className="text-sm text-foreground-lighter">{template.description}</p>
+                  <p className="text-sm text-foreground-lighter">{$tValue(template.description)}</p>
                 </Link>
               </ResourceItem>
             ))}

@@ -15,7 +15,7 @@ import { getFieldDisplay, SLOT_LAG_FIELDS } from './SlotLagMetrics'
 import { SLOT_STATUS_TOOLTIP, SlotWalStatusValue } from './SlotStatus'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface PipelineHealthSectionProps {
   /** Absent while the pipeline is stopped or failed and reports no slot metrics. */
@@ -50,7 +50,7 @@ export const PipelineHealthSection = ({ metrics, children }: PipelineHealthSecti
                   tooltip={SLOT_STATUS_TOOLTIP}
                   description={
                     <>
-                      {walStatusMeta.description}{' '}
+                      {$tValue(walStatusMeta.description)}{' '}
                       <InlineLink
                         className="text-foreground-lighter hover:text-foreground"
                         href={`${DOCS_URL}/guides/database/replication/pipelines-monitoring#slot-statuses`}
@@ -74,8 +74,8 @@ export const PipelineHealthSection = ({ metrics, children }: PipelineHealthSecti
                   return (
                     <PipelineDetailItem
                       key={field.key}
-                      label={field.label}
-                      tooltip={field.description}
+                      label={$tValue(field.label)}
+                      tooltip={$tValue(field.description)}
                     >
                       {valueTooltip !== undefined ? (
                         <Tooltip>

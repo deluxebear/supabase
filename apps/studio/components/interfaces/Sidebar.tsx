@@ -44,7 +44,7 @@ import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -199,7 +199,7 @@ export function SideBarNavLink({
   ) : (
     <>
       {route.icon}
-      <span>{route.label}</span>
+      <span>{$tValue(route.label)}</span>
       {route.isNew && (
         <Badge
           variant="success"
@@ -227,7 +227,7 @@ export function SideBarNavLink({
           onTrigger={() => router.push(route.link!)}
           side="right"
           delayDuration={shortcutPopoverDelay}
-          label={route.key === 'explorer' ? 'Go to Explorer' : undefined}
+          label={route.key === 'explorer' ? $t('Go to Explorer') : undefined}
         >
           {button}
         </Shortcut>
@@ -353,7 +353,7 @@ const ProjectLinks = () => {
                   isLoading={isProjectPending}
                 >
                   {route.icon}
-                  <span>{route.label}</span>
+                  <span>{$tValue(route.label)}</span>
                   {!route.disabled && (
                     <ActiveDot
                       hasErrors={errorLints.length > 0}

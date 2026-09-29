@@ -8,6 +8,8 @@ import {
   BreadcrumbSeparator,
 } from 'ui'
 
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
+
 interface SidebarBreadcrumbProps {
   label: string
   'aria-label': string
@@ -38,10 +40,10 @@ export const SidebarBreadcrumb = ({
                       parent.onClick()
                     }
                   }}
-                  title={parent.label}
+                  title={$tValue(parent.label)}
                   className="min-w-0 cursor-pointer truncate no-underline focus-ring"
                 >
-                  {parent.label}
+                  {$tValue(parent.label)}
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="shrink-0" />

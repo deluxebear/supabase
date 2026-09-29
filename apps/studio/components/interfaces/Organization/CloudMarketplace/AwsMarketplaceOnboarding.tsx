@@ -238,7 +238,7 @@ export const AwsMarketplaceOnboardingScreen = ({ buyerId }: { buyerId?: string }
             description={
               linkedOrganization
                 ? `${linkedOrganization.name} will be billed through AWS Marketplace.`
-                : 'The selected organization will be billed through AWS Marketplace.'
+                : $t('The selected organization will be billed through AWS Marketplace.')
             }
           />
           <Button variant="primary" block asChild>

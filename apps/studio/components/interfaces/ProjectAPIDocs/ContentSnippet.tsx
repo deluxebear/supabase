@@ -3,6 +3,7 @@ import { PropsWithChildren } from 'react'
 import { SimpleCodeBlock } from 'ui-patterns/SimpleCodeBlock'
 
 import { Markdown } from '../Markdown'
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 interface ContentSnippetProps {
@@ -42,7 +43,7 @@ const ContentSnippet = ({
     <div className="space-y-4 py-6 pb-2 last:pb-6">
       <div className="px-4 space-y-4">
         <h2 id={snippet.key} tabIndex={-1} className="doc-heading">
-          {snippet.title}
+          {$tValue(snippet.title)}
         </h2>
         {snippet.description !== undefined && (
           <div className="doc-section">

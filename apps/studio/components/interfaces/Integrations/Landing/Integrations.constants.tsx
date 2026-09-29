@@ -571,7 +571,7 @@ const TEMPLATE_INTEGRATIONS: Array<IntegrationDefinition> = [
       <Image
         fill
         src={`${BASE_PATH}/img/icons/stripe-icon.svg`}
-        alt={'Stripe Logo'}
+        alt={$t('Stripe Logo')}
         className={cn('p-2', className)}
         {...props}
       />

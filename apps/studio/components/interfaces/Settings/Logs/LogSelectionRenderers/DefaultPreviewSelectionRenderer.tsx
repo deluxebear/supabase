@@ -120,7 +120,7 @@ const PropertyRow = ({
                 variant="outline"
                 onClick={() => setIsExpanded(!isExpanded)}
               >
-                {isExpanded ? 'Collapse' : 'Expand'}
+                {isExpanded ? $t('Collapse') : $t('Expand')}
               </Button>
             )}
           </div>
@@ -197,7 +197,7 @@ const PropertyRow = ({
                 setIsExpanded(!isExpanded)
               }}
             >
-              {isExpanded ? 'Collapse' : 'Expand'} value
+              {isExpanded ? $t('Collapse') : $t('Expand')} value
             </DropdownMenuItem>
           )}
           {(isMethod || isUserAgent || isStatus || isPath) && (

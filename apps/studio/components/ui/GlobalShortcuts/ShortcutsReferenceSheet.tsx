@@ -13,7 +13,7 @@ import {
 } from 'ui'
 import { Input } from 'ui-patterns/DataInputs/Input'
 
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { hotkeyToKeys } from '@/state/shortcuts/formatShortcut'
 import {
   SHORTCUT_REFERENCE_GROUP_LABELS,
@@ -227,7 +227,7 @@ function ShortcutsReferenceSheetContent() {
                     key={definition.id}
                     className="flex min-h-10 items-center justify-between gap-4 border-b border-muted py-2 last:border-b-0"
                   >
-                    <span className="text-sm text-foreground">{definition.label}</span>
+                    <span className="text-sm text-foreground">{$tValue(definition.label)}</span>
                     <ShortcutSequence sequence={definition.sequence} />
                   </li>
                 ))}

@@ -52,7 +52,7 @@ export const DatabaseParametersSubMenu = ({
           <span className="text-foreground-lighter text-xs">
             {selectedDatabase
               ? databaseLabel(selectedDatabase.identifier, selectedDatabase.region, projectRef)
-              : 'Primary database'}
+              : $t('Primary database')}
           </span>
         </div>
       </DropdownMenuSubTrigger>

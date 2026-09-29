@@ -53,7 +53,7 @@ import { ActionBar } from '@/components/interfaces/TableGridEditor/SidePanelEdit
 import { useSchemasQuery } from '@/data/database/schemas-query'
 import { useSchemasFilteredForHighAvailability } from '@/hooks/misc/useHighAvailability'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export type WrapperTableEditorProps = {
   visible: boolean
@@ -135,7 +135,7 @@ const WrapperTableEditor = ({
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" strokeWidth={1} />
                   }
                 >
-                  {!!selectedTableIndex ? tables[Number(selectedTableIndex)].label : '---'}
+                  {!!selectedTableIndex ? $tValue(tables[Number(selectedTableIndex)].label) : '---'}
                 </Button>
               </PopoverTrigger>
               <PopoverContent id={listboxId} className="p-0" sameWidthAsTrigger>
@@ -159,8 +159,10 @@ const WrapperTableEditor = ({
                             }}
                           >
                             <div className="space-y-1">
-                              <p>{table.label}</p>
-                              <p className="text-foreground-lighter">{table.description}</p>
+                              <p>{$tValue(table.label)}</p>
+                              <p className="text-foreground-lighter">
+                                {$tValue(table.description)}
+                              </p>
                             </div>
                             {String(i) === selectedTableIndex && (
                               <Check className={cn('mr-2 h-4 w-4')} />
@@ -194,7 +196,7 @@ const Option = ({ option, control }: { option: TableOption; control: Control<Fie
         name={option.name}
         defaultValue={option.defaultValue}
         render={({ field }) => (
-          <FormItemLayout layout="vertical" label={option.label}>
+          <FormItemLayout layout="vertical" label={$tValue(option.label)}>
             <FormControl>
               <Select value={field.value} onValueChange={field.onChange}>
                 <SelectTrigger>
@@ -204,7 +206,7 @@ const Option = ({ option, control }: { option: TableOption; control: Control<Fie
                   <SelectSeparator />
                   {option.options.map((subOption) => (
                     <SelectItem key={subOption.value} value={subOption.value}>
-                      {subOption.label}
+                      {$tValue(subOption.label)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -222,7 +224,7 @@ const Option = ({ option, control }: { option: TableOption; control: Control<Fie
       name={option.name}
       defaultValue={option.defaultValue ?? ''}
       render={({ field }) => (
-        <FormItemLayout layout="vertical" label={option.label}>
+        <FormItemLayout layout="vertical" label={$tValue(option.label)}>
           <FormControl>
             <Input {...field} placeholder={option.placeholder ?? ''} />
           </FormControl>

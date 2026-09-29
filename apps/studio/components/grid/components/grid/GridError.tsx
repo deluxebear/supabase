@@ -163,7 +163,7 @@ const InvalidOrderingOperatorError = ({ error }: { error: ResponseError }) => {
     >
       <p className="mb-0!">
         {$t('Unable to retrieve results as sorting is not supported on')}{' '}
-        {sorts.length > 1 ? 'one of the selected columns' : 'the selected column'}{' '}
+        {sorts.length > 1 ? $t('one of the selected columns') : $t('the selected column')}{' '}
         {$t('due to its data type. (')}
         {formattedInvalidDataType})
       </p>

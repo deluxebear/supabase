@@ -200,7 +200,7 @@ export const ActivityStats = () => {
           <SingleStat
             href={isHighAvailability ? undefined : `/project/${ref}/branches`}
             icon={<GitBranch size={18} strokeWidth={1.5} className="text-foreground" />}
-            label={<span>{isDefaultProject ? 'Recent branch' : 'Branch Created'}</span>}
+            label={<span>{isDefaultProject ? $t('Recent branch') : $t('Branch Created')}</span>}
             trackingProperties={{
               stat_type: 'branches',
               stat_value: branchesData?.length ?? 0,

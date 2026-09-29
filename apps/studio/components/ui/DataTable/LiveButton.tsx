@@ -63,7 +63,7 @@ export function LiveButton({ fetchPreviousPage, searchParamsParser }: LiveButton
   return (
     <ShortcutTooltip
       shortcutId={SHORTCUT_IDS.DATA_TABLE_TOGGLE_LIVE}
-      label={live ? 'Pause live mode' : 'Start live mode'}
+      label={live ? $t('Pause live mode') : $t('Start live mode')}
       side="bottom"
     >
       <Button

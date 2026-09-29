@@ -15,7 +15,7 @@ import {
 import { useVaultSecretDeleteMutation } from '@/data/vault/vault-secret-delete-mutation'
 import { useVaultSecretsQuery } from '@/data/vault/vault-secrets-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export const DeleteSecretModal = () => {
   const { data: project } = useSelectedProjectQuery()
@@ -68,7 +68,7 @@ export const DeleteSecretModal = () => {
               )}
             </p>
             <div className="space-y-1">
-              <p className="text-sm">{selectedSecret?.description}</p>
+              <p className="text-sm">{$tValue(selectedSecret?.description)}</p>
               <p className="text-sm text-foreground-light">
                 {$t('ID:')} <code className="text-code-inline">{selectedSecret?.id}</code>
               </p>

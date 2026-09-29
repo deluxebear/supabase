@@ -4,7 +4,7 @@ import { Button, DialogFooter, DialogSection } from 'ui'
 
 import type { PolicyForReview } from './StoragePolicies.types'
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface PolicyReviewProps {
   policy: PolicyForReview
@@ -45,7 +45,7 @@ export const PolicyReview = ({
               </div>
             ) : (
               <div className="space-y-2">
-                <p>{policy.description}</p>
+                <p>{$tValue(policy.description)}</p>
                 <div className="h-40">
                   <CodeEditor
                     hideLineNumbers

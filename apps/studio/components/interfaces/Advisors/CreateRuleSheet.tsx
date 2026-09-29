@@ -37,7 +37,7 @@ import { generateRuleDescription } from './AdvisorRules.utils'
 import { useLintRuleCreateMutation } from '@/data/lint/create-lint-rule-mutation'
 import { useOrganizationMembersQuery } from '@/data/organizations/organization-members-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface CreateRuleSheetProps {
   lint?: LintInfo
@@ -129,7 +129,7 @@ export const CreateRuleSheet = ({ lint, open, onOpenChange }: CreateRuleSheetPro
         <SheetHeader className="shrink-0 flex items-center gap-4">
           <SheetTitle>
             {$t('Create a rule for "')}
-            {lint?.title}"
+            {$tValue(lint?.title)}"
           </SheetTitle>
         </SheetHeader>
         <SheetSection className="overflow-auto grow px-0">

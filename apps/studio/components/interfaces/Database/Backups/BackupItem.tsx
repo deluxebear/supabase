@@ -120,12 +120,14 @@ export const BackupItem = ({
         />
         <Tooltip>
           <TooltipTrigger>
-            <Badge variant="default">{backup.isPhysicalBackup ? 'Physical' : 'Logical'}</Badge>
+            <Badge variant="default">
+              {backup.isPhysicalBackup ? $t('Physical') : $t('Logical')}
+            </Badge>
           </TooltipTrigger>
           <TooltipContent side="bottom">
             {backup.isPhysicalBackup
-              ? 'File-level backups of your entire database.'
-              : 'SQL-based backups of your entire database.'}{' '}
+              ? $t('File-level backups of your entire database.')
+              : $t('SQL-based backups of your entire database.')}{' '}
             <InlineLink href="https://supabase.com/blog/postgresql-physical-logical-backups">
               {$t('Learn more')}
             </InlineLink>

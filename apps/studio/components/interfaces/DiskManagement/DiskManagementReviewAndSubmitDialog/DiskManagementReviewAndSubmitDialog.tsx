@@ -191,7 +191,9 @@ export const DiskManagementReviewAndSubmitDialog = ({
                 label="IOPS"
                 description={
                   anyDiskAttributeChange && !hasTotalSizeChanges && !hasStorageTypeChanges
-                    ? 'Disk attributes, including IOPS and disk size, may only be modified 4 times within a rolling 24-hour window. A new modification can be started as soon as the previous one completes.'
+                    ? $t(
+                        'Disk attributes, including IOPS and disk size, may only be modified 4 times within a rolling 24-hour window. A new modification can be started as soon as the previous one completes.'
+                      )
                     : undefined
                 }
               >

@@ -191,7 +191,8 @@ export const DiskUsage = ({
                                 <>
                                   <p>
                                     {replicaDiskUsage} {$t('GB for')} {replicaDbs.length}{' '}
-                                    {$t('Read')} {replicaDbs.length === 1 ? 'Replica' : 'Replicas'}
+                                    {$t('Read')}{' '}
+                                    {replicaDbs.length === 1 ? $t('Replica') : $t('Replicas')}
                                   </p>
                                   <p className="mt-1">
                                     {$t(

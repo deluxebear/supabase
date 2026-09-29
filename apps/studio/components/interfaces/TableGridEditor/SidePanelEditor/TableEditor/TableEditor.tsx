@@ -95,8 +95,8 @@ export const TableRealtimeToggle = ({
         </label>
         <p className="text-sm text-foreground-muted">
           {isHighAvailability
-            ? 'Realtime is unavailable on High Availability projects.'
-            : 'Broadcast changes on this table to authorized subscribers.'}
+            ? $t('Realtime is unavailable on High Availability projects.')
+            : $t('Broadcast changes on this table to authorized subscribers.')}
         </p>
       </div>
     </div>
@@ -511,7 +511,7 @@ export const TableEditor = ({
                   'You need to create an access policy before you can query data from this table. Without a policy, querying this table will return an'
                 )}{' '}
                 <u className="text-foreground">{$t('empty array')}</u> {$t('of results.')}{' '}
-                {isNewRecord ? 'You can create policies after saving this table.' : ''}
+                {isNewRecord ? $t('You can create policies after saving this table.') : ''}
               </>
             }
           >
@@ -528,7 +528,7 @@ export const TableEditor = ({
             title={$t('You are allowing anonymous access to your table')}
             description={
               <>
-                {tableFields.name ? `The table ${tableFields.name}` : 'Your table'}{' '}
+                {tableFields.name ? `The table ${tableFields.name}` : $t('Your table')}{' '}
                 {$t('will be publicly writable and readable')}
               </>
             }

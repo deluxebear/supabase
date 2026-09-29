@@ -111,7 +111,7 @@ export const BucketTableRow = ({
                 bucket.allowed_mime_types ? 'text-foreground-light' : 'text-foreground-muted'
               }
             >
-              {bucket.allowed_mime_types ? bucket.allowed_mime_types.join(', ') : 'Any'}
+              {bucket.allowed_mime_types ? bucket.allowed_mime_types.join(', ') : $t('Any')}
             </p>
           </BucketTableCell>
 
@@ -132,8 +132,12 @@ export const BucketTableRow = ({
       {isDisabled && (
         <TooltipContent>
           {allowedBucketType === 'public'
-            ? 'Private buckets are not selectable for this action. Please select a public bucket.'
-            : 'Public buckets are not selectable for this action. Please select a private bucket.'}
+            ? $t(
+                'Private buckets are not selectable for this action. Please select a public bucket.'
+              )
+            : $t(
+                'Public buckets are not selectable for this action. Please select a private bucket.'
+              )}
         </TooltipContent>
       )}
     </Tooltip>

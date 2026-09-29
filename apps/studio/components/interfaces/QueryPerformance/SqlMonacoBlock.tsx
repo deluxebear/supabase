@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { Button, cn, copyToClipboard, FloatingPlate } from 'ui'
 
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
+import { t as $t } from '@/lib/i18n'
 
 type SqlMonacoBlockProps = {
   value?: string
@@ -42,7 +43,7 @@ export const SqlMonacoBlock = ({ value, wrapperClassName }: SqlMonacoBlockProps)
           icon={copied ? <Check /> : <Copy />}
           onClick={() => handleCopy(content)}
         >
-          {copied ? 'Copied' : ''}
+          {copied ? $t('Copied') : ''}
         </Button>
       </FloatingPlate>
     </div>

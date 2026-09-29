@@ -113,7 +113,11 @@ export const CustomDomainsConfigureHostname = () => {
             <h4 className="text-sm mb-1">{$t('Configure a CNAME record')}</h4>
             <p className="text-sm text-foreground-light">
               {$t('Set up a CNAME record for')}{' '}
-              {domain ? <code className="text-code-inline">{domain}</code> : 'your custom domain'}{' '}
+              {domain ? (
+                <code className="text-code-inline">{domain}</code>
+              ) : (
+                $t('your custom domain')
+              )}{' '}
               {$t('resolving to')}{' '}
               {endpoint ? (
                 <span className="inline-flex items-center gap-x-1">

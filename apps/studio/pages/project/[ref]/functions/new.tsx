@@ -51,7 +51,7 @@ import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { usePreventNavigationOnUnsavedChanges } from '@/hooks/ui/usePreventNavigationOnUnsavedChanges'
 import { BASE_PATH } from '@/lib/constants'
 import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -346,7 +346,7 @@ const NewFunctionPage = () => {
                             <span className="text-foreground">{template.name}</span>
                           </div>
                           <span className="text-xs text-foreground-light pl-6">
-                            {template.description}
+                            {$tValue(template.description)}
                           </span>
                         </div>
                       </CommandItem>

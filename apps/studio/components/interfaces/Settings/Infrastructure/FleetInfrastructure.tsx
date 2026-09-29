@@ -10,7 +10,7 @@ import {
   getInventoryCopy,
 } from './FleetInfrastructure.utils'
 import { useRuntimeInventoryQuery } from '@/data/infrastructure/runtime-inventory-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const gibibyte = 1024 ** 3
 
@@ -72,7 +72,7 @@ export const FleetInfrastructure = () => {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-medium">{$t('Capacity and runtime inventory')}</h2>
-          <p className="text-sm text-foreground-light">{copy.description}</p>
+          <p className="text-sm text-foreground-light">{$tValue(copy.description)}</p>
         </div>
         <Button type="button" disabled={isFetching} loading={isFetching} onClick={() => refetch()}>
           <RefreshCw className="mr-2 size-4" />

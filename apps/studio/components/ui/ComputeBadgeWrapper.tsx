@@ -175,13 +175,13 @@ export const ComputeBadgeWrapper = ({
               <div className="flex flex-col gap-0">
                 <p className="text-foreground">
                   {isEligibleForFreeUpgrade
-                    ? 'Free upgrade to Micro available'
-                    : 'Unlock more compute'}
+                    ? $t('Free upgrade to Micro available')
+                    : $t('Unlock more compute')}
                 </p>
                 <p className="text-foreground-light">
                   {isEligibleForFreeUpgrade
-                    ? 'Paid plans include a free upgrade to Micro compute.'
-                    : 'Scale your project up to 64 vCPUs and 256 GB RAM.'}
+                    ? $t('Paid plans include a free upgrade to Micro compute.')
+                    : $t('Scale your project up to 64 vCPUs and 256 GB RAM.')}
                 </p>
               </div>
               <div>

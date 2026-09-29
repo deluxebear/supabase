@@ -72,7 +72,7 @@ import { applyAutoLimit } from '@/data/sql/utils'
 import { useLatest } from '@/hooks/misc/useLatest'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { detectOS } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { wrapWithRoleImpersonation } from '@/lib/role-impersonation'
 import {
   isRoleImpersonationEnabled,
@@ -505,7 +505,7 @@ export const QueryEditor = forwardRef<QueryEditorHandle, QueryEditorProps>(funct
           <div className="absolute inset-0 z-10 flex flex-col bg-studio">
             <div className="flex items-center justify-between gap-2 border-b bg-surface-100 px-3 py-2">
               <div>
-                <p className="text-xs text-foreground-light">{pendingProposal.label}</p>
+                <p className="text-xs text-foreground-light">{$tValue(pendingProposal.label)}</p>
                 {pendingProposal.prompt && (
                   <p className="text-xs text-foreground-lighter">
                     {$t('Prompt:')} {pendingProposal.prompt}
@@ -577,7 +577,7 @@ export const QueryEditor = forwardRef<QueryEditorHandle, QueryEditorProps>(funct
                 showQuery ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />
               }
               disabled={pendingProposal !== null}
-              tooltip={showQuery ? 'Hide query' : 'Show query'}
+              tooltip={showQuery ? $t('Hide query') : $t('Show query')}
               onClick={() => onShowQueryChange(!showQuery)}
             />
 

@@ -416,7 +416,7 @@ export const NewPaymentMethodElement = forwardRef(
                           >
                             {selectedTaxId
                               ? `${selectedTaxId.country} - ${selectedTaxId.name}`
-                              : 'Select tax ID'}
+                              : $t('Select tax ID')}
                           </Button>
                         </FormControl>
                       </PopoverTrigger>

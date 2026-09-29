@@ -10,6 +10,7 @@ import { DataTableFilterInput } from './DataTableFilterInput'
 import { DataTableFilterResetButton } from './DataTableFilterResetButton'
 import { DataTableFilterSlider } from './DataTableFilterSlider'
 import { DataTableFilterTimerange } from './DataTableFilterTimerange'
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
 
 // FIXME: use @container (especially for the slider element) to restructure elements
 
@@ -44,7 +45,7 @@ export function DataTableFilterControls({
                 <div className="flex items-center gap-2 pr-2">
                   <AccordionTrigger className="flex-1 px-2 py-0 hover:no-underline data-[state=closed]:text-muted-foreground data-open:text-foreground focus-within:data-closed:text-foreground hover:data-closed:text-foreground">
                     <div className="flex items-center gap-2 truncate py-2">
-                      <p className="text-sm">{field.label}</p>
+                      <p className="text-sm">{$tValue(field.label)}</p>
                     </div>
                   </AccordionTrigger>
                   <DataTableFilterResetButton {...field} />

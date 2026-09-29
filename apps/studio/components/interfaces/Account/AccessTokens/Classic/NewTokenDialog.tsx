@@ -38,7 +38,7 @@ import {
   useAccessTokenCreateMutation,
   type NewAccessToken,
 } from '@/data/access-tokens/access-tokens-create-mutation'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const formId = 'new-access-token-form'
@@ -139,7 +139,9 @@ export const NewTokenDialog = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {tokenScope === 'V0' ? 'Generate token for experimental API' : 'Generate New Token'}
+            {tokenScope === 'V0'
+              ? $t('Generate token for experimental API')
+              : $t('Generate New Token')}
           </DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
@@ -171,8 +173,8 @@ export const NewTokenDialog = ({
           <Admonition
             type="warning"
             className="rounded-none border-t-0 border-x-0"
-            title={CLASSIC_TOKEN_WARNING.title}
-            description={CLASSIC_TOKEN_WARNING.description}
+            title={$tValue(CLASSIC_TOKEN_WARNING.title)}
+            description={$tValue(CLASSIC_TOKEN_WARNING.description)}
           />
         )}
         <DialogSection className="flex flex-col gap-4">
@@ -211,7 +213,7 @@ export const NewTokenDialog = ({
                           {Object.values(EXPIRES_AT_OPTIONS).map(
                             (option: { value: string; label: string }) => (
                               <SelectItem key={option.value} value={option.value}>
-                                {option.label}
+                                {$tValue(option.label)}
                               </SelectItem>
                             )
                           )}

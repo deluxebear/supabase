@@ -22,7 +22,7 @@ import { useDatabaseExtensionsQuery } from '@/data/database-extensions/database-
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const WrapperOverviewContent = () => {
   const { id } = useParams()
@@ -110,7 +110,8 @@ const AddNewWrapperCTA = () => {
       <Admonition type="warning" title={$t('Your extension version is outdated for this wrapper')}>
         <div className="flex flex-col gap-y-2 [&>p]:mb-0!">
           <p>
-            {$t('The')} {wrapperMeta.label} {$t('wrapper requires a minimum extension version of')}{' '}
+            {$t('The')} {$tValue(wrapperMeta.label)}{' '}
+            {$t('wrapper requires a minimum extension version of')}{' '}
             {wrapperMeta.minimumExtensionVersion}
             {$t('. You have version')} {wrappersExtension?.installed_version}{' '}
             {$t('installed. Please')} {databaseNeedsUpgrading && 'upgrade your database then '}
@@ -132,7 +133,7 @@ const AddNewWrapperCTA = () => {
                 : `/project/${project?.ref}/database/extensions?filter=wrappers`
             }
           >
-            {databaseNeedsUpgrading ? 'Upgrade database' : 'View wrappers extension'}
+            {databaseNeedsUpgrading ? $t('Upgrade database') : $t('View wrappers extension')}
           </Link>
         </Button>
       </Admonition>

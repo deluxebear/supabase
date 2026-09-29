@@ -15,7 +15,7 @@ import {
 import { useOrganizationQuery } from '@/data/organizations/organization-query'
 import { DOCS_URL } from '@/lib/constants'
 import { formatCurrency } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export interface UpcomingInvoiceProps {
   slug?: string
@@ -131,7 +131,7 @@ export const UpcomingInvoice = ({ slug }: UpcomingInvoiceProps) => {
               <TableBody>
                 {planItem && !planFeePaidInAdvance && (
                   <TableRow>
-                    <TableCell className="py-2! px-0">{planItem?.description}</TableCell>
+                    <TableCell className="py-2! px-0">{$tValue(planItem?.description)}</TableCell>
                     <TableCell className="text-right py-2 px-0">
                       {!planItem ? (
                         '-'
@@ -253,7 +253,7 @@ export const UpcomingInvoice = ({ slug }: UpcomingInvoiceProps) => {
                               {sortedBreakdown.length > 0 && (
                                 <>
                                   <p>
-                                    {$t('Projects using')} {item.description}:
+                                    {$t('Projects using')} {$tValue(item.description)}:
                                   </p>
                                   <ul className="ml-6 list-disc">
                                     {sortedBreakdown.map((breakdown) => {
@@ -287,7 +287,8 @@ export const UpcomingInvoice = ({ slug }: UpcomingInvoiceProps) => {
                                   <InlineLink href={usageBillingDocsLink[usageMetric]!}>
                                     docs
                                   </InlineLink>{' '}
-                                  {$t('on how billing for')} {item.description} {$t('works and')}{' '}
+                                  {$t('on how billing for')} {$tValue(item.description)}{' '}
+                                  {$t('works and')}{' '}
                                   <InlineLink href={`/org/${slug}/usage`}>
                                     {$t('usage page')}
                                   </InlineLink>{' '}
@@ -508,7 +509,7 @@ function ComputeLineItem({
             className="text-foreground-light text-xs"
           >
             <TableCell className="py-2! px-0 pl-6">
-              {computeItem.description} - {computeItem.usage_original} {$t('Hours')}
+              {$tValue(computeItem.description)} - {computeItem.usage_original} {$t('Hours')}
             </TableCell>
 
             <TableCell className="py-2! px-0 text-right" translate="no">

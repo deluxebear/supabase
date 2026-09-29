@@ -149,7 +149,7 @@ export const FunctionList = ({
             </TableCell>
             <TableCell className="table-cell">
               <p className="truncate text-foreground-light">
-                {x.security_definer ? 'Definer' : 'Invoker'}
+                {x.security_definer ? $t('Definer') : $t('Invoker')}
               </p>
             </TableCell>
             <TableCell className="text-right">

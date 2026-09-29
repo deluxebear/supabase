@@ -56,7 +56,7 @@ import { useDatabaseExtensionsQuery } from '@/data/database-extensions/database-
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { isGreaterThanOrEqual } from '@/lib/semver'
 import { useTrack } from '@/lib/telemetry/track'
 
@@ -369,10 +369,12 @@ export const CreateCronJobSheet = ({ open, selectedCronJob, onClose }: CreateCro
                                     <div className="text-foreground">{definition.icon}</div>
                                     <div className="flex flex-col">
                                       <div className="flex gap-x-2">
-                                        <p className="text-foreground">{definition.label}</p>
+                                        <p className="text-foreground">
+                                          {$tValue(definition.label)}
+                                        </p>
                                       </div>
                                       <p className="text-foreground-light">
-                                        {definition.description}
+                                        {$tValue(definition.description)}
                                       </p>
                                     </div>
                                   </div>
@@ -467,7 +469,7 @@ export const CreateCronJobSheet = ({ open, selectedCronJob, onClose }: CreateCro
                 disabled={isLoading}
                 loading={isLoading}
               >
-                {isEditing ? `Save cron job` : 'Create cron job'}
+                {isEditing ? `Save cron job` : $t('Create cron job')}
               </Button>
             </SheetFooter>
           </div>

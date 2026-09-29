@@ -108,7 +108,7 @@ export const DatabaseConnections: NextPageWithLayout = () => {
         <div className="flex items-center gap-x-2">
           <ShortcutTooltip
             shortcutId={SHORTCUT_IDS.DATA_TABLE_TOGGLE_LIVE}
-            label={live ? 'Pause live mode' : 'Refresh data every 3 seconds'}
+            label={live ? $t('Pause live mode') : $t('Refresh data every 3 seconds')}
             side="bottom"
           >
             <Button
@@ -116,7 +116,7 @@ export const DatabaseConnections: NextPageWithLayout = () => {
               onClick={handleToggleLive}
               icon={live ? <CirclePause /> : <CirclePlay />}
             >
-              {live ? 'Pause' : 'Live'}
+              {live ? $t('Pause') : $t('Live')}
             </Button>
           </ShortcutTooltip>
           <AiAssistantDropdown

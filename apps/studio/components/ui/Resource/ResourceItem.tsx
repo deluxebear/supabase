@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
 } from 'ui'
 
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
+
 export interface ResourceAction {
   label: string
   onClick: () => void
@@ -85,7 +87,7 @@ export const ResourceItem = forwardRef<HTMLDivElement, ResourceItemProps>(
                     action.onClick()
                   }}
                 >
-                  {action.label}
+                  {$tValue(action.label)}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>

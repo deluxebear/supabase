@@ -77,22 +77,22 @@ export const ClickHouseFields = ({
               label={$t('Password')}
               description={
                 editMode
-                  ? 'Stored password is hidden. Enter a new password to replace it.'
-                  : 'Omit for passwordless access'
+                  ? $t('Stored password is hidden. Enter a new password to replace it.')
+                  : $t('Omit for passwordless access')
               }
             >
               <FormControl>
                 <PasswordInput
                   value={field.value ?? ''}
                   type={showPassword ? 'text' : 'password'}
-                  placeholder={editMode ? STORED_SECRET_PLACEHOLDER : 'Optional'}
+                  placeholder={editMode ? STORED_SECRET_PLACEHOLDER : $t('Optional')}
                   onChange={(event) => field.onChange(event.target.value)}
                   actions={
                     <div className="flex items-center justify-center">
                       <Button
                         className="w-7"
-                        title={showPassword ? 'Hide password' : 'Show password'}
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        title={showPassword ? $t('Hide password') : $t('Show password')}
+                        aria-label={showPassword ? $t('Hide password') : $t('Show password')}
                         icon={showPassword ? <Eye /> : <EyeOff />}
                         onClick={() => setShowPassword(!showPassword)}
                       />

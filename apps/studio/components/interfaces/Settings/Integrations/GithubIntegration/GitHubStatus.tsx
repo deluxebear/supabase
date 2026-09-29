@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { useParams } from 'common'
 import { AlertCircle, ArrowUpRight, CheckCircle2 } from 'lucide-react'
 import Image from 'next/image'
@@ -10,6 +9,7 @@ import { useGitHubConnectionsQuery } from '@/data/integrations/github-connection
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 export const GitHubStatus = () => {
   const { ref: projectRef } = useParams()
@@ -77,7 +77,7 @@ export const GitHubStatus = () => {
             alt={$t('GitHub')}
           />
           <span className="truncate">
-            {isConnected ? githubConnection?.repository.name : 'Not connected'}
+            {isConnected ? githubConnection?.repository.name : $t('Not connected')}
           </span>
         </div>
 
@@ -92,7 +92,7 @@ export const GitHubStatus = () => {
               <span>
                 {hasGitBranchSync
                   ? `Syncing production (${mainBranch?.git_branch})`
-                  : 'Production sync disabled'}
+                  : $t('Production sync disabled')}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -103,8 +103,8 @@ export const GitHubStatus = () => {
               )}
               <span>
                 {hasAutomaticBranching
-                  ? 'Automatically creating branches'
-                  : 'Automatic branching disabled'}
+                  ? $t('Automatically creating branches')
+                  : $t('Automatic branching disabled')}
               </span>
             </div>
           </div>

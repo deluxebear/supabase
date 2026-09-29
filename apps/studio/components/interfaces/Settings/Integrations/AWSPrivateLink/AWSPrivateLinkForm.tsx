@@ -125,11 +125,11 @@ export const AWSPrivateLinkForm = ({
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent className="flex flex-col gap-0">
         <SheetHeader>
-          <SheetTitle>{isNew ? 'Add connection' : 'Connection details'}</SheetTitle>
+          <SheetTitle>{isNew ? $t('Add connection') : $t('Connection details')}</SheetTitle>
           <SheetDescription>
             {isNew
-              ? 'Enter an AWS account to connect. You’ll need to accept the share in AWS. '
-              : 'These values identify the resource share in AWS. '}
+              ? $t('Enter an AWS account to connect. You’ll need to accept the share in AWS. ')
+              : $t('These values identify the resource share in AWS. ')}
             <InlineLink href={`${DOCS_URL}/guides/platform/privatelink`}>
               {$t('Learn more')}
             </InlineLink>

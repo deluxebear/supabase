@@ -175,7 +175,7 @@ function EmptyState({
             className={generateCommandClassNames(false)}
             onSelect={() => router.push(`/project/${projectRef ?? '_'}/sql/new`)}
           >
-            {canCreateNew ? 'Create new snippet' : 'Run new SQL'}
+            {canCreateNew ? $t('Create new snippet') : $t('Run new SQL')}
           </CommandItem>
         </CommandGroup>
       </CommandList>

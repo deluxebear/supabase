@@ -27,7 +27,7 @@ import { useLintRuleDeleteMutation } from '@/data/lint/delete-lint-rule-mutation
 import { useProjectLintRulesQuery } from '@/data/lint/lint-rules-query'
 import { useOrganizationMembersQuery } from '@/data/organizations/organization-members-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface AdvisorRuleItemProps {
   lint: LintInfo
@@ -81,7 +81,7 @@ export const AdvisorRuleItem = ({ lint }: AdvisorRuleItemProps) => {
             {lint.icon}
           </div>
           <div className="flex-1 flex items-center gap-x-2">
-            <span>{lint.title}</span>
+            <span>{$tValue(lint.title)}</span>
             {rules.length > 0 && <Badge>{$t('Disabled')}</Badge>}
           </div>
           <div className="flex items-center gap-x-2">
@@ -114,7 +114,7 @@ export const AdvisorRuleItem = ({ lint }: AdvisorRuleItemProps) => {
                 {lint.icon}
               </div>
               <div className="flex-1 flex items-center gap-x-2">
-                <span>{lint.title}</span>
+                <span>{$tValue(lint.title)}</span>
                 {rules.length > 0 && (
                   <span className="font-mono text-xs w-5 h-5 rounded-full border border-alternative bg-surface-300 flex items-center justify-center">
                     {rules.length}
@@ -224,7 +224,7 @@ export const AdvisorRuleItem = ({ lint }: AdvisorRuleItemProps) => {
             <p className="text-sm text-foreground">
               {$t('The selected lint will appear under the')}{' '}
               <span className="capitalize">{lint.category}</span> {$t('Advisor again')}
-              {!!selectedRuleMeta.assigned_to ? ' for all project members' : ''}{' '}
+              {!!selectedRuleMeta.assigned_to ? $t(' for all project members') : ''}{' '}
               {$t('once this rule is removed.')}
             </p>
           </>

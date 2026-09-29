@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { Button, Card, CardContent, CardHeader, CardTitle } from 'ui'
 
 import { ActionRun } from '@/data/actions/action-detail-query'
+import { t as $t } from '@/lib/i18n'
 
 interface WorkflowLogsCardProps {
   workflowRun: ActionRun | null | undefined
@@ -103,7 +104,7 @@ export const WorkflowLogsCard = ({
           <pre className="p-6 text-xs text-foreground-light p-0 rounded-sm">{logs}</pre>
         ) : (
           <pre className="p-6 text-sm text-foreground-light rounded-sm">
-            {isLoading || isPolling ? 'Initializing workflow...' : 'Waiting for logs...'}
+            {isLoading || isPolling ? $t('Initializing workflow...') : $t('Waiting for logs...')}
           </pre>
         )}
       </CardContent>

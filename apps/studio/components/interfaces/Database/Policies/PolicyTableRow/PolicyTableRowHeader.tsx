@@ -136,8 +136,8 @@ export const PolicyTableRowHeader = ({
               }}
               aria-label={
                 !canToggleRLS || !canCreatePolicies
-                  ? 'You need additional permissions to create RLS policies'
-                  : 'Create with Supabase Assistant'
+                  ? $t('You need additional permissions to create RLS policies')
+                  : $t('Create with Supabase Assistant')
               }
             >
               <AiIconAnimation size={16} />

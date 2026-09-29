@@ -105,7 +105,9 @@ export const PausingState = ({ project }: PausingStateProps) => {
               <p className="text-center text-sm text-foreground-light">
                 {isTakingLongerThanExpected
                   ? `This is taking longer than usual. Contact support if your project is still pausing after ${LONG_RUNNING_STATE_THRESHOLD_MINUTES} minutes.`
-                  : 'Your project is being paused now. This usually takes a few minutes. While paused, your data stays safe, and you can turn the project back on anytime.'}
+                  : $t(
+                      'Your project is being paused now. This usually takes a few minutes. While paused, your data stays safe, and you can turn the project back on anytime.'
+                    )}
               </p>
               {isTakingLongerThanExpected && (
                 <div className="flex justify-center">

@@ -16,7 +16,7 @@ import type { EntryAccess } from '../../AccessToken.roles'
 import { ExceedsRoleBadge } from '../ExceedsRoleBadge'
 import { TokenFormValues } from './NewScopedTokenForm.utils'
 import { RiskMarker } from './RiskMarker'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface PermissionRowProps {
   control: Control<TokenFormValues>
@@ -81,15 +81,15 @@ export const PermissionRow = ({
           )}
         </span>
         <p id={`${entry.key}-permissions-description`} className="text-xs text-foreground-lighter">
-          {entry.description}
+          {$tValue(entry.description)}
           {entry.dependencies.length > 0 ? (
             <b>
               {' '}
               {$t('Requires')}{' '}
               {entry.dependencies.map((dependency, index) => (
                 <Fragment key={dependency.key}>
-                  {dependency.label} {$t('set to')}{' '}
-                  {dependency.permissions === 'read' ? 'read' : 'read or read-write'}
+                  {$tValue(dependency.label)} {$t('set to')}{' '}
+                  {dependency.permissions === 'read' ? 'read' : $t('read or read-write')}
                   {index < entry.dependencies.length - 1 ? ', ' : null}
                 </Fragment>
               ))}

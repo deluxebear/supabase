@@ -8,7 +8,7 @@ import {
 import { EndpointRow } from './EndpointRow'
 import { getSharedPathPrefix } from './TokenCapabilities.utils'
 import type { EnabledEndpoint } from '@/data/scoped-access-tokens/permission-scope-map-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface CapabilityCardBodyProps {
   entry: PermissionCatalogEntry
@@ -23,7 +23,7 @@ export const CapabilityCardBody = ({ entry, endpoints }: CapabilityCardBodyProps
     <div className="flex flex-col gap-4 mt-4">
       <div className="flex flex-col gap-1.5">
         <h3 className="text-xs tracking-wide text-foreground-lighter">{$t('Description')}</h3>
-        <p className="text-sm text-foreground">{entry.description}</p>
+        <p className="text-sm text-foreground">{$tValue(entry.description)}</p>
       </div>
 
       <div className="flex flex-col items-start gap-1.5">

@@ -1,6 +1,7 @@
 import { ExplorerQueryFooter } from '../ExplorerQuery'
 import { DownloadResultsButton } from '@/components/ui/DownloadResultsButton'
 import { pluralize } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 
 interface QueryResultFooterProps {
   count: number
@@ -24,7 +25,7 @@ export const QueryResultFooter = ({
         {rowLimit && (
           <>
             <p>·</p>
-            <p>{rowLimit < 0 ? 'No row limit' : `Limit ${rowLimit} rows`}</p>
+            <p>{rowLimit < 0 ? $t('No row limit') : `Limit ${rowLimit} rows`}</p>
           </>
         )}
       </div>

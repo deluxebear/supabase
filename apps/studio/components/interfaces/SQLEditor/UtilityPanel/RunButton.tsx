@@ -2,6 +2,7 @@ import { Loader2 } from 'lucide-react'
 import { KeyboardShortcut } from 'ui'
 
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { t as $t } from '@/lib/i18n'
 
 interface SqlRunButtonProps {
   isDisabled?: boolean
@@ -43,7 +44,7 @@ export const SqlRunButton = ({
       className={className}
       tooltip={{ content: { side: 'bottom', text: isDisabled ? disabledReason : undefined } }}
     >
-      {hasSelection ? 'Run selected' : 'Run'}
+      {hasSelection ? $t('Run selected') : $t('Run')}
     </ButtonTooltip>
   )
 }

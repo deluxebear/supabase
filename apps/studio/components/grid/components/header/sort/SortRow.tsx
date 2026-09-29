@@ -48,7 +48,7 @@ const SortRow = ({ index, columnName, sort, onDelete, onToggle }: SortRowProps) 
       <div className="grow">
         <span className="flex grow items-center gap-1 truncate text-sm text-foreground">
           <span className="text-xs text-foreground-lighter">
-            {index > 0 ? 'then by' : 'sort by'}
+            {index > 0 ? $t('then by') : $t('sort by')}
           </span>
           <span className="text-xs">{column.name}</span>
         </span>

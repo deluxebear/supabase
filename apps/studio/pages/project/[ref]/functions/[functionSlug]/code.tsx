@@ -264,7 +264,7 @@ const CodePage = () => {
 CodePage.getLayout = (page: React.ReactNode) => {
   return (
     <DefaultLayout>
-      <EdgeFunctionDetailsLayout title={'Code'}>{page}</EdgeFunctionDetailsLayout>
+      <EdgeFunctionDetailsLayout title={$t('Code')}>{page}</EdgeFunctionDetailsLayout>
     </DefaultLayout>
   )
 }

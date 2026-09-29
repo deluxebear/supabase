@@ -110,7 +110,7 @@ export const AIAssistantChatSelector = ({
       </ShortcutTooltip>
       <PopoverContent className="w-[250px] p-0" align="end">
         <Command>
-          <CommandInput className="text-xs" placeholder={'Search chats...'} />
+          <CommandInput className="text-xs" placeholder={$t('Search chats...')} />
           <CommandList>
             <CommandEmpty>{$t('No chats found.')}</CommandEmpty>
             <CommandGroup>
@@ -150,7 +150,7 @@ export const AIAssistantChatSelector = ({
                           />
                           <div className="flex items-center gap-0">
                             <Button
-                              aria-label={'Save chat name'}
+                              aria-label={$t('Save chat name')}
                               variant="text"
                               size="tiny"
                               icon={<Check size={14} />}
@@ -158,7 +158,7 @@ export const AIAssistantChatSelector = ({
                               className="h-7 w-7"
                             />
                             <Button
-                              aria-label={'Cancel edit chat'}
+                              aria-label={$t('Cancel edit chat')}
                               variant="text"
                               size="tiny"
                               icon={<X size={14} />}
@@ -182,7 +182,7 @@ export const AIAssistantChatSelector = ({
                     {editingChatId !== id && (
                       <div className="flex items-center gap-x-0 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button
-                          aria-label={'Edit chat name'}
+                          aria-label={$t('Edit chat name')}
                           variant="text"
                           size="tiny"
                           icon={<Edit size={14} />}
@@ -191,7 +191,7 @@ export const AIAssistantChatSelector = ({
                         />
                         {chats.length > 1 && (
                           <Button
-                            aria-label={'Delete chat'}
+                            aria-label={$t('Delete chat')}
                             variant="text"
                             size="tiny"
                             icon={<Trash size={14} />}

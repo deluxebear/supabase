@@ -34,7 +34,7 @@ import {
   OrgProjectsResponse,
   useOrgProjectsInfiniteQuery,
 } from '@/data/projects/org-projects-infinite-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { Organization } from '@/types'
 
 interface ResourceAccessStepProps {
@@ -172,7 +172,7 @@ export const ResourceAccessStep = ({
                             <Badge variant="success">{$t('Recommended')}</Badge>
                           )}
                         </div>
-                        <span className="text-foreground-light">{option.description}</span>
+                        <span className="text-foreground-light">{$tValue(option.description)}</span>
                       </div>
                     }
                   />
@@ -239,8 +239,8 @@ export const ResourceAccessStep = ({
                     mode="combobox"
                     label={
                       organizationSlugs.length > 0
-                        ? 'Select projects'
-                        : 'Select an organization first'
+                        ? $t('Select projects')
+                        : $t('Select an organization first')
                     }
                     badgeLimit="wrap"
                     showIcon={true}

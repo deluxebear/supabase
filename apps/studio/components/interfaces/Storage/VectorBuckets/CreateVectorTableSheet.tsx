@@ -37,7 +37,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useDeploymentMode } from '@/hooks/misc/useDeploymentMode'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const isStagingLocal = process.env.NEXT_PUBLIC_ENVIRONMENT !== 'prod'
 
@@ -324,8 +324,8 @@ export const CreateVectorTableSheet = ({ bucketName }: CreateVectorTableSheetPro
                             key={metric.value}
                             id={metric.value}
                             value={metric.value}
-                            label={metric.label}
-                            description={metric.description}
+                            label={$tValue(metric.label)}
+                            description={$tValue(metric.description)}
                             showIndicator={true}
                           ></RadioGroupStackedItem>
                         ))}
@@ -355,7 +355,9 @@ export const CreateVectorTableSheet = ({ bucketName }: CreateVectorTableSheetPro
                             name={`metadataKeys.${index}.value`}
                             description={
                               index === fields.length - 1
-                                ? 'Must be between 1–63 characters and unique within this table.'
+                                ? $t(
+                                    'Must be between 1–63 characters and unique within this table.'
+                                  )
                                 : undefined
                             }
                             layout="vertical"

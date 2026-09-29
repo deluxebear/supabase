@@ -11,7 +11,7 @@ import CardButton from '@/components/ui/CardButton'
 import LogsExplorerHeader from '@/components/ui/Logs/LogsExplorerHeader'
 import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
 export const LogsTemplatesPage: NextPageWithLayout = () => {
@@ -57,7 +57,7 @@ const Template = ({ projectRef, template }: { projectRef?: string; template: Log
 
   return (
     <CardButton
-      title={template.label}
+      title={$tValue(template.label)}
       icon={
         <div
           className={cn(
@@ -75,7 +75,7 @@ const Template = ({ projectRef, template }: { projectRef?: string; template: Log
       }
       className="h-44"
       linkHref={`/project/${projectRef}/logs/explorer?q=${encodeURI(template.searchString)}`}
-      description={template.description}
+      description={$tValue(template.description)}
       footer={
         <div className="flex flex-row justify-end">
           <Popover onOpenChange={setShowPreview} open={showPreview}>

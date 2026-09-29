@@ -19,7 +19,7 @@ import { getTableCopyTargets } from './TableSyncCopy.utils'
 import { ReplicationPipelineTableStatus } from '@/data/replication/pipeline-replication-status-query'
 import { useRollbackTablesMutation } from '@/data/replication/rollback-tables-mutation'
 import type { TableSyncCopyConfig } from '@/data/replication/types'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import {
   PipelineStatusRequestStatus,
   usePipelineRequestStatus,
@@ -136,8 +136,8 @@ export const BatchRestartDialog = ({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{dialogContent.title}</AlertDialogTitle>
-          <AlertDialogDescription>{dialogContent.description}</AlertDialogDescription>
+          <AlertDialogTitle>{$tValue(dialogContent.title)}</AlertDialogTitle>
+          <AlertDialogDescription>{$tValue(dialogContent.description)}</AlertDialogDescription>
         </AlertDialogHeader>
         <RestartCostEstimate
           open={open}
@@ -149,7 +149,7 @@ export const BatchRestartDialog = ({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isResetting}>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction disabled={isResetting} onClick={handleReset} variant="warning">
-            {isResetting ? 'Resetting…' : dialogContent.action}
+            {isResetting ? $t('Resetting…') : dialogContent.action}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

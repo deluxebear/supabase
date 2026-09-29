@@ -5,7 +5,7 @@ import { cn, Skeleton, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
 import { useQueryPerformanceQuery } from './useQueryPerformanceQuery'
 import { NumericFilter } from '@/components/interfaces/Reports/v2/ReportsNumericFilter'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export const QueryPerformanceMetrics = () => {
   const { data: queryMetrics, isLoading } = useQueryPerformanceQuery({ preset: 'queryMetrics' })
@@ -64,7 +64,7 @@ export const QueryPerformanceMetrics = () => {
               <>
                 <span className="text-foreground">{card.value}</span>
                 <span className="flex items-center gap-1">
-                  {card.title}
+                  {$tValue(card.title)}
                   {(card.title === 'Slow Queries' || card.title === 'Slow Query') && (
                     <Tooltip>
                       <TooltipTrigger asChild>

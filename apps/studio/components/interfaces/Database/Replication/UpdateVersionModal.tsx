@@ -81,8 +81,10 @@ export const UpdateVersionModal = ({ visible, pipeline, onClose }: UpdateVersion
       <div className="flex flex-col gap-y-3">
         <p className="text-sm text-foreground-light">
           {shouldRestart
-            ? 'A newer pipeline version is available with improvements and bug fixes. The pipeline will restart and continue from where it left off.'
-            : 'A newer pipeline version is available with improvements and bug fixes.'}
+            ? $t(
+                'A newer pipeline version is available with improvements and bug fixes. The pipeline will restart and continue from where it left off.'
+              )
+            : $t('A newer pipeline version is available with improvements and bug fixes.')}
         </p>
         <div className="overflow-hidden rounded-md border">
           <table className="w-full text-sm">
@@ -90,13 +92,13 @@ export const UpdateVersionModal = ({ visible, pipeline, onClose }: UpdateVersion
               <tr className="border-b">
                 <td className="px-3 py-2 text-foreground-lighter">{$t('Current')}</td>
                 <td className="px-3 py-2 text-right text-foreground" translate="no">
-                  {isLoadingVersion ? 'Loading…' : (currentVersionName ?? 'Unknown')}
+                  {isLoadingVersion ? $t('Loading…') : (currentVersionName ?? 'Unknown')}
                 </td>
               </tr>
               <tr>
                 <td className="px-3 py-2 text-foreground-lighter">{$t('New')}</td>
                 <td className="px-3 py-2 text-right text-foreground" translate="no">
-                  {isLoadingVersion ? 'Loading…' : (newVersionName ?? 'Unknown')}
+                  {isLoadingVersion ? $t('Loading…') : (newVersionName ?? 'Unknown')}
                 </td>
               </tr>
             </tbody>

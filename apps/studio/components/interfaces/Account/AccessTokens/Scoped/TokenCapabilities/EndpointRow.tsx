@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { cn, copyToClipboard } from 'ui'
 
 import { splitEndpointPath } from './TokenCapabilities.utils'
+import { t as $t } from '@/lib/i18n'
 
 interface EndpointRowProps {
   method: string
@@ -104,7 +105,7 @@ export const EndpointRow = ({
         )}
       </span>
       <span className="sr-only" aria-live="polite">
-        {isCopied ? 'URL copied' : null}
+        {isCopied ? $t('URL copied') : null}
       </span>
     </button>
   )

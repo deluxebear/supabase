@@ -40,7 +40,9 @@ export const ValidationFailuresSection = ({
       <p className="text-sm text-foreground-light mb-2!">
         {hasCriticalFailures
           ? `Please fix all required issues below${hasWarnings ? ' and review the others' : ''} before continuing.`
-          : 'The following issues were identified. You may still continue after reviewing them.'}
+          : $t(
+              'The following issues were identified. You may still continue after reviewing them.'
+            )}
       </p>
       <p className="text-sm text-foreground-light mb-2!">
         {$t('Pipeline options are under')} <strong>{$t('Advanced settings')}</strong>{' '}

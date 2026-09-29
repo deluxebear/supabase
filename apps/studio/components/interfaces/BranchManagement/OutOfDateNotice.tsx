@@ -97,7 +97,7 @@ export const OutOfDateNotice = ({
                 icon={<GitBranchIcon size={16} strokeWidth={1.5} />}
                 className="shrink-0"
               >
-                {isPushing ? 'Updating...' : 'Update branch'}
+                {isPushing ? $t('Updating...') : $t('Update branch')}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -126,7 +126,7 @@ export const OutOfDateNotice = ({
             icon={<GitBranchIcon size={16} strokeWidth={1.5} />}
             className="shrink-0"
           >
-            {isPushing ? 'Updating...' : 'Update branch'}
+            {isPushing ? $t('Updating...') : $t('Update branch')}
           </Button>
         )}
       </div>

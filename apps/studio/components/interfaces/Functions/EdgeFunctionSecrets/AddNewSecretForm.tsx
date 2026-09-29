@@ -287,15 +287,17 @@ export const AddNewSecretForm = () => {
                                   className="absolute right-3 top-2 px-1"
                                   aria-label={
                                     isSecretVisible(fieldItem.id)
-                                      ? 'Hide secret value'
-                                      : 'Show secret value'
+                                      ? $t('Hide secret value')
+                                      : $t('Show secret value')
                                   }
                                   icon={isSecretVisible(fieldItem.id) ? <EyeOff /> : <Eye />}
                                   onClick={() => handleToggleSecretVisibility(fieldItem.id)}
                                 />
                               </TooltipTrigger>
                               <TooltipContent side="bottom">
-                                {isSecretVisible(fieldItem.id) ? 'Hide value' : 'Show value'}
+                                {isSecretVisible(fieldItem.id)
+                                  ? $t('Hide value')
+                                  : $t('Show value')}
                               </TooltipContent>
                             </Tooltip>
                           </div>
@@ -314,7 +316,7 @@ export const AddNewSecretForm = () => {
               <div className="flex items-center space-x-2">
                 <Button onClick={handleAddAnotherSecret}>{$t('Add another')}</Button>
                 <Button variant="primary" type="submit" disabled={isCreating} loading={isCreating}>
-                  {isCreating ? 'Saving...' : fields.length > 1 ? 'Bulk save' : 'Save'}
+                  {isCreating ? $t('Saving...') : fields.length > 1 ? $t('Bulk save') : $t('Save')}
                 </Button>
               </div>
             </CardFooter>

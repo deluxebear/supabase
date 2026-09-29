@@ -46,7 +46,7 @@ import { getDecryptedValues } from '@/data/vault/vault-secret-decrypted-value-qu
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
 import { UUID_REGEX } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export interface EditWrapperSheetProps {
   wrapper: FDW
@@ -201,7 +201,7 @@ export const EditWrapperSheet = ({
           >
             <SheetHeader>
               <SheetTitle>
-                {$t('Edit')} {wrapperMeta.label} wrapper: {wrapper.name}
+                {$t('Edit')} {$tValue(wrapperMeta.label)} wrapper: {wrapper.name}
               </SheetTitle>
             </SheetHeader>
             <div className="grow overflow-y-auto">
@@ -243,7 +243,7 @@ export const EditWrapperSheet = ({
               <FormSection
                 header={
                   <FormSectionLabel>
-                    {wrapperMeta.label} {$t('Configuration')}
+                    {$tValue(wrapperMeta.label)} {$t('Configuration')}
                   </FormSectionLabel>
                 }
               >

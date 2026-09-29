@@ -627,7 +627,7 @@ export const TableList = ({
                 <TableRow ref={sentinelRef} className="border-b-0">
                   <TableCell colSpan={7} className="text-foreground-muted hover:bg-inherit">
                     {isFetchingNextTablesPage
-                      ? 'Loading more tables…'
+                      ? $t('Loading more tables…')
                       : `${footerCount} ${footerCount === 1 ? 'table' : 'tables'}${
                           hasNextTablesPage ? ' loaded' : ''
                         }`}

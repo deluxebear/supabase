@@ -21,7 +21,7 @@ import { DropdownMenuItemTooltip } from '@/components/ui/DropdownMenuItemTooltip
 import { useVaultSecretDecryptedValueQuery } from '@/data/vault/vault-secret-decrypted-value-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import type { VaultSecret } from '@/types'
 
 interface SecretRowProps {
@@ -127,13 +127,13 @@ export const SecretRow = ({ row, col }: SecretRowProps) => {
                 )
               }
               onClick={() => setRevealSecret(!revealSecret)}
-              aria-label={revealSecret ? 'Hide secret value' : 'Show secret value'}
+              aria-label={revealSecret ? $t('Hide secret value') : $t('Show secret value')}
               // Tooltip repeats the label; screen readers would read it twice
               aria-describedby={undefined}
             />
           </TooltipTrigger>
           <TooltipContent side="bottom">
-            {revealSecret ? 'Hide secret value' : 'Show secret value'}
+            {revealSecret ? $t('Hide secret value') : $t('Show secret value')}
           </TooltipContent>
         </Tooltip>
         <div className="grow min-w-0">
@@ -151,7 +151,7 @@ export const SecretRow = ({ row, col }: SecretRowProps) => {
     return (
       <div className="w-full flex items-center justify-start">
         <p className="text-xs text-foreground-light">
-          {row.updated_at === row.created_at ? 'Added' : 'Updated'} on{' '}
+          {row.updated_at === row.created_at ? $t('Added') : $t('Updated')} on{' '}
           {dayjs(row.updated_at).format('MMM D, YYYY')}
         </p>
       </div>
@@ -177,7 +177,7 @@ export const SecretRow = ({ row, col }: SecretRowProps) => {
       {row.description !== undefined && row.description !== '' && (
         <div>
           <p className="text-xs text-foreground-lighter w-full truncate select-text">
-            {row.description}
+            {$tValue(row.description)}
           </p>
         </div>
       )}

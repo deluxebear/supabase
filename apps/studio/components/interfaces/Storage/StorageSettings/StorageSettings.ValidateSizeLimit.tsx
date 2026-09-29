@@ -133,7 +133,7 @@ export const ValidateSizeLimit = ({
               onClick={() => setShowModal(true)}
               disabled={isValidating}
             >
-              {isValidating ? 'Validating...' : 'Validate size limit'}
+              {isValidating ? $t('Validating...') : $t('Validate size limit')}
             </button>
           </TooltipTrigger>
           <TooltipContent side="bottom">

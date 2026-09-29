@@ -42,7 +42,7 @@ export function SecretEnvRow({ secret }: SecretEnvRowProps) {
           <Button
             size="tiny"
             className={cn('px-1.5', isDisabled && 'opacity-50')}
-            aria-label={secret.isRevealed ? 'Hide secret key' : 'Reveal secret key'}
+            aria-label={secret.isRevealed ? $t('Hide secret key') : $t('Reveal secret key')}
             loading={secret.isRevealed && secret.isRevealing}
             icon={secret.isRevealed ? <EyeOff strokeWidth={2} /> : <Eye strokeWidth={2} />}
             onClick={onToggle}

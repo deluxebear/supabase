@@ -39,7 +39,7 @@ import { useIsHighAvailability } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
 import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { pluckObjectFields } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface ConnectStepsSectionProps {
   steps: ResolvedStep[]
@@ -281,10 +281,10 @@ export function ConnectStepsSection({ steps, state, projectKeys }: ConnectStepsS
           <Admonition
             type="warning"
             layout="responsive"
-            title={'Database access requires the Data API'}
-            description={
+            title={$t('Database access requires the Data API')}
+            description={$t(
               'Client library database queries will not work until the Data API is enabled.'
-            }
+            )}
             actions={[
               <Button asChild key="enable">
                 <Link href={`/project/${ref}/integrations/data_api`}>{$t('Enable Data API')}</Link>
@@ -329,10 +329,10 @@ export function ConnectStepsSection({ steps, state, projectKeys }: ConnectStepsS
         {showSelfHostedMcpNotice && (
           <Admonition
             type="default"
-            title={'MCP for self-hosted Supabase requires extra setup'}
-            description={
+            title={$t('MCP for self-hosted Supabase requires extra setup')}
+            description={$t(
               'The configuration below points at the hosted Supabase MCP server. To use MCP against your self-hosted instance, follow the self-hosted MCP guide.'
-            }
+            )}
             actions={[
               <DocsButton key="docs" href={`${DOCS_URL}/guides/self-hosting/enable-mcp`} />,
             ]}
@@ -344,8 +344,8 @@ export function ConnectStepsSection({ steps, state, projectKeys }: ConnectStepsS
             <ConnectSheetStep
               key={step.id}
               number={index + 1}
-              title={step.title}
-              description={step.description}
+              title={$tValue(step.title)}
+              description={$tValue(step.description)}
               optional={step.optional}
             >
               <StepContent

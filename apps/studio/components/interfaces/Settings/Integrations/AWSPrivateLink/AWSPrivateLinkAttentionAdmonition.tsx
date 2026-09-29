@@ -6,7 +6,7 @@ import { Admonition } from 'ui-patterns/Admonition'
 import { getConnectionsAttention, getConnectionsAttentionCopy } from './AWSPrivateLink.utils'
 import type { AWSAccount } from '@/data/aws-accounts/aws-accounts-query'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export function AWSPrivateLinkAttentionAdmonition({
   accounts,
@@ -22,8 +22,8 @@ export function AWSPrivateLinkAttentionAdmonition({
     <Admonition
       type={copy.type}
       layout="responsive"
-      title={copy.title}
-      description={copy.description}
+      title={$tValue(copy.title)}
+      description={$tValue(copy.description)}
       className={className}
       actions={
         copy.shouldShowAcceptLink && (

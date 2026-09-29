@@ -13,7 +13,7 @@ import type { ReportConfig } from '@/data/reports/v2/reports.types'
 import { useFillTimeseriesSorted } from '@/hooks/analytics/useFillTimeseriesSorted'
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export interface ReportChartV2Props {
   report: ReportConfig
@@ -167,7 +167,7 @@ export const ReportChartV2 = ({
               yAxisKey={report.yAxisKey ?? dynamicAttributes[0]?.attribute}
               hideHighlightedValue={report.hideHighlightedValue}
               highlightedValue={headerTotal}
-              title={report.label}
+              title={$tValue(report.label)}
               customDateFormat={undefined}
               chartStyle={chartStyle}
               chartHighlight={chartHighlight}

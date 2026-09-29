@@ -1,7 +1,7 @@
 import { useStatusPageBannerVisibility } from './useStatusPageBannerVisibility'
 import { HeaderBanner } from '@/components/interfaces/Organization/HeaderBanner'
 import { InlineLink } from '@/components/ui/InlineLink'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const BANNER_DESCRIPTION = (
   <>
@@ -22,7 +22,7 @@ export const StatusPageBanner = () => {
   return (
     <HeaderBanner
       variant="warning"
-      title={banner.title}
+      title={$tValue(banner.title)}
       description={BANNER_DESCRIPTION}
       onDismiss={banner.dismiss}
     />

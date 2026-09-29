@@ -4,7 +4,7 @@ import { PricingInformation } from 'shared-data'
 import { Button, cn } from 'ui'
 
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 export interface EnterpriseCardProps {
@@ -44,7 +44,7 @@ export const EnterpriseCard = ({ plan, isCurrentPlan, variants }: EnterpriseCard
           ) : null}
         </div>
 
-        <p className="text-sm mt-2 mb-4">{plan.description}</p>
+        <p className="text-sm mt-2 mb-4">{$tValue(plan.description)}</p>
 
         <Button
           block

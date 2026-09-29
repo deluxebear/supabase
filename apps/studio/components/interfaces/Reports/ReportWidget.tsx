@@ -7,6 +7,7 @@ import { Button, cn, Loading, Tooltip, TooltipContent, TooltipTrigger } from 'ui
 import type { LogsEndpointParams } from '../Settings/Logs/Logs.types'
 import type { BaseReportParams, ReportQueryType } from './Reports.types'
 import Panel from '@/components/ui/Panel'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export interface ReportWidgetProps<T = any> {
   data: T[]
@@ -44,7 +45,7 @@ const ReportWidget = (props: ReportWidgetProps) => {
         <div className={cn('flex flex-row items-start justify-between', props.headerClassName)}>
           <div className="gap-2">
             <div className="flex flex-row gap-2">
-              <h3 className="w-full h-6">{props.title}</h3>{' '}
+              <h3 className="w-full h-6">{$tValue(props.title)}</h3>{' '}
               {props?.tooltip && (
                 <Tooltip>
                   <TooltipTrigger>
@@ -54,7 +55,7 @@ const ReportWidget = (props: ReportWidgetProps) => {
                 </Tooltip>
               )}
             </div>
-            <p className="text-sm text-foreground-light">{props.description}</p>
+            <p className="text-sm text-foreground-light">{$tValue(props.description)}</p>
           </div>
           {props.params && (
             <Tooltip>
@@ -80,7 +81,7 @@ const ReportWidget = (props: ReportWidgetProps) => {
                 />
               </TooltipTrigger>
               <TooltipContent side="left">
-                {props.queryType === 'db' ? 'Open in SQL Editor' : 'Open in Logs Explorer'}
+                {props.queryType === 'db' ? $t('Open in SQL Editor') : $t('Open in Logs Explorer')}
               </TooltipContent>
             </Tooltip>
           )}

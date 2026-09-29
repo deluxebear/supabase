@@ -5,7 +5,7 @@ import { Admonition } from 'ui-patterns/Admonition'
 
 import { type ResourceGroup } from './MarketplaceIntegrationSettingsTab.types'
 import { type ConnectedResource } from '@/components/interfaces/Integrations/Landing/Landing.utils'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export const ResourceGroupSection = ({
   group,
@@ -18,7 +18,7 @@ export const ResourceGroupSection = ({
     <section className="flex flex-col gap-y-4 border-b py-8 first:pt-0 last:border-b-0">
       <div className="flex flex-col gap-y-2">
         <div className="flex items-center gap-x-2">
-          <h3 className="text-base text-foreground">{group.title}</h3>
+          <h3 className="text-base text-foreground">{$tValue(group.title)}</h3>
           {group.missing ? (
             <Badge variant="warning" className="gap-x-1.5">
               <TriangleAlert size={12} strokeWidth={1.5} />
@@ -34,13 +34,13 @@ export const ResourceGroupSection = ({
             )
           )}
         </div>
-        <p className="text-sm text-foreground-light max-w-2xl">{group.description}</p>
+        <p className="text-sm text-foreground-light max-w-2xl">{$tValue(group.description)}</p>
       </div>
 
       <Admonition
         type={group.missing ? 'warning' : 'default'}
         className="m-0 max-w-2xl"
-        title={group.missing ? 'This resource is missing' : undefined}
+        title={group.missing ? $t('This resource is missing') : undefined}
       >
         {group.missing ? group.missingNote : group.note}
       </Admonition>
@@ -49,7 +49,7 @@ export const ResourceGroupSection = ({
         group.manageAction && (
           <div className="max-w-2xl">
             <Button asChild icon={<Settings />}>
-              <Link href={group.manageAction.href}>{group.manageAction.label}</Link>
+              <Link href={group.manageAction.href}>{$tValue(group.manageAction.label)}</Link>
             </Button>
           </div>
         )
@@ -72,7 +72,7 @@ export const ResourceGroupSection = ({
               <div className="flex shrink-0 items-center gap-x-2">
                 {group.manageAction && (
                   <Button asChild icon={<Settings />}>
-                    <Link href={group.manageAction.href}>{group.manageAction.label}</Link>
+                    <Link href={group.manageAction.href}>{$tValue(group.manageAction.label)}</Link>
                   </Button>
                 )}
                 <Button

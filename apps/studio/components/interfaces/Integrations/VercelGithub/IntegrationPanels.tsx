@@ -13,7 +13,7 @@ import type {
 } from '@/data/integrations/integrations.types'
 import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
 import { BASE_PATH } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { getIntegrationConfigurationUrl } from '@/lib/integration-utils'
 
 const ICON_STROKE_WIDTH = 2
@@ -366,7 +366,7 @@ export const IntegrationConnectionHeader = forwardRef<HTMLDivElement, Integratio
           className
         )}
       >
-        {props.title && <h5 className="text-foreground">{props.title}</h5>}
+        {props.title && <h5 className="text-foreground">{$tValue(props.title)}</h5>}
         <Markdown content={markdown} className="[&>p]:my-0" />
       </div>
     )

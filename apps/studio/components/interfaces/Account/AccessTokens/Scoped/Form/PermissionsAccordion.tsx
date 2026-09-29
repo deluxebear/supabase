@@ -15,7 +15,7 @@ import type { TokenAccessEvaluation } from '../../AccessToken.roles'
 import { TokenFormValues } from './NewScopedTokenForm.utils'
 import { PermissionPresetSelect } from './PermissionPresetSelect'
 import { PermissionRow } from './PermissionRow'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface PermissionsAccordionProps {
   control: Control<TokenFormValues>
@@ -58,8 +58,8 @@ export const PermissionsAccordion = ({
           type="warning"
           // Groups the warning with the header above it, rather than the list it sits on top of.
           className="mb-4"
-          title={riskyPreset.label}
-          description={riskyPreset.description}
+          title={$tValue(riskyPreset.label)}
+          description={$tValue(riskyPreset.description)}
         />
       )}
 
@@ -80,7 +80,9 @@ export const PermissionsAccordion = ({
                 <div className="flex flex-1 items-center justify-between gap-2 pr-2">
                   <div className="flex flex-col gap-1">
                     <span className="text-sm font-medium">{category.name}</span>
-                    <span className="text-xs text-foreground-lighter">{category.description}</span>
+                    <span className="text-xs text-foreground-lighter">
+                      {$tValue(category.description)}
+                    </span>
                   </div>
                   {configuredCount > 0 && (
                     <span className="text-xs text-primary font-medium">

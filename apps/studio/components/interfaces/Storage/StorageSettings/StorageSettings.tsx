@@ -247,8 +247,10 @@ export const StorageSettings = () => {
             {!IS_PLATFORM ? (
               <Admonition
                 type="default"
-                title={'Storage settings are not available for self-hosted projects'}
-                description={'Storage settings are only available for Supabase Platform projects.'}
+                title={$t('Storage settings are not available for self-hosted projects')}
+                description={$t(
+                  'Storage settings are only available for Supabase Platform projects.'
+                )}
               />
             ) : isLoading ? (
               <GenericSkeletonLoader />
@@ -273,7 +275,7 @@ export const StorageSettings = () => {
                           render={({ field }) => (
                             <FormItemLayout
                               layout="flex-row-reverse"
-                              label={'Enable image transformation'}
+                              label={$t('Enable image transformation')}
                               description={
                                 <>
                                   {$t('Optimize and resize images on the fly.')}{' '}
@@ -309,7 +311,7 @@ export const StorageSettings = () => {
                             <FormItemLayout
                               hideMessage
                               layout="flex-row-reverse"
-                              label={'Global file size limit'}
+                              label={$t('Global file size limit')}
                               description={
                                 <>
                                   {$t('Restrict the size of files uploaded across all buckets.')}{' '}

@@ -112,7 +112,7 @@ export function ApiKeyPill({
           <TooltipTrigger asChild>
             <Button
               variant="outline"
-              aria-label={show ? 'Hide API key' : 'Reveal API key'}
+              aria-label={show ? $t('Hide API key') : $t('Reveal API key')}
               className="rounded-full px-2 pointer-events-auto"
               loading={show && isLoading}
               icon={show ? <EyeOff strokeWidth={2} /> : <Eye strokeWidth={2} />}
@@ -122,12 +122,12 @@ export function ApiKeyPill({
           </TooltipTrigger>
           <TooltipContent side="bottom">
             {isRestricted
-              ? 'You need additional permissions to reveal secret API keys'
+              ? $t('You need additional permissions to reveal secret API keys')
               : isLoadingPermission
-                ? 'Loading permissions...'
+                ? $t('Loading permissions...')
                 : show
-                  ? 'Hide API key'
-                  : 'Reveal API key'}
+                  ? $t('Hide API key')
+                  : $t('Reveal API key')}
           </TooltipContent>
         </Tooltip>
       )}
@@ -145,10 +145,10 @@ export function ApiKeyPill({
         </TooltipTrigger>
         <TooltipContent side="bottom">
           {isRestricted
-            ? 'You need additional permissions to copy secret API keys'
+            ? $t('You need additional permissions to copy secret API keys')
             : isLoadingPermission
-              ? 'Loading permissions...'
-              : 'Copy API key'}
+              ? $t('Loading permissions...')
+              : $t('Copy API key')}
         </TooltipContent>
       </Tooltip>
     </>

@@ -100,11 +100,11 @@ export const CreateCredentialModal = ({ visible, onOpenChange }: CreateCredentia
         {disableCreation && (
           <TooltipContent side="bottom">
             {!isProjectActive
-              ? 'Restore your project to create new access keys'
+              ? $t('Restore your project to create new access keys')
               : !isS3ConnectionEnabled
-                ? 'Connection via S3 protocol is currently disabled'
+                ? $t('Connection via S3 protocol is currently disabled')
                 : !canCreateCredentials
-                  ? 'You need additional permissions to create new access keys'
+                  ? $t('You need additional permissions to create new access keys')
                   : ''}
           </TooltipContent>
         )}
@@ -130,7 +130,7 @@ export const CreateCredentialModal = ({ visible, onOpenChange }: CreateCredentia
               <FormItemLayout label={$t('Access key ID')} isReactForm={false}>
                 <Input className="input-mono" readOnly copy value={createS3KeyData?.access_key} />
               </FormItemLayout>
-              <FormItemLayout label={'Secret access key'} isReactForm={false}>
+              <FormItemLayout label={$t('Secret access key')} isReactForm={false}>
                 <Input className="input-mono" readOnly copy value={createS3KeyData?.secret_key} />
               </FormItemLayout>
             </DialogSection>

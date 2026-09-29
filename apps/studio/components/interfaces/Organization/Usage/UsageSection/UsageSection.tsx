@@ -8,6 +8,7 @@ import { DataPoint } from '@/data/analytics/constants'
 import { PricingMetric } from '@/data/analytics/org-daily-stats-query'
 import type { OrgSubscription } from '@/data/subscriptions/types'
 import { useOrgUsageQuery } from '@/data/usage/org-usage-query'
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export interface ChartMeta {
   [key: string]: { data: DataPoint[]; margin: number; isLoading: boolean }
@@ -57,7 +58,7 @@ const UsageSection = ({
       <ScaffoldContainer>
         <SectionHeader
           title={categoryMeta.name}
-          description={categoryMeta.description}
+          description={$tValue(categoryMeta.description)}
           className="pb-0"
         />
       </ScaffoldContainer>

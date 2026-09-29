@@ -313,7 +313,7 @@ export const EditHookPanel = () => {
               disabled={isSubmitting}
               loading={isSubmitting}
             >
-              {selectedHook === undefined ? 'Create webhook' : 'Update webhook'}
+              {selectedHook === undefined ? $t('Create webhook') : $t('Update webhook')}
             </Button>
           </div>
         }

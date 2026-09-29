@@ -137,7 +137,7 @@ export const QueryDetail = ({ selectedRow, onClickViewSuggestion, onClose }: Que
               aria-controls="query-detail-sql-panel"
               onClick={() => setIsExpanded(!isExpanded)}
             >
-              {isExpanded ? 'Collapse' : 'Expand'}
+              {isExpanded ? $t('Collapse') : $t('Expand')}
             </Button>
           </FloatingPlate>
         </div>

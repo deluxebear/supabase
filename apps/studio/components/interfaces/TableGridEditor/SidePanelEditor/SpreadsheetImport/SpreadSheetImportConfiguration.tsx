@@ -94,8 +94,8 @@ const SpreadsheetImportConfiguration = ({
                   badgeLimit="wrap"
                   label={
                     importableHeaders.length === 0
-                      ? 'No imported columns selected'
-                      : 'Select columns...'
+                      ? $t('No imported columns selected')
+                      : $t('Select columns...')
                   }
                   mode="inline-combobox"
                 />

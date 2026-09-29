@@ -24,7 +24,7 @@ import { CLEANUP_INTERVALS } from './CronJobsTab.constants'
 import { useCronJobQuery } from '@/data/database-cron-jobs/database-cron-job-query'
 import { useScheduleCronJobRunDetailsCleanupMutation } from '@/data/database-cron-jobs/schedule-clean-up-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const DEFAULT_CLEANUP_INTERVAL =
@@ -118,7 +118,7 @@ export const EnableCleanupButton = ({ onScheduled }: EnableCleanupButtonProps) =
                 <SelectContent>
                   {CLEANUP_INTERVALS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                      {$tValue(option.label)}
                     </SelectItem>
                   ))}
                 </SelectContent>

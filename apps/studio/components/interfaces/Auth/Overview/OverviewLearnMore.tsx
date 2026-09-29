@@ -16,7 +16,7 @@ import {
 
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { BASE_PATH, DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
 
@@ -123,13 +123,13 @@ export const OverviewLearnMore = () => {
           {LearnMoreCards.map((card) => (
             <Card key={card.label} className="relative">
               <CardHeader className="absolute top-0 left-0 right-0 border-b-0">
-                <CardTitle className="text-foreground-lighter">{card.label}</CardTitle>
+                <CardTitle className="text-foreground-lighter">{$tValue(card.label)}</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="bg-black/20 flex w-full">
                   <Image
                     src={card.image && card?.image}
-                    alt={card.title}
+                    alt={$tValue(card.title)}
                     width={620}
                     height={324}
                     className="object-fit"
@@ -137,8 +137,8 @@ export const OverviewLearnMore = () => {
                 </div>
                 <div className="p-4 flex flex-col">
                   <div className="flex flex-col gap-1 mb-4 flex-1">
-                    <h4>{card.title}</h4>
-                    <p className="text-sm text-foreground-lighter">{card.description}</p>
+                    <h4>{$tValue(card.title)}</h4>
+                    <p className="text-sm text-foreground-lighter">{$tValue(card.description)}</p>
                   </div>
                   <div className="flex flex-col gap-2 items-start mt-auto">
                     {card.actions.map((action) => {
@@ -151,7 +151,7 @@ export const OverviewLearnMore = () => {
                             asChild
                           >
                             <Link href={action.href} className="inline-flex">
-                              {action.label}
+                              {$tValue(action.label)}
                             </Link>
                           </Button>
                         )
@@ -163,7 +163,7 @@ export const OverviewLearnMore = () => {
                             className="inline-flex"
                             icon={action.icon}
                           >
-                            {action.label}
+                            {$tValue(action.label)}
                           </Button>
                         )
                       }

@@ -13,7 +13,7 @@ import {
 } from 'ui'
 
 import { useS3AccessKeyDeleteMutation } from '@/data/storage/s3-access-key-delete-mutation'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface RevokeCredentialModalProps {
   visible: boolean
@@ -40,7 +40,7 @@ export const RevokeCredentialModal = ({
         <DialogHeader>
           <DialogTitle>
             {$t('Revoke credential')}{' '}
-            <code className="text-sm">{selectedCredential?.description}</code>
+            <code className="text-sm">{$tValue(selectedCredential?.description)}</code>
           </DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />

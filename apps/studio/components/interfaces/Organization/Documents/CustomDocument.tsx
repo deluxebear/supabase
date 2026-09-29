@@ -8,6 +8,7 @@ import {
   ScaffoldSectionDetail,
 } from '@/components/layouts/Scaffold'
 import { CustomContentTypes } from '@/hooks/custom-content/CustomContent.types'
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface CustomDocumentProps {
   doc: CustomContentTypes['organizationLegalDocuments'][number]
@@ -20,7 +21,7 @@ export const CustomDocument = ({ doc }: CustomDocumentProps) => {
         <ScaffoldSectionDetail>
           <p className="text-base m-0">{doc.name}</p>
           <div className="space-y-2 text-sm text-foreground-light [&_p]:m-0">
-            <p>{doc.description}</p>
+            <p>{$tValue(doc.description)}</p>
           </div>
         </ScaffoldSectionDetail>
         <ScaffoldSectionContent>

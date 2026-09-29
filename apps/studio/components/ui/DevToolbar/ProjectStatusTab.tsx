@@ -21,7 +21,7 @@ import {
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 type ProjectStatus = Project['status']
 
@@ -179,7 +179,7 @@ export const ProjectStatusTab = () => {
             <SelectContent>
               {PAUSE_STATE_OPTIONS.map((option) => (
                 <SelectItem key={option.value} value={option.value} className="text-xs">
-                  {option.label}
+                  {$tValue(option.label)}
                 </SelectItem>
               ))}
             </SelectContent>

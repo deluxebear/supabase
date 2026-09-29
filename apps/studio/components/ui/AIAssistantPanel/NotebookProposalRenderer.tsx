@@ -635,8 +635,12 @@ function UnsavedLocalChangesWarning({ mode }: { mode: 'update' | 'delete' }) {
         title={$t('Unsaved local changes')}
         description={
           mode === 'update'
-            ? "This notebook has unsaved local changes that aren't reflected in this preview. Approving will overwrite them on save."
-            : "This notebook has unsaved local changes that aren't reflected in this preview. Approving will permanently delete them."
+            ? $t(
+                "This notebook has unsaved local changes that aren't reflected in this preview. Approving will overwrite them on save."
+              )
+            : $t(
+                "This notebook has unsaved local changes that aren't reflected in this preview. Approving will permanently delete them."
+              )
         }
       />
     </div>

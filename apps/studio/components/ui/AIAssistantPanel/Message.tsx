@@ -79,7 +79,7 @@ function UserMessage({ message }: { message: VercelMessage }) {
         <MessageActions>
           <MessageActions.Edit
             onClick={state === 'idle' ? () => onEdit(id) : onCancelEdit}
-            tooltip={state === 'idle' ? 'Edit message' : 'Cancel editing'}
+            tooltip={state === 'idle' ? $t('Edit message') : $t('Cancel editing')}
           />
           <MessageActions.Delete onClick={() => setShowDeleteConfirmModal(true)} />
         </MessageActions>

@@ -8,7 +8,7 @@ import type { ContentProps } from './Content.types'
 import { tempRemovePostgrestText } from './Content.utils'
 import Table from '@/components/to-be-cleaned/Table'
 import { useProjectJsonSchemaQuery } from '@/data/docs/project-json-schema-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useAppStateSnapshot } from '@/state/app-state'
 
 function getColumnType(type: string, format: string) {
@@ -83,7 +83,7 @@ export const Entity = ({ language, apikey = '', endpoint = '' }: ContentProps) =
                   <p className="truncate">{column.format}</p>
                 </Table.td>
                 <Table.td title={formattedColumnType}>{formattedColumnType}</Table.td>
-                <Table.td title={column.description}>
+                <Table.td title={$tValue(column.description)}>
                   {tempRemovePostgrestText(column.description ?? '').trim()}
                 </Table.td>
               </Table.tr>

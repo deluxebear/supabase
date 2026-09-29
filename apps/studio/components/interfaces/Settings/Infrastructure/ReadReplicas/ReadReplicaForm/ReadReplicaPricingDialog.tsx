@@ -21,7 +21,7 @@ import { Admonition } from 'ui-patterns/Admonition'
 import { useGetReplicaCost } from './useGetReplicaCost'
 import { TaxDisclaimer } from '@/components/interfaces/Billing/TaxDisclaimer'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface ReadReplicaPricingDialogProps {
   replicaCost: ReturnType<typeof useGetReplicaCost>
@@ -45,8 +45,8 @@ export const ReadReplicaPricingDialog = ({ replicaCost }: ReadReplicaPricingDial
         title={title}
         description={
           isError
-            ? 'We couldn’t load the required pricing data.'
-            : 'Based on your primary database configuration.'
+            ? $t('We couldn’t load the required pricing data.')
+            : $t('Based on your primary database configuration.')
         }
         className="mb-0 rounded-none border-x-0"
         actions={
@@ -88,21 +88,27 @@ export const ReadReplicaPricingDialog = ({ replicaCost }: ReadReplicaPricingDial
                   <TableBody>
                     <TableRow>
                       <TableCell>{$t('Compute size')}</TableCell>
-                      <TableCell className="text-foreground-lighter">{compute.label}</TableCell>
+                      <TableCell className="text-foreground-lighter">
+                        {$tValue(compute.label)}
+                      </TableCell>
                       <TableCell className="text-right font-mono" translate="no">
                         {compute.cost}
                       </TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>{$t('Disk size')}</TableCell>
-                      <TableCell className="text-foreground-lighter">{disk.label}</TableCell>
+                      <TableCell className="text-foreground-lighter">
+                        {$tValue(disk.label)}
+                      </TableCell>
                       <TableCell className="text-right font-mono" translate="no">
                         {disk.cost}
                       </TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>IOPS</TableCell>
-                      <TableCell className="text-foreground-lighter">{iops.label}</TableCell>
+                      <TableCell className="text-foreground-lighter">
+                        {$tValue(iops.label)}
+                      </TableCell>
                       <TableCell className="text-right font-mono" translate="no">
                         {iops.cost}
                       </TableCell>
@@ -111,7 +117,7 @@ export const ReadReplicaPricingDialog = ({ replicaCost }: ReadReplicaPricingDial
                       <TableRow>
                         <TableCell>{$t('Throughput')}</TableCell>
                         <TableCell className="text-foreground-lighter">
-                          {throughput.label}
+                          {$tValue(throughput.label)}
                         </TableCell>
                         <TableCell className="text-right font-mono" translate="no">
                           {throughput.cost}
@@ -137,7 +143,7 @@ export const ReadReplicaPricingDialog = ({ replicaCost }: ReadReplicaPricingDial
               {$t(
                 'Read replicas will be on the same compute size as your primary database. Deploying a read replica on the'
               )}{' '}
-              <span className="text-foreground">{compute.label}</span>{' '}
+              <span className="text-foreground">{$tValue(compute.label)}</span>{' '}
               {$t('size incurs additional')}{' '}
               <span className="text-foreground" translate="no">
                 {compute?.priceDescription}

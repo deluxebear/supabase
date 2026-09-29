@@ -11,7 +11,7 @@ import { useProjectApiUrl } from '@/data/config/project-endpoint-query'
 import { useProjectJsonSchemaQuery } from '@/data/docs/project-json-schema-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface ResourceContentProps {
   resourceId: string
@@ -87,7 +87,7 @@ export const ResourceContent = ({
                   type={x.type}
                   format={x.format}
                   required={x.required}
-                  description={x.description}
+                  description={$tValue(x.description)}
                   metadata={{
                     table: resourceId,
                     column: x.id,

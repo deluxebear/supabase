@@ -248,7 +248,7 @@ export const AuditLogs = () => {
                   icon={<RefreshCw className={isRefetching ? 'animate-spin' : ''} />}
                   onClick={() => refetch()}
                 >
-                  {isRefetching ? 'Refreshing' : 'Refresh'}
+                  {isRefetching ? $t('Refreshing') : $t('Refresh')}
                 </Button>
               </div>
             )}
@@ -404,7 +404,7 @@ export const AuditLogs = () => {
                                     className="text-foreground-light max-w-[230px] truncate"
                                     title={project?.name ?? organization?.name}
                                   >
-                                    {project ? 'Project: ' : 'Organization: '}
+                                    {project ? $t('Project: ') : $t('Organization: ')}
                                     {project?.name ?? organization?.name}
                                   </p>
                                   <p className="text-foreground-light text-xs mt-0.5 truncate">

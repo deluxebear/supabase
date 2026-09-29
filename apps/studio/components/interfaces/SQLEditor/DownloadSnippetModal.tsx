@@ -27,7 +27,7 @@ import {
 } from './SQLEditor.utils'
 import { TwoOptionToggle } from '@/components/ui/TwoOptionToggle'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useSqlEditorV2StateSnapshot } from '@/state/sql-editor/sql-editor-state'
 
 const CLI_DOCS_URL = `${DOCS_URL}/guides/cli/local-development`
@@ -123,7 +123,7 @@ export const DownloadSnippetModal = ({ id, ...props }: DownloadSnippetModalProps
               <SelectContent>
                 {SNIPPETS.map((snippet) => (
                   <SelectItem key={snippet.id} value={snippet.id}>
-                    {snippet.label}
+                    {$tValue(snippet.label)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -161,7 +161,7 @@ export const DownloadSnippetModal = ({ id, ...props }: DownloadSnippetModalProps
             {selectedSnippet.docLink && (
               <Button asChild icon={<ExternalLink />}>
                 <Link href={selectedSnippet.docLink.href} target="_blank" rel="noreferrer">
-                  {selectedSnippet.docLink.label}
+                  {$tValue(selectedSnippet.docLink.label)}
                 </Link>
               </Button>
             )}

@@ -143,7 +143,7 @@ export const BanUserModal = ({ visible, user, onClose }: BanUserModalProps) => {
                   {$t('This user will not be able to log in until:')}
                 </p>
                 <p className={cn('text-sm', !value && 'text-foreground-light')}>
-                  {!!value ? bannedUntil : 'Invalid duration set'}
+                  {!!value ? bannedUntil : $t('Invalid duration set')}
                 </p>
               </div>
             </DialogSection>

@@ -28,7 +28,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { BASE_PATH } from '@/lib/constants'
 import { timeout } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const DATE_FORMAT = 'DD MMM, YYYY HH:mm'
 const CONTAINER_CLASS = cn(
@@ -263,7 +263,7 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
                   <p className="capitalize">{providerName}</p>
                   <p className="text-xs text-foreground-light">
                     {$t('Signed in with a')} {providerName} {$t('account via')}{' '}
-                    {providerName === 'SAML' ? 'SSO' : 'OAuth'}
+                    {providerName === 'SAML' ? 'SSO' : $t('OAuth')}
                   </p>
                   {authenticationSignInProviders && (
                     <Button asChild className="mt-2">
@@ -319,11 +319,11 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
                 }
               />
               <RowAction
-                title={isVerified ? 'Send magic link' : 'Send confirmation email'}
+                title={isVerified ? $t('Send magic link') : $t('Send confirmation email')}
                 description={
                   isVerified
-                    ? 'Send a passwordless magic link to the user'
-                    : 'Send a confirmation email to the user'
+                    ? $t('Send a passwordless magic link to the user')
+                    : $t('Send a confirmation email to the user')
                 }
                 button={{
                   icon: <Mail />,
@@ -397,12 +397,12 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
             title={
               isBanned
                 ? `User is banned until ${dayjs(user.banned_until).format(DATE_FORMAT)}`
-                : 'Ban user'
+                : $t('Ban user')
             }
             description={
               isBanned
-                ? 'User has no access to the project until after this date'
-                : 'Revoke access to the project for a set duration'
+                ? $t('User has no access to the project until after this date')
+                : $t('Revoke access to the project for a set duration')
             }
             button={{
               icon: <Ban />,
@@ -551,9 +551,9 @@ export const RowAction = ({
   return (
     <div className={cn(CONTAINER_CLASS, className)}>
       <div>
-        <p>{success ? success.title : title}</p>
+        <p>{success ? $tValue(success.title) : title}</p>
         <p className="text-xs text-foreground-light">
-          {success ? success.description : description}
+          {success ? $tValue(success.description) : description}
         </p>
       </div>
 

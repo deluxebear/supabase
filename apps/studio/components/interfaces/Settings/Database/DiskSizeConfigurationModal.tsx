@@ -245,8 +245,10 @@ const DiskSizeConfigurationModal = ({
             <InfoIcon />
             <AlertTitle>
               {hasAccessToDiskModifications === false
-                ? 'Disk size configuration is not available for projects on the Free Plan'
-                : 'Disk size configuration is only available when the spend cap has been disabled'}
+                ? $t('Disk size configuration is not available for projects on the Free Plan')
+                : $t(
+                    'Disk size configuration is only available when the spend cap has been disabled'
+                  )}
             </AlertTitle>
             <AlertDescription>
               {hasAccessToDiskModifications === false ? (
@@ -270,8 +272,8 @@ const DiskSizeConfigurationModal = ({
                   target="_blank"
                 >
                   {hasAccessToDiskModifications === false
-                    ? 'Upgrade subscription'
-                    : 'Disable spend cap'}
+                    ? $t('Upgrade subscription')
+                    : $t('Disable spend cap')}
                 </Link>
               </Button>
             </AlertDescription>

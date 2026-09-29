@@ -87,8 +87,10 @@ export const ProjectPausedState = ({ product }: ProjectPausedStateProps) => {
                     )}
                     <li>
                       {enableProBenefitWording === 'variant-a'
-                        ? 'Upgrade to Pro to prevent pauses and unlock features like branching, compute upgrades, and daily backups.'
-                        : 'To prevent future pauses, consider upgrading to Pro.'}
+                        ? $t(
+                            'Upgrade to Pro to prevent pauses and unlock features like branching, compute upgrades, and daily backups.'
+                          )
+                        : $t('To prevent future pauses, consider upgrading to Pro.')}
                     </li>
                   </ul>
                 ) : (

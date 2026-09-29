@@ -1,7 +1,7 @@
 import { useRolesFilter, type RoleWithDescription } from '../hooks/useRolesFilter'
 import { RoleTooltip } from './RoleTooltip'
 import { FilterPopover } from '@/components/ui/FilterPopover'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface RolesFilterDropdownProps {
   activeOptions: string[]
@@ -17,7 +17,11 @@ export const RolesFilterDropdown = ({
   const { roles, roleGroups, isLoadingRoles } = useRolesFilter()
 
   const renderLabel = (option: RoleWithDescription, value: string) => (
-    <RoleTooltip htmlFor={value} label={option.displayName} description={option.description} />
+    <RoleTooltip
+      htmlFor={value}
+      label={option.displayName}
+      description={$tValue(option.description)}
+    />
   )
 
   return (

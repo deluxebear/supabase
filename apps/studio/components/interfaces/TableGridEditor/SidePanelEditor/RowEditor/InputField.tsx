@@ -26,7 +26,7 @@ import { DATETIME_TYPES, JSON_TYPES, TEXT_TYPES } from '../SidePanelEditor.const
 import { DateTimeInput } from './DateTimeInput'
 import type { EditValue, RowField } from './RowEditor.types'
 import { isValueTruncated } from './RowEditor.utils'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const TRUNCATE_DESCRIPTION =
   'Note: Value is too large to be rendered in the dashboard. Please expand the editor to edit the value'
@@ -344,7 +344,7 @@ export const InputField = ({
             <SelectGroup>
               {options.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
-                  {option.label}
+                  {$tValue(option.label)}
                 </SelectItem>
               ))}
             </SelectGroup>
@@ -402,7 +402,7 @@ export const InputField = ({
           value={field.value ?? ''}
           placeholder={
             field.isIdentity
-              ? 'Automatically generated as identity'
+              ? $t('Automatically generated as identity')
               : field.defaultValue !== null
                 ? `Default: ${field.defaultValue}`
                 : 'NULL'
@@ -418,7 +418,7 @@ export const InputField = ({
               onClick={() => onEditJson({ column: field.name, value: field.value })}
               icon={isEditable ? <Edit /> : <Eye />}
             >
-              {isEditable ? 'Edit' : 'View'}
+              {isEditable ? $t('Edit') : $t('View')}
             </InputGroupButton>
           ) : undefined}
         </InputGroupAddon>

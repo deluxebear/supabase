@@ -88,8 +88,12 @@ export const ResetTemplateDialog = ({
           <AlertDialogTitle>{$t('Reset template to default')}</AlertDialogTitle>
           <AlertDialogDescription>
             {hasUnsavedChanges
-              ? 'This will discard your unsaved changes and use the default subject line and email body content.'
-              : 'This will remove your custom subject line and email body content. The default values will be used instead.'}
+              ? $t(
+                  'This will discard your unsaved changes and use the default subject line and email body content.'
+                )
+              : $t(
+                  'This will remove your custom subject line and email body content. The default values will be used instead.'
+                )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && (

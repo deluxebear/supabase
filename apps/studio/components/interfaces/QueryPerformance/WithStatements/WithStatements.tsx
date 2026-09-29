@@ -334,7 +334,9 @@ export const WithStatements = ({
         <p className="text-foreground-light text-sm">
           {$t('This will reset the pg_stat_statements table in the extensions schema on your')}{' '}
           <span className="text-foreground">
-            {isPrimaryDatabase ? 'primary database' : `read replica (ID: ${formattedDatabaseId})`}
+            {isPrimaryDatabase
+              ? $t('primary database')
+              : `read replica (ID: ${formattedDatabaseId})`}
           </span>
           {$t(
             ', which is used to calculate query performance. This data will repopulate immediately after.'

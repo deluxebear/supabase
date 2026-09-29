@@ -15,7 +15,7 @@ import {
 } from './ConfigurationDriftPage.utils'
 import { AlertError } from '@/components/ui/AlertError'
 import { useSelectedGitHubConfigDrift } from '@/hooks/misc/useGitHubConfigDrift'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export function ConfigurationDriftPageSkeleton() {
   return (
@@ -202,7 +202,7 @@ function ConfigFieldSection({
                     key={row.configPath}
                     className="flex items-center justify-between gap-4 px-3 py-2 text-sm"
                   >
-                    <span className="text-foreground-light">{row.label}</span>
+                    <span className="text-foreground-light">{$tValue(row.label)}</span>
                     <code
                       className="max-w-[60%] truncate text-xs text-foreground-muted"
                       title={row.value}

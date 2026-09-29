@@ -473,7 +473,7 @@ export const CustomAuthProvidersList = () => {
                       </TableCell>
                       <TableCell className="text-xs text-foreground-light max-w-28">
                         <Badge variant={provider.enabled ? 'success' : 'default'}>
-                          {provider.enabled ? 'Enabled' : 'Disabled'}
+                          {provider.enabled ? $t('Enabled') : $t('Disabled')}
                         </Badge>
                       </TableCell>
                       <TableCell className="max-w-20 bg-surface-100 @[944px]:hover:bg-surface-200 px-6">

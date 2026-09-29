@@ -70,7 +70,7 @@ export const AuditLogDetailsPanel = ({ selectedLog, onClose }: AuditLogDetailsPa
                     })
                   }}
                 >
-                  {copied ? 'Copied' : ''}
+                  {copied ? $t('Copied') : ''}
                 </Button>
               </FloatingPlate>
             </div>

@@ -171,7 +171,9 @@ function PublicBucketWarningView(props: PublicBucketWarningViewProps): ReactNode
         description={
           hasMultiplePolicies
             ? `${policyCount} broad SELECT policies on storage.objects allow clients to retrieve a full list of files. Public buckets don’t need these policies and they may expose more data than intended.`
-            : 'A broad SELECT policy on storage.objects allows clients to retrieve a full list of files. Public buckets don’t need this and it may expose more data than intended.'
+            : $t(
+                'A broad SELECT policy on storage.objects allows clients to retrieve a full list of files. Public buckets don’t need this and it may expose more data than intended.'
+              )
         }
         actions={
           <div className="flex gap-2">
@@ -190,7 +192,7 @@ function PublicBucketWarningView(props: PublicBucketWarningViewProps): ReactNode
         title={
           hasMultiplePolicies
             ? `Remove SELECT policy (1 of ${policyCount})`
-            : 'Remove SELECT policy'
+            : $t('Remove SELECT policy')
         }
         confirmLabel="Remove policy"
         loading={isRemovingPolicy}
@@ -201,9 +203,9 @@ function PublicBucketWarningView(props: PublicBucketWarningViewProps): ReactNode
           <p className="text-sm text-foreground-light">
             {$t('This will drop')} {hasMultiplePolicies ? 'one' : 'the'}{' '}
             <code className="text-code-inline">SELECT</code>
-            {
+            {$t(
               ' policy that makes the bucket’s contents listable. Object URLs will continue to work.'
-            }
+            )}
             {hasMultiplePolicies
               ? ` ${policyCount - 1} matching ${
                   policyCount - 1 === 1 ? 'policy' : 'policies'

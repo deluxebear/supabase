@@ -114,9 +114,9 @@ const CustomDomainSidePanel = () => {
       }
       tooltip={
         !hasAccessToCustomDomain
-          ? 'Unable to enable custom domain on a Free Plan'
+          ? $t('Unable to enable custom domain on a Free Plan')
           : !canUpdateCustomDomain
-            ? 'You do not have permission to update custom domain'
+            ? $t('You do not have permission to update custom domain')
             : undefined
       }
       header={

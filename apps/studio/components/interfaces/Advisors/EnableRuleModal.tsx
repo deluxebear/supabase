@@ -16,7 +16,7 @@ import {
 import { LintInfo } from '../Linter/Linter.constants'
 import { useLintRuleDeleteMutation } from '@/data/lint/delete-lint-rule-mutation'
 import { LintException } from '@/data/lint/lint-rules-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface EnableRuleModalProps {
   lint: LintInfo
@@ -53,7 +53,7 @@ export const EnableRuleModal = ({ lint, rule }: EnableRuleModalProps) => {
         <DialogSection>
           <p className="text-sm">
             {$t('The "')}
-            {lint.title}
+            {$tValue(lint.title)}
             {$t(
               '" rule will be visible in the Advisor reports, and will be included in email notifications for this project.'
             )}

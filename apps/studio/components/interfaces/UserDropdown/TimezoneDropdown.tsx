@@ -88,7 +88,7 @@ export const TimezoneDropdown = () => {
                     value="UTC Coordinated Universal Time"
                     onSelect={() => handleSelect('UTC')}
                   >
-                    {'(UTC) Coordinated Universal Time'}
+                    {$t('(UTC) Coordinated Universal Time')}
                     <CheckIcon
                       className={cn(
                         'ml-auto h-4 w-4',

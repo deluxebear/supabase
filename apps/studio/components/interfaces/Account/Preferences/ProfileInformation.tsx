@@ -134,8 +134,8 @@ export const ProfileInformation = () => {
                       label={$t('Primary email')}
                       description={
                         profile?.is_sso_user
-                          ? 'Managed by your SSO provider and cannot be changed here'
-                          : 'Used for account notifications'
+                          ? $t('Managed by your SSO provider and cannot be changed here')
+                          : $t('Used for account notifications')
                       }
                       layout="flex-row-reverse"
                     >
@@ -173,8 +173,8 @@ export const ProfileInformation = () => {
                       label={$t('Username')}
                       description={
                         profile?.is_sso_user
-                          ? 'Managed by your SSO provider and cannot be changed here'
-                          : 'Display name used across dashboard'
+                          ? $t('Managed by your SSO provider and cannot be changed here')
+                          : $t('Display name used across dashboard')
                       }
                       layout="flex-row-reverse"
                     >

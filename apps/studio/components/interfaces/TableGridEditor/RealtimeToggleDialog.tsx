@@ -86,7 +86,7 @@ export const RealtimeToggleDialog = ({
       <DialogContent size="small" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>
-            {isRealtimeEnabled ? 'Disable' : 'Enable'} {$t('realtime for')} {table.name}
+            {isRealtimeEnabled ? $t('Disable') : $t('Enable')} {$t('realtime for')} {table.name}
           </DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
@@ -94,7 +94,7 @@ export const RealtimeToggleDialog = ({
           <div className="space-y-2">
             <p className="text-sm">
               {$t('Once realtime has been')} {isRealtimeEnabled ? 'disabled' : 'enabled'}
-              {$t(', the table will')} {isRealtimeEnabled ? 'no longer ' : ''}
+              {$t(', the table will')} {isRealtimeEnabled ? $t('no longer ') : ''}
               {$t('broadcast any changes to authorized subscribers.')}
             </p>
             {!isRealtimeEnabled && (
@@ -113,7 +113,7 @@ export const RealtimeToggleDialog = ({
             {$t('Cancel')}
           </Button>
           <Button variant="primary" loading={isTogglingRealtime} onClick={toggleRealtime}>
-            {isRealtimeEnabled ? 'Disable' : 'Enable'} realtime
+            {isRealtimeEnabled ? $t('Disable') : $t('Enable')} realtime
           </Button>
         </DialogFooter>
       </DialogContent>

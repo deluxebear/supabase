@@ -83,7 +83,7 @@ import { useUpsertNotebookMutation } from '@/data/content/notebooks/notebook-ups
 import { acceptUntrustedLogsSql } from '@/data/logs/safe-analytics-sql'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import {
   getNotebooksStateSnapshot,
   useCurrentNotebook,
@@ -412,7 +412,9 @@ export const ExplorerNotebookTab = () => {
             }
             loading={isCreating}
             disabled={cells.length === 0}
-            tooltip={cells.length === 0 ? 'Add a cell to the notebook to analyze it' : undefined}
+            tooltip={
+              cells.length === 0 ? $t('Add a cell to the notebook to analyze it') : undefined
+            }
             onClick={handleClickAnalyze}
           >
             {$t('Analyze')}
@@ -589,8 +591,12 @@ export const ExplorerNotebookTab = () => {
       >
         <p className="text-sm">
           {id && snap.serverDivergedWhileDirty.get(id) === 'deleted'
-            ? 'This notebook was deleted on the server after your local changes. Saving will recreate it.'
-            : 'This notebook changed on the server after your local changes. Saving will overwrite those changes.'}
+            ? $t(
+                'This notebook was deleted on the server after your local changes. Saving will recreate it.'
+              )
+            : $t(
+                'This notebook changed on the server after your local changes. Saving will overwrite those changes.'
+              )}
         </p>
       </ConfirmationModal>
 
@@ -612,7 +618,7 @@ export const ExplorerNotebookTab = () => {
         <ul className="text-sm list-disc pl-4 mt-2">
           {pendingQueryMatches?.mutatingQueries.map((cell) => (
             <li key={cell.id} className="flex items-center gap-2">
-              {cell.title}
+              {$tValue(cell.title)}
               {pendingQueryMatches.destructiveQueries.some(({ id }) => id === cell.id) && (
                 <Badge variant="destructive">{$t('Destructive')}</Badge>
               )}

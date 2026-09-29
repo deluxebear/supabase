@@ -174,12 +174,12 @@ export const QueuesTab = () => {
               <div className="absolute top-32 px-6 w-full">
                 <div className="text-center text-sm flex flex-col gap-y-1">
                   <p className="text-foreground">
-                    {!!searchQuery ? 'No queues found' : 'No queues created yet'}
+                    {!!searchQuery ? $t('No queues found') : $t('No queues created yet')}
                   </p>
                   <p className="text-foreground-light">
                     {!!searchQuery
-                      ? 'There are currently no queues based on the search applied'
-                      : 'There are currently no queues created yet in your project'}
+                      ? $t('There are currently no queues based on the search applied')
+                      : $t('There are currently no queues created yet in your project')}
                   </p>
                 </div>
               </div>

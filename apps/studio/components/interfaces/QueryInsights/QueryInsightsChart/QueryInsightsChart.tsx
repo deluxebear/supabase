@@ -16,7 +16,7 @@ import type { ChartDataPoint } from '../QueryInsights.types'
 import { CHART_TABS, CHART_TYPE, LEGEND_ITEMS, SEL_COLOR } from './QueryInsightsChart.constants'
 import { formatTime } from './QueryInsightsChart.utils'
 import { QueryInsightsChartTooltip } from './QueryInsightsChartTooltip'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface QueryInsightsChartProps {
   chartData: ChartDataPoint[]
@@ -93,7 +93,7 @@ export const QueryInsightsChart = ({
               value={tab.id}
               className="flex items-center gap-2 text-xs py-3 border-b font-mono uppercase"
             >
-              {tab.label}
+              {$tValue(tab.label)}
             </TabsTrigger>
           ))}
         </TabsList>
@@ -120,7 +120,7 @@ export const QueryInsightsChart = ({
                   )}
                   style={{ backgroundColor: item.color }}
                 />
-                {item.label}
+                {$tValue(item.label)}
               </button>
             ))}
             {hasSelection && (

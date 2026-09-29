@@ -104,7 +104,7 @@ export const StripeAtlasApplicationForm = ({ application }: StripeAtlasApplicati
             />
 
             <Button block size="medium" type="submit" loading={isPending} disabled={isPending}>
-              {isPending ? 'Confirming application...' : 'Confirm application'}
+              {isPending ? $t('Confirming application...') : $t('Confirm application')}
             </Button>
           </form>
         </Form>

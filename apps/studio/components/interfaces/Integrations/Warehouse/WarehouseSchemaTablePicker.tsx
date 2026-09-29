@@ -150,8 +150,10 @@ export const WarehouseSchemaTablePicker = ({
             <PageSectionTitle>{$t('Tables')}</PageSectionTitle>
             <PageSectionDescription>
               {isEditing
-                ? 'Tables currently replicating are selected. Changes apply on save.'
-                : 'Choose which schemas or tables to replicate. You can change this at any time.'}
+                ? $t('Tables currently replicating are selected. Changes apply on save.')
+                : $t(
+                    'Choose which schemas or tables to replicate. You can change this at any time.'
+                  )}
             </PageSectionDescription>
           </PageSectionSummary>
         </PageSectionMeta>
@@ -203,8 +205,8 @@ export const WarehouseSchemaTablePicker = ({
           <PageSectionTitle>{$t('Tables')}</PageSectionTitle>
           <PageSectionDescription>
             {isEditing
-              ? 'Tables currently replicating are selected. Changes apply on save.'
-              : 'Choose which schemas or tables to replicate. You can change this at any time.'}
+              ? $t('Tables currently replicating are selected. Changes apply on save.')
+              : $t('Choose which schemas or tables to replicate. You can change this at any time.')}
           </PageSectionDescription>
         </PageSectionSummary>
       </PageSectionMeta>
@@ -283,7 +285,7 @@ export const WarehouseSchemaTablePicker = ({
                                   className="font-sans! normal-case! tracking-normal!"
                                   onClick={() => handleSchemaSelection(schema)}
                                 >
-                                  {areAllSelected ? 'Clear' : 'Select all'}
+                                  {areAllSelected ? $t('Clear') : $t('Select all')}
                                 </Button>
                               </div>
                             }
@@ -329,7 +331,7 @@ export const WarehouseSchemaTablePicker = ({
               loading={isSubmitting}
               onClick={handleSubmit}
             >
-              {isEditing ? 'Update replicated tables' : 'Enable Warehouse'}
+              {isEditing ? $t('Update replicated tables') : $t('Enable Warehouse')}
             </Button>
           </CardFooter>
         </Card>

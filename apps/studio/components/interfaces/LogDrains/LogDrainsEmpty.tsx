@@ -6,7 +6,7 @@ import { AnimatedLogos } from './AnimatedLogos'
 import { VoteLink } from './VoteLink'
 import { UpgradePlanButton } from '@/components/ui/UpgradePlanButton'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export const LogDrainsEmpty = () => {
   const items = [
@@ -61,12 +61,14 @@ export const LogDrainsEmpty = () => {
                   >
                     {item.step}
                   </span>
-                  <h3 className="heading-default">{item.title}</h3>
+                  <h3 className="heading-default">{$tValue(item.title)}</h3>
                 </div>
-                <p className="text-foreground-light text-sm mb-4 flex-1">{item.description}</p>
+                <p className="text-foreground-light text-sm mb-4 flex-1">
+                  {$tValue(item.description)}
+                </p>
                 <Button className="w-full" asChild>
                   <Link href={item.link} target="_blank">
-                    {item.label}
+                    {$tValue(item.label)}
                   </Link>
                 </Button>
               </div>

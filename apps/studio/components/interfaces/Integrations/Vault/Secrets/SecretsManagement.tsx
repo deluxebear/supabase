@@ -142,7 +142,8 @@ export const SecretsManagement = () => {
                 <SelectTrigger size="tiny" className="w-44">
                   <SelectValue asChild>
                     <>
-                      {$t('Sort by')} {selectedSort === 'updated_at' ? 'Last updated' : 'Name'}
+                      {$t('Sort by')}{' '}
+                      {selectedSort === 'updated_at' ? $t('Last updated') : $t('Name')}
                     </>
                   </SelectValue>
                 </SelectTrigger>
@@ -213,12 +214,12 @@ export const SecretsManagement = () => {
             <div className="absolute top-32 px-6 w-full">
               <div className="text-center text-sm flex flex-col gap-y-1">
                 <p className="text-foreground">
-                  {searchValue ? 'No secrets found' : 'No secrets added yet'}
+                  {searchValue ? $t('No secrets found') : $t('No secrets added yet')}
                 </p>
                 <p className="text-foreground-light">
                   {searchValue
-                    ? 'There are currently no secrets based on the search "{{search}}"'
-                    : 'The Vault allows you to store sensitive information like API keys'}
+                    ? $t('There are currently no secrets based on the search "{{search}}"')
+                    : $t('The Vault allows you to store sensitive information like API keys')}
                 </p>
               </div>
             </div>

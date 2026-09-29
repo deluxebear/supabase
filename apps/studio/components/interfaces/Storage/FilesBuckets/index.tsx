@@ -148,7 +148,7 @@ export const FilesBuckets = () => {
                           <DropdownMenuTrigger asChild>
                             <Button icon={<ArrowDownNarrowWide />}>
                               {$t('Sorted by')}{' '}
-                              {sortBucket === 'alphabetical' ? 'name' : 'created at'}
+                              {sortBucket === 'alphabetical' ? 'name' : $t('created at')}
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="start" className="w-40">

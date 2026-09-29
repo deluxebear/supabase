@@ -107,7 +107,7 @@ export const RestartTableDialog = ({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isResetting}>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction disabled={isResetting} onClick={handleReset} variant="warning">
-            {isResetting ? 'Resetting…' : 'Reset table'}
+            {isResetting ? $t('Resetting…') : $t('Reset table')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

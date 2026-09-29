@@ -34,7 +34,7 @@ export function RLSToggleDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {isEnabled ? 'Disable Row Level Security' : 'Enable Row Level Security'}
+            {isEnabled ? $t('Disable Row Level Security') : $t('Enable Row Level Security')}
           </AlertDialogTitle>
           <AlertDialogDescription>
             {isEnabled ? (

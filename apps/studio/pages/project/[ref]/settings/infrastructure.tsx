@@ -78,7 +78,7 @@ const InfrastructureSettings: NextPageWithLayout = () => {
 
 InfrastructureSettings.getLayout = (page) => (
   <DefaultLayout>
-    <SettingsLayout title={'Infrastructure'}>{page}</SettingsLayout>
+    <SettingsLayout title={$t('Infrastructure')}>{page}</SettingsLayout>
   </DefaultLayout>
 )
 export default InfrastructureSettings

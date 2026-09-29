@@ -24,7 +24,7 @@ import {
 } from '@/components/layouts/InterstitialLayout'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const OAUTH_SCOPES_DOCS_URL = `${DOCS_URL}/guides/platform/oauth-apps/oauth-scopes`
 const PERMISSION_DETAILS_TRIGGER_CLASSNAME =
@@ -299,7 +299,9 @@ export const AuthorizeRequesterDetails = ({
 
           <Collapsible open={showDetails} onOpenChange={setShowDetails} className="mt-2 space-y-2">
             <CollapsibleTrigger className={PERMISSION_DETAILS_TRIGGER_CLASSNAME}>
-              <span>{showDetails ? 'Hide detailed permissions' : 'Show detailed permissions'}</span>
+              <span>
+                {showDetails ? $t('Hide detailed permissions') : $t('Show detailed permissions')}
+              </span>
               <ChevronDown
                 className={cn('size-3.5 transition-transform', showDetails && 'rotate-180')}
               />
@@ -355,7 +357,7 @@ function PermissionDetails({
           return (
             <div key={group.label} className="border-b border-muted last:border-b-0 px-4 py-3">
               <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-foreground-lighter">
-                {group.label}
+                {$tValue(group.label)}
               </p>
               <div className="divide-y divide-muted">
                 {groupPermissions.map((permission) => (
@@ -364,7 +366,9 @@ function PermissionDetails({
                     className="flex items-center justify-between gap-3 py-2"
                   >
                     <div className="flex min-w-0 items-center gap-1.5">
-                      <p className="truncate text-sm text-foreground">{permission.label}</p>
+                      <p className="truncate text-sm text-foreground">
+                        {$tValue(permission.label)}
+                      </p>
                       <InfoTooltip side="right" className="max-w-64 text-xs">
                         {formatPermissionDescription(permission.description)}
                       </InfoTooltip>

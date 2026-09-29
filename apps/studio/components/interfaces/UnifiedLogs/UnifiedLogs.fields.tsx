@@ -6,6 +6,7 @@ import { getLevelLabel } from './UnifiedLogs.utils'
 import { LEVELS } from '@/components/ui/DataTable/DataTable.constants'
 import { DataTableFilterField, Option } from '@/components/ui/DataTable/DataTable.types'
 import { getLevelColor } from '@/components/ui/DataTable/DataTable.utils'
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
 
 // instead of filterFields, maybe just 'fields' with a filterDisabled prop?
 // that way, we could have 'message' or 'headers' field with label and value as well as type!
@@ -42,7 +43,7 @@ export const filterFields = [
       return (
         <div className="flex items-center w-full justify-between gap-2">
           <span className="text-foreground/70 group-hover:text-accent-foreground text-xs">
-            {props.label}
+            {$tValue(props.label)}
           </span>
         </div>
       )
@@ -60,7 +61,7 @@ export const filterFields = [
       return (
         <div className="flex w-full max-w-28 items-center justify-between gap-2">
           <span className="capitalize text-foreground/70 group-hover:text-accent-foreground text-xs">
-            {props.label}
+            {$tValue(props.label)}
           </span>
           <div className="flex items-center gap-2">
             <div className={cn('h-2.5 w-2.5 rounded-[2px]', getLevelColor(value).bg)} />

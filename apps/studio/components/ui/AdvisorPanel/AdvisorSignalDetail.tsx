@@ -8,7 +8,7 @@ import { useAdvisorSignals } from './useAdvisorSignals'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
 import { InlineLink } from '@/components/ui/InlineLink'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useAdvisorStateSnapshot } from '@/state/advisor-state'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -94,7 +94,7 @@ export const AdvisorSignalDetail = ({ item }: AdvisorSignalDetailProps) => {
         {item.actions.map((action) => (
           <Button key={`${item.dismissalKey}-${action.href}`} asChild>
             <Link href={action.href}>
-              <span className="flex items-center gap-2">{action.label}</span>
+              <span className="flex items-center gap-2">{$tValue(action.label)}</span>
             </Link>
           </Button>
         ))}

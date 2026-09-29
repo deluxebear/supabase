@@ -23,7 +23,7 @@ import { useManagementTargetCreateMutation } from '@/data/organizations/manageme
 import { useManagementTargetRevokeMutation } from '@/data/organizations/management-target-revoke-mutation'
 import { managementTargetsQueryOptions } from '@/data/organizations/management-targets-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const schema = z.object({
   name: z.string().trim().min(1),
@@ -221,8 +221,8 @@ export const ManagementTargetsSettings = () => {
                   name={field.name}
                   render={({ field: control, fieldState }) => (
                     <FormItemLayout
-                      label={field.label}
-                      description={field.description}
+                      label={$tValue(field.label)}
+                      description={$tValue(field.description)}
                       error={fieldState.error?.message}
                       layout="horizontal"
                     >

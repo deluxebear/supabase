@@ -175,8 +175,12 @@ export const ComputeAndDiskUsageCharts = ({ className }: { className?: string })
                 label={$t('Compute')}
                 tooltip={
                   supportsBurstableIO
-                    ? 'Peak CPU, memory, and disk IO usage over the last 7 days. Sustained high usage may require a larger compute size.'
-                    : 'Peak CPU and memory usage over the last 7 days. Sustained high usage may require a larger compute size.'
+                    ? $t(
+                        'Peak CPU, memory, and disk IO usage over the last 7 days. Sustained high usage may require a larger compute size.'
+                      )
+                    : $t(
+                        'Peak CPU and memory usage over the last 7 days. Sustained high usage may require a larger compute size.'
+                      )
                 }
                 value={formatUsagePercent(peakComputeUsage)}
                 status={computeUsageStatus}

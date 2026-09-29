@@ -44,9 +44,9 @@ export const HTTPRequestConfig = ({ form }: HTTPRequestConfigProps) => {
       header={
         <FormSectionLabel className="lg:col-span-4!">
           {functionType === 'http_request'
-            ? 'HTTP Request'
+            ? $t('HTTP Request')
             : functionType === 'supabase_function'
-              ? 'Edge Function'
+              ? $t('Edge Function')
               : ''}
         </FormSectionLabel>
       }

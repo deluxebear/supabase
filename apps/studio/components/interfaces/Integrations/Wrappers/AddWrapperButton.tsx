@@ -5,6 +5,7 @@ import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { useDatabaseExtensionsQuery } from '@/data/database-extensions/database-extensions-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 const WRAPPER_REQUIRED_EXTENSION_NAMES = ['wrappers', 'supabase_vault']
 
@@ -46,7 +47,7 @@ export const AddWrapperButton = ({ variant = 'default', onClick }: AddWrapperBut
         },
       }}
     >
-      {needsExtensions ? 'Install wrapper' : 'Add new wrapper'}
+      {needsExtensions ? $t('Install wrapper') : $t('Add new wrapper')}
     </ButtonTooltip>
   )
 }

@@ -71,8 +71,10 @@ export const EnablePipelinesModal = ({
           <DialogTitle>{$t('Enable Pipelines')}</DialogTitle>
           <DialogDescription>
             {hasAccess
-              ? 'Enabling creates Pipelines resources for this project.'
-              : 'Upgrade to the Pro plan to replicate database changes to data warehouses and analytics platforms.'}
+              ? $t('Enabling creates Pipelines resources for this project.')
+              : $t(
+                  'Upgrade to the Pro plan to replicate database changes to data warehouses and analytics platforms.'
+                )}
           </DialogDescription>
         </DialogHeader>
         {hasAccess && (
@@ -126,7 +128,7 @@ export const EnablePipelinesCallout = ({
         <h4>{$t('Enable Pipelines')}</h4>
         <p className="text-sm text-foreground-light">
           {$t('Supabase Pipelines replicates database changes to supported destination systems.')}{' '}
-          {hasAccess ? 'Enable Pipelines for your project' : 'Upgrade to the Pro plan'}{' '}
+          {hasAccess ? $t('Enable Pipelines for your project') : $t('Upgrade to the Pro plan')}{' '}
           {$t('to replicate database changes to')}{' '}
           {type ?? 'data warehouses and analytics platforms'}.
         </p>

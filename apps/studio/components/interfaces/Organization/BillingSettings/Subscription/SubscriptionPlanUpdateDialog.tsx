@@ -36,7 +36,7 @@ import {
   STRIPE_PUBLIC_KEY,
 } from '@/lib/constants'
 import { formatCurrency } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const stripePromise = loadStripe(STRIPE_PUBLIC_KEY)
 
@@ -411,7 +411,7 @@ export const SubscriptionPlanUpdateDialog = ({
                           className="flex items-center justify-between gap-2 border-b border-muted text-xs"
                         >
                           <div className="py-2 pl-0 flex items-center gap-1">
-                            <span>{item.label}</span>
+                            <span>{$tValue(item.label)}</span>
                             {item.tooltip && (
                               <InfoTooltip className="max-w-sm">{item.tooltip}</InfoTooltip>
                             )}
@@ -425,7 +425,9 @@ export const SubscriptionPlanUpdateDialog = ({
                           key={i}
                           className="flex items-center justify-between gap-2 border-b border-muted text-xs"
                         >
-                          <div className="py-2 pl-0 text-foreground-lighter">{item.label}</div>
+                          <div className="py-2 pl-0 text-foreground-lighter">
+                            {$tValue(item.label)}
+                          </div>
                         </div>
                       )
                     )}
@@ -529,7 +531,7 @@ export const SubscriptionPlanUpdateDialog = ({
           {/* Right Column */}
           <div className="bg-surface-100 p-8 flex flex-col border-l xl:col-span-2">
             <h3 className="mb-8">
-              {changeType === 'downgrade' ? 'Downgrade' : 'Upgrade'}{' '}
+              {changeType === 'downgrade' ? $t('Downgrade') : $t('Upgrade')}{' '}
               <span className="font-bold">{selectedOrganization?.name}</span> to{' '}
               {changeType === 'downgrade'
                 ? DOWNGRADE_PLAN_HEADINGS[(selectedTier as DowngradePlanHeadingKey) || 'default']

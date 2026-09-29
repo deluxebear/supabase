@@ -32,7 +32,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import type { Enum } from './AuthProvidersForm.types'
 import { Markdown } from '@/components/interfaces/Markdown'
 import { BASE_PATH } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface FormFieldProps {
   projectRef: string | undefined
@@ -110,7 +110,7 @@ const FormField = ({
               render={({ field }) => (
                 <FormItemLayout
                   layout="horizontal"
-                  label={properties.title}
+                  label={$tValue(properties.title)}
                   description={
                     description ? (
                       <ReactMarkdown unwrapDisallowed disallowedElements={['p']}>
@@ -128,7 +128,7 @@ const FormField = ({
                           icon={<CalendarIcon className="h-4 w-4" />}
                           size="small"
                         >
-                          {field.value ? format(new Date(field.value), 'PPP') : 'Pick a date'}
+                          {field.value ? format(new Date(field.value), 'PPP') : $t('Pick a date')}
                         </Button>
                       </PopoverTrigger>
                     </FormControl>
@@ -162,7 +162,7 @@ const FormField = ({
               render={({ field }) => (
                 <FormItemLayout
                   layout="horizontal"
-                  label={properties.title}
+                  label={$tValue(properties.title)}
                   description={
                     description ? (
                       <Markdown content={description} className="text-foreground-lighter" />
@@ -195,7 +195,7 @@ const FormField = ({
               render={({ field }) => (
                 <FormItemLayout
                   layout="horizontal"
-                  label={properties.title}
+                  label={$tValue(properties.title)}
                   description={
                     description ? (
                       <Markdown content={description} className="text-foreground-lighter" />
@@ -230,7 +230,7 @@ const FormField = ({
               render={({ field }) => (
                 <FormItemLayout
                   layout="horizontal"
-                  label={properties.title}
+                  label={$tValue(properties.title)}
                   description={
                     description ? (
                       <Markdown content={description} className="text-foreground-lighter" />
@@ -286,7 +286,7 @@ const FormField = ({
               render={({ field }) => (
                 <FormItemLayout
                   layout="horizontal"
-                  label={properties.title}
+                  label={$tValue(properties.title)}
                   description={
                     <div className="flex flex-col gap-1">
                       {description ? <Markdown content={description} /> : null}
@@ -324,7 +324,7 @@ const FormField = ({
               render={({ field }) => (
                 <FormItemLayout
                   layout="horizontal"
-                  label={properties.title}
+                  label={$tValue(properties.title)}
                   description={
                     description ? (
                       <div className="form-field-markdown">
@@ -356,7 +356,7 @@ const FormField = ({
                                 src={`${BASE_PATH}/img/icons/${option.icon}`}
                               />
                             ) : null}
-                            {option.label}
+                            {$tValue(option.label)}
                           </span>
                         </SelectItem>
                       ))}

@@ -478,8 +478,10 @@ export const SmtpForm = () => {
                               label={$t('Password')}
                               description={
                                 isSmtpEnabled(authConfig)
-                                  ? 'Stored password is hidden. Enter a new password to replace it.'
-                                  : 'Password for your SMTP server.'
+                                  ? $t(
+                                      'Stored password is hidden. Enter a new password to replace it.'
+                                    )
+                                  : $t('Password for your SMTP server.')
                               }
                             >
                               <FormControl>

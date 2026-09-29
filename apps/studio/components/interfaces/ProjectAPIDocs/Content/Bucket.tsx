@@ -27,22 +27,22 @@ export const Bucket = ({ language, apikey, endpoint }: ContentProps) => {
         <div className="flex items-center space-x-2">
           <h2>{bucket.name}</h2>
           <Badge variant={bucket.public ? 'warning' : 'default'}>
-            {bucket.public ? 'Public' : 'Private'}
+            {bucket.public ? $t('Public') : $t('Private')}
           </Badge>
         </div>
         <p className="text-sm text-foreground-light">
           {$t('Allowed MIME types:')}{' '}
           {allowedMimeTypes === null
-            ? 'All types are allowed'
+            ? $t('All types are allowed')
             : (allowedMimeTypes ?? []).length === 0
-              ? 'No types are allowed'
+              ? $t('No types are allowed')
               : (allowedMimeTypes ?? []).length > 1
                 ? (allowedMimeTypes ?? []).join(', ')
-                : 'Unknown'}
+                : $t('Unknown')}
         </p>
         <p className="text-sm text-foreground-light">
           {$t('Max file size limit:')}{' '}
-          {maxFileSizeLimit === null ? 'No limit' : `${formatBytes(maxFileSizeLimit)}`}
+          {maxFileSizeLimit === null ? $t('No limit') : `${formatBytes(maxFileSizeLimit)}`}
         </p>
       </div>
 

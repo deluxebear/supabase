@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { cn, sidebarMenuButtonVariants, SidebarMenuItem } from 'ui'
 
 import type { OrgNavItem } from './OrgMenuContent.utils'
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export interface OrgMenuItemProps {
   item: OrgNavItem
@@ -30,7 +31,7 @@ export function OrgMenuItem({
       <span className="flex size-5 shrink-0 items-center justify-center [&>svg]:size-5 [&>svg]:shrink-0">
         {item.icon}
       </span>
-      <span className="truncate">{item.label}</span>
+      <span className="truncate">{$tValue(item.label)}</span>
     </>
   )
 

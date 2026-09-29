@@ -139,7 +139,7 @@ export function ExplainHeader({ mode, onToggleMode, summary, id, rows }: Explain
             icon={isVisual ? <Code size={14} /> : <Eye size={14} />}
             onClick={onToggleMode}
           >
-            {isVisual ? 'Raw' : 'Visual'}
+            {isVisual ? $t('Raw') : $t('Visual')}
           </Button>
         </div>
       </div>

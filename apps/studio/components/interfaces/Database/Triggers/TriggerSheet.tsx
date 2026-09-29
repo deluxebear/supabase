@@ -43,7 +43,7 @@ import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
 import { useProtectedSchemas } from '@/hooks/useProtectedSchemas'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const formId = 'create-trigger'
 
@@ -201,10 +201,10 @@ export const TriggerSheet = ({
           <SheetHeader>
             <SheetTitle>
               {isDuplicatingTrigger
-                ? 'Duplicate trigger'
+                ? $t('Duplicate trigger')
                 : isEditing
                   ? `Edit database trigger: ${selectedTrigger.name}`
-                  : 'Create a new database trigger'}
+                  : $t('Create a new database trigger')}
             </SheetTitle>
           </SheetHeader>
 
@@ -247,16 +247,18 @@ export const TriggerSheet = ({
                       <FormControl>
                         <Select defaultValue={field.value} onValueChange={field.onChange}>
                           <SelectTrigger className="col-span-8">
-                            {
+                            {$tValue(
                               TRIGGER_ENABLED_MODES.find((option) => option.value === field.value)
                                 ?.label
-                            }
+                            )}
                           </SelectTrigger>
                           <SelectContent>
                             {TRIGGER_ENABLED_MODES.map((option) => (
                               <SelectItem key={option.value} value={option.value}>
-                                <p className="text-foreground">{option.label}</p>
-                                <p className="text-foreground-lighter">{option.description}</p>
+                                <p className="text-foreground">{$tValue(option.label)}</p>
+                                <p className="text-foreground-lighter">
+                                  {$tValue(option.description)}
+                                </p>
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -330,8 +332,8 @@ export const TriggerSheet = ({
                               <FormItemLayout
                                 hideMessage
                                 layout="flex"
-                                label={event.label}
-                                description={event.description}
+                                label={$tValue(event.label)}
+                                description={$tValue(event.description)}
                               >
                                 <FormControl>
                                   <Checkbox
@@ -367,13 +369,17 @@ export const TriggerSheet = ({
                         <FormControl>
                           <Select defaultValue={field.value} onValueChange={field.onChange}>
                             <SelectTrigger className="col-span-8">
-                              {TRIGGER_TYPES.find((option) => option.value === field.value)?.label}
+                              {$tValue(
+                                TRIGGER_TYPES.find((option) => option.value === field.value)?.label
+                              )}
                             </SelectTrigger>
                             <SelectContent>
                               {TRIGGER_TYPES.map((option) => (
                                 <SelectItem key={option.value} value={option.value}>
-                                  <p className="text-foreground">{option.label}</p>
-                                  <p className="text-foreground-lighter">{option.description}</p>
+                                  <p className="text-foreground">{$tValue(option.label)}</p>
+                                  <p className="text-foreground-lighter">
+                                    {$tValue(option.description)}
+                                  </p>
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -398,16 +404,18 @@ export const TriggerSheet = ({
                         <FormControl>
                           <Select defaultValue={field.value} onValueChange={field.onChange}>
                             <SelectTrigger className="col-span-8">
-                              {
+                              {$tValue(
                                 TRIGGER_ORIENTATIONS.find((option) => option.value === field.value)
                                   ?.label
-                              }
+                              )}
                             </SelectTrigger>
                             <SelectContent>
                               {TRIGGER_ORIENTATIONS.map((option) => (
                                 <SelectItem key={option.value} value={option.value}>
-                                  <p className="text-foreground">{option.label}</p>
-                                  <p className="text-foreground-lighter">{option.description}</p>
+                                  <p className="text-foreground">{$tValue(option.label)}</p>
+                                  <p className="text-foreground-lighter">
+                                    {$tValue(option.description)}
+                                  </p>
                                 </SelectItem>
                               ))}
                             </SelectContent>

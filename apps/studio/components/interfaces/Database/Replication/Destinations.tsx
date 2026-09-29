@@ -357,7 +357,7 @@ export const Destinations = () => {
       <div className="w-full overflow-hidden overflow-x-auto flex flex-col gap-y-4">
         {/* Mounted whether or not it has anything to say, so the update is announced */}
         <p role="status" aria-live="polite" className="sr-only">
-          {isDestinationsLoading ? 'Loading pipelines' : ''}
+          {isDestinationsLoading ? $t('Loading pipelines') : ''}
         </p>
 
         {hasErrorsFetchingData && (

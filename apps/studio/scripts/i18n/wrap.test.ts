@@ -38,6 +38,7 @@ describe('collectDynamicLabelKeys', () => {
         `  'table-editor': 'Table Editor Group',`,
         `}`,
         `export const OTHER = { name: 'Not a label' }`,
+        `export const EMPTY = { title: '   ' }`,
       ].join('\n')
     )
     const keys = collectDynamicLabelKeys(project).sort()

@@ -147,7 +147,7 @@ export const NewScopedTokenSheet = ({ onCreateExperimentalToken }: NewScopedToke
         className="flex h-full flex-col gap-0 sm:w-[656px] lg:w-[800px]"
       >
         <SheetHeader className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
-          <SheetTitle>{step === 'success' ? 'Token created' : 'Generate token'}</SheetTitle>
+          <SheetTitle>{step === 'success' ? $t('Token created') : $t('Generate token')}</SheetTitle>
           <SheetDescription className="sr-only">
             {$t('Configure and create a new access token.')}
           </SheetDescription>

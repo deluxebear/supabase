@@ -217,29 +217,31 @@ export const DiskSpaceBar = ({ form }: DiskSpaceBarProps) => {
             name="Database"
             size={diskBreakdownBytes.dbSizeBytes}
             color="bg-foreground"
-            description={'Total space on disk used by your database (tables, indexes, data, ...).'}
+            description={$t(
+              'Total space on disk used by your database (tables, indexes, data, ...).'
+            )}
           />
           <LegendItem
             name="WAL"
             size={diskBreakdownBytes.walSizeBytes}
             color="bg-[hsl(var(--secondary-default))]"
-            description={'Total space on disk used by the write-ahead log.'}
+            description={$t('Total space on disk used by the write-ahead log.')}
           />
 
           <LegendItem
             name="System"
             size={diskBreakdownBytes.systemBytes}
             color="bg-destructive-500"
-            description={
+            description={$t(
               'Reserved space for the system to ensure your database runs smoothly. You cannot modify this.'
-            }
+            )}
           />
 
           <LegendItem
             name="Available space"
             size={diskBreakdownBytes.availableBytes}
             color="bg-border"
-            description={'Total available space on the disk left.'}
+            description={$t('Total available space on the disk left.')}
           />
         </div>
       )}

@@ -191,7 +191,7 @@ export const CreateAwsCognitoAuthIntegrationDialog = ({
             disabled={isPending}
             loading={isPending}
           >
-            {isCreating ? 'Create connection' : 'Update connection'}
+            {isCreating ? $t('Create connection') : $t('Update connection')}
           </Button>
         </DialogFooter>
       </DialogContent>

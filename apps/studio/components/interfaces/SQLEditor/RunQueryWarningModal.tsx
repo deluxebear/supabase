@@ -11,7 +11,7 @@ import {
 } from 'ui'
 
 import { type PotentialIssues } from './SQLEditor.types'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface RunQueryWarningModalProps {
   visible: boolean
@@ -127,7 +127,7 @@ export const RunQueryWarningModal = ({
       description: (
         <>
           {$t('Clients using anon or authenticated keys may be able to access')}{' '}
-          {tableName ? <code className="text-code-inline">{tableName}</code> : 'these tables'}.
+          {tableName ? <code className="text-code-inline">{tableName}</code> : $t('these tables')}.
         </>
       ),
     })
@@ -154,7 +154,7 @@ export const RunQueryWarningModal = ({
             ) : warnings.length === 1 ? (
               <div>
                 <p>
-                  {warnings[0].summary}. {warnings[0].description}
+                  {warnings[0].summary}. {$tValue(warnings[0].description)}
                 </p>
                 <p className="mt-3">{confirmationCopy}</p>
               </div>
@@ -165,7 +165,7 @@ export const RunQueryWarningModal = ({
                   {warnings.map((warning) => (
                     <li key={warning.id} className="mt-3">
                       <span className="font-medium text-foreground">{warning.summary}.</span>{' '}
-                      <span>{warning.description}</span>
+                      <span>{$tValue(warning.description)}</span>
                     </li>
                   ))}
                 </ul>
@@ -177,7 +177,7 @@ export const RunQueryWarningModal = ({
         <AlertDialogFooter>
           <AlertDialogCancel>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction variant="warning" onClick={handleConfirm}>
-            {canEnableRLS ? 'Run without RLS' : 'Run query'}
+            {canEnableRLS ? $t('Run without RLS') : $t('Run query')}
           </AlertDialogAction>
           {canEnableRLS && (
             <AlertDialogAction onClick={handleConfirmWithRLS}>

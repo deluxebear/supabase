@@ -146,8 +146,8 @@ const Subscription = () => {
                         <Link href={`/org/${slug}/usage`}>{$t('included usage quota')}</Link>
                         {$t('. To scale seamlessly,')}{' '}
                         {currentPlan?.id === 'free'
-                          ? 'upgrade to a paid plan.'
-                          : 'you can disable Spend Cap under the Cost Control settings.'}
+                          ? $t('upgrade to a paid plan.')
+                          : $t('you can disable Spend Cap under the Cost Control settings.')}
                       </div>
                     </Admonition>
                   )}

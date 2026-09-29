@@ -21,7 +21,7 @@ import { MessagePartQueryLogs } from './MessagePartQueryLogs'
 import { NotebookProposalRenderer, type NotebookProposalMode } from './NotebookProposalRenderer'
 import { NotebookRunRenderer } from './NotebookRunRenderer'
 import { parseSupportRequestMessage, SupportRequestMessage } from './SupportRequestMessage'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 function MessagePartText({ textPart }: { textPart: TextUIPart }) {
   const { id, isLoading, readOnly, isUserMessage, state } = useMessageInfoContext()
@@ -59,7 +59,7 @@ function MessagePartDynamicTool({ toolPart }: { toolPart: DynamicToolUIPart }) {
       }
       label={
         <div>
-          {toolPart.state === 'input-streaming' ? 'Running ' : 'Ran '}
+          {toolPart.state === 'input-streaming' ? $t('Running ') : $t('Ran ')}
           <span className="text-foreground-lighter">{`${toolPart.toolName}`}</span>
         </div>
       }
@@ -79,7 +79,7 @@ function MessagePartTool({ toolPart }: { toolPart: ToolUIPart }) {
       }
       label={
         <div>
-          {toolPart.state === 'input-streaming' ? 'Running ' : 'Ran '}
+          {toolPart.state === 'input-streaming' ? $t('Running ') : $t('Ran ')}
           <span className="text-foreground-lighter">{`${toolPart.type.replace('tool-', '')}`}</span>
         </div>
       }
@@ -97,7 +97,7 @@ function MessagePartReasoning({ reasoningPart }: { reasoningPart: ReasoningUIPar
           <BrainIcon strokeWidth={1.5} size={12} className="text-foreground-muted" />
         )
       }
-      label={reasoningPart.state === 'streaming' ? 'Thinking...' : 'Reasoned'}
+      label={reasoningPart.state === 'streaming' ? $t('Thinking...') : $t('Reasoned')}
     >
       {reasoningPart.text}
     </Tool>
@@ -146,7 +146,7 @@ function MessagePartExecuteSql({ toolPart }: { toolPart: ToolUIPart }) {
         <AssistantQueryCell
           id={`${id}-${toolCallId}`}
           sql={chart.sql}
-          title={chart.label}
+          title={$tValue(chart.label)}
           initialResult={
             state === 'output-error'
               ? { rows: [], error: { message: toolPart.errorText ?? 'Failed to execute SQL' } }
@@ -207,7 +207,7 @@ function MessagePartDeployEdgeFunction({ toolPart }: { toolPart: ToolUIPart }) {
 
   return (
     <EdgeFunctionRenderer
-      label={parsedInput.data.label}
+      label={$tValue(parsedInput.data.label)}
       code={parsedInput.data.code}
       functionName={parsedInput.data.functionName}
       confirmState={confirmState}

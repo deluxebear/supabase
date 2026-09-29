@@ -51,7 +51,7 @@ import { useEdgeFunctionQuery } from '@/data/edge-functions/edge-function-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { withAuth } from '@/hooks/misc/withAuth'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -340,10 +340,10 @@ const EdgeFunctionDetailsLayout = ({
                     <BreadcrumbItem>
                       {item.href ? (
                         <BreadcrumbLink asChild>
-                          <Link href={item.href}>{item.label}</Link>
+                          <Link href={item.href}>{$tValue(item.label)}</Link>
                         </BreadcrumbLink>
                       ) : (
-                        <span>{item.label}</span>
+                        <span>{$tValue(item.label)}</span>
                       )}
                     </BreadcrumbItem>
                     {index < breadcrumbItems.length - 1 && <BreadcrumbSeparator />}
@@ -356,7 +356,7 @@ const EdgeFunctionDetailsLayout = ({
           <PageHeader size="full" className="bg-surface-75">
             <PageHeaderMeta>
               <PageHeaderSummary>
-                <PageHeaderTitle>{functionSlug ? name : 'Edge Functions'}</PageHeaderTitle>
+                <PageHeaderTitle>{functionSlug ? name : $t('Edge Functions')}</PageHeaderTitle>
                 <PageHeaderDescription className="flex flex-row flex-wrap items-center gap-x-4 gap-y-1 text-sm!">
                   <div className="flex items-center gap-x-2">
                     <span className="flex items-center gap-2">{functionUrl}</span>
@@ -430,7 +430,7 @@ const EdgeFunctionDetailsLayout = ({
                     const isActive = router.asPath.split('?')[0] === item.href
                     return (
                       <NavMenuItem key={item.label} active={isActive}>
-                        <Link href={item.href}>{item.label}</Link>
+                        <Link href={item.href}>{$tValue(item.label)}</Link>
                       </NavMenuItem>
                     )
                   })}

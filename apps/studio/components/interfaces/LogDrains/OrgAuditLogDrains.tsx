@@ -257,7 +257,7 @@ export function OrgAuditLogDrains() {
       <ConfirmationModal
         confirmLabel="Add destination"
         variant="default"
-        title={'Confirm Audit Log Drain Creation'}
+        title={$t('Confirm Audit Log Drain Creation')}
         visible={isCreateConfirmModalOpen}
         loading={createLoading}
         onConfirm={() => {
@@ -279,7 +279,7 @@ export function OrgAuditLogDrains() {
             <p>
               {$t('This will incur an additional')}{' '}
               <span className="text-foreground">{$t('$60 per month')}</span>
-              {'charge to your subscription.'}
+              {$t('charge to your subscription.')}
             </p>
           )}
           <p>{$t('Are you sure you want to proceed?')}</p>

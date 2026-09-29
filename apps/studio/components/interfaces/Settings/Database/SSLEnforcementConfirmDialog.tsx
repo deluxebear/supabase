@@ -51,7 +51,7 @@ export const SSLEnforcementConfirmDialog = ({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isSubmitting}>{$t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction variant="warning" disabled={isSubmitting} onClick={onConfirm}>
-            {isTargetEnforced ? 'Enable SSL' : 'Disable SSL'}
+            {isTargetEnforced ? $t('Enable SSL') : $t('Disable SSL')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

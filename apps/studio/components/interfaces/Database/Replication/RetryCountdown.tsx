@@ -31,7 +31,7 @@ export const RetryCountdown = ({ nextRetryTime }: RetryCountdownProps) => {
 
   return (
     <span role="status" aria-live="polite">
-      {remaining <= 0 ? 'Retrying now…' : `Retrying in ${formatRemaining(remaining)}…`}
+      {remaining <= 0 ? $t('Retrying now…') : `Retrying in ${formatRemaining(remaining)}…`}
     </span>
   )
 }

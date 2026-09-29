@@ -8,7 +8,7 @@ import { InlineLink } from '@/components/ui/InlineLink'
 import { AIOptInFormValues } from '@/hooks/forms/useAIOptInForm'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface AIOptInLevelSelectorProps {
   control: Control<AIOptInFormValues>
@@ -124,8 +124,12 @@ export const AIOptInLevelSelector = ({
                     htmlFor={`ai-opt-in-${item.value}`}
                     className="cursor-pointer flex flex-col"
                   >
-                    <span className="text-sm font-medium text-foreground">{item.title}</span>
-                    <span className="text-sm text-foreground-light">{item.description}</span>
+                    <span className="text-sm font-medium text-foreground">
+                      {$tValue(item.title)}
+                    </span>
+                    <span className="text-sm text-foreground-light">
+                      {$tValue(item.description)}
+                    </span>
                   </label>
                 </div>
               ))}

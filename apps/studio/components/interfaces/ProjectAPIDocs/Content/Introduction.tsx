@@ -74,7 +74,7 @@ export const Introduction = ({ showKeys, language, apikey, endpoint }: ContentPr
                       })
                     }}
                   >
-                    {copied === 'anon' ? 'Copied' : 'Copy'}
+                    {copied === 'anon' ? $t('Copied') : $t('Copy')}
                   </Button>,
                 ]}
               />
@@ -114,7 +114,7 @@ export const Introduction = ({ showKeys, language, apikey, endpoint }: ContentPr
                       })
                     }}
                   >
-                    {copied === 'service' ? 'Copied' : 'Copy'}
+                    {copied === 'service' ? $t('Copied') : $t('Copy')}
                   </Button>,
                 ]}
               />

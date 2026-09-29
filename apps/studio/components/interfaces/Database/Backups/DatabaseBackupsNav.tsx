@@ -5,7 +5,7 @@ import { Badge, NavMenu, NavMenuItem } from 'ui'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 type Props = {
   active: 'pitr' | 'scheduled' | 'rtnp'
@@ -50,7 +50,7 @@ function DatabaseBackupsNav({ active }: Props) {
         (item) =>
           item.enabled && (
             <NavMenuItem key={item.id} active={item.id === active}>
-              <Link href={item.href}>{item.label}</Link>
+              <Link href={item.href}>{$tValue(item.label)}</Link>
             </NavMenuItem>
           )
       )}

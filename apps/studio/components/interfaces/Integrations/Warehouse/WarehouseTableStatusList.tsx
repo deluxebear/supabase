@@ -25,7 +25,7 @@ import {
 import type { WarehouseSetupTable } from './Warehouse.utils'
 import { StateDot, type StateDotVariant } from '@/components/ui/StateDot'
 import type { WarehouseSetupStatusResponse } from '@/data/warehouse/warehouse-setup-status-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const TABLE_STATE: Record<
   WarehouseSetupTable['state'],
@@ -97,7 +97,7 @@ const WarehouseTableStatusList = ({ tables }: WarehouseTableStatusListProps) => 
                   </TableCell>
                   <TableCell>
                     <StateDot variant={state.variant} isPulsing={state.isPulsing}>
-                      {state.label}
+                      {$tValue(state.label)}
                     </StateDot>
                   </TableCell>
                 </TableRow>

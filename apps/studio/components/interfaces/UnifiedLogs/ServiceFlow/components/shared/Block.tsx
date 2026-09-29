@@ -5,6 +5,7 @@ import { memo } from 'react'
 import { BlockFieldConfig, BlockFieldProps, ServiceFlowBlockProps } from '../../types'
 import { DetailRow } from './DetailRow'
 import { CollapsibleDetailSection } from '@/components/ui/DataTable/CollapsibleDetailSection'
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface BlockSection {
   title: string
@@ -74,7 +75,7 @@ export function createBlock(config: BlockConfig) {
         <CollapsibleDetailSection
           defaultOpen
           className="border-b"
-          title={config.title}
+          title={$tValue(config.title)}
           icon={config.icon}
         >
           {config.primaryFields?.map((field) => (
@@ -109,7 +110,7 @@ export function createBlock(config: BlockConfig) {
             <CollapsibleDetailSection
               key={section.title}
               className="border-b"
-              title={section.title}
+              title={$tValue(section.title)}
               icon={section.icon}
             >
               {section.fields.map((field) => (

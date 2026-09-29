@@ -70,7 +70,7 @@ export const PlatformWebhooksHeader = ({
                   className="shrink-0 self-center"
                   variant={endpointStatus === 'enabled' ? 'success' : 'default'}
                 >
-                  {endpointStatus === 'enabled' ? 'Enabled' : 'Disabled'}
+                  {endpointStatus === 'enabled' ? $t('Enabled') : $t('Disabled')}
                 </Badge>
               )}
               {!hasSelectedEndpoint && <FeaturePreviewBadge featureKey={featureKey} />}

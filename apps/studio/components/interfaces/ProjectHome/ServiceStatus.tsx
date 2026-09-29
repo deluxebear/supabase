@@ -422,7 +422,7 @@ export const ServiceStatus = () => {
             </div>
             <div className="flex flex-col gap-y-1">
               <p>
-                {isProjectNew ? 'New' : 'Recently restored'} {$t('projects can take up to')}{' '}
+                {isProjectNew ? $t('New') : $t('Recently restored')} {$t('projects can take up to')}{' '}
                 {SERVICE_STATUS_THRESHOLD} {$t('minutes to become fully operational.')}
               </p>
               <p>

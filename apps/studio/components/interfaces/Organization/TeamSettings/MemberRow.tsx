@@ -94,7 +94,7 @@ export const MemberRow = memo(function MemberRow({ member }: MemberRowProps) {
               {member.gotrue_id === profile?.gotrue_id && <Badge>{$t('You')}</Badge>}
               {isInvitedUser && member.invited_at && (
                 <Badge variant={isInviteExpired(member.invited_at) ? 'destructive' : 'warning'}>
-                  {isInviteExpired(member.invited_at) ? 'Expired' : 'Invited'}
+                  {isInviteExpired(member.invited_at) ? $t('Expired') : $t('Invited')}
                 </Badge>
               )}
               {member.is_sso_user && <Badge variant="default">SSO</Badge>}
@@ -152,7 +152,7 @@ export const MemberRow = memo(function MemberRow({ member }: MemberRowProps) {
                       <HoverCardTrigger asChild>
                         <span className="text-foreground-light">
                           {appliesToAllProjects
-                            ? 'Organization'
+                            ? $t('Organization')
                             : `${projectsApplied.length} project${projectsApplied.length > 1 ? 's' : ''}`}
                         </span>
                       </HoverCardTrigger>

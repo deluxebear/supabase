@@ -326,7 +326,9 @@ export const NamespaceWithTables = ({
                 onClick={() => (schema ? rescanNamespace() : setImportForeignSchemaShown(true))}
                 loading={isImportingForeignSchema || isLoadingNamespaceTables}
               >
-                {schema ? 'Sync tables' : `Connect to table${missingTables.length > 1 ? 's' : ''}`}
+                {schema
+                  ? $t('Sync tables')
+                  : `Connect to table${missingTables.length > 1 ? 's' : ''}`}
               </Button>
             ) : null}
           </div>
@@ -356,8 +358,8 @@ export const NamespaceWithTables = ({
                 <p className="text-sm text-foreground">{$t('No tables yet')}</p>
                 <p className="text-sm text-foreground-lighter">
                   {sourceType === 'direct'
-                    ? ' Publish an analytics table from your Iceberg client'
-                    : 'Connect a table from your database'}
+                    ? $t(' Publish an analytics table from your Iceberg client')
+                    : $t('Connect a table from your database')}
                 </p>
               </TableCell>
             </TableRow>

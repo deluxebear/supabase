@@ -268,7 +268,7 @@ const MapView = () => {
                       <div className="flex flex-col gap-y-1">
                         <p className="flex items-center gap-x-2">
                           {database.identifier === ref
-                            ? 'Primary Database'
+                            ? $t('Primary Database')
                             : `Read Replica ${
                                 database.identifier.length > 0 &&
                                 `(ID: ${formatDatabaseID(database.identifier)})`

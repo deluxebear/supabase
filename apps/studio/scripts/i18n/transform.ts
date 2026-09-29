@@ -1,8 +1,9 @@
-import { Node, QuoteKind, type SourceFile } from 'ts-morph'
+import { Node, QuoteKind, SyntaxKind, type Expression, type SourceFile } from 'ts-morph'
 
 import { isTranslatableAttr, isTranslatableText, TOAST_METHODS } from './classify'
 
 const I18N_IMPORT = '@/lib/i18n'
+const DYNAMIC_DISPLAY_PROPS = new Set(['label', 'title', 'description'])
 
 // Turn an English source string into a valid single-quoted $t() call, escaping
 // backslashes and single quotes. We use the $t alias (rather than a bare t)
@@ -34,28 +35,46 @@ function directivePrologueCount(sf: SourceFile): number {
   return count
 }
 
-function ensureImport(sf: SourceFile): void {
+function ensureImport(
+  sf: SourceFile,
+  hasDynamicDisplayValue: boolean,
+  hasStaticTranslation: boolean
+): void {
   // ts-morph defaults newly-generated nodes to double quotes; force single
   // quotes to match the codebase style for any import text we insert.
   sf.getProject().manipulationSettings.set({ quoteKind: QuoteKind.Single })
 
   const existing = sf.getImportDeclaration((d) => d.getModuleSpecifierValue() === I18N_IMPORT)
   if (existing) {
-    const hasAlias = existing.getNamedImports().some((n) => n.getAliasNode()?.getText() === '$t')
-    if (!hasAlias) {
+    const staticImport = existing
+      .getNamedImports()
+      .find((n) => n.getAliasNode()?.getText() === '$t')
+    if (hasStaticTranslation && !staticImport) {
       existing.addNamedImport({ name: 't', alias: '$t' })
+    } else if (!hasStaticTranslation && staticImport) {
+      staticImport.remove()
+    }
+    if (
+      hasDynamicDisplayValue &&
+      !existing.getNamedImports().some((n) => n.getAliasNode()?.getText() === '$tValue')
+    ) {
+      existing.addNamedImport({ name: 'translateDisplayValue', alias: '$tValue' })
     }
     return
   }
   sf.insertImportDeclaration(directivePrologueCount(sf), {
     moduleSpecifier: I18N_IMPORT,
-    namedImports: [{ name: 't', alias: '$t' }],
+    namedImports: [
+      ...(hasStaticTranslation ? [{ name: 't', alias: '$t' }] : []),
+      ...(hasDynamicDisplayValue ? [{ name: 'translateDisplayValue', alias: '$tValue' }] : []),
+    ],
   })
 }
 
 export function transformSourceFile(sf: SourceFile): { keys: string[]; changed: boolean } {
   const keys: string[] = []
   let changed = false
+  let hasDynamicDisplayValue = false
 
   const record = (key: string) => {
     keys.push(key)
@@ -107,7 +126,38 @@ export function transformSourceFile(sf: SourceFile): { keys: string[]; changed: 
     }
   })
 
-  // 3) sonner toast calls: toast.success('Saved successfully')
+  // 3) JSX expression strings, including conditional values of text attrs.
+  // Keep the condition and any non-text branches intact.
+  const wrapExpressionText = (expression: Expression) => {
+    if (Node.isConditionalExpression(expression)) {
+      wrapExpressionText(expression.getWhenTrue())
+      wrapExpressionText(expression.getWhenFalse())
+    } else if (Node.isStringLiteral(expression)) {
+      const value = expression.getLiteralValue()
+      if (!isTranslatableText(value)) return
+      expression.replaceWithText(tCall(value))
+      record(value)
+    } else if (
+      Node.isPropertyAccessExpression(expression) &&
+      DYNAMIC_DISPLAY_PROPS.has(expression.getName())
+    ) {
+      expression.replaceWithText(`$tValue(${expression.getText()})`)
+      changed = true
+      hasDynamicDisplayValue = true
+    }
+  }
+
+  sf.forEachDescendant((node) => {
+    if (!Node.isJsxExpression(node)) return
+    const parent = node.getParent()
+    if (Node.isJsxAttribute(parent) && !isTranslatableAttr(parent.getNameNode().getText())) return
+    if (!Node.isJsxAttribute(parent) && !Node.isJsxElement(parent) && !Node.isJsxFragment(parent))
+      return
+    const expression = node.getExpression()
+    if (expression) wrapExpressionText(expression)
+  })
+
+  // 4) sonner toast calls: toast.success('Saved successfully')
   sf.forEachDescendant((node) => {
     if (!Node.isCallExpression(node)) return
     const expr = node.getExpression()
@@ -127,6 +177,19 @@ export function transformSourceFile(sf: SourceFile): { keys: string[]; changed: 
     }
   })
 
-  if (changed) ensureImport(sf)
+  const hasStaticTranslation = sf
+    .getDescendantsOfKind(SyntaxKind.CallExpression)
+    .some(
+      (call) => Node.isIdentifier(call.getExpression()) && call.getExpression().getText() === '$t'
+    )
+  const staticImport = sf
+    .getImportDeclaration((declaration) => declaration.getModuleSpecifierValue() === I18N_IMPORT)
+    ?.getNamedImports()
+    .some((namedImport) => namedImport.getAliasNode()?.getText() === '$t')
+  const staleStaticImport = !hasStaticTranslation && staticImport
+  if (changed || staleStaticImport || (hasStaticTranslation && !staticImport)) {
+    ensureImport(sf, hasDynamicDisplayValue, hasStaticTranslation)
+    changed = true
+  }
   return { keys, changed }
 }

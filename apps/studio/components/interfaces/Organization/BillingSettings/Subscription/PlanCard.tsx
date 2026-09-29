@@ -16,7 +16,7 @@ import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { RequestUpgradeToBillingOwners } from '@/components/ui/RequestUpgradeToBillingOwners'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
 import { formatCurrency } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const GAPS_BY_PLAN_ID: Record<string, GapFeature[]> = {
   tier_free: FREE_PLAN_GAPS,
@@ -106,7 +106,7 @@ export function PlanCard({
         },
       }}
     >
-      {isDowngradeOption ? 'Downgrade' : 'Upgrade'} to {plan.name}
+      {isDowngradeOption ? $t('Downgrade') : $t('Upgrade')} to {plan.name}
     </ButtonTooltip>
   )
 
@@ -285,7 +285,7 @@ function ParityCard({
         </div>
 
         <p className="text-foreground-light text-[13px] leading-4 mb-4 min-h-12 line-clamp-3">
-          {plan.description}
+          {$tValue(plan.description)}
         </p>
 
         {ctaButton}
@@ -349,7 +349,7 @@ function ParityCard({
           <>
             <div className="border-t my-3" />
             <p className="text-foreground-muted text-[13px] mb-3">
-              {gaps.some((g) => g.type === 'lesser') ? 'Plan limits' : 'Not included'}
+              {gaps.some((g) => g.type === 'lesser') ? $t('Plan limits') : $t('Not included')}
             </p>
             <ul className="text-[13px]">
               {gaps.map((gap) => (
@@ -363,7 +363,7 @@ function ParityCard({
                           strokeWidth={2}
                         />
                       </div>
-                      <span className="text-foreground-muted">{gap.label}</span>
+                      <span className="text-foreground-muted">{$tValue(gap.label)}</span>
                     </>
                   ) : (
                     <>
@@ -374,7 +374,7 @@ function ParityCard({
                           strokeWidth={2}
                         />
                       </div>
-                      <span className="text-foreground-muted">{gap.label}</span>
+                      <span className="text-foreground-muted">{$tValue(gap.label)}</span>
                     </>
                   )}
                 </li>

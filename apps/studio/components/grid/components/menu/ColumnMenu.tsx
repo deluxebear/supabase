@@ -204,7 +204,9 @@ export const ColumnMenu = ({ column, isEncrypted }: ColumnMenuProps) => {
           >
             <Eye size={14} strokeWidth={1.5} />
             <span>
-              {snap.temporarilyRevealedColumns.has(columnKey) ? 'Data revealed (5s)' : 'Show data'}
+              {snap.temporarilyRevealedColumns.has(columnKey)
+                ? $t('Data revealed (5s)')
+                : $t('Show data')}
             </span>
           </DropdownMenuItem>
         )}

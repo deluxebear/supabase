@@ -187,7 +187,7 @@ export const JWTSettings = () => {
                         'Legacy JWT secret can only be changed by rotating to a standby key and then revoking it. It is used to'
                       )}{' '}
                       <em className="text-foreground not-italic">
-                        {legacyKey.status === 'in_use' ? 'sign and verify' : 'only verify'}
+                        {legacyKey.status === 'in_use' ? $t('sign and verify') : $t('only verify')}
                       </em>{' '}
                       {$t('JSON Web Tokens by Supabase products.')}
                     </p>
@@ -226,17 +226,17 @@ export const JWTSettings = () => {
                   id="JWT_SECRET"
                   label={
                     legacyKey?.status === 'revoked'
-                      ? 'Revoked legacy JWT secret'
+                      ? $t('Revoked legacy JWT secret')
                       : legacyKey
-                        ? 'Legacy JWT secret (still used)'
-                        : 'Legacy JWT secret'
+                        ? $t('Legacy JWT secret (still used)')
+                        : $t('Legacy JWT secret')
                   }
                   description={
                     legacyKey?.status === 'revoked'
-                      ? 'No longer used to sign JWTs by Supabase Auth.'
+                      ? $t('No longer used to sign JWTs by Supabase Auth.')
                       : !legacyKey || legacyKey.status === 'in_use'
-                        ? 'Used to sign and verify JWTs issued by Supabase Auth.'
-                        : 'Used only to verify JWTs.'
+                        ? $t('Used to sign and verify JWTs issued by Supabase Auth.')
+                        : $t('Used only to verify JWTs.')
                   }
                 >
                   <Input
@@ -285,16 +285,20 @@ export const JWTSettings = () => {
                 <CollapsibleTrigger className="p-4 w-full flex items-center justify-between [&[data-state=open]>svg]:-rotate-180!">
                   <p className="text-sm">
                     {disableLegacyJwtSecretRotation
-                      ? 'How to migrate to the new API keys?'
-                      : 'How to change your JWT secret?'}
+                      ? $t('How to migrate to the new API keys?')
+                      : $t('How to change your JWT secret?')}
                   </p>
                   <ChevronDown size={14} className="transition-transform duration-200" />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="border-t p-4">
                   <p className="text-sm text-foreground-light text-balance mb-2">
                     {disableLegacyJwtSecretRotation
-                      ? 'Migrate to the new publishable and secret API keys to enable rotation with zero downtime and without signing users out. The change is reversible until you revoke the legacy secret.'
-                      : 'Instead of changing the legacy JWT secret use a combination of the JWT Signing Keys and API keys features. Consider these advantages:'}
+                      ? $t(
+                          'Migrate to the new publishable and secret API keys to enable rotation with zero downtime and without signing users out. The change is reversible until you revoke the legacy secret.'
+                        )
+                      : $t(
+                          'Instead of changing the legacy JWT secret use a combination of the JWT Signing Keys and API keys features. Consider these advantages:'
+                        )}
                   </p>
 
                   {disableLegacyJwtSecretRotation ? (

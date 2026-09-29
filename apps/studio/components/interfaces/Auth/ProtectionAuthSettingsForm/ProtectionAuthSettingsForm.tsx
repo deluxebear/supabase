@@ -40,7 +40,7 @@ import { useAuthConfigQuery } from '@/data/auth/auth-config-query'
 import { useAuthConfigUpdateMutation } from '@/data/auth/auth-config-update-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const CAPTCHA_PROVIDERS = [
   { key: 'hcaptcha', label: 'hCaptcha' },
@@ -229,7 +229,7 @@ export const ProtectionAuthSettingsForm = () => {
                                 <SelectContent align="end">
                                   {CAPTCHA_PROVIDERS.map((x) => (
                                     <SelectItem key={x.key} value={x.key}>
-                                      {x.label}
+                                      {$tValue(x.label)}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
@@ -245,7 +245,7 @@ export const ProtectionAuthSettingsForm = () => {
                               }
                               className="mt-2 text-xs text-foreground-light hover:text-foreground no-underline"
                             >
-                              {$t('How to set up')} {selectedProvider?.label}?
+                              {$t('How to set up')} {$tValue(selectedProvider?.label)}?
                             </InlineLink>
                           </FormItemLayout>
                         )
@@ -287,7 +287,7 @@ export const ProtectionAuthSettingsForm = () => {
                     >
                       <div className="flex items-center justify-end gap-2">
                         <Badge variant={field.value ? 'success' : 'default'}>
-                          {field.value ? 'Enabled' : 'Disabled'}
+                          {field.value ? $t('Enabled') : $t('Disabled')}
                         </Badge>
                         <Link href={`/project/${projectRef}/auth/providers?provider=Email`}>
                           <Button>{$t('Configure in email provider')}</Button>

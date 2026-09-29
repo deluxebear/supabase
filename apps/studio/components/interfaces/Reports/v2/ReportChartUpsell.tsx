@@ -3,7 +3,7 @@ import { useRef, useState } from 'react'
 import { Button, Card, cn } from 'ui'
 
 import { LazyComposedChartHandler } from '@/components/ui/Charts/ComposedChartHandler'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface ReportsChartUpsellProps {
   report: {
@@ -41,7 +41,7 @@ export const ReportChartUpsell = ({ report, orgSlug }: ReportsChartUpsellProps) 
   return (
     <Card className={cn('h-[280px] relative')}>
       <div className="z-10 flex flex-col items-center justify-center space-y-2 h-full absolute top-0 left-0 w-full bg-surface-100/70 backdrop-blur-md">
-        <h2 className="text-sm">{report.label}</h2>
+        <h2 className="text-sm">{$tValue(report.label)}</h2>
         <p className="text-sm text-foreground-light">
           {report.requiredPlan
             ? `Available on the ${report.requiredPlan} Plan and above`
@@ -55,7 +55,7 @@ export const ReportChartUpsell = ({ report, orgSlug }: ReportsChartUpsellProps) 
           className="mt-4"
         >
           <Link href={`/org/${orgSlug || '_'}/billing?panel=subscriptionPlan&source=reports`}>
-            {report.requiredPlan ? `Upgrade to ${report.requiredPlan}` : 'Upgrade'}
+            {report.requiredPlan ? `Upgrade to ${report.requiredPlan}` : $t('Upgrade')}
           </Link>
         </Button>
       </div>

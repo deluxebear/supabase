@@ -9,7 +9,7 @@ import { formatAttachedSnippets } from './AIAssistant.utils'
 import { ModelSelector } from './ModelSelector'
 import { SnippetRow } from './SnippetRow'
 import type { AssistantModelId } from '@/lib/ai/model.utils'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { type SqlSnippet } from '@/state/ai-assistant-state'
 
 export interface FormProps {
@@ -174,11 +174,11 @@ const AssistantChatFormComponent = forwardRef<HTMLFormElement, FormProps>(
                     <Button
                       type="button"
                       variant="outline"
-                      aria-label={secondaryAction.label}
+                      aria-label={$tValue(secondaryAction.label)}
                       onClick={secondaryAction.onClick}
                       className="h-7 rounded-full"
                     >
-                      {secondaryAction.label}
+                      {$tValue(secondaryAction.label)}
                     </Button>
                   </motion.div>
                 )}

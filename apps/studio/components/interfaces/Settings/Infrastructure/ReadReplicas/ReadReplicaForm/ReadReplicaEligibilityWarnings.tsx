@@ -207,8 +207,8 @@ export const ReadReplicaEligibilityWarnings = ({
         type="warning"
         title={
           refetchInterval === false
-            ? 'Physical backups are required to deploy replicas'
-            : 'Physical backups are currently being enabled'
+            ? $t('Physical backups are required to deploy replicas')
+            : $t('Physical backups are currently being enabled')
         }
       >
         {refetchInterval === false ? (

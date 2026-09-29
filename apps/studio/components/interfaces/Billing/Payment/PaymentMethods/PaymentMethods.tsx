@@ -70,8 +70,8 @@ const PaymentMethods = () => {
             <p className="text-foreground text-base m-0">{$t('Payment Methods')}</p>
             <p className="text-sm text-foreground-light mb-2 pr-4 m-0">
               {isStripeManagedOrganization
-                ? 'Billing for this organisation is handled through Stripe Projects.'
-                : 'Payments for your subscription are made using the default card.'}
+                ? $t('Billing for this organisation is handled through Stripe Projects.')
+                : $t('Payments for your subscription are made using the default card.')}
             </p>
           </div>
         </ScaffoldSectionDetail>
@@ -109,8 +109,12 @@ const PaymentMethods = () => {
                       title={$t('Payment is currently by invoice')}
                       description={
                         isStripeManagedOrganization
-                          ? 'You get a monthly invoice and payment link via email. Manage payment methods through Stripe Projects.'
-                          : 'You get a monthly invoice and payment link via email. To change your payment method, please contact us via our support form.'
+                          ? $t(
+                              'You get a monthly invoice and payment link via email. Manage payment methods through Stripe Projects.'
+                            )
+                          : $t(
+                              'You get a monthly invoice and payment link via email. To change your payment method, please contact us via our support form.'
+                            )
                       }
                       actions={
                         isStripeManagedOrganization ? (

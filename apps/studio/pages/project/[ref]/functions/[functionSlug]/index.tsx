@@ -28,7 +28,7 @@ import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
 import { useFillTimeseriesSorted } from '@/hooks/analytics/useFillTimeseriesSorted'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import type { ChartIntervals, NextPageWithLayout } from '@/types'
 
 const CHART_INTERVALS: ChartIntervals[] = [
@@ -179,14 +179,14 @@ const LegacyEdgeFunctionOverview = () => {
                     onClick={() => setInterval(item.key)}
                     className={classes.join(' ')}
                   >
-                    {item.label}
+                    {$tValue(item.label)}
                   </Button>
                 )
               })}
             </div>
 
             <span className="text-xs text-foreground-light">
-              {$t('Statistics for past')} {selectedInterval.label}
+              {$t('Statistics for past')} {$tValue(selectedInterval.label)}
             </span>
           </div>
           <div>

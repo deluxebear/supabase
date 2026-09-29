@@ -322,8 +322,8 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
                             {field.value
                               ? field.value
                               : isSelectEntityDisabled
-                                ? 'No tables available in schema'
-                                : 'Choose a table'}
+                                ? $t('No tables available in schema')
+                                : $t('Choose a table')}
                           </Button>
                         </PopoverTrigger>
                       </FormControl>
@@ -418,8 +418,8 @@ CREATE INDEX ON "${selectedSchema}"."${selectedEntity}" USING ${selectedIndexTyp
                               mode="inline-combobox"
                               label={
                                 field.value.length === 0
-                                  ? 'Choose which columns to create an index on'
-                                  : 'Search for a column'
+                                  ? $t('Choose which columns to create an index on')
+                                  : $t('Search for a column')
                               }
                               deletableBadge
                               badgeLimit="wrap"

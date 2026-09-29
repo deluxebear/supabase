@@ -33,7 +33,7 @@ export const AutosaveStatus = ({ id }: AutosaveStatusProps) => {
 
     return (
       <span className="text-xs text-foreground-lighter">
-        {unsavedChanges ? 'Unsaved edits' : 'Saved'}
+        {unsavedChanges ? $t('Unsaved edits') : $t('Saved')}
       </span>
     )
   }

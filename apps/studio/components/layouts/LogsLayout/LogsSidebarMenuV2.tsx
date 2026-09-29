@@ -298,7 +298,9 @@ export function LogsSidebarMenuV2() {
             className="mx-4"
             title={$t('No queries created yet')}
             description={
-              IS_PLATFORM ? 'Create and save your queries to use them in the explorer' : undefined
+              IS_PLATFORM
+                ? $t('Create and save your queries to use them in the explorer')
+                : undefined
             }
             actions={
               <Button asChild>

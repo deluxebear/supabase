@@ -12,7 +12,7 @@ import { useDataTable } from '../providers/DataTableProvider'
 import { isLogsFilterColumnValue } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.filters'
 import { QuerySearchParamsType } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.types'
 import { useUnifiedLogsFacetCountQuery } from '@/data/logs/unified-logs-facet-count-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export function DataTableFilterCheckboxAsync<TData>({
   value: _value,
@@ -110,7 +110,7 @@ export function DataTableFilterCheckboxAsync<TData>({
                     {Component ? (
                       <Component {...option} />
                     ) : (
-                      <span className="truncate font-normal block">{option.label}</span>
+                      <span className="truncate font-normal block">{$tValue(option.label)}</span>
                     )}
                   </div>
                   <span className="shrink-0 flex items-center justify-center font-mono text-xs group-hover:opacity-0">

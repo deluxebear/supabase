@@ -183,13 +183,17 @@ export const NotebookRunRenderer = ({
               type="warning"
               title={
                 isHistoricalRun
-                  ? 'Notebook changed since this run'
-                  : 'Notebook changed since the Assistant read it'
+                  ? $t('Notebook changed since this run')
+                  : $t('Notebook changed since the Assistant read it')
               }
               description={
                 isHistoricalRun
-                  ? 'This preview shows the current notebook. Its cells may not match the saved results from this run.'
-                  : 'Review the current cells below. The run will be rejected until the Assistant reads the latest notebook version.'
+                  ? $t(
+                      'This preview shows the current notebook. Its cells may not match the saved results from this run.'
+                    )
+                  : $t(
+                      'Review the current cells below. The run will be rejected until the Assistant reads the latest notebook version.'
+                    )
               }
             />
           </div>

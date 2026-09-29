@@ -265,7 +265,7 @@ const StripeSyncContent = ({ hideInstallCTA = false }: { hideInstallCTA?: boolea
             >
               <SheetHeader>
                 <SheetTitle>
-                  {upgradeAvailable ? 'Upgrade' : 'Install'} {$t('Stripe Sync Engine')}
+                  {upgradeAvailable ? $t('Upgrade') : $t('Install')} {$t('Stripe Sync Engine')}
                 </SheetTitle>
               </SheetHeader>
               <SheetSection className="flex-1 flex flex-col gap-y-6">
@@ -352,11 +352,11 @@ const StripeSyncContent = ({ hideInstallCTA = false }: { hideInstallCTA?: boolea
                 >
                   {isInstallRequested
                     ? upgradeAvailable
-                      ? 'Upgrading'
-                      : 'Installing'
+                      ? $t('Upgrading')
+                      : $t('Installing')
                     : upgradeAvailable
-                      ? 'Upgrade integration'
-                      : 'Install integration'}
+                      ? $t('Upgrade integration')
+                      : $t('Install integration')}
                 </Button>
               </SheetFooter>
             </form>

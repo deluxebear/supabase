@@ -15,7 +15,7 @@ import { useEdgeFunctionsQuery } from '@/data/edge-functions/edge-functions-quer
 import { usePaginatedBucketsQuery, type Bucket } from '@/data/storage/buckets-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { BASE_PATH, DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useAppStateSnapshot } from '@/state/app-state'
 
 type DocsSections = typeof DOCS_MENU
@@ -176,7 +176,7 @@ const Subsections = ({ category }: SubsectionsProps): ReactNode => {
             navigateToSection(snippet.key)
           }}
         >
-          {snippet.title}
+          {$tValue(snippet.title)}
         </button>
       ))}
       {category === API_DOCS_CATEGORIES.ENTITIES && <TablesSubsections />}

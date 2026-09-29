@@ -42,7 +42,7 @@ import { AlertError } from '@/components/ui/AlertError'
 import CopyButton from '@/components/ui/CopyButton'
 import { useUpdateWarehouseCatalogMutation } from '@/data/warehouse/warehouse-catalog-mutation'
 import { useWarehouseCatalogQuery } from '@/data/warehouse/warehouse-catalog-query'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import {
   DUCKLAKE_METADATA_PASSWORD_ENV_VAR,
   DUCKLAKE_S3_SECRET_ENV_VAR,
@@ -141,7 +141,7 @@ const DuckLakeSecretRow = ({ name, value }: { name: string; value: string }) => 
           />
         </TooltipTrigger>
         <TooltipContent side="bottom">
-          {isRevealed ? 'Hide environment variable' : 'Reveal environment variable'}
+          {isRevealed ? $t('Hide environment variable') : $t('Reveal environment variable')}
         </TooltipContent>
       </Tooltip>
       <CopyButton variant="default" size="tiny" iconOnly aria-label={`Copy ${name}`} text={value} />
@@ -298,10 +298,12 @@ const CatalogAccessToggle = ({
         <div className="flex items-center justify-end gap-2">
           <span
             role="status"
-            aria-label={catalogMutation.isPending ? 'Updating DuckDB catalog access' : undefined}
+            aria-label={
+              catalogMutation.isPending ? $t('Updating DuckDB catalog access') : undefined
+            }
             className="sr-only"
           >
-            {catalogMutation.isPending ? 'Updating DuckDB catalog access' : ''}
+            {catalogMutation.isPending ? $t('Updating DuckDB catalog access') : ''}
           </span>
           {catalogMutation.isPending && (
             <Loader2
@@ -370,7 +372,7 @@ export const WarehouseConnectionCard = ({ variant = 'default' }: WarehouseConnec
             <SelectContent align="end">
               {QUERY_ENGINES.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
-                  {option.label}
+                  {$tValue(option.label)}
                 </SelectItem>
               ))}
             </SelectContent>

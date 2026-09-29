@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import {
   Badge,
   Card,
@@ -17,6 +16,7 @@ import { type ExtensionsSchema, type InstallIntegrationSheetProps } from './Inst
 import { Markdown } from '@/components/interfaces/Markdown'
 import { useDatabaseExtensionsQuery } from '@/data/database-extensions/database-extensions-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export const InstallationOverview = ({
   integration,
@@ -55,9 +55,8 @@ export const InstallationOverview = ({
       <div>
         <h4>{$t('Installs')}</h4>
         <p className="text-sm text-foreground-light">
-          
-                            {$t('What this integration will run on your project')}
-                          </p>
+          {$t('What this integration will run on your project')}
+        </p>
       </div>
 
       {hasMissingExtensions && missingExtensionsAlert}
@@ -68,7 +67,7 @@ export const InstallationOverview = ({
             <ul className="text-foreground-light text-sm divide-y">
               {steps.map((step) => (
                 <li key={step.label} className="px-4 py-2">
-                  <Markdown>{step.label}</Markdown>
+                  <Markdown>{$tValue(step.label)}</Markdown>
                 </li>
               ))}
             </ul>
@@ -83,9 +82,8 @@ export const InstallationOverview = ({
               {involvesExtensions && (
                 <>
                   <TabsTrigger value="extensions" className="font-mono uppercase text-xs">
-                    
-                                                          {$t('Extensions')}
-                                                        </TabsTrigger>
+                    {$t('Extensions')}
+                  </TabsTrigger>
                   <TabsTrigger value="sql" className="font-mono uppercase text-xs">
                     SQL
                   </TabsTrigger>
@@ -93,9 +91,8 @@ export const InstallationOverview = ({
               )}
               {involvesEdgeFunctions && (
                 <TabsTrigger value="edge_functions" className="font-mono uppercase text-xs">
-                  
-                                                    {$t('Edge Functions')}
-                                                  </TabsTrigger>
+                  {$t('Edge Functions')}
+                </TabsTrigger>
               )}
             </TabsList>
 

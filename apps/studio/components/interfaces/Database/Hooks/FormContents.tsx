@@ -40,7 +40,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { buildDatabaseEdgeFunctionUrl, isEdgeFunctionUrl } from '@/lib/api/edgeFunctions'
 import { uuidv4 } from '@/lib/helpers'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export interface FormContentsProps {
   form: UseFormReturn<WebhookFormValues>
@@ -197,9 +197,11 @@ export const FormContents = ({ form, selectedHook }: FormContentsProps) => {
                           htmlFor={`event-${event.value}`}
                           className="text-sm font-normal cursor-pointer"
                         >
-                          {event.label}
+                          {$tValue(event.label)}
                         </Label>
-                        <p className="text-xs text-foreground-lighter">{event.description}</p>
+                        <p className="text-xs text-foreground-lighter">
+                          {$tValue(event.description)}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -260,7 +262,7 @@ export const FormContents = ({ form, selectedHook }: FormContentsProps) => {
                       >
                         <div className="flex items-center gap-5">
                           <Image
-                            alt={webhook.label}
+                            alt={$tValue(webhook.label)}
                             src={webhook.icon}
                             layout="fixed"
                             width="32"
@@ -268,9 +270,9 @@ export const FormContents = ({ form, selectedHook }: FormContentsProps) => {
                           />
                           <div className="flex-col space-y-0">
                             <div className="flex space-x-2">
-                              <p className="text-foreground">{webhook.label}</p>
+                              <p className="text-foreground">{$tValue(webhook.label)}</p>
                             </div>
-                            <p className="text-foreground-light">{webhook.description}</p>
+                            <p className="text-foreground-light">{$tValue(webhook.description)}</p>
                           </div>
                         </div>
                       </RadioGroupStackedItem>

@@ -10,7 +10,7 @@ import { useDataTable } from '../providers/DataTableProvider'
 import { DataTableFilterCheckboxLoader } from './DataTableFilterCheckboxLoader'
 import { SEARCH_PARAMS_PARSER } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.constants'
 import { isLogsFilterColumnValue } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.filters'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export function DataTableFilterCheckbox<TData>({
   value: _value,
@@ -121,14 +121,14 @@ export function DataTableFilterCheckbox<TData>({
                       {Component ? (
                         <Component {...option} />
                       ) : (
-                        <span className="truncate font-normal block">{option.label}</span>
+                        <span className="truncate font-normal block">{$tValue(option.label)}</span>
                       )}
                     </div>
                     {hasNested && (
                       <button
                         type="button"
                         tabIndex={0}
-                        aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                        aria-label={isExpanded ? $t('Collapse') : $t('Expand')}
                         aria-expanded={isExpanded}
                         onClick={() => toggleExpanded(optionKey)}
                         className={cn(
@@ -217,7 +217,9 @@ export function DataTableFilterCheckbox<TData>({
                               htmlFor={`${value}-${optionNested.value}`}
                               className="flex w-full cursor-pointer items-center text-[0.8rem] font-normal text-foreground/70 group-hover/nested:text-accent-foreground min-w-0"
                             >
-                              <span className="truncate text-xs">{optionNested.label}</span>
+                              <span className="truncate text-xs">
+                                {$tValue(optionNested.label)}
+                              </span>
                             </Label>
                           </div>
                         </div>

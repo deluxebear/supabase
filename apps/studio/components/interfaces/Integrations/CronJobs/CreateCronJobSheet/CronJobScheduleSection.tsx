@@ -85,8 +85,8 @@ export const CronJobScheduleSection = ({ form, supportsSeconds }: CronJobSchedul
                 <FormLabel>{$t('Schedule')}</FormLabel>
                 <span className="text-foreground-lighter text-xs">
                   {useNaturalLanguage
-                    ? 'Describe your schedule in words'
-                    : 'Enter a cron expression'}
+                    ? $t('Describe your schedule in words')
+                    : $t('Enter a cron expression')}
                 </span>
               </div>
 

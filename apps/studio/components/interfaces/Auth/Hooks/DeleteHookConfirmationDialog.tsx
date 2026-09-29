@@ -24,7 +24,7 @@ import { useAuthHooksUpdateMutation } from '@/data/auth/auth-hooks-update-mutati
 import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface DeleteHookConfirmationDialogProps {
   hook?: Hook
@@ -145,7 +145,7 @@ export const DeleteHookConfirmationDialog = ({
     >
       <div>
         <p className="md:px-5 text-sm text-foreground-light">
-          {$t('Are you sure you want to delete the')} {hook?.title}?
+          {$t('Are you sure you want to delete the')} {$tValue(hook?.title)}?
         </p>
         {hook?.method.type === 'postgres' && (
           <>

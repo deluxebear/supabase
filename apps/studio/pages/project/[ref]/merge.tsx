@@ -36,7 +36,7 @@ import { useBranchMergeDiff } from '@/hooks/branches/useBranchMergeDiff'
 import { useWorkflowManagement } from '@/hooks/branches/useWorkflowManagement'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import type { NextPageWithLayout } from '@/types'
 
@@ -440,7 +440,7 @@ const MergePageContent = () => {
                     }
                     className={cn('inline-flex items-center gap-2', isActive && 'text-foreground')}
                   >
-                    {item.label}
+                    {$tValue(item.label)}
                   </Link>
                 </NavMenuItem>
               )

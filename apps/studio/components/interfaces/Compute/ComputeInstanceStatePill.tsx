@@ -2,6 +2,7 @@ import { cn } from 'ui'
 
 import { getComputeInstanceStateMeta } from './Compute.constants'
 import type { ComputeInstance } from './Compute.types'
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface ComputeInstanceStatePillProps {
   instance: ComputeInstance
@@ -28,7 +29,7 @@ export const ComputeInstanceStatePill = ({
         )}
         <span className={cn('relative inline-flex h-2 w-2 rounded-full', meta.dotClassName)} />
       </span>
-      <span className={cn('text-sm', meta.textClassName)}>{meta.label}</span>
+      <span className={cn('text-sm', meta.textClassName)}>{$tValue(meta.label)}</span>
     </span>
   )
 }

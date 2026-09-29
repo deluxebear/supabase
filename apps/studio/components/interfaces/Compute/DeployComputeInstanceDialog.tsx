@@ -32,7 +32,7 @@ import type { ComputeInstanceAccess } from './Compute.types'
 import { formatSize, generateComputeInstanceName } from './Compute.utils'
 import { ComputeInstanceSnippetTabs } from './ComputeInstanceSnippetTabs'
 import { RuntimeBadge } from './RuntimeBadge'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const FORM_ID = 'deploy-instance-form'
 
@@ -184,7 +184,7 @@ export const DeployComputeInstanceDialog = ({
                       <SelectContent>
                         {ACCESS_OPTIONS.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
-                            {option.label}
+                            {$tValue(option.label)}
                           </SelectItem>
                         ))}
                       </SelectContent>

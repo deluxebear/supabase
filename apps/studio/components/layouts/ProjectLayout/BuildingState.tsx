@@ -71,8 +71,8 @@ const BuildingState = () => {
                 <Loader2 className="animate-spin" size={12} />
                 <span>
                   {project.status === PROJECT_STATUS.UNKNOWN
-                    ? 'Initiating project set up'
-                    : 'Setting up project'}
+                    ? $t('Initiating project set up')
+                    : $t('Setting up project')}
                 </span>
               </div>
             </Badge>

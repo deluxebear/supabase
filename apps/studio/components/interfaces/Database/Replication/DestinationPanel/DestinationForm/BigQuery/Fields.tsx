@@ -102,8 +102,8 @@ export const BigQueryFields = ({
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label={'Project ID'}
-              description={'The Google Cloud project ID where data will be sent'}
+              label={$t('Project ID')}
+              description={$t('The Google Cloud project ID where data will be sent')}
             >
               <FormControl>
                 <Input {...field} placeholder="my-gcp-project" />
@@ -117,9 +117,9 @@ export const BigQueryFields = ({
           name="datasetId"
           render={({ field }) => (
             <FormItemLayout
-              label={'Dataset ID'}
+              label={$t('Dataset ID')}
               layout="horizontal"
-              description={'The BigQuery dataset where replicated tables will be created'}
+              description={$t('The BigQuery dataset where replicated tables will be created')}
             >
               <FormControl>
                 <Input {...field} placeholder="my_dataset" />
@@ -137,8 +137,12 @@ export const BigQueryFields = ({
               label={$t('Service account key')}
               description={
                 editMode
-                  ? 'Stored credentials are hidden. Paste or upload new credentials to replace them.'
-                  : 'Paste or upload your service account credentials JSON file for authenticating with BigQuery.'
+                  ? $t(
+                      'Stored credentials are hidden. Paste or upload new credentials to replace them.'
+                    )
+                  : $t(
+                      'Paste or upload your service account credentials JSON file for authenticating with BigQuery.'
+                    )
               }
             >
               <div
@@ -160,7 +164,7 @@ export const BigQueryFields = ({
                       placeholder={
                         editMode
                           ? STORED_SECRET_PLACEHOLDER
-                          : '{"type": "service_account", "project_id": "...", ...}'
+                          : $t('{"type": "service_account", "project_id": "...", ...}')
                       }
                       className="max-h-[calc(13lh+1rem)] font-mono text-xs"
                     />

@@ -369,20 +369,24 @@ export const RealtimeSettings = () => {
                     type={isDisablingRealtime || isEnablingRealtime ? 'warning' : 'default'}
                     title={
                       isDisablingRealtime
-                        ? 'Realtime service will be disabled'
+                        ? $t('Realtime service will be disabled')
                         : isEnablingRealtime
-                          ? 'Realtime service will be re-enabled'
+                          ? $t('Realtime service will be re-enabled')
                           : isRealtimeDisabled
-                            ? 'Realtime service is disabled'
+                            ? $t('Realtime service is disabled')
                             : ''
                     }
                     description={
                       isDisablingRealtime
-                        ? 'Clients will no longer be able to connect to your project’s realtime service once saved'
+                        ? $t(
+                            'Clients will no longer be able to connect to your project’s realtime service once saved'
+                          )
                         : isEnablingRealtime
-                          ? "Clients will be able to connect to your project's realtime service again once saved"
+                          ? $t(
+                              "Clients will be able to connect to your project's realtime service again once saved"
+                            )
                           : isRealtimeDisabled
-                            ? 'You will need to enable it to continue using Realtime'
+                            ? $t('You will need to enable it to continue using Realtime')
                             : null
                     }
                   />
@@ -592,8 +596,10 @@ export const RealtimeSettings = () => {
                               </h5>
                               <p className="text-foreground-light">
                                 {isFreePlan
-                                  ? 'Upgrade to the Pro plan first to disable spend cap'
-                                  : 'You may adjust this setting in the organization billing settings'}
+                                  ? $t('Upgrade to the Pro plan first to disable spend cap')
+                                  : $t(
+                                      'You may adjust this setting in the organization billing settings'
+                                    )}
                               </p>
                             </div>
                             <div className="grow flex items-center justify-end">
@@ -652,8 +658,10 @@ export const RealtimeSettings = () => {
                               </h5>
                               <p className="text-foreground-light">
                                 {isFreePlan
-                                  ? 'Upgrade to the Pro plan first to disable spend cap'
-                                  : 'You may adjust this setting in the organization billing settings'}
+                                  ? $t('Upgrade to the Pro plan first to disable spend cap')
+                                  : $t(
+                                      'You may adjust this setting in the organization billing settings'
+                                    )}
                               </p>
                             </div>
                             <div className="grow flex items-center justify-end">
@@ -712,8 +720,10 @@ export const RealtimeSettings = () => {
                               </h5>
                               <p className="text-foreground-light">
                                 {isFreePlan
-                                  ? 'Upgrade to the Pro plan first to disable spend cap'
-                                  : 'You may adjust this setting in the organization billing settings'}
+                                  ? $t('Upgrade to the Pro plan first to disable spend cap')
+                                  : $t(
+                                      'You may adjust this setting in the organization billing settings'
+                                    )}
                               </p>
                             </div>
                             <div className="grow flex items-center justify-end">

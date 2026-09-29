@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { IS_PLATFORM } from 'common'
 import Link from 'next/link'
@@ -57,6 +56,7 @@ import { TaxDisclaimer } from '@/components/interfaces/Billing/TaxDisclaimer'
 import { Shortcut } from '@/components/ui/Shortcut'
 import { LogDrainData } from '@/data/log-drains/log-drains-query'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { httpEndpointUrlSchema } from '@/lib/validation/http-url'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -558,7 +558,7 @@ export function LogDrainDestinationSheetForm({
                       render={({ field }) => (
                         <FormItemLayout
                           layout="horizontal"
-                          label={'Region'}
+                          label={$t('Region')}
                           description={
                             <p>
                               {$t(
@@ -586,7 +586,7 @@ export function LogDrainDestinationSheetForm({
                                   <SelectLabel>{$t('Region')}</SelectLabel>
                                   {DATADOG_REGIONS.map((reg) => (
                                     <SelectItem key={reg.value} value={reg.value}>
-                                      {reg.label}
+                                      {$tValue(reg.label)}
                                     </SelectItem>
                                   ))}
                                 </SelectGroup>
@@ -746,7 +746,7 @@ export function LogDrainDestinationSheetForm({
                                     <SelectLabel>{$t('Protocol')}</SelectLabel>
                                     {OTLP_PROTOCOLS.map((proto) => (
                                       <SelectItem key={proto.value} value={proto.value}>
-                                        {proto.label}
+                                        {$tValue(proto.label)}
                                       </SelectItem>
                                     ))}
                                   </SelectGroup>
@@ -787,7 +787,7 @@ export function LogDrainDestinationSheetForm({
                       render={({ field }) => (
                         <FormItemLayout
                           layout="horizontal"
-                          label={'Region'}
+                          label={$t('Region')}
                           description={
                             <p>
                               {$t(
@@ -806,7 +806,7 @@ export function LogDrainDestinationSheetForm({
                                   <SelectLabel>{$t('Region')}</SelectLabel>
                                   {LAST9_REGIONS.map((reg) => (
                                     <SelectItem key={reg.value} value={reg.value}>
-                                      {reg.label}
+                                      {$tValue(reg.label)}
                                     </SelectItem>
                                   ))}
                                 </SelectGroup>

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button, CardContent, Slider } from 'ui'
 
 import { useThemeOverrides } from '@/hooks/misc/useThemeOverrides'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import {
   applyThemeOverrides,
   getThemeOverrideValue,
@@ -83,9 +83,9 @@ export const ThemeColorSettings = () => {
                     id={`theme-color-${knob.key}-label`}
                     className="text-sm font-medium text-foreground"
                   >
-                    {knob.label}
+                    {$tValue(knob.label)}
                   </span>
-                  <span className="text-sm text-foreground-light">{knob.description}</span>
+                  <span className="text-sm text-foreground-light">{$tValue(knob.description)}</span>
                 </div>
                 <span className="text-right text-sm text-foreground-light tabular-nums">
                   {sliderValue}

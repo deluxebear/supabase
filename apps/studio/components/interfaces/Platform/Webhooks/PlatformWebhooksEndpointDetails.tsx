@@ -33,7 +33,7 @@ import { getStatusLevel } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { DataTableColumnStatusCode } from '@/components/ui/DataTable/DataTableColumn/DataTableColumnStatusCode'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
@@ -230,7 +230,9 @@ export const PlatformWebhooksEndpointDetails = ({
               </DetailItem>
 
               {hasDescription && (
-                <DetailItem label={$t('Description')}>{selectedEndpoint.description}</DetailItem>
+                <DetailItem label={$t('Description')}>
+                  {$tValue(selectedEndpoint.description)}
+                </DetailItem>
               )}
 
               <DetailItem label={$t('Event types')} ddClassName="flex flex-wrap gap-2">

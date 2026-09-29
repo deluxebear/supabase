@@ -28,7 +28,7 @@ import {
   getDefaultCustomExpiryDate,
   type TokenFormValues,
 } from './NewScopedTokenForm.utils'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface TokenDetailsProps {
   control: Control<TokenFormValues>
@@ -85,7 +85,7 @@ export const TokenDetails = ({ control, setValue }: TokenDetailsProps) => {
                   {EXPIRY_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       <span className="flex items-center gap-2">
-                        {option.label}
+                        {$tValue(option.label)}
                         {option.recommended && <Badge variant="success">{$t('Recommended')}</Badge>}
                       </span>
                     </SelectItem>
@@ -105,7 +105,7 @@ export const TokenDetails = ({ control, setValue }: TokenDetailsProps) => {
                         <DatePicker>
                           <DatePickerTrigger asChild>
                             <DatePickerButton ref={field.ref} block isInvalid={fieldState.invalid}>
-                              {value ? dayjs(value).format('DD MMM, YYYY') : 'Pick a date'}
+                              {value ? dayjs(value).format('DD MMM, YYYY') : $t('Pick a date')}
                             </DatePickerButton>
                           </DatePickerTrigger>
                           <DatePickerContent align="end">

@@ -6,7 +6,7 @@ import { Input as PasswordInput } from 'ui-patterns/DataInputs/Input'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import type { ServerOption } from './Wrappers.types'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface InputFieldProps<TFieldValues extends FieldValues = FieldValues> {
   option: ServerOption
@@ -32,7 +32,7 @@ const InputField = <
           layout="vertical"
           label={
             <div className="flex items-center space-x-2">
-              <p>{option.label}</p>
+              <p>{$tValue(option.label)}</p>
               {option.urlHelper !== undefined && (
                 <Link href={option.urlHelper} target="_blank" rel="noreferrer">
                   <span className="sr-only">{$t('Documentation')}</span>
@@ -46,7 +46,7 @@ const InputField = <
             </div>
           }
           labelOptional={!option.required ? 'Optional' : undefined}
-          description={option.description}
+          description={$tValue(option.description)}
         >
           <FormControl>
             {loading ? (

@@ -29,7 +29,7 @@ import { useSchemaCreateMutation } from '@/data/database/schema-create-mutation'
 import { useSchemasQuery } from '@/data/database/schemas-query'
 import { useFDWCreateMutation } from '@/data/fdw/fdw-create-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 const FORM_ID = 'create-wrapper-form'
@@ -243,7 +243,7 @@ export const CreateIcebergWrapperSheet = ({
           >
             <SheetHeader>
               <SheetTitle>
-                {$t('Create a')} {wrapperMeta.label} wrapper
+                {$t('Create a')} {$tValue(wrapperMeta.label)} wrapper
               </SheetTitle>
             </SheetHeader>
             <SheetSection className="grow overflow-y-auto">
@@ -341,7 +341,7 @@ export const CreateIcebergWrapperSheet = ({
               <FormSection
                 header={
                   <FormSectionLabel>
-                    {wrapperMeta.label} {$t('Configuration')}
+                    {$tValue(wrapperMeta.label)} {$t('Configuration')}
                   </FormSectionLabel>
                 }
               >

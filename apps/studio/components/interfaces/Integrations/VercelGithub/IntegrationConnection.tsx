@@ -156,8 +156,12 @@ export const IntegrationConnectionItem = forwardRef<HTMLLIElement, IntegrationCo
         >
           <p className="text-sm text-foreground-light">
             {type === 'Vercel'
-              ? 'Deleting this Vercel connection will stop syncing environment variables to your Vercel project. Existing environment variables will remain unchanged.'
-              : 'Deleting this GitHub connection will stop automatic creation and merging of preview branches. Existing preview branches will remain unchanged.'}
+              ? $t(
+                  'Deleting this Vercel connection will stop syncing environment variables to your Vercel project. Existing environment variables will remain unchanged.'
+                )
+              : $t(
+                  'Deleting this GitHub connection will stop automatic creation and merging of preview branches. Existing preview branches will remain unchanged.'
+                )}
           </p>
         </ConfirmationModal>
       </>

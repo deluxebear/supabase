@@ -248,8 +248,8 @@ const VercelIntegrationConnectionForm = ({
                       type="warning"
                       title={
                         isBranchingEnabled
-                          ? 'Not recommended with Branching'
-                          : 'These environments will use production credentials'
+                          ? $t('Not recommended with Branching')
+                          : $t('These environments will use production credentials')
                       }
                     >
                       <p>

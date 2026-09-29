@@ -7,6 +7,7 @@ import { StorageExplorerContent } from './StorageExplorerContent'
 import { StorageExplorerNavigationProvider } from './StorageExplorerNavigation'
 import { useProjectStorageConfigQuery } from '@/data/config/project-storage-config-query'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { useStorageExplorerStateSnapshot } from '@/state/storage-explorer'
 
 export const StorageExplorer = () => {
@@ -29,7 +30,7 @@ export const StorageExplorer = () => {
           `aria-live` rather than `role="status"`: that role is how toasts announce
           themselves here, and tests wait on it to tell when an upload has finished. */}
       <span aria-live="polite" aria-atomic="true" className="sr-only">
-        {isBucketReady ? 'Bucket contents loaded' : 'Loading bucket contents'}
+        {isBucketReady ? $t('Bucket contents loaded') : $t('Loading bucket contents')}
       </span>
       <StorageExplorerNavigationProvider
         isBucketReady={isBucketReady}

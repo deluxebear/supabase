@@ -148,7 +148,7 @@ export const EdgeFunctionSection = ({ form }: HTTPRequestFieldsProps) => {
                       >
                         {selectedFunction
                           ? selectedFunction.name
-                          : 'Select which edge function to trigger'}
+                          : $t('Select which edge function to trigger')}
                       </Button>
                     </FormControl>
                   </PopoverTrigger>

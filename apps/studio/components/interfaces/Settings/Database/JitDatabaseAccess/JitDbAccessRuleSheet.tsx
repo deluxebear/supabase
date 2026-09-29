@@ -229,7 +229,7 @@ export function JitDbAccessRuleSheet({
         >
           <SheetHeader>
             <SheetTitle>
-              {mode === 'edit' ? 'Edit temporary access rule' : 'New temporary access rule'}
+              {mode === 'edit' ? $t('Edit temporary access rule') : $t('New temporary access rule')}
             </SheetTitle>
             <SheetDescription className="sr-only">
               {$t('Configure which database roles a user can request with temporary access.')}
@@ -344,7 +344,7 @@ export function JitDbAccessRuleSheet({
               onClick={form.handleSubmit(handleSaveRule)}
               loading={isSubmitting}
             >
-              {mode === 'edit' ? 'Save rule' : 'Create rule'}
+              {mode === 'edit' ? $t('Save rule') : $t('Create rule')}
             </Button>
           </SheetFooter>
         </SheetContent>

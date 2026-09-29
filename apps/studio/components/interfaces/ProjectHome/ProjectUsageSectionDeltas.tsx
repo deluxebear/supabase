@@ -27,7 +27,7 @@ import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useIsDataApiEnabled } from '@/hooks/misc/useIsDataApiEnabled'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 // Services the homepage shows; matches the telemetry event types.
@@ -209,7 +209,7 @@ export const ProjectUsageSectionDeltas = () => {
                             })
                           }}
                         >
-                          {s.title}
+                          {$tValue(s.title)}
                         </Link>
                       ) : (
                         s.title

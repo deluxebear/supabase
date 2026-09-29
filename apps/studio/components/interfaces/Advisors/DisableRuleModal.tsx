@@ -17,7 +17,7 @@ import {
 import { LintInfo } from '../Linter/Linter.constants'
 import { lintInfoMap } from '../Linter/Linter.utils'
 import { useLintRuleCreateMutation } from '@/data/lint/create-lint-rule-mutation'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface DisableRuleModalProps {
   lint: LintInfo
@@ -74,7 +74,7 @@ export const DisableRuleModal = ({ lint }: DisableRuleModalProps) => {
         <DialogSection>
           <p className="text-sm">
             {$t('This will silence the "')}
-            {lint.title}
+            {$tValue(lint.title)}
             {$t(
               '" by hiding this rule in the Advisor reports, as well omitting this rule from email notifications for this project.'
             )}

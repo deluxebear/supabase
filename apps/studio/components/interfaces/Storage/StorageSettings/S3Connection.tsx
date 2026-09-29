@@ -54,7 +54,7 @@ import { useStorageCredentialsQuery } from '@/data/storage/s3-access-key-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsProjectActive, useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export const S3Connection = () => {
   const { ref: projectRef } = useParams()
@@ -316,7 +316,7 @@ export const S3Connection = () => {
                               key={cred.id}
                               created_at={cred.created_at}
                               access_key={cred.access_key}
-                              description={cred.description}
+                              description={$tValue(cred.description)}
                               id={cred.id}
                               onDeleteClick={() => {
                                 setDeleteCred(cred)

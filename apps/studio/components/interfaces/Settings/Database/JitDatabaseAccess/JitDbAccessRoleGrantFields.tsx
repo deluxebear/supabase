@@ -19,7 +19,7 @@ import { createEmptyIpRange, getRelativeDatetimeByMode } from './JitDbAccess.uti
 import { DatePicker } from '@/components/ui/DatePicker'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const EXPIRY_MODE_OPTIONS: Array<{ value: JitRoleGrantDraft['expiryMode']; label: string }> = [
   { value: '1h', label: '1 hour' },
@@ -91,7 +91,7 @@ export function JitDbAccessRoleGrantFields({
         />
         <div className="min-w-0 flex-1">
           <code className="text-code-inline dark:bg-surface-300! dark:border-control! tracking-normal!">
-            {role.label}
+            {$tValue(role.label)}
           </code>
         </div>
       </label>
@@ -145,8 +145,8 @@ export function JitDbAccessRoleGrantFields({
               description={
                 <p className="text-xs text-foreground-lighter">
                   {grant.branchesOnly
-                    ? 'Can only be requested from preview branch databases.'
-                    : 'Can be requested from production and preview branch databases.'}
+                    ? $t('Can only be requested from preview branch databases.')
+                    : $t('Can be requested from production and preview branch databases.')}
                 </p>
               }
             >
@@ -160,7 +160,7 @@ export function JitDbAccessRoleGrantFields({
                 <SelectContent>
                   {BRANCH_SCOPE_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                      {$tValue(option.label)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -229,7 +229,7 @@ export function JitDbAccessRoleGrantFields({
                     <SelectContent>
                       {EXPIRY_MODE_OPTIONS.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
-                          {option.label}
+                          {$tValue(option.label)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -254,7 +254,7 @@ export function JitDbAccessRoleGrantFields({
                     }}
                     triggerButtonClassName="min-w-[120px]"
                   >
-                    {grant.expiry ? dayjs(grant.expiry).format('DD MMM, HH:mm') : 'Select date'}
+                    {grant.expiry ? dayjs(grant.expiry).format('DD MMM, HH:mm') : $t('Select date')}
                   </DatePicker>
                 )}
               </div>

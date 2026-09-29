@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { Card, cn } from 'ui'
 
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
+
 export const ActionCard = (card: {
   icon: ReactNode
   title: string
@@ -20,8 +22,10 @@ export const ActionCard = (card: {
           {card.icon}
         </div>
         <div className="flex flex-col gap-0">
-          <h3 className="text-sm text-foreground mb-0">{card.title}</h3>
-          {card.description && <p className="text-xs text-foreground-light">{card.description}</p>}
+          <h3 className="text-sm text-foreground mb-0">{$tValue(card.title)}</h3>
+          {card.description && (
+            <p className="text-xs text-foreground-light">{$tValue(card.description)}</p>
+          )}
         </div>
       </div>
     </Card>

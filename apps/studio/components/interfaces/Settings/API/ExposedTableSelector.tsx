@@ -152,7 +152,7 @@ export const ExposedTableSelector = ({
                 <>
                   {tables.length === 0 && (
                     <p className="text-xs text-center text-foreground-lighter py-3">
-                      {search.length > 0 ? 'No tables found' : 'No tables available'}
+                      {search.length > 0 ? $t('No tables found') : $t('No tables available')}
                     </p>
                   )}
                   <ScrollArea ref={scrollRootRef} className={tables.length > 7 ? 'h-[210px]' : ''}>

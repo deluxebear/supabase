@@ -62,7 +62,9 @@ export function PromoteInstallationModal({
   return (
     <ConfirmationModal
       visible={appToPromote !== undefined}
-      title={currentInstallation ? 'Replace installed app?' : `Install "${appToPromote?.name}"?`}
+      title={
+        currentInstallation ? $t('Replace installed app?') : `Install "${appToPromote?.name}"?`
+      }
       confirmLabel={currentInstallation ? 'Replace' : 'Install'}
       confirmLabelLoading={currentInstallation ? 'Replacing...' : 'Installing...'}
       onCancel={onClose}

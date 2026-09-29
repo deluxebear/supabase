@@ -72,7 +72,7 @@ export const RecoveryCodesModal = <T = unknown,>({
         {!mutation.isPending ? (
           <DialogFooter className="items-center">
             <span role="status" className="text-sm text-lighter">
-              {copiedToClipboard ? 'Codes copied to your clipboard.' : null}
+              {copiedToClipboard ? $t('Codes copied to your clipboard.') : null}
             </span>
             {copied || mutation.isError ? (
               <DialogClose asChild>

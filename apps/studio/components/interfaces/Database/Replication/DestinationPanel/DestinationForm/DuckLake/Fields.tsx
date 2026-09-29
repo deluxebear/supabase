@@ -44,7 +44,7 @@ import { usePaginatedBucketsQuery } from '@/data/storage/buckets-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const DUCKLAKE_MODE_OPTIONS = [
   {
@@ -101,8 +101,8 @@ const DuckLakeModeSelector = ({
               )}
             </div>
             <div className="flex flex-col gap-y-1">
-              <span className="text-sm text-foreground">{option.label}</span>
-              <span className="text-xs text-foreground-light">{option.description}</span>
+              <span className="text-sm text-foreground">{$tValue(option.label)}</span>
+              <span className="text-xs text-foreground-light">{$tValue(option.description)}</span>
             </div>
           </button>
         )
@@ -400,8 +400,8 @@ const DuckLakeCustomFields = ({
               label={$t('Catalog URL')}
               description={
                 editMode
-                  ? 'Stored catalog URL is hidden. Enter a new URL to replace it.'
-                  : 'A PostgreSQL connection string for the DuckLake catalog'
+                  ? $t('Stored catalog URL is hidden. Enter a new URL to replace it.')
+                  : $t('A PostgreSQL connection string for the DuckLake catalog')
               }
             >
               <FormControl>
@@ -490,8 +490,8 @@ const DuckLakeCustomFields = ({
               label={$t('S3 access key ID')}
               description={
                 editMode
-                  ? 'Stored access key ID is hidden. Enter a new key ID to replace it.'
-                  : 'Required access key ID for the object storage provider'
+                  ? $t('Stored access key ID is hidden. Enter a new key ID to replace it.')
+                  : $t('Required access key ID for the object storage provider')
               }
             >
               <FormControl>
@@ -514,8 +514,8 @@ const DuckLakeCustomFields = ({
               label={$t('S3 secret access key')}
               description={
                 editMode
-                  ? 'Stored secret access key is hidden. Enter a new secret to replace it.'
-                  : 'Required secret access key for the object storage provider'
+                  ? $t('Stored secret access key is hidden. Enter a new secret to replace it.')
+                  : $t('Required secret access key for the object storage provider')
               }
               className="relative"
             >

@@ -156,7 +156,7 @@ export const NewPublicationPanel = ({ visible, onClose }: NewPublicationPanelPro
                         layout="horizontal"
                         description={
                           field.value.length === 0
-                            ? 'Select at least one table to include in the publication.'
+                            ? $t('Select at least one table to include in the publication.')
                             : undefined
                         }
                       >

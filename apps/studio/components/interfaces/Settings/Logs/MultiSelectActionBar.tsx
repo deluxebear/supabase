@@ -68,7 +68,7 @@ export function MultiSelectActionBar({
               }
               iconRight={<ChevronDown size={11} />}
             >
-              {copiedFormat ? 'Copied!' : 'Copy'}
+              {copiedFormat ? $t('Copied!') : $t('Copy')}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-60">

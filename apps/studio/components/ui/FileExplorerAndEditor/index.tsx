@@ -110,7 +110,7 @@ export const FileExplorerAndEditor = ({
                 {$t('Failed to extract')} {file.name}
               </p>
               <p className="text-foreground-light">
-                {error instanceof Error ? error.message : 'Unknown error occurred'}
+                {error instanceof Error ? error.message : $t('Unknown error occurred')}
               </p>
             </div>,
             { duration: 8000 }

@@ -399,8 +399,8 @@ export const PolicyEditorPanel = memo(function ({
                         id="rls-exp-one-editor"
                         placeholder={
                           command === 'insert'
-                            ? '-- Provide a SQL expression for the with check statement'
-                            : '-- Provide a SQL expression for the using statement'
+                            ? $t('-- Provide a SQL expression for the with check statement')
+                            : $t('-- Provide a SQL expression for the using statement')
                         }
                         defaultValue={using}
                         value={using}

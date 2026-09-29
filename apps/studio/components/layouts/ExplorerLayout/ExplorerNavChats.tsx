@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { ExplorerNavResourceWrapper } from './ExplorerLayout.constants'
 import { ExplorerNavItem } from './ExplorerNavItem'
 import { useExplorerDeleteItem } from './ExplorerProvider'
+import { t as $t } from '@/lib/i18n'
 import type { ChatSession } from '@/state/ai-assistant-state'
 import { useAiAssistantChatList } from '@/state/ai-assistant-state'
 import { createTabId, useTabsStateSnapshot } from '@/state/tabs'
@@ -33,7 +34,7 @@ export const ExplorerNavChats = () => {
       <div className="flex flex-1 flex-col gap-px overflow-y-auto p-3">
         {chats.length === 0 ? (
           <p className="px-2 py-2 text-xs text-foreground-lighter">
-            {search ? 'No chats found' : 'No chats created yet'}
+            {search ? $t('No chats found') : $t('No chats created yet')}
           </p>
         ) : (
           chats.map((chat) => {

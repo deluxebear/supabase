@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Button, DialogFooter, DialogSection, DialogSectionSeparator } from 'ui'
 
 import { CodeEditor } from '@/components/ui/CodeEditor/CodeEditor'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const ReviewEmptyState = () => {
   return (
@@ -49,7 +49,7 @@ export const StoragePoliciesReview = ({
             let formattedSQLStatement = policy.statement || ''
             return (
               <div key={`policy_${idx}`} className="space-y-2">
-                <p className="text-sm">{policy.description}</p>
+                <p className="text-sm">{$tValue(policy.description)}</p>
                 <div className="h-40">
                   <CodeEditor
                     hideLineNumbers

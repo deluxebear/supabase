@@ -320,7 +320,9 @@ export const NetworkRestrictions = () => {
                             <div key={ip} className="py-4 flex items-center justify-between">
                               <div className="flex items-center space-x-5">
                                 <Globe size={16} className="text-foreground-lighter" />
-                                <Badge>{ipv4Restrictions.includes(ip) ? 'IPv4' : 'IPv6'}</Badge>
+                                <Badge>
+                                  {ipv4Restrictions.includes(ip) ? $t('IPv4') : $t('IPv6')}
+                                </Badge>
                                 <p className="text-sm font-mono">{ip}</p>
                               </div>
                               <ButtonTooltip

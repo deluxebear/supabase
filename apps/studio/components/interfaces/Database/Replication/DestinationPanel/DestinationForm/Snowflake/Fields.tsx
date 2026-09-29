@@ -128,8 +128,8 @@ export const SnowflakeFields = ({
               label={$t('Private key')}
               description={
                 editMode
-                  ? 'Stored private key is hidden. Enter a new private key to replace it.'
-                  : 'RSA private key PEM contents in PKCS#8 or PKCS#1 format'
+                  ? $t('Stored private key is hidden. Enter a new private key to replace it.')
+                  : $t('RSA private key PEM contents in PKCS#8 or PKCS#1 format')
               }
             >
               <FormControl>
@@ -140,7 +140,7 @@ export const SnowflakeFields = ({
                   placeholder={
                     editMode
                       ? STORED_SECRET_PLACEHOLDER
-                      : '-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----'
+                      : $t('-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----')
                   }
                   value={field.value ?? ''}
                   className="font-mono text-xs"
@@ -159,23 +159,25 @@ export const SnowflakeFields = ({
               label={$t('Private key passphrase')}
               description={
                 editMode
-                  ? 'Stored passphrase setting is hidden. Enter a new passphrase to replace it.'
-                  : 'Optional passphrase for encrypted private keys'
+                  ? $t('Stored passphrase setting is hidden. Enter a new passphrase to replace it.')
+                  : $t('Optional passphrase for encrypted private keys')
               }
             >
               <FormControl>
                 <PasswordInput
                   value={field.value ?? ''}
                   type={showPrivateKeyPassphrase ? 'text' : 'password'}
-                  placeholder={editMode ? STORED_SECRET_PLACEHOLDER : 'Optional'}
+                  placeholder={editMode ? STORED_SECRET_PLACEHOLDER : $t('Optional')}
                   onChange={(event) => field.onChange(event.target.value)}
                   actions={
                     <div className="flex items-center justify-center">
                       <Button
                         className="w-7"
-                        title={showPrivateKeyPassphrase ? 'Hide passphrase' : 'Show passphrase'}
+                        title={
+                          showPrivateKeyPassphrase ? $t('Hide passphrase') : $t('Show passphrase')
+                        }
                         aria-label={
-                          showPrivateKeyPassphrase ? 'Hide passphrase' : 'Show passphrase'
+                          showPrivateKeyPassphrase ? $t('Hide passphrase') : $t('Show passphrase')
                         }
                         icon={showPrivateKeyPassphrase ? <Eye /> : <EyeOff />}
                         onClick={() => setShowPrivateKeyPassphrase(!showPrivateKeyPassphrase)}

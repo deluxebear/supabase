@@ -2,6 +2,8 @@ import { Megaphone } from 'lucide-react'
 import { forwardRef, type PropsWithChildren, type ReactNode } from 'react'
 import { Badge, Button, cn, Loading } from 'ui'
 
+import { translateDisplayValue as $tValue } from '@/lib/i18n'
+
 interface PanelProps {
   className?: string
   id?: string
@@ -37,7 +39,7 @@ function Panel(props: PropsWithChildren<PanelProps>) {
             props.titleClasses
           )}
         >
-          {props.title}
+          {$tValue(props.title)}
         </div>
       )}
       {props.children}

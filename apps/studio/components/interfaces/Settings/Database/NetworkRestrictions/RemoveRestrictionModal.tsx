@@ -81,7 +81,7 @@ const RemoveRestrictionModal = ({
                 {$t('will be removed from your list of network restrictions')}
                 {isRemovingOnlyRestriction
                   ? '.'
-                  : ", and no longer have access to your project's database."}
+                  : $t(", and no longer have access to your project's database.")}
               </p>
               {isRemovingOnlyRestriction && (
                 <Admonition

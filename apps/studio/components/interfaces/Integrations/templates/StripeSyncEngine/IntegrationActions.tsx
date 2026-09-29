@@ -67,7 +67,7 @@ export const IntegrationInstalledActions = ({
             },
           }}
         >
-          {uninstallError ? 'Retry uninstallation' : 'Uninstall integration'}
+          {uninstallError ? $t('Retry uninstallation') : $t('Uninstall integration')}
         </ButtonTooltip>
       </div>
     </>
@@ -119,7 +119,7 @@ export const IntegrationNotInstalledActions = ({
             },
           }}
         >
-          {installError ? 'Retry installation' : 'Install integration'}
+          {installError ? $t('Retry installation') : $t('Install integration')}
         </ButtonTooltip>
       )}
       {installError && (

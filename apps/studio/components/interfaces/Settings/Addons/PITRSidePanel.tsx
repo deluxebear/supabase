@@ -159,11 +159,11 @@ const CloudPITRSidePanel = () => {
       }
       tooltip={
         blockDowngradeDueToHipaa
-          ? 'Unable to disable PITR with HIPAA add-on'
+          ? $t('Unable to disable PITR with HIPAA add-on')
           : !hasAccessToPitrVariants
-            ? 'Unable to enable point in time recovery on your Plan'
+            ? $t('Unable to enable point in time recovery on your Plan')
             : !canUpdatePitr
-              ? 'You do not have permission to update PITR'
+              ? $t('You do not have permission to update PITR')
               : undefined
       }
       header={

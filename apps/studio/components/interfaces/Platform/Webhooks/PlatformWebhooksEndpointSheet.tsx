@@ -44,7 +44,7 @@ import { DiscardChangesConfirmationDialog } from '@/components/ui-patterns/Dialo
 import { InlineLink } from '@/components/ui/InlineLink'
 import { Shortcut } from '@/components/ui/Shortcut'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { httpEndpointUrlSchema } from '@/lib/validation/http-url'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 
@@ -258,11 +258,11 @@ export const PlatformWebhooksEndpointSheet = ({
     <Sheet open={visible} onOpenChange={handleOpenChange}>
       <SheetContent showClose={false} size="default" className="flex flex-col gap-0">
         <SheetHeader>
-          <SheetTitle>{mode === 'create' ? 'Create endpoint' : 'Edit endpoint'}</SheetTitle>
+          <SheetTitle>{mode === 'create' ? $t('Create endpoint') : $t('Edit endpoint')}</SheetTitle>
           <SheetDescription className="sr-only">
             {mode === 'create'
-              ? 'Create a webhook endpoint by setting a name, URL, and event subscriptions.'
-              : 'Edit this webhook endpoint name, URL, and event subscriptions.'}
+              ? $t('Create a webhook endpoint by setting a name, URL, and event subscriptions.')
+              : $t('Edit this webhook endpoint name, URL, and event subscriptions.')}
           </SheetDescription>
         </SheetHeader>
         <Separator />
@@ -480,7 +480,7 @@ export const PlatformWebhooksEndpointSheet = ({
                                     <div className="flex w-full items-center justify-between gap-3">
                                       <div className="flex items-center gap-2">
                                         <p className="text-sm text-foreground-light">
-                                          {group.label}
+                                          {$tValue(group.label)}
                                         </p>
                                         {selectedInGroup.length > 0 && (
                                           <span className="text-xs text-foreground-muted">
@@ -504,7 +504,7 @@ export const PlatformWebhooksEndpointSheet = ({
                                               )
                                             }}
                                           >
-                                            {allSelected ? 'Clear all' : 'Select all'}
+                                            {allSelected ? $t('Clear all') : $t('Select all')}
                                           </span>
                                         )}
                                         <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-open:rotate-180" />
@@ -589,11 +589,11 @@ export const PlatformWebhooksEndpointSheet = ({
           <Button onClick={confirmOnClose}>{$t('Cancel')}</Button>
           <Shortcut
             id={SHORTCUT_IDS.ACTION_BAR_SAVE}
-            label={mode === 'create' ? 'Create endpoint' : 'Save changes'}
+            label={mode === 'create' ? $t('Create endpoint') : $t('Save changes')}
             onTrigger={() => form.handleSubmit(onSubmit)()}
           >
             <Button variant="primary" form="platform-webhook-endpoint-form" type="submit">
-              {mode === 'create' ? 'Create endpoint' : 'Save changes'}
+              {mode === 'create' ? $t('Create endpoint') : $t('Save changes')}
             </Button>
           </Shortcut>
         </SheetFooter>

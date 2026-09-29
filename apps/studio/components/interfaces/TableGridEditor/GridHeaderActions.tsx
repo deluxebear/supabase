@@ -399,7 +399,7 @@ export const GridHeaderActions = ({ table, isRefetching }: GridHeaderActionsProp
                 <DropdownMenuItem className="gap-x-2" onClick={() => setRealtimeDialogOpen(true)}>
                   <Realtime size={14} className={isRealtimeEnabled ? 'text-primary' : ''} />
                   <span>
-                    {isRealtimeEnabled ? 'Disable' : 'Enable'} {$t('Realtime')}
+                    {isRealtimeEnabled ? $t('Disable') : $t('Enable')} {$t('Realtime')}
                   </span>
                 </DropdownMenuItem>
               )}

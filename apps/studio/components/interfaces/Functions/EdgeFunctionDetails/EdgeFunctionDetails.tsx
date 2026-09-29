@@ -49,7 +49,7 @@ import { useEdgeFunctionDeleteMutation } from '@/data/edge-functions/edge-functi
 import { useEdgeFunctionUpdateMutation } from '@/data/edge-functions/edge-functions-update-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const FormSchema = z.object({
   name: z.string().min(0, 'Name is required'),
@@ -254,7 +254,7 @@ export const EdgeFunctionDetails = () => {
                 <TabsList className="flex flex-wrap gap-4 px-6">
                   {invocationTabs.map((tab) => (
                     <TabsTrigger key={tab.id} value={tab.id}>
-                      {tab.label}
+                      {$tValue(tab.label)}
                     </TabsTrigger>
                   ))}
                   {selectedTab === 'curl' && (
@@ -262,7 +262,7 @@ export const EdgeFunctionDetails = () => {
                       className="ml-auto -translate-y-2 translate-x-3"
                       onClick={() => setShowKey(!showKey)}
                     >
-                      {showKey ? 'Hide' : 'Show'} {$t('anon key')}
+                      {showKey ? $t('Hide') : $t('Show')} {$t('anon key')}
                     </Button>
                   )}
                 </TabsList>

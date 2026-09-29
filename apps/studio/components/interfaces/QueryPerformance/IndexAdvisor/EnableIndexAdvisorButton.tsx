@@ -121,7 +121,7 @@ export const EnableIndexAdvisorDialog = ({
               return onEnableIndexAdvisor()
             }}
           >
-            {isEnablingExtension ? 'Enabling...' : 'Enable'}
+            {isEnablingExtension ? $t('Enabling...') : $t('Enable')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

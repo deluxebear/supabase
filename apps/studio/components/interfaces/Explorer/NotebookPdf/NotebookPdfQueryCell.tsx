@@ -108,7 +108,7 @@ export function NotebookPdfQueryCell({ cell, result }: NotebookPdfQueryCellProps
           <>
             <Text style={pdfStyles.footerText}>·</Text>
             <Text style={pdfStyles.footerText}>
-              {rowLimit < 0 ? 'No row limit' : `Limit ${rowLimit} rows`}
+              {rowLimit < 0 ? $t('No row limit') : `Limit ${rowLimit} rows`}
             </Text>
           </>
         )}

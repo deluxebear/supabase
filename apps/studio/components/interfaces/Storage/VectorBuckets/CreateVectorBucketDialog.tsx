@@ -214,7 +214,7 @@ export const CreateVectorBucketDialog = ({
               <Admonition type="default" className="border-x-0 border-b-0 rounded-none">
                 <p>
                   {$t('Supabase will install the')}{' '}
-                  {wrappersExtensionState !== 'installed' ? 'Wrappers extension and ' : ''}
+                  {wrappersExtensionState !== 'installed' ? $t('Wrappers extension and ') : ''}
                   {$t('S3 Vectors Wrapper integration on your behalf.')}{' '}
                   <InlineLink href={`${DOCS_URL}/guides/database/extensions/wrappers/s3_vectors`}>
                     {$t('Learn more')}

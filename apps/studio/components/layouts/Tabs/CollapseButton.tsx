@@ -49,7 +49,9 @@ export function CollapseButton({ hideTabs }: { hideTabs: boolean }) {
           )}
         </button>
       </TooltipTrigger>
-      <TooltipContent side="bottom">{showSidebar ? 'Collapse' : 'Expand'} sidebar</TooltipContent>
+      <TooltipContent side="bottom">
+        {showSidebar ? $t('Collapse') : $t('Expand')} sidebar
+      </TooltipContent>
     </Tooltip>
   )
 }

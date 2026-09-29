@@ -18,7 +18,7 @@ import type { OrganizationPaymentMethod } from '@/data/organizations/organizatio
 import type { PlanId } from '@/data/subscriptions/types'
 import { BASE_PATH } from '@/lib/constants'
 import { MANAGED_BY } from '@/lib/constants/infrastructure'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface CreditCardProps {
   paymentMethod: OrganizationPaymentMethod
@@ -150,10 +150,10 @@ const CreditCard = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <span>
-                  <Badge variant={stripeStatus.variant}>{stripeStatus.label}</Badge>
+                  <Badge variant={stripeStatus.variant}>{$tValue(stripeStatus.label)}</Badge>
                 </span>
               </TooltipTrigger>
-              <TooltipContent side="left">{stripeStatus.description}</TooltipContent>
+              <TooltipContent side="left">{$tValue(stripeStatus.description)}</TooltipContent>
             </Tooltip>
           )}
 

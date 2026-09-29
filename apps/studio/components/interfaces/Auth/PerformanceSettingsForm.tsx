@@ -337,7 +337,7 @@ export const PerformanceSettingsForm = () => {
                         >
                           <SelectTrigger size="small" disabled={!canUpdateConfig || promptUpgrade}>
                             <SelectValue>
-                              {field.value === 'percent' ? 'Percentage' : 'Absolute'}
+                              {field.value === 'percent' ? $t('Percentage') : $t('Absolute')}
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent align="end">

@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react'
 import { Button, Card, CardFooter, CardHeader, cn } from 'ui'
 
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export type SteppedFlowStep = {
   id: string
@@ -138,7 +138,7 @@ export const SteppedFlow = ({
                   disabled={navigationDisabled || finalAction.disabled}
                   onClick={finalAction.onClick}
                 >
-                  {finalAction.label}
+                  {$tValue(finalAction.label)}
                 </Button>
               ) : (
                 <Button

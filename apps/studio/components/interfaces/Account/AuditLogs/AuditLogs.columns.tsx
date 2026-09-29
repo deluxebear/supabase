@@ -126,7 +126,7 @@ export function getAuditLogColumns({
                 )}
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                {log.project_ref ? 'Project' : 'Organization'}
+                {log.project_ref ? $t('Project') : $t('Organization')}
               </TooltipContent>
             </Tooltip>
           )

@@ -94,11 +94,13 @@ export const ColumnDefaultValue = ({
 
   return (
     <InputWithSuggestions
-      label={showLabel ? 'Default Value' : undefined}
+      label={showLabel ? $t('Default Value') : undefined}
       layout={layout}
       description={
         showLabel
-          ? 'Can either be a literal or an expression. When using an expression wrap your expression in brackets, e.g. (gen_random_uuid())'
+          ? $t(
+              'Can either be a literal or an expression. When using an expression wrap your expression in brackets, e.g. (gen_random_uuid())'
+            )
           : undefined
       }
       placeholder={

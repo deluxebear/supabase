@@ -185,8 +185,10 @@ export const ImportForeignSchemaDialog = ({
                 {$t('Namespace “')}
                 <strong>{namespace}</strong>”{' '}
                 {circumstance === 'fresh'
-                  ? 'must be linked to a new schema before tables can be paired.'
-                  : 'clashes with an existing database schema. Create a new schema to use as the destination for this data.'}
+                  ? $t('must be linked to a new schema before tables can be paired.')
+                  : $t(
+                      'clashes with an existing database schema. Create a new schema to use as the destination for this data.'
+                    )}
               </p>
               <Separator />
               <FormField

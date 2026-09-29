@@ -158,7 +158,7 @@ export const SchemaSelector = forwardRef<HTMLDivElement, SchemaSelectorProps>(
                   <span className="flex w-full gap-1">
                     <span className="text-foreground-lighter">schema</span>
                     <span className="text-foreground">
-                      {selectedSchemaName === '*' ? 'All schemas' : selectedSchemaName}
+                      {selectedSchemaName === '*' ? $t('All schemas') : selectedSchemaName}
                     </span>
                   </span>
                 ) : (

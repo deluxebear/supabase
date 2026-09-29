@@ -20,7 +20,7 @@ import {
   useIsETLSnowflakePrivateAlpha,
 } from '../useIsETLPrivateAlpha'
 import { DestinationType } from './DestinationPanel.types'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface DestinationTypeOption {
   value: DestinationType
@@ -164,7 +164,7 @@ export const DestinationTypeSelection = () => {
             {selectedOption ? (
               <div className="flex items-center gap-x-3 text-left">
                 <DestinationLogo type={selectedOption.value} />
-                <span className="text-sm text-foreground">{selectedOption.label}</span>
+                <span className="text-sm text-foreground">{$tValue(selectedOption.label)}</span>
               </div>
             ) : (
               <span className="text-foreground-lighter">{$t('Select a destination type')}</span>
@@ -174,15 +174,15 @@ export const DestinationTypeSelection = () => {
             {visibleGroups.map((group, index) => (
               <SelectGroup key={group.label}>
                 {index > 0 && <SelectSeparator />}
-                <SelectLabel>{group.label}</SelectLabel>
+                <SelectLabel>{$tValue(group.label)}</SelectLabel>
                 {group.options.map((option) => (
                   <SelectItem key={option.value} value={option.value} className="py-2">
                     <div className="flex items-center gap-x-3">
                       <DestinationLogo type={option.value} />
                       <div className="flex flex-col gap-y-0.5">
-                        <span className="text-foreground">{option.label}</span>
+                        <span className="text-foreground">{$tValue(option.label)}</span>
                         <span className="text-xs text-foreground-lighter">
-                          {option.description}
+                          {$tValue(option.description)}
                         </span>
                       </div>
                     </div>

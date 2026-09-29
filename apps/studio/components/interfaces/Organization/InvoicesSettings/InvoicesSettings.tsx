@@ -254,7 +254,7 @@ export const InvoicesSettings = () => {
         <CardFooter className="border-t p-4 flex items-center justify-between">
           <p className="text-foreground-muted text-sm">
             {isErrorCount
-              ? 'Failed to retrieve total number of invoices'
+              ? $t('Failed to retrieve total number of invoices')
               : typeof count === 'number'
                 ? `Showing ${offset + 1} to ${offset + invoices.length} out of ${count} invoices`
                 : `Showing ${offset + 1} to ${offset + invoices.length} invoices`}

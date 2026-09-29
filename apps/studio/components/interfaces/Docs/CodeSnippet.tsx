@@ -1,6 +1,6 @@
 import { SimpleCodeBlock } from 'ui-patterns/SimpleCodeBlock'
 
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 
 interface CodeSnippetProps {
@@ -26,7 +26,7 @@ const CodeSnippet = ({ selectedLang, snippet }: CodeSnippetProps) => {
   return (
     <div>
       <h4 className="heading-default mb-2">
-        {snippet.title ? $t(snippet.title) : snippet.title}
+        {snippet.title ? $t(snippet.title) : $tValue(snippet.title)}
       </h4>
       <div className="[&_.codeBlock]:p-0 [&_.token-line]:text-sm">
         <SimpleCodeBlock className={snippet[selectedLang]?.language} onCopy={handleCopy}>

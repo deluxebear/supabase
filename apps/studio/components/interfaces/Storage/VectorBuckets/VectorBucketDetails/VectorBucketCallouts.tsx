@@ -10,7 +10,7 @@ import { InlineLink } from '@/components/ui/InlineLink'
 import { DatabaseExtension } from '@/data/database-extensions/database-extensions-query'
 import { useS3VectorsWrapperCreateMutation } from '@/data/storage/s3-vectors-wrapper-create-mutation'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export const ExtensionNotInstalled = ({
   projectRef,
@@ -46,7 +46,7 @@ export const ExtensionNotInstalled = ({
                 : `/project/${projectRef}/database/extensions?filter=wrappers`
             }
           >
-            {databaseNeedsUpgrading ? 'Upgrade database' : 'Install extension'}
+            {databaseNeedsUpgrading ? $t('Upgrade database') : $t('Install extension')}
           </Link>
         </Button>
       </Admonition>
@@ -72,7 +72,8 @@ export const ExtensionNeedsUpgrade = ({
     <ScaffoldSection isFullWidth>
       <Admonition type="warning" title={$t('Outdated extension version')}>
         <p>
-          {$t('The')} {wrapperMeta.label} {$t('wrapper requires a minimum extension version of')}{' '}
+          {$t('The')} {$tValue(wrapperMeta.label)}{' '}
+          {$t('wrapper requires a minimum extension version of')}{' '}
           {wrapperMeta.minimumExtensionVersion}
           {$t('. You have version')} {wrappersExtension?.installed_version}{' '}
           {$t('installed. Please')}{' '}
@@ -92,7 +93,7 @@ export const ExtensionNeedsUpgrade = ({
                 : `/project/${projectRef}/database/extensions?filter=wrappers`
             }
           >
-            {databaseNeedsUpgrading ? 'Upgrade database' : 'Extensions'}
+            {databaseNeedsUpgrading ? $t('Upgrade database') : $t('Extensions')}
           </Link>
         </Button>
       </Admonition>

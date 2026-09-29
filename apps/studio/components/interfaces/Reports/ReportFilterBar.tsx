@@ -31,7 +31,7 @@ import { DatabaseSelector } from '@/components/ui/DatabaseSelector'
 import { ShortcutTooltip } from '@/components/ui/ShortcutTooltip'
 import { useLoadBalancersQuery } from '@/data/read-replicas/load-balancers-query'
 import { BASE_PATH } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useShortcut } from '@/state/shortcuts/useShortcut'
 
@@ -270,7 +270,7 @@ const ReportFilterBar = ({
                 >
                   <span>
                     {currentProductFilter === null
-                      ? 'All Requests'
+                      ? $t('All Requests')
                       : $t(currentProductFilter.label)}
                   </span>
                 </Button>
@@ -311,7 +311,7 @@ const ReportFilterBar = ({
                           'inline-block'
                         )}
                       >
-                        {productFilter.label}
+                        {$tValue(productFilter.label)}
                       </p>
                     </div>
                   </DropdownMenuItem>
@@ -420,8 +420,8 @@ const ReportFilterBar = ({
                 <Input
                   placeholder={
                     addFilterValues.compare === 'matches'
-                      ? 'Provide a regex expression'
-                      : 'Provide a string'
+                      ? $t('Provide a regex expression')
+                      : $t('Provide a string')
                   }
                   value={addFilterValues.value}
                   onChange={(e) => {

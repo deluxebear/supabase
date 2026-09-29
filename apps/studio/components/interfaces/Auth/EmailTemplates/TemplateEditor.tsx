@@ -43,7 +43,7 @@ import { useValidateSpamMutation, ValidateSpamResponse } from '@/data/auth/valid
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { usePreventNavigationOnUnsavedChanges } from '@/hooks/ui/usePreventNavigationOnUnsavedChanges'
 import { DOCS_URL } from '@/lib/constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface TemplateEditorProps {
   template: AuthTemplate
@@ -299,11 +299,11 @@ export const TemplateEditor = ({ template, isReadOnly = false }: TemplateEditorP
                     <FormItemLayout
                       className="gap-y-3"
                       layout="vertical"
-                      label={property.title}
+                      label={$tValue(property.title)}
                       description={
                         property.description ? (
                           <ReactMarkdown unwrapDisallowed disallowedElements={['p']}>
-                            {property.description}
+                            {$tValue(property.description)}
                           </ReactMarkdown>
                         ) : null
                       }
@@ -394,7 +394,7 @@ export const TemplateEditor = ({ template, isReadOnly = false }: TemplateEditorP
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent side="bottom">
-                            {variable.description}
+                            {$tValue(variable.description)}
 
                             {variable.name === 'Token' &&
                               template.variables.some((x) => x.name === 'ConfirmationURL') && (

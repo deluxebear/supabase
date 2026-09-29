@@ -264,7 +264,7 @@ export const CreateOrUpdateCustomProviderSheet = ({
               <span className="sr-only">{$t('Close')}</span>
             </SheetClose>
             <SheetTitle className="truncate">
-              {isEditMode ? 'Update Custom Auth Provider' : 'Create Custom Auth Provider'}
+              {isEditMode ? $t('Update Custom Auth Provider') : $t('Create Custom Auth Provider')}
             </SheetTitle>
           </div>
         </SheetHeader>
@@ -522,7 +522,7 @@ export const CreateOrUpdateCustomProviderSheet = ({
         <SheetFooter>
           <Button onClick={confirmOnClose}>{$t('Cancel')}</Button>
           <Button variant="primary" type="submit" form={FORM_ID} loading={isCreating || isUpdating}>
-            {isEditMode ? 'Update provider' : 'Create and enable provider'}
+            {isEditMode ? $t('Update provider') : $t('Create and enable provider')}
           </Button>
         </SheetFooter>
       </SheetContent>

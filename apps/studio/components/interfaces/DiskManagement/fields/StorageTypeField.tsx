@@ -25,7 +25,7 @@ import FormMessage from '../ui/FormMessage'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { useDiskAttributesQuery } from '@/data/config/disk-attributes-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 type StorageTypeFieldProps = {
   form: UseFormReturn<DiskStorageSchemaType>
@@ -117,7 +117,7 @@ export function StorageTypeField({ form, disableInput }: StorageTypeFieldProps) 
                                 {item.type}
                               </Badge>
                             </div>
-                            <p className="text-foreground-light">{item.description}</p>
+                            <p className="text-foreground-light">{$tValue(item.description)}</p>
                           </div>
                         </SelectItem>
                       </TooltipTrigger>

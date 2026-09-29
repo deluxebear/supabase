@@ -40,7 +40,7 @@ import { useDefaultRegionQuery } from '@/data/misc/get-default-region-query'
 import { useOrganizationAvailableRegionsQuery } from '@/data/organizations/organization-available-regions-query'
 import { useIncidentStatusQuery } from '@/data/platform/incident-status-query'
 import type { DesiredInstanceSize } from '@/data/projects/new-project.constants'
-import { t as $t } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 interface RegionSelectorProps {
   form: UseFormReturn<CreateProjectForm>
@@ -309,8 +309,8 @@ export const RegionSelector = ({
                       <SelectValue
                         placeholder={
                           isLoading
-                            ? 'Loading available regions...'
-                            : 'Select a region for your project..'
+                            ? $t('Loading available regions...')
+                            : $t('Select a region for your project..')
                         }
                       >
                         {dbRegion !== undefined && (
@@ -389,7 +389,9 @@ export const RegionSelector = ({
 
                       <SelectGroup>
                         <SelectLabel>
-                          {highAvailability ? 'High Availability Regions' : 'Specific regions'}
+                          {highAvailability
+                            ? $t('High Availability Regions')
+                            : $t('Specific regions')}
                         </SelectLabel>
                         {regionOptionsWithRestriction.map((value) => {
                           const restrictionCopy =
@@ -468,7 +470,7 @@ export const RegionSelector = ({
                 <FormItemLayout layout="horizontal" isReactForm={false}>
                   <Admonition
                     type="warning"
-                    title={selectedRestrictionCopy.title}
+                    title={$tValue(selectedRestrictionCopy.title)}
                     description={`${selectedRestrictionCopy.notice} ${SELECT_DIFFERENT_REGION}`}
                     className="mt-3"
                   />
