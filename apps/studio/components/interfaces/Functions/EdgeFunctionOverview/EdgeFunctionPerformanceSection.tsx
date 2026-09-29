@@ -21,6 +21,7 @@ import { t as $t } from '@/lib/i18n'
 
 interface EdgeFunctionPerformanceSectionProps {
   data: EdgeFunctionChartDatum[]
+  isUnavailable: boolean
   dateTimeFormat: string
   isLoading: boolean
   isError: boolean
@@ -31,6 +32,7 @@ interface EdgeFunctionPerformanceSectionProps {
 
 export const EdgeFunctionPerformanceSection = ({
   data,
+  isUnavailable,
   dateTimeFormat,
   isLoading,
   isError,
@@ -39,6 +41,9 @@ export const EdgeFunctionPerformanceSection = ({
   maxExecutionTime,
 }: EdgeFunctionPerformanceSectionProps) => {
   const emptyStateCopy = getChartEmptyStateCopy('execution time', isError, errorMessage)
+  const unavailableDescription = $t(
+    'This self-hosted stack does not record function execution time, CPU time, or memory usage'
+  )
   const tooltipDetails = useMemo(
     () => getExecutionTooltipDetails(averageExecutionTime),
     [averageExecutionTime]
@@ -47,12 +52,12 @@ export const EdgeFunctionPerformanceSection = ({
     <div className="flex flex-wrap gap-x-8 gap-y-4">
       <ChartMetric
         label={$t('Average Execution Time')}
-        value={formatMetric(averageExecutionTime, 'ms')}
+        value={isUnavailable ? '—' : formatMetric(averageExecutionTime, 'ms')}
         tooltip={$t('Average execution time of function invocations')}
       />
       <ChartMetric
         label={$t('Max Execution Time')}
-        value={formatMetric(maxExecutionTime, 'ms')}
+        value={isUnavailable ? '—' : formatMetric(maxExecutionTime, 'ms')}
         tooltip={$t('Maximum execution time of function invocations')}
       />
     </div>
@@ -72,12 +77,14 @@ export const EdgeFunctionPerformanceSection = ({
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <EdgeFunctionTimeSeriesChartCard
                 className="lg:col-span-2"
-                data={data}
+                data={isUnavailable ? [] : data}
                 dateTimeFormat={dateTimeFormat}
-                isLoading={isLoading}
-                isError={isError}
-                emptyTitle={emptyStateCopy.title}
-                emptyDescription={emptyStateCopy.description}
+                isLoading={isLoading && !isUnavailable}
+                isError={isError && !isUnavailable}
+                emptyTitle={isUnavailable ? $t('Metrics unavailable') : emptyStateCopy.title}
+                emptyDescription={
+                  isUnavailable ? unavailableDescription : emptyStateCopy.description
+                }
                 metrics={metrics}
                 dataKey="max_execution_time"
                 dataKeys={['avg_execution_time', 'max_execution_time']}

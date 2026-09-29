@@ -31,6 +31,7 @@ import {
 import { useEdgeFunctionQuery } from '@/data/edge-functions/edge-function-query'
 import { useFillTimeseriesSorted } from '@/hooks/analytics/useFillTimeseriesSorted'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 export const EdgeFunctionOverview = () => {
   const router = useRouter()
@@ -233,6 +234,7 @@ export const EdgeFunctionOverview = () => {
 
       <EdgeFunctionPerformanceSection
         data={chartData}
+        isUnavailable={IS_SELF_PLATFORM}
         dateTimeFormat={dateTimeFormat}
         isLoading={combinedStatsResults.isLoading}
         isError={isStatsError}
@@ -243,6 +245,7 @@ export const EdgeFunctionOverview = () => {
 
       <EdgeFunctionUsageSection
         data={chartData}
+        isUnavailable={IS_SELF_PLATFORM}
         dateTimeFormat={dateTimeFormat}
         isLoading={combinedStatsResults.isLoading}
         isError={isStatsError}

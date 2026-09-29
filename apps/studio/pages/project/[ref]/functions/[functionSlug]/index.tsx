@@ -62,6 +62,17 @@ const CHART_INTERVALS: ChartIntervals[] = [
   },
 ]
 
+const SelfHostedFunctionMetricsUnavailable = () => (
+  <Alert>
+    <AlertTitle>{$t('Metrics unavailable')}</AlertTitle>
+    <AlertDescription>
+      {$t(
+        'This self-hosted stack does not record function execution time, CPU time, or memory usage'
+      )}
+    </AlertDescription>
+  </Alert>
+)
+
 const LegacyEdgeFunctionOverview = () => {
   const router = useRouter()
   const { ref: projectRef, functionSlug } = useParams()
@@ -202,6 +213,7 @@ const LegacyEdgeFunctionOverview = () => {
                 data={combinedStatsChartData}
                 isLoading={combinedStatsResults.isLoading}
                 renderer={(props) => {
+                  if (IS_SELF_PLATFORM) return <SelfHostedFunctionMetricsUnavailable />
                   return isStatsError ? (
                     <Alert variant="warning">
                       <WarningIcon />
@@ -343,6 +355,7 @@ const LegacyEdgeFunctionOverview = () => {
                 data={combinedStatsChartData}
                 isLoading={combinedStatsResults.isLoading}
                 renderer={(props) => {
+                  if (IS_SELF_PLATFORM) return <SelfHostedFunctionMetricsUnavailable />
                   return isStatsError ? (
                     <Alert variant="warning">
                       <WarningIcon />
@@ -381,6 +394,7 @@ const LegacyEdgeFunctionOverview = () => {
                 data={combinedStatsChartData}
                 isLoading={combinedStatsResults.isLoading}
                 renderer={(props) => {
+                  if (IS_SELF_PLATFORM) return <SelfHostedFunctionMetricsUnavailable />
                   if (isStatsError) {
                     return (
                       <Alert variant="warning">

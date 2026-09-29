@@ -23,6 +23,7 @@ import { t as $t } from '@/lib/i18n'
 
 interface EdgeFunctionUsageSectionProps {
   data: EdgeFunctionChartDatum[]
+  isUnavailable: boolean
   dateTimeFormat: string
   isLoading: boolean
   isError: boolean
@@ -37,6 +38,7 @@ interface EdgeFunctionUsageSectionProps {
 
 export const EdgeFunctionUsageSection = ({
   data,
+  isUnavailable,
   dateTimeFormat,
   isLoading,
   isError,
@@ -50,6 +52,9 @@ export const EdgeFunctionUsageSection = ({
 }: EdgeFunctionUsageSectionProps) => {
   const cpuEmptyStateCopy = getChartEmptyStateCopy('CPU time', isError, errorMessage)
   const memoryEmptyStateCopy = getChartEmptyStateCopy('memory usage', isError, errorMessage)
+  const unavailableDescription = $t(
+    'This self-hosted stack does not record function execution time, CPU time, or memory usage'
+  )
   const cpuTooltipDetails = useMemo(() => getCpuTooltipDetails(averageCpuTime), [averageCpuTime])
   const memoryTooltipDetails = useMemo(
     () => getMemoryTooltipDetails(averageMemoryUsage),
@@ -59,12 +64,12 @@ export const EdgeFunctionUsageSection = ({
     <div className="flex flex-wrap gap-x-8 gap-y-4">
       <ChartMetric
         label={$t('Average CPU Time')}
-        value={formatMetric(averageCpuTime, 'ms')}
+        value={isUnavailable ? '—' : formatMetric(averageCpuTime, 'ms')}
         tooltip={$t('Average CPU time usage for the function')}
       />
       <ChartMetric
         label={$t('Max CPU Time')}
-        value={formatMetric(maxCpuTime, 'ms')}
+        value={isUnavailable ? '—' : formatMetric(maxCpuTime, 'ms')}
         tooltip={$t('Maximum CPU time usage for the function')}
       />
     </div>
@@ -73,17 +78,17 @@ export const EdgeFunctionUsageSection = ({
     <div className="flex flex-wrap gap-x-8 gap-y-4">
       <ChartMetric
         label={$t('Average Memory Usage')}
-        value={formatMetric(averageMemoryUsage, 'MB')}
+        value={isUnavailable ? '—' : formatMetric(averageMemoryUsage, 'MB')}
         tooltip={$t('Average memory usage for the function')}
       />
       <ChartMetric
         label={$t('Heap')}
-        value={formatRate(totalHeapMemory, totalMemoryByType)}
+        value={isUnavailable ? '—' : formatRate(totalHeapMemory, totalMemoryByType)}
         tooltip={$t('Share of memory attributed to heap usage over the selected interval')}
       />
       <ChartMetric
         label={$t('External')}
-        value={formatRate(totalExternalMemory, totalMemoryByType)}
+        value={isUnavailable ? '—' : formatRate(totalExternalMemory, totalMemoryByType)}
         tooltip={$t('Share of memory attributed to external usage over the selected interval')}
       />
     </div>
@@ -102,12 +107,14 @@ export const EdgeFunctionUsageSection = ({
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <EdgeFunctionTimeSeriesChartCard
-                data={data}
+                data={isUnavailable ? [] : data}
                 dateTimeFormat={dateTimeFormat}
-                isLoading={isLoading}
-                isError={isError}
-                emptyTitle={cpuEmptyStateCopy.title}
-                emptyDescription={cpuEmptyStateCopy.description}
+                isLoading={isLoading && !isUnavailable}
+                isError={isError && !isUnavailable}
+                emptyTitle={isUnavailable ? $t('Metrics unavailable') : cpuEmptyStateCopy.title}
+                emptyDescription={
+                  isUnavailable ? unavailableDescription : cpuEmptyStateCopy.description
+                }
                 metrics={cpuMetrics}
                 dataKey="max_cpu_time_used"
                 config={CPU_TIME_CHART_CONFIG}
@@ -126,12 +133,14 @@ export const EdgeFunctionUsageSection = ({
               />
 
               <EdgeFunctionTimeSeriesChartCard
-                data={data}
+                data={isUnavailable ? [] : data}
                 dateTimeFormat={dateTimeFormat}
-                isLoading={isLoading}
-                isError={isError}
-                emptyTitle={memoryEmptyStateCopy.title}
-                emptyDescription={memoryEmptyStateCopy.description}
+                isLoading={isLoading && !isUnavailable}
+                isError={isError && !isUnavailable}
+                emptyTitle={isUnavailable ? $t('Metrics unavailable') : memoryEmptyStateCopy.title}
+                emptyDescription={
+                  isUnavailable ? unavailableDescription : memoryEmptyStateCopy.description
+                }
                 metrics={memoryMetrics}
                 dataKey="avg_memory_used"
                 config={MEMORY_CHART_CONFIG}

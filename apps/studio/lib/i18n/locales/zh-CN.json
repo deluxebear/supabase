@@ -9543,6 +9543,7 @@
   "This schema is not exposed via the Supabase APIs. You may configure this in your project’s": "此模式未通过 Supabase API 公开。您可以在项目的以下位置进行配置：",
   "This schema is protected and should not be exposed": "此模式受保护，不应公开",
   "This secret won’t be shown again": "此密钥将不再显示",
+  "This self-hosted stack does not record function execution time, CPU time, or memory usage": "此自托管环境未记录函数执行时间、CPU 时间或内存使用量",
   "This session is currently running a query": "此会话当前正在运行查询",
   "This setting persists until explicitly disabled.": "此设置会保持到明确禁用为止。",
   "This setting persists until explicitly re-enabled.": "此设置会保持到明确重新启用为止。",
