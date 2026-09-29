@@ -11,6 +11,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  copyToClipboard,
   Input,
   Select,
   SelectContent,
@@ -234,11 +235,7 @@ export const SelfPlatformManagementTrustPanel = () => {
               <code className="block break-all rounded bg-surface-100 p-2 text-xs">
                 {token.token}
               </code>
-              <Button
-                size="tiny"
-                variant="default"
-                onClick={() => navigator.clipboard.writeText(token.token)}
-              >
+              <Button size="tiny" variant="default" onClick={() => copyToClipboard(token.token)}>
                 {$t('Copy token')}
               </Button>
             </AlertDescription>

@@ -233,7 +233,7 @@ describe('copyToClipboard', () => {
     const promise = copyToClipboard('hello', callback)
     vi.runAllTimers()
 
-    await expect(promise).resolves.toBeUndefined()
+    await expect(promise).resolves.toBe(false)
     expect(callback).not.toHaveBeenCalled()
     expect(toast.error).toHaveBeenCalledWith('Unable to copy to clipboard')
   })
@@ -243,7 +243,7 @@ describe('copyToClipboard', () => {
     vi.stubGlobal('navigator', { clipboard: { writeText: writeTextMock } })
     const callback = vi.fn()
 
-    await expect(copyToClipboard('hello', callback)).resolves.toBeUndefined()
+    await expect(copyToClipboard('hello', callback)).resolves.toBe(false)
     expect(callback).not.toHaveBeenCalled()
     expect(toast.error).toHaveBeenCalledWith('Unable to copy to clipboard')
   })

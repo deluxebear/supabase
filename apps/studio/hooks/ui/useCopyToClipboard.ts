@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
+import { copyToClipboard } from 'ui'
 
 // [Joshen] This hook can replace all usage of copyToClipboard from lib/helpers
 export function useCopyToClipboard() {
@@ -13,13 +14,12 @@ export function useCopyToClipboard() {
         withToast: false,
       }
     ) => {
-      if (!navigator?.clipboard) {
-        console.warn('Clipboard not supported')
-        return false
-      }
-
       try {
-        await navigator.clipboard.writeText(text)
+        const copied = await copyToClipboard(text)
+        if (!copied) {
+          setText(null)
+          return false
+        }
         setText(text)
 
         if (timeout) {

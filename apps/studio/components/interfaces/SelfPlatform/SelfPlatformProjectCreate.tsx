@@ -15,6 +15,7 @@ import {
   Card,
   CardContent,
   CardFooter,
+  copyToClipboard,
   Form,
   FormControl,
   FormField,
@@ -392,10 +393,9 @@ export const SelfPlatformProjectCreate = () => {
     })
   })
 
-  const copyToken = async () => {
+  const copyToken = () => {
     if (!token) return
-    await navigator.clipboard.writeText(token.token)
-    toast.success($t('Enrollment token copied'))
+    copyToClipboard(token.token, () => toast.success($t('Enrollment token copied')))
   }
 
   const field = (
