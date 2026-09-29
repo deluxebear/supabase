@@ -32,6 +32,27 @@ const CLOUD = ['true', ''] as const
 const PG_SELF_PLATFORM = ['true', 'true'] as const
 
 describe('Logs.utils genDefaultQuery dialect', () => {
+  it('self-platform: function invocations select populated fields and filter by function ID', async () => {
+    const { LogsTableName, genDefaultQuery } = await loadGenDefaultQuery(...PG_SELF_PLATFORM)
+    const sql = genDefaultQuery(LogsTableName.FN_EDGE, {
+      'metadata.function_id': 'project-d:quick-endpoint',
+    })
+
+    expect(sql).toContain('response.status_code, request.method, request.pathname, m.function_id')
+    expect(sql).toContain("m.function_id = 'project-d:quick-endpoint'")
+    expect(sql).not.toContain('m.execution_time_ms')
+    expect(sql).not.toContain('m.deployment_id')
+  })
+
+  it('self-platform: function ID filter escapes SQL literals', async () => {
+    const { LogsTableName, genDefaultQuery } = await loadGenDefaultQuery(...PG_SELF_PLATFORM)
+    const sql = genDefaultQuery(LogsTableName.FN_EDGE, {
+      'metadata.function_id': "project-d:it's-safe",
+    })
+
+    expect(sql).toContain("m.function_id = 'project-d:it''s-safe'")
+  })
+
   it('cloud: edge_logs keeps the identifier column byte-identically', async () => {
     const { LogsTableName, genDefaultQuery } = await loadGenDefaultQuery(...CLOUD)
     const sql = genDefaultQuery(LogsTableName.EDGE, {})
@@ -54,5 +75,15 @@ describe('Logs.utils genDefaultQuery dialect', () => {
     const { LogsTableName, genDefaultQuery } = await loadGenDefaultQuery(...PG_SELF_PLATFORM)
     const sql = genDefaultQuery(LogsTableName.POSTGRES, {})
     expect(sql).not.toContain('identifier')
+  })
+
+  it('cloud: function invocations keep the platform columns', async () => {
+    const { LogsTableName, genDefaultQuery } = await loadGenDefaultQuery(...CLOUD)
+    const sql = genDefaultQuery(LogsTableName.FN_EDGE, {
+      'metadata.function_id': 'project-d:quick-endpoint',
+    })
+
+    expect(sql).toContain('m.execution_time_ms, m.deployment_id, m.version')
+    expect(sql).toContain("m.function_id = 'project-d:quick-endpoint'")
   })
 })

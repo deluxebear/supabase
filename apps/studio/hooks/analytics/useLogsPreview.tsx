@@ -175,7 +175,7 @@ function useLogsPreview({
     const oldestTimestamp = logData.length > 0 ? logData[logData.length - 1]?.timestamp : undefined
 
     return { logData, error, oldestTimestamp }
-  }, [data?.pages])
+  }, [data?.pages, rqError])
 
   const countQuerySql = useMemo(
     () => pickLogsQueryBuilder(useOtel, genCountQueryOtel, genCountQuery)(table, mergedFilters),

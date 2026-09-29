@@ -283,7 +283,7 @@ describe('functions.combined-stats substitute', () => {
     ).rejects.toBeInstanceOf(InvalidAnalyticsParams)
     expect(retrieveAnalyticsData).not.toHaveBeenCalled()
   })
-  it('two queries (function_edge_logs + function_logs) merged by bucket; missing metrics omitted (frontend zero-fills)', async () => {
+  it('two queries (function_edge_logs + function_logs) merge by bucket; missing metrics omitted (frontend zero-fills)', async () => {
     retrieveAnalyticsData.mockImplementation(async ({ params }: RetrieveAnalyticsDataOptions) =>
       params.sql?.includes('from function_edge_logs')
         ? ok([
@@ -311,11 +311,11 @@ describe('functions.combined-stats substitute', () => {
     const { data } = await retrieveSubstitutedAnalyticsData({
       name: 'functions.combined-stats',
       projectRef: 'default',
-      params: { function_id: 'fn-uuid-1', interval: '1hr' },
+      params: { function_id: 'project-d:rapid-task', interval: '1hr' },
     })
     expect(retrieveAnalyticsData).toHaveBeenCalledTimes(2)
     for (const [{ params }] of retrieveAnalyticsData.mock.calls as [RetrieveAnalyticsDataOptions][])
-      expect(params.sql).toContain("'fn-uuid-1'")
+      expect(params.sql).toContain("'project-d:rapid-task'")
     const row = data?.result?.[0]
     expect(row.timestamp).toBe('2026-07-05T15:00:00.000Z')
     expect(row.requests_count).toBe(4)

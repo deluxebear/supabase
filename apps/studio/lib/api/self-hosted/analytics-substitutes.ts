@@ -59,7 +59,7 @@ const INTERVALS: Record<string, { trunc: 'minute' | 'hour' | 'day'; spanMs: numb
   '7day': { trunc: 'day', spanMs: 7 * 24 * 60 * 60_000 },
 }
 const GRANULARITIES = new Set(['minute', 'hour', 'day'])
-const FUNCTION_ID_RE = /^[A-Za-z0-9_-]+$/
+const FUNCTION_ID_RE = /^[A-Za-z0-9_-]+(?::[A-Za-z0-9_-]+)?$/
 
 type Params = Record<string, string | undefined>
 // A builder validates+prepares its request(s) SYNCHRONOUSLY (throwing
@@ -326,7 +326,7 @@ const buildAuthMetrics: Builder = (projectRef, params) => {
 
 // ---------------------------------------------------------------------------
 // functions.combined-stats — function_edge_logs + function_logs, merged by
-// bucket. function_id validated against FUNCTION_ID_RE before interpolation.
+// bucket. function_id is validated against FUNCTION_ID_RE before interpolation.
 // ---------------------------------------------------------------------------
 // [self-platform] M6.3 fold-in rider ③: row shapes per each SQL's own select
 // list (functionEdgeSql / functionLogsSql below), and the merged-by-bucket
@@ -357,15 +357,10 @@ const buildFunctionsCombinedStats: Builder = (projectRef, params) => {
   const { trunc, spanMs } = resolveInterval(params.interval)
   const isoStart = new Date(Date.now() - spanMs).toISOString()
 
-  // [self-platform] LIVE-PINNED 2026-07-06 (beyond the Step-1 decision
-  // rules, recorded as a refinement): avg(m.execution_time_ms) /
-  // max(m.execution_time_ms) 500 on the PG translator — categorical, not a
-  // data-availability fluke (crashes even with a zero-row function_id
-  // filter; confirmed via vector.yml — self-hosted's deno-relay-logs router
-  // never populates execution_time_ms, so the source's inferred schema has
-  // no numeric type for the aggregate to bind to). Omitted like the other
-  // non-derivable metrics (cpu/memory/heap) — useFillTimeseriesSorted
-  // zero-fills client-side (EdgeFunctionOverview.tsx:80-105).
+  // Request counts come from Kong access logs, normalized by Vector into
+  // function_edge_logs events. Kong's
+  // combined access format has no execution duration, so execution, CPU, and
+  // memory metrics are omitted and remain zero-filled in the UI.
   const functionEdgeSql = `select timestamp_trunc(t.timestamp, ${trunc}) as timestamp, count(t.id) as requests_count, countif(resp.status_code >= 200 and resp.status_code < 300) as success_count, countif(resp.status_code >= 300 and resp.status_code < 400) as redirect_count, countif(resp.status_code >= 400 and resp.status_code < 500) as client_err_count, countif(resp.status_code >= 500) as server_err_count from function_edge_logs t cross join unnest(t.metadata) as m cross join unnest(m.response) as resp where m.function_id = '${functionId}' group by 1 order by 1 asc`
 
   const functionLogsSql = `select timestamp_trunc(t.timestamp, ${trunc}) as timestamp, count(t.id) as log_count, countif(m.level = 'info' or m.level = 'log') as log_info_count, countif(m.level = 'warning') as log_warn_count, countif(m.level = 'error') as log_error_count from function_logs t cross join unnest(t.metadata) as m where m.function_id = '${functionId}' group by 1 order by 1 asc`

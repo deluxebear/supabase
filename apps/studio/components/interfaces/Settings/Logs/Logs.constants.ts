@@ -484,6 +484,7 @@ export const SQL_FILTER_TEMPLATES: Record<string, Record<string, SqlFilterEntry>
   },
   function_edge_logs: {
     ..._SQL_FILTER_COMMON,
+    'metadata.function_id': (value: string) => safeSql`m.function_id = ${analyticsLiteral(value)}`,
     'status_code.error': safeSql`response.status_code between 500 and 599`,
     'status_code.success': safeSql`response.status_code between 200 and 299`,
     'status_code.warning': safeSql`response.status_code between 400 and 499`,

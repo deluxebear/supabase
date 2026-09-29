@@ -629,6 +629,15 @@ describe('OTEL filter translation', () => {
     `)
   })
 
+  it('filters edge function invocations by function ID', () => {
+    const sql = genDefaultQueryOtel(LogsTableName.FN_EDGE, {
+      'metadata.function_id': 'project-d:quick-endpoint',
+    })
+
+    expect(sql).toContain("source = 'function_edge_logs'")
+    expect(sql).toContain("log_attributes['function_id'] = 'project-d:quick-endpoint'")
+  })
+
   it('translates the etl pipeline_id filter', () => {
     expect(fmt(genDefaultQueryOtel(LogsTableName.ETL, { pipeline_id: '42' })))
       .toMatchInlineSnapshot(`

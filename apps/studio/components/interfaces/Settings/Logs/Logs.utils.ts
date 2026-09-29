@@ -227,10 +227,12 @@ limit ${limitLit}
     `
 
     case 'function_edge_logs':
-      if (!IS_PLATFORM) {
+      if (USE_LOGFLARE_PG_SQL) {
         return safeSql`
-select id, function_edge_logs.timestamp, event_message
+select id, function_edge_logs.timestamp, event_message, response.status_code, request.method, request.pathname, m.function_id
 from function_edge_logs
+${joins}
+${where}
 ${orderBy}
 limit ${limitLit}
 `

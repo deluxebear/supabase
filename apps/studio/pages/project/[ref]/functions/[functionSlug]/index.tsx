@@ -137,6 +137,11 @@ const LegacyEdgeFunctionOverview = () => {
     startDate: startDate.toISOString(),
     endDate: endDate.toISOString(),
   })
+  const isStatsError = combinedStatsResults.isError || isErrorCombinedStats
+  const statsErrorMessage =
+    combinedStatsResults.error instanceof Error
+      ? combinedStatsResults.error.message
+      : (combinedStatsError?.message ?? 'Unknown error')
 
   const { isLoading: permissionsLoading, can: canReadFunction } = useAsyncCheckPermissions(
     PermissionAction.FUNCTIONS_READ,
@@ -197,13 +202,11 @@ const LegacyEdgeFunctionOverview = () => {
                 data={combinedStatsChartData}
                 isLoading={combinedStatsResults.isLoading}
                 renderer={(props) => {
-                  return isErrorCombinedStats ? (
+                  return isStatsError ? (
                     <Alert variant="warning">
                       <WarningIcon />
                       <AlertTitle>{$t('Failed to reterieve execution time')}</AlertTitle>
-                      <AlertDescription>
-                        {combinedStatsError?.message ?? 'Unknown error'}
-                      </AlertDescription>
+                      <AlertDescription>{statsErrorMessage}</AlertDescription>
                     </Alert>
                   ) : (
                     <div className="space-y-8">
@@ -241,14 +244,12 @@ const LegacyEdgeFunctionOverview = () => {
                 data={combinedStatsChartData}
                 isLoading={combinedStatsResults.isLoading}
                 renderer={(props) => {
-                  if (isErrorCombinedStats) {
+                  if (isStatsError) {
                     return (
                       <Alert variant="warning">
                         <WarningIcon />
                         <AlertTitle>{$t('Failed to reterieve invocations')}</AlertTitle>
-                        <AlertDescription>
-                          {combinedStatsError?.message ?? 'Unknown error'}
-                        </AlertDescription>
+                        <AlertDescription>{statsErrorMessage}</AlertDescription>
                       </Alert>
                     )
                   } else {
@@ -342,13 +343,11 @@ const LegacyEdgeFunctionOverview = () => {
                 data={combinedStatsChartData}
                 isLoading={combinedStatsResults.isLoading}
                 renderer={(props) => {
-                  return isErrorCombinedStats ? (
+                  return isStatsError ? (
                     <Alert variant="warning">
                       <WarningIcon />
                       <AlertTitle>{$t('Failed to retrieve CPU time')}</AlertTitle>
-                      <AlertDescription>
-                        {combinedStatsError?.message ?? 'Unknown error'}
-                      </AlertDescription>
+                      <AlertDescription>{statsErrorMessage}</AlertDescription>
                     </Alert>
                   ) : (
                     <div className="space-y-8">
@@ -382,14 +381,12 @@ const LegacyEdgeFunctionOverview = () => {
                 data={combinedStatsChartData}
                 isLoading={combinedStatsResults.isLoading}
                 renderer={(props) => {
-                  if (isErrorCombinedStats) {
+                  if (isStatsError) {
                     return (
                       <Alert variant="warning">
                         <WarningIcon />
                         <AlertTitle>{$t('Failed to retrieve memory usage')}</AlertTitle>
-                        <AlertDescription>
-                          {combinedStatsError?.message ?? 'Unknown error'}
-                        </AlertDescription>
+                        <AlertDescription>{statsErrorMessage}</AlertDescription>
                       </Alert>
                     )
                   }

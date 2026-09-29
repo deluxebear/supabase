@@ -106,6 +106,11 @@ export const EdgeFunctionOverview = () => {
     startDate: startDate.toISOString(),
     endDate: endDate.toISOString(),
   })
+  const isStatsError = combinedStatsResults.isError || isErrorCombinedStats
+  const statsErrorMessage =
+    combinedStatsResults.error instanceof Error
+      ? combinedStatsResults.error.message
+      : (combinedStatsError?.message ?? 'Unknown error')
 
   const chartData = useMemo(
     () => toEdgeFunctionChartData(combinedStatsChartData),
@@ -199,8 +204,8 @@ export const EdgeFunctionOverview = () => {
         isErrorFunction={isErrorFunction}
         functionError={functionError}
         isLoadingChart={combinedStatsResults.isLoading}
-        isErrorChart={isErrorCombinedStats}
-        chartErrorMessage={combinedStatsError?.message ?? 'Unknown error'}
+        isErrorChart={isStatsError}
+        chartErrorMessage={statsErrorMessage}
         chartData={invocationChartData}
         onChartClick={(timestamp) => {
           if (!projectRef || !functionSlug) return
@@ -230,8 +235,8 @@ export const EdgeFunctionOverview = () => {
         data={chartData}
         dateTimeFormat={dateTimeFormat}
         isLoading={combinedStatsResults.isLoading}
-        isError={isErrorCombinedStats}
-        errorMessage={combinedStatsError?.message ?? 'Unknown error'}
+        isError={isStatsError}
+        errorMessage={statsErrorMessage}
         averageExecutionTime={averageExecutionTime}
         maxExecutionTime={maxExecutionTime}
       />
@@ -240,8 +245,8 @@ export const EdgeFunctionOverview = () => {
         data={chartData}
         dateTimeFormat={dateTimeFormat}
         isLoading={combinedStatsResults.isLoading}
-        isError={isErrorCombinedStats}
-        errorMessage={combinedStatsError?.message ?? 'Unknown error'}
+        isError={isStatsError}
+        errorMessage={statsErrorMessage}
         averageCpuTime={averageCpuTime}
         maxCpuTime={maxCpuTime}
         averageMemoryUsage={averageMemoryUsage}
