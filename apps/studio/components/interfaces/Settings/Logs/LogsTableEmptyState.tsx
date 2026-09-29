@@ -1,4 +1,5 @@
 import { Search } from 'lucide-react'
+import { t as $t } from '@/lib/i18n'
 
 const EmptyStateRow = () => {
   return (
@@ -22,8 +23,8 @@ export function LogsTableEmptyState({
         <Search size={30} className="absolute right-3 -bottom-2 text-foreground-lighter" />
       </div>
       <div className="flex flex-col gap-1 px-5">
-        <h3 className="text-lg text-foreground">{title}</h3>
-        <p className="text-sm max-w-xs text-foreground-lighter">{description}</p>
+        <h3 className="text-lg text-foreground">{$t(title)}</h3>
+        <p className="text-sm max-w-xs text-foreground-lighter">{$t(description)}</p>
       </div>
     </div>
   )
