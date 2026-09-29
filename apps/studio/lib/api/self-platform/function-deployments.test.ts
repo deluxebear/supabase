@@ -7,6 +7,7 @@ import {
   deployFunction,
   functionDeploymentInputSchema,
   listFunctionDeployments,
+  updateFunctionDeploymentSettings,
 } from './function-deployments'
 import { requestManagementDomain, syncProjectManagementBinding } from './management-trust'
 import { listProjectOwnershipPolicies } from './ownership-policy'
@@ -114,6 +115,80 @@ describe('Fleet function artifact validation', () => {
     const deployments = await listFunctionDeployments('project-a')
     expect(deployments).toHaveLength(1)
     expect(vi.mocked(executePlatformQuery).mock.calls[0][0].parameters).toEqual(['project-a'])
+  })
+
+  it('reuses the existing artifact when updating Fleet function settings', async () => {
+    const deployment = {
+      project_ref: 'project-a',
+      slug: 'hello',
+      generation: 1,
+      desired_revision: '11111111-1111-4111-8111-111111111111',
+      desired_artifact_digest: 'a'.repeat(64),
+      active_artifact_digest: null,
+      previous_artifact_digest: null,
+      operation_id: 'op-a',
+      adapter: 'compose',
+      state: 'rolled-back',
+      last_error_code: 'rollout_probe_failed',
+      remediation: null,
+      observed_at: null,
+      created_at: '2026-07-15T00:00:00Z',
+      updated_at: '2026-07-15T00:00:00Z',
+    }
+    vi.mocked(requireProjectCapability).mockResolvedValue({} as never)
+    vi.mocked(syncProjectManagementBinding).mockResolvedValue({
+      state: 'active',
+      targetState: 'active',
+      deploymentKind: 'compose',
+    } as never)
+    vi.mocked(listProjectOwnershipPolicies).mockResolvedValue([
+      { domain: 'functions', ownershipMode: 'direct-managed' },
+    ] as never)
+    vi.mocked(executePlatformQuery)
+      .mockResolvedValueOnce({ data: [deployment], error: null } as never)
+      .mockResolvedValueOnce({
+        data: [
+          {
+            size_bytes: 123,
+            entrypoint_path: 'index.ts',
+            import_map_path: null,
+            static_patterns: [],
+            verify_jwt: true,
+          },
+        ],
+        error: null,
+      } as never)
+      .mockResolvedValueOnce({ data: [{ operation_id: 'op-b' }], error: null } as never)
+      .mockResolvedValueOnce({
+        data: [{ ...deployment, generation: 2, operation_id: 'op-b', state: 'queued' }],
+        error: null,
+      } as never)
+
+    const updated = await updateFunctionDeploymentSettings({
+      projectRef: 'project-a',
+      slug: 'hello',
+      name: 'hello',
+      verifyJwt: false,
+      expectedGeneration: 1,
+      actor: 'owner-a',
+      correlationId: 'correlation-a',
+      idempotencyKey: 'settings-a',
+    })
+
+    expect(updated.generation).toBe(2)
+    expect(vi.mocked(executePlatformQuery).mock.calls[2][0].parameters?.slice(0, 10)).toEqual([
+      'project-a',
+      'hello',
+      'deploy',
+      'a'.repeat(64),
+      123,
+      'index.ts',
+      '',
+      '[]',
+      false,
+      1,
+    ])
+    expect(requestManagementDomain).not.toHaveBeenCalled()
   })
 
   it('checks capability, active binding, ownership and project-scoped artifact upload before commit', async () => {

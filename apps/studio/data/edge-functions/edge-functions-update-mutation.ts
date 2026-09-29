@@ -8,6 +8,7 @@ import type { ResponseError, UseCustomMutationOptions } from '@/types'
 export type EdgeFunctionsUpdateVariables = {
   projectRef: string
   slug: string
+  expectedGeneration: number
   payload: {
     name?: string
     verify_jwt?: boolean
@@ -18,11 +19,13 @@ export type EdgeFunctionsUpdateVariables = {
 export async function updateEdgeFunction({
   projectRef,
   slug,
+  expectedGeneration,
   payload,
 }: EdgeFunctionsUpdateVariables) {
   if (!projectRef) throw new Error('projectRef is required')
 
   const { data, error } = await patch(`/v1/projects/{ref}/functions/{function_slug}`, {
+    headers: { 'If-Match': String(expectedGeneration) },
     params: {
       path: { ref: projectRef, function_slug: slug },
     },

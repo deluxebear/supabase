@@ -49,6 +49,7 @@ import { useEdgeFunctionDeleteMutation } from '@/data/edge-functions/edge-functi
 import { useEdgeFunctionUpdateMutation } from '@/data/edge-functions/edge-functions-update-mutation'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 const FormSchema = z.object({
@@ -78,6 +79,7 @@ export const EdgeFunctionDetails = () => {
   )
 
   const canUpdateEdgeFunction = IS_PLATFORM && canUpdateEdgeFunctionPermission
+  const isFleet = STUDIO_DEPLOYMENT_PROFILE === 'fleet'
 
   const { can: canReadAPIKeys } = useAsyncCheckPermissions(PermissionAction.SECRETS_READ, '*')
   const { data: apiKeyData } = useAPIKeys({ projectRef }, { enabled: canReadAPIKeys })
@@ -117,11 +119,16 @@ export const EdgeFunctionDetails = () => {
       {
         projectRef,
         slug: selectedFunction.slug,
+        expectedGeneration: selectedFunction.version,
         payload: values,
       },
       {
         onSuccess: () => {
-          toast.success(`Successfully updated edge function`)
+          toast.success(
+            isFleet
+              ? $t('Function settings deployment queued')
+              : $t('Successfully updated edge function')
+          )
         },
       }
     )
@@ -162,10 +169,18 @@ export const EdgeFunctionDetails = () => {
                       <FormItemLayout
                         label={$t('Name')}
                         layout="flex-row-reverse"
-                        description={$t('Your slug and endpoint URL will remain the same')}
+                        description={
+                          isFleet
+                            ? $t('Function names are fixed in Fleet projects.')
+                            : $t('Your slug and endpoint URL will remain the same')
+                        }
                       >
                         <FormControl>
-                          <Input {...field} className="w-64" disabled={!canUpdateEdgeFunction} />
+                          <Input
+                            {...field}
+                            className="w-64"
+                            disabled={!canUpdateEdgeFunction || isFleet}
+                          />
                         </FormControl>
                       </FormItemLayout>
                     )}

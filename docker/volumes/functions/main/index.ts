@@ -190,6 +190,38 @@ Deno.serve(async (req: Request) => {
   const path_parts = pathname.split('/')
   const service_name = path_parts[1]
 
+  // Fleet checks the active revision without invoking user code. A function may
+  // accept only POST requests or require a request body, so its handler is not
+  // a reliable deployment probe.
+  if (service_name === '__fleet_probe') {
+    const slug = path_parts[2]
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    if (
+      req.method !== 'GET' ||
+      !slug ||
+      !/^[A-Za-z0-9][A-Za-z0-9_-]{0,62}$/.test(slug) ||
+      !serviceKey ||
+      req.headers.get('authorization') !== `Bearer ${serviceKey}`
+    ) {
+      return new Response(null, { status: 404 })
+    }
+    try {
+      const revision = (await Deno.readTextFile(
+        `/home/deno/functions/${slug}/.fleet-runtime-revision`
+      )).trim()
+      if (/^[0-9a-f]{64}$/.test(revision)) {
+        await Deno.stat(`/home/deno/functions/.fleet-artifacts/${slug}/revisions/${revision}`)
+        return new Response(null, {
+          status: 204,
+          headers: { 'X-Supabase-Fleet-Revision': revision, 'Cache-Control': 'no-store' },
+        })
+      }
+    } catch {
+      // A missing revision marker or artifact means the function is absent.
+    }
+    return new Response(null, { status: 404 })
+  }
+
   if (!service_name || service_name === '') {
     const error = { msg: 'missing function name in request' }
     return new Response(JSON.stringify(error), {

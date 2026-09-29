@@ -237,6 +237,32 @@ export async function getFunctionDeployment(projectRef: string, slug: string) {
   return result.data?.[0] === undefined ? null : mapDeployment(result.data[0])
 }
 
+const functionSettingsRowSchema = z.object({
+  size_bytes: z.coerce.number().int().positive(),
+  entrypoint_path: safePathSchema,
+  import_map_path: safePathSchema.nullable(),
+  static_patterns: z.array(safePathSchema),
+  verify_jwt: z.boolean(),
+})
+
+export async function getFunctionDeploymentSettings(projectRef: string, slug: string) {
+  const result = await executePlatformQuery({
+    query: `select artifact.size_bytes, artifact.entrypoint_path, artifact.import_map_path,
+      artifact.static_patterns,
+      coalesce((revision.desired_document ->> 'verifyJwt')::boolean, true) as verify_jwt
+    from platform.function_deployments deployment
+    join platform.function_artifact_references artifact
+      on artifact.project_ref = deployment.project_ref
+      and artifact.digest = deployment.desired_artifact_digest
+    join platform.configuration_revisions revision
+      on revision.revision_id = deployment.desired_revision
+    where deployment.project_ref = $1 and deployment.slug = $2 and deployment.state <> 'deleted'`,
+    parameters: [projectRef, functionSlugSchema.parse(slug)],
+  })
+  if (result.error) throw result.error
+  return result.data?.[0] ? functionSettingsRowSchema.parse(result.data[0]) : null
+}
+
 type CommitInput = {
   projectRef: string
   action: 'deploy' | 'delete'
@@ -382,6 +408,52 @@ export async function deployFunction(input: {
     importMapPath: built.input.metadata.importMapPath ?? '',
     staticPatterns: built.input.metadata.staticPatterns,
     verifyJwt: built.input.metadata.verifyJwt,
+    actor: input.actor,
+    correlationId: input.correlationId,
+  })
+}
+
+export async function updateFunctionDeploymentSettings(input: {
+  projectRef: string
+  slug: string
+  name: string
+  verifyJwt: boolean
+  expectedGeneration: number
+  actor: string
+  correlationId: string
+  idempotencyKey: string
+}) {
+  const slug = functionSlugSchema.parse(input.slug)
+  if (input.name !== slug) {
+    throw new FunctionDeploymentConflict(
+      'configuration_conflict',
+      'Fleet function names cannot differ from their slugs.'
+    )
+  }
+  await requireFunctionBinding(input)
+  const deployment = await getFunctionDeployment(input.projectRef, slug)
+  const settings = await getFunctionDeploymentSettings(input.projectRef, slug)
+  if (!deployment || !settings || !deployment.desiredArtifactDigest) {
+    throw new FunctionDeploymentConflict('configuration_conflict', 'Function deployment not found.')
+  }
+  if (deployment.generation !== input.expectedGeneration) {
+    throw new FunctionDeploymentConflict(
+      'configuration_conflict',
+      'Function deployment changed. Refresh the page and try again.'
+    )
+  }
+  return commitDeployment({
+    projectRef: input.projectRef,
+    action: 'deploy',
+    slug,
+    expectedGeneration: input.expectedGeneration,
+    idempotencyKey: input.idempotencyKey,
+    artifactDigest: deployment.desiredArtifactDigest,
+    artifactSize: settings.size_bytes,
+    entrypointPath: settings.entrypoint_path,
+    importMapPath: settings.import_map_path ?? '',
+    staticPatterns: settings.static_patterns,
+    verifyJwt: input.verifyJwt,
     actor: input.actor,
     correlationId: input.correlationId,
   })

@@ -170,7 +170,7 @@ services:
       FLEET_AGENT_ADAPTER: compose
       FLEET_AGENT_COMPOSE_OWNED_ROOT: /var/lib/supabase-fleet/config
       FLEET_AGENT_FUNCTION_ARTIFACT_ROOT: /var/lib/supabase-fleet/functions
-      FLEET_AGENT_FUNCTION_PROBE_URL: http://kong-${MANAGED_PROJECT_REF}:8000/functions/v1
+      FLEET_AGENT_FUNCTION_PROBE_URL: http://kong-${MANAGED_PROJECT_REF}:8000/functions/v1/__fleet_probe
       FLEET_AGENT_FUNCTION_PROBE_TOKEN: ${SERVICE_ROLE_KEY}
       FLEET_AGENT_DATABASE_ADMIN_DSN: postgres://supabase_admin:${POSTGRES_PASSWORD}@db-${MANAGED_PROJECT_REF}:5432/postgres?sslmode=disable
       FLEET_AGENT_DATABASE_POOLER_DSN: postgres://postgres.${POOLER_TENANT_ID}:${POSTGRES_PASSWORD}@supavisor:5432/postgres?sslmode=disable
