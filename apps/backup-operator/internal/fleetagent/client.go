@@ -27,6 +27,7 @@ type Client struct {
 	Executor          *Executor
 	HeartbeatInterval time.Duration
 	JWTObserverURL    string
+	JWTObserver       func(context.Context) ([]byte, error)
 	// SecretRecipientPublicKey is reported in every hello so Studio can seal
 	// secrets to this Agent.
 	SecretRecipientPublicKey []byte

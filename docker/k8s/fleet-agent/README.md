@@ -163,3 +163,34 @@ manifests strictly against the Kubernetes API types and checks that every
 `FLEET_AGENT_*` variable is one the Agent reads, that the Role covers the
 allowlisted services, and that the Agent and the patched `functions` Deployment
 mount the same function volume.
+
+### Observe the running HS256 JWT configuration
+
+JWT observation is opt-in. Set these values in `fleet-agent.env` before running
+`deploy.sh` (the recipient is Studio's observation **public** key):
+
+```sh
+FLEET_AGENT_JWT_OBSERVATION_RECIPIENT='<base64 Studio observation public key>'
+FLEET_AGENT_KUBERNETES_JWT_TARGETS='{"auth":{"deployment":"auth","container":"auth"},"rest":{"deployment":"rest","container":"rest"},"storage":{"deployment":"storage","container":"storage"},"realtime":{"deployment":"realtime","container":"realtime"},"functions":{"deployment":"functions","container":"functions"},"kong":{"deployment":"kong","container":"kong"},"supavisor":{"deployment":"supavisor","container":"supavisor"}}'
+```
+
+Adjust Deployment/container names to the installed stack. The logical gateway
+key remains `kong`; for Envoy, point it at the Envoy Deployment/container and
+add that Deployment name to `11-jwt-observer-rbac.yaml`. Both the Kong variable
+names and Envoy's `ANON_KEY`/`SERVICE_ROLE_KEY` names are supported.
+
+The optional Role permits reading Deployment/ReplicaSet/Pod metadata and
+creating `pods/exec` sessions within this namespace. It grants no Secret reads.
+The Agent verifies the Deployment → ReplicaSet → Pod owner UIDs, waits for all
+replicas to be ready, and executes a fixed JWT-only `printenv` command in the
+explicitly selected container. Containers must provide `/bin/sh` and `printenv`.
+A changed Pod/Deployment, replica disagreement, partial JWT rotation, expired
+API token, or asymmetric signing configuration prevents publication. Observation
+failures leave the last verified record to expire through Studio's existing
+freshness checks.
+
+Only the sealed observation travels through Fleet Control; credentials are
+never placed in the Agent identity ConfigMap or emitted to logs. The existing
+Studio synchronizer handles this observation in the same way as Compose.
+This section enables observation; Kubernetes JWT rotation remains unavailable
+until coordinated multi-service configuration delivery is enabled.

@@ -1,0 +1,38 @@
+# Optional JWT observation permissions. Install only when the Agent has an
+# explicit FLEET_AGENT_KUBERNETES_JWT_TARGETS map. This role reads no Secrets.
+# Pod names change on rollout, so exec cannot be restricted by resourceNames;
+# the Agent verifies Deployment -> ReplicaSet -> Pod ownership before executing
+# its fixed JWT-only printenv command in the configured container.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fleet-agent-jwt-observer
+  namespace: supabase
+rules:
+  - apiGroups: [apps]
+    resources: [deployments]
+    resourceNames: [auth, rest, storage, realtime, functions, kong, supavisor]
+    verbs: [get]
+  - apiGroups: [apps]
+    resources: [replicasets]
+    verbs: [get]
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [get, list]
+  - apiGroups: [""]
+    resources: [pods/exec]
+    verbs: [create]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fleet-agent-jwt-observer
+  namespace: supabase
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fleet-agent-jwt-observer
+subjects:
+  - kind: ServiceAccount
+    name: fleet-agent
+    namespace: supabase

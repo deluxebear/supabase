@@ -57,6 +57,8 @@ kubectl create configmap fleet-agent-identity -n "$NS" \
   --from-literal=FLEET_AGENT_CONTROL_ADDRESS="$FLEET_AGENT_CONTROL_ADDRESS" \
   --from-literal=FLEET_AGENT_SERVER_NAME="$FLEET_AGENT_SERVER_NAME" \
   --from-literal=FLEET_AGENT_ENROLLMENT_URL="$FLEET_AGENT_ENROLLMENT_URL" \
+  --from-literal=FLEET_AGENT_KUBERNETES_JWT_TARGETS="${FLEET_AGENT_KUBERNETES_JWT_TARGETS:-}" \
+  --from-literal=FLEET_AGENT_JWT_OBSERVATION_RECIPIENT="${FLEET_AGENT_JWT_OBSERVATION_RECIPIENT:-}" \
   --from-literal=FLEET_AGENT_KUBERNETES_SECRET_SERVICES="$FLEET_AGENT_KUBERNETES_SECRET_SERVICES" \
   --from-literal=FLEET_AGENT_KUBERNETES_LIFECYCLE_SERVICES="$FLEET_AGENT_KUBERNETES_LIFECYCLE_SERVICES" \
   --from-literal=FLEET_AGENT_LIFECYCLE_COMPONENT_VERSIONS="$FLEET_AGENT_LIFECYCLE_COMPONENT_VERSIONS" \
@@ -74,6 +76,11 @@ fi
 
 echo "==> RBAC, state and function volumes, capabilities"
 kubectl apply -f "$SCRIPT_DIR/10-rbac.yaml" -f "$SCRIPT_DIR/20-state.yaml" -f "$SCRIPT_DIR/25-functions-volume.yaml"
+
+if [ -n "${FLEET_AGENT_KUBERNETES_JWT_TARGETS:-}" ]; then
+  [ -n "${FLEET_AGENT_JWT_OBSERVATION_RECIPIENT:-}" ] || { echo "ERROR: JWT observation needs the Studio recipient public key" >&2; exit 1; }
+  kubectl apply -f "$SCRIPT_DIR/11-jwt-observer-rbac.yaml"
+fi
 
 if kubectl get configmap fleet-agent-enrollment-state -n "$NS" >/dev/null 2>&1; then
   echo "==> already enrolled (ConfigMap fleet-agent-enrollment-state exists)"

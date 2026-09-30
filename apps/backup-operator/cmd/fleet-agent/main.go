@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/ecdh"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -22,6 +23,7 @@ import (
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetdatabase"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetfunctions"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetinventory"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetjwt"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetlifecycle"
 	"github.com/supabase/supabase/apps/backup-operator/internal/fleetproviders"
 	"github.com/supabase/supabase/apps/backup-operator/internal/sealedsecret"
@@ -53,6 +55,8 @@ func main() {
 	kubeconfig := flag.String("kubeconfig", os.Getenv("FLEET_AGENT_KUBECONFIG"), "Kubernetes kubeconfig; empty uses in-cluster configuration")
 	allowedKubernetesFields := flag.String("kubernetes-allowed-field-prefixes", envOr("FLEET_AGENT_KUBERNETES_ALLOWED_FIELD_PREFIXES", "/metadata/labels/supabase.com~1fleet-revision,/metadata/annotations/supabase.com~1fleet-revision,/spec/template/metadata/annotations/supabase.com~1fleet-revision,/spec/template/spec/containers"), "comma-separated JSON pointer prefixes Fleet may own")
 	kubernetesSecretServices := flag.String("kubernetes-secret-services", os.Getenv("FLEET_AGENT_KUBERNETES_SECRET_SERVICES"), "comma-separated Deployments in --kubernetes-namespace that may receive sealed secrets as supabase-fleet-<name>-secrets")
+	kubernetesJWTTargets := flag.String("kubernetes-jwt-targets", os.Getenv("FLEET_AGENT_KUBERNETES_JWT_TARGETS"), "JSON map of JWT consumers to explicit Deployment and container names")
+	kubernetesJWTRecipient := flag.String("jwt-observation-recipient", os.Getenv("FLEET_AGENT_JWT_OBSERVATION_RECIPIENT"), "base64 Studio public key for sealed JWT observations")
 	kubernetesRolloutTimeout := flag.Duration("kubernetes-rollout-timeout", envDuration("FLEET_AGENT_KUBERNETES_ROLLOUT_TIMEOUT", 3*time.Minute), "how long a Deployment may take to roll out after its sealed secrets change")
 	kubernetesLifecycleServices := flag.String("kubernetes-lifecycle-services", os.Getenv("FLEET_AGENT_KUBERNETES_LIFECYCLE_SERVICES"), "comma-separated Deployments in --kubernetes-namespace that lifecycle actions may restart, roll out, or scale")
 	lifecyclePlugin := flag.String("lifecycle-plugin", os.Getenv("FLEET_AGENT_LIFECYCLE_PLUGIN"), "operator-managed typed lifecycle provider executable")
@@ -250,6 +254,32 @@ func main() {
 		SecretRecipientPublicKey: secretRecipient.PublicKey().Bytes(),
 		JWTObserverURL:           os.Getenv("FLEET_AGENT_JWT_OBSERVER_URL"),
 	}
+	if strings.TrimSpace(*kubernetesJWTTargets) != "" {
+		if *adapter != "kubernetes" || client.JWTObserverURL != "" || *kubernetesNamespace == "" {
+			log.Fatal("Kubernetes JWT observation requires the Kubernetes adapter, a namespace, and no Compose observer URL")
+		}
+		var targets map[string]fleetjwt.KubernetesTarget
+		if json.Unmarshal([]byte(*kubernetesJWTTargets), &targets) != nil {
+			log.Fatal("invalid Kubernetes JWT target map")
+		}
+		recipient, err := base64.StdEncoding.DecodeString(*kubernetesJWTRecipient)
+		if err != nil || len(recipient) != 32 {
+			log.Fatal("Kubernetes JWT observation requires a base64 Studio public key")
+		}
+		config, err := kubernetesConfig(*kubeconfig)
+		if err != nil {
+			log.Fatal(err)
+		}
+		dynamicClient, err := dynamic.NewForConfig(config)
+		if err != nil {
+			log.Fatal(err)
+		}
+		observer := fleetjwt.KubernetesObserver{Client: dynamicClient, Namespace: *kubernetesNamespace, Targets: targets, Recipient: recipient, ProjectRef: *projectRef, BindingID: *bindingID, ReadEnvironment: fleetjwt.KubernetesEnvironmentReader(config)}
+		if err := observer.Validate(); err != nil {
+			log.Fatal(err)
+		}
+		client.JWTObserver = observer.Observe
+	}
 	if err := client.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
 		log.Fatal(err)
 	}
@@ -408,7 +438,7 @@ func envDuration(name string, fallback time.Duration) time.Duration {
 	return fallback
 }
 
-func kubernetesClient(kubeconfig string) (dynamic.Interface, error) {
+func kubernetesConfig(kubeconfig string) (*rest.Config, error) {
 	var config *rest.Config
 	var err error
 	if kubeconfig == "" {
@@ -416,6 +446,14 @@ func kubernetesClient(kubeconfig string) (dynamic.Interface, error) {
 	} else {
 		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
 	}
+	if err != nil {
+		return nil, err
+	}
+	return config, nil
+}
+
+func kubernetesClient(kubeconfig string) (dynamic.Interface, error) {
+	config, err := kubernetesConfig(kubeconfig)
 	if err != nil {
 		return nil, err
 	}

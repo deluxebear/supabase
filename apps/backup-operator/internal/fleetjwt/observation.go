@@ -97,6 +97,12 @@ func ReadCredentials(envs map[string]map[string]string, now time.Time) (Credenti
 		}
 	}
 	anon, service := envs["kong"]["SUPABASE_ANON_KEY"], envs["kong"]["SUPABASE_SERVICE_KEY"]
+	if anon == "" {
+		anon = envs["kong"]["ANON_KEY"]
+	}
+	if service == "" {
+		service = envs["kong"]["SERVICE_ROLE_KEY"]
+	}
 	if !ValidateToken(anon, secret, "anon", now) || !ValidateToken(service, secret, "service_role", now) {
 		return Credentials{}, errors.New("JWT gateway credentials do not match the running key")
 	}
