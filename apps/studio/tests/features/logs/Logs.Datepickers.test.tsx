@@ -7,7 +7,7 @@ import { HttpResponse } from 'msw'
 import { useState } from 'react'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-import { render } from '../../helpers'
+import { render as baseRender } from '../../helpers'
 import { PREVIEWER_DATEPICKER_HELPERS } from '@/components/interfaces/Settings/Logs/Logs.constants'
 import {
   generateDynamicHelper,
@@ -20,8 +20,14 @@ import {
   type DatePickerValue,
 } from '@/components/interfaces/Settings/Logs/Logs.DatePickers'
 import { DatetimeHelper } from '@/components/interfaces/Settings/Logs/Logs.types'
-import { customRender } from '@/tests/lib/custom-render'
+import { I18nProvider } from '@/lib/i18n/I18nProvider'
+import { customRender as baseCustomRender } from '@/tests/lib/custom-render'
 import { addAPIMock, type APIErrorBody } from '@/tests/lib/msw'
+
+const render = (...[component, options]: Parameters<typeof baseRender>) =>
+  baseRender(<I18nProvider>{component}</I18nProvider>, options)
+const customRender = (...[component, options]: Parameters<typeof baseCustomRender>) =>
+  baseCustomRender(<I18nProvider>{component}</I18nProvider>, options)
 
 dayjs.extend(timezone)
 dayjs.extend(utc)

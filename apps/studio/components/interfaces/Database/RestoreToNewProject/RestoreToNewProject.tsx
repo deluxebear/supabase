@@ -132,7 +132,7 @@ export const RestoreToNewProject = () => {
         type="default"
         title={$t('Restoring to new projects are not available for OrioleDB')}
         description={$t(
-          'OrioleDB is currently in public alpha and projects created are strictly ephemeral with no database backups'
+          'OrioleDB is currently in public beta and restoring to a new project is unavailable on OrioleDB projects'
         )}
       />
     )

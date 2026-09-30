@@ -168,7 +168,7 @@ export const RowMenu = ({
           <div className="relative">
             <Button
               variant="default"
-              className="px-1.25 hit-area-2"
+              className="w-6.5 hit-area-1"
               aria-label={
                 hasUpdate ? $t('Pipeline options, update available') : $t('Pipeline options')
               }
@@ -176,7 +176,7 @@ export const RowMenu = ({
             />
             {hasUpdate && (
               <span
-                className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-primary-bright rounded-full"
+                className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary-bright"
                 aria-hidden
               />
             )}
@@ -194,12 +194,16 @@ export const RowMenu = ({
           {hasUpdate && (
             <>
               <DropdownMenuItem
-                className="space-x-2"
+                className="gap-x-2"
                 onClick={() => onUpdateClick?.()}
                 disabled={isPipelineRequestPending}
               >
                 <ArrowUpCircle size={14} />
                 <p>{$t('Update available')}</p>
+                <span
+                  className="ml-auto h-2 w-2 shrink-0 rounded-full bg-primary-bright"
+                  aria-hidden
+                />
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>

@@ -36,6 +36,7 @@ interface ProjectCreationFooterProps {
   organizationProjects: OrgProject[]
   isCreatingNewProject: boolean
   isSuccessNewProject: boolean
+  isLoadingAvailableRegions?: boolean
   cancelAction?: ProjectCreationCancelAction
 }
 
@@ -47,6 +48,7 @@ export const ProjectCreationFooter = ({
   organizationProjects,
   isCreatingNewProject,
   isSuccessNewProject,
+  isLoadingAvailableRegions = false,
   cancelAction = 'studio',
 }: ProjectCreationFooterProps) => {
   const router = useRouter()
@@ -238,7 +240,7 @@ export const ProjectCreationFooter = ({
           variant="primary"
           type="submit"
           loading={isCreatingNewProject || isSuccessNewProject}
-          disabled={!canCreateProject}
+          disabled={!canCreateProject || isLoadingAvailableRegions}
         >
           {$t('Create new project')}
         </Button>

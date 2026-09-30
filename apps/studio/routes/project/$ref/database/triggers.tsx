@@ -4,6 +4,7 @@ import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { PageLayout } from '@/components/layouts/PageLayout/PageLayout'
 import { NoPermission } from '@/components/ui/NoPermission'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
+import { t as $t } from '@/lib/i18n'
 
 export const Route = createFileRoute('/project/$ref/database/triggers')({
   component: TriggersShell,
@@ -25,7 +26,7 @@ function TriggersShell() {
 
   return (
     <PageLayout
-      title="Database Triggers"
+      title={$t('Database Triggers')}
       subtitle="Execute actions automatically when database events occur"
       size="large"
       navigationItems={[

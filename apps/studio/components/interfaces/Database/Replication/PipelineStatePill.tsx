@@ -57,7 +57,7 @@ export const PipelineStatePill = ({
     return (
       <span className="inline-flex" aria-live="polite" aria-atomic="true">
         <span className="sr-only">{$t('Loading pipeline status')}</span>
-        <ShimmeringLoader className="w-20" />
+        <ShimmeringLoader className="h-5 w-20 py-0" />
       </span>
     )
   }
@@ -82,7 +82,7 @@ export const PipelineStatePill = ({
             {shouldShowError ? $t('Unknown') : label}
           </StateDot>
         </TooltipTrigger>
-        <TooltipContent side="bottom" className="max-w-xs">
+        <TooltipContent side="bottom" className="max-w-64">
           {tooltipMessage}
           {isError && isRequestPending && ` Unable to refresh status: ${error?.message}.`}
         </TooltipContent>

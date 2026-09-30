@@ -13,8 +13,9 @@ import { SupportAssistantSuccessCard } from './SupportAssistantSuccessCard'
 import { createInitialSupportFormState, supportFormReducer } from './SupportForm.state'
 import { NO_PROJECT_MARKER, type SupportFormUrlKeys } from './SupportForm.utils'
 import { SupportFormV3 } from './SupportFormV3'
+import { DEFAULT_STATUS_PAGE_URL, getSupportStatusLabel } from './SupportStatus.utils'
 import { useSupportForm } from './useSupportForm'
-import { useIncidentStatusQuery } from '@/data/platform/incident-status-query'
+import { useSupportStatus } from './useSupportStatus'
 import { useStateTransition } from '@/hooks/misc/useStateTransition'
 import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
@@ -50,14 +51,10 @@ export function SupportForm({ initialParams }: SupportFormProps) {
   const { form, initialError, projectRef } = useSupportForm(dispatch, initialParams)
   const showSupportAssistantFollowUp = useFlag('supportAssistantFollowUp') === true
 
-  const {
-    data: allStatusPageEvents,
-    isPending: isIncidentsPending,
-    isError: isIncidentsError,
-  } = useIncidentStatusQuery()
-  const { incidents = [] } = allStatusPageEvents ?? {}
-  const hasActiveIncidents =
-    !isIncidentsPending && !isIncidentsError && incidents && incidents.length > 0
+  const supportStatus = useSupportStatus()
+  const admonition = supportStatus.status === 'success' ? supportStatus.admonition : null
+  const statusPageUrl =
+    supportStatus.status === 'success' ? supportStatus.pageUrl : DEFAULT_STATUS_PAGE_URL
 
   const sendTelemetry = useSupportFormTelemetry()
   useStateTransition(state, 'submitting', 'success', (_, curr) => {
@@ -87,7 +84,10 @@ export function SupportForm({ initialParams }: SupportFormProps) {
   return (
     <div className="relative h-full overflow-y-auto overflow-x-hidden">
       <IncidentAdmonition
-        isActive={hasActiveIncidents}
+        isActive={admonition !== null}
+        title={admonition?.title ?? ''}
+        description={admonition?.description ?? ''}
+        statusPageUrl={statusPageUrl}
         className="rounded-none border-x-0 shadow-none"
       />
       <div className="min-h-full px-5 pt-5">
@@ -123,10 +123,11 @@ export function SupportForm({ initialParams }: SupportFormProps) {
 }
 
 export function SupportFormStatusButton() {
-  const { data: allStatusPageEvents, isPending: isLoading, isError } = useIncidentStatusQuery()
-  const { incidents = [], maintenanceEvents = [] } = allStatusPageEvents ?? {}
-  const isMaintenance = maintenanceEvents.length > 0
-  const isIncident = incidents.length > 0
+  const supportStatus = useSupportStatus()
+  const isLoading = supportStatus.status === 'pending'
+  const isIncident = supportStatus.status === 'success' && supportStatus.hasActiveIncidents
+  const statusPageUrl =
+    supportStatus.status === 'success' ? supportStatus.pageUrl : DEFAULT_STATUS_PAGE_URL
 
   return (
     <Tooltip>
@@ -147,16 +148,8 @@ export function SupportFormStatusButton() {
             )
           }
         >
-          <Link href="https://status.supabase.com/" target="_blank" rel="noreferrer">
-            {isLoading
-              ? $t('Checking status')
-              : isError
-                ? $t('Failed to check status')
-                : isIncident
-                  ? $t('Active incident ongoing')
-                  : isMaintenance
-                    ? $t('Scheduled maintenance')
-                    : $t('All systems operational')}
+          <Link href={statusPageUrl} target="_blank" rel="noreferrer">
+            {getSupportStatusLabel(supportStatus)}
           </Link>
         </Button>
       </TooltipTrigger>

@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { PageLayout } from '@/components/layouts/PageLayout/PageLayout'
+import { t as $t } from '@/lib/i18n'
 import OrganizationsPage from '@/pages/organizations'
 
 export const Route = createFileRoute('/_app/organizations')({
@@ -14,7 +15,7 @@ export const Route = createFileRoute('/_app/organizations')({
 function Organizations() {
   // Next page default export is already wrapped in withAuth.
   return (
-    <PageLayout title="Your organizations" className="max-w-[1200px] lg:px-6 mx-auto">
+    <PageLayout title={$t('Your organizations')} className="max-w-[1200px] lg:px-6 mx-auto">
       <OrganizationsPage dehydratedState={undefined} />
     </PageLayout>
   )

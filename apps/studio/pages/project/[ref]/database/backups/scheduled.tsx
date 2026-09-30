@@ -19,13 +19,12 @@ import { SelfPlatformBackupOperator } from '@/components/interfaces/Database/Bac
 import { DatabaseLayout } from '@/components/layouts/DatabaseLayout/DatabaseLayout'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import { AlertError } from '@/components/ui/AlertError'
-import { DocsButton } from '@/components/ui/DocsButton'
 import { HighAvailabilityDisabledEmptyState } from '@/components/ui/HighAvailability/HighAvailabilityDisabledEmptyState'
 import InformationBox from '@/components/ui/InformationBox'
 import { NoPermission } from '@/components/ui/NoPermission'
 import { useBackupsQuery } from '@/data/database/backups-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
-import { useIsHighAvailability, useIsOrioleDbInAws } from '@/hooks/misc/useSelectedProject'
+import { useIsHighAvailability } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
@@ -66,7 +65,6 @@ const ScheduledBackups = () => {
     isSuccess,
   } = useBackupsQuery({ projectRef }, { enabled: !IS_SELF_PLATFORM })
 
-  const isOrioleDbInAws = useIsOrioleDbInAws()
   const isHighAvailability = useIsHighAvailability()
   const isPitrEnabled = backups?.pitr_enabled
 
@@ -91,20 +89,6 @@ const ScheduledBackups = () => {
           <SelfPlatformBackupOperator projectRef={projectRef} />
         )}
       </div>
-    )
-  }
-
-  if (isOrioleDbInAws) {
-    return (
-      <Admonition
-        type="default"
-        title={$t('Database backups are not available for OrioleDB')}
-        description={$t(
-          'OrioleDB is currently in public alpha and projects created are strictly ephemeral with no database backups'
-        )}
-      >
-        <DocsButton abbrev={false} className="mt-2" href={`${DOCS_URL}`} />
-      </Admonition>
     )
   }
 

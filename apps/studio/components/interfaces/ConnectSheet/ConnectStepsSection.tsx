@@ -35,7 +35,8 @@ import { useProjectAddonsQuery } from '@/data/subscriptions/project-addons-query
 import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { useDeploymentMode } from '@/hooks/misc/useDeploymentMode'
 import { useIsDataApiEnabled } from '@/hooks/misc/useIsDataApiEnabled'
-import { useIsHighAvailability } from '@/hooks/misc/useSelectedProject'
+import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { useIsAwsCloudProvider, useIsHighAvailability } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
 import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { pluckObjectFields } from '@/lib/helpers'
@@ -218,10 +219,15 @@ function StepContent({
 
 export function ConnectStepsSection({ steps, state, projectKeys }: ConnectStepsSectionProps) {
   const { ref } = useParams()
+  const isAws = useIsAwsCloudProvider()
   const stepsContainerRef = useRef<HTMLDivElement | null>(null)
   const deploymentMode = useDeploymentMode()
   const isHighAvailability = useIsHighAvailability()
   const connectionStringPooler = useConnectionStringPooler(deploymentMode)
+
+  const { projectAddonsDedicatedIpv4Address } = useIsFeatureEnabled([
+    'project_addons:dedicated_ipv4_address',
+  ])
 
   const { data: ipv4Addon } = useProjectAddonsQuery(
     { projectRef: ref },
@@ -233,7 +239,9 @@ export function ConnectStepsSection({ steps, state, projectKeys }: ConnectStepsS
     }
   )
   const showIpv4AddonNotice = shouldShowIpv4AddonNotice({
+    isAws,
     isPlatform: deploymentMode.isPlatform && STUDIO_DEPLOYMENT_PROFILE !== 'fleet',
+    isIpv4Enabled: projectAddonsDedicatedIpv4Address,
     mode: state.mode,
     connectionMethod: state.connectionMethod,
     useSharedPooler: state.useSharedPooler,

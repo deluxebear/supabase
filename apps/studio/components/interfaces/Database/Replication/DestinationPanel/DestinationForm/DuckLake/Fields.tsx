@@ -29,6 +29,13 @@ import { SelectionListState } from 'ui-patterns/SelectionListState'
 import { DEFAULT_DUCKLAKE_POOL_SIZE, STORED_SECRET_PLACEHOLDER } from '../DestinationForm.constants'
 import type { DestinationPanelSchemaType } from '../DestinationForm.schema'
 import {
+  DUCKLAKE_BUCKET_FIELD_COPY,
+  DUCKLAKE_CATALOG_PROJECT_FIELD_COPY,
+  DUCKLAKE_CATALOG_URL_FIELD_COPY,
+  DUCKLAKE_DATA_PATH_FIELD_COPY,
+  DUCKLAKE_STORAGE_PROJECT_FIELD_COPY,
+} from '../DestinationFormFieldCopy'
+import {
   isMetadataListErrorVisible,
   isMetadataListLoading,
   useRefreshOnOpen,
@@ -58,7 +65,7 @@ const DUCKLAKE_MODE_OPTIONS = [
     value: DUCKLAKE_MODE_CUSTOM,
     icon: SlidersHorizontal,
     label: 'Custom parameters',
-    description: 'Bring your own PostgreSQL catalog and S3-compatible object storage credentials.',
+    description: 'Bring your own Postgres catalog and S3-compatible object storage credentials.',
   },
 ] as const
 
@@ -188,9 +195,7 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
       <div className="flex flex-col gap-y-1">
         <p className="text-sm font-medium text-foreground">{$t('Catalog')}</p>
         <p className="text-sm text-foreground-light">
-          {$t(
-            "The selected project's Postgres database is used as the PostgreSQL DuckLake catalog"
-          )}
+          {$t("The selected project's Postgres database is used as the DuckLake catalog.")}
         </p>
       </div>
 
@@ -200,15 +205,11 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
         render={({ field }) => (
           <FormItemLayout
             layout="horizontal"
-            label={$t('Catalog project')}
+            label={$tValue(DUCKLAKE_CATALOG_PROJECT_FIELD_COPY.label)}
             description={
               <div className="flex flex-col gap-y-2">
                 {renderRegionWarning(field.value)}
-                <span>
-                  {$t(
-                    "Pipelines connects to this project's Postgres instance to store the DuckLake catalog"
-                  )}
-                </span>
+                <span>{$tValue(DUCKLAKE_CATALOG_PROJECT_FIELD_COPY.description)}</span>
               </div>
             }
           >
@@ -230,7 +231,7 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
           <FormItemLayout
             layout="horizontal"
             label={$t('Pool size')}
-            description={$t('Number of concurrent DuckDB connections to the catalog')}
+            description={$t('Number of concurrent DuckDB connections to the catalog.')}
           >
             <FormControl>
               <Input
@@ -255,7 +256,7 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
           <FormItemLayout
             layout="horizontal"
             label={$t('Metadata schema')}
-            description={$t("Schema used for DuckLake metadata tables in the catalog's Postgres")}
+            description={$t("Schema used for DuckLake metadata tables in the catalog's Postgres.")}
           >
             <FormControl>
               <Input {...field} placeholder="ducklake" value={field.value ?? ''} />
@@ -277,11 +278,11 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
         render={({ field }) => (
           <FormItemLayout
             layout="horizontal"
-            label={$t('Storage project')}
+            label={$tValue(DUCKLAKE_STORAGE_PROJECT_FIELD_COPY.label)}
             description={
               <div className="flex flex-col gap-y-2">
                 {renderRegionWarning(field.value)}
-                <span>{$t('The project whose object storage holds the DuckLake data files')}</span>
+                <span>{$tValue(DUCKLAKE_STORAGE_PROJECT_FIELD_COPY.description)}</span>
               </div>
             }
           >
@@ -306,8 +307,8 @@ const DuckLakeSupabaseFields = ({ form }: { form: UseFormReturn<DestinationPanel
         render={({ field }) => (
           <FormItemLayout
             layout="horizontal"
-            label={$t('Bucket')}
-            description={$t('The bucket in which DuckLake data files will be stored.')}
+            label={$tValue(DUCKLAKE_BUCKET_FIELD_COPY.label)}
+            description={$tValue(DUCKLAKE_BUCKET_FIELD_COPY.description)}
           >
             <div className="flex items-center gap-x-2">
               <div className="grow">
@@ -385,7 +386,7 @@ const DuckLakeCustomFields = ({
         <p className="text-sm font-medium text-foreground">{$t('Catalog')}</p>
         <p className="text-sm text-foreground-light">
           {$t(
-            'Configure the PostgreSQL DuckLake catalog and S3-compatible storage for replicated data'
+            'Configure the Postgres DuckLake catalog and S3-compatible storage for replicated data.'
           )}
         </p>
       </div>
@@ -397,17 +398,17 @@ const DuckLakeCustomFields = ({
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label={$t('Catalog URL')}
+              label={$tValue(DUCKLAKE_CATALOG_URL_FIELD_COPY.label)}
               description={
                 editMode
-                  ? $t('Stored catalog URL is hidden. Enter a new URL to replace it.')
-                  : $t('A PostgreSQL connection string for the DuckLake catalog')
+                  ? DUCKLAKE_CATALOG_URL_FIELD_COPY.editDescription
+                  : DUCKLAKE_CATALOG_URL_FIELD_COPY.createDescription
               }
             >
               <FormControl>
                 <PasswordInput
                   value={field.value ?? ''}
-                  type={showCatalogUrl ? 'text' : 'password'}
+                  type={showCatalogUrl && !editMode ? 'text' : 'password'}
                   placeholder={
                     editMode
                       ? STORED_SECRET_PLACEHOLDER
@@ -415,13 +416,18 @@ const DuckLakeCustomFields = ({
                   }
                   onChange={(event) => field.onChange(event.target.value)}
                   actions={
-                    <div className="flex items-center justify-center">
-                      <Button
-                        className="w-7"
-                        icon={showCatalogUrl ? <Eye /> : <EyeOff />}
-                        onClick={() => setShowCatalogUrl(!showCatalogUrl)}
-                      />
-                    </div>
+                    !editMode && (
+                      <div className="flex items-center justify-center">
+                        <Button
+                          className="w-7"
+                          aria-label={
+                            showCatalogUrl ? $t('Hide catalog URL') : $t('Show catalog URL')
+                          }
+                          icon={showCatalogUrl ? <Eye /> : <EyeOff />}
+                          onClick={() => setShowCatalogUrl(!showCatalogUrl)}
+                        />
+                      </div>
+                    )
                   }
                 />
               </FormControl>
@@ -435,8 +441,8 @@ const DuckLakeCustomFields = ({
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label={$t('Data path')}
-              description={$t('An S3 path where DuckLake data files will be written')}
+              label={$tValue(DUCKLAKE_DATA_PATH_FIELD_COPY.label)}
+              description={$tValue(DUCKLAKE_DATA_PATH_FIELD_COPY.description)}
             >
               <FormControl>
                 <Input {...field} placeholder="s3://bucket/path" value={field.value ?? ''} />
@@ -452,7 +458,7 @@ const DuckLakeCustomFields = ({
             <FormItemLayout
               layout="horizontal"
               label={$t('Pool size')}
-              description={$t('Number of concurrent DuckDB connections to use')}
+              description={$t('Number of concurrent DuckDB connections to use.')}
             >
               <FormControl>
                 <Input
@@ -491,7 +497,7 @@ const DuckLakeCustomFields = ({
               description={
                 editMode
                   ? $t('Stored access key ID is hidden. Enter a new key ID to replace it.')
-                  : $t('Required access key ID for the object storage provider')
+                  : $t('Required access key ID for the object storage provider.')
               }
             >
               <FormControl>
@@ -515,23 +521,30 @@ const DuckLakeCustomFields = ({
               description={
                 editMode
                   ? $t('Stored secret access key is hidden. Enter a new secret to replace it.')
-                  : $t('Required secret access key for the object storage provider')
+                  : $t('Required secret access key for the object storage provider.')
               }
               className="relative"
             >
               <FormControl>
                 <Input
                   {...field}
-                  type={showSecretAccessKey ? 'text' : 'password'}
+                  type={showSecretAccessKey && !editMode ? 'text' : 'password'}
                   placeholder={editMode ? STORED_SECRET_PLACEHOLDER : 'my-secret-key'}
                   value={field.value ?? ''}
                 />
               </FormControl>
-              <Button
-                icon={showSecretAccessKey ? <Eye /> : <EyeOff />}
-                className="w-7 absolute right-6 top-[4px]"
-                onClick={() => setShowSecretAccessKey(!showSecretAccessKey)}
-              />
+              {!editMode && (
+                <Button
+                  aria-label={
+                    showSecretAccessKey
+                      ? $t('Hide secret access key')
+                      : $t('Show secret access key')
+                  }
+                  icon={showSecretAccessKey ? <Eye /> : <EyeOff />}
+                  className="w-7 absolute right-6 top-[4px]"
+                  onClick={() => setShowSecretAccessKey(!showSecretAccessKey)}
+                />
+              )}
             </FormItemLayout>
           )}
         />
@@ -543,7 +556,7 @@ const DuckLakeCustomFields = ({
             <FormItemLayout
               layout="horizontal"
               label={$t('S3 region')}
-              description={$t('Required region for the object storage provider')}
+              description={$t('Required region for the object storage provider.')}
             >
               <FormControl>
                 <Input {...field} placeholder="us-east-1" value={field.value ?? ''} />
@@ -560,7 +573,7 @@ const DuckLakeCustomFields = ({
               layout="horizontal"
               label={$t('S3 endpoint')}
               description={$t(
-                'Required endpoint without the protocol scheme, for example `127.0.0.1:5000/s3`'
+                'Required endpoint without the protocol scheme, for example `127.0.0.1:5000/s3`.'
               )}
             >
               <FormControl>
@@ -578,7 +591,7 @@ const DuckLakeCustomFields = ({
               layout="horizontal"
               label={$t('S3 URL style')}
               description={$t(
-                'Choose `path` for MinIO/Supabase-style endpoints or `vhost` for AWS-style virtual host addressing'
+                'Choose `path` for MinIO/Supabase-style endpoints or `vhost` for AWS-style virtual host addressing.'
               )}
             >
               <FormControl>
@@ -601,7 +614,7 @@ const DuckLakeCustomFields = ({
             <FormItemLayout
               layout="horizontal"
               label={$t('Use SSL')}
-              description={$t('Whether to use SSL when connecting to the S3-compatible endpoint')}
+              description={$t('Whether to use SSL when connecting to the S3-compatible endpoint.')}
             >
               <FormControl>
                 <Select
@@ -635,7 +648,7 @@ const DuckLakeCustomFields = ({
             <FormItemLayout
               layout="horizontal"
               label={$t('Metadata schema')}
-              description={$t('Schema used for DuckLake metadata tables in PostgreSQL')}
+              description={$t('Schema used for DuckLake metadata tables in Postgres.')}
             >
               <FormControl>
                 <Input {...field} placeholder="ducklake" value={field.value ?? ''} />

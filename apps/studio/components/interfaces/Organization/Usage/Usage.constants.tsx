@@ -405,7 +405,7 @@ export const USAGE_CATEGORIES: (subscription?: OrgSubscription) => CategoryMeta[
           links: [
             {
               name: 'Log Ingestion',
-              url: `${DOCS_URL}/guides/platform/manage-your-usage/log-ingest`,
+              url: `${DOCS_URL}/guides/platform/manage-your-usage/logs-ingest`,
             },
           ],
         },
@@ -423,7 +423,7 @@ export const USAGE_CATEGORIES: (subscription?: OrgSubscription) => CategoryMeta[
           links: [
             {
               name: 'Log Query',
-              url: `${DOCS_URL}/guides/platform/manage-your-usage/log-query`,
+              url: `${DOCS_URL}/guides/platform/manage-your-usage/logs-query`,
             },
           ],
         },

@@ -25,9 +25,9 @@ import { useIntegrationVercelConnectionsCreateMutation } from '@/data/integratio
 import { useVercelProjectsQuery } from '@/data/integrations/integrations-vercel-projects-query'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { withAuth } from '@/hooks/misc/withAuth'
-import { BASE_PATH } from '@/lib/constants'
 import { getErrorMessage } from '@/lib/get-error-message'
 import { t as $t } from '@/lib/i18n'
+import { getFrameworkIconUrl } from '@/lib/integration-utils'
 import { hasVercelDeployButtonSignals } from '@/lib/integrations/vercel-install.utils'
 import { buildStudioPageTitle } from '@/lib/page-title'
 import { useProfileNameAndPicture } from '@/lib/profile'
@@ -84,16 +84,12 @@ const VercelChooseProjectPage: NextPageWithLayout = () => {
   const getForeignProjectIcon = useCallback(
     (_project: ForeignProject) => {
       const project = vercelProjectsById[_project.id]
+      const frameworkIconUrl = getFrameworkIconUrl(project?.framework)
 
-      return !project?.framework ? (
+      return !frameworkIconUrl ? (
         vercelIcon
       ) : (
-        <img
-          src={`${BASE_PATH}/img/icons/frameworks/${project.framework}.svg`}
-          width={21}
-          height={21}
-          alt={$t('Framework icon')}
-        />
+        <img src={frameworkIconUrl} width={21} height={21} alt={$t('Framework icon')} />
       )
     },
     [vercelProjectsById]

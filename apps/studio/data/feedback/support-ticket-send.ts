@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 // End of third-party imports
 
 import type { ExtendedSupportCategories } from '@/components/interfaces/Support/Support.constants'
+import { NO_ORG_MARKER, NO_PROJECT_MARKER } from '@/components/interfaces/Support/SupportForm.utils'
 import { handleError, post } from '@/data/fetchers'
 import { t as $t } from '@/lib/i18n'
 import { ResponseError } from '@/types'
@@ -56,8 +57,9 @@ export async function sendSupportTicket({
       message,
       category,
       severity,
-      projectRef,
-      organizationSlug,
+      // Skip `NO_PROJECT_MARKER` values so we don't need to have special handling for it's value in API validation.
+      projectRef: projectRef === NO_PROJECT_MARKER ? undefined : projectRef,
+      organizationSlug: organizationSlug === NO_ORG_MARKER ? undefined : organizationSlug,
       library,
       verified: true,
       tags: ['dashboard-support-form'],

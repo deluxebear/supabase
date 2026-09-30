@@ -1,8 +1,8 @@
 import dayjs from 'dayjs'
-import { enUS, zhCN } from 'date-fns/locale'
 import { Clock, HistoryIcon, Lock } from 'lucide-react'
 import type { PropsWithChildren } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { enUS, zhCN } from 'react-day-picker/locale'
 import {
   Button,
   ButtonProps,

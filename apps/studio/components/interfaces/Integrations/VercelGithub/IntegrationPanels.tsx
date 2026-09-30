@@ -14,7 +14,7 @@ import type {
 import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
 import { BASE_PATH } from '@/lib/constants'
 import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
-import { getIntegrationConfigurationUrl } from '@/lib/integration-utils'
+import { getFrameworkIconUrl, getIntegrationConfigurationUrl } from '@/lib/integration-utils'
 
 const ICON_STROKE_WIDTH = 2
 const ICON_SIZE = 14
@@ -157,6 +157,7 @@ export const IntegrationConnection = forwardRef<HTMLLIElement, IntegrationConnec
     ref
   ) => {
     const { data: project } = useProjectDetailQuery({ ref: connection.supabase_project_ref })
+    const frameworkIconUrl = getFrameworkIconUrl(connection?.metadata?.framework)
 
     return (
       <li
@@ -193,17 +194,12 @@ export const IntegrationConnection = forwardRef<HTMLLIElement, IntegrationConnec
               />
 
               <div className="flex-1 min-w-0 flex gap-2 items-center">
-                {!connection?.metadata?.framework ? (
+                {!frameworkIconUrl ? (
                   <div className="bg-black text-white w-4 h-4 rounded-sm flex items-center justify-center">
                     <HandleIcon type={type} className={'w-2.5!'} />
                   </div>
                 ) : (
-                  <img
-                    src={`${BASE_PATH}/img/icons/frameworks/${connection.metadata.framework}.svg`}
-                    width={21}
-                    height={21}
-                    alt={`icon`}
-                  />
+                  <img src={frameworkIconUrl} width={21} height={21} alt={`icon`} />
                 )}
                 {type === 'GitHub' ? (
                   <a

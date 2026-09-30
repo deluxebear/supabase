@@ -192,7 +192,7 @@ export const DiskManagementReviewAndSubmitDialog = ({
                 description={
                   anyDiskAttributeChange && !hasTotalSizeChanges && !hasStorageTypeChanges
                     ? $t(
-                        'Disk attributes, including IOPS and disk size, may only be modified 4 times within a rolling 24-hour window. A new modification can be started as soon as the previous one completes.'
+                        'Disk attributes, including IOPS and disk size, will be locked for 4 hours after this change.'
                       )
                     : undefined
                 }
@@ -223,7 +223,7 @@ export const DiskManagementReviewAndSubmitDialog = ({
               <BreakdownRow
                 label={$t('Disk size')}
                 description={$t(
-                  'You can modify disk attributes up to 4 times within a rolling 24-hour window.'
+                  'For 4 hours after changes you will not be able to modify disk attributes.'
                 )}
               >
                 <div className="flex flex-col items-end gap-0.5">

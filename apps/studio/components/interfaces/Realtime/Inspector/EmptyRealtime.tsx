@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import { AiIconAnimation, Button, Card, cn } from 'ui'
 
+import { SuspensionNotice } from '../../Settings/SuspensionNotice'
 import { AnimatedCursors } from './AnimatedCursors'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { DocsButton } from '@/components/ui/DocsButton'
+import { useRealtimeConfigurationQuery } from '@/data/realtime/realtime-config-query'
 import { DOCS_URL } from '@/lib/constants'
 import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
@@ -16,6 +18,9 @@ export const EmptyRealtime = ({ projectRef }: { projectRef: string }) => {
   const aiSnap = useAiAssistantStateSnapshot()
   const { openSidebar } = useSidebarManagerSnapshot()
 
+  const { data } = useRealtimeConfigurationQuery({ projectRef })
+  const isSuspended = Boolean(data?.admin_suspended_at)
+
   const handleCreateTriggerWithAssistant = () => {
     openSidebar(SIDEBAR_KEYS.AI_ASSISTANT)
     aiSnap.newChat({
@@ -27,7 +32,7 @@ export const EmptyRealtime = ({ projectRef }: { projectRef: string }) => {
   return (
     <div className="flex grow items-center justify-center p-12 @container">
       <div className="w-full max-w-4xl flex flex-col items-center gap-0">
-        <div className="text-center mb-12">
+        <div className={cn('text-center', !isSuspended && 'mb-12')}>
           <AnimatedCursors />
           <h2 className="heading-section mb-1">{$t('Create realtime experiences')}</h2>
           <p className="text-foreground-light mb-6">
@@ -35,10 +40,14 @@ export const EmptyRealtime = ({ projectRef }: { projectRef: string }) => {
               'Send your first realtime message from your database, application code or edge function'
             )}
           </p>
-          <Button icon={<AiIconAnimation />} onClick={handleCreateTriggerWithAssistant}>
-            {$t('Set up realtime for me')}
-          </Button>
+          {!isSuspended && (
+            <Button icon={<AiIconAnimation />} onClick={handleCreateTriggerWithAssistant}>
+              {$t('Set up realtime for me')}
+            </Button>
+          )}
         </div>
+
+        {isSuspended && <SuspensionNotice suspendedAt={data?.admin_suspended_at} />}
 
         <Card className="grid grid-cols-1 @xl:grid-cols-3 bg divide-x mb-8">
           <div className="flex flex-col h-full p-6">

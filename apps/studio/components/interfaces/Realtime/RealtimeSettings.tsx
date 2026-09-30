@@ -26,6 +26,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 import * as z from 'zod'
 
+import { SuspensionNotice } from '../Settings/SuspensionNotice'
 import { AlertError } from '@/components/ui/AlertError'
 import { ToggleSpendCapButton } from '@/components/ui/ToggleSpendCapButton'
 import { UpgradePlanButton } from '@/components/ui/UpgradePlanButton'
@@ -69,9 +70,7 @@ export const RealtimeSettings = () => {
     projectRef: project?.ref,
     connectionString: project?.connectionString,
   })
-  const { data, error, isError, isPending } = useRealtimeConfigurationQuery({
-    projectRef,
-  })
+  const { data, error, isError, isPending } = useRealtimeConfigurationQuery({ projectRef })
 
   const { data: policies, isSuccess: isSuccessPolicies } = useDatabasePoliciesQuery({
     projectRef,
@@ -123,6 +122,7 @@ export const RealtimeSettings = () => {
   const canConfigureUsageLimits =
     !STUDIO_CAPABILITIES.hostedBilling || isUsageBillingEnabled === true
   const isRealtimeDisabled = data?.suspend ?? REALTIME_DEFAULT_CONFIG.suspend
+  const isAdminSuspended = Boolean(data?.admin_suspended_at)
   // Check if RLS policies exist for realtime.messages table
   const realtimeMessagesPolicies = policies?.filter(
     (policy) => policy.schema === 'realtime' && policy.table === 'messages'
@@ -329,6 +329,8 @@ export const RealtimeSettings = () => {
 
   return (
     <>
+      {isAdminSuspended && <SuspensionNotice suspendedAt={data?.admin_suspended_at} />}
+
       <Form {...form}>
         <form id={formId} onSubmit={form.handleSubmit(onSubmit)}>
           {isError ? (

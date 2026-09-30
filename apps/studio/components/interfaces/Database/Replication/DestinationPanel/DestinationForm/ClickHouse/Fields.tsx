@@ -16,7 +16,12 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import { STORED_SECRET_PLACEHOLDER } from '../DestinationForm.constants'
 import type { DestinationPanelSchemaType } from '../DestinationForm.schema'
-import { t as $t } from '@/lib/i18n'
+import {
+  CLICKHOUSE_DATABASE_FIELD_COPY,
+  CLICKHOUSE_ENGINE_FIELD_COPY,
+  CLICKHOUSE_URL_FIELD_COPY,
+} from '../DestinationFormFieldCopy'
+import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 
 export const ClickHouseFields = ({
   form,
@@ -26,6 +31,7 @@ export const ClickHouseFields = ({
   editMode: boolean
 }) => {
   const [showPassword, setShowPassword] = useState(false)
+  const passwordVisibilityLabel = showPassword ? 'Hide entered password' : 'Show entered password'
 
   return (
     <div className="flex flex-col gap-y-6 p-5">
@@ -38,8 +44,8 @@ export const ClickHouseFields = ({
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label="URL"
-              description={$t('HTTPS endpoint for your ClickHouse server, including port')}
+              label={$tValue(CLICKHOUSE_URL_FIELD_COPY.label)}
+              description={$tValue(CLICKHOUSE_URL_FIELD_COPY.description)}
             >
               <FormControl>
                 <Input
@@ -59,10 +65,10 @@ export const ClickHouseFields = ({
             <FormItemLayout
               layout="horizontal"
               label={$t('User')}
-              description={$t('ClickHouse user with permission to write to the target database')}
+              description={$t('Dedicated database user with access to the destination database.')}
             >
               <FormControl>
-                <Input {...field} value={field.value ?? ''} placeholder="default" />
+                <Input {...field} value={field.value ?? ''} placeholder="pipelines_user" />
               </FormControl>
             </FormItemLayout>
           )}
@@ -75,28 +81,31 @@ export const ClickHouseFields = ({
             <FormItemLayout
               layout="horizontal"
               label={$t('Password')}
+              labelOptional="Optional"
               description={
                 editMode
-                  ? $t('Stored password is hidden. Enter a new password to replace it.')
-                  : $t('Omit for passwordless access')
+                  ? $t('Enter a new password to replace the stored one.')
+                  : $t('Leave blank if the ClickHouse user has no password.')
               }
             >
               <FormControl>
                 <PasswordInput
                   value={field.value ?? ''}
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder={editMode ? STORED_SECRET_PLACEHOLDER : $t('Optional')}
+                  type={showPassword && !editMode ? 'text' : 'password'}
+                  placeholder={editMode ? STORED_SECRET_PLACEHOLDER : undefined}
                   onChange={(event) => field.onChange(event.target.value)}
                   actions={
-                    <div className="flex items-center justify-center">
-                      <Button
-                        className="w-7"
-                        title={showPassword ? $t('Hide password') : $t('Show password')}
-                        aria-label={showPassword ? $t('Hide password') : $t('Show password')}
-                        icon={showPassword ? <Eye /> : <EyeOff />}
-                        onClick={() => setShowPassword(!showPassword)}
-                      />
-                    </div>
+                    !editMode && (
+                      <div className="flex items-center justify-center">
+                        <Button
+                          className="w-7"
+                          title={passwordVisibilityLabel}
+                          aria-label={passwordVisibilityLabel}
+                          icon={showPassword ? <Eye /> : <EyeOff />}
+                          onClick={() => setShowPassword(!showPassword)}
+                        />
+                      </div>
+                    )
                   }
                 />
               </FormControl>
@@ -110,11 +119,11 @@ export const ClickHouseFields = ({
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label={$t('Database')}
-              description={$t('The ClickHouse database where replicated tables will be created')}
+              label={$tValue(CLICKHOUSE_DATABASE_FIELD_COPY.label)}
+              description={$tValue(CLICKHOUSE_DATABASE_FIELD_COPY.description)}
             >
               <FormControl>
-                <Input {...field} value={field.value ?? ''} placeholder="default" />
+                <Input {...field} value={field.value ?? ''} placeholder="pipelines" />
               </FormControl>
             </FormItemLayout>
           )}
@@ -126,18 +135,30 @@ export const ClickHouseFields = ({
           render={({ field }) => (
             <FormItemLayout
               layout="horizontal"
-              label={$t('Table engine')}
-              description={$t('Server defaults to replacing_merge_tree when unset')}
+              label={$tValue(CLICKHOUSE_ENGINE_FIELD_COPY.label)}
+              description={$tValue(CLICKHOUSE_ENGINE_FIELD_COPY.description)}
             >
               <FormControl>
                 <Select
                   value={field.value ?? 'replacing_merge_tree'}
                   onValueChange={field.onChange}
                 >
-                  <SelectTrigger>{field.value ?? 'replacing_merge_tree'}</SelectTrigger>
+                  <SelectTrigger>
+                    {field.value === 'merge_tree' ? $t('MergeTree') : $t('ReplacingMergeTree')}
+                  </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="replacing_merge_tree">replacing_merge_tree</SelectItem>
-                    <SelectItem value="merge_tree">merge_tree</SelectItem>
+                    <SelectItem value="replacing_merge_tree" className="[&>span]:top-2.5">
+                      <p>{$t('ReplacingMergeTree')}</p>
+                      <p className="text-foreground-lighter">
+                        {$t('Creates current-state views.')}
+                      </p>
+                    </SelectItem>
+                    <SelectItem value="merge_tree" className="[&>span]:top-2.5">
+                      <p>{$t('MergeTree')}</p>
+                      <p className="text-foreground-lighter">
+                        {$t('Keeps an append-only history of changes.')}
+                      </p>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </FormControl>

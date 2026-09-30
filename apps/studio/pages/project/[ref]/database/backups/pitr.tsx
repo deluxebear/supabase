@@ -114,7 +114,7 @@ const PITR = () => {
         type="default"
         title={$t('Database backups are not available for OrioleDB')}
         description={$t(
-          'OrioleDB is currently in public alpha and projects created are strictly ephemeral with no database backups'
+          'OrioleDB is currently in public beta and Point-in-Time Recovery is unavailable on OrioleDB projects'
         )}
       >
         <DocsButton abbrev={false} className="mt-2" href={DOCS_URL} />

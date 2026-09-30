@@ -5,6 +5,7 @@ import { useIsAdvisorRulesEnabled } from '@/components/interfaces/App/FeaturePre
 import AdvisorsLayout from '@/components/layouts/AdvisorsLayout/AdvisorsLayout'
 import { PageLayout } from '@/components/layouts/PageLayout/PageLayout'
 import { FeaturePreviewBadge } from '@/components/ui/FeaturePreviewBadge'
+import { t as $t } from '@/lib/i18n'
 
 export const Route = createFileRoute('/project/$ref/advisors/rules')({
   component: AdvisorRulesShell,
@@ -32,7 +33,7 @@ function AdvisorRulesShell() {
       <PageLayout
         title={
           <span className="flex items-center gap-x-4">
-            Advisor Settings
+            {$t('Advisor Settings')}
             {isAdvisorRulesEnabled && (
               <FeaturePreviewBadge featureKey={LOCAL_STORAGE_KEYS.UI_PREVIEW_ADVISOR_RULES} />
             )}

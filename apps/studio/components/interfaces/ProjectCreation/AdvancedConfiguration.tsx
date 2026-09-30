@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n'
 import { useFlag } from 'common'
 import { UseFormReturn } from 'react-hook-form'
 import {
@@ -21,6 +20,7 @@ import { CreateProjectForm } from './ProjectCreation.schema'
 import { DocsButton } from '@/components/ui/DocsButton'
 import Panel from '@/components/ui/Panel'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 
 interface AdvancedConfigurationProps {
   form: UseFormReturn<CreateProjectForm>
@@ -78,7 +78,7 @@ export const AdvancedConfiguration = ({ form }: AdvancedConfigurationProps) => {
                               label={
                                 <>
                                   {$t('Postgres with OrioleDB')}
-                                  <Badge variant="warning">{$t('Alpha')}</Badge>
+                                  <Badge variant="warning">{$t('Beta')}</Badge>
                                 </>
                               }
                               description={$t('Not recommended for production workloads')}
@@ -107,7 +107,7 @@ export const AdvancedConfiguration = ({ form }: AdvancedConfigurationProps) => {
                     className="rounded-t-none [&>div]:text-xs"
                     title={$t('OrioleDB is not production ready')}
                     description={$t(
-                      'Postgres with OrioleDB extension is currently in Public Alpha and not recommended for production usage yet.'
+                      'Postgres with OrioleDB extension is currently in Public Beta and not recommended for production usage yet.'
                     )}
                   >
                     <DocsButton className="mt-2" href={`${DOCS_URL}/guides/database/orioledb`} />

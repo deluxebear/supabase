@@ -44,41 +44,47 @@ export const copyToClipboard = async (str: ClipboardText, callback = noop) => {
     return false
   }
 
+  let copied = false
   try {
     if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write) {
-      // NOTE: Safari locks down the clipboard API to only work when triggered
-      // by a direct user interaction. You can't use it async in a promise.
-      // But! You can wrap the promise in a ClipboardItem, and give that to
-      // the clipboard API.
-      // Found this on https://developer.apple.com/forums/thread/691873
-      const text = new ClipboardItem({
-        'text/plain': Promise.resolve(str).then((text) => new Blob([text], { type: 'text/plain' })),
-      })
-
-      await navigator.clipboard.write([text])
-      callback()
-      return true
+      try {
+        // Safari permits promised text in a ClipboardItem during user interaction.
+        const text = new ClipboardItem({
+          'text/plain': Promise.resolve(str).then(
+            (text) => new Blob([text], { type: 'text/plain' })
+          ),
+        })
+        await navigator.clipboard.write([text])
+        copied = true
+      } catch {
+        // Safari may expose write() but deny it; try writeText() next.
+      }
     }
 
-    if (navigator.clipboard?.writeText) {
-      // Firefox may not expose ClipboardItem, but supports writeText.
+    if (!copied && navigator.clipboard?.writeText) {
       await Promise.resolve(str).then((text) => navigator.clipboard.writeText(text))
-      callback()
-      return true
+      copied = true
     }
   } catch {
-    // A user-triggered selection copy also works on HTTP origins, where the
-    // asynchronous Clipboard API is unavailable.
+    // Selection copying also works on HTTP origins without the Clipboard API.
   }
 
-  try {
-    const text = typeof str === 'string' ? str : await str
-    if (copyWithSelection(text)) {
+  if (!copied) {
+    try {
+      const text = typeof str === 'string' ? str : await str
+      copied = copyWithSelection(text)
+    } catch {
+      // Report one error after all clipboard methods fail.
+    }
+  }
+
+  if (copied) {
+    try {
       callback()
       return true
+    } catch {
+      // A callback failure must not trigger another clipboard write.
     }
-  } catch {
-    // Report one error after both clipboard methods fail.
   }
 
   toast.error('Unable to copy to clipboard')

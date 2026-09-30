@@ -55,6 +55,7 @@ export const InternalOnlyConfiguration = ({ form }: InternalOnlyConfigurationPro
                   organizationSlug={slug}
                   dbRegion={form.getValues('dbRegion')}
                   disabled={highAvailability}
+                  highAvailability={highAvailability}
                   lastValidSelectionRef={lastValidPostgresVersionSelection}
                 />
               )}

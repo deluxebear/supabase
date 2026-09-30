@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { Button, StatusIcon } from 'ui'
 
 import { useDeploymentCommitQuery } from '@/data/utils/deployment-commit-query'
+import { t as $t } from '@/lib/i18n'
 
 const DeployCheckToast = ({ id }: { id: string | number }) => {
   const router = useRouter()
@@ -15,14 +16,14 @@ const DeployCheckToast = ({ id }: { id: string | number }) => {
       <div className="flex gap-3 flex-row">
         <StatusIcon variant="default" className="mt-0.5" />
         <div className="flex w-full justify-between flex-col text-sm">
-          <p className="text-foreground">A new version of this page is available</p>
-          <p className="text-foreground-light">Refresh to see the latest changes.</p>
+          <p className="text-foreground">{$t('A new version of this page is available')}</p>
+          <p className="text-foreground-light">{$t('Refresh to see the latest changes.')}</p>
         </div>
       </div>
 
       <div className="flex gap-5 justify-end">
         <Button variant="outline" onClick={() => toast.dismiss(id)}>
-          Not now
+          {$t('Not now')}
         </Button>
         <Button
           variant="primary"
@@ -32,7 +33,7 @@ const DeployCheckToast = ({ id }: { id: string | number }) => {
             router.reload()
           }}
         >
-          Refresh
+          {$t('Refresh')}
         </Button>
       </div>
     </div>

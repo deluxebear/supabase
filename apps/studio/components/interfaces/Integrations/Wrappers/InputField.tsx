@@ -12,6 +12,7 @@ interface InputFieldProps<TFieldValues extends FieldValues = FieldValues> {
   option: ServerOption
   control: Control<TFieldValues>
   loading?: boolean
+  placeholder?: string
 }
 
 const InputField = <
@@ -21,6 +22,7 @@ const InputField = <
   control,
   option,
   loading = false,
+  placeholder,
 }: InputFieldProps<TFieldValues>) => {
   return (
     <FormField
@@ -58,7 +60,7 @@ const InputField = <
             ) : option.secureEntry ? (
               <PasswordInput copy reveal {...field} />
             ) : (
-              <Input {...field} />
+              <Input {...field} placeholder={placeholder} />
             )}
           </FormControl>
         </FormItemLayout>
