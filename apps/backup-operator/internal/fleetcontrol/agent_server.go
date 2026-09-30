@@ -208,7 +208,12 @@ func (s *AgentServer) handleAgentMessage(stream fleetagentv1.FleetAgentControlSe
 	if message == nil {
 		return status.Error(codes.InvalidArgument, "Fleet Agent message is empty")
 	}
-	if message.GetHeartbeat() != nil {
+	if heartbeat := message.GetHeartbeat(); heartbeat != nil {
+		if len(heartbeat.GetJwtObservationJson()) > 0 {
+			if err := s.Store.RecordAgentJWTObservation(stream.Context(), identity.AgentID, identity.ProjectRef, identity.BindingID, heartbeat.GetJwtObservationJson()); err != nil {
+				return status.Error(codes.InvalidArgument, "JWT observation is invalid")
+			}
+		}
 		return s.Store.TouchAgentSession(stream.Context(), identity.AgentID)
 	}
 	if progress := message.GetProgress(); progress != nil {

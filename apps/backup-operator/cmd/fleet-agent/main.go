@@ -29,6 +29,7 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"sigs.k8s.io/yaml"
 )
 
 func main() {
@@ -141,7 +142,7 @@ func main() {
 		capabilities = append(capabilities, fleetdatabase.CapabilityReconcile)
 	}
 	if strings.TrimSpace(*functionProbeURL) != "" {
-		functionProvider, err := buildFunctionProvider(*adapter, *functionRoot, *functionProbeURL, *functionProbeToken, *kubeconfig, *kubernetesNamespace, *kubernetesDeployment)
+		functionProvider, err := buildFunctionProvider(*adapter, *functionRoot, *functionProbeURL, *functionProbeToken, *kubeconfig, *kubernetesNamespace, *kubernetesDeployment, *ownedRoot)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -247,17 +248,41 @@ func main() {
 		Build: version.String(), Capabilities: capabilities, Executor: executor, HeartbeatInterval: *heartbeat,
 		MinBackoff: *minBackoff, MaxBackoff: *maxBackoff,
 		SecretRecipientPublicKey: secretRecipient.PublicKey().Bytes(),
+		JWTObserverURL:           os.Getenv("FLEET_AGENT_JWT_OBSERVER_URL"),
 	}
 	if err := client.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
 		log.Fatal(err)
 	}
 }
 
-func buildFunctionProvider(adapter, root, probeURL, probeToken, kubeconfig, namespace, deployment string) (fleetfunctions.Provider, error) {
+func buildFunctionProvider(adapter, root, probeURL, probeToken, kubeconfig, namespace, deployment string, ownedRoot ...string) (fleetfunctions.Provider, error) {
 	if strings.TrimSpace(root) == "" || strings.TrimSpace(probeURL) == "" {
 		return nil, errors.New("Fleet function artifact root and fixed probe URL are required")
 	}
 	prober := fleetfunctions.HTTPProber{BaseURL: probeURL, Token: probeToken}
+	if adapter == "compose" && len(ownedRoot) > 0 {
+		prober.TokenSource = func() (string, error) {
+			raw, err := os.ReadFile(filepath.Join(ownedRoot[0], "jwt", "current", "secrets.compose.yml"))
+			if errors.Is(err, os.ErrNotExist) {
+				return probeToken, nil
+			}
+			if err != nil {
+				return "", err
+			}
+			var document struct {
+				Services map[string]struct {
+					Environment map[string]string `json:"environment"`
+				} `json:"services"`
+			}
+			if err := yaml.Unmarshal(raw, &document); err != nil {
+				return "", err
+			}
+			if token := document.Services["kong"].Environment["SUPABASE_SERVICE_KEY"]; token != "" {
+				return token, nil
+			}
+			return probeToken, nil
+		}
+	}
 	switch adapter {
 	case string(fleetfunctions.AdapterCompose):
 		return fleetfunctions.ComposeProvider{Root: root, Prober: prober}, nil

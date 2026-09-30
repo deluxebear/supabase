@@ -132,9 +132,12 @@ type Agent struct {
 	Capabilities              []CapabilityObservation `json:"capabilities"`
 	CertificateExpiresAt      time.Time               `json:"certificateExpiresAt"`
 	Id                        string                  `json:"id"`
-	LastSeenAt                time.Time               `json:"lastSeenAt"`
-	ProtocolMajor             int                     `json:"protocolMajor"`
-	ProtocolMinor             int                     `json:"protocolMinor"`
+
+	// JwtObservation Binding-scoped runtime JWT credentials sealed to Studio; never plaintext.
+	JwtObservation *map[string]interface{} `json:"jwtObservation,omitempty"`
+	LastSeenAt     time.Time               `json:"lastSeenAt"`
+	ProtocolMajor  int                     `json:"protocolMajor"`
+	ProtocolMinor  int                     `json:"protocolMinor"`
 
 	// SecretRecipient The Agent's X25519 public key for sealed secrets, reported in every hello. Studio seals secret material to it; the private key never leaves the target.
 	SecretRecipient *SecretRecipient `json:"secretRecipient,omitempty"`

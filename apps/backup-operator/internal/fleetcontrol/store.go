@@ -27,7 +27,7 @@ import (
 //go:embed migrations/*/*.sql
 var fleetMigrations embed.FS
 
-const CurrentSchemaVersion = 11
+const CurrentSchemaVersion = 12
 
 const operationDeadline = 15 * time.Minute
 

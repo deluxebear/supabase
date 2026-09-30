@@ -107,6 +107,13 @@ services:
         # Owner only: files holding delivered secrets keep the operator group.
         chown -R 65532 /fleet-config
         chmod 0700 /agent-state
+        if [ ! -e /fleet-config/jwt/current ]; then
+          mkdir -p /fleet-config/jwt/revisions/bootstrap
+          printf 'services: {}\n' > /fleet-config/jwt/revisions/bootstrap/secrets.compose.yml
+          ln -s revisions/bootstrap /fleet-config/jwt/current
+          printf '{"domain":"jwt"}\n' > /fleet-config/jwt/.fleet-bootstrap.json
+          chown -R 65532 /fleet-config/jwt
+        fi
     volumes:
       - ./volumes/functions:/seed:ro
       - ${FLEET_FUNCTION_ROOT}:/functions
@@ -180,6 +187,7 @@ services:
       FLEET_AGENT_DATABASE_PRIMARY_ROLE: postgres
       FLEET_AGENT_DATABASE_READ_ONLY_ROLE: supabase_read_only_user
       FLEET_AGENT_RUNTIME_OBSERVER_URL: http://fleet-compose-observer:8093
+      FLEET_AGENT_JWT_OBSERVER_URL: http://fleet-compose-observer:8093/v1/jwt
       FLEET_AGENT_RUNTIME_ADMIN_DSN: postgres://supabase_admin:${POSTGRES_PASSWORD}@db-${MANAGED_PROJECT_REF}:5432/postgres?sslmode=disable
       FLEET_AGENT_RUNTIME_UPGRADE_TARGETS: ${FLEET_AGENT_RUNTIME_UPGRADE_TARGETS:-}
       FLEET_AGENT_JOURNAL: /var/lib/fleet-agent/agent-journal.db
@@ -232,6 +240,9 @@ services:
       FLEET_OBSERVER_COMPOSE_PROJECT: ${COMPOSE_PROJECT_NAME}
       FLEET_OBSERVER_DATABASE_PATH: /inventory/database
       FLEET_OBSERVER_DOCKER_ENDPOINT: http://fleet-docker-proxy:2375
+      FLEET_OBSERVER_PROJECT_REF: ${MANAGED_PROJECT_REF}
+      FLEET_OBSERVER_BINDING_ID: ${FLEET_AGENT_BINDING_ID:-}
+      FLEET_OBSERVER_JWT_RECIPIENT_PUBLIC_KEY: ${FLEET_JWT_SYNC_PUBLIC_KEY:-}
     volumes:
       - managed-db-data:/inventory/database:ro
     read_only: true

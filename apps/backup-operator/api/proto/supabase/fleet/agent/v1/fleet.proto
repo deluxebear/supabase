@@ -135,6 +135,8 @@ message RuntimeService {
 
 message Heartbeat {
   int64 unix_milliseconds = 1;
+  // Runtime credentials sealed to Studio; Fleet Control never sees plaintext.
+  bytes jwt_observation_json = 2;
 }
 
 message Acknowledgement {

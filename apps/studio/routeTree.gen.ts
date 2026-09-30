@@ -306,6 +306,7 @@ import { Route as ApiPlatformProjectsRefManagementBindingSyncRouteImport } from 
 import { Route as ApiPlatformProjectsRefManagementBindingEnrollmentTokenRouteImport } from './routes/api/platform/projects/$ref/management-binding/enrollment-token'
 import { Route as ApiPlatformProjectsRefContentCountRouteImport } from './routes/api/platform/projects/$ref/content/count'
 import { Route as ApiPlatformProjectsRefConfigPostgrestRouteImport } from './routes/api/platform/projects/$ref/config/postgrest'
+import { Route as ApiPlatformProjectsRefConfigJwtRouteImport } from './routes/api/platform/projects/$ref/config/jwt'
 import { Route as ApiPlatformProjectsRefBillingAddonsRouteImport } from './routes/api/platform/projects/$ref/billing/addons'
 import { Route as ApiPlatformProjectsRefApiRestRouteImport } from './routes/api/platform/projects/$ref/api/rest'
 import { Route as ApiPlatformProjectsRefApiGraphqlRouteImport } from './routes/api/platform/projects/$ref/api/graphql'
@@ -1993,6 +1994,12 @@ const ApiPlatformProjectsRefConfigPostgrestRoute =
     path: '/api/platform/projects/$ref/config/postgrest',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPlatformProjectsRefConfigJwtRoute =
+  ApiPlatformProjectsRefConfigJwtRouteImport.update({
+    id: '/api/platform/projects/$ref/config/jwt',
+    path: '/api/platform/projects/$ref/config/jwt',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPlatformProjectsRefBillingAddonsRoute =
   ApiPlatformProjectsRefBillingAddonsRouteImport.update({
     id: '/api/platform/projects/$ref/billing/addons',
@@ -2497,6 +2504,7 @@ export interface FileRoutesByFullPath {
   '/api/platform/projects/$ref/api/graphql': typeof ApiPlatformProjectsRefApiGraphqlRoute
   '/api/platform/projects/$ref/api/rest': typeof ApiPlatformProjectsRefApiRestRoute
   '/api/platform/projects/$ref/billing/addons': typeof ApiPlatformProjectsRefBillingAddonsRoute
+  '/api/platform/projects/$ref/config/jwt': typeof ApiPlatformProjectsRefConfigJwtRoute
   '/api/platform/projects/$ref/config/postgrest': typeof ApiPlatformProjectsRefConfigPostgrestRoute
   '/api/platform/projects/$ref/content/count': typeof ApiPlatformProjectsRefContentCountRoute
   '/api/platform/projects/$ref/management-binding/enrollment-token': typeof ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute
@@ -2816,6 +2824,7 @@ export interface FileRoutesByTo {
   '/api/platform/projects/$ref/api/graphql': typeof ApiPlatformProjectsRefApiGraphqlRoute
   '/api/platform/projects/$ref/api/rest': typeof ApiPlatformProjectsRefApiRestRoute
   '/api/platform/projects/$ref/billing/addons': typeof ApiPlatformProjectsRefBillingAddonsRoute
+  '/api/platform/projects/$ref/config/jwt': typeof ApiPlatformProjectsRefConfigJwtRoute
   '/api/platform/projects/$ref/config/postgrest': typeof ApiPlatformProjectsRefConfigPostgrestRoute
   '/api/platform/projects/$ref/content/count': typeof ApiPlatformProjectsRefContentCountRoute
   '/api/platform/projects/$ref/management-binding/enrollment-token': typeof ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute
@@ -3153,6 +3162,7 @@ export interface FileRoutesById {
   '/api/platform/projects/$ref/api/graphql': typeof ApiPlatformProjectsRefApiGraphqlRoute
   '/api/platform/projects/$ref/api/rest': typeof ApiPlatformProjectsRefApiRestRoute
   '/api/platform/projects/$ref/billing/addons': typeof ApiPlatformProjectsRefBillingAddonsRoute
+  '/api/platform/projects/$ref/config/jwt': typeof ApiPlatformProjectsRefConfigJwtRoute
   '/api/platform/projects/$ref/config/postgrest': typeof ApiPlatformProjectsRefConfigPostgrestRoute
   '/api/platform/projects/$ref/content/count': typeof ApiPlatformProjectsRefContentCountRoute
   '/api/platform/projects/$ref/management-binding/enrollment-token': typeof ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute
@@ -3489,6 +3499,7 @@ export interface FileRouteTypes {
     | '/api/platform/projects/$ref/api/graphql'
     | '/api/platform/projects/$ref/api/rest'
     | '/api/platform/projects/$ref/billing/addons'
+    | '/api/platform/projects/$ref/config/jwt'
     | '/api/platform/projects/$ref/config/postgrest'
     | '/api/platform/projects/$ref/content/count'
     | '/api/platform/projects/$ref/management-binding/enrollment-token'
@@ -3808,6 +3819,7 @@ export interface FileRouteTypes {
     | '/api/platform/projects/$ref/api/graphql'
     | '/api/platform/projects/$ref/api/rest'
     | '/api/platform/projects/$ref/billing/addons'
+    | '/api/platform/projects/$ref/config/jwt'
     | '/api/platform/projects/$ref/config/postgrest'
     | '/api/platform/projects/$ref/content/count'
     | '/api/platform/projects/$ref/management-binding/enrollment-token'
@@ -4144,6 +4156,7 @@ export interface FileRouteTypes {
     | '/api/platform/projects/$ref/api/graphql'
     | '/api/platform/projects/$ref/api/rest'
     | '/api/platform/projects/$ref/billing/addons'
+    | '/api/platform/projects/$ref/config/jwt'
     | '/api/platform/projects/$ref/config/postgrest'
     | '/api/platform/projects/$ref/content/count'
     | '/api/platform/projects/$ref/management-binding/enrollment-token'
@@ -4289,6 +4302,7 @@ export interface RootRouteChildren {
   ApiPlatformProjectsRefApiGraphqlRoute: typeof ApiPlatformProjectsRefApiGraphqlRoute
   ApiPlatformProjectsRefApiRestRoute: typeof ApiPlatformProjectsRefApiRestRoute
   ApiPlatformProjectsRefBillingAddonsRoute: typeof ApiPlatformProjectsRefBillingAddonsRoute
+  ApiPlatformProjectsRefConfigJwtRoute: typeof ApiPlatformProjectsRefConfigJwtRoute
   ApiPlatformProjectsRefConfigPostgrestRoute: typeof ApiPlatformProjectsRefConfigPostgrestRoute
   ApiPlatformProjectsRefContentCountRoute: typeof ApiPlatformProjectsRefContentCountRoute
   ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute: typeof ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute
@@ -6416,6 +6430,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPlatformProjectsRefConfigPostgrestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/platform/projects/$ref/config/jwt': {
+      id: '/api/platform/projects/$ref/config/jwt'
+      path: '/api/platform/projects/$ref/config/jwt'
+      fullPath: '/api/platform/projects/$ref/config/jwt'
+      preLoaderRoute: typeof ApiPlatformProjectsRefConfigJwtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/platform/projects/$ref/billing/addons': {
       id: '/api/platform/projects/$ref/billing/addons'
       path: '/api/platform/projects/$ref/billing/addons'
@@ -7517,6 +7538,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPlatformProjectsRefApiRestRoute: ApiPlatformProjectsRefApiRestRoute,
   ApiPlatformProjectsRefBillingAddonsRoute:
     ApiPlatformProjectsRefBillingAddonsRoute,
+  ApiPlatformProjectsRefConfigJwtRoute: ApiPlatformProjectsRefConfigJwtRoute,
   ApiPlatformProjectsRefConfigPostgrestRoute:
     ApiPlatformProjectsRefConfigPostgrestRoute,
   ApiPlatformProjectsRefContentCountRoute:

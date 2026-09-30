@@ -1,0 +1,34 @@
+# Fleet-managed Envoy gateway. Keep the Compose service name `kong` so existing
+# management bindings, network aliases, and lifecycle allowlists remain valid.
+# Apply after docker-compose.override.yml and docker-compose.lifecycle.yml.
+services:
+  kong:
+    image: envoyproxy/envoy:v1.39.1
+    container_name: ${MANAGED_CONTAINER_PREFIX:?set MANAGED_CONTAINER_PREFIX}-envoy
+    ports: !override
+      - ${MANAGED_KONG_HTTP_PORT:?set MANAGED_KONG_HTTP_PORT}:8000/tcp
+    volumes: !override
+      - ./volumes/api/envoy/envoy.yaml:/etc/envoy/envoy.yaml:ro
+      - ./volumes/api/envoy/cds.yaml:/etc/envoy/cds.yaml:ro
+      - ./volumes/api/envoy/lds.template.yaml:/etc/envoy/lds.template.yaml:ro
+      - ./volumes/api/envoy/docker-entrypoint.sh:/docker-entrypoint.sh:ro
+      - ./fleet-managed/envoy-entrypoint.sh:/fleet-entrypoint.sh:ro
+    entrypoint: [/bin/sh, /fleet-entrypoint.sh]
+    healthcheck: !override
+      test: [CMD-SHELL, "timeout 1 bash -c '</dev/tcp/127.0.0.1/8000'"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    environment:
+      ANON_KEY: ${ANON_KEY}
+      SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      # The legacy variable names are inherited for Fleet's existing sealed
+      # JWT overrides. The entrypoint maps them to Envoy's canonical names.
+      SUPABASE_PUBLIC_URL: ${SUPABASE_PUBLIC_URL}
+
+  fleet-agent:
+    environment:
+      FLEET_LIFECYCLE_COMPOSE_FILES: ${FLEET_HOST_COMPOSE_DIRECTORY}/docker-compose.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.override.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.lifecycle.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.envoy.yml,${FLEET_HOST_CONFIG_ROOT}/auth/current/compose.yml,${FLEET_HOST_CONFIG_ROOT}/auth/current/secrets.compose.yml,${FLEET_HOST_CONFIG_ROOT}/functions/current/secrets.compose.yml,${FLEET_HOST_CONFIG_ROOT}/jwt/current/secrets.compose.yml
+    volumes:
+      - ${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.envoy.yml:${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.envoy.yml:ro

@@ -7,9 +7,12 @@ import (
 	"encoding/base64"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
+	"encoding/json"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetjwt"
 	"github.com/supabase/supabase/apps/backup-operator/internal/sealedsecret"
 )
 
@@ -62,6 +65,34 @@ func TestAgentSecretRecipientRecordedAndExposed(t *testing.T) {
 	status, _ = store.GetBindingStatus(ctx, "project-a", "binding-a")
 	if status.Agent.SecretRecipient.KeyID != sealedsecret.KeyID(replacement.PublicKey().Bytes()) {
 		t.Fatal("a new hello key must replace the old one")
+	}
+
+	envelope, _ := sealedsecret.Seal(rand.Reader, public, fleetjwt.Context("project-a", "binding-a"), []byte(`{"secret":"private-runtime-secret"}`))
+	report := fleetjwt.Observation{Schema: fleetjwt.Schema, ProjectRef: "project-a", BindingID: "binding-a", ObservedAt: base, Sealed: envelope}
+	raw, _ := json.Marshal(report)
+	if err := store.RecordAgentJWTObservation(ctx, "agent-a", "project-a", "binding-a", raw); err != nil {
+		t.Fatal(err)
+	}
+	status, _ = store.GetBindingStatus(ctx, "project-a", "binding-a")
+	if len(status.Agent.JWTObservation) == 0 || strings.Contains(string(status.Agent.JWTObservation), "private-runtime-secret") {
+		t.Fatal("observation missing or plaintext leaked")
+	}
+	if err := store.RecordAgentJWTObservation(ctx, "agent-a", "project-b", "binding-a", raw); err == nil {
+		t.Fatal("cross-project observation accepted")
+	}
+	report.ObservedAt = base.Add(-3 * time.Minute)
+	old, _ := json.Marshal(report)
+	if err := store.RecordAgentJWTObservation(ctx, "agent-a", "project-a", "binding-a", old); err == nil {
+		t.Fatal("stale observation accepted")
+	}
+	report.ObservedAt = base.Add(-time.Second)
+	old, _ = json.Marshal(report)
+	if err := store.RecordAgentJWTObservation(ctx, "agent-a", "project-a", "binding-a", old); err != nil {
+		t.Fatal(err)
+	}
+	status, _ = store.GetBindingStatus(ctx, "project-a", "binding-a")
+	if string(status.Agent.JWTObservation) != string(raw) {
+		t.Fatal("out-of-order observation replaced a newer observation")
 	}
 
 	if err := store.RecordAgentSecretRecipient(ctx, "agent-a", []byte("short")); err == nil {

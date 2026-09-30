@@ -26,6 +26,7 @@ type Client struct {
 	Capabilities      []string
 	Executor          *Executor
 	HeartbeatInterval time.Duration
+	JWTObserverURL    string
 	// SecretRecipientPublicKey is reported in every hello so Studio can seal
 	// secrets to this Agent.
 	SecretRecipientPublicKey []byte
@@ -121,7 +122,8 @@ func (c Client) connect(ctx context.Context) error {
 			case <-heartbeatCtx.Done():
 				return
 			case now := <-ticker.C:
-				if send(&fleetagentv1.ConnectRequest{Payload: &fleetagentv1.ConnectRequest_Heartbeat{Heartbeat: &fleetagentv1.Heartbeat{UnixMilliseconds: now.UnixMilli()}}}) != nil {
+				report := c.observeJWT(heartbeatCtx)
+				if send(&fleetagentv1.ConnectRequest{Payload: &fleetagentv1.ConnectRequest_Heartbeat{Heartbeat: &fleetagentv1.Heartbeat{UnixMilliseconds: now.UnixMilli(), JwtObservationJson: report}}}) != nil {
 					cancel()
 					return
 				}

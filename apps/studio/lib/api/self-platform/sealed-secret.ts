@@ -5,6 +5,7 @@
 // test suites check the same vector.
 import {
   createCipheriv,
+  createDecipheriv,
   createHash,
   createHmac,
   createPrivateKey,
@@ -155,4 +156,65 @@ export function sealedSecretFingerprint(input: {
   return createHmac('sha256', key)
     .update([projectRef, bindingId, domain, path, input.plaintext].join('\n'))
     .digest('hex')
+}
+
+/** Opens a target observation sealed to Studio's X25519 recipient. */
+export function openSecret(input: {
+  recipientPrivateKey: Buffer
+  context: SealedSecretContext
+  envelope: SealedSecretEnvelope
+}): string {
+  validateContext(input.context)
+  const privateKey = createPrivateKey({
+    key: Buffer.concat([PKCS8_PREFIX, input.recipientPrivateKey]),
+    format: 'der',
+    type: 'pkcs8',
+  })
+  const publicKey = rawPublicKey(createPublicKey(privateKey))
+  const envelope = input.envelope
+  if (
+    envelope.schema !== SEALED_SECRET_SCHEMA ||
+    envelope.recipientKeyId !== sealedSecretKeyId(publicKey)
+  )
+    throw new Error('Sealed secret recipient does not match')
+  const ephemeral = Buffer.from(envelope.ephemeralPublicKey, 'base64')
+  const nonce = Buffer.from(envelope.nonce, 'base64')
+  const ciphertext = Buffer.from(envelope.ciphertext, 'base64')
+  if (
+    nonce.length !== NONCE_SIZE ||
+    ciphertext.length < 17 ||
+    ciphertext.length > MAX_PLAINTEXT + 16
+  )
+    throw new Error('Sealed secret envelope is invalid')
+  const shared = diffieHellman({ privateKey, publicKey: publicKeyFromRaw(ephemeral) })
+  const key = Buffer.from(
+    hkdfSync(
+      'sha256',
+      shared,
+      Buffer.concat([ephemeral, publicKey]),
+      SEALED_SECRET_SCHEMA,
+      KEY_SIZE
+    )
+  )
+  const decipher = createDecipheriv('aes-256-gcm', key, nonce)
+  decipher.setAAD(additionalData(input.context, envelope.recipientKeyId))
+  decipher.setAuthTag(ciphertext.subarray(-16))
+  return Buffer.concat([decipher.update(ciphertext.subarray(0, -16)), decipher.final()]).toString(
+    'utf8'
+  )
+}
+
+/** Separate key for agent-to-Studio observations, derived from the at-rest key. */
+export function studioObservationRecipient(studioKey: string) {
+  if (!studioKey) throw new Error('Studio encryption key is required')
+  const privateKey = createHash('sha256')
+    .update('supabase.fleet.jwt-sync.v1\0')
+    .update(studioKey)
+    .digest()
+  const key = createPrivateKey({
+    key: Buffer.concat([PKCS8_PREFIX, privateKey]),
+    format: 'der',
+    type: 'pkcs8',
+  })
+  return { privateKey, publicKey: rawPublicKey(createPublicKey(key)) }
 }

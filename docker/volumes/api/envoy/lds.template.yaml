@@ -709,7 +709,8 @@ resources:
                       local SUPABASE_SECRET_KEY = "${SUPABASE_SECRET_KEY}"
                       local ANON_KEY_ASYMMETRIC = "${ANON_KEY_ASYMMETRIC}"
                       local SERVICE_ROLE_KEY_ASYMMETRIC = "${SERVICE_ROLE_KEY_ASYMMETRIC}"
-                      local TRANSLATION_ENABLED = SUPABASE_SECRET_KEY ~= "" and SUPABASE_PUBLISHABLE_KEY ~= "" and SERVICE_ROLE_KEY_ASYMMETRIC ~= "" and ANON_KEY_ASYMMETRIC ~= ""
+                      local SECRET_TRANSLATION_ENABLED = SUPABASE_SECRET_KEY ~= "" and SERVICE_ROLE_KEY_ASYMMETRIC ~= ""
+                      local PUBLISHABLE_TRANSLATION_ENABLED = SUPABASE_PUBLISHABLE_KEY ~= "" and ANON_KEY_ASYMMETRIC ~= ""
 
                       local PROTECTED_ROUTES = {
                         ["auth-v1-protected"] = true,
@@ -742,11 +743,11 @@ resources:
                           return true
                         end
 
-                        if TRANSLATION_ENABLED and apikey == SUPABASE_SECRET_KEY then
+                        if SECRET_TRANSLATION_ENABLED and apikey == SUPABASE_SECRET_KEY then
                           return true
                         end
 
-                        if TRANSLATION_ENABLED and apikey == SUPABASE_PUBLISHABLE_KEY then
+                        if PUBLISHABLE_TRANSLATION_ENABLED and apikey == SUPABASE_PUBLISHABLE_KEY then
                           return true
                         end
 
@@ -782,7 +783,8 @@ resources:
                       local PUBLISHABLE_KEY = "${SUPABASE_PUBLISHABLE_KEY}"
                       local SERVICE_ROLE_JWT = "${SERVICE_ROLE_KEY_ASYMMETRIC}"
                       local ANON_JWT = "${ANON_KEY_ASYMMETRIC}"
-                      local TRANSLATION_ENABLED = SECRET_KEY ~= "" and PUBLISHABLE_KEY ~= "" and SERVICE_ROLE_JWT ~= "" and ANON_JWT ~= ""
+                      local SECRET_TRANSLATION_ENABLED = SECRET_KEY ~= "" and SERVICE_ROLE_JWT ~= ""
+                      local PUBLISHABLE_TRANSLATION_ENABLED = PUBLISHABLE_KEY ~= "" and ANON_JWT ~= ""
 
                       local function is_functions_request(request_handle, headers)
                         if request_handle:streamInfo():routeName() == FUNCTIONS_ROUTE then
@@ -802,15 +804,11 @@ resources:
                           return nil
                         end
 
-                        if not TRANSLATION_ENABLED then
-                          return nil
-                        end
-
-                        if apikey == SECRET_KEY then
+                        if SECRET_TRANSLATION_ENABLED and apikey == SECRET_KEY then
                           return SERVICE_ROLE_JWT
                         end
 
-                        if apikey == PUBLISHABLE_KEY then
+                        if PUBLISHABLE_TRANSLATION_ENABLED and apikey == PUBLISHABLE_KEY then
                           return ANON_JWT
                         end
 
@@ -902,7 +900,8 @@ resources:
                       local PUBLISHABLE_KEY = "${SUPABASE_PUBLISHABLE_KEY}"
                       local SERVICE_ROLE_JWT = "${SERVICE_ROLE_KEY_ASYMMETRIC}"
                       local ANON_JWT = "${ANON_KEY_ASYMMETRIC}"
-                      local TRANSLATION_ENABLED = SECRET_KEY ~= "" and PUBLISHABLE_KEY ~= "" and SERVICE_ROLE_JWT ~= "" and ANON_JWT ~= ""
+                      local SECRET_TRANSLATION_ENABLED = SECRET_KEY ~= "" and SERVICE_ROLE_JWT ~= ""
+                      local PUBLISHABLE_TRANSLATION_ENABLED = PUBLISHABLE_KEY ~= "" and ANON_JWT ~= ""
 
                       local function is_functions_request(request_handle, headers)
                         if request_handle:streamInfo():routeName() == FUNCTIONS_ROUTE then
@@ -922,15 +921,11 @@ resources:
                           return nil
                         end
 
-                        if not TRANSLATION_ENABLED then
-                          return nil
-                        end
-
-                        if apikey == SECRET_KEY then
+                        if SECRET_TRANSLATION_ENABLED and apikey == SECRET_KEY then
                           return SERVICE_ROLE_JWT
                         end
 
-                        if apikey == PUBLISHABLE_KEY then
+                        if PUBLISHABLE_TRANSLATION_ENABLED and apikey == PUBLISHABLE_KEY then
                           return ANON_JWT
                         end
 

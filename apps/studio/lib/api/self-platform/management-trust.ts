@@ -192,6 +192,7 @@ const fleetBindingStatusSchema = z.object({
       unavailableAt: z.string().datetime({ offset: true }),
       sessionState: z.enum(['online', 'stale', 'unavailable']),
       capabilities: z.array(z.unknown()).default([]),
+      jwtObservation: z.unknown().optional(),
       secretRecipient: z
         .object({
           keyId: z.string().regex(/^[0-9a-f]{32}$/),
@@ -1174,4 +1175,26 @@ function httpsRequestJSON(
 
 function ensureTrailingSlash(value: string): string {
   return value.endsWith('/') ? value : `${value}/`
+}
+
+export async function getAgentJWTObservation(projectRef: string) {
+  const binding = await getProjectManagementBinding(projectRef)
+  if (!binding || binding.state !== 'active' || binding.targetState !== 'active') return null
+  const raw = await requestManagementDomain(binding, 'fleet-control', {
+    method: 'GET',
+    path: `/platform/fleet/v1/projects/${encodeURIComponent(projectRef)}/management-bindings/${encodeURIComponent(binding.id)}`,
+    scopes: ['fleet.read'],
+    actor: 'studio-jwt-sync',
+    correlationId: randomUUID(),
+  })
+  const status = fleetBindingStatusSchema.parse(raw)
+  if (
+    status.binding.bindingId !== binding.id ||
+    status.binding.projectRef !== projectRef ||
+    status.binding.targetId !== binding.managementTargetId ||
+    status.binding.state !== 'active' ||
+    status.agent?.sessionState !== 'online'
+  )
+    return null
+  return { binding, observation: status.agent.jwtObservation }
 }

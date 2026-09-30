@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"log"
@@ -43,6 +44,27 @@ func main() {
 		}
 		_ = json.NewEncoder(w).Encode(snapshot)
 	})
+
+	if encoded := os.Getenv("FLEET_OBSERVER_JWT_RECIPIENT_PUBLIC_KEY"); encoded != "" {
+		public, err := base64.StdEncoding.DecodeString(encoded)
+		projectRef, binding := os.Getenv("FLEET_OBSERVER_PROJECT_REF"), os.Getenv("FLEET_OBSERVER_BINDING_ID")
+		if err != nil || len(public) != 32 || projectRef == "" || binding == "" {
+			log.Fatal("JWT observation requires a recipient key and binding identity")
+		}
+		mux.HandleFunc("GET /v1/jwt", func(w http.ResponseWriter, r *http.Request) {
+			ctx, cancel := context.WithTimeout(r.Context(), 8*time.Second)
+			defer cancel()
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("Cache-Control", "no-store")
+			report, err := observer.ObserveJWT(ctx, projectRef, binding, public)
+			if err != nil {
+				w.WriteHeader(http.StatusServiceUnavailable)
+				_ = json.NewEncoder(w).Encode(map[string]string{"code": "jwt_observation_unavailable"})
+				return
+			}
+			_ = json.NewEncoder(w).Encode(report)
+		})
+	}
 	server := &http.Server{Addr: *listen, Handler: mux, ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 30 * time.Second}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

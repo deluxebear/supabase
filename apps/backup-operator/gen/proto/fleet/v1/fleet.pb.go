@@ -1324,8 +1324,10 @@ func (x *RuntimeService) GetVersion() string {
 type Heartbeat struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	UnixMilliseconds int64                  `protobuf:"varint,1,opt,name=unix_milliseconds,json=unixMilliseconds,proto3" json:"unix_milliseconds,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// Runtime credentials sealed to Studio; Fleet Control never sees plaintext.
+	JwtObservationJson []byte `protobuf:"bytes,2,opt,name=jwt_observation_json,json=jwtObservationJson,proto3" json:"jwt_observation_json,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *Heartbeat) Reset() {
@@ -1363,6 +1365,13 @@ func (x *Heartbeat) GetUnixMilliseconds() int64 {
 		return x.UnixMilliseconds
 	}
 	return 0
+}
+
+func (x *Heartbeat) GetJwtObservationJson() []byte {
+	if x != nil {
+		return x.JwtObservationJson
+	}
+	return nil
 }
 
 type Acknowledgement struct {
@@ -1504,9 +1513,10 @@ const file_supabase_fleet_agent_v1_fleet_proto_rawDesc = "" +
 	"\x0eRuntimeService\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05state\x18\x02 \x01(\tR\x05state\x12\x18\n" +
-	"\aversion\x18\x03 \x01(\tR\aversion\"8\n" +
+	"\aversion\x18\x03 \x01(\tR\aversion\"j\n" +
 	"\tHeartbeat\x12+\n" +
-	"\x11unix_milliseconds\x18\x01 \x01(\x03R\x10unixMilliseconds\"*\n" +
+	"\x11unix_milliseconds\x18\x01 \x01(\x03R\x10unixMilliseconds\x120\n" +
+	"\x14jwt_observation_json\x18\x02 \x01(\fR\x12jwtObservationJson\"*\n" +
 	"\x0fAcknowledgement\x12\x17\n" +
 	"\atask_id\x18\x01 \x01(\tR\x06taskId2\xec\x01\n" +
 	"\x18FleetAgentControlService\x12`\n" +

@@ -55,7 +55,7 @@ services:
       FLEET_DOCKER_PROXY_COMPOSE_PROJECT: ${COMPOSE_PROJECT_NAME}
       FLEET_DOCKER_PROXY_POLICY: lifecycle
       FLEET_DOCKER_PROXY_LISTEN: 0.0.0.0:2375
-      FLEET_DOCKER_PROXY_SERVICES: ${FLEET_LIFECYCLE_SERVICES:-auth,rest,realtime,storage,imgproxy,meta,functions,supavisor}
+      FLEET_DOCKER_PROXY_SERVICES: ${FLEET_LIFECYCLE_SERVICES:-auth,rest,realtime,storage,imgproxy,meta,functions,supavisor,kong}
       FLEET_DOCKER_PROXY_EXTERNAL_NETWORKS: ${FLEET_MANAGEMENT_NETWORK_NAME:-fleet-management}
       FLEET_DOCKER_PROXY_BIND_PREFIXES: ${FLEET_LIFECYCLE_BIND_PREFIXES:?set FLEET_LIFECYCLE_BIND_PREFIXES}
     volumes:
@@ -84,10 +84,10 @@ services:
       # Agent rejects plans built from different component versions.
       FLEET_AGENT_LIFECYCLE_COMPONENT_VERSIONS: ${FLEET_LIFECYCLE_COMPONENT_VERSIONS:?set FLEET_LIFECYCLE_COMPONENT_VERSIONS}
       FLEET_LIFECYCLE_COMPOSE_PROJECT: ${COMPOSE_PROJECT_NAME}
-      FLEET_LIFECYCLE_SERVICES: ${FLEET_LIFECYCLE_SERVICES:-auth,rest,realtime,storage,imgproxy,meta,functions,supavisor}
+      FLEET_LIFECYCLE_SERVICES: ${FLEET_LIFECYCLE_SERVICES:-auth,rest,realtime,storage,imgproxy,meta,functions,supavisor,kong}
       FLEET_LIFECYCLE_DOCKER_ENDPOINT: http://fleet-docker-proxy-lifecycle:2375
       FLEET_LIFECYCLE_PROJECT_DIRECTORY: ${FLEET_HOST_COMPOSE_DIRECTORY:?set FLEET_HOST_COMPOSE_DIRECTORY}
-      FLEET_LIFECYCLE_COMPOSE_FILES: ${FLEET_HOST_COMPOSE_DIRECTORY}/docker-compose.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.override.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.lifecycle.yml,${FLEET_HOST_CONFIG_ROOT:?set FLEET_HOST_CONFIG_ROOT}/auth/current/compose.yml,${FLEET_HOST_CONFIG_ROOT}/auth/current/secrets.compose.yml,${FLEET_HOST_CONFIG_ROOT}/functions/current/secrets.compose.yml
+      FLEET_LIFECYCLE_COMPOSE_FILES: ${FLEET_HOST_COMPOSE_DIRECTORY}/docker-compose.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.override.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.lifecycle.yml,${FLEET_HOST_CONFIG_ROOT:?set FLEET_HOST_CONFIG_ROOT}/auth/current/compose.yml,${FLEET_HOST_CONFIG_ROOT}/auth/current/secrets.compose.yml,${FLEET_HOST_CONFIG_ROOT}/functions/current/secrets.compose.yml,${FLEET_HOST_CONFIG_ROOT}/jwt/current/secrets.compose.yml
       FLEET_LIFECYCLE_ENV_FILES: /var/lib/fleet-lifecycle/env/supabase.env,/var/lib/fleet-lifecycle/env/project.env
       FLEET_LIFECYCLE_VERIFY_TIMEOUT: ${FLEET_LIFECYCLE_VERIFY_TIMEOUT:-2m}
     volumes:

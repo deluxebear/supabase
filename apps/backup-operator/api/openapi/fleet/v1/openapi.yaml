@@ -516,6 +516,10 @@ components:
           type: array
           items: { $ref: '#/components/schemas/CapabilityObservation' }
         secretRecipient: { $ref: '#/components/schemas/SecretRecipient' }
+        jwtObservation:
+          type: object
+          additionalProperties: true
+          description: Binding-scoped runtime JWT credentials sealed to Studio; never plaintext.
     SecretRecipient:
       type: object
       description: >-

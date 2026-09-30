@@ -63,6 +63,7 @@ type AgentRecord struct {
 	Capabilities              []CapabilityObservation `json:"capabilities"`
 	// SecretRecipient is the Agent's sealed-secret public key, when it has one.
 	SecretRecipient *SecretRecipient `json:"secretRecipient,omitempty"`
+	JWTObservation  json.RawMessage  `json:"jwtObservation,omitempty"`
 }
 
 // SecretRecipient is an Agent's X25519 public key for sealed secrets.
@@ -398,6 +399,10 @@ WHERE a.binding_id=? AND a.state IN ('online','offline','incompatible') ORDER BY
 		return BindingStatus{}, err
 	}
 	agent.SecretRecipient = recipient
+	agent.JWTObservation, err = s.agentJWTObservation(ctx, agent.ID)
+	if err != nil {
+		return BindingStatus{}, err
+	}
 	capabilityQuery := "SELECT domain,name,contract_version,input_schema,evidence_schema,observed_at_ms,valid_until_ms FROM agent_capabilities WHERE agent_id=? ORDER BY name"
 	if s.dialect == FleetPostgres {
 		capabilityQuery = strings.ReplaceAll(capabilityQuery, "?", "$1")

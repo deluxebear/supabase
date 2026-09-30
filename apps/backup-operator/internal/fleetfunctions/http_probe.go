@@ -12,11 +12,12 @@ import (
 )
 
 type HTTPProber struct {
-	BaseURL  string
-	Token    string
-	Client   *http.Client
-	Timeout  time.Duration
-	Interval time.Duration
+	BaseURL     string
+	Token       string
+	TokenSource func() (string, error)
+	Client      *http.Client
+	Timeout     time.Duration
+	Interval    time.Duration
 }
 
 func (p HTTPProber) Probe(ctx context.Context, slug string, shouldExist bool) error {
@@ -33,8 +34,16 @@ func (p HTTPProber) ProbeRevision(ctx context.Context, slug string, shouldExist 
 	if err != nil {
 		return err
 	}
-	if p.Token != "" {
-		request.Header.Set("Authorization", "Bearer "+p.Token)
+	token := p.Token
+	if p.TokenSource != nil {
+		var err error
+		token, err = p.TokenSource()
+		if err != nil {
+			return errors.New("Edge Runtime probe token is unavailable")
+		}
+	}
+	if token != "" {
+		request.Header.Set("Authorization", "Bearer "+token)
 	}
 	client := p.Client
 	if client == nil {

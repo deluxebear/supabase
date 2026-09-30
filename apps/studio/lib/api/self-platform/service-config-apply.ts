@@ -359,6 +359,7 @@ export type ServiceConfigSpec = {
   secretsHeader: string
   /** Whether the settings can be delivered to Kubernetes targets. */
   supportsKubernetes: boolean
+  rolloutServices?: string[]
 }
 
 export type ApplyRequest = { actor: string; correlationId: string }
@@ -381,6 +382,8 @@ export async function loadServiceConfigApplyPlan(input: {
   secretsEnv: Record<string, string> | null
   /** Whether the plain files carry any stored settings. */
   hasPlainSettings: boolean
+  /** Multi-service Compose secret override, sealed as one file. */
+  secretsPlaintext?: string
 }) {
   const { spec, projectRef } = input
   const storedBinding = await getProjectManagementBinding(projectRef)
@@ -404,6 +407,7 @@ export async function loadServiceConfigApplyPlan(input: {
   let plaintext: string | null = null
   if (isKubernetes)
     plaintext = kubernetesSecretsPlaintext({ ...input.plainEnv, ...input.secretsEnv })
+  else if (input.secretsPlaintext !== undefined) plaintext = input.secretsPlaintext
   else if (hasSecrets && input.secretsEnv !== null)
     plaintext = toComposeOverrideYaml(spec.service, input.secretsEnv, spec.secretsHeader)
 
@@ -598,7 +602,7 @@ export async function commitServiceConfigApply(
     desiredDocument = {
       ownershipMode: 'direct-managed',
       adapter: 'compose',
-      compose: { files, rollout: [spec.service] },
+      compose: { files, rollout: spec.rolloutServices ?? [spec.service] },
     }
   }
   return commitDesiredConfiguration({

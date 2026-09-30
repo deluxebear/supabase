@@ -8,6 +8,9 @@ export async function register() {
     if (process.env.NEXT_PUBLIC_SELF_PLATFORM === 'true') {
       const { startMetricsSampler } = await import('./lib/api/self-platform/metrics')
       startMetricsSampler()
+      const { startJWTConfigurationSync } =
+        await import('./lib/api/self-platform/jwt-configuration')
+      startJWTConfigurationSync()
     }
   }
 

@@ -2,9 +2,12 @@ package fleetinventory
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/supabase/supabase/apps/backup-operator/internal/fleetjwt"
+	"github.com/supabase/supabase/apps/backup-operator/internal/sealedsecret"
 	"io"
 	"net"
 	"net/http"
@@ -39,6 +42,9 @@ type dockerContainer struct {
 }
 
 type dockerContainerInspect struct {
+	Config struct {
+		Env []string `json:"Env"`
+	} `json:"Config"`
 	State struct {
 		Status string `json:"Status"`
 		Health *struct {
@@ -187,4 +193,52 @@ func first(values []string) string {
 		return "unknown"
 	}
 	return values[0]
+}
+
+// ObserveJWT reads only the allowlisted Compose project and seals verified keys.
+func (o DockerObserver) ObserveJWT(ctx context.Context, project, binding string, publicKey []byte) (fleetjwt.Observation, error) {
+	client, base := o.client()
+	filters, _ := json.Marshal(map[string][]string{"label": {"com.docker.compose.project=" + o.ComposeProject}})
+	var listed []dockerContainer
+	if err := dockerGet(ctx, client, base+"/containers/json?all=1&filters="+url.QueryEscape(string(filters)), &listed); err != nil {
+		return fleetjwt.Observation{}, err
+	}
+	envs := map[string]map[string]string{}
+	for _, container := range listed {
+		service := container.Labels["com.docker.compose.service"]
+		switch service {
+		case "auth", "rest", "storage", "realtime", "functions", "kong", "supavisor":
+		default:
+			continue
+		}
+		if _, exists := envs[service]; exists {
+			return fleetjwt.Observation{}, errors.New("JWT observation requires one running container per service")
+		}
+		var inspect dockerContainerInspect
+		if err := dockerGet(ctx, client, base+"/containers/"+url.PathEscape(container.ID)+"/json", &inspect); err != nil {
+			return fleetjwt.Observation{}, err
+		}
+		if inspect.State.Status != "running" || inspect.State.Health != nil && inspect.State.Health.Status != "healthy" {
+			return fleetjwt.Observation{}, errors.New("JWT consumer is not healthy")
+		}
+		values := map[string]string{}
+		for _, value := range inspect.Config.Env {
+			key, val, ok := strings.Cut(value, "=")
+			if ok {
+				values[key] = val
+			}
+		}
+		envs[service] = values
+	}
+	now := time.Now().UTC()
+	credentials, err := fleetjwt.ReadCredentials(envs, now)
+	if err != nil {
+		return fleetjwt.Observation{}, err
+	}
+	raw, _ := json.Marshal(credentials)
+	envelope, err := sealedsecret.Seal(rand.Reader, publicKey, fleetjwt.Context(project, binding), raw)
+	if err != nil {
+		return fleetjwt.Observation{}, errors.New("JWT observation could not be sealed")
+	}
+	return fleetjwt.Observation{Schema: fleetjwt.Schema, ProjectRef: project, BindingID: binding, ObservedAt: now, Sealed: envelope}, nil
 }

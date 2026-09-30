@@ -3,6 +3,7 @@ import { IS_PLATFORM } from 'common'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { JWTSecretKeysTable } from '@/components/interfaces/JwtSecrets/jwt-secret-keys-table'
+import { SelfPlatformJWTSettings } from '@/components/interfaces/JwtSecrets/SelfPlatformJWTSettings'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import JWTKeysLayout from '@/components/layouts/JWTKeys/JWTKeysLayout'
 import SettingsLayout from '@/components/layouts/ProjectSettingsLayout/SettingsLayout'
@@ -11,6 +12,7 @@ import { NoPermission } from '@/components/ui/NoPermission'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useDeploymentMode } from '@/hooks/misc/useDeploymentMode'
 import { DOCS_URL } from '@/lib/constants'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
@@ -20,6 +22,8 @@ const JWTSigningKeysPage: NextPageWithLayout = () => {
     PermissionAction.READ,
     'auth_signing_keys'
   )
+
+  if (IS_SELF_PLATFORM) return <SelfPlatformJWTSettings />
 
   if (!IS_PLATFORM) {
     return (

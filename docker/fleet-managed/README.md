@@ -176,3 +176,90 @@ Do not mount the Docker socket into the generic Fleet Agent. Lifecycle actions
 remain unavailable until a versioned, allowlisted provider is installed. Backup
 also remains explicitly unconfigured until a target-local Backup Agent and
 repository have completed their own recovery acceptance.
+
+
+### Legacy HS256 JWT configuration and automatic synchronization
+
+Fleet-managed Compose projects can synchronize the running legacy JWT credentials
+back to Studio. In Studio, open **Settings → JWT keys**, copy the **Studio recipient
+public key**, and set `FLEET_JWT_SYNC_PUBLIC_KEY` in the managed project's env file.
+The observer needs that public key, `MANAGED_PROJECT_REF`, and the enrolled
+`FLEET_AGENT_BINDING_ID`. Recreate `fleet-compose-observer` and `fleet-agent` after
+changing the settings. The observer only reports a credential set when Auth,
+REST, Storage, Realtime, Functions, Pooler, and Kong are running, healthy, and
+using matching legacy credentials. Reports are sealed to Studio, forwarded in
+the Agent's mTLS heartbeat, and accepted for at most two minutes. Studio checks
+the current project binding and JWT signatures before encrypting the observed
+credentials into the project registry. Neither Fleet Control nor inventory or
+operation evidence contains plaintext credentials.
+
+Upgrade Fleet Control to schema 12 and run platform migration
+`34-jwt-observations.sql` before enabling this feature. It currently supports
+Compose projects registered in `legacy-jwt` mode; Kubernetes and asymmetric
+signing-key lifecycle management are not supported by this configuration flow.
+
+To apply a new HS256 secret, use the configuration form in Studio. An administrator
+with secret-read and infrastructure-execute permission must confirm ownership
+and token invalidation and have a recent AAL2 session. Studio generates replacement
+legacy anon/service_role tokens and seals one multi-service Compose override to
+the Agent. The Agent applies the `jwt` domain and recreates dependent services;
+Studio advances registered credentials only after a matching runtime observation.
+A partially applied configuration does not replace registered credentials. The
+operation reports failure and must be resolved before another change is submitted.
+Changing the secret signs users out; applications must receive the replacement
+legacy API keys. Plan for a service interruption. This is not zero-downtime key
+rotation.
+
+The lifecycle service allowlist must include `kong` and `supavisor`. Allowlist
+Kong's read-only bind mounts under the deployment's `volumes/api` directory in
+`FLEET_LIFECYCLE_BIND_PREFIXES`. Bootstrap the new domain once for existing targets:
+
+```bash
+docker/fleet-managed/scripts/bootstrap-config-domain.sh "$FLEET_HOST_CONFIG_ROOT" jwt
+```
+
+Include `$FLEET_HOST_CONFIG_ROOT/jwt/current/secrets.compose.yml` **after** Auth
+and Functions overrides in every manual Compose command. The lifecycle overlay
+includes it automatically. The Agent uses the current generated service token
+for future function probes, so changing credentials does not strand subsequent
+function deployments. Preserve generated domain revisions for retries; do not
+place plaintext credentials in operation notes or logs.
+
+
+### Envoy gateway for managed Compose projects
+
+Apply `docker-compose.envoy.yml` after the managed and lifecycle overlays. The
+Compose service remains `kong` for compatibility with existing Fleet bindings;
+the container becomes `<prefix>-envoy`. HTTP ports and project network aliases
+are unchanged. This overlay does not publish a TLS listener: use a TLS reverse
+proxy when HTTPS is required.
+
+```sh
+docker compose --env-file docker/self-platform/.env \
+  --env-file docker/fleet-managed/project-d.env -p supabase-managed-d \
+  -f docker/docker-compose.yml \
+  -f docker/fleet-managed/docker-compose.override.yml \
+  -f docker/fleet-managed/docker-compose.lifecycle.yml \
+  -f docker/fleet-managed/docker-compose.envoy.yml --profile agent up -d
+```
+
+Include the Envoy overlay on every subsequent operator Compose invocation. The
+Agent's lifecycle file list includes it automatically. Add the exact host path
+of `fleet-managed/envoy-entrypoint.sh` and the `volumes/api` directory to
+`FLEET_LIFECYCLE_BIND_PREFIXES`; set the `gateway` component version to `1.39.1`
+in both the Agent and Studio lifecycle version maps. The entrypoint maps Fleet's
+existing legacy JWT variable names to Envoy and allows each opaque API key to
+translate independently to its internal JWT.
+
+Run the read-only smoke check without printing credentials:
+
+```sh
+python3 docker/fleet-managed/tests/envoy-smoke.py \
+  --container supabase-managed-project-d-envoy --port 8300
+```
+
+The check verifies Auth, REST, Storage, an existing Fleet function revision,
+Realtime WebSocket upgrades, and rejection of invalid API keys. The Realtime
+tenant administration route remains blocked by the gateway. To restore Kong,
+omit the Envoy overlay and recreate the gateway and Agent; also restore the
+previous lifecycle component version maps. JWT and database data are unchanged.

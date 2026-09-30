@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 
 import { JWTSettings } from '@/components/interfaces/JwtSecrets/jwt-settings'
 import { JWT_SECRET_UPDATE_ERROR_MESSAGES } from '@/components/interfaces/JwtSecrets/jwt.constants'
+import { SelfPlatformJWTSettings } from '@/components/interfaces/JwtSecrets/SelfPlatformJWTSettings'
 import { DefaultLayout } from '@/components/layouts/DefaultLayout'
 import JWTKeysLayout from '@/components/layouts/JWTKeys/JWTKeysLayout'
 import SettingsLayout from '@/components/layouts/ProjectSettingsLayout/SettingsLayout'
@@ -13,6 +14,7 @@ import { UnknownInterface } from '@/components/ui/UnknownInterface'
 import { useJwtSecretUpdatingStatusQuery } from '@/data/config/jwt-secret-updating-status-query'
 import { configKeys } from '@/data/config/keys'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 import type { NextPageWithLayout } from '@/types'
 
@@ -23,7 +25,7 @@ const JWTKeysLegacyPage: NextPageWithLayout = () => {
 
   const { data } = useJwtSecretUpdatingStatusQuery(
     { projectRef },
-    { enabled: projectSettingsLegacyJwtKeys }
+    { enabled: projectSettingsLegacyJwtKeys && !IS_SELF_PLATFORM }
   )
   const jwtSecretUpdateStatus = data?.jwtSecretUpdateStatus
   const jwtSecretUpdateError = data?.jwtSecretUpdateError
@@ -50,6 +52,14 @@ const JWTKeysLegacyPage: NextPageWithLayout = () => {
 
     previousJwtSecretUpdateStatus.current = jwtSecretUpdateStatus
   }, [jwtSecretUpdateStatus])
+
+  if (IS_SELF_PLATFORM) {
+    return (
+      <JWTKeysLayout>
+        <SelfPlatformJWTSettings />
+      </JWTKeysLayout>
+    )
+  }
 
   if (!projectSettingsLegacyJwtKeys) {
     return <UnknownInterface urlBack={`/project/${projectRef}/settings/jwt/signing-keys`} />
