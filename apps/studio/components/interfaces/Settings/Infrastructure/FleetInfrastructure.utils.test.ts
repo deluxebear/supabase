@@ -2,13 +2,36 @@ import { describe, expect, it } from 'vitest'
 
 import {
   formatComputeSource,
+  formatPreflightCheck,
+  formatRuntimeStatus,
   formatVolumeUsage,
   getInventoryCopy,
 } from './FleetInfrastructure.utils'
+import { i18n } from '@/lib/i18n'
 
 const formatBytes = (value: number) => `${value} B`
 
 describe('FleetInfrastructure utils', () => {
+  it('localizes runtime states and preflight checks without changing unknown identifiers', async () => {
+    const previousLocale = i18n.language
+    try {
+      await i18n.changeLanguage('zh-CN')
+      expect(formatRuntimeStatus('healthy')).toBe('健康')
+      expect(formatRuntimeStatus('running')).toBe('正在运行')
+      expect(formatRuntimeStatus('not-configured')).toBe('未配置')
+      expect(formatRuntimeStatus('idle')).toBe('空闲')
+      expect(formatRuntimeStatus('future-state')).toBe('future-state')
+      expect(formatPreflightCheck('provider_registration')).toBe('升级执行器注册')
+      expect(formatPreflightCheck('future-check')).toBe('future-check')
+
+      await i18n.changeLanguage('en')
+      expect(formatRuntimeStatus('healthy')).toBe('Healthy')
+      expect(formatPreflightCheck('provider_registration')).toBe('Upgrade provider registration')
+    } finally {
+      await i18n.changeLanguage(previousLocale)
+    }
+  })
+
   it('names the inventory source for each adapter', () => {
     expect(getInventoryCopy('compose').workloadsTitle).toBe('Compose containers and volumes')
     expect(getInventoryCopy('kubernetes').workloadsTitle).toBe('Kubernetes pods and volumes')

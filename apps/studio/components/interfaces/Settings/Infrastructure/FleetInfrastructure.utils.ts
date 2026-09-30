@@ -5,6 +5,39 @@ import { t as $t } from '@/lib/i18n'
 
 export type InventoryAdapter = 'compose' | 'kubernetes'
 
+const RUNTIME_STATUSES: Record<string, string> = {
+  healthy: 'Healthy',
+  unhealthy: 'Unhealthy',
+  running: 'Running',
+  exited: 'Exited',
+  starting: 'Starting',
+  created: 'Created',
+  restarting: 'Restarting',
+  paused: 'Paused',
+  dead: 'Dead',
+  removing: 'Removing',
+  passed: 'Passed',
+  failed: 'Failed',
+  blocked: 'Blocked',
+  idle: 'Idle',
+  'not-configured': 'Not configured',
+  unknown: 'Unknown',
+}
+
+export function formatRuntimeStatus(status: string): string {
+  return $t(RUNTIME_STATUSES[status] ?? status)
+}
+
+const PREFLIGHT_CHECKS: Record<string, string> = {
+  inventory_fresh: 'Inventory freshness',
+  disk_headroom: 'Recovery storage capacity',
+  provider_registration: 'Upgrade provider registration',
+}
+
+export function formatPreflightCheck(code: string): string {
+  return $t(PREFLIGHT_CHECKS[code] ?? code)
+}
+
 export function getInventoryCopy(adapter: InventoryAdapter) {
   if (adapter === 'kubernetes') {
     return {

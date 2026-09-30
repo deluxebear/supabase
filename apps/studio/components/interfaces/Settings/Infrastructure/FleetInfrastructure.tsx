@@ -6,6 +6,8 @@ import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import {
   formatComputeSource,
+  formatPreflightCheck,
+  formatRuntimeStatus,
   formatVolumeUsage,
   getInventoryCopy,
 } from './FleetInfrastructure.utils'
@@ -48,7 +50,7 @@ export const FleetInfrastructure = () => {
         title={$t('Unable to load runtime inventory')}
         description={
           error instanceof Error
-            ? error.message
+            ? $t(error.message)
             : $t('The Fleet Agent runtime inventory is unavailable.')
         }
       >
@@ -74,9 +76,15 @@ export const FleetInfrastructure = () => {
           <h2 className="text-lg font-medium">{$t('Capacity and runtime inventory')}</h2>
           <p className="text-sm text-foreground-light">{$tValue(copy.description)}</p>
         </div>
-        <Button type="button" disabled={isFetching} loading={isFetching} onClick={() => refetch()}>
-          <RefreshCw className="mr-2 size-4" />
-          {$t('Refresh')}
+        <Button
+          type="button"
+          className="shrink-0 whitespace-nowrap"
+          icon={<RefreshCw size={16} />}
+          disabled={isFetching}
+          loading={isFetching}
+          onClick={() => refetch()}
+        >
+          {isFetching ? $t('Refreshing') : $t('Refresh')}
         </Button>
       </div>
 
@@ -172,7 +180,9 @@ export const FleetInfrastructure = () => {
                       <StatusIcon
                         state={item.health === 'not-configured' ? item.state : item.health}
                       />
-                      {item.health === 'not-configured' ? item.state : item.health}
+                      {formatRuntimeStatus(
+                        item.health === 'not-configured' ? item.state : item.health
+                      )}
                     </span>
                   </td>
                 </tr>
@@ -201,7 +211,10 @@ export const FleetInfrastructure = () => {
               label={$t('Latest approved')}
               value={data.upgrade.latestSupportedVersion}
             />
-            <InventoryRow label={$t('Progress')} value={data.upgrade.progress} />
+            <InventoryRow
+              label={$t('Progress')}
+              value={formatRuntimeStatus(data.upgrade.progress)}
+            />
           </div>
           <div>
             <h4 className="mb-2 text-sm font-medium">{$t('Preflight')}</h4>
@@ -210,8 +223,8 @@ export const FleetInfrastructure = () => {
                 <div key={check.code} className="flex items-start gap-2 text-sm">
                   <StatusIcon state={check.state} />
                   <div>
-                    <p className="font-medium">{check.code}</p>
-                    <p className="text-foreground-light">{check.message}</p>
+                    <p className="font-medium">{formatPreflightCheck(check.code)}</p>
+                    <p className="text-foreground-light">{$t(check.message)}</p>
                   </div>
                 </div>
               ))}
@@ -221,8 +234,8 @@ export const FleetInfrastructure = () => {
             <Admonition
               key={blocker.code}
               type="warning"
-              title={blocker.message}
-              description={blocker.remediation}
+              title={$t(blocker.message)}
+              description={$t(blocker.remediation)}
             />
           ))}
           <div className="grid gap-5 lg:grid-cols-3">
@@ -235,7 +248,7 @@ export const FleetInfrastructure = () => {
                 <h4 className="mb-2 text-sm font-medium">{title}</h4>
                 <ol className="list-decimal space-y-1 pl-5 text-sm text-foreground-light">
                   {(items as string[]).map((item) => (
-                    <li key={item}>{item}</li>
+                    <li key={item}>{$t(item)}</li>
                   ))}
                 </ol>
               </div>
@@ -255,7 +268,7 @@ export const FleetInfrastructure = () => {
               <InventoryRow
                 key={item.name}
                 label={item.service}
-                value={`${item.state} · ${item.health}`}
+                value={`${formatRuntimeStatus(item.state)} · ${formatRuntimeStatus(item.health)}`}
               />
             ))}
           </div>
