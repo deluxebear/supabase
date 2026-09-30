@@ -1,6 +1,8 @@
 import { PropsWithChildren, ReactNode } from 'react'
 import { cn } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 interface ProductMenuBarProps {
   title: string
   titleBadge?: ReactNode
@@ -35,7 +37,7 @@ export const ProductMenuBar = ({
       <ProductMenuBarHeader>
         {header ?? (
           <>
-            <h4 className="text-sm truncate min-w-0 flex-1">{title}</h4>
+            <h4 className="text-sm truncate min-w-0 flex-1">{$t(title)}</h4>
             {titleBadge}
           </>
         )}

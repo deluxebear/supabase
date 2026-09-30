@@ -33,6 +33,12 @@ export const APIKeyRow = ({
   setKeyToDelete: (id: string | null) => void
 }) => {
   const MotionTableRow = motion.create(TableRow)
+  const isDefaultPublishableKey =
+    !IS_PLATFORM &&
+    apiKey.type === 'publishable' &&
+    apiKey.id === 'publishable' &&
+    apiKey.name === 'publishable' &&
+    apiKey.description === 'Publishable API key (anon role)'
 
   return (
     <>
@@ -50,9 +56,13 @@ export const APIKeyRow = ({
       >
         <TableCell className="py-2 w-56">
           <div className="flex flex-col">
-            <span className="font-medium">{apiKey.name}</span>
+            <span className="font-medium">
+              {isDefaultPublishableKey ? $t('Publishable key') : apiKey.name}
+            </span>
             <div className="text-sm text-foreground-lighter">
-              {apiKey.description || (
+              {(isDefaultPublishableKey
+                ? $t('Publishable API key (anon role)')
+                : apiKey.description) || (
                 <span className="text-foreground-muted">{$t('No description')}</span>
               )}
             </div>
