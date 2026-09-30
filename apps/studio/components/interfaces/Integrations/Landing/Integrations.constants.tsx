@@ -146,8 +146,30 @@ const SUPABASE_INTEGRATIONS: Array<IntegrationDefinition> = [
       websiteUrl: 'https://github.com/microsoft/pg_durable',
     },
     requiredExtensions: ['pg_durable'],
-    navigation: [{ route: 'overview', label: 'Overview' }],
+    navigation: [
+      { route: 'overview', label: 'Overview' },
+      { route: 'workflows', label: 'Workflows', layout: 'constrained' },
+      { route: 'settings', label: 'Runtime Configuration', layout: 'constrained' },
+    ],
     navigate: ({ pageId = 'overview' }) => {
+      if (pageId === 'workflows') {
+        return dynamic(
+          () =>
+            import('@/components/interfaces/Integrations/Durable/WorkflowsTab').then(
+              (mod) => mod.WorkflowsTab
+            ),
+          { loading: Loading }
+        )
+      }
+      if (pageId === 'settings') {
+        return dynamic(
+          () =>
+            import('@/components/interfaces/Integrations/Durable/RuntimeConfigurationTab').then(
+              (mod) => mod.RuntimeConfigurationTab
+            ),
+          { loading: Loading }
+        )
+      }
       if (pageId !== 'overview') return null
       return dynamic(
         () =>
