@@ -58,7 +58,7 @@ export const ScopeSection = ({
         <Check className="size-4 text-primary" strokeWidth={1.5} />
       </div>
       <div>
-        <span className="font-semibold text-foreground">{permissions}</span> {description}
+        <span className="font-semibold text-foreground">{$t(permissions)}</span> {$t(description)}
       </div>
     </div>
   )
@@ -326,7 +326,9 @@ function PermissionSummaryRow({
   return (
     <div className="flex items-center justify-between gap-3 py-3 text-sm">
       <p className="min-w-0 leading-tight">
-        <span className="text-foreground">{permissions.map(({ label }) => label).join(', ')}</span>
+        <span className="text-foreground">
+          {permissions.map(({ label }) => $t(label)).join(', ')}
+        </span>
       </p>
       <Badge variant={getPermissionLevelBadgeVariant(level)} className="shrink-0">
         {formatPermissionLevel(level)}
@@ -408,13 +410,14 @@ function getRequestedPermissions(scopes: OAuthScope[]): RequestedPermission[] {
 }
 
 function formatPermissionLevel(level: PermissionLevel) {
-  if (level === 'read') return 'Read'
-  if (level === 'write') return 'Write'
-  return 'Read + Write'
+  if (level === 'read') return $t('Read')
+  if (level === 'write') return $t('Write')
+  return $t('Read + Write')
 }
 
 function formatPermissionDescription(description: string) {
-  return description.charAt(0).toUpperCase() + description.slice(1)
+  const translatedDescription = $t(description)
+  return translatedDescription.charAt(0).toUpperCase() + translatedDescription.slice(1)
 }
 
 function getPermissionLevelBadgeVariant(level: PermissionLevel) {

@@ -57,23 +57,24 @@ export interface PublishAppSidePanelProps {
   onCreateSuccess: (app: OAuthAppCreateResponse) => void
 }
 
-const formSchema = z.object({
-  name: z.string().min(1, 'Please provide a name for your application'),
-  website: z
-    .string()
-    .min(1, 'Please provide a URL for your site')
-    .url('Please provide a URL for your site')
-    .refine((value) => isValidHttpUrl(value), 'Please provide a valid URL for your site'),
-  redirect_uris: z
-    .array(
-      z.object({
-        id: z.string(),
-        value: z.string().min(1, 'Please provide a URL').url('Please provide a URL'),
-      }),
-      { required_error: 'Please provide at least one callback URL' }
-    )
-    .min(1, 'Please provide at least one callback URL'),
-})
+const createFormSchema = () =>
+  z.object({
+    name: z.string().min(1, $t('Please provide a name for your application')),
+    website: z
+      .string()
+      .min(1, $t('Please provide a URL for your site'))
+      .url($t('Please provide a URL for your site'))
+      .refine((value) => isValidHttpUrl(value), $t('Please provide a valid URL for your site')),
+    redirect_uris: z
+      .array(
+        z.object({
+          id: z.string(),
+          value: z.string().min(1, $t('Please provide a URL')).url($t('Please provide a URL')),
+        }),
+        { required_error: $t('Please provide at least one callback URL') }
+      )
+      .min(1, $t('Please provide at least one callback URL')),
+  })
 
 const getFormDefaultValues = (selectedApp: OAuthApp | undefined) => {
   if (selectedApp) {
@@ -90,7 +91,7 @@ const getFormDefaultValues = (selectedApp: OAuthApp | undefined) => {
   return { name: '', website: '', redirect_uris: [{ id: uuidv4(), value: '' }] }
 }
 
-type FormSchema = z.infer<typeof formSchema>
+type FormSchema = z.infer<ReturnType<typeof createFormSchema>>
 
 export const PublishAppSidePanel = ({
   visible,
@@ -192,7 +193,7 @@ export const PublishAppSidePanel = ({
 
   const form = useForm<FormSchema>({
     defaultValues: getFormDefaultValues(selectedApp),
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(createFormSchema()),
   })
   const { reset } = form
   const { errors, isSubmitting } = form.formState
@@ -222,7 +223,9 @@ export const PublishAppSidePanel = ({
       size="large"
       visible={visible}
       header={
-        selectedApp !== undefined ? 'Update OAuth application' : 'Publish a new OAuth application'
+        selectedApp !== undefined
+          ? $t('Update OAuth application')
+          : $t('Publish a new OAuth application')
       }
       onCancel={() => onClose()}
     >

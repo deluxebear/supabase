@@ -73,12 +73,12 @@ const Scope = ({
     >
       <div className="flex flex-col">
         <span className="text-foreground text-sm">{title}</span>
-        <span className="text-foreground-light text-xs capitalize-sentence">{description}</span>
+        <span className="text-foreground-light text-xs capitalize-sentence">{$t(description)}</span>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button iconRight={<ChevronDown />}>
-            <p>{accessDescription}</p>
+            <p>{$t(accessDescription)}</p>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-40">
