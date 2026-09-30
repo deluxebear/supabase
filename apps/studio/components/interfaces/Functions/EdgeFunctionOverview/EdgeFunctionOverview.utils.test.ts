@@ -18,6 +18,7 @@ import {
   getMemoryTooltipDetail,
   getRollingTimeRange,
   getSegmentedButtonClassName,
+  getSelfHostedFunctionMetrics,
   getUsageMetrics,
   toEdgeFunctionChartData,
   type EdgeFunctionChartRawDatum,
@@ -289,5 +290,43 @@ describe('EdgeFunctionOverview.utils', () => {
       description: 'Request failed',
     })
     expect(getMemoryTooltipDetail(12.34, 5.67)).toBe('Heap 12.3MB • External 5.7MB')
+  })
+})
+
+describe('self-hosted measured summaries', () => {
+  it('weights actual samples and excludes unmeasured chart buckets', () => {
+    const metrics = getSelfHostedFunctionMetrics([
+      {
+        timestamp: 'a',
+        execution_sample_count: 1,
+        avg_execution_time: 100,
+        max_execution_time: 100,
+        worker_sample_count: 1,
+        avg_cpu_time_used: 40,
+        max_cpu_time_used: 40,
+        avg_memory_used: 12,
+        avg_heap_memory_used: 9,
+        avg_external_memory_used: 3,
+      },
+      {
+        timestamp: 'b',
+        execution_sample_count: 3,
+        avg_execution_time: 20,
+        max_execution_time: 25,
+        worker_sample_count: 2,
+        avg_cpu_time_used: 10,
+        max_cpu_time_used: 20,
+        avg_memory_used: 6,
+        avg_heap_memory_used: 4,
+        avg_external_memory_used: 2,
+      },
+      { timestamp: 'c' },
+    ])
+    expect(metrics.averageExecutionTime).toBe(40)
+    expect(metrics.maxExecutionTime).toBe(100)
+    expect(metrics.averageCpuTime).toBe(20)
+    expect(metrics.averageMemoryUsage).toBe(8)
+    expect(metrics.totalMemoryByType).toBe(8)
+    expect(getSelfHostedFunctionMetrics([]).averageCpuTime).toBe(0)
   })
 })

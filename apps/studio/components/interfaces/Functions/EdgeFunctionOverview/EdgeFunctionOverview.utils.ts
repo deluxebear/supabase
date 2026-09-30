@@ -9,6 +9,8 @@ import type { ChartIntervals } from '@/types'
 
 export type EdgeFunctionChartRawDatum = {
   timestamp: string | number
+  execution_sample_count?: string | number
+  worker_sample_count?: string | number
   success_count?: string | number
   redirect_count?: string | number
   client_err_count?: string | number
@@ -234,6 +236,41 @@ export const getUsageMetrics = (data: EdgeFunctionChartDatum[]) => {
     averageCpuTime: meanBy(data, 'avg_cpu_time_used') ?? 0,
     maxCpuTime: maxBy(data, 'max_cpu_time_used')?.max_cpu_time_used ?? 0,
     averageMemoryUsage: meanBy(data, 'avg_memory_used') ?? 0,
+    totalHeapMemory,
+    totalExternalMemory,
+    totalMemoryByType: totalHeapMemory + totalExternalMemory,
+  }
+}
+
+// Empty chart buckets are not measured workers or requests. Weight summaries
+// by the number of recorded samples rather than the filled timeline length.
+export const getSelfHostedFunctionMetrics = (data: EdgeFunctionChartRawDatum[]) => {
+  const mean = (
+    key: keyof EdgeFunctionChartRawDatum,
+    countKey: 'execution_sample_count' | 'worker_sample_count'
+  ) => {
+    let samples = 0
+    let total = 0
+    for (const row of data) {
+      const count = Number(row[countKey] ?? 0)
+      const value = Number(row[key])
+      if (row[key] == null || !Number.isFinite(value) || !Number.isFinite(count) || count <= 0)
+        continue
+      samples += count
+      total += value * count
+    }
+    return samples === 0 ? 0 : total / samples
+  }
+  const maximum = (key: 'max_execution_time' | 'max_cpu_time_used') =>
+    Math.max(0, ...data.map((row) => Number(row[key] ?? 0)).filter(Number.isFinite))
+  const totalHeapMemory = mean('avg_heap_memory_used', 'worker_sample_count')
+  const totalExternalMemory = mean('avg_external_memory_used', 'worker_sample_count')
+  return {
+    averageExecutionTime: mean('avg_execution_time', 'execution_sample_count'),
+    maxExecutionTime: maximum('max_execution_time'),
+    averageCpuTime: mean('avg_cpu_time_used', 'worker_sample_count'),
+    maxCpuTime: maximum('max_cpu_time_used'),
+    averageMemoryUsage: mean('avg_memory_used', 'worker_sample_count'),
     totalHeapMemory,
     totalExternalMemory,
     totalMemoryByType: totalHeapMemory + totalExternalMemory,

@@ -14,6 +14,7 @@ import {
   getInvocationTotals,
   getInvocationUpdateAnnotation,
   getRollingTimeRange,
+  getSelfHostedFunctionMetrics,
   getUsageMetrics,
   toEdgeFunctionChartData,
 } from './EdgeFunctionOverview.utils'
@@ -32,11 +33,13 @@ import { useEdgeFunctionQuery } from '@/data/edge-functions/edge-function-query'
 import { useFillTimeseriesSorted } from '@/hooks/analytics/useFillTimeseriesSorted'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
+import { t as $t } from '@/lib/i18n'
 
 export const EdgeFunctionOverview = () => {
   const router = useRouter()
   const { ref: projectRef, functionSlug } = useParams()
-  const { isEnabled: isUnifiedLogsEnabled } = useUnifiedLogsPreview()
+  const { isEnabled: isUnifiedLogsPreviewEnabled } = useUnifiedLogsPreview()
+  const isUnifiedLogsEnabled = isUnifiedLogsPreviewEnabled && !IS_SELF_PLATFORM
 
   const [interval, setInterval] = useState<string>('15min')
   const selectedInterval =
@@ -123,8 +126,11 @@ export const EdgeFunctionOverview = () => {
     [invocationChartData]
   )
   const { averageExecutionTime, maxExecutionTime } = useMemo(
-    () => getExecutionMetrics(chartData),
-    [chartData]
+    () =>
+      IS_SELF_PLATFORM
+        ? getSelfHostedFunctionMetrics(combinedStatsData)
+        : getExecutionMetrics(chartData),
+    [chartData, combinedStatsData]
   )
   const {
     averageCpuTime,
@@ -133,7 +139,13 @@ export const EdgeFunctionOverview = () => {
     totalHeapMemory,
     totalExternalMemory,
     totalMemoryByType,
-  } = useMemo(() => getUsageMetrics(chartData), [chartData])
+  } = useMemo(
+    () =>
+      IS_SELF_PLATFORM
+        ? getSelfHostedFunctionMetrics(combinedStatsData)
+        : getUsageMetrics(chartData),
+    [chartData, combinedStatsData]
+  )
   const invocationUpdateAnnotation = useMemo(
     () =>
       getInvocationUpdateAnnotation({
@@ -148,7 +160,7 @@ export const EdgeFunctionOverview = () => {
   const invocationActions = useMemo(
     () => [
       {
-        label: isUnifiedLogsEnabled ? 'Open logs' : 'Open invocations',
+        label: isUnifiedLogsEnabled ? $t('Open logs') : $t('Open invocations'),
         href: `/project/${projectRef}/functions/${functionSlug}/${
           isUnifiedLogsEnabled ? 'logs' : 'invocations'
         }`,
@@ -234,7 +246,11 @@ export const EdgeFunctionOverview = () => {
 
       <EdgeFunctionPerformanceSection
         data={chartData}
-        isUnavailable={IS_SELF_PLATFORM}
+        isUnavailable={
+          IS_SELF_PLATFORM &&
+          combinedStatsResults.isSuccess &&
+          !combinedStatsData.some((row) => row.avg_execution_time != null)
+        }
         dateTimeFormat={dateTimeFormat}
         isLoading={combinedStatsResults.isLoading}
         isError={isStatsError}
@@ -245,7 +261,11 @@ export const EdgeFunctionOverview = () => {
 
       <EdgeFunctionUsageSection
         data={chartData}
-        isUnavailable={IS_SELF_PLATFORM}
+        isUnavailable={
+          IS_SELF_PLATFORM &&
+          combinedStatsResults.isSuccess &&
+          !combinedStatsData.some((row) => row.avg_cpu_time_used != null)
+        }
         dateTimeFormat={dateTimeFormat}
         isLoading={combinedStatsResults.isLoading}
         isError={isStatsError}

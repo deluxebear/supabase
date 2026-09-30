@@ -54,6 +54,9 @@ transforms:
     inputs:
       - docker_host
     source: |-
+      if .label."com.docker.compose.project" != "${VECTOR_COMPOSE_PROJECT}" {
+        abort
+      }
       .project = "default"
       .event_message = del(.message)
       .appname = del(.container_name)
@@ -166,67 +169,35 @@ transforms:
           .event_message = parsed.msg
           .metadata.level = parsed.level
       }
-  # Function logs are unstructured messages on stderr
+  # Structured lifecycle events emitted by the Edge Runtime event worker.
   functions_logs:
     type: remap
     inputs:
       - router.functions
     source: |-
-      metadata = {}
-      if is_object(.metadata) {
-        metadata = .metadata
-      }
       parsed, err = parse_json(.event_message)
-      if err == null && is_object(parsed) {
-        if is_array(parsed.metadata) && length!(parsed.metadata) > 0 {
-          metadata = merge!(metadata, parsed.metadata[0])
-        } else if is_object(parsed.metadata) {
-          metadata = merge!(metadata, parsed.metadata)
-        }
-        if parsed.event_message != null {
-          .event_message = parsed.event_message
-        }
-        if parsed.timestamp != null {
-          .timestamp = parsed.timestamp
-        }
+      if err != null || parsed.log_type != "FunctionEvent" {
+        abort
       }
-      metadata.project_ref = .project
-      .metadata = metadata
-  # Kong's access log is the request-level signal available in a self-hosted
-  # stack. Fleet function IDs are stable as project-ref plus slug, matching
-  # the ID returned by Studio's Fleet function detail API.
+      .event_message = parsed.event_message
+      .timestamp = parsed.timestamp
+      .metadata = parsed.metadata
+      .metadata.project_ref = .project
+  # The main worker emits one request record, including latency and worker ID.
+  # Do not also ingest Kong access logs: that would count each request twice.
   function_invocation_logs:
     type: remap
     inputs:
-      - kong_logs
+      - router.functions
     source: |-
-      request_path = to_string!(.metadata.request.path)
-      request_path_parts = split(request_path, "?")
-      pathname = request_path_parts[0]
-      path_parts = split!(pathname, "/")
-      if length(path_parts) < 4 || path_parts[1] != "functions" || path_parts[2] != "v1" {
+      parsed, err = parse_json(.event_message)
+      if err != null || parsed.log_type != "FunctionInvocation" {
         abort
       }
-      function_slug = path_parts[3]
-      if function_slug == "" {
-        abort
-      }
-      method = to_string!(.metadata.request.method)
-      status_code = to_string!(.metadata.response.status_code)
-      .event_message = method + " | " + status_code + " | " + pathname
-      .metadata = {
-        "project_ref": .project,
-        "function_id": "${FUNCTIONS_PROJECT_REF}:" + function_slug,
-        "event_type": "Invocation",
-        "level": "info",
-        "request": {
-          "method": method,
-          "pathname": pathname
-        },
-        "response": {
-          "status_code": .metadata.response.status_code
-        }
-      }
+      .event_message = parsed.event_message
+      .timestamp = parsed.timestamp
+      .metadata = parsed.metadata
+      .metadata.project_ref = .project
   # Storage logs may contain json objects so we parse them for completeness
   storage_logs:
     type: remap
@@ -336,7 +307,6 @@ sinks:
     type: 'http'
     inputs:
       - functions_logs
-      - function_invocation_logs
     encoding:
       codec: 'json'
     method: 'post'

@@ -458,9 +458,9 @@ const LegacyEdgeFunctionOverview = () => {
 
 const PageLayout: NextPageWithLayout = () => {
   const { hasLoaded: flagsLoaded } = useFeatureFlags()
-  const showNewOverview = useFlag('edgeFunctionsOverview') === true
+  const showNewOverview = useFlag('edgeFunctionsOverview') === true || IS_SELF_PLATFORM
 
-  if (IS_PLATFORM && !flagsLoaded) {
+  if (IS_PLATFORM && !IS_SELF_PLATFORM && !flagsLoaded) {
     return <LogoLoader />
   }
 

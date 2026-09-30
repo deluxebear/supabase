@@ -86,7 +86,7 @@ function useLogsPreview({
     [urlTimestampEnd, defaultHelper]
   )
   const isSelfPlatformInvocationQuery =
-    IS_SELF_PLATFORM && table === LogsTableName.FN_EDGE && !useOtel
+    IS_SELF_PLATFORM && [LogsTableName.FN_EDGE, LogsTableName.FUNCTIONS].includes(table) && !useOtel
   const startEpoch = Date.parse(timestampStart) / 1000
   const endEpoch = Date.parse(timestampEnd) / 1000
 

@@ -326,9 +326,8 @@ const buildAuthMetrics: Builder = (projectRef, params) => {
 }
 
 // ---------------------------------------------------------------------------
-// functions.combined-stats — request counts from function_edge_logs. The
-// self-hosted Logflare source retains the normalized invocation message but
-// does not expose the function metadata fields to SQL.
+// Requests and worker lifecycle metrics use a queryable message envelope
+// because PG-backed Logflare cannot expose arbitrary metadata to SQL.
 // ---------------------------------------------------------------------------
 // [self-platform] M6.3 fold-in rider ③: row shapes per each SQL's own select
 // list (functionEdgeSql / functionLogsSql below), and the merged-by-bucket
@@ -340,8 +339,27 @@ interface FunctionEdgeLogsRow {
   redirect_count?: number
   client_err_count?: number
   server_err_count?: number
+  execution_sample_count?: number
+  avg_execution_time?: number | null
+  max_execution_time?: number | null
 }
-type FunctionsCombinedStatsBucket = { timestamp: string } & Omit<FunctionEdgeLogsRow, 'timestamp'>
+interface FunctionWorkerLogsRow {
+  timestamp: number
+  log_count?: number
+  log_info_count?: number
+  log_warn_count?: number
+  log_error_count?: number
+  worker_sample_count?: number
+  avg_cpu_time_used?: number | null
+  max_cpu_time_used?: number | null
+  avg_memory_used?: number | null
+  avg_heap_memory_used?: number | null
+  avg_external_memory_used?: number | null
+}
+type FunctionsCombinedStatsBucket = { timestamp: string } & Omit<
+  FunctionEdgeLogsRow & FunctionWorkerLogsRow,
+  'timestamp'
+>
 
 const buildFunctionsCombinedStats: Builder = (projectRef, params) => {
   const functionId = params.function_id
@@ -359,20 +377,35 @@ const buildFunctionsCombinedStats: Builder = (projectRef, params) => {
 
   // Vector writes "METHOD | STATUS | PATH" to event_message. Logflare's PG
   // backend accepts date_trunc but fails on timestamp_trunc for this source.
-  // Kong does not record execution, CPU, memory, or attributable runtime logs.
   const status = "split_part(t.event_message, ' | ', 2)"
-  const functionEdgeSql = `select date_trunc('${trunc}', t.timestamp) as timestamp, count(t.id) as requests_count, countif(${status} like '2__') as success_count, countif(${status} like '3__') as redirect_count, countif(${status} like '4__') as client_err_count, countif(${status} like '5__') as server_err_count from function_edge_logs t where split_part(t.event_message, ' | ', 3) = '${pathname}' and extract(epoch from t.timestamp) >= ${startEpoch} group by 1 order by 1 asc`
+  const executionTime = "cast(nullif(split_part(t.event_message, ' | ', 4), '') as float)"
+  const functionEdgeSql = `select date_trunc('${trunc}', t.timestamp) as timestamp, count(t.id) as requests_count, countif(${status} like '2__') as success_count, countif(${status} like '3__') as redirect_count, countif(${status} like '4__') as client_err_count, countif(${status} like '5__') as server_err_count, count(${executionTime}) as execution_sample_count, avg(${executionTime}) as avg_execution_time, max(${executionTime}) as max_execution_time from function_edge_logs t where split_part(t.event_message, ' | ', 3) = '${pathname}' and extract(epoch from t.timestamp) >= ${startEpoch} group by 1 order by 1 asc limit 10000`
+  const eventType = "split_part(t.event_message, ' | ', 1)"
+  const level = "split_part(t.event_message, ' | ', 4)"
+  const metric = (position: number) =>
+    `cast(nullif(split_part(t.event_message, ' | ', ${position}), '') as float)`
+  const functionLogsSql = `select date_trunc('${trunc}', t.timestamp) as timestamp, countif(${eventType} = 'Log') as log_count, countif(${eventType} = 'Log' and ${level} = 'info') as log_info_count, countif(${eventType} = 'Log' and ${level} = 'warn') as log_warn_count, countif(${eventType} = 'Log' and ${level} = 'error') as log_error_count, count(${metric(5)}) as worker_sample_count, avg(${metric(5)}) as avg_cpu_time_used, max(${metric(5)}) as max_cpu_time_used, avg(${metric(6)}) / 1048576 as avg_memory_used, avg(${metric(7)}) / 1048576 as avg_heap_memory_used, avg(${metric(8)}) / 1048576 as avg_external_memory_used from function_logs t where split_part(t.event_message, ' | ', 2) = '${functionSlug}' and extract(epoch from t.timestamp) >= ${startEpoch} group by 1 order by 1 asc limit 10000`
 
   return async () => {
-    const edgeResult = await retrieveAnalyticsData({
-      name: 'logs.all',
-      projectRef,
-      params: { sql: functionEdgeSql, iso_timestamp_start: isoStart },
-    })
+    const [edgeResult, workerResult] = await Promise.all(
+      [functionEdgeSql, functionLogsSql].map((sql) =>
+        retrieveAnalyticsData({
+          name: 'logs.all',
+          projectRef,
+          params: { sql, iso_timestamp_start: isoStart },
+        })
+      )
+    )
     if (edgeResult.error) return { data: undefined, error: edgeResult.error }
+    if (workerResult.error) return { data: undefined, error: workerResult.error }
 
     const buckets = new Map<string, FunctionsCombinedStatsBucket>()
     for (const row of (edgeResult.data?.result ?? []) as FunctionEdgeLogsRow[]) {
+      const { timestamp, ...rest } = row
+      const iso = microsToIso(timestamp)
+      buckets.set(iso, { ...(buckets.get(iso) ?? {}), timestamp: iso, ...rest })
+    }
+    for (const row of (workerResult.data?.result ?? []) as FunctionWorkerLogsRow[]) {
       const { timestamp, ...rest } = row
       const iso = microsToIso(timestamp)
       buckets.set(iso, { ...(buckets.get(iso) ?? {}), timestamp: iso, ...rest })

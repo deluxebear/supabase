@@ -102,6 +102,7 @@ services:
           cp /seed/main/index.ts "$$project_root/main/.index.ts.next"
           mv "$$project_root/main/.index.ts.next" "$$project_root/main/index.ts"
         fi
+        cp -a /seed/.events "$$project_root/"
         chown -R 65532:65532 /functions /agent-state /database-state
         # Owner only: files holding delivered secrets keep the operator group.
         chown -R 65532 /fleet-config

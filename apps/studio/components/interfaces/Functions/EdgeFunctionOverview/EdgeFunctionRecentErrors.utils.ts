@@ -219,6 +219,41 @@ limit ${limit}
 `.trim()
 }
 
+export const getSelfHostedFunctionErrorQueries = ({
+  functionSlug,
+  start,
+  end,
+  executionIds = [],
+}: {
+  functionSlug?: string
+  start?: string
+  end?: string
+  executionIds?: string[]
+}) => {
+  const slug = escapeSqlString(functionSlug ?? '__pending__')
+  const startEpoch = Date.parse(start ?? '') / 1000
+  const endEpoch = Date.parse(end ?? '') / 1000
+  if (!Number.isFinite(startEpoch) || !Number.isFinite(endEpoch)) {
+    return { invocations: '', count: '', runtime: '' }
+  }
+  const time = `extract(epoch from timestamp) >= ${startEpoch} and extract(epoch from timestamp) < ${endEpoch}`
+  const where = `split_part(event_message, ' | ', 3) = '/functions/v1/${slug}' and ${time}`
+  const ids = executionIds.map((id) => `'${escapeSqlString(id)}'`).join(', ')
+  return {
+    invocations: `-- self-hosted errors since last deploy
+select id, timestamp, event_message, split_part(event_message, ' | ', 1) as method, split_part(event_message, ' | ', 2) as status_code, split_part(event_message, ' | ', 5) as execution_id
+from function_edge_logs where ${where} and split_part(event_message, ' | ', 2) like '5__'
+order by timestamp desc limit ${RECENT_ERROR_INVOCATIONS_LIMIT}`,
+    count: `-- self-hosted invocation count since last deploy
+select count(id) as count from function_edge_logs where ${where} limit 1`,
+    runtime: ids
+      ? `-- self-hosted runtime logs for error groups
+select id, timestamp, event_message from function_logs where split_part(event_message, ' | ', 2) = '${slug}' and split_part(event_message, ' | ', 3) in (${ids}) and ${time}
+order by timestamp desc limit ${RELATED_RUNTIME_LOGS_LIMIT}`
+      : '',
+  }
+}
+
 export const getSinceLastDeployInvocationCountSql = (functionId?: string): string => {
   const id = escapeSqlString(functionId ?? '__pending__')
   return `-- invocation count since last deploy

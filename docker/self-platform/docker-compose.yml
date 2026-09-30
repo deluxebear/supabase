@@ -454,10 +454,12 @@ services:
 
   functions:
     container_name: supabase-edge-functions
-    image: supabase/edge-runtime:v1.74.0
+    image: supabase/edge-runtime:v1.76.2
     restart: unless-stopped
     volumes:
       - ./volumes/functions:/home/deno/functions:z
+      - ../volumes/functions/main/index.ts:/home/deno/functions/main/index.ts:ro,z
+      - ../volumes/functions/.events:/home/deno/functions/.events:ro,z
       - deno-cache:/root/.cache/deno
     depends_on:
       kong:
@@ -485,11 +487,14 @@ services:
       SUPABASE_DB_URL: postgresql://postgres:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
       # TODO: Allow configuring VERIFY_JWT per function.
       VERIFY_JWT: "${FUNCTIONS_VERIFY_JWT}"
+      FUNCTIONS_PROJECT_REF: ${MANAGED_PROJECT_REF:-default}
     command:
       [
         "start",
         "--main-service",
-        "/home/deno/functions/main"
+        "/home/deno/functions/main",
+        "--event-worker",
+        "/home/deno/functions/.events"
       ]
 
   db:
@@ -676,7 +681,7 @@ services:
   analytics:
     profiles: ["obs"]
     container_name: supabase-analytics
-    image: supabase/logflare:1.43.1
+    image: supabase/logflare:1.50.10
     restart: unless-stopped
     ports:
       - 4000:4000
@@ -727,6 +732,23 @@ services:
     #volumes:
     #  - ./gcloud.json:/opt/app/rel/logflare/bin/gcloud.json:ro,z
 
+  function-logs-init:
+    profiles: ["obs"]
+    image: node:22-alpine
+    restart: "no"
+    depends_on:
+      analytics:
+        condition: service_healthy
+    environment:
+      LOGFLARE_URL: http://analytics:4000
+      LOGFLARE_PRIVATE_ACCESS_TOKEN: ${LOGFLARE_PRIVATE_ACCESS_TOKEN}
+      LOGFLARE_PUBLIC_ACCESS_TOKEN: ${LOGFLARE_PUBLIC_ACCESS_TOKEN}
+    volumes:
+      - ../volumes/logs/bootstrap-function-sources.mjs:/bootstrap.mjs:ro
+      - ../volumes/logs/vector.yml:/etc/vector/template.yml:ro
+      - vector-config:/etc/vector/generated
+    command: ["node", "/bootstrap.mjs"]
+
   vector:
     profiles: ["obs"]
     container_name: supabase-vector
@@ -735,7 +757,7 @@ services:
     ports:
       - 9598:9598
     volumes:
-      - ../volumes/logs/vector.yml:/etc/vector/vector.yml:ro,z
+      - vector-config:/etc/vector/generated:ro
       - ${DOCKER_SOCKET_LOCATION}:/var/run/docker.sock:ro,z
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -751,15 +773,18 @@ services:
     depends_on:
       analytics:
         condition: service_healthy
+      function-logs-init:
+        condition: service_completed_successfully
     environment:
       LOGFLARE_PUBLIC_ACCESS_TOKEN: ${LOGFLARE_PUBLIC_ACCESS_TOKEN}
+      VECTOR_COMPOSE_PROJECT: ${COMPOSE_PROJECT_NAME:-supabase}
       PROCFS_ROOT: /host/proc
       SYSFS_ROOT: /host/sys
       METRICS_SCRAPE_TOKEN: ${ANON_KEY}
     command:
       [
         "--config",
-        "/etc/vector/vector.yml"
+        "/etc/vector/generated/vector.yml"
       ]
     security_opt:
       - "label=disable"
@@ -784,5 +809,6 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
 
 volumes:
+  vector-config:
   db-config:
   deno-cache:

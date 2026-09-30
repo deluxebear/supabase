@@ -510,12 +510,34 @@ export const SQL_FILTER_TEMPLATES: Record<string, Record<string, SqlFilterEntry>
   },
   function_logs: {
     ..._SQL_FILTER_COMMON,
-    'severity.error': safeSql`metadata.level = 'error'`,
-    'severity.notError': safeSql`metadata.level != 'error'`,
-    'severity.log': safeSql`metadata.level = 'log'`,
-    'severity.info': safeSql`metadata.level = 'info'`,
-    'severity.debug': safeSql`metadata.level = 'debug'`,
-    'severity.warn': safeSql`metadata.level = 'warn'`,
+    function_runtime_slug: (value: string) =>
+      safeSql`split_part(event_message, ' | ', 2) = ${analyticsLiteral(value)}`,
+    __timestamp_start: (value: string) =>
+      Number.isFinite(Number(value))
+        ? safeSql`extract(epoch from timestamp) >= ${analyticsLiteral(Number(value))}`
+        : safeSql`false`,
+    __timestamp_end: (value: string) =>
+      Number.isFinite(Number(value))
+        ? safeSql`extract(epoch from timestamp) < ${analyticsLiteral(Number(value))}`
+        : safeSql`false`,
+    'severity.error': IS_SELF_PLATFORM
+      ? safeSql`split_part(event_message, ' | ', 4) = 'error'`
+      : safeSql`metadata.level = 'error'`,
+    'severity.notError': IS_SELF_PLATFORM
+      ? safeSql`split_part(event_message, ' | ', 4) != 'error'`
+      : safeSql`metadata.level != 'error'`,
+    'severity.log': IS_SELF_PLATFORM
+      ? safeSql`split_part(event_message, ' | ', 4) = 'log'`
+      : safeSql`metadata.level = 'log'`,
+    'severity.info': IS_SELF_PLATFORM
+      ? safeSql`split_part(event_message, ' | ', 4) = 'info'`
+      : safeSql`metadata.level = 'info'`,
+    'severity.debug': IS_SELF_PLATFORM
+      ? safeSql`split_part(event_message, ' | ', 4) = 'debug'`
+      : safeSql`metadata.level = 'debug'`,
+    'severity.warn': IS_SELF_PLATFORM
+      ? safeSql`split_part(event_message, ' | ', 4) = 'warn'`
+      : safeSql`metadata.level = 'warn'`,
   },
   auth_logs: {
     ..._SQL_FILTER_COMMON,

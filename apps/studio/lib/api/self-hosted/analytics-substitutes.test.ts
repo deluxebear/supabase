@@ -285,7 +285,7 @@ describe('functions.combined-stats substitute', () => {
   })
   it('counts normalized invocation messages by function without querying unavailable metadata', async () => {
     vi.useFakeTimers().setSystemTime(new Date('2026-07-05T15:10:00.000Z'))
-    retrieveAnalyticsData.mockResolvedValue(
+    retrieveAnalyticsData.mockResolvedValueOnce(
       ok([
         {
           timestamp: 1783263600000000,
@@ -297,12 +297,13 @@ describe('functions.combined-stats substitute', () => {
         },
       ])
     )
+    retrieveAnalyticsData.mockResolvedValueOnce(ok([]))
     const { data } = await retrieveSubstitutedAnalyticsData({
       name: 'functions.combined-stats',
       projectRef: 'default',
       params: { function_id: 'project-d:rapid-task', interval: '1hr' },
     })
-    expect(retrieveAnalyticsData).toHaveBeenCalledTimes(1)
+    expect(retrieveAnalyticsData).toHaveBeenCalledTimes(2)
     const [{ params }] = retrieveAnalyticsData.mock.calls[0] as [RetrieveAnalyticsDataOptions]
     expect(params.sql).toContain("date_trunc('minute', t.timestamp)")
     expect(params.sql).toContain(
@@ -315,7 +316,69 @@ describe('functions.combined-stats substitute', () => {
     expect(row.requests_count).toBe(4)
     expect(row.client_err_count).toBe(1)
     expect(row.log_count).toBeUndefined()
-    expect(row.avg_cpu_time_used).toBeUndefined() // not derivable self-hosted; useFillTimeseriesSorted defaults 0
+    expect(row.avg_cpu_time_used).toBeUndefined() // old request logs contain no worker metrics
+  })
+
+  it('merges request durations and worker Shutdown metrics into the Cloud bucket shape', async () => {
+    retrieveAnalyticsData.mockResolvedValueOnce(
+      ok([
+        {
+          timestamp: 1783263600000000,
+          requests_count: 2,
+          execution_sample_count: 2,
+          avg_execution_time: 80,
+          max_execution_time: 120,
+        },
+      ])
+    )
+    retrieveAnalyticsData.mockResolvedValueOnce(
+      ok([
+        {
+          timestamp: 1783263600000000,
+          worker_sample_count: 1,
+          avg_cpu_time_used: 44,
+          max_cpu_time_used: 44,
+          avg_memory_used: 10.5,
+          log_count: 1,
+        },
+      ])
+    )
+    const { data, error } = await retrieveSubstitutedAnalyticsData({
+      name: 'functions.combined-stats',
+      projectRef: 'project-d',
+      params: { function_id: 'project-d:hello', interval: '1hr' },
+    })
+    expect(error).toBeUndefined()
+    expect(data?.result).toEqual([
+      {
+        timestamp: '2026-07-05T15:00:00.000Z',
+        requests_count: 2,
+        execution_sample_count: 2,
+        avg_execution_time: 80,
+        max_execution_time: 120,
+        worker_sample_count: 1,
+        avg_cpu_time_used: 44,
+        max_cpu_time_used: 44,
+        avg_memory_used: 10.5,
+        log_count: 1,
+      },
+    ])
+    const workerSql = retrieveAnalyticsData.mock.calls[1][0].params.sql
+    expect(workerSql).toContain("split_part(t.event_message, ' | ', 2) = 'hello'")
+    expect(workerSql).toContain('/ 1048576 as avg_memory_used')
+  })
+
+  it('reports worker query failures instead of silently showing zero usage', async () => {
+    retrieveAnalyticsData.mockResolvedValueOnce(ok([]))
+    const failure = new Error('Worker logs unavailable')
+    retrieveAnalyticsData.mockResolvedValueOnce({ data: undefined, error: failure })
+    const { data, error } = await retrieveSubstitutedAnalyticsData({
+      name: 'functions.combined-stats',
+      projectRef: 'project-d',
+      params: { function_id: 'project-d:hello', interval: '1hr' },
+    })
+    expect(data).toBeUndefined()
+    expect(error).toBe(failure)
   })
 
   it('accepts the three-hour interval used by the function overview', async () => {

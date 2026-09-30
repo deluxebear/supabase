@@ -15,3 +15,7 @@ test.http
 docker-compose.override.yml
 .supabase-version
 backups
+
+!volumes/functions/.events/
+volumes/functions/.events/**
+!volumes/functions/.events/index.ts

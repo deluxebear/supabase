@@ -69,6 +69,22 @@ services:
     #volumes:
     #  - ./gcloud.json:/opt/app/rel/logflare/bin/gcloud.json:ro,z
 
+  function-logs-init:
+    image: node:22-alpine
+    restart: "no"
+    depends_on:
+      analytics:
+        condition: service_healthy
+    environment:
+      LOGFLARE_URL: http://analytics:4000
+      LOGFLARE_PRIVATE_ACCESS_TOKEN: ${LOGFLARE_PRIVATE_ACCESS_TOKEN}
+      LOGFLARE_PUBLIC_ACCESS_TOKEN: ${LOGFLARE_PUBLIC_ACCESS_TOKEN}
+    volumes:
+      - ./volumes/logs/bootstrap-function-sources.mjs:/bootstrap.mjs:ro
+      - ./volumes/logs/vector.yml:/etc/vector/template.yml:ro
+      - vector-config:/etc/vector/generated
+    command: ["node", "/bootstrap.mjs"]
+
   vector:
     container_name: supabase-vector
     image: timberio/vector:0.53.0-alpine
@@ -76,7 +92,7 @@ services:
     ports:
       - 9598:9598
     volumes:
-      - ./volumes/logs/vector.yml:/etc/vector/vector.yml:ro,z
+      - vector-config:/etc/vector/generated:ro
       - ${DOCKER_SOCKET_LOCATION}:/var/run/docker.sock:ro,z
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -92,8 +108,11 @@ services:
     depends_on:
       analytics:
         condition: service_healthy
+      function-logs-init:
+        condition: service_completed_successfully
     environment:
       LOGFLARE_PUBLIC_ACCESS_TOKEN: ${LOGFLARE_PUBLIC_ACCESS_TOKEN}
+      VECTOR_COMPOSE_PROJECT: ${COMPOSE_PROJECT_NAME:-supabase}
       FUNCTIONS_PROJECT_REF: ${MANAGED_PROJECT_REF:-default}
       PROCFS_ROOT: /host/proc
       SYSFS_ROOT: /host/sys
@@ -101,7 +120,7 @@ services:
     command:
       [
         "--config",
-        "/etc/vector/vector.yml"
+        "/etc/vector/generated/vector.yml"
       ]
     security_opt:
       - "label=disable"
@@ -123,3 +142,6 @@ services:
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
+
+volumes:
+  vector-config:

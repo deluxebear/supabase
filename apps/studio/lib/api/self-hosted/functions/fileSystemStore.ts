@@ -19,7 +19,9 @@ export class FileSystemFunctionsArtifactStore {
       throw err
     }
 
-    const functionsFolders = dirEntries.filter((dir) => dir.isDirectory() && dir.name !== 'main')
+    const functionsFolders = dirEntries.filter(
+      (dir) => dir.isDirectory() && dir.name !== 'main' && !dir.name.startsWith('.')
+    )
     const functionsArtifacts = await Promise.all(
       functionsFolders.map(parseFolderToFunctionArtifact)
     )
@@ -31,7 +33,8 @@ export class FileSystemFunctionsArtifactStore {
     const dirEntries = await readdir(this.folderPath, { withFileTypes: true })
 
     const functionFolder = dirEntries.find(
-      (dir) => dir.isDirectory() && dir.name !== 'main' && dir.name === slug
+      (dir) =>
+        dir.isDirectory() && dir.name !== 'main' && !dir.name.startsWith('.') && dir.name === slug
     )
     if (!functionFolder) return
 
@@ -39,7 +42,7 @@ export class FileSystemFunctionsArtifactStore {
   }
 
   async getFileEntriesBySlug(slug: string): Promise<Array<FunctionFileEntry>> {
-    if (slug === 'main') return []
+    if (slug === 'main' || slug.startsWith('.')) return []
 
     const functionFolderPath = path.resolve(this.folderPath, slug)
     if (!functionFolderPath.startsWith(path.resolve(this.folderPath) + path.sep)) return []

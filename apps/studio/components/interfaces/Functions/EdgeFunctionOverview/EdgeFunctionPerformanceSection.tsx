@@ -42,7 +42,7 @@ export const EdgeFunctionPerformanceSection = ({
 }: EdgeFunctionPerformanceSectionProps) => {
   const emptyStateCopy = getChartEmptyStateCopy('execution time', isError, errorMessage)
   const unavailableDescription = $t(
-    'This self-hosted stack does not record function execution time, CPU time, or memory usage'
+    'No request execution time has been recorded in this time range.'
   )
   const tooltipDetails = useMemo(
     () => getExecutionTooltipDetails(averageExecutionTime),

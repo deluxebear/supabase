@@ -194,7 +194,7 @@ async function shouldVerifyJWT(serviceName: string | undefined): Promise<boolean
   throw new Error('Fleet function runtime JWT setting is invalid')
 }
 
-Deno.serve(async (req: Request) => {
+async function handleRequest(req: Request, invocation: { execution_id?: string }) {
   const url = new URL(req.url)
   const { pathname } = url
   const path_parts = pathname.split('/')
@@ -306,6 +306,7 @@ Deno.serve(async (req: Request) => {
       importMapPath,
       envVars,
     })
+    invocation.execution_id = worker.key
     const workerResponse = await worker.fetch(req)
     if (fleetRevision === undefined) return workerResponse
     const headers = new Headers(workerResponse.headers)
@@ -322,4 +323,29 @@ Deno.serve(async (req: Request) => {
       headers: { 'Content-Type': 'application/json' },
     })
   }
+}
+
+Deno.serve(async (req: Request) => {
+  const slug = new URL(req.url).pathname.split('/')[1]
+  const started = performance.now()
+  const invocation: { execution_id?: string } = {}
+  const response = await handleRequest(req, invocation)
+  if (slug && /^[A-Za-z0-9][A-Za-z0-9_-]{0,62}$/.test(slug) && slug !== '__fleet_probe') {
+    const executionTime = Math.round((performance.now() - started) * 1000) / 1000
+    console.log(JSON.stringify({
+      log_type: 'FunctionInvocation',
+      timestamp: new Date().toISOString(),
+      event_message: [req.method, response.status, `/functions/v1/${slug}`, executionTime, invocation.execution_id ?? ''].join(' | '),
+      metadata: {
+        function_id: `${Deno.env.get('FUNCTIONS_PROJECT_REF') ?? 'default'}:${slug}`,
+        execution_id: invocation.execution_id,
+        execution_time_ms: executionTime,
+        event_type: 'Invocation',
+        level: 'info',
+        request: { method: req.method, pathname: `/functions/v1/${slug}` },
+        response: { status_code: response.status },
+      },
+    }))
+  }
+  return response
 })

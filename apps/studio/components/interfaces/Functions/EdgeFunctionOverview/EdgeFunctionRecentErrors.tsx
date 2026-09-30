@@ -35,9 +35,9 @@ import {
   getRecentErrorGroupsBase,
   getRecentErrorInvocationsSql,
   getRelatedExecutionIds,
+  getSelfHostedFunctionErrorQueries,
   getSinceLastDeployInvocationCount,
   getSinceLastDeployInvocationCountSql,
-  getSinceLastDeployInvocationPhrase,
   getSinceLastDeployLogRange,
   getStatusBadgeVariant,
   toAlertError,
@@ -47,6 +47,7 @@ import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/L
 import { AiAssistantDropdown } from '@/components/ui/AiAssistantDropdown'
 import { AlertError } from '@/components/ui/AlertError'
 import { useLogsQuery } from '@/hooks/analytics/useLogsQuery'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -71,10 +72,16 @@ export const EdgeFunctionRecentErrors = ({
     () => getSinceLastDeployLogRange(updatedAt),
     [updatedAt]
   )
-  const emptyStateFallback =
+  const emptyStateFallback = $t(
     'Runtime errors since the last deploy will appear here when this function returns a 5xx response.'
+  )
 
   const isQueryEnabled = Boolean(projectRef && functionId && isoTimestampStart)
+  const selfHostedQueries = getSelfHostedFunctionErrorQueries({
+    functionSlug,
+    start: isoTimestampStart,
+    end: isoTimestampEnd,
+  })
   const recentErrorInvocationsSql = useMemo(
     () => getRecentErrorInvocationsSql(functionId),
     [functionId]
@@ -91,12 +98,12 @@ export const EdgeFunctionRecentErrors = ({
   } = useLogsQuery({
     projectRef: projectRef!,
     initialParams: {
-      sql: recentErrorInvocationsSql,
+      sql: IS_SELF_PLATFORM ? selfHostedQueries.invocations : recentErrorInvocationsSql,
       iso_timestamp_start: isoTimestampStart,
       iso_timestamp_end: isoTimestampEnd,
     },
     enabled: isQueryEnabled,
-    options: { useOtel: true },
+    options: { useOtel: !IS_SELF_PLATFORM },
   })
 
   const recentErrorGroupsBase = useMemo(
@@ -110,12 +117,12 @@ export const EdgeFunctionRecentErrors = ({
   } = useLogsQuery({
     projectRef: projectRef!,
     initialParams: {
-      sql: sinceLastDeployInvocationCountSql,
+      sql: IS_SELF_PLATFORM ? selfHostedQueries.count : sinceLastDeployInvocationCountSql,
       iso_timestamp_start: isoTimestampStart,
       iso_timestamp_end: isoTimestampEnd,
     },
     enabled: Boolean(projectRef && sinceLastDeployInvocationCountSql && isoTimestampStart),
-    options: { useOtel: true },
+    options: { useOtel: !IS_SELF_PLATFORM },
   })
 
   const relatedExecutionIds = useMemo(
@@ -127,6 +134,12 @@ export const EdgeFunctionRecentErrors = ({
     () => getFunctionRuntimeLogsSql({ functionId, executionIds: relatedExecutionIds }),
     [functionId, relatedExecutionIds]
   )
+  const selfHostedRuntimeSql = getSelfHostedFunctionErrorQueries({
+    functionSlug,
+    start: isoTimestampStart,
+    end: isoTimestampEnd,
+    executionIds: relatedExecutionIds,
+  }).runtime
 
   const {
     logData: functionRuntimeLogs,
@@ -135,12 +148,12 @@ export const EdgeFunctionRecentErrors = ({
   } = useLogsQuery({
     projectRef: projectRef!,
     initialParams: {
-      sql: functionRuntimeLogsSql,
+      sql: IS_SELF_PLATFORM ? selfHostedRuntimeSql : functionRuntimeLogsSql,
       iso_timestamp_start: isoTimestampStart,
       iso_timestamp_end: isoTimestampEnd,
     },
     enabled: Boolean(projectRef && functionRuntimeLogsSql && isoTimestampStart),
-    options: { useOtel: true },
+    options: { useOtel: !IS_SELF_PLATFORM },
   })
   const queryError =
     toAlertError(recentErrorInvocationsError) ?? toAlertError(functionRuntimeLogsError)
@@ -156,15 +169,12 @@ export const EdgeFunctionRecentErrors = ({
   const emptyStateMessage = useMemo(() => {
     if (!isoTimestampStart || sinceLastDeployInvocationCountError) return emptyStateFallback
 
-    const verb = sinceLastDeployInvocationCount === 1 ? 'has' : 'have'
-    const invocationPhrase = getSinceLastDeployInvocationPhrase(sinceLastDeployInvocationCount)
-
-    return (
-      <>
-        {$t('There')} {verb} been <span className="text-foreground">{invocationPhrase}</span>{' '}
-        {$t('since last deploy and no errors.')}
-      </>
-    )
+    if (sinceLastDeployInvocationCount === 1) {
+      return $t('There has been 1 invocation since last deploy and no errors.')
+    }
+    return $t('There have been {{count}} invocations since last deploy and no errors.', {
+      count: sinceLastDeployInvocationCount.toLocaleString('en-US'),
+    })
   }, [
     emptyStateFallback,
     isoTimestampStart,

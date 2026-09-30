@@ -11784,5 +11784,13 @@
   "— applied on": "— 应用于",
   "— no unnesting joins needed.": "— 不需要嵌套联接。",
   "“Auto Renewal” is turned OFF for your AWS Marketplace subscription": "\"自动续订\"对于您的 AWS Marketplace 订阅已关闭",
-  "” did not return any results": "未返回任何结果"
+  "” did not return any results": "未返回任何结果",
+  "No request execution time has been recorded in this time range.": "此时间范围内尚未记录请求执行时间。",
+  "Worker CPU and memory metrics appear after the worker shuts down.": "Worker 退出后会显示 CPU 和内存指标。",
+  "Average CPU time recorded when function workers shut down": "函数 Worker 退出时记录的平均 CPU 时间",
+  "Maximum CPU time recorded when function workers shut down": "函数 Worker 退出时记录的最大 CPU 时间",
+  "Average memory snapshot recorded when function workers shut down": "函数 Worker 退出时记录的平均内存快照",
+  "Runtime errors since the last deploy will appear here when this function returns a 5xx response.": "此函数返回 5xx 响应时，这里会显示上次部署以来的运行时错误。",
+  "There has been 1 invocation since last deploy and no errors.": "上次部署以来调用了 1 次，未发生错误。",
+  "There have been {{count}} invocations since last deploy and no errors.": "上次部署以来调用了 {{count}} 次，未发生错误。"
 }

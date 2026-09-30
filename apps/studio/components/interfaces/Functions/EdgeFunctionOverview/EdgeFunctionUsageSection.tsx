@@ -53,7 +53,7 @@ export const EdgeFunctionUsageSection = ({
   const cpuEmptyStateCopy = getChartEmptyStateCopy('CPU time', isError, errorMessage)
   const memoryEmptyStateCopy = getChartEmptyStateCopy('memory usage', isError, errorMessage)
   const unavailableDescription = $t(
-    'This self-hosted stack does not record function execution time, CPU time, or memory usage'
+    'Worker CPU and memory metrics appear after the worker shuts down.'
   )
   const cpuTooltipDetails = useMemo(() => getCpuTooltipDetails(averageCpuTime), [averageCpuTime])
   const memoryTooltipDetails = useMemo(
@@ -65,12 +65,12 @@ export const EdgeFunctionUsageSection = ({
       <ChartMetric
         label={$t('Average CPU Time')}
         value={isUnavailable ? '—' : formatMetric(averageCpuTime, 'ms')}
-        tooltip={$t('Average CPU time usage for the function')}
+        tooltip={$t('Average CPU time recorded when function workers shut down')}
       />
       <ChartMetric
         label={$t('Max CPU Time')}
         value={isUnavailable ? '—' : formatMetric(maxCpuTime, 'ms')}
-        tooltip={$t('Maximum CPU time usage for the function')}
+        tooltip={$t('Maximum CPU time recorded when function workers shut down')}
       />
     </div>
   )
@@ -79,7 +79,7 @@ export const EdgeFunctionUsageSection = ({
       <ChartMetric
         label={$t('Average Memory Usage')}
         value={isUnavailable ? '—' : formatMetric(averageMemoryUsage, 'MB')}
-        tooltip={$t('Average memory usage for the function')}
+        tooltip={$t('Average memory snapshot recorded when function workers shut down')}
       />
       <ChartMetric
         label={$t('Heap')}

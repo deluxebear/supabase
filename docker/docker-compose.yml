@@ -478,11 +478,14 @@ services:
       SUPABASE_DB_URL: postgresql://postgres:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
       # TODO: Allow configuring VERIFY_JWT per function.
       VERIFY_JWT: "${FUNCTIONS_VERIFY_JWT}"
+      FUNCTIONS_PROJECT_REF: ${MANAGED_PROJECT_REF:-default}
     command:
       [
         "start",
         "--main-service",
-        "/home/deno/functions/main"
+        "/home/deno/functions/main",
+        "--event-worker",
+        "/home/deno/functions/.events"
       ]
 
   # Comment out everything below this point if you are using an external Postgres database

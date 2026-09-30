@@ -12,6 +12,7 @@ import {
   getRecentErrorGroupsBase,
   getRecentErrorInvocationsSql,
   getRelatedExecutionIds,
+  getSelfHostedFunctionErrorQueries,
   getSinceLastDeployInvocationCount,
   getSinceLastDeployInvocationCountSql,
   getSinceLastDeployInvocationPhrase,
@@ -369,5 +370,35 @@ limit 25`)
     expect(buildTroubleshootingDocsUrl({ statusCode: 'not-a-number' })).toBe(
       'https://supabase.com/docs/guides/troubleshooting?search=edge%20function'
     )
+  })
+})
+
+describe('self-hosted error queries', () => {
+  it('uses bounded PG queries and escapes function names and execution IDs', () => {
+    const result = getSelfHostedFunctionErrorQueries({
+      functionSlug: "hello'world",
+      start: '2026-09-30T03:00:00Z',
+      end: '2026-09-30T04:00:00Z',
+      executionIds: ["worker'id"],
+    })
+    expect(result.invocations).toContain("'/functions/v1/hello''world'")
+    expect(result.invocations).toContain("like '5__'")
+    expect(result.count).toContain('extract(epoch from timestamp)')
+    expect(result.runtime).toContain("in ('worker''id')")
+    expect(result.runtime).not.toContain('log_attributes')
+    expect(result.runtime).not.toContain('unnest')
+  })
+  it('does not emit queries for an invalid time range or missing related executions', () => {
+    expect(getSelfHostedFunctionErrorQueries({ start: 'invalid', end: 'invalid' })).toEqual({
+      invocations: '',
+      count: '',
+      runtime: '',
+    })
+    expect(
+      getSelfHostedFunctionErrorQueries({
+        start: '2026-09-30T03:00:00Z',
+        end: '2026-09-30T04:00:00Z',
+      }).runtime
+    ).toBe('')
   })
 })

@@ -1,5 +1,6 @@
 import assert from 'node:assert'
 
+import { decodeFunctionLogEnvelope } from './function-log-envelope'
 import { WrappedResult } from './types'
 import { assertSelfHosted } from './util'
 import { resolveProjectConnection } from '@/lib/api/self-platform/resolve-connection'
@@ -125,6 +126,11 @@ export async function retrieveAnalyticsData({
       return { data: undefined, error }
     }
 
+    if (Array.isArray(result?.result)) {
+      result.result = result.result.map((row: Record<string, unknown>) =>
+        decodeFunctionLogEnvelope(row, projectRef)
+      )
+    }
     return { data: result, error: undefined }
   } catch (error) {
     if (error instanceof Error) {

@@ -212,6 +212,16 @@ limit ${limitLit}
   `
 
     case 'function_logs':
+      if (IS_SELF_PLATFORM) {
+        return safeSql`select id, timestamp, event_message,
+  split_part(event_message, ' | ', 1) as event_type,
+  split_part(event_message, ' | ', 3) as execution_id,
+  split_part(event_message, ' | ', 4) as level
+from function_logs
+${where}
+${orderBy}
+limit ${limitLit}`
+      }
       return safeSql`select id, ${LOG_TABLE_SQL[table]}.timestamp, event_message, metadata.event_type, metadata.function_id, metadata.execution_id, metadata.level from ${LOG_TABLE_SQL[table]}
   ${joins}
   ${where}
@@ -294,6 +304,7 @@ const genCrossJoinUnnests = (table: LogsTableName): SafeLogSqlFragment => {
   cross join unnest(m.parsed) as parsed`
 
     case 'function_logs':
+      if (IS_SELF_PLATFORM) return safeSql``
       return safeSql`cross join unnest(metadata) as metadata`
 
     case 'auth_logs':
@@ -338,10 +349,15 @@ export const LOG_TABLE_SQL: Record<LogsTableName, SafeLogSqlFragment> = {
 export const genSingleLogQuery = (table: LogsTableName, id: string): SafeLogSqlFragment => {
   // multigres logs have no metadata column
   const metadataColumn =
-    table === LogsTableName.MULTIGRES || (IS_SELF_PLATFORM && table === LogsTableName.FN_EDGE)
+    table === LogsTableName.MULTIGRES ||
+    (IS_SELF_PLATFORM && [LogsTableName.FN_EDGE, LogsTableName.FUNCTIONS].includes(table))
       ? safeSql``
       : safeSql`, metadata`
-  return safeSql`select id, timestamp, event_message${metadataColumn} from ${LOG_TABLE_SQL[table]} where id = ${analyticsLiteral(id)} limit 1`
+  const idColumn =
+    IS_SELF_PLATFORM && [LogsTableName.FN_EDGE, LogsTableName.FUNCTIONS].includes(table)
+      ? safeSql`cast(id as text)`
+      : safeSql`id`
+  return safeSql`select id, timestamp, event_message${metadataColumn} from ${LOG_TABLE_SQL[table]} where ${idColumn} = ${analyticsLiteral(id)} limit 1`
 }
 
 /**
@@ -448,7 +464,8 @@ export const genChartQuery = (
   const tsLit = analyticsLiteral(startOffset.toISOString())
   // The self-platform invocation filter already compares numeric epoch values.
   // Comparing its timestamp column with an ISO string fails in Logflare SQL.
-  const isSelfPlatformInvocationChart = IS_SELF_PLATFORM && table === LogsTableName.FN_EDGE
+  const isSelfPlatformInvocationChart =
+    IS_SELF_PLATFORM && [LogsTableName.FN_EDGE, LogsTableName.FUNCTIONS].includes(table)
   const whereFragment = isSelfPlatformInvocationChart
     ? where
     : where
@@ -776,7 +793,9 @@ function getErrorCondition(table: LogsTableName): SafeLogSqlFragment {
         ? safeSql`split_part(event_message, ' | ', 2) like '5__'`
         : safeSql`response.status_code >= 500`
     case 'function_logs':
-      return safeSql`metadata.level IN ('error', 'fatal')`
+      return IS_SELF_PLATFORM
+        ? safeSql`split_part(event_message, ' | ', 4) IN ('error', 'fatal')`
+        : safeSql`metadata.level IN ('error', 'fatal')`
     case 'pg_cron_logs':
       return safeSql`parsed.error_severity IN ('ERROR', 'FATAL', 'PANIC')`
     case 'multigres_logs':
@@ -799,7 +818,9 @@ function getWarningCondition(table: LogsTableName): SafeLogSqlFragment {
         ? safeSql`split_part(event_message, ' | ', 2) like '4__'`
         : safeSql`response.status_code >= 400 AND response.status_code < 500`
     case 'function_logs':
-      return safeSql`metadata.level IN ('warning')`
+      return IS_SELF_PLATFORM
+        ? safeSql`split_part(event_message, ' | ', 4) IN ('warning', 'warn')`
+        : safeSql`metadata.level IN ('warning')`
     case 'multigres_logs':
       return safeSql`JSON_VALUE(event_message, '$.level') IN ('WARN', 'WARNING')`
     default:

@@ -85,6 +85,7 @@ describe('Logs.utils genDefaultQuery dialect', () => {
     expect(chartSql).not.toContain('unnest')
     expect(chartSql).not.toContain('t.timestamp >')
     expect(singleSql).not.toContain('metadata')
+    expect(singleSql).toContain("cast(id as text) = 'log-1'")
   })
 
   it('cloud: edge_logs keeps the identifier column byte-identically', async () => {
