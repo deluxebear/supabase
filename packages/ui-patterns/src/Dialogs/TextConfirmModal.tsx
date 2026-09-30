@@ -30,6 +30,7 @@ import {
 import { z } from 'zod'
 
 import { Admonition } from '../Admonition'
+import { uiT } from '../lib/i18n'
 
 export interface TextConfirmModalProps {
   loading: boolean
@@ -95,7 +96,7 @@ export const TextConfirmModal = forwardRef<
       confirmValue: z.preprocess(
         (val) => (typeof val === 'string' ? val.trim() : val),
         z.literal(confirmString.trim(), {
-          errorMap: () => ({ message: errorMessage }),
+          errorMap: () => ({ message: uiT(errorMessage) }),
         })
       ),
     })
@@ -184,7 +185,7 @@ export const TextConfirmModal = forwardRef<
                 render={({ field }) => (
                   <FormItem className="flex flex-col gap-y-2">
                     <FormLabel {...label} enableSelection={!enableCopy}>
-                      Type{' '}
+                      {uiT('Type to confirm:')}{' '}
                       {enableCopy ? (
                         <>
                           <Button
@@ -211,8 +212,7 @@ export const TextConfirmModal = forwardRef<
                         <span className="text-foreground break-all whitespace-pre">
                           {confirmString}
                         </span>
-                      )}{' '}
-                      to confirm.
+                      )}
                     </FormLabel>
                     <FormControl>
                       <Input

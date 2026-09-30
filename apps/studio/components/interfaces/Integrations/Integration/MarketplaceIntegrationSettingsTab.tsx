@@ -202,16 +202,17 @@ export const MarketplaceIntegrationSettingsTab = () => {
         variant="destructive"
         visible={apiKeyToDelete !== undefined}
         loading={isRemoving}
-        title={`Delete secret API key: ${apiKeyToDelete?.apiKey.name ?? ''}`}
+        title={$t('Delete secret API key: {{name}}', { name: apiKeyToDelete?.apiKey.name ?? '' })}
         confirmString={apiKeyToDelete?.apiKey.name ?? ''}
-        confirmLabel="Yes, irreversibly delete this API key"
-        confirmPlaceholder="Type the name of the API key to confirm"
+        confirmLabel={$t('Yes, irreversibly delete this API key')}
+        confirmPlaceholder={$t('Type the name of the API key to confirm')}
         onCancel={() => setApiKeyToDelete(undefined)}
         onConfirm={onConfirmDeleteApiKey}
         alert={{
-          title: 'This cannot be undone',
-          description:
-            'Make sure all components using this key have been updated. Deletion will cause them to receive HTTP 401 Unauthorized status codes on all Supabase APIs.',
+          title: $t('This cannot be undone'),
+          description: $t(
+            'Make sure all components using this key have been updated. Deletion will cause them to receive HTTP 401 Unauthorized status codes on all Supabase APIs.'
+          ),
         }}
       />
     </>

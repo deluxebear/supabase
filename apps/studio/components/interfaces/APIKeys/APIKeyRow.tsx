@@ -100,16 +100,21 @@ export const APIKeyRow = ({
         visible={isDeleteModalOpen}
         onCancel={() => setKeyToDelete(null)}
         onConfirm={onDelete}
-        title={`Delete ${apiKey.type} API key: ${apiKey.name}`}
+        title={
+          apiKey.type === 'secret'
+            ? $t('Delete secret API key: {{name}}', { name: apiKey.name })
+            : $t('Delete publishable API key: {{name}}', { name: apiKey.name })
+        }
         confirmString={apiKey.name}
-        confirmLabel="Yes, irreversibly delete this API key"
-        confirmPlaceholder="Type the name of the API key to confirm"
+        confirmLabel={$t('Yes, irreversibly delete this API key')}
+        confirmPlaceholder={$t('Type the name of the API key to confirm')}
         loading={isDeleting}
         variant="destructive"
         alert={{
-          title: 'This cannot be undone',
-          description:
-            'Make sure all applications and services using it have been updated before deletion. Deletion will cause them to receive HTTP 401 Unauthorized status codes on all Supabase APIs.',
+          title: $t('This cannot be undone'),
+          description: $t(
+            'Make sure all applications and services using it have been updated before deletion. Deletion will cause them to receive HTTP 401 Unauthorized status codes on all Supabase APIs.'
+          ),
         }}
       />
     </>
