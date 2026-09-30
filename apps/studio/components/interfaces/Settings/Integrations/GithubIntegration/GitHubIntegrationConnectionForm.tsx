@@ -109,7 +109,9 @@ export const GitHubIntegrationConnectionForm = ({
         // Don't show error toast when connection already exists - the branch
         // settings update will still proceed and show its own success toast
         if (!error.message?.includes('already exists')) {
-          toast.error(`Failed to create GitHub connection: ${error.message}`)
+          toast.error(
+            $t('Failed to create GitHub connection: {{value0}}', { value0: error.message })
+          )
         }
       },
     })

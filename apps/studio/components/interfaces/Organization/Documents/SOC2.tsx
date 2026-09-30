@@ -41,7 +41,7 @@ export const SOC2 = () => {
       setIsOpen(false)
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error occurred'
-      toast.error(`Failed to download SOC2 report: ${message}`)
+      toast.error($t('Failed to download SOC2 report: {{value0}}', { value0: message }))
     }
   }
 

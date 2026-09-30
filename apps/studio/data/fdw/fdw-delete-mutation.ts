@@ -9,6 +9,7 @@ import { entityTypeKeys } from '@/data/entity-types/keys'
 import { foreignTableKeys } from '@/data/foreign-tables/keys'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { vaultSecretsKeys } from '@/data/vault/keys'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type FDWDeleteVariables = {
@@ -57,7 +58,12 @@ export const useFDWDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete ${variables.wrapper.name} connection: ${data.message}`)
+        toast.error(
+          $t('Failed to delete {{value0}} connection: {{value1}}', {
+            value0: variables.wrapper.name,
+            value1: data.message,
+          })
+        )
       } else {
         onError(data, variables, context)
       }

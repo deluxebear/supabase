@@ -27,6 +27,7 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH } from '@/lib/constants'
 import { formatSql } from '@/lib/formatSql'
+import { t as $t } from '@/lib/i18n'
 import { useProfile } from '@/lib/profile'
 import { useTrack } from '@/lib/telemetry/track'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
@@ -117,7 +118,7 @@ export function useSqlEditorAi({
         snapV2.addNeedsSaving(snippet.id!)
         router.push(`/project/${ref}/sql/${snippet.id}`)
       } catch (error: any) {
-        toast.error(`Failed to create new query: ${error.message}`)
+        toast.error($t('Failed to create new query: {{value0}}', { value0: error.message }))
       }
     },
     [profile, project, ref, router, snapV2]
@@ -143,7 +144,9 @@ export function useSqlEditorAi({
       // entire error body from the assistant
       if (isError(error)) {
         toast.error(
-          `Sorry, the assistant failed to debug your query! Please try again with a different one.`
+          $t(
+            'Sorry, the assistant failed to debug your query! Please try again with a different one.'
+          )
         )
       }
     }
@@ -249,7 +252,11 @@ export function useSqlEditorAi({
         setPromptState((prev) => ({ ...prev, isLoading: false }))
         setIsCompletionLoading(false)
       } catch (error: any) {
-        toast.error(`Failed to generate SQL: ${error?.message ?? 'Unknown error'}`)
+        toast.error(
+          $t('Failed to generate SQL: {{value0}}', {
+            value0: error?.message ?? $t('Unknown error'),
+          })
+        )
         setIsCompletionLoading(false)
         throw error
       }

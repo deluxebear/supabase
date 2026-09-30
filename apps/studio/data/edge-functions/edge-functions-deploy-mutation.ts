@@ -12,6 +12,7 @@ import {
 import { constructHeaders, handleError, post } from '@/data/fetchers'
 import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { ResponseError, type UseCustomMutationOptions } from '@/types'
 
 type EdgeFunctionsDeployBodyMetadata = components['schemas']['FunctionDeployBody']['metadata']
@@ -140,7 +141,7 @@ export const useEdgeFunctionDeployMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to deploy edge function: ${data.message}`)
+        toast.error($t('Failed to deploy edge function: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

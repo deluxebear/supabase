@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { warehouseKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
 import { replicationKeys } from '@/data/replication/keys'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type WarehouseSetupBody = components['schemas']['WarehouseSetupBody']
@@ -55,7 +56,7 @@ export const useWarehouseSetupMutation = ({
     },
     async onError(error, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to set up Warehouse: ${error.message}`)
+        toast.error($t('Failed to set up Warehouse: {{value0}}', { value0: error.message }))
       } else {
         onError(error, variables, context)
       }

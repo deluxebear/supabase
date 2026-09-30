@@ -123,7 +123,10 @@ export const InitializeForeignSchemaDialog = () => {
       })
 
       toast.success(
-        `Successfully created "${values.schema}" schema! Data from tables in this bucket can now be queried from there.`
+        $t(
+          'Successfully created "{{value0}}" schema! Data from tables in this bucket can now be queried from there.',
+          { value0: values.schema }
+        )
       )
       setIsOpen(false)
 
@@ -132,7 +135,7 @@ export const InitializeForeignSchemaDialog = () => {
         refetchType: 'all',
       })
     } catch (error: any) {
-      toast.error(`Failed to expose tables: ${error.message}`)
+      toast.error($t('Failed to expose tables: {{value0}}', { value0: error.message }))
     } finally {
       setIsCreating(false)
     }

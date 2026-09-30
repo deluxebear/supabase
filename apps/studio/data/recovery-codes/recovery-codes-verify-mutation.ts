@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { captureCriticalError } from '@/lib/error-reporting'
 import { auth } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 import { UseCustomMutationOptions } from '@/types'
 
 export const recoveryCodesVerify = async (params: MFARecoveryCodesVerifyParams) => {
@@ -36,7 +37,7 @@ export const useRecoveryCodesVerifyMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to verify recovery code: ${data.message}`)
+        toast.error($t('Failed to verify recovery code: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

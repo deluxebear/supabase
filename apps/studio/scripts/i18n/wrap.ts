@@ -4,11 +4,14 @@ import { Node, Project } from 'ts-morph'
 
 import { transformSourceFile } from './transform'
 
-export function collectFromProject(project: Project): { filesChanged: number; keys: string[] } {
+export function collectFromProject(
+  project: Project,
+  options: { toastsOnly?: boolean } = {}
+): { filesChanged: number; keys: string[] } {
   const keys = new Set<string>()
   let filesChanged = 0
   for (const sf of project.getSourceFiles()) {
-    const { keys: fileKeys, changed } = transformSourceFile(sf)
+    const { keys: fileKeys, changed } = transformSourceFile(sf, options)
     if (changed) filesChanged++
     for (const k of fileKeys) keys.add(k)
   }
@@ -46,13 +49,14 @@ export function wrapProject(opts: {
   tsConfigFilePath: string
   globs: string[]
   dryRun?: boolean
+  toastsOnly?: boolean
 }): { filesChanged: number; keys: string[]; dynamicKeyCount: number } {
   const project = new Project({
     tsConfigFilePath: opts.tsConfigFilePath,
     skipAddingFilesFromTsConfig: true,
   })
   project.addSourceFilesAtPaths(opts.globs)
-  const result = collectFromProject(project)
+  const result = collectFromProject(project, opts)
   const dynamicKeys = collectDynamicLabelKeys(project)
   if (!opts.dryRun) project.saveSync()
   return {
@@ -65,18 +69,24 @@ export function wrapProject(opts: {
 // CLI: pnpm --filter studio exec tsx scripts/i18n/wrap.ts [--dry]
 if (process.argv[1] && process.argv[1].endsWith('wrap.ts')) {
   const dryRun = process.argv.includes('--dry')
+  const toastsOnly = process.argv.includes('--toasts-only')
   const cwd = process.cwd() // apps/studio
   const { filesChanged, keys, dynamicKeyCount } = wrapProject({
     tsConfigFilePath: join(cwd, 'tsconfig.json'),
     globs: [
       // .ts files carry no JSX, but they do carry user-facing sonner toasts
       // and hand-wrapped $t() menu labels that must land in keys.json.
-      join(cwd, 'components/**/*.{ts,tsx}'),
-      join(cwd, 'pages/**/*.{ts,tsx}'),
+      ...['components', 'pages', 'routes', 'data', 'hooks', 'lib', 'state'].map((dir) =>
+        join(cwd, dir, '**/*.{ts,tsx}')
+      ),
+      '!' + join(cwd, '**/__generated__/**'),
+      '!' + join(cwd, '**/*.gen.ts'),
+      '!' + join(cwd, 'lib/i18n/**'),
       '!' + join(cwd, '**/*.test.{ts,tsx}'),
       '!' + join(cwd, '**/*.spec.{ts,tsx}'),
     ],
     dryRun,
+    toastsOnly,
   })
   const dynamicProject = new Project({
     tsConfigFilePath: join(cwd, 'tsconfig.json'),

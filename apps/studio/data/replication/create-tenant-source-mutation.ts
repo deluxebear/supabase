@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { replicationKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type CreateTenantSourceParams = {
@@ -44,7 +45,7 @@ export const useCreateTenantSourceMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create tenant or source: ${data.message}`)
+        toast.error($t('Failed to create tenant or source: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

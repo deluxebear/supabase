@@ -151,7 +151,10 @@ export const useCronJobsCleanupActions = ({
 
         setCleanupState({ status: 'delete-success', totalRowsDeleted })
         toast.success(
-          `Deleted ${totalRowsDeleted.toLocaleString()} cron job runs older than ${interval}.`
+          $t('Deleted {{value0}} cron job runs older than {{value1}}.', {
+            value0: totalRowsDeleted.toLocaleString(),
+            value1: interval,
+          })
         )
       } catch (error) {
         console.error('[CronJobs] Batch deletion failed with error: %O', error)

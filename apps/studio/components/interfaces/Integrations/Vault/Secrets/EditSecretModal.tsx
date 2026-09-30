@@ -97,7 +97,7 @@ export const EditSecretModal = () => {
             setSelectedSecretToEdit(null)
           },
           onError: (error) => {
-            toast.error(`Failed to update secret: ${error.message}`)
+            toast.error($t('Failed to update secret: {{value0}}', { value0: error.message }))
           },
         }
       )

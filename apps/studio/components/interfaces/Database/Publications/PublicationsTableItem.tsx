@@ -60,11 +60,19 @@ export const PublicationsTableItem = ({
       {
         onSuccess: () => {
           toast.success(
-            `Successfully ${checked ? 'disabled' : 'enabled'} replication for ${table.name}`
+            $t('Successfully {{value0}} replication for {{value1}}', {
+              value0: checked ? $t('disabled') : $t('enabled'),
+              value1: table.name,
+            })
           )
         },
         onError: (error) => {
-          toast.error(`Failed to toggle replication for ${table.name}: ${error.message}`)
+          toast.error(
+            $t('Failed to toggle replication for {{value0}}: {{value1}}', {
+              value0: table.name,
+              value1: error.message,
+            })
+          )
           setChecked(originalChecked)
         },
       }

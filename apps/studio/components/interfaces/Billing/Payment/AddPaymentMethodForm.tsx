@@ -96,7 +96,9 @@ const AddPaymentMethodForm = ({ onCancel, onConfirm }: AddPaymentMethodFormProps
           dry_run: true,
         })
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : 'Failed to validate billing profile')
+        toast.error(
+          error instanceof Error ? error.message : $t('Failed to validate billing profile')
+        )
         setIsSaving(false)
         if (document !== undefined) {
           document.body.classList.remove('pointer-events-auto!')

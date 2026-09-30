@@ -70,7 +70,9 @@ export const EditWrapperSheet = ({
 
   const { mutate: updateFDW, isPending: isSaving } = useFDWUpdateMutation({
     onSuccess: () => {
-      toast.success(`Successfully updated ${wrapperMeta?.label} foreign data wrapper`)
+      toast.success(
+        $t('Successfully updated {{value0}} foreign data wrapper', { value0: wrapperMeta?.label })
+      )
 
       const { tables } = getValues()
       const hasNewSchema = (tables as Record<string, any>[]).some((table) => table.is_new_schema)

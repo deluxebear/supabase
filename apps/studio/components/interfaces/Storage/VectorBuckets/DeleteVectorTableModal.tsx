@@ -49,11 +49,14 @@ export const DeleteVectorTableModal = () => {
             tableName: foreignTable.name,
           })
         }
-        toast.success(`Table "${vars.indexName}" deleted successfully`)
+        toast.success($t('Table "{{value0}}" deleted successfully', { value0: vars.indexName }))
         setSelectedTableIdToDelete(null)
       } catch (error: any) {
         toast.success(
-          `Table "${vars.indexName}" deleted successfully, but its corresponding foreign table failed to clean up: ${error.message}`
+          $t(
+            'Table "{{value0}}" deleted successfully, but its corresponding foreign table failed to clean up: {{value1}}',
+            { value0: vars.indexName, value1: error.message }
+          )
         )
       }
     },
@@ -72,7 +75,9 @@ export const DeleteVectorTableModal = () => {
 
   useEffect(() => {
     if (!!selectedTableIdToDelete && isSuccessIndexes && !table && !isSuccessDelete) {
-      toast(`Table ${selectedTableIdToDelete} cannot be found in your bucket`)
+      toast(
+        $t('Table {{value0}} cannot be found in your bucket', { value0: selectedTableIdToDelete })
+      )
       setSelectedTableIdToDelete(null)
     }
   }, [

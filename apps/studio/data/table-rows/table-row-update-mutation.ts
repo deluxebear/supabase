@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { tableRowKeys } from './keys'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 import { RoleImpersonationState, wrapWithRoleImpersonation } from '@/lib/role-impersonation'
 import { isRoleImpersonationEnabled } from '@/state/role-impersonation-state'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
@@ -85,7 +86,7 @@ export const useTableRowUpdateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update table row: ${data.message}`)
+        toast.error($t('Failed to update table row: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

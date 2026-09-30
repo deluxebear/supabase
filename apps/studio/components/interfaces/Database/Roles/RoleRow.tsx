@@ -88,7 +88,7 @@ export const RoleRow = ({ role, disabled = false, onSelectDelete }: RoleRowProps
       },
       {
         onSuccess: () => {
-          toast.success(`Successfully updated role "${role.name}"`)
+          toast.success($t('Successfully updated role "{{value0}}"', { value0: role.name }))
           reset(values)
         },
       }

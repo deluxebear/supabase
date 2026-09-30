@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { projectKeys } from './keys'
 import { useInvalidateProjectsInfiniteQuery } from './org-projects-infinite-query'
 import { handleError, patch } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type ProjectUpdateVariables = {
@@ -51,7 +52,7 @@ export const useProjectUpdateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update project: ${data.message}`)
+        toast.error($t('Failed to update project: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

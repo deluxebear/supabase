@@ -27,7 +27,7 @@ export const RestartReplicaConfirmationModal = ({
 
   const { mutate: restartProject, isPending: isRestartingProject } = useProjectRestartMutation({
     onSuccess: () => {
-      toast.success(`Restarting read replica (ID: ${formattedId})`)
+      toast.success($t('Restarting read replica (ID: {{value0}})', { value0: formattedId }))
 
       // [Joshen] Temporarily optimistic rendering until API supports immediate status update
       queryClient.setQueriesData({ queryKey: replicaKeys.list(ref) }, (old: Database[]) => {
@@ -56,7 +56,7 @@ export const RestartReplicaConfirmationModal = ({
       onCancel()
     },
     onError: (error) => {
-      toast.error(`Failed to restart replica: ${error.message}`)
+      toast.error($t('Failed to restart replica: {{value0}}', { value0: error.message }))
     },
   })
 

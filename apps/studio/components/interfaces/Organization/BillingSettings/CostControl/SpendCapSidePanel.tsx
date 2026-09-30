@@ -58,11 +58,15 @@ const SpendCapSidePanel = () => {
   const { mutate: updateOrgSubscription, isPending: isUpdating } = useOrgSubscriptionUpdateMutation(
     {
       onSuccess: () => {
-        toast.success(`Successfully ${isTurningOnCap ? 'enabled' : 'disabled'} spend cap`)
+        toast.success(
+          $t('Successfully {{value0}} spend cap', {
+            value0: isTurningOnCap ? $t('enabled') : $t('disabled'),
+          })
+        )
         onClose()
       },
       onError: (error) => {
-        toast.error(`Failed to toggle spend cap: ${error.message}`)
+        toast.error($t('Failed to toggle spend cap: {{value0}}', { value0: error.message }))
       },
     }
   )

@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { constructHeaders, fetchHandler, handleError } from '@/data/fetchers'
 import { API_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type VerifyEmailVariables = {
@@ -47,7 +48,7 @@ export const useVerifyEmailMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to verify email: ${data.message}`)
+        toast.error($t('Failed to verify email: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

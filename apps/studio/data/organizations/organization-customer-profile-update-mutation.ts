@@ -5,6 +5,7 @@ import { organizationKeys } from './keys'
 import type { OrganizationsData } from './organizations-query'
 import type { CustomerAddress, CustomerTaxId } from './types'
 import { handleError, put } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type OrganizationCustomerProfileUpdateVariables = {
@@ -146,7 +147,7 @@ export const useOrganizationCustomerProfileUpdateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update customer profile: ${data.message}`)
+        toast.error($t('Failed to update customer profile: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

@@ -49,9 +49,9 @@ export const SchemaEditor = ({ visible, onSuccess, closePanel }: SchemaEditorPro
         name: values.name,
       })
       onSuccess(values.name)
-      toast.success(`Successfully created schema "${values.name}"`)
+      toast.success($t('Successfully created schema "{{value0}}"', { value0: values.name }))
     } catch (error) {
-      toast.error(`Failed to create schema: ${error}`)
+      toast.error($t('Failed to create schema: {{value0}}', { value0: error }))
     }
   }
 

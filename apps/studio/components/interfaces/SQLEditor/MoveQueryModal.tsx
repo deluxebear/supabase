@@ -72,12 +72,12 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
   const { mutateAsync: createFolder, isPending: isCreatingFolder } =
     useSQLSnippetFolderCreateMutation({
       onError: (error) => {
-        toast.error(`Failed to create new folder: ${error.message}`)
+        toast.error($t('Failed to create new folder: {{value0}}', { value0: error.message }))
       },
     })
   const { mutateAsync: moveSnippetAsync, isPending: isMovingSnippet } = useContentUpsertMutation({
     onError: (error) => {
-      toast.error(`Failed to move query: ${error.message}`)
+      toast.error($t('Failed to move query: {{value0}}', { value0: error.message }))
     },
   })
 
@@ -186,7 +186,10 @@ export const MoveQueryModal = ({ visible, snippets = [], onClose }: MoveQueryMod
       )
 
       toast.success(
-        `Successfully moved ${snippets.length === 1 ? `"${snippets[0].name}"` : `${snippets.length} snippets`} to ${selectedId === 'root' ? 'the root of the editor' : selectedFolder}`
+        $t('Successfully moved {{value0}} to {{value1}}', {
+          value0: snippets.length === 1 ? `"${snippets[0].name}"` : `${snippets.length} snippets`,
+          value1: selectedId === 'root' ? $t('the root of the editor') : selectedFolder,
+        })
       )
 
       onClose()

@@ -107,7 +107,7 @@ const MergePageContent = () => {
 
   const { mutate: updateBranch } = useBranchUpdateMutation({
     onError: (error) => {
-      toast.error(`Failed to update branch: ${error.message}`)
+      toast.error($t('Failed to update branch: {{value0}}', { value0: error.message }))
     },
   })
 
@@ -197,7 +197,7 @@ const MergePageContent = () => {
       track('branch_updated', { source: 'merge_page' }, { project: parentProjectRef })
     },
     onError: (error) => {
-      toast.error(`Failed to update branch: ${error.message}`)
+      toast.error($t('Failed to update branch: {{value0}}', { value0: error.message }))
     },
   })
 
@@ -221,7 +221,7 @@ const MergePageContent = () => {
     },
     onError: (error) => {
       setIsSubmitting(false)
-      toast.error(`Failed to merge branch: ${error.message}`)
+      toast.error($t('Failed to merge branch: {{value0}}', { value0: error.message }))
 
       track(
         'branch_merge_failed',
@@ -241,7 +241,7 @@ const MergePageContent = () => {
       track('branch_delete_button_clicked', { origin: 'merge_page' }, { project: parentProjectRef })
     },
     onError: (error) => {
-      toast.error(`Failed to close branch: ${error.message}`)
+      toast.error($t('Failed to close branch: {{value0}}', { value0: error.message }))
     },
   })
 

@@ -30,7 +30,7 @@ export const EnableRuleModal = ({ lint, rule }: EnableRuleModalProps) => {
 
   const { mutate: deleteRule, isPending: isDeleting } = useLintRuleDeleteMutation({
     onSuccess: () => {
-      toast.success(`Successfully enabled the "${lint.title}" rule`)
+      toast.success($t('Successfully enabled the "{{value0}}" rule', { value0: lint.title }))
       setOpen(false)
     },
   })

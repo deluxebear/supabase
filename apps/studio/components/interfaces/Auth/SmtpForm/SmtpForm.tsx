@@ -185,7 +185,7 @@ export const SmtpForm = () => {
       { projectRef: projectRef!, config: payload as any },
       {
         onError: (error) => {
-          toast.error(`Failed to update settings: ${error.message}`)
+          toast.error($t('Failed to update settings: {{value0}}', { value0: error.message }))
           onError?.()
         },
         onSuccess: () => {

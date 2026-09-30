@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { awsAccountKeys } from './keys'
 import { del, handleError } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 export type AWSAccountDeleteVariables = {
@@ -63,7 +64,7 @@ export const useAWSAccountDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete connection: ${data.message}`)
+        toast.error($t('Failed to delete connection: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

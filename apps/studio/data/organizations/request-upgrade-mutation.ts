@@ -3,6 +3,7 @@ import { components } from 'api-types'
 import { toast } from 'sonner'
 
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type PlanRequest = components['schemas']['RequestUpgradeBody']['requested_plan']
@@ -42,7 +43,7 @@ export const useSendUpgradeRequestMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to send upgrade request: ${data.message}`)
+        toast.error($t('Failed to send upgrade request: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

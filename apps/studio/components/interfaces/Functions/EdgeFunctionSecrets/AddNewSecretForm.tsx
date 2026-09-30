@@ -132,7 +132,9 @@ export const AddNewSecretForm = () => {
 
   const { mutate: createSecret, isPending: isCreating } = useSecretsCreateMutation({
     onSuccess: (_, variables) => {
-      toast.success(`Successfully created new secret "${variables.secrets[0].name}"`)
+      toast.success(
+        $t('Successfully created new secret "{{value0}}"', { value0: variables.secrets[0].name })
+      )
       // RHF recommends using setTimeout/useEffect to reset the form
       setTimeout(() => {
         form.reset()

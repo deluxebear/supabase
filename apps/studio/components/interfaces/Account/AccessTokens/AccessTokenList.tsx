@@ -60,7 +60,7 @@ export const AccessTokenList = ({
         setTokenToDelete(undefined)
       },
       onError: (error) => {
-        toast.error(`Failed to delete access token: ${error.message}`)
+        toast.error($t('Failed to delete access token: {{value0}}', { value0: error.message }))
       },
     })
 
@@ -73,7 +73,7 @@ export const AccessTokenList = ({
         setTokenToDelete(undefined)
       },
       onError: (error) => {
-        toast.error(`Failed to delete access token: ${error.message}`)
+        toast.error($t('Failed to delete access token: {{value0}}', { value0: error.message }))
       },
     })
 

@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { jwtSigningKeysKeys } from './keys'
 import { del, handleError } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 interface JWTSigningKeyDeleteVariables {
@@ -46,7 +47,7 @@ export const useJWTSigningKeyDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete JWT signing key: ${data.message}`)
+        toast.error($t('Failed to delete JWT signing key: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

@@ -6,6 +6,7 @@ import { handleAPIKeyMutationError, showAPIKeyMfaAction } from './api-key-errors
 import { apiKeysKeys } from './keys'
 import { del } from '@/data/fetchers'
 import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type APIKeyDeleteVariables = {
@@ -52,7 +53,7 @@ export const useAPIKeyDeleteMutation = ({
     async onError(data, variables, context) {
       if (await showAPIKeyMfaAction(data, queryClient)) return
       if (onError === undefined) {
-        toast.error(`Failed to delete API key: ${data.message}`)
+        toast.error($t('Failed to delete API key: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

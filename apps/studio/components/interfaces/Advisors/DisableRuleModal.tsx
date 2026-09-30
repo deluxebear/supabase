@@ -34,7 +34,9 @@ export const DisableRuleModal = ({ lint }: DisableRuleModalProps) => {
     onSuccess: (_, vars) => {
       const ruleLint = vars.exception.lint_name
       const ruleLintMeta = lintInfoMap.find((x) => x.name === ruleLint)
-      toast.success(`Successfully disabled the "${ruleLintMeta?.title}" rule`)
+      toast.success(
+        $t('Successfully disabled the "{{value0}}" rule', { value0: ruleLintMeta?.title })
+      )
 
       if (ruleLintMeta) {
         if (!!routeCategory && routeCategory !== ruleLintMeta.category) {

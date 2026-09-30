@@ -13,6 +13,7 @@ import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { getAiOptInLevel } from '@/hooks/misc/useOrgOptedIntoAi'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { OPT_IN_TAGS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 // Shared schema definition
@@ -52,11 +53,11 @@ export const useAIOptInForm = (onSuccessCallback?: () => void) => {
 
   const onSubmit = async (values: AIOptInFormValues) => {
     if (!canUpdateOrganization) {
-      return toast.error('You do not have the required permissions to update this organization')
+      return toast.error($t('You do not have the required permissions to update this organization'))
     }
     if (!selectedOrganization?.slug) {
       console.error('Organization slug is required')
-      return toast.error('Failed to update settings: Organization not found.')
+      return toast.error($t('Failed to update settings: Organization not found.'))
     }
     const existingOptInTags = selectedOrganization?.opt_in_tags ?? []
 
@@ -91,12 +92,12 @@ export const useAIOptInForm = (onSuccessCallback?: () => void) => {
       {
         onSuccess: () => {
           invalidateOrganizationsQuery(queryClient)
-          toast.success('Successfully updated AI opt-in settings')
+          toast.success($t('Successfully updated AI opt-in settings'))
           setUpdatedOptInSinceMCP(true)
           onSuccessCallback?.() // Call optional callback on success
         },
         onError: (error: ResponseError) => {
-          toast.error(`Failed to update settings: ${error.message}`)
+          toast.error($t('Failed to update settings: {{value0}}', { value0: error.message }))
         },
       }
     )

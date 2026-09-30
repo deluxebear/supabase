@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { edgeFunctionsKeys } from './keys'
 import { handleError, patch } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type EdgeFunctionsUpdateVariables = {
@@ -60,7 +61,7 @@ export const useEdgeFunctionUpdateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update edge function: ${data.message}`)
+        toast.error($t('Failed to update edge function: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

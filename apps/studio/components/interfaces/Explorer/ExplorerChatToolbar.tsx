@@ -45,7 +45,9 @@ export const ExplorerChatToolbar = ({
   const { onSelectDelete } = useExplorerDeleteItem()
 
   const handleCopyChatId = () => {
-    copyToClipboard(chatId, () => toast.success(`Copied chat ID for ${chat?.name}`))
+    copyToClipboard(chatId, () =>
+      toast.success($t('Copied chat ID for {{value0}}', { value0: chat?.name }))
+    )
   }
 
   const handleSaveName = (name: string) => {

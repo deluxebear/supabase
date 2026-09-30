@@ -82,7 +82,7 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
 
   const { mutate: createApp, isPending: isCreatingApp } = usePlatformAppCreateMutation({
     onSuccess: (data) => {
-      toast.success(`App "${data.name}" created`)
+      toast.success($t('App "{{value0}}" created', { value0: data.name }))
       setCreatedApp(data)
       createSigningKey({ slug: slug!, appId: data.id })
     },

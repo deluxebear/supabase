@@ -4,6 +4,7 @@ import { AIFilterRequestPayload, FilterGroup } from 'ui-patterns/FilterBar'
 
 import { constructHeaders, fetchHandler } from '@/data/fetchers'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type SqlFilterGenerateResponse = FilterGroup
@@ -51,7 +52,7 @@ export const useSqlFilterGenerateMutation = ({
     },
     async onError(error, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to generate filters: ${error.message}`)
+        toast.error($t('Failed to generate filters: {{value0}}', { value0: error.message }))
       } else {
         onError(error, variables, context)
       }

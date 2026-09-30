@@ -118,13 +118,13 @@ export const CreateOrUpdateOAuthAppSheet = ({
 
   const { mutate: createOAuthApp, isPending: isCreating } = useOAuthServerAppCreateMutation({
     onSuccess: (data) => {
-      toast.success(`Successfully created OAuth app "${data.client_name}"`)
+      toast.success($t('Successfully created OAuth app "{{value0}}"', { value0: data.client_name }))
       onSuccess(data)
     },
   })
   const { mutate: updateOAuthApp, isPending: isUpdating } = useOAuthServerAppUpdateMutation({
     onSuccess: (data) => {
-      toast.success(`Successfully updated OAuth app "${data.client_name}"`)
+      toast.success($t('Successfully updated OAuth app "{{value0}}"', { value0: data.client_name }))
       onSuccess(data)
     },
   })
@@ -132,7 +132,11 @@ export const CreateOrUpdateOAuthAppSheet = ({
     useOAuthServerAppRegenerateSecretMutation({
       onSuccess: (data) => {
         if (data) {
-          toast.success(`Successfully regenerated client secret for "${appToEdit?.client_name}"`)
+          toast.success(
+            $t('Successfully regenerated client secret for "{{value0}}"', {
+              value0: appToEdit?.client_name,
+            })
+          )
           onSuccess(data)
           setShowRegenerateDialog(false)
         }

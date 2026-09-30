@@ -241,7 +241,7 @@ const DatabasePoliciesPage: NextPageWithLayout = () => {
 
   useEffect(() => {
     if (selectedIdToEdit && isPoliciesSuccess && !selectedPolicyToEdit) {
-      toast(`Policy ID ${selectedIdToEdit} cannot be found`)
+      toast($t('Policy ID {{value0}} cannot be found', { value0: selectedIdToEdit }))
       setSelectedIdToEdit(null)
     }
   }, [selectedIdToEdit, selectedPolicyToEdit, isPoliciesSuccess, setSelectedIdToEdit])

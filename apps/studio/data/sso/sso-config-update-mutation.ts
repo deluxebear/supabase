@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { orgSSOKeys } from './keys'
 import { handleError, put } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 type UpdateSSOProviderBody =
@@ -46,7 +47,7 @@ export const useSSOConfigUpdateMutation = ({
     async onError(data, variables, context) {
       if (onError === undefined) {
         if (data.message === '') {
-          toast.error(`Failed to update SSO configuration.`)
+          toast.error($t('Failed to update SSO configuration.'))
         } else {
           toast.error(`${data.message}`)
         }

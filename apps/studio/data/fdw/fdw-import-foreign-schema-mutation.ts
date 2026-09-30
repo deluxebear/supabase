@@ -8,6 +8,7 @@ import { entityTypeKeys } from '@/data/entity-types/keys'
 import { foreignTableKeys } from '@/data/foreign-tables/keys'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { vaultSecretsKeys } from '@/data/vault/keys'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type FDWImportForeignSchemaVariables = {
@@ -57,7 +58,11 @@ export const useFDWImportForeignSchemaMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to import schema for foreign data wrapper: ${data.message}`)
+        toast.error(
+          $t('Failed to import schema for foreign data wrapper: {{value0}}', {
+            value0: data.message,
+          })
+        )
       } else {
         onError(data, variables, context)
       }

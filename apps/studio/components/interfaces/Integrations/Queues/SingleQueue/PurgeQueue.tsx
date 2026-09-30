@@ -16,7 +16,7 @@ export const PurgeQueue = ({ queueName, visible, onClose }: PurgeQueueProps) => 
 
   const { mutate: purgeDatabaseQueue, isPending } = useDatabaseQueuePurgeMutation({
     onSuccess: () => {
-      toast.success(`Successfully purged queue ${queueName}`)
+      toast.success($t('Successfully purged queue {{value0}}', { value0: queueName }))
       onClose()
     },
   })

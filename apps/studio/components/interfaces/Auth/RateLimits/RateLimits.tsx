@@ -67,7 +67,7 @@ export const RateLimits = () => {
       toast.success($t('Rate limits successfully updated'))
     },
     onError: (error) => {
-      toast.error(`Failed to update rate limits: ${error.message}`)
+      toast.error($t('Failed to update rate limits: {{value0}}', { value0: error.message }))
     },
   })
 

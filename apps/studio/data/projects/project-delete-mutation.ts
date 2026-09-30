@@ -5,6 +5,7 @@ import { projectKeys } from './keys'
 import { useInvalidateProjectsInfiniteQuery } from './org-projects-infinite-query'
 import { del, handleError } from '@/data/fetchers'
 import { organizationKeys } from '@/data/organizations/keys'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type ProjectDeleteVariables = {
@@ -64,7 +65,7 @@ export const useProjectDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete project: ${data.message}`)
+        toast.error($t('Failed to delete project: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

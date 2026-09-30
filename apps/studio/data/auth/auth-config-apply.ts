@@ -12,6 +12,7 @@ import { z } from 'zod'
 import { authKeys } from './keys'
 import { constructHeaders } from '@/data/fetchers'
 import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
+import { t as $t } from '@/lib/i18n'
 import { ResponseError } from '@/types'
 
 const operationSchema = z.object({
@@ -121,7 +122,8 @@ export const useApplyAuthConfigMutation = ({
       await onSuccess?.(data, variables, context)
     },
     async onError(error, variables, context) {
-      if (onError === undefined) toast.error(`Failed to apply Auth settings: ${error.message}`)
+      if (onError === undefined)
+        toast.error($t('Failed to apply Auth settings: {{value0}}', { value0: error.message }))
       else onError(error, variables, context)
     },
     ...options,

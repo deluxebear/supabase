@@ -83,20 +83,20 @@ const CloudPITRSidePanel = () => {
 
   const { mutate: updateAddon, isPending: isUpdating } = useProjectAddonUpdateMutation({
     onSuccess: () => {
-      toast.success(`Successfully updated point in time recovery duration`)
+      toast.success($t('Successfully updated point in time recovery duration'))
       closePanel()
     },
     onError: (error) => {
-      toast.error(`Unable to update PITR: ${error.message}`)
+      toast.error($t('Unable to update PITR: {{value0}}', { value0: error.message }))
     },
   })
   const { mutate: removeAddon, isPending: isRemoving } = useProjectAddonRemoveMutation({
     onSuccess: () => {
-      toast.success(`Successfully disabled point in time recovery`)
+      toast.success($t('Successfully disabled point in time recovery'))
       closePanel()
     },
     onError: (error) => {
-      toast.error(`Unable to disable PITR: ${error.message}`)
+      toast.error($t('Unable to disable PITR: {{value0}}', { value0: error.message }))
     },
   })
   const isSubmitting = isUpdating || isRemoving

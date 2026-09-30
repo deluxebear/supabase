@@ -123,7 +123,7 @@ export const CreateKeyDialog = ({
           errorMessage = `Please wait for ${date.fromNow(true)} before attempting this request again.`
         }
       }
-      toast.error(`Failed to add new standby key: ${errorMessage}`)
+      toast.error($t('Failed to add new standby key: {{value0}}', { value0: errorMessage }))
     },
   })
 

@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { components } from '@/data/api'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 type ListBucketObjectsParams = {
@@ -90,7 +91,7 @@ export const useGetSignBucketObjectMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to list bucket objects: ${data.message}`)
+        toast.error($t('Failed to list bucket objects: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

@@ -100,7 +100,7 @@ export const CreateQueueSheet = ({ visible, onClose }: CreateQueueSheetProps) =>
       },
       {
         onSuccess: () => {
-          toast.success(`Successfully created queue ${name}`)
+          toast.success($t('Successfully created queue {{value0}}', { value0: name }))
           router.push(`/project/${project?.ref}/integrations/queues/queues/${name}`)
           onClose()
         },

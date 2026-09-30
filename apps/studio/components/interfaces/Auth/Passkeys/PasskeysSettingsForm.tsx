@@ -157,7 +157,7 @@ export const PasskeysSettingsForm = () => {
       toast.success($t('Passkey settings updated successfully'))
     },
     onError: (error) => {
-      toast.error(`Failed to update passkey settings: ${error?.message}`)
+      toast.error($t('Failed to update passkey settings: {{value0}}', { value0: error?.message }))
     },
   })
 

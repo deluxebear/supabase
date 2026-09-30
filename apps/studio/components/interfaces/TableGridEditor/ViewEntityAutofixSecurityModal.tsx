@@ -48,7 +48,7 @@ export const ViewEntityAutofixSecurityModal = ({
       await queryClient.invalidateQueries({ queryKey: lintKeys.lint(project?.ref) })
     },
     onError: (error) => {
-      toast.error(`Failed to autofix view security: ${error.message}`)
+      toast.error($t('Failed to autofix view security: {{value0}}', { value0: error.message }))
     },
   })
 

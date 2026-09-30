@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { customDomainKeys } from './keys'
 import { del, handleError } from '@/data/fetchers'
 import { subscriptionKeys } from '@/data/subscriptions/keys'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type CustomDomainDeleteVariables = {
@@ -62,7 +63,7 @@ export const useCustomDomainDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete custom domain: ${data.message}`)
+        toast.error($t('Failed to delete custom domain: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

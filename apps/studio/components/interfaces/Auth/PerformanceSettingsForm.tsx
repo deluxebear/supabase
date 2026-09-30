@@ -125,7 +125,9 @@ export const PerformanceSettingsForm = () => {
       { projectRef: project?.ref, config: values },
       {
         onError: (error) => {
-          toast.error(`Failed to update request duration settings: ${error?.message}`)
+          toast.error(
+            $t('Failed to update request duration settings: {{value0}}', { value0: error?.message })
+          )
           setIsUpdatingRequestDurationForm(false)
         },
         onSuccess: () => {

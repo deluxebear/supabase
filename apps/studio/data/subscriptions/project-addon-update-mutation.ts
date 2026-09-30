@@ -5,6 +5,7 @@ import { subscriptionKeys } from './keys'
 import type { AddonVariantId, ProjectAddonType } from './types'
 import { configKeys } from '@/data/config/keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type ProjectAddonUpdateVariables = {
@@ -63,7 +64,7 @@ export const useProjectAddonUpdateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update addon: ${data.message}`)
+        toast.error($t('Failed to update addon: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

@@ -103,21 +103,21 @@ export const PublishAppSidePanel = ({
 
   const { mutateAsync: createOAuthApp } = useOAuthAppCreateMutation({
     onSuccess: (res, variables) => {
-      toast.success(`Successfully created OAuth app "${variables.name}"!`)
+      toast.success($t('Successfully created OAuth app "{{value0}}"!', { value0: variables.name }))
       onClose()
       onCreateSuccess(res)
     },
     onError: (error) => {
-      toast.error(`Failed to create OAuth application: ${error.message}`)
+      toast.error($t('Failed to create OAuth application: {{value0}}', { value0: error.message }))
     },
   })
   const { mutateAsync: updateOAuthApp } = useOAuthAppUpdateMutation({
     onSuccess: (_, variables) => {
-      toast.success(`Successfully updated OAuth app "${variables.name}"!`)
+      toast.success($t('Successfully updated OAuth app "{{value0}}"!', { value0: variables.name }))
       onClose()
     },
     onError: (error) => {
-      toast.error(`Failed to update OAuth application: ${error.message}`)
+      toast.error($t('Failed to update OAuth application: {{value0}}', { value0: error.message }))
     },
   })
 

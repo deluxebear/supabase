@@ -130,7 +130,7 @@ export const CreateFunction = ({
         },
         {
           onSuccess: () => {
-            toast.success(`Successfully updated function ${data.name}`)
+            toast.success($t('Successfully updated function {{value0}}', { value0: data.name }))
             onClose()
           },
         }
@@ -144,7 +144,7 @@ export const CreateFunction = ({
         },
         {
           onSuccess: () => {
-            toast.success(`Successfully created function ${data.name}`)
+            toast.success($t('Successfully created function {{value0}}', { value0: data.name }))
             onClose()
           },
         }

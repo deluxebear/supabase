@@ -5,6 +5,7 @@ import { logDrainsKeys } from './keys'
 import { LogDrainType } from '@/components/interfaces/LogDrains/LogDrains.constants'
 import type { components } from '@/data/api'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type AuditLogDrainConfig = components['schemas']['CreateBackendParamsOpenapi']['config']
@@ -55,7 +56,7 @@ export const useCreateAuditLogDrainMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to mutate: ${data.message}`)
+        toast.error($t('Failed to mutate: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

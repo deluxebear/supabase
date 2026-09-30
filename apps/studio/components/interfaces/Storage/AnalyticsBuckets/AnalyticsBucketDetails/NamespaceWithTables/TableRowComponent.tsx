@@ -144,7 +144,9 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
       setShowStopReplicationModal(false)
       toast.success($t('Successfully disabled replication for table! Pipeline is being restarted.'))
     } catch (error: any) {
-      toast.error(`Failed to disable replication for table: ${error.message}`)
+      toast.error(
+        $t('Failed to disable replication for table: {{value0}}', { value0: error.message })
+      )
     } finally {
       setIsUpdatingReplication(false)
     }
@@ -187,7 +189,9 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
       setShowStartReplicationModal(false)
       toast.success($t('Successfully enabled replication for table! Pipeline is being restarted.'))
     } catch (error: any) {
-      toast.error(`Failed to enable replication for table: ${error.message}`)
+      toast.error(
+        $t('Failed to enable replication for table: {{value0}}', { value0: error.message })
+      )
     } finally {
       setIsUpdatingReplication(false)
     }
@@ -253,7 +257,7 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
       toast.success($t('Successfully removed table!'))
       setShowRemoveTableModal(false)
     } catch (error: any) {
-      toast.error(`Failed to remove table: ${error.message}`)
+      toast.error($t('Failed to remove table: {{value0}}', { value0: error.message }))
     } finally {
       setIsRemovingTable(false)
     }
@@ -290,9 +294,9 @@ export const TableRowComponent = ({ table, schema, namespace }: TableRowComponen
         )
       )
 
-      toast.success(`Successfully removed table "${table.name}"!`)
+      toast.success($t('Successfully removed table "{{value0}}"!', { value0: table.name }))
     } catch (error: any) {
-      toast.error(`Failed to remove table: ${error.message}`)
+      toast.error($t('Failed to remove table: {{value0}}', { value0: error.message }))
     } finally {
       setIsRemovingTable(false)
     }

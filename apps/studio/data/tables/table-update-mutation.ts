@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { CreateTableBody } from './table-create-mutation'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { invalidateTableMetadata } from '@/data/tables/table-metadata-invalidation'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type UpdateTableBody = Partial<CreateTableBody> & {
@@ -74,7 +75,7 @@ export const useTableUpdateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update database table: ${data.message}`)
+        toast.error($t('Failed to update database table: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

@@ -75,7 +75,7 @@ export const RolesList = () => {
     isSuccess: isSuccessDelete,
   } = useDatabaseRoleDeleteMutation({
     onSuccess: () => {
-      toast.success(`Successfully deleted role`)
+      toast.success($t('Successfully deleted role'))
       setSelectedRoleIdToDelete(null)
     },
   })

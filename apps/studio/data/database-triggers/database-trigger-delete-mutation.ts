@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { databaseTriggerKeys } from './keys'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type DatabaseTriggerDeleteVariables = {
@@ -59,7 +60,7 @@ export const useDatabaseTriggerDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete database trigger: ${data.message}`)
+        toast.error($t('Failed to delete database trigger: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

@@ -44,7 +44,7 @@ export const UnhealthyState = () => {
       router.push(`/project/${ref}`)
     },
     onError: (error) => {
-      toast.error(`Failed to restart project: ${error.message}`)
+      toast.error($t('Failed to restart project: {{value0}}', { value0: error.message }))
     },
   })
 

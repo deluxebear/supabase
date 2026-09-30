@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { del, handleError } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type UserDeleteMFAFactorsVariables = {
@@ -37,7 +38,9 @@ export const useUserDeleteMFAFactorsMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete the user's MFA factors: ${data.message}`)
+        toast.error(
+          $t("Failed to delete the user's MFA factors: {{value0}}", { value0: data.message })
+        )
       } else {
         onError(data, variables, context)
       }

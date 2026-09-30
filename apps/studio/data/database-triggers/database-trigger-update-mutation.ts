@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 
 import { databaseTriggerKeys } from './keys'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type DatabaseTriggerUpdateVariables = {
@@ -62,7 +63,7 @@ export const useDatabaseTriggerUpdateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update database trigger: ${data.message}`)
+        toast.error($t('Failed to update database trigger: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

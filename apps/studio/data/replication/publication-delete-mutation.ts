@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { replicationKeys } from './keys'
 import { del, handleError } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type DeletePublicationParams = {
@@ -57,7 +58,7 @@ export const useDeletePublicationMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete publication: ${data.message}`)
+        toast.error($t('Failed to delete publication: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

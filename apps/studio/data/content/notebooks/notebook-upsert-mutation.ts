@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { upsertContent, type UpsertContentPayload } from '../content-upsert-mutation'
 import { contentKeys } from '../keys'
 import { writableNotebookSchema, type WritableNotebook } from './notebook-schema'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 function buildNotebookUpsertPayload({
@@ -92,7 +93,7 @@ export const useUpsertNotebookMutation = ({
     },
     async onError(error, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update notebook: ${error.message}`)
+        toast.error($t('Failed to update notebook: {{value0}}', { value0: error.message }))
       } else {
         onError(error, variables, context)
       }

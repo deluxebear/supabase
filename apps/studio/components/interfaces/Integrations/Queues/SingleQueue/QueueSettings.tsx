@@ -215,7 +215,11 @@ export const QueueSettings = ({}: QueueSettingsProps) => {
       toast.success($t('Successfully updated permissions'))
       setOpen(false)
     } catch (error: unknown) {
-      toast.error(`Failed to update permissions: ${getErrorMessage(error, 'unknown error')}`)
+      toast.error(
+        $t('Failed to update permissions: {{value0}}', {
+          value0: getErrorMessage(error, 'unknown error'),
+        })
+      )
     } finally {
       setIsSaving(false)
     }

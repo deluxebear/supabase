@@ -3,6 +3,7 @@ import { components } from 'api-types'
 import { toast } from 'sonner'
 
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type BackupDownloadVariables = {
@@ -38,7 +39,7 @@ export const useBackupDownloadMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to download backup: ${data.message}`)
+        toast.error($t('Failed to download backup: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

@@ -3,6 +3,7 @@ import { components } from 'api-types'
 import { toast } from 'sonner'
 
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type ProjectUpgradeVariables = components['schemas']['UpgradeDatabaseBody'] & {
@@ -39,7 +40,7 @@ export const useProjectUpgradeMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to upgrade project: ${data.message}`)
+        toast.error($t('Failed to upgrade project: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

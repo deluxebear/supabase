@@ -38,7 +38,7 @@ export const DataApiEnableSwitch = () => {
   const { mutate: updatePostgrestConfig, isPending: isUpdating } =
     useProjectPostgrestConfigUpdateMutation({
       onSuccess: (_data, variables) => {
-        toast.success(variables.dbSchema ? 'Data API enabled' : 'Data API disabled')
+        toast.success(variables.dbSchema ? $t('Data API enabled') : $t('Data API disabled'))
       },
     })
 

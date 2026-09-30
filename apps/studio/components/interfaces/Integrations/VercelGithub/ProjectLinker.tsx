@@ -65,7 +65,10 @@ export const ProjectLinker = ({
 
     const alreadyInstalled = flatInstalledConnectionsIds.has(foreignProjectId ?? '')
     if (alreadyInstalled) {
-      const message = `Unable to connect to ${selectedForeignProject.name}: Selected repository already has an installed connection to a project`
+      const message = $t(
+        'Unable to connect to {{value0}}: Selected repository already has an installed connection to a project',
+        { value0: selectedForeignProject.name }
+      )
       if (variant === 'interstitial') {
         setValidationError(message)
         return

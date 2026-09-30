@@ -6,6 +6,7 @@ import { castOrganizationResponseToOrganization } from './organizations-query'
 import type { CustomerAddress, CustomerTaxId } from './types'
 import { handleError, post } from '@/data/fetchers'
 import { permissionKeys } from '@/data/permissions/keys'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type OrganizationCreateVariables = {
@@ -83,7 +84,7 @@ export const useOrganizationCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create organization: ${data.message}`)
+        toast.error($t('Failed to create organization: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }
@@ -163,7 +164,7 @@ export const useAwsManagedOrganizationCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create organization: ${data.message}`)
+        toast.error($t('Failed to create organization: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

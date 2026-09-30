@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { branchKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 export type BranchRestoreVariables = {
@@ -41,7 +42,7 @@ export const useBranchRestoreMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to restore branch: ${data.message}`)
+        toast.error($t('Failed to restore branch: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

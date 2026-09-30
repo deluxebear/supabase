@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { del, handleError } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 type DeleteBucketObjectParams = {
@@ -50,7 +51,7 @@ export const useBucketObjectDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete bucket object: ${data.message}`)
+        toast.error($t('Failed to delete bucket object: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

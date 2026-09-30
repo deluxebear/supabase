@@ -195,7 +195,7 @@ export const NewPaymentMethodElement = forwardRef(
         elements,
       })
       if (error || paymentMethod == null) {
-        toast.error(error?.message ?? ' Failed to process card details')
+        toast.error(error?.message ?? $t(' Failed to process card details'))
         return
       }
 
@@ -234,7 +234,7 @@ export const NewPaymentMethodElement = forwardRef(
       })
 
       if (error || setupIntent == null) {
-        toast.error(error?.message ?? ' Failed to process card details')
+        toast.error(error?.message ?? $t(' Failed to process card details'))
         return
       }
 

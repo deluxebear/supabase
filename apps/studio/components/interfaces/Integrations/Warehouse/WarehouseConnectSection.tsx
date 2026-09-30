@@ -282,7 +282,9 @@ const CatalogAccessToggle = ({
   const catalogMutation = useUpdateWarehouseCatalogMutation({
     onSuccess: (catalog) =>
       toast.success(
-        catalog?.enabled ? 'DuckDB catalog access enabled' : 'DuckDB catalog access disabled'
+        catalog?.enabled
+          ? $t('DuckDB catalog access enabled')
+          : $t('DuckDB catalog access disabled')
       ),
   })
 

@@ -72,7 +72,7 @@ export const EditBucketModal = ({ visible, bucket, onClose }: EditBucketModalPro
 
   const { mutate: updateBucket, isPending: isUpdating } = useBucketUpdateMutation({
     onSuccess: () => {
-      toast.success(`Successfully updated bucket "${bucket?.name}"`)
+      toast.success($t('Successfully updated bucket "{{value0}}"', { value0: bucket?.name }))
       onClose()
     },
     onError: (error) => {
@@ -101,7 +101,11 @@ export const EditBucketModal = ({ visible, bucket, onClose }: EditBucketModalPro
         })
       } else {
         // For other errors, show a toast as fallback
-        toast.error(`Failed to update bucket: ${error.message || 'Unknown error'}`)
+        toast.error(
+          $t('Failed to update bucket: {{value0}}', {
+            value0: error.message || $t('Unknown error'),
+          })
+        )
       }
     },
   })

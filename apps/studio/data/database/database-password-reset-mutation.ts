@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { handleError, patch } from '@/data/fetchers'
 import { projectKeys } from '@/data/projects/keys'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type DatabasePasswordResetVariables = {
@@ -47,7 +48,7 @@ export const useDatabasePasswordResetMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to reset database password: ${data.message}`)
+        toast.error($t('Failed to reset database password: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

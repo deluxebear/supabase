@@ -45,7 +45,9 @@ const JWTKeysLegacyPage: NextPageWithLayout = () => {
           toast.success($t('Successfully updated JWT secret'))
           break
         case Failed:
-          toast.error(`JWT secret update failed: ${jwtSecretUpdateErrorMessage}`)
+          toast.error(
+            $t('JWT secret update failed: {{value0}}', { value0: jwtSecretUpdateErrorMessage })
+          )
           break
       }
     }

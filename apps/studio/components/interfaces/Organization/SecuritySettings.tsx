@@ -62,7 +62,7 @@ export const SecuritySettings = () => {
 
   const { mutate: toggleMfa, isPending: isUpdatingMfa } = useOrganizationMfaToggleMutation({
     onError: (error) => {
-      toast.error(`Failed to update MFA enforcement: ${error.message}`)
+      toast.error($t('Failed to update MFA enforcement: {{value0}}', { value0: error.message }))
       if (mfaConfig !== undefined) form.reset({ enforceMfa: mfaConfig })
     },
     onSuccess: (data) => {

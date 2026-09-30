@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 
 import type { ConnectionVars } from '@/data/common.types'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 import type { UseCustomMutationOptions } from '@/types'
 
 export type UpdateExposedEntitiesVariables = ConnectionVars & {
@@ -64,7 +65,7 @@ export const useUpdateExposedEntitiesMutation = ({
   return useMutation<UpdateExposedEntitiesData, Error, UpdateExposedEntitiesVariables>({
     mutationFn: (vars: UpdateExposedEntitiesVariables) => updateExposedEntities(vars),
     onError(error: Error) {
-      toast.error(`Failed to update entity access: ${error.message}`)
+      toast.error($t('Failed to update entity access: {{value0}}', { value0: error.message }))
     },
     ...(onError ? { onError } : {}),
     ...options,

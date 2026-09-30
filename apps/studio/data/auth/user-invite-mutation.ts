@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { authKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type UserInviteVariables = {
@@ -44,7 +45,7 @@ export const useUserInviteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to invite user: ${data.message}`)
+        toast.error($t('Failed to invite user: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

@@ -94,7 +94,12 @@ export const UtilityActions = ({
   const toggleIntellisense = () => {
     setIntellisenseEnabled(!intellisenseEnabled)
     toast.success(
-      `Successfully ${intellisenseEnabled ? 'disabled' : 'enabled'} intellisense. ${intellisenseEnabled ? 'Please refresh your browser for changes to take place.' : ''}`
+      $t('Successfully {{value0}} intellisense. {{value1}}', {
+        value0: intellisenseEnabled ? $t('disabled') : $t('enabled'),
+        value1: intellisenseEnabled
+          ? $t('Please refresh your browser for changes to take place.')
+          : '',
+      })
     )
   }
 

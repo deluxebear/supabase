@@ -36,7 +36,7 @@ export const EmptyBucketModal = ({ visible, bucket, onClose }: EmptyBucketModalP
         folderName: bucket.name,
         index: -1,
       })
-      toast.success(`Successfully emptied bucket ${bucket!.name}`)
+      toast.success($t('Successfully emptied bucket {{value0}}', { value0: bucket!.name }))
       onClose()
     },
   })

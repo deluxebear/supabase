@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import type { CustomerAddress, CustomerTaxId } from './types'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type OrganizationCreditTopUpVariables = {
@@ -78,7 +79,7 @@ export const useOrganizationCreditTopUpMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to top up credits: ${data.message}`)
+        toast.error($t('Failed to top up credits: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

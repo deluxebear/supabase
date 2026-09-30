@@ -53,7 +53,7 @@ export const CreateFirebaseAuthIntegrationDialog = ({
   const { ref: projectRef } = useParams()
   const { mutate: createAuthIntegration, isPending } = useCreateThirdPartyAuthIntegrationMutation({
     onSuccess: () => {
-      toast.success(`Successfully created a new Firebase Auth integration.`)
+      toast.success($t('Successfully created a new Firebase Auth integration.'))
       onClose()
     },
   })

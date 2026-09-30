@@ -72,7 +72,7 @@ export const LinkSupportTicketForm = ({
         errorMessage = parsed?._error?.message || parsed?.message || error.message
       } catch {}
       // If parsing fails, use the original message
-      toast.error(`Failed to link support ticket: ${errorMessage}`)
+      toast.error($t('Failed to link support ticket: {{value0}}', { value0: errorMessage }))
     },
   })
 

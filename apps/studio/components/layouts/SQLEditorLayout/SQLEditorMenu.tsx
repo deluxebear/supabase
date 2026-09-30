@@ -83,7 +83,7 @@ export const SQLEditorMenu = () => {
       setSearch('')
       setShowSearch(false)
     } catch (error) {
-      toast.error(`Failed to create new query: ${getErrorMessage(error)}`)
+      toast.error($t('Failed to create new query: {{value0}}', { value0: getErrorMessage(error) }))
     }
   }
 

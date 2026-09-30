@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { profileKeys } from './keys'
 import { captureCriticalError } from '@/lib/error-reporting'
 import { auth } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 import { UseCustomMutationOptions } from '@/types'
 
 interface MFAChallengeAndVerifyVariables extends MFAChallengeAndVerifyParams {
@@ -54,7 +55,7 @@ export const useMfaChallengeAndVerifyMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to sign in: ${data.message}`)
+        toast.error($t('Failed to sign in: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

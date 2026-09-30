@@ -50,7 +50,7 @@ export const SavedQueriesItem = ({ item }: SavedQueriesItemProps) => {
       toast.success($t('Successfully deleted query'))
     },
     onError: (error) => {
-      toast.error(`Failed to delete saved query: ${error.message}`)
+      toast.error($t('Failed to delete saved query: {{value0}}', { value0: error.message }))
     },
   })
   const { mutateAsync: updateContent } = useContentUpsertMutation({
@@ -59,7 +59,7 @@ export const SavedQueriesItem = ({ item }: SavedQueriesItemProps) => {
       toast.success($t('Successfully updated query'))
     },
     onError: (error) => {
-      toast.error(`Failed to update query: ${error.message}`)
+      toast.error($t('Failed to update query: {{value0}}', { value0: error.message }))
     },
   })
 

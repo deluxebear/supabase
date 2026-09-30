@@ -59,7 +59,7 @@ export const ProjectClaimConfirm = ({
         router.push(`/org/${selectedOrganization.slug}`)
       }
     } catch (error: any) {
-      toast.error(`Failed to claim project ${error.message}`)
+      toast.error($t('Failed to claim project {{value0}}', { value0: error.message }))
     }
   }
 

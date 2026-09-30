@@ -65,7 +65,7 @@ const SiteUrl = () => {
       { projectRef: projectRef!, config: values },
       {
         onError: (error) => {
-          toast.error(`Failed to update site URL: ${error?.message}`)
+          toast.error($t('Failed to update site URL: {{value0}}', { value0: error?.message }))
           setIsUpdatingSiteUrl(false)
         },
         onSuccess: () => {

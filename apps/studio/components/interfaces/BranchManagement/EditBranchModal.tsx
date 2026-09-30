@@ -85,11 +85,11 @@ export const EditBranchModal = ({ branch, visible, onClose }: EditBranchModalPro
 
   const { mutate: updateBranch, isPending: isUpdating } = useBranchUpdateMutation({
     onSuccess: (data) => {
-      toast.success(`Successfully updated branch "${data.name}"`)
+      toast.success($t('Successfully updated branch "{{value0}}"', { value0: data.name }))
       onClose()
     },
     onError: (error) => {
-      toast.error(`Failed to update branch: ${error.message}`)
+      toast.error($t('Failed to update branch: {{value0}}', { value0: error.message }))
     },
   })
 

@@ -234,7 +234,9 @@ const DatabaseUsage = () => {
 
   const { isPending: isUpdatingDiskSize } = useProjectDiskResizeMutation({
     onSuccess: (_, variables) => {
-      toast.success(`Successfully updated disk size to ${variables.volumeSize} GB`)
+      toast.success(
+        $t('Successfully updated disk size to {{value0}} GB', { value0: variables.volumeSize })
+      )
       setshowIncreaseDiskSizeModal(false)
     },
   })

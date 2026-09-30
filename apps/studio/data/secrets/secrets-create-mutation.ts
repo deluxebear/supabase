@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { secretsKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type SecretsCreateVariables = {
@@ -42,7 +43,7 @@ export const useSecretsCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create secrets: ${data.message}`)
+        toast.error($t('Failed to create secrets: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

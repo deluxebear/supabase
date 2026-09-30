@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { storageCredentialsKeys } from './s3-access-key-keys'
 import { del, handleError } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 type S3AccessKeyDeleteVariables = {
@@ -51,7 +52,7 @@ export function useS3AccessKeyDeleteMutation({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete S3 access key: ${data.message}`)
+        toast.error($t('Failed to delete S3 access key: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

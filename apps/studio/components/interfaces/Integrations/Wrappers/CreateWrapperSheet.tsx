@@ -196,24 +196,33 @@ export const CreateWrapperSheet = ({
 
     const toastId = toast.loading(
       needsExtensions
-        ? `Installing extensions ${(requiredExtensionsToInstall ?? []).map((e) => e.name).join(', ')}…`
-        : `Creating ${wrapperMeta.label} wrapper…`
+        ? $t('Installing extensions {{value0}}…', {
+            value0: (requiredExtensionsToInstall ?? []).map((e) => e.name).join(', '),
+          })
+        : $t('Creating {{value0}} wrapper…', { value0: wrapperMeta.label })
     )
 
     try {
       if (needsExtensions) {
         await installRequiredExtensions()
-        toast.loading(`Creating ${wrapperMeta.label} wrapper…`, { id: toastId })
+        toast.loading($t('Creating {{value0}} wrapper…', { value0: wrapperMeta.label }), {
+          id: toastId,
+        })
       }
 
       if (mode === 'schema') {
-        toast.loading(`Creating schema "${wrapperValues.target_schema}"…`, { id: toastId })
+        toast.loading(
+          $t('Creating schema "{{value0}}"…', { value0: wrapperValues.target_schema }),
+          { id: toastId }
+        )
         await createSchema({
           projectRef: project?.ref,
           connectionString: project?.connectionString,
           name: wrapperValues.target_schema,
         })
-        toast.loading(`Creating ${wrapperMeta.label} wrapper…`, { id: toastId })
+        toast.loading($t('Creating {{value0}} wrapper…', { value0: wrapperMeta.label }), {
+          id: toastId,
+        })
       }
 
       await createFDW({
@@ -236,14 +245,20 @@ export const CreateWrapperSheet = ({
       if (hasNewSchema) invalidateSchemasQuery(queryClient, project?.ref)
 
       track('foreign_data_wrapper_created', { wrapperType: wrapperMeta.label })
-      toast.success(`Successfully created ${wrapperMeta.label} foreign data wrapper`, {
-        id: toastId,
-      })
+      toast.success(
+        $t('Successfully created {{value0}} foreign data wrapper', { value0: wrapperMeta.label }),
+        {
+          id: toastId,
+        }
+      )
       onClose()
       form.reset()
     } catch (error) {
       toast.error(
-        `Failed to create ${wrapperMeta.label} wrapper: ${(error as ResponseError).message}`,
+        $t('Failed to create {{value0}} wrapper: {{value1}}', {
+          value0: wrapperMeta.label,
+          value1: (error as ResponseError).message,
+        }),
         { id: toastId }
       )
     }

@@ -64,7 +64,7 @@ export function useFeaturePreviewCommands() {
     onUpdateFlag(preview.key, isEnabling)
 
     if (!isEnabling) {
-      toast(`${preview.name} disabled`)
+      toast($t('{{value0}} disabled', { value0: preview.name }))
       return
     }
 
@@ -78,13 +78,13 @@ export function useFeaturePreviewCommands() {
     if (route !== undefined && currentRef !== undefined) {
       setIsOpen(false)
       router.push(route)
-      toast.success(`${preview.name} enabled`, {
-        description: "We've taken you to where you can try it out.",
+      toast.success($t('{{value0}} enabled', { value0: preview.name }), {
+        description: $t("We've taken you to where you can try it out."),
       })
       if (preview.bannerId) dismissBanner(preview.bannerId)
     } else {
-      toast.success(`${preview.name} enabled`, {
-        description: "It's now active across the dashboard.",
+      toast.success($t('{{value0}} enabled', { value0: preview.name }), {
+        description: $t("It's now active across the dashboard."),
       })
     }
   }

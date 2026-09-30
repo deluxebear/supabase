@@ -195,7 +195,11 @@ const PrivilegesPage: NextPageWithLayout = () => {
       table: selectedTable,
       onSuccess: useCallback(() => {
         toast.success(
-          `Successfully updated privileges on ${selectedSchema}.${selectedTable} for ${selectedRole}`,
+          $t('Successfully updated privileges on {{value0}}.{{value1}} for {{value2}}', {
+            value0: selectedSchema,
+            value1: selectedTable,
+            value2: selectedRole,
+          }),
           { duration: 6000 }
         )
         resetOperations()

@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { storageKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 type VectorBucketIndexCreateVariables = components['schemas']['CreateBucketIndexBody'] & {
@@ -59,7 +60,9 @@ export const useVectorBucketIndexCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create vector bucket index: ${data.message}`)
+        toast.error(
+          $t('Failed to create vector bucket index: {{value0}}', { value0: data.message })
+        )
       } else {
         onError(data, variables, context)
       }

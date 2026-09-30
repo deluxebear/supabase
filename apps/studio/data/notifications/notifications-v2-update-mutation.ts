@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { handleError, patch } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type NotificationsUpdateVariables = {
@@ -39,7 +40,7 @@ export const useNotificationsV2UpdateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update notifications: ${data.message}`)
+        toast.error($t('Failed to update notifications: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

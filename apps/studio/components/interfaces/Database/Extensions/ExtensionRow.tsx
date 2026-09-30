@@ -44,7 +44,7 @@ export const ExtensionRow = ({ extension }: ExtensionRowProps) => {
 
   const { mutate: disableExtension, isPending: isDisabling } = useDatabaseExtensionDisableMutation({
     onSuccess: () => {
-      toast.success(`${extension.name} is off.`)
+      toast.success($t('{{value0}} is off.', { value0: extension.name }))
       setIsDisableModalOpen(false)
     },
   })

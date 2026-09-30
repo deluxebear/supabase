@@ -136,7 +136,9 @@ export const AIEditor = ({
         setDiffValue({ original, modified })
         setIsDiffMode(true)
       } catch (error: any) {
-        toast.error(`Failed to generate: ${error?.message ?? 'Unknown error'}`)
+        toast.error(
+          $t('Failed to generate: {{value0}}', { value0: error?.message ?? $t('Unknown error') })
+        )
       } finally {
         setIsCompletionLoading(false)
       }

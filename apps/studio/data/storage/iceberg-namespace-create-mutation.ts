@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { storageKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 type CreateIcebergNamespaceVariables = {
@@ -56,11 +57,15 @@ export const useIcebergNamespaceCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (data.message === 'Request failed with status code 409') {
-        toast.error(`A namespace named ${variables.namespace} already exists in the catalog.`)
+        toast.error(
+          $t('A namespace named {{value0}} already exists in the catalog.', {
+            value0: variables.namespace,
+          })
+        )
         return
       }
       if (onError === undefined) {
-        toast.error(`Failed to create Iceberg namespace: ${data.message}`)
+        toast.error($t('Failed to create Iceberg namespace: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

@@ -29,7 +29,7 @@ export const DeleteHookModal = () => {
     isSuccess: isSuccessDelete,
   } = useDatabaseTriggerDeleteMutation({
     onSuccess: () => {
-      toast.success(`Successfully deleted ${name}`)
+      toast.success($t('Successfully deleted {{value0}}', { value0: name }))
       setSelectedHookIdToDelete(null)
     },
   })

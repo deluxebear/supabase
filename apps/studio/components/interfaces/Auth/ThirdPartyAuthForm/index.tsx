@@ -194,11 +194,15 @@ export const ThirdPartyAuthForm = () => {
                 projectRef: projectRef!,
                 tpaId: selectedIntegrationForDeletion.id,
               })
-              toast.success(`Successfully deleted ${getIntegrationTypeLabel(type)}.`)
+              toast.success(
+                $t('Successfully deleted {{value0}}.', { value0: getIntegrationTypeLabel(type) })
+              )
               setSelectedIntegrationForDeletion(undefined)
               setSelectedIntegration(undefined)
             } catch (error) {
-              toast.error(`Failed to delete ${getIntegrationTypeLabel(type)}.`)
+              toast.error(
+                $t('Failed to delete {{value0}}.', { value0: getIntegrationTypeLabel(type) })
+              )
               console.error(error)
             }
           }}

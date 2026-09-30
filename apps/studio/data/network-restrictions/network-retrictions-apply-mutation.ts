@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { networkRestrictionKeys } from './keys'
 import { configKeys } from '@/data/config/keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type NetworkRestrictionsApplyVariables = {
@@ -60,7 +61,9 @@ export const useNetworkRestrictionsApplyMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to apply network restrictions: ${data.message}`)
+        toast.error(
+          $t('Failed to apply network restrictions: {{value0}}', { value0: data.message })
+        )
       } else {
         onError(data, variables, context)
       }

@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { customDomainKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type CustomDomainActivateVariables = {
@@ -39,7 +40,7 @@ export const useCustomDomainActivateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to activate custom domain: ${data.message}`)
+        toast.error($t('Failed to activate custom domain: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

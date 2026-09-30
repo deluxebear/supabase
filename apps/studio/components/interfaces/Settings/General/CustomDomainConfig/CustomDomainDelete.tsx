@@ -25,7 +25,7 @@ export const CustomDomainDelete = ({ projectRef, customDomain }: CustomDomainDel
     useCustomDomainDeleteMutation({
       onSuccess: () => {
         toast.success(
-          `Successfully deleted custom domain. Refresh your browser to see the changes.`
+          $t('Successfully deleted custom domain. Refresh your browser to see the changes.')
         )
         setIsDeleteConfirmModalVisible(false)
       },

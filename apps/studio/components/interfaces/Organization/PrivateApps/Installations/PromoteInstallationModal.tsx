@@ -26,12 +26,12 @@ export function PromoteInstallationModal({
   const { mutate: installApp, isPending: isInstalling } = usePlatformAppInstallationCreateMutation({
     onSuccess: (data) => {
       if (data) addInstallation(data, 'all')
-      toast.success(`"${appToPromote?.name}" is now the installed app`)
+      toast.success($t('"{{value0}}" is now the installed app', { value0: appToPromote?.name }))
       onSuccess()
       onClose()
     },
     onError: (error) => {
-      toast.error(`Failed to install app: ${error.message}`)
+      toast.error($t('Failed to install app: {{value0}}', { value0: error.message }))
     },
   })
 
@@ -43,7 +43,7 @@ export function PromoteInstallationModal({
         installApp({ slug, app_id: appToPromote.id })
       },
       onError: (error) => {
-        toast.error(`Failed to uninstall current app: ${error.message}`)
+        toast.error($t('Failed to uninstall current app: {{value0}}', { value0: error.message }))
       },
     })
 

@@ -72,7 +72,7 @@ export const BannedIPs = () => {
       setShowUnban(false)
     },
     onError: (error) => {
-      toast.error(`Failed to unban IP: ${error?.message}`)
+      toast.error($t('Failed to unban IP: {{value0}}', { value0: error?.message }))
     },
   })
 

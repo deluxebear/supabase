@@ -98,22 +98,22 @@ export const TriggerSheet = ({
   const { mutate: createDatabaseTrigger, isPending: isCreating } = useDatabaseTriggerCreateMutation(
     {
       onSuccess: () => {
-        toast.success(`Successfully created trigger`)
+        toast.success($t('Successfully created trigger'))
         onClose()
       },
       onError: (error) => {
-        toast.error(`Failed to create trigger: ${error.message}`)
+        toast.error($t('Failed to create trigger: {{value0}}', { value0: error.message }))
       },
     }
   )
   const { mutate: updateDatabaseTrigger, isPending: isUpdating } = useDatabaseTriggerUpdateMutation(
     {
       onSuccess: () => {
-        toast.success(`Successfully updated trigger`)
+        toast.success($t('Successfully updated trigger'))
         onClose()
       },
       onError: (error) => {
-        toast.error(`Failed to update trigger: ${error.message}`)
+        toast.error($t('Failed to update trigger: {{value0}}', { value0: error.message }))
       },
     }
   )

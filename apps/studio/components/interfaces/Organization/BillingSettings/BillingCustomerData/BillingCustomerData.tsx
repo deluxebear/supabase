@@ -124,7 +124,9 @@ export const BillingCustomerData = () => {
         )
       } catch (error) {
         toast.error(
-          `Failed updating billing data: ${error instanceof Error ? error.message : 'Unknown error'}`
+          $t('Failed updating billing data: {{value0}}', {
+            value0: error instanceof Error ? error.message : $t('Unknown error'),
+          })
         )
         throw error
       } finally {

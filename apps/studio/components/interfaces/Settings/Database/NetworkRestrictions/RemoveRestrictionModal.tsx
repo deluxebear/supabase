@@ -39,7 +39,7 @@ const RemoveRestrictionModal = ({
     useNetworkRestrictionsApplyMutation({
       onSuccess: () => onClose(),
       onError: (error) => {
-        toast.error(`Failed to remove restriction: ${error.message}`)
+        toast.error($t('Failed to remove restriction: {{value0}}', { value0: error.message }))
       },
     })
 

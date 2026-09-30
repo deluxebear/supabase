@@ -30,7 +30,7 @@ export const DeleteAnalyticsBucketModal = ({
     useAnalyticsBucketDeleteMutation({
       onSuccess: async () => {
         if (project?.connectionString) await deleteAnalyticsBucketCleanUp()
-        toast.success(`Successfully deleted analytics bucket ${bucketId}`)
+        toast.success($t('Successfully deleted analytics bucket {{value0}}', { value0: bucketId }))
         onClose()
         onSuccess?.()
       },

@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { fetchHandler, handleError } from '@/data/fetchers'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type CheckCNAMERecordVariables = {
@@ -57,7 +58,7 @@ export const useCheckCNAMERecordMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to check CNAME record: ${data.message}`)
+        toast.error($t('Failed to check CNAME record: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

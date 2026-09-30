@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { replicaKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type ReadReplicaRemoveVariables = {
@@ -51,7 +52,7 @@ export const useReadReplicaRemoveMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to remove read replica: ${data.message}`)
+        toast.error($t('Failed to remove read replica: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

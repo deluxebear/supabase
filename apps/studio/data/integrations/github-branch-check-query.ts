@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { get, handleError } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type GithubBranchVariables = {
@@ -47,7 +48,7 @@ export const useCheckGithubBranchValidity = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to check GitHub branch: ${data.message}`)
+        toast.error($t('Failed to check GitHub branch: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

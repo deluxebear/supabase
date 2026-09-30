@@ -142,7 +142,7 @@ export const JWTSettings = () => {
         )
       )
     } catch (error: any) {
-      toast.error(`Failed to update JWT secret: ${error.message}`)
+      toast.error($t('Failed to update JWT secret: {{value0}}', { value0: error.message }))
     }
   }
 

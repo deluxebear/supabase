@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { replicationKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type RollbackTablesTarget = components['schemas']['RollbackTablesBody']['target']
@@ -90,7 +91,7 @@ export const useRollbackTablesMutation = ({
       ])
 
       if (onError === undefined) {
-        toast.error(`Failed to restart table replication: ${data.message}`)
+        toast.error($t('Failed to restart table replication: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

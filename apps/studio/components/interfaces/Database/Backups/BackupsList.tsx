@@ -44,9 +44,9 @@ export const BackupsList = () => {
         setTimeout(() => {
           setProjectStatus({ ref: projectRef, status: PROJECT_STATUS.RESTORING })
           toast.success(
-            `Restoring database back to ${dayjs(selectedBackup?.inserted_at).format(
-              'DD MMM YYYY HH:mm:ss'
-            )}`
+            $t('Restoring database back to {{value0}}', {
+              value0: dayjs(selectedBackup?.inserted_at).format('DD MMM YYYY HH:mm:ss'),
+            })
           )
           router.push(`/project/${projectRef}`)
         }, 3000)

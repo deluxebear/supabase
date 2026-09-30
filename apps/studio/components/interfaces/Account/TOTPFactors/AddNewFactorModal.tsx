@@ -199,7 +199,9 @@ const SecondStep = ({
   const { mutate: unenroll } = useMfaUnenrollMutation({ onSuccess: () => onClose() })
   const { mutate: challengeAndVerify, isPending: isVerifying } = useMfaChallengeAndVerifyMutation({
     onError: (error) => {
-      toast.error(`Failed to add a second factor authentication:  ${error?.message}`)
+      toast.error(
+        $t('Failed to add a second factor authentication:  {{value0}}', { value0: error?.message })
+      )
     },
     onSuccess: async () => {
       if (lastVisitedOrganization) {
@@ -207,7 +209,7 @@ const SecondStep = ({
           queryKey: organizationKeys.members(lastVisitedOrganization),
         })
       }
-      toast.success(`Successfully added a second factor authentication`)
+      toast.success($t('Successfully added a second factor authentication'))
       onClose()
     },
   })

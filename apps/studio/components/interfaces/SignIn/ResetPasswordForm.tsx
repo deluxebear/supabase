@@ -59,7 +59,9 @@ export const ResetPasswordForm = () => {
       await auth.signOut({ scope: 'others' })
       await router.push(getReturnToPath('/organizations'))
     } else {
-      toast.error(`Failed to save password: ${error.message}`, { id: toastId })
+      toast.error($t('Failed to save password: {{value0}}', { value0: error.message }), {
+        id: toastId,
+      })
       captureCriticalError(error, 'reset password')
     }
   }

@@ -64,7 +64,7 @@ export const RedirectUrls = () => {
       { projectRef: projectRef!, config: { URI_ALLOW_LIST: payloadString } },
       {
         onError: (error) => {
-          toast.error(`Failed to remove URL(s): ${error?.message}`)
+          toast.error($t('Failed to remove URL(s): {{value0}}', { value0: error?.message }))
         },
         onSuccess: () => {
           setSelectedUrls([])

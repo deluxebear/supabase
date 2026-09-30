@@ -290,9 +290,12 @@ export const EntityListItem = ({
                       })
                     } catch (err: unknown) {
                       if (err instanceof Error) {
-                        toast.error('Failed to copy schema: ' + (err.message || err), {
-                          id: toastId,
-                        })
+                        toast.error(
+                          $t('Failed to copy schema: {{value0}}', { value0: err.message || err }),
+                          {
+                            id: toastId,
+                          }
+                        )
                       }
                     }
                   }}
@@ -311,7 +314,9 @@ export const EntityListItem = ({
                     e.stopPropagation()
                     const label =
                       entity.type === ENTITY_TYPE.MATERIALIZED_VIEW ? 'materialized view' : 'view'
-                    const toastId = toast.loading(`Getting ${label} definition...`)
+                    const toastId = toast.loading(
+                      $t('Getting {{value0}} definition...', { value0: label })
+                    )
 
                     const formattedDefinition = getViewDefinition({
                       id: entity.id,
@@ -328,14 +333,22 @@ export const EntityListItem = ({
                     try {
                       await copyToClipboard(formattedDefinition, () => {
                         toast.success(
-                          `${label[0].toUpperCase() + label.slice(1)} definition copied to clipboard`,
+                          $t('{{value0}} definition copied to clipboard', {
+                            value0: label[0].toUpperCase() + label.slice(1),
+                          }),
                           { id: toastId }
                         )
                       })
                     } catch (err: any) {
-                      toast.error(`Failed to copy ${label} definition: ` + (err.message || err), {
-                        id: toastId,
-                      })
+                      toast.error(
+                        $t('Failed to copy {{value0}} definition: {{value1}}', {
+                          value0: label,
+                          value1: err.message || err,
+                        }),
+                        {
+                          id: toastId,
+                        }
+                      )
                     }
                   }}
                 >

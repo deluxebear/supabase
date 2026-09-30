@@ -2,6 +2,8 @@ import { useCallback, useRef, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { SonnerProgress } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 export const useProgressToasts = () => {
   const toastIdsRef = useRef(new Map<number, string | number>())
 
@@ -20,13 +22,19 @@ export const useProgressToasts = () => {
       if (trackPercentage) {
         toastIdsRef.current.set(
           id,
-          toast(<SonnerProgress progress={0} message={`Exporting ${name}...`} />, {
-            closeButton: false,
-            duration: Infinity,
-          })
+          toast(
+            <SonnerProgress
+              progress={0}
+              message={$t('Exporting {{value0}}...', { value0: name })}
+            />,
+            {
+              closeButton: false,
+              duration: Infinity,
+            }
+          )
         )
       } else {
-        toastIdsRef.current.set(id, toast.loading(`Exporting ${name}...`))
+        toastIdsRef.current.set(id, toast.loading($t('Exporting {{value0}}...', { value0: name })))
       }
     },
     []
@@ -48,7 +56,10 @@ export const useProgressToasts = () => {
 
       const progress = Math.min((value / totalRows) * 100, 100)
       const newToastId = toast(
-        <SonnerProgress progress={progress} message={`Exporting ${name}...`} />,
+        <SonnerProgress
+          progress={progress}
+          message={$t('Exporting {{value0}}...', { value0: name })}
+        />,
         {
           id: savedToastId,
           closeButton: false,
@@ -69,7 +80,7 @@ export const useProgressToasts = () => {
         toastIdsRef.current.delete(id)
       }
 
-      toast.error(customMessage ?? `There was an error exporting ${name}`)
+      toast.error(customMessage ?? $t('There was an error exporting {{value0}}', { value0: name }))
     },
     []
   )
@@ -86,7 +97,7 @@ export const useProgressToasts = () => {
     const savedToastId = toastIdsRef.current.get(id)
     const deleteSavedToastId = () => toastIdsRef.current.delete(id)
 
-    toast.success(`Successfully exported ${totalRows} rows`, {
+    toast.success($t('Successfully exported {{value0}} rows', { value0: totalRows }), {
       id: savedToastId,
       duration: 4000,
       onAutoClose: deleteSavedToastId,

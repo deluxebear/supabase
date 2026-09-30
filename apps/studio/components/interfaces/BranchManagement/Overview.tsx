@@ -299,7 +299,7 @@ const PreviewBranchActions = ({
       setShowConfirmRetriggersModal(false)
     },
     onError: (data) => {
-      toast.error(`Failed to trigger workflow: ${data.message}`)
+      toast.error($t('Failed to trigger workflow: {{value0}}', { value0: data.message }))
     },
   })
 
@@ -586,7 +586,7 @@ const MainBranchActions = ({ branch, repo }: { branch: Branch; repo: string }) =
       setShowConfirmRetriggersModal(false)
     },
     onError: (data) => {
-      toast.error(`Failed to trigger workflow: ${data.message}`)
+      toast.error($t('Failed to trigger workflow: {{value0}}', { value0: data.message }))
     },
   })
   const [showEditBranchModal, setShowEditBranchModal] = useState(false)

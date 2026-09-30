@@ -66,8 +66,10 @@ export const WrapperTable = ({ isLatest = false }: WrapperTableProps) => {
       if (openedWrapperId.current !== selectedWrapperIdToEdit) {
         toast(
           isSelectedWrapperShared
-            ? 'Shared wrappers cannot be edited in the dashboard. Use the SQL Editor to edit this connection.'
-            : 'Wrapper not found'
+            ? $t(
+                'Shared wrappers cannot be edited in the dashboard. Use the SQL Editor to edit this connection.'
+              )
+            : $t('Wrapper not found')
         )
       }
       setSelectedWrapperToEdit(null)

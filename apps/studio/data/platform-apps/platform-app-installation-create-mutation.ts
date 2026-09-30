@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { platformAppKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type PlatformAppInstallationCreateVariables = {
@@ -55,7 +56,7 @@ export const usePlatformAppInstallationCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to install app: ${data.message}`)
+        toast.error($t('Failed to install app: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

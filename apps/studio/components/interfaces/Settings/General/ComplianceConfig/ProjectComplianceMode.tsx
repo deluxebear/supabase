@@ -52,7 +52,11 @@ export const ComplianceConfig = () => {
       },
       onError: (error) => {
         setIsSensitive(initialIsSensitive)
-        toast.error(`Failed to update project compliance configuration: ${error.message}`)
+        toast.error(
+          $t('Failed to update project compliance configuration: {{value0}}', {
+            value0: error.message,
+          })
+        )
       },
     })
 

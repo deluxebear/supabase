@@ -57,7 +57,7 @@ const ConfirmResetCodeForm = ({ email }: { email: string }) => {
 
     if (error) {
       setIsLoading(false)
-      toast.error(`Failed to verify code: ${error.message}`)
+      toast.error($t('Failed to verify code: {{value0}}', { value0: error.message }))
     } else {
       if (user?.factors?.length) {
         await router.push({
@@ -133,7 +133,7 @@ const ForgotPasswordForm = ({ onSuccess }: { onSuccess: (email: string) => void 
     onError: (error) => {
       setCaptchaToken(null)
       captchaRef.current?.resetCaptcha()
-      toast.error(`Failed to send reset email: ${error.message}`)
+      toast.error($t('Failed to send reset email: {{value0}}', { value0: error.message }))
     },
   })
 

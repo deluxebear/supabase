@@ -1,4 +1,3 @@
-import { t as $t } from '@/lib/i18n';
 import { Copy, Edit, ListFilter, Trash } from 'lucide-react'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
@@ -8,6 +7,7 @@ import { useTableRowOperations } from '../../hooks/useTableRowOperations'
 import { formatClipboardValue } from '../../utils/common'
 import { buildFilterFromCellValue, isComplexValue } from '../header/filter/FilterPopoverNew.utils'
 import type { SupaRow } from '@/components/grid/types'
+import { t as $t } from '@/lib/i18n'
 import { useTableEditorStateSnapshot } from '@/state/table-editor'
 import { useTableEditorTableStateSnapshot } from '@/state/table-editor-table'
 
@@ -88,7 +88,9 @@ export const RowContextMenuContent = ({
     snap.setFilters([...snap.filters, newFilter])
 
     const displayValue = newFilter.value === 'null' ? 'NULL' : newFilter.value
-    toast.success(`Filtering ${column.name} by ${displayValue}`)
+    toast.success(
+      $t('Filtering {{value0}} by {{value1}}', { value0: column.name, value1: displayValue })
+    )
   }, [getRowAndColumn, snap])
 
   const isFilterByValueVisible = useCallback(() => {

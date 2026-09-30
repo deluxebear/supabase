@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type ProjectRestartServicesVariables = {
@@ -66,7 +67,7 @@ export const useProjectRestartServicesMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to restart project: ${data.message}`)
+        toast.error($t('Failed to restart project: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

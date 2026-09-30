@@ -40,7 +40,7 @@ const AddNewPaymentMethodModal = ({
       setIntent(intent)
     },
     onError: (error) => {
-      toast.error(`Failed to setup intent: ${error.message}`)
+      toast.error($t('Failed to setup intent: {{value0}}', { value0: error.message }))
     },
   })
 

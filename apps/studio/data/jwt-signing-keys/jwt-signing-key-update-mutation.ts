@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { jwtSigningKeysKeys } from './keys'
 import { handleError, patch } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 interface JWTSigningKeyUpdateVariables {
@@ -50,7 +51,9 @@ export const useJWTSigningKeyUpdateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update new JWT signing key: ${data.message}`)
+        toast.error(
+          $t('Failed to update new JWT signing key: {{value0}}', { value0: data.message })
+        )
       } else {
         onError(data, variables, context)
       }

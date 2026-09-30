@@ -178,7 +178,12 @@ export const ReplicationPipelineLayout = ({ children }: PropsWithChildren) => {
         )
       }
     } catch (error) {
-      toast.error(`Failed to ${resolvedAction} pipeline: ${(error as ResponseError).message}`)
+      toast.error(
+        $t('Failed to {{value0}} pipeline: {{value1}}', {
+          value0: resolvedAction,
+          value1: (error as ResponseError).message,
+        })
+      )
     }
   }
 
@@ -196,10 +201,12 @@ export const ReplicationPipelineLayout = ({ children }: PropsWithChildren) => {
         pipelineId: pipeline.id,
       })
       setShowDeleteDestination(false)
-      toast.success(`Deleted pipeline "${pipeline.destination_name}"`)
+      toast.success($t('Deleted pipeline "{{value0}}"', { value0: pipeline.destination_name }))
       router.push(`/project/${projectRef}/database/pipelines`)
     } catch (error) {
-      toast.error(`Failed to delete pipeline: ${(error as ResponseError).message}`)
+      toast.error(
+        $t('Failed to delete pipeline: {{value0}}', { value0: (error as ResponseError).message })
+      )
     } finally {
       setIsDeleting(false)
     }

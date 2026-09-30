@@ -82,7 +82,7 @@ function SupportFormPageContent() {
   })
 
   useStateTransition(state, 'submitting', 'error', (_, curr) => {
-    toast.error(`Failed to submit support ticket: ${curr.message}`)
+    toast.error($t('Failed to submit support ticket: {{value0}}', { value0: curr.message }))
     if (curr.code !== 429) {
       Sentry.captureMessage(`Failed to submit Support Form: ${curr.message}`)
     }

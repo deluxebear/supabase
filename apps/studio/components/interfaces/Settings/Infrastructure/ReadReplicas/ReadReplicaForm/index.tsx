@@ -54,7 +54,9 @@ export const ReadReplicaForm = ({
   const { mutate: setUpReplica, isPending: isSettingUp } = useReadReplicaSetUpMutation({
     onSuccess: () => {
       const region = AVAILABLE_REPLICA_REGIONS.find((r) => r.key === selectedRegion)?.name
-      toast.success(`Spinning up new replica in ${region ?? 'Unknown'}...`)
+      toast.success(
+        $t('Spinning up new replica in {{value0}}...', { value0: region ?? $t('Unknown') })
+      )
       onSuccess?.()
       onClose()
     },

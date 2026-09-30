@@ -9,6 +9,7 @@ import { getTableRowDeleteSql } from './table-row-delete-mutation'
 import { getTableRowUpdateSql } from './table-row-update-mutation'
 import type { PendingAddRow } from '@/components/grid/types'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 import { RoleImpersonationState, wrapWithRoleImpersonation } from '@/lib/role-impersonation'
 import { isRoleImpersonationEnabled } from '@/state/role-impersonation-state'
 import {
@@ -207,7 +208,7 @@ export const useOperationQueueSaveMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to save changes: ${data.message}`)
+        toast.error($t('Failed to save changes: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

@@ -68,7 +68,7 @@ export const CreateReportModal = ({ visible, onCancel, afterSubmit }: CreateRepo
       afterSubmit()
     },
     onError: (error) => {
-      toast.error(`Failed to create report: ${error.message}`)
+      toast.error($t('Failed to create report: {{value0}}', { value0: error.message }))
     },
   })
 

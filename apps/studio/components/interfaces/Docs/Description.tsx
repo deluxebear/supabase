@@ -68,9 +68,9 @@ const Description = ({ content, metadata, onChange = noop }: DescrptionProps) =>
         })
         // [Joshen] Temp fix, immediately refreshing the docs fetches stale state
         await timeout(500)
-        toast.success(`Successfully updated description`)
+        toast.success($t('Successfully updated description'))
       } catch (error: any) {
-        toast.error(`Failed to update description: ${error.message}`)
+        toast.error($t('Failed to update description: {{value0}}', { value0: error.message }))
       }
     }
 

@@ -79,7 +79,9 @@ const RenameQueryForm = ({ snippet, onCancel, onComplete }: RenameQueryFormProps
         }
       },
       onError: (error) => {
-        toast.error(`Failed to generate title and description: ${error.message}`)
+        toast.error(
+          $t('Failed to generate title and description: {{value0}}', { value0: error.message })
+        )
       },
     })
   const { data: check } = useCheckOpenAIKeyQuery()
@@ -150,7 +152,7 @@ const RenameQueryForm = ({ snippet, onCancel, onComplete }: RenameQueryFormProps
       if (onComplete) onComplete()
     } catch (error: any) {
       // [Joshen] We probably need some rollback cause all the saving is async
-      toast.error(`Failed to rename snippet: ${error.message}`)
+      toast.error($t('Failed to rename snippet: {{value0}}', { value0: error.message }))
     }
   }
 

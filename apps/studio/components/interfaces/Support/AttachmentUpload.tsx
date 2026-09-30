@@ -81,7 +81,7 @@ export function useAttachmentUpload() {
 
       setUploadedFiles(uploadedFiles.concat(itemsToBeUploaded))
       if (items.length + uploadedFiles.length > MAX_ATTACHMENTS) {
-        toast(`Only up to ${MAX_ATTACHMENTS} attachments are allowed`)
+        toast($t('Only up to {{value0}} attachments are allowed', { value0: MAX_ATTACHMENTS }))
       }
       event.target.value = ''
     },

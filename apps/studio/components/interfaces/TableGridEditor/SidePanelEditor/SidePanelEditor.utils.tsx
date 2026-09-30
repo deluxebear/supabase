@@ -203,7 +203,8 @@ export const createColumn = async ({
   skipSuccessMessage?: boolean
   toastId?: string | number
 }) => {
-  const toastId = _toastId ?? toast.loading(`Creating column "${payload.name}"...`)
+  const toastId =
+    _toastId ?? toast.loading($t('Creating column "{{value0}}"...', { value0: payload.name }))
   try {
     // Once pg-meta supports composite keys, we can remove this logic
     const { isPrimaryKey, ...formattedPayload } = payload
@@ -250,11 +251,17 @@ export const createColumn = async ({
     }
 
     if (!skipSuccessMessage) {
-      toast.success(`Successfully created column "${formattedPayload.name}"`, { id: toastId })
+      toast.success(
+        $t('Successfully created column "{{value0}}"', { value0: formattedPayload.name }),
+        { id: toastId }
+      )
     }
     return { error: undefined }
   } catch (error) {
-    toast.error(`An error occurred while creating the column "${payload.name}"`, { id: toastId })
+    toast.error(
+      $t('An error occurred while creating the column "{{value0}}"', { value0: payload.name }),
+      { id: toastId }
+    )
     return { error }
   }
 }
@@ -333,7 +340,8 @@ export const updateColumn = async ({
       })
     }
 
-    if (!skipSuccessMessage) toast.success(`Successfully updated column "${originalColumn.name}"`)
+    if (!skipSuccessMessage)
+      toast.success($t('Successfully updated column "{{value0}}"', { value0: originalColumn.name }))
   } catch (error: any) {
     return { error }
   }
@@ -525,7 +533,7 @@ export const createTable = async ({
   }
 
   // Execute all table creation SQL in a single transaction
-  toast.loading(`Creating table ${payload.name}...`, { id: toastId })
+  toast.loading($t('Creating table {{value0}}...', { value0: payload.name }), { id: toastId })
 
   await Sentry.startSpan(
     { name: 'create_table.execute_sql', op: 'db.sql.transaction' },
@@ -594,7 +602,10 @@ export const createTable = async ({
                     max={100}
                     type="horizontal"
                     barClass="bg-primary-bright"
-                    labelBottom={`Adding ${importContent.rowCount.toLocaleString()} rows to ${table.name}`}
+                    labelBottom={$t('Adding {{value0}} rows to {{value1}}', {
+                      value0: importContent.rowCount.toLocaleString(),
+                      value1: table.name,
+                    })}
                     labelBottomClass=""
                     labelTop={`${progress.toFixed(2)}%`}
                     labelTopClass="tabular-nums"
@@ -611,7 +622,7 @@ export const createTable = async ({
             toast.error($t('Do check your spreadsheet if there are any discrepancies.'))
             const message = isObjectContainingKeys(error, ['message'])
               ? String(error.message)
-              : 'An unknown error occurred during data import.'
+              : $t('An unknown error occurred during data import.')
             toast.error(message)
             console.error('Error:', { error, message })
           }
@@ -631,7 +642,10 @@ export const createTable = async ({
                     max={100}
                     type="horizontal"
                     barClass="bg-primary-bright"
-                    labelBottom={`Adding ${importContent.rows.length.toLocaleString()} rows to ${table.name}`}
+                    labelBottom={$t('Adding {{value0}} rows to {{value1}}', {
+                      value0: importContent.rows.length.toLocaleString(),
+                      value1: table.name,
+                    })}
                     labelTop={`${progress.toFixed(2)}%`}
                     labelTopClass="tabular-nums"
                   />
@@ -780,7 +794,13 @@ export const updateTable = async ({
   // Delete any removed columns
   const columnsToRemove = originalColumns.filter((column) => !columnIds.includes(column.id))
   for (const column of columnsToRemove) {
-    toast.loading(`Removing column ${column.name} from ${updatedTable.name}`, { id: toastId })
+    toast.loading(
+      $t('Removing column {{value0}} from {{value1}}', {
+        value0: column.name,
+        value1: updatedTable.name,
+      }),
+      { id: toastId }
+    )
     await deleteDatabaseColumn({
       projectRef,
       connectionString,
@@ -792,7 +812,13 @@ export const updateTable = async ({
   let hasError = false
   for (const column of columns) {
     if (!column.id.includes(table.id.toString())) {
-      toast.loading(`Adding column ${column.name} to ${updatedTable.name}`, { id: toastId })
+      toast.loading(
+        $t('Adding column {{value0}} to {{value1}}', {
+          value0: column.name,
+          value1: updatedTable.name,
+        }),
+        { id: toastId }
+      )
       // Ensure that columns do not created as primary key first, cause the primary key will
       // be added later on further down in the code
       const columnPayload = generateCreateColumnPayload(updatedTable, {
@@ -813,7 +839,13 @@ export const updateTable = async ({
       if (originalColumn) {
         const columnPayload = generateUpdateColumnPayload(originalColumn, updatedTable, column)
         if (!isEmpty(columnPayload)) {
-          toast.loading(`Updating column ${column.name} from ${updatedTable.name}`, { id: toastId })
+          toast.loading(
+            $t('Updating column {{value0}} from {{value1}}', {
+              value0: column.name,
+              value1: updatedTable.name,
+            }),
+            { id: toastId }
+          )
 
           const res = await updateColumn({
             projectRef: projectRef,
@@ -831,7 +863,12 @@ export const updateTable = async ({
           })
           if (res?.error) {
             hasError = true
-            toast.error(`Failed to update column "${column.name}": ${res.error.message}`)
+            toast.error(
+              $t('Failed to update column "{{value0}}": {{value1}}', {
+                value0: column.name,
+                value1: res.error.message,
+              })
+            )
           }
         }
       }

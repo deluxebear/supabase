@@ -54,7 +54,12 @@ export const RealtimeToggleDialog = ({
         })
       },
       onError: (error) => {
-        toast.error(`Failed to toggle realtime for ${table.name}: ${error.message}`)
+        toast.error(
+          $t('Failed to toggle realtime for {{value0}}: {{value1}}', {
+            value0: table.name,
+            value1: error.message,
+          })
+        )
       },
     })
 

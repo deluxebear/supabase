@@ -6,6 +6,7 @@ import { buildSchemaCommentWith, parseSchemaComment } from './pgGraphqlSchemaCom
 import { pgGraphqlKeys } from '@/data/pg-graphql/keys'
 import { useExecuteSqlMutation } from '@/data/sql/execute-sql-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { t as $t } from '@/lib/i18n'
 
 interface UseSetIntrospectionParams {
   schema: string
@@ -42,7 +43,9 @@ export const useSetIntrospection = ({
 
   const { mutate, isPending } = useExecuteSqlMutation({
     onSuccess: async (_data, variables) => {
-      toast.success(`Introspection ${pastVerb} on schema "${schema}".`)
+      toast.success(
+        $t('Introspection {{value0}} on schema "{{value1}}".', { value0: pastVerb, value1: schema })
+      )
       onMutationSuccess()
       await queryClient.invalidateQueries({
         queryKey: pgGraphqlKeys.schemaComment(variables.projectRef, schema),
@@ -50,7 +53,12 @@ export const useSetIntrospection = ({
       onInvalidated()
     },
     onError: (error) => {
-      toast.error(`Failed to ${presentVerb} introspection: ${error.message}`)
+      toast.error(
+        $t('Failed to {{value0}} introspection: {{value1}}', {
+          value0: presentVerb,
+          value1: error.message,
+        })
+      )
     },
   })
 

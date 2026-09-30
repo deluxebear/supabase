@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { databaseQueuesKeys } from './keys'
 import { databaseKeys } from '@/data/database/keys'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 import { isGreaterThanOrEqual } from '@/lib/semver'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
@@ -73,7 +74,9 @@ export const useDatabaseQueueToggleExposeMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to toggle queue exposure via PostgREST: ${data.message}`)
+        toast.error(
+          $t('Failed to toggle queue exposure via PostgREST: {{value0}}', { value0: data.message })
+        )
       } else {
         onError(data, variables, context)
       }

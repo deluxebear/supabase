@@ -15,6 +15,7 @@ import type { StateSnippet, StateSnippetFolder } from './types'
 import type { SnippetWithContent } from '@/data/content/sql-folders-query'
 import { Snippet, SnippetFolder } from '@/data/content/sql-folders-query'
 import { untrustedLogSql } from '@/data/logs/safe-analytics-sql'
+import { t as $t } from '@/lib/i18n'
 
 export const sqlEditorState = proxy({
   // ========================================================================
@@ -221,10 +222,10 @@ export const sqlEditorState = proxy({
 
     if (isNew && folderNameTaken) {
       sqlEditorState.removeFolder(id)
-      return toast.error('Unable to create new folder: This folder name already exists')
+      return toast.error($t('Unable to create new folder: This folder name already exists'))
     } else if (hasChanges && folderNameTaken) {
       storeFolder.status = 'idle'
-      return toast.error('Unable to update folder: This folder name already exists')
+      return toast.error($t('Unable to update folder: This folder name already exists'))
     }
 
     const originalFolderName = storeFolder.folder.name.slice()

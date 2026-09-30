@@ -55,7 +55,7 @@ const SQLExamples = () => {
 
       router.push(`/project/${ref}/sql/${snippet.id}`)
     } catch (error: any) {
-      toast.error(`Failed to create new query: ${error.message}`)
+      toast.error($t('Failed to create new query: {{value0}}', { value0: error.message }))
     }
   }
 

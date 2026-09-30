@@ -175,7 +175,7 @@ export const SQLEditorNav = ({ sort = 'inserted_at' }: SQLEditorNavProps) => {
   useEffect(() => {
     if (snippetCountError || snippetsFoldersError) {
       toast.error(
-        snippetCountError?.message || snippetsFoldersError?.message || 'Failed to load snippets'
+        snippetCountError?.message || snippetsFoldersError?.message || $t('Failed to load snippets')
       )
     }
   }, [snippetCountError, snippetsFoldersError])
@@ -332,7 +332,7 @@ export const SQLEditorNav = ({ sort = 'inserted_at' }: SQLEditorNavProps) => {
       if (error.message.includes('Contents not found')) {
         postDeleteCleanup(data.ids)
       } else {
-        toast.error(`Failed to delete query: ${error.message}`)
+        toast.error($t('Failed to delete query: {{value0}}', { value0: error.message }))
       }
     },
   })

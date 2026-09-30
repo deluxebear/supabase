@@ -2,6 +2,7 @@ import { QueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { storageKeys } from '@/data/storage/keys'
+import { t as $t } from '@/lib/i18n'
 import { createProjectSupabaseClient } from '@/lib/project-supabase-client'
 
 export async function uploadFilesToBucket({
@@ -30,14 +31,21 @@ export async function uploadFilesToBucket({
     const filePath = currentPath ? `${currentPath}/${file.name}` : file.name
     const { error } = await client.storage.from(bucketName).upload(filePath, file, { upsert: true })
     if (error) {
-      toast.error(`Failed to upload ${file.name}: ${error.message}`)
+      toast.error(
+        $t('Failed to upload {{value0}}: {{value1}}', { value0: file.name, value1: error.message })
+      )
     } else {
       successCount++
     }
   }
 
   if (successCount > 0) {
-    toast.success(`Successfully uploaded ${successCount} file${successCount > 1 ? 's' : ''}`)
+    toast.success(
+      $t('Successfully uploaded {{value0}} file{{value1}}', {
+        value0: successCount,
+        value1: successCount > 1 ? $t('s') : '',
+      })
+    )
     const queryKey = storageKeys.objects(projectRef, bucketId, '')
     await queryClient.refetchQueries({ queryKey, type: 'active' })
   }

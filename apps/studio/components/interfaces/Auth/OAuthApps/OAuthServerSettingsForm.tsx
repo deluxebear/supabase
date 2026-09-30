@@ -95,7 +95,9 @@ export const OAuthServerSettingsForm = () => {
       })
     },
     onError: (error) => {
-      toast.error(`Failed to update OAuth server settings: ${error?.message}`)
+      toast.error(
+        $t('Failed to update OAuth server settings: {{value0}}', { value0: error?.message })
+      )
     },
   })
 

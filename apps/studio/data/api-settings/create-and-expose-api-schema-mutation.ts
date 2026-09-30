@@ -7,6 +7,7 @@ import { configKeys } from '@/data/config/keys'
 import { databaseKeys } from '@/data/database/keys'
 import { handleError, patch } from '@/data/fetchers'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type CreateAndExposeAPISchemaVariables = {
@@ -83,7 +84,9 @@ export const useCreateAndExposeAPISchemaMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create and expose API schema: ${data.message}`)
+        toast.error(
+          $t('Failed to create and expose API schema: {{value0}}', { value0: data.message })
+        )
       } else {
         onError(data, variables, context)
       }

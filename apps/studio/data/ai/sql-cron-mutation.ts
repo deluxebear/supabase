@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { constructHeaders, fetchHandler } from '@/data/fetchers'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type SqlCronGenerateResponse = string
@@ -51,7 +52,7 @@ export const useSqlCronGenerateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to generate cron expression: ${data.message}`)
+        toast.error($t('Failed to generate cron expression: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

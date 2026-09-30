@@ -77,7 +77,9 @@ export const CreateRuleSheet = ({ lint, open, onOpenChange }: CreateRuleSheetPro
     onSuccess: (_, vars) => {
       const ruleLint = vars.exception.lint_name
       const ruleLintMeta = lintInfoMap.find((x) => x.name === ruleLint)
-      toast.success(`Successfully created new rule for ${ruleLintMeta?.title}`)
+      toast.success(
+        $t('Successfully created new rule for {{value0}}', { value0: ruleLintMeta?.title })
+      )
 
       if (ruleLintMeta) {
         if (!!routeCategory && routeCategory !== ruleLintMeta.category) {

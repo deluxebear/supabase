@@ -78,7 +78,7 @@ export const DeleteAccountButton = () => {
       )
     },
     onError: (error) => {
-      toast.error(`Failed to submit account deletion request: ${error}`)
+      toast.error($t('Failed to submit account deletion request: {{value0}}', { value0: error }))
     },
   })
 

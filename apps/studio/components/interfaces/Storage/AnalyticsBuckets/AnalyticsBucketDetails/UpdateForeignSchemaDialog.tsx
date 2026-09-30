@@ -82,10 +82,10 @@ export const UpdateForeignSchemaDialog = ({
         targetSchema: values.schema,
       })
 
-      toast.success(`Successfully updated "${values.schema}" schema!`)
+      toast.success($t('Successfully updated "{{value0}}" schema!', { value0: values.schema }))
       setIsOpen(false)
     } catch (error: any) {
-      toast.error(`Failed to update schema: ${error.message}`)
+      toast.error($t('Failed to update schema: {{value0}}', { value0: error.message }))
     }
   }
 

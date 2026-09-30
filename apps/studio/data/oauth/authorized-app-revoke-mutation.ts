@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { oauthAppKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type AuthorizedAppRevokeVariables = {
@@ -43,7 +44,7 @@ export const useAuthorizedAppRevokeMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to revoke application: ${data.message}`)
+        toast.error($t('Failed to revoke application: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

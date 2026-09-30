@@ -46,6 +46,7 @@ import type { Bucket } from '@/data/storage/buckets-query'
 import { moveStorageObject } from '@/data/storage/object-move-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { lookupMime } from '@/lib/mime'
 import { createProjectSupabaseClient } from '@/lib/project-supabase-client'
 import { ResponseError } from '@/types'
@@ -344,7 +345,12 @@ export function createStorageExplorerState({
             columnIndex: index,
           })
         } else {
-          toast.error(`Failed to retrieve folder contents from "${folderName}": ${error.message}`)
+          toast.error(
+            $t('Failed to retrieve folder contents from "{{value0}}": {{value1}}', {
+              value0: folderName,
+              value1: error.message,
+            })
+          )
         }
       }
     },
@@ -393,7 +399,9 @@ export function createStorageExplorerState({
         })
       } catch (error: any) {
         if (!error.message.includes('aborted')) {
-          toast.error(`Failed to retrieve more folder contents: ${error.message}`)
+          toast.error(
+            $t('Failed to retrieve more folder contents: {{value0}}', { value0: error.message })
+          )
         }
       }
     },
@@ -460,7 +468,7 @@ export function createStorageExplorerState({
             })
             return { items: data, isComplete: true }
           } catch (error: any) {
-            toast.error(`Failed to fetch folders: ${error.message}`)
+            toast.error($t('Failed to fetch folders: {{value0}}', { value0: error.message }))
             // Flagged so an empty listing isn't read as "the folder has nothing in it"
             return { items: [], isComplete: false }
           }
@@ -576,9 +584,9 @@ export function createStorageExplorerState({
 
         await state.refetchAllOpenedFolders()
         state.setSelectedItemsToDelete([])
-        toast.success(`Successfully deleted ${folder.name}`)
+        toast.success($t('Successfully deleted {{value0}}', { value0: folder.name }))
       } catch (error: any) {
-        toast.error(`Failed to delete folder: ${error.message}`)
+        toast.error($t('Failed to delete folder: {{value0}}', { value0: error.message }))
       }
     },
 
@@ -609,7 +617,10 @@ export function createStorageExplorerState({
       }
 
       const toastId = toast(
-        <SonnerProgress progress={0} message={`Renaming folder to ${newName}`} />,
+        <SonnerProgress
+          progress={0}
+          message={$t('Renaming folder to {{value0}}', { value0: newName })}
+        />,
         { closeButton: false, position: 'top-right' }
       )
 
@@ -647,8 +658,17 @@ export function createStorageExplorerState({
                     toast(
                       <SonnerProgress
                         progress={Math.min(progress * 100, 100)}
-                        message={`Renaming folder to ${newName}`}
-                        description={`${isRateLimited ? 'API rate limited' : 'Error moving file'} - retrying in ${seconds} seconds (${attempt}/3)`}
+                        message={$t('Renaming folder to {{value0}}', { value0: newName })}
+                        description={$t(
+                          '{{value0}} - retrying in {{value1}} seconds ({{value2}}/3)',
+                          {
+                            value0: isRateLimited
+                              ? $t('API rate limited')
+                              : $t('Error moving file'),
+                            value1: seconds,
+                            value2: attempt,
+                          }
+                        )}
                       />,
                       { id: toastId, closeButton: false, position: 'top-right', duration: Infinity }
                     )
@@ -686,14 +706,14 @@ export function createStorageExplorerState({
           toast(
             <SonnerProgress
               progress={Math.min(progress * 100, 100)}
-              message={`Renaming folder to ${newName}`}
+              message={$t('Renaming folder to {{value0}}', { value0: newName })}
             />,
             { id: toastId, closeButton: false, position: 'top-right', duration: Infinity }
           )
         }
 
         if (failedFiles === 0) {
-          toast.success(`Successfully renamed folder to ${newName}`, {
+          toast.success($t('Successfully renamed folder to {{value0}}', { value0: newName }), {
             id: toastId,
             closeButton: true,
             duration: SONNER_DEFAULT_DURATION,
@@ -702,10 +722,17 @@ export function createStorageExplorerState({
           toast.error(
             <div>
               <p>
-                Renamed folder to {newName} with {failedFiles} error{failedFiles > 1 ? 's' : ''}
+                {$t('Renamed folder to {{name}} with {{count}} error{{suffix}}', {
+                  name: newName,
+                  count: failedFiles,
+                  suffix: failedFiles > 1 ? $t('s') : '',
+                })}
               </p>
               <p className="text-foreground-light">
-                You may try again to rename the folder {originalName} to {newName}
+                {$t('You may try again to rename the folder {{originalName}} to {{newName}}', {
+                  originalName,
+                  newName,
+                })}
               </p>
             </div>,
             {
@@ -724,11 +751,17 @@ export function createStorageExplorerState({
 
         // TODO: Should we invalidate the file preview cache when renaming folders?
       } catch (e: any) {
-        toast.error(`Failed to rename folder to ${newName}: ${e.message}`, {
-          id: toastId,
-          closeButton: true,
-          duration: SONNER_DEFAULT_DURATION,
-        })
+        toast.error(
+          $t('Failed to rename folder to {{value0}}: {{value1}}', {
+            value0: newName,
+            value1: e.message,
+          }),
+          {
+            id: toastId,
+            closeButton: true,
+            duration: SONNER_DEFAULT_DURATION,
+          }
+        )
       }
     },
 
@@ -782,7 +815,7 @@ export function createStorageExplorerState({
 
     downloadFolder: async (folder: StorageItemWithColumn) => {
       let progress = 0
-      const toastId = toast.loading('Retrieving files from folder...')
+      const toastId = toast.loading($t('Retrieving files from folder...'))
 
       try {
         const files = await state.getAllItemsAlongFolder(folder)
@@ -790,7 +823,10 @@ export function createStorageExplorerState({
         toast(
           <SonnerProgress
             progress={0}
-            message={`Downloading ${files.length} file${files.length > 1 ? 's' : ''}...`}
+            message={$t('Downloading {{value0}} file{{value1}}...', {
+              value0: files.length,
+              value1: files.length > 1 ? $t('s') : '',
+            })}
           />,
           { id: toastId, closeButton: false, position: 'top-right' }
         )
@@ -863,7 +899,10 @@ export function createStorageExplorerState({
             toast(
               <SonnerProgress
                 progress={progress * 100}
-                message={`Downloading ${files.length} file${files.length > 1 ? 's' : ''}...`}
+                message={$t('Downloading {{value0}} file{{value1}}...', {
+                  value0: files.length,
+                  value1: files.length > 1 ? $t('s') : '',
+                })}
               />,
               { id: toastId, closeButton: false, position: 'top-right' }
             )
@@ -882,7 +921,7 @@ export function createStorageExplorerState({
         const zipWriter = new ZipWriter(zipFileWriter, { bufferedWrite: true })
 
         if (downloadedFiles.length === 0) {
-          toast.error(`Failed to download files from "${folder.name}"`, {
+          toast.error($t('Failed to download files from "{{value0}}"', { value0: folder.name }), {
             id: toastId,
             closeButton: true,
             duration: SONNER_DEFAULT_DURATION,
@@ -903,14 +942,15 @@ export function createStorageExplorerState({
 
         toast.success(
           downloadedFiles.length === files.length
-            ? `Successfully downloaded folder "${folder.name}"`
-            : `Downloaded folder "${folder.name}". However, ${
-                files.length - downloadedFiles.length
-              } files did not download successfully.`,
+            ? $t('Successfully downloaded folder "{{value0}}"', { value0: folder.name })
+            : $t(
+                'Downloaded folder "{{value0}}". However, {{value1}} files did not download successfully.',
+                { value0: folder.name, value1: files.length - downloadedFiles.length }
+              ),
           { id: toastId, closeButton: true, duration: SONNER_DEFAULT_DURATION }
         )
       } catch (error: any) {
-        toast.error(`Failed to download folder: ${error.message}`, {
+        toast.error($t('Failed to download folder: {{value0}}', { value0: error.message }), {
           id: toastId,
           closeButton: true,
           duration: SONNER_DEFAULT_DURATION,
@@ -1037,15 +1077,20 @@ export function createStorageExplorerState({
         toast.error(
           <div className="flex flex-col gap-y-1">
             <p className="text-foreground">
-              Failed to upload {numberOfFilesRejected} file{numberOfFilesRejected > 1 ? 's' : ''} as{' '}
-              {numberOfFilesRejected > 1 ? 'their' : 'its'} size
-              {numberOfFilesRejected > 1 ? 's are' : ' is'} beyond the global upload limit of{' '}
-              {value} {unit}.
+              {$t(
+                'Failed to upload {{count}} file{{suffix}} because the file size exceeds the global upload limit of {{value}} {{unit}}.',
+                {
+                  count: numberOfFilesRejected,
+                  suffix: numberOfFilesRejected > 1 ? $t('s') : '',
+                  value,
+                  unit,
+                }
+              )}
             </p>
             <p className="text-foreground-light">
-              You can change the global file size upload limit in{' '}
+              {$t('You can change the global file size upload limit in')}{' '}
               <InlineLink href={`/project/${state.projectRef}/storage/settings`}>
-                Storage Settings
+                {$t('Storage Settings')}
               </InlineLink>
               .
             </p>
@@ -1062,9 +1107,10 @@ export function createStorageExplorerState({
         toast.error(
           <div className="flex flex-col gap-y-1">
             <p className="text-foreground">
-              Failed to upload {numberOfFilesRejected} file{numberOfFilesRejected > 1 ? 's' : ''} as{' '}
-              {numberOfFilesRejected > 1 ? 'their' : 'its'} size
-              {numberOfFilesRejected > 1 ? 's are' : ' is'} 0.
+              {$t('Failed to upload {{count}} file{{suffix}} because the file size is 0.', {
+                count: numberOfFilesRejected,
+                suffix: numberOfFilesRejected > 1 ? $t('s') : '',
+              })}
             </p>
           </div>
         )
@@ -1241,10 +1287,15 @@ export function createStorageExplorerState({
                       toast.error(
                         capitalize(
                           error?.originalResponse?.getBody() ||
-                            `Failed to upload ${file.name}: ${metadata.mimetype} is not allowed`
+                            $t('Failed to upload {{name}}: {{type}} is not allowed', {
+                              name: file.name,
+                              type: metadata.mimetype,
+                            })
                         ),
                         {
-                          description: `Allowed MIME types: ${state.selectedBucket.allowed_mime_types?.join(', ')}`,
+                          description: $t('Allowed MIME types: {{value0}}', {
+                            value0: state.selectedBucket.allowed_mime_types?.join(', '),
+                          }),
                         }
                       )
                       break
@@ -1252,37 +1303,62 @@ export function createStorageExplorerState({
                     case 413: {
                       // Payload too large
                       toast.error(
-                        `Failed to upload ${file.name}: File size exceeds the bucket file size limit.`
+                        $t(
+                          'Failed to upload {{value0}}: File size exceeds the bucket file size limit.',
+                          { value0: file.name }
+                        )
                       )
                       break
                     }
                     case 409: {
                       // Resource already exists
-                      toast.error(`Failed to upload ${file.name}: File name already exists.`)
+                      toast.error(
+                        $t('Failed to upload {{value0}}: File name already exists.', {
+                          value0: file.name,
+                        })
+                      )
                       break
                     }
                     case 400: {
                       const responseBody = error.originalResponse?.getBody()
                       if (typeof responseBody === 'string') {
                         if (responseBody.includes('Invalid key:')) {
-                          toast.error(`Failed to upload ${file.name}: File name is invalid.`)
+                          toast.error(
+                            $t('Failed to upload {{value0}}: File name is invalid.', {
+                              value0: file.name,
+                            })
+                          )
                           break
                         }
 
                         if (responseBody.includes('Invalid Compact JWS')) {
-                          toast.error(`Failed to upload ${file.name}: Invalid Compact JWS.`)
+                          toast.error(
+                            $t('Failed to upload {{value0}}: Invalid Compact JWS.', {
+                              value0: file.name,
+                            })
+                          )
                           break
                         }
                       }
                       // if it's not handled by the two ifs, fallthrough to the default case which shows the generic error message
                     }
                     default: {
-                      toast.error(`Failed to upload ${file.name}: ${error.message}`)
+                      toast.error(
+                        $t('Failed to upload {{value0}}: {{value1}}', {
+                          value0: file.name,
+                          value1: error.message,
+                        })
+                      )
                       break
                     }
                   }
                 } else {
-                  toast.error(`Failed to upload ${file.name}: ${error.message}`)
+                  toast.error(
+                    $t('Failed to upload {{value0}}: {{value1}}', {
+                      value0: file.name,
+                      value1: error.message,
+                    })
+                  )
                 }
                 reject(error)
               },
@@ -1372,27 +1448,33 @@ export function createStorageExplorerState({
             toast.dismiss(toastId)
           } else {
             toast.error(
-              `Failed to upload ${numberOfFilesToUpload} file${numberOfFilesToUpload > 1 ? 's' : ''}!`,
+              $t('Failed to upload {{value0}} file{{value1}}!', {
+                value0: numberOfFilesToUpload,
+                value1: numberOfFilesToUpload > 1 ? $t('s') : '',
+              }),
               { id: toastId, closeButton: true, duration: SONNER_DEFAULT_DURATION }
             )
           }
         } else if (numberOfFilesUploadedSuccess === numberOfFilesToUpload) {
           toast.success(
-            `Successfully uploaded ${numberOfFilesToUpload} file${
-              numberOfFilesToUpload > 1 ? 's' : ''
-            }!`,
+            $t('Successfully uploaded {{value0}} file{{value1}}!', {
+              value0: numberOfFilesToUpload,
+              value1: numberOfFilesToUpload > 1 ? $t('s') : '',
+            }),
             { id: toastId, closeButton: true, duration: SONNER_DEFAULT_DURATION }
           )
         } else {
           toast.success(
-            `Successfully uploaded ${numberOfFilesUploadedSuccess} out of ${numberOfFilesToUpload} file${
-              numberOfFilesToUpload > 1 ? 's' : ''
-            }!`,
+            $t('Successfully uploaded {{value0}} out of {{value1}} file{{value2}}!', {
+              value0: numberOfFilesUploadedSuccess,
+              value1: numberOfFilesToUpload,
+              value2: numberOfFilesToUpload > 1 ? $t('s') : '',
+            }),
             { id: toastId, closeButton: true, duration: SONNER_DEFAULT_DURATION }
           )
         }
       } catch (e) {
-        toast.error('Failed to upload files', {
+        toast.error($t('Failed to upload files'), {
           id: toastId,
           closeButton: true,
           duration: SONNER_DEFAULT_DURATION,
@@ -1412,7 +1494,10 @@ export function createStorageExplorerState({
       state.clearSelectedItems()
 
       const toastId = toast(
-        `Moving ${state.selectedItemsToMove.length} file${state.selectedItemsToMove.length > 1 ? 's' : ''}...`,
+        $t('Moving {{value0}} file{{value1}}...', {
+          value0: state.selectedItemsToMove.length,
+          value1: state.selectedItemsToMove.length > 1 ? $t('s') : '',
+        }),
         {
           description: STORAGE_PROGRESS_INFO_TEXT,
           duration: Infinity,
@@ -1445,12 +1530,16 @@ export function createStorageExplorerState({
       )
 
       if (numberOfFilesMovedFail === state.selectedItemsToMove.length) {
-        toast.error('Failed to move files')
+        toast.error($t('Failed to move files'))
       } else {
         toast(
-          `Successfully moved ${
-            state.selectedItemsToMove.length - numberOfFilesMovedFail
-          } files to ${formattedNewPathToFile.length > 0 ? formattedNewPathToFile : 'the root of your bucket'}`
+          $t('Successfully moved {{value0}} files to {{value1}}', {
+            value0: state.selectedItemsToMove.length - numberOfFilesMovedFail,
+            value1:
+              formattedNewPathToFile.length > 0
+                ? formattedNewPathToFile
+                : $t('the root of your bucket'),
+          })
         )
       }
 
@@ -1486,7 +1575,9 @@ export function createStorageExplorerState({
 
       state.clearSelectedItems()
 
-      const toastId = toast.loading(`Deleting ${prefixes.length} file(s)...`)
+      const toastId = toast.loading(
+        $t('Deleting {{value0}} file(s)...', { value0: prefixes.length })
+      )
 
       try {
         await deleteBucketObject({
@@ -1507,12 +1598,15 @@ export function createStorageExplorerState({
             parentFolderPrefixes.map((prefix) => state.validateParentFolderEmpty(prefix))
           )
 
-          toast.success(`Successfully deleted ${prefixes.length} file(s)`, {
-            id: toastId,
-            closeButton: true,
-            duration: SONNER_DEFAULT_DURATION,
-            description: undefined,
-          })
+          toast.success(
+            $t('Successfully deleted {{value0}} file(s)', { value0: prefixes.length }),
+            {
+              id: toastId,
+              closeButton: true,
+              duration: SONNER_DEFAULT_DURATION,
+              description: undefined,
+            }
+          )
           await state.refetchAllOpenedFolders()
           state.setSelectedItemsToDelete([])
         } else {
@@ -1520,7 +1614,7 @@ export function createStorageExplorerState({
         }
       } catch (err) {
         if (!isDeleteFolder) {
-          toast.error(`Failed to delete ${prefixes.length} file(s)`, {
+          toast.error($t('Failed to delete {{value0}} file(s)', { value0: prefixes.length }), {
             id: toastId,
             closeButton: true,
             duration: SONNER_DEFAULT_DURATION,
@@ -1542,14 +1636,16 @@ export function createStorageExplorerState({
 
     downloadFile: async (file: StorageItemWithColumn, showToast = true) => {
       if (!file.path) {
-        toast.error('Failed to download: Unable to find path to file')
+        toast.error($t('Failed to download: Unable to find path to file'))
         return false
       }
 
       const fileName: string = file.name
       const fileMimeType = file?.metadata?.mimetype ?? undefined
 
-      const toastId = showToast ? toast.loading(`Retrieving ${fileName}...`) : undefined
+      const toastId = showToast
+        ? toast.loading($t('Retrieving {{value0}}...', { value0: fileName }))
+        : undefined
 
       try {
         const url = await fetchFileUrl(
@@ -1573,7 +1669,7 @@ export function createStorageExplorerState({
         window.URL.revokeObjectURL(blobUrl)
 
         if (toastId) {
-          toast.success(`Downloading ${fileName}`, {
+          toast.success($t('Downloading {{value0}}', { value0: fileName }), {
             id: toastId,
             closeButton: true,
             duration: SONNER_DEFAULT_DURATION,
@@ -1582,7 +1678,7 @@ export function createStorageExplorerState({
         return true
       } catch (err) {
         if (toastId) {
-          toast.error(`Failed to download ${fileName}`, {
+          toast.error($t('Failed to download {{value0}}', { value0: fileName }), {
             id: toastId,
             closeButton: true,
             duration: SONNER_DEFAULT_DURATION,
@@ -1629,7 +1725,10 @@ export function createStorageExplorerState({
 
       let progress = 0
       const toastId = toast.loading(
-        `Downloading ${files.length} file${files.length > 1 ? 's' : ''}...`
+        $t('Downloading {{value0}} file{{value1}}...', {
+          value0: files.length,
+          value1: files.length > 1 ? $t('s') : '',
+        })
       )
 
       const promises = formattedFilesWithPrefix.map((file) => {
@@ -1653,7 +1752,10 @@ export function createStorageExplorerState({
         toast(
           <SonnerProgress
             progress={progress * 100}
-            message={`Downloading ${files.length} file${files.length > 1 ? 's' : ''}...`}
+            message={$t('Downloading {{value0}} file{{value1}}...', {
+              value0: files.length,
+              value1: files.length > 1 ? $t('s') : '',
+            })}
           />,
           { id: toastId, closeButton: false, position: 'top-right' }
         )
@@ -1674,11 +1776,14 @@ export function createStorageExplorerState({
       link.click()
       link.parentNode?.removeChild(link)
 
-      toast.success(`Successfully downloaded ${downloadedFiles.length} files`, {
-        id: toastId,
-        closeButton: true,
-        duration: SONNER_DEFAULT_DURATION,
-      })
+      toast.success(
+        $t('Successfully downloaded {{value0}} files', { value0: downloadedFiles.length }),
+        {
+          id: toastId,
+          closeButton: true,
+          duration: SONNER_DEFAULT_DURATION,
+        }
+      )
     },
 
     renameFile: async (file: StorageItem, newName: string, columnIndex: number) => {
@@ -1705,7 +1810,12 @@ export function createStorageExplorerState({
             to: toPath,
           })
 
-          toast.success(`Successfully renamed "${originalName}" to "${newName}"`)
+          toast.success(
+            $t('Successfully renamed "{{value0}}" to "{{value1}}"', {
+              value0: originalName,
+              value1: newName,
+            })
+          )
 
           // TODO: Should we invalidate the file preview cache when renaming files?
 
@@ -1716,7 +1826,7 @@ export function createStorageExplorerState({
 
           await state.refetchAllOpenedFolders()
         } catch (error: any) {
-          toast.error(`Failed to rename file: ${error.message}`)
+          toast.error($t('Failed to rename file: {{value0}}', { value0: error.message }))
           state.updateRowStatus({
             name: originalName,
             status: STORAGE_ROW_STATUS.READY,
@@ -1811,12 +1921,15 @@ export function createStorageExplorerState({
       return toast(
         <SonnerProgress
           progress={progress}
-          message={`Uploading ${totalFiles} file${totalFiles > 1 ? 's' : ''}...`}
-          progressPrefix={`${remainingTime && !isNaN(remainingTime) && isFinite(remainingTime) && remainingTime !== 0 ? `${formatTime(remainingTime)} remaining – ` : ''}`}
+          message={$t('Uploading {{value0}} file{{value1}}...', {
+            value0: totalFiles,
+            value1: totalFiles > 1 ? $t('s') : '',
+          })}
+          progressPrefix={`${remainingTime && !isNaN(remainingTime) && isFinite(remainingTime) && remainingTime !== 0 ? $t('{{value0}} remaining – ', { value0: formatTime(remainingTime) }) : ''}`}
           action={
             toastId && (
               <Button size="tiny" className="ml-6" onClick={() => state.abortUploads(toastId)}>
-                Cancel
+                {$t('Cancel')}
               </Button>
             )
           }

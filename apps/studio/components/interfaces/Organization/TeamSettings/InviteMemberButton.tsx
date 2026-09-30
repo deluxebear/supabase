@@ -184,15 +184,21 @@ export const InviteMemberButton = () => {
     if (alreadyInvited.length > 0) {
       toast.error(
         alreadyInvited.length === 1
-          ? `${alreadyInvited[0]} has already been invited to this organization`
-          : `${alreadyInvited.length} emails have already been invited to this organization`
+          ? $t('{{value0}} has already been invited to this organization', {
+              value0: alreadyInvited[0],
+            })
+          : $t('{{value0}} emails have already been invited to this organization', {
+              value0: alreadyInvited.length,
+            })
       )
     }
     if (alreadyMembers.length > 0) {
       toast.error(
         alreadyMembers.length === 1
-          ? `${alreadyMembers[0]} is already in this organization`
-          : `${alreadyMembers.length} emails are already in this organization`
+          ? $t('{{value0}} is already in this organization', { value0: alreadyMembers[0] })
+          : $t('{{value0}} emails are already in this organization', {
+              value0: alreadyMembers.length,
+            })
       )
     }
     if (alreadyInvited.length > 0 || alreadyMembers.length > 0) {
@@ -220,13 +226,15 @@ export const InviteMemberButton = () => {
     if (succeeded.length > 0) {
       toast.success(
         succeeded.length === 1
-          ? 'Successfully sent invitation to new member'
-          : `Successfully sent invitations to ${succeeded.length} new members`
+          ? $t('Successfully sent invitation to new member')
+          : $t('Successfully sent invitations to {{value0}} new members', {
+              value0: succeeded.length,
+            })
       )
     }
 
     for (const { email, error } of failed) {
-      toast.error(`Failed to invite ${email}: ${error}`)
+      toast.error($t('Failed to invite {{value0}}: {{value1}}', { value0: email, value1: error }))
     }
 
     if (succeeded.length > 0) {

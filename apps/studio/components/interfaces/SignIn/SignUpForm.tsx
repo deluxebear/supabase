@@ -66,14 +66,14 @@ export const SignUpForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
   const { mutate: signup, isPending: isSigningUp } = useSignUpMutation({
     onSuccess: () => {
-      toast.success(`Signed up successfully!`)
+      toast.success($t('Signed up successfully!'))
       setIsSubmitted(true)
       onSuccess?.()
     },
     onError: (error) => {
       setCaptchaToken(null)
       captchaRef.current?.resetCaptcha()
-      const toastId = toast.error(`Failed to sign up: ${error.message}`)
+      const toastId = toast.error($t('Failed to sign up: {{value0}}', { value0: error.message }))
       trackFunnelError('signup', classifyApiError('signup', error), 'toast', toastId)
     },
   })

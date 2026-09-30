@@ -76,7 +76,8 @@ export const ProfileInformation = () => {
         primary_email,
       })
     },
-    onError: (error) => toast.error(`Failed to update profile: ${error.message}`),
+    onError: (error) =>
+      toast.error($t('Failed to update profile: {{value0}}', { value0: error.message })),
   })
 
   const onSubmit: SubmitHandler<z.infer<typeof FormSchema>> = async (data) => {

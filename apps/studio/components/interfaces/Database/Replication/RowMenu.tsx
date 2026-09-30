@@ -109,7 +109,9 @@ export const RowMenu = ({
         startPipeline({ projectRef, pipelineId: pipeline.id })
       )
     } catch (error) {
-      toast.error(`Failed to start pipeline: ${(error as ResponseError).message}`)
+      toast.error(
+        $t('Failed to start pipeline: {{value0}}', { value0: (error as ResponseError).message })
+      )
     }
   }
 
@@ -122,7 +124,9 @@ export const RowMenu = ({
         stopPipeline({ projectRef, pipelineId: pipeline.id })
       )
     } catch (error) {
-      toast.error(`Failed to stop pipeline: ${(error as ResponseError).message}`)
+      toast.error(
+        $t('Failed to stop pipeline: {{value0}}', { value0: (error as ResponseError).message })
+      )
     }
   }
 
@@ -135,7 +139,9 @@ export const RowMenu = ({
         restartPipeline({ projectRef, pipelineId: pipeline.id })
       )
     } catch (error) {
-      toast.error(`Failed to restart pipeline: ${(error as ResponseError).message}`)
+      toast.error(
+        $t('Failed to restart pipeline: {{value0}}', { value0: (error as ResponseError).message })
+      )
     }
   }
 

@@ -190,7 +190,9 @@ const TableNodeComponent = ({
                               })
                             } catch (err) {
                               toast.error(
-                                'Failed to copy schema: ' + ((err as Error).message || err),
+                                $t('Failed to copy schema: {{value0}}', {
+                                  value0: (err as Error).message || err,
+                                }),
                                 {
                                   id: toastId,
                                 }
@@ -214,7 +216,9 @@ const TableNodeComponent = ({
                               })
                             } catch (err) {
                               toast.error(
-                                'Failed to copy schema: ' + ((err as Error).message || err)
+                                $t('Failed to copy schema: {{value0}}', {
+                                  value0: (err as Error).message || err,
+                                })
                               )
                             }
                           }}

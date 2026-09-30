@@ -361,11 +361,15 @@ export const SidePanelEditor = ({
 
       await saveRow(value, isNewRecord, configuration, (error) => {
         if (error) {
-          toast.error(`Failed to save row: ${error?.message ?? 'Unknown error'}`)
+          toast.error(
+            $t('Failed to save row: {{value0}}', { value0: error?.message ?? $t('Unknown error') })
+          )
         }
       })
     } catch (error: any) {
-      toast.error(`Failed to save row: ${error?.message ?? 'Unknown error'}`)
+      toast.error(
+        $t('Failed to save row: {{value0}}', { value0: error?.message ?? $t('Unknown error') })
+      )
       Sentry.captureException(error, { tags: { workflow: 'save-foreign-row' } })
     }
   }
@@ -551,7 +555,12 @@ export const SidePanelEditor = ({
         table_name: table.name,
       })
     } catch (error: any) {
-      toast.error(`Failed to update realtime for ${table.name}: ${error.message}`)
+      toast.error(
+        $t('Failed to update realtime for {{value0}}: {{value1}}', {
+          value0: table.name,
+          value1: error.message,
+        })
+      )
     }
   }
 
@@ -571,7 +580,12 @@ export const SidePanelEditor = ({
     } catch (error) {
       const message = error instanceof Error ? error.message : undefined
       const toastDetail = message ? `: ${message}` : ''
-      toast.error(`Failed to update API access privileges for ${table.name}${toastDetail}`)
+      toast.error(
+        $t('Failed to update API access privileges for {{value0}}{{value1}}', {
+          value0: table.name,
+          value1: toastDetail,
+        })
+      )
     }
   }
 
@@ -620,7 +634,9 @@ export const SidePanelEditor = ({
             op: 'db.table.create',
           },
           async (createTableSpan) => {
-            toastId = toast.loading(`Creating new table: ${payload.name}...`)
+            toastId = toast.loading(
+              $t('Creating new table: {{value0}}...', { value0: payload.name })
+            )
 
             // Get existing table count from cache — try entity types first (always loaded
             // by the Table Editor sidebar), then fall back to tables query cache.
@@ -709,7 +725,9 @@ export const SidePanelEditor = ({
                 }
               )
 
-              toast.success(`Table ${table.name} is good to go!`, { id: toastId })
+              toast.success($t('Table {{value0}} is good to go!', { value0: table.name }), {
+                id: toastId,
+              })
 
               onTableCreated(table)
             } catch (error) {
@@ -724,7 +742,9 @@ export const SidePanelEditor = ({
         )
       } else if (action === 'duplicate' && !!selectedTable) {
         const tableToDuplicate = selectedTable
-        toastId = toast.loading(`Duplicating table: ${tableToDuplicate.name}...`)
+        toastId = toast.loading(
+          $t('Duplicating table: {{value0}}...', { value0: tableToDuplicate.name })
+        )
 
         const table = await duplicateTable(project?.ref!, project?.connectionString, payload, {
           isRLSEnabled,
@@ -755,12 +775,15 @@ export const SidePanelEditor = ({
         ])
 
         toast.success(
-          `Table ${tableToDuplicate.name} has been successfully duplicated into ${table.name}!`,
+          $t('Table {{value0}} has been successfully duplicated into {{value1}}!', {
+            value0: tableToDuplicate.name,
+            value1: table.name,
+          }),
           { id: toastId }
         )
         onTableCreated(table)
       } else if (action === 'update' && selectedTable) {
-        toastId = toast.loading(`Updating table: ${selectedTable.name}...`)
+        toastId = toast.loading($t('Updating table: {{value0}}...', { value0: selectedTable.name }))
 
         const { table, hasError } = await updateTable({
           projectRef: project?.ref!,
@@ -791,7 +814,10 @@ export const SidePanelEditor = ({
 
         if (hasError) {
           toast.warning(
-            `Table ${table.name} has been updated but there were some errors. Please check these errors separately.`
+            $t(
+              'Table {{value0}} has been updated but there were some errors. Please check these errors separately.',
+              { value0: table.name }
+            )
           )
         } else {
           if (ref && payload.name) {
@@ -799,7 +825,9 @@ export const SidePanelEditor = ({
             const tabId = createTabId(ENTITY_TYPE.TABLE, { id: selectedTable.id })
             tabsSnap.updateTab(tabId, { label: payload.name })
           }
-          toast.success(`Successfully updated ${table.name}!`, { id: toastId })
+          toast.success($t('Successfully updated {{value0}}!', { value0: table.name }), {
+            id: toastId,
+          })
         }
       }
     } catch (error: any) {
@@ -822,7 +850,10 @@ export const SidePanelEditor = ({
 
     const { file, rowCount, selectedHeaders, emptyStringAsNullHeaders, resolve } = importContent
     const toastId = toast.loading(
-      `Adding ${rowCount.toLocaleString()} rows to ${selectedTable.name}`
+      $t('Adding {{value0}} rows to {{value1}}', {
+        value0: rowCount.toLocaleString(),
+        value1: selectedTable.name,
+      })
     )
 
     if (file && rowCount > 0) {
@@ -838,7 +869,10 @@ export const SidePanelEditor = ({
           toast.loading(
             <SonnerProgress
               progress={progress}
-              message={`Adding ${rowCount.toLocaleString()} rows to ${selectedTable.name}`}
+              message={$t('Adding {{value0}} rows to {{value1}}', {
+                value0: rowCount.toLocaleString(),
+                value1: selectedTable.name,
+              })}
             />,
             { id: toastId }
           )
@@ -848,7 +882,7 @@ export const SidePanelEditor = ({
         const message = isObjectContainingKeys(res.error, ['message'])
           ? res.error.message
           : 'An unknown error occurred during import'
-        toast.error(`Failed to import data: ${message}`, { id: toastId })
+        toast.error($t('Failed to import data: {{value0}}', { value0: message }), { id: toastId })
         return resolve()
       }
     } else {
@@ -864,9 +898,10 @@ export const SidePanelEditor = ({
           toast.loading(
             <SonnerProgress
               progress={progress}
-              message={`Adding ${importContent.rows.length.toLocaleString()} rows to ${
-                selectedTable.name
-              }`}
+              message={$t('Adding {{value0}} rows to {{value1}}', {
+                value0: importContent.rows.length.toLocaleString(),
+                value1: selectedTable.name,
+              })}
             />,
             { id: toastId }
           )
@@ -876,7 +911,7 @@ export const SidePanelEditor = ({
         const message = isObjectContainingKeys(res.error, ['message'])
           ? res.error.message
           : 'An unknown error occurred during import'
-        toast.error(`Failed to import data: ${message}`, { id: toastId })
+        toast.error($t('Failed to import data: {{value0}}', { value0: message }), { id: toastId })
         return resolve()
       }
     }
@@ -884,9 +919,15 @@ export const SidePanelEditor = ({
     await queryClient.invalidateQueries({
       queryKey: tableRowKeys.tableRowsAndCount(project?.ref, selectedTable?.id),
     })
-    toast.success(`Successfully imported ${rowCount} rows of data into ${selectedTable.name}`, {
-      id: toastId,
-    })
+    toast.success(
+      $t('Successfully imported {{value0}} rows of data into {{value1}}', {
+        value0: rowCount,
+        value1: selectedTable.name,
+      }),
+      {
+        id: toastId,
+      }
+    )
     resolve()
     snap.closeSidePanel()
   }

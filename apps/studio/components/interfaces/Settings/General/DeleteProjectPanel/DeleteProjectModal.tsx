@@ -83,7 +83,7 @@ export const DeleteProjectModal = ({
         }
       }
 
-      toast.success(`Successfully deleted ${project?.name}`)
+      toast.success($t('Successfully deleted {{value0}}', { value0: project?.name }))
 
       // Only redirect if still viewing the deleted project
       if (router.asPath.startsWith(`/project/${projectRef}`)) {

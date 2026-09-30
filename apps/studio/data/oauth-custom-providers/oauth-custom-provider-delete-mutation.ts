@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { oAuthCustomProvidersKeys } from './keys'
 import { handleError } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import { createProjectSupabaseClient } from '@/lib/project-supabase-client'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
@@ -59,7 +60,9 @@ export const useOAuthCustomProviderDeleteMutation = ({
     },
     onError: async (data, variables, context) => {
       if (onError === undefined) {
-        toast.error(`Failed to delete custom OAuth provider: ${data.message}`)
+        toast.error(
+          $t('Failed to delete custom OAuth provider: {{value0}}', { value0: data.message })
+        )
       } else {
         onError(data, variables, context)
       }

@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { auth } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 import { UseCustomMutationOptions } from '@/types'
 
 const mfaEnroll = async (params: MFAEnrollParams) => {
@@ -30,7 +31,7 @@ export const useMfaEnrollMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to enroll factor: ${data.message}`)
+        toast.error($t('Failed to enroll factor: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

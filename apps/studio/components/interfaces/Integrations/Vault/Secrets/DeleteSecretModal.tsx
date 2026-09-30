@@ -30,11 +30,11 @@ export const DeleteSecretModal = () => {
 
   const { mutateAsync: deleteSecret, isSuccess: isSuccessDelete } = useVaultSecretDeleteMutation({
     onSuccess: () => {
-      toast.success(`Successfully deleted secret ${selectedSecret?.name}`)
+      toast.success($t('Successfully deleted secret {{value0}}', { value0: selectedSecret?.name }))
       setSelectedSecretToDelete(null)
     },
     onError: (error) => {
-      toast.error(`Failed to delete secret: ${error.message}`)
+      toast.error($t('Failed to delete secret: {{value0}}', { value0: error.message }))
     },
   })
 

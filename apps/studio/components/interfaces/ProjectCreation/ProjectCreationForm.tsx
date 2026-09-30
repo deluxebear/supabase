@@ -390,7 +390,9 @@ export const ProjectCreationForm = ({
         trackFunnelError('project_creation', classifyApiError('project_creation', error), 'form')
         return
       }
-      const toastId = toast.error(`Failed to create new project: ${error.message}`)
+      const toastId = toast.error(
+        $t('Failed to create new project: {{value0}}', { value0: error.message })
+      )
       trackFunnelError(
         'project_creation',
         classifyApiError('project_creation', error),
@@ -452,8 +454,9 @@ export const ProjectCreationForm = ({
     const customPostgresVersion = highAvailability ? undefined : postgresVersion
 
     if (customPostgresVersion && !customPostgresVersion.match(/1[2-9]\..*/)) {
-      const message =
+      const message = $t(
         'Invalid Postgres version, should start with a number between 12-19, a dot and additional characters, i.e. 15.2 or 15.2.0-3'
+      )
       if (isVercelIntegrationFlow) {
         setProjectCreationError(message)
         return
@@ -462,7 +465,7 @@ export const ProjectCreationForm = ({
     }
 
     if (useOrioleDb && !availableOrioleVersion) {
-      const message = 'No available OrioleDB image found, only Postgres is available'
+      const message = $t('No available OrioleDB image found, only Postgres is available')
       if (isVercelIntegrationFlow) {
         setProjectCreationError(message)
         trackFunnelError(
@@ -492,7 +495,9 @@ export const ProjectCreationForm = ({
 
     if (highAvailability && highAvailabilityRegionCode !== undefined && !selectedRegion) {
       return toast.error(
-        `High Availability projects are not available in the required region (${highAvailabilityRegionCode})`
+        $t('High Availability projects are not available in the required region ({{value0}})', {
+          value0: highAvailabilityRegionCode,
+        })
       )
     }
 
@@ -525,7 +530,7 @@ export const ProjectCreationForm = ({
 
     let dbSql = enableRlsEventTrigger ? AUTO_ENABLE_RLS_EVENT_TRIGGER_SQL : undefined
     if (isVercelIntegrationFlow && shouldRunMigrations && !!externalId) {
-      const id = toast.loading(`Fetching initial migrations from GitHub repository...`)
+      const id = toast.loading($t('Fetching initial migrations from GitHub repository...'))
 
       try {
         const migrationSql = await getInitialMigrationSQLFromGitHubRepo(externalId)
@@ -536,13 +541,15 @@ export const ProjectCreationForm = ({
           dbSql = dbSql
             ? joinSqlFragments([trimSafeSqlFragment(dbSql), safeMigrationSql], ';\n')
             : safeMigrationSql
-          toast.loading(`Migrations fetched! Creating project...`, { id })
+          toast.loading($t('Migrations fetched! Creating project...'), { id })
         } else {
           toast.loading($t('No migrations found, creating project...'))
         }
       } catch (error) {
         toast.loading(
-          `Failed to fetch migrations: ${error instanceof Error ? error.message : ''}. Proceeding to create project...`,
+          $t('Failed to fetch migrations: {{value0}}. Proceeding to create project...', {
+            value0: error instanceof Error ? error.message : '',
+          }),
           { id }
         )
       }

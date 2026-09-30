@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { jwtSigningKeysKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 interface LegacyJWTSigningKeyCreateVariables {
@@ -56,7 +57,9 @@ export const useLegacyJWTSigningKeyCreateMutation = ({
     async onError(data, variables, context) {
       if (onError === undefined) {
         toast.error(
-          `Failed to enable use of JWT signing keys with legacy JWT secret: ${data.message}`
+          $t('Failed to enable use of JWT signing keys with legacy JWT secret: {{value0}}', {
+            value0: data.message,
+          })
         )
       } else {
         onError(data, variables, context)

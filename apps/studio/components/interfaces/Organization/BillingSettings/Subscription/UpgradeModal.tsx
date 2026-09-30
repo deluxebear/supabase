@@ -42,7 +42,7 @@ const UpgradeSurveyModal = ({
 
   const { mutate: sendUpgradeSurvey, isPending: isSubmitting } = useSendUpgradeFeedbackMutation({
     onError: (error) => {
-      toast.error(`Failed to submit survey: ${error.message}`)
+      toast.error($t('Failed to submit survey: {{value0}}', { value0: error.message }))
     },
     onSuccess: () => {
       onClose(true)

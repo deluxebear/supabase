@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { configKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type UpdateDiskAutoscaleConfigVariables = {
@@ -62,7 +63,9 @@ export const useUpdateDiskAutoscaleConfigMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update disk autoscale config: ${data.message}`)
+        toast.error(
+          $t('Failed to update disk autoscale config: {{value0}}', { value0: data.message })
+        )
       } else {
         onError(data, variables, context)
       }

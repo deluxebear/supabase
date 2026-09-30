@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { organizationKeys } from './keys'
 import { handleError, patch } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type OrganizationMfaToggleVariables = {
@@ -49,7 +50,7 @@ export const useOrganizationMfaToggleMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update MFA enforcement: ${data.message}`)
+        toast.error($t('Failed to update MFA enforcement: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

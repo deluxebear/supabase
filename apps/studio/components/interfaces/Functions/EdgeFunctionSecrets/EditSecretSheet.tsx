@@ -57,7 +57,9 @@ export function EditSecretSheet({ secret, visible, onClose }: EditSecretSheetPro
 
   const { mutate: updateSecret, isPending: isUpdating } = useSecretsCreateMutation({
     onSuccess: (_, variables) => {
-      toast.success(`Successfully updated secret "${variables.secrets[0].name}"`)
+      toast.success(
+        $t('Successfully updated secret "{{value0}}"', { value0: variables.secrets[0].name })
+      )
       onClose()
     },
   })

@@ -30,7 +30,9 @@ const DeletePaymentMethodModal = ({
   const { mutateAsync: deletePayment } = useOrganizationPaymentMethodDeleteMutation({
     onSuccess: () => {
       toast.success(
-        `Successfully removed payment method ending with ${selectedPaymentMethod?.card?.last4}`
+        $t('Successfully removed payment method ending with {{value0}}', {
+          value0: selectedPaymentMethod?.card?.last4,
+        })
       )
       onClose()
     },

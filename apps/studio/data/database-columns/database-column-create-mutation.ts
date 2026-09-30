@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { executeSql } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type CreateColumnBody = {
@@ -76,7 +77,7 @@ export const useDatabaseColumnCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create database column: ${data.message}`)
+        toast.error($t('Failed to create database column: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

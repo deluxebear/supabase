@@ -74,7 +74,7 @@ export const CreateNewProjectDialog = ({
 
   const { mutate: triggerClone, isPending: cloneMutationLoading } = useProjectCloneMutation({
     onError: (error) => {
-      toast.error(`Failed to restore to new project: ${error.message}`)
+      toast.error($t('Failed to restore to new project: {{value0}}', { value0: error.message }))
     },
     onSuccess: () => {
       toast.success($t('Restoration process started'))

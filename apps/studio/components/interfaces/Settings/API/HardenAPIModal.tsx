@@ -51,7 +51,7 @@ export const HardenAPIModal = ({ visible, onClose }: HardenAPIModalProps) => {
   const { mutate: createAndExposeAPISchema, isPending: isCreatingAPISchema } =
     useCreateAndExposeAPISchemaMutation({
       onSuccess: () => {
-        toast.success(`Successfully created api schema and exposed via Data API`)
+        toast.success($t('Successfully created api schema and exposed via Data API'))
       },
     })
 

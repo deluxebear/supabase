@@ -50,7 +50,7 @@ export const UpdateCustomReportModal = ({
       onCancel()
     },
     onError: (error) => {
-      toast.error(`Failed to update report: ${error.message}`)
+      toast.error($t('Failed to update report: {{value0}}', { value0: error.message }))
     },
   })
 

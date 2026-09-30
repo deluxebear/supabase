@@ -184,7 +184,7 @@ export const CreateBranchModal = () => {
 
   const { mutate: createBranch, isPending: isCreatingBranch } = useBranchCreateMutation({
     onSuccess: async (data) => {
-      toast.success(`Successfully created preview branch "${data.name}"`)
+      toast.success($t('Successfully created preview branch "{{value0}}"', { value0: data.name }))
       if (projectRef) {
         await queryClient.invalidateQueries({ queryKey: projectKeys.detail(projectRef) })
       }
@@ -197,7 +197,7 @@ export const CreateBranchModal = () => {
       router.push(`/project/${data.project_ref}`)
     },
     onError: (error) => {
-      toast.error(`Failed to create branch: ${error.message}`)
+      toast.error($t('Failed to create branch: {{value0}}', { value0: error.message }))
     },
   })
 

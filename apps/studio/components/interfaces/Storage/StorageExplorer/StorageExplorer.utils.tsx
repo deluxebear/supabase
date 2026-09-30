@@ -123,7 +123,10 @@ export function sanitizeNameForDuplicateInColumn(
       return fileExt ? `${updatedFileName}.${fileExt}` : updatedFileName
     } else {
       toast.error(
-        `The name ${name} already exists in the current directory. Please use a different name.`
+        $t(
+          'The name {{value0}} already exists in the current directory. Please use a different name.',
+          { value0: name }
+        )
       )
       return null
     }
@@ -173,7 +176,7 @@ export const copyStoragePath = (
 ) => {
   // Toast from the callback: the write is async and reports its own failures.
   copyToClipboard(getStoragePathForItem(openedFolders, item), () =>
-    toast.success(`Copied relative path for "${item.name}"`)
+    toast.success($t('Copied relative path for "{{value0}}"', { value0: item.name }))
   )
 }
 
@@ -184,7 +187,7 @@ export const copyStorageExplorerUrl = (params: {
   bucketId: string
 }) => {
   copyToClipboard(getStorageExplorerUrlForItem(params), () =>
-    toast.success(`Copied URL for "${params.item.name}"`)
+    toast.success($t('Copied URL for "{{value0}}"', { value0: params.item.name }))
   )
 }
 

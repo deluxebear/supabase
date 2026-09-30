@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { scopedAccessTokenKeys } from './keys'
 import { del, handleError } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 export type ScopedAccessTokenDeleteVariables = {
@@ -40,7 +41,7 @@ export const useScopedAccessTokenDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete access token: ${data.message}`)
+        toast.error($t('Failed to delete access token: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

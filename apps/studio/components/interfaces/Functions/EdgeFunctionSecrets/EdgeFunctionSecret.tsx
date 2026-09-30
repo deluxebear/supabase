@@ -38,7 +38,7 @@ const EdgeFunctionSecret = ({ secret, onSelectEdit, onSelectDelete }: EdgeFuncti
           <TooltipTrigger
             onClick={() => {
               copyToClipboard(secret.name)
-              toast.success(`Copied ${secret.name}`)
+              toast.success($t('Copied {{value0}}', { value0: secret.name }))
             }}
           >
             <p className="truncate py-1">

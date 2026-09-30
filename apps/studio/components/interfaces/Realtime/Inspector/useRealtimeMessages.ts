@@ -190,9 +190,11 @@ export const useRealtimeMessages = (
         }
       } else if (status === 'CHANNEL_ERROR') {
         if (err?.message) {
-          toast.error(`Failed to connect with the following error: ${err.message}`)
+          toast.error(
+            $t('Failed to connect with the following error: {{value0}}', { value0: err.message })
+          )
         } else {
-          toast.error(`Failed to connect. Please check your RLS policies and try again.`)
+          toast.error($t('Failed to connect. Please check your RLS policies and try again.'))
         }
 
         newChannel.unsubscribe()

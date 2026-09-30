@@ -9,6 +9,7 @@ import {
 } from '@/components/interfaces/Integrations/Queues/Queues.utils'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { invalidateTableMetadata } from '@/data/tables/table-metadata-invalidation'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type DatabaseQueueCreateVariables = {
@@ -88,7 +89,7 @@ export const useDatabaseQueueCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create database queue: ${data.message}`)
+        toast.error($t('Failed to create database queue: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

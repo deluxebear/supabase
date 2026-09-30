@@ -59,7 +59,7 @@ export const useNewQuery = () => {
         return snippet.id
       }
     } catch (error: any) {
-      toast.error(`Failed to create new query: ${error.message}`)
+      toast.error($t('Failed to create new query: {{value0}}', { value0: error.message }))
       return undefined
     }
   }

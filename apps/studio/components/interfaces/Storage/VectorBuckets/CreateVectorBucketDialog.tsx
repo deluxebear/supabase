@@ -123,7 +123,7 @@ export const CreateVectorBucketDialog = ({
     try {
       await createVectorBucket({ projectRef: ref, bucketName: values.name })
     } catch (error: any) {
-      toast.error(`Failed to create vector bucket: ${error.message}`)
+      toast.error($t('Failed to create vector bucket: {{value0}}', { value0: error.message }))
       setIsLoading(false)
       return
     }
@@ -142,7 +142,7 @@ export const CreateVectorBucketDialog = ({
       }
 
       await createS3VectorsWrapper({ bucketName: values.name })
-      toast.success(`Successfully created vector bucket ${values.name}`)
+      toast.success($t('Successfully created vector bucket {{value0}}', { value0: values.name }))
     } catch (error: any) {
       toast.success(
         <div>

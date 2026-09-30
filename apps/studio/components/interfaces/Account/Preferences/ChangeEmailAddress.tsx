@@ -62,12 +62,15 @@ export const ChangeEmailAddressForm = ({ onClose }: { onClose: () => void }) => 
   const { mutate: updateEmail, isPending } = useEmailUpdateMutation({
     onSuccess: (_, vars) => {
       toast.success(
-        `A confirmation email has been sent to ${vars.email}. Please confirm the change within 10 minutes.`
+        $t(
+          'A confirmation email has been sent to {{value0}}. Please confirm the change within 10 minutes.',
+          { value0: vars.email }
+        )
       )
       onClose()
     },
     onError: (error) => {
-      toast.error(`Failed to update email: ${error.message}`)
+      toast.error($t('Failed to update email: {{value0}}', { value0: error.message }))
       setCaptchaToken(null)
       captchaRef.current?.resetCaptcha()
     },

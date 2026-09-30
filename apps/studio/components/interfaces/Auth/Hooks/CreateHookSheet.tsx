@@ -214,7 +214,12 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
 
   const { mutate: updateAuthHooks, isPending: isUpdatingAuthHooks } = useAuthHooksUpdateMutation({
     onSuccess: () => {
-      toast.success(`Successfully ${isCreating ? 'created' : 'updated'} ${hookType}.`)
+      toast.success(
+        $t('Successfully {{value0}} {{value1}}.', {
+          value0: isCreating ? $t('created') : $t('updated'),
+          value1: hookType,
+        })
+      )
       if (statements.length > 0) {
         executeSql({
           projectRef,
@@ -225,7 +230,7 @@ revoke execute on function ${ident(schema)}.${ident(functionName)} from authenti
       onClose()
     },
     onError: (error) => {
-      toast.error(`Failed to create hook: ${error.message}`)
+      toast.error($t('Failed to create hook: {{value0}}', { value0: error.message }))
     },
   })
 

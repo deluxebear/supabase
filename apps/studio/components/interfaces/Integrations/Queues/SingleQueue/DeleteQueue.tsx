@@ -18,7 +18,7 @@ export const DeleteQueue = ({ queueName, visible, onClose }: DeleteQueueProps) =
 
   const { mutate: deleteDatabaseQueue, isPending } = useDatabaseQueueDeleteMutation({
     onSuccess: () => {
-      toast.success(`Successfully removed queue ${queueName}`)
+      toast.success($t('Successfully removed queue {{value0}}', { value0: queueName }))
       router.push(`/project/${project?.ref}/integrations/queues/queues`)
       onClose()
     },

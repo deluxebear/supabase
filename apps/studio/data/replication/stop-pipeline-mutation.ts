@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { replicationKeys } from './keys'
 import { waitForPipelineStopped } from './pipeline-status-query'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type StopPipelineParams = {
@@ -66,7 +67,7 @@ export const useStopPipelineMutation = ({
       )
 
       if (onError === undefined) {
-        toast.error(`Failed to stop pipeline: ${data.message}`)
+        toast.error($t('Failed to stop pipeline: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

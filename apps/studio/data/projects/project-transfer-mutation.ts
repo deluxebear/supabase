@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { projectKeys } from './keys'
 import { useInvalidateProjectsInfiniteQuery } from './org-projects-infinite-query'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type ProjectTransferVariables = {
@@ -58,7 +59,7 @@ export const useProjectTransferMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to transfer project: ${data.message}`)
+        toast.error($t('Failed to transfer project: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

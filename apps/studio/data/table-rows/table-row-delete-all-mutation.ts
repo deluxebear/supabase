@@ -7,6 +7,7 @@ import { formatFilterValue } from './utils'
 import type { Filter } from '@/components/grid/types'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { Entity } from '@/data/table-editor/table-editor-types'
+import { t as $t } from '@/lib/i18n'
 import { RoleImpersonationState, wrapWithRoleImpersonation } from '@/lib/role-impersonation'
 import { isRoleImpersonationEnabled } from '@/state/role-impersonation-state'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
@@ -83,7 +84,7 @@ export const useTableRowDeleteAllMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete all table rows: ${data.message}`)
+        toast.error($t('Failed to delete all table rows: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

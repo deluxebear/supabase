@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { profileKeys } from './keys'
 import { auth } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 
 export type SetPasswordVariables = {
   password: string
@@ -41,7 +42,7 @@ export const useSetPasswordMutation = ({
     },
     async onError(error, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to add password: ${error.message}`)
+        toast.error($t('Failed to add password: {{value0}}', { value0: error.message }))
       } else {
         onError(error, variables, context)
       }

@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { databaseIndexesKeys } from './keys'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type DatabaseIndexDeleteVariables = {
@@ -52,7 +53,7 @@ export const useDatabaseIndexDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete database index: ${data.message}`)
+        toast.error($t('Failed to delete database index: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

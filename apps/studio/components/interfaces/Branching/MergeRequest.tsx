@@ -126,7 +126,7 @@ export const MergeActions = ({
 
   const { mutate: updateBranch, isPending: isUpdating } = useBranchUpdateMutation({
     onError: (error) => {
-      toast.error(`Failed to update branch: ${error.message}`)
+      toast.error($t('Failed to update branch: {{value0}}', { value0: error.message }))
     },
   })
 

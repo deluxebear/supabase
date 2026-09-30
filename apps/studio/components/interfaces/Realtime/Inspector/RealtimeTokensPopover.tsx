@@ -9,6 +9,7 @@ import { getTemporaryAPIKey } from '@/data/api-keys/temp-api-keys-query'
 import { useProjectPostgrestConfigQuery } from '@/data/config/project-postgrest-config-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { getRoleImpersonationJWT } from '@/lib/role-impersonation'
 import { useTrack } from '@/lib/telemetry/track'
 import { useRoleImpersonationStateSnapshot } from '@/state/role-impersonation-state'
@@ -66,7 +67,9 @@ export const RealtimeTokensPopover = ({ config, onChangeConfig }: RealtimeTokens
         token = publishableKey?.api_key ?? anonKey?.api_key
         await getRoleImpersonationJWT(config.projectRef, jwtSecret, snap.role)
           .then((b) => (bearer = b))
-          .catch((err) => toast.error(`Failed to get JWT for role: ${err.message}`))
+          .catch((err) =>
+            toast.error($t('Failed to get JWT for role: {{value0}}', { value0: err.message }))
+          )
       } else {
         try {
           const data = await getTemporaryAPIKey({ projectRef: config.projectRef, expiry: 3600 })

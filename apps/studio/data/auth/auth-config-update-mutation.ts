@@ -80,7 +80,7 @@ export const useAuthConfigUpdateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update auth configuration: ${data.message}`)
+        toast.error($t('Failed to update auth configuration: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

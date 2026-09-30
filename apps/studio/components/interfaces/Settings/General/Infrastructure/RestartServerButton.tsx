@@ -87,7 +87,9 @@ export const RestartServerButton = () => {
   }
 
   const onRestartFailed = (error: ResponseError, type: string) => {
-    toast.error(`Unable to restart ${type}: ${error.message}`)
+    toast.error(
+      $t('Unable to restart {{value0}}: {{value1}}', { value0: type, value1: error.message })
+    )
     setServiceToRestart(undefined)
   }
 

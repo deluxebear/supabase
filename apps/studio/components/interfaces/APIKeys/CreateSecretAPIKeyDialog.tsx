@@ -77,7 +77,7 @@ export const CreateSecretAPIKeyDialog = () => {
       },
       {
         onSuccess: (data) => {
-          toast.success(`Your secret API key ${data.prefix}... is ready.`)
+          toast.success($t('Your secret API key {{value0}}... is ready.', { value0: data.prefix }))
           form.reset(defaultValues)
           onOpenChange(false)
         },

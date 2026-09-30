@@ -48,4 +48,11 @@ describe('i18n core', () => {
   it('defaults to en when nothing is stored', () => {
     expect(getInitialLocale()).toBe('en')
   })
+  it('localizes API key notifications while preserving their prefix in both languages', async () => {
+    const key = 'Your secret API key {{value0}}... is ready.'
+    const vars = { value0: 'sb_secret_example' }
+    expect(t(key, vars)).toBe('Your secret API key sb_secret_example... is ready.')
+    await applyLocale('zh-CN')
+    expect(t(key, vars)).toBe('您的私密 API 密钥 sb_secret_example... 已就绪。')
+  })
 })

@@ -86,7 +86,7 @@ export const EnableIndexAdvisorDialog = ({
       toast.success($t('Successfully enabled Index Advisor!'))
       setOpen(false)
     } catch (error: any) {
-      toast.error(`Failed to enable Index Advisor: ${error.message}`)
+      toast.error($t('Failed to enable Index Advisor: {{value0}}', { value0: error.message }))
       throw error
     }
   }

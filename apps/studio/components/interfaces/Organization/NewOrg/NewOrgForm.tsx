@@ -286,7 +286,7 @@ export const NewOrgForm = ({
     } else {
       // If the payment intent is not successful, we reset the payment method and show an error
       const toastId = toast.error(
-        `Could not confirm payment. Please try again or use a different card.`,
+        $t('Could not confirm payment. Please try again or use a different card.'),
         { duration: 10_000 }
       )
       trackFunnelError(

@@ -6,6 +6,7 @@ import { configKeys } from './keys'
 import { fetchGet, fetchPost } from '@/data/fetchers'
 import { API_URL } from '@/lib/constants'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
+import { t as $t } from '@/lib/i18n'
 import { ResponseError } from '@/types'
 
 const statusSchema = z.object({
@@ -67,6 +68,7 @@ export const useJWTConfigurationMutation = () => {
         client.invalidateQueries({ queryKey: configKeys.postgrest(variables.projectRef) }),
       ])
     },
-    onError: (error: Error) => toast.error(`Failed to apply JWT configuration: ${error.message}`),
+    onError: (error: Error) =>
+      toast.error($t('Failed to apply JWT configuration: {{value0}}', { value0: error.message })),
   })
 }

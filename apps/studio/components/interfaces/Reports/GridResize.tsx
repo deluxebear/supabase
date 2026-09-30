@@ -1,5 +1,7 @@
 import RGL, { WidthProvider } from 'react-grid-layout'
 
+import { t as $t } from '@/lib/i18n'
+
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 
@@ -90,7 +92,7 @@ export const GridResize = ({
     const { label, sql, config } = queryData
     if (!label || !sql) return console.error('SQL and Label required')
 
-    const toastId = toast.loading(`Creating new query: ${label}`)
+    const toastId = toast.loading($t('Creating new query: {{value0}}', { value0: label }))
 
     const payload = createSqlSnippetSkeletonV2({
       name: label,
@@ -123,7 +125,9 @@ export const GridResize = ({
       { projectRef: ref, payload },
       {
         onSuccess: () => {
-          toast.success(`Successfully created new query: ${label}`, { id: toastId })
+          toast.success($t('Successfully created new query: {{value0}}', { value0: label }), {
+            id: toastId,
+          })
           const finalLayout = updatedLayout.map((x) => {
             if (x.id === payload.id) {
               return { ...x, attribute: `snippet_${payload.id}` }

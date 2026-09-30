@@ -35,7 +35,7 @@ export const DeleteVectorBucketModal = ({
 
   const { mutateAsync: deleteBucket, isPending: isDeletingBucket } = useVectorBucketDeleteMutation({
     onSuccess: async () => {
-      toast.success(`Bucket "${bucketName}" deleted successfully`)
+      toast.success($t('Bucket "{{value0}}" deleted successfully', { value0: bucketName }))
       if (vectorBucketWrapper) {
         deleteFDW({
           projectRef: project?.ref,
@@ -74,7 +74,9 @@ export const DeleteVectorBucketModal = ({
       await deleteBucket({ projectRef: project?.ref, bucketName })
     } catch (error) {
       toast.error(
-        `Failed to delete bucket: ${error instanceof Error ? error.message : 'Unknown error'}`
+        $t('Failed to delete bucket: {{value0}}', {
+          value0: error instanceof Error ? error.message : $t('Unknown error'),
+        })
       )
     } finally {
       setIsDeletingIndexes(false)

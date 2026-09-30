@@ -117,7 +117,7 @@ const PaymentMethodSelection = forwardRef(function PaymentMethodSelection(
         setSetupIntent(intent)
       },
       onError: (error) => {
-        toast.error(`Failed to setup intent: ${error.message}`)
+        toast.error($t('Failed to setup intent: {{value0}}', { value0: error.message }))
       },
     })
 
@@ -210,8 +210,8 @@ const PaymentMethodSelection = forwardRef(function PaymentMethodSelection(
     if (isTaxIdError || isCustomerTaxIdLoading) {
       toast.error(
         isTaxIdError
-          ? 'Unable to load current tax ID. Please try again.'
-          : 'Tax ID is still loading. Please wait and try again.'
+          ? $t('Unable to load current tax ID. Please try again.')
+          : $t('Tax ID is still loading. Please wait and try again.')
       )
       return false
     }
@@ -229,7 +229,7 @@ const PaymentMethodSelection = forwardRef(function PaymentMethodSelection(
       })
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Failed to validate billing profile'
+        error instanceof Error ? error.message : $t('Failed to validate billing profile')
       if (errorMessage.includes('The tax ID type does not match the billing address country')) {
         toast.error(
           <div>

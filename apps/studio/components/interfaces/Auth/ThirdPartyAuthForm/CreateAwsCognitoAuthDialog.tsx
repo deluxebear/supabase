@@ -56,7 +56,7 @@ export const CreateAwsCognitoAuthIntegrationDialog = ({
   const { ref: projectRef } = useParams()
   const { mutate: createAuthIntegration, isPending } = useCreateThirdPartyAuthIntegrationMutation({
     onSuccess: () => {
-      toast.success(`Successfully created a new Amazon Cognito Auth integration.`)
+      toast.success($t('Successfully created a new Amazon Cognito Auth integration.'))
       onClose()
     },
   })

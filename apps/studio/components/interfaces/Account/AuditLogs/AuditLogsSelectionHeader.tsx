@@ -6,6 +6,7 @@ import { copyToClipboard } from 'ui'
 
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import type { AuditLog } from '@/data/organizations/organization-audit-logs-query'
+import { t as $t } from '@/lib/i18n'
 
 interface AuditLogsSelectionHeaderProps {
   table: Table<AuditLog>
@@ -18,7 +19,12 @@ export const AuditLogsSelectionHeader = ({ table }: AuditLogsSelectionHeaderProp
   const handleCopy = () => {
     const text = JSON.stringify(selectedRows, null, 2)
     copyToClipboard(text, () => {
-      toast.success(`Copied ${selectedRows.length} log${selectedRows.length !== 1 ? 's' : ''}`)
+      toast.success(
+        $t('Copied {{value0}} log{{value1}}', {
+          value0: selectedRows.length,
+          value1: selectedRows.length !== 1 ? $t('s') : '',
+        })
+      )
     })
   }
 

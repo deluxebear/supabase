@@ -11,6 +11,7 @@ import { ViewAppSheetInfo } from './ViewAppSheetInfo'
 import { ViewAppSheetPermissions } from './ViewAppSheetPermissions'
 import { usePlatformAppDeleteMutation } from '@/data/platform-apps/platform-app-delete-mutation'
 import { usePlatformAppQuery } from '@/data/platform-apps/platform-app-query'
+import { t as $t } from '@/lib/i18n'
 
 interface ViewAppSheetProps {
   app: PrivateApp | null
@@ -32,7 +33,7 @@ export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetP
 
   const { mutate: deleteApp, isPending: isDeleting } = usePlatformAppDeleteMutation({
     onSuccess: (_, vars) => {
-      toast.success(`Deleted "${app?.name}"`)
+      toast.success($t('Deleted "{{value0}}"', { value0: app?.name }))
       removeInstallationsByAppId(vars.appId)
       setShowDeleteModal(false)
       onClose()

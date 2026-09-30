@@ -35,7 +35,7 @@ export const DeleteBucketModal = ({ visible, bucket, onClose }: DeleteBucketModa
       // Close the modal and navigate away as soon as the bucket itself is deleted, so
       // policy cleanup below (which can be slow) doesn't hold the loading state or block
       // the success feedback.
-      toast.success(`Successfully deleted bucket ${bucket.id}`)
+      toast.success($t('Successfully deleted bucket {{value0}}', { value0: bucket.id }))
       onClose()
       if (bucketId) router.push(`/project/${projectRef}/storage/files`)
 
@@ -63,7 +63,10 @@ export const DeleteBucketModal = ({ visible, bucket, onClose }: DeleteBucketModa
         )
       } catch (error) {
         toast.success(
-          `Successfully deleted bucket ${bucket.id}. However, there was a problem deleting the policies tied to the bucket. Please review them in the storage policies section`
+          $t(
+            'Successfully deleted bucket {{value0}}. However, there was a problem deleting the policies tied to the bucket. Please review them in the storage policies section',
+            { value0: bucket.id }
+          )
         )
       }
     },

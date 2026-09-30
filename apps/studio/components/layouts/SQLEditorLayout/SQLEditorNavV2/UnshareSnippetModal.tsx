@@ -24,7 +24,7 @@ export const UnshareSnippetModal = ({
 
   const { mutate: upsertContent } = useContentUpsertMutation({
     onError: (error) => {
-      toast.error(`Failed to update query: ${error.message}`)
+      toast.error($t('Failed to update query: {{value0}}', { value0: error.message }))
     },
   })
 

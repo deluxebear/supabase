@@ -39,7 +39,7 @@ export const SecurityQuestionnaire = () => {
       if (questionnaireLink?.fileUrl) window.open(questionnaireLink.fileUrl, '_blank')
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error occurred'
-      toast.error(`Failed to download Security Questionnaire: ${message}`)
+      toast.error($t('Failed to download Security Questionnaire: {{value0}}', { value0: message }))
     }
   }
 

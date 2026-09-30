@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { pollUntilBucketEmpty } from './bucket-util'
 import { storageKeys } from './keys'
 import { del, handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 type BucketDeleteVariables = {
@@ -59,7 +60,7 @@ export const useBucketDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete bucket: ${data.message}`)
+        toast.error($t('Failed to delete bucket: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

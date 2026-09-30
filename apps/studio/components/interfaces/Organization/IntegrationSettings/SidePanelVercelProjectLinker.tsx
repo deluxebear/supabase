@@ -14,6 +14,7 @@ import { useVercelProjectsQuery } from '@/data/integrations/integrations-vercel-
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { EMPTY_ARR } from '@/lib/void'
 import { useSidePanelsStateSnapshot } from '@/state/side-panels'
 import type { ResponseError } from '@/types'
@@ -77,14 +78,17 @@ export const SidePanelVercelProjectLinker = () => {
       async onSuccess({ env_sync_error: envSyncError }) {
         if (envSyncError) {
           toast.error(
-            `Failed to sync environment variables: ${envSyncError.message}. Please try re-syncing manually from settings.`
+            $t(
+              'Failed to sync environment variables: {{value0}}. Please try re-syncing manually from settings.',
+              { value0: envSyncError.message }
+            )
           )
         }
 
         sidePanelStateSnapshot.setVercelConnectionsOpen(false)
       },
       onError(error: ResponseError) {
-        toast.error(`Failed to create connection: ${error.message}`)
+        toast.error($t('Failed to create connection: {{value0}}', { value0: error.message }))
       },
     })
 

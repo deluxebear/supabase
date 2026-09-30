@@ -77,7 +77,7 @@ const VercelIntegrationConnectionForm = ({
       form.reset(form.getValues())
       setShowConfirmation(false)
       setPendingValues(null)
-      toast.success(`Updated Vercel connection`)
+      toast.success($t('Updated Vercel connection'))
     },
   })
 

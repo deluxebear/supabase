@@ -81,7 +81,9 @@ export const EdgeFunctionSecrets = () => {
     isSuccess: isSuccessDelete,
   } = useSecretsDeleteMutation({
     onSuccess: (_, variables) => {
-      toast.success(`Successfully deleted secret “${variables.secrets[0]}”`)
+      toast.success(
+        $t('Successfully deleted secret “{{value0}}”', { value0: variables.secrets[0] })
+      )
       setSelectedIdToDelete(null)
     },
   })
@@ -105,14 +107,14 @@ export const EdgeFunctionSecrets = () => {
 
   useEffect(() => {
     if (!!selectedIdToEdit && isSuccess && !selectedSecretToEdit) {
-      toast(`Secret ${selectedIdToEdit} cannot be found`)
+      toast($t('Secret {{value0}} cannot be found', { value0: selectedIdToEdit }))
       setSelectedIdToEdit(null)
     }
   }, [isSuccess, selectedIdToEdit, selectedSecretToEdit, setSelectedIdToEdit])
 
   useEffect(() => {
     if (!!selectedIdToDelete && isSuccess && !selectedSecretToDelete && !isSuccessDelete) {
-      toast(`Secret ${selectedIdToDelete} cannot be found`)
+      toast($t('Secret {{value0}} cannot be found', { value0: selectedIdToDelete }))
       setSelectedIdToDelete(null)
     }
   }, [

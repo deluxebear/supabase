@@ -181,12 +181,19 @@ export function JitDbAccessRuleSheet({
   const { mutate: grantUserAccess, isPending: isSubmitting } = useJitDbAccessGrantMutation({
     onSuccess: () => {
       toast.success(
-        mode === 'edit' ? 'Successfully updated user access' : 'Successfully granted user access'
+        mode === 'edit'
+          ? $t('Successfully updated user access')
+          : $t('Successfully granted user access')
       )
       onCloseSheet()
     },
     onError: (error) => {
-      toast.error(`Failed to ${mode === 'edit' ? 'update' : 'grant'} user access: ${error.message}`)
+      toast.error(
+        $t('Failed to {{value0}} user access: {{value1}}', {
+          value0: mode === 'edit' ? 'update' : 'grant',
+          value1: error.message,
+        })
+      )
     },
   })
 

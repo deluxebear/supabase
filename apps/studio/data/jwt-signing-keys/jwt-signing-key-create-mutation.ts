@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { JWTAlgorithm } from './jwt-signing-keys-query'
 import { jwtSigningKeysKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 interface JWTSigningKeyCreateVariables {
@@ -54,7 +55,9 @@ export const useJWTSigningKeyCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create new JWT signing key: ${data.message}`)
+        toast.error(
+          $t('Failed to create new JWT signing key: {{value0}}', { value0: data.message })
+        )
       } else {
         onError(data, variables, context)
       }

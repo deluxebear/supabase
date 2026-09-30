@@ -44,7 +44,7 @@ export const BanUserModal = ({ visible, user, onClose }: BanUserModalProps) => {
       const bannedUntil = dayjs()
         .add(Number(vars.banDuration), 'hours')
         .format('DD MMM YYYY HH:mm (ZZ)')
-      toast.success(`User banned successfully until ${bannedUntil}`)
+      toast.success($t('User banned successfully until {{value0}}', { value0: bannedUntil }))
       onClose()
     },
   })
@@ -68,7 +68,7 @@ export const BanUserModal = ({ visible, user, onClose }: BanUserModalProps) => {
   const onSubmit = (data: FormType) => {
     if (projectRef === undefined) return console.error('Project ref is required')
     if (user.id === undefined) {
-      return toast.error(`Failed to ban user: User ID not found`)
+      return toast.error($t('Failed to ban user: User ID not found'))
     }
 
     const durationHours = data.unit === 'hours' ? Number(data.value) : Number(data.value) * 24

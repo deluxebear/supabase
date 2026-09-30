@@ -49,7 +49,7 @@ export const IndexAdvisorDisabledState = () => {
       }
       toast.success($t('Successfully enabled index advisor!'))
     } catch (error: any) {
-      toast.error(`Failed to enable index advisor: ${error.message}`)
+      toast.error($t('Failed to enable index advisor: {{value0}}', { value0: error.message }))
     }
   }
 

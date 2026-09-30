@@ -77,7 +77,7 @@ export const FeedbackWidget = ({ onClose, onSwitchToIssueOptions }: FeedbackWidg
       setSending(false)
     },
     onError: (error) => {
-      toast.error(`Failed to submit feedback: ${error.message}`)
+      toast.error($t('Failed to submit feedback: {{value0}}', { value0: error.message }))
       setSending(false)
     },
   })

@@ -105,7 +105,7 @@ export const DestinationPanel = () => {
 
   useEffect(() => {
     if (edit !== null && invalidExistingDestination) {
-      toast(`Unable to find destination ID ${edit}`)
+      toast($t('Unable to find destination ID {{value0}}', { value0: edit }))
       setEdit(null)
     }
   }, [edit, invalidExistingDestination, setEdit])

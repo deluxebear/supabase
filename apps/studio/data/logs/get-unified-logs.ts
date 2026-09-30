@@ -11,6 +11,7 @@ import { getUnifiedLogsQuery as getUnifiedLogsQueryBq } from '@/components/inter
 import { getUnifiedLogsQuery as buildPgQuery } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.queries.pg'
 import { QuerySearchParamsType } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.types'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type getUnifiedLogsVariables = {
@@ -73,7 +74,7 @@ export const useGetUnifiedLogsMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to retrieve logs: ${data.message}`)
+        toast.error($t('Failed to retrieve logs: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

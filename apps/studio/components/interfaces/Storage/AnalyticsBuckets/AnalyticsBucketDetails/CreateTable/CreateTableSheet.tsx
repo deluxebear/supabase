@@ -131,7 +131,11 @@ export const CreateTableSheet = ({ open, onOpenChange }: CreateTableSheetProps) 
         fields,
       })
 
-      toast.success(`Successfully created table in ${values.newNamespace ?? values.namespace}!`)
+      toast.success(
+        $t('Successfully created table in {{value0}}!', {
+          value0: values.newNamespace ?? values.namespace,
+        })
+      )
       onOpenChange(false)
       form.reset(defaultValues)
     } catch (error) {

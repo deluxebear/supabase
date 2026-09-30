@@ -86,7 +86,7 @@ export const StoragePolicies = () => {
         setSelectedPolicyToDelete(undefined)
       },
       onError: (error: any) => {
-        toast.error(`Failed to delete policy: ${error.message}`)
+        toast.error($t('Failed to delete policy: {{value0}}', { value0: error.message }))
       },
     })
 
@@ -177,7 +177,7 @@ export const StoragePolicies = () => {
             })
             return false
           } catch (error: any) {
-            toast.error(`Error adding policy: ${error.message}`)
+            toast.error($t('Error adding policy: {{value0}}', { value0: error.message }))
             return true
           }
         })
@@ -200,7 +200,7 @@ export const StoragePolicies = () => {
       })
       return false
     } catch (error: any) {
-      toast.error(`Error adding policy: ${error.message}`)
+      toast.error($t('Error adding policy: {{value0}}', { value0: error.message }))
       return true
     }
   }
@@ -224,7 +224,7 @@ export const StoragePolicies = () => {
       })
       return false
     } catch (error: any) {
-      toast.error(`Error updating policy: ${error.message}`)
+      toast.error($t('Error updating policy: {{value0}}', { value0: error.message }))
       return true
     }
   }

@@ -90,14 +90,16 @@ export const SignInForm = () => {
         const data = await getMfaAuthenticatorAssuranceLevel()
         if (data) {
           if (data.currentLevel !== data.nextLevel) {
-            toast.success(`You need to provide your second factor authentication`, { id: toastId })
+            toast.success($t('You need to provide your second factor authentication'), {
+              id: toastId,
+            })
             const url = buildPathWithParams('/sign-in-mfa?method=email')
             router.replace(url)
             return
           }
         }
 
-        toast.success(`Signed in successfully!`, { id: toastId })
+        toast.success($t('Signed in successfully!'), { id: toastId })
         track('sign_in', { category: 'account', method: 'email' })
         addLoginEvent({})
 
@@ -109,7 +111,9 @@ export const SignInForm = () => {
         }
         router.push(redirectPath)
       } catch (error: any) {
-        toast.error(`Failed to sign in: ${(error as AuthError).message}`, { id: toastId })
+        toast.error($t('Failed to sign in: {{value0}}', { value0: (error as AuthError).message }), {
+          id: toastId,
+        })
         trackFunnelError('signin', classifyApiError('signin', error), 'toast', toastId)
         captureCriticalError(error, 'sign in via EP')
       }

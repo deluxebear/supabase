@@ -64,7 +64,11 @@ export const PauseProjectButton = () => {
 
   const requestPauseProject = () => {
     if (!canPauseProject) {
-      return toast.error(`You do not have the required permissions to pause this ${entityLabel}`)
+      return toast.error(
+        $t('You do not have the required permissions to pause this {{value0}}', {
+          value0: entityLabel,
+        })
+      )
     }
     pauseProject({ ref: projectRef })
   }

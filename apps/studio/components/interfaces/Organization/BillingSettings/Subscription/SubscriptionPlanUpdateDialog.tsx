@@ -133,7 +133,10 @@ export const SubscriptionPlanUpdateDialog = ({
   const onSuccessfulPlanChange = () => {
     setPaymentConfirmationLoading(false)
     toast.success(
-      `Successfully ${changeType === 'downgrade' ? 'downgraded' : 'upgraded'} subscription to ${subscriptionPlanMeta?.name}!`
+      $t('Successfully {{value0}} subscription to {{value1}}!', {
+        value0: changeType === 'downgrade' ? $t('downgraded') : $t('upgraded'),
+        value1: subscriptionPlanMeta?.name,
+      })
     )
     onClose()
     onSuccess?.()
@@ -152,7 +155,7 @@ export const SubscriptionPlanUpdateDialog = ({
       },
       onError: (error) => {
         setPaymentConfirmationLoading(false)
-        toast.error(`Unable to update subscription: ${error.message}`)
+        toast.error($t('Unable to update subscription: {{value0}}', { value0: error.message }))
       },
     }
   )
@@ -163,7 +166,7 @@ export const SubscriptionPlanUpdateDialog = ({
         onSuccessfulPlanChange()
       },
       onError: (error) => {
-        toast.error(`Unable to update subscription: ${error.message}`)
+        toast.error($t('Unable to update subscription: {{value0}}', { value0: error.message }))
       },
     })
 
@@ -179,7 +182,7 @@ export const SubscriptionPlanUpdateDialog = ({
     } else {
       setPaymentConfirmationLoading(false)
       // If the payment intent is not successful, we reset the payment method and show an error
-      toast.error(`Could not confirm payment. Please try again or use a different card.`)
+      toast.error($t('Could not confirm payment. Please try again or use a different card.'))
     }
   }
 

@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { apiKeysKeys } from './keys'
 import { handleError, put } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type ToggleLegacyAPIKeysVariables = {
@@ -48,7 +49,10 @@ export const useToggleLegacyAPIKeysMutation = ({
     async onError(data, variables, context) {
       if (onError === undefined) {
         toast.error(
-          `Failed to ${variables.enabled ? 're-enable' : 'disable'} JWT-based API keys: ${data.message}`
+          $t('Failed to {{value0}} JWT-based API keys: {{value1}}', {
+            value0: variables.enabled ? $t('re-enable') : $t('disable'),
+            value1: data.message,
+          })
         )
       } else {
         onError(data, variables, context)

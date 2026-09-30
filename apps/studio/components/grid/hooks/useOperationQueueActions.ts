@@ -37,7 +37,7 @@ export function useOperationQueueActions(options: UseOperationQueueActionsOption
       },
       onError: (error) => {
         snap.setQueueStatus('idle')
-        toast.error(`Failed to save changes: ${error.message}`)
+        toast.error($t('Failed to save changes: {{value0}}', { value0: error.message }))
       },
     })
 

@@ -11,6 +11,7 @@ import {
   type ManagementBindingPayload,
   type ManagementBindingResponse,
 } from '@/data/management-trust/types'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 const bindingEnvelopeSchema = z.object({ binding: managementBindingResponseSchema })
@@ -96,7 +97,8 @@ export const useProjectManagementBindMutation = ({
       await onSuccess?.(data, variables, context)
     },
     async onError(error, variables, context) {
-      if (onError === undefined) toast.error(`Failed to bind management target: ${error.message}`)
+      if (onError === undefined)
+        toast.error($t('Failed to bind management target: {{value0}}', { value0: error.message }))
       else await onError(error, variables, context)
     },
     ...options,
@@ -119,7 +121,8 @@ export const useProjectEnrollmentTokenMutation = ({
       await onSuccess?.(data, variables, context)
     },
     async onError(error, variables, context) {
-      if (onError === undefined) toast.error(`Failed to issue enrollment token: ${error.message}`)
+      if (onError === undefined)
+        toast.error($t('Failed to issue enrollment token: {{value0}}', { value0: error.message }))
       else await onError(error, variables, context)
     },
     ...options,
@@ -142,7 +145,8 @@ export const useProjectManagementSyncMutation = ({
       await onSuccess?.(data, variables, context)
     },
     async onError(error, variables, context) {
-      if (onError === undefined) toast.error(`Failed to refresh Agent trust: ${error.message}`)
+      if (onError === undefined)
+        toast.error($t('Failed to refresh Agent trust: {{value0}}', { value0: error.message }))
       else await onError(error, variables, context)
     },
     ...options,
@@ -165,7 +169,8 @@ export const useProjectManagementRevokeMutation = ({
       await onSuccess?.(data, variables, context)
     },
     async onError(error, variables, context) {
-      if (onError === undefined) toast.error(`Failed to revoke Agent trust: ${error.message}`)
+      if (onError === undefined)
+        toast.error($t('Failed to revoke Agent trust: {{value0}}', { value0: error.message }))
       else await onError(error, variables, context)
     },
     ...options,

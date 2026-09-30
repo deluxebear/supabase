@@ -5,6 +5,7 @@ import { sslEnforcementKeys } from './keys'
 import { configKeys } from '@/data/config/keys'
 import { handleError, put } from '@/data/fetchers'
 import { jitDbAccessKeys } from '@/data/jit-db-access/keys'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type SSLEnforcementUpdateVariables = {
@@ -58,7 +59,7 @@ export const useSSLEnforcementUpdateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update SSL enforcement: ${data.message}`)
+        toast.error($t('Failed to update SSL enforcement: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

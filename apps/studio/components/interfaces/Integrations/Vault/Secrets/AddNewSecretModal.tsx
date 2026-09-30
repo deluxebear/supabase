@@ -67,7 +67,7 @@ export const AddNewSecretModal = () => {
         description: values.description,
         secret: values.secret,
       })
-      toast.success(`Successfully added new secret ${values.name}`)
+      toast.success($t('Successfully added new secret {{value0}}', { value0: values.name }))
       handleClose()
     } catch (error: any) {
       // [Joshen] No error handler required as they are all handled within the mutations already

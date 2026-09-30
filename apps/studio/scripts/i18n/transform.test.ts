@@ -176,4 +176,91 @@ export const C = ({ item }) => <div>{$t(item.name)}{$tValue(item.title)}</div>`
     const lines = text.split('\n').filter((l) => l.trim().length > 0)
     expect(lines[0]).toContain(`import { t as $t } from '@/lib/i18n'`)
   })
+  it('wraps dynamic toast sentences as interpolation and remains idempotent', () => {
+    const { text, keys } = run('toast.success(`Your secret API key ${data.prefix}... is ready.`)')
+    expect(keys).toContain('Your secret API key {{value0}}... is ready.')
+    expect(text).toContain(
+      "$t('Your secret API key {{value0}}... is ready.', { value0: data.prefix })"
+    )
+    const project = new Project({ useInMemoryFileSystem: true })
+    const sf = project.createSourceFile('toast.ts', text)
+    expect(transformSourceFile(sf).changed).toBe(false)
+    expect(transformSourceFile(sf).keys).toContain('Your secret API key {{value0}}... is ready.')
+  })
+
+  it('preserves multiple interpolated expressions and escaped template text', () => {
+    const { text, keys } = run(
+      'toast.error(`Failed to delete "${name}" (${count}): ${error.message}`)'
+    )
+    expect(keys).toEqual(['Failed to delete "{{value0}}" ({{value1}}): {{value2}}'])
+    expect(text).toContain('value0: name, value1: count, value2: error.message')
+  })
+
+  it('wraps conditional messages and descriptions without changing backend errors or options', () => {
+    const { text, keys } = run(
+      `toast.error(error.message ?? 'Unable to save', { description: ok ? 'Try again' : 'Contact support', id: 'save-toast' })`
+    )
+    expect(keys.sort()).toEqual(['Contact support', 'Try again', 'Unable to save'])
+    expect(text).toContain("error.message ?? $t('Unable to save')")
+    expect(text).toContain("description: ok ? $t('Try again') : $t('Contact support')")
+    expect(text).toContain("id: 'save-toast'")
+  })
+
+  it('wraps promise notifications including callback return values', () => {
+    const { text, keys } = run(
+      'toast.promise(request, { loading: "Saving changes", success: (data) => `Saved ${data.name}`, error: () => { return "Unable to save" } })'
+    )
+    expect(keys.sort()).toEqual(['Saved {{value0}}', 'Saving changes', 'Unable to save'])
+    expect(text).toContain("success: (data) => $t('Saved {{value0}}', { value0: data.name })")
+  })
+
+  it('limits notification-only transformations to toasts', () => {
+    const project = new Project({ useInMemoryFileSystem: true })
+    const sf = project.createSourceFile(
+      'C.tsx',
+      'export const C = () => <div>Keep this text</div>\n toast.success(`Saved changes`)'
+    )
+    const { keys } = transformSourceFile(sf, { toastsOnly: true })
+    expect(keys).toEqual(['Saved changes'])
+    expect(sf.getFullText()).toContain('<div>Keep this text</div>')
+  })
+  it('wraps concatenated notifications while preserving operand order', () => {
+    const { text, keys } = run("toast.error('Failed to copy schema: ' + (err.message || err))")
+    expect(keys).toEqual(['Failed to copy schema: {{value0}}'])
+    expect(text).toContain(
+      "$t('Failed to copy schema: {{value0}}', { value0: (err.message || err) })"
+    )
+  })
+
+  it('localizes custom progress messages and preserves numeric props', () => {
+    const project = new Project({ useInMemoryFileSystem: true })
+    const sf = project.createSourceFile(
+      'progress.tsx',
+      'toast(<Progress value={100} message={`Uploading ${count} files`} />)'
+    )
+    const { keys } = transformSourceFile(sf, { toastsOnly: true })
+    expect(keys).toEqual(['Uploading {{value0}} files'])
+    expect(sf.getFullText()).toContain('value={100}')
+    expect(sf.getFullText()).toContain(
+      "message={$t('Uploading {{value0}} files', { value0: count })}"
+    )
+  })
+
+  it('translates local message variables without evaluating static configuration', () => {
+    const { text } = run(
+      "const title = 'Static title'; function save() { const message = `Saved ${name}`; toast.success(message) }"
+    )
+    expect(text).toContain("const title = 'Static title'")
+    expect(text).toContain("const message = $t('Saved {{value0}}', { value0: name })")
+  })
+
+  it('translates grammatical suffixes and default errors inside interpolation', () => {
+    const { text, keys } = run(
+      'toast.error(`Deleted ${count} row${count > 1 ? "s" : ""}: ${error.message ?? "Unknown error"}`)'
+    )
+    expect(keys).toContain('s')
+    expect(keys).toContain('Unknown error')
+    expect(text).toContain("count > 1 ? $t('s') :")
+    expect(text).toContain("error.message ?? $t('Unknown error')")
+  })
 })

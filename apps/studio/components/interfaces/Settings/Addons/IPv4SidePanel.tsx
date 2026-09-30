@@ -38,20 +38,20 @@ const IPv4SidePanel = () => {
   const { data: addons, isPending: isLoading } = useProjectAddonsQuery({ projectRef })
   const { mutate: updateAddon, isPending: isUpdating } = useProjectAddonUpdateMutation({
     onSuccess: () => {
-      toast.success(`Successfully enabled IPv4`)
+      toast.success($t('Successfully enabled IPv4'))
       closePanel()
     },
     onError: (error) => {
-      toast.error(`Unable to enable IPv4: ${error.message}`)
+      toast.error($t('Unable to enable IPv4: {{value0}}', { value0: error.message }))
     },
   })
   const { mutate: removeAddon, isPending: isRemoving } = useProjectAddonRemoveMutation({
     onSuccess: () => {
-      toast.success(`Successfully disabled IPv4.`)
+      toast.success($t('Successfully disabled IPv4.'))
       closePanel()
     },
     onError: (error) => {
-      toast.error(`Unable to disable IPv4: ${error.message}`)
+      toast.error($t('Unable to disable IPv4: {{value0}}', { value0: error.message }))
     },
   })
   const isSubmitting = isUpdating || isRemoving

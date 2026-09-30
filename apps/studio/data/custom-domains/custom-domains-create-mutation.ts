@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { customDomainKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type CustomDomainCreateVariables = {
@@ -44,7 +45,7 @@ export const useCustomDomainCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create custom domain: ${data.message}`)
+        toast.error($t('Failed to create custom domain: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

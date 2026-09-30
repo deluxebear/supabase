@@ -54,7 +54,9 @@ export const OrganizationDetailsForm = () => {
           toast.success($t('Successfully updated organization name'))
         },
         onError: (error: ResponseError) => {
-          toast.error(`Failed to update organization name: ${error.message}`)
+          toast.error(
+            $t('Failed to update organization name: {{value0}}', { value0: error.message })
+          )
         },
       }
     )

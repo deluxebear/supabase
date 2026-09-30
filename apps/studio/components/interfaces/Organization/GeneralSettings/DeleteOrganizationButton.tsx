@@ -99,7 +99,7 @@ export const DeleteOrganizationButton = () => {
 
   const { mutate: deleteOrganization, isPending: isDeleting } = useOrganizationDeleteMutation({
     onSuccess: () => {
-      toast.success(`Successfully deleted ${orgName}`)
+      toast.success($t('Successfully deleted {{value0}}', { value0: orgName }))
       setLastVisitedOrganization('')
       router.push('/organizations')
     },

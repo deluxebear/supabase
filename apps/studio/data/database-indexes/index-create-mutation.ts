@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { databaseIndexesKeys } from './keys'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type DatabaseIndexCreateVariables = {
@@ -61,7 +62,7 @@ export const useDatabaseIndexCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create database index: ${data.message}`)
+        toast.error($t('Failed to create database index: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

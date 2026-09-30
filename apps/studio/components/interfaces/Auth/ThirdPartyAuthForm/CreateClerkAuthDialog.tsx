@@ -61,7 +61,7 @@ export const CreateClerkAuthIntegrationDialog = ({
   const { ref: projectRef } = useParams()
   const { mutate: createAuthIntegration, isPending } = useCreateThirdPartyAuthIntegrationMutation({
     onSuccess: () => {
-      toast.success(`Successfully created a new Clerk integration.`)
+      toast.success($t('Successfully created a new Clerk integration.'))
       onClose()
     },
   })

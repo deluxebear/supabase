@@ -30,9 +30,9 @@ export const Entities = ({ language }: ContentProps) => {
       document.body.appendChild(element)
       element.click()
       document.body.removeChild(element)
-      toast.success(`Successfully generated types! File is being downloaded`)
+      toast.success($t('Successfully generated types! File is being downloaded'))
     } catch (error: any) {
-      toast.error(`Failed to generate types: ${error.message}`)
+      toast.error($t('Failed to generate types: {{value0}}', { value0: error.message }))
     } finally {
       setIsGeneratingTypes(false)
     }

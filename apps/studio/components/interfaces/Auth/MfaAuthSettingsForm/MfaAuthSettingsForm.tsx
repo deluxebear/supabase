@@ -237,7 +237,7 @@ export const MfaAuthSettingsForm = () => {
       { projectRef: projectRef!, config: payload },
       {
         onError: (error) => {
-          toast.error(`Failed to update TOTP settings: ${error?.message}`)
+          toast.error($t('Failed to update TOTP settings: {{value0}}', { value0: error?.message }))
           setIsUpdatingTotpForm(false)
         },
         onSuccess: () => {
@@ -255,7 +255,11 @@ export const MfaAuthSettingsForm = () => {
       { projectRef: projectRef!, config: values },
       {
         onError: (error) => {
-          toast.error(`Failed to update enhanced MFA security settings: ${error?.message}`)
+          toast.error(
+            $t('Failed to update enhanced MFA security settings: {{value0}}', {
+              value0: error?.message,
+            })
+          )
           setIsUpdatingSecurityForm(false)
         },
         onSuccess: () => {
@@ -289,7 +293,9 @@ export const MfaAuthSettingsForm = () => {
       { projectRef: projectRef!, config: payload },
       {
         onError: (error) => {
-          toast.error(`Failed to update phone MFA settings: ${error?.message}`)
+          toast.error(
+            $t('Failed to update phone MFA settings: {{value0}}', { value0: error?.message })
+          )
           setIsUpdatingPhoneForm(false)
         },
         onSuccess: () => {

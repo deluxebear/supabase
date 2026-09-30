@@ -5,6 +5,7 @@ import { getBranchDiff } from './branch-diff-query'
 import { branchKeys } from './keys'
 import { upsertMigration } from '@/data/database/migration-upsert-mutation'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type BranchMergeVariables = {
@@ -79,7 +80,7 @@ export const useBranchMergeMutation = ({
       if (onError === undefined) {
         let errorMessage = data.message || 'Unknown error occurred'
 
-        toast.error(`Failed to merge branch: ${errorMessage}`)
+        toast.error($t('Failed to merge branch: {{value0}}', { value0: errorMessage }))
       } else {
         onError(data, variables, context)
       }

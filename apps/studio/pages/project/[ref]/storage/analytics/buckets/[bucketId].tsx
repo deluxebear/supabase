@@ -36,7 +36,7 @@ const AnalyticsBucketPageContent = () => {
 
   useEffect(() => {
     if (isSuccess && !bucket) {
-      toast.info(`Bucket "${bucketId}" does not exist in your project`)
+      toast.info($t('Bucket "{{value0}}" does not exist in your project', { value0: bucketId }))
       router.push(`/project/${ref}/storage/analytics`)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

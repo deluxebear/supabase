@@ -86,7 +86,7 @@ export const EventTriggersList = () => {
   const { mutate: deleteEventTrigger, isPending: isDeletingEventTrigger } =
     useDatabaseEventTriggerDeleteMutation({
       onSuccess: (_, variables) => {
-        toast.success(`Successfully removed ${variables.trigger.name}`)
+        toast.success($t('Successfully removed {{value0}}', { value0: variables.trigger.name }))
         setTriggerToDelete(null)
       },
       onError: () => {

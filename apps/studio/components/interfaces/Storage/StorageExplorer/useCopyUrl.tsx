@@ -5,6 +5,7 @@ import { copyToClipboard } from 'ui'
 import { URL_EXPIRY_DURATION } from '../Storage.constants'
 import { fetchFileUrl } from './useFetchFileUrlQuery'
 import { useProjectApiUrl } from '@/data/config/project-endpoint-query'
+import { t as $t } from '@/lib/i18n'
 import { useStorageExplorerStateSnapshot } from '@/state/storage-explorer'
 
 export const useCopyUrl = () => {
@@ -29,7 +30,7 @@ export const useCopyUrl = () => {
       })
 
       return copyToClipboard(formattedUrl, () => {
-        toast.success(`Copied URL for ${filePath} to clipboard.`)
+        toast.success($t('Copied URL for {{value0}} to clipboard.', { value0: filePath }))
       })
     },
     [customEndpoint, getFileUrl, hostEndpoint, isCustomDomainActive]

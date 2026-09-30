@@ -69,11 +69,16 @@ export const BatchRestartDialog = ({
   const { mutateAsync: rollbackTables, isPending: isResetting } = useRollbackTablesMutation({
     onSuccess: (data) => {
       const count = data.tables.length
-      toast.success(`Resetting ${count} table${count > 1 ? 's' : ''}`)
+      toast.success(
+        $t('Resetting {{value0}} table{{value1}}', {
+          value0: count,
+          value1: count > 1 ? $t('s') : '',
+        })
+      )
       onOpenChange(false)
     },
     onError: (error) => {
-      toast.error(`Failed to reset tables: ${error.message}`)
+      toast.error($t('Failed to reset tables: {{value0}}', { value0: error.message }))
     },
   })
 

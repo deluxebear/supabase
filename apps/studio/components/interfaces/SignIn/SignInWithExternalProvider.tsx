@@ -47,7 +47,12 @@ export const SignInWithExternalProvider = ({ provider }: SignInWithExternalProvi
       setLastSignInUsed(provider.id)
     } catch (error: unknown) {
       const message = getErrorMessage(error) ?? 'Unknown error'
-      const toastId = toast.error(`Failed to sign in via ${provider.displayName}: ${message}`)
+      const toastId = toast.error(
+        $t('Failed to sign in via {{value0}}: {{value1}}', {
+          value0: provider.displayName,
+          value1: message,
+        })
+      )
       trackFunnelError('signin', classifyApiError('signin', error), 'toast', toastId)
       captureCriticalError(
         error instanceof Error ? error : new Error(message),

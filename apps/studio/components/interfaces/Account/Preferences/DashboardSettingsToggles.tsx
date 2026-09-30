@@ -49,7 +49,7 @@ export const DashboardSettingsToggles = () => {
     track('inline_editor_setting_clicked', { enabled: value })
 
     toast(
-      `${value ? 'Editing entities will now be via the SQL Editor' : 'Editing entities will now be via a guided UI panel'}`
+      `${value ? $t('Editing entities will now be via the SQL Editor') : $t('Editing entities will now be via a guided UI panel')}`
     )
   }
 
@@ -60,7 +60,7 @@ export const DashboardSettingsToggles = () => {
     track('queue_operations_setting_clicked', { enabled: value })
 
     toast(
-      `${value ? 'Table edits in the Table Editor will now be queued' : 'Table edits in the Table Editor will now be saved immediately'}`
+      `${value ? $t('Table edits in the Table Editor will now be queued') : $t('Table edits in the Table Editor will now be saved immediately')}`
     )
   }
 

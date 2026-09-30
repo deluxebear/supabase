@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { jitDbAccessKeys } from './keys'
 import { del, handleError } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 type JitDbAccessRevokeVariables = {
@@ -44,7 +45,7 @@ export const useJitDbAccessRevokeMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to revoke temporary access: ${data.message}`)
+        toast.error($t('Failed to revoke temporary access: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

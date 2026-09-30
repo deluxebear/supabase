@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { stripeAtlasKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
 import { IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type StripeAtlasApplicationVariables = {
@@ -84,7 +85,7 @@ export const useStripeAtlasApplicationCompleteMutation = ({
     mutationFn: (args) => completeStripeAtlasApplication(args),
     async onError(error, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to confirm application: ${error.message}`)
+        toast.error($t('Failed to confirm application: {{value0}}', { value0: error.message }))
       } else {
         onError(error, variables, context)
       }

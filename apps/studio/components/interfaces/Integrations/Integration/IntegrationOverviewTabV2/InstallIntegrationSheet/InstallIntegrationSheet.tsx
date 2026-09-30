@@ -132,15 +132,15 @@ export const InstallIntegrationSheet = ({ integration }: InstallIntegrationSheet
     if (!project) return console.error('Project is required')
 
     setIsInstalling(true)
-    const toastId = toast.loading(`Installing ${name}`)
+    const toastId = toast.loading($t('Installing {{value0}}', { value0: name }))
 
     try {
       if (requiredExtensionsToBeInstalled.length > 0) {
-        toast.loading(`Installing required database extensions`, { id: toastId })
+        toast.loading($t('Installing required database extensions'), { id: toastId })
         await installRequiredIntegrationExtensions(requiredExtensionsToBeInstalled)
       }
       if (installationCommand) {
-        toast.loading(`Installing ${name}`, { id: toastId })
+        toast.loading($t('Installing {{value0}}', { value0: name }), { id: toastId })
         await installationCommand({ ref: project.ref, track, ...values })
       }
 
@@ -150,29 +150,43 @@ export const InstallIntegrationSheet = ({ integration }: InstallIntegrationSheet
             const { ref: projectRef, connectionString } = project || {}
             const status = await checkInstallationStatus({ projectRef, connectionString })
             if (status === 'installed') {
-              toast.success(`Successfully installed ${name}`, { id: toastId })
+              toast.success($t('Successfully installed {{value0}}', { value0: name }), {
+                id: toastId,
+              })
               setOpen(false)
               setIsInstalling(false)
             } else {
               setTimeout(() => pollInstallationStatus(), 5000)
             }
           } catch (error) {
-            toast.error(`Failed to install ${name}: ${(error as ResponseError).message}`, {
-              id: toastId,
-            })
+            toast.error(
+              $t('Failed to install {{value0}}: {{value1}}', {
+                value0: name,
+                value1: (error as ResponseError).message,
+              }),
+              {
+                id: toastId,
+              }
+            )
             setIsInstalling(false)
           }
         }
         pollInstallationStatus()
       } else {
-        toast.success(`Successfully installed ${name}`, { id: toastId })
+        toast.success($t('Successfully installed {{value0}}', { value0: name }), { id: toastId })
         setOpen(false)
         setIsInstalling(false)
       }
     } catch (error) {
-      toast.error(`Failed to install ${name}: ${(error as ResponseError).message}`, {
-        id: toastId,
-      })
+      toast.error(
+        $t('Failed to install {{value0}}: {{value1}}', {
+          value0: name,
+          value1: (error as ResponseError).message,
+        }),
+        {
+          id: toastId,
+        }
+      )
       setIsInstalling(false)
     }
   }

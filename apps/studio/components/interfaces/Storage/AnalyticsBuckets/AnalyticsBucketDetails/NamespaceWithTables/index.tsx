@@ -206,10 +206,10 @@ export const NamespaceWithTables = ({
 
       await deleteNamespace({ projectRef, warehouse: bucketId, namespace })
 
-      toast.success(`Successfully deleted namespace "${namespace}"`)
+      toast.success($t('Successfully deleted namespace "{{value0}}"', { value0: namespace }))
       setShowConfirmDeleteNamespace(false)
     } catch (error: any) {
-      toast.error(`Failed to delete namespace: ${error.message}`)
+      toast.error($t('Failed to delete namespace: {{value0}}', { value0: error.message }))
     } finally {
       setIsDeletingNamespace(false)
     }

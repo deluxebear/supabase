@@ -294,7 +294,7 @@ export const PlatformWebhooksPage = ({ scope, endpointId }: PlatformWebhooksPage
 
   const handleCopy = (value: string, label: string) => {
     copyToClipboard(value)
-    toast.success(`Copied ${label}`)
+    toast.success($t('Copied {{value0}}', { value0: label }))
   }
 
   const isEndpointSheetOpen = panel === 'create' || (panel === 'edit' && !!selectedEndpoint)

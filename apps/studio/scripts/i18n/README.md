@@ -4,11 +4,18 @@
   translations; upstream never touches it, so a merge can never overwrite or
   delete a translation.
 - **Wrap:** `pnpm exec tsx scripts/i18n/wrap.ts` (idempotent) — walks
-  component and page sources, wraps user-facing JSX text, attrs, expressions,
+  Studio components, pages, routes, data hooks, libraries, and state, wraps user-facing JSX text, attrs, expressions,
   and toasts with `$t(...)`. Rendered `label`, `title`, and `description` object
   fields use `$tValue(...)` so static config keeps its English values until
   render time. The script writes the full key list to `scripts/i18n/keys.json`.
   Running it again on already-wrapped source is a no-op.
+- **Notifications only:** `pnpm exec tsx scripts/i18n/wrap.ts --toasts-only`
+  scans components, pages, routes, data hooks, libraries, and state. It wraps
+  notification titles, descriptions, promise states, and custom progress text,
+  including template literals and concatenated messages. Dynamic values remain
+  interpolation parameters. Run the translation batch workflow afterward to
+  populate new keys. Backend error details remain intact.
+
 - **Translate:** `pnpm exec tsx scripts/i18n/translate.ts` reads
   `scripts/i18n/keys.json` and `lib/i18n/locales/zh-CN.json`, and only
   translates keys that are missing from the catalog (existing translations are

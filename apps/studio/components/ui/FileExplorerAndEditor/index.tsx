@@ -131,7 +131,9 @@ export const FileExplorerAndEditor = ({
           }
           allFiles.push({ name: file.name, size: file.size, content })
         } catch (error) {
-          toast.error(`Failed to read file: ${file.name}: ${error}`)
+          toast.error(
+            $t('Failed to read file: {{value0}}: {{value1}}', { value0: file.name, value1: error })
+          )
         }
       }
     }
@@ -257,7 +259,10 @@ export const FileExplorerAndEditor = ({
       const isDuplicate = files.some((file) => file.id !== id && file.name === newName)
       if (isDuplicate) {
         toast.error(
-          `The name ${newName} already exists in the current directory. Please use a different name.`
+          $t(
+            'The name {{value0}} already exists in the current directory. Please use a different name.',
+            { value0: newName }
+          )
         )
         return exitEditMode()
       }

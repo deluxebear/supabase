@@ -80,7 +80,7 @@ export const AIAssistantHeader = ({
 
   const handleCopyChatId = () => {
     copyToClipboard(snap.activeChatId ?? '', () => {
-      toast.success(`Copied chat ID for ${snap.activeChat?.name}`)
+      toast.success($t('Copied chat ID for {{value0}}', { value0: snap.activeChat?.name }))
     })
   }
 

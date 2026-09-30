@@ -11,6 +11,7 @@ import { useProfileCreateMutation } from '@/data/profile/profile-create-mutation
 import { useProfileIdentitiesQuery } from '@/data/profile/profile-identities-query'
 import { useProfileQuery } from '@/data/profile/profile-query'
 import type { Profile } from '@/data/profile/types'
+import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import type { ResponseError } from '@/types'
 
@@ -59,11 +60,15 @@ export const ProfileProvider = ({ children }: PropsWithChildren<{}>) => {
         // Adding a Sentry capture + toast in hopes to catch this while developing on local / staging
         Sentry.captureMessage('Profile already exists: ' + error.message)
         if (process.env.NEXT_PUBLIC_ENVIRONMENT !== 'prod') {
-          toast.error('[DEV] createProfile called despite profile already exists: ' + error.message)
+          toast.error(
+            $t('[DEV] createProfile called despite profile already exists: {{value0}}', {
+              value0: error.message,
+            })
+          )
         }
       } else {
         Sentry.captureMessage('Failed to create users profile: ' + error.message)
-        toast.error('Failed to create your profile. Please refresh to try again.')
+        toast.error($t('Failed to create your profile. Please refresh to try again.'))
       }
     },
   })

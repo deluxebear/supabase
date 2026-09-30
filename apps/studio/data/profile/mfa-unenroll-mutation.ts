@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { profileKeys } from './keys'
 import { auth } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 import { UseCustomMutationOptions } from '@/types'
 
 const mfaUnenroll = async (params: MFAUnenrollParams) => {
@@ -39,7 +40,7 @@ export const useMfaUnenrollMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete factor: ${data.message}`)
+        toast.error($t('Failed to delete factor: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

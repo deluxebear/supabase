@@ -115,7 +115,9 @@ const StripeSyncContent = ({ hideInstallCTA = false }: { hideInstallCTA?: boolea
   } = useStripeSyncInstallMutation({
     onSuccess: () => {
       toast.success(
-        upgradeAvailable ? 'Stripe Sync upgrade started' : 'Stripe Sync installation started'
+        upgradeAvailable
+          ? $t('Stripe Sync upgrade started')
+          : $t('Stripe Sync installation started')
       )
       setShouldShowInstallSheet(false)
       form.reset()

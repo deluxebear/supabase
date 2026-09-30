@@ -177,10 +177,10 @@ export const CreateAnalyticsBucketForm = ({
       track('storage_bucket_created', { bucketType: 'analytics' })
 
       form.reset()
-      toast.success(`Created bucket “${values.name}”`)
+      toast.success($t('Created bucket “{{value0}}”', { value0: values.name }))
       onOpenChange(false)
     } catch (error: any) {
-      toast.error(`Failed to create bucket: ${error.message}`)
+      toast.error($t('Failed to create bucket: {{value0}}', { value0: error.message }))
     }
   }
 

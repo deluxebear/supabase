@@ -23,7 +23,7 @@ export const DeleteUserModal = ({
 
   const { mutate: deleteUser, isPending: isDeleting } = useUserDeleteMutation({
     onSuccess: () => {
-      toast.success(`Successfully deleted ${selectedUser?.email}`)
+      toast.success($t('Successfully deleted {{value0}}', { value0: selectedUser?.email }))
       onDeleteSuccess?.()
     },
   })
@@ -31,7 +31,7 @@ export const DeleteUserModal = ({
   const handleDeleteUser = async () => {
     if (!projectRef) return console.error('Project ref is required')
     if (selectedUser?.id === undefined) {
-      return toast.error(`Failed to delete user: User ID not found`)
+      return toast.error($t('Failed to delete user: User ID not found'))
     }
     deleteUser({ projectRef, userId: selectedUser.id })
   }

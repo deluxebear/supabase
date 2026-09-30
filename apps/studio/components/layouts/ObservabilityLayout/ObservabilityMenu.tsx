@@ -70,9 +70,10 @@ export const ObservabilityMenu = () => {
 
     const deletion = deleteReport({ projectRef: ref, ids: [reportId] })
     toast.promise(deletion, {
-      loading: 'Deleting report...',
-      success: 'Report deleted',
-      error: (err) => `Failed to delete report: ${err?.message ?? 'Unknown error'}`,
+      loading: $t('Deleting report...'),
+      success: $t('Report deleted'),
+      error: (err) =>
+        $t('Failed to delete report: {{value0}}', { value0: err?.message ?? $t('Unknown error') }),
     })
 
     // Only navigate away when the open report is the one deleted, and only after it

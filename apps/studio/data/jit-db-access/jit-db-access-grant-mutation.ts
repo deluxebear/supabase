@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { jitDbAccessKeys } from './keys'
 import { handleError, put } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 type JitDbAccessGrantVariables = {
@@ -58,7 +59,7 @@ export const useJitDbAccessGrantMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to grant temporary access: ${data.message}`)
+        toast.error($t('Failed to grant temporary access: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

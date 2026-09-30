@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { orgSSOKeys } from './keys'
 import { del, handleError } from '@/data/fetchers'
 import { organizationKeys as organizationKeysV1 } from '@/data/organizations/keys'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type SSOConfigDeleteVariables = {
@@ -43,7 +44,7 @@ export const useSSOConfigDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete SSO configuration: ${data.message}`)
+        toast.error($t('Failed to delete SSO configuration: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

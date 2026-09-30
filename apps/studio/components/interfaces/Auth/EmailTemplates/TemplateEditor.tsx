@@ -114,7 +114,7 @@ export const TemplateEditor = ({ template, isReadOnly = false }: TemplateEditorP
   const { mutate: updateAuthConfig } = useAuthConfigUpdateMutation({
     onError: (error) => {
       setIsSavingTemplate(false)
-      toast.error(`Failed to update email templates: ${error.message}`)
+      toast.error($t('Failed to update email templates: {{value0}}', { value0: error.message }))
     },
   })
 

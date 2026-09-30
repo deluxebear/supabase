@@ -87,7 +87,7 @@ export async function createIndexes({
     if (onSuccess) onSuccess()
     return Promise.resolve()
   } catch (error: any) {
-    toast.error(`Failed to create index: ${error.message}`)
+    toast.error($t('Failed to create index: {{value0}}', { value0: error.message }))
     if (onError) onError(error)
     return Promise.reject(error)
   }

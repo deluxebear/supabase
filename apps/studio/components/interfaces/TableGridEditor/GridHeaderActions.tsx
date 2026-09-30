@@ -100,7 +100,7 @@ export const GridHeaderActions = ({ table, isRefetching }: GridHeaderActionsProp
 
   const { mutateAsync: updateTable, isPending: isUpdatingTable } = useTableUpdateMutation({
     onError: (error) => {
-      toast.error(`Failed to toggle RLS: ${error.message}`)
+      toast.error($t('Failed to toggle RLS: {{value0}}', { value0: error.message }))
     },
   })
 

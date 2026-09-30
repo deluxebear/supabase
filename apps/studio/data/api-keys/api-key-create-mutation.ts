@@ -6,6 +6,7 @@ import { handleAPIKeyMutationError, showAPIKeyMfaAction } from './api-key-errors
 import { apiKeysKeys } from './keys'
 import { post } from '@/data/fetchers'
 import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type APIKeyCreateVariables = {
@@ -69,7 +70,7 @@ export const useAPIKeyCreateMutation = ({
     async onError(data, variables, context) {
       if (await showAPIKeyMfaAction(data, queryClient)) return
       if (onError === undefined) {
-        toast.error(`Failed to create API key: ${data.message}`)
+        toast.error($t('Failed to create API key: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

@@ -215,17 +215,17 @@ export const LogsExplorerPage: NextPageWithLayout = () => {
       console.error(error)
       setSaveModalOpen(false)
       if (queryId) {
-        toast.error(`Failed to update query: ${error.message}`)
+        toast.error($t('Failed to update query: {{value0}}', { value0: error.message }))
       } else {
-        toast.error(`Failed to save query: ${error.message}`)
+        toast.error($t('Failed to save query: {{value0}}', { value0: error.message }))
       }
     },
     onSuccess: (_data, vars) => {
       setSaveModalOpen(false)
       if (queryId) {
-        toast.success(`Updated "${vars.payload.name}" log query`)
+        toast.success($t('Updated "{{value0}}" log query', { value0: vars.payload.name }))
       } else {
-        toast.success(`Saved "${vars.payload.name}" log query`)
+        toast.success($t('Saved "{{value0}}" log query', { value0: vars.payload.name }))
       }
     },
   })

@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { resourceKeys } from './keys'
 import { handleError, patch } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type ResourceUpdateVariables = {
@@ -48,7 +49,7 @@ export const useResourceUpdateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to mutate: ${data.message}`)
+        toast.error($t('Failed to mutate: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

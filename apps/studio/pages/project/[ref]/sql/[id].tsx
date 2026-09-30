@@ -154,7 +154,9 @@ const SqlEditor: NextPageWithLayout = () => {
     if (snippet !== undefined) snapV2.removeSnippet(id)
     clearSnippetsFromHistory([id])
 
-    toast(`The SQL snippet you were trying to open no longer exists. Opened a new query instead.`)
+    toast(
+      $t('The SQL snippet you were trying to open no longer exists. Opened a new query instead.')
+    )
     router.replace(`/project/${ref}/sql/new`)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSnippetDeleted, id, ref])

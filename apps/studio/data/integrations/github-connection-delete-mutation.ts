@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { integrationKeys } from './keys'
 import { del, handleError } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 type DeleteVariables = {
@@ -43,7 +44,7 @@ export const useGitHubConnectionDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete GitHub connection: ${data.message}`)
+        toast.error($t('Failed to delete GitHub connection: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

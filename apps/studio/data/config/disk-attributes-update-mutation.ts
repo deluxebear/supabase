@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { configKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export const COOLDOWN_DURATION = 60 * 60 * 4
@@ -65,7 +66,7 @@ export const useUpdateDiskAttributesMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update disk attributes: ${data.message}`)
+        toast.error($t('Failed to update disk attributes: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

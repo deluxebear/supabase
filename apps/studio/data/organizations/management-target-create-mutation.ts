@@ -8,6 +8,7 @@ import {
   type ManagementTargetCreatePayload,
   type ManagementTargetResponse,
 } from '@/data/management-trust/types'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError } from '@/types'
 
 export type ManagementTargetCreateVariables = {
@@ -43,7 +44,8 @@ export const useManagementTargetCreateMutation = ({
       await onSuccess?.(data, variables, context)
     },
     async onError(error, variables, context) {
-      if (onError === undefined) toast.error(`Failed to create management target: ${error.message}`)
+      if (onError === undefined)
+        toast.error($t('Failed to create management target: {{value0}}', { value0: error.message }))
       else await onError(error, variables, context)
     },
     ...options,

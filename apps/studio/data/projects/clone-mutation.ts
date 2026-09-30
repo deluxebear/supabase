@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { projectKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type ProjectCloneVariables = {
@@ -58,7 +59,7 @@ export const useProjectCloneMutation = ({
     async onError(data, variables, context) {
       if (onError === undefined) {
         console.error(data)
-        toast.error(`Failed to trigger clone: ${data.message}`)
+        toast.error($t('Failed to trigger clone: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

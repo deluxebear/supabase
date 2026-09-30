@@ -111,7 +111,9 @@ export const WrapperMissing = ({ bucketName }: { bucketName?: string }) => {
       await createS3VectorsWrapper({ bucketName })
     } catch (error) {
       toast.error(
-        `Failed to install wrapper: ${error instanceof Error ? error.message : 'Unknown error'}`
+        $t('Failed to install wrapper: {{value0}}', {
+          value0: error instanceof Error ? error.message : $t('Unknown error'),
+        })
       )
     }
   }

@@ -164,7 +164,7 @@ export const CreateVectorTableSheet = ({ bucketName }: CreateVectorTableSheetPro
         metadataKeys: values.metadataKeys.map((key) => key.value),
       })
     } catch (error: any) {
-      toast.error(`Failed to create vector table: ${error.message}`)
+      toast.error($t('Failed to create vector table: {{value0}}', { value0: error.message }))
       return
     }
 
@@ -180,10 +180,12 @@ export const CreateVectorTableSheet = ({ bucketName }: CreateVectorTableSheetPro
         })
       }
     } catch (error: any) {
-      toast.warning(`Failed to connect vector table to the database: ${error.message}`)
+      toast.warning(
+        $t('Failed to connect vector table to the database: {{value0}}', { value0: error.message })
+      )
     }
 
-    toast.success(`Successfully created vector table “${values.name}”`)
+    toast.success($t('Successfully created vector table “{{value0}}”', { value0: values.name }))
     form.reset()
 
     setVisible(false)

@@ -82,15 +82,16 @@ export function PublicBucketWarning({ projectRef, bucketId }: PublicBucketWarnin
       setShowModal(false)
       toast.success(
         matchingPolicyCount > 1
-          ? `Policy removed successfully. ${matchingPolicyCount - 1} matching ${
-              matchingPolicyCount - 1 === 1 ? 'policy' : 'policies'
-            } remaining.`
-          : 'Policy removed successfully'
+          ? $t('Policy removed successfully. {{value0}} matching {{value1}} remaining.', {
+              value0: matchingPolicyCount - 1,
+              value1: matchingPolicyCount - 1 === 1 ? $t('policy') : $t('policies'),
+            })
+          : $t('Policy removed successfully')
       )
     },
     onError: (error) => {
       console.error('Failed to remove policy', error)
-      toast.error(`Failed to remove policy: ${error.message}`)
+      toast.error($t('Failed to remove policy: {{value0}}', { value0: error.message }))
     },
   })
 

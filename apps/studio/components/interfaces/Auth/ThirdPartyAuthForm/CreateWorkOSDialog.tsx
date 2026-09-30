@@ -59,7 +59,7 @@ export const CreateWorkOSIntegrationDialog = ({
   const { ref: projectRef } = useParams()
   const { mutate: createAuthIntegration, isPending } = useCreateThirdPartyAuthIntegrationMutation({
     onSuccess: () => {
-      toast.success(`Successfully created a new WorkOS integration.`)
+      toast.success($t('Successfully created a new WorkOS integration.'))
       onClose()
     },
   })

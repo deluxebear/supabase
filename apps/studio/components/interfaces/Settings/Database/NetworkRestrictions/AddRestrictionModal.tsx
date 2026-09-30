@@ -114,7 +114,7 @@ const AddRestrictionModal = ({
     const alreadyExists =
       restrictedIps.includes(address) || restrictedIps.includes(normalizedAddress)
     if (alreadyExists) {
-      return toast(`The address ${address} is already restricted`)
+      return toast($t('The address {{value0}} is already restricted', { value0: address }))
     }
 
     // Need to replace over arching restriction (allow all / disallow all)

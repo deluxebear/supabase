@@ -43,7 +43,12 @@ export const SignInWithCustom = ({ providerName }: SignInWithCustomProps) => {
 
       if (error) throw error
     } catch (error: any) {
-      const toastId = toast.error(`Failed to sign in via ${displayName}: ${error.message}`)
+      const toastId = toast.error(
+        $t('Failed to sign in via {{value0}}: {{value1}}', {
+          value0: displayName,
+          value1: error.message,
+        })
+      )
       trackFunnelError('signin', classifyApiError('signin', error), 'toast', toastId)
       captureCriticalError(error, `sign in via ${providerName}`)
       setLoading(false)

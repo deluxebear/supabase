@@ -87,7 +87,7 @@ export const AuditLogsForm = () => {
 
   const { mutate: updateAuthConfig, isPending: isUpdatingConfig } = useAuthConfigUpdateMutation({
     onError: (error) => {
-      toast.error(`Failed to update audit logs: ${error?.message}`)
+      toast.error($t('Failed to update audit logs: {{value0}}', { value0: error?.message }))
     },
     onSuccess: () => {
       toast.success($t('Successfully updated audit logs settings'))

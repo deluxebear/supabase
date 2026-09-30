@@ -27,7 +27,7 @@ export const CustomDomainActivate = ({ projectRef, customDomain }: CustomDomainA
   const { mutate: activateCustomDomain, isPending: isActivating } = useCustomDomainActivateMutation(
     {
       onSuccess: () => {
-        toast.success(`Successfully activated custom domain`)
+        toast.success($t('Successfully activated custom domain'))
         setIsActivateConfirmModalVisible(false)
       },
     }

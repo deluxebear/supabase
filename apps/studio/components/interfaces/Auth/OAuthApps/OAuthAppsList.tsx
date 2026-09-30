@@ -122,7 +122,7 @@ export const OAuthAppsList = () => {
     isSuccess: isSuccessDelete,
   } = useOAuthServerAppDeleteMutation({
     onSuccess: () => {
-      toast.success(`Successfully deleted OAuth app`)
+      toast.success($t('Successfully deleted OAuth app'))
       setSelectedAppToDelete(null)
     },
   })

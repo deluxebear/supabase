@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { profileKeys } from './keys'
 import { auth } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 import { UseCustomMutationOptions } from '@/types'
 
 const unlinkIdentity = async (identity: UserIdentity) => {
@@ -36,7 +37,7 @@ export const useUnlinkIdentityMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to unlink identity: ${data.message}`)
+        toast.error($t('Failed to unlink identity: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

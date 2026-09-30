@@ -247,7 +247,10 @@ export const PostgrestConfig = () => {
         functionNamesToRemove: [],
       })
     } catch (error) {
-      toast.error('Failed to save settings: ' + (error as ResponseError).message || 'Unknown error')
+      toast.error(
+        $t('Failed to save settings: {{value0}}', { value0: (error as ResponseError).message }) ||
+          $t('Unknown error')
+      )
     } finally {
       setIsUpdating(false)
     }

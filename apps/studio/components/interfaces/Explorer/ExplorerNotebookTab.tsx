@@ -319,7 +319,7 @@ export const ExplorerNotebookTab = () => {
       )
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err)
-      toast.error('Failed to copy notebook as Markdown: ' + message)
+      toast.error($t('Failed to copy notebook as Markdown: {{value0}}', { value0: message }))
     }
   }
 
@@ -335,7 +335,7 @@ export const ExplorerNotebookTab = () => {
       })
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err)
-      toast.error('Failed to export notebook as PDF: ' + message)
+      toast.error($t('Failed to export notebook as PDF: {{value0}}', { value0: message }))
     } finally {
       setIsExportingPdf(false)
     }

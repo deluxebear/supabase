@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { authKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type UserCreateVariables = {
@@ -53,7 +54,7 @@ export const useUserCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create user: ${data.message}`)
+        toast.error($t('Failed to create user: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

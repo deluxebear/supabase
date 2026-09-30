@@ -31,7 +31,7 @@ function CopyableId({ id, label }: { id: string; label: string }) {
     e.stopPropagation()
     copyToClipboard(id, () => {
       setIsCopied(true)
-      toast.success(`Copied ${label} to clipboard`)
+      toast.success($t('Copied {{value0}} to clipboard', { value0: label }))
       setTimeout(() => setIsCopied(false), 2000)
     })
   }

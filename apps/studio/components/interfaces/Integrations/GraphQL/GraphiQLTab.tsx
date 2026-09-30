@@ -1,3 +1,5 @@
+import { t as $t } from '@/lib/i18n'
+
 import 'graphiql/setup-workers/webpack'
 import './graphiql-styles.css'
 
@@ -122,7 +124,7 @@ export const GraphiQLTab = () => {
           const token = await getRoleImpersonationJWT(projectRef, jwtSecret, role)
           userAuthorization = 'Bearer ' + token
         } catch (err: any) {
-          toast.error(`Failed to get JWT for role: ${err.message}`)
+          toast.error($t('Failed to get JWT for role: {{value0}}', { value0: err.message }))
         }
       }
 

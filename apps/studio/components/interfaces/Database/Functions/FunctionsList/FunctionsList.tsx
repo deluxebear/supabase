@@ -202,7 +202,7 @@ export const FunctionsList = () => {
     isSuccess: isSuccessDelete,
   } = useDatabaseFunctionDeleteMutation({
     onSuccess: (_, variables) => {
-      toast.success(`Successfully removed function ${variables.func.name}`)
+      toast.success($t('Successfully removed function {{value0}}', { value0: variables.func.name }))
       setSelectedFunctionToDelete(null)
     },
   })

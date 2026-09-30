@@ -121,8 +121,11 @@ export const JitDbAccessConfiguration = () => {
         } else {
           toast.success(
             activeRuleCount > 0
-              ? `Temporary access disabled. ${activeRuleCount} configured member${activeRuleCount === 1 ? '' : 's'} can no longer request temporary database access.`
-              : 'Temporary access disabled'
+              ? $t(
+                  'Temporary access disabled. {{value0}} configured member{{value1}} can no longer request temporary database access.',
+                  { value0: activeRuleCount, value1: activeRuleCount === 1 ? '' : $t('s') }
+                )
+              : $t('Temporary access disabled')
           )
         }
       },
@@ -135,7 +138,7 @@ export const JitDbAccessConfiguration = () => {
         toast.success($t('Successfully enabled SSL enforcement'))
       },
       onError: (error) => {
-        toast.error(`Failed to enable SSL enforcement: ${error.message}`)
+        toast.error($t('Failed to enable SSL enforcement: {{value0}}', { value0: error.message }))
       },
     })
 
@@ -247,13 +250,17 @@ export const JitDbAccessConfiguration = () => {
         return setShowEnableJitDialog(true)
       }
       return void submitJitToggle(true).catch((error) => {
-        toast.error(`Failed to update temporary access: ${getErrorMessage(error)}`)
+        toast.error(
+          $t('Failed to update temporary access: {{value0}}', { value0: getErrorMessage(error) })
+        )
       })
     }
 
     if (!checked && enabled) {
       void submitJitToggle(false).catch((error) => {
-        toast.error(`Failed to update temporary access: ${getErrorMessage(error)}`)
+        toast.error(
+          $t('Failed to update temporary access: {{value0}}', { value0: getErrorMessage(error) })
+        )
       })
     }
   }

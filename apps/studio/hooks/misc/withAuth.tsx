@@ -8,6 +8,7 @@ import { usePermissionsQuery } from '@/data/permissions/permissions-query'
 import { useAuthenticatorAssuranceLevelQuery } from '@/data/profile/mfa-authenticator-assurance-level-query'
 import { useSignOut } from '@/lib/auth'
 import { BASE_PATH, IS_PLATFORM } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { isNextPageWithLayout, type NextPageWithLayout } from '@/types'
 
 const MAX_TIMEOUT = 10000 // 10 seconds
@@ -51,7 +52,10 @@ export function withAuth<T>(
     useEffect(() => {
       if (isErrorAAL) {
         toast.error(
-          `Failed to fetch authenticator assurance level: ${errorAAL?.message}. Try refreshing your browser, or reach out to us via a support ticket if the issue persists`
+          $t(
+            'Failed to fetch authenticator assurance level: {{value0}}. Try refreshing your browser, or reach out to us via a support ticket if the issue persists',
+            { value0: errorAAL?.message }
+          )
         )
       }
     }, [isErrorAAL, errorAAL])
@@ -61,7 +65,10 @@ export function withAuth<T>(
     useEffect(() => {
       if (isErrorPermissions && isAtHighestAAL) {
         toast.error(
-          `Failed to fetch permissions: ${errorPermissions?.message}. Try refreshing your browser, or reach out to us via a support ticket if the issue persists`
+          $t(
+            'Failed to fetch permissions: {{value0}}. Try refreshing your browser, or reach out to us via a support ticket if the issue persists',
+            { value0: errorPermissions?.message }
+          )
         )
       }
     }, [isErrorPermissions, errorPermissions, isAtHighestAAL])

@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export async function addLoginEvent() {
@@ -31,7 +32,7 @@ export const useAddLoginEvent = ({
         new Error("Failed to add login event to user's audit log", { cause: data })
       )
       if (onError === undefined) {
-        toast.error(`Failed to add login event: ${data.message}`)
+        toast.error($t('Failed to add login event: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

@@ -62,7 +62,9 @@ export const ImportForeignSchemaDialog = ({
   const { mutateAsync: importForeignSchema } = useFDWImportForeignSchemaMutation({})
   const { mutateAsync: updateFDW } = useFDWUpdateMutation({
     onSuccess: () => {
-      toast.success(`Successfully connected “${bucketName}” to the database.`)
+      toast.success(
+        $t('Successfully connected “{{value0}}” to the database.', { value0: bucketName })
+      )
       onClose()
     },
   })

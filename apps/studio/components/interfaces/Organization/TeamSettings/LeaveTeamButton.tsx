@@ -50,14 +50,14 @@ export const LeaveTeamButton = () => {
       setIsLeaveTeamModalOpen(false)
 
       await refetchOrganizations()
-      toast.success(`Successfully left ${selectedOrganization?.name}`)
+      toast.success($t('Successfully left {{value0}}', { value0: selectedOrganization?.name }))
 
       setLastVisitedOrganization('')
       router.push('/organizations')
     },
     onError: (error) => {
       setIsLeaving(false)
-      toast.error(`Failed to leave organization: ${error?.message}`)
+      toast.error($t('Failed to leave organization: {{value0}}', { value0: error?.message }))
     },
   })
 

@@ -132,7 +132,9 @@ export const ActivityRow = ({
 
   const { mutateAsync: terminateSession } = useSessionTerminateMutation({
     onSuccess: () => {
-      toast.success(`Successfully terminated session (ID: ${activity.pid})`)
+      toast.success(
+        $t('Successfully terminated session (ID: {{value0}})', { value0: activity.pid })
+      )
     },
   })
 
@@ -158,7 +160,7 @@ export const ActivityRow = ({
       origin,
     })
 
-    const toastId = toast.loading(`Cancelling query (ID: ${activity.pid})`)
+    const toastId = toast.loading($t('Cancelling query (ID: {{value0}})', { value0: activity.pid }))
     try {
       await cancelQuery({
         pid: activity.pid,
@@ -166,10 +168,14 @@ export const ActivityRow = ({
         projectRef: project?.ref,
         connectionString: project?.connectionString,
       })
-      toast.success(`Successfully cancelled query (ID: ${activity.pid})`, { id: toastId })
+      toast.success($t('Successfully cancelled query (ID: {{value0}})', { value0: activity.pid }), {
+        id: toastId,
+      })
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      toast.error(`Failed to cancel query: ${errorMessage}`, { id: toastId })
+      toast.error($t('Failed to cancel query: {{value0}}', { value0: errorMessage }), {
+        id: toastId,
+      })
     }
   }
 

@@ -98,7 +98,7 @@ export const InvoicesSettings = () => {
       }
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'unknown error'
-      toast.error(`Failed to fetch the selected invoice: ${msg}`)
+      toast.error($t('Failed to fetch the selected invoice: {{value0}}', { value0: msg }))
     }
   }
 
@@ -109,7 +109,7 @@ export const InvoicesSettings = () => {
       const receipt = await getInvoiceReceipt({ invoiceId, slug })
       if (receipt?.receipt_pdf) window.open(receipt.receipt_pdf, '_blank')
     } catch (error: any) {
-      toast.error(`Failed to fetch receipt: ${error.message}`)
+      toast.error($t('Failed to fetch receipt: {{value0}}', { value0: error.message }))
     }
   }
 

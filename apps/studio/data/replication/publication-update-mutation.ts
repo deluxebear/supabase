@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { replicationKeys } from './keys'
 import { handleError, put } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type UpdatePublicationParams = {
@@ -57,7 +58,7 @@ export const useUpdatePublicationMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update publication: ${data.message}`)
+        toast.error($t('Failed to update publication: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

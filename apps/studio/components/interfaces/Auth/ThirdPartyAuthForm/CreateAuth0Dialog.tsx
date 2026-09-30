@@ -53,7 +53,7 @@ export const CreateAuth0IntegrationDialog = ({
   const { ref: projectRef } = useParams()
   const { mutate: createAuthIntegration, isPending } = useCreateThirdPartyAuthIntegrationMutation({
     onSuccess: () => {
-      toast.success(`Successfully created a new Auth0 Auth integration.`)
+      toast.success($t('Successfully created a new Auth0 Auth integration.'))
       onClose()
     },
   })

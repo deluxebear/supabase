@@ -117,7 +117,9 @@ const CodePage = () => {
       })
     } catch (error) {
       toast.error(
-        `Failed to update function: ${error instanceof Error ? error.message : 'Unknown error'}`
+        $t('Failed to update function: {{value0}}', {
+          value0: error instanceof Error ? error.message : $t('Unknown error'),
+        })
       )
     }
   }

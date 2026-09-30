@@ -6,6 +6,7 @@ import { edgeFunctionsKeys } from './keys'
 import { constructHeaders, del, handleError } from '@/data/fetchers'
 import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { ResponseError, type UseCustomMutationOptions } from '@/types'
 
 export type EdgeFunctionsDeleteVariables = {
@@ -116,7 +117,7 @@ export const useEdgeFunctionDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete edge function: ${data.message}`)
+        toast.error($t('Failed to delete edge function: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

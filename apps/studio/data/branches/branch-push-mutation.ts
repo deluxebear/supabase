@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { actionKeys } from '../actions/keys'
 import { branchKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type BranchPushVariables = {
@@ -42,7 +43,7 @@ export const useBranchPushMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to push branch: ${data.message}`)
+        toast.error($t('Failed to push branch: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

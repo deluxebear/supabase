@@ -29,7 +29,7 @@ export function AppsList({ onCreateApp, createShortcutId }: AppsListProps) {
 
   const { mutate: deleteApp, isPending: isDeleting } = usePlatformAppDeleteMutation({
     onSuccess: (_, vars) => {
-      toast.success(`Deleted app`)
+      toast.success($t('Deleted app'))
       removeInstallationsByAppId(vars.appId)
       if (appToDelete?.id === vars.appId) setAppToDelete(undefined)
     },

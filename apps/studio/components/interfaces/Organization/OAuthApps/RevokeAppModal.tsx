@@ -34,7 +34,7 @@ export const RevokeAppModal = ({
   const orgSlug = slugOverride ?? slugParam
   const { mutateAsync: revokeAuthorizedApp } = useAuthorizedAppRevokeMutation({
     onSuccess: () => {
-      toast.success(`Successfully revoked the app "${selectedApp?.name}"`)
+      toast.success($t('Successfully revoked the app "{{value0}}"', { value0: selectedApp?.name }))
       onClose()
     },
   })

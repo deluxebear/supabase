@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { storageKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 type BucketCreateVariables = Omit<CreateStorageBucketBody, 'public'> & {
@@ -60,7 +61,7 @@ export const useBucketCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create bucket: ${data.message}`)
+        toast.error($t('Failed to create bucket: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

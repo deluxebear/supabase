@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { invalidateTableMetadata } from '@/data/tables/table-metadata-invalidation'
 import { viewKeys } from '@/data/views/keys'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type DatabaseColumnDeleteVariables = {
@@ -69,7 +70,7 @@ export const useDatabaseColumnDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete database column: ${data.message}`)
+        toast.error($t('Failed to delete database column: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

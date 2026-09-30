@@ -112,7 +112,11 @@ export const MarketplaceIntegrationSettingsTab = () => {
       await removeResource(confirmTarget)
       setConfirmTarget(undefined)
     } catch (err) {
-      toast.error(`Failed to remove: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      toast.error(
+        $t('Failed to remove: {{value0}}', {
+          value0: err instanceof Error ? err.message : $t('Unknown error'),
+        })
+      )
     }
   }
 

@@ -6,6 +6,7 @@ import { profileKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
 import { organizationKeys } from '@/data/organizations/keys'
 import { permissionKeys } from '@/data/permissions/keys'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type ProfileResponse = components['schemas']['ProfileResponse_Output']
@@ -38,7 +39,7 @@ export const useProfileCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create profile: ${data.message}`)
+        toast.error($t('Failed to create profile: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

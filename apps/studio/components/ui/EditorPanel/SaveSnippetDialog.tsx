@@ -40,7 +40,8 @@ export const SaveSnippetDialog = ({ open, sql, onOpenChange, onSave }: SaveSnipp
 
   const { mutate: generateTitle, isPending: isGenerating } = useSqlTitleGenerateMutation({
     onSuccess: ({ title }) => setName(title),
-    onError: (error) => toast.error(`Failed to generate title: ${error.message}`),
+    onError: (error) =>
+      toast.error($t('Failed to generate title: {{value0}}', { value0: error.message })),
   })
 
   // Reset the name each time the dialog opens

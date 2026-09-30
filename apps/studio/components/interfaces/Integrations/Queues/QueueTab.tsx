@@ -81,7 +81,7 @@ export const QueueTab = () => {
 
   const { mutate: updateTable, isPending: isUpdatingTable } = useTableUpdateMutation({
     onSettled: () => {
-      toast.success(`Successfully enabled RLS for ${queueName}`)
+      toast.success($t('Successfully enabled RLS for {{value0}}', { value0: queueName }))
       setRlsConfirmModalOpen(false)
     },
   })

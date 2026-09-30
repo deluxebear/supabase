@@ -24,7 +24,7 @@ export const MakeReportSnippetPublicModal = ({
 
   const { mutate: upsertContent, isPending: isUpserting } = useContentUpsertMutation({
     onError: (error) => {
-      toast.error(`Failed to share snippet: ${error.message}`)
+      toast.error($t('Failed to share snippet: {{value0}}', { value0: error.message }))
     },
   })
 
@@ -54,7 +54,7 @@ export const MakeReportSnippetPublicModal = ({
       )
     } catch (error: unknown) {
       if (error instanceof Error) {
-        toast.error(`Failed to share snippet: ${error.message}`)
+        toast.error($t('Failed to share snippet: {{value0}}', { value0: error.message }))
       }
     } finally {
       setIsPreparing(false)

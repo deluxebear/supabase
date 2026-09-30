@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 
 import { CreateColumnBody } from './database-column-create-mutation'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type UpdateColumnBody = Partial<
@@ -77,7 +78,7 @@ export const useDatabaseColumnUpdateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update database column: ${data.message}`)
+        toast.error($t('Failed to update database column: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { replicationKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 type UpdatePipelineVersionParams = {
@@ -72,7 +73,7 @@ export const useUpdatePipelineVersionMutation = ({
           queryKey: replicationKeys.pipelinesVersion(projectRef, pipelineId),
         })
       } else if (onError === undefined) {
-        toast.error(`Failed to update pipeline version: ${error.message}`)
+        toast.error($t('Failed to update pipeline version: {{value0}}', { value0: error.message }))
       } else {
         onError(error, variables, context)
       }

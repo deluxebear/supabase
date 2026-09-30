@@ -5,6 +5,7 @@ import { organizationKeys } from './keys'
 import { del, handleError } from '@/data/fetchers'
 import { organizationKeys as organizationKeysV1 } from '@/data/organizations/keys'
 import { invalidatePermissionsQuery } from '@/data/permissions/permissions-query'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type OrganizationMemberUnassignRoleVariables = {
@@ -76,7 +77,7 @@ export const useOrganizationMemberUnassignRoleMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to unassign member role: ${data.message}`)
+        toast.error($t('Failed to unassign member role: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

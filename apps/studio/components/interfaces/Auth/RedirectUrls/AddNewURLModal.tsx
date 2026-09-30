@@ -109,10 +109,15 @@ export const AddNewURLModal = ({ visible, allowList, onClose }: AddNewURLModalPr
       { projectRef: ref!, config: { URI_ALLOW_LIST: payloadString } },
       {
         onError: (error) => {
-          toast.error(`Failed to add URL(s): ${error?.message}`)
+          toast.error($t('Failed to add URL(s): {{value0}}', { value0: error?.message }))
         },
         onSuccess: () => {
-          toast.success(`Successfully added ${addedCount} URL${addedCount > 1 ? 's' : ''}`)
+          toast.success(
+            $t('Successfully added {{value0}} URL{{value1}}', {
+              value0: addedCount,
+              value1: addedCount > 1 ? $t('s') : '',
+            })
+          )
           form.reset(initialValues)
           onClose()
         },

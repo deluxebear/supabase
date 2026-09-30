@@ -11,6 +11,7 @@ import { secretsKeys } from './keys'
 import { constructHeaders } from '@/data/fetchers'
 import { STUDIO_CAPABILITIES, STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { uuidv4 } from '@/lib/helpers'
+import { t as $t } from '@/lib/i18n'
 import { ResponseError } from '@/types'
 
 // [self-platform] Whether stored Edge Function secrets reach the project's
@@ -131,7 +132,9 @@ export const useApplyFunctionSecretsMutation = ({
     },
     async onError(error, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to apply Edge Function secrets: ${error.message}`)
+        toast.error(
+          $t('Failed to apply Edge Function secrets: {{value0}}', { value0: error.message })
+        )
       } else onError(error, variables, context)
     },
     ...options,

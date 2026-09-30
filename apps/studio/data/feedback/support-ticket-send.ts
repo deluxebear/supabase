@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 
 import type { ExtendedSupportCategories } from '@/components/interfaces/Support/Support.constants'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import { ResponseError } from '@/types'
 import type { UseCustomMutationOptions } from '@/types'
 
@@ -116,7 +117,7 @@ export const useSendSupportTicketMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to submit support ticket: ${data.message}`)
+        toast.error($t('Failed to submit support ticket: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

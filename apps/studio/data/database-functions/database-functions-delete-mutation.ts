@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { SavedDatabaseFunction } from './database-functions-query'
 import { databaseKeys } from '@/data/database/keys'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type DatabaseFunctionDeleteVariables = {
@@ -56,7 +57,7 @@ export const useDatabaseFunctionDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete database function: ${data.message}`)
+        toast.error($t('Failed to delete database function: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

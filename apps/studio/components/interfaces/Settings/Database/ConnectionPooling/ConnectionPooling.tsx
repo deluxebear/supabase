@@ -136,7 +136,7 @@ export const ConnectionPooling = () => {
       },
       {
         onSuccess: (data) => {
-          toast.success(`Successfully updated pooler configuration`)
+          toast.success($t('Successfully updated pooler configuration'))
           if (data) {
             form.reset({
               default_pool_size: data.default_pool_size ?? undefined,

@@ -83,10 +83,10 @@ export const UpdateRolesConfirmationModal = ({
           gotrueId,
           roleId: projectsRoleConfiguration[0].roleId,
         })
-        toast.success(`Successfully updated role for ${member.username}`)
+        toast.success($t('Successfully updated role for {{value0}}', { value0: member.username }))
         onClose(true)
       } catch (error: any) {
-        toast.error(`Failed to update role: ${error.message}`)
+        toast.error($t('Failed to update role: {{value0}}', { value0: error.message }))
       } finally {
         setSaving(false)
         return
@@ -126,10 +126,10 @@ export const UpdateRolesConfirmationModal = ({
         // invalidation; refresh the caller's permission cache here.
         invalidatePermissionsQuery(queryClient),
       ])
-      toast.success(`Successfully updated role for ${member.username}`)
+      toast.success($t('Successfully updated role for {{value0}}', { value0: member.username }))
       onClose(true)
     } catch (error: any) {
-      toast.error(`Failed to update role: ${error.message}`)
+      toast.error($t('Failed to update role: {{value0}}', { value0: error.message }))
     } finally {
       setSaving(false)
       return

@@ -92,11 +92,16 @@ export const EnableExtensionModal = ({
 
   const { mutate: enableExtension, isPending: isEnabling } = useDatabaseExtensionEnableMutation({
     onSuccess: () => {
-      toast.success(`Extension "${extension.name}" is now enabled`)
+      toast.success($t('Extension "{{value0}}" is now enabled', { value0: extension.name }))
       onCancel()
     },
     onError: (error) => {
-      toast.error(`Failed to enable ${extension.name}: ${error.message}`)
+      toast.error(
+        $t('Failed to enable {{value0}}: {{value1}}', {
+          value0: extension.name,
+          value1: error.message,
+        })
+      )
     },
   })
 

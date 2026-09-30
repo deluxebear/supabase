@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { constructHeaders } from '@/data/fetchers'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type GenerateAttachmentURLsResponse = {
@@ -66,7 +67,7 @@ export const useGenerateAttachmentURLsMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to generate attachment URLS: ${data.message}`)
+        toast.error($t('Failed to generate attachment URLS: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

@@ -12,6 +12,7 @@ import { DocViewError } from '@/components/interfaces/Integrations/DataApi/DocVi
 import { DocViewLoading } from '@/components/interfaces/Integrations/DataApi/DocViewLoading'
 import { useProjectSettingsV2Query } from '@/data/config/project-settings-v2-query'
 import { useProjectJsonSchemaQuery } from '@/data/docs/project-json-schema-query'
+import { t as $t } from '@/lib/i18n'
 
 interface DocViewProps {
   selectedLang: 'js' | 'bash'
@@ -42,7 +43,11 @@ export const DocView = ({ selectedLang, selectedApiKey }: DocViewProps) => {
     const isSchemaReady = !isLoading && !!jsonSchema && !settingsError && !jsonSchemaError
     if (!isSchemaReady || !projectRef) return
     if (resourceMissing || rpcMissing) {
-      toast.error(`${resourceMissing ? 'table/view' : 'function'} could not be found`)
+      toast.error(
+        $t('{{value0}} could not be found', {
+          value0: resourceMissing ? 'table/view' : $t('function'),
+        })
+      )
       router.replace(`/project/${projectRef}/integrations/data_api/docs`)
     }
   }, [

@@ -45,7 +45,7 @@ export const ExitSurveyModal = ({ visible, projects, onClose }: ExitSurveyModalP
   const { mutate: updateOrgSubscription, isPending: isUpdating } = useOrgSubscriptionUpdateMutation(
     {
       onError: (error) => {
-        toast.error(`Failed to downgrade project: ${error.message}`, {
+        toast.error($t('Failed to downgrade project: {{value0}}', { value0: error.message }), {
           duration: 10_000,
           dismissible: true,
         })
@@ -53,8 +53,10 @@ export const ExitSurveyModal = ({ visible, projects, onClose }: ExitSurveyModalP
       onSuccess: async () => {
         toast.success(
           hasProjectsWithComputeDowngrade
-            ? 'Successfully downgraded organization to the Free Plan. Your projects are currently restarting to update their compute instances.'
-            : 'Successfully downgraded organization to the Free Plan',
+            ? $t(
+                'Successfully downgraded organization to the Free Plan. Your projects are currently restarting to update their compute instances.'
+              )
+            : $t('Successfully downgraded organization to the Free Plan'),
           { duration: hasProjectsWithComputeDowngrade ? 8000 : 4000 }
         )
 

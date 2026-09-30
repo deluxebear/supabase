@@ -36,7 +36,7 @@ export const DeleteCronJob = () => {
         const { type } = parseCronJobCommand(cronJob.command, project.ref, project.restUrl)
         track('cron_job_removed', { type })
       }
-      toast.success(`Successfully removed cron job`)
+      toast.success($t('Successfully removed cron job'))
       setCronJobForDeletion(null)
     },
   })

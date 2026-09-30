@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import type { User } from './users-infinite-query'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type UserResetPasswordVariables = {
@@ -39,7 +40,7 @@ export const useUserResetPasswordMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to reset user password: ${data.message}`)
+        toast.error($t('Failed to reset user password: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

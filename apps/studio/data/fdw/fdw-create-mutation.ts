@@ -9,6 +9,7 @@ import { entityTypeKeys } from '@/data/entity-types/keys'
 import { foreignTableKeys } from '@/data/foreign-tables/keys'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { vaultSecretsKeys } from '@/data/vault/keys'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type FDWCreateVariables = {
@@ -61,7 +62,10 @@ export const useFDWCreateMutation = ({
     async onError(data, variables, context) {
       if (onError === undefined) {
         toast.error(
-          `Failed to create ${variables.wrapperMeta.label} foreign data wrapper: ${data.message}`
+          $t('Failed to create {{value0}} foreign data wrapper: {{value1}}', {
+            value0: variables.wrapperMeta.label,
+            value1: data.message,
+          })
         )
       } else {
         onError(data, variables, context)

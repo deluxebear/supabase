@@ -327,7 +327,7 @@ export const WithStatements = ({
             handleRefresh()
             setShowResetgPgStatStatements(false)
           } catch (error: any) {
-            toast.error(`Failed to reset analysis: ${error.message}`)
+            toast.error($t('Failed to reset analysis: {{value0}}', { value0: error.message }))
           }
         }}
       >

@@ -76,14 +76,17 @@ export const GraphqlExposureLintCTA = ({
   const { mutate: executeSql, isPending: isRevoking } = useExecuteSqlMutation({
     onSuccess: async () => {
       toast.success(
-        `Revoked access to ${schema}.${name} from ${role}. ${audience.upper} can no longer query this ${objectType} via GraphQL or Data API.`
+        $t(
+          'Revoked access to {{value0}}.{{value1}} from {{value2}}. {{value3}} can no longer query this {{value4}} via GraphQL or Data API.',
+          { value0: schema, value1: name, value2: role, value3: audience.upper, value4: objectType }
+        )
       )
       setShowConfirmRevoke(false)
       await queryClient.invalidateQueries({ queryKey: lintKeys.lint(projectRef) })
       onAfterAction?.()
     },
     onError: (error) => {
-      toast.error(`Failed to revoke access: ${error.message}`)
+      toast.error($t('Failed to revoke access: {{value0}}', { value0: error.message }))
     },
   })
 

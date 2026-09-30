@@ -44,7 +44,7 @@ export function RestartProjectDialog({
       onClose()
     },
     onError: (error) => {
-      toast.error(`Unable to restart project: ${error.message}`)
+      toast.error($t('Unable to restart project: {{value0}}', { value0: error.message }))
     },
   })
 
@@ -59,7 +59,7 @@ export function RestartProjectDialog({
         onClose()
       },
       onError: (error) => {
-        toast.error(`Unable to restart database: ${error.message}`)
+        toast.error($t('Unable to restart database: {{value0}}', { value0: error.message }))
       },
     })
 

@@ -49,7 +49,7 @@ export function RotateKeyDialog({
       onClose()
     },
     onError: (error) => {
-      toast.error(`Failed to rotate signing key: ${error.message}`)
+      toast.error($t('Failed to rotate signing key: {{value0}}', { value0: error.message }))
     },
   })
 

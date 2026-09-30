@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { invalidateReplicationPipelineQueries } from './invalidate-pipeline-queries'
 import { replicationKeys } from './keys'
 import { del, handleError } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type DeleteDestinationPipelineParams = {
@@ -62,7 +63,9 @@ export const useDeleteDestinationPipelineMutation = ({
       },
       async onError(data, variables, context) {
         if (onError === undefined) {
-          toast.error(`Failed to delete destination and pipeline: ${data.message}`)
+          toast.error(
+            $t('Failed to delete destination and pipeline: {{value0}}', { value0: data.message })
+          )
         } else {
           onError(data, variables, context)
         }

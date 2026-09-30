@@ -103,10 +103,10 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
   const { mutate: resetPassword, isPending: isResettingPassword } = useUserResetPasswordMutation({
     onSuccess: (_, vars) => {
       setSuccessAction('send_recovery')
-      toast.success(`Sent password recovery to ${vars.user.email}`)
+      toast.success($t('Sent password recovery to {{value0}}', { value0: vars.user.email }))
     },
     onError: (err) => {
-      toast.error(`Failed to send password recovery: ${err.message}`)
+      toast.error($t('Failed to send password recovery: {{value0}}', { value0: err.message }))
     },
   })
   const { mutate: sendMagicLink, isPending: isSendingMagicLink } = useUserSendMagicLinkMutation({
@@ -114,25 +114,25 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
       setSuccessAction('send_magic_link')
       toast.success(
         isVerified
-          ? `Sent magic link to ${vars.user.email}`
-          : `Sent confirmation email to ${vars.user.email}`
+          ? $t('Sent magic link to {{value0}}', { value0: vars.user.email })
+          : $t('Sent confirmation email to {{value0}}', { value0: vars.user.email })
       )
     },
     onError: (err) => {
       toast.error(
         isVerified
-          ? `Failed to send magic link: ${err.message}`
-          : `Failed to send confirmation email: ${err.message}`
+          ? $t('Failed to send magic link: {{value0}}', { value0: err.message })
+          : $t('Failed to send confirmation email: {{value0}}', { value0: err.message })
       )
     },
   })
   const { mutate: sendOTP, isPending: isSendingOTP } = useUserSendOTPMutation({
     onSuccess: (_, vars) => {
       setSuccessAction('send_otp')
-      toast.success(`Sent OTP to ${vars.user.phone}`)
+      toast.success($t('Sent OTP to {{value0}}', { value0: vars.user.phone }))
     },
     onError: (err) => {
-      toast.error(`Failed to send OTP: ${err.message}`)
+      toast.error($t('Failed to send OTP: {{value0}}', { value0: err.message }))
     },
   })
   const { mutate: deleteUserMFAFactors } = useUserDeleteMFAFactorsMutation({
@@ -157,7 +157,7 @@ export const UserOverview = ({ user, onDeleteSuccess }: UserOverviewProps) => {
   const handleUnban = () => {
     if (projectRef === undefined) return console.error('Project ref is required')
     if (user.id === undefined) {
-      return toast.error(`Failed to ban user: User ID not found`)
+      return toast.error($t('Failed to ban user: User ID not found'))
     }
 
     updateUser({

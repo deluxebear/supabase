@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { branchKeys } from './keys'
 import { handleError, patch } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type BranchUpdateVariables = {
@@ -57,7 +58,7 @@ export const useBranchUpdateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update branch: ${data.message}`)
+        toast.error($t('Failed to update branch: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

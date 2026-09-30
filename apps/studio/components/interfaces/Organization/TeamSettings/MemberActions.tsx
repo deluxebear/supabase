@@ -94,7 +94,7 @@ export const MemberActions = ({ member }: MemberActionsProps) => {
   const { mutate: deleteOrganizationMember, isPending: isDeletingMember } =
     useOrganizationMemberDeleteMutation({
       onSuccess: () => {
-        toast.success(`Successfully removed ${member.primary_email}`)
+        toast.success($t('Successfully removed {{value0}}', { value0: member.primary_email }))
         setIsDeleteModalOpen(false)
       },
     })
@@ -105,7 +105,7 @@ export const MemberActions = ({ member }: MemberActionsProps) => {
         toast.success($t('Resent the invitation.'))
       },
       onError: (error) => {
-        toast.error(`Failed to resend invitation: ${error.message}`)
+        toast.error($t('Failed to resend invitation: {{value0}}', { value0: error.message }))
       },
     })
 

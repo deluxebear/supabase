@@ -78,11 +78,14 @@ export const InitializeForeignSchemaDialog = ({ namespace }: { namespace: string
       })
 
       toast.success(
-        `Successfully created "${values.schema}" schema! Data from tables in the "${namespace}" namespace can now be queried from there.`
+        $t(
+          'Successfully created "{{value0}}" schema! Data from tables in the "{{value1}}" namespace can now be queried from there.',
+          { value0: values.schema, value1: namespace }
+        )
       )
       setIsOpen(false)
     } catch (error: any) {
-      toast.error(`Failed to expose tables: ${error.message}`)
+      toast.error($t('Failed to expose tables: {{value0}}', { value0: error.message }))
     } finally {
       setIsCreating(false)
     }

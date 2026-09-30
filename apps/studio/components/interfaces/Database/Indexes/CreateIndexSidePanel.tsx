@@ -126,7 +126,7 @@ export const CreateIndexSidePanel = ({ visible, onClose }: CreateIndexSidePanelP
   const { mutate: createIndex, isPending: isExecuting } = useDatabaseIndexCreateMutation({
     onSuccess: () => {
       onClose()
-      toast.success(`Successfully created index`)
+      toast.success($t('Successfully created index'))
     },
   })
 

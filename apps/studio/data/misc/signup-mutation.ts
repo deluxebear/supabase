@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { handleError, post } from '@/data/fetchers'
 import { captureCriticalError } from '@/lib/error-reporting'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type SignUpVariables = {
@@ -39,7 +40,7 @@ export const useSignUpMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to sign up: ${data.message}`)
+        toast.error($t('Failed to sign up: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

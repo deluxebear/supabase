@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { constructHeaders } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import { ResponseError } from '@/types'
 
 export const databaseSecurityPolicySchema = z.object({
@@ -83,7 +84,7 @@ export function useUpdateDatabaseSecurityMutation() {
     },
     onSuccess: async (policy, variables) => {
       queryClient.setQueryData(keys.policy(variables.projectRef), policy)
-      toast.success('Database security settings updated')
+      toast.success($t('Database security settings updated'))
     },
     onError: (error: ResponseError) => toast.error(error.message),
   })
@@ -117,7 +118,7 @@ export function useRotateDatabasePasswordMutation() {
     },
     onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({ queryKey: keys.policy(variables.projectRef) })
-      toast.success('Database password rotated and the platform connection was updated')
+      toast.success($t('Database password rotated and the platform connection was updated'))
     },
     onError: (error: ResponseError) => toast.error(error.message),
   })

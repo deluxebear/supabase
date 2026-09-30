@@ -5,6 +5,7 @@ import { realtimeKeys } from './keys'
 import type { components } from '@/data/api'
 import { configKeys } from '@/data/config/keys'
 import { handleError, patch } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type RealtimeConfigurationUpdateBody = components['schemas']['UpdateRealtimeConfigBody'] & {
@@ -84,7 +85,9 @@ export const useRealtimeConfigurationUpdateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update realtime configuration: ${data.message}`)
+        toast.error(
+          $t('Failed to update realtime configuration: {{value0}}', { value0: data.message })
+        )
       } else {
         onError(data, variables, context)
       }

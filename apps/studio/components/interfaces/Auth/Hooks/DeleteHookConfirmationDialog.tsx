@@ -55,17 +55,20 @@ export const DeleteHookConfirmationDialog = ({
             connectionString: project!.connectionString,
             sql: joinSqlFragments(revokeStatements, '\n'),
           })
-          toast.success(`Successfully deleted ${hook.title}`)
+          toast.success($t('Successfully deleted {{value0}}', { value0: hook.title }))
         } catch (error) {
           toast.warning(
-            `Deleted ${hook.title}, but failed to revoke permissions on ${method.schema}.${method.functionName}. You may want to revoke them manually.`
+            $t(
+              'Deleted {{value0}}, but failed to revoke permissions on {{value1}}.{{value2}}. You may want to revoke them manually.',
+              { value0: hook.title, value1: method.schema, value2: method.functionName }
+            )
           )
         }
       }
       onDeleteSuccess()
     },
     onError: (error) => {
-      toast.error(`Failed to delete hook: ${error.message}`)
+      toast.error($t('Failed to delete hook: {{value0}}', { value0: error.message }))
     },
   })
 

@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import type { User } from './users-infinite-query'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type UserSendMagicLinkVariables = {
@@ -39,7 +40,7 @@ export const useUserSendMagicLinkMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to send magic link: ${data.message}`)
+        toast.error($t('Failed to send magic link: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

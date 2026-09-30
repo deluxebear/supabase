@@ -65,7 +65,7 @@ export const EnumeratedTypes = () => {
     isSuccess: isSuccessDelete,
   } = useEnumeratedTypeDeleteMutation({
     onSuccess: (_, vars) => {
-      toast.success(`Successfully deleted type "${vars.name}"`)
+      toast.success($t('Successfully deleted type "{{value0}}"', { value0: vars.name }))
       setSelectedTypeIdToDelete(null)
     },
   })

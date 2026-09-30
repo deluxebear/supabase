@@ -265,7 +265,11 @@ export const UsersV2 = () => {
         toast.success($t('Initiated creation of user search indexes'))
       },
       onError: (error) => {
-        toast.error(`Failed to initiate creation of user search indexes: ${error?.message}`)
+        toast.error(
+          $t('Failed to initiate creation of user search indexes: {{value0}}', {
+            value0: error?.message,
+          })
+        )
       },
     }
   )
@@ -475,14 +479,17 @@ export const UsersV2 = () => {
         queryClient.invalidateQueries({ queryKey: authKeys.usersInfinite(projectRef) }),
       ])
       toast.success(
-        `Successfully deleted the selected ${selectedUsers.size} user${selectedUsers.size > 1 ? 's' : ''}`
+        $t('Successfully deleted the selected {{value0}} user{{value1}}', {
+          value0: selectedUsers.size,
+          value1: selectedUsers.size > 1 ? $t('s') : '',
+        })
       )
       setShowDeleteModal(false)
       setSelectedUsers(new Set([]))
 
       if (userIds.includes(selectedUser)) setSelectedId(null)
     } catch (error: any) {
-      toast.error(`Failed to delete selected users: ${error.message}`)
+      toast.error($t('Failed to delete selected users: {{value0}}', { value0: error.message }))
     } finally {
       setIsDeletingUsers(false)
     }
@@ -830,7 +837,11 @@ export const UsersV2 = () => {
                 onScroll={handleScroll}
                 onSelectedRowsChange={(rows) => {
                   if (rows.size > MAX_BULK_DELETE) {
-                    toast(`Only up to ${MAX_BULK_DELETE} users can be selected at a time`)
+                    toast(
+                      $t('Only up to {{value0}} users can be selected at a time', {
+                        value0: MAX_BULK_DELETE,
+                      })
+                    )
                   } else setSelectedUsers(rows)
                 }}
                 onCellKeyDown={onCellKeyDown}

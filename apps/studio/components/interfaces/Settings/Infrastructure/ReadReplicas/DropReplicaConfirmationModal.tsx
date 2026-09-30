@@ -47,7 +47,7 @@ export const DropReplicaConfirmationModal = ({
 
   const { mutate: removeReadReplica, isPending: isRemoving } = useReadReplicaRemoveMutation({
     onSuccess: () => {
-      toast.success(`Tearing down read replica (ID: ${formattedId})`)
+      toast.success($t('Tearing down read replica (ID: {{value0}})', { value0: formattedId }))
 
       // [Joshen] Temporarily optimistic rendering until API supports immediate status update
       queryClient.setQueriesData(

@@ -136,7 +136,9 @@ export const UserImpersonationSelector = ({
         customAccessTokenHookDetails
       )
     } catch (error) {
-      toast.error(`Failed to impersonate user: ${(error as ResponseError).message}`)
+      toast.error(
+        $t('Failed to impersonate user: {{value0}}', { value0: (error as ResponseError).message })
+      )
     } finally {
       setIsImpersonateLoading(false)
     }
@@ -166,7 +168,9 @@ export const UserImpersonationSelector = ({
         customAccessTokenHookDetails
       )
     } catch (error) {
-      toast.error(`Failed to impersonate user: ${(error as ResponseError).message}`)
+      toast.error(
+        $t('Failed to impersonate user: {{value0}}', { value0: (error as ResponseError).message })
+      )
     } finally {
       setIsImpersonateLoading(false)
     }
@@ -183,7 +187,11 @@ export const UserImpersonationSelector = ({
       setSelectedSource(value)
       onUserImpersonationCleared?.()
     } catch (error) {
-      toast.error(`Failed to stop impersonating user: ${(error as ResponseError).message}`)
+      toast.error(
+        $t('Failed to stop impersonating user: {{value0}}', {
+          value0: (error as ResponseError).message,
+        })
+      )
     }
   }
 
@@ -203,7 +211,11 @@ export const UserImpersonationSelector = ({
       await state.setRole({ ...state.role, aal: value }, customAccessTokenHookDetails)
     } catch (error) {
       setAal(previousAal)
-      toast.error(`Failed to update MFA assurance level: ${(error as ResponseError).message}`)
+      toast.error(
+        $t('Failed to update MFA assurance level: {{value0}}', {
+          value0: (error as ResponseError).message,
+        })
+      )
     }
   }
 

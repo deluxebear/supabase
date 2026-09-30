@@ -7,6 +7,7 @@ import { type AuthTemplateResetType } from '@/components/interfaces/Auth/EmailTe
 import { configKeys } from '@/data/config/keys'
 import { handleError, post } from '@/data/fetchers'
 import { lintKeys } from '@/data/lint/keys'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 type AuthTemplateResetVariables = {
@@ -61,7 +62,7 @@ export const useAuthTemplateResetMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to reset email template: ${data.message}`)
+        toast.error($t('Failed to reset email template: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

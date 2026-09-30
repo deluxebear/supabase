@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { recoveryCodeKeys } from './keys'
 import { captureCriticalError } from '@/lib/error-reporting'
 import { auth } from '@/lib/gotrue'
+import { t as $t } from '@/lib/i18n'
 import { UseCustomMutationOptions } from '@/types'
 
 export const recoveryCodesUnenroll = async () => {
@@ -37,7 +38,7 @@ export const useRecoveryCodesUnenrollMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to unenroll recovery codes: ${data.message}`)
+        toast.error($t('Failed to unenroll recovery codes: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

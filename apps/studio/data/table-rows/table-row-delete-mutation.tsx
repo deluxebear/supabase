@@ -10,6 +10,7 @@ import { DocsButton } from '@/components/ui/DocsButton'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { Entity } from '@/data/table-editor/table-editor-types'
 import { DOCS_URL } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { RoleImpersonationState, wrapWithRoleImpersonation } from '@/lib/role-impersonation'
 import { isRoleImpersonationEnabled } from '@/state/role-impersonation-state'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
@@ -96,9 +97,18 @@ export const useTableRowDeleteMutation = ({
             .split('on table')[0]
             .replaceAll('"', '')
           const initialMessage = isMultipleRows
-            ? `Unable to delete rows as one of them is currently referenced by a foreign key constraint from the table \`${referencingTable}\`.`
-            : `Unable to delete row as it is currently referenced by a foreign key constraint from the table \`${referencingTable}\`.`
-          const resolutionCTA = `Set an on delete behavior on the foreign key relation \`${fkName}\` in the \`${referencingTable}\` table to automatically respond when row(s) are being deleted in the \`${sourceTable}\` table.`
+            ? $t(
+                'Unable to delete rows as one of them is currently referenced by a foreign key constraint from the table `{{value0}}`.',
+                { value0: referencingTable }
+              )
+            : $t(
+                'Unable to delete row as it is currently referenced by a foreign key constraint from the table `{{value0}}`.',
+                { value0: referencingTable }
+              )
+          const resolutionCTA = $t(
+            'Set an on delete behavior on the foreign key relation `{{value0}}` in the `{{value1}}` table to automatically respond when row(s) are being deleted in the `{{value2}}` table.',
+            { value0: fkName, value1: referencingTable, value2: sourceTable }
+          )
 
           toast(initialMessage, {
             description: <Markdown content={resolutionCTA} className="[&>p]:m-0" />,
@@ -115,12 +125,13 @@ export const useTableRowDeleteMutation = ({
             ),
           })
         } else if (isPkError) {
-          toast('Unable to delete row(s) as table has no primary keys', {
+          toast($t('Unable to delete row(s) as table has no primary keys'), {
             description: (
               <div>
                 <p className="text-sm text-foreground-light">
-                  Add a primary key column to your table first to serve as a unique identifier for
-                  each row before updating or deleting the row.
+                  {$t(
+                    'Add a primary key column to your table first to serve as a unique identifier for each row before updating or deleting the row.'
+                  )}
                 </p>
                 <div className="mt-3">
                   <DocsButton href={`${DOCS_URL}/guides/database/tables#primary-keys`} />
@@ -129,7 +140,7 @@ export const useTableRowDeleteMutation = ({
             ),
           })
         } else {
-          toast.error(`Failed to delete table row: ${data.message}`)
+          toast.error($t('Failed to delete table row: {{value0}}', { value0: data.message }))
         }
       } else {
         onError(data, variables, context)

@@ -204,7 +204,7 @@ export const CreateCronJobSheet = ({ open, selectedCronJob, onClose }: CreateCro
           )
         }
       } catch (error: any) {
-        toast.error(`Failed to validate cron job name: ${error.message}`)
+        toast.error($t('Failed to validate cron job name: {{value0}}', { value0: error.message }))
         return
       } finally {
         setIsLoadingGetCronJob(false)
@@ -228,9 +228,9 @@ export const CreateCronJobSheet = ({ open, selectedCronJob, onClose }: CreateCro
       {
         onSuccess: () => {
           if (isEditing) {
-            toast.success(`Successfully updated cron job ${name}`)
+            toast.success($t('Successfully updated cron job {{value0}}', { value0: name }))
           } else {
-            toast.success(`Successfully created cron job ${name}`)
+            toast.success($t('Successfully created cron job {{value0}}', { value0: name }))
           }
 
           if (isEditing) {

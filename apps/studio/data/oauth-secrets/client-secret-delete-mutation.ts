@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { clientSecretKeys } from './keys'
 import { del, handleError } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type ClientSecretDeleteVariables = {
@@ -39,7 +40,7 @@ export const useClientSecretDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete client secret: ${data.message}`)
+        toast.error($t('Failed to delete client secret: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

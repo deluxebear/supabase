@@ -313,7 +313,7 @@ export function CustomReportSection() {
       const { label, sql } = JSON.parse(data)
       if (!label || !sql) return
 
-      const toastId = toast.loading(`Creating new query: ${label}`)
+      const toastId = toast.loading($t('Creating new query: {{value0}}', { value0: label }))
 
       const payload = {
         ...createSqlSnippetSkeletonV2({
@@ -328,7 +328,9 @@ export function CustomReportSection() {
       upsertContent({ projectRef: ref, payload })
 
       // Handle success optimistically
-      toast.success(`Successfully created new query: ${label}`, { id: toastId })
+      toast.success($t('Successfully created new query: {{value0}}', { value0: label }), {
+        id: toastId,
+      })
       addSnippetToReport({ id: payload.id, name: label })
       track('custom_report_assistant_sql_block_added')
     },

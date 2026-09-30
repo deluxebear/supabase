@@ -46,7 +46,11 @@ export const RowSelectionHeader = () => {
       format === 'json' ? formatLogsAsJson(selectedRows) : formatLogsAsMarkdown(selectedRows)
     copyToClipboard(text, () => {
       toast.success(
-        `Copied ${selectedRows.length} log${selectedRows.length !== 1 ? 's' : ''} as ${format === 'json' ? format.toUpperCase() : format}`
+        $t('Copied {{value0}} log{{value1}} as {{value2}}', {
+          value0: selectedRows.length,
+          value1: selectedRows.length !== 1 ? $t('s') : '',
+          value2: format === 'json' ? format.toUpperCase() : format,
+        })
       )
     })
   }

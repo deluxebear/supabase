@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { constructHeaders, fetchHandler } from '@/data/fetchers'
 import { BASE_PATH } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { ResponseError, UseCustomMutationOptions } from '@/types'
 
 type SqlTitleGenerateResponse = {
@@ -52,7 +53,7 @@ export const useSqlTitleGenerateMutation = ({
     mutationFn: (vars) => generateSqlTitle(vars),
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to generate title: ${data.message}`)
+        toast.error($t('Failed to generate title: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

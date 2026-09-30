@@ -54,11 +54,11 @@ export const RestartTableDialog = ({
   const willCopyTable = shouldCopyTable(tableSyncCopy, table.id)
   const { mutateAsync: rollbackTables, isPending: isResetting } = useRollbackTablesMutation({
     onSuccess: () => {
-      toast.success(`Resetting "${tableName}"`)
+      toast.success($t('Resetting "{{value0}}"', { value0: tableName }))
       onOpenChange(false)
     },
     onError: (error) => {
-      toast.error(`Failed to reset table: ${error.message}`)
+      toast.error($t('Failed to reset table: {{value0}}', { value0: error.message }))
     },
   })
 

@@ -60,7 +60,9 @@ export const useExportSchemaToImage = () => {
         }
       } catch (error) {
         console.error('Failed to download:', error)
-        toast.error(`Failed to download current view: ${(error as Error).message}`)
+        toast.error(
+          $t('Failed to download current view: {{value0}}', { value0: (error as Error).message })
+        )
       } finally {
         setIsDownloading(false)
       }

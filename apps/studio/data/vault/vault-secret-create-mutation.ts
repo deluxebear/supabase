@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { vaultSecretsKeys } from './keys'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions, VaultSecret } from '@/types'
 
 export type VaultSecretCreateVariables = {
@@ -46,7 +47,7 @@ export const useVaultSecretCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create secret: ${data.message}`)
+        toast.error($t('Failed to create secret: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

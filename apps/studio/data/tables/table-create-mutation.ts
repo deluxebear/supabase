@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { privilegeKeys } from '@/data/privileges/keys'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { invalidateTableMetadata } from '@/data/tables/table-metadata-invalidation'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type CreateTableBody = {
@@ -65,7 +66,7 @@ export const useTableCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create database table: ${data.message}`)
+        toast.error($t('Failed to create database table: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

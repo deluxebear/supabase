@@ -28,14 +28,14 @@ const ChangePaymentMethodModal = ({
   const { mutateAsync: markAsDefault } = useOrganizationPaymentMethodMarkAsDefaultMutation({
     onSuccess: () => {
       toast.success(
-        `Successfully changed payment method to the card ending with ${
-          selectedPaymentMethod!.card!.last4
-        }`
+        $t('Successfully changed payment method to the card ending with {{value0}}', {
+          value0: selectedPaymentMethod!.card!.last4,
+        })
       )
       onClose()
     },
     onError: (error) => {
-      toast.error(`Failed to change payment method: ${error.message}`)
+      toast.error($t('Failed to change payment method: {{value0}}', { value0: error.message }))
     },
   })
 

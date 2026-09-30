@@ -82,7 +82,7 @@ export const SignInSSOForm = () => {
     } else {
       setCaptchaToken(null)
       captchaRef.current?.resetCaptcha()
-      toast.error(`Failed to sign in: ${error.message}`, { id: toastId })
+      toast.error($t('Failed to sign in: {{value0}}', { value0: error.message }), { id: toastId })
       trackFunnelError('signin', classifyApiError('signin', error), 'toast', toastId)
       captureCriticalError(error, 'sign in via SSO')
     }

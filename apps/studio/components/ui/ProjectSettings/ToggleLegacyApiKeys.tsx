@@ -188,8 +188,8 @@ const ToggleApiKeysModal = ({
         onSuccess: () => {
           toast.success(
             enabled
-              ? 'Your anon and service_role keys have been re-enabled!'
-              : 'Your anon and service_role keys have been disabled!'
+              ? $t('Your anon and service_role keys have been re-enabled!')
+              : $t('Your anon and service_role keys have been disabled!')
           )
           onClose()
         },

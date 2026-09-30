@@ -12,6 +12,7 @@ import {
   API_PRIVILEGE_TYPES,
   type ApiPrivilegesByRole,
 } from '@/lib/data-api-types'
+import { t as $t } from '@/lib/i18n'
 import type { DeepReadonly } from '@/lib/type-helpers'
 import type { UseCustomMutationOptions } from '@/types'
 
@@ -105,7 +106,9 @@ export const useTableApiAccessPrivilegesMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update API access privileges: ${data.message}`)
+        toast.error(
+          $t('Failed to update API access privileges: {{value0}}', { value0: data.message })
+        )
       } else {
         onError(data, variables, context)
       }

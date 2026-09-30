@@ -5,6 +5,7 @@ import { subscriptionKeys } from './keys'
 import type { AddonVariantId } from './types'
 import { configKeys } from '@/data/config/keys'
 import { del, handleError } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type ProjectAddonRemoveVariables = {
@@ -58,7 +59,7 @@ export const useProjectAddonRemoveMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to remove addon: ${data.message}`)
+        toast.error($t('Failed to remove addon: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

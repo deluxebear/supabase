@@ -25,7 +25,7 @@ export const DeleteAppModal = ({ selectedApp, onClose }: DeleteAppModalProps) =>
   const { slug } = useParams()
   const { mutateAsync: deleteOAuthApp } = useOAuthAppDeleteMutation({
     onSuccess: () => {
-      toast.success(`Successfully deleted the app "${selectedApp?.name}"`)
+      toast.success($t('Successfully deleted the app "{{value0}}"', { value0: selectedApp?.name }))
       onClose()
     },
   })

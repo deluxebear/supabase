@@ -14,6 +14,7 @@ import {
 import { handleError as handleErrorFetchers, post } from '@/data/fetchers'
 import { QUERY_SOURCE_REGISTRY } from '@/data/query-sources/query-source-registry'
 import { MB } from '@/lib/constants'
+import { t as $t } from '@/lib/i18n'
 import { sqlEventParser } from '@/lib/sql-event-parser'
 import { useTrack } from '@/lib/telemetry/track'
 import { ResponseError, UseCustomMutationOptions } from '@/types'
@@ -274,7 +275,7 @@ export const useExecuteSqlMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to execute SQL: ${data.message}`)
+        toast.error($t('Failed to execute SQL: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

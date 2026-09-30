@@ -176,7 +176,9 @@ export const SessionsAuthSettingsForm = () => {
       { projectRef: projectRef!, config: payload },
       {
         onError: (error) => {
-          toast.error(`Failed to update access token settings: ${error?.message}`)
+          toast.error(
+            $t('Failed to update access token settings: {{value0}}', { value0: error?.message })
+          )
           setIsUpdatingAccessToken(false)
         },
         onSuccess: () => {
@@ -195,7 +197,9 @@ export const SessionsAuthSettingsForm = () => {
       { projectRef: projectRef!, config: payload },
       {
         onError: (error) => {
-          toast.error(`Failed to update refresh token settings: ${error?.message}`)
+          toast.error(
+            $t('Failed to update refresh token settings: {{value0}}', { value0: error?.message })
+          )
           setIsUpdatingRefreshTokens(false)
         },
         onSuccess: () => {
@@ -214,7 +218,9 @@ export const SessionsAuthSettingsForm = () => {
       { projectRef: projectRef!, config: payload },
       {
         onError: (error) => {
-          toast.error(`Failed to update user session settings: ${error?.message}`)
+          toast.error(
+            $t('Failed to update user session settings: {{value0}}', { value0: error?.message })
+          )
           setIsUpdatingUserSessions(false)
         },
         onSuccess: () => {

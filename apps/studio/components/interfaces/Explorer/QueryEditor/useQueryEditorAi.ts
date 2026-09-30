@@ -16,6 +16,7 @@ import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { BASE_PATH } from '@/lib/constants'
 import { formatSql } from '@/lib/formatSql'
 import { getErrorMessage } from '@/lib/get-error-message'
+import { t as $t } from '@/lib/i18n'
 
 export function useQueryEditorAi({ dialect }: { dialect: SqlDialect }) {
   const { data: project } = useSelectedProjectQuery()
@@ -86,7 +87,11 @@ export function useQueryEditorAi({ dialect }: { dialect: SqlDialect }) {
 
       return { original, modified: isClickhouse ? modified : formatSql(modified) }
     } catch (error) {
-      toast.error(`Failed to generate SQL: ${getErrorMessage(error, 'Unknown error')}`)
+      toast.error(
+        $t('Failed to generate SQL: {{value0}}', {
+          value0: getErrorMessage(error, 'Unknown error'),
+        })
+      )
       return { original: undefined, modified: undefined }
     } finally {
       setIsCompletionLoading(false)

@@ -85,7 +85,11 @@ export const AccountIdentities = () => {
 
   const { mutate: unlinkIdentity, isPending: isUnlinking } = useUnlinkIdentityMutation({
     onSuccess: () => {
-      toast.success(`Successfully unlinked ${getProviderName(selectedProviderUnlink)} identity!`)
+      toast.success(
+        $t('Successfully unlinked {{value0}} identity!', {
+          value0: getProviderName(selectedProviderUnlink),
+        })
+      )
       setSelectedProviderUnlink(undefined)
     },
   })
@@ -117,7 +121,12 @@ export const AccountIdentities = () => {
       if (error) throw error
     } catch (error: unknown) {
       const message = getErrorMessage(error) ?? 'Unknown error'
-      toast.error(`Failed to link ${provider.displayName} identity: ${message}`)
+      toast.error(
+        $t('Failed to link {{value0}} identity: {{value1}}', {
+          value0: provider.displayName,
+          value1: message,
+        })
+      )
       captureCriticalError(
         error instanceof Error ? error : new Error(message),
         `link ${provider.displayName} identity`

@@ -144,7 +144,7 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
       })
       track('storage_bucket_created', { bucketType: 'STANDARD' })
 
-      toast.success(`Successfully created bucket ${values.name}`)
+      toast.success($t('Successfully created bucket {{value0}}', { value0: values.name }))
       form.reset()
       setSelectedUnit(StorageSizeUnits.MB)
       onOpenChange(false)
@@ -163,7 +163,7 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
         })
       } else {
         // For other errors, show a toast as fallback
-        toast.error(`Failed to create bucket: ${error.message}`)
+        toast.error($t('Failed to create bucket: {{value0}}', { value0: error.message }))
       }
     }
   }

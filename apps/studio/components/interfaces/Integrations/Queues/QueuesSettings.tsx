@@ -110,7 +110,9 @@ export const QueuesSettings = () => {
     onSuccess: onPostgrestConfigUpdateSuccess,
     onError: (error) => {
       setIsToggling(false)
-      toast.error(`Failed to toggle queue exposure via PostgREST: ${error.message}`)
+      toast.error(
+        $t('Failed to toggle queue exposure via PostgREST: {{value0}}', { value0: error.message })
+      )
     },
   })
 
@@ -141,7 +143,9 @@ export const QueuesSettings = () => {
     },
     onError: (error) => {
       setIsToggling(false)
-      toast.error(`Failed to toggle queue exposure via PostgREST: ${error.message}`)
+      toast.error(
+        $t('Failed to toggle queue exposure via PostgREST: {{value0}}', { value0: error.message })
+      )
     },
   })
 
@@ -162,12 +166,17 @@ export const QueuesSettings = () => {
         )
       )
       toast.success(
-        `Successfully enabled RLS on ${tablesWithoutRLS.length === 1 ? tablesWithoutRLS[0].name : `${tablesWithoutRLS.length} queue${tablesWithoutRLS.length > 1 ? 's' : ''}`} `
+        $t('Successfully enabled RLS on {{value0}} ', {
+          value0:
+            tablesWithoutRLS.length === 1
+              ? tablesWithoutRLS[0].name
+              : `${tablesWithoutRLS.length} queue${tablesWithoutRLS.length > 1 ? 's' : ''}`,
+        })
       )
       setRlsConfirmModalOpen(false)
     } catch (error: any) {
       setIsUpdatingRls(false)
-      toast.error(`Failed to enable RLS on queues: ${error.message}`)
+      toast.error($t('Failed to enable RLS on queues: {{value0}}', { value0: error.message }))
     }
   }
 
@@ -175,7 +184,10 @@ export const QueuesSettings = () => {
     if (!project) return console.error('Project is required')
     if (configError) {
       return toast.error(
-        `Failed to toggle queue exposure via PostgREST: Unable to retrieve PostgREST configuration (${configError.message})`
+        $t(
+          'Failed to toggle queue exposure via PostgREST: Unable to retrieve PostgREST configuration ({{value0}})',
+          { value0: configError.message }
+        )
       )
     }
     if (!pgmqVersion) {

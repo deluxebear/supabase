@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import type { ConnectionVars } from '@/data/common.types'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 import type { UseCustomMutationOptions } from '@/types'
 
 export type UpdateDefaultPrivilegesVariables = ConnectionVars & {
@@ -39,7 +40,7 @@ export const useUpdateDefaultPrivilegesMutation = ({
   return useMutation<UpdateDefaultPrivilegesData, Error, UpdateDefaultPrivilegesVariables>({
     mutationFn: (vars: UpdateDefaultPrivilegesVariables) => updateDefaultPrivileges(vars),
     onError(error: Error) {
-      toast.error(`Failed to update default privileges: ${error.message}`)
+      toast.error($t('Failed to update default privileges: {{value0}}', { value0: error.message }))
     },
     ...(onError ? { onError } : {}),
     ...options,

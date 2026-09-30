@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { integrationKeys } from './keys'
 import { del, handleError } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export async function deleteGitHubAuthorization(signal?: AbortSignal) {
@@ -38,7 +39,9 @@ export const useGitHubAuthorizationDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to remove GitHub authorization: ${data.message}`)
+        toast.error(
+          $t('Failed to remove GitHub authorization: {{value0}}', { value0: data.message })
+        )
       } else {
         onError(data, variables, context)
       }

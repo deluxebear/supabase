@@ -56,7 +56,8 @@ export const ExplorerProvider = ({ children }: PropsWithChildren) => {
       closeTabForItem(pending)
       setPending(null)
     },
-    onError: (error) => toast.error(`Failed to delete notebook: ${error.message}`),
+    onError: (error) =>
+      toast.error($t('Failed to delete notebook: {{value0}}', { value0: error.message })),
   })
 
   const handleConfirm = () => {
@@ -67,7 +68,7 @@ export const ExplorerProvider = ({ children }: PropsWithChildren) => {
       deleteNotebook({ projectRef: ref, ids: [pending.id] })
     } else {
       aiAssistantSnap.deleteChat(pending.id)
-      toast.success(`Deleted "${pending.name}"`)
+      toast.success($t('Deleted "{{value0}}"', { value0: pending.name }))
       closeTabForItem(pending)
       setPending(null)
     }

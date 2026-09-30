@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { branchKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type BranchCreateVariables = {
@@ -61,7 +62,7 @@ export const useBranchCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create branch: ${data.message}`)
+        toast.error($t('Failed to create branch: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

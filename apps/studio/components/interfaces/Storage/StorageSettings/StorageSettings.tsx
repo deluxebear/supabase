@@ -169,7 +169,7 @@ export const StorageSettings = () => {
       setIsUpdating(false)
     },
     onError: (error) => {
-      toast.error(`Failed to update storage settings: ${error.message}`)
+      toast.error($t('Failed to update storage settings: {{value0}}', { value0: error.message }))
       setIsUpdating(false)
     },
   })

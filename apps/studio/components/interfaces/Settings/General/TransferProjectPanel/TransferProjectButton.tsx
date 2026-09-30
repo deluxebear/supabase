@@ -56,7 +56,7 @@ export const TransferProjectButton = () => {
     isPending: isTransferring,
   } = useProjectTransferMutation({
     onSuccess: () => {
-      toast.success(`Successfully transferred project ${project?.name}.`)
+      toast.success($t('Successfully transferred project {{value0}}.', { value0: project?.name }))
       setIsOpen(false)
     },
   })

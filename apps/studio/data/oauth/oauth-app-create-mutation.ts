@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 
 import { oauthAppKeys } from './keys'
 import { handleError, post } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type OAuthAppCreateVariables = {
@@ -62,7 +63,7 @@ export const useOAuthAppCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create OAuth application: ${data.message}`)
+        toast.error($t('Failed to create OAuth application: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

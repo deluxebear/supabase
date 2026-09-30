@@ -129,7 +129,9 @@ export const CreateIcebergWrapperSheet = ({
 
   const { mutateAsync: createFDW, isPending: isCreatingWrapper } = useFDWCreateMutation({
     onSuccess: () => {
-      toast.success(`Successfully created ${wrapperMeta?.label} foreign data wrapper`)
+      toast.success(
+        $t('Successfully created {{value0}} foreign data wrapper', { value0: wrapperMeta?.label })
+      )
       onClose()
     },
   })

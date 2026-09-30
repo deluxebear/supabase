@@ -48,7 +48,7 @@ export const EnablePipelinesModal = ({
         setOpen(false)
       },
       onError: (error) => {
-        toast.error(`Failed to enable Pipelines: ${error.message}`)
+        toast.error($t('Failed to enable Pipelines: {{value0}}', { value0: error.message }))
       },
     })
 

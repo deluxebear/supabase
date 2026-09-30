@@ -107,7 +107,7 @@ const RedirectToTemplates = () => {
 
   const { mutate: updateAuthConfig, isPending: isUpdatingConfig } = useAuthConfigUpdateMutation({
     onError: (error) => {
-      toast.error(`Failed to update settings: ${error?.message}`)
+      toast.error($t('Failed to update settings: {{value0}}', { value0: error?.message }))
     },
     onSuccess: () => {
       toast.success($t('Successfully updated settings'))

@@ -109,11 +109,13 @@ export const EditHookPanel = () => {
   const { mutate: createDatabaseTrigger, isPending: isCreating } = useDatabaseTriggerCreateMutation(
     {
       onSuccess: (_, variables) => {
-        toast.success(`Successfully created new webhook "${variables.payload.name}"`)
+        toast.success(
+          $t('Successfully created new webhook "{{value0}}"', { value0: variables.payload.name })
+        )
         onClose()
       },
       onError: (error) => {
-        toast.error(`Failed to create webhook: ${error.message}`)
+        toast.error($t('Failed to create webhook: {{value0}}', { value0: error.message }))
       },
     }
   )
@@ -121,11 +123,11 @@ export const EditHookPanel = () => {
   const { mutate: updateDatabaseTrigger, isPending: isUpdating } = useDatabaseTriggerUpdateMutation(
     {
       onSuccess: (res) => {
-        toast.success(`Successfully updated webhook "${res.name}"`)
+        toast.success($t('Successfully updated webhook "{{value0}}"', { value0: res.name }))
         onClose()
       },
       onError: (error) => {
-        toast.error(`Failed to update webhook: ${error.message}`)
+        toast.error($t('Failed to update webhook: {{value0}}', { value0: error.message }))
       },
     }
   )

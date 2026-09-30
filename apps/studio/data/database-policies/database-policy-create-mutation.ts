@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 
 import { databasePoliciesKeys } from './keys'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type CreatePolicyBody = {
@@ -64,7 +65,7 @@ export const useDatabasePolicyCreateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to create database policy: ${data.message}`)
+        toast.error($t('Failed to create database policy: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

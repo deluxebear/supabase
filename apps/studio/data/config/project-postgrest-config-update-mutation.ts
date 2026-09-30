@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { configKeys } from './keys'
 import { handleError, patch } from '@/data/fetchers'
 import { lintKeys } from '@/data/lint/keys'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type ProjectPostgrestConfigUpdateVariables = {
@@ -73,7 +74,7 @@ export const useProjectPostgrestConfigUpdateMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update Postgrest config: ${data.message}`)
+        toast.error($t('Failed to update Postgrest config: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

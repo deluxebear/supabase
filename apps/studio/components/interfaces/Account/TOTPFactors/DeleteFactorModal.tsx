@@ -34,7 +34,7 @@ export const DeleteFactorModal = ({
           queryKey: organizationKeys.members(lastVisitedOrganization),
         })
       }
-      toast.success(`Successfully deleted factor`)
+      toast.success($t('Successfully deleted factor'))
       onClose()
     },
   })

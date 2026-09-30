@@ -461,7 +461,11 @@ export const LogTable = ({
     copyToClipboard(text, () => {
       setCopiedFormat(format)
       toast.success(
-        `Copied ${selectedRowsData.length} log${selectedRowsData.length !== 1 ? 's' : ''} as ${format.toUpperCase()}`
+        $t('Copied {{value0}} log{{value1}} as {{value2}}', {
+          value0: selectedRowsData.length,
+          value1: selectedRowsData.length !== 1 ? $t('s') : '',
+          value2: format.toUpperCase(),
+        })
       )
     })
   }

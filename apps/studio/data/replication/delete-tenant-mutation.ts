@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { replicationKeys } from './keys'
 import { del, handleError } from '@/data/fetchers'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type DeleteReplicationTenantParams = {
@@ -55,7 +56,7 @@ export const useDeleteReplicationTenantMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to disable Pipelines: ${data.message}`)
+        toast.error($t('Failed to disable Pipelines: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

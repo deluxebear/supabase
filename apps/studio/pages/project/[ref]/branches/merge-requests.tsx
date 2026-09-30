@@ -105,7 +105,7 @@ const MergeRequestsPageContent = () => {
 
   const { mutate: updateBranch, isPending: isUpdating } = useBranchUpdateMutation({
     onError: () => {
-      toast.error(`Failed to update the branch`)
+      toast.error($t('Failed to update the branch'))
     },
   })
 
@@ -330,7 +330,7 @@ export const MergeRequestsPageWrapper = ({ children }: PropsWithChildren<{}>) =>
 
   const { mutate: updateBranch, isPending: isUpdating } = useBranchUpdateMutation({
     onError: () => {
-      toast.error(`Failed to update the branch`)
+      toast.error($t('Failed to update the branch'))
     },
   })
 

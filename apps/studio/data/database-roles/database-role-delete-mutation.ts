@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { invalidateRolesQuery } from './database-roles-query'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
+import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 type DropRoleBody = Parameters<typeof pgMeta.roles.remove>[1]
@@ -52,7 +53,7 @@ export const useDatabaseRoleDeleteMutation = ({
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to delete database role: ${data.message}`)
+        toast.error($t('Failed to delete database role: {{value0}}', { value0: data.message }))
       } else {
         onError(data, variables, context)
       }

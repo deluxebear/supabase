@@ -58,7 +58,7 @@ export const SSLConfiguration = () => {
         toast.success($t('Successfully updated SSL configuration'))
       },
       onError: (error) => {
-        toast.error(`Failed to update SSL enforcement: ${error.message}`)
+        toast.error($t('Failed to update SSL enforcement: {{value0}}', { value0: error.message }))
       },
     })
 
