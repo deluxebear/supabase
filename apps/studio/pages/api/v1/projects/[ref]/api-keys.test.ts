@@ -5,6 +5,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
 
+vi.mock('@/lib/api/self-platform/db', () => ({
+  executePlatformQuery: vi.fn().mockResolvedValue({ data: [], error: undefined }),
+}))
+
 const resolveProjectConnection = vi.fn()
 
 vi.hoisted(() => {

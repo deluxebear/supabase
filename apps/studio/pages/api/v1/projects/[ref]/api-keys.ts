@@ -8,20 +8,32 @@ import {
   getNonPlatformApiKeys,
   parseRevealQuery,
 } from '@/lib/api/self-hosted/api-keys'
+import { listManagedAPIKeys } from '@/lib/api/self-platform/api-key-management'
+import { handleManagedAPIKeyMutation } from '@/lib/api/self-platform/api-key-route'
 import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
 import {
   ProjectNotFound,
   resolveProjectConnection,
 } from '@/lib/api/self-platform/resolve-connection'
+import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
-export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
+const apiKeysRoute = (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
+
+export default apiKeysRoute
 
 // [self-platform] exported for handler-level tests
 export async function handler(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
   const { method } = req
 
   switch (method) {
+    case 'POST':
+      if (STUDIO_DEPLOYMENT_PROFILE === 'fleet')
+        return handleManagedAPIKeyMutation(req, res, claims)
+      res.setHeader('Allow', ['GET'])
+      return res
+        .status(405)
+        .json({ data: null, error: { message: `Method ${method} Not Allowed` } })
     case 'GET':
       return handleGetAll(req, res, claims)
     default:
@@ -31,6 +43,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
 }
 
 const handleGetAll = async (req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) => {
+  res.setHeader('Cache-Control', 'no-store')
   const reveal = parseRevealQuery(req.query.reveal)
 
   // [self-platform] Resolve the registry project by ref so multi-project
@@ -52,7 +65,11 @@ const handleGetAll = async (req: NextApiRequest, res: NextApiResponse, claims?: 
       projectRef: String(req.query.ref),
     })
     if (!canReadSecrets) return res.status(403).json({ message: 'Forbidden' })
-    const response = getNonPlatformApiKeys(conn).map((key) => applyRevealToApiKey(key, reveal))
+    const keys =
+      STUDIO_DEPLOYMENT_PROFILE === 'fleet'
+        ? await listManagedAPIKeys(String(req.query.ref), conn)
+        : getNonPlatformApiKeys(conn)
+    const response = keys.map((key) => applyRevealToApiKey(key, reveal))
     return res.status(200).json(response)
   } catch (err) {
     if (err instanceof ProjectNotFound) {

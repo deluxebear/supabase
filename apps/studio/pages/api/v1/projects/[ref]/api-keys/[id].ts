@@ -3,12 +3,19 @@ import type { JwtPayload } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import { apiWrapper } from '@/lib/api/apiWrapper'
-import { getNonPlatformApiKeyById, parseRevealQuery } from '@/lib/api/self-hosted/api-keys'
+import {
+  applyRevealToApiKey,
+  getNonPlatformApiKeyById,
+  parseRevealQuery,
+} from '@/lib/api/self-hosted/api-keys'
+import { listManagedAPIKeys } from '@/lib/api/self-platform/api-key-management'
+import { handleManagedAPIKeyMutation } from '@/lib/api/self-platform/api-key-route'
 import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
 import {
   ProjectNotFound,
   resolveProjectConnection,
 } from '@/lib/api/self-platform/resolve-connection'
+import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
 const apiKeyByIdRoute = (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
@@ -20,6 +27,14 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
   const { method } = req
 
   switch (method) {
+    case 'DELETE':
+    case 'PATCH':
+      if (STUDIO_DEPLOYMENT_PROFILE === 'fleet')
+        return handleManagedAPIKeyMutation(req, res, claims)
+      res.setHeader('Allow', ['GET'])
+      return res
+        .status(405)
+        .json({ data: null, error: { message: `Method ${method} Not Allowed` } })
     case 'GET':
       return handleGet(req, res, claims)
     default:
@@ -29,6 +44,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
 }
 
 const handleGet = async (req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) => {
+  res.setHeader('Cache-Control', 'no-store')
   const idParam = req.query.id
   const id = Array.isArray(idParam) ? idParam[0] : idParam
 
@@ -61,7 +77,14 @@ const handleGet = async (req: NextApiRequest, res: NextApiResponse, claims?: Jwt
       projectRef: String(req.query.ref),
     })
     if (!canReadSecrets) return res.status(403).json({ message: 'Forbidden' })
-    const apiKey = getNonPlatformApiKeyById(id, reveal, conn)
+    const managed =
+      STUDIO_DEPLOYMENT_PROFILE === 'fleet'
+        ? (await listManagedAPIKeys(String(req.query.ref), conn)).find((key) => key.id === id)
+        : undefined
+    const apiKey =
+      STUDIO_DEPLOYMENT_PROFILE === 'fleet'
+        ? managed && applyRevealToApiKey(managed, reveal)
+        : getNonPlatformApiKeyById(id, reveal, conn)
 
     if (!apiKey) {
       return res.status(404).json({ error: { message: 'API key not found' } })

@@ -16,10 +16,13 @@ import (
 const Schema = "supabase.fleet.jwt.observation.v1"
 
 type Credentials struct {
-	Secret     string    `json:"secret"`
-	AnonKey    string    `json:"anonKey"`
-	ServiceKey string    `json:"serviceKey"`
-	ObservedAt time.Time `json:"observedAt"`
+	Secret                string    `json:"secret"`
+	AnonKey               string    `json:"anonKey"`
+	ServiceKey            string    `json:"serviceKey"`
+	ObservedAt            time.Time `json:"observedAt"`
+	APIKeysGateway        bool      `json:"apiKeysGateway"`
+	GatewayAPIKeys        string    `json:"gatewayAPIKeys"`
+	GatewayAPIKeysManaged bool      `json:"gatewayAPIKeysManaged"`
 }
 
 type Observation struct {
@@ -110,5 +113,10 @@ func ReadCredentials(envs map[string]map[string]string, now time.Time) (Credenti
 	if envs["storage"]["ANON_KEY"] != anon || envs["storage"]["SERVICE_KEY"] != service || envs["functions"]["SUPABASE_ANON_KEY"] != anon || envs["functions"]["SUPABASE_SERVICE_ROLE_KEY"] != service {
 		return Credentials{}, errors.New("JWT consumer API keys do not agree")
 	}
-	return Credentials{Secret: secret, AnonKey: anon, ServiceKey: service, ObservedAt: now.UTC()}, nil
+	return Credentials{
+		Secret: secret, AnonKey: anon, ServiceKey: service, ObservedAt: now.UTC(),
+		APIKeysGateway:        envs["kong"]["FLEET_API_KEYS_VERSION"] == "1",
+		GatewayAPIKeys:        envs["kong"]["FLEET_API_KEYS"],
+		GatewayAPIKeysManaged: envs["kong"]["FLEET_API_KEYS_MANAGED"] == "true",
+	}, nil
 }

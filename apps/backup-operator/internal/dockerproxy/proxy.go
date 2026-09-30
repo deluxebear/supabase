@@ -245,7 +245,7 @@ func (p *Proxy) authorize(r *http.Request, rule Rule, params map[string]string) 
 		if err != nil {
 			return http.StatusBadRequest, err.Error()
 		}
-		if err := p.validateCreate(body); err != nil {
+		if err := p.validateCreate(r.Context(), body); err != nil {
 			return http.StatusForbidden, err.Error()
 		}
 		return 0, ""
@@ -417,7 +417,7 @@ var allowedSecurityOptions = map[string]struct{}{
 	"no-new-privileges": {}, "no-new-privileges:true": {}, "no-new-privileges=true": {},
 }
 
-func (p *Proxy) validateCreate(body []byte) error {
+func (p *Proxy) validateCreate(ctx context.Context, body []byte) error {
 	var create createRequest
 	if err := json.Unmarshal(body, &create); err != nil {
 		return errors.New("Container create body is not valid JSON")
@@ -440,13 +440,30 @@ func (p *Proxy) validateCreate(body []byte) error {
 			return fmt.Errorf("Created containers may not use the %s mode %q", name, mode)
 		}
 	}
-	if host.NetworkMode != "" && host.NetworkMode != "none" && !p.networkNameAllowed(host.NetworkMode) {
-		return fmt.Errorf("Created containers may not join network %q", host.NetworkMode)
+	networks := make(map[string]struct{})
+	if host.NetworkMode != "" && host.NetworkMode != "none" {
+		networks[host.NetworkMode] = struct{}{}
 	}
 	for network := range create.NetworkingConfig.EndpointsConfig {
-		if !p.networkNameAllowed(network) {
-			return fmt.Errorf("Created containers may not join network %q", network)
+		networks[network] = struct{}{}
+	}
+	for network := range networks {
+		if p.networkNameAllowed(network) {
+			continue
 		}
+		// Compose may use the full Engine network ID in HostConfig. Inspect
+		// that ID and apply the same project-label/external-name boundary.
+		isID := len(network) == 64 && strings.Trim(network, "0123456789abcdef") == ""
+		if isID {
+			allowed, err := p.networkAllowed(ctx, network)
+			if err != nil {
+				return errors.New("Docker network identity could not be verified")
+			}
+			if allowed {
+				continue
+			}
+		}
+		return fmt.Errorf("Created containers may not join network %q", network)
 	}
 	for _, option := range host.SecurityOpt {
 		if _, ok := allowedSecurityOptions[strings.ToLower(strings.TrimSpace(option))]; !ok {

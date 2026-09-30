@@ -263,3 +263,32 @@ Realtime WebSocket upgrades, and rejection of invalid API keys. The Realtime
 tenant administration route remains blocked by the gateway. To restore Kong,
 omit the Envoy overlay and recreate the gateway and Agent; also restore the
 previous lifecycle component version maps. JWT and database data are unchanged.
+
+### Manage multiple API keys through Fleet
+
+With the managed Envoy overlay, Studio's API keys page creates publishable and
+secret keys, reveals them subject to project permissions, and revokes individual
+keys. Each mutation requires secret-read and infrastructure-execution permissions
+and a recent MFA verification. When verification is needed, the mutation offers
+an action to verify an existing factor or set up MFA.
+
+Fleet delivers the complete key set sealed to the Agent in the `api-keys`
+configuration domain, then recreates only the gateway. Include
+`<config-root>/api-keys/current/secrets.compose.yml` after the JWT overlay in
+operator Compose commands; the Agent includes it automatically. The managed
+init service bootstraps this domain before the Agent starts. Keys are stored
+encrypted in the immutable configuration revision, and Studio lists only the
+latest successfully applied revision. Failed updates restore the previous
+configuration. Concurrent edits use the desired generation to prevent lost keys.
+
+Existing registered opaque keys are retained on the first managed revision.
+Once Fleet manages the key set, that set is authoritative: a revoked key is not
+accepted again through the gateway's older single-key environment variables.
+Legacy anon/service-role JWTs remain available and rotate through the JWT page.
+The gateway translates opaque keys to the corresponding internal JWT using the
+current JWT configuration, so JWT rotation does not require regenerating opaque
+keys. The read-only smoke script checks each running opaque key and its role.
+
+This delivery path currently supports managed Compose Envoy stacks. It rejects
+unsupported or outdated gateways before accepting a change. Kubernetes key
+configuration delivery is not enabled by this overlay.

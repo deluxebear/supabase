@@ -705,6 +705,12 @@ resources:
                     inline_code: |
                       local ANON_KEY = "${ANON_KEY}"
                       local SERVICE_ROLE_KEY = "${SERVICE_ROLE_KEY}"
+                      local FLEET_API_KEYS = "${FLEET_API_KEYS}"
+                      local FLEET_MANAGED = "${FLEET_API_KEYS_MANAGED}" == "true"
+                      local FLEET_KEYS = {}
+                      for key, role in string.gmatch(FLEET_API_KEYS, "([%w_-]+)=([%w_]+)") do
+                        FLEET_KEYS[key] = role
+                      end
                       local SUPABASE_PUBLISHABLE_KEY = "${SUPABASE_PUBLISHABLE_KEY}"
                       local SUPABASE_SECRET_KEY = "${SUPABASE_SECRET_KEY}"
                       local ANON_KEY_ASYMMETRIC = "${ANON_KEY_ASYMMETRIC}"
@@ -743,11 +749,15 @@ resources:
                           return true
                         end
 
-                        if SECRET_TRANSLATION_ENABLED and apikey == SUPABASE_SECRET_KEY then
+                        if FLEET_KEYS[apikey] == "secret" or FLEET_KEYS[apikey] == "publishable" then
                           return true
                         end
 
-                        if PUBLISHABLE_TRANSLATION_ENABLED and apikey == SUPABASE_PUBLISHABLE_KEY then
+                        if not FLEET_MANAGED and SECRET_TRANSLATION_ENABLED and apikey == SUPABASE_SECRET_KEY then
+                          return true
+                        end
+
+                        if not FLEET_MANAGED and PUBLISHABLE_TRANSLATION_ENABLED and apikey == SUPABASE_PUBLISHABLE_KEY then
                           return true
                         end
 
@@ -779,6 +789,11 @@ resources:
                     inline_code: |
                       local FUNCTIONS_ROUTE = "functions-v1-all"
                       local FUNCTIONS_PREFIX = "/functions/v1/"
+                      local FLEET_MANAGED = "${FLEET_API_KEYS_MANAGED}" == "true"
+                      local FLEET_KEYS = {}
+                      for key, role in string.gmatch("${FLEET_API_KEYS}", "([%w_-]+)=([%w_]+)") do
+                        FLEET_KEYS[key] = role
+                      end
                       local SECRET_KEY = "${SUPABASE_SECRET_KEY}"
                       local PUBLISHABLE_KEY = "${SUPABASE_PUBLISHABLE_KEY}"
                       local SERVICE_ROLE_JWT = "${SERVICE_ROLE_KEY_ASYMMETRIC}"
@@ -804,11 +819,14 @@ resources:
                           return nil
                         end
 
-                        if SECRET_TRANSLATION_ENABLED and apikey == SECRET_KEY then
+                        if FLEET_KEYS[apikey] == "secret" then return SERVICE_ROLE_JWT end
+                        if FLEET_KEYS[apikey] == "publishable" then return ANON_JWT end
+
+                        if not FLEET_MANAGED and SECRET_TRANSLATION_ENABLED and apikey == SECRET_KEY then
                           return SERVICE_ROLE_JWT
                         end
 
-                        if PUBLISHABLE_TRANSLATION_ENABLED and apikey == PUBLISHABLE_KEY then
+                        if not FLEET_MANAGED and PUBLISHABLE_TRANSLATION_ENABLED and apikey == PUBLISHABLE_KEY then
                           return ANON_JWT
                         end
 
@@ -896,6 +914,11 @@ resources:
                     inline_code: |
                       local FUNCTIONS_ROUTE = "functions-v1-all"
                       local FUNCTIONS_PREFIX = "/functions/v1/"
+                      local FLEET_MANAGED = "${FLEET_API_KEYS_MANAGED}" == "true"
+                      local FLEET_KEYS = {}
+                      for key, role in string.gmatch("${FLEET_API_KEYS}", "([%w_-]+)=([%w_]+)") do
+                        FLEET_KEYS[key] = role
+                      end
                       local SECRET_KEY = "${SUPABASE_SECRET_KEY}"
                       local PUBLISHABLE_KEY = "${SUPABASE_PUBLISHABLE_KEY}"
                       local SERVICE_ROLE_JWT = "${SERVICE_ROLE_KEY_ASYMMETRIC}"
@@ -921,11 +944,14 @@ resources:
                           return nil
                         end
 
-                        if SECRET_TRANSLATION_ENABLED and apikey == SECRET_KEY then
+                        if FLEET_KEYS[apikey] == "secret" then return SERVICE_ROLE_JWT end
+                        if FLEET_KEYS[apikey] == "publishable" then return ANON_JWT end
+
+                        if not FLEET_MANAGED and SECRET_TRANSLATION_ENABLED and apikey == SECRET_KEY then
                           return SERVICE_ROLE_JWT
                         end
 
-                        if PUBLISHABLE_TRANSLATION_ENABLED and apikey == PUBLISHABLE_KEY then
+                        if not FLEET_MANAGED and PUBLISHABLE_TRANSLATION_ENABLED and apikey == PUBLISHABLE_KEY then
                           return ANON_JWT
                         end
 
@@ -935,6 +961,14 @@ resources:
                       function envoy_on_request(request_handle)
                         local headers = request_handle:headers()
                         if is_functions_request(request_handle, headers) then
+                          local supplied = headers:get("apikey")
+                          if FLEET_KEYS[supplied] == nil then return end
+                          local translated = translate_apikey(supplied)
+                          headers:replace("apikey", translated)
+                          local auth = headers:get("authorization")
+                          if auth == nil or auth == "Bearer " .. supplied then
+                            headers:replace("authorization", "Bearer " .. translated)
+                          end
                           return
                         end
 

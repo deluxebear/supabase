@@ -33,9 +33,13 @@ func (e *lifecycleEngine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"other1": labels("managed-b", "auth"),
 	}
 	networks := map[string]map[string]any{
-		"managed-a_default": {"Name": "managed-a_default", "Labels": map[string]string{composeProjectLabel: "managed-a"}},
-		"fleet-management":  {"Name": "fleet-management", "Labels": map[string]string{}},
-		"bridge":            {"Name": "bridge", "Labels": map[string]string{}},
+		strings.Repeat("a", 64): {"Name": "managed-a_default", "Labels": map[string]string{composeProjectLabel: "managed-a"}},
+		strings.Repeat("b", 64): {"Name": "managed-b_default", "Labels": map[string]string{composeProjectLabel: "managed-b"}},
+		strings.Repeat("c", 64): {"Name": "fleet-management", "Labels": map[string]string{}},
+		strings.Repeat("d", 64): {"Name": "bridge", "Labels": map[string]string{}},
+		"managed-a_default":     {"Name": "managed-a_default", "Labels": map[string]string{composeProjectLabel: "managed-a"}},
+		"fleet-management":      {"Name": "fleet-management", "Labels": map[string]string{}},
+		"bridge":                {"Name": "bridge", "Labels": map[string]string{}},
 	}
 	volumes := map[string]map[string]string{
 		"managed-a_managed-db-data": {composeProjectLabel: "managed-a"},
@@ -318,5 +322,26 @@ func TestNewRejectsWriteRulesWithoutServices(t *testing.T) {
 	}
 	if _, err := New(Config{SocketPath: "/s", ComposeProject: "a", Rules: LifecycleRules(), Services: []string{"auth"}, BindPrefixes: []string{"/"}}); err == nil {
 		t.Fatal("expected a root bind prefix to be rejected")
+	}
+}
+
+func TestLifecycleCreateResolvesNetworkIDsWithinTheProjectBoundary(t *testing.T) {
+	for _, id := range []string{"a", "b", "c", "d", "e"} {
+		t.Run(id, func(t *testing.T) {
+			server, engine := newLifecycleProxy(t)
+			network := strings.Repeat(id, 64)
+			body := createBody(t, func(body map[string]any) {
+				body["HostConfig"].(map[string]any)["NetworkMode"] = network
+				body["NetworkingConfig"] = map[string]any{"EndpointsConfig": map[string]any{network: map[string]any{}}}
+			})
+			status := send(t, http.MethodPost, server.URL+"/containers/create", body)
+			allowed := id == "a" || id == "c"
+			if allowed && status != http.StatusOK || !allowed && status != http.StatusForbidden {
+				t.Fatalf("network ID status %d", status)
+			}
+			if !allowed && engine.wasForwarded("POST /containers/create") {
+				t.Fatal("foreign or unknown network create reached Docker")
+			}
+		})
 	}
 }

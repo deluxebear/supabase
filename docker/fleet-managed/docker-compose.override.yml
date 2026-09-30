@@ -107,6 +107,13 @@ services:
         # Owner only: files holding delivered secrets keep the operator group.
         chown -R 65532 /fleet-config
         chmod 0700 /agent-state
+        if [ ! -e /fleet-config/api-keys/current ]; then
+          mkdir -p /fleet-config/api-keys/revisions/bootstrap
+          printf 'services: {}\n' > /fleet-config/api-keys/revisions/bootstrap/secrets.compose.yml
+          ln -s revisions/bootstrap /fleet-config/api-keys/current
+          printf '{"domain":"api-keys"}\n' > /fleet-config/api-keys/.fleet-bootstrap.json
+          chown -R 65532 /fleet-config/api-keys
+        fi
         if [ ! -e /fleet-config/jwt/current ]; then
           mkdir -p /fleet-config/jwt/revisions/bootstrap
           printf 'services: {}\n' > /fleet-config/jwt/revisions/bootstrap/secrets.compose.yml

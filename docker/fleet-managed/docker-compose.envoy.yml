@@ -21,6 +21,7 @@ services:
       retries: 5
       start_period: 20s
     environment:
+      FLEET_API_KEYS_VERSION: "1"
       ANON_KEY: ${ANON_KEY}
       SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
       # The legacy variable names are inherited for Fleet's existing sealed
@@ -29,6 +30,6 @@ services:
 
   fleet-agent:
     environment:
-      FLEET_LIFECYCLE_COMPOSE_FILES: ${FLEET_HOST_COMPOSE_DIRECTORY}/docker-compose.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.override.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.lifecycle.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.envoy.yml,${FLEET_HOST_CONFIG_ROOT}/auth/current/compose.yml,${FLEET_HOST_CONFIG_ROOT}/auth/current/secrets.compose.yml,${FLEET_HOST_CONFIG_ROOT}/functions/current/secrets.compose.yml,${FLEET_HOST_CONFIG_ROOT}/jwt/current/secrets.compose.yml
+      FLEET_LIFECYCLE_COMPOSE_FILES: ${FLEET_HOST_COMPOSE_DIRECTORY}/docker-compose.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.override.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.lifecycle.yml,${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.envoy.yml,${FLEET_HOST_CONFIG_ROOT}/auth/current/compose.yml,${FLEET_HOST_CONFIG_ROOT}/auth/current/secrets.compose.yml,${FLEET_HOST_CONFIG_ROOT}/functions/current/secrets.compose.yml,${FLEET_HOST_CONFIG_ROOT}/jwt/current/secrets.compose.yml,${FLEET_HOST_CONFIG_ROOT}/api-keys/current/secrets.compose.yml
     volumes:
       - ${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.envoy.yml:${FLEET_HOST_COMPOSE_DIRECTORY}/fleet-managed/docker-compose.envoy.yml:ro

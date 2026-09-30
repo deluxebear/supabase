@@ -6,5 +6,5 @@ import nextHandler from '@/pages/api/v1/projects/[ref]/api-keys/[id]'
 const handler = toWebHandler(nextHandler)
 
 export const Route = createFileRoute('/api/v1/projects/$ref/api-keys/$id')({
-  server: { handlers: { GET: handler } },
+  server: { handlers: { GET: handler, PATCH: handler, DELETE: handler } },
 })

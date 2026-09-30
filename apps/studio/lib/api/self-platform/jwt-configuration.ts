@@ -51,6 +51,9 @@ const credentialsSchema = z.object({
   anonKey: z.string().max(16384),
   serviceKey: z.string().max(16384),
   observedAt: z.string().datetime({ offset: true }),
+  apiKeysGateway: z.boolean().default(false),
+  gatewayAPIKeys: z.string().max(16384).default(''),
+  gatewayAPIKeysManaged: z.boolean().default(false),
 })
 export const jwtConfigurationInputSchema = z
   .object({
@@ -113,7 +116,7 @@ export function renderJWTOverride(input: { secret: string; anonKey: string; serv
 }
 
 // The envelope, timestamp, token roles and current binding must all agree.
-export async function syncJWTConfiguration(projectRef: string) {
+export async function readVerifiedJWTObservation(projectRef: string) {
   const report = await getAgentJWTObservation(projectRef)
   if (!report) return null
   const parsed = observationSchema.safeParse(report.observation)
@@ -149,6 +152,13 @@ export async function syncJWTConfiguration(projectRef: string) {
     !verifyLegacyJWT(credentials.serviceKey, credentials.secret, 'service_role')
   )
     return null
+  return { credentials, binding: report.binding, observedAt: observation.observedAt }
+}
+
+export async function syncJWTConfiguration(projectRef: string) {
+  const report = await readVerifiedJWTObservation(projectRef)
+  if (!report) return null
+  const { credentials, binding, observedAt } = report
   const conn = await resolveProjectConnection(projectRef)
   if (!conn.row || conn.row.key_mode !== 'legacy-jwt') return null
   const isChanged =
@@ -165,13 +175,13 @@ export async function syncJWTConfiguration(projectRef: string) {
       isChanged ? encryptSecret(credentials.secret) : conn.row.jwt_secret_enc,
       isChanged ? encryptSecret(credentials.anonKey) : conn.row.anon_key_enc,
       isChanged ? encryptSecret(credentials.serviceKey) : conn.row.service_key_enc,
-      observation.observedAt,
+      observedAt,
       conn.row.jwt_secret_enc,
-      report.binding.id,
+      binding.id,
     ],
   })
   if (result.error) throw result.error
-  return observation.observedAt
+  return observedAt
 }
 
 async function loadPlan(
