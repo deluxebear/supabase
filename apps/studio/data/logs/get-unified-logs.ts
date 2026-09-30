@@ -2,11 +2,13 @@ import { useMutation } from '@tanstack/react-query'
 import { useFlag } from 'common'
 import { toast } from 'sonner'
 
+import { USE_LOGFLARE_PG_SQL } from './logflare-dialect'
 import { logsAllEndpointUrl, pickLogsQueryBuilder } from './logs-endpoint'
 import { getUnifiedLogsISOStartEnd } from './unified-logs-infinite-query'
 import { mapUnifiedLogRow, parseUnifiedLogsQueryRows } from './unified-logs.utils'
 import { getUnifiedLogsQuery } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.queries'
 import { getUnifiedLogsQuery as getUnifiedLogsQueryBq } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.queries.bq'
+import { getUnifiedLogsQuery as buildPgQuery } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.queries.pg'
 import { QuerySearchParamsType } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.types'
 import { handleError, post } from '@/data/fetchers'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
@@ -31,8 +33,13 @@ export async function retrieveUnifiedLogs({
     throw new Error('projectRef is required for retrieveUnifiedLogs')
 
   const { isoTimestampStart, isoTimestampEnd } = getUnifiedLogsISOStartEnd(search, hoursAgo)
-  const buildQuery = pickLogsQueryBuilder(useOtel, getUnifiedLogsQuery, getUnifiedLogsQueryBq)
-  const sql = `${buildQuery(search)} ORDER BY timestamp DESC, id DESC LIMIT ${limit}`
+  const buildQuery = USE_LOGFLARE_PG_SQL
+    ? buildPgQuery
+    : pickLogsQueryBuilder(useOtel, getUnifiedLogsQuery, getUnifiedLogsQueryBq)
+  const querySearch = USE_LOGFLARE_PG_SQL
+    ? { ...search, date: [new Date(isoTimestampStart), new Date(isoTimestampEnd)] }
+    : search
+  const sql = `${buildQuery(querySearch)} ORDER BY timestamp DESC, id DESC LIMIT ${limit}`
 
   const endpoint = logsAllEndpointUrl(useOtel)
   const { data, error } = await post(endpoint, {

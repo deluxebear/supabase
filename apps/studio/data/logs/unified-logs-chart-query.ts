@@ -3,11 +3,13 @@ import { useFlag } from 'common'
 
 import { executeAnalyticsSql } from './execute-analytics-sql'
 import { logsKeys } from './keys'
+import { USE_LOGFLARE_PG_SQL } from './logflare-dialect'
 import { logsAllEndpointUrl, pickLogsQueryBuilder } from './logs-endpoint'
 import { UNIFIED_LOGS_QUERY_OPTIONS, UnifiedLogsVariables } from './unified-logs-infinite-query'
 import { parseLogsFilterUrlParams } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.filters'
 import { getLogsChartQuery } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.queries'
 import { getLogsChartQuery as getLogsChartQueryBq } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.queries.bq'
+import { getLogsChartQuery as buildPgQuery } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.queries.pg'
 import { ResponseError, UseCustomQueryOptions } from '@/types'
 
 export async function getUnifiedLogsChart(
@@ -40,7 +42,11 @@ export async function getUnifiedLogsChart(
   }
 
   // Get SQL query from utility function (with dynamic bucketing)
-  const sql = pickLogsQueryBuilder(useOtel, getLogsChartQuery, getLogsChartQueryBq)(search)
+  const sql = (
+    USE_LOGFLARE_PG_SQL
+      ? buildPgQuery
+      : pickLogsQueryBuilder(useOtel, getLogsChartQuery, getLogsChartQueryBq)
+  )(search)
 
   const endpoint = logsAllEndpointUrl(useOtel)
   const data = await executeAnalyticsSql({

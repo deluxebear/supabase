@@ -3,11 +3,13 @@ import { useFlag } from 'common'
 
 import { executeAnalyticsSql } from './execute-analytics-sql'
 import { logsKeys } from './keys'
+import { USE_LOGFLARE_PG_SQL } from './logflare-dialect'
 import { logsAllEndpointUrl, pickLogsQueryBuilder } from './logs-endpoint'
 import { analyticsLiteral, safeSql } from './safe-analytics-sql'
 import { mapUnifiedLogRow, parseUnifiedLogsQueryRows } from './unified-logs.utils'
 import { getUnifiedLogsQuery } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.queries'
 import { getUnifiedLogsQuery as getUnifiedLogsQueryBq } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.queries.bq'
+import { getUnifiedLogsQuery as buildPgQuery } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.queries.pg'
 import {
   PageParam,
   QuerySearchParamsType,
@@ -84,8 +86,9 @@ export async function getUnifiedLogs(
    */
 
   const { isoTimestampStart, isoTimestampEnd } = getUnifiedLogsISOStartEnd(search)
-  const buildQuery = pickLogsQueryBuilder(useOtel, getUnifiedLogsQuery, getUnifiedLogsQueryBq)
-  const sql = safeSql`${buildQuery(search)} ORDER BY timestamp DESC, id DESC LIMIT ${analyticsLiteral(LOGS_PAGE_LIMIT)}`
+  const buildQuery = USE_LOGFLARE_PG_SQL
+    ? buildPgQuery
+    : pickLogsQueryBuilder(useOtel, getUnifiedLogsQuery, getUnifiedLogsQueryBq)
 
   const cursorValue = pageParam?.cursor
   const cursorDirection = pageParam?.direction
@@ -106,6 +109,11 @@ export async function getUnifiedLogs(
   } else {
     timestampEnd = isoTimestampEnd
   }
+
+  const querySearch = USE_LOGFLARE_PG_SQL
+    ? { ...search, date: [new Date(isoTimestampStart), new Date(timestampEnd)] }
+    : search
+  const sql = safeSql`${buildQuery(querySearch)} ORDER BY timestamp DESC, id DESC LIMIT ${analyticsLiteral(LOGS_PAGE_LIMIT)}`
 
   const endpoint = logsAllEndpointUrl(useOtel)
   const data = await executeAnalyticsSql({

@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { useFlag } from 'common'
+import { z } from 'zod'
 
 import { executeAnalyticsSql } from './execute-analytics-sql'
 import { logsKeys } from './keys'
+import { USE_LOGFLARE_PG_SQL } from './logflare-dialect'
 import { logsAllEndpointUrl } from './logs-endpoint'
 import { quotedIdent, safeSql } from './safe-analytics-sql'
 import {
@@ -15,6 +17,7 @@ import {
   getFacetCountCTE,
   getUnifiedLogsCTE,
 } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.queries.bq'
+import { getFacetCountQuery as getPgFacetCountQuery } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.queries.pg'
 import { Option } from '@/components/ui/DataTable/DataTable.types'
 import { ResponseError, UseCustomQueryOptions } from '@/types'
 
@@ -35,7 +38,7 @@ export async function getUnifiedLogsFacetCount(
   const { isoTimestampStart, isoTimestampEnd } = getUnifiedLogsISOStartEnd(search)
   const cteName = quotedIdent(facet.replaceAll('.', '_') + '_count')
 
-  const sql = useOtel
+  const cloudSql = useOtel
     ? getFacetCountQuery({ search, facet, facetSearch })
     : safeSql`
 ${getUnifiedLogsCTE()},
@@ -43,6 +46,7 @@ ${getFacetCountCTE({ search, facet, facetSearch, cteName })}
 SELECT dimension, value, count from ${cteName};
 `
 
+  const sql = USE_LOGFLARE_PG_SQL ? getPgFacetCountQuery({ search, facet, facetSearch }) : cloudSql
   const endpoint = logsAllEndpointUrl(useOtel)
   const data = await executeAnalyticsSql({
     projectRef,
@@ -52,6 +56,12 @@ SELECT dimension, value, count from ${cteName};
     iso_timestamp_end: isoTimestampEnd,
     signal,
   })
+  if (USE_LOGFLARE_PG_SQL) {
+    return z
+      .array(z.object({ value: z.string(), count: z.coerce.number() }))
+      .parse(data.result ?? [])
+      .map((row) => ({ label: row.value, value: row.value, total: row.count }))
+  }
   return (data.result ?? []) as Option[]
 }
 

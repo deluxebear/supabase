@@ -79,6 +79,7 @@ transforms:
       realtime: '.appname == "realtime-dev.supabase-realtime" || starts_with(string!(.appname), "realtime-dev.")'
       storage: '.appname == "supabase-storage" || ends_with(string!(.appname), "-storage")'
       functions: '.appname == "supabase-edge-functions" || ends_with(string!(.appname), "-functions")'
+      pooler: 'ends_with(string!(.appname), "-pooler") || .appname == "supabase-pooler"'
       db: '.appname == "supabase-db" || ends_with(string!(.appname), "-db")'
   # Ignores non nginx errors since they are related with kong booting up
   kong_logs:
@@ -235,6 +236,61 @@ transforms:
           .metadata.parsed.error_severity = "log"
       }
       .metadata.parsed.error_severity = upcase!(.metadata.parsed.error_severity)
+  # A flat envelope gives the PG sandbox the same filter columns as Cloud.
+  unified_logs:
+    type: remap
+    inputs:
+      - kong_logs
+      - kong_err
+      - auth_logs
+      - rest_logs
+      - realtime_logs
+      - storage_logs
+      - db_logs
+      - function_invocation_logs
+      - router.pooler
+    source: |-
+      log_type = "postgres"
+      method = to_string(.metadata.request.method) ?? ""
+      path = to_string(.metadata.request.path) ?? ""
+      status = to_string(.metadata.response.status_code) ?? ""
+      level = downcase(to_string(.metadata.level) ?? "info")
+      if contains(string!(.appname), "-kong") || .appname == "supabase-kong" || .appname == "supabase-envoy" {
+        log_type = "edge"
+        # Successful function requests are emitted by the main worker below.
+        if starts_with(path, "/functions/") { abort }
+      } else if ends_with(string!(.appname), "-auth") {
+        log_type = "auth"
+        method = to_string(.metadata.method) ?? ""
+        path = to_string(.metadata.path) ?? ""
+        status = to_string(.metadata.status) ?? ""
+      } else if ends_with(string!(.appname), "-rest") {
+        log_type = "postgrest"
+      } else if starts_with(string!(.appname), "realtime-dev.") {
+        log_type = "realtime"
+      } else if ends_with(string!(.appname), "-storage") {
+        log_type = "storage"
+      } else if ends_with(string!(.appname), "-pooler") {
+        log_type = "supavisor"
+      } else if ends_with(string!(.appname), "-functions") {
+        log_type = "edge function"
+        path = to_string(.metadata.request.pathname) ?? ""
+      } else {
+        level = downcase(to_string(.metadata.parsed.error_severity) ?? "info")
+      }
+      numeric_status = to_int(status) ?? 0
+      if numeric_status >= 500 || includes(["error", "fatal", "panic"], level) {
+        level = "error"
+      } else if numeric_status >= 400 || includes(["warn", "warning"], level) {
+        level = "warning"
+      } else {
+        level = "success"
+      }
+      auth_user = to_string(.metadata.user_id) ?? ""
+      payload = encode_json({"event_message": .event_message, "metadata": .metadata})
+      # Keep separator-bearing paths in the payload; the filter column uses URL escaping.
+      path = replace(path, " | ", "%20%7C%20")
+      .event_message = "UnifiedLog | " + log_type + " | " + status + " | " + level + " | " + method + " | " + path + " | " + auth_user + " | " + payload
   # [self-platform] M6.4: keep only the Postgres containers' container_* series
   # (compose service "db") plus machine_cpu_cores/machine_memory_bytes (the
   # %-of-machine denominators). Everything else from cAdvisor is dropped.
@@ -356,6 +412,19 @@ sinks:
       headers:
         x-api-key: ${LOGFLARE_PUBLIC_ACCESS_TOKEN?LOGFLARE_PUBLIC_ACCESS_TOKEN is required}
     uri: 'http://analytics:4000/api/logs?source_name=cloudflare.logs.prod'
+  logflare_unified:
+    type: 'http'
+    inputs:
+      - unified_logs
+    encoding:
+      codec: 'json'
+    method: 'post'
+    request:
+      retry_max_duration_secs: 30
+      retry_initial_backoff_secs: 1
+      headers:
+        x-api-key: ${LOGFLARE_PUBLIC_ACCESS_TOKEN?LOGFLARE_PUBLIC_ACCESS_TOKEN is required}
+    uri: 'http://analytics:4000/api/logs?source_name=unified.logs'
   # [self-platform] M6.3: single aggregated Prometheus endpoint consumed by
   # the Studio metrics sampler (registered per project as metrics_url).
   prometheus_metrics:

@@ -157,6 +157,12 @@ export function analyticsLiteral(value: string | number | boolean): SafeLogSqlFr
   return rawSql(`'${escaped}'`)
 }
 
+/** PostgreSQL uses standard strings: backslashes stay literal, quotes are doubled. */
+export function postgresAnalyticsLiteral(value: string | number): SafeLogSqlFragment {
+  if (typeof value === 'number') return analyticsLiteral(value)
+  return rawSql(`'${value.replaceAll("'", "''")}'`)
+}
+
 const SAFE_IDENT_RE = /^[A-Za-z_][A-Za-z0-9_]*$/
 
 /**

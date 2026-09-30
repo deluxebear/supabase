@@ -3,12 +3,14 @@ import { useFlag } from 'common'
 
 import { executeAnalyticsSql } from './execute-analytics-sql'
 import { logsKeys } from './keys'
+import { USE_LOGFLARE_PG_SQL } from './logflare-dialect'
 import {
   aggregateFunctionLogs,
   flattenOtelInspectionRow,
   type OtelLogRow,
 } from './otel-inspection.utils'
 import { analyticsLiteral as lit, safeSql, type SafeLogSqlFragment } from './safe-analytics-sql'
+import { flattenSelfHostedInspection } from './self-hosted-inspection.utils'
 import {
   getUnifiedLogsISOStartEnd,
   UNIFIED_LOGS_QUERY_OPTIONS,
@@ -21,6 +23,7 @@ import {
   getStorageServiceFlowQuery,
 } from '@/components/interfaces/UnifiedLogs/Queries/ServiceFlowQueries/ServiceFlow.sql'
 import { LOG_TYPE_TO_SOURCE } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.constants'
+import { getUnifiedLogInspectionQuery as getPgInspectionQuery } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.queries.pg'
 import { QuerySearchParamsType } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.types'
 import type { ResponseError, UseCustomQueryOptions } from '@/types'
 
@@ -184,6 +187,47 @@ export async function getUnifiedLogInspection(
   }
 
   const { isoTimestampStart, isoTimestampEnd } = getInspectionISOStartEnd(search, logTimestampMs)
+
+  if (USE_LOGFLARE_PG_SQL) {
+    const data = await executeAnalyticsSql({
+      projectRef,
+      endpoint: '/platform/projects/{ref}/analytics/endpoints/logs.all',
+      sql: getPgInspectionQuery(
+        logId,
+        new Date(isoTimestampStart).getTime(),
+        new Date(isoTimestampEnd).getTime()
+      ),
+      iso_timestamp_start: isoTimestampStart,
+      iso_timestamp_end: isoTimestampEnd,
+      signal,
+    })
+    const entry = flattenSelfHostedInspection(data?.result)
+    if (!entry) return { result: [] }
+    const executionId = entry.execution_id
+    if (
+      type === 'edge-function' &&
+      typeof executionId === 'string' &&
+      /^[0-9a-f-]{36}$/i.test(executionId)
+    ) {
+      const functionData = await executeAnalyticsSql({
+        projectRef,
+        endpoint: '/platform/projects/{ref}/analytics/endpoints/logs.all',
+        sql: safeSql`-- self-hosted unified logs
+SELECT cast(id as text) as id, timestamp, event_message
+FROM function_logs WHERE split_part(event_message, ' | ', 3) = ${lit(executionId)}
+AND timestamp >= ${lit(isoTimestampStart)}
+AND timestamp <= ${lit(isoTimestampEnd)} ORDER BY timestamp DESC LIMIT 100`,
+        iso_timestamp_start: isoTimestampStart,
+        iso_timestamp_end: isoTimestampEnd,
+        signal,
+      })
+      Object.assign(entry, {
+        function_log_count: functionData.result?.length ?? 0,
+        function_logs: functionData.result ?? [],
+      })
+    }
+    return { result: [entry] }
+  }
 
   if (!useOtel) {
     let sql: SafeLogSqlFragment

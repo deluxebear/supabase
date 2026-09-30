@@ -34,3 +34,21 @@ After updating the main service or event worker, recreate the functions service.
 Fleet's init service copies both into existing project volumes. After updating
 Vector configuration, rerun `function-logs-init` and recreate Vector so it reads
 the generated configuration. Each Vector only ingests its Compose project's logs.
+
+## Unified logs
+
+The same initialization service provisions a dedicated `unified_logs` source.
+Vector forwards gateway, Postgres, PostgREST, Auth, Storage, Realtime, Supavisor,
+and function invocation events with a flat envelope. Original messages and
+metadata are retained in the JSON payload. Function requests are counted once.
+
+Studio keeps the Cloud list, filters, live mode, download, and detail panel.
+Self-hosted queries use Logflare's native PostgreSQL management query API through
+the server-side project connection and existing Analytics read permission.
+The private access token never goes to the browser. Every generated query has
+UTC time bounds and a row limit. Cloud keeps its existing endpoint and dialect.
+
+Unified logs begin collecting after Vector is updated. Historical service logs
+remain in their existing sources and are accessible in the Logs Explorer;
+they are not automatically copied to the unified source. Fields supplied by
+Cloud-only infrastructure, such as Cloudflare location, remain absent.

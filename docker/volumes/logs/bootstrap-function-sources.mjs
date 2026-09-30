@@ -14,7 +14,7 @@ async function listSources() {
 }
 
 let sources = await listSources()
-for (const name of ['function_edge_logs', 'function_logs']) {
+for (const name of ['function_edge_logs', 'function_logs', 'unified_logs']) {
   if (sources.some((source) => source.name === name)) continue
   const response = await fetch(`${baseUrl}/api/sources`, {
     method: 'POST',
@@ -43,6 +43,7 @@ let config = await readFile(process.env.VECTOR_TEMPLATE_PATH ?? '/etc/vector/tem
 for (const [legacyName, name] of [
   ['deno-subhosting-events', 'function_logs'],
   ['deno-relay-logs', 'function_edge_logs'],
+  ['unified.logs', 'unified_logs'],
 ]) {
   const source = sources.find((source) => source.name === name)
   if (!source || !/^[0-9a-f-]{36}$/.test(source.token)) throw new Error(`Invalid ${name} source ID`)

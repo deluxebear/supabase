@@ -2,6 +2,7 @@ import assert from 'node:assert'
 
 import { decodeFunctionLogEnvelope } from './function-log-envelope'
 import { WrappedResult } from './types'
+import { decodeUnifiedLogEnvelope } from './unified-log-envelope'
 import { assertSelfHosted } from './util'
 import { resolveProjectConnection } from '@/lib/api/self-platform/resolve-connection'
 import { PROJECT_ANALYTICS_URL } from '@/lib/constants/api'
@@ -97,9 +98,21 @@ export async function retrieveAnalyticsData({
     token = process.env.LOGFLARE_PRIVATE_ACCESS_TOKEN
   }
 
+  const isPgUnifiedQuery =
+    name === 'logs.all' &&
+    typeof params.sql === 'string' &&
+    params.sql.startsWith('-- self-hosted unified logs')
+  if (isPgUnifiedQuery) {
+    // PG endpoints cannot sandbox dynamic SQL in Logflare 1.50. The management
+    // query API validates read-only SQL and resolves native source columns.
+    // Project RBAC has already run; the private token stays server-side.
+    url = new URL('/api/query', url.origin)
+    url.searchParams.set('pg_sql', params.sql ?? '')
+  }
+
   // Add all other params
   Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined) {
+    if (value !== undefined && !isPgUnifiedQuery) {
       url.searchParams.set(key, value)
     }
   })
@@ -128,7 +141,7 @@ export async function retrieveAnalyticsData({
 
     if (Array.isArray(result?.result)) {
       result.result = result.result.map((row: Record<string, unknown>) =>
-        decodeFunctionLogEnvelope(row, projectRef)
+        decodeUnifiedLogEnvelope(decodeFunctionLogEnvelope(row, projectRef))
       )
     }
     return { data: result, error: undefined }

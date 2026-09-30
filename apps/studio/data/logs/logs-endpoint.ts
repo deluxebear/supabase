@@ -1,5 +1,7 @@
+import { USE_LOGFLARE_PG_SQL } from './logflare-dialect'
+
 export const logsAllEndpointUrl = (useOtel: boolean) =>
-  useOtel
+  useOtel && !USE_LOGFLARE_PG_SQL
     ? ('/platform/projects/{ref}/analytics/endpoints/logs.all.otel' as const)
     : ('/platform/projects/{ref}/analytics/endpoints/logs.all' as const)
 

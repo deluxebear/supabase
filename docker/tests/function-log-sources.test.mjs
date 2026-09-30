@@ -7,7 +7,7 @@ import { join } from 'node:path'
 import { test } from 'node:test'
 
 test('source bootstrap recovers a saved source after HTTP 500 and is idempotent', async () => {
-  const sources = [{ name: 'function_edge_logs', token: '11111111-1111-1111-1111-111111111111' }]
+  const sources = [{ name: 'function_edge_logs', token: '11111111-1111-1111-1111-111111111111' }, { name: 'unified_logs', token: '33333333-3333-3333-3333-333333333333' }]
   let creations = 0
   let initializations = 0
   const server = createServer((req, res) => {
@@ -32,7 +32,7 @@ test('source bootstrap recovers a saved source after HTTP 500 and is idempotent'
   const output = join(directory, 'vector.yml')
   await writeFile(
     template,
-    'source_name=deno-subhosting-events\nsource_name=deno-relay-logs\n${LOGFLARE_PUBLIC_ACCESS_TOKEN}'
+    'source_name=deno-subhosting-events\nsource_name=deno-relay-logs\nsource_name=unified.logs\n${LOGFLARE_PUBLIC_ACCESS_TOKEN}'
   )
   try {
     for (let run = 0; run < 2; run++) {
@@ -62,7 +62,7 @@ test('source bootstrap recovers a saved source after HTTP 500 and is idempotent'
     assert.equal(initializations, 1)
     assert.equal(
       await readFile(output, 'utf8'),
-      'source=22222222-2222-2222-2222-222222222222\nsource=11111111-1111-1111-1111-111111111111\n${LOGFLARE_PUBLIC_ACCESS_TOKEN}'
+      'source=22222222-2222-2222-2222-222222222222\nsource=11111111-1111-1111-1111-111111111111\nsource=33333333-3333-3333-3333-333333333333\n${LOGFLARE_PUBLIC_ACCESS_TOKEN}'
     )
   } finally {
     await new Promise((resolve) => server.close(resolve))

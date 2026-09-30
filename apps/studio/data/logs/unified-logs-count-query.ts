@@ -3,6 +3,7 @@ import { useFlag } from 'common'
 
 import { executeAnalyticsSql } from './execute-analytics-sql'
 import { logsKeys } from './keys'
+import { USE_LOGFLARE_PG_SQL } from './logflare-dialect'
 import { logsAllEndpointUrl, pickLogsQueryBuilder } from './logs-endpoint'
 import {
   getUnifiedLogsISOStartEnd,
@@ -11,6 +12,7 @@ import {
 } from './unified-logs-infinite-query'
 import { getLogsCountQuery } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.queries'
 import { getLogsCountQuery as getLogsCountQueryBq } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.queries.bq'
+import { getFacetCountQuery as getPgFacetCountQuery } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.queries.pg'
 import { FacetMetadataSchema } from '@/components/interfaces/UnifiedLogs/UnifiedLogs.schema'
 import { ResponseError, UseCustomQueryOptions } from '@/types'
 
@@ -26,18 +28,30 @@ export async function getUnifiedLogsCount(
     throw new Error('projectRef is required for getUnifiedLogsCount')
   }
 
-  const sql = pickLogsQueryBuilder(useOtel, getLogsCountQuery, getLogsCountQueryBq)(search)
   const { isoTimestampStart, isoTimestampEnd } = getUnifiedLogsISOStartEnd(search)
-
-  const endpoint = logsAllEndpointUrl(useOtel)
-  const data = await executeAnalyticsSql({
-    projectRef,
-    endpoint,
-    sql,
-    iso_timestamp_start: isoTimestampStart,
-    iso_timestamp_end: isoTimestampEnd,
-    signal,
-  })
+  const execute = (sql: Parameters<typeof executeAnalyticsSql>[0]['sql']) =>
+    executeAnalyticsSql({
+      projectRef,
+      endpoint: logsAllEndpointUrl(useOtel),
+      sql,
+      iso_timestamp_start: isoTimestampStart,
+      iso_timestamp_end: isoTimestampEnd,
+      signal,
+    })
+  let data
+  if (USE_LOGFLARE_PG_SQL) {
+    // The PG sandbox does not support Cloud's CTE/UNION facet query.
+    const results = await Promise.all(
+      ['total', 'log_type', 'level', 'method', 'status', 'pathname', 'auth_user'].map((facet) =>
+        execute(getPgFacetCountQuery({ search, facet }))
+      )
+    )
+    data = { result: results.flatMap((result) => result.result ?? []) }
+  } else {
+    data = await execute(
+      pickLogsQueryBuilder(useOtel, getLogsCountQuery, getLogsCountQueryBq)(search)
+    )
+  }
 
   const facets: Record<string, FacetMetadataSchema> = {}
   const countsByFacet: Record<string, Map<string, number>> = {}

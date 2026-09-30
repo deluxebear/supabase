@@ -5,6 +5,7 @@ import { LEVELS } from '@/components/ui/DataTable/DataTable.constants'
 import { tryParseJson } from '@/lib/helpers'
 
 type UnifiedLogMetadataRow = {
+  self_hosted?: boolean
   log_type?: string | null
   status?: string | number | null
   method?: string | null
@@ -13,6 +14,7 @@ type UnifiedLogMetadataRow = {
 }
 
 const unifiedLogsQueryRowSchema = z.object({
+  self_hosted: z.boolean().optional(),
   id: z.string(),
   timestamp: z.union([z.string(), z.number()]),
   log_type: z.string(),
@@ -49,10 +51,17 @@ export const extractLogMetadata = (row: UnifiedLogMetadataRow) => {
     row.log_type === 'auth'
       ? (eventMessage?.status ??
         extractLeadingStatus(eventMessage?.msg) ??
-        extractLeadingStatus(eventMessage?.error))
-      : (row.status ?? 200)
-  const method = row.log_type === 'auth' ? eventMessage?.method : row.method
-  const pathname = row.log_type === 'auth' ? eventMessage?.path : row.pathname || ''
+        extractLeadingStatus(eventMessage?.error) ??
+        (row.self_hosted ? row.status : undefined))
+      : (row.status ?? (row.self_hosted ? null : 200))
+  const method =
+    row.log_type === 'auth'
+      ? (eventMessage?.method ?? (row.self_hosted ? row.method : undefined))
+      : row.method
+  const pathname =
+    row.log_type === 'auth'
+      ? (eventMessage?.path ?? (row.self_hosted ? row.pathname : undefined))
+      : row.pathname || ''
 
   return { status, method, pathname }
 }
@@ -74,6 +83,7 @@ export const mapUnifiedLogRow = (row: UnifiedLogsQueryRow) => {
     log_count: row.log_count ?? null,
     logs: row.logs ?? [],
     auth_user: isComputeLog ? null : row.auth_user || null,
+    ...(row.self_hosted ? { metadata: row.metadata ?? null } : {}),
   }
 
   if (isComputeLog) return { ...mappedRow, metadata: row.metadata ?? null }
