@@ -304,7 +304,7 @@ export const ProjectLayout = forwardRef<HTMLDivElement, PropsWithChildren<Projec
           <title>{pageTitle}</title>
           <meta name="description" content="Supabase Studio" />
         </Head>
-        <div className="flex flex-row h-full w-full">
+        <div className="flex flex-row h-full min-h-0 w-full overflow-hidden">
           <ResizablePanelGroup orientation="horizontal">
             {productMenu && sideBarIsOpen && (
               <ResizablePanel
@@ -353,7 +353,7 @@ export const ProjectLayout = forwardRef<HTMLDivElement, PropsWithChildren<Projec
               id="panel-project-content"
             >
               <main
-                className="h-full flex flex-col flex-1 w-full overflow-y-auto overflow-x-hidden @container"
+                className="relative h-full min-h-0 flex flex-col flex-1 w-full overflow-y-auto overflow-x-hidden overscroll-y-contain @container"
                 ref={combinedRef}
               >
                 {showStripeProjectBanner && (

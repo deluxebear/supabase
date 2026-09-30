@@ -97,7 +97,7 @@ export const DefaultLayout = ({
       <LayoutSidebarProvider>
         <ProjectContextProvider projectRef={ref}>
           <MobileSheetProvider>
-            <div className="flex flex-col h-screen w-screen">
+            <div className="flex flex-col h-dvh w-screen overflow-hidden">
               <SkipToContent href="#main" />
               {/* Top Banner */}
               <AppBannerWrapper />
@@ -112,7 +112,7 @@ export const DefaultLayout = ({
                 {showConfigDrift && ref && <GitHubConfigDriftBanner />}
               </div>
               {/* Main Content Area */}
-              <div className="flex flex-1 w-full overflow-y-hidden">
+              <div className="flex min-h-0 flex-1 w-full overflow-hidden">
                 {/* Sidebar - Only show for project pages, not account pages */}
                 {!router.pathname.startsWith('/account') && <Sidebar />}
                 {/* Main Content with Layout Sidebar */}

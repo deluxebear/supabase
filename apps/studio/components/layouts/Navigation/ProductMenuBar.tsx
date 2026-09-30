@@ -30,7 +30,7 @@ export const ProductMenuBar = ({
        * */
       id="spec-click-target"
       className={cn(
-        'flex flex-col w-full h-full', // Layout
+        'flex flex-col w-full h-full min-h-0 overflow-hidden', // Layout
         'hide-scrollbar bg-dash-sidebar border-default'
       )}
     >
@@ -42,7 +42,9 @@ export const ProductMenuBar = ({
           </>
         )}
       </ProductMenuBarHeader>
-      <div className={cn('grow overflow-y-auto', className)}>{children}</div>
+      <div className={cn('min-h-0 grow overflow-y-auto overscroll-y-contain', className)}>
+        {children}
+      </div>
     </div>
   )
 }
