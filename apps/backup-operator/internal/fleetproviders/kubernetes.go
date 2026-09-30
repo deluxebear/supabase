@@ -56,6 +56,11 @@ func (p KubernetesProvider) Reconcile(ctx context.Context, request Request) (Evi
 	if err := request.Validate(); err != nil {
 		return Evidence{}, err
 	}
+	if scoped, ok := p.Workloads.(interface {
+		WithSecretDomain(string) KubernetesWorkloadClient
+	}); ok {
+		p.Workloads = scoped.WithSecretDomain(request.Domain)
+	}
 	hasResources := len(request.Document.Kubernetes.Resources) > 0
 	if request.Document.Adapter != AdapterKubernetes || (hasResources && (p.Client == nil || len(p.AllowedFieldPrefixes) == 0)) {
 		return Evidence{}, errors.New("Kubernetes provider is not configured")

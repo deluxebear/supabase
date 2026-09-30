@@ -53,7 +53,16 @@ func KubernetesSecretName(service string) string {
 	return "supabase-fleet-" + service + "-secrets"
 }
 
+// JWT credentials must not replace the Auth or Functions settings Secret.
+func KubernetesSecretNameForDomain(domain, service string) string {
+	if domain == "jwt" {
+		return "supabase-fleet-jwt-" + service + "-secrets"
+	}
+	return KubernetesSecretName(service)
+}
+
 type openedKubernetesSecret struct {
+	Name    string
 	Service string
 	Data    map[string][]byte
 	Digest  string
@@ -102,7 +111,7 @@ func (p KubernetesProvider) openKubernetesSecrets(request Request) ([]openedKube
 		if err != nil {
 			return nil, err
 		}
-		opened = append(opened, openedKubernetesSecret{Service: secret.Service, Data: data, Digest: sealedsecret.Digest(secret.Sealed.Envelope)})
+		opened = append(opened, openedKubernetesSecret{Name: KubernetesSecretNameForDomain(request.Domain, secret.Service), Service: secret.Service, Data: data, Digest: sealedsecret.Digest(secret.Sealed.Envelope)})
 	}
 	return opened, nil
 }
@@ -133,7 +142,7 @@ func (p KubernetesProvider) planKubernetesSecrets(ctx context.Context, secrets [
 	plans := make([]kubernetesSecretPlan, 0, len(secrets))
 	conflicts := make([]Conflict, 0)
 	for _, secret := range secrets {
-		name := KubernetesSecretName(secret.Service)
+		name := secret.Name
 		identity := "core/v1/secrets/" + p.SecretNamespace + "/" + name
 		current, err := p.Workloads.GetSecret(ctx, p.SecretNamespace, name)
 		if err != nil {
@@ -177,7 +186,7 @@ func (p KubernetesProvider) applyKubernetesSecrets(ctx context.Context, plans []
 		if !plan.needsApply && !plan.needsRollout {
 			continue
 		}
-		name := KubernetesSecretName(plan.secret.Service)
+		name := plan.secret.Name
 		if plan.needsApply {
 			if err := p.Workloads.ApplySecret(ctx, p.SecretNamespace, name, plan.secret.Data, plan.secret.Digest); err != nil {
 				restoreErr := p.restoreKubernetesSecrets(ctx, done)
@@ -227,7 +236,7 @@ func (p KubernetesProvider) restoreKubernetesSecret(ctx context.Context, plan ku
 		if previous == nil {
 			previous = map[string][]byte{}
 		}
-		if err := p.Workloads.ApplySecret(ctx, p.SecretNamespace, KubernetesSecretName(plan.secret.Service), previous, plan.previous.Digest); err != nil {
+		if err := p.Workloads.ApplySecret(ctx, p.SecretNamespace, plan.secret.Name, previous, plan.previous.Digest); err != nil {
 			return err
 		}
 	}

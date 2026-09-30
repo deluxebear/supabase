@@ -18,7 +18,8 @@ import (
 )
 
 type DynamicKubernetesClient struct {
-	Client dynamic.Interface
+	Client       dynamic.Interface
+	SecretDomain string
 }
 
 func (c DynamicKubernetesClient) Get(ctx context.Context, resource KubernetesResource) (KubernetesObject, error) {
@@ -149,7 +150,7 @@ func (c DynamicKubernetesClient) GetDeploymentDigest(ctx context.Context, namesp
 	if err != nil {
 		return "", err
 	}
-	digest, _, _ := unstructured.NestedString(object.Object, "spec", "template", "metadata", "annotations", KubernetesSecretDigestAnnotation)
+	digest, _, _ := unstructured.NestedString(object.Object, "spec", "template", "metadata", "annotations", c.deploymentDigestAnnotation())
 	return digest, nil
 }
 
@@ -162,14 +163,14 @@ func (c DynamicKubernetesClient) RestartDeployment(ctx context.Context, namespac
 		"kind":       "Deployment",
 		"metadata":   map[string]any{"name": name, "namespace": namespace},
 		"spec": map[string]any{"template": map[string]any{"metadata": map[string]any{
-			"annotations": map[string]string{KubernetesSecretDigestAnnotation: digest},
+			"annotations": map[string]string{c.deploymentDigestAnnotation(): digest},
 		}}},
 	})
 	if err != nil {
 		return err
 	}
 	force := false
-	_, err = c.Client.Resource(deploymentsGVR).Namespace(namespace).Patch(ctx, name, types.ApplyPatchType, patch, metav1.PatchOptions{FieldManager: KubernetesSecretFieldManager, Force: &force})
+	_, err = c.Client.Resource(deploymentsGVR).Namespace(namespace).Patch(ctx, name, types.ApplyPatchType, patch, metav1.PatchOptions{FieldManager: c.deploymentSecretFieldManager(), Force: &force})
 	return err
 }
 
@@ -217,4 +218,22 @@ func managedFieldsOf(object *unstructured.Unstructured) map[string][]string {
 		sort.Strings(managed[entry.Manager])
 	}
 	return managed
+}
+
+// WithSecretDomain isolates JWT restarts from Auth/Functions configuration.
+func (c DynamicKubernetesClient) WithSecretDomain(domain string) KubernetesWorkloadClient {
+	c.SecretDomain = domain
+	return c
+}
+func (c DynamicKubernetesClient) deploymentDigestAnnotation() string {
+	if c.SecretDomain == "jwt" {
+		return "supabase.com/fleet-jwt-secrets-digest"
+	}
+	return KubernetesSecretDigestAnnotation
+}
+func (c DynamicKubernetesClient) deploymentSecretFieldManager() string {
+	if c.SecretDomain == "jwt" {
+		return KubernetesSecretFieldManager + "-jwt"
+	}
+	return KubernetesSecretFieldManager
 }

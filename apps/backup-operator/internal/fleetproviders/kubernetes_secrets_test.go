@@ -250,3 +250,26 @@ func TestKubernetesSealedSecretsRestoreEveryServiceWhenOneFails(t *testing.T) {
 		}
 	}
 }
+
+func TestKubernetesJWTSecretsDoNotReplaceServiceConfiguration(t *testing.T) {
+	recipient, _ := ecdh.X25519().GenerateKey(rand.Reader)
+	authSettings := KubernetesSecretState{Exists: true, Type: "Opaque", Data: map[string][]byte{"GOTRUE_SITE_URL": []byte("https://project.example")}, Digest: "auth-settings"}
+	workloads := &multiWorkloads{secrets: map[string]KubernetesSecretState{KubernetesSecretName("auth"): authSettings}, podDigests: map[string]string{}, unavailable: map[string]bool{}}
+	provider := KubernetesProvider{Workloads: workloads, SecretRecipient: recipient, SecretNamespace: "supabase", SecretServices: []string{"auth"}, RolloutTimeout: time.Second}
+	request := sealedKubernetesRequest(t, recipient, "auth", `{"GOTRUE_JWT_SECRET":"a-legacy-jwt-secret"}`)
+	request.Domain = "jwt"
+	envelope, err := sealedsecret.Seal(rand.Reader, recipient.PublicKey().Bytes(), KubernetesSecretContext(request, "auth"), []byte(`{"GOTRUE_JWT_SECRET":"a-legacy-jwt-secret"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	request.Document.Kubernetes.Secrets[0].Sealed.Envelope = envelope
+	if _, err := provider.Reconcile(context.Background(), request); err != nil {
+		t.Fatal(err)
+	}
+	if string(workloads.secrets[KubernetesSecretName("auth")].Data["GOTRUE_SITE_URL"]) != "https://project.example" || workloads.secrets[KubernetesSecretName("auth")].Digest != "auth-settings" {
+		t.Fatal("JWT update replaced Auth configuration")
+	}
+	if string(workloads.secrets[KubernetesSecretNameForDomain("jwt", "auth")].Data["GOTRUE_JWT_SECRET"]) != "a-legacy-jwt-secret" {
+		t.Fatal("JWT configuration was not isolated")
+	}
+}

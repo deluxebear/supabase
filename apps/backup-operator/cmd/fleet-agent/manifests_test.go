@@ -169,7 +169,9 @@ func TestKubernetesAgentManifests(t *testing.T) {
 	for _, object := range objects {
 		switch typed := object.(type) {
 		case *rbacv1.Role:
-			role = typed
+			if typed.Name == "fleet-agent" {
+				role = typed
+			}
 		case *appsv1.Deployment:
 			agent = typed
 		case *batchv1.Job:
@@ -274,7 +276,7 @@ func roleAllows(role *rbacv1.Role, group, resource, name string, verbs ...string
 	for _, verb := range verbs {
 		allowed := false
 		for _, rule := range role.Rules {
-			if contains(rule.APIGroups, group) && contains(rule.Resources, resource) && contains(rule.ResourceNames, name) && contains(rule.Verbs, verb) {
+			if contains(rule.APIGroups, group) && contains(rule.Resources, resource) && (contains(rule.ResourceNames, name) || name == "" && len(rule.ResourceNames) == 0) && contains(rule.Verbs, verb) {
 				allowed = true
 			}
 		}
@@ -310,4 +312,34 @@ func envExampleKeys(t *testing.T) map[string]string {
 		values[name] = strings.Trim(value, "'")
 	}
 	return values
+}
+
+func TestJWTObserverRoleDoesNotGrantSecretOrWorkloadWrites(t *testing.T) {
+	var observerRole *rbacv1.Role
+	for _, object := range decodeManifests(t) {
+		if role, ok := object.(*rbacv1.Role); ok && role.Name == "fleet-agent-jwt-observer" {
+			observerRole = role
+		}
+	}
+	if observerRole == nil {
+		t.Fatal("optional JWT observer Role is missing")
+	}
+	if !roleAllows(observerRole, "", "pods/exec", "", "create") || !roleAllows(observerRole, "", "pods", "", "get", "list") {
+		t.Fatal("JWT observation requires pod exec and metadata reads")
+	}
+	for _, rule := range observerRole.Rules {
+		for _, resource := range rule.Resources {
+			if resource == "secrets" || resource == "*" {
+				t.Fatal("JWT observer must not read Secrets")
+			}
+			for _, verb := range rule.Verbs {
+				if resource == "pods/exec" && verb == "create" {
+					continue
+				}
+				if verb != "get" && verb != "list" {
+					t.Fatal("JWT observer may not mutate workload objects")
+				}
+			}
+		}
+	}
 }

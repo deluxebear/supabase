@@ -194,3 +194,10 @@ never placed in the Agent identity ConfigMap or emitted to logs. The existing
 Studio synchronizer handles this observation in the same way as Compose.
 This section enables observation; Kubernetes JWT rotation remains unavailable
 until coordinated multi-service configuration delivery is enabled.
+
+JWT configuration delivery uses dedicated `supabase-fleet-jwt-<service>-secrets`
+Secrets and the `supabase.com/fleet-jwt-secrets-digest` pod-template annotation.
+Auth and Functions configuration retain their existing Secret names and restart
+annotation. This prevents a JWT revision from removing their unrelated settings
+or taking ownership of their rollout annotation. Provisioning must bind each
+JWT consumer to its dedicated Secret before coordinated JWT delivery is enabled.
