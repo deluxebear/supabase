@@ -1,6 +1,6 @@
 import { getEnableWebhooksSQL } from '@supabase/pg-meta'
 import type { Tables } from 'common/marketplace.types'
-import { Clock5, Code2, Layers, Timer, Vault, Warehouse, Webhook } from 'lucide-react'
+import { Clock5, Code2, Layers, Timer, Vault, Warehouse, Webhook, Workflow } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { ComponentType, ReactNode } from 'react'
@@ -131,6 +131,33 @@ const authorSupabase = {
 }
 
 const SUPABASE_INTEGRATIONS: Array<IntegrationDefinition> = [
+  {
+    id: 'pg_durable',
+    type: 'postgres_extension',
+    source: 'Community',
+    name: 'pg_durable',
+    icon: ({ className, ...props } = {}) => (
+      <Workflow className={cn('inset-0 p-2 text-black w-full h-full', className)} {...props} />
+    ),
+    description: 'Run durable workflows in Postgres using SQL',
+    docsUrl: 'https://github.com/microsoft/pg_durable',
+    author: {
+      name: 'Microsoft',
+      websiteUrl: 'https://github.com/microsoft/pg_durable',
+    },
+    requiredExtensions: ['pg_durable'],
+    navigation: [{ route: 'overview', label: 'Overview' }],
+    navigate: ({ pageId = 'overview' }) => {
+      if (pageId !== 'overview') return null
+      return dynamic(
+        () =>
+          import('@/components/interfaces/Integrations/Integration/IntegrationOverviewTab').then(
+            (mod) => mod.IntegrationOverviewTab
+          ),
+        { loading: Loading }
+      )
+    },
+  },
   {
     id: 'queues',
     type: 'postgres_extension' as const,

@@ -37,7 +37,7 @@ export const IntegrationLoadingCard = () => {
 
 export const IntegrationCard = ({
   id,
-  listingId,
+  source,
   status,
   name,
   icon,
@@ -47,7 +47,6 @@ export const IntegrationCard = ({
   image,
 }: IntegrationCardProps) => {
   const { data: project } = useSelectedProjectQuery()
-  const shouldShowOfficialBadge = !listingId
 
   if (featured) {
     return (
@@ -71,10 +70,12 @@ export const IntegrationCard = ({
           <CardContent className="p-6 px-4">
             <div className="flex-col justify-start items-center text-center gap-y-0.5 flex">
               <h3>{name}</h3>
-              <p className="text-foreground-light text-sm line-clamp-3">{description}</p>
+              <p className="text-foreground-light text-sm line-clamp-3">
+                {description && $t(description)}
+              </p>
               <div className="flex items-center gap-x-1 mt-4">
                 {status && <Badge variant="warning">{status}</Badge>}
-                {shouldShowOfficialBadge && <Badge>{$t('Official')}</Badge>}
+                <Badge>{$t(source)}</Badge>
               </div>
             </div>
           </CardContent>
@@ -101,10 +102,10 @@ export const IntegrationCard = ({
           <div className="flex-col justify-start items-start gap-y-0.5 flex flex-1">
             <h3 className="text-foreground text-sm">{name}</h3>
 
-            <p className="text-foreground-light text-xs flex-1">{description}</p>
+            <p className="text-foreground-light text-xs flex-1">{description && $t(description)}</p>
             <div className="flex items-center gap-x-1 mt-4">
               {status && <Badge variant="warning">{status}</Badge>}
-              {shouldShowOfficialBadge && <Badge>{$t('Official')}</Badge>}
+              <Badge>{$t(source)}</Badge>
             </div>
           </div>
         </CardContent>

@@ -35,6 +35,7 @@ const INTEGRATION_OVERVIEWS = {
   notion_wrapper: () => import('@/static-data/integrations/notion_wrapper/overview.md'),
   orb_wrapper: () => import('@/static-data/integrations/orb_wrapper/overview.md'),
   paddle_wrapper: () => import('@/static-data/integrations/paddle_wrapper/overview.md'),
+  pg_durable: () => import('@/static-data/integrations/pg_durable/overview.md'),
   queues: () => import('@/static-data/integrations/queues/overview.md'),
   redis_wrapper: () => import('@/static-data/integrations/redis_wrapper/overview.md'),
   s3_vectors_wrapper: () => import('@/static-data/integrations/s3_vectors_wrapper/overview.md'),
