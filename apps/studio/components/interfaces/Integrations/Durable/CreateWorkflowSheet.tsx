@@ -31,7 +31,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { ContainerStepFields } from './ContainerStepFields'
-import { formToFlowGraph } from './Durable.flow'
+import { formToFlowGraph } from './Durable.flowBuilder'
 import {
   buildStartWorkflow,
   buildWorkflow,
