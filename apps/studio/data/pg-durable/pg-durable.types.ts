@@ -69,6 +69,7 @@ export const durableNodeSchema = z.object({
   result: z.string().nullable(),
   status_details: z.string().nullable(),
   inferred_status: z.string().nullable(),
+  inferred_status_from_ancestor_id: z.string().nullable().optional(),
   updated_at: z.string().nullable(),
 })
 export type DurableNode = z.infer<typeof durableNodeSchema>
@@ -83,6 +84,11 @@ export const durableDetailSchema = z.object({
       current_execution_id: z.coerce.number().nullable(),
       status: z.string().nullable(),
       output: z.string().nullable(),
+      root_node: z.string().nullable().optional(),
+      created_at: z.string().nullable().optional(),
+      completed_at: z.string().nullable().optional(),
+      submitted_by: z.string().nullable().optional(),
+      database: z.string().nullable().optional(),
     })
     .nullable(),
   nodes: z.array(durableNodeSchema),

@@ -21,4 +21,6 @@ export const pgDurableKeys = {
     ] as const,
   instance: (projectRef?: string, instanceId?: string, connectionString?: string | null) =>
     [...pgDurableKeys.all(projectRef), 'instance', instanceId, connectionString] as const,
+  explain: (projectRef?: string, input?: string | null, connectionString?: string | null) =>
+    [...pgDurableKeys.all(projectRef), 'explain', input, connectionString] as const,
 }

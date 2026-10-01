@@ -129,7 +129,14 @@ async function getDetail(
       ...variables,
       sql: safeSql`
     SELECT jsonb_build_object(
-      'info', (SELECT to_jsonb(i) FROM df.instance_info(${literal(instanceId)}) i LIMIT 1),
+      'info', (
+        SELECT to_jsonb(x) FROM (
+          SELECT i.*, d.root_node, d.created_at, d.completed_at,
+            d.submitted_by::text AS submitted_by, d.database
+          FROM df.instance_info(${literal(instanceId)}) i
+          LEFT JOIN df.instances d ON d.id = i.instance_id
+        ) x LIMIT 1
+      ),
       'nodes', COALESCE((SELECT jsonb_agg(to_jsonb(n) ORDER BY n.node_id) FROM df.instance_nodes(${literal(instanceId)}) n), '[]'::jsonb),
       'executions', COALESCE((SELECT jsonb_agg(to_jsonb(e) ORDER BY e.execution_id DESC) FROM df.instance_executions(${literal(instanceId)}, 20) e), '[]'::jsonb)
     ) AS detail;
@@ -156,4 +163,37 @@ export const durableDetailQueryOptions = ({
       const status = query.state.data?.info?.status?.toLowerCase()
       return !query.state.data?.info || status === 'pending' || status === 'running' ? 3_000 : false
     },
+  })
+
+export type PgDurableExplainVariables = PgDurableVariables & {
+  input?: string | null
+  enabled?: boolean
+}
+async function getExplain(
+  { input, ...variables }: PgDurableVariables & { input?: string | null },
+  signal?: AbortSignal
+) {
+  if (!input) throw new Error('Workflow input is required')
+  const { result } = await executeSql<unknown>(
+    { ...variables, sql: safeSql`SELECT df.explain(${literal(input)}) AS plan;` },
+    signal
+  )
+  return z
+    .array(z.object({ plan: z.string() }))
+    .nonempty()
+    .parse(result)[0].plan
+}
+export type PgDurableExplainData = Awaited<ReturnType<typeof getExplain>>
+export const durableExplainQueryOptions = ({
+  projectRef,
+  connectionString,
+  input,
+  enabled,
+}: PgDurableExplainVariables) =>
+  queryOptions({
+    queryKey: pgDurableKeys.explain(projectRef, input, connectionString),
+    queryFn: ({ signal }) => getExplain({ projectRef, connectionString, input }, signal),
+    enabled: !!projectRef && !!input && enabled !== false,
+    staleTime: 0,
+    retry: false,
   })
