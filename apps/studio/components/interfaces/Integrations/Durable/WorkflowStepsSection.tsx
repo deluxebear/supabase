@@ -31,6 +31,11 @@ export const WorkflowStepsSection = ({
     instanceStatus?.toLowerCase() === 'failed' ? getFirstFailedNodeId(graph) : null
   const selectedNodeId = selection ? selection.nodeId : failedNodeId
   const selectedNode = nodes.find((node) => node.node_id === selectedNodeId)
+  // IF and LOOP conditions are not drawn, so their details (and errors) appear with the decision.
+  const conditionNodeId = graph?.nodes.find(
+    (n) => n.durableNodeId === selectedNodeId
+  )?.conditionNodeId
+  const conditionNode = nodes.find((node) => node.node_id === conditionNodeId)
 
   return (
     <>
@@ -81,6 +86,19 @@ export const WorkflowStepsSection = ({
                 </span>
               </div>
               <WorkflowStepDetails node={selectedNode} />
+              {conditionNode && (
+                <div className="border-t pt-3 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-foreground-light">{$t('Condition')}</span>
+                    <span className="ml-auto">
+                      <WorkflowStatus
+                        status={conditionNode.inferred_status ?? conditionNode.status}
+                      />
+                    </span>
+                  </div>
+                  <WorkflowStepDetails node={conditionNode} />
+                </div>
+              )}
             </div>
           ) : (
             <p className="text-xs text-foreground-light">

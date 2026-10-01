@@ -83,6 +83,29 @@ describe('WorkflowFlowDiagram', () => {
     expect(onSelectNode).toHaveBeenLastCalledWith('a')
   })
 
+  it('does not capture wheel scrolling meant for the surrounding sheet', () => {
+    const { container } = customRender(<WorkflowFlowDiagram graph={GRAPH} />)
+    const pane = container.querySelector('.react-flow__pane')
+    if (!pane) throw new Error('pane is missing')
+    // dispatchEvent returns false when a listener called preventDefault.
+    expect(fireEvent.wheel(pane, { deltaY: 120 })).toBe(true)
+  })
+
+  it('only makes selectable steps keyboard focusable', () => {
+    const { container, unmount } = customRender(
+      <WorkflowFlowDiagram graph={GRAPH} onSelectNode={vi.fn()} />
+    )
+    const focusable = () =>
+      [...container.querySelectorAll('.react-flow__node[tabindex="0"]')].map((el) =>
+        el.getAttribute('aria-label')
+      )
+    expect(focusable()).toEqual(['SQL, load, completed', 'HTTP, notify, running'])
+    unmount()
+    // Without a selection handler (the builder preview) nothing in the diagram is a tab stop.
+    const builder = customRender(<WorkflowFlowDiagram graph={GRAPH} />)
+    expect(builder.container.querySelectorAll('.react-flow__node[tabindex="0"]')).toHaveLength(0)
+  })
+
   it('opens a larger diagram from Expand', async () => {
     const user = userEvent.setup()
     customRender(<WorkflowFlowDiagram graph={GRAPH} canExpand />)

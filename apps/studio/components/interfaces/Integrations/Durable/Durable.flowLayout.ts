@@ -26,10 +26,25 @@ export type FlowNodeData = { flow: FlowNode }
 export type FlowDiagramNode = Node<FlowNodeData>
 export type FlowDiagramEdge = Edge<{ label?: FlowEdgeLabel }>
 
+const MAX_CACHED_LAYOUTS = 16
+// Node sizes are fixed per kind, so positions depend only on the graph's structure. Caching them
+// keeps dagre off the typing path in the builder and off every changed poll of a running workflow.
+const placementCache = new Map<string, Map<string, Placed>>()
+
+const rememberPlacement = (key: string, placed: Map<string, Placed>) => {
+  placementCache.delete(key)
+  placementCache.set(key, placed)
+  if (placementCache.size > MAX_CACHED_LAYOUTS) {
+    const oldest = placementCache.keys().next().value
+    if (oldest !== undefined) placementCache.delete(oldest)
+  }
+}
+
 /**
  * Lays out a flow graph top to bottom with dagre. Loop groups are laid out bottom-up: each
  * loop's children get their own dagre pass, then the loop is one fixed-size node in its
- * parent's pass. Child positions are relative to their loop, as React Flow expects.
+ * parent's pass. Child positions are relative to their loop, as React Flow expects. Positions
+ * are cached by structure; node data always comes from the graph passed in.
  */
 export function layoutFlowGraph(graph: FlowGraph): {
   nodes: FlowDiagramNode[]
@@ -43,7 +58,9 @@ export function layoutFlowGraph(graph: FlowGraph): {
     scopeOf.set(node.id, parent)
     childrenOf.set(parent, [...(childrenOf.get(parent) ?? []), node])
   }
-  const placed = new Map<string, Placed>()
+  const structureKey = getFlowStructureKey(graph)
+  const cachedPlacement = placementCache.get(structureKey)
+  const placed = cachedPlacement ?? new Map<string, Placed>()
 
   const layoutLoop = (loop: FlowNode): Box => {
     const content = layoutScope(loop.id)
@@ -100,7 +117,12 @@ export function layoutFlowGraph(graph: FlowGraph): {
     return { width: maxX - minX, height: maxY - minY }
   }
 
-  layoutScope(undefined)
+  if (cachedPlacement) {
+    rememberPlacement(structureKey, cachedPlacement)
+  } else {
+    layoutScope(undefined)
+    rememberPlacement(structureKey, placed)
+  }
 
   // React Flow requires parents to precede their children.
   const nodes: FlowDiagramNode[] = []

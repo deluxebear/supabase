@@ -61,6 +61,8 @@ const FlowCanvas = ({
   const nodes = layout.nodes.map((node) => ({
     ...node,
     selectable: canSelect && node.selectable,
+    // Only selectable steps are tab stops; a preview with nothing to select has none.
+    focusable: canSelect && node.selectable,
     selected: !!selectedNodeId && node.data.flow.durableNodeId === selectedNodeId,
     ariaLabel: getNodeAriaLabel(node.data.flow),
   }))
@@ -113,7 +115,12 @@ const FlowCanvas = ({
           minZoom={0.2}
           nodesDraggable={false}
           nodesConnectable={false}
+          edgesFocusable={false}
           elementsSelectable={canSelect}
+          // The canvas sits inside scrolling sheets: wheel and touch scrolling must reach the
+          // sheet, so zooming is left to the controls.
+          zoomOnScroll={false}
+          preventScrolling={false}
           colorMode={resolvedTheme === 'dark' ? 'dark' : 'light'}
           proOptions={{ hideAttribution: true }}
         >

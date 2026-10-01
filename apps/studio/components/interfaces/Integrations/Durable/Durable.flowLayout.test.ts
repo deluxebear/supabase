@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest'
+import dagre from '@dagrejs/dagre'
+import { describe, expect, it, vi } from 'vitest'
 
 import type { FlowGraph, FlowNode } from './Durable.flow'
 import {
@@ -139,6 +140,38 @@ describe('layoutFlowGraph', () => {
       type: 'smoothstep',
       data: { label: 'then' },
     })
+  })
+})
+
+describe('layout caching', () => {
+  it('reuses positions while only status and summary change, but refreshes node data', () => {
+    const base = graphOf(
+      [flowNode('a'), flowNode('l', 'loop'), flowNode('b', 'step', 'l')],
+      [['a', 'l']]
+    )
+    const spy = vi.spyOn(dagre, 'layout')
+    try {
+      const first = layoutFlowGraph(base)
+      const callsAfterFirst = spy.mock.calls.length
+      expect(callsAfterFirst).toBeGreaterThan(0)
+
+      const polled: FlowGraph = {
+        ...base,
+        nodes: base.nodes.map((n) => ({ ...n, status: 'failed', summary: 'changed' })),
+      }
+      const second = layoutFlowGraph(polled)
+      expect(spy.mock.calls.length).toBe(callsAfterFirst)
+      expect(second.nodes.map((n) => n.position)).toEqual(first.nodes.map((n) => n.position))
+      expect(get(second.nodes, 'a').data.flow).toMatchObject({
+        status: 'failed',
+        summary: 'changed',
+      })
+
+      layoutFlowGraph(graphOf([...base.nodes, flowNode('c')], [['a', 'l']]))
+      expect(spy.mock.calls.length).toBeGreaterThan(callsAfterFirst)
+    } finally {
+      spy.mockRestore()
+    }
   })
 })
 

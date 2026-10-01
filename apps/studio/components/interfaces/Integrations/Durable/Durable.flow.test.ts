@@ -418,6 +418,46 @@ describe('getEdgeAppearance', () => {
   })
 })
 
+describe('failed conditions', () => {
+  const ifWithFailedCondition = () =>
+    runtime('i', [
+      node({
+        node_id: 'i',
+        node_type: 'IF',
+        left_node: 't',
+        right_node: 'e',
+        query: '{"condition_node":"c"}',
+        status: 'running',
+      }),
+      node({ node_id: 'c', query: 'SELECT * FROM missing_tbl', status: 'failed' }),
+      node({ node_id: 't', status: 'skipped' }),
+      node({ node_id: 'e', status: 'skipped' }),
+    ])
+
+  it('keeps the condition node id and status on IF and LOOP nodes', () => {
+    expect(byId(ifWithFailedCondition(), 'i')).toMatchObject({
+      conditionNodeId: 'c',
+      conditionStatus: 'failed',
+    })
+    const loop = runtime('l', [
+      node({
+        node_id: 'l',
+        node_type: 'LOOP',
+        left_node: 'a',
+        query: '{"condition_node":"c"}',
+        status: 'running',
+      }),
+      node({ node_id: 'c', status: 'completed' }),
+      node({ node_id: 'a' }),
+    ])
+    expect(byId(loop, 'l')).toMatchObject({ conditionNodeId: 'c', conditionStatus: 'completed' })
+  })
+
+  it('preselects the decision whose condition failed', () => {
+    expect(getFirstFailedNodeId(ifWithFailedCondition())).toBe('i')
+  })
+})
+
 describe('getFirstFailedNodeId', () => {
   it('prefers a failed step over its failed container', () => {
     const graph = runtime('l', [

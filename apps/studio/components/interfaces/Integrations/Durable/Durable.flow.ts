@@ -33,6 +33,9 @@ export type FlowNode = {
   continueOnFailure?: boolean
   /** Runtime only: the df node shown when this flow node is selected. */
   durableNodeId?: string
+  /** Runtime only: the condition df node of an IF or LOOP, which is not drawn as its own node. */
+  conditionNodeId?: string
+  conditionStatus?: string | null
 }
 
 export type FlowEdge = { id: string; source: string; target: string; label?: FlowEdgeLabel }
@@ -164,8 +167,13 @@ export function treeToFlowGraph(root: DurableTreeNode): FlowGraph {
     const title = node.result_name || node.node_id
     const config = getNodeConfig(node)
     const childOf = (role: DurableTreeNode['role']) => tree.children.find((c) => c.role === role)
-    const conditionQuery = childOf('condition')?.node?.query
-    const conditionText = conditionQuery ? firstLine(conditionQuery) || undefined : undefined
+    const conditionNode = childOf('condition')?.node
+    const conditionText = conditionNode?.query
+      ? firstLine(conditionNode.query) || undefined
+      : undefined
+    const condition = conditionNode
+      ? { conditionNodeId: conditionNode.node_id, conditionStatus: getStatus(conditionNode) }
+      : {}
 
     switch (node.node_type.toUpperCase()) {
       case 'THEN': {
@@ -182,6 +190,7 @@ export function treeToFlowGraph(root: DurableTreeNode): FlowGraph {
           summary: isRows ? asText(config?.result_name) : conditionText,
           status,
           durableNodeId: node.node_id,
+          ...condition,
           ...scope,
         })
         const thenChild = childOf('then')
@@ -209,6 +218,7 @@ export function treeToFlowGraph(root: DurableTreeNode): FlowGraph {
           continueOnFailure: config?.continue_on_failure === true,
           status,
           durableNodeId: node.node_id,
+          ...condition,
           ...scope,
         })
         const body = childOf('body')
@@ -426,7 +436,10 @@ export function getEdgeAppearance(
 
 export function getFirstFailedNodeId(graph: FlowGraph | null): string | null {
   if (!graph) return null
-  const isFailed = (n: FlowNode) => !!n.durableNodeId && n.status?.toLowerCase() === 'failed'
+  // A failed IF/LOOP condition is not drawn as its own node; it is shown with its decision.
+  const isFailed = (n: FlowNode) =>
+    !!n.durableNodeId &&
+    (n.status?.toLowerCase() === 'failed' || n.conditionStatus?.toLowerCase() === 'failed')
   const failed =
     graph.nodes.find((n) => n.kind === 'step' && isFailed(n)) ?? graph.nodes.find(isFailed)
   return failed?.durableNodeId ?? null

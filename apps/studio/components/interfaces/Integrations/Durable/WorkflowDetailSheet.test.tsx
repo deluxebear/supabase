@@ -175,6 +175,30 @@ describe('workflow detail sheet', () => {
     expect(screen.queryByText(/boom explosion/)).not.toBeInTheDocument()
   })
 
+  it('shows the error of a failed condition for the selected decision', async () => {
+    mockQueries([
+      node({
+        node_id: 't1',
+        node_type: 'IF',
+        left_node: 't',
+        right_node: 'e',
+        query: '{"condition_node":"c"}',
+        status: 'running',
+      }),
+      node({
+        node_id: 'c',
+        query: 'SELECT * FROM missing_tbl',
+        status: 'failed',
+        result: '"relation missing_tbl does not exist"',
+      }),
+      node({ node_id: 't', status: 'skipped' }),
+      node({ node_id: 'e', status: 'skipped' }),
+    ])
+    renderSheet()
+    expect(await screen.findByText(/relation missing_tbl does not exist/)).toBeInTheDocument()
+    expect(screen.getByText('Condition')).toBeInTheDocument()
+  })
+
   it('asks for a selection when nothing failed', async () => {
     mockQueries(CHAIN.map((n) => ({ ...n, status: 'completed' })))
     renderSheet()
