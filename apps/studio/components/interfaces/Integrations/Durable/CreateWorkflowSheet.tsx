@@ -1,6 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { acceptUntrustedSql, untrustedSql } from '@supabase/pg-meta'
+import { useQuery } from '@tanstack/react-query'
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import {
@@ -11,7 +13,9 @@ import {
   Input,
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
   Sheet,
@@ -22,36 +26,75 @@ import {
   SheetTitle,
   Textarea,
 } from 'ui'
+import { Admonition } from 'ui-patterns/Admonition'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
+import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
+import { ContainerStepFields } from './ContainerStepFields'
 import {
-  ALL_CAPABILITIES,
   buildStartWorkflow,
   buildWorkflow,
+  CONTAINER_STEP_TYPES,
+  createDefaultContainer,
   createDefaultStep,
+  createWorkflowFormSchema,
   workflowDefaultValues,
-  workflowFormSchema,
   type WorkflowFormValues,
 } from './Durable.utils'
 import { LeafStepFields } from './LeafStepFields'
 import { DiscardChangesConfirmationDialog } from '@/components/ui-patterns/Dialogs/DiscardChangesConfirmationDialog'
+import { AlertError } from '@/components/ui/AlertError'
 import { usePgDurableMutation } from '@/data/pg-durable/pg-durable-mutation'
+import { durableExplainQueryOptions } from '@/data/pg-durable/pg-durable-query'
+import type { DurableConfiguration } from '@/data/pg-durable/pg-durable.types'
+import { capabilitiesFromConfiguration } from '@/data/pg-durable/pg-durable.utils'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from '@/hooks/ui/useConfirmOnClose'
 import { t as $t } from '@/lib/i18n'
 
 const FORM_ID = 'create-durable-workflow'
+const STEP_TYPES = ['sql', 'sleep', 'signal', 'http', 'multipart', 'schedule'] as const
+const STEP_TYPE_LABELS = {
+  sql: () => $t('Run SQL'),
+  sleep: () => $t('Wait for a duration'),
+  signal: () => $t('Wait for a signal'),
+  http: () => $t('HTTP request'),
+  multipart: () => $t('Multipart HTTP request'),
+  schedule: () => $t('Schedule a workflow'),
+}
+const CONTAINER_TYPE_LABELS = {
+  loop: () => $t('Loop'),
+  if: () => $t('If condition'),
+  if_rows: () => $t('If result has rows'),
+  race: () => $t('Race'),
+  parallel: () => $t('Parallel branches'),
+}
+const isContainerType = (type: string): type is (typeof CONTAINER_STEP_TYPES)[number] =>
+  (CONTAINER_STEP_TYPES as readonly string[]).includes(type)
+
 export const CreateWorkflowSheet = ({
   onClose,
   onCreated,
+  configuration,
+  initialValues,
+  notice,
 }: {
   onClose: () => void
   onCreated: (id: string) => void
+  configuration: DurableConfiguration
+  initialValues?: Partial<WorkflowFormValues>
+  notice?: string
 }) => {
   const { data: project } = useSelectedProjectQuery()
+  const capabilities = capabilitiesFromConfiguration(configuration)
+  const schema = useMemo(
+    () => createWorkflowFormSchema(capabilities),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [capabilities.multipart, capabilities.transactionMode, capabilities.loopContinueOnFailure]
+  )
   const form = useForm<WorkflowFormValues>({
-    resolver: zodResolver(workflowFormSchema),
-    defaultValues: workflowDefaultValues,
+    resolver: zodResolver(schema),
+    defaultValues: { ...workflowDefaultValues, ...initialValues },
   })
   const { isDirty } = form.formState
   const { fields, append, remove, move } = useFieldArray({ control: form.control, name: 'steps' })
@@ -62,14 +105,69 @@ export const CreateWorkflowSheet = ({
     checkIsDirty: () => isDirty,
     onClose,
   })
-  const parsed = workflowFormSchema.safeParse(values)
+  const parsed = schema.safeParse(values)
   const preview =
     parsed.success && mode === 'builder'
       ? buildStartWorkflow(
           buildWorkflow(parsed.data.steps, parsed.data.composition),
-          parsed.data.label
+          parsed.data.label,
+          parsed.data.transactionMode
         )
       : null
+
+  // The plan input is tied to the content it was requested for, so editing the form
+  // discards a stale plan without an effect.
+  const explainSource =
+    mode === 'builder'
+      ? parsed.success
+        ? buildWorkflow(parsed.data.steps, parsed.data.composition)
+        : null
+      : (values.expression ?? '').trim() || null
+  const [explainRequest, setExplainRequest] = useState<{ source: string; input: string } | null>(
+    null
+  )
+  const explainInput =
+    explainRequest && explainRequest.source === explainSource ? explainRequest.input : null
+  const explain = useQuery(
+    durableExplainQueryOptions({
+      projectRef: project?.ref ?? '',
+      connectionString: project?.connectionString,
+      input: explainInput,
+      enabled: !!explainInput,
+    })
+  )
+
+  const handlePreviewPlan = () => {
+    if (mode === 'builder') {
+      if (parsed.success && explainSource) {
+        setExplainRequest({ source: explainSource, input: explainSource })
+      } else {
+        void form.trigger()
+      }
+      return
+    }
+    if (explainSource) {
+      // Quoted as a literal by the explain query, so the text is data and not executed SQL.
+      const input = acceptUntrustedSql(untrustedSql(explainSource))
+      setExplainRequest({ source: explainSource, input })
+    } else {
+      void form.trigger()
+    }
+  }
+
+  const handleStepTypeChange = (index: number, next: string, onChange: (value: string) => void) => {
+    const current = form.getValues(`steps.${index}`)
+    const hasChildren = current.body.length + current.then.length + current.else.length > 0
+    if (isContainerType(next) && !hasChildren) {
+      form.setValue(
+        `steps.${index}`,
+        { ...current, ...createDefaultContainer(next) },
+        { shouldDirty: true }
+      )
+      return
+    }
+    onChange(next)
+  }
 
   const handleSubmit = (input: WorkflowFormValues) => {
     if (!project?.ref) return
@@ -81,7 +179,7 @@ export const CreateWorkflowSheet = ({
       {
         projectRef: project.ref,
         connectionString: project.connectionString,
-        sql: buildStartWorkflow(expression, input.label),
+        sql: buildStartWorkflow(expression, input.label, input.transactionMode),
       },
       {
         onSuccess: (id) => {
@@ -92,6 +190,27 @@ export const CreateWorkflowSheet = ({
       }
     )
   }
+  const planPreview = configuration.can_explain && (
+    <div className="space-y-3">
+      <Button
+        type="button"
+        variant="default"
+        loading={explain.isFetching}
+        onClick={handlePreviewPlan}
+      >
+        {$t('Preview plan')}
+      </Button>
+      {explainInput && explain.isFetching && <GenericSkeletonLoader />}
+      {explainInput && explain.isError && (
+        <AlertError error={explain.error} subject={$t('Failed to preview the workflow plan')} />
+      )}
+      {explainInput && explain.isSuccess && !explain.isFetching && (
+        <pre className="text-xs font-mono whitespace-pre-wrap break-all bg-surface-200 p-4 rounded-md">
+          {explain.data}
+        </pre>
+      )}
+    </div>
+  )
   return (
     <>
       <Sheet
@@ -112,6 +231,7 @@ export const CreateWorkflowSheet = ({
             >
               <fieldset disabled={isPending}>
                 <SheetSection className="space-y-4">
+                  {notice && <Admonition type="default" title={notice} />}
                   <p className="text-sm text-foreground-light">
                     {$t(
                       'Build a workflow that checkpoints each step and resumes after a database restart.'
@@ -179,6 +299,35 @@ export const CreateWorkflowSheet = ({
                       )}
                     />
                   )}
+                  {capabilities.transactionMode && (
+                    <FormField
+                      control={form.control}
+                      name="transactionMode"
+                      render={({ field }) => (
+                        <FormItemLayout
+                          label={$t('Start transaction')}
+                          description={$t(
+                            'An independent start survives a rollback of the calling transaction. At most {{limit}} independent starts can run at once. Studio runs each statement on its own, so the options differ only when you start from your own transaction.',
+                            { limit: configuration.max_new_transaction_starts ?? '2' }
+                          )}
+                        >
+                          <Select value={field.value} onValueChange={field.onChange}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="caller">
+                                {$t('Caller transaction (default)')}
+                              </SelectItem>
+                              <SelectItem value="new">{$t('Independent transaction')}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormItemLayout>
+                      )}
+                    />
+                  )}
                 </SheetSection>
                 {mode === 'builder' && (
                   <SheetSection className="space-y-4 border-t">
@@ -216,12 +365,66 @@ export const CreateWorkflowSheet = ({
                             />
                           </div>
                         </div>
-                        <LeafStepFields
-                          form={form}
-                          name={`steps.${index}`}
-                          capabilities={ALL_CAPABILITIES}
-                          allowBreak={false}
+                        <FormField
+                          control={form.control}
+                          name={`steps.${index}.type`}
+                          render={({ field }) => (
+                            <FormItemLayout label={$t('Step type')}>
+                              <Select
+                                value={field.value}
+                                onValueChange={(next) =>
+                                  handleStepTypeChange(index, next, field.onChange)
+                                }
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectGroup>
+                                    <SelectLabel>{$t('Steps')}</SelectLabel>
+                                    {STEP_TYPES.map((type) => (
+                                      <SelectItem
+                                        key={type}
+                                        value={type}
+                                        disabled={type === 'multipart' && !capabilities.multipart}
+                                      >
+                                        {STEP_TYPE_LABELS[type]()}
+                                        {type === 'multipart' &&
+                                          !capabilities.multipart &&
+                                          ` ${$t('(requires pg_durable 0.2.5)')}`}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectGroup>
+                                  <SelectGroup>
+                                    <SelectLabel>{$t('Control flow')}</SelectLabel>
+                                    {CONTAINER_STEP_TYPES.map((type) => (
+                                      <SelectItem key={type} value={type}>
+                                        {CONTAINER_TYPE_LABELS[type]()}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectGroup>
+                                </SelectContent>
+                              </Select>
+                            </FormItemLayout>
+                          )}
                         />
+                        {isContainerType(values.steps?.[index]?.type ?? '') ? (
+                          <ContainerStepFields
+                            form={form}
+                            index={index}
+                            capabilities={capabilities}
+                          />
+                        ) : (
+                          <LeafStepFields
+                            form={form}
+                            name={`steps.${index}`}
+                            capabilities={capabilities}
+                            allowBreak={false}
+                            hideTypeSelect
+                          />
+                        )}
                       </div>
                     ))}
                     <Button
@@ -232,6 +435,7 @@ export const CreateWorkflowSheet = ({
                     >
                       {$t('Add step')}
                     </Button>
+                    {planPreview}
                     {preview && (
                       <details className="text-sm">
                         <summary className="cursor-pointer text-foreground-light">
@@ -245,7 +449,7 @@ export const CreateWorkflowSheet = ({
                   </SheetSection>
                 )}
                 {mode === 'expression' && (
-                  <SheetSection className="border-t">
+                  <SheetSection className="space-y-4 border-t">
                     <FormField
                       control={form.control}
                       name="expression"
@@ -253,7 +457,7 @@ export const CreateWorkflowSheet = ({
                         <FormItemLayout
                           label={$t('Workflow expression')}
                           description={$t(
-                            'Enter a df expression, without SELECT df.start(). Use this mode for branches, loops, and schedules.'
+                            'Enter a df expression, without SELECT df.start(). Use this mode for nesting deeper than the step builder supports.'
                           )}
                         >
                           <FormControl>
@@ -267,6 +471,7 @@ export const CreateWorkflowSheet = ({
                         </FormItemLayout>
                       )}
                     />
+                    {planPreview}
                   </SheetSection>
                 )}
                 <SheetSection className="border-t text-xs text-foreground-light">

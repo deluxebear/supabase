@@ -236,6 +236,7 @@ const WorkflowsContent = () => {
       </div>
       {isCreateOpen && (
         <CreateWorkflowSheet
+          configuration={configuration.data}
           onClose={() => setIsCreateOpen(false)}
           onCreated={(id) => {
             setCursors([''])
