@@ -56,7 +56,7 @@ type FlowEdge = {
   id: string
   source: string
   target: string
-  label?: 'then' | 'else' | { branch: number }
+  label?: 'then' | 'else' // parallel lanes are unlabeled; the fork/merge bars make them clear
 }
 
 type FlowGraph = { nodes: FlowNode[]; edges: FlowEdge[] }
@@ -69,7 +69,7 @@ type FlowGraph = { nodes: FlowNode[]; edges: FlowEdge[] }
 | Workflow          | `start` → … → `end`                                                                      |
 | Sequence / THEN   | steps chained in order                                                                   |
 | Leaf step         | one `step` node                                                                          |
-| JOIN / parallel   | `fork` → one lane per branch → `merge` (`mergeMode: 'all'`), edges labeled `branch N`    |
+| JOIN / parallel   | `fork` → one lane per branch → `merge` (`mergeMode: 'all'`), lanes unlabeled             |
 | RACE              | same as JOIN with `mergeMode: 'first'`                                                   |
 | IF / IF_ROWS      | `decision` (summary = condition / rows result name) → `then` lane, `else` lane → `merge` |
 | Empty else        | `decision` → `merge` edge labeled `else` (no placeholder node)                           |
@@ -110,7 +110,7 @@ while the user types and still renders with invalid or empty fields:
 - Direction **top → bottom** (`rankdir: 'TB'`): sheets are tall and narrow; parallel lanes
   spread horizontally.
 - **Fixed node sizes** per kind (no measure-then-relayout pass): step / decision 240×64,
-  start / end 96×32 pill, fork / merge 120×8 bar, unknown 240×48. Text truncates with a
+  start / end 96×32 pill, fork 120×8 bar, merge 160×24 (bar + caption), unknown 240×48. Text truncates with a
   native `title` tooltip.
 - **Loop groups lay out bottom-up**: each loop's children are laid out with their own dagre
   pass, the group's size becomes the bounding box plus padding and a 32px header, and the
