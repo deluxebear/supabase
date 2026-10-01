@@ -61,7 +61,7 @@ const mockQueries = (value: string) => {
 const renderSheet = (props: Partial<ComponentProps<typeof CreateWorkflowSheet>> = {}) => {
   const onCreated = vi.fn()
   const onClose = vi.fn()
-  customRender(
+  const { unmount } = customRender(
     <CreateWorkflowSheet
       onCreated={onCreated}
       onClose={onClose}
@@ -69,7 +69,7 @@ const renderSheet = (props: Partial<ComponentProps<typeof CreateWorkflowSheet>> 
       {...props}
     />
   )
-  return { onCreated, onClose, user: userEvent.setup() }
+  return { onCreated, onClose, user: userEvent.setup(), unmount }
 }
 
 const chooseStepType = async (
@@ -203,5 +203,67 @@ describe('workflow creation', () => {
     await user.click(comboboxes[1])
     const listbox = await screen.findByRole('listbox')
     expect(within(listbox).getByRole('option', { name: 'Break out of loop' })).toBeInTheDocument()
+  })
+
+  it('shows start transaction only when supported and starts an independent transaction', async () => {
+    const old = renderSheet({ configuration: { ...CONFIGURATION, installed_version: '0.2.4' } })
+    expect(screen.queryByText('Start transaction')).not.toBeInTheDocument()
+    old.unmount()
+    const requests = mockQueries('tx')
+    const { onCreated, user } = renderSheet()
+    await user.click(screen.getByRole('combobox', { name: 'Start transaction' }))
+    await user.click(await screen.findByRole('option', { name: 'Independent transaction' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Start workflow' }))
+    await waitFor(() => expect(onCreated).toHaveBeenCalledWith('tx'))
+    expect(requests).toEqual([
+      "SELECT df.start(df.sql('SELECT 1 AS result'), NULL, NULL, transaction_mode => 'new') AS value;",
+    ])
+  })
+
+  it('previews an expression as a quoted literal without starting', async () => {
+    const requests = mockQueries('unused')
+    const { user } = renderSheet({
+      initialValues: { mode: 'expression', expression: 'df.sleep(1)' },
+    })
+    await user.click(screen.getByRole('button', { name: 'Preview plan' }))
+    expect(await screen.findByText('Plan: seq(sql)')).toBeInTheDocument()
+    expect(requests).toEqual(["SELECT df.explain('df.sleep(1)') AS plan;"])
+  })
+
+  it('doubles single quotes in an expression plan request', async () => {
+    const requests = mockQueries('unused')
+    const { user } = renderSheet({
+      initialValues: { mode: 'expression', expression: "df.sql('SELECT 1')" },
+    })
+    await user.click(screen.getByRole('button', { name: 'Preview plan' }))
+    await screen.findByText('Plan: seq(sql)')
+    expect(requests).toEqual(["SELECT df.explain('df.sql(''SELECT 1'')') AS plan;"])
+  })
+
+  it('clears a displayed plan when the steps change', async () => {
+    mockQueries('unused')
+    const { user } = renderSheet()
+    await user.click(screen.getByRole('button', { name: 'Preview plan' }))
+    expect(await screen.findByText('Plan: seq(sql)')).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('SQL statement'), { target: { value: 'SELECT 9' } })
+    await waitFor(() => expect(screen.queryByText('Plan: seq(sql)')).not.toBeInTheDocument())
+  })
+
+  it('hides Preview plan when explain is unavailable', () => {
+    renderSheet({ configuration: { ...CONFIGURATION, can_explain: false } })
+    expect(screen.queryByRole('button', { name: 'Preview plan' })).not.toBeInTheDocument()
+  })
+
+  it('explains why continue after failures is disabled', async () => {
+    const { user } = renderSheet({
+      configuration: { ...CONFIGURATION, installed_version: '0.2.7' },
+    })
+    await chooseStepType(user, 'Loop')
+    const toggle = screen.getByRole('switch', { name: 'Continue after step failures' })
+    expect(toggle).toBeDisabled()
+    await user.hover(toggle.parentElement as HTMLElement)
+    expect(
+      (await screen.findAllByText('Requires pg_durable 0.2.8 or later')).length
+    ).toBeGreaterThan(0)
   })
 })
