@@ -20,6 +20,7 @@ import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { ConstrainedIntegrationTabScaffold } from '../ConstrainedIntegrationTabScaffold'
 import { CreateWorkflowSheet } from './CreateWorkflowSheet'
+import type { WorkflowFormValues } from './Durable.utils'
 import { DurableInstalled } from './DurableShared'
 import { WorkflowDetailSheet } from './WorkflowDetailSheet'
 import { WorkflowTable } from './WorkflowTable'
@@ -49,6 +50,10 @@ const WorkflowsContent = () => {
   const [labelInput, setLabelInput] = useState('')
   const [cursors, setCursors] = useState<string[]>([''])
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [rerun, setRerun] = useState<{
+    key: number
+    values: Partial<WorkflowFormValues>
+  } | null>(null)
   const [instanceId, setInstanceId] = useQueryState('instance', parseAsString)
   const instances = useQuery({
     ...durableInstancesQueryOptions({
@@ -199,7 +204,7 @@ const WorkflowsContent = () => {
             <h3>{$t(label || status ? 'No workflows match these filters' : 'No workflows yet')}</h3>
             <p className="text-sm text-foreground-light">
               {$t(
-                'Create a workflow to run durable SQL steps, timers, signals, and HTTP requests.'
+                'Create a workflow to run durable SQL steps, loops, branches, timers, signals, and HTTP requests.'
               )}
             </p>
           </div>
@@ -234,10 +239,22 @@ const WorkflowsContent = () => {
           </div>
         </div>
       </div>
-      {isCreateOpen && (
+      {(isCreateOpen || rerun) && (
         <CreateWorkflowSheet
+          key={rerun?.key ?? 'create'}
           configuration={configuration.data}
-          onClose={() => setIsCreateOpen(false)}
+          initialValues={rerun?.values}
+          notice={
+            rerun
+              ? $t(
+                  'Re-running starts a new workflow. $name references use current variable values, and SQL changes and HTTP requests run again.'
+                )
+              : undefined
+          }
+          onClose={() => {
+            setIsCreateOpen(false)
+            setRerun(null)
+          }}
           onCreated={(id) => {
             setCursors([''])
             setStatus(undefined)
@@ -253,6 +270,11 @@ const WorkflowsContent = () => {
           instanceId={instanceId}
           configuration={configuration.data}
           canWrite={canWrite}
+          canStart={canStart}
+          onRerun={(values) => {
+            setRerun((current) => ({ key: (current?.key ?? 0) + 1, values }))
+            void setInstanceId(null)
+          }}
           onClose={() => {
             void setInstanceId(null)
           }}

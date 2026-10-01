@@ -1,23 +1,31 @@
 import { useQuery } from '@tanstack/react-query'
-import { RefreshCw, Send, Square } from 'lucide-react'
-import { useState } from 'react'
+import dayjs from 'dayjs'
+import { RefreshCw, RotateCcw, Send, Square } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { Badge, Button, Sheet, SheetContent, SheetHeader, SheetSection, SheetTitle } from 'ui'
+import { Button, Sheet, SheetContent, SheetHeader, SheetSection, SheetTitle } from 'ui'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
+import { reconstructExpression } from './Durable.reconstruct'
+import { buildNodeTree } from './Durable.tree'
 import {
   buildCancelWorkflow,
   formatWorkflowValue,
   getWaitingSignalNames,
   isWorkflowActive,
+  type WorkflowFormValues,
 } from './Durable.utils'
 import { WorkflowStatus } from './DurableShared'
 import { SendSignalSheet } from './SendSignalSheet'
+import { WorkflowStepTree } from './WorkflowStepTree'
 import { AlertError } from '@/components/ui/AlertError'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { usePgDurableMutation } from '@/data/pg-durable/pg-durable-mutation'
-import { durableDetailQueryOptions } from '@/data/pg-durable/pg-durable-query'
+import {
+  durableDetailQueryOptions,
+  durableExplainQueryOptions,
+} from '@/data/pg-durable/pg-durable-query'
 import type { DurableConfiguration } from '@/data/pg-durable/pg-durable.types'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { t as $t } from '@/lib/i18n'
@@ -26,11 +34,15 @@ export const WorkflowDetailSheet = ({
   instanceId,
   configuration,
   canWrite,
+  canStart,
+  onRerun,
   onClose,
 }: {
   instanceId: string
   configuration: DurableConfiguration
   canWrite: boolean
+  canStart: boolean
+  onRerun: (values: Partial<WorkflowFormValues>) => void
   onClose: () => void
 }) => {
   const { data: project } = useSelectedProjectQuery()
@@ -39,6 +51,15 @@ export const WorkflowDetailSheet = ({
       projectRef: project?.ref,
       connectionString: project?.connectionString,
       instanceId,
+    })
+  )
+  const [isPlanOpen, setIsPlanOpen] = useState(false)
+  const plan = useQuery(
+    durableExplainQueryOptions({
+      projectRef: project?.ref,
+      connectionString: project?.connectionString,
+      input: instanceId,
+      enabled: isPlanOpen && configuration.can_explain,
     })
   )
   const { mutate, isPending } = usePgDurableMutation()
@@ -64,6 +85,28 @@ export const WorkflowDetailSheet = ({
       }
     )
   }
+  const info = detail.data?.info
+  const nodes = detail.data?.nodes
+  const stepTree = useMemo(
+    () => (nodes ? buildNodeTree(info?.root_node ?? null, nodes) : null),
+    [info?.root_node, nodes]
+  )
+  const handleRerun = () => {
+    if (!info || !nodes) return
+    const result = reconstructExpression(info.root_node ?? null, nodes)
+    if ('error' in result) {
+      toast.error($t("This workflow can't be re-run: {{reason}}", { reason: result.error }))
+      return
+    }
+    onRerun({
+      mode: 'expression',
+      expression: result.expression,
+      label: info.label ?? '',
+      transactionMode: 'caller',
+    })
+  }
+  const formatTimestamp = (value?: string | null) =>
+    value ? dayjs(value).format('YYYY-MM-DD HH:mm:ss') : '—'
   return (
     <>
       <Sheet
@@ -125,7 +168,38 @@ export const WorkflowDetailSheet = ({
                 >
                   {$t('Cancel workflow')}
                 </ButtonTooltip>
+                <ButtonTooltip
+                  icon={<RotateCcw size={14} />}
+                  disabled={!canStart || !info || isPending}
+                  tooltip={{
+                    content: {
+                      text: !canStart
+                        ? $t(
+                            'Workflow creation requires database write permission, pg_durable access, and a configured runtime.'
+                          )
+                        : undefined,
+                    },
+                  }}
+                  onClick={handleRerun}
+                >
+                  {$t('Re-run')}
+                </ButtonTooltip>
               </div>
+              {info && (
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                  {[
+                    { label: $t('Created'), value: formatTimestamp(info.created_at) },
+                    { label: $t('Completed'), value: formatTimestamp(info.completed_at) },
+                    { label: $t('Submitted by'), value: info.submitted_by || '—' },
+                    { label: $t('Database'), value: info.database || '—' },
+                  ].map((item) => (
+                    <div key={item.label}>
+                      <dt className="text-foreground-light">{item.label}</dt>
+                      <dd className="font-mono break-all">{item.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
               {isActive && (
                 <p className="text-xs text-foreground-light">
                   {$t('Live updates every 3 seconds')}
@@ -184,53 +258,41 @@ export const WorkflowDetailSheet = ({
                       'Step status reflects the current execution, including steps waiting for timers or signals.'
                     )}
                   </p>
-                  {detail.data.nodes.map((node) => (
-                    <details key={node.node_id} className="border rounded-md bg-surface-100">
-                      <summary className="cursor-pointer p-3 flex flex-wrap items-center gap-2">
-                        <Badge>{node.node_type}</Badge>
-                        <span className="text-xs font-mono">
-                          {node.result_name || node.node_id}
-                        </span>
-                        <span className="ml-auto">
-                          <WorkflowStatus status={node.inferred_status ?? node.status} />
-                        </span>
-                      </summary>
-                      <div className="p-4 pt-0 space-y-3">
-                        {node.left_node && (
-                          <p className="text-xs text-foreground-light">
-                            {$t('Child steps')}: <code>{node.left_node}</code>
-                            {node.right_node && (
-                              <>
-                                {' '}
-                                / <code>{node.right_node}</code>
-                              </>
-                            )}
-                          </p>
-                        )}
-                        {node.query && (
-                          <>
-                            <p className="text-xs text-foreground-light">{$t('Step definition')}</p>
-                            <pre className="text-xs font-mono whitespace-pre-wrap break-all max-h-60 overflow-auto">
-                              {formatWorkflowValue(node.query)}
-                            </pre>
-                          </>
-                        )}
-                        {node.status_details && (
-                          <p className="text-xs text-destructive break-all">
-                            {node.status_details}
-                          </p>
-                        )}
-                        <p className="text-xs text-foreground-light">{$t('Step result')}</p>
-                        <pre className="text-xs font-mono whitespace-pre-wrap break-all max-h-60 overflow-auto">
-                          {formatWorkflowValue(node.result)}
-                        </pre>
-                      </div>
-                    </details>
-                  ))}
+                  {stepTree && <WorkflowStepTree root={stepTree} />}
                   {detail.data.nodes.length === 0 && (
                     <p className="text-xs text-foreground-light">{$t('No steps available yet')}</p>
                   )}
                 </SheetSection>
+                {configuration.can_explain && (
+                  <SheetSection className="border-t space-y-3">
+                    <details onToggle={(event) => setIsPlanOpen(event.currentTarget.open)}>
+                      <summary className="cursor-pointer text-sm">{$t('Plan')}</summary>
+                      <div className="mt-3 space-y-3">
+                        <Button
+                          icon={<RefreshCw size={14} />}
+                          loading={plan.isFetching}
+                          onClick={() => {
+                            void plan.refetch()
+                          }}
+                        >
+                          {$t('Refresh plan')}
+                        </Button>
+                        {plan.isPending && plan.isFetching && <GenericSkeletonLoader />}
+                        {plan.isError && (
+                          <AlertError
+                            error={plan.error}
+                            subject={$t('Failed to retrieve workflow plan')}
+                          />
+                        )}
+                        {plan.isSuccess && (
+                          <pre className="text-xs font-mono whitespace-pre-wrap break-all bg-surface-200 rounded-md p-4 max-h-72 overflow-auto">
+                            {plan.data}
+                          </pre>
+                        )}
+                      </div>
+                    </details>
+                  </SheetSection>
+                )}
                 <SheetSection className="border-t space-y-3">
                   <h4>{$t('Execution history')}</h4>
                   <p className="text-xs text-foreground-light">

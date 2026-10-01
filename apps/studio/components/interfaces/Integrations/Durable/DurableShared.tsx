@@ -17,6 +17,7 @@ const STATUS_LABELS: Record<string, string> = {
   completed: 'Completed',
   failed: 'Failed',
   cancelled: 'Cancelled',
+  skipped: 'Skipped',
 }
 export const WorkflowStatus = ({ status }: { status?: string | null }) => {
   const normalized = status?.toLowerCase() ?? ''
