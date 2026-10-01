@@ -249,6 +249,40 @@ describe('workflow creation', () => {
     await waitFor(() => expect(screen.queryByText('Plan: seq(sql)')).not.toBeInTheDocument())
   })
 
+  it('shows a live flow preview in builder mode', async () => {
+    const { user } = renderSheet()
+    const diagram = screen.getByRole('region', { name: 'Workflow diagram' })
+    expect(within(diagram).getByText('SELECT 1 AS result')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Add step' }))
+    const updated = screen.getByRole('region', { name: 'Workflow diagram' })
+    expect(within(updated).getAllByText('SELECT 1 AS result')).toHaveLength(2)
+  })
+
+  it('shows loop bodies inside the flow preview', async () => {
+    const { user } = renderSheet()
+    await chooseStepType(user, 'Loop')
+    const diagram = screen.getByRole('region', { name: 'Workflow diagram' })
+    expect(within(diagram).getByText('LOOP')).toBeInTheDocument()
+    expect(within(diagram).getByText('Step 1.1')).toBeInTheDocument()
+  })
+
+  it('does not start the workflow when expanding the flow preview', async () => {
+    const requests = mockQueries('never')
+    const { user, onCreated } = renderSheet()
+    // The preview sits inside the form, so Expand must never be a submit button.
+    expect(screen.getByRole('button', { name: 'Expand' })).toHaveAttribute('type', 'button')
+    await user.click(screen.getByRole('button', { name: 'Expand' }))
+    expect(await screen.findByRole('dialog', { name: 'Workflow diagram' })).toBeInTheDocument()
+    expect(requests).toEqual([])
+    expect(onCreated).not.toHaveBeenCalled()
+  })
+
+  it('explains that expression mode has no flow preview', () => {
+    renderSheet({ initialValues: { mode: 'expression', expression: 'df.sleep(1)' } })
+    expect(screen.queryByRole('region', { name: 'Workflow diagram' })).not.toBeInTheDocument()
+    expect(screen.getByText('Flow preview is available in builder mode.')).toBeInTheDocument()
+  })
+
   it('hides Preview plan when explain is unavailable', () => {
     renderSheet({ configuration: { ...CONFIGURATION, can_explain: false } })
     expect(screen.queryByRole('button', { name: 'Preview plan' })).not.toBeInTheDocument()

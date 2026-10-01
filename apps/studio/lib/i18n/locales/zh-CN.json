@@ -4525,6 +4525,8 @@
   "Flip": "翻转",
   "Floating Point Exception": "浮点异常",
   "Floating toolbar": "浮动工具栏",
+  "Flow preview": "流程预览",
+  "Flow preview is available in builder mode.": "流程预览仅在构建器模式下可用。",
   "Flutter MFA app": "Flutter MFA 应用",
   "Flutter chat app": "Flutter 聊天应用",
   "Focus SQL editor": "聚焦 SQL 编辑器",

@@ -31,6 +31,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { ContainerStepFields } from './ContainerStepFields'
+import { formToFlowGraph } from './Durable.flow'
 import {
   buildStartWorkflow,
   buildWorkflow,
@@ -42,6 +43,7 @@ import {
   type WorkflowFormValues,
 } from './Durable.utils'
 import { LeafStepFields } from './LeafStepFields'
+import { WorkflowFlowDiagram } from './WorkflowFlowDiagram'
 import { DiscardChangesConfirmationDialog } from '@/components/ui-patterns/Dialogs/DiscardChangesConfirmationDialog'
 import { AlertError } from '@/components/ui/AlertError'
 import { usePgDurableMutation } from '@/data/pg-durable/pg-durable-mutation'
@@ -435,6 +437,16 @@ export const CreateWorkflowSheet = ({
                     >
                       {$t('Add step')}
                     </Button>
+                    <details open className="text-sm">
+                      <summary className="cursor-pointer text-foreground-light">
+                        {$t('Flow preview')}
+                      </summary>
+                      <WorkflowFlowDiagram
+                        graph={formToFlowGraph(values)}
+                        className="h-80 mt-3"
+                        canExpand
+                      />
+                    </details>
                     {planPreview}
                     {preview && (
                       <details className="text-sm">
@@ -472,6 +484,9 @@ export const CreateWorkflowSheet = ({
                       )}
                     />
                     {planPreview}
+                    <p className="text-xs text-foreground-light">
+                      {$t('Flow preview is available in builder mode.')}
+                    </p>
                   </SheetSection>
                 )}
                 <SheetSection className="border-t text-xs text-foreground-light">
