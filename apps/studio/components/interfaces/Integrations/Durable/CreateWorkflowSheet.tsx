@@ -25,6 +25,7 @@ import {
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
 import {
+  ALL_CAPABILITIES,
   buildStartWorkflow,
   buildWorkflow,
   createDefaultStep,
@@ -32,7 +33,7 @@ import {
   workflowFormSchema,
   type WorkflowFormValues,
 } from './Durable.utils'
-import { WorkflowStepFields } from './WorkflowStepFields'
+import { LeafStepFields } from './LeafStepFields'
 import { DiscardChangesConfirmationDialog } from '@/components/ui-patterns/Dialogs/DiscardChangesConfirmationDialog'
 import { usePgDurableMutation } from '@/data/pg-durable/pg-durable-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
@@ -215,7 +216,12 @@ export const CreateWorkflowSheet = ({
                             />
                           </div>
                         </div>
-                        <WorkflowStepFields form={form} index={index} />
+                        <LeafStepFields
+                          form={form}
+                          name={`steps.${index}`}
+                          capabilities={ALL_CAPABILITIES}
+                          allowBreak={false}
+                        />
                       </div>
                     ))}
                     <Button
