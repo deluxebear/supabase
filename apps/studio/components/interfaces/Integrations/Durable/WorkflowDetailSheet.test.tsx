@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { mockAnimationsApi } from 'jsdom-testing-mocks'
 import { HttpResponse } from 'msw'
@@ -135,15 +135,19 @@ const renderSheet = (props: Partial<ComponentProps<typeof WorkflowDetailSheet>> 
   return { onRerun, user: userEvent.setup() }
 }
 
+const showList = async (user: ReturnType<typeof userEvent.setup>) => {
+  await user.click(await screen.findByRole('radio', { name: 'List' }))
+}
+
 beforeEach(() => {
   toastError.mockClear()
 })
 
 describe('workflow detail sheet', () => {
-  it('renders steps in chain order', async () => {
+  it('renders steps in chain order in the list view', async () => {
     mockQueries()
-    renderSheet()
-    await screen.findByText('Steps')
+    const { user } = renderSheet()
+    await showList(user)
     await waitFor(() => expect(screen.getAllByText('SQL')).toHaveLength(3))
     const ids = ['a', 'b', 'c'].map((id) => screen.getByText(id))
     for (let i = 0; i < ids.length - 1; i++) {
@@ -151,6 +155,31 @@ describe('workflow detail sheet', () => {
         ids[i].compareDocumentPosition(ids[i + 1]) & Node.DOCUMENT_POSITION_FOLLOWING
       ).toBeTruthy()
     }
+  })
+
+  it('shows the graph by default and preselects the failed step', async () => {
+    mockQueries()
+    renderSheet()
+    const diagram = await screen.findByRole('region', { name: 'Workflow diagram' })
+    expect(within(diagram).getByRole('group', { name: 'SQL, b, failed' })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'Graph' })).toHaveAttribute('aria-checked', 'true')
+    expect(await screen.findByText(/boom explosion/)).toBeInTheDocument()
+  })
+
+  it('shows the details of a clicked step', async () => {
+    mockQueries()
+    renderSheet()
+    const diagram = await screen.findByRole('region', { name: 'Workflow diagram' })
+    fireEvent.click(within(diagram).getByText('a'))
+    expect(await screen.findByText(/first ok/)).toBeInTheDocument()
+    expect(screen.queryByText(/boom explosion/)).not.toBeInTheDocument()
+  })
+
+  it('asks for a selection when nothing failed', async () => {
+    mockQueries(CHAIN.map((n) => ({ ...n, status: 'completed' })))
+    renderSheet()
+    await screen.findByRole('region', { name: 'Workflow diagram' })
+    expect(screen.getByText('Select a step to see its details.')).toBeInTheDocument()
   })
 
   it('shows failed results as errors and keeps metadata neutral', async () => {
@@ -165,7 +194,8 @@ describe('workflow detail sheet', () => {
 
   it('explains skipped steps', async () => {
     mockQueries()
-    renderSheet()
+    const { user } = renderSheet()
+    await showList(user)
     expect(
       await screen.findByText("Skipped because step b decided this branch won't run.")
     ).toBeInTheDocument()

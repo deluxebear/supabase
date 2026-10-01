@@ -19,7 +19,7 @@ import {
 } from './Durable.utils'
 import { WorkflowStatus } from './DurableShared'
 import { SendSignalSheet } from './SendSignalSheet'
-import { WorkflowStepTree } from './WorkflowStepTree'
+import { WorkflowStepsSection } from './WorkflowStepsSection'
 import { AlertError } from '@/components/ui/AlertError'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
 import { usePgDurableMutation } from '@/data/pg-durable/pg-durable-mutation'
@@ -257,16 +257,11 @@ export const WorkflowDetailSheet = ({
                   </pre>
                 </SheetSection>
                 <SheetSection className="border-t space-y-3">
-                  <h4>{$t('Steps')}</h4>
-                  <p className="text-xs text-foreground-light">
-                    {$t(
-                      'Step status reflects the current execution, including steps waiting for timers or signals.'
-                    )}
-                  </p>
-                  {stepTree && <WorkflowStepTree root={stepTree} />}
-                  {detail.data.nodes.length === 0 && (
-                    <p className="text-xs text-foreground-light">{$t('No steps available yet')}</p>
-                  )}
+                  <WorkflowStepsSection
+                    tree={stepTree}
+                    nodes={detail.data.nodes}
+                    instanceStatus={detail.data.info.status}
+                  />
                 </SheetSection>
                 {configuration.can_explain && (
                   <SheetSection className="border-t space-y-3">
