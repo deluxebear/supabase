@@ -1,9 +1,12 @@
+import { safeSql } from '@supabase/pg-meta'
 import { describe, expect, it } from 'vitest'
 
 import {
   buildCancelWorkflow,
+  buildLeaf,
   buildSignalWorkflow,
   buildStartWorkflow,
+  buildStep,
   buildWorkflow,
   createDefaultContainer,
   createDefaultLeafStep,
@@ -203,5 +206,107 @@ describe('durable control-flow step validation', () => {
     expect(schema.safeParse(nonDefault).success).toBe(true)
     expect(createWorkflowFormSchema(noCaps).safeParse(nonDefault).success).toBe(false)
     expect(workflowDefaultValues.transactionMode).toBe('caller')
+  })
+})
+
+describe('durable SQL generation', () => {
+  const sql = (query: string) => ({ ...leaf, query })
+  it('generates leaf steps', () => {
+    expect(buildLeaf({ ...leaf, type: 'signal', signal: 'ok', noTimeout: true })).toBe(
+      "df.wait_for_signal('ok')"
+    )
+    expect(buildLeaf({ ...leaf, type: 'signal', signal: 'ok', seconds: '60' })).toBe(
+      "df.wait_for_signal('ok', 60::integer)"
+    )
+    expect(buildLeaf({ ...leaf, type: 'http', url: 'https://x.dev', timeoutSeconds: '45' })).toBe(
+      "df.http('https://x.dev', 'GET', NULL, '{}'::jsonb, 45)"
+    )
+    expect(buildLeaf({ ...leaf, type: 'http', url: 'https://x.dev' })).toBe(
+      "df.http('https://x.dev', 'GET', NULL, '{}'::jsonb, 30)"
+    )
+    expect(
+      buildLeaf({
+        ...leaf,
+        type: 'http',
+        url: 'https://x.dev',
+        method: 'POST',
+        requestBody: '{"a":1}',
+      })
+    ).toBe(`df.http('https://x.dev', 'POST', '{"a":1}', '{}'::jsonb, 30)`)
+    expect(
+      buildLeaf({
+        ...leaf,
+        type: 'multipart',
+        url: 'https://x.dev',
+        method: 'POST',
+        parts: '[{"name":"f","data_b64":"aGk="}]',
+      })
+    ).toBe(
+      `df.http_multipart('https://x.dev', 'POST', '[{"name":"f","data_b64":"aGk="}]'::jsonb, '{}'::jsonb, 30)`
+    )
+    expect(buildLeaf({ ...leaf, type: 'schedule', cron: '*/5 * * * *' })).toBe(
+      "df.wait_for_schedule('*/5 * * * *')"
+    )
+    expect(buildLeaf({ ...leaf, type: 'break' })).toBe('df.break()')
+    expect(buildLeaf({ ...leaf, type: 'break', breakValue: '{"done":true}' })).toBe(
+      `df.break('{"done":true}')`
+    )
+    expect(buildLeaf({ ...leaf, type: 'break', resultName: 'x' })).toBe('df.break()')
+  })
+  it('generates containers', () => {
+    expect(
+      buildStep({
+        ...step,
+        type: 'loop',
+        body: [sql('SELECT 1'), { ...leaf, type: 'sleep', seconds: '5' }],
+      })
+    ).toBe("df.loop(df.seq(df.sql('SELECT 1'), df.sleep(5::bigint)))")
+    expect(
+      buildStep({
+        ...step,
+        type: 'loop',
+        condition: 'SELECT true',
+        continueOnFailure: true,
+        body: [sql('SELECT 1')],
+      })
+    ).toBe("df.loop(df.sql('SELECT 1'), 'SELECT true', continue_on_failure => true)")
+    expect(
+      buildStep({ ...step, type: 'loop', continueOnFailure: true, body: [sql('SELECT 1')] })
+    ).toBe("df.loop(df.sql('SELECT 1'), continue_on_failure => true)")
+    expect(
+      buildStep({ ...step, type: 'if', condition: 'SELECT true', then: [sql('SELECT 1')] })
+    ).toBe("df.if('SELECT true', df.sql('SELECT 1'), df.sql('SELECT NULL'))")
+    expect(
+      buildStep({
+        ...step,
+        type: 'if_rows',
+        rowsResultName: 'rows',
+        then: [sql('SELECT 1')],
+        else: [sql('SELECT 2')],
+      })
+    ).toBe("df.if_rows('rows', df.sql('SELECT 1'), df.sql('SELECT 2'))")
+    expect(
+      buildStep({
+        ...step,
+        type: 'race',
+        body: [sql('SELECT 1'), sql('SELECT 2'), sql('SELECT 3')],
+      })
+    ).toBe("df.race(df.race(df.sql('SELECT 1'), df.sql('SELECT 2')), df.sql('SELECT 3'))")
+    expect(
+      buildStep({
+        ...step,
+        type: 'parallel',
+        resultName: 'both',
+        body: [sql('SELECT 1'), sql('SELECT 2')],
+      })
+    ).toBe("df.as(df.join(df.sql('SELECT 1'), df.sql('SELECT 2')), 'both')")
+  })
+  it('builds start statements', () => {
+    expect(buildStartWorkflow(safeSql`df.sleep(1)`, '', 'caller')).toBe(
+      'SELECT df.start(df.sleep(1), NULL) AS value;'
+    )
+    expect(buildStartWorkflow(safeSql`df.sleep(1)`, 'job', 'new')).toBe(
+      "SELECT df.start(df.sleep(1), 'job', NULL, transaction_mode => 'new') AS value;"
+    )
   })
 })

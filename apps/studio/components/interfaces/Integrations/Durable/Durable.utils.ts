@@ -276,8 +276,11 @@ export const workflowDefaultValues: WorkflowFormValues = {
   steps: [createDefaultStep()],
 }
 
-export function buildStep(input: WorkflowStep): SafeSqlFragment {
-  const step = workflowStepSchema.parse(input)
+const withResultName = (expression: SafeSqlFragment, resultName: string): SafeSqlFragment =>
+  resultName ? safeSql`df.as(${expression}, ${literal(resultName)})` : expression
+
+/** Builds one leaf step. Assumes validated input. */
+export function buildLeaf(step: LeafStep): SafeSqlFragment {
   let expression: SafeSqlFragment
   switch (step.type) {
     case 'sql':
@@ -287,15 +290,78 @@ export function buildStep(input: WorkflowStep): SafeSqlFragment {
       expression = safeSql`df.sleep(${literal(Number(step.seconds))}::bigint)`
       break
     case 'signal':
-      expression = safeSql`df.wait_for_signal(${literal(step.signal)}, ${literal(Number(step.seconds))}::integer)`
+      expression = step.noTimeout
+        ? safeSql`df.wait_for_signal(${literal(step.signal)})`
+        : safeSql`df.wait_for_signal(${literal(step.signal)}, ${literal(Number(step.seconds))}::integer)`
       break
     case 'http':
-      expression = safeSql`df.http(${literal(step.url)}, ${literal(step.method)}, ${literal(step.requestBody || null)}, ${literal(step.headers)}::jsonb, 30)`
+      expression = safeSql`df.http(${literal(step.url)}, ${literal(step.method)}, ${literal(step.requestBody || null)}, ${literal(step.headers)}::jsonb, ${literal(Number(step.timeoutSeconds))})`
+      break
+    case 'multipart':
+      expression = safeSql`df.http_multipart(${literal(step.url)}, ${literal(step.method)}, ${literal(step.parts)}::jsonb, ${literal(step.headers)}::jsonb, ${literal(Number(step.timeoutSeconds))})`
+      break
+    case 'schedule':
+      expression = safeSql`df.wait_for_schedule(${literal(step.cron)})`
+      break
+    case 'break':
+      return step.breakValue ? safeSql`df.break(${literal(step.breakValue)})` : safeSql`df.break()`
+  }
+  return withResultName(expression, step.resultName)
+}
+
+const foldFragments = (
+  fragments: SafeSqlFragment[],
+  combine: (left: SafeSqlFragment, right: SafeSqlFragment) => SafeSqlFragment
+): SafeSqlFragment => {
+  const [first, ...remaining] = fragments
+  if (!first) throw new Error('At least one step is required')
+  return remaining.reduce(combine, first)
+}
+
+export const buildSequence = (steps: LeafStep[]): SafeSqlFragment =>
+  foldFragments(steps.map(buildLeaf), (left, right) => safeSql`df.seq(${left}, ${right})`)
+
+export function buildStep(input: WorkflowStep): SafeSqlFragment {
+  const step = workflowStepSchema.parse(input)
+  let expression: SafeSqlFragment
+  switch (step.type) {
+    case 'loop': {
+      const body = buildSequence(step.body)
+      const condition = step.condition.trim() ? literal(step.condition) : undefined
+      if (condition && step.continueOnFailure)
+        expression = safeSql`df.loop(${body}, ${condition}, continue_on_failure => true)`
+      else if (condition) expression = safeSql`df.loop(${body}, ${condition})`
+      else if (step.continueOnFailure)
+        expression = safeSql`df.loop(${body}, continue_on_failure => true)`
+      else expression = safeSql`df.loop(${body})`
+      break
+    }
+    case 'if':
+    case 'if_rows': {
+      const thenArm = buildSequence(step.then)
+      const elseArm = step.else.length ? buildSequence(step.else) : safeSql`df.sql('SELECT NULL')`
+      expression =
+        step.type === 'if'
+          ? safeSql`df.if(${literal(step.condition)}, ${thenArm}, ${elseArm})`
+          : safeSql`df.if_rows(${literal(step.rowsResultName)}, ${thenArm}, ${elseArm})`
+      break
+    }
+    case 'race':
+      expression = foldFragments(
+        step.body.map(buildLeaf),
+        (left, right) => safeSql`df.race(${left}, ${right})`
+      )
+      break
+    case 'parallel':
+      expression = foldFragments(
+        step.body.map(buildLeaf),
+        (left, right) => safeSql`df.join(${left}, ${right})`
+      )
       break
     default:
-      throw new Error('Not implemented until Task 5')
+      return buildLeaf(step as LeafStep)
   }
-  return step.resultName ? safeSql`df.as(${expression}, ${literal(step.resultName)})` : expression
+  return withResultName(expression, step.resultName)
 }
 
 export function buildWorkflow(
@@ -313,8 +379,15 @@ export function buildWorkflow(
   )
 }
 
-export function buildStartWorkflow(expression: SafeSqlFragment, label: string): SafeSqlFragment {
-  return safeSql`SELECT df.start(${expression}, ${literal(label.trim() || null)}) AS value;`
+export function buildStartWorkflow(
+  expression: SafeSqlFragment,
+  label: string,
+  transactionMode: 'caller' | 'new' = 'caller'
+): SafeSqlFragment {
+  const labelLiteral = literal(label.trim() || null)
+  return transactionMode === 'new'
+    ? safeSql`SELECT df.start(${expression}, ${labelLiteral}, NULL, transaction_mode => 'new') AS value;`
+    : safeSql`SELECT df.start(${expression}, ${labelLiteral}) AS value;`
 }
 export const buildSignalWorkflow = (id: string, name: string, payload: string) =>
   safeSql`SELECT df.signal(${literal(id)}, ${literal(name)}, ${literal(payload)}) AS value;`
