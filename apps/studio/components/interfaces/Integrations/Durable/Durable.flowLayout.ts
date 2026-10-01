@@ -16,8 +16,8 @@ export const FLOW_NODE_SIZES: Record<Exclude<FlowNodeKind, 'loop'>, Box> = {
   merge: { width: 160, height: 24 },
 }
 export const LOOP_PADDING = 16
-/** Matches the `h-8` loop header in `WorkflowFlowNodes.tsx`. */
-export const LOOP_HEADER_HEIGHT = 32
+/** Matches the `h-14` loop header (title row + details row) in `WorkflowFlowNodes.tsx`. */
+export const LOOP_HEADER_HEIGHT = 56
 const EMPTY_LOOP_BODY: Box = { width: 240, height: 48 }
 const NODE_SEP = 32
 const RANK_SEP = 40

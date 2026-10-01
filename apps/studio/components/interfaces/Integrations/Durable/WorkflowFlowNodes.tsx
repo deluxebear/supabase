@@ -135,32 +135,31 @@ const LoopNode = ({ data, selected }: NodeProps<FlowDiagramNode>) => {
   return (
     <div
       className={cn(
-        'h-full w-full rounded-md border border-dashed',
+        'h-full w-full rounded-md border border-dashed border-strong bg-surface-75',
         getStatusAccent(flow.status),
         selected && SELECTED_RING
       )}
     >
       <HiddenHandles />
-      {/* h-8 must match LOOP_HEADER_HEIGHT in Durable.flowLayout.ts */}
-      <div className="h-8 flex items-center gap-2 px-3 min-w-0">
-        <Repeat size={14} className="text-foreground-light shrink-0" aria-hidden />
-        <Badge>{flow.stepType}</Badge>
-        <span className="text-xs font-mono truncate" title={flow.summary ?? flow.title}>
-          {flow.summary ?? flow.title}
-        </span>
-        {flow.continueOnFailure && (
-          <span className="text-xs text-foreground-light shrink-0">
-            {$t('Continue after step failures')}
+      {/* h-14 must match LOOP_HEADER_HEIGHT in Durable.flowLayout.ts */}
+      <div className="h-14 px-3 pt-1 min-w-0">
+        <div className="h-7 flex items-center gap-2 min-w-0">
+          <Repeat size={14} className="text-foreground-light shrink-0" aria-hidden />
+          <Badge>{flow.stepType}</Badge>
+          <span
+            className="flex-1 min-w-0 text-xs font-mono truncate"
+            title={flow.summary ?? flow.title}
+          >
+            {flow.summary ?? flow.title}
           </span>
-        )}
-        {typeof flow.iteration === 'number' && (
-          <span className="text-xs text-foreground-light shrink-0">
-            {$t('Iteration {{number}}', { number: flow.iteration })}
-          </span>
-        )}
-        <span className="ml-auto">
           <StatusIndicator status={flow.status} />
-        </span>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-foreground-light">
+          {flow.continueOnFailure && <span>{$t('Continue after step failures')}</span>}
+          {typeof flow.iteration === 'number' && (
+            <span>{$t('Iteration {{number}}', { number: flow.iteration })}</span>
+          )}
+        </div>
       </div>
     </div>
   )
