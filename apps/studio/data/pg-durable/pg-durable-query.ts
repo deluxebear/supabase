@@ -33,7 +33,20 @@ async function getConfiguration(variables: PgDurableVariables, signal?: AbortSig
       current_database() AS current_database,
       current_setting('pg_durable.worker_role', true) AS worker_role,
       current_setting('pg_durable.retention_days', true) AS retention_days,
-      current_setting('pg_durable.reconcile_interval', true) AS reconcile_interval;
+      current_setting('pg_durable.reconcile_interval', true) AS reconcile_interval,
+      (SELECT extversion FROM pg_extension WHERE extname = 'pg_durable') AS installed_version,
+      (SELECT default_version FROM pg_available_extensions WHERE name = 'pg_durable') AS default_version,
+      COALESCE(has_function_privilege(current_user, to_regprocedure('df.explain(text)'), 'EXECUTE'), false) AS can_explain,
+      current_setting('pg_durable.log_workflow_sql', true) AS log_workflow_sql,
+      current_setting('pg_durable.host', true) AS host,
+      current_setting('pg_durable.max_new_transaction_starts', true) AS max_new_transaction_starts,
+      current_setting('pg_durable.new_transaction_start_timeout', true) AS new_transaction_start_timeout,
+      current_setting('pg_durable.list_instances_max_limit', true) AS list_instances_max_limit,
+      current_setting('pg_durable.enable_superuser_instances', true) AS enable_superuser_instances,
+      current_setting('pg_durable.max_user_connections', true) AS max_user_connections,
+      current_setting('pg_durable.max_management_connections', true) AS max_management_connections,
+      current_setting('pg_durable.max_duroxide_connections', true) AS max_duroxide_connections,
+      current_setting('pg_durable.execution_acquire_timeout', true) AS execution_acquire_timeout;
   `,
     },
     signal

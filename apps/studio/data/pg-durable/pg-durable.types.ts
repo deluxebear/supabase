@@ -35,6 +35,19 @@ export const durableConfigurationSchema = z.object({
   worker_role: z.string().nullable(),
   retention_days: z.string().nullable(),
   reconcile_interval: z.string().nullable(),
+  installed_version: z.string().nullable(),
+  default_version: z.string().nullable(),
+  can_explain: z.boolean(),
+  log_workflow_sql: z.string().nullable(),
+  host: z.string().nullable(),
+  max_new_transaction_starts: z.string().nullable(),
+  new_transaction_start_timeout: z.string().nullable(),
+  list_instances_max_limit: z.string().nullable(),
+  enable_superuser_instances: z.string().nullable(),
+  max_user_connections: z.string().nullable(),
+  max_management_connections: z.string().nullable(),
+  max_duroxide_connections: z.string().nullable(),
+  execution_acquire_timeout: z.string().nullable(),
 })
 export type DurableConfiguration = z.infer<typeof durableConfigurationSchema>
 

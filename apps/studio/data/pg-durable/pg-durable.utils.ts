@@ -27,3 +27,6 @@ export function getDurableCapabilities(version: string | null | undefined): Dura
     loopContinueOnFailure: atLeast(version, '0.2.8'),
   }
 }
+
+export const capabilitiesFromConfiguration = (c: { installed_version: string | null }) =>
+  getDurableCapabilities(c.installed_version)
