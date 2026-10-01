@@ -73,6 +73,7 @@ export function buildNodeTree(
 
   const byId = new Map<string, DurableNode>()
   for (const n of nodes) if (!byId.has(n.node_id)) byId.set(n.node_id, n)
+  // Global visited set: a node referenced twice renders as a `node: null` leaf (same as cycles).
   const visited = new Set<string>()
 
   const missing = (id: string, role: Role, inLoop: boolean, branchIndex?: number) => {
@@ -82,20 +83,25 @@ export function buildNodeTree(
   }
 
   // Collect the ordered, flattened steps of a THEN chain (left subtree first, then right).
-  const collectSteps = (id: string | null, inLoop: boolean, out: DurableTreeNode[]) => {
-    if (!id) return
-    const n = byId.get(id)
-    if (!n || visited.has(id)) {
-      out.push(missing(id, 'step', inLoop))
-      return
+  // Iterative (explicit stack) so very long chains cannot overflow the call stack.
+  const collectSteps = (startId: string | null, inLoop: boolean, out: DurableTreeNode[]) => {
+    const stack: (string | null)[] = [startId]
+    while (stack.length > 0) {
+      const id = stack.pop() ?? null
+      if (!id) continue
+      const n = byId.get(id)
+      if (!n || visited.has(id)) {
+        out.push(missing(id, 'step', inLoop))
+        continue
+      }
+      if (n.node_type.toUpperCase() === 'THEN') {
+        visited.add(id)
+        // Push right first so the left subtree is processed first.
+        stack.push(n.right_node, n.left_node)
+        continue
+      }
+      out.push(build(id, 'step', inLoop))
     }
-    if (n.node_type.toUpperCase() === 'THEN') {
-      visited.add(id)
-      collectSteps(n.left_node, inLoop, out)
-      collectSteps(n.right_node, inLoop, out)
-      return
-    }
-    out.push(build(id, 'step', inLoop))
   }
 
   const build = (

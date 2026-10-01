@@ -173,6 +173,39 @@ describe('buildNodeTree', () => {
   })
 })
 
+describe('long THEN chains', () => {
+  const N = 5000
+  const steps = Array.from({ length: N }, (_, i) => node({ node_id: `s${i}` }))
+  const expected = steps.map((s) => s.node_id)
+
+  it('flattens a right-nested chain without overflowing', () => {
+    const thens = Array.from({ length: N - 1 }, (_, i) =>
+      node({
+        node_id: `t${i}`,
+        node_type: 'THEN',
+        left_node: `s${i}`,
+        right_node: i === N - 2 ? `s${N - 1}` : `t${i + 1}`,
+      })
+    )
+    const tree = buildNodeTree('t0', [...thens, ...steps])!
+    expect(tree.children.map((c) => c.id)).toEqual(expected)
+    expect(tree.children.every((c) => c.role === 'step')).toBe(true)
+  })
+
+  it('flattens a left-nested chain without overflowing', () => {
+    const thens = Array.from({ length: N - 1 }, (_, i) =>
+      node({
+        node_id: `t${i}`,
+        node_type: 'THEN',
+        left_node: i === N - 2 ? `s0` : `t${i + 1}`,
+        right_node: `s${N - 1 - i}`,
+      })
+    )
+    const tree = buildNodeTree('t0', [...thens, ...steps])!
+    expect(tree.children.map((c) => c.id)).toEqual(expected)
+  })
+})
+
 describe('parseExecutionGeneration', () => {
   it('reads the last :: token', () => {
     expect(parseExecutionGeneration('{"execution_id":"a1b2c3d4::1::7f9a0012::2"}')).toBe(2)
