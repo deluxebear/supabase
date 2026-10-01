@@ -161,7 +161,7 @@ describe('workflow detail sheet', () => {
     mockQueries()
     renderSheet()
     const diagram = await screen.findByRole('region', { name: 'Workflow diagram' })
-    expect(within(diagram).getByRole('group', { name: 'SQL, b, failed' })).toBeInTheDocument()
+    expect(within(diagram).getByRole('group', { name: 'SQL step b, Failed' })).toBeInTheDocument()
     expect(screen.getByRole('radio', { name: 'Graph' })).toHaveAttribute('aria-checked', 'true')
     expect(await screen.findByText(/boom explosion/)).toBeInTheDocument()
   })

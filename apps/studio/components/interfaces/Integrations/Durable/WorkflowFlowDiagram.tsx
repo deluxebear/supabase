@@ -10,18 +10,16 @@ import {
 import { Maximize2 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useMemo, useState } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 
 import '@xyflow/react/dist/style.css'
 
 import { Button, cn, Dialog, DialogContent, DialogHeader, DialogSection, DialogTitle } from 'ui'
+import { Admonition } from 'ui-patterns/Admonition'
 
-import {
-  getEdgeAppearance,
-  type FlowEdgeLabel,
-  type FlowGraph,
-  type FlowNode,
-} from './Durable.flow'
+import { getEdgeAppearance, type FlowEdgeLabel, type FlowGraph } from './Durable.flow'
 import { getFlowStructureKey, layoutFlowGraph, type FlowDiagramNode } from './Durable.flowLayout'
+import { getNodeAriaLabel } from './WorkflowFlow.labels'
 import { flowNodeTypes } from './WorkflowFlowNodes'
 import { t as $t } from '@/lib/i18n'
 
@@ -35,15 +33,13 @@ type WorkflowFlowDiagramProps = {
 }
 
 const MUTED_EDGE_STYLE = { strokeDasharray: '4 4', opacity: 0.5 }
+const FIT_VIEW_OPTIONS = { padding: 0.15, maxZoom: 1 }
 
 const getEdgeLabelText = (label?: FlowEdgeLabel) => {
   if (label === 'then') return $t('Then')
   if (label === 'else') return $t('Else')
   return undefined
 }
-
-const getNodeAriaLabel = (flow: FlowNode) =>
-  [flow.stepType, flow.title, flow.status].filter(Boolean).join(', ') || undefined
 
 const FlowCanvas = ({
   graph,
@@ -65,6 +61,8 @@ const FlowCanvas = ({
     focusable: canSelect && node.selectable,
     selected: !!selectedNodeId && node.data.flow.durableNodeId === selectedNodeId,
     ariaLabel: getNodeAriaLabel(node.data.flow),
+    // xyflow only assigns a role to focusable nodes; without one the label would be ignored.
+    ariaRole: 'group' as const,
   }))
   const edges = layout.edges.map((edge) => {
     const { animated, isMuted } = getEdgeAppearance(graph.mode, statusById.get(edge.target))
@@ -72,6 +70,9 @@ const FlowCanvas = ({
       ...edge,
       animated,
       label: getEdgeLabelText(edge.data?.label),
+      // Edges are decoration; a presentational role keeps xyflow's English "Edge from <id> to
+      // <id>" default label from being announced.
+      ariaRole: 'presentation' as const,
       style: isMuted ? MUTED_EDGE_STYLE : undefined,
     }
   })
@@ -111,7 +112,7 @@ const FlowCanvas = ({
           onNodesChange={handleNodesChange}
           onPaneClick={() => onSelectNode?.(null)}
           fitView
-          fitViewOptions={{ padding: 0.15, maxZoom: 1 }}
+          fitViewOptions={FIT_VIEW_OPTIONS}
           minZoom={0.2}
           nodesDraggable={false}
           nodesConnectable={false}
@@ -139,11 +140,28 @@ const FlowCanvas = ({
   )
 }
 
+const DiagramFallback = () => (
+  <Admonition
+    type="warning"
+    title={$t("Couldn't draw the diagram")}
+    description={$t('The rest of this panel still works.')}
+  />
+)
+
+// A drawing failure must not take the whole sheet down with it.
+const SafeFlowCanvas = (
+  props: Omit<WorkflowFlowDiagramProps, 'canExpand'> & { onExpand?: () => void }
+) => (
+  <ErrorBoundary fallbackRender={DiagramFallback} resetKeys={[props.graph]}>
+    <FlowCanvas {...props} />
+  </ErrorBoundary>
+)
+
 export const WorkflowFlowDiagram = ({ canExpand = false, ...props }: WorkflowFlowDiagramProps) => {
   const [isExpanded, setIsExpanded] = useState(false)
   return (
     <>
-      <FlowCanvas {...props} onExpand={canExpand ? () => setIsExpanded(true) : undefined} />
+      <SafeFlowCanvas {...props} onExpand={canExpand ? () => setIsExpanded(true) : undefined} />
       {canExpand && (
         <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
           <DialogContent size="xxlarge">
@@ -151,7 +169,7 @@ export const WorkflowFlowDiagram = ({ canExpand = false, ...props }: WorkflowFlo
               <DialogTitle>{$t('Workflow diagram')}</DialogTitle>
             </DialogHeader>
             <DialogSection>
-              <FlowCanvas {...props} className="h-[70vh]" />
+              <SafeFlowCanvas {...props} onSelectNode={undefined} className="h-[70vh]" />
             </DialogSection>
           </DialogContent>
         </Dialog>

@@ -145,6 +145,14 @@ describe('treeToFlowGraph', () => {
     expect(edgePairs(graph)).toContain('i->i:merge:else')
   })
 
+  it('draws one edge when a runtime IF has neither arm', () => {
+    const graph = runtime('i', [
+      node({ node_id: 'i', node_type: 'IF', query: '{"condition_node":"c"}' }),
+      node({ node_id: 'c', query: 'SELECT true' }),
+    ])
+    expect(edgePairs(graph).filter((edge) => edge.startsWith('i->i:merge'))).toEqual(['i->i:merge'])
+  })
+
   it('groups a loop body and reports the latest iteration', () => {
     const graph = runtime('l', [
       node({

@@ -6,9 +6,9 @@ import { Badge, cn } from 'ui'
 import type { FlowNode } from './Durable.flow'
 import type { FlowDiagramNode } from './Durable.flowLayout'
 import { WorkflowStatus } from './DurableShared'
+import { getMergeCaption } from './WorkflowFlow.labels'
 import { t as $t } from '@/lib/i18n'
 
-const MERGE_CAPTIONS = { all: 'All branches', first: 'First to finish' } as const
 const SELECTED_RING = 'ring-2 ring-foreground-light'
 
 const getStatusAccent = (status?: string | null) => {
@@ -88,14 +88,16 @@ const StepNode = ({ data, selected }: NodeProps<FlowDiagramNode>) => {
           <Split size={14} className="text-foreground-light shrink-0" aria-hidden />
         )}
         <Badge>{flow.stepType}</Badge>
-        <span className="text-xs font-mono truncate" title={flow.title}>
+        <span className="flex-1 min-w-0 text-xs font-mono truncate" title={flow.title}>
           {flow.title}
         </span>
-        <span className="ml-auto">
-          <StatusIndicator status={flow.status} />
-        </span>
       </div>
-      <Summary flow={flow} />
+      <div className="flex items-center gap-2 min-w-0">
+        <div className="flex-1 min-w-0">
+          <Summary flow={flow} />
+        </div>
+        <StatusIndicator status={flow.status} />
+      </div>
     </CardShell>
   )
 }
@@ -109,7 +111,7 @@ const UnknownNode = ({ data, selected }: NodeProps<FlowDiagramNode>) => (
 
 const GatewayNode = ({ data, selected }: NodeProps<FlowDiagramNode>) => {
   const { flow } = data
-  const caption = flow.mergeMode ? $t(MERGE_CAPTIONS[flow.mergeMode]) : null
+  const caption = flow.mergeMode ? getMergeCaption(flow.mergeMode) : null
   return (
     <div className={cn('h-full w-full flex flex-col items-center', selected && SELECTED_RING)}>
       <HiddenHandles />
@@ -154,7 +156,8 @@ const LoopNode = ({ data, selected }: NodeProps<FlowDiagramNode>) => {
           </span>
           <StatusIndicator status={flow.status} />
         </div>
-        <div className="flex items-center gap-2 text-xs text-foreground-light">
+        <div className="flex items-center gap-2 text-xs text-foreground-light min-w-0">
+          {flow.summary && <span className="font-mono truncate">{flow.title}</span>}
           {flow.continueOnFailure && <span>{$t('Continue after step failures')}</span>}
           {typeof flow.iteration === 'number' && (
             <span>{$t('Iteration {{number}}', { number: flow.iteration })}</span>

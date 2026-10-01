@@ -135,6 +135,8 @@ export function layoutFlowGraph(graph: FlowGraph): {
         position: { x: p.x, y: p.y },
         width: p.width,
         height: p.height,
+        // Sizes are fixed, so tell React Flow they are already measured instead of re-observing.
+        measured: { width: p.width, height: p.height },
         data: { flow: member },
         draggable: false,
         connectable: false,

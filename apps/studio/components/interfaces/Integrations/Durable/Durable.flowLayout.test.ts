@@ -91,6 +91,13 @@ describe('layoutFlowGraph', () => {
     expect(a.position.y).toBeLessThan(b.position.y)
   })
 
+  it('reports measured sizes so React Flow does not re-measure fixed-size nodes', () => {
+    const { nodes } = layoutFlowGraph(graphOf([flowNode('a'), flowNode('l', 'loop')], []))
+    for (const n of nodes) {
+      expect(n.measured).toEqual({ width: n.width, height: n.height })
+    }
+  })
+
   it('sizes an empty loop to the minimum body', () => {
     const { nodes } = layoutFlowGraph(graphOf([flowNode('l', 'loop')], []))
     expect(get(nodes, 'l')).toMatchObject({

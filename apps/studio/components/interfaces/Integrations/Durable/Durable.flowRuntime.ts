@@ -91,8 +91,12 @@ export function treeToFlowGraph(root: DurableTreeNode): FlowGraph {
           status,
           ...scope,
         })
-        g.arm(decision, merge, thenSegment, 'then')
-        g.arm(decision, merge, elseSegment, 'else')
+        if (thenSegment || elseSegment) {
+          g.arm(decision, merge, thenSegment, 'then')
+          g.arm(decision, merge, elseSegment, 'else')
+        } else {
+          g.connect(decision, merge)
+        }
         return { entry: decision, exit: merge }
       }
       case 'LOOP': {

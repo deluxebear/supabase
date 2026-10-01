@@ -19,6 +19,9 @@ const STATUS_LABELS: Record<string, string> = {
   cancelled: 'Cancelled',
   skipped: 'Skipped',
 }
+export const getWorkflowStatusLabel = (status?: string | null) =>
+  $t(STATUS_LABELS[status?.toLowerCase() ?? ''] ?? status ?? 'Unknown')
+
 export const WorkflowStatus = ({ status }: { status?: string | null }) => {
   const normalized = status?.toLowerCase() ?? ''
   const variant =
@@ -29,7 +32,7 @@ export const WorkflowStatus = ({ status }: { status?: string | null }) => {
         : normalized === 'running'
           ? 'warning'
           : 'default'
-  return <Badge variant={variant}>{$t(STATUS_LABELS[normalized] ?? status ?? 'Unknown')}</Badge>
+  return <Badge variant={variant}>{getWorkflowStatusLabel(status)}</Badge>
 }
 
 export const DurableInstalled = ({ children }: PropsWithChildren) => {
