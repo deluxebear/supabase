@@ -8,6 +8,7 @@ import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { reconstructExpression } from './Durable.reconstruct'
+import { translateReconstructError } from './Durable.reconstructErrors'
 import { buildNodeTree } from './Durable.tree'
 import {
   buildCancelWorkflow,
@@ -95,7 +96,11 @@ export const WorkflowDetailSheet = ({
     if (!info || !nodes) return
     const result = reconstructExpression(info.root_node ?? null, nodes)
     if ('error' in result) {
-      toast.error($t("This workflow can't be re-run: {{reason}}", { reason: result.error }))
+      toast.error(
+        $t("This workflow can't be re-run: {{reason}}", {
+          reason: translateReconstructError(result.error),
+        })
+      )
       return
     }
     onRerun({

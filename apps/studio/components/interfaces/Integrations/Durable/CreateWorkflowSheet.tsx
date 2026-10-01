@@ -307,7 +307,7 @@ export const CreateWorkflowSheet = ({
                         <FormItemLayout
                           label={$t('Start transaction')}
                           description={$t(
-                            'An independent start survives a rollback of the calling transaction. At most {{limit}} independent starts can run at once. Studio runs each statement on its own, so the options differ only when you start from your own transaction.',
+                            'An independent start survives a rollback of the calling transaction. At most {{limit}} independent starts can run at once. Studio runs this statement on its own, so the two options differ only if you run the SQL yourself inside a transaction.',
                             { limit: configuration.max_new_transaction_starts ?? '2' }
                           )}
                         >
