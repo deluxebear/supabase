@@ -141,7 +141,7 @@ export const WorkflowStepFields = ({
           />
           <FormField
             control={form.control}
-            name={`steps.${index}.body`}
+            name={`steps.${index}.requestBody`}
             render={({ field }) => (
               <FormItemLayout label={$t('Request body')}>
                 <FormControl>

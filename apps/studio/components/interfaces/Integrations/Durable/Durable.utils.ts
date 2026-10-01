@@ -1,34 +1,82 @@
 import { literal, safeSql, type SafeSqlFragment } from '@supabase/pg-meta'
 import { z } from 'zod'
 
+import type { DurableCapabilities } from '@/data/pg-durable/pg-durable.utils'
 import { t as $t } from '@/lib/i18n'
 
-const workflowStepFieldsSchema = z.object({
-  type: z.enum(['sql', 'sleep', 'signal', 'http']),
+export const LEAF_STEP_TYPES = [
+  'sql',
+  'sleep',
+  'signal',
+  'http',
+  'multipart',
+  'schedule',
+  'break',
+] as const
+export const CONTAINER_STEP_TYPES = ['loop', 'if', 'if_rows', 'race', 'parallel'] as const
+
+const leafFields = {
   query: z.string(),
   seconds: z.string(),
+  noTimeout: z.boolean(),
   signal: z.string(),
   url: z.string(),
   method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']),
-  body: z.string(),
+  requestBody: z.string(),
   headers: z.string(),
+  timeoutSeconds: z.string(),
+  parts: z.string(),
+  cron: z.string(),
+  breakValue: z.string(),
   resultName: z.string(),
+}
+export const leafStepFieldsSchema = z.object({ type: z.enum(LEAF_STEP_TYPES), ...leafFields })
+export const workflowStepFieldsSchema = z.object({
+  type: z.enum([...LEAF_STEP_TYPES, ...CONTAINER_STEP_TYPES]),
+  ...leafFields,
+  condition: z.string(),
+  rowsResultName: z.string(),
+  continueOnFailure: z.boolean(),
+  body: z.array(leafStepFieldsSchema),
+  then: z.array(leafStepFieldsSchema),
+  else: z.array(leafStepFieldsSchema),
 })
+export type LeafStep = z.infer<typeof leafStepFieldsSchema>
+export type WorkflowStep = z.infer<typeof workflowStepFieldsSchema>
 
-export const workflowStepSchema = workflowStepFieldsSchema.superRefine((step, ctx) => {
-  if (!/^$|^[a-zA-Z_][a-zA-Z0-9_]*$/.test(step.resultName))
-    ctx.addIssue({
-      code: 'custom',
-      path: ['resultName'],
-      message: $t('Use letters, numbers, and underscores for the result name'),
+export const ALL_CAPABILITIES: DurableCapabilities = {
+  multipart: true,
+  transactionMode: true,
+  loopContinueOnFailure: true,
+}
+
+const MAX_TOTAL_LEAVES = 60
+const IDENTIFIER_PATTERN = /^[a-zA-Z_][a-zA-Z0-9_]*$/
+const multipartPartsSchema = z
+  .array(
+    z.object({
+      name: z.string().min(1),
+      data_b64: z.string(),
+      filename: z.string().optional(),
+      content_type: z.string().optional(),
     })
+  )
+  .min(1)
+
+type Path = (string | number)[]
+type LeafContext = { inLoop: boolean; capabilities: DurableCapabilities }
+
+const addIssue = (ctx: z.RefinementCtx, path: Path, message: string) =>
+  ctx.addIssue({ code: 'custom', path, message })
+
+function validateLeaf(step: LeafStep, ctx: z.RefinementCtx, path: Path, options: LeafContext) {
+  const issue = (field: string, message: string) => addIssue(ctx, [...path, field], message)
+  if (!/^$|^[a-zA-Z_][a-zA-Z0-9_]*$/.test(step.resultName))
+    issue('resultName', $t('Use letters, numbers, and underscores for the result name'))
   const required = (field: 'query' | 'signal' | 'url') => {
-    if (!step[field].trim())
-      ctx.addIssue({ code: 'custom', path: [field], message: $t('This field is required') })
+    if (!step[field].trim()) issue(field, $t('This field is required'))
   }
-  if (step.type === 'sql') required('query')
-  if (step.type === 'signal') required('signal')
-  if (step.type === 'sleep' || step.type === 'signal') {
+  const validateSeconds = () => {
     const seconds = Number(step.seconds)
     if (
       !/^\d+$/.test(step.seconds) ||
@@ -36,74 +84,194 @@ export const workflowStepSchema = workflowStepFieldsSchema.superRefine((step, ct
       seconds < 1 ||
       seconds > 2147483647
     ) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['seconds'],
-        message: $t('Enter a whole number of seconds between 1 and 2147483647'),
-      })
+      issue('seconds', $t('Enter a whole number of seconds between 1 and 2147483647'))
     }
   }
-  if (step.type === 'http') {
+  const validateHttpFields = () => {
     required('url')
     if (!z.string().url().safeParse(step.url).success || !/^https?:\/\//i.test(step.url)) {
-      ctx.addIssue({ code: 'custom', path: ['url'], message: $t('Enter an HTTP or HTTPS URL') })
+      issue('url', $t('Enter an HTTP or HTTPS URL'))
     }
     try {
       z.record(z.string(), z.string()).parse(JSON.parse(step.headers))
     } catch {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['headers'],
-        message: $t('Enter a JSON object with string header values'),
-      })
+      issue('headers', $t('Enter a JSON object with string header values'))
+    }
+    const timeout = Number(step.timeoutSeconds)
+    if (!/^\d+$/.test(step.timeoutSeconds) || timeout < 1 || timeout > 3600) {
+      issue('timeoutSeconds', $t('Enter a whole number of seconds between 1 and 3600'))
     }
   }
-})
-export type WorkflowStep = z.infer<typeof workflowStepSchema>
 
-export const workflowFormSchema = z
-  .object({
-    label: z.string().trim().max(200),
-    mode: z.enum(['builder', 'expression']),
-    composition: z.enum(['sequential', 'parallel']),
-    expression: z.string(),
-    steps: z.array(workflowStepFieldsSchema).min(1).max(30),
-  })
-  .superRefine((values, ctx) => {
-    if (values.mode === 'builder') {
-      values.steps.forEach((step, index) => {
-        const parsed = workflowStepSchema.safeParse(step)
-        if (!parsed.success)
-          parsed.error.issues.forEach((issue) =>
-            ctx.addIssue({ ...issue, path: ['steps', index, ...issue.path] })
-          )
-      })
+  if (step.type === 'sql') required('query')
+  if (step.type === 'sleep') validateSeconds()
+  if (step.type === 'signal') {
+    required('signal')
+    if (!step.noTimeout) validateSeconds()
+  }
+  if (step.type === 'http') validateHttpFields()
+  if (step.type === 'multipart') {
+    if (!options.capabilities.multipart) issue('type', $t('Requires pg_durable 0.2.5 or later'))
+    validateHttpFields()
+    let parts: unknown
+    try {
+      parts = JSON.parse(step.parts)
+    } catch {
+      parts = undefined
     }
-    if (values.mode === 'expression' && !values.expression.trim()) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['expression'],
-        message: $t('Enter a workflow expression'),
-      })
+    if (!multipartPartsSchema.safeParse(parts).success)
+      issue('parts', $t('Enter a JSON array of parts, each with a name and base64 data'))
+  }
+  if (step.type === 'schedule') {
+    const fields = step.cron.trim().split(/\s+/)
+    if (fields.length !== 5 || !fields.every((field) => /^[0-9*,/-]+$/.test(field)))
+      issue('cron', $t('Enter a five-field cron expression'))
+  }
+  if (step.type === 'break') {
+    if (!options.inLoop) issue('type', $t('Break steps can only be used inside a loop'))
+    if (step.breakValue) {
+      try {
+        JSON.parse(step.breakValue)
+      } catch {
+        issue('breakValue', $t('Enter valid JSON or leave this field empty'))
+      }
     }
-  })
+  }
+}
+
+function validateStep(
+  step: WorkflowStep,
+  ctx: z.RefinementCtx,
+  path: Path,
+  capabilities: DurableCapabilities
+) {
+  const validateChildren = (field: 'body' | 'then' | 'else', inLoop: boolean) =>
+    step[field].forEach((child, index) =>
+      validateLeaf(child, ctx, [...path, field, index], { inLoop, capabilities })
+    )
+  if ((LEAF_STEP_TYPES as readonly string[]).includes(step.type)) {
+    validateLeaf(step as unknown as LeafStep, ctx, path, { inLoop: false, capabilities })
+    return
+  }
+  if (!/^$|^[a-zA-Z_][a-zA-Z0-9_]*$/.test(step.resultName))
+    addIssue(
+      ctx,
+      [...path, 'resultName'],
+      $t('Use letters, numbers, and underscores for the result name')
+    )
+  if (step.type === 'loop') {
+    if (step.body.length < 1) addIssue(ctx, [...path, 'body'], $t('Add at least one step'))
+    if (step.continueOnFailure && !capabilities.loopContinueOnFailure)
+      addIssue(ctx, [...path, 'continueOnFailure'], $t('Requires pg_durable 0.2.8 or later'))
+    validateChildren('body', true)
+  }
+  if (step.type === 'if' || step.type === 'if_rows') {
+    if (step.type === 'if' && !step.condition.trim())
+      addIssue(ctx, [...path, 'condition'], $t('This field is required'))
+    if (step.type === 'if_rows' && !IDENTIFIER_PATTERN.test(step.rowsResultName))
+      addIssue(
+        ctx,
+        [...path, 'rowsResultName'],
+        $t('Use letters, numbers, and underscores for the result name')
+      )
+    if (step.then.length < 1) addIssue(ctx, [...path, 'then'], $t('Add at least one step'))
+    validateChildren('then', false)
+    validateChildren('else', false)
+  }
+  if (step.type === 'race' || step.type === 'parallel') {
+    if (step.body.length < 2) addIssue(ctx, [...path, 'body'], $t('Add at least two steps'))
+    validateChildren('body', false)
+  }
+}
+
+export const countLeafSteps = (steps: WorkflowStep[]) =>
+  steps.reduce(
+    (total, step) =>
+      total +
+      ((LEAF_STEP_TYPES as readonly string[]).includes(step.type)
+        ? 1
+        : step.body.length + step.then.length + step.else.length),
+    0
+  )
+
+const createStepSchema = (capabilities: DurableCapabilities) =>
+  workflowStepFieldsSchema.superRefine((step, ctx) => validateStep(step, ctx, [], capabilities))
+
+/** Single-step validator with top-level semantics and every capability enabled. */
+export const workflowStepSchema = createStepSchema(ALL_CAPABILITIES)
+export const validateWorkflowStep = (step: WorkflowStep, capabilities: DurableCapabilities) =>
+  createStepSchema(capabilities).safeParse(step)
+
+export const createWorkflowFormSchema = (capabilities: DurableCapabilities) =>
+  z
+    .object({
+      label: z.string().trim().max(200),
+      mode: z.enum(['builder', 'expression']),
+      composition: z.enum(['sequential', 'parallel']),
+      transactionMode: z.enum(['caller', 'new']),
+      expression: z.string(),
+      steps: z.array(workflowStepFieldsSchema).min(1).max(30),
+    })
+    .superRefine((values, ctx) => {
+      if (values.mode === 'builder') {
+        values.steps.forEach((step, index) =>
+          validateStep(step, ctx, ['steps', index], capabilities)
+        )
+        if (countLeafSteps(values.steps) > MAX_TOTAL_LEAVES)
+          addIssue(ctx, ['steps'], $t('A workflow can have at most 60 steps in total'))
+      }
+      if (values.mode === 'expression' && !values.expression.trim()) {
+        addIssue(ctx, ['expression'], $t('Enter a workflow expression'))
+      }
+      if (values.transactionMode === 'new' && !capabilities.transactionMode)
+        addIssue(ctx, ['transactionMode'], $t('Requires pg_durable 0.2.5 or later'))
+    })
+export const workflowFormSchema = createWorkflowFormSchema(ALL_CAPABILITIES)
 export type WorkflowFormValues = z.infer<typeof workflowFormSchema>
 
-export const createDefaultStep = (): WorkflowStep => ({
+export const createDefaultLeafStep = (): LeafStep => ({
   type: 'sql',
   query: 'SELECT 1 AS result',
   seconds: '30',
+  noTimeout: false,
   signal: 'approval',
   url: '',
   method: 'GET',
-  body: '',
+  requestBody: '',
   headers: '{}',
+  timeoutSeconds: '30',
+  parts: '[]',
+  cron: '0 * * * *',
+  breakValue: '',
   resultName: '',
+})
+export const createDefaultStep = (): WorkflowStep => ({
+  ...createDefaultLeafStep(),
+  condition: '',
+  rowsResultName: '',
+  continueOnFailure: false,
+  body: [],
+  then: [],
+  else: [],
+})
+export const createDefaultContainer = (
+  type: (typeof CONTAINER_STEP_TYPES)[number]
+): WorkflowStep => ({
+  ...createDefaultStep(),
+  type,
+  body:
+    type === 'race' || type === 'parallel'
+      ? [createDefaultLeafStep(), createDefaultLeafStep()]
+      : type === 'loop'
+        ? [createDefaultLeafStep()]
+        : [],
+  then: type === 'if' || type === 'if_rows' ? [createDefaultLeafStep()] : [],
 })
 export const workflowDefaultValues: WorkflowFormValues = {
   label: '',
   mode: 'builder',
   composition: 'sequential',
+  transactionMode: 'caller',
   expression: '',
   steps: [createDefaultStep()],
 }
@@ -122,8 +290,10 @@ export function buildStep(input: WorkflowStep): SafeSqlFragment {
       expression = safeSql`df.wait_for_signal(${literal(step.signal)}, ${literal(Number(step.seconds))}::integer)`
       break
     case 'http':
-      expression = safeSql`df.http(${literal(step.url)}, ${literal(step.method)}, ${literal(step.body || null)}, ${literal(step.headers)}::jsonb, 30)`
+      expression = safeSql`df.http(${literal(step.url)}, ${literal(step.method)}, ${literal(step.requestBody || null)}, ${literal(step.headers)}::jsonb, 30)`
       break
+    default:
+      throw new Error('Not implemented until Task 5')
   }
   return step.resultName ? safeSql`df.as(${expression}, ${literal(step.resultName)})` : expression
 }
