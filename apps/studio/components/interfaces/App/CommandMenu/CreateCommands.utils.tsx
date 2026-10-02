@@ -110,25 +110,20 @@ export function useCreateCommandsConfig() {
     isPending: isAuthConfigLoading,
   } = useAuthConfigQuery({ projectRef: ref })
 
-  const { getEntitlementSetValues: getEntitledHookSet } = useCheckEntitlements('auth.hooks')
-  const entitledHookSet = getEntitledHookSet()
+  const { hasEntitlementSetValue: isHookEntitled } = useCheckEntitlements('auth.hooks')
 
-  const { nonAvailableHooks } = useMemo(() => {
-    const allHooks: Hook[] = HOOKS_DEFINITIONS.map((definition) => ({
+  const nonAvailableHooks: string[] = HOOKS_DEFINITIONS.map(
+    (definition): Hook => ({
       ...definition,
       enabled: authConfig?.[definition.enabledKey] || false,
       method: extractMethod(
         authConfig?.[definition.uriKey] || '',
         authConfig?.[definition.secretsKey] || ''
       ),
-    }))
-
-    const nonAvailableHooks: string[] = allHooks
-      .filter((h) => !isValidHook(h) && !entitledHookSet.includes(h.entitlementKey))
-      .map((h) => h.entitlementKey)
-
-    return { nonAvailableHooks }
-  }, [entitledHookSet, authConfig])
+    })
+  )
+    .filter((h) => !isValidHook(h) && !isHookEntitled(h.entitlementKey))
+    .map((h) => h.entitlementKey)
 
   const showAuthConfig = !isAuthConfigError && !isAuthConfigLoading
 

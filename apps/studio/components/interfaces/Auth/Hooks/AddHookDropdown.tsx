@@ -1,7 +1,6 @@
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
 import { ChevronDown } from 'lucide-react'
-import { useMemo } from 'react'
 import {
   Button,
   DropdownMenu,
@@ -44,29 +43,20 @@ export const AddHookDropdown = ({
 
   const { data: authConfig } = useAuthConfigQuery({ projectRef })
   const { can: canUpdateAuthHook } = useAsyncCheckPermissions(PermissionAction.AUTH_EXECUTE, '*')
-  const { getEntitlementSetValues: getEntitledHookSet } = useCheckEntitlements('auth.hooks')
-  const entitledHookSet = getEntitledHookSet()
+  const { hasEntitlementSetValue: isHookEntitled } = useCheckEntitlements('auth.hooks')
 
-  const { availableHooks, nonAvailableHooks } = useMemo(() => {
-    const allHooks: Hook[] = HOOKS_DEFINITIONS.map((definition) => ({
-      ...definition,
-      enabled: authConfig?.[definition.enabledKey] || false,
-      method: extractMethod(
-        authConfig?.[definition.uriKey] || '',
-        authConfig?.[definition.secretsKey] || ''
-      ),
-    }))
-
-    const availableHooks: Hook[] = allHooks.filter(
-      (h) => !isValidHook(h) && entitledHookSet.includes(h.entitlementKey)
-    )
-
-    const nonAvailableHooks: Hook[] = allHooks.filter(
-      (h) => !isValidHook(h) && !entitledHookSet.includes(h.entitlementKey)
-    )
-
-    return { availableHooks, nonAvailableHooks }
-  }, [entitledHookSet, authConfig])
+  const allHooks: Hook[] = HOOKS_DEFINITIONS.map((definition) => ({
+    ...definition,
+    enabled: authConfig?.[definition.enabledKey] || false,
+    method: extractMethod(
+      authConfig?.[definition.uriKey] || '',
+      authConfig?.[definition.secretsKey] || ''
+    ),
+  }))
+  const availableHooks = allHooks.filter((h) => !isValidHook(h) && isHookEntitled(h.entitlementKey))
+  const nonAvailableHooks = allHooks.filter(
+    (h) => !isValidHook(h) && !isHookEntitled(h.entitlementKey)
+  )
 
   if (!canUpdateAuthHook) {
     return (

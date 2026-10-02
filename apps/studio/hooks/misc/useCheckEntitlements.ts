@@ -139,6 +139,9 @@ export function useCheckEntitlements(
     getEntitlementNumericValue: () => getEntitlementNumericValue(entitlement),
     isEntitlementUnlimited: () => isEntitlementUnlimited(entitlement),
     getEntitlementSetValues: () => getEntitlementSetValues(entitlement),
+    // [self-platform] Grants every set member when entitlements are not checked.
+    hasEntitlementSetValue: (value: string) =>
+      CHECK_ENTITLEMENTS ? getEntitlementSetValues(entitlement).includes(value) : true,
     getEntitlementMax: () => getEntitlementMax(entitlement),
   }
 }
