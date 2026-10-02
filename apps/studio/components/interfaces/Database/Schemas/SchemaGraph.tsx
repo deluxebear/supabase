@@ -554,11 +554,14 @@ export const SchemaGraph = () => {
                 description={
                   isSchemaLocked
                     ? $t(
-                        'The “{{schema}}” schema is managed by Supabase and is read-only through the dashboard.'
+                        'The “{{schema}}” schema is managed by Supabase and is read-only through the dashboard.',
+                        { schema: selectedSchema }
                       )
                     : !canUpdateTables
                       ? $t('You need additional permissions to create tables')
-                      : $t('The “{{schema}}” schema doesn’t have any tables.')
+                      : $t('The “{{schema}}” schema doesn’t have any tables.', {
+                          schema: selectedSchema,
+                        })
                 }
               >
                 {canAddTables && (

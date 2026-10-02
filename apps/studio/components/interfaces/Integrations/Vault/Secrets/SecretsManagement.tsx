@@ -218,7 +218,9 @@ export const SecretsManagement = () => {
                 </p>
                 <p className="text-foreground-light">
                   {searchValue
-                    ? $t('There are currently no secrets based on the search "{{search}}"')
+                    ? $t('There are currently no secrets based on the search "{{search}}"', {
+                        search: searchValue,
+                      })
                     : $t('The Vault allows you to store sensitive information like API keys')}
                 </p>
               </div>
