@@ -8,7 +8,9 @@ import { getConfigApplyNotice } from '@/components/interfaces/SelfPlatform/Confi
 import { authConfigApplyStatusQueryOptions } from '@/data/auth/auth-config-apply'
 import { t as $t } from '@/lib/i18n'
 
-const NOTICE_CLASS_NAME = 'rounded-none border-x-0 border-t-0 px-6'
+// shrink-0: rendered directly inside ProjectLayout's flex-col <main>, where a
+// tall page would otherwise squash the notice down to a clipped title.
+const NOTICE_CLASS_NAME = 'shrink-0 rounded-none border-x-0 border-t-0 px-6'
 
 // [self-platform] Fleet stores Auth settings as desired state; they reach the
 // running Auth service only through an explicit apply. Shown on Auth
