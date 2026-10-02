@@ -43,7 +43,7 @@ import {
   emailSchema,
   parseEmails,
 } from './InviteMemberButton.utils'
-import { ROLE_DESCRIPTIONS } from './Roles.constants'
+import { getRoleDescription } from './Roles.constants'
 import { useGetRolesManagementPermissions } from './TeamSettings.utils'
 import { DiscardChangesConfirmationDialog } from '@/components/ui-patterns/Dialogs/DiscardChangesConfirmationDialog'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
@@ -385,8 +385,10 @@ export const InviteMemberButton = () => {
                                   label={role.name}
                                   description={
                                     <>
-                                      {ROLE_DESCRIPTIONS[role.name] ??
-                                        'Permissions are based on the configured organization role.'}
+                                      {getRoleDescription(role.name) ??
+                                        $t(
+                                          'Permissions are based on the configured organization role.'
+                                        )}
                                       {disabledReason && ` ${disabledReason}`}
                                     </>
                                   }
@@ -534,10 +536,10 @@ export const InviteMemberButton = () => {
         variant="warning"
         visible={pendingInvite !== undefined}
         loading={isInviting}
-        title={`Invite as ${pendingRoleName}?`}
-        description={pendingRoleName && ROLE_DESCRIPTIONS[pendingRoleName]}
-        confirmLabel="Send invitation"
-        confirmLabelLoading="Sending invitation..."
+        title={$t('Invite as {{role}}?', { role: pendingRoleName })}
+        description={getRoleDescription(pendingRoleName ?? undefined)}
+        confirmLabel={$t('Send invitation')}
+        confirmLabelLoading={$t('Sending invitation...')}
         onCancel={() => setPendingInvite(undefined)}
         onConfirm={handleConfirmInvite}
       />

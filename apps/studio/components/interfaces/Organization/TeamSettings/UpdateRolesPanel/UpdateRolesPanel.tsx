@@ -28,7 +28,7 @@ import {
   WarningIcon,
 } from 'ui'
 
-import { ROLE_DESCRIPTIONS } from '../Roles.constants'
+import { getRoleDescription } from '../Roles.constants'
 import { useGetRolesManagementPermissions } from '../TeamSettings.utils'
 import { UpdateRolesConfirmationModal } from './UpdateRolesConfirmationModal'
 import {
@@ -302,8 +302,10 @@ export const UpdateRolesPanel = ({ visible, member, onClose }: UpdateRolesPanelP
                                       <div className="flex flex-col gap-0.5 max-w-xs">
                                         <span>{role.name}</span>
                                         <span className="text-xs text-foreground-lighter">
-                                          {ROLE_DESCRIPTIONS[role.name] ??
-                                            'Permissions are based on the configured organization role.'}
+                                          {getRoleDescription(role.name) ??
+                                            $t(
+                                              'Permissions are based on the configured organization role.'
+                                            )}
                                           {disabledReason && ` ${disabledReason}`}
                                         </span>
                                       </div>
