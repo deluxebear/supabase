@@ -25,7 +25,9 @@ export const DocsButton = ({ href, abbrev = true, className, topic, label }: Doc
         target="_blank"
         rel="noopener noreferrer"
         href={href}
-        aria-label={topic ? `${topic} documentation (opens in new tab)` : undefined}
+        aria-label={
+          topic ? $t('{{topic}} documentation (opens in new tab)', { topic: $t(topic) }) : undefined
+        }
       >
         {label ?? (abbrev ? $t('Docs') : $t('Documentation'))}
       </a>

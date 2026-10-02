@@ -13204,6 +13204,7 @@
   "{{projectCount}} of {{orgCount}} organization members can access this project.": "{{orgCount}} 名组织成员中有 {{projectCount}} 名可访问此项目。",
   "{{selected}} of {{total}} schemas exposed": "已公开 {{selected}}/{{total}} 个模式",
   "{{storageClass}} · usage not reported": "{{storageClass}} · 未上报用量",
+  "{{topic}} documentation (opens in new tab)": "{{topic}}文档（在新标签页打开）",
   "{{type}} step {{title}}": "{{type}} 步骤 {{title}}",
   "{{value0}} - retrying in {{value1}} seconds ({{value2}}/3)": "{{value0}}，将在 {{value1}} 秒后重试（{{value2}}/3）",
   "{{value0}} could not be found": "找不到 {{value0}}",
