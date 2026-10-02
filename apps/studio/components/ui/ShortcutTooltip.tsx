@@ -77,7 +77,7 @@ export const ShortcutPills = ({ sequence }: { sequence: HotkeySequence }) => {
     <span className="flex items-center gap-1">
       {sequence.map((step, i) => (
         <Fragment key={i}>
-          {i > 0 && <span className="text-foreground-lighter text-[11px]">then</span>}
+          {i > 0 && <span className="text-foreground-lighter text-[11px]">{$t('then')}</span>}
           <KeyboardShortcut keys={hotkeyToKeys(step)} />
         </Fragment>
       ))}
