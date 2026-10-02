@@ -118,7 +118,7 @@ export const RealtimeToggleDialog = ({
             {$t('Cancel')}
           </Button>
           <Button variant="primary" loading={isTogglingRealtime} onClick={toggleRealtime}>
-            {isRealtimeEnabled ? $t('Disable') : $t('Enable')} realtime
+            {isRealtimeEnabled ? $t('Disable realtime') : $t('Enable realtime')}
           </Button>
         </DialogFooter>
       </DialogContent>

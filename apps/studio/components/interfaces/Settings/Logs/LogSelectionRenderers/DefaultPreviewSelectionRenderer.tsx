@@ -197,7 +197,7 @@ const PropertyRow = ({
                 setIsExpanded(!isExpanded)
               }}
             >
-              {isExpanded ? $t('Collapse') : $t('Expand')} value
+              {isExpanded ? $t('Collapse value') : $t('Expand value')}
             </DropdownMenuItem>
           )}
           {(isMethod || isUserAgent || isStatus || isPath) && (

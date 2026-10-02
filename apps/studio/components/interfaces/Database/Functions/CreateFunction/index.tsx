@@ -472,7 +472,7 @@ export const CreateFunction = ({
               disabled={isCreating || isUpdating}
               loading={isCreating || isUpdating}
             >
-              {isEditing ? $t('Save') : $t('Create')} function
+              {isEditing ? $t('Save function') : $t('Create function')}
             </Button>
           </SheetFooter>
         </div>

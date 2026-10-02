@@ -151,7 +151,7 @@ export const UtilityActions = ({
                       : 'fill-none stroke-foreground-light'
                   }
                 />
-                {isFavorite ? $t('Remove from') : $t('Add to')} favorites
+                {isFavorite ? $t('Remove from favorites') : $t('Add to favorites')}
               </DropdownMenuItem>
             </>
           )}
@@ -223,7 +223,7 @@ export const UtilityActions = ({
               )}
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              {isFavorite ? $t('Remove from') : $t('Add to')} favorites
+              {isFavorite ? $t('Remove from favorites') : $t('Add to favorites')}
             </TooltipContent>
           </Tooltip>
         )}
