@@ -17,9 +17,8 @@ import {
 } from './QueryPerformance.types'
 import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
-import useDbQuery from '@/hooks/analytics/useDbQuery'
+import useDbQuery, { canRunDbQuery } from '@/hooks/analytics/useDbQuery'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { IS_PLATFORM } from '@/lib/constants'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 
 const VALID_SORT_COLUMNS: ReadonlySet<string> = new Set<QueryPerformanceSort['column']>([
@@ -193,9 +192,9 @@ export const useQueryPerformanceInfiniteQuery = (
       },
       // Don't run until we have a connection string for the selected database.
       // For replicas this prevents a silent fallback to the primary before replicas load.
-      // In self-hosted mode (IS_PLATFORM=false) there is no real connection string, so we
-      // skip the check — executeSql works fine without one on self-hosted deployments.
-      enabled: Boolean(project?.ref) && (!IS_PLATFORM || Boolean(effectiveConnectionString)),
+      // Self-hosted and self-platform have no connection string — see canRunDbQuery.
+      enabled:
+        Boolean(project?.ref) && canRunDbQuery({ connectionString: effectiveConnectionString }),
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
     })

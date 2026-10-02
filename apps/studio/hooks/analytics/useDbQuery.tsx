@@ -11,6 +11,7 @@ import { useReadReplicasQuery } from '@/data/read-replicas/replicas-query'
 import { executeSql } from '@/data/sql/execute-sql-mutation'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { useDatabaseSelectorStateSnapshot } from '@/state/database-selector'
 
 export interface DbQueryHook<T = any> {
@@ -25,6 +26,22 @@ export interface DbQueryHook<T = any> {
   changeQuery?: never
   resolvedSql: string
 }
+
+/**
+ * Whether a db query may run yet. On hosted platform we wait for the selected database's
+ * connection string so a replica never silently falls back to the primary. Self-hosted and
+ * self-platform deployments never return a connection string (executeSql resolves the
+ * database from the project ref), so waiting for one would leave the query disabled forever.
+ */
+export const canRunDbQuery = ({
+  isPlatform = IS_PLATFORM,
+  isSelfPlatform = IS_SELF_PLATFORM,
+  connectionString,
+}: {
+  isPlatform?: boolean
+  isSelfPlatform?: boolean
+  connectionString?: string | null
+}) => !isPlatform || isSelfPlatform || Boolean(connectionString)
 
 // [Joshen] Atm this is being used only in query performance
 const useDbQuery = ({
@@ -83,9 +100,8 @@ const useDbQuery = ({
     },
     // Don't run until we have a connection string for the selected database.
     // For replicas this prevents a silent fallback to the primary before replicas load.
-    // In self-hosted mode (IS_PLATFORM=false) there is no real connection string, so we
-    // skip the check — executeSql works fine without one on self-hosted deployments.
-    enabled: Boolean(resolvedSql) && (!IS_PLATFORM || Boolean(effectiveConnectionString)),
+    // Self-hosted and self-platform have no connection string — see canRunDbQuery.
+    enabled: Boolean(resolvedSql) && canRunDbQuery({ connectionString: effectiveConnectionString }),
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   })
