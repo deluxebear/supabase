@@ -48,6 +48,7 @@ import { useProjectApiUrl } from '@/data/config/project-endpoint-query'
 import { useOAuthCustomProviderUpdateMutation } from '@/data/oauth-custom-providers/oauth-custom-provider-update-mutation'
 import { useOAuthCustomProvidersQuery } from '@/data/oauth-custom-providers/oauth-custom-providers-query'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
+import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 import { t as $t } from '@/lib/i18n'
 import { onSearchInputEscape } from '@/lib/keyboard'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
@@ -100,7 +101,11 @@ export const CustomAuthProvidersList = () => {
   const { hostEndpoint: clientEndpoint } = useProjectApiUrl({ projectRef })
   const nextPlan = getNextPlanForCustomProviders(organization?.plan?.id)
   const isCustomProvidersEnabled = !!authConfig?.CUSTOM_OAUTH_ENABLED
-  const providerLimit = authConfig?.CUSTOM_OAUTH_MAX_PROVIDERS || 0
+  // [self-platform] Auth treats a max of 0 as no limit, and Fleet never sets one.
+  const providerLimit =
+    IS_SELF_PLATFORM && !authConfig?.CUSTOM_OAUTH_MAX_PROVIDERS
+      ? Infinity
+      : authConfig?.CUSTOM_OAUTH_MAX_PROVIDERS || 0
 
   const queryClient = useQueryClient()
   const { mutate: updateAuthConfig, isPending: isEnabling } = useAuthConfigUpdateMutation({
