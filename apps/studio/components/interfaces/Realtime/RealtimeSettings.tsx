@@ -474,7 +474,7 @@ export const RealtimeSettings = () => {
                                   value={field.value || ''}
                                 />
                                 <InputGroupAddon align="inline-end">
-                                  <InputGroupText>connections</InputGroupText>
+                                  <InputGroupText>{$t('connections')}</InputGroupText>
                                 </InputGroupAddon>
                               </InputGroup>
                             </FormControl>
@@ -518,7 +518,7 @@ export const RealtimeSettings = () => {
                                 value={field.value || ''}
                               />
                               <InputGroupAddon align="inline-end">
-                                <InputGroupText>connections</InputGroupText>
+                                <InputGroupText>{$t('connections')}</InputGroupText>
                               </InputGroupAddon>
                             </InputGroup>
                           </FormControl>
@@ -549,7 +549,7 @@ export const RealtimeSettings = () => {
                                 value={field.value || ''}
                               />
                               <InputGroupAddon align="inline-end">
-                                <InputGroupText>clients</InputGroupText>
+                                <InputGroupText>{$t('clients')}</InputGroupText>
                               </InputGroupAddon>
                             </InputGroup>
                           </FormControl>
@@ -580,7 +580,7 @@ export const RealtimeSettings = () => {
                                 value={field.value || ''}
                               />
                               <InputGroupAddon align="inline-end">
-                                <InputGroupText>events/s</InputGroupText>
+                                <InputGroupText>{$t('events/s')}</InputGroupText>
                               </InputGroupAddon>
                             </InputGroup>
                           </FormControl>
@@ -642,7 +642,7 @@ export const RealtimeSettings = () => {
                                 value={field.value || ''}
                               />
                               <InputGroupAddon align="inline-end">
-                                <InputGroupText>events/s</InputGroupText>
+                                <InputGroupText>{$t('events/s')}</InputGroupText>
                               </InputGroupAddon>
                             </InputGroup>
                           </FormControl>

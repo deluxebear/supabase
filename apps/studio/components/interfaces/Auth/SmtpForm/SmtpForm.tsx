@@ -443,7 +443,7 @@ export const SmtpForm = () => {
                                     disabled={!canUpdateConfig}
                                   />
                                   <InputGroupAddon align="inline-end">
-                                    <InputGroupText>seconds</InputGroupText>
+                                    <InputGroupText>{$t('seconds')}</InputGroupText>
                                   </InputGroupAddon>
                                 </InputGroup>
                               </FormControl>

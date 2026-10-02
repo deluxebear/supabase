@@ -417,7 +417,7 @@ export const MfaAuthSettingsForm = () => {
                               data-bwignore // Bitwarden
                             />
                             <InputGroupAddon align="inline-end">
-                              <InputGroupText>factors</InputGroupText>
+                              <InputGroupText>{$t('factors')}</InputGroupText>
                             </InputGroupAddon>
                           </InputGroup>
                         </FormControl>
@@ -528,7 +528,7 @@ export const MfaAuthSettingsForm = () => {
                               data-bwignore // Bitwarden
                             />
                             <InputGroupAddon align="inline-end">
-                              <InputGroupText>digits</InputGroupText>
+                              <InputGroupText>{$t('digits')}</InputGroupText>
                             </InputGroupAddon>
                           </InputGroup>
                         </FormControl>

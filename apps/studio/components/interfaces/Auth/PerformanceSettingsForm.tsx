@@ -254,7 +254,7 @@ export const PerformanceSettingsForm = () => {
                                 disabled={!canUpdateConfig || promptUpgrade}
                               />
                               <InputGroupAddon align="inline-end">
-                                <InputGroupText>seconds</InputGroupText>
+                                <InputGroupText>{$t('seconds')}</InputGroupText>
                               </InputGroupAddon>
                             </InputGroup>
                           </FormControl>

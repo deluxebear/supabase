@@ -350,7 +350,7 @@ export const ConnectionPooling = () => {
                               />
                               {!isHighAvailability && (
                                 <InputGroupAddon align="inline-end">
-                                  <InputGroupText>connections</InputGroupText>
+                                  <InputGroupText>{$t('connections')}</InputGroupText>
                                 </InputGroupAddon>
                               )}
                             </InputGroup>
@@ -436,7 +436,7 @@ export const ConnectionPooling = () => {
                                 }
                               />
                               <InputGroupAddon align="inline-end">
-                                <InputGroupText>clients</InputGroupText>
+                                <InputGroupText>{$t('clients')}</InputGroupText>
                               </InputGroupAddon>
                             </InputGroup>
                           </FormControl>

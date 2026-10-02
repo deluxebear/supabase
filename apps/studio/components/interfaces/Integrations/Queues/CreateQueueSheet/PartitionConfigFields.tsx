@@ -33,7 +33,7 @@ export function PartitionConfigFields({ form }: { form: UseFormReturn<CreateQueu
               <InputGroup>
                 <InputGroupInput {...rest} type="number" placeholder="10000" />
                 <InputGroupAddon align="inline-end">
-                  <InputGroupText>messages</InputGroupText>
+                  <InputGroupText>{$t('messages')}</InputGroupText>
                 </InputGroupAddon>
               </InputGroup>
             </FormItemLayout>
@@ -53,7 +53,7 @@ export function PartitionConfigFields({ form }: { form: UseFormReturn<CreateQueu
               <InputGroup>
                 <InputGroupInput {...rest} type="number" placeholder="10000" />
                 <InputGroupAddon align="inline-end">
-                  <InputGroupText>messages</InputGroupText>
+                  <InputGroupText>{$t('messages')}</InputGroupText>
                 </InputGroupAddon>
               </InputGroup>
             </FormItemLayout>

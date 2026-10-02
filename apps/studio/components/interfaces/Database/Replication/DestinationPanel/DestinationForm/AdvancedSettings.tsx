@@ -82,7 +82,7 @@ export const AdvancedSettings = ({
                         placeholder={String(DEFAULT_MAX_FILL_MS)}
                       />
                       <InputGroupAddon align="inline-end">
-                        <InputGroupText>milliseconds</InputGroupText>
+                        <InputGroupText>{$t('milliseconds')}</InputGroupText>
                       </InputGroupAddon>
                     </InputGroup>
                   </FormControl>
@@ -111,7 +111,7 @@ export const AdvancedSettings = ({
                         placeholder={`Default: ${DEFAULT_MAX_TABLE_SYNC_WORKERS}`}
                       />
                       <InputGroupAddon align="inline-end">
-                        <InputGroupText>workers</InputGroupText>
+                        <InputGroupText>{$t('workers')}</InputGroupText>
                       </InputGroupAddon>
                     </InputGroup>
                   </FormControl>
@@ -142,7 +142,7 @@ export const AdvancedSettings = ({
                         placeholder={`Default: ${DEFAULT_MAX_COPY_CONNECTIONS_PER_TABLE}`}
                       />
                       <InputGroupAddon align="inline-end">
-                        <InputGroupText>connections</InputGroupText>
+                        <InputGroupText>{$t('connections')}</InputGroupText>
                       </InputGroupAddon>
                     </InputGroup>
                   </FormControl>
@@ -213,7 +213,7 @@ export const AdvancedSettings = ({
                             placeholder={`Default: ${DEFAULT_CONNECTION_POOL_SIZE}`}
                           />
                           <InputGroupAddon align="inline-end">
-                            <InputGroupText>connections</InputGroupText>
+                            <InputGroupText>{$t('connections')}</InputGroupText>
                           </InputGroupAddon>
                         </InputGroup>
                       </FormControl>
@@ -243,7 +243,7 @@ export const AdvancedSettings = ({
                             onChange={handleNumberChange(field)}
                           />
                           <InputGroupAddon align="inline-end">
-                            <InputGroupText>minutes</InputGroupText>
+                            <InputGroupText>{$t('minutes')}</InputGroupText>
                           </InputGroupAddon>
                         </InputGroup>
                       </FormControl>

@@ -118,7 +118,7 @@ export const SendMessageModal = ({ visible, onClose }: SendMessageModalProps) =>
                       <InputGroup>
                         <InputGroupInput {...rest} type="number" placeholder="1" />
                         <InputGroupAddon align="inline-end">
-                          <InputGroupText>sec</InputGroupText>
+                          <InputGroupText>{$t('sec')}</InputGroupText>
                         </InputGroupAddon>
                       </InputGroup>
                     </FormControl>

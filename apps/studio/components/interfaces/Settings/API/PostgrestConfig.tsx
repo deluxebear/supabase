@@ -546,7 +546,7 @@ export const PostgrestConfig = () => {
                                   type="number"
                                 />
                                 <InputGroupAddon align="inline-end">
-                                  <InputGroupText>rows</InputGroupText>
+                                  <InputGroupText>{$t('rows')}</InputGroupText>
                                 </InputGroupAddon>
                               </InputGroup>
                             </FormControl>
@@ -584,7 +584,7 @@ export const PostgrestConfig = () => {
                                   value={field.value === null ? '' : field.value}
                                 />
                                 <InputGroupAddon align="inline-end">
-                                  <InputGroupText>connections</InputGroupText>
+                                  <InputGroupText>{$t('connections')}</InputGroupText>
                                 </InputGroupAddon>
                               </InputGroup>
                             </FormControl>
