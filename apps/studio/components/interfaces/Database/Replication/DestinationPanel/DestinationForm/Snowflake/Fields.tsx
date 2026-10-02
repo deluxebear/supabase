@@ -230,7 +230,7 @@ export const SnowflakeFields = ({
             <FormItemLayout
               layout="horizontal"
               label={$t('Private key passphrase')}
-              labelOptional="Optional"
+              labelOptional={$t('Optional')}
               description={
                 editMode
                   ? $t('Stored passphrase setting is hidden. Enter a new passphrase to replace it.')

@@ -201,7 +201,7 @@ export const CreateAnalyticsBucketForm = ({
                   name="name"
                   className="p-5"
                   label={$t('Bucket name')}
-                  labelOptional="Cannot be changed after creation"
+                  labelOptional={$t('Cannot be changed after creation')}
                   description={$t(
                     'Must be between 3 – 63 characters. Only lowercase letters, numbers, and hyphens are allowed.'
                   )}

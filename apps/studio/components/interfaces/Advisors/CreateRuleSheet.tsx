@@ -227,7 +227,7 @@ export const CreateRuleSheet = ({ lint, open, onOpenChange }: CreateRuleSheetPro
                     layout="vertical"
                     className="px-5"
                     label={$t('Description')}
-                    labelOptional="Optional"
+                    labelOptional={$t('Optional')}
                   >
                     <FormControl>
                       <TextArea

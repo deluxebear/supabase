@@ -272,7 +272,7 @@ export const AdvancedSettings = ({
                 render={({ field }) => (
                   <FormItemLayout
                     label={$t('Role')}
-                    labelOptional="Optional"
+                    labelOptional={$t('Optional')}
                     layout="horizontal"
                     description={$t(
                       'Role for SQL requests. Leave blank to use the service user’s default role.'

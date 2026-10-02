@@ -139,7 +139,7 @@ export const CreateSecretAPIKeyDialog = () => {
                 name="description"
                 control={form.control}
                 render={({ field }) => (
-                  <FormItemLayout label={$t('Description')} labelOptional="Optional">
+                  <FormItemLayout label={$t('Description')} labelOptional={$t('Optional')}>
                     <FormControl>
                       <Input
                         {...field}

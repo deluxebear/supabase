@@ -141,7 +141,7 @@ export const HTTPRequestConfig = ({ form }: HTTPRequestConfigProps) => {
           render={({ field }) => (
             <FormItemLayout
               label={$t('Timeout')}
-              labelOptional="Between 1000ms to 10,000ms"
+              labelOptional={$t('Between 1000ms to 10,000ms')}
               layout="vertical"
               className="gap-1"
             >

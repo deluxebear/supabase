@@ -115,7 +115,7 @@ export const AddNewSecretModal = () => {
                   <FormItemLayout
                     layout="vertical"
                     label={$t('Description')}
-                    labelOptional="Optional"
+                    labelOptional={$t('Optional')}
                   >
                     <FormControl className="col-span-6">
                       <Input {...field} />

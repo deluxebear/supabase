@@ -218,7 +218,7 @@ export const EditBucketModal = ({ visible, bucket, onClose }: EditBucketModalPro
                   <FormItemLayout
                     hideMessage
                     label={$t('Bucket name')}
-                    labelOptional="Cannot be changed after creation"
+                    labelOptional={$t('Cannot be changed after creation')}
                   >
                     <FormControl>
                       <Input {...field} disabled />
@@ -402,7 +402,7 @@ export const EditBucketModal = ({ visible, bucket, onClose }: EditBucketModalPro
                   render={({ field }) => (
                     <FormItemLayout
                       label={$t('Allowed MIME types')}
-                      labelOptional="Comma separated values"
+                      labelOptional={$t('Comma separated values')}
                       description={$t('Wildcards are allowed, e.g. image/*.')}
                     >
                       <FormControl>

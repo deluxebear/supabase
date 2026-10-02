@@ -81,7 +81,7 @@ export const ClickHouseFields = ({
             <FormItemLayout
               layout="horizontal"
               label={$t('Password')}
-              labelOptional="Optional"
+              labelOptional={$t('Optional')}
               description={
                 editMode
                   ? $t('Enter a new password to replace the stored one.')

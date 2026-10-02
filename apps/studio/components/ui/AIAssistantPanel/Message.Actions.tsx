@@ -222,7 +222,7 @@ function MessageActionsThumbsDown({
                 control={form.control}
                 name="reason"
                 render={({ field }) => (
-                  <FormItemLayout label={$t('What went wrong?')} labelOptional="optional">
+                  <FormItemLayout label={$t('What went wrong?')} labelOptional={$t('optional')}>
                     <FormControl>
                       <TextArea
                         placeholder={$t('Describe why the response was not helpful...')}

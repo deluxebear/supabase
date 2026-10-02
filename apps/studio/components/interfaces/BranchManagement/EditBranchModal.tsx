@@ -283,7 +283,7 @@ export const EditBranchModal = ({ branch, visible, onClose }: EditBranchModalPro
                             </div>
                           </div>
                         }
-                        labelOptional="Optional"
+                        labelOptional={$t('Optional')}
                         description={$t('Automatically deploy changes on every commit')}
                       >
                         <div className="relative">

@@ -191,7 +191,7 @@ export const CreateVectorBucketDialog = ({
                     name="name"
                     label={$t('Bucket name')}
                     className="px-5 py-5"
-                    labelOptional="Cannot be changed after creation"
+                    labelOptional={$t('Cannot be changed after creation')}
                     description={$t(
                       'Must be between 3–63 characters. Only lowercase letters, numbers, and hyphens are allowed'
                     )}

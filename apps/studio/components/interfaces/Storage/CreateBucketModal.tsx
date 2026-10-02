@@ -200,7 +200,7 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
                 render={({ field }) => (
                   <FormItemLayout
                     label={$t('Bucket name')}
-                    labelOptional="Cannot be changed after creation"
+                    labelOptional={$t('Cannot be changed after creation')}
                   >
                     <FormControl>
                       <Input
@@ -358,7 +358,7 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
                   render={({ field }) => (
                     <FormItemLayout
                       label={$t('Allowed MIME types')}
-                      labelOptional="Comma separated values"
+                      labelOptional={$t('Comma separated values')}
                       description={$t('Wildcards are allowed, e.g. image/*.')}
                     >
                       <FormControl>

@@ -211,7 +211,7 @@ export const AWSPrivateLinkForm = ({
                 render={({ field }) => (
                   <FormItemLayout
                     label={$t('Name')}
-                    labelOptional="Optional"
+                    labelOptional={$t('Optional')}
                     description={$t(
                       'Shown on the connections list. Defaults to the AWS account ID if left blank.'
                     )}

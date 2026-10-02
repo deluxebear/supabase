@@ -63,7 +63,7 @@ export const AutoScaleFields = ({ form, disableInput = false }: AutoScaleFieldPr
               layout="flex-row-reverse"
               label={$t('Autoscale growth percent')}
               id={field.name}
-              labelOptional="Percentage of current disk size to grow"
+              labelOptional={$t('Percentage of current disk size to grow')}
               description={
                 !errors.growthPercent
                   ? `This amounts to ${growthSize} GB based on the current disk size of ${totalSize} GB`
@@ -110,7 +110,7 @@ export const AutoScaleFields = ({ form, disableInput = false }: AutoScaleFieldPr
               layout="flex-row-reverse"
               label={$t('Minimum increment')}
               id={field.name}
-              labelOptional="Minimum value to autoscale disk size by"
+              labelOptional={$t('Minimum value to autoscale disk size by')}
               description={
                 !!minIncrementGb && minIncrementGb > growthSize && !errors.minIncrementGb
                   ? `This value takes precedence as the minimum increment is larger than the growth percent`
@@ -157,7 +157,7 @@ export const AutoScaleFields = ({ form, disableInput = false }: AutoScaleFieldPr
               layout="flex-row-reverse"
               label={$t('Maximum disk size')}
               id={field.name}
-              labelOptional="Maximum size that the disk can grow to"
+              labelOptional={$t('Maximum size that the disk can grow to')}
               className="[&>div>span]:text-foreground-lighter"
             >
               <FormControl className="max-w-32">

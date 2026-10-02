@@ -283,7 +283,7 @@ export const ColumnEditor = ({
                 isReactForm={false}
                 id="description"
                 label={$t('Description')}
-                labelOptional="Optional"
+                labelOptional={$t('Optional')}
               >
                 <Input
                   id="description"
@@ -522,7 +522,7 @@ export const ColumnEditor = ({
               <FormItemLayout
                 isReactForm={false}
                 label={$t('CHECK constraint')}
-                labelOptional="Optional"
+                labelOptional={$t('Optional')}
               >
                 <SafeSqlInput
                   type="text"

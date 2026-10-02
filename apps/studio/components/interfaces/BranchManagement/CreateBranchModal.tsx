@@ -378,7 +378,7 @@ export const CreateBranchModal = () => {
                             </div>
                           </div>
                         }
-                        labelOptional="Optional"
+                        labelOptional={$t('Optional')}
                         description={
                           githubAuthorization
                             ? $t('Automatically deploy changes on every commit')

@@ -157,7 +157,7 @@ export const EditSecretModal = () => {
                     name="description"
                     control={form.control}
                     render={({ field }) => (
-                      <FormItemLayout label={$t('Description')} labelOptional="Optional">
+                      <FormItemLayout label={$t('Description')} labelOptional={$t('Optional')}>
                         <FormControl>
                           <Input {...field} data-lpignore="true" />
                         </FormControl>
