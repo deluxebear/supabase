@@ -72,7 +72,7 @@ import { useExecuteSqlMutation } from '@/data/sql/execute-sql-mutation'
 import { applyAutoLimit } from '@/data/sql/utils'
 import { useLatest } from '@/hooks/misc/useLatest'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { detectOS } from '@/lib/helpers'
+import { detectOS, uuidv4 } from '@/lib/helpers'
 import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
 import { wrapWithRoleImpersonation } from '@/lib/role-impersonation'
 import { useTrack } from '@/lib/telemetry/track'
@@ -269,7 +269,7 @@ export const QueryEditor = forwardRef<QueryEditorHandle, QueryEditorProps>(funct
 
     const querySnapshot = { sql: rawSql, source: query._tag }
     const runProperties = location
-      ? { ...location, runId: crypto.randomUUID(), source: query._tag }
+      ? { ...location, runId: uuidv4(), source: query._tag }
       : undefined
     const groups = { project: project.ref }
 

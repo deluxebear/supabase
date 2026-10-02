@@ -3,6 +3,7 @@ import dayjs from 'dayjs'
 import * as z from 'zod'
 
 import { untrustedLogSql, type SafeLogSqlFragment } from '@/data/logs/safe-analytics-sql'
+import { uuidv4 } from '@/lib/helpers'
 import { isoDateTimeString } from '@/lib/iso-datetime'
 
 const isoDateTimeSchema = z.string().transform((raw, ctx) => {
@@ -183,7 +184,7 @@ export type AgentCell = z.infer<typeof agentCellSchema>
 const DRAFT_ID_PREFIX = 'draft-'
 
 export function generateDraftId(): string {
-  return `${DRAFT_ID_PREFIX}${crypto.randomUUID()}`
+  return `${DRAFT_ID_PREFIX}${uuidv4()}`
 }
 
 export function isDraftId(id: string): boolean {

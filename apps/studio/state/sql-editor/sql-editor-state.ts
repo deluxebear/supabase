@@ -15,6 +15,7 @@ import type { StateSnippet, StateSnippetFolder } from './types'
 import type { SnippetWithContent } from '@/data/content/sql-folders-query'
 import { Snippet, SnippetFolder } from '@/data/content/sql-folders-query'
 import { untrustedLogSql } from '@/data/logs/safe-analytics-sql'
+import { uuidv4 } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
 
 export const sqlEditorState = proxy({
@@ -190,7 +191,7 @@ export const sqlEditorState = proxy({
    * (the status, not the id, is what tags it as new).
    */
   addNewFolder: ({ projectRef }: { projectRef: string }) => {
-    const id = crypto.randomUUID()
+    const id = uuidv4()
     sqlEditorState.folders[id] = {
       projectRef,
       status: 'new_editing',

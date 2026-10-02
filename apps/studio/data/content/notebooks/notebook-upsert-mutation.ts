@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { upsertContent, type UpsertContentPayload } from '../content-upsert-mutation'
 import { contentKeys } from '../keys'
 import { writableNotebookSchema, type WritableNotebook } from './notebook-schema'
+import { uuidv4 } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
@@ -40,7 +41,7 @@ export async function createNotebook(
   signal?: AbortSignal,
   headersInit?: HeadersInit
 ) {
-  const id = crypto.randomUUID()
+  const id = uuidv4()
   const payload = buildNotebookUpsertPayload({ id, name, description, content })
 
   await upsertContent({ projectRef, payload }, signal, headersInit)

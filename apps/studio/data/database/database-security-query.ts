@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { constructHeaders } from '@/data/fetchers'
+import { uuidv4 } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
 import { ResponseError } from '@/types'
 
@@ -74,7 +75,7 @@ export function useUpdateDatabaseSecurityMutation() {
           method: 'PATCH',
           headers: await constructHeaders({
             'Content-Type': 'application/json',
-            'Idempotency-Key': crypto.randomUUID(),
+            'Idempotency-Key': uuidv4(),
           }),
           body: JSON.stringify({ ...input.policy, expectedGeneration: input.expectedGeneration }),
         }
@@ -105,7 +106,7 @@ export function useRotateDatabasePasswordMutation() {
           method: 'POST',
           headers: await constructHeaders({
             'Content-Type': 'application/json',
-            'Idempotency-Key': crypto.randomUUID(),
+            'Idempotency-Key': uuidv4(),
           }),
           body: JSON.stringify({
             expectedGeneration: input.expectedGeneration,

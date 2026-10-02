@@ -35,6 +35,7 @@ import {
   type LifecycleAction,
   type LifecycleImpactPlan,
 } from '@/lib/api/self-platform/lifecycle-contract'
+import { uuidv4 } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
 
 type Action = LifecycleAction
@@ -103,7 +104,7 @@ export const SelfPlatformLifecyclePanel = () => {
       input: {
         plan: planned.plan,
         expectedGeneration: planned.expectedGeneration,
-        idempotencyKey: crypto.randomUUID(),
+        idempotencyKey: uuidv4(),
       },
     })
   }

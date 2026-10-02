@@ -12,6 +12,7 @@ import { z } from 'zod'
 import { authKeys } from './keys'
 import { constructHeaders } from '@/data/fetchers'
 import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
+import { uuidv4 } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
 import { ResponseError } from '@/types'
 
@@ -95,7 +96,7 @@ async function applyAuthConfig({
     method: 'POST',
     headers: await constructHeaders({
       'Content-Type': 'application/json',
-      'Idempotency-Key': crypto.randomUUID(),
+      'Idempotency-Key': uuidv4(),
     }),
     body: JSON.stringify({ expectedGeneration, confirmOwnership }),
   })

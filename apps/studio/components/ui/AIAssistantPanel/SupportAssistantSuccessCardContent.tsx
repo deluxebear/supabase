@@ -26,6 +26,7 @@ import type { SubmittedSupportRequest } from '@/components/interfaces/Support/Su
 import { NO_PROJECT_MARKER } from '@/components/interfaces/Support/SupportForm.utils'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { uuidv4 } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
 import { useTrack } from '@/lib/telemetry/track'
 import {
@@ -76,7 +77,7 @@ export function SupportAssistantSuccessCardContent({
   // An opaque token for the handoff URL — the actual ticket content never touches the URL
   // (browser history, referrer headers, a copy-pasted link); it's stashed in sessionStorage
   // instead, scoped to this tab and consumed (removed) the moment the destination page reads it.
-  const [handoffToken] = useState(() => crypto.randomUUID())
+  const [handoffToken] = useState(() => uuidv4())
 
   useEffect(() => {
     if (!isProjectHandoffRequired) return
