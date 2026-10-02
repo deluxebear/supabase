@@ -96,7 +96,7 @@ const ORDINAL_KEYS = [
 ]
 
 // approx_quantiles pinned BROKEN (500) — these two keep the BQ text in BOTH
-// branches (existing chart error state surfaces; README known-limitation).
+// branches; self-hosted charts use AUTH_PERCENTILE_SQL_SELF_HOSTED instead.
 const PERCENTILE_KEYS = ['SignInProcessingTimePercentiles', 'SignUpProcessingTimePercentiles']
 
 describe('AUTH_REPORT_SQL dialect — pg', () => {
@@ -169,5 +169,44 @@ describe('AUTH_REPORT_SQL dialect — pg', () => {
       )
       expect(withProvider).toMatch(/JSON_VALUE\(event_message, '\$\.provider'\) IN \('google'\)/)
     }
+  })
+})
+
+// [self-platform] The logs.all translator has no percentile function, so the
+// self-hosted percentile charts run as native Postgres via /api/query.
+describe('AUTH_PERCENTILE_SQL_SELF_HOSTED', () => {
+  const range = { startDate: '2026-10-02T13:00:00.000Z', endDate: '2026-10-02T14:00:00.000Z' }
+
+  it('computes percentiles natively over the GoTrue source with explicit time bounds', async () => {
+    const mod = await loadAuthConfig(...PG_SELF_PLATFORM)
+    const sql = mod.AUTH_PERCENTILE_SQL_SELF_HOSTED('SignInProcessingTimePercentiles', {
+      interval: '1h',
+      ...range,
+    })
+    expect(sql.startsWith('-- self-hosted unified logs')).toBe(true)
+    expect(sql).toContain('from "gotrue.logs.prod"')
+    expect(sql).toContain(
+      "timestamp >= '2026-10-02T13:00:00.000Z' AND timestamp <= '2026-10-02T14:00:00.000Z'"
+    )
+    expect(sql).toContain("e #>> '{auth_event,action}' = 'login'")
+    for (const p of ['0.5', '0.95', '0.99']) {
+      expect(sql).toContain(`percentile_cont(${p}) within group`)
+    }
+    expect(sql).toMatch(/group by 1\s+order by 1 desc$/)
+    expect(sql).not.toMatch(/approx_quantiles|provider/)
+  })
+
+  it('filters and groups by provider for sign-ups', async () => {
+    const mod = await loadAuthConfig(...PG_SELF_PLATFORM)
+    const sql = mod.AUTH_PERCENTILE_SQL_SELF_HOSTED('SignUpProcessingTimePercentiles', {
+      interval: '1m',
+      ...range,
+      filters: { provider: ['google', "o'auth"] },
+    })
+    expect(sql).toContain("e #>> '{auth_event,action}' = 'user_signedup'")
+    expect(sql).toContain("coalesce(e->>'provider', 'unknown') as provider")
+    expect(sql).toContain("AND e->>'provider' IN ('google', 'o''auth')")
+    expect(sql).toMatch(/date_trunc\('minute', timestamp\)/)
+    expect(sql).toMatch(/group by 1, 2\s+order by 1 desc, 2$/)
   })
 })

@@ -2,9 +2,42 @@ import { type ComparisonOperator } from '@/components/interfaces/Reports/v2/Repo
 import { AnalyticsInterval } from '@/data/analytics/constants'
 import { executeAnalyticsSql } from '@/data/logs/execute-analytics-sql'
 import { logsAllEndpointUrl } from '@/data/logs/logs-endpoint'
-import { safeSql, type SafeLogSqlFragment } from '@/data/logs/safe-analytics-sql'
+import {
+  postgresAnalyticsLiteral,
+  safeSql,
+  type SafeLogSqlFragment,
+} from '@/data/logs/safe-analytics-sql'
 
 export type Granularity = 'minute' | 'hour' | 'day'
+
+/**
+ * [self-platform] `date_trunc` units for report queries that run as native
+ * Postgres on a self-hosted Logflare (SQL prefixed `-- self-hosted unified logs`,
+ * routed to Logflare's `/api/query?pg_sql=` by `retrieveAnalyticsData`). That path
+ * reads the real ingest sources, supports `percentile_cont`, and returns timestamps
+ * as unix microseconds — unlike the `logs.all` BQ→PG translator.
+ */
+export const SELF_HOSTED_TRUNC_UNIT_SQL: Record<Granularity, SafeLogSqlFragment> = {
+  minute: safeSql`'minute'`,
+  hour: safeSql`'hour'`,
+  day: safeSql`'day'`,
+}
+
+const toValidDate = (value: string, fallback: Date) => {
+  const date = value ? new Date(value) : fallback
+  return Number.isNaN(date.getTime()) ? fallback : date
+}
+
+/**
+ * [self-platform] The native Postgres path ignores the endpoint's ISO time params,
+ * so every self-hosted report query must carry its own time bounds. Defaults to
+ * the last hour, matching the reports' default range.
+ */
+export function selfHostedTimeRangeSql(startDate: string, endDate: string): SafeLogSqlFragment {
+  const end = toValidDate(endDate, new Date())
+  const start = toValidDate(startDate, new Date(end.getTime() - 3_600_000))
+  return safeSql`timestamp >= ${postgresAnalyticsLiteral(start.toISOString())} AND timestamp <= ${postgresAnalyticsLiteral(end.toISOString())}`
+}
 
 /**
  * Pre-branded SQL fragments for the closed set of granularity tokens that

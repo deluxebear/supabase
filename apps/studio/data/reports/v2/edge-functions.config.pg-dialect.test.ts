@@ -39,41 +39,66 @@ describe('METRIC_SQL dialect — cloud byte-identity', () => {
   })
 })
 
-describe('METRIC_SQL dialect — pg', () => {
-  it('ExecutionStatusCodes/InvocationsByRegion: group by 1, 2 / order by 1 desc', async () => {
+// [self-platform] Self-hosted reports no longer use METRIC_SQL: the `logs.all`
+// translator reads the legacy deno-relay-logs source and rejects timestamp_trunc
+// on function_edge_logs, so they run SELF_HOSTED_METRIC_SQL as native Postgres.
+describe('METRIC_SQL on self-platform', () => {
+  it('keeps the cloud BQ text (self-hosted gating lives at the call site)', async () => {
     const mod = await loadEdgeFunctionsConfig(...PG_SELF_PLATFORM)
-    for (const key of ['ExecutionStatusCodes', 'InvocationsByRegion']) {
-      const sql = mod.METRIC_SQL[key]('1h', undefined)
-      expect(sql).not.toMatch(/group by\s*\n?\s*timestamp,/i)
-      expect(sql).not.toMatch(/order by\s*\n?\s*timestamp desc/i)
-      expect(sql).toMatch(/group by 1, 2\b/i)
-      expect(sql).toMatch(/order by 1 desc/i)
+    for (const [key, expected] of Object.entries(EDGE_FUNCTIONS_BQ_SNAPSHOT)) {
+      expect(mod.METRIC_SQL[key]('1h', undefined)).toBe(expected)
+    }
+  })
+})
+
+describe('SELF_HOSTED_METRIC_SQL', () => {
+  const range = { startDate: '2026-10-02T13:00:00.000Z', endDate: '2026-10-02T14:00:00.000Z' }
+  const noFilters = { functions: [], region: [], status_code: null, execution_time: null }
+
+  it('routes every metric to the native Postgres path with explicit time bounds', async () => {
+    const mod = await loadEdgeFunctionsConfig(...PG_SELF_PLATFORM)
+    for (const build of Object.values(mod.SELF_HOSTED_METRIC_SQL)) {
+      const sql = build({ interval: '1m', ...range, filters: noFilters })
+      expect(sql.startsWith('-- self-hosted unified logs')).toBe(true)
+      expect(sql).toMatch(/from function_edge_logs/)
+      expect(sql).toContain(
+        "timestamp >= '2026-10-02T13:00:00.000Z' AND timestamp <= '2026-10-02T14:00:00.000Z'"
+      )
+      expect(sql).toMatch(/date_trunc\('minute', timestamp\)/)
+      expect(sql).not.toMatch(/timestamp_trunc|unnest/i)
     }
   })
 
-  // [self-platform] M6.2 T3 live-verification finding (beyond the Step 1
-  // pins): bare `function_id` and `avg(m.execution_time_ms)` both 500 on
-  // `function_edge_logs` (self-hosted's vector.yml never populates either —
-  // same root cause T2 already traced). TotalInvocations/ExecutionTime drop
-  // function_id (their own consumers discard function_name either way) and
-  // ExecutionTime flatlines the uncomputable avg to 0 (networkTraffic
-  // precedent).
-  it('TotalInvocations: drops function_id, groups by 1 only', async () => {
+  it('applies every filter against the ingested metadata', async () => {
     const mod = await loadEdgeFunctionsConfig(...PG_SELF_PLATFORM)
-    const sql = mod.METRIC_SQL.TotalInvocations('1h', undefined)
-    expect(sql).not.toMatch(/function_id/i)
-    expect(sql).not.toMatch(/group by\s*\n?\s*timestamp,/i)
-    expect(sql).toMatch(/group by 1\b/i)
-    expect(sql).toMatch(/order by 1 desc/i)
+    const sql = mod.SELF_HOSTED_METRIC_SQL.TotalInvocations({
+      interval: '1h',
+      ...range,
+      filters: {
+        functions: ['project-d:hello', "o'brien"],
+        region: ['local'],
+        status_code: { operator: '>=', value: 400 },
+        execution_time: { operator: '>', value: 10 },
+      },
+    })
+    expect(sql).toContain("body->'metadata'->>'function_id' IN ('project-d:hello', 'o''brien')")
+    expect(sql).toContain("(body->'metadata'->'response'->>'status_code')::int >= 400")
+    expect(sql).toContain(
+      "body->'metadata'->'response'->'headers'->>'x_sb_edge_region' IN ('local')"
+    )
+    expect(sql).toContain("(body->'metadata'->>'execution_time_ms')::float > 10")
+    expect(sql).toMatch(/date_trunc\('hour', timestamp\)/)
   })
 
-  it('ExecutionTime: drops function_id, flatlines avg_execution_time to 0', async () => {
+  it('falls back to the last hour when the date range is missing', async () => {
     const mod = await loadEdgeFunctionsConfig(...PG_SELF_PLATFORM)
-    const sql = mod.METRIC_SQL.ExecutionTime('1h', undefined)
-    expect(sql).not.toMatch(/function_id/i)
-    expect(sql).not.toMatch(/avg\(/i)
-    expect(sql).toMatch(/0 as avg_execution_time/i)
-    expect(sql).toMatch(/group by 1\b/i)
-    expect(sql).toMatch(/order by 1 desc/i)
+    const sql = mod.SELF_HOSTED_METRIC_SQL.ExecutionTime({
+      interval: '1m',
+      startDate: '',
+      endDate: 'not a date',
+      filters: noFilters,
+    })
+    const [, start, end] = sql.match(/timestamp >= '([^']+)' AND timestamp <= '([^']+)'/) ?? []
+    expect(new Date(end).getTime() - new Date(start).getTime()).toBe(3_600_000)
   })
 })

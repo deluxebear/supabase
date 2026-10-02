@@ -10,10 +10,11 @@ import {
 } from '@/components/interfaces/Reports/Reports.utils'
 import { NumericFilter } from '@/components/interfaces/Reports/v2/ReportsNumericFilter'
 import type { AnalyticsInterval } from '@/data/analytics/constants'
-import { pickDialect } from '@/data/logs/logflare-dialect'
+import { pickDialect, USE_LOGFLARE_PG_SQL } from '@/data/logs/logflare-dialect'
 import {
   analyticsLiteral,
   joinSqlFragments,
+  postgresAnalyticsLiteral,
   safeSql,
   type SafeLogSqlFragment,
 } from '@/data/logs/safe-analytics-sql'
@@ -22,6 +23,8 @@ import {
   fetchLogs,
   SAFE_COMPARISON_OPERATOR_SQL,
   SAFE_GRANULARITY_SQL,
+  SELF_HOSTED_TRUNC_UNIT_SQL,
+  selfHostedTimeRangeSql,
   type Granularity,
 } from '@/data/reports/report.utils'
 
@@ -699,6 +702,63 @@ function authOtelQuerySetup(
   }
 }
 
+// [self-platform] Logflare's BQ→PG translator has no percentile function at all
+// (approx_quantiles / percentile_cont both fail), so on self-hosted the
+// percentile charts run as native Postgres (see SELF_HOSTED_TRUNC_UNIT_SQL).
+// GoTrue writes one JSON object per line; non-JSON lines are skipped before the
+// cast. The status-code filter does not apply: auth server logs carry no
+// gateway response status.
+const PERCENTILE_ACTIONS = {
+  SignInProcessingTimePercentiles: 'login',
+  SignUpProcessingTimePercentiles: 'user_signedup',
+} as const
+
+const durationPercentileMs = (fraction: number, alias: SafeLogSqlFragment) =>
+  safeSql`round((percentile_cont(${analyticsLiteral(fraction)}) within group (order by (e->>'duration')::float) / 1000000)::numeric, 2)::float as ${alias}`
+
+export const AUTH_PERCENTILE_SQL_SELF_HOSTED = (
+  metric: keyof typeof PERCENTILE_ACTIONS,
+  {
+    interval,
+    startDate,
+    endDate,
+    filters,
+  }: {
+    interval: AnalyticsInterval
+    startDate: string
+    endDate: string
+    filters?: AuthReportFilters
+  }
+): SafeLogSqlFragment => {
+  const groupByProvider = Boolean(filters?.provider && filters.provider.length > 0)
+  const providerSelect = groupByProvider
+    ? safeSql`coalesce(e->>'provider', 'unknown') as provider,`
+    : EMPTY
+  const providerPredicate = groupByProvider
+    ? safeSql`AND e->>'provider' IN (${joinSqlFragments(filters!.provider!.map(postgresAnalyticsLiteral), ', ')})`
+    : EMPTY
+  const tail = groupByProvider ? safeSql`, 2` : EMPTY
+  const unit = SELF_HOSTED_TRUNC_UNIT_SQL[analyticsIntervalToGranularity(interval)]
+
+  return safeSql`-- self-hosted unified logs
+-- auth-processing-time-percentiles
+select date_trunc(${unit}, timestamp) as timestamp,
+  ${providerSelect}
+  count(*) as count,
+  ${durationPercentileMs(0.5, safeSql`p50_processing_time_ms`)},
+  ${durationPercentileMs(0.95, safeSql`p95_processing_time_ms`)},
+  ${durationPercentileMs(0.99, safeSql`p99_processing_time_ms`)}
+from (
+  select timestamp, case when event_message like '{%' then event_message::jsonb end as e
+  from "gotrue.logs.prod"
+  where ${selfHostedTimeRangeSql(startDate, endDate)}
+) t
+where e #>> '{auth_event,action}' = ${postgresAnalyticsLiteral(PERCENTILE_ACTIONS[metric])}
+  ${providerPredicate}
+group by 1${tail}
+order by 1 desc${tail}`
+}
+
 export const AUTH_REPORT_SQL_OTEL: Record<
   MetricKey,
   (interval: AnalyticsInterval, filters?: AuthReportFilters) => SafeLogSqlFragment
@@ -1362,7 +1422,14 @@ export const createLatencyReportConfig = ({
           },
         ]
 
-        const sql = AUTH_REPORT_SQL.SignInProcessingTimePercentiles(interval, filters)
+        const sql = USE_LOGFLARE_PG_SQL
+          ? AUTH_PERCENTILE_SQL_SELF_HOSTED('SignInProcessingTimePercentiles', {
+              interval,
+              startDate,
+              endDate,
+              filters,
+            })
+          : AUTH_REPORT_SQL.SignInProcessingTimePercentiles(interval, filters)
         const rawData = await fetchLogs(projectRef, sql, startDate, endDate)
         const transformedData = defaultAuthReportFormatter(rawData, attributes, groupByProvider)
 
@@ -1444,7 +1511,14 @@ export const createLatencyReportConfig = ({
           },
         ]
 
-        const sql = AUTH_REPORT_SQL.SignUpProcessingTimePercentiles(interval, filters)
+        const sql = USE_LOGFLARE_PG_SQL
+          ? AUTH_PERCENTILE_SQL_SELF_HOSTED('SignUpProcessingTimePercentiles', {
+              interval,
+              startDate,
+              endDate,
+              filters,
+            })
+          : AUTH_REPORT_SQL.SignUpProcessingTimePercentiles(interval, filters)
         const rawData = await fetchLogs(projectRef, sql, startDate, endDate)
         const transformedData = defaultAuthReportFormatter(rawData, attributes, groupByProvider)
 
