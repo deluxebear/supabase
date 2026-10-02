@@ -73,7 +73,7 @@ transforms:
     inputs:
       - project_logs
     route:
-      kong: '.appname == "supabase-kong" || .appname == "supabase-envoy" || ends_with(string!(.appname), "-kong")'
+      kong: '.appname == "supabase-kong" || .appname == "supabase-envoy" || ends_with(string!(.appname), "-kong") || ends_with(string!(.appname), "-envoy")'
       auth: '.appname == "supabase-auth" || ends_with(string!(.appname), "-auth")'
       rest: '.appname == "supabase-rest" || ends_with(string!(.appname), "-rest")'
       realtime: '.appname == "realtime-dev.supabase-realtime" || starts_with(string!(.appname), "realtime-dev.")'

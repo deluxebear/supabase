@@ -1,6 +1,10 @@
-# Attach the per-project analytics service to the control-plane network so
-# Studio can query it without publishing Logflare's unauthenticated dashboard
-# port on the host.
+# Attach the per-project analytics and vector services to the control-plane
+# network so Studio can query Logflare and scrape the metrics endpoint without
+# publishing either port on the host.
+#
+# Register the project with:
+#   Logflare URL:         http://analytics-<ref>:4000
+#   Metrics endpoint URL: http://vector-<ref>:9598/metrics
 services:
   analytics:
     ports: !override []
@@ -9,6 +13,16 @@ services:
       management:
         aliases:
           - analytics-${MANAGED_PROJECT_REF:?set MANAGED_PROJECT_REF}
+
+  vector:
+    # The base logs overlay publishes 9598 on the host, which collides as soon
+    # as a second managed project runs on the same host.
+    ports: !override []
+    networks:
+      default: {}
+      management:
+        aliases:
+          - vector-${MANAGED_PROJECT_REF:?set MANAGED_PROJECT_REF}
 
 networks:
   management:
