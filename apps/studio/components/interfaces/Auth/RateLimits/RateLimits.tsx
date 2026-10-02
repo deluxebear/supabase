@@ -257,7 +257,7 @@ export const RateLimits = () => {
                                   disabled={!canUpdateConfig || !canUpdateEmailLimit}
                                 />
                                 <InputGroupAddon align="inline-end">
-                                  <InputGroupText>emails/h</InputGroupText>
+                                  <InputGroupText>{$t('emails/h')}</InputGroupText>
                                 </InputGroupAddon>
                               </InputGroup>
                             </FormControl>
@@ -337,7 +337,7 @@ export const RateLimits = () => {
                                   disabled={!canUpdateConfig || !canUpdateSMSRateLimit}
                                 />
                                 <InputGroupAddon align="inline-end">
-                                  <InputGroupText>sms/h</InputGroupText>
+                                  <InputGroupText>{$t('sms/h')}</InputGroupText>
                                 </InputGroupAddon>
                               </InputGroup>
                             </FormControl>
@@ -490,7 +490,7 @@ export const RateLimits = () => {
                                   disabled={!canUpdateConfig || !canUpdateAnonymousUsersRateLimit}
                                 />
                                 <InputGroupAddon align="inline-end">
-                                  <InputGroupText>requests/h</InputGroupText>
+                                  <InputGroupText>{$t('requests/h')}</InputGroupText>
                                 </InputGroupAddon>
                               </InputGroup>
                             </FormControl>
