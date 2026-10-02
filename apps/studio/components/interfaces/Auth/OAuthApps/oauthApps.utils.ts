@@ -10,6 +10,15 @@ export const OAUTH_APP_CLIENT_TYPE_OPTIONS = [
   { name: 'Confidential', value: 'confidential' },
 ]
 
+// Map a raw API value (e.g. `confidential`) to its English option label, which is
+// the i18n key. Unknown values fall through unchanged.
+export function getOAuthAppOptionLabel(
+  options: { name: string; value: string }[],
+  value: string
+): string {
+  return options.find((option) => option.value === value)?.name ?? value
+}
+
 interface FilterOAuthAppsParams {
   apps: OAuthClient[]
   searchString?: string

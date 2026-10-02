@@ -34,6 +34,7 @@ import { DeleteOAuthAppModal } from './DeleteOAuthAppModal'
 import { NewOAuthAppBanner } from './NewOAuthAppBanner'
 import {
   filterOAuthApps,
+  getOAuthAppOptionLabel,
   OAUTH_APP_CLIENT_TYPE_OPTIONS,
   OAUTH_APP_REGISTRATION_TYPE_OPTIONS,
 } from './oauthApps.utils'
@@ -399,8 +400,17 @@ export const OAuthAppsList = () => {
                       <TableCell title={app.client_id}>
                         <code className="text-code-inline">{app.client_id}</code>
                       </TableCell>
-                      <TableCell className="max-w-28 capitalize">{app.client_type}</TableCell>
-                      <TableCell className="max-w-28 capitalize">{app.registration_type}</TableCell>
+                      <TableCell className="max-w-28 capitalize">
+                        {$t(getOAuthAppOptionLabel(OAUTH_APP_CLIENT_TYPE_OPTIONS, app.client_type))}
+                      </TableCell>
+                      <TableCell className="max-w-28 capitalize">
+                        {$t(
+                          getOAuthAppOptionLabel(
+                            OAUTH_APP_REGISTRATION_TYPE_OPTIONS,
+                            app.registration_type
+                          )
+                        )}
+                      </TableCell>
                       <TableCell className="min-w-28 max-w-40 w-1/6">
                         <TimestampInfo
                           className="text-sm"
