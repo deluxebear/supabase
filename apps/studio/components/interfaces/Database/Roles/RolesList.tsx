@@ -201,7 +201,7 @@ export const RolesList = () => {
                       : `${totalActiveConnections}`
                   }
                   labelTopClass="text-xs"
-                  labelBottom="Active connections"
+                  labelBottom={$t('Active connections')}
                   labelBottomClass="text-xs"
                 />
               </div>

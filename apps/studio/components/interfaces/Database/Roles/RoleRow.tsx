@@ -152,7 +152,7 @@ export const RoleRow = ({ role, disabled = false, onSelectDelete }: RoleRowProps
                   role.activeConnections > 0 ? 'text-foreground' : 'text-foreground-light'
                 )}
               >
-                {role.activeConnections} connections
+                {$t('{{count}} connections', { count: role.activeConnections })}
               </p>
             </div>
           </button>

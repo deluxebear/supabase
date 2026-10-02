@@ -80,7 +80,7 @@ export const CreateRolePanel = ({ visible, onClose }: CreateRolePanelProps) => {
     <SidePanel
       size="large"
       visible={visible}
-      header="Create a new role"
+      header={$t('Create a new role')}
       className="mr-0 transform transition-all duration-300 ease-in-out"
       loading={false}
       onCancel={handleClose}

@@ -43,7 +43,7 @@ export const FormActions = ({
           disabled={isDisabled}
           loading={isSubmitting}
         >
-          {submitText ?? 'Save'}
+          {submitText ?? $t('Save')}
         </Button>
       </div>
     </div>
