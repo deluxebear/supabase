@@ -49,11 +49,11 @@ import { t as $t } from '@/lib/i18n'
 
 function HoursOrNeverText({ value }: { value: number }) {
   if (value === 0) {
-    return 'never'
+    return $t('never')
   } else if (value === 1) {
-    return 'hour'
+    return $t('hour')
   } else {
-    return 'hours'
+    return $t('hours')
   }
 }
 
@@ -308,7 +308,10 @@ export const SessionsAuthSettingsForm = () => {
                       <FormItemLayout
                         layout="flex-row-reverse"
                         label={$t('Time-box user sessions')}
-                        description={`The amount of time before a user is forced to sign in again. Use 0 for never. Maximum ${MAX_SESSIONS_TIMEBOX_HOURS} hours (1 year).`}
+                        description={$t(
+                          'The amount of time before a user is forced to sign in again. Use 0 for never. Maximum {{hours}} hours (1 year).',
+                          { hours: MAX_SESSIONS_TIMEBOX_HOURS }
+                        )}
                       >
                         <FormControl className="w-full">
                           <InputGroup>
@@ -338,7 +341,10 @@ export const SessionsAuthSettingsForm = () => {
                       <FormItemLayout
                         layout="flex-row-reverse"
                         label={$t('Inactivity timeout')}
-                        description={`The amount of time a user needs to be inactive to be forced to sign in again. Use 0 for never. Maximum ${MAX_SESSIONS_INACTIVITY_TIMEOUT_HOURS} hours (1 year).`}
+                        description={$t(
+                          'The amount of time a user needs to be inactive to be forced to sign in again. Use 0 for never. Maximum {{hours}} hours (1 year).',
+                          { hours: MAX_SESSIONS_INACTIVITY_TIMEOUT_HOURS }
+                        )}
                       >
                         <FormControl className="w-full">
                           <InputGroup>
@@ -428,7 +434,7 @@ export const SessionsAuthSettingsForm = () => {
                               disabled={!canUpdateConfig}
                             />
                             <InputGroupAddon align="inline-end">
-                              <InputGroupText>seconds</InputGroupText>
+                              <InputGroupText>{$t('seconds')}</InputGroupText>
                             </InputGroupAddon>
                           </InputGroup>
                         </FormControl>
@@ -503,7 +509,10 @@ export const SessionsAuthSettingsForm = () => {
                       <FormItemLayout
                         layout="flex-row-reverse"
                         label={$t('Refresh token reuse interval')}
-                        description={`Time interval where the same refresh token can be used multiple times to request for an access token. Recommendation: 10 seconds. Maximum ${MAX_REFRESH_TOKEN_REUSE_INTERVAL_SECONDS} seconds (5 minutes).`}
+                        description={$t(
+                          'Time interval where the same refresh token can be used multiple times to request for an access token. Recommendation: 10 seconds. Maximum {{seconds}} seconds (5 minutes).',
+                          { seconds: MAX_REFRESH_TOKEN_REUSE_INTERVAL_SECONDS }
+                        )}
                       >
                         <FormControl className="w-full">
                           <InputGroup>
@@ -514,7 +523,7 @@ export const SessionsAuthSettingsForm = () => {
                               disabled={!canUpdateConfig}
                             />
                             <InputGroupAddon align="inline-end">
-                              <InputGroupText>seconds</InputGroupText>
+                              <InputGroupText>{$t('seconds')}</InputGroupText>
                             </InputGroupAddon>
                           </InputGroup>
                         </FormControl>
