@@ -98,7 +98,7 @@ export const ConfirmationModal = forwardRef<
     }, [loading_])
 
     const { title: _alertBaseTitle, children: _alertBaseChildren, ...alertBase } = alert?.base ?? {}
-    const alertTitleProps = alert?.title ? { title: alert.title } : {}
+    const alertTitleProps = alert?.title ? { title: uiT(alert.title) } : {}
 
     return (
       <Dialog
@@ -123,7 +123,9 @@ export const ConfirmationModal = forwardRef<
           {alert && (
             <Admonition
               type={variant as 'default' | 'destructive' | 'warning'}
-              description={alert.description}
+              description={
+                typeof alert.description === 'string' ? uiT(alert.description) : alert.description
+              }
               {...alertTitleProps}
               className="border-x-0 rounded-none -mt-px"
               {...alertBase}
@@ -159,7 +161,7 @@ export const ConfirmationModal = forwardRef<
               onClick={onSubmit}
               className="truncate"
             >
-              {loading && confirmLabelLoading ? confirmLabelLoading : confirmLabel}
+              {uiT(loading && confirmLabelLoading ? confirmLabelLoading : confirmLabel)}
             </Button>
           </div>
         </DialogContent>

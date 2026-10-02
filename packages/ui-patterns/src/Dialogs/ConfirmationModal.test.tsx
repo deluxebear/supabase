@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
+import { setUiTranslator } from '../lib/i18n'
 import { ConfirmationModal } from './ConfirmationModal'
 
 describe('ConfirmationModal', () => {
@@ -44,5 +45,27 @@ describe('ConfirmationModal', () => {
     fireEvent.pointerDown(dialog.parentElement!, { button: 0, ctrlKey: false })
 
     expect(onCancel).not.toHaveBeenCalled()
+  })
+
+  it('translates string confirm labels and alert text through the host translator', () => {
+    setUiTranslator((key) => `zh:${key}`)
+    try {
+      render(
+        <ConfirmationModal
+          visible
+          title="Enable feature"
+          confirmLabel="Enable it"
+          alert={{ title: 'Risky change', description: 'Read before confirming' }}
+          onCancel={vi.fn()}
+          onConfirm={vi.fn()}
+        />
+      )
+
+      expect(screen.getByRole('button', { name: 'zh:Enable it' })).toBeInTheDocument()
+      expect(screen.getByText('zh:Risky change')).toBeInTheDocument()
+      expect(screen.getByText('zh:Read before confirming')).toBeInTheDocument()
+    } finally {
+      setUiTranslator((key) => key)
+    }
   })
 })
