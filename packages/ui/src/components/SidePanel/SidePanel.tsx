@@ -6,6 +6,7 @@ import React from 'react'
 
 import { Button } from '../../components/Button/Button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/shadcn/ui/tooltip'
+import { uiT } from '../../lib/i18n'
 import { cn } from '../../lib/utils'
 
 export type SidePanelProps = RadixProps & CustomProps
@@ -98,7 +99,7 @@ const SidePanel = ({
     <div className="flex justify-end gap-2 p-4 bg-overlay border-t">
       <div>
         <Button disabled={loading} variant="default" onClick={() => (onCancel ? onCancel() : null)}>
-          {cancelText}
+          {uiT(String(cancelText))}
         </Button>
       </div>
       {!!onConfirm && (
@@ -111,7 +112,7 @@ const SidePanel = ({
                 loading={loading}
                 onClick={onConfirm}
               >
-                {confirmText}
+                {uiT(String(confirmText))}
               </Button>
             </span>
           </TooltipTrigger>
@@ -162,7 +163,7 @@ const SidePanel = ({
         >
           {header && (
             <header className="flex items-center space-y-1 py-4 px-4 bg-popover sm:px-6 border-b h-(--header-height)">
-              {header}
+              {typeof header === 'string' ? uiT(header) : header}
             </header>
           )}
           <div className="relative flex-1 overflow-y-auto">{children}</div>

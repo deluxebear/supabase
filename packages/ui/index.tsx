@@ -171,3 +171,4 @@ export * from './src/components/KeyboardShortcut/KeyboardShortcut'
 
 export * as colors from './src/lib/tailwind-demo-classes'
 export * from './src/lib/constants'
+export * from './src/lib/i18n'
