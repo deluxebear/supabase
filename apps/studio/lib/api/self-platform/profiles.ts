@@ -14,6 +14,11 @@ export type PlatformProfileRow = {
 
 type ProfileResponse = components['schemas']['ProfileResponse_Output']
 
+// [self-platform] Features with no management-plane backend. Third-party Auth
+// needs each project's services to trust external JWKS, which Fleet does not
+// deliver, so its page could only show a 404 error.
+export const SELF_PLATFORM_DISABLED_FEATURES = ['authentication:third_party_auth']
+
 export function toProfileResponse(row: PlatformProfileRow): ProfileResponse {
   return {
     id: row.id,
@@ -29,7 +34,7 @@ export function toProfileResponse(row: PlatformProfileRow): ProfileResponse {
     is_alpha_user: false,
     is_sso_user: false,
     free_project_limit: 10,
-    disabled_features: [],
+    disabled_features: SELF_PLATFORM_DISABLED_FEATURES,
   }
 }
 

@@ -31,7 +31,7 @@ describe('toProfileResponse', () => {
       mobile: null,
       is_alpha_user: false,
       is_sso_user: false,
-      disabled_features: [],
+      disabled_features: ['authentication:third_party_auth'],
     })
     expect(typeof res.auth0_id).toBe('string')
   })
