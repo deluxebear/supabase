@@ -1,6 +1,7 @@
 import { loader } from '@monaco-editor/react'
 
 import { BASE_PATH, IS_PLATFORM } from '@/lib/constants'
+import { getInitialLocale, type Locale } from '@/lib/i18n'
 
 // [Ivan] Serve the Monaco assets locally from the public folder for self-hosted deployments, but use the CDN for
 // the platform deployment to reduce bundle size and improve caching.
@@ -9,14 +10,25 @@ import { BASE_PATH, IS_PLATFORM } from '@/lib/constants'
 // `routes/__root.tsx` (TanStack) — so the asset path can't drift between them.
 export function configureMonacoLoader() {
   if (typeof window !== 'undefined') {
+    // Monaco's built-in UI (context menu, find widget, command palette) reads its
+    // strings from `vs/nls.messages.<lang>.js`, chosen once at load time — a
+    // later language switch takes effect on the next page load.
+    const monacoLanguage = MONACO_NLS_LANGUAGE[getInitialLocale()]
     loader.config({
       paths: {
         vs: IS_PLATFORM
           ? 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs'
           : `${BASE_PATH}/monaco-editor/vs`,
       },
+      ...(monacoLanguage ? { 'vs/nls': { availableLanguages: { '*': monacoLanguage } } } : {}),
     })
   }
+}
+
+// Locales without an entry keep Monaco's English strings. Self-hosted builds
+// serve these bundles from public/monaco-editor/vs, so add the file there too.
+const MONACO_NLS_LANGUAGE: Partial<Record<Locale, string>> = {
+  'zh-CN': 'zh-cn',
 }
 
 export function isMonacoCancellation(reason: unknown) {

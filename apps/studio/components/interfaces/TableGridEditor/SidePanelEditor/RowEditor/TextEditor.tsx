@@ -96,7 +96,7 @@ export const TextEditor = ({
 
       editor.addAction({
         id: 'save-value',
-        label: 'Save value',
+        label: $t('Save value'),
         keybindings: [monaco.KeyMod.CtrlCmd + monaco.KeyCode.Enter],
         run: () => saveValue(editor.getValue(), () => undefined),
       })

@@ -502,7 +502,7 @@ export const QueryEditor = forwardRef<QueryEditorHandle, QueryEditorProps>(funct
 
             editor.addAction({
               id: 'generate-sql',
-              label: 'Generate SQL',
+              label: $t('Generate SQL'),
               keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyK],
               run: () => {
                 if (pendingProposalRef.current) return
@@ -513,7 +513,7 @@ export const QueryEditor = forwardRef<QueryEditorHandle, QueryEditorProps>(funct
 
             editor.addAction({
               id: 'prettify-query',
-              label: 'Prettify SQL',
+              label: $t('Prettify SQL'),
               keybindings: [monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.KeyF],
               contextMenuGroupId: 'operation',
               run: () => {

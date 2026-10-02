@@ -177,7 +177,7 @@ export const AIEditor = ({
 
     const action = editor.addAction({
       id: 'close-editor',
-      label: 'Close editor',
+      label: $t('Close editor'),
       keybindings: [monaco.KeyMod.CtrlCmd + monaco.KeyCode.KeyE],
       contextMenuGroupId: 'operation',
       contextMenuOrder: 0,
@@ -245,7 +245,7 @@ export const AIEditor = ({
     if (openAIAssistantShortcutEnabled) {
       editor.addAction({
         id: 'toggle-ai-assistant',
-        label: 'Toggle AI Assistant',
+        label: $t('Toggle AI Assistant'),
         keybindings: [monaco.KeyMod.CtrlCmd + monaco.KeyCode.KeyI],
         run: () => {
           toggleSidebar(SIDEBAR_KEYS.AI_ASSISTANT)
@@ -255,7 +255,7 @@ export const AIEditor = ({
 
     editor.addAction({
       id: 'generate-ai',
-      label: 'Generate with AI',
+      label: $t('Generate with AI'),
       keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyK],
       run: () => {
         const selectionParts = getEditorSelectionParts(editor)

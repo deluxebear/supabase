@@ -111,7 +111,7 @@ export const MonacoEditor = ({
 
     editor.addAction({
       id: 'save-query',
-      label: 'Save Query',
+      label: $t('Save Query'),
       keybindings: [monaco.KeyMod.CtrlCmd + monaco.KeyCode.KeyS],
       contextMenuGroupId: 'operation',
       contextMenuOrder: 0,
@@ -123,7 +123,7 @@ export const MonacoEditor = ({
 
     editor.addAction({
       id: 'prettify-query',
-      label: 'Prettify SQL',
+      label: $t('Prettify SQL'),
       keybindings: [monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.KeyF],
       contextMenuGroupId: 'operation',
       contextMenuOrder: 2,
@@ -134,7 +134,7 @@ export const MonacoEditor = ({
 
     editor.addAction({
       id: 'explain-code',
-      label: 'Explain Code',
+      label: $t('Explain Code'),
       contextMenuGroupId: 'operation',
       contextMenuOrder: 1,
       run: () => {
@@ -154,7 +154,7 @@ export const MonacoEditor = ({
 
     editor.addAction({
       id: 'toggle-ai-assistant',
-      label: 'Toggle AI Assistant',
+      label: $t('Toggle AI Assistant'),
       keybindings: [monaco.KeyMod.CtrlCmd + monaco.KeyCode.KeyI],
       run: () => {
         if (aiHotkeyEnabledRef.current) {
@@ -166,7 +166,7 @@ export const MonacoEditor = ({
     if (onPrompt) {
       editor.addAction({
         id: 'generate-sql',
-        label: 'Generate SQL',
+        label: $t('Generate SQL'),
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyK],
         run: () => {
           const selectionParts = getEditorSelectionParts(editor)

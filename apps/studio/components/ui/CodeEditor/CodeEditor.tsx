@@ -15,6 +15,7 @@ import { Markdown } from '@/components/interfaces/Markdown'
 import { useLatest } from '@/hooks/misc/useLatest'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { formatSql } from '@/lib/formatSql'
+import { t as $t } from '@/lib/i18n'
 import { SHORTCUT_IDS } from '@/state/shortcuts/registry'
 import { useIsShortcutEnabled } from '@/state/shortcuts/useIsShortcutEnabled'
 
@@ -161,7 +162,7 @@ export const CodeEditor = ({
     if (runQuery.enabled) {
       editor.addAction({
         id: 'run-query',
-        label: 'Run Query',
+        label: $t('Run Query'),
         keybindings: [monaco.KeyMod.CtrlCmd + monaco.KeyCode.Enter],
         contextMenuGroupId: 'operation',
         contextMenuOrder: 0,
