@@ -9126,6 +9126,7 @@
   "Select which user to test as before running the query": "运行查询前请先选择要模拟的测试用户",
   "Select your X and Y axis in the chart options panel": "在图表选项面板中选择 X 和 Y 轴",
   "Select your X and Y axis in the display settings": "在显示设置中选择 X 轴和 Y 轴",
+  "Select {{name}}": "选择{{name}}",
   "Select-all": "全选",
   "Selected address space:": "选定的地址空间：",
   "Selected logs JSON": "所选日志的 JSON",

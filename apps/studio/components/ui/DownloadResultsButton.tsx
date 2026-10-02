@@ -137,11 +137,11 @@ export const DownloadResultsButton = ({
             icon={<Download />}
             disabled={results.length === 0}
             className="w-7"
-            tooltip={{ content: { side: 'bottom', text: 'Download results' } }}
+            tooltip={{ content: { side: 'bottom', text: $t('Download results') } }}
           />
         ) : (
           <Button variant={variant} iconRight={<ChevronDown />} disabled={results.length === 0}>
-            {text}
+            {$t(text)}
           </Button>
         )}
       </DropdownMenuTrigger>

@@ -190,7 +190,7 @@ export const FilterPopover = <T extends Record<string, any>>({
           iconRight={<ChevronDown />}
         >
           <div>
-            <span>{name}</span>
+            <span>{$t(name)}</span>
             {activeOptions.length > 0 && (
               <>
                 <span className="mr-1">:</span>
@@ -214,7 +214,7 @@ export const FilterPopover = <T extends Record<string, any>>({
       >
         <div className="border-b border-overlay bg-surface-200 rounded-t pb-1 px-3">
           <span className="text-xs text-foreground-light">
-            {title ?? `Select ${name.toLowerCase()}`}
+            {title ?? $t('Select {{name}}', { name: $t(name).toLowerCase() })}
           </span>
         </div>
         {search !== undefined && (

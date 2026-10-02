@@ -1,6 +1,8 @@
 import { ComponentProps, ComponentPropsWithoutRef, ElementRef, forwardRef, ReactNode } from 'react'
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
+import { t as $t } from '@/lib/i18n'
+
 export const ButtonTooltip = forwardRef<
   ElementRef<typeof Button>,
   ComponentPropsWithoutRef<typeof Button> & {
@@ -28,7 +30,11 @@ export const ButtonTooltip = forwardRef<
           {props.children}
         </Button>
       </TooltipTrigger>
-      {text !== undefined && <TooltipContent {...tooltipContentProps}>{text}</TooltipContent>}
+      {text !== undefined && (
+        <TooltipContent {...tooltipContentProps}>
+          {typeof text === 'string' ? $t(text) : text}
+        </TooltipContent>
+      )}
     </Tooltip>
   )
 })
