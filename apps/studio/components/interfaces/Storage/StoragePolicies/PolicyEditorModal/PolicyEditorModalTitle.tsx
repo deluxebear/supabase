@@ -28,10 +28,16 @@ export const PolicyEditorModalTitle = ({
 }: PolicyEditorModalTitleProps) => {
   const getTitle = () => {
     if (view === POLICY_MODAL_VIEWS.EDITOR || view === POLICY_MODAL_VIEWS.SELECTION) {
-      return `${isNewPolicy ? 'Adding new policy to' : 'Editing policy from'} ${schema}.${table}`
+      const target = `${schema}.${table}`
+      return isNewPolicy
+        ? $t('Adding new policy to {{target}}', { target })
+        : $t('Editing policy from {{target}}', { target })
     }
     if (view === POLICY_MODAL_VIEWS.REVIEW) {
-      return `Reviewing policy to be ${isNewPolicy ? 'created' : 'updated'} on ${schema}.${table}`
+      const target = `${schema}.${table}`
+      return isNewPolicy
+        ? $t('Reviewing policy to be created on {{target}}', { target })
+        : $t('Reviewing policy to be updated on {{target}}', { target })
     }
   }
 
