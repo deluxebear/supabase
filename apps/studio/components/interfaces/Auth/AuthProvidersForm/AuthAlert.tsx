@@ -31,7 +31,7 @@ export const AuthAlert = ({
               className="underline"
               target="_blank"
             >
-              documentation
+              {$t('documentation')}
             </a>{' '}
             {$t('for more details.')}
           </AlertDescription>

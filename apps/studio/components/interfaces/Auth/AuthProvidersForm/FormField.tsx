@@ -32,7 +32,7 @@ import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import type { Enum } from './AuthProvidersForm.types'
 import { Markdown } from '@/components/interfaces/Markdown'
 import { BASE_PATH } from '@/lib/constants'
-import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue, translateWithDocsUrl } from '@/lib/i18n'
 
 interface FormFieldProps {
   projectRef: string | undefined
@@ -56,7 +56,7 @@ const FormField = ({
   readOnly,
 }: FormFieldProps) => {
   const { setValue } = useFormContext()
-  const { description: originalDescription } = properties
+  const originalDescription: string | undefined = translateWithDocsUrl(properties.description)
   let description = originalDescription
 
   if (originalDescription && projectRef) {
@@ -69,7 +69,9 @@ const FormField = ({
   const fieldValue = useWatch({ control, name })
   if (!hasAccess) {
     const planMessage = organizationSlug
-      ? `Only available on [Pro plan](/org/${organizationSlug}/billing?panel=subscriptionPlan) and above.`
+      ? $t('Only available on [Pro plan]({{billingUrl}}) and above.', {
+          billingUrl: `/org/${organizationSlug}/billing?panel=subscriptionPlan`,
+        })
       : ''
     description = originalDescription ? `${originalDescription} ${planMessage}` : planMessage
   }
@@ -250,7 +252,7 @@ const FormField = ({
                         />
                         <InputGroupAddon align="inline-end">
                           <ReactMarkdown unwrapDisallowed disallowedElements={['p']}>
-                            {properties.units}
+                            {$tValue(properties.units)}
                           </ReactMarkdown>
                         </InputGroupAddon>
                       </InputGroup>

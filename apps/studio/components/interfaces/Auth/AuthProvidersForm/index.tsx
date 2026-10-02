@@ -45,7 +45,7 @@ export const AuthProvidersForm = () => {
         {isError ? (
           <AlertError
             error={authConfigError}
-            subject="Failed to retrieve auth configuration for hooks"
+            subject={$t('Failed to retrieve auth configuration for hooks')}
           />
         ) : (
           <div className="-space-y-px">

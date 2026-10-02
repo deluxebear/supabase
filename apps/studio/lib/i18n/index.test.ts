@@ -7,7 +7,9 @@ import {
   LOCALE_STORAGE_KEY,
   t,
   translateDisplayValue,
+  translateWithDocsUrl,
 } from './index'
+import { DOCS_URL } from '@/lib/constants'
 
 describe('i18n core', () => {
   beforeEach(async () => {
@@ -31,6 +33,20 @@ describe('i18n core', () => {
     expect(translateDisplayValue('Save changes')).toBe('保存更改')
     expect(translateDisplayValue(42)).toBe(42)
     expect(translateDisplayValue(null)).toBeNull()
+  })
+
+  it('keys docs links on a {{docsUrl}} placeholder and restores the real origin', async () => {
+    const source = `See [docs](${DOCS_URL}/guides/auth)`
+    expect(translateWithDocsUrl(source)).toBe(source)
+    i18n.addResource(
+      'zh-CN',
+      'translation',
+      'See [docs]({{docsUrl}}/guides/auth)',
+      '参见 [文档]({{docsUrl}}/guides/auth)'
+    )
+    await applyLocale('zh-CN')
+    expect(translateWithDocsUrl(source)).toBe(`参见 [文档](${DOCS_URL}/guides/auth)`)
+    expect(translateWithDocsUrl(undefined)).toBeUndefined()
   })
 
   it('interpolates variables with the {{var}} syntax', async () => {

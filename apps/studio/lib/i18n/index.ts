@@ -7,6 +7,7 @@ import { initReactI18next } from 'react-i18next'
 import { setUiTranslator } from 'ui-patterns/lib/i18n'
 
 import zhCN from './locales/zh-CN.json'
+import { DOCS_URL } from '@/lib/constants'
 
 export const LOCALES = ['en', 'zh-CN'] as const
 export type Locale = (typeof LOCALES)[number]
@@ -41,6 +42,14 @@ export const t = i18n.t.bind(i18n) as (key: string, vars?: Record<string, unknow
 // Translate them only when a component renders a display field.
 export function translateDisplayValue<T>(value: T): T {
   return typeof value === 'string' ? (t(value) as T) : value
+}
+
+// Config strings often embed the env-dependent docs origin (`${DOCS_URL}/guides/…`).
+// Key them on a `{{docsUrl}}` placeholder so the catalog entry matches regardless
+// of NEXT_PUBLIC_DOCS_URL, then interpolate the real origin back in.
+export function translateWithDocsUrl<T>(value: T): T {
+  if (typeof value !== 'string') return value
+  return t(value.split(DOCS_URL).join('{{docsUrl}}'), { docsUrl: DOCS_URL }) as T
 }
 
 // Bridge the studio translator into ui-patterns so its cross-package components

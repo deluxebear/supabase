@@ -13,6 +13,7 @@ import {
   useWatch,
 } from 'react-hook-form'
 
+import { uiT } from '../../../lib/i18n'
 import { cn } from '../../../lib/utils/cn'
 import type { InputProps } from './input'
 import { InputGroupInput, InputGroupTextarea } from './input-group'
@@ -153,7 +154,7 @@ const FormMessage = React.forwardRef<
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, children, ...props }, ref) => {
   const { error, formMessageId } = useFormField()
-  const body = error ? String(error?.message) : children
+  const body = error ? uiT(String(error?.message)) : children
 
   return (
     <AnimatePresence initial={false}>

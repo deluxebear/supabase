@@ -37,7 +37,7 @@ import { useHasEntitlementAccess } from '@/hooks/misc/useCheckEntitlements'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { BASE_PATH } from '@/lib/constants'
-import { t as $t, translateDisplayValue as $tValue } from '@/lib/i18n'
+import { t as $t, translateDisplayValue as $tValue, translateWithDocsUrl } from '@/lib/i18n'
 
 interface ProviderFormProps {
   config: components['schemas']['GoTrueConfigResponse']
@@ -225,7 +225,7 @@ export const ProviderForm = ({ config, provider, isActive }: ProviderFormProps) 
               onSubmit={form.handleSubmit(onSubmit)}
             >
               <AuthAlert
-                title={$tValue(provider.title)}
+                title={provider.title}
                 isHookSendSMSEnabled={config.HOOK_SEND_SMS_ENABLED}
               />
 
@@ -251,9 +251,11 @@ export const ProviderForm = ({ config, provider, isActive }: ProviderFormProps) 
                 <SheetSection>
                   <Admonition
                     type="warning"
-                    title={$tValue(provider.misc.alert.title)}
+                    title={translateWithDocsUrl(provider.misc.alert.title)}
                     description={
-                      <ReactMarkdown>{$tValue(provider.misc.alert.description)}</ReactMarkdown>
+                      <ReactMarkdown>
+                        {translateWithDocsUrl(provider.misc.alert.description)}
+                      </ReactMarkdown>
                     }
                   />
                 </SheetSection>
@@ -266,7 +268,7 @@ export const ProviderForm = ({ config, provider, isActive }: ProviderFormProps) 
                     label={$t('Callback URL (for OAuth)')}
                     description={
                       <Markdown
-                        content={provider.misc.helper}
+                        content={translateWithDocsUrl(provider.misc.helper)}
                         className="text-foreground-lighter"
                       />
                     }
@@ -302,7 +304,7 @@ export const ProviderForm = ({ config, provider, isActive }: ProviderFormProps) 
                     content: {
                       side: 'bottom',
                       text: !canUpdateConfig
-                        ? 'You need additional permissions to update provider settings'
+                        ? $t('You need additional permissions to update provider settings')
                         : undefined,
                     },
                   }}
