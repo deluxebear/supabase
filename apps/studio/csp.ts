@@ -16,6 +16,19 @@ const SUPABASE_URL = toOrigin(process.env.SUPABASE_URL)
 const GOTRUE_URL = toOrigin(process.env.NEXT_PUBLIC_GOTRUE_URL)
 const MARKETPLACE_API_URL = toOrigin(process.env.NEXT_PUBLIC_MARKETPLACE_API_URL)
 
+// [self-platform] Each managed project's public API origin lives in the platform
+// DB, so it can't be known at build time — yet the browser talks to it directly
+// (custom OAuth providers, OAuth apps, realtime inspector, …). The operator lists
+// those origins in STUDIO_CSP_EXTRA_CONNECT_SRC (space-separated CSP sources, e.g.
+// "http://192.168.1.100:* ws://192.168.1.100:*"). The fleet image is built with
+// a placeholder that docker-entrypoint.sh swaps for the runtime value.
+const SELF_PLATFORM_EXTRA_CONNECT_SRC_PLACEHOLDER = 'https://project-endpoints-runtime.invalid'
+const EXTRA_CONNECT_SRC =
+  process.env.STUDIO_CSP_EXTRA_CONNECT_SRC ||
+  (process.env.NEXT_PUBLIC_SELF_PLATFORM === 'true'
+    ? SELF_PLATFORM_EXTRA_CONNECT_SRC_PLACEHOLDER
+    : '')
+
 const SUPABASE_PROJECTS_URL = 'https://*.supabase.co https://*.storage.supabase.co'
 const SUPABASE_PROJECTS_URL_WS = 'wss://*.supabase.co'
 
@@ -113,6 +126,7 @@ export function getCSP() {
     POSTHOG_URL,
     ...(!!NIMBUS_PROD_PROJECTS_URL ? [NIMBUS_PROD_PROJECTS_URL, NIMBUS_PROD_PROJECTS_URL_WS] : []),
     CLOUDFLARE_CDN_URL,
+    EXTRA_CONNECT_SRC,
   ]
   const SCRIPT_SRC_URLS = [
     CLOUDFLARE_CDN_URL,

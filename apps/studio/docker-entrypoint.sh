@@ -37,6 +37,7 @@ file_env 'SUPABASE_SERVICE_KEY'
 STUDIO_NEXT_DIR="${STUDIO_NEXT_DIR:-/app/apps/studio/.next}"
 API_URL_PLACEHOLDER='https://studio-runtime-origin.invalid'
 GOTRUE_URL_PLACEHOLDER='https://gotrue-runtime-origin.invalid'
+EXTRA_CONNECT_SRC_PLACEHOLDER='https://project-endpoints-runtime.invalid'
 
 origin_of() {
   # strip everything after the origin: scheme://host[:port]
@@ -66,6 +67,11 @@ if [ -d "$STUDIO_NEXT_DIR" ]; then
   fi
   if [ -n "${NEXT_PUBLIC_GOTRUE_URL:-}" ]; then
     replace_in_bundle "$GOTRUE_URL_PLACEHOLDER" "$NEXT_PUBLIC_GOTRUE_URL"
+  fi
+  # [self-platform] Managed projects' public API origins for the CSP default-src
+  # (see csp.ts). Left as the inert `.invalid` placeholder when unset.
+  if [ -n "${STUDIO_CSP_EXTRA_CONNECT_SRC:-}" ]; then
+    replace_in_bundle "$EXTRA_CONNECT_SRC_PLACEHOLDER" "$STUDIO_CSP_EXTRA_CONNECT_SRC"
   fi
 fi
 

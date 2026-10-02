@@ -274,6 +274,8 @@ services:
       PLATFORM_SITE_URL: ${FLEET_PUBLIC_URL}
       NEXT_PUBLIC_API_URL: ${FLEET_PUBLIC_URL}/api
       NEXT_PUBLIC_GOTRUE_URL: ${FLEET_PUBLIC_URL}/platform-auth/v1
+      # Managed projects' public API origins for the CSP (see control-plane.env.example).
+      STUDIO_CSP_EXTRA_CONNECT_SRC: ${STUDIO_CSP_EXTRA_CONNECT_SRC:-}
       # Fleet routes use each registered project's `${kong_url}/pg` endpoint.
       # This key must match the pg-meta CRYPTO_KEY on every managed target.
       PG_META_CRYPTO_KEY: ${PG_META_CRYPTO_KEY}
