@@ -42,6 +42,8 @@ export const useAuthHooksUpdateMutation = ({
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: authKeys.authConfig(projectRef) }),
         queryClient.invalidateQueries({ queryKey: configKeys.projectConfig(projectRef) }),
+        // [self-platform] A save makes the stored settings differ from the running ones.
+        queryClient.invalidateQueries({ queryKey: authKeys.authConfigApply(projectRef) }),
       ])
       await onSuccess?.(data, variables, context)
     },

@@ -69,6 +69,8 @@ export const useAuthConfigUpdateMutation = ({
       Promise.all([
         queryClient.invalidateQueries({ queryKey: lintKeys.lint(projectRef) }),
         queryClient.invalidateQueries({ queryKey: configKeys.projectConfig(projectRef) }),
+        // [self-platform] A save makes the stored settings differ from the running ones.
+        queryClient.invalidateQueries({ queryKey: authKeys.authConfigApply(projectRef) }),
       ])
         .then(() =>
           queryClient.refetchQueries({
