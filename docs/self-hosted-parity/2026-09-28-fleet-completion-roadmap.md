@@ -262,3 +262,18 @@ Fleet can be called feature-complete for self-hosted management when:
 - Phases 0–4 are done.
 - The alignment matrix shows no row whose UI accepts a change that the stack never applies.
 - Release gates 1–5 in the alignment matrix pass on a fresh two-stack environment built only from published images.
+
+## 7. Status snapshot (2026-10-12)
+
+Derived from the phase status tables above and the commits on `custom/main` through 2026-10-03. Items marked "unverified" were not checked against code or a live environment for this snapshot.
+
+| Phase                    | State                                                                                                                                                                                                                                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0. Honesty and hygiene   | 0.1–0.6 done. 0.7 still needs the canonical-origin redirect and the 91-route crawl on a live environment.                                                                                                                                                                                   |
+| 1. Lifecycle plugin      | Code done. `verify-compose-lifecycle.sh` has not run on a Docker host.                                                                                                                                                                                                                      |
+| 2. Runtime configuration | Auth apply, the sealed-secret channel, Edge Function secrets, Kubernetes sealed secrets, sealed-only password rotation, and JWT synchronization with the Envoy gateway are done. None has passed a live Studio → Fleet Control → Agent run. PostgREST, Realtime, and Storage are not wired. |
+| 3. Backups on Compose    | Not started on `docker/fleet-managed`: no backup agent, WAL archiving, or repository. The Backup Operator engine itself is complete.                                                                                                                                                        |
+| 4. Observability         | Per-project analytics and Vector overlay (`docker-compose.logs.override.yml`), unified logs on self-hosted Logflare, and gateway log and metrics scraping are in. Capability-gated empty states, the `disk` 500, and hiding log drains are unverified.                                      |
+| 5. Platform API gaps     | Organization audit logs implemented; Third-Party Auth hidden. Account audit logs, hiding GitHub connections and branching, and the zh-CN switcher in the Fleet image are unverified.                                                                                                        |
+
+Next, in order: a live acceptance run on a fresh two-stack environment built from published images (covers 0.7, 1, and 2), Phase 3, then PostgREST, Realtime, and Storage on the Phase 2 producer.
