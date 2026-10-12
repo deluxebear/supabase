@@ -9,6 +9,7 @@ import {
   requestBackupOperator,
   requestBackupOperatorEvents,
 } from '@/lib/api/self-platform/backup-operator-client'
+import { syncProjectManagementBinding } from '@/lib/api/self-platform/management-trust'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { STUDIO_CAPABILITIES, STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
@@ -103,6 +104,12 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
 
   try {
     if (STUDIO_DEPLOYMENT_PROFILE === 'fleet') {
+      // Agent capability evidence expires within seconds; refresh it first. If
+      // Fleet Control cannot be reached, the check below reports the stale
+      // evidence instead.
+      await syncProjectManagementBinding({ projectRef, actor: claims?.sub ?? 'studio-api' }).catch(
+        () => undefined
+      )
       await requireProjectCapability(projectRef, 'management.agent.connect')
     }
     let correlationId: string | undefined

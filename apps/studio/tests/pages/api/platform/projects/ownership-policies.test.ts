@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { requireProjectCapability } from '@/lib/api/self-platform/attachment'
+import { syncProjectManagementBinding } from '@/lib/api/self-platform/management-trust'
 import { setProjectOwnershipPolicy } from '@/lib/api/self-platform/ownership-policy'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { handler } from '@/pages/api/platform/projects/[ref]/ownership-policies'
@@ -16,6 +17,10 @@ vi.mock('@/lib/api/self-platform/attachment', () => ({
   requireProjectCapability: vi.fn(),
 }))
 vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({ guardProjectRoute: vi.fn() }))
+vi.mock('@/lib/api/self-platform/management-trust', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/api/self-platform/management-trust')>()),
+  syncProjectManagementBinding: vi.fn(),
+}))
 vi.mock('@/lib/api/self-platform/ownership-policy', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/api/self-platform/ownership-policy')>()),
   listProjectOwnershipPolicies: vi.fn(),
@@ -98,6 +103,13 @@ describe('project ownership policy API', () => {
       2,
       'project-a',
       'runtime.config.reconcile'
+    )
+    // Agent evidence expires within seconds, so it is refreshed before the check.
+    expect(syncProjectManagementBinding).toHaveBeenCalledWith(
+      expect.objectContaining({ projectRef: 'project-a', actor: 'owner-a' })
+    )
+    expect(vi.mocked(syncProjectManagementBinding).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(requireProjectCapability).mock.invocationCallOrder[1]
     )
     expect(setProjectOwnershipPolicy).toHaveBeenCalledWith(
       expect.objectContaining({ projectRef: 'project-a', policy: body, actor: 'owner-a' })

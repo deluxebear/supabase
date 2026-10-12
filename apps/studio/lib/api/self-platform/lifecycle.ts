@@ -12,7 +12,7 @@ import {
   type LifecycleExecuteInput,
   type LifecyclePlanInput,
 } from './lifecycle-contract'
-import { getProjectManagementBinding, requestManagementDomain } from './management-trust'
+import { requestManagementDomain, syncProjectManagementBinding } from './management-trust'
 import { listProjectOwnershipPolicies } from './ownership-policy'
 
 export {
@@ -75,10 +75,17 @@ export async function getLifecycleGeneration(projectRef: string, action: Lifecyc
 async function bindingFor(
   projectRef: string,
   action: LifecycleAction,
-  requiresMutation: boolean
+  requiresMutation: boolean,
+  request: { actor: string; correlationId: string }
 ) {
+  // Agent capability evidence expires within seconds, so refresh it from Fleet
+  // Control before checking, as the other Agent-backed flows do.
+  const binding = await syncProjectManagementBinding({
+    projectRef,
+    actor: request.actor,
+    correlationId: request.correlationId,
+  })
   await requireProjectCapability(projectRef, action)
-  const binding = await getProjectManagementBinding(projectRef)
   if (!binding || binding.state !== 'active' || binding.targetState !== 'active')
     throw new LifecycleConflict(
       'management_target_unbound',
@@ -110,7 +117,7 @@ export async function createLifecycleImpactPlan(input: {
   correlationId: string
 }) {
   const value = lifecyclePlanInputSchema.parse(input.value)
-  const binding = await bindingFor(input.projectRef, value.action, false)
+  const binding = await bindingFor(input.projectRef, value.action, false, input)
   const response = await requestManagementDomain(binding, 'fleet-control', {
     method: 'POST',
     path: `/platform/fleet/v1/projects/${encodeURIComponent(input.projectRef)}/lifecycle/impact-plans`,
@@ -143,7 +150,7 @@ export async function executeLifecyclePlan(input: {
       'plan_confirmation_invalid',
       'The lifecycle impact plan is expired or belongs to another project.'
     )
-  const binding = await bindingFor(input.projectRef, value.plan.action, true)
+  const binding = await bindingFor(input.projectRef, value.plan.action, true, input)
   if (binding.deploymentKind !== value.plan.adapter)
     throw new LifecycleConflict(
       'plan_confirmation_invalid',

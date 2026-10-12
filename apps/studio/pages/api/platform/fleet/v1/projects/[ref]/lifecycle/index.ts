@@ -13,7 +13,10 @@ import {
   lifecycleExecuteInputSchema,
   lifecyclePlanInputSchema,
 } from '@/lib/api/self-platform/lifecycle'
-import { ManagementTrustDownstreamError } from '@/lib/api/self-platform/management-trust'
+import {
+  ManagementTrustConflict,
+  ManagementTrustDownstreamError,
+} from '@/lib/api/self-platform/management-trust'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { STUDIO_CAPABILITIES, STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 
@@ -50,13 +53,11 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
     if (req.body?.phase === 'plan') {
       const parsed = lifecyclePlanInputSchema.safeParse(req.body.input)
       if (!parsed.success)
-        return res
-          .status(400)
-          .json({
-            code: 'validation_failed',
-            message: 'Lifecycle plan input is invalid',
-            details: parsed.error.flatten(),
-          })
+        return res.status(400).json({
+          code: 'validation_failed',
+          message: 'Lifecycle plan input is invalid',
+          details: parsed.error.flatten(),
+        })
       const [plan, expectedGeneration] = await Promise.all([
         createLifecycleImpactPlan({ projectRef, value: parsed.data, actor, correlationId }),
         getLifecycleGeneration(projectRef, parsed.data.action),
@@ -67,37 +68,31 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
       const idempotencyKey = req.headers['idempotency-key']
       const parsed = lifecycleExecuteInputSchema.safeParse({ ...req.body.input, idempotencyKey })
       if (!parsed.success)
-        return res
-          .status(400)
-          .json({
-            code: 'validation_failed',
-            message: 'Lifecycle execution input is invalid',
-            details: parsed.error.flatten(),
-          })
+        return res.status(400).json({
+          code: 'validation_failed',
+          message: 'Lifecycle execution input is invalid',
+          details: parsed.error.flatten(),
+        })
       if (
         parsed.data.plan.requiresRecentAal2 &&
         (claims?.aal !== 'aal2' ||
           typeof claims.iat !== 'number' ||
           Date.now() / 1000 - claims.iat > 600)
       )
-        return res
-          .status(403)
-          .json({
-            code: 'aal2_required',
-            message: 'A recent AAL2 session is required for this lifecycle action',
-          })
-      return res
-        .status(202)
-        .json({
-          operation: await executeLifecyclePlan({
-            projectRef,
-            value: parsed.data,
-            actor,
-            correlationId,
-            aal: claims?.aal,
-            aalAuthenticatedAt: claims?.iat,
-          }),
+        return res.status(403).json({
+          code: 'aal2_required',
+          message: 'A recent AAL2 session is required for this lifecycle action',
         })
+      return res.status(202).json({
+        operation: await executeLifecyclePlan({
+          projectRef,
+          value: parsed.data,
+          actor,
+          correlationId,
+          aal: claims?.aal,
+          aalAuthenticatedAt: claims?.iat,
+        }),
+      })
     }
     return res
       .status(400)
@@ -107,7 +102,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
       return res
         .status(409)
         .json({ code: 'capability_unavailable', message: error.message, blockers: error.blockers })
-    if (error instanceof LifecycleConflict)
+    if (error instanceof LifecycleConflict || error instanceof ManagementTrustConflict)
       return res.status(409).json({ code: error.code, message: error.message })
     if (error instanceof ManagementTrustDownstreamError)
       return res.status(error.status).json({ code: error.code, message: error.message })

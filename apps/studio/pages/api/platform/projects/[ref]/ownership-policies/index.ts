@@ -6,6 +6,11 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import apiWrapper from '@/lib/api/apiWrapper'
 import { CapabilityUnavailable, requireProjectCapability } from '@/lib/api/self-platform/attachment'
 import {
+  ManagementTrustConflict,
+  ManagementTrustDownstreamError,
+  syncProjectManagementBinding,
+} from '@/lib/api/self-platform/management-trust'
+import {
   listProjectOwnershipPolicies,
   OwnershipPolicyConflict,
   ownershipPolicyInputSchema,
@@ -56,17 +61,20 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
           details: parsed.error.flatten(),
         })
       }
+      const actor = claims?.sub ?? 'unknown'
+      const correlationId =
+        (typeof req.headers['x-correlation-id'] === 'string' && req.headers['x-correlation-id']) ||
+        randomUUID()
       if (parsed.data.ownershipMode === 'direct-managed') {
+        // Agent capability evidence expires within seconds; refresh it first.
+        await syncProjectManagementBinding({ projectRef, actor, correlationId })
         await requireProjectCapability(projectRef, 'runtime.config.reconcile')
       }
       const policy = await setProjectOwnershipPolicy({
         projectRef,
         policy: parsed.data,
-        actor: claims?.sub ?? 'unknown',
-        correlationId:
-          (typeof req.headers['x-correlation-id'] === 'string' &&
-            req.headers['x-correlation-id']) ||
-          randomUUID(),
+        actor,
+        correlationId,
       })
       return res.status(200).json({ policy })
     }
@@ -78,8 +86,11 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
         blockers: error.blockers,
       })
     }
-    if (error instanceof OwnershipPolicyConflict) {
+    if (error instanceof OwnershipPolicyConflict || error instanceof ManagementTrustConflict) {
       return res.status(409).json({ code: error.code, message: error.message })
+    }
+    if (error instanceof ManagementTrustDownstreamError) {
+      return res.status(error.status).json({ code: error.code, message: error.message })
     }
     throw error
   }
