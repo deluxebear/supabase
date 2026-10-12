@@ -4,7 +4,7 @@ Local environment, 2026-10-12. Stack `project-d` (`supabase-managed-d`), control
 
 ## End-to-end script
 
-`docker/self-platform/scripts/verify-compose-backups.sh project-d -- <stack Compose arguments>` passed on its first run. Output: [verify-compose-backups.log](./verify-compose-backups.log). It checked, in order:
+`docker/self-platform/scripts/verify-compose-backups.sh project-d -- <stack Compose arguments>` passed on its first run. Output: [verify-compose-backups.txt](./verify-compose-backups.txt). It checked, in order:
 
 1. Discovery and PITR status come from the backup Agent's observation.
 2. A full backup through the Operator.

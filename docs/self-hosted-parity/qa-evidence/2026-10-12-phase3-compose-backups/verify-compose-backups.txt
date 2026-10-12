@@ -1,0 +1,28 @@
+
+==> Checking the cluster
+PASS: discovery and PITR come from the Agent
+
+==> Taking a full backup
+PASS: full backup
+
+==> Writing fixture rows around a target time
+NOTICE:  table "backup_e2e" does not exist, skipping
+target: 2026-10-12T06:33:30.000Z
+
+==> Running an isolated restore drill
+PASS: drill passed; confidence is drill-verified
+
+==> Restoring to the target time
+PASS: restore kept only the row written before the target
+PASS: services run again after cut-over
+
+==> Rolling back
+PASS: rollback restored both rows and the services
+
+==> Checking isolation
+PASS: the backup proxy refuses containers outside its allowlist
+PASS: drill credentials cannot write to the repository
+
+==> Cleaning up
+
+All checks passed for project-d.
