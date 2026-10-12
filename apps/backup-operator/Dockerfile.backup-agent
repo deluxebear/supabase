@@ -1,0 +1,29 @@
+# Backup Agent for Fleet-managed Compose stacks. It runs on the stack's own
+# PostgreSQL image, so pgBackRest and the PostgreSQL binaries match the ones the
+# database uses for archive-push and restore.
+ARG POSTGRES_IMAGE=deluxebear/postgres:17
+
+FROM golang:1.24-bookworm AS build
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+ARG TARGETOS=linux
+ARG TARGETARCH
+ARG VERSION=dev
+ARG COMMIT=unknown
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w -X github.com/supabase/supabase/apps/backup-operator/internal/version.Version=${VERSION} -X github.com/supabase/supabase/apps/backup-operator/internal/version.Commit=${COMMIT}" -o /out/backup-operator ./cmd/backup-operator
+
+FROM ${POSTGRES_IMAGE}
+ARG VERSION=dev
+ARG COMMIT=unknown
+ARG BUILD_DATE=unknown
+LABEL org.opencontainers.image.title="Supabase Backup Agent" \
+      org.opencontainers.image.source="https://github.com/supabase/supabase/tree/master/apps/backup-operator" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.revision="${COMMIT}" \
+      org.opencontainers.image.created="${BUILD_DATE}"
+COPY --from=build /out/backup-operator /usr/local/bin/backup-operator
+USER postgres
+ENTRYPOINT ["/usr/local/bin/backup-operator"]
+CMD ["--mode=agent", "--agent-runtime=docker"]

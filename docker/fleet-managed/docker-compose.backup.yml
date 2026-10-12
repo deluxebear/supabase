@@ -1,0 +1,133 @@
+# Backups for a Fleet-managed stack (opt-in). Apply after the other overlays:
+#
+#   -f docker/fleet-managed/docker-compose.backup.yml
+#
+# Enable with scripts/enable-backups.sh, which migrates the data volume to the
+# layout below and writes the project's pgBackRest configuration first. Every
+# later `docker compose` command for the stack must include this file, or `db`
+# is recreated with the data volume mounted at the old path.
+#
+# Layout: the data volume is mounted at /var/lib/postgresql and PGDATA is its
+# `data` subdirectory, so a restore can quarantine PGDATA as a sibling on the
+# same filesystem.
+services:
+  db:
+    depends_on:
+      backup-config-init:
+        condition: service_completed_successfully
+    volumes: !override
+      - ./volumes/db/realtime.sql:/docker-entrypoint-initdb.d/migrations/99-realtime.sql:Z
+      - ./volumes/db/webhooks.sql:/docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql:Z
+      - ./fleet-managed/volumes/db/97-fleet-readonly-user.sh:/docker-entrypoint-initdb.d/init-scripts/97-fleet-readonly-user.sh:Z
+      - ./volumes/db/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:Z
+      - ./volumes/db/jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:Z
+      - managed-db-data:/var/lib/postgresql
+      - ./volumes/db/_supabase.sql:/docker-entrypoint-initdb.d/migrations/97-_supabase.sql:Z
+      - ./volumes/db/logs.sql:/docker-entrypoint-initdb.d/migrations/99-logs.sql:Z
+      - ./volumes/db/pooler.sql:/docker-entrypoint-initdb.d/migrations/99-pooler.sql:Z
+      - db-config:/etc/postgresql-custom
+      # Shared with the backup Agent, which connects over the socket.
+      - managed-db-socket:/var/run/postgresql
+      # archive-push reads the same configuration as the Agent.
+      - backup-config:/etc/pgbackrest:ro
+
+  # Copies the project's pgBackRest configuration and repository CA into a
+  # volume owned by the postgres user (UID 100), which `db` and the Agent read,
+  # and hands the Agent its state volume.
+  backup-config-init:
+    image: alpine:3.22
+    restart: "no"
+    command:
+      - /bin/sh
+      - -ceu
+      - |
+        install -o 100 -g 101 -m 0600 /source/pgbackrest.conf /config/pgbackrest.conf
+        install -o 100 -g 101 -m 0644 /source/ca.crt /config/ca.crt
+        chown 100:101 /config /agent-state
+        chmod 0750 /config
+        chmod 0700 /agent-state
+    volumes:
+      - ${FLEET_BACKUP_CONFIG_ROOT:?set FLEET_BACKUP_CONFIG_ROOT}:/source:ro
+      - backup-config:/config
+      - backup-agent-state:/agent-state
+
+  # One-shot data volume layout migration, run by scripts/enable-backups.sh
+  # while `db` is stopped. MIGRATE_DIRECTION=rollback reverses it.
+  db-layout-migrate:
+    image: alpine:3.22
+    profiles: [backup-migrate]
+    restart: "no"
+    network_mode: none
+    environment:
+      MIGRATE_DIRECTION: ${MIGRATE_DIRECTION:-forward}
+    command:
+      - /bin/sh
+      - -ceu
+      - |
+        cd /volume
+        marker=.fleet-pgdata-layout
+        move_entries() {
+          from="$$1" to="$$2"
+          find "$$from" -mindepth 1 -maxdepth 1 ! -name data ! -name "$$marker" \
+            ! -name 'data.*' -exec mv -n {} "$$to/" \;
+        }
+        if [ "$$MIGRATE_DIRECTION" = rollback ]; then
+          [ -f "$$marker" ] || { echo "layout is not migrated; nothing to roll back"; exit 0; }
+          [ -d data ] || { echo "data directory is missing" >&2; exit 1; }
+          move_entries data .
+          rmdir data
+          rm "$$marker"
+          [ -f PG_VERSION ] || { echo "PG_VERSION missing after rollback" >&2; exit 1; }
+          echo "layout rolled back"
+          exit 0
+        fi
+        if [ -f "$$marker" ]; then
+          echo "layout already migrated"
+          exit 0
+        fi
+        if [ ! -f PG_VERSION ] && [ ! -d data ]; then
+          [ -z "$$(ls -A)" ] || { echo "volume is not a PGDATA directory" >&2; exit 1; }
+          chown 100:101 .
+          touch "$$marker"
+          echo "empty volume marked for the new layout"
+          exit 0
+        fi
+        # A partial earlier run leaves entries in both places; finish it.
+        mkdir -p data
+        chown "$$(stat -c %u:%g .)" data
+        chmod "$$(stat -c %a .)" data
+        move_entries . data
+        [ -f data/PG_VERSION ] || { echo "PG_VERSION missing after the move" >&2; exit 1; }
+        [ -z "$$(find . -mindepth 1 -maxdepth 1 ! -name data ! -name "$$marker")" ] || {
+          echo "entries left outside data/" >&2
+          exit 1
+        }
+        touch "$$marker"
+        echo "layout migrated"
+    volumes:
+      - managed-db-data:/volume
+
+  # Runs pgBackRest and the Backup Operator in Agent mode, on the same image
+  # as `db`. It connects to the Operator once enrolled; until then
+  # scripts/enable-backups.sh runs pgBackRest commands in it with `run`.
+  backup-agent:
+    image: ${FLEET_BACKUP_AGENT_IMAGE:?set FLEET_BACKUP_AGENT_IMAGE}
+    profiles: [backup-agent]
+    restart: unless-stopped
+    user: "100:101"
+    depends_on:
+      backup-config-init:
+        condition: service_completed_successfully
+    volumes:
+      - managed-db-data:/var/lib/postgresql
+      - managed-db-socket:/var/run/postgresql
+      - backup-config:/etc/pgbackrest:ro
+      - backup-agent-state:/var/lib/backup-agent
+    networks:
+      default: {}
+      management: {}
+
+volumes:
+  managed-db-socket:
+  backup-config:
+  backup-agent-state:

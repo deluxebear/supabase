@@ -307,3 +307,56 @@ keys. The read-only smoke script checks each running opaque key and its role.
 This delivery path currently supports managed Compose Envoy stacks. It rejects
 unsupported or outdated gateways before accepting a change. Kubernetes key
 configuration delivery is not enabled by this overlay.
+
+## Backups (opt-in)
+
+`docker-compose.backup.yml` adds pgBackRest backups to a stack. The repository
+is the control plane's `backup-repository` service (RustFS over TLS); each
+project gets its own bucket, a user that can access only that bucket, and its
+own encryption passphrase. The design is in
+[Phase 3: backups on Fleet Compose stacks](../../docs/self-hosted-parity/2026-10-12-phase3-compose-backups-design.md).
+
+Prepare the control plane once:
+
+```bash
+docker/self-platform/scripts/generate-backup-repository-tls.sh
+docker build -f apps/backup-operator/Dockerfile.backup-agent \
+  -t supabase-backup-agent:local apps/backup-operator
+```
+
+Then enable backups for a stack from the `docker` directory, passing the
+stack's usual Compose arguments after `--`:
+
+```bash
+fleet-managed/scripts/enable-backups.sh project-a -- \
+  -p supabase-managed-a \
+  --env-file self-platform/.env \
+  --env-file fleet-managed/project-a.env \
+  -f docker-compose.yml \
+  -f fleet-managed/docker-compose.override.yml
+```
+
+The script writes the project's pgBackRest configuration to
+`state/<ref>/backup` (mode 0600), adds `FLEET_BACKUP_CONFIG_ROOT` and
+`FLEET_BACKUP_AGENT_IMAGE` to the project env file, creates the bucket and
+credentials, migrates the data volume so PGDATA becomes its `data`
+subdirectory, creates the stanza, turns on WAL archiving, and takes a first
+full backup. `db` is stopped for the migration (typically seconds) and
+restarted once more for archiving. Every step is idempotent.
+
+After that, every `docker compose` command for the stack must include
+`-f fleet-managed/docker-compose.backup.yml`, or `db` is recreated with the
+data volume at the old path and does not start. Fleet lifecycle rollouts are
+not affected: they recreate only allowlisted services, and `db` is not one of
+them.
+
+To undo the layout migration before relying on backups, stop `db` and run:
+
+```bash
+MIGRATE_DIRECTION=rollback docker compose <same arguments> \
+  -f fleet-managed/docker-compose.backup.yml \
+  --profile backup-migrate run --rm --no-deps db-layout-migrate
+```
+
+Then start the stack without the backup overlay and turn archiving off with
+`ALTER SYSTEM RESET archive_mode` and `ALTER SYSTEM RESET archive_command`.

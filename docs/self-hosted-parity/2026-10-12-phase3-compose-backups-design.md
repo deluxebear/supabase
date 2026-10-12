@@ -2,7 +2,7 @@
 
 - Date: 2026-10-12
 - Branch: `custom/main`
-- Status: approved 2026-10-12 (option B). Implementation starts with stage 3.1.
+- Status: approved 2026-10-12 (option B). Stage 3.1 is done; see section 9.
 - Inputs: Phase 3 of the [completion roadmap](./2026-09-28-fleet-completion-roadmap.md), the [Go Backup Operator architecture](./2026-07-12-go-backup-operator-architecture.md), `apps/backup-operator/docs/production-runbook.md`, and a code audit of `apps/backup-operator` and `docker/fleet-managed` on 2026-10-12.
 
 ## 1. Goal
@@ -70,10 +70,12 @@ rustfs (S3)  <---------------------------------- archive-push (db), backup/resto
 
 A new `docker/fleet-managed/docker-compose.backup.yml`, applied after the existing overlays, adds or changes these services:
 
-- **`db`**: mounts the data volume at `/var/lib/postgresql` (the parent of the image's default PGDATA, `/var/lib/postgresql/data`), adds a shared socket volume at `/var/run/postgresql`, and mounts the project's `pgbackrest.conf` read-only at `/etc/pgbackrest/pgbackrest.conf`. Archiving stays off until PITR is enabled; the existing PITR workflow sets `archive_mode` and `archive_command` with `ALTER SYSTEM` and restarts `db`.
-- **`db-validation`**: the same image, volume, and configuration as `db`, on an internal network with no published port. It is created but never started by Compose (`restart: "no"` and a `backup-validation` profile); only the Agent starts it during a restore.
-- **`backup-agent`**: a `supabase-backup-agent` image built `FROM deluxebear/postgres:17` with the `backup-operator` binary and the fence helper added, so it has the same pgBackRest and PostgreSQL binaries as the database. It runs as the `postgres` user (UID 100), mounts the data volume at the same path as `db`, the socket volume, `pgbackrest.conf`, and its own state volume, and runs `backup-operator --mode=agent --agent-runtime=docker`. It joins the management network to reach the Operator's gRPC listener and the proxy network to reach Docker.
-- **`fleet-docker-proxy-backup`**: the Phase 1 proxy (`fleet-docker-proxy`) with a new `backup` policy: `GET /containers/{id}/json` for project containers, and `start`, `stop`, `restart` for the `db`, `db-validation`, and fence services only. No create, delete, pull, exec, or network changes. The Agent never mounts the Docker socket.
+- **`db`**: mounts the data volume at `/var/lib/postgresql` (the parent of the image's default PGDATA, `/var/lib/postgresql/data`), adds a shared socket volume at `/var/run/postgresql`, and mounts the `backup-config` volume read-only at `/etc/pgbackrest`. pgBackRest cannot take a consistent backup without WAL archiving, so enabling backups turns archiving on with `ALTER SYSTEM`, using exactly the `archive_command` the Operator's PITR workflow sets. That workflow accepts a matching command as its own.
+- **`backup-config-init`**: a one-shot service that copies the project's `pgbackrest.conf` (mode 0600) and the repository CA from the host into the `backup-config` volume, owned by the `postgres` user (UID 100). A direct read-only bind mount of a 0600 host file is not readable by UID 100 on Linux hosts.
+- **`db-validation`** (stage 3.3): the same image, volume, and configuration as `db`, on an internal network with no published port. It is created but never started by Compose (`restart: "no"` and a `backup-validation` profile); only the Agent starts it during a restore.
+- **`backup-agent`**: a `supabase-backup-agent` image (`apps/backup-operator/Dockerfile.backup-agent`) built `FROM deluxebear/postgres:17` with the `backup-operator` binary added, so it has the same pgBackRest and PostgreSQL binaries as the database. It runs as the `postgres` user (UID 100), mounts the data volume at the same path as `db`, the socket volume, `backup-config`, and its own state volume, and runs `backup-operator --mode=agent --agent-runtime=docker`. It joins the management network to reach the repository and the Operator's gRPC listener, and in stage 3.3 the proxy network to reach Docker. It stays behind a `backup-agent` profile until it is enrolled (stage 3.2).
+- **pgBackRest binary**: the image's `/usr/bin/pgbackrest` is a wrapper that drops `--config` and switches to the `pgbackrest` user with `sudo`. The Agent and `archive_command` call `/usr/lib/pgbackrest/bin/pgbackrest.real` directly as `postgres`, as the Kubernetes runtime already does.
+- **`fleet-docker-proxy-backup`** (stage 3.3): the Phase 1 proxy (`fleet-docker-proxy`) with a new `backup` policy: `GET /containers/{id}/json` for project containers, and `start`, `stop`, `restart` for the `db`, `db-validation`, and fence services only. No create, delete, pull, exec, or network changes. The Agent never mounts the Docker socket.
 
 ### 4.3 Write fence
 
@@ -93,17 +95,18 @@ A fence helper binary in the Agent image implements the seven entry points by st
 
 New stacks start with the new layout. An existing stack migrates once, when backups are enabled:
 
-1. Stop `db` (the stack is unavailable for the duration, typically seconds).
+1. Record the system identifier and stop `db` (the stack is unavailable for the duration, typically seconds).
 2. A one-shot `db-layout-migrate` service mounts the volume, moves every top-level entry into a new `data/` directory with the same owner and mode, and writes a marker file. It is idempotent: with the marker present it does nothing; with a partial move it completes it.
 3. Start `db` with the backup overlay and verify the system identifier is unchanged.
 
-Rollback before backups are enabled: move `data/*` back to the volume root and drop the overlay. The procedure is in a script, `docker/fleet-managed/scripts/enable-backups.sh`, which also refuses to run unless `db` is stopped.
+Rollback before backups are enabled: run the same service with `MIGRATE_DIRECTION=rollback` while `db` is stopped, and drop the overlay. `docker/fleet-managed/scripts/enable-backups.sh` runs the migration only when the marker is missing, so a repeated run does not stop `db` again. The migration refuses a volume that is neither empty nor a PGDATA directory, and stops if an entry would be overwritten.
 
 ### 4.5 Repository
 
-- The control plane gets a `rustfs` service (from `docker/docker-compose.rustfs.yml`) on the control network, plus the management network so stacks can reach it.
-- Enabling backups for a project creates a bucket and a credential pair limited to that bucket. If RustFS cannot scope credentials to one bucket, the local acceptance uses its root credentials and the gap is recorded (open question 3).
-- `pgbackrest.conf` uses `repo1-type=s3`, path-style URIs, `repo1-cipher-type=aes-256-cbc` with a per-project passphrase, and `repo1-retention-full=2`. The file holds secrets, so it is written with mode 0600 and mounted read-only.
+- The control plane gets a `backup-repository` service (RustFS) on the control network, plus the management network so stacks can reach it. It publishes no host port.
+- pgBackRest uses S3 over HTTPS only, so the repository serves TLS with a certificate issued from the management CA (`docker/self-platform/scripts/generate-backup-repository-tls.sh`). pgBackRest verifies it with that CA.
+- Enabling backups for a project creates a bucket (`fleet-backup-<ref>`), a policy limited to that bucket, and a user with only that policy. RustFS enforces it: the user gets `AccessDenied` for other buckets.
+- `pgbackrest.conf` uses `repo1-type=s3`, path-style URIs, `repo1-cipher-type=aes-256-cbc` with a per-project passphrase, and `repo1-retention-full=2`. The file holds secrets, so it is written with mode 0600 under the gitignored `docker/fleet-managed/state/<ref>/backup` and copied into the `backup-config` volume.
 
 ### 4.6 Operator changes
 
@@ -125,16 +128,17 @@ The device check is not weakened.
 
 ### 4.8 Enrollment and bootstrap
 
-`enable-backups.sh <project>` performs, in order:
+`enable-backups.sh <project> -- <compose arguments>` performs, in order:
 
-1. The layout migration.
+1. `pgbackrest.conf`, and the backup settings in the project env file.
 2. The bucket and credentials.
-3. `pgbackrest.conf`.
-4. An Agent client certificate from the backup CA.
-5. The enrollment file.
-6. Registration of the cluster (`POST /v1/clusters`).
-7. The stanza.
-8. A first full backup.
+3. The layout migration.
+4. The stanza.
+5. WAL archiving.
+6. A check and a first full backup.
+7. An Agent client certificate, the enrollment file, and registration of the cluster (`POST /v1/clusters`), added in stage 3.2.
+
+Every step is idempotent.
 
 After that, the `backup-operator` domain answers for the project and Studio shows it as available. `init-instance-env.sh` generates the variables for new stacks.
 
@@ -168,7 +172,7 @@ Total: about 4.5–5.5 weeks, above the roadmap's 3–4 weeks because of option 
 
 1. **Option A or B.** Decided: option B (section 3).
 2. **`direct-postgres` fence.** Stopping in-stack clients covers the stack. Clients connecting from outside through the published DB port are ended by the writer drain, and the database itself is stopped for the restore. A stricter gate (for example `pg_hba` rejection) can follow if the release requires it.
-3. **RustFS bucket-scoped credentials.** To verify in stage 3.1. Without them, the local acceptance uses root credentials, and production needs a store that supports scoped keys.
+3. **RustFS bucket-scoped credentials.** Resolved in stage 3.1: a bucket policy attached to a per-project user is enforced.
 4. **Layout migration downtime.** Proportional to file count, not data size (a rename within one filesystem), but the stack is down while it runs.
 5. **pgsodium and Vault keys.** A restored database needs the same root key. The project's key lives outside PGDATA (`db-config` volume), so an in-place restore keeps it. A restore to a new stack must copy it; this is out of scope for Phase 3 and documented as a limitation.
 6. **Capacity.** In-place restore keeps the quarantined PGDATA until the rollback window ends, so the volume needs room for two copies. The Operator's capacity check already enforces this using the Agent-reported free bytes.
@@ -186,3 +190,16 @@ A new `docker/self-platform/scripts/verify-compose-backups.sh` runs against a di
 7. Roll back within the window and verify the later rows return.
 
 It also checks that project-b's Agent cannot receive project-a tasks and that the backup proxy rejects other containers. Evidence goes to `docs/self-hosted-parity/qa-evidence/`.
+
+## 9. Progress
+
+### Stage 3.1 (done 2026-10-12)
+
+On the local environment, `enable-backups.sh project-d` migrated the data volume (system identifier unchanged), created the bucket, user, and stanza, turned on archiving, and took a full backup from the Agent container: 645.6 MB of data, 90.1 MB stored after compression and encryption. A second run changed nothing and did not restart `db`. The layout migration was also tested on scratch volumes: forward, repeated, rollback, a partial earlier run, a conflicting entry (refused), a non-PGDATA volume (refused), and an empty volume.
+
+Findings that changed the design:
+
+- The image's pgBackRest wrapper drops `--config` and runs as another user, so the real binary is used.
+- pgBackRest needs HTTPS for S3, so the repository serves TLS from the management CA.
+- Backups need WAL archiving, so it is turned on when backups are enabled rather than only for PITR.
+- The configuration is copied into a volume owned by UID 100 instead of bind-mounted.

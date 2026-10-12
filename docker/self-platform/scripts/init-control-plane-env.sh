@@ -93,6 +93,8 @@ umask 077
   printf 'BACKUP_OPERATOR_CONTROL_STORE_SYSTEM_IDENTIFIER=control-plane-postgres\n'
   printf 'BACKUP_OPERATOR_CONTROL_STORE_DATA_DOMAIN=platform-db-data\n'
   printf 'BACKUP_OPERATOR_RUNTIME_MAX_CONCURRENT_OPERATIONS=4\n'
+  printf 'BACKUP_REPOSITORY_ROOT_USER=backup-admin\n'
+  printf 'BACKUP_REPOSITORY_ROOT_PASSWORD=%s\n' "$(random_secret)"
   printf 'MANAGED_SUPABASE_URL=\n'
   printf 'MANAGED_ANON_KEY=\n'
   printf 'MANAGED_SERVICE_ROLE_KEY=\n'

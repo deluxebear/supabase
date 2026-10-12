@@ -209,6 +209,33 @@ services:
       management:
         aliases: [backup-operator-tls]
 
+  # S3 repository for project backups. Each project gets its own bucket and
+  # credentials (docker/fleet-managed/scripts/enable-backups.sh). Stacks reach
+  # it on the management network; it publishes no host port.
+  backup-repository:
+    image: ${BACKUP_REPOSITORY_IMAGE:-rustfs/rustfs:v1.0.0-rc.5}
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: ${BACKUP_REPOSITORY_ROOT_USER:?set BACKUP_REPOSITORY_ROOT_USER}
+      RUSTFS_SECRET_KEY: ${BACKUP_REPOSITORY_ROOT_PASSWORD:?set BACKUP_REPOSITORY_ROOT_PASSWORD}
+      RUSTFS_CONSOLE_ENABLE: "false"
+      RUSTFS_TLS_PATH: /opt/tls
+    healthcheck:
+      test: [CMD, curl, -fsSk, https://127.0.0.1:9000/health]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - backup-repository-data:/data
+      # From scripts/generate-backup-repository-tls.sh, signed by the management CA.
+      - ./secrets/backup-repository/rustfs_cert.pem:/opt/tls/rustfs_cert.pem:ro
+      - ./secrets/backup-repository/rustfs_key.pem:/opt/tls/rustfs_key.pem:ro
+    security_opt: [no-new-privileges:true]
+    networks:
+      control: {}
+      management:
+        aliases: [backup-repository]
+
   platform-auth:
     image: supabase/gotrue:v2.189.0
     restart: unless-stopped
@@ -344,6 +371,7 @@ volumes:
   platform-db-data:
   fleet-artifacts:
   control-snippets:
+  backup-repository-data:
 
 secrets:
   fleet_agent_ca_cert:
