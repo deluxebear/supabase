@@ -4,7 +4,9 @@ import {
   createManagedAPIKey,
   listManagedAPIKeys,
   mutateManagedAPIKeys,
+  renderFunctionAPIKeyMaps,
   renderManagedAPIKeys,
+  renderManagedAPIKeysOverride,
 } from './api-key-management'
 import { executePlatformQuery } from './db'
 import { readVerifiedJWTObservation } from './jwt-configuration'
@@ -12,14 +14,12 @@ import { commitServiceConfigApply, loadServiceConfigApplyPlan } from './service-
 
 vi.mock('./db', () => ({ executePlatformQuery: vi.fn() }))
 vi.mock('./resolve-connection', () => ({
-  resolveProjectConnection: vi
-    .fn()
-    .mockResolvedValue({
-      anonKey: 'anon',
-      serviceKey: 'service',
-      publishableKey: 'sb_publishable_existing',
-      secretKey: null,
-    }),
+  resolveProjectConnection: vi.fn().mockResolvedValue({
+    anonKey: 'anon',
+    serviceKey: 'service',
+    publishableKey: 'sb_publishable_existing',
+    secretKey: null,
+  }),
 }))
 vi.mock('./secrets', () => ({
   encryptSecret: (value: string) => `encrypted:${value}`,
@@ -53,6 +53,37 @@ describe('Fleet managed API keys', () => {
     for (const value of ['key"; os.exit()', 'sb_secret_x|injection', 'sb_secret_x\n'])
       expect(() => renderManagedAPIKeys([{ ...key, api_key: value }])).toThrow()
     expect(renderManagedAPIKeys([])).toBe('')
+  })
+  it('delivers named key maps to Edge Functions alongside the gateway registry', () => {
+    const browser = createManagedAPIKey({ name: 'Browser app', type: 'publishable' })
+    const mobile = createManagedAPIKey({ name: 'Mobile app', type: 'publishable' })
+    const duplicate = createManagedAPIKey({ name: 'mobile app', type: 'publishable' })
+    const server = createManagedAPIKey({ name: 'server', type: 'secret' })
+    // `auth: 'publishable'` in @supabase/server accepts only the key named `default`.
+    expect(renderFunctionAPIKeyMaps([browser, mobile, duplicate, server])).toEqual({
+      SUPABASE_PUBLISHABLE_KEYS: JSON.stringify({
+        default: browser.api_key,
+        mobile_app: mobile.api_key,
+        mobile_app_2: duplicate.api_key,
+      }),
+      SUPABASE_SECRET_KEYS: JSON.stringify({ default: server.api_key }),
+    })
+    const override = JSON.parse(renderManagedAPIKeysOverride([browser, server]))
+    expect(override.services.kong.environment).toEqual({
+      FLEET_API_KEYS_MANAGED: 'true',
+      FLEET_API_KEYS: renderManagedAPIKeys([browser, server]),
+    })
+    expect(JSON.parse(override.services.functions.environment.SUPABASE_SECRET_KEYS)).toEqual({
+      default: server.api_key,
+    })
+  })
+  it('keeps an explicitly named default key as the default', () => {
+    const first = createManagedAPIKey({ name: 'first', type: 'secret' })
+    const named = createManagedAPIKey({ name: 'Default', type: 'secret' })
+    expect(JSON.parse(renderFunctionAPIKeyMaps([first, named]).SUPABASE_SECRET_KEYS)).toEqual({
+      first: first.api_key,
+      default: named.api_key,
+    })
   })
   it('retains registered keys until an Agent revision is applied', async () => {
     const keys = await listManagedAPIKeys('project-d')
@@ -113,6 +144,9 @@ describe('Fleet managed API keys', () => {
     const plan = vi.mocked(loadServiceConfigApplyPlan).mock.calls[0][0]
     expect(plan.secretsEnv?.FLEET_API_KEYS).toContain('sb_publishable_existing=publishable')
     expect(plan.secretsEnv?.FLEET_API_KEYS).toContain(`${key.api_key}=secret`)
+    expect(plan.spec.rolloutServices).toEqual(['kong', 'functions'])
+    const functionsEnv = JSON.parse(plan.secretsPlaintext ?? '{}').services.functions.environment
+    expect(Object.values(JSON.parse(functionsEnv.SUPABASE_SECRET_KEYS))).toContain(key.api_key)
     expect(plan.plainFiles[0].content).toContain('encrypted:')
   })
 })

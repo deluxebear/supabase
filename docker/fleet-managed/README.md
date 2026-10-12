@@ -279,7 +279,16 @@ and a recent MFA verification. When verification is needed, the mutation offers
 an action to verify an existing factor or set up MFA.
 
 Fleet delivers the complete key set sealed to the Agent in the `api-keys`
-configuration domain, then recreates only the gateway. Include
+configuration domain, then recreates the gateway and `functions`. Edge Functions
+receive the keys as `SUPABASE_PUBLISHABLE_KEYS` and `SUPABASE_SECRET_KEYS`, the
+named key maps that `withSupabase` from `@supabase/server` reads. Unless a key is
+named `default`, the oldest key of each type is delivered as `default`, which is
+the key that `auth: 'publishable'` and `auth: 'secret'` accept; other keys keep
+their names, so a function accepts them with `auth: 'publishable:<name>'` or
+`auth: 'publishable:*'`. On `/functions/v1/`, the gateway leaves the `apikey`
+header unchanged and adds the internal JWT as `sb-api-key`, as it does for
+single-key stacks. Stacks whose key set was applied before this change receive
+the key maps with the next key change. Include
 `<config-root>/api-keys/current/secrets.compose.yml` after the JWT overlay in
 operator Compose commands; the Agent includes it automatically. The managed
 init service bootstraps this domain before the Agent starts. Keys are stored

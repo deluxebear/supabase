@@ -135,4 +135,24 @@ describe('Fleet functions runtime upstream integration', () => {
     expect(response.headers.get('X-Supabase-Fleet-Revision')).toBe(revision)
     expect(runtime.create).not.toHaveBeenCalled()
   })
+
+  it('probes Fleet revisions with a secret API key translated by the gateway', async () => {
+    const runtime = loadRuntime({ fleet: true })
+    const probe = (headers: Record<string, string>) =>
+      runtime.invoke(new Request('http://functions/__fleet_probe/example', { headers }))
+
+    const accepted = await probe({
+      apikey: 'sb_secret_example',
+      authorization: 'Bearer sb_secret_example',
+      'sb-api-key': 'service-key',
+    })
+    expect(accepted.status).toBe(204)
+
+    const rejected = await probe({
+      apikey: 'sb_publishable_example',
+      authorization: 'Bearer sb_publishable_example',
+      'sb-api-key': 'anon-key',
+    })
+    expect(rejected.status).toBe(404)
+  })
 })

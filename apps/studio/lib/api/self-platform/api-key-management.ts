@@ -21,6 +21,8 @@ const SPEC: ServiceConfigSpec = {
   label: 'API keys',
   secretsHeader: '# Fleet-managed Envoy API keys',
   supportsKubernetes: false,
+  // Edge Functions validate opaque keys themselves, for example `withSupabase`.
+  rolloutServices: ['kong', 'functions'],
 }
 const REGISTRY_PATH = 'registry.enc'
 const keySchema = z.object({
@@ -69,6 +71,45 @@ export function createManagedAPIKey(input: z.infer<typeof apiKeyCreateSchema>): 
 export function renderManagedAPIKeys(keys: NonPlatformApiKey[]) {
   const validated = keysSchema.parse(keys)
   return validated.map((key) => `${key.api_key}=${key.type}`).join(',')
+}
+
+/**
+ * Named key maps in the format `@supabase/server` reads from the environment.
+ * Its `auth: 'publishable'` and `auth: 'secret'` modes accept only the key named
+ * `default`, so unless a key already has that name, the oldest key of each type
+ * is delivered as `default`. Other keys keep their (normalized) names.
+ */
+export function renderFunctionAPIKeyMaps(keys: NonPlatformApiKey[]) {
+  const validated = keysSchema.parse(keys)
+  const normalize = (name: string) => name.toLowerCase().replace(/[^a-z0-9_-]+/g, '_')
+  const maps = { publishable: {} as Record<string, string>, secret: {} as Record<string, string> }
+  for (const type of ['publishable', 'secret'] as const) {
+    const ofType = validated.filter((key) => key.type === type)
+    const hasDefault = ofType.some((key) => normalize(key.name) === 'default')
+    const map = maps[type]
+    ofType.forEach((key, index) => {
+      const base = !hasDefault && index === 0 ? 'default' : normalize(key.name) || type
+      let name = base
+      for (let suffix = 2; name in map; suffix++) name = `${base}_${suffix}`
+      map[name] = key.api_key
+    })
+  }
+  return {
+    SUPABASE_PUBLISHABLE_KEYS: JSON.stringify(maps.publishable),
+    SUPABASE_SECRET_KEYS: JSON.stringify(maps.secret),
+  }
+}
+
+/** Sealed Compose override for the gateway registry and the functions key maps. */
+export function renderManagedAPIKeysOverride(keys: NonPlatformApiKey[]) {
+  return JSON.stringify({
+    services: {
+      kong: {
+        environment: { FLEET_API_KEYS_MANAGED: 'true', FLEET_API_KEYS: renderManagedAPIKeys(keys) },
+      },
+      functions: { environment: renderFunctionAPIKeyMaps(keys) },
+    },
+  })
 }
 
 function keysFromDocument(document: unknown): NonPlatformApiKey[] {
@@ -226,6 +267,7 @@ export async function mutateManagedAPIKeys(input: {
     isStrict: true,
     plainFiles: [{ path: REGISTRY_PATH, content: encryptSecret(JSON.stringify(next)) }],
     secretsEnv: { FLEET_API_KEYS_MANAGED: 'true', FLEET_API_KEYS: renderManagedAPIKeys(next) },
+    secretsPlaintext: renderManagedAPIKeysOverride(next),
     hasPlainSettings: true,
   })
   if (plan.expectedGeneration !== snapshot.generation) throw new ConfigurationConflictError()

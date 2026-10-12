@@ -964,14 +964,6 @@ resources:
                       function envoy_on_request(request_handle)
                         local headers = request_handle:headers()
                         if is_functions_request(request_handle, headers) then
-                          local supplied = headers:get("apikey")
-                          if FLEET_KEYS[supplied] == nil then return end
-                          local translated = translate_apikey(supplied)
-                          headers:replace("apikey", translated)
-                          local auth = headers:get("authorization")
-                          if auth == nil or auth == "Bearer " .. supplied then
-                            headers:replace("authorization", "Bearer " .. translated)
-                          end
                           return
                         end
 
@@ -1092,7 +1084,14 @@ resources:
                       local SECRET_KEY = "${SUPABASE_SECRET_KEY}"
                       local ANON_JWT = "${ANON_KEY_ASYMMETRIC}"
                       local SERVICE_ROLE_JWT = "${SERVICE_ROLE_KEY_ASYMMETRIC}"
-                      local TRANSLATION_ENABLED = SECRET_KEY ~= "" and PUBLISHABLE_KEY ~= "" and SERVICE_ROLE_JWT ~= "" and ANON_JWT ~= ""
+                      local FLEET_MANAGED = "${FLEET_API_KEYS_MANAGED}" == "true"
+                      local FLEET_KEYS = {}
+                      for key, role in string.gmatch("${FLEET_API_KEYS}", "([%w_-]+)=([%w_]+)") do
+                        FLEET_KEYS[key] = role
+                      end
+                      local SINGLE_KEYS_ENABLED = not FLEET_MANAGED and SECRET_KEY ~= "" and PUBLISHABLE_KEY ~= ""
+                      local TRANSLATION_ENABLED = SERVICE_ROLE_JWT ~= "" and ANON_JWT ~= ""
+                        and (SINGLE_KEYS_ENABLED or FLEET_MANAGED or next(FLEET_KEYS) ~= nil)
 
                       local function is_functions_request(request_handle, headers)
                         if request_handle:streamInfo():routeName() == FUNCTIONS_ROUTE then
@@ -1164,9 +1163,18 @@ resources:
                         end
 
                         -- sb_ key: translate publishable/secret, otherwise reject.
-                        if key == SECRET_KEY then
+                        -- Fleet-registered keys are accepted like the single keys.
+                        local role = FLEET_KEYS[key]
+                        if role == nil and SINGLE_KEYS_ENABLED then
+                          if key == SECRET_KEY then
+                            role = "secret"
+                          elseif key == PUBLISHABLE_KEY then
+                            role = "publishable"
+                          end
+                        end
+                        if role == "secret" then
                           headers:replace("sb-api-key", SERVICE_ROLE_JWT)
-                        elseif key == PUBLISHABLE_KEY then
+                        elseif role == "publishable" then
                           headers:replace("sb-api-key", ANON_JWT)
                         else
                           unauthorized(request_handle, "Invalid API key")

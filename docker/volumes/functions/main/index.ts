@@ -355,7 +355,8 @@ async function handleRequest(req: Request, invocation: { execution_id?: string }
       !slug ||
       !/^[A-Za-z0-9][A-Za-z0-9_-]{0,62}$/.test(slug) ||
       !serviceKey ||
-      req.headers.get('authorization') !== `Bearer ${serviceKey}`
+      // A secret API key arrives as the gateway-minted service role JWT.
+      getAuthToken(req) !== serviceKey
     ) {
       return new Response(null, { status: 404 })
     }
