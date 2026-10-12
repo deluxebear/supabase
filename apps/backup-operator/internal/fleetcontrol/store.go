@@ -165,6 +165,9 @@ type AgentSessionIdentity struct {
 	TargetID     string
 	BindingID    string
 	Capabilities []string
+	// CertificateSerial is the mTLS certificate the session was opened with.
+	// Heartbeats revalidate it so expiry or revocation ends a long-lived stream.
+	CertificateSerial string
 }
 
 type CompleteOperationInput struct {

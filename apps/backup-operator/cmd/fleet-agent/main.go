@@ -40,6 +40,7 @@ func main() {
 	key := flag.String("client-key", os.Getenv("FLEET_AGENT_CLIENT_KEY"), "Fleet Agent mTLS private key")
 	ca := flag.String("server-ca", os.Getenv("FLEET_AGENT_SERVER_CA"), "Fleet Control server CA")
 	serverName := flag.String("server-name", os.Getenv("FLEET_AGENT_SERVER_NAME"), "Fleet Control mTLS server name")
+	renewalURL := flag.String("certificate-renewal-url", os.Getenv("FLEET_AGENT_ENROLLMENT_URL"), "Fleet Control enrollment HTTPS URL used to renew the mTLS certificate before it expires")
 	agentID := flag.String("agent-id", os.Getenv("FLEET_AGENT_ID"), "enrolled Fleet Agent id")
 	projectRef := flag.String("project-ref", os.Getenv("FLEET_AGENT_PROJECT_REF"), "enrolled Fleet project ref")
 	targetID := flag.String("target-id", os.Getenv("FLEET_AGENT_TARGET_ID"), "enrolled management target id")
@@ -242,9 +243,26 @@ func main() {
 		log.Fatal(err)
 	}
 	defer lock.Release()
+	if err := fleetagent.RecoverPendingCertificate(*cert, *key); err != nil {
+		log.Fatalf("Fleet Agent pending certificate recovery: %v", err)
+	}
 	tlsConfig, err := agenttransport.LoadClientTLS(*cert, *key, *ca, *serverName)
 	if err != nil {
 		log.Fatal(err)
+	}
+	certificateRotated := make(chan struct{}, 1)
+	if strings.TrimSpace(*renewalURL) == "" {
+		log.Print("Fleet Agent certificate renewal is disabled because FLEET_AGENT_ENROLLMENT_URL is not set; the Agent goes offline when its certificate expires")
+	} else {
+		rotator := fleetagent.CertificateRotator{
+			Endpoint: *renewalURL, AgentID: *agentID, CertFile: *cert, KeyFile: *key, CAFile: *ca, ServerName: *serverName,
+			Rotated: certificateRotated, Logf: log.Printf,
+		}
+		go func() {
+			if err := rotator.Run(ctx); err != nil {
+				log.Fatal(err)
+			}
+		}()
 	}
 	executor := &fleetagent.Executor{Journal: journal, Providers: providers, FunctionProviders: functionProviders, LifecycleProviders: lifecycleProviders, DatabaseProviders: databaseProviders, SecretRecipient: secretRecipient, InventoryProvider: inventoryProvider, LifecycleVersions: lifecycleVersions, ProjectRef: *projectRef, TargetID: *targetID, BindingID: *bindingID}
 	client := fleetagent.Client{
@@ -253,6 +271,8 @@ func main() {
 		MinBackoff: *minBackoff, MaxBackoff: *maxBackoff,
 		SecretRecipientPublicKey: secretRecipient.PublicKey().Bytes(),
 		JWTObserverURL:           os.Getenv("FLEET_AGENT_JWT_OBSERVER_URL"),
+		Reconnect:                certificateRotated,
+		Logf:                     log.Printf,
 	}
 	if strings.TrimSpace(*kubernetesJWTTargets) != "" {
 		if *adapter != "kubernetes" || client.JWTObserverURL != "" || *kubernetesNamespace == "" {

@@ -177,6 +177,8 @@ services:
       FLEET_AGENT_CLIENT_KEY: /var/lib/fleet-agent/trust/agent-key.pem
       FLEET_AGENT_SERVER_CA: /var/lib/fleet-agent/trust/agent-ca.pem
       FLEET_AGENT_SERVER_NAME: ${FLEET_AGENT_SERVER_NAME:-fleet-control}
+      # Renews the mTLS certificate before it expires.
+      FLEET_AGENT_ENROLLMENT_URL: ${FLEET_AGENT_ENROLLMENT_URL:-https://fleet-control:8091}
       FLEET_AGENT_ID: ${FLEET_AGENT_ID:-}
       FLEET_AGENT_PROJECT_REF: ${MANAGED_PROJECT_REF:?set MANAGED_PROJECT_REF}
       FLEET_AGENT_TARGET_ID: ${FLEET_AGENT_TARGET_ID:-}

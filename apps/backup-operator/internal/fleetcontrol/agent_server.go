@@ -112,7 +112,7 @@ func (s *AgentServer) Connect(stream fleetagentv1.FleetAgentControlService_Conne
 	if err := s.Store.RecordAgentSecretRecipient(stream.Context(), agent.ID, hello.GetSecretRecipientPublicKey()); err != nil {
 		return status.Error(codes.InvalidArgument, "Fleet Agent secret recipient key is invalid")
 	}
-	identity := AgentSessionIdentity{AgentID: agent.ID, ProjectRef: binding.ProjectRef, TargetID: binding.TargetID, BindingID: binding.BindingID, Capabilities: append([]string(nil), hello.GetCapabilities()...)}
+	identity := AgentSessionIdentity{AgentID: agent.ID, ProjectRef: binding.ProjectRef, TargetID: binding.TargetID, BindingID: binding.BindingID, Capabilities: append([]string(nil), hello.GetCapabilities()...), CertificateSerial: certificate.SerialNumber.Text(16)}
 	if s.Sessions == nil {
 		return status.Error(codes.FailedPrecondition, "Fleet Agent session limiter is required")
 	}
@@ -209,6 +209,11 @@ func (s *AgentServer) handleAgentMessage(stream fleetagentv1.FleetAgentControlSe
 		return status.Error(codes.InvalidArgument, "Fleet Agent message is empty")
 	}
 	if heartbeat := message.GetHeartbeat(); heartbeat != nil {
+		// TLS checks certificate validity only at the handshake, so a stream
+		// opened before expiry or revocation would otherwise stay online.
+		if _, _, err := s.Store.ValidateAgentCertificate(stream.Context(), identity.AgentID, identity.CertificateSerial); err != nil {
+			return status.Error(codes.PermissionDenied, "Fleet Agent certificate or binding is no longer active")
+		}
 		if len(heartbeat.GetJwtObservationJson()) > 0 {
 			if err := s.Store.RecordAgentJWTObservation(stream.Context(), identity.AgentID, identity.ProjectRef, identity.BindingID, heartbeat.GetJwtObservationJson()); err != nil {
 				return status.Error(codes.InvalidArgument, "JWT observation is invalid")

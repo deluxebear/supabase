@@ -7,6 +7,7 @@ import (
 	"io"
 	"math/rand/v2"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	transportv1 "github.com/supabase/supabase/apps/backup-operator/gen/proto/agent/transport/v1"
@@ -34,7 +35,18 @@ type Client struct {
 	MinBackoff               time.Duration
 	MaxBackoff               time.Duration
 	Jitter                   func(time.Duration) time.Duration
+	// Reconnect asks for a new stream, for example after certificate
+	// renewal. A running task finishes first.
+	Reconnect <-chan struct{}
+	Logf      func(format string, args ...any)
 }
+
+// errReconnectRequested ends a stream on purpose so the Agent reconnects
+// immediately.
+var errReconnectRequested = errors.New("Fleet Agent reconnect requested")
+
+// repeatedErrorLogInterval limits how often the same connection error is logged.
+const repeatedErrorLogInterval = 5 * time.Minute
 
 func (c Client) Run(ctx context.Context) error {
 	if c.Address == "" || c.TLS == nil || c.AgentID == "" || c.TargetID == "" || c.BindingID == "" || c.NodeID == "" || c.Build == "" || len(c.Capabilities) == 0 || c.Executor == nil {
@@ -49,11 +61,23 @@ func (c Client) Run(ctx context.Context) error {
 		maximum = 30 * time.Second
 	}
 	backoff := minimum
+	var lastError string
+	var lastLogged time.Time
 	for {
-		if err := c.connect(ctx); err == nil {
-			backoff = minimum
-		} else if ctx.Err() != nil {
+		err := c.connect(ctx)
+		if ctx.Err() != nil {
 			return nil
+		}
+		if errors.Is(err, errReconnectRequested) {
+			c.logf("Fleet Agent reconnecting with its renewed certificate")
+			backoff = minimum
+			continue
+		}
+		if err == nil {
+			backoff = minimum
+		} else if message := err.Error(); message != lastError || time.Since(lastLogged) >= repeatedErrorLogInterval {
+			c.logf("Fleet Agent connection to %s failed: %v", c.Address, err)
+			lastError, lastLogged = message, time.Now()
 		}
 		delay := reconnectDelay(backoff, c.Jitter)
 		timer := time.NewTimer(delay)
@@ -103,6 +127,22 @@ func (c Client) connect(ctx context.Context) error {
 	}}}); err != nil {
 		return err
 	}
+	var busy, reconnectPending atomic.Bool
+	if c.Reconnect != nil {
+		go func() {
+			for {
+				select {
+				case <-streamCtx.Done():
+					return
+				case <-c.Reconnect:
+					reconnectPending.Store(true)
+					if !busy.Load() {
+						cancel()
+					}
+				}
+			}
+		}()
+	}
 	var sendMu sync.Mutex
 	send := func(message *fleetagentv1.ConnectRequest) error {
 		sendMu.Lock()
@@ -134,12 +174,21 @@ func (c Client) connect(ctx context.Context) error {
 	for {
 		message, err := stream.Recv()
 		if err != nil {
+			if reconnectPending.Load() {
+				return errReconnectRequested
+			}
 			return err
+		}
+		// Fleet Control acknowledges the hello without a task id and each task
+		// result with one.
+		if ack := message.GetAcknowledgement(); ack != nil && ack.GetTaskId() == "" {
+			c.logf("Fleet Agent connected to %s", c.Address)
 		}
 		task := message.GetTask()
 		if task == nil {
 			continue
 		}
+		busy.Store(true)
 		artifactFetcher := grpcArtifactFetcher{client: fleetagentv1.NewFleetAgentControlServiceClient(connection), agentID: c.AgentID, projectRef: c.Executor.ProjectRef, targetID: c.TargetID, bindingID: c.BindingID}
 		result := c.Executor.ExecuteWithArtifacts(ctx, task, func(progress *transportv1.TaskProgress) error {
 			return send(&fleetagentv1.ConnectRequest{Payload: &fleetagentv1.ConnectRequest_Progress{Progress: progress}})
@@ -147,6 +196,16 @@ func (c Client) connect(ctx context.Context) error {
 		if err := send(&fleetagentv1.ConnectRequest{Payload: &fleetagentv1.ConnectRequest_Result{Result: result}}); err != nil {
 			return err
 		}
+		busy.Store(false)
+		if reconnectPending.Load() {
+			return errReconnectRequested
+		}
+	}
+}
+
+func (c Client) logf(format string, args ...any) {
+	if c.Logf != nil {
+		c.Logf(format, args...)
 	}
 }
 

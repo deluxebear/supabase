@@ -54,6 +54,12 @@ docker compose -p supabase-managed-a \
   --profile agent up -d fleet-agent
 ```
 
+The Agent renews its mTLS certificate through `FLEET_AGENT_ENROLLMENT_URL`
+(default `https://fleet-control:8091`) after two thirds of its lifetime. An
+Agent whose certificate has already expired logs
+`certificate has expired; enroll the Agent again` and needs a new enrollment
+token and bootstrap run as above.
+
 `capabilities.json` does not advertise `runtime.config.reconcile`. The Agent
 can write Fleet-owned configuration revisions, but no managed service consumes
 them yet, so advertising the capability would report changes as applied when
