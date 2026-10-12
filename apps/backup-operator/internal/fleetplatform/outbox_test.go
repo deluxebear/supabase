@@ -242,3 +242,83 @@ func securityClaims(r *http.Request, key []byte) (security.ServiceClaims, error)
 	}
 	return security.ValidateServiceJWT(header[len("Bearer "):], key, "studio-platform", "fleet-control", time.Unix(1_700_000_000, 0))
 }
+
+type lifecycleProjectionMemoryStore struct {
+	memoryStore
+	candidate LifecycleProjection
+	ready     bool
+	applied   []string
+}
+
+func (s *lifecycleProjectionMemoryStore) NextLifecycleProjection(context.Context) (LifecycleProjection, bool, error) {
+	return s.candidate, s.ready, nil
+}
+
+func (s *lifecycleProjectionMemoryStore) ApplyLifecycleProjection(_ context.Context, candidate LifecycleProjection, state, errorCode string) (bool, error) {
+	if candidate != s.candidate {
+		return false, nil
+	}
+	s.applied = append(s.applied, state+"/"+errorCode)
+	s.ready = false
+	return true, nil
+}
+
+func TestLifecycleProjectionRecordsTerminalFleetControlState(t *testing.T) {
+	key := []byte("fleet-control-test-key-at-least-32-bytes")
+	now := time.Unix(1_700_000_000, 0).UTC()
+	candidate := LifecycleProjection{OperationID: "lifecycle_op", ProjectRef: "project-a", DesiredRevision: "11111111-1111-4111-8111-111111111111", DesiredGeneration: 4}
+	for _, test := range []struct {
+		state     string
+		projected bool
+		applied   []string
+	}{
+		{state: "running", projected: false},
+		{state: "succeeded", projected: true, applied: []string{"succeeded/"}},
+		{state: "failed", projected: true, applied: []string{"failed/provider_failed"}},
+	} {
+		t.Run(test.state, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				claims, err := securityClaims(r, key)
+				if err != nil || len(claims.Projects) != 1 || claims.Projects[0] != candidate.ProjectRef || len(claims.Scopes) != 1 || claims.Scopes[0] != "fleet.read" {
+					t.Fatalf("projection assertion = %+v, %v", claims, err)
+				}
+				if r.URL.Path != "/platform/fleet/v1/projects/project-a/operations/lifecycle_op" {
+					t.Fatalf("path = %s", r.URL.Path)
+				}
+				errorCode := ""
+				if test.state == "failed" {
+					errorCode = "provider_failed"
+				}
+				w.Header().Set("Content-Type", "application/json")
+				_ = json.NewEncoder(w).Encode(map[string]any{"id": candidate.OperationID, "projectRef": candidate.ProjectRef, "state": test.state, "errorCode": errorCode})
+			}))
+			defer server.Close()
+			store := &lifecycleProjectionMemoryStore{candidate: candidate, ready: true}
+			cfg := Config{Store: store, FleetControlURL: server.URL, AssertionKey: key, AssertionIssuer: "studio-platform", AssertionAudience: "fleet-control", WorkerID: "worker-1", Lease: 30 * time.Second, PollInterval: time.Second, Now: func() time.Time { return now }}
+			projected, err := cfg.ProjectLifecycleOnce(context.Background())
+			if err != nil || projected != test.projected || len(store.applied) != len(test.applied) {
+				t.Fatalf("projection = %v applied=%v err=%v", projected, store.applied, err)
+			}
+			for index := range test.applied {
+				if store.applied[index] != test.applied[index] {
+					t.Fatalf("applied = %v, want %v", store.applied, test.applied)
+				}
+			}
+		})
+	}
+}
+
+func TestLifecycleProjectionRejectsAnotherProjectsOperation(t *testing.T) {
+	key := []byte("fleet-control-test-key-at-least-32-bytes")
+	candidate := LifecycleProjection{OperationID: "lifecycle_op", ProjectRef: "project-a", DesiredRevision: "11111111-1111-4111-8111-111111111111", DesiredGeneration: 4}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{"id": candidate.OperationID, "projectRef": "project-b", "state": "succeeded"})
+	}))
+	defer server.Close()
+	store := &lifecycleProjectionMemoryStore{candidate: candidate, ready: true}
+	cfg := Config{Store: store, FleetControlURL: server.URL, AssertionKey: key, AssertionIssuer: "studio-platform", AssertionAudience: "fleet-control", WorkerID: "worker-1", Lease: 30 * time.Second, PollInterval: time.Second}
+	if _, err := cfg.ProjectLifecycleOnce(context.Background()); err == nil || len(store.applied) != 0 {
+		t.Fatalf("mismatched operation was projected: applied=%v err=%v", store.applied, err)
+	}
+}

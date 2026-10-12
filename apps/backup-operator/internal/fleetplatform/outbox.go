@@ -71,6 +71,20 @@ type ConfigurationProjectionStore interface {
 	ApplyConfigurationProjection(context.Context, ConfigurationProjection, *fleetproviders.Evidence, string, string) (bool, error)
 }
 
+type LifecycleProjection struct {
+	OperationID       string
+	ProjectRef        string
+	DesiredRevision   string
+	DesiredGeneration int64
+}
+
+// LifecycleProjectionStore records Fleet Control's terminal state for lifecycle
+// operations, which carry no configuration evidence to project.
+type LifecycleProjectionStore interface {
+	NextLifecycleProjection(context.Context) (LifecycleProjection, bool, error)
+	ApplyLifecycleProjection(context.Context, LifecycleProjection, string, string) (bool, error)
+}
+
 type PostgresStore struct{ db *sql.DB }
 
 func OpenPostgres(ctx context.Context, dsn string) (*PostgresStore, error) {
@@ -199,6 +213,29 @@ $1,$2,$3,$4::uuid,$5,$6::jsonb,$7,$8,$9,$10,$11,$12::jsonb,$13,$14::timestamptz
 		string(evidence.ObservedDocument), evidence.ObservedDigest, candidate.OperationID,
 		evidence.DriftState, evidence.Applied && operationState == "succeeded", evidence.ObservationOnly, string(blockers),
 		errorCode, time.Now().UTC()).Scan(&applied)
+	return applied, err
+}
+
+func (s *PostgresStore) NextLifecycleProjection(ctx context.Context) (LifecycleProjection, bool, error) {
+	var candidate LifecycleProjection
+	err := s.db.QueryRowContext(ctx, `SELECT operation_id, project_ref, desired_revision::text, desired_generation
+FROM platform.next_lifecycle_projection()`).Scan(
+		&candidate.OperationID, &candidate.ProjectRef, &candidate.DesiredRevision, &candidate.DesiredGeneration,
+	)
+	if errors.Is(err, sql.ErrNoRows) {
+		return LifecycleProjection{}, false, nil
+	}
+	if err != nil {
+		return LifecycleProjection{}, false, err
+	}
+	return candidate, true, nil
+}
+
+func (s *PostgresStore) ApplyLifecycleProjection(ctx context.Context, candidate LifecycleProjection, controlState, errorCode string) (bool, error) {
+	var applied bool
+	err := s.db.QueryRowContext(ctx, `SELECT platform.apply_lifecycle_operation_result($1,$2,$3::uuid,$4,$5,$6)`,
+		candidate.ProjectRef, candidate.OperationID, candidate.DesiredRevision,
+		candidate.DesiredGeneration, controlState, errorCode).Scan(&applied)
 	return applied, err
 }
 
@@ -418,6 +455,84 @@ func (c Config) ProjectConfigurationOnce(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
+func (c Config) ProjectLifecycleOnce(ctx context.Context) (bool, error) {
+	store, ok := c.Store.(LifecycleProjectionStore)
+	if !ok {
+		return false, nil
+	}
+	candidate, ok, err := store.NextLifecycleProjection(ctx)
+	if err != nil || !ok {
+		return ok, err
+	}
+	operation, err := c.fetchOperation(ctx, candidate.ProjectRef, candidate.OperationID)
+	if err != nil {
+		return true, err
+	}
+	if operation.ID != candidate.OperationID || operation.ProjectRef != candidate.ProjectRef {
+		return true, &FleetError{Code: "downstream_invalid_response", Message: "Fleet Control returned a mismatched lifecycle operation", Retryable: false}
+	}
+	if operation.State != "succeeded" && operation.State != "failed" && operation.State != "cancelled" && operation.State != "timed_out" {
+		return false, nil
+	}
+	applied, err := store.ApplyLifecycleProjection(ctx, candidate, operation.State, operation.ErrorCode)
+	if err != nil {
+		return true, err
+	}
+	if !applied {
+		return true, errors.New("stale lifecycle operation result was rejected")
+	}
+	return true, nil
+}
+
+type projectedOperation struct {
+	ID         string `json:"id"`
+	ProjectRef string `json:"projectRef"`
+	State      string `json:"state"`
+	ErrorCode  string `json:"errorCode"`
+}
+
+func (c Config) fetchOperation(ctx context.Context, projectRef, operationID string) (projectedOperation, error) {
+	now := time.Now
+	if c.Now != nil {
+		now = c.Now
+	}
+	assertion, err := security.SignServiceJWT(security.ServiceClaims{
+		Issuer: c.AssertionIssuer, Subject: "fleet-platform-projector", Audience: c.AssertionAudience,
+		NotBefore: now().Add(-5 * time.Second).Unix(), Expires: now().Add(time.Minute).Unix(),
+		Scopes: []string{"fleet.read"}, Projects: []string{projectRef},
+	}, c.AssertionKey)
+	if err != nil {
+		return projectedOperation{}, err
+	}
+	endpoint := strings.TrimRight(c.FleetControlURL, "/") + "/platform/fleet/v1/projects/" + url.PathEscape(projectRef) + "/operations/" + url.PathEscape(operationID)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return projectedOperation{}, err
+	}
+	request.Header.Set("Authorization", "Bearer "+assertion)
+	client := c.HTTPClient
+	if client == nil {
+		client = &http.Client{Timeout: 10 * time.Second}
+	}
+	response, err := client.Do(request)
+	if err != nil {
+		return projectedOperation{}, err
+	}
+	defer response.Body.Close()
+	payload, err := io.ReadAll(io.LimitReader(response.Body, 1<<20))
+	if err != nil {
+		return projectedOperation{}, err
+	}
+	if response.StatusCode != http.StatusOK || !strings.Contains(response.Header.Get("Content-Type"), "application/json") {
+		return projectedOperation{}, &FleetError{Code: "downstream_invalid_response", Message: fmt.Sprintf("Fleet Control operation projection returned HTTP %d", response.StatusCode), Retryable: response.StatusCode >= 500}
+	}
+	var operation projectedOperation
+	if json.Unmarshal(payload, &operation) != nil {
+		return projectedOperation{}, &FleetError{Code: "downstream_invalid_response", Message: "Fleet Control returned an invalid operation", Retryable: false}
+	}
+	return operation, nil
+}
+
 type FleetError struct {
 	Code      string
 	Message   string
@@ -523,6 +638,9 @@ func Run(ctx context.Context, cfg Config) error {
 		}
 		if _, err := cfg.ProjectConfigurationOnce(ctx); err != nil {
 			cfg.Logger.Error("Fleet configuration projection failed", "error", err)
+		}
+		if _, err := cfg.ProjectLifecycleOnce(ctx); err != nil {
+			cfg.Logger.Error("Fleet lifecycle projection failed", "error", err)
 		}
 		select {
 		case <-ctx.Done():

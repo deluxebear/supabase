@@ -129,6 +129,8 @@ grant execute on function platform.next_configuration_projection() to fleet_plat
 grant execute on function platform.apply_configuration_reconciliation_evidence(text, text, bigint, uuid, bigint, jsonb, text, text, text, boolean, jsonb, text, timestamptz) to fleet_platform_dispatcher;
 grant execute on function platform.apply_configuration_reconciliation_evidence(text, text, bigint, uuid, bigint, jsonb, text, text, text, boolean, boolean, jsonb, text, timestamptz) to fleet_platform_dispatcher;
 grant execute on function platform.apply_configuration_operation_failure(text, text, uuid, bigint, text) to fleet_platform_dispatcher;
+grant execute on function platform.next_lifecycle_projection() to fleet_platform_dispatcher;
+grant execute on function platform.apply_lifecycle_operation_result(text, text, uuid, bigint, text, text) to fleet_platform_dispatcher;
 SQL
 fi
 

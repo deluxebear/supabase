@@ -1031,6 +1031,9 @@ func (s *Store) TouchAgentSession(ctx context.Context, agentID string) error {
 	if _, err := tx.ExecContext(ctx, capabilities, now.UnixMilli(), leaseExpiresAt.UnixMilli(), agentID); err != nil {
 		return err
 	}
+	if err := retireEndedCertificateOverlaps(ctx, tx, s.dialect, agentID, now.UnixMilli()); err != nil {
+		return err
+	}
 	return tx.Commit()
 }
 

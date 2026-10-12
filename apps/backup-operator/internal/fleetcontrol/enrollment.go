@@ -499,6 +499,17 @@ WHERE c.serial=? AND a.id=?`
 	return binding, agent, nil
 }
 
+// A rotated-out certificate is accepted only until its overlap window ends.
+// Heartbeats record that it is no longer usable instead of leaving it in overlap.
+func retireEndedCertificateOverlaps(ctx context.Context, tx *sql.Tx, dialect StoreDialect, agentID string, nowMs int64) error {
+	query := "UPDATE agent_certificates SET state='replaced' WHERE agent_id=? AND state='overlap' AND overlap_until_ms<?"
+	if dialect == FleetPostgres {
+		query = "UPDATE agent_certificates SET state='replaced' WHERE agent_id=$1 AND state='overlap' AND overlap_until_ms<$2"
+	}
+	_, err := tx.ExecContext(ctx, query, agentID, nowMs)
+	return err
+}
+
 func (s *Store) RotateAgentCertificate(ctx context.Context, agentID, currentSerial string, certificate IssuedCertificate, overlap time.Duration, actor, correlationID string) (AgentRecord, error) {
 	binding, agent, err := s.ValidateAgentCertificate(ctx, agentID, currentSerial)
 	if err != nil {
@@ -573,6 +584,9 @@ func (s *Store) RecordHeartbeat(ctx context.Context, agentID, serial string, pro
 		return BindingStatus{}, err
 	}
 	if err := replaceAgentCapabilities(ctx, tx, s.dialect, agentID, capabilities, now.UnixMilli(), leaseExpiresAt.UnixMilli()); err != nil {
+		return BindingStatus{}, err
+	}
+	if err := retireEndedCertificateOverlaps(ctx, tx, s.dialect, agentID, now.UnixMilli()); err != nil {
 		return BindingStatus{}, err
 	}
 	if err := tx.Commit(); err != nil {

@@ -134,6 +134,6 @@ fi
 
 (cd "$REPO_DIR/apps/backup-operator" && \
   go test ./internal/fleetproviders ./internal/fleetagent ./internal/fleetcontrol \
-    -run 'Ownership|Reconcile|OperationClaim' -count=1)
+    -run 'Ownership|Reconcile|OperationClaim|Executor' -count=1)
 
 echo "T8 ownership-safe reconciliation acceptance passed"
