@@ -30,6 +30,15 @@ const (
 	Unknown       BackupRecoverabilityConfidence = "unknown"
 )
 
+// Defines values for BackupRecoverabilityDrillStatus.
+const (
+	BackupRecoverabilityDrillStatusFailed                BackupRecoverabilityDrillStatus = "failed"
+	BackupRecoverabilityDrillStatusMismatch              BackupRecoverabilityDrillStatus = "mismatch"
+	BackupRecoverabilityDrillStatusNone                  BackupRecoverabilityDrillStatus = "none"
+	BackupRecoverabilityDrillStatusOlderThanLatestBackup BackupRecoverabilityDrillStatus = "older-than-latest-backup"
+	BackupRecoverabilityDrillStatusVerified              BackupRecoverabilityDrillStatus = "verified"
+)
+
 // Defines values for HealthStatus.
 const (
 	Ok HealthStatus = "ok"
@@ -51,12 +60,12 @@ const (
 
 // Defines values for OperationStepState.
 const (
-	OperationStepStateCancelled OperationStepState = "cancelled"
-	OperationStepStateFailed    OperationStepState = "failed"
-	OperationStepStateOrphaned  OperationStepState = "orphaned"
-	OperationStepStateQueued    OperationStepState = "queued"
-	OperationStepStateRunning   OperationStepState = "running"
-	OperationStepStateSucceeded OperationStepState = "succeeded"
+	Cancelled OperationStepState = "cancelled"
+	Failed    OperationStepState = "failed"
+	Orphaned  OperationStepState = "orphaned"
+	Queued    OperationStepState = "queued"
+	Running   OperationStepState = "running"
+	Succeeded OperationStepState = "succeeded"
 )
 
 // Defines values for CreateManualBackupJSONBodyType.
@@ -110,11 +119,13 @@ type BackupPolicyInputBackupFrom string
 
 // BackupRecoverability defines model for BackupRecoverability.
 type BackupRecoverability struct {
-	Backups        []ObservedBackup               `json:"backups"`
-	Blockers       []string                       `json:"blockers"`
-	Confidence     BackupRecoverabilityConfidence `json:"confidence"`
-	Drill          *RestoreDrill                  `json:"drill"`
-	IsStale        bool                           `json:"isStale"`
+	Backups        []ObservedBackup                 `json:"backups"`
+	Blockers       []string                         `json:"blockers"`
+	Confidence     BackupRecoverabilityConfidence   `json:"confidence"`
+	Drill          *RestoreDrill                    `json:"drill"`
+	DrillStatus    *BackupRecoverabilityDrillStatus `json:"drillStatus,omitempty"`
+	IsStale        bool                             `json:"isStale"`
+	Notes          *[]string                        `json:"notes,omitempty"`
 	RecoveryWindow struct {
 		Earliest *time.Time `json:"earliest"`
 		Latest   *time.Time `json:"latest"`
@@ -123,6 +134,9 @@ type BackupRecoverability struct {
 
 // BackupRecoverabilityConfidence defines model for BackupRecoverability.Confidence.
 type BackupRecoverabilityConfidence string
+
+// BackupRecoverabilityDrillStatus defines model for BackupRecoverability.DrillStatus.
+type BackupRecoverabilityDrillStatus string
 
 // Capability defines model for Capability.
 type Capability struct {

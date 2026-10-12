@@ -647,7 +647,26 @@ func (h *Handler) listBackups(w http.ResponseWriter, r *http.Request) {
 	} else {
 		notes = append(notes, window.Reasons...)
 	}
-	writeJSON(w, 200, map[string]any{"backups": backups, "recoveryWindow": map[string]any{"earliest": earliest, "latest": latest}, "confidence": window.Confidence, "isStale": isStale, "blockers": blockers, "notes": notes, "drill": drillResponse})
+	writeJSON(w, 200, map[string]any{"backups": backups, "recoveryWindow": map[string]any{"earliest": earliest, "latest": latest}, "confidence": window.Confidence, "drillStatus": drillStatus(window, drill), "isStale": isStale, "blockers": blockers, "notes": notes, "drill": drillResponse})
+}
+
+// drillStatus says why a window is, or is not, verified by a restore drill, as
+// a stable code for clients to explain.
+func drillStatus(window recoverability.Window, drill *recoverability.DrillRecord) string {
+	switch {
+	case window.Confidence == recoverability.DrillVerified:
+		return "verified"
+	case drill == nil:
+		return "none"
+	case !drill.Passed:
+		return "failed"
+	case !window.From.IsZero() && drill.TargetTime.Before(window.From):
+		// The newest backup completed after the drill's target, so the drill
+		// verified an older backup.
+		return "older-than-latest-backup"
+	default:
+		return "mismatch"
+	}
 }
 func (h *Handler) getClusterJob(w http.ResponseWriter, r *http.Request) {
 	target, ok := h.authorizedTarget(w, r, "backup.read")

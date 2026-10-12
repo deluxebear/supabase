@@ -27,9 +27,12 @@ type Coordinator struct {
 	Targets    TargetSource
 	Jobs       JobStore
 	Capability CapabilityResolver
-	Interval   time.Duration
-	LeaseTTL   time.Duration
-	Now        func() time.Time
+	// Interval is the shortest time between drills. CheckInterval is how often
+	// due targets are evaluated; zero means Interval.
+	Interval      time.Duration
+	CheckInterval time.Duration
+	LeaseTTL      time.Duration
+	Now           func() time.Time
 }
 
 func (c Coordinator) Name() string { return "restore-drill-coordinator" }
@@ -41,7 +44,11 @@ func (c Coordinator) Run(ctx context.Context) error {
 	if err := c.RunOnce(ctx); err != nil {
 		slog.Warn("restore drill remains blocked", "error", err)
 	}
-	ticker := time.NewTicker(c.Interval)
+	check := c.CheckInterval
+	if check <= 0 {
+		check = c.Interval
+	}
+	ticker := time.NewTicker(check)
 	defer ticker.Stop()
 	for {
 		select {

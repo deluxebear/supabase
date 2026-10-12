@@ -138,6 +138,8 @@ func main() {
 	spHealth := flag.String("single-primary-health-urls", os.Getenv("BACKUP_OPERATOR_SINGLE_PRIMARY_HEALTH_URLS"), "comma-separated typed health URLs")
 	drillEnable := flag.Bool("restore-drill-enable", envBool("BACKUP_OPERATOR_RESTORE_DRILL_ENABLED", false), "schedule isolated restore drills from server observations")
 	drillInterval := flag.Duration("restore-drill-interval", envDuration("BACKUP_OPERATOR_RESTORE_DRILL_INTERVAL", 24*time.Hour), "restore drill coordinator interval")
+	drillCheckInterval := flag.Duration("restore-drill-check-interval", envDuration("BACKUP_OPERATOR_RESTORE_DRILL_CHECK_INTERVAL", 15*time.Minute), "how often restore drills are evaluated; a drill runs earlier than the interval when a newer backup exists")
+	drillBackupInterval := flag.Duration("restore-drill-new-backup-interval", envDuration("BACKUP_OPERATOR_RESTORE_DRILL_NEW_BACKUP_INTERVAL", time.Hour), "shortest time between drills triggered by a new backup; 0 disables")
 	drillTargetLag := flag.Duration("restore-drill-target-lag", envDuration("BACKUP_OPERATOR_RESTORE_DRILL_TARGET_LAG", 15*time.Minute), "PITR target lag for restore drills")
 	drillLeaseTTL := flag.Duration("restore-drill-lease-ttl", envDuration("BACKUP_OPERATOR_RESTORE_DRILL_LEASE_TTL", 30*time.Minute), "exclusive restore drill execution lease")
 	agentEnrollmentFile := flag.String("agent-enrollment-file", os.Getenv("BACKUP_OPERATOR_AGENT_ENROLLMENT_FILE"), "0600 Agent enrollment bootstrap JSON")
@@ -752,8 +754,8 @@ func main() {
 				return nil, errors.New("restore drill server observations are unavailable")
 			}
 			results := drill.TaskResultStore{Source: store, Capability: app.CapabilitySinglePrimary + ".maintenance.restore-drill"}
-			targets := drill.ServerObservationTargets{Source: configuredRestoreObservations, Results: results, ClusterIDs: drillClusterIDs, TargetLag: *drillTargetLag, MinInterval: *drillInterval}
-			return drill.Coordinator{Targets: targets, Jobs: store, Interval: *drillInterval, LeaseTTL: *drillLeaseTTL, Capability: func(projectID, targetID string) (string, error) {
+			targets := drill.ServerObservationTargets{Source: configuredRestoreObservations, Results: results, ClusterIDs: drillClusterIDs, TargetLag: *drillTargetLag, MinInterval: *drillInterval, BackupMinInterval: *drillBackupInterval}
+			return drill.Coordinator{Targets: targets, Jobs: store, Interval: *drillInterval, CheckInterval: *drillCheckInterval, LeaseTTL: *drillLeaseTTL, Capability: func(projectID, targetID string) (string, error) {
 				if project, ok := drillClusters[targetID]; !ok || project != projectID {
 					return "", errors.New("restore drill target does not match a configured recovery domain")
 				}

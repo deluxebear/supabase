@@ -90,3 +90,54 @@ func TestServerObservationProducesRoutedUTCTarget(t *testing.T) {
 		t.Fatalf("target=%#v", target)
 	}
 }
+
+type latestResult struct{ result Result }
+
+func (latestResult) Save(context.Context, Result) error               { return nil }
+func (s latestResult) Latest(context.Context, string) (Result, error) { return s.result, nil }
+
+// newBackupSource observes one backup, labelled `label`, that stopped before the drill target.
+func newBackupSource(now time.Time, label string) restoreplan.Request {
+	until := now
+	return restoreplan.Request{Target: contracts.TargetRef{ProjectID: "project-1", TargetID: "cluster-1"}, RepositoryRevision: "rev-1", RepositoryFingerprint: "sha256:repo-1", Topology: contracts.TopologySnapshot{Nodes: []contracts.NodeObservation{{NodeID: "node-1", Role: contracts.RolePrimary}}}, Candidates: []restoreplan.BackupCandidate{{
+		ID: "backup-" + label, Label: label, Identity: contracts.BackupIdentity{SystemIdentifier: "42", DatabaseHistory: "7"}, StartedAt: now.Add(-time.Hour), StoppedAt: now.Add(-30 * time.Minute), RecoverableUntil: &until,
+	}}}
+}
+
+func lastDrill(label string, completedAt time.Time) latestResult {
+	var result Result
+	result.ClusterID = "cluster-1"
+	result.Record.CompletedAt = completedAt
+	result.Record.Lineage.BackupLabel = label
+	return latestResult{result}
+}
+
+func TestRecentDrillIsRepeatedOnlyForANewerBackup(t *testing.T) {
+	now := time.Date(2026, 7, 13, 3, 0, 0, 0, time.UTC)
+	due := func(source targetObservation, results Store, backupInterval time.Duration) ([]Target, error) {
+		return ServerObservationTargets{Source: source, Results: results, ClusterIDs: []string{"cluster-1"}, TargetLag: time.Minute, MinInterval: 24 * time.Hour, BackupMinInterval: backupInterval}.DueTargets(context.Background(), now)
+	}
+	fresh := targetObservation{request: newBackupSource(now, "20260713-020000F")}
+
+	// The last drill already verified the newest backup.
+	if targets, err := due(fresh, lastDrill("20260713-020000F", now.Add(-2*time.Hour)), time.Hour); err != nil || len(targets) != 0 {
+		t.Fatalf("verified backup: targets=%d err=%v", len(targets), err)
+	}
+	// The last drill verified an older backup and is old enough to repeat.
+	if targets, err := due(fresh, lastDrill("20260713-010000F", now.Add(-2*time.Hour)), time.Hour); err != nil || len(targets) != 1 {
+		t.Fatalf("newer backup: targets=%d err=%v", len(targets), err)
+	}
+	// The same, but the last drill is younger than the new-backup interval.
+	if targets, err := due(fresh, lastDrill("20260713-010000F", now.Add(-10*time.Minute)), time.Hour); err != nil || len(targets) != 0 {
+		t.Fatalf("too soon: targets=%d err=%v", len(targets), err)
+	}
+	// A zero interval keeps the original one-drill-per-interval behavior.
+	if targets, err := due(fresh, lastDrill("20260713-010000F", now.Add(-2*time.Hour)), 0); err != nil || len(targets) != 0 {
+		t.Fatalf("disabled: targets=%d err=%v", len(targets), err)
+	}
+	// Incomplete evidence must not block while the last drill is still fresh.
+	broken := targetObservation{err: errors.New("WAL gap on timeline 00000001 at ordinal 2")}
+	if targets, err := due(broken, lastDrill("20260713-010000F", now.Add(-2*time.Hour)), time.Hour); err != nil || len(targets) != 0 {
+		t.Fatalf("incomplete evidence: targets=%d err=%v", len(targets), err)
+	}
+}

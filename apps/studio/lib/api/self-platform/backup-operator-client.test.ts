@@ -52,6 +52,22 @@ describe('Backup Operator self-platform client', () => {
     expect(operatorBackupsSchema.parse(payload).blockers).toEqual([])
   })
 
+  it('defaults the drill status for a Backup Operator that does not report it', () => {
+    const payload = {
+      backups: [],
+      recoveryWindow: { earliest: null, latest: null },
+      confidence: 'inferred',
+      isStale: false,
+      blockers: [],
+      drill: null,
+    }
+    expect(operatorBackupsSchema.parse(payload).drillStatus).toBe('none')
+    expect(
+      operatorBackupsSchema.parse({ ...payload, drillStatus: 'older-than-latest-backup' })
+        .drillStatus
+    ).toBe('older-than-latest-backup')
+  })
+
   it('preserves reported backup blockers', () => {
     const payload = {
       backups: [],

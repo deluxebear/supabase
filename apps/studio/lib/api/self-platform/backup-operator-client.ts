@@ -72,6 +72,10 @@ export const operatorBackupsSchema = z.object({
   backups: z.array(operatorBackupSchema),
   recoveryWindow: z.object({ earliest: z.string().nullable(), latest: z.string().nullable() }),
   confidence: z.enum(['unknown', 'inferred', 'drill-verified']),
+  // Absent from Backup Operators that predate the field.
+  drillStatus: z
+    .enum(['none', 'verified', 'failed', 'older-than-latest-backup', 'mismatch'])
+    .default('none'),
   isStale: z.boolean(),
   blockers: nullableStringArraySchema,
   drill: z

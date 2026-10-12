@@ -12,6 +12,7 @@ import {
   canExecuteRestore,
   canRollbackRestore,
   getAAL2UpgradePath,
+  getDrillStatusMessage,
   isRestorePlanExpired,
 } from './SelfPlatformBackupOperator.utils'
 import { SelfPlatformBackupOperatorPolicy } from './SelfPlatformBackupOperatorPolicy'
@@ -138,6 +139,7 @@ function SelfPlatformBackupOperatorControls({ projectRef }: SelfPlatformBackupOp
 
   const policy = policyQuery.data
   const backupState = backupsQuery.data
+  const drillStatusMessage = getDrillStatusMessage(backupState.drillStatus)
   const restorePlan = planQuery.data ?? null
   const isPlanExpired = isRestorePlanExpired(restorePlan, new Date())
   const mustRegeneratePlan = isPlanExpired || requiresNewPlan
@@ -234,6 +236,9 @@ function SelfPlatformBackupOperatorControls({ projectRef }: SelfPlatformBackupOp
           <p className="text-sm text-foreground-light">
             {$t('Recovery confidence:')} {$t(backupState.confidence)}
           </p>
+          {drillStatusMessage !== null && (
+            <p className="text-sm text-foreground-lighter">{drillStatusMessage}</p>
+          )}
           {backupState.backups.length === 0 ? (
             <p className="mt-4 text-sm text-foreground-light">
               {$t(

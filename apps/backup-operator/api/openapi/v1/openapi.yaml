@@ -491,8 +491,12 @@ components:
             earliest: { type: string, format: date-time, nullable: true }
             latest: { type: string, format: date-time, nullable: true }
         confidence: { type: string, enum: [unknown, inferred, drill-verified] }
+        drillStatus:
+          type: string
+          enum: [none, verified, failed, older-than-latest-backup, mismatch]
         isStale: { type: boolean }
         blockers: { type: array, items: { type: string } }
+        notes: { type: array, items: { type: string } }
         drill:
           allOf:
             - { $ref: '#/components/schemas/RestoreDrill' }

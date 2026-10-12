@@ -6,6 +6,7 @@ import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { BackupManagementUnavailable } from './BackupManagementUnavailable'
 import { BackupOperatorNotConfigured } from './BackupOperatorNotConfigured'
+import { getDrillStatusMessage } from './SelfPlatformBackupOperator.utils'
 import { AlertError } from '@/components/ui/AlertError'
 import {
   operatorBackupsQueryOptions,
@@ -56,6 +57,7 @@ function SelfPlatformPITRContent({ projectRef }: SelfPlatformPITRProps) {
 
   const pitr = pitrQuery.data
   const backupState = backupsQuery.data
+  const drillStatusMessage = getDrillStatusMessage(backupState.drillStatus)
   const blockers = [...pitr.blockers, ...backupState.blockers]
 
   if (!pitr.enabled) {
@@ -112,6 +114,9 @@ function SelfPlatformPITRContent({ projectRef }: SelfPlatformPITRProps) {
           <div>
             <p className="text-sm font-medium">{$t('Recovery confidence:')}</p>
             <p className="text-sm text-foreground-light">{$t(backupState.confidence)}</p>
+            {drillStatusMessage !== null && (
+              <p className="text-sm text-foreground-lighter">{drillStatusMessage}</p>
+            )}
           </div>
           <div>
             <p className="text-sm font-medium">{$t('Earliest recoverable time')}</p>
