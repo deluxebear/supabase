@@ -117,16 +117,17 @@ services:
     volumes:
       - managed-db-data:/volume
 
-  # Starts only during a restore, after `db` is stopped, to validate the
-  # restored PGDATA before cut-over. It shares the data volume with `db`, so it
-  # must never run at the same time: only the Agent starts it.
+  # Starts only during a restore, after `db` is stopped, to recover the
+  # restored PGDATA to the target time and validate it before cut-over. It
+  # shares the data volume with `db`, so it must never run at the same time:
+  # only the Agent starts it. It listens only on its Unix socket and reaches
+  # the repository on the management network to fetch WAL.
   db-validation:
     image: deluxebear/postgres:17
     container_name: ${MANAGED_CONTAINER_PREFIX:?set MANAGED_CONTAINER_PREFIX}-db-validation
     profiles: [backup-validation]
     restart: "no"
     user: postgres
-    network_mode: none
     entrypoint: [postgres]
     command:
       - -D
@@ -137,13 +138,21 @@ services:
       - config_file=/etc/postgresql/postgresql.conf
       - -c
       - listen_addresses=
+      # Archiving is on with no command: promotion marks the new timeline's
+      # history file and the last partial segment ready, and `db` archives
+      # them after cut-over. With archiving off they would never reach the
+      # repository, and a later restore would reuse the timeline ID.
       - -c
-      - archive_mode=off
+      - archive_mode=on
+      - -c
+      - archive_command=
     volumes:
       - managed-db-data:/var/lib/postgresql
       - managed-db-socket:/var/run/postgresql
       - db-config:/etc/postgresql-custom
       - backup-config:/etc/pgbackrest:ro
+    networks:
+      management: {}
 
   # Runs pgBackRest and the Backup Operator in Agent mode, on the same image
   # as `db`. It reaches the Operator and the repository on the management
@@ -182,6 +191,16 @@ services:
       BACKUP_AGENT_REPOSITORY_ID: fleet-backup-${MANAGED_PROJECT_REF}
       BACKUP_AGENT_REPOSITORY_PATH: /var/lib/backup-agent/repository-gate
       BACKUP_AGENT_FENCE_COMMAND: /usr/local/bin/backup-fence
+      # The write fence stops these containers for a restore and starts them
+      # after cut-over or rollback.
+      BACKUP_FENCE_DOCKER_ENDPOINT: http://fleet-docker-proxy-backup:2375
+      BACKUP_FENCE_KONG_DATA_PLANE: ${FLEET_BACKUP_GATEWAY_CONTAINER:-${MANAGED_CONTAINER_PREFIX}-kong}
+      BACKUP_FENCE_SUPAVISOR: ${MANAGED_CONTAINER_PREFIX}-pooler
+      BACKUP_FENCE_AUTH: ${MANAGED_CONTAINER_PREFIX}-auth
+      BACKUP_FENCE_STORAGE: ${MANAGED_CONTAINER_PREFIX}-storage
+      BACKUP_FENCE_REALTIME: realtime-dev.${MANAGED_CONTAINER_PREFIX}
+      BACKUP_FENCE_BACKGROUND_JOBS: ${MANAGED_CONTAINER_PREFIX}-functions
+      BACKUP_FENCE_DIRECT_POSTGRES: ${MANAGED_CONTAINER_PREFIX}-rest,${MANAGED_CONTAINER_PREFIX}-meta
       BACKUP_AGENT_ROLLBACK_WINDOW: ${FLEET_BACKUP_ROLLBACK_WINDOW:-1h}
     volumes:
       - managed-db-data:/var/lib/postgresql
@@ -195,7 +214,8 @@ services:
       backup-docker-api: {}
 
   # The only path from the backup Agent to Docker: inspect project containers,
-  # and start, stop, or restart `db` and `db-validation`.
+  # start, stop, or restart `db` and `db-validation`, and stop and start the
+  # services the write fence closes.
   fleet-docker-proxy-backup:
     image: ${FLEET_BACKUP_AGENT_IMAGE:?set FLEET_BACKUP_AGENT_IMAGE}
     profiles: [backup-agent]
@@ -207,7 +227,7 @@ services:
       FLEET_DOCKER_PROXY_COMPOSE_PROJECT: ${COMPOSE_PROJECT_NAME}
       FLEET_DOCKER_PROXY_POLICY: backup
       FLEET_DOCKER_PROXY_LISTEN: 0.0.0.0:2375
-      FLEET_DOCKER_PROXY_SERVICES: db,db-validation
+      FLEET_DOCKER_PROXY_SERVICES: db,db-validation,kong,supavisor,auth,storage,realtime,functions,rest,meta
     healthcheck:
       test: [CMD, curl, -fsS, -o, /dev/null, http://127.0.0.1:2375/_ping]
       interval: 10s

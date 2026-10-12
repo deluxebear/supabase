@@ -39,6 +39,9 @@ const (
 	stateEngaged       fenceState = "engaged"
 	stateVerified      fenceState = "verified"
 	stateReleaseFailed fenceState = "release-failed"
+	// stateSuspended keeps a handle after a completed restore reopened every
+	// entry point, so a rollback within the window can close the same fence.
+	stateSuspended fenceState = "suspended"
 )
 
 type trackedFence struct {
@@ -292,6 +295,116 @@ func (p *Provider) Release(ctx context.Context, handle contracts.FenceHandle) (c
 	}
 	now := p.now()
 	return contracts.Evidence{ProviderID: p.ProviderID, ObservationID: handle.ID + "-released", ObservedAt: now, ValidUntil: now.Add(30 * time.Second)}, nil
+}
+
+// Suspend reopens every entry point after a completed restore but keeps the
+// handle durable. Reengage closes the same fence again for a rollback; Release
+// ends it.
+func (p *Provider) Suspend(ctx context.Context, handle contracts.FenceHandle) error {
+	p.mu.Lock()
+	tracked, ok := p.handles[handle.ID]
+	p.mu.Unlock()
+	if !ok || tracked.handle.Target != handle.Target {
+		return errors.New("unknown write fence handle")
+	}
+	if tracked.state == stateSuspended {
+		return nil
+	}
+	targets, err := p.targets()
+	if err != nil {
+		return err
+	}
+	released := make([]Gate, 0, len(targets))
+	for i := len(RequiredEntryPoints) - 1; i >= 0; i-- {
+		entry := RequiredEntryPoints[i]
+		gate := targets[entry]
+		if err := gate.Unblock(ctx, handle.Target); err != nil {
+			var reblockErr error
+			for j := len(released) - 1; j >= 0; j-- {
+				reblockErr = errors.Join(reblockErr, released[j].Block(context.WithoutCancel(ctx), handle.Target))
+			}
+			failure := errors.Join(err, reblockErr)
+			tracked.state = stateReleaseFailed
+			p.mu.Lock()
+			p.handles[handle.ID] = tracked
+			p.mu.Unlock()
+			_ = p.save(context.WithoutCancel(ctx), tracked, "suspend-failed", failure)
+			return &ReleaseError{EntryPoint: entry, Cause: failure, Runbook: p.releaseRunbook(targets, handle)}
+		}
+		released = append(released, gate)
+	}
+	tracked.state = stateSuspended
+	p.mu.Lock()
+	p.handles[handle.ID] = tracked
+	p.mu.Unlock()
+	return p.save(ctx, tracked, "suspend", nil)
+}
+
+// Reengage closes a suspended fence again with its original handle.
+func (p *Provider) Reengage(ctx context.Context, handleID string, target contracts.TargetRef) error {
+	p.mu.Lock()
+	tracked, ok := p.handles[handleID]
+	p.mu.Unlock()
+	if !ok || tracked.handle.Target != target || tracked.revision != p.Revision {
+		return errors.New("durable write fence handle is unavailable or changed")
+	}
+	if tracked.state != stateSuspended {
+		return nil
+	}
+	targets, err := p.targets()
+	if err != nil {
+		return err
+	}
+	tracked.state = stateEngaging
+	if err := p.save(ctx, tracked, "reengaging", nil); err != nil {
+		return fmt.Errorf("persist write fence intent: %w", err)
+	}
+	blocked := make([]Gate, 0, len(targets))
+	for _, entry := range RequiredEntryPoints {
+		gate := targets[entry]
+		if err := gate.Block(ctx, target); err != nil {
+			return p.compensateEngage(ctx, tracked, targets, blocked, entry, fmt.Errorf("block %s traffic gate: %w", entry, err))
+		}
+		blocked = append(blocked, gate)
+	}
+	if err := p.Database.DrainWriters(ctx); err != nil {
+		return p.compensateEngage(ctx, tracked, targets, blocked, "", fmt.Errorf("drain writers: %w", err))
+	}
+	if err := p.Database.ResolvePreparedTransactions(ctx); err != nil {
+		return p.compensateEngage(ctx, tracked, targets, blocked, "", fmt.Errorf("prepared transaction preflight: %w", err))
+	}
+	tracked.state = stateEngaged
+	tracked.handle.Expires = p.now().Add(p.TTL)
+	p.mu.Lock()
+	p.handles[handleID] = tracked
+	p.mu.Unlock()
+	return p.save(ctx, tracked, "reengage", nil)
+}
+
+// ReleaseHandle reopens every entry point and forgets a handle by ID, for a
+// fence whose rollback window has ended. An unknown handle is already released.
+func (p *Provider) ReleaseHandle(ctx context.Context, handleID string, target contracts.TargetRef) error {
+	p.mu.Lock()
+	tracked, ok := p.handles[handleID]
+	p.mu.Unlock()
+	if !ok {
+		return nil
+	}
+	if tracked.handle.Target != target {
+		return errors.New("write fence handle belongs to another target")
+	}
+	if err := p.Suspend(ctx, tracked.handle); err != nil {
+		return err
+	}
+	p.mu.Lock()
+	delete(p.handles, handleID)
+	p.mu.Unlock()
+	if p.State != nil {
+		if err := p.State.Delete(ctx, handleID); err != nil {
+			return fmt.Errorf("persist write fence release: %w", err)
+		}
+	}
+	return nil
 }
 
 func (p *Provider) known(handle contracts.FenceHandle) bool {

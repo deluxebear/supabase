@@ -155,6 +155,7 @@ func (c *observedClusters) bind(store *controlstore.Store, coordinator *opruntim
 		for _, source := range c.sources {
 			source.Evidence = store
 			source.Manifests = store
+			source.Recoveries = store
 			cluster := source.Cluster
 			source.RequestObservation = func(ctx context.Context) error { return coordinator.Request(ctx, cluster) }
 		}

@@ -263,3 +263,75 @@ func (s *memoryState) AppendAudit(_ context.Context, event AuditEvent) error {
 	s.audit = append(s.audit, event)
 	return nil
 }
+
+func TestSuspendedFenceReopensTheStackAndReengagesWithTheSameHandle(t *testing.T) {
+	now := time.Unix(1_700_000_000, 0)
+	gate := &fakeGate{}
+	provider := completeProvider(now, &fakeDatabase{}, topologySnapshot(now))
+	provider.EntryPoints = testEntryPoints(gate, gate, gate, gate)
+	ctx := context.Background()
+	handle, err := provider.Engage(ctx, provider.Target, topologySnapshot(now))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := provider.Suspend(ctx, handle); err != nil {
+		t.Fatal(err)
+	}
+	if gate.blocked {
+		t.Fatal("a suspended fence still blocks the stack")
+	}
+	if _, err := provider.Resume(ctx, handle.ID, handle.Target); err == nil {
+		t.Fatal("a suspended fence was resumed without closing it again")
+	}
+
+	// An Agent restart keeps the suspended handle without closing the stack.
+	restarted := completeProvider(now, &fakeDatabase{}, topologySnapshot(now))
+	restarted.EntryPoints = testEntryPoints(gate, gate, gate, gate)
+	restarted.State = provider.State
+	if _, err := restarted.Recover(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if gate.blocked {
+		t.Fatal("recovery closed the stack for a suspended fence")
+	}
+	if err := restarted.Reengage(ctx, handle.ID, handle.Target); err != nil {
+		t.Fatal(err)
+	}
+	if !gate.blocked {
+		t.Fatal("re-engaging did not close the stack")
+	}
+	resumed, err := restarted.Resume(ctx, handle.ID, handle.Target)
+	if err != nil || resumed.ID != handle.ID {
+		t.Fatalf("resume after re-engage: %+v %v", resumed, err)
+	}
+	if _, err := restarted.Release(ctx, resumed); err != nil || gate.blocked {
+		t.Fatalf("release after rollback: blocked=%t err=%v", gate.blocked, err)
+	}
+	if err := restarted.Reengage(ctx, handle.ID, handle.Target); err == nil {
+		t.Fatal("a released fence was re-engaged")
+	}
+}
+
+func TestReleaseHandleReopensAndForgetsAFence(t *testing.T) {
+	now := time.Unix(1_700_000_000, 0)
+	gate := &fakeGate{}
+	provider := completeProvider(now, &fakeDatabase{}, topologySnapshot(now))
+	provider.EntryPoints = testEntryPoints(gate, gate, gate, gate)
+	ctx := context.Background()
+	handle, err := provider.Engage(ctx, provider.Target, topologySnapshot(now))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := provider.ReleaseHandle(ctx, handle.ID, contracts.TargetRef{ProjectID: "other", TargetID: "db"}); err == nil {
+		t.Fatal("another target's handle was released")
+	}
+	if err := provider.ReleaseHandle(ctx, handle.ID, handle.Target); err != nil || gate.blocked {
+		t.Fatalf("release: blocked=%t err=%v", gate.blocked, err)
+	}
+	if len(provider.State.(*memoryState).handles) != 0 {
+		t.Fatal("the released handle is still persisted")
+	}
+	if err := provider.ReleaseHandle(ctx, handle.ID, handle.Target); err != nil {
+		t.Fatalf("releasing an unknown handle: %v", err)
+	}
+}

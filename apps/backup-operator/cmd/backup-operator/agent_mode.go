@@ -140,7 +140,13 @@ func configureAgentMode(ctx context.Context, flags agentModeFlags, router *app.T
 	client := agenttransport.Client{Address: *flags.address, TLS: tlsConfig, AgentID: *flags.agentID, ClusterID: *flags.targetID, NodeID: *flags.nodeID, Build: version.String(), Capabilities: capabilities, Executor: &agent.Executor{Journal: journal, Registry: registry}, HeartbeatInterval: 5 * time.Second}
 	cleanupRecovery = false
 	cleanup := func() error { return errors.Join(lock.Release(), journal.Close(), recovery.Close()) }
-	return []app.Worker{client}, cleanup, nil
+	workers := []app.Worker{client}
+	if cleaner, ok := recovery.(interface {
+		QuarantineCleaner() opruntime.QuarantineCleaner
+	}); ok {
+		workers = append(workers, cleaner.QuarantineCleaner())
+	}
+	return workers, cleanup, nil
 }
 
 func buildAgentRecovery(ctx context.Context, flags agentModeFlags) (agentRecovery, error) {

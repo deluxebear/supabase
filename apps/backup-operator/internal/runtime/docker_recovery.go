@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -17,6 +18,7 @@ import (
 	"github.com/supabase/supabase/apps/backup-operator/internal/controlstore"
 	"github.com/supabase/supabase/apps/backup-operator/internal/pgbackrest"
 	"github.com/supabase/supabase/apps/backup-operator/internal/pitr"
+	"github.com/supabase/supabase/apps/backup-operator/internal/recoveryexec"
 	"github.com/supabase/supabase/apps/backup-operator/internal/restoreplan"
 	"github.com/supabase/supabase/apps/backup-operator/internal/singleprimary"
 	"github.com/supabase/supabase/apps/backup-operator/internal/writefence"
@@ -293,6 +295,12 @@ func (r *DockerRecovery) Materialize(ctx context.Context, planID, planHash strin
 	if planID == "" || !time.Now().Before(expiresAt) || safety.Target.ProjectID != r.config.ProjectID || safety.Target.TargetID != r.config.TargetID || safety.TargetNodeID != r.config.NodeID || safety.TopologyProvider != "single-primary-pgbackrest" || safety.FenceProvider != "compose" || filepath.Clean(safety.Capacity.Destination) != r.config.PGData || safety.RepositoryID != r.config.RepositoryID {
 		return contracts.RecoveryPlan{}, contracts.FenceHandle{}, errors.New("restore task does not match the enrolled Docker recovery domain")
 	}
+	// A previous restore's original PGDATA stays next to PGDATA until its
+	// rollback window ends. A new restore would have to quarantine to the same
+	// path, so it waits unless this is a replay of the restore that made it.
+	if err := checkNoOpenRollbackWindow(r.config.PGData, func() error { _, err := r.store.Load(ctx, planID); return err }); err != nil {
+		return contracts.RecoveryPlan{}, contracts.FenceHandle{}, err
+	}
 	if err := r.ensureRecoveryPlan(ctx, planID, planHash, safetyJSON, expiresAt); err != nil {
 		return contracts.RecoveryPlan{}, contracts.FenceHandle{}, fmt.Errorf("persist Agent recovery plan: %w", err)
 	}
@@ -304,8 +312,33 @@ func (r *DockerRecovery) Materialize(ctx context.Context, planID, planHash strin
 	if err != nil {
 		return contracts.RecoveryPlan{}, contracts.FenceHandle{}, fmt.Errorf("engage Docker Compose write fence: %w", err)
 	}
-	plan := contracts.RecoveryPlan{ID: planID, Mode: contracts.RecoveryInPlace, Target: safety.Target, Topology: topology, Backup: contracts.BackupIdentity{ProviderID: safety.BackupProvider, RepositoryID: safety.RepositoryID, Stanza: r.config.Stanza, SystemIdentifier: safety.BackupSystemID, DatabaseHistory: r.config.DatabaseHistory}, Recovery: contracts.RestoreTarget{Name: safety.BackupID, Time: safety.RestoreTarget}, TargetSystemID: safety.BackupSystemID, Destination: r.config.PGData, PlanHash: planHash, ExpiresAt: expiresAt}
+	plan := contracts.RecoveryPlan{ID: planID, Mode: contracts.RecoveryInPlace, Target: safety.Target, Topology: topology, Backup: contracts.BackupIdentity{ProviderID: safety.BackupProvider, RepositoryID: safety.RepositoryID, Stanza: r.config.Stanza, SystemIdentifier: safety.BackupSystemID, DatabaseHistory: r.config.DatabaseHistory}, Recovery: contracts.RestoreTarget{Name: safety.BackupID, Time: safety.RestoreTarget, Timeline: currentTimeline(topology)}, TargetSystemID: safety.BackupSystemID, Destination: r.config.PGData, PlanHash: planHash, ExpiresAt: expiresAt}
 	return plan, handle, nil
+}
+
+// checkNoOpenRollbackWindow refuses a new restore while a previous restore's
+// quarantined PGDATA exists. loadExecution succeeds only when this plan already
+// started, which makes the call a replay of the restore that created it.
+func checkNoOpenRollbackWindow(pgdata string, loadExecution func() error) error {
+	if _, err := os.Stat(pgdata + ".backup-operator-quarantine"); err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	if loadExecution() == nil {
+		return nil
+	}
+	return errors.New("a previous restore can still be rolled back; wait until its rollback window ends")
+}
+
+func currentTimeline(topology contracts.TopologySnapshot) uint32 {
+	for _, node := range topology.Nodes {
+		if node.Role == contracts.RolePrimary {
+			return uint32(node.Timeline)
+		}
+	}
+	return 0
 }
 
 func (r *DockerRecovery) MaterializeTask(ctx context.Context, action string, token int64, planID, planHash string, expiresAt time.Time, safety restoreplan.SafetyInputs) (contracts.RecoveryPlan, contracts.FenceHandle, error) {
@@ -330,6 +363,22 @@ func (r *DockerRecovery) MaterializeTask(ctx context.Context, action string, tok
 	execution, err := r.store.AdvanceRecoveryFencingToken(ctx, planID, token)
 	if err != nil {
 		return contracts.RecoveryPlan{}, contracts.FenceHandle{}, err
+	}
+	// Check the window before closing the stack: an expired rollback must not
+	// take the restored database out of service.
+	window, windowErr := r.coordinator.Windows.GetWindow(ctx, planID)
+	if windowErr != nil || window.QuarantineRef == "" || !time.Now().Before(window.RollbackUntil) {
+		if execution.State == recoveryexec.StateCutOver {
+			// No rollback step ran. Reopen the stack if an earlier attempt closed it.
+			if err := r.fence.ReleaseHandle(ctx, execution.FenceHandleID, safety.Target); err != nil {
+				return contracts.RecoveryPlan{}, contracts.FenceHandle{}, fmt.Errorf("rollback window has ended, and the write fence did not reopen the stack: %w", err)
+			}
+		}
+		return contracts.RecoveryPlan{}, contracts.FenceHandle{}, errors.New("rollback window is missing or expired")
+	}
+	// A completed restore suspended its fence; close it again before rollback.
+	if err := r.fence.Reengage(ctx, execution.FenceHandleID, safety.Target); err != nil {
+		return contracts.RecoveryPlan{}, contracts.FenceHandle{}, fmt.Errorf("re-engage write fence for rollback: %w", err)
 	}
 	handle, err := r.fence.Resume(ctx, execution.FenceHandleID, safety.Target)
 	if err != nil {
@@ -364,11 +413,25 @@ func (r *DockerRecovery) Execute(ctx context.Context, plan contracts.RecoveryPla
 	if err := r.store.CreateRecoveryExecution(ctx, plan.ID, handle.ID, token); err != nil {
 		return err
 	}
-	return r.coordinator.Execute(ctx, plan, handle, token)
+	if err := r.coordinator.Execute(ctx, plan, handle, token); err != nil {
+		return err
+	}
+	// The restored database serves again; reopen the stack but keep the fence
+	// handle so a rollback within the window closes the same fence.
+	if err := r.fence.Suspend(ctx, handle); err != nil {
+		return fmt.Errorf("restore cut over, but the write fence did not reopen the stack: %w", err)
+	}
+	return nil
 }
 
 func (r *DockerRecovery) RollbackPlan(ctx context.Context, plan contracts.RecoveryPlan, handle contracts.FenceHandle, token int64) error {
-	return r.coordinator.RollbackPlan(ctx, plan, handle, token)
+	if err := r.coordinator.RollbackPlan(ctx, plan, handle, token); err != nil {
+		return err
+	}
+	if _, err := r.fence.Release(ctx, handle); err != nil {
+		return fmt.Errorf("rollback cut over, but the write fence did not reopen the stack: %w", err)
+	}
+	return nil
 }
 
 func validateDockerRecoveryConfig(c DockerRecoveryConfig) error {
@@ -426,14 +489,33 @@ type localDockerTopology struct {
 func (p *localDockerTopology) ID() string { return p.providerID }
 func (p *localDockerTopology) Observe(ctx context.Context, target contracts.TargetRef) (contracts.TopologySnapshot, error) {
 	var systemID string
-	if err := p.database.QueryRowContext(ctx, "SELECT system_identifier::text FROM pg_control_system()").Scan(&systemID); err != nil {
+	var timeline uint64
+	if err := p.database.QueryRowContext(ctx, "SELECT system_identifier::text, (pg_control_checkpoint()).timeline_id::bigint FROM pg_control_system()").Scan(&systemID, &timeline); err != nil {
 		return contracts.TopologySnapshot{}, err
 	}
 	now := time.Now().UTC()
-	return contracts.TopologySnapshot{Kind: contracts.TopologyStaticPrimary, Authority: "compose", ControllerOwner: p.sourceContainer, Evidence: contracts.Evidence{ProviderID: p.providerID, ObservationID: "docker-" + strconv.FormatInt(now.UnixNano(), 10), ObservedAt: now, ValidUntil: now.Add(time.Minute), Facts: map[string]string{"container": p.sourceContainer, "volume": p.volumeName}}, Nodes: []contracts.NodeObservation{{NodeID: p.nodeID, Role: contracts.RolePrimary, Reachable: true, SystemIdentifier: systemID}}}, nil
+	return contracts.TopologySnapshot{Kind: contracts.TopologyStaticPrimary, Authority: "compose", ControllerOwner: p.sourceContainer, Evidence: contracts.Evidence{ProviderID: p.providerID, ObservationID: "docker-" + strconv.FormatInt(now.UnixNano(), 10), ObservedAt: now, ValidUntil: now.Add(time.Minute), Facts: map[string]string{"container": p.sourceContainer, "volume": p.volumeName}}, Nodes: []contracts.NodeObservation{{NodeID: p.nodeID, Role: contracts.RolePrimary, Reachable: true, SystemIdentifier: systemID, Timeline: timeline}}}, nil
 }
 func (p *localDockerTopology) RebuildStandbys(context.Context, contracts.TargetRef, contracts.TopologySnapshot) (contracts.Evidence, error) {
 	return contracts.Evidence{}, contracts.ErrUnsupported
+}
+
+// QuarantineCleaner deletes quarantined PGDATA after its rollback window. The
+// quarantine is a sibling of PGDATA on the data volume.
+func (r *DockerRecovery) QuarantineCleaner() QuarantineCleaner {
+	remove := RemoveQuarantinedPGDATA(filepath.Dir(r.config.PGData), r.config.PGData)
+	return QuarantineCleaner{Store: r.store, Owner: "agent-" + r.config.NodeID, Remove: func(ctx context.Context, item controlstore.Quarantine) error {
+		if err := remove(ctx, item); err != nil {
+			return err
+		}
+		// Without the quarantine no rollback is possible; forget the
+		// restore's suspended fence handle.
+		execution, err := r.coordinator.Executions.Load(ctx, item.PlanID)
+		if err != nil || execution.FenceHandleID == "" || execution.State != recoveryexec.StateCutOver {
+			return err
+		}
+		return r.fence.ReleaseHandle(ctx, execution.FenceHandleID, contracts.TargetRef{ProjectID: r.config.ProjectID, TargetID: r.config.TargetID})
+	}}
 }
 
 // ObserveClusterEvidence implements app.ObservationRuntime.

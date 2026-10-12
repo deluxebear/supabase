@@ -363,9 +363,16 @@ backup-validation up`.
 
 The Operator asks each Agent for an observation every 5 minutes and plans with
 it; Studio then shows the project's backups, PITR status, and recovery window.
-Use the repository ID `fleet-backup-<ref>` in the backup policy. In-place
-restores are not available yet: the Compose write fence refuses to block, so a
-restore stops before it changes anything.
+Use the repository ID `fleet-backup-<ref>` in the backup policy.
+
+An in-place restore stops the gateway, pooler, Auth, Storage, Realtime,
+Functions, PostgREST, and pg-meta through the backup proxy, ends client
+sessions, restores PGDATA to the target time, validates it in `db-validation`,
+and starts `db` on it. The other services start again after cut-over. The
+original PGDATA stays next to the new one for the rollback window
+(`FLEET_BACKUP_ROLLBACK_WINDOW`, default `1h`); a rollback within it swaps them
+back. When the window ends, the Agent deletes the original, and a new restore
+is refused until then. The data volume needs room for both copies.
 
 After that, every `docker compose` command for the stack must include
 `-f fleet-managed/docker-compose.backup.yml`, or `db` is recreated with the

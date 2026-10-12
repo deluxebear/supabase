@@ -149,3 +149,22 @@ func (s *Store) deleteJob(ctx context.Context, jobID, taskID string) error {
 	}
 	return tx.Commit()
 }
+
+// LatestRecoveryFinishedAt returns when the newest finished restore or
+// rollback of a target ended, or the zero time when none has.
+func (s *Store) LatestRecoveryFinishedAt(ctx context.Context, targetID string) (time.Time, error) {
+	query := `SELECT COALESCE(MAX(updated_at_ms), 0) FROM jobs
+WHERE target_id=? AND type IN ('restore','rollback') AND state IN ('succeeded','failed','cancelled','orphaned')`
+	if s.dialect == Postgres {
+		query = `SELECT COALESCE(MAX(updated_at_ms), 0) FROM jobs
+WHERE target_id=$1 AND type IN ('restore','rollback') AND state IN ('succeeded','failed','cancelled','orphaned')`
+	}
+	var finishedAtMS int64
+	if err := s.db.QueryRowContext(ctx, query, targetID).Scan(&finishedAtMS); err != nil {
+		return time.Time{}, err
+	}
+	if finishedAtMS == 0 {
+		return time.Time{}, nil
+	}
+	return time.UnixMilli(finishedAtMS).UTC(), nil
+}

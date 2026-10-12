@@ -102,3 +102,36 @@ func TestRestoreDispatchRejectsUnregisteredTopologyProvider(t *testing.T) {
 		t.Fatal("unregistered topology provider was dispatched")
 	}
 }
+
+func TestFailedRestoreDispatchReleasesTheDestructiveLease(t *testing.T) {
+	ctx := context.Background()
+	store := openOrchestrationStore(t, t.TempDir()+"/control.db")
+	now := time.Date(2026, 7, 13, 8, 0, 0, 0, time.UTC)
+	store.now = func() time.Time { return now }
+	target := contracts.TargetRef{ProjectID: "project", TargetID: "database"}
+	if err := store.RegisterTarget(ctx, target, contracts.RecoveryDomain{SystemIdentifier: "managed", DataDomain: "pgdata"}); err != nil {
+		t.Fatal(err)
+	}
+	safetyJSON, _ := json.Marshal(restoreplan.SafetyInputs{Target: target, TargetNodeID: "node-a", TopologyProvider: "single-primary-pgbackrest"})
+	if err := store.SaveRestorePlan(ctx, RestorePlanRecord{ID: "plan", JobID: "restore-job", PlanHash: "hash", SafetyInputJSON: string(safetyJSON), ExpiresAt: now.Add(time.Hour)}); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.ConfirmRestorePlan(ctx, "plan", "hash", restoreplan.AAL2Assertion{Subject: "operator", Authenticated: now}, 5*time.Minute); err != nil {
+		t.Fatal(err)
+	}
+	confirmed, err := store.RequireConfirmedRestorePlan(ctx, "plan", "hash", 5*time.Minute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// An outbox row with the dispatch's idempotency key makes the transaction fail after the lease.
+	createTestJob(t, store, "other-job", "other-key")
+	if _, err := store.db.ExecContext(ctx, "UPDATE task_outbox SET idempotency_key='restore/plan/execute' WHERE job_id='other-job'"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.DispatchConfirmedRestore(ctx, confirmed); err == nil {
+		t.Fatal("the dispatch was expected to fail")
+	}
+	if _, acquired, err := store.AcquireLease(ctx, "destructive/database", "another-operation", time.Minute); err != nil || !acquired {
+		t.Fatalf("the lease of a failed dispatch is still held: acquired=%t err=%v", acquired, err)
+	}
+}

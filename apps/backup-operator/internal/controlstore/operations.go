@@ -227,6 +227,14 @@ func (s *Store) DispatchConfirmedRestore(ctx context.Context, plan ConfirmedRest
 	if !acquired {
 		return JobRecord{}, errors.New("destructive restore lease is held by another operation")
 	}
+	// Until the dispatch commits, nothing runs under the lease; a failed
+	// dispatch must not block a retry for the whole execution window.
+	committed := false
+	defer func() {
+		if !committed {
+			_ = s.releaseLease(context.WithoutCancel(ctx), "destructive/"+job.TargetID, plan.JobID)
+		}
+	}()
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return JobRecord{}, err
@@ -237,7 +245,7 @@ func (s *Store) DispatchConfirmedRestore(ctx context.Context, plan ConfirmedRest
 	outbox := "INSERT INTO task_outbox(task_id,job_id,step_name,capability,target_node_id,idempotency_key,payload,created_at_ms) VALUES(?,?,'execute',?,?,?, ?,?)"
 	update := "UPDATE jobs SET state='queued',updated_at_ms=? WHERE id=? AND state='planned'"
 	if s.dialect == Postgres {
-		step = "INSERT INTO job_steps(job_id,name,state,fencing_token,non_takeover,updated_at_ms) VALUES($1,'execute','queued',$2,1,$3)"
+		step = "INSERT INTO job_steps(job_id,name,state,fencing_token,non_takeover,updated_at_ms) VALUES($1,'execute','queued',$2,true,$3)"
 		outbox = "INSERT INTO task_outbox(task_id,job_id,step_name,capability,target_node_id,idempotency_key,payload,created_at_ms) VALUES($1,$2,'execute',$3,$4,$5,$6,$7)"
 		update = "UPDATE jobs SET state='queued',updated_at_ms=$1 WHERE id=$2 AND state='planned'"
 	}
@@ -263,7 +271,17 @@ func (s *Store) DispatchConfirmedRestore(ctx context.Context, plan ConfirmedRest
 	if err = tx.Commit(); err != nil {
 		return JobRecord{}, err
 	}
+	committed = true
 	return s.GetJob(ctx, plan.JobID)
+}
+
+func (s *Store) releaseLease(ctx context.Context, resourceKey, ownerID string) error {
+	query := "DELETE FROM leases WHERE resource_key=? AND owner_id=?"
+	if s.dialect == Postgres {
+		query = "DELETE FROM leases WHERE resource_key=$1 AND owner_id=$2"
+	}
+	_, err := s.db.ExecContext(ctx, query, resourceKey, ownerID)
+	return err
 }
 
 type restoreTaskEnvelope struct {

@@ -99,3 +99,26 @@ func TestEnsureRepositoryRejectsAChangedIdentity(t *testing.T) {
 		t.Fatal("a repository with a different fingerprint was accepted")
 	}
 }
+
+func TestLatestRecoveryFinishedAt(t *testing.T) {
+	ctx := context.Background()
+	store := openOrchestrationStore(t, filepath.Join(t.TempDir(), "control.db"))
+	clock := time.UnixMilli(1_800_000_000_000).UTC()
+	store.now = func() time.Time { return clock }
+	if at, err := store.LatestRecoveryFinishedAt(ctx, "target"); err != nil || !at.IsZero() {
+		t.Fatalf("no recovery: %s %v", at, err)
+	}
+	if _, _, err := store.CreateJob(ctx, CreateJobInput{ID: "restore-1", ProjectID: "project", TargetID: "target", Type: "restore", IdempotencyKey: "restore-1", PlanHash: "plan", StepName: "execute", Capability: "provider.restore.execute", TargetNodeID: "node", Payload: []byte(`{}`)}); err != nil {
+		t.Fatal(err)
+	}
+	if at, _ := store.LatestRecoveryFinishedAt(ctx, "target"); !at.IsZero() {
+		t.Fatal("a running restore was reported as finished")
+	}
+	clock = clock.Add(time.Minute)
+	if _, err := store.ReconcileTaskResult(ctx, "restore-1/execute", true, []byte(`{}`), ""); err != nil {
+		t.Fatal(err)
+	}
+	if at, err := store.LatestRecoveryFinishedAt(ctx, "target"); err != nil || !at.Equal(clock) {
+		t.Fatalf("finished restore at %s, err %v; want %s", at, err, clock)
+	}
+}

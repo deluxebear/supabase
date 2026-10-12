@@ -9,7 +9,6 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
@@ -953,27 +952,7 @@ func dnsRestoreDestination(target string) string {
 }
 
 func singlePrimaryCleanup(root string) func(context.Context, controlstore.Quarantine) error {
-	return func(ctx context.Context, item controlstore.Quarantine) error {
-		if err := ctx.Err(); err != nil {
-			return err
-		}
-		if item.ResourceType != "pgdata" {
-			return fmt.Errorf("unsupported single-primary quarantine resource type %q", item.ResourceType)
-		}
-		allowedRoot, err := filepath.Abs(root)
-		if err != nil {
-			return err
-		}
-		resource, err := filepath.Abs(item.ResourceRef)
-		if err != nil {
-			return err
-		}
-		relative, err := filepath.Rel(allowedRoot, resource)
-		if err != nil || relative == "." || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
-			return fmt.Errorf("quarantine resource is outside the configured capacity root")
-		}
-		return os.RemoveAll(resource)
-	}
+	return opruntime.RemoveQuarantinedPGDATA(root, "")
 }
 
 func combineObservers(left, right func(context.Context) error) func(context.Context) error {

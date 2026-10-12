@@ -127,6 +127,10 @@ set_project_env() {
 }
 set_project_env FLEET_BACKUP_CONFIG_ROOT "./fleet-managed/state/$project_ref/backup"
 grep -qE '^FLEET_BACKUP_AGENT_IMAGE=' "$project_env" || set_project_env FLEET_BACKUP_AGENT_IMAGE "$agent_image"
+# The gateway container is named by the Kong or Envoy overlay in use.
+gateway_container="$(compose ps --all --format '{{.Name}}' kong | head -1)"
+[ -n "$gateway_container" ] || fail "the stack's gateway (service kong) is not created"
+set_project_env FLEET_BACKUP_GATEWAY_CONTAINER "$gateway_container"
 
 step "Creating bucket $bucket and its credentials"
 {
@@ -250,7 +254,7 @@ control_compose up -d --force-recreate --no-deps backup-operator-config-init
 control_compose up -d --force-recreate --no-deps backup-operator
 
 step "Starting the backup Agent"
-compose --profile backup-validation create --no-recreate db-validation
+compose --profile backup-validation create db-validation
 compose --profile backup-agent up -d backup-config-init fleet-docker-proxy-backup backup-agent
 echo "The Operator asks the Agent for its first observation within a minute."
 echo "Repository ID for the backup policy: $bucket"

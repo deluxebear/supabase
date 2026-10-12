@@ -175,6 +175,10 @@ type BackupRequest struct {
 type RestoreTarget struct {
 	Name string
 	Time time.Time
+	// Timeline is the database's timeline when the restore was planned.
+	// Recovery follows its history, not the newest timeline in the archive,
+	// which may be a branch abandoned by a rollback. Zero keeps the default.
+	Timeline uint32
 }
 
 type RestoreRequest struct {

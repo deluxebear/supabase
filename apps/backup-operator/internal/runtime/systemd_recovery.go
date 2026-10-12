@@ -604,7 +604,7 @@ func (p pgBackRestBackupProvider) Restore(ctx context.Context, request contracts
 		return contracts.Evidence{}, errors.New("systemd restore requires the enrolled read-only repository")
 	}
 	target := request.Recovery.Time.UTC()
-	if err := p.client.RunRestore(ctx, p.stanza, pgbackrest.RestoreOptions{PGData: request.Destination, Set: request.Recovery.Name, TargetTime: &target, TargetAction: "promote"}); err != nil {
+	if err := p.client.RunRestore(ctx, p.stanza, pgbackrest.RestoreOptions{PGData: request.Destination, Set: request.Recovery.Name, TargetTime: &target, TargetAction: "promote", TargetTimeline: request.Recovery.Timeline}); err != nil {
 		return contracts.Evidence{}, err
 	}
 	now := time.Now().UTC()

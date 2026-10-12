@@ -27,6 +27,11 @@ type TaskEvidenceAtSource interface {
 	LatestSuccessfulTaskEvidenceAt(context.Context, string, string) ([]byte, time.Time, error)
 }
 
+// RecoveryHistory reports when a target's newest restore or rollback ended.
+type RecoveryHistory interface {
+	LatestRecoveryFinishedAt(context.Context, string) (time.Time, error)
+}
+
 // ObservedCluster is a single-primary cluster whose database runs next to an
 // enrolled Agent rather than next to the Operator.
 type ObservedCluster struct {
@@ -56,6 +61,9 @@ type ObservedSinglePrimary struct {
 	Cluster   ObservedCluster
 	Evidence  TaskEvidenceAtSource
 	Manifests operatorapi.ManifestSource
+	// Recoveries reports when the target's newest restore or rollback ended. An
+	// observation from before it describes a database that no longer exists.
+	Recoveries RecoveryHistory
 	// RequestObservation enqueues an observe task, for restore planning when
 	// the latest observation is older than RestoreMaxAge.
 	RequestObservation func(context.Context) error
@@ -107,35 +115,54 @@ func (s *ObservedSinglePrimary) Latest(ctx context.Context, maxAge time.Duration
 	if age := s.now().Sub(receivedAt); age > maxAge {
 		return observation, receivedAt, fmt.Errorf("%w: the latest is %s old", ErrObservationUnavailable, age.Truncate(time.Second))
 	}
+	if s.Recoveries != nil {
+		recoveredAt, err := s.Recoveries.LatestRecoveryFinishedAt(ctx, s.Cluster.TargetID)
+		if err != nil {
+			return ClusterObservation{}, time.Time{}, err
+		}
+		if receivedAt.Before(recoveredAt) {
+			if s.RequestObservation != nil {
+				if err := s.RequestObservation(ctx); err != nil {
+					return ClusterObservation{}, time.Time{}, fmt.Errorf("request observation: %w", err)
+				}
+			}
+			return observation, receivedAt, fmt.Errorf("%w: the latest predates the last restore or rollback", ErrObservationUnavailable)
+		}
+	}
 	return observation, receivedAt, nil
 }
 
-// fresh returns an observation no older than RestoreMaxAge, requesting one and
-// waiting for it when needed.
-func (s *ObservedSinglePrimary) fresh(ctx context.Context) (ClusterObservation, time.Time, error) {
-	maxAge := durationOr(s.RestoreMaxAge, 2*time.Minute)
-	observation, receivedAt, err := s.Latest(ctx, maxAge)
-	if err == nil || !errors.Is(err, ErrObservationUnavailable) || s.RequestObservation == nil {
-		return observation, receivedAt, err
+// fresh returns an observation received after this call, requesting one and
+// waiting up to RefreshWait. Restore planning never reuses an earlier one: a
+// restore or rollback since then may have changed the timeline, and the
+// restore target may be later than it.
+func (s *ObservedSinglePrimary) fresh(ctx context.Context, notBefore time.Time) (ClusterObservation, time.Time, error) {
+	if s.RequestObservation == nil {
+		return ClusterObservation{}, time.Time{}, errors.New("restore planning requires on-demand observations")
 	}
+	requestedAt := s.now().Truncate(time.Millisecond)
 	if err := s.RequestObservation(ctx); err != nil {
 		return ClusterObservation{}, time.Time{}, fmt.Errorf("request observation: %w", err)
 	}
+	maxAge := durationOr(s.RestoreMaxAge, 2*time.Minute)
 	deadline := time.NewTimer(durationOr(s.RefreshWait, 30*time.Second))
 	defer deadline.Stop()
 	ticker := time.NewTicker(durationOr(s.PollInterval, time.Second))
 	defer ticker.Stop()
 	for {
+		observation, receivedAt, err := s.Latest(ctx, maxAge)
+		switch {
+		case err != nil && !errors.Is(err, ErrObservationUnavailable):
+			return ClusterObservation{}, time.Time{}, err
+		case err == nil && !receivedAt.Before(requestedAt) && !observation.ObservedAt.Before(notBefore):
+			return observation, receivedAt, nil
+		}
 		select {
 		case <-ctx.Done():
 			return ClusterObservation{}, time.Time{}, ctx.Err()
 		case <-deadline.C:
-			return ClusterObservation{}, time.Time{}, err
+			return ClusterObservation{}, time.Time{}, fmt.Errorf("%w: the Agent did not report a new one in time", ErrObservationUnavailable)
 		case <-ticker.C:
-			observation, receivedAt, err = s.Latest(ctx, maxAge)
-			if err == nil || !errors.Is(err, ErrObservationUnavailable) {
-				return observation, receivedAt, err
-			}
 		}
 	}
 }
@@ -179,7 +206,7 @@ func (s *ObservedSinglePrimary) Observe(ctx context.Context, cluster string, tar
 	if cluster != s.Cluster.TargetID {
 		return restoreplan.Request{}, errors.New("restore cluster does not match the observed cluster")
 	}
-	observation, receivedAt, err := s.fresh(ctx)
+	observation, receivedAt, err := s.fresh(ctx, target)
 	if err != nil {
 		return restoreplan.Request{}, err
 	}
@@ -280,9 +307,7 @@ func (s observedWALSource) ObserveWAL(_ context.Context, manifest controlstore.B
 	if err != nil {
 		return recoverability.Observation{}, err
 	}
-	inventory := WALInventory{RepositoryFingerprint: s.fingerprint, RepositoryRevision: s.revision, DatabaseHistoryID: s.observation.DatabaseHistoryID, CurrentTimeline: s.observation.Timeline, Segments: s.observation.ArchiveSegments, WALSegmentSize: s.observation.WALSegmentSize}
-	// Timeline history files are listed but not yet read, so recoverability
-	// across a timeline switch stays unknown instead of being guessed.
+	inventory := WALInventory{RepositoryFingerprint: s.fingerprint, RepositoryRevision: s.revision, DatabaseHistoryID: s.observation.DatabaseHistoryID, CurrentTimeline: s.observation.Timeline, Segments: s.observation.ArchiveSegments, History: s.observation.ArchiveHistory, WALSegmentSize: s.observation.WALSegmentSize}
 	return observeInventoryWAL(inventory, infos, s.observation.Stanza, manifest)
 }
 

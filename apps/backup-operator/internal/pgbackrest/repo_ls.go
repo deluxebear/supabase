@@ -99,3 +99,64 @@ func ParseArchiveList(data []byte) (ArchiveListing, error) {
 	sort.Slice(listing.Timelines, func(i, j int) bool { return listing.Timelines[i] < listing.Timelines[j] })
 	return listing, nil
 }
+
+// TimelineSwitch is the parent and switch point of a timeline, from the last
+// line of its history file.
+type TimelineSwitch struct {
+	Timeline  uint32
+	Parent    uint32
+	SwitchLSN string
+}
+
+// TimelineHistoryFile reads one timeline history file from the archive of a
+// database history. pgBackRest decrypts and decompresses it.
+func (b Builder) TimelineHistoryFile(stanza, archiveID string, timeline uint32) (Command, error) {
+	if !archiveIDPattern.MatchString(archiveID) || timeline < 2 {
+		return Command{}, errors.New("invalid archive ID or timeline")
+	}
+	command, err := b.command(stanza, "repo-get")
+	if err != nil {
+		return Command{}, err
+	}
+	command.Args = append(command.Args, fmt.Sprintf("archive/%s/%s/%08X.history", stanza, archiveID, timeline))
+	return command, nil
+}
+
+func (c Client) RunTimelineHistory(ctx context.Context, stanza, archiveID string, timeline uint32) (TimelineSwitch, error) {
+	command, err := c.Builder.TimelineHistoryFile(stanza, archiveID, timeline)
+	if err != nil {
+		return TimelineSwitch{}, err
+	}
+	out, err := c.execute(ctx, "repo-get", command)
+	if err != nil {
+		return TimelineSwitch{}, err
+	}
+	return ParseTimelineHistory(out.Stdout, timeline)
+}
+
+var historyLinePattern = regexp.MustCompile(`^([0-9]+)\s+([0-9A-Fa-f]{1,8}/[0-9A-Fa-f]{1,8})(?:\s.*)?$`)
+
+// ParseTimelineHistory reads a PostgreSQL timeline history file. Its last
+// entry names the timeline this one branched from and where.
+func ParseTimelineHistory(data []byte, timeline uint32) (TimelineSwitch, error) {
+	var last []string
+	for _, line := range strings.Split(string(data), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		match := historyLinePattern.FindStringSubmatch(line)
+		if match == nil {
+			return TimelineSwitch{}, errors.New("timeline history contains an invalid line")
+		}
+		last = match
+	}
+	if last == nil {
+		return TimelineSwitch{}, errors.New("timeline history is empty")
+	}
+	var parent uint32
+	if _, err := fmt.Sscanf(last[1], "%d", &parent); err != nil || parent == 0 || parent >= timeline {
+		return TimelineSwitch{}, errors.New("timeline history names an invalid parent")
+	}
+	return TimelineSwitch{Timeline: timeline, Parent: parent, SwitchLSN: strings.ToUpper(last[2])}, nil
+}

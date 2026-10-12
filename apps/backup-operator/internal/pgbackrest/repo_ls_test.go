@@ -49,3 +49,43 @@ func TestParseArchiveListKeepsSegmentsAndTimelines(t *testing.T) {
 		t.Fatal("non-object listing was accepted")
 	}
 }
+
+func TestTimelineHistory(t *testing.T) {
+	command, err := Builder{Binary: DefaultBinary}.TimelineHistoryFile("project-a", "17-1", 3)
+	if err != nil || command.Args[len(command.Args)-2] != "repo-get" || command.Args[len(command.Args)-1] != "archive/project-a/17-1/00000003.history" {
+		t.Fatalf("command = %v, err = %v", command.Args, err)
+	}
+	if _, err := (Builder{}).TimelineHistoryFile("project-a", "17-1", 1); err == nil {
+		t.Fatal("timeline 1 has no history file but was accepted")
+	}
+	got, err := ParseTimelineHistory([]byte("1\t0/5000148\tno recovery target specified\n\n2\t1/4A0000A0\tbefore 2026-10-12 06:00:00+00\n"), 3)
+	if err != nil || got != (TimelineSwitch{Timeline: 3, Parent: 2, SwitchLSN: "1/4A0000A0"}) {
+		t.Fatalf("history = %+v, err = %v", got, err)
+	}
+	for _, bad := range []string{"", "x\t0/1\n", "3\t0/1\tsame timeline\n"} {
+		if _, err := ParseTimelineHistory([]byte(bad), 3); err == nil {
+			t.Fatalf("history %q was accepted", bad)
+		}
+	}
+}
+
+func TestRestoreFollowsTheRequestedTimeline(t *testing.T) {
+	target := time.Unix(1791780010, 0).UTC()
+	command, err := Builder{Binary: DefaultBinary}.Restore("project-a", RestoreOptions{PGData: "/var/lib/postgresql/data", TargetTime: &target, TargetAction: "promote", TargetTimeline: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	found := false
+	for _, arg := range command.Args {
+		found = found || arg == "--target-timeline=1"
+	}
+	if !found {
+		t.Fatalf("restore args %v do not pin the timeline", command.Args)
+	}
+	command, _ = Builder{Binary: DefaultBinary}.Restore("project-a", RestoreOptions{PGData: "/var/lib/postgresql/data", TargetTime: &target})
+	for _, arg := range command.Args {
+		if arg == "--target-timeline=0" {
+			t.Fatal("an unset timeline was passed to pgBackRest")
+		}
+	}
+}

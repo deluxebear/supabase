@@ -2,7 +2,7 @@
 
 - Date: 2026-10-12
 - Branch: `custom/main`
-- Status: approved 2026-10-12 (option B). Stages 3.1 and 3.2 are done; see section 9.
+- Status: approved 2026-10-12 (option B). Stages 3.1 to 3.3 are done; see section 9.
 - Inputs: Phase 3 of the [completion roadmap](./2026-09-28-fleet-completion-roadmap.md), the [Go Backup Operator architecture](./2026-07-12-go-backup-operator-architecture.md), `apps/backup-operator/docs/production-runbook.md`, and a code audit of `apps/backup-operator` and `docker/fleet-managed` on 2026-10-12.
 
 ## 1. Goal
@@ -72,14 +72,21 @@ A new `docker/fleet-managed/docker-compose.backup.yml`, applied after the existi
 
 - **`db`**: mounts the data volume at `/var/lib/postgresql` (the parent of the image's default PGDATA, `/var/lib/postgresql/data`), adds a shared socket volume at `/var/run/postgresql`, and mounts the `backup-config` volume read-only at `/etc/pgbackrest`. pgBackRest cannot take a consistent backup without WAL archiving, so enabling backups turns archiving on with `ALTER SYSTEM`, using exactly the `archive_command` the Operator's PITR workflow sets. That workflow accepts a matching command as its own.
 - **`backup-config-init`**: a one-shot service that copies the project's `pgbackrest.conf` (mode 0600) and the repository CA from the host into the `backup-config` volume, owned by the `postgres` user (UID 100). A direct read-only bind mount of a 0600 host file is not readable by UID 100 on Linux hosts.
-- **`db-validation`** (stage 3.3): the same image, volume, and configuration as `db`, on an internal network with no published port. It is created but never started by Compose (`restart: "no"` and a `backup-validation` profile); only the Agent starts it during a restore.
+- **`db-validation`**: the same image, volume, and configuration as `db`, listening only on its Unix socket (port 5433). It joins the management network to fetch WAL from the repository during recovery. It is created but never started by Compose (`restart: "no"` and a `backup-validation` profile); only the Agent starts it during a restore, after `db` has stopped. It runs with `archive_mode=on` and an empty `archive_command`, so promotion marks the new timeline's history file ready without archiving it; `db` archives it after cut-over. With archiving off, the history file never reached the repository and a later restore reused the timeline ID.
 - **`backup-agent`**: a `supabase-backup-agent` image (`apps/backup-operator/Dockerfile.backup-agent`) built `FROM deluxebear/postgres:17` with the `backup-operator` binary added, so it has the same pgBackRest and PostgreSQL binaries as the database. It runs as the `postgres` user (UID 100), mounts the data volume at the same path as `db`, the socket volume, `backup-config`, and its own state volume, and runs `backup-operator --mode=agent --agent-runtime=docker`. It joins the management network to reach the repository and the Operator's gRPC listener, and in stage 3.3 the proxy network to reach Docker. It stays behind a `backup-agent` profile until it is enrolled (stage 3.2).
 - **pgBackRest binary**: the image's `/usr/bin/pgbackrest` is a wrapper that drops `--config` and switches to the `pgbackrest` user with `sudo`. The Agent and `archive_command` call `/usr/lib/pgbackrest/bin/pgbackrest.real` directly as `postgres`, as the Kubernetes runtime already does.
 - **`fleet-docker-proxy-backup`** (stage 3.3): the Phase 1 proxy (`fleet-docker-proxy`) with a new `backup` policy: `GET /containers/{id}/json` for project containers, and `start`, `stop`, `restart` for the `db`, `db-validation`, and fence services only. No create, delete, pull, exec, or network changes. The Agent never mounts the Docker socket.
 
 ### 4.3 Write fence
 
-A fence helper binary in the Agent image implements the seven entry points by stopping and starting containers through the backup proxy. `status` reports `blocked` only when every container of the entry point is stopped.
+`compose-fence`, installed as `/usr/local/bin/backup-fence` in the Agent image, implements the seven entry points by stopping and starting containers through the backup proxy. The containers of each entry point come from `BACKUP_FENCE_<ENTRY_POINT>` variables; every entry point needs at least one, and a container may serve only one. `status` reports `blocked` only when every container of the entry point is stopped.
+
+The fence lifecycle around a restore:
+
+1. The Agent closes the fence (stops the containers) and drains client backends before stopping `db`.
+2. After cut-over, the fence is **suspended**: every entry point reopens, but the handle stays durable, including across Agent restarts.
+3. A rollback within the window closes the same handle again, rolls back, and releases it.
+4. When the window ends, the Agent deletes the quarantined PGDATA and releases the suspended handle. A rollback requested after the window is refused before the fence is touched.
 
 | Entry point       | Containers                                                                                                                                                                                               |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -113,7 +120,7 @@ Rollback before backups are enabled: run the same service with `MIGRATE_DIRECTIO
 1. **Agent listener.** The control-plane Compose file configures `BACKUP_OPERATOR_AGENT_GRPC_LISTEN` on port 9443 with a server certificate and client CA from a separate backup Agent CA (`docker/self-platform/scripts/generate-backup-agent-trust.sh`), so a Fleet Agent certificate cannot authenticate. The Operator joins the management network with the alias `backup-operator`.
 2. **Cluster registrations.** `BACKUP_OPERATOR_CLUSTER_DIR` holds one 0600 JSON file per cluster with its project, target, node, Agent ID, certificate fingerprint, system identifier, data domain, stanza, pgBackRest paths, and repository identity. At startup the Operator enrolls each Agent, registers the repository and the cluster, and routes backups, PITR, maintenance, and restores for it. Duplicate targets, nodes, Agents, or stanzas are refused. A new registration takes effect when the Operator is recreated, which `enable-backups.sh` does. A copy step (`backup-operator-config-init`) delivers the files and the server certificate to the Operator user; the CA key stays on the host.
 3. **Observation task.** `single-primary-pgbackrest.maintenance.observe` runs on the Agent and returns typed evidence: the system identifier, timeline, recovery state, archive settings and archiver health, `pgbackrest info` JSON, the WAL segments listed with `pgbackrest repo-ls`, and the free bytes next to PGDATA. A coordinator requests it every 5 minutes per cluster (skipping clusters with one already queued) and prunes finished observation jobs after 24 hours, keeping the newest. Discovery, PITR status, and recoverability use evidence up to 15 minutes old. Restore planning needs evidence under 2 minutes old and requests a new observation, waiting up to 30 seconds. Recoverability also requests one when the newest backup finished after the latest observation. Freshness is measured from when the Operator received the evidence, not the Agent's clock.
-4. **Quarantine cleanup** (stage 3.3). Today the Operator deletes expired quarantine data on its own filesystem. It becomes an Agent task on the owning cluster, together with in-place restore, which is what creates quarantines.
+4. **Quarantine cleanup.** The quarantine records live in the Agent's own recovery store, next to the data, so the Agent cleans them itself: a worker deletes quarantined PGDATA whose rollback window has ended (never the live PGDATA) and records the result. No Operator task is needed.
 5. **Docker restore drill.** Implement `RestoreDrill` for the Docker runtime by reusing the systemd drill runner: restore into the drill workspace and run the validation harness inside the Agent container.
 
 ### 4.7 Drill workspace
@@ -177,7 +184,8 @@ Total: about 4.5–5.5 weeks, above the roadmap's 3–4 weeks because of option 
 5. **pgsodium and Vault keys.** A restored database needs the same root key. The project's key lives outside PGDATA (`db-config` volume), so an in-place restore keeps it. A restore to a new stack must copy it; this is out of scope for Phase 3 and documented as a limitation.
 6. **Capacity.** In-place restore keeps the quarantined PGDATA until the rollback window ends, so the volume needs room for two copies. The Operator's capacity check already enforces this using the Agent-reported free bytes.
 7. **Remote stacks.** `enable-backups.sh` assumes the stack and the control plane share a host. A stack on another host needs the Agent certificate, the registration file, and the Operator restart split into a control-plane step.
-8. **Timeline history.** Observations list timeline history files but do not read them yet, so the recovery window after a timeline switch (a restore) stays unknown instead of being guessed. Reading them with `pgbackrest repo-get` belongs to stage 3.3.
+8. **Timeline history.** Resolved in stage 3.3: observations read each history file with `pgbackrest repo-get`, so the recovery window follows a timeline switch.
+9. **Destructive lease and rollback window.** The Operator's destructive lease lasts 15 minutes, but the default rollback window is an hour. The Agent therefore refuses a new restore while a previous restore's quarantine exists. Aligning the lease with the window is a follow-up.
 
 ## 8. Verification
 
@@ -225,3 +233,17 @@ Defects found and fixed during the live run:
 - Studio marked the shared `backup-operator` domain unavailable for every project when one project got an application error, such as a 404 for a cluster without backups. Only network errors, 401, 403, and 5xx responses do now.
 - An idle database never completed a WAL segment, so the recovery window stopped at the last backup. `enable-backups.sh` sets `archive_timeout` to 120 seconds.
 - The Agent's reconnect loop and the outbox dispatcher dropped errors silently; both log them now.
+
+### Stage 3.3 (done 2026-10-12)
+
+In-place PITR restore and rollback run through the Operator on `project-d`. A fixture table had one row written before the target time and one after. Each restore left only the earlier row, on a new timeline, with every service back up after cut-over; each rollback brought both rows back on the original timeline. The cycle ran four times, and every restore chose a new timeline ID (2, 3, 4, 5). With the rollback window set to two minutes, the Agent deleted the quarantine after the window, and a later rollback was refused without stopping any service.
+
+Defects found and fixed during the live run:
+
+- Restore dispatch failed on the PostgreSQL control store: a boolean column was written as an integer. A PostgreSQL integration test now covers restore dispatch and the observation queries.
+- A failed dispatch kept the destructive lease for its whole 15-minute window, blocking retries. The lease is now released when the dispatch does not commit.
+- The engine never released the write fence, so the stack stayed down after a successful restore. The fence is now suspended after cut-over and released after rollback or when the window ends.
+- A rollback requested after the window closed the fence before discovering the window had ended, leaving the stack down. The window is checked first.
+- The validation instance ran with archiving off, so the new timeline's history file never reached the repository and the next restore reused timeline 2, colliding with the first restore's WAL. The abandoned segment was removed from the local repository by hand.
+- Recovery followed the newest timeline in the archive. After a rollback that is an abandoned branch, so recovery now follows the timeline the database was on when the restore was planned (`--target-timeline`).
+- Restore planning could reuse an observation taken before the target time or before the last restore or rollback. Planning now always waits for a new observation, and status views ignore observations older than the last restore or rollback.

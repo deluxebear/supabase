@@ -200,6 +200,17 @@ func (p *Provider) Recover(ctx context.Context) ([]contracts.FenceHandle, error)
 		if item.handle.Target != p.Target || item.revision != p.Revision {
 			return result, &ReleaseError{Cause: errors.New("persisted write fence target or configuration revision changed"), Runbook: p.releaseRunbook(targets, item.handle)}
 		}
+		if item.state == stateSuspended {
+			// The restore completed and reopened every entry point; keep the
+			// handle for a rollback without closing the stack again.
+			p.mu.Lock()
+			if p.handles == nil {
+				p.handles = map[string]trackedFence{}
+			}
+			p.handles[item.handle.ID] = item
+			p.mu.Unlock()
+			continue
+		}
 		for _, entry := range RequiredEntryPoints {
 			if err := targets[entry].Block(ctx, item.handle.Target); err != nil {
 				return result, &ReleaseError{EntryPoint: entry, Cause: err, Runbook: p.releaseRunbook(targets, item.handle)}

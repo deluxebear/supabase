@@ -142,7 +142,8 @@ func TestObservedClusterReportsDiscoveryPITRAndRecoverability(t *testing.T) {
 
 func TestObservedClusterRestorePlanningRequestsAFreshObservation(t *testing.T) {
 	evidence := &fakeEvidence{}
-	evidence.set(t, testObservation(), observedNow.Add(-10*time.Minute))
+	// Received a second ago: recent, but planning still asks for a new one.
+	evidence.set(t, testObservation(), observedNow.Add(-time.Second))
 	source := testObservedSource(evidence)
 	requested := 0
 	source.RequestObservation = func(context.Context) error {
@@ -160,10 +161,102 @@ func TestObservedClusterRestorePlanningRequestsAFreshObservation(t *testing.T) {
 	if request.Capacity.Destination != "/var/lib/postgresql/data" || request.Capacity.RequiredBytes != 676941634 || request.FenceProvider != "compose" {
 		t.Fatalf("capacity or fence = %+v / %s", request.Capacity, request.FenceProvider)
 	}
-	if _, err := source.Observe(context.Background(), "project-d", time.Unix(1791790000, 0).UTC()); err == nil {
+	requested = 0
+	source.RequestObservation = func(context.Context) error { requested++; return nil }
+	if _, err := source.Observe(context.Background(), "project-d", observedNow.Add(time.Second)); err == nil || requested != 1 {
+		t.Fatalf("a target after the observation was planned without a new observation: err = %v, requested = %d", err, requested)
+	}
+	source.RequestObservation = func(context.Context) error {
+		evidence.set(t, testObservation(), observedNow)
+		return nil
+	}
+	if _, err := source.Observe(context.Background(), "project-d", time.Unix(1791781100, 0).UTC()); err == nil {
 		t.Fatal("a target after the newest archived WAL was planned")
 	}
 	if _, err := source.Observe(context.Background(), "project-x", time.Unix(1791780860, 0).UTC()); err == nil {
 		t.Fatal("another cluster was planned")
+	}
+}
+
+func TestObservedClusterFollowsTimelineHistoryAfterARestore(t *testing.T) {
+	evidence := &fakeEvidence{}
+	observation := testObservation()
+	observation.Timeline = 2
+	observation.ArchiveSegments = []recoverability.ArchiveSegment{
+		ExplicitSegment("000000010000000100000048", time.Unix(1791780851, 0)),
+		ExplicitSegment("000000010000000100000049", time.Unix(1791780869, 0)),
+		ExplicitSegment("000000020000000100000049", time.Unix(1791781000, 0)),
+		ExplicitSegment("00000002000000010000004A", time.Unix(1791781100, 0)),
+	}
+	evidence.set(t, observation, observedNow)
+	source := testObservedSource(evidence)
+	unknown, err := source.ObserveRecoverability(context.Background(), "project-d")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if window := recoverability.Evaluate(unknown); window.Confidence != recoverability.Unknown {
+		t.Fatalf("a timeline without history was trusted: %+v", window)
+	}
+	observation.ArchiveHistory = []recoverability.TimelineHistory{{Timeline: 2, Parent: 1, SwitchLSN: "1/49000100"}}
+	evidence.set(t, observation, observedNow)
+	known, err := source.ObserveRecoverability(context.Background(), "project-d")
+	if err != nil {
+		t.Fatal(err)
+	}
+	window := recoverability.Evaluate(known)
+	if window.Confidence != recoverability.Inferred || !window.Until.Equal(time.Unix(1791781100, 0).UTC()) {
+		t.Fatalf("window across the timeline switch = %+v", window)
+	}
+}
+
+func TestObservedClusterPlansEachUseANewObservation(t *testing.T) {
+	evidence := &fakeEvidence{}
+	source := testObservedSource(evidence)
+	observedAt := testObservation().ObservedAt
+	source.RequestObservation = func(context.Context) error {
+		observation := testObservation()
+		observation.ObservedAt = observedAt
+		observedAt = observedAt.Add(time.Second)
+		evidence.set(t, observation, observedNow)
+		return nil
+	}
+	target := time.Unix(1791780860, 0).UTC()
+	first, err := source.Observe(context.Background(), "project-d", target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := source.Observe(context.Background(), "project-d", target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The topology identity is stable, so execution can confirm the plan, but
+	// each plan comes from its own observation and so has its own deadline.
+	if first.Topology.Evidence.ObservationID != second.Topology.Evidence.ObservationID {
+		t.Fatal("the topology identity changed without a topology change")
+	}
+	if !first.Topology.Evidence.ObservedAt.Before(second.Topology.Evidence.ObservedAt) {
+		t.Fatal("the second plan reused the first plan's observation")
+	}
+}
+
+type fixedRecoveries time.Time
+
+func (f fixedRecoveries) LatestRecoveryFinishedAt(context.Context, string) (time.Time, error) {
+	return time.Time(f), nil
+}
+
+func TestObservedClusterIgnoresObservationsFromBeforeARestore(t *testing.T) {
+	evidence := &fakeEvidence{}
+	evidence.set(t, testObservation(), observedNow.Add(-time.Minute))
+	source := testObservedSource(evidence)
+	source.Recoveries = fixedRecoveries(observedNow.Add(-30 * time.Second))
+	requested := 0
+	source.RequestObservation = func(context.Context) error { requested++; return nil }
+	if _, err := source.Discover(context.Background(), controlstore.TargetRecord{}); !errors.Is(err, ErrObservationUnavailable) || requested != 1 {
+		t.Fatalf("an observation from before the restore was used: err = %v, requested = %d", err, requested)
+	}
+	evidence.set(t, testObservation(), observedNow)
+	if _, err := source.Discover(context.Background(), controlstore.TargetRecord{}); err != nil {
+		t.Fatal(err)
 	}
 }

@@ -141,3 +141,39 @@ func (c *DockerClient) ValidateVolumeMount(ctx context.Context, container, volum
 	}
 	return fmt.Errorf("Docker container %q does not have enrolled writable volume %q at %q", container, volume, destination)
 }
+
+// Running reports whether an enrolled container is running. A missing
+// container is reported as not running.
+func (c *DockerClient) Running(ctx context.Context, container string) (bool, error) {
+	if _, ok := c.containers[container]; !ok {
+		return false, fmt.Errorf("Docker container %q is not enrolled", container)
+	}
+	target := *c.baseURL
+	target.Path = strings.TrimSuffix(c.baseURL.Path, "/") + "/containers/" + container + "/json"
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, target.String(), nil)
+	if err != nil {
+		return false, err
+	}
+	response, err := c.doer.Do(request)
+	if err != nil {
+		return false, err
+	}
+	defer response.Body.Close()
+	if response.StatusCode == http.StatusNotFound {
+		return false, nil
+	}
+	if response.StatusCode != http.StatusOK {
+		_, _ = io.Copy(io.Discard, io.LimitReader(response.Body, 64<<10))
+		return false, fmt.Errorf("Docker inspect returned HTTP %d", response.StatusCode)
+	}
+	var inspected struct {
+		State struct {
+			Running    bool `json:"Running"`
+			Restarting bool `json:"Restarting"`
+		} `json:"State"`
+	}
+	if err := json.NewDecoder(io.LimitReader(response.Body, 1<<20)).Decode(&inspected); err != nil {
+		return false, fmt.Errorf("decode Docker inspect: %w", err)
+	}
+	return inspected.State.Running || inspected.State.Restarting, nil
+}

@@ -75,7 +75,9 @@ type RestoreOptions struct {
 	Set          string
 	TargetTime   *time.Time
 	TargetAction string
-	Delta        bool
+	// TargetTimeline selects the timeline recovery follows; zero keeps the default.
+	TargetTimeline uint32
+	Delta          bool
 }
 
 func (b Builder) Restore(stanza string, options RestoreOptions) (Command, error) {
@@ -97,6 +99,9 @@ func (b Builder) Restore(stanza string, options RestoreOptions) (Command, error)
 			return Command{}, errors.New("invalid recovery target action")
 		}
 		args = append(args, "--target-action="+options.TargetAction)
+	}
+	if options.TargetTimeline > 0 {
+		args = append(args, fmt.Sprintf("--target-timeline=%d", options.TargetTimeline))
 	}
 	if options.Delta {
 		args = append(args, "--delta")

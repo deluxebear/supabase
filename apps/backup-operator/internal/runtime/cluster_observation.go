@@ -21,23 +21,24 @@ const ObserveCapability = "single-primary-pgbackrest.maintenance.observe"
 
 // ClusterObservation is the typed evidence of one observe task.
 type ClusterObservation struct {
-	ClusterID         string                          `json:"clusterId"`
-	NodeID            string                          `json:"nodeId"`
-	Stanza            string                          `json:"stanza"`
-	ObservedAt        time.Time                       `json:"observedAt"`
-	SystemIdentifier  string                          `json:"systemIdentifier"`
-	Timeline          uint32                          `json:"timeline"`
-	InRecovery        bool                            `json:"inRecovery"`
-	ArchiveMode       string                          `json:"archiveMode"`
-	ArchiveCommand    string                          `json:"archiveCommand"`
-	ArchiverFailing   bool                            `json:"archiverFailing"`
-	WALSegmentSize    uint64                          `json:"walSegmentSize"`
-	PgBackRestInfo    json.RawMessage                 `json:"pgbackrestInfo"`
-	DatabaseHistoryID uint64                          `json:"databaseHistoryId"`
-	ArchiveSegments   []recoverability.ArchiveSegment `json:"archiveSegments"`
-	ArchiveTimelines  []uint32                        `json:"archiveTimelines"`
-	Destination       string                          `json:"destination"`
-	AvailableBytes    int64                           `json:"availableBytes"`
+	ClusterID         string                           `json:"clusterId"`
+	NodeID            string                           `json:"nodeId"`
+	Stanza            string                           `json:"stanza"`
+	ObservedAt        time.Time                        `json:"observedAt"`
+	SystemIdentifier  string                           `json:"systemIdentifier"`
+	Timeline          uint32                           `json:"timeline"`
+	InRecovery        bool                             `json:"inRecovery"`
+	ArchiveMode       string                           `json:"archiveMode"`
+	ArchiveCommand    string                           `json:"archiveCommand"`
+	ArchiverFailing   bool                             `json:"archiverFailing"`
+	WALSegmentSize    uint64                           `json:"walSegmentSize"`
+	PgBackRestInfo    json.RawMessage                  `json:"pgbackrestInfo"`
+	DatabaseHistoryID uint64                           `json:"databaseHistoryId"`
+	ArchiveSegments   []recoverability.ArchiveSegment  `json:"archiveSegments"`
+	ArchiveTimelines  []uint32                         `json:"archiveTimelines"`
+	ArchiveHistory    []recoverability.TimelineHistory `json:"archiveHistory"`
+	Destination       string                           `json:"destination"`
+	AvailableBytes    int64                            `json:"availableBytes"`
 }
 
 // Validate checks the identity and completeness of evidence read back from the
@@ -104,7 +105,8 @@ func (o ClusterObserver) Observe(ctx context.Context) (ClusterObservation, error
 			continue
 		}
 		observation.DatabaseHistoryID = info.DatabaseHistoryID
-		listing, err := o.PgBackRest.RunArchiveList(ctx, o.Stanza, fmt.Sprintf("%s-%d", info.DatabaseVersion, info.DatabaseHistoryID))
+		archiveID := fmt.Sprintf("%s-%d", info.DatabaseVersion, info.DatabaseHistoryID)
+		listing, err := o.PgBackRest.RunArchiveList(ctx, o.Stanza, archiveID)
 		if err != nil {
 			return ClusterObservation{}, fmt.Errorf("list WAL archive: %w", err)
 		}
@@ -112,6 +114,13 @@ func (o ClusterObserver) Observe(ctx context.Context) (ClusterObservation, error
 			observation.ArchiveSegments = append(observation.ArchiveSegments, ExplicitSegment(segment.Name, segment.StoredAt))
 		}
 		observation.ArchiveTimelines = listing.Timelines
+		for _, timeline := range listing.Timelines {
+			history, err := o.PgBackRest.RunTimelineHistory(ctx, o.Stanza, archiveID, timeline)
+			if err != nil {
+				return ClusterObservation{}, fmt.Errorf("read timeline %08X history: %w", timeline, err)
+			}
+			observation.ArchiveHistory = append(observation.ArchiveHistory, recoverability.TimelineHistory{Timeline: history.Timeline, Parent: history.Parent, SwitchLSN: history.SwitchLSN})
+		}
 	}
 	available := o.AvailableBytes
 	if available == nil {
