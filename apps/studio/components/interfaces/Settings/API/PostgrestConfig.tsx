@@ -38,6 +38,7 @@ import { z } from 'zod'
 
 import { ExposedSchemaSelector, internalSchemasCannotExpose } from './ExposedSchemaSelector'
 import { HardenAPIModal } from './HardenAPIModal'
+import { EnvServiceApplyNotice } from '@/components/interfaces/SelfPlatform/EnvServiceApplyNotice'
 import { ExposedFunctionSelector } from '@/components/interfaces/Settings/API/ExposedFunctionSelector'
 import { ExposedTableSelector } from '@/components/interfaces/Settings/API/ExposedTableSelector'
 import { FormActions } from '@/components/ui/Forms/FormActions'
@@ -52,6 +53,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useLatest } from '@/hooks/misc/useLatest'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
+import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { t as $t } from '@/lib/i18n'
 import { noop } from '@/lib/void'
 import type { ResponseError } from '@/types'
@@ -292,6 +294,9 @@ export const PostgrestConfig = () => {
   return (
     <PageSection id="postgrest-config" className="first:pt-0">
       <PageSectionContent>
+        {STUDIO_DEPLOYMENT_PROFILE === 'fleet' && projectRef !== undefined && (
+          <EnvServiceApplyNotice projectRef={projectRef} service="postgrest" />
+        )}
         <Card className="mb-4">
           <Form {...form}>
             <form id={formId} onSubmit={form.handleSubmit(onSubmit)}>

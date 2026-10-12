@@ -328,7 +328,9 @@ import { Route as ApiPlatformStorageRefBucketsIdEmptyRouteImport } from './route
 import { Route as ApiPlatformProjectsRefFunctionsSecretsApplyRouteImport } from './routes/api/platform/projects/$ref/functions/secrets/apply'
 import { Route as ApiPlatformProjectsRefContentItemIdRouteImport } from './routes/api/platform/projects/$ref/content/item/$id'
 import { Route as ApiPlatformProjectsRefContentFoldersIdRouteImport } from './routes/api/platform/projects/$ref/content/folders/$id'
+import { Route as ApiPlatformProjectsRefConfigStorageApplyRouteImport } from './routes/api/platform/projects/$ref/config/storage/apply'
 import { Route as ApiPlatformProjectsRefConfigSecretsUpdateStatusRouteImport } from './routes/api/platform/projects/$ref/config/secrets/update-status'
+import { Route as ApiPlatformProjectsRefConfigPostgrestApplyRouteImport } from './routes/api/platform/projects/$ref/config/postgrest/apply'
 import { Route as ApiPlatformProjectsRefAnalyticsLogDrainsUuidRouteImport } from './routes/api/platform/projects/$ref/analytics/log-drains/$uuid'
 import { Route as ApiPlatformProjectsRefAnalyticsEndpointsNameRouteImport } from './routes/api/platform/projects/$ref/analytics/endpoints/$name'
 import { Route as ApiPlatformAuthRefUsersIdFactorsRouteImport } from './routes/api/platform/auth/$ref/users/$id/factors'
@@ -2126,11 +2128,23 @@ const ApiPlatformProjectsRefContentFoldersIdRoute =
     path: '/api/platform/projects/$ref/content/folders/$id',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPlatformProjectsRefConfigStorageApplyRoute =
+  ApiPlatformProjectsRefConfigStorageApplyRouteImport.update({
+    id: '/api/platform/projects/$ref/config/storage/apply',
+    path: '/api/platform/projects/$ref/config/storage/apply',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPlatformProjectsRefConfigSecretsUpdateStatusRoute =
   ApiPlatformProjectsRefConfigSecretsUpdateStatusRouteImport.update({
     id: '/api/platform/projects/$ref/config/secrets/update-status',
     path: '/api/platform/projects/$ref/config/secrets/update-status',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPlatformProjectsRefConfigPostgrestApplyRoute =
+  ApiPlatformProjectsRefConfigPostgrestApplyRouteImport.update({
+    id: '/apply',
+    path: '/apply',
+    getParentRoute: () => ApiPlatformProjectsRefConfigPostgrestRoute,
   } as any)
 const ApiPlatformProjectsRefAnalyticsLogDrainsUuidRoute =
   ApiPlatformProjectsRefAnalyticsLogDrainsUuidRouteImport.update({
@@ -2512,7 +2526,7 @@ export interface FileRoutesByFullPath {
   '/api/platform/projects/$ref/api/rest': typeof ApiPlatformProjectsRefApiRestRoute
   '/api/platform/projects/$ref/billing/addons': typeof ApiPlatformProjectsRefBillingAddonsRoute
   '/api/platform/projects/$ref/config/jwt': typeof ApiPlatformProjectsRefConfigJwtRoute
-  '/api/platform/projects/$ref/config/postgrest': typeof ApiPlatformProjectsRefConfigPostgrestRoute
+  '/api/platform/projects/$ref/config/postgrest': typeof ApiPlatformProjectsRefConfigPostgrestRouteWithChildren
   '/api/platform/projects/$ref/content/count': typeof ApiPlatformProjectsRefContentCountRoute
   '/api/platform/projects/$ref/management-binding/enrollment-token': typeof ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute
   '/api/platform/projects/$ref/management-binding/sync': typeof ApiPlatformProjectsRefManagementBindingSyncRoute
@@ -2539,7 +2553,9 @@ export interface FileRoutesByFullPath {
   '/api/platform/auth/$ref/users/$id/factors': typeof ApiPlatformAuthRefUsersIdFactorsRoute
   '/api/platform/projects/$ref/analytics/endpoints/$name': typeof ApiPlatformProjectsRefAnalyticsEndpointsNameRoute
   '/api/platform/projects/$ref/analytics/log-drains/$uuid': typeof ApiPlatformProjectsRefAnalyticsLogDrainsUuidRoute
+  '/api/platform/projects/$ref/config/postgrest/apply': typeof ApiPlatformProjectsRefConfigPostgrestApplyRoute
   '/api/platform/projects/$ref/config/secrets/update-status': typeof ApiPlatformProjectsRefConfigSecretsUpdateStatusRoute
+  '/api/platform/projects/$ref/config/storage/apply': typeof ApiPlatformProjectsRefConfigStorageApplyRoute
   '/api/platform/projects/$ref/content/folders/$id': typeof ApiPlatformProjectsRefContentFoldersIdRoute
   '/api/platform/projects/$ref/content/item/$id': typeof ApiPlatformProjectsRefContentItemIdRoute
   '/api/platform/projects/$ref/functions/secrets/apply': typeof ApiPlatformProjectsRefFunctionsSecretsApplyRoute
@@ -2833,7 +2849,7 @@ export interface FileRoutesByTo {
   '/api/platform/projects/$ref/api/rest': typeof ApiPlatformProjectsRefApiRestRoute
   '/api/platform/projects/$ref/billing/addons': typeof ApiPlatformProjectsRefBillingAddonsRoute
   '/api/platform/projects/$ref/config/jwt': typeof ApiPlatformProjectsRefConfigJwtRoute
-  '/api/platform/projects/$ref/config/postgrest': typeof ApiPlatformProjectsRefConfigPostgrestRoute
+  '/api/platform/projects/$ref/config/postgrest': typeof ApiPlatformProjectsRefConfigPostgrestRouteWithChildren
   '/api/platform/projects/$ref/content/count': typeof ApiPlatformProjectsRefContentCountRoute
   '/api/platform/projects/$ref/management-binding/enrollment-token': typeof ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute
   '/api/platform/projects/$ref/management-binding/sync': typeof ApiPlatformProjectsRefManagementBindingSyncRoute
@@ -2860,7 +2876,9 @@ export interface FileRoutesByTo {
   '/api/platform/auth/$ref/users/$id/factors': typeof ApiPlatformAuthRefUsersIdFactorsRoute
   '/api/platform/projects/$ref/analytics/endpoints/$name': typeof ApiPlatformProjectsRefAnalyticsEndpointsNameRoute
   '/api/platform/projects/$ref/analytics/log-drains/$uuid': typeof ApiPlatformProjectsRefAnalyticsLogDrainsUuidRoute
+  '/api/platform/projects/$ref/config/postgrest/apply': typeof ApiPlatformProjectsRefConfigPostgrestApplyRoute
   '/api/platform/projects/$ref/config/secrets/update-status': typeof ApiPlatformProjectsRefConfigSecretsUpdateStatusRoute
+  '/api/platform/projects/$ref/config/storage/apply': typeof ApiPlatformProjectsRefConfigStorageApplyRoute
   '/api/platform/projects/$ref/content/folders/$id': typeof ApiPlatformProjectsRefContentFoldersIdRoute
   '/api/platform/projects/$ref/content/item/$id': typeof ApiPlatformProjectsRefContentItemIdRoute
   '/api/platform/projects/$ref/functions/secrets/apply': typeof ApiPlatformProjectsRefFunctionsSecretsApplyRoute
@@ -3172,7 +3190,7 @@ export interface FileRoutesById {
   '/api/platform/projects/$ref/api/rest': typeof ApiPlatformProjectsRefApiRestRoute
   '/api/platform/projects/$ref/billing/addons': typeof ApiPlatformProjectsRefBillingAddonsRoute
   '/api/platform/projects/$ref/config/jwt': typeof ApiPlatformProjectsRefConfigJwtRoute
-  '/api/platform/projects/$ref/config/postgrest': typeof ApiPlatformProjectsRefConfigPostgrestRoute
+  '/api/platform/projects/$ref/config/postgrest': typeof ApiPlatformProjectsRefConfigPostgrestRouteWithChildren
   '/api/platform/projects/$ref/content/count': typeof ApiPlatformProjectsRefContentCountRoute
   '/api/platform/projects/$ref/management-binding/enrollment-token': typeof ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute
   '/api/platform/projects/$ref/management-binding/sync': typeof ApiPlatformProjectsRefManagementBindingSyncRoute
@@ -3199,7 +3217,9 @@ export interface FileRoutesById {
   '/api/platform/auth/$ref/users/$id/factors': typeof ApiPlatformAuthRefUsersIdFactorsRoute
   '/api/platform/projects/$ref/analytics/endpoints/$name': typeof ApiPlatformProjectsRefAnalyticsEndpointsNameRoute
   '/api/platform/projects/$ref/analytics/log-drains/$uuid': typeof ApiPlatformProjectsRefAnalyticsLogDrainsUuidRoute
+  '/api/platform/projects/$ref/config/postgrest/apply': typeof ApiPlatformProjectsRefConfigPostgrestApplyRoute
   '/api/platform/projects/$ref/config/secrets/update-status': typeof ApiPlatformProjectsRefConfigSecretsUpdateStatusRoute
+  '/api/platform/projects/$ref/config/storage/apply': typeof ApiPlatformProjectsRefConfigStorageApplyRoute
   '/api/platform/projects/$ref/content/folders/$id': typeof ApiPlatformProjectsRefContentFoldersIdRoute
   '/api/platform/projects/$ref/content/item/$id': typeof ApiPlatformProjectsRefContentItemIdRoute
   '/api/platform/projects/$ref/functions/secrets/apply': typeof ApiPlatformProjectsRefFunctionsSecretsApplyRoute
@@ -3537,7 +3557,9 @@ export interface FileRouteTypes {
     | '/api/platform/auth/$ref/users/$id/factors'
     | '/api/platform/projects/$ref/analytics/endpoints/$name'
     | '/api/platform/projects/$ref/analytics/log-drains/$uuid'
+    | '/api/platform/projects/$ref/config/postgrest/apply'
     | '/api/platform/projects/$ref/config/secrets/update-status'
+    | '/api/platform/projects/$ref/config/storage/apply'
     | '/api/platform/projects/$ref/content/folders/$id'
     | '/api/platform/projects/$ref/content/item/$id'
     | '/api/platform/projects/$ref/functions/secrets/apply'
@@ -3858,7 +3880,9 @@ export interface FileRouteTypes {
     | '/api/platform/auth/$ref/users/$id/factors'
     | '/api/platform/projects/$ref/analytics/endpoints/$name'
     | '/api/platform/projects/$ref/analytics/log-drains/$uuid'
+    | '/api/platform/projects/$ref/config/postgrest/apply'
     | '/api/platform/projects/$ref/config/secrets/update-status'
+    | '/api/platform/projects/$ref/config/storage/apply'
     | '/api/platform/projects/$ref/content/folders/$id'
     | '/api/platform/projects/$ref/content/item/$id'
     | '/api/platform/projects/$ref/functions/secrets/apply'
@@ -4196,7 +4220,9 @@ export interface FileRouteTypes {
     | '/api/platform/auth/$ref/users/$id/factors'
     | '/api/platform/projects/$ref/analytics/endpoints/$name'
     | '/api/platform/projects/$ref/analytics/log-drains/$uuid'
+    | '/api/platform/projects/$ref/config/postgrest/apply'
     | '/api/platform/projects/$ref/config/secrets/update-status'
+    | '/api/platform/projects/$ref/config/storage/apply'
     | '/api/platform/projects/$ref/content/folders/$id'
     | '/api/platform/projects/$ref/content/item/$id'
     | '/api/platform/projects/$ref/functions/secrets/apply'
@@ -4316,7 +4342,7 @@ export interface RootRouteChildren {
   ApiPlatformProjectsRefApiRestRoute: typeof ApiPlatformProjectsRefApiRestRoute
   ApiPlatformProjectsRefBillingAddonsRoute: typeof ApiPlatformProjectsRefBillingAddonsRoute
   ApiPlatformProjectsRefConfigJwtRoute: typeof ApiPlatformProjectsRefConfigJwtRoute
-  ApiPlatformProjectsRefConfigPostgrestRoute: typeof ApiPlatformProjectsRefConfigPostgrestRoute
+  ApiPlatformProjectsRefConfigPostgrestRoute: typeof ApiPlatformProjectsRefConfigPostgrestRouteWithChildren
   ApiPlatformProjectsRefContentCountRoute: typeof ApiPlatformProjectsRefContentCountRoute
   ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute: typeof ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute
   ApiPlatformProjectsRefManagementBindingSyncRoute: typeof ApiPlatformProjectsRefManagementBindingSyncRoute
@@ -4337,6 +4363,7 @@ export interface RootRouteChildren {
   ApiPlatformAuthRefUsersIdFactorsRoute: typeof ApiPlatformAuthRefUsersIdFactorsRoute
   ApiPlatformProjectsRefAnalyticsEndpointsNameRoute: typeof ApiPlatformProjectsRefAnalyticsEndpointsNameRoute
   ApiPlatformProjectsRefConfigSecretsUpdateStatusRoute: typeof ApiPlatformProjectsRefConfigSecretsUpdateStatusRoute
+  ApiPlatformProjectsRefConfigStorageApplyRoute: typeof ApiPlatformProjectsRefConfigStorageApplyRoute
   ApiPlatformProjectsRefContentFoldersIdRoute: typeof ApiPlatformProjectsRefContentFoldersIdRoute
   ApiPlatformProjectsRefContentItemIdRoute: typeof ApiPlatformProjectsRefContentItemIdRoute
   ApiPlatformProjectsRefFunctionsSecretsApplyRoute: typeof ApiPlatformProjectsRefFunctionsSecretsApplyRoute
@@ -6597,12 +6624,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPlatformProjectsRefContentFoldersIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/platform/projects/$ref/config/storage/apply': {
+      id: '/api/platform/projects/$ref/config/storage/apply'
+      path: '/api/platform/projects/$ref/config/storage/apply'
+      fullPath: '/api/platform/projects/$ref/config/storage/apply'
+      preLoaderRoute: typeof ApiPlatformProjectsRefConfigStorageApplyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/platform/projects/$ref/config/secrets/update-status': {
       id: '/api/platform/projects/$ref/config/secrets/update-status'
       path: '/api/platform/projects/$ref/config/secrets/update-status'
       fullPath: '/api/platform/projects/$ref/config/secrets/update-status'
       preLoaderRoute: typeof ApiPlatformProjectsRefConfigSecretsUpdateStatusRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/platform/projects/$ref/config/postgrest/apply': {
+      id: '/api/platform/projects/$ref/config/postgrest/apply'
+      path: '/apply'
+      fullPath: '/api/platform/projects/$ref/config/postgrest/apply'
+      preLoaderRoute: typeof ApiPlatformProjectsRefConfigPostgrestApplyRouteImport
+      parentRoute: typeof ApiPlatformProjectsRefConfigPostgrestRoute
     }
     '/api/platform/projects/$ref/analytics/log-drains/$uuid': {
       id: '/api/platform/projects/$ref/analytics/log-drains/$uuid'
@@ -7453,6 +7494,21 @@ const ApiPlatformProjectsRefAnalyticsLogDrainsRouteWithChildren =
     ApiPlatformProjectsRefAnalyticsLogDrainsRouteChildren,
   )
 
+interface ApiPlatformProjectsRefConfigPostgrestRouteChildren {
+  ApiPlatformProjectsRefConfigPostgrestApplyRoute: typeof ApiPlatformProjectsRefConfigPostgrestApplyRoute
+}
+
+const ApiPlatformProjectsRefConfigPostgrestRouteChildren: ApiPlatformProjectsRefConfigPostgrestRouteChildren =
+  {
+    ApiPlatformProjectsRefConfigPostgrestApplyRoute:
+      ApiPlatformProjectsRefConfigPostgrestApplyRoute,
+  }
+
+const ApiPlatformProjectsRefConfigPostgrestRouteWithChildren =
+  ApiPlatformProjectsRefConfigPostgrestRoute._addFileChildren(
+    ApiPlatformProjectsRefConfigPostgrestRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
@@ -7561,7 +7617,7 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPlatformProjectsRefBillingAddonsRoute,
   ApiPlatformProjectsRefConfigJwtRoute: ApiPlatformProjectsRefConfigJwtRoute,
   ApiPlatformProjectsRefConfigPostgrestRoute:
-    ApiPlatformProjectsRefConfigPostgrestRoute,
+    ApiPlatformProjectsRefConfigPostgrestRouteWithChildren,
   ApiPlatformProjectsRefContentCountRoute:
     ApiPlatformProjectsRefContentCountRoute,
   ApiPlatformProjectsRefManagementBindingEnrollmentTokenRoute:
@@ -7595,6 +7651,8 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPlatformProjectsRefAnalyticsEndpointsNameRoute,
   ApiPlatformProjectsRefConfigSecretsUpdateStatusRoute:
     ApiPlatformProjectsRefConfigSecretsUpdateStatusRoute,
+  ApiPlatformProjectsRefConfigStorageApplyRoute:
+    ApiPlatformProjectsRefConfigStorageApplyRoute,
   ApiPlatformProjectsRefContentFoldersIdRoute:
     ApiPlatformProjectsRefContentFoldersIdRoute,
   ApiPlatformProjectsRefContentItemIdRoute:
@@ -7644,13 +7702,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

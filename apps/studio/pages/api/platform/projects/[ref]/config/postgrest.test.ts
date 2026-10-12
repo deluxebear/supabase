@@ -3,7 +3,11 @@ import type { JwtPayload } from '@supabase/supabase-js'
 import { createMocks } from 'node-mocks-http'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { checkPermission } from '@/lib/api/self-platform/rbac/enforce'
+import { checkPermission, guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
+import {
+  mergeStoredServiceConfig,
+  readStoredServiceConfig,
+} from '@/lib/api/self-platform/service-settings'
 
 const resolveProjectConnection = vi.fn()
 
@@ -21,7 +25,14 @@ vi.mock('@/lib/api/self-platform/resolve-connection', async (importOriginal) => 
   }
 })
 
-vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({ checkPermission: vi.fn() }))
+vi.mock('@/lib/api/self-platform/rbac/enforce', () => ({
+  checkPermission: vi.fn(),
+  guardProjectRoute: vi.fn(),
+}))
+vi.mock('@/lib/api/self-platform/service-settings', () => ({
+  readStoredServiceConfig: vi.fn(),
+  mergeStoredServiceConfig: vi.fn(),
+}))
 
 const claimsOf = (sub: string) => ({ sub }) as JwtPayload
 
@@ -29,6 +40,11 @@ beforeEach(() => {
   resolveProjectConnection.mockReset()
   vi.mocked(checkPermission).mockReset()
   vi.mocked(checkPermission).mockResolvedValue(true)
+  vi.mocked(guardProjectRoute).mockReset()
+  vi.mocked(guardProjectRoute).mockResolvedValue(true)
+  vi.mocked(readStoredServiceConfig).mockReset()
+  vi.mocked(readStoredServiceConfig).mockResolvedValue({})
+  vi.mocked(mergeStoredServiceConfig).mockReset()
 })
 afterEach(() => vi.unstubAllEnvs())
 
@@ -104,5 +120,73 @@ describe('GET /platform/projects/{ref}/config/postgrest (self-platform)', () => 
     await handler(req as any, res as any, claimsOf('g-1'))
     expect(res._getStatusCode()).toBe(404)
     expect(checkPermission).not.toHaveBeenCalled()
+  })
+})
+
+describe('stored settings (fleet)', () => {
+  it('GET shows stored overrides over the stack defaults', async () => {
+    resolveProjectConnection.mockResolvedValueOnce({ row: { id: 2 }, jwtSecret: 'secret-b' })
+    vi.mocked(readStoredServiceConfig).mockResolvedValueOnce({
+      max_rows: 250,
+      db_schema: 'public,api',
+    })
+    const { handler } = await import('./postgrest')
+    const { req, res } = createMocks({ method: 'GET', query: { ref: 'proj-b' } })
+    await handler(req as any, res as any)
+    const body = res._getJSONData()
+    expect(body.max_rows).toBe(250)
+    expect(body.db_schema).toBe('public,api')
+    expect(body.db_extra_search_path).toBe('public')
+  })
+
+  it('PATCH stores validated settings as desired state', async () => {
+    vi.mocked(mergeStoredServiceConfig).mockResolvedValueOnce({ max_rows: 250 })
+    const { handler } = await import('./postgrest')
+    const { req, res } = createMocks({
+      method: 'PATCH',
+      query: { ref: 'proj-b' },
+      body: { max_rows: 250, db_pool: null },
+    })
+    await handler(req as any, res as any, claimsOf('user-1'))
+    expect(res._getStatusCode()).toBe(200)
+    expect(guardProjectRoute).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({
+        action: PermissionAction.UPDATE,
+        resource: 'custom_config_postgrest',
+        projectRef: 'proj-b',
+      })
+    )
+    expect(mergeStoredServiceConfig).toHaveBeenCalledWith({
+      projectRef: 'proj-b',
+      service: 'postgrest',
+      patch: { max_rows: 250, db_pool: null },
+      actor: 'user-1',
+    })
+  })
+
+  it('PATCH rejects invalid settings without storing', async () => {
+    const { handler } = await import('./postgrest')
+    const { req, res } = createMocks({
+      method: 'PATCH',
+      query: { ref: 'proj-b' },
+      body: { db_schema: 'public;drop' },
+    })
+    await handler(req as any, res as any, claimsOf('user-1'))
+    expect(res._getStatusCode()).toBe(400)
+    expect(mergeStoredServiceConfig).not.toHaveBeenCalled()
+  })
+
+  it('PATCH stops when the permission check denies', async () => {
+    vi.mocked(guardProjectRoute).mockResolvedValueOnce(false)
+    const { handler } = await import('./postgrest')
+    const { req, res } = createMocks({
+      method: 'PATCH',
+      query: { ref: 'proj-b' },
+      body: { max_rows: 10 },
+    })
+    await handler(req as any, res as any, claimsOf('user-1'))
+    expect(mergeStoredServiceConfig).not.toHaveBeenCalled()
   })
 })

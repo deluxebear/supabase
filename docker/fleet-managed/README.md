@@ -123,6 +123,8 @@ docker compose -p supabase-managed-a \
   -f docker/fleet-managed/state/project-a/config/auth/current/compose.yml \
   -f docker/fleet-managed/state/project-a/config/auth/current/secrets.compose.yml \
   -f docker/fleet-managed/state/project-a/config/functions/current/secrets.compose.yml \
+  -f docker/fleet-managed/state/project-a/config/postgrest/current/compose.yml \
+  -f docker/fleet-managed/state/project-a/config/storage/current/compose.yml \
   --profile agent up -d
 ```
 
@@ -131,9 +133,23 @@ instances. The `functions` file carries Edge Function secrets (see below). For a
 path of its `FLEET_CONFIG_ROOT`) and `FLEET_OPERATOR_GID` (the output of
 `id -g` for the user who runs `docker compose`) to its env file and run
 `scripts/bootstrap-config-domain.sh "$FLEET_HOST_CONFIG_ROOT" auth` and
-`scripts/bootstrap-config-domain.sh "$FLEET_HOST_CONFIG_ROOT" functions` once. If
+`scripts/bootstrap-config-domain.sh "$FLEET_HOST_CONFIG_ROOT" functions` once. Do the same for the
+`postgrest` and `storage` domains, which carry applied PostgREST and Storage settings
+(see below); the Agent's Compose file list names their files, so they must exist
+before the Agent restarts. If
 the script warns that `secrets.compose.yml` is missing, apply the Auth settings
 from Studio once before adding the file to your commands.
+
+### PostgREST and Storage settings
+
+Studio stores PostgREST settings (exposed schemas, extra search path, max rows,
+pool size) and Storage settings (upload size limit, image transformation) as
+desired state. "Apply" renders them into
+`$FLEET_HOST_CONFIG_ROOT/postgrest/current/compose.yml` and
+`$FLEET_HOST_CONFIG_ROOT/storage/current/compose.yml`, and the Agent recreates
+`rest` or `storage`. Both files must also be on every manual `docker compose`
+command, as shown above. Only stored overrides are rendered: a setting you never
+changed keeps the upstream value. Realtime limits are not part of this path.
 
 ### Secret Auth settings
 

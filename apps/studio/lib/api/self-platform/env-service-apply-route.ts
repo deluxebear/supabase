@@ -1,0 +1,127 @@
+// [self-platform] Phase 2: shared HTTP handler for applying stored settings of
+// an environment-driven service. GET reports whether the running service uses
+// the stored settings; POST commits them as the desired revision, which the
+// Fleet Agent writes and rolls out. Fleet profile only.
+import { randomUUID } from 'node:crypto'
+import type { JwtPayload } from '@supabase/supabase-js'
+import type { NextApiRequest, NextApiResponse } from 'next'
+import { z } from 'zod'
+
+import apiWrapper from '@/lib/api/apiWrapper'
+import { CapabilityUnavailable } from '@/lib/api/self-platform/attachment'
+import {
+  CapacityExceededError,
+  ConfigurationConflictError,
+} from '@/lib/api/self-platform/desired-state'
+import {
+  applyEnvServiceConfig,
+  getEnvServiceApplyStatus,
+  type EnvServiceDefinition,
+} from '@/lib/api/self-platform/env-service-apply'
+import { OwnershipPolicyConflict } from '@/lib/api/self-platform/ownership-policy'
+import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
+import { hasRecentAal2 } from '@/lib/api/self-platform/recent-aal2'
+import { ServiceConfigApplyConflict } from '@/lib/api/self-platform/service-config-apply'
+import { STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
+
+const applyBodySchema = z
+  .object({
+    expectedGeneration: z.number().int().nonnegative(),
+    confirmOwnership: z.boolean().default(false),
+  })
+  .strict()
+
+const isAvailable = () => STUDIO_DEPLOYMENT_PROFILE === 'fleet'
+
+export function createEnvServiceApplyRoute(options: {
+  definition: EnvServiceDefinition
+  /** Permission checked for GET and POST. */
+  permissions: {
+    read: { action: string; resource?: string }
+    write: { action: string; resource?: string }
+  }
+}) {
+  const { definition, permissions } = options
+
+  async function handler(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
+    if (!isAvailable())
+      return res.status(404).json({ code: 'project_not_found', message: 'Not found' })
+    if (req.method !== 'GET' && req.method !== 'POST') {
+      res.setHeader('Allow', ['GET', 'POST'])
+      return res.status(405).json({ code: 'validation_failed', message: 'Method not allowed' })
+    }
+    if (Array.isArray(req.query.ref)) {
+      return res.status(400).json({ code: 'validation_failed', message: 'Invalid ref parameter' })
+    }
+    const projectRef = String(req.query.ref)
+    const permission = req.method === 'GET' ? permissions.read : permissions.write
+    const allowed = await guardProjectRoute(res, claims, { ...permission, projectRef })
+    if (!allowed) return
+
+    const correlationId =
+      (typeof req.headers['x-correlation-id'] === 'string' && req.headers['x-correlation-id']) ||
+      randomUUID()
+    const actor = claims?.sub ?? 'unknown'
+    try {
+      if (req.method === 'GET') {
+        return res
+          .status(200)
+          .json(await getEnvServiceApplyStatus(definition, projectRef, { actor, correlationId }))
+      }
+
+      const parsed = applyBodySchema.safeParse(req.body)
+      const idempotencyKey = req.headers['idempotency-key']
+      if (!parsed.success || typeof idempotencyKey !== 'string' || idempotencyKey.length === 0) {
+        return res.status(400).json({
+          code: 'validation_failed',
+          message: 'Apply requires expectedGeneration and an Idempotency-Key header',
+        })
+      }
+      // Applying recreates the service, so it follows the lifecycle rule for
+      // disruptive actions: a recent AAL2 session.
+      if (!hasRecentAal2(claims)) {
+        return res.status(403).json({
+          code: 'aal2_required',
+          message: `A recent AAL2 session is required to apply ${definition.spec.label}`,
+        })
+      }
+      const operation = await applyEnvServiceConfig(definition, {
+        projectRef,
+        expectedGeneration: parsed.data.expectedGeneration,
+        confirmOwnership: parsed.data.confirmOwnership,
+        idempotencyKey,
+        actor,
+        correlationId,
+        aal: claims?.aal,
+        aalAuthenticatedAt: claims?.iat,
+      })
+      return res.status(202).json({ operation })
+    } catch (error) {
+      if (error instanceof ServiceConfigApplyConflict) {
+        return res.status(409).json({ code: error.code, message: error.message })
+      }
+      if (error instanceof CapabilityUnavailable) {
+        return res.status(409).json({
+          code: 'capability_unavailable',
+          message: error.message,
+          blockers: error.blockers,
+        })
+      }
+      if (error instanceof OwnershipPolicyConflict) {
+        return res.status(409).json({ code: error.code, message: error.message })
+      }
+      if (error instanceof ConfigurationConflictError || error instanceof CapacityExceededError) {
+        return res.status(409).json({ code: error.code, message: error.message })
+      }
+      throw error
+    }
+  }
+
+  function route(req: NextApiRequest, res: NextApiResponse) {
+    if (!isAvailable())
+      return res.status(404).json({ code: 'project_not_found', message: 'Not found' })
+    return apiWrapper(req, res, handler, { withAuth: true })
+  }
+
+  return { route, handler }
+}

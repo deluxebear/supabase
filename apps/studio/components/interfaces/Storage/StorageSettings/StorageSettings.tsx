@@ -40,6 +40,7 @@ import {
   encodeBucketLimitErrorMessage,
 } from './StorageSettings.utils'
 import { ValidateSizeLimit } from './StorageSettings.ValidateSizeLimit'
+import { EnvServiceApplyNotice } from '@/components/interfaces/SelfPlatform/EnvServiceApplyNotice'
 import { AlertError } from '@/components/ui/AlertError'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { NoPermission } from '@/components/ui/NoPermission'
@@ -52,7 +53,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL } from '@/lib/constants'
-import { STUDIO_CAPABILITIES } from '@/lib/constants/deployment-profile'
+import { STUDIO_CAPABILITIES, STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 import { formatBytes } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
 
@@ -243,6 +244,9 @@ export const StorageSettings = () => {
     <PageContainer>
       <PageSection>
         <PageSectionContent className="flex flex-col gap-y-8">
+          {STUDIO_DEPLOYMENT_PROFILE === 'fleet' && projectRef !== undefined && (
+            <EnvServiceApplyNotice projectRef={projectRef} service="storage" />
+          )}
           <Form {...form}>
             {!IS_PLATFORM ? (
               <Admonition

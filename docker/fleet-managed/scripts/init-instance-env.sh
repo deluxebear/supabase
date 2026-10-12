@@ -130,3 +130,5 @@ trap - EXIT
 echo "Created managed instance environment at $output_env"
 "$root_dir/scripts/bootstrap-config-domain.sh" "$root_dir/state/$project_ref/config" auth
 "$root_dir/scripts/bootstrap-config-domain.sh" "$root_dir/state/$project_ref/config" functions
+"$root_dir/scripts/bootstrap-config-domain.sh" "$root_dir/state/$project_ref/config" postgrest
+"$root_dir/scripts/bootstrap-config-domain.sh" "$root_dir/state/$project_ref/config" storage
