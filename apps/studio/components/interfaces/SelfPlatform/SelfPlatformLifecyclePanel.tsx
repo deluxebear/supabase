@@ -4,7 +4,6 @@ import {
   Alert,
   AlertDescription,
   AlertTitle,
-  Badge,
   Button,
   Card,
   CardContent,
@@ -20,6 +19,7 @@ import {
 } from 'ui'
 
 import { lifecycleParameters, lifecycleValueLabel } from './SelfPlatformLifecyclePanel.utils'
+import { SelfPlatformLifecyclePlanReview } from './SelfPlatformLifecyclePlanReview'
 import { AlertError } from '@/components/ui/AlertError'
 import {
   findProjectCapability,
@@ -28,13 +28,10 @@ import {
 import {
   useCreateLifecyclePlanMutation,
   useExecuteLifecyclePlanMutation,
+  type LifecyclePlanResponse,
 } from '@/data/projects/project-lifecycle-mutations'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import {
-  lifecycleActions,
-  type LifecycleAction,
-  type LifecycleImpactPlan,
-} from '@/lib/api/self-platform/lifecycle-contract'
+import { lifecycleActions, type LifecycleAction } from '@/lib/api/self-platform/lifecycle-contract'
 import { uuidv4 } from '@/lib/helpers'
 import { t as $t } from '@/lib/i18n'
 
@@ -59,16 +56,11 @@ export const SelfPlatformLifecyclePanel = () => {
   const [action, setAction] = useState<Action>('runtime.restart')
   const [value, setValue] = useState('')
   const [replicas, setReplicas] = useState(1)
-  const [planned, setPlanned] = useState<{
-    plan: LifecycleImpactPlan
-    expectedGeneration: number
-  }>()
+  const [planned, setPlanned] = useState<LifecyclePlanResponse>()
   const [error, setError] = useState<Error>()
   const createPlan = useCreateLifecyclePlanMutation({ onSuccess: setPlanned, onError: setError })
-  const execute = useExecuteLifecyclePlanMutation({
-    onSuccess: () => setPlanned(undefined),
-    onError: setError,
-  })
+  // Execution errors render inside the plan review, next to the confirmation.
+  const execute = useExecuteLifecyclePlanMutation({ onSuccess: () => setPlanned(undefined) })
   if (!project?.ref) return null
   if (capabilities.isPending)
     return (
@@ -91,12 +83,13 @@ export const SelfPlatformLifecyclePanel = () => {
   const handlePlan = () => {
     setError(undefined)
     setPlanned(undefined)
+    execute.reset()
     createPlan.mutate({
       projectRef: project.ref,
       input: { action, parameters: lifecycleParameters(action, value, replicas) },
     })
   }
-  const handleExecute = () => {
+  const handleExecute = (confirmOwnership: boolean) => {
     if (!planned) return
     setError(undefined)
     execute.mutate({
@@ -105,6 +98,7 @@ export const SelfPlatformLifecyclePanel = () => {
         plan: planned.plan,
         expectedGeneration: planned.expectedGeneration,
         idempotencyKey: uuidv4(),
+        confirmOwnership,
       },
     })
   }
@@ -176,50 +170,13 @@ export const SelfPlatformLifecyclePanel = () => {
           </Alert>
         )}
         {planned && (
-          <div className="space-y-3 rounded-md border p-4">
-            <div className="flex flex-wrap gap-2">
-              <Badge variant={planned.plan.impact.serviceInterruption ? 'warning' : 'secondary'}>
-                {planned.plan.impact.serviceInterruption
-                  ? $t('Service interruption')
-                  : $t('No interruption expected')}
-              </Badge>
-              {planned.plan.requiresRecentAal2 && <Badge variant="warning">AAL2</Badge>}
-              <Badge variant="secondary">{planned.plan.adapter}</Badge>
-            </div>
-            <p className="text-sm">
-              {$t('Affected services')}:{' '}
-              {planned.plan.impact.affectedServices.join(', ') || $t('None')}
-            </p>
-            <p className="text-sm">
-              {$t('Data-loss risk')}: {planned.plan.impact.dataLossRisk}
-            </p>
-            <div>
-              <p className="text-sm font-medium">{$t('Verification')}</p>
-              <ul className="list-disc pl-5 text-sm text-foreground-light">
-                {planned.plan.verification.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <p className="text-sm font-medium">{$t('Rollback and manual recovery')}</p>
-              <ul className="list-disc pl-5 text-sm text-foreground-light">
-                {[...planned.plan.rollback, ...planned.plan.manualIntervention].map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-            {planned.plan.requiresExplicitConfirmation && (
-              <Button
-                variant="danger"
-                loading={execute.isPending}
-                disabled={execute.isPending}
-                onClick={handleExecute}
-              >
-                {$t('Confirm and execute')}
-              </Button>
-            )}
-          </div>
+          <SelfPlatformLifecyclePlanReview
+            key={planned.plan.id}
+            planned={planned}
+            isExecuting={execute.isPending}
+            executeError={execute.error}
+            onExecute={handleExecute}
+          />
         )}
       </CardContent>
       <CardFooter className="border-t text-xs text-foreground-muted">

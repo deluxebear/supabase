@@ -136,11 +136,21 @@ export interface LifecycleExecuteInput {
   plan: LifecycleImpactPlan
   expectedGeneration: number
   idempotencyKey: string
+  /** Hands the action's ownership domain to Fleet when it does not own it yet. */
+  confirmOwnership?: boolean
 }
 export const lifecycleExecuteInputSchema: z.ZodType<LifecycleExecuteInput> = z
   .object({
     plan: lifecycleImpactPlanSchema,
     expectedGeneration: z.number().int().nonnegative(),
     idempotencyKey: z.string().min(1).max(255),
+    confirmOwnership: z.boolean().optional(),
   })
+  .strict()
+export interface LifecycleOwnership {
+  domain: string
+  isOwnedByFleet: boolean
+}
+export const lifecycleOwnershipSchema: z.ZodType<LifecycleOwnership> = z
+  .object({ domain: z.string(), isOwnedByFleet: z.boolean() })
   .strict()

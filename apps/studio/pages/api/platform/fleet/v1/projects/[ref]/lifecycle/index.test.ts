@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   plan: vi.fn(),
   generation: vi.fn(),
   execute: vi.fn(),
+  ownership: vi.fn(),
 }))
 vi.mock('@/lib/constants/deployment-profile', () => ({
   STUDIO_DEPLOYMENT_PROFILE: 'fleet',
@@ -21,6 +22,7 @@ vi.mock('@/lib/api/self-platform/lifecycle', async (importOriginal) => {
     createLifecycleImpactPlan: mocks.plan,
     getLifecycleGeneration: mocks.generation,
     executeLifecyclePlan: mocks.execute,
+    getLifecycleOwnership: mocks.ownership,
   }
 })
 
@@ -91,6 +93,11 @@ describe('Fleet lifecycle API', () => {
     mocks.plan.mockResolvedValue(plan)
     mocks.generation.mockResolvedValue(2)
     mocks.execute.mockResolvedValue({ operationId: 'op-a' })
+    mocks.ownership.mockResolvedValue({
+      domain: 'runtime',
+      isOwnedByFleet: false,
+      policy: { casToken: 'internal' },
+    })
   })
   it('checks project RBAC before creating a project-scoped plan', async () => {
     const res = response()
@@ -111,7 +118,11 @@ describe('Fleet lifecycle API', () => {
       expect.objectContaining({ projectRef: 'project-a', actor: 'user-a' })
     )
     expect(res.statusCode).toBe(201)
-    expect(res.body).toEqual({ plan, expectedGeneration: 2 })
+    expect(res.body).toEqual({
+      plan,
+      expectedGeneration: 2,
+      ownership: { domain: 'runtime', isOwnedByFleet: false },
+    })
   })
   it('stops before lifecycle access when RBAC denies', async () => {
     mocks.guard.mockResolvedValue(false)

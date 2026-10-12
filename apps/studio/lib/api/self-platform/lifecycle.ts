@@ -13,7 +13,7 @@ import {
   type LifecyclePlanInput,
 } from './lifecycle-contract'
 import { requestManagementDomain, syncProjectManagementBinding } from './management-trust'
-import { listProjectOwnershipPolicies } from './ownership-policy'
+import { listProjectOwnershipPolicies, setProjectOwnershipPolicy } from './ownership-policy'
 
 export {
   lifecycleActionSchema,
@@ -26,7 +26,7 @@ export class LifecycleConflict extends Error {
     readonly code:
       | 'capability_unavailable'
       | 'management_target_unbound'
-      | 'ownership_conflict'
+      | 'ownership_confirmation_required'
       | 'plan_confirmation_invalid',
     message: string
   ) {
@@ -72,10 +72,44 @@ export async function getLifecycleGeneration(projectRef: string, action: Lifecyc
   return Number(result.data?.[0]?.generation ?? 0)
 }
 
+export async function getLifecycleOwnership(projectRef: string, action: LifecycleAction) {
+  const domain = ownershipDomain(action)
+  const policy = (await listProjectOwnershipPolicies(projectRef)).find(
+    (item) => item.domain === domain
+  )
+  return { domain, isOwnedByFleet: policy?.ownershipMode === 'direct-managed', policy }
+}
+
+// Fleet only mutates a domain the operator explicitly handed over, as Auth apply does.
+async function ensureLifecycleOwnership(
+  projectRef: string,
+  action: LifecycleAction,
+  confirmOwnership: boolean,
+  request: { actor: string; correlationId: string }
+) {
+  const { domain, isOwnedByFleet, policy } = await getLifecycleOwnership(projectRef, action)
+  if (isOwnedByFleet) return
+  if (!confirmOwnership)
+    throw new LifecycleConflict(
+      'ownership_confirmation_required',
+      `Confirm that Fleet manages the ${domain} domain before executing this lifecycle action.`
+    )
+  await setProjectOwnershipPolicy({
+    projectRef,
+    policy: {
+      domain,
+      ownershipMode: 'direct-managed',
+      expectedRevision: policy?.policyRevision ?? 0,
+      expectedCasToken: policy?.casToken ?? null,
+    },
+    actor: request.actor,
+    correlationId: request.correlationId,
+  })
+}
+
 async function bindingFor(
   projectRef: string,
   action: LifecycleAction,
-  requiresMutation: boolean,
   request: { actor: string; correlationId: string }
 ) {
   // Agent capability evidence expires within seconds, so refresh it from Fleet
@@ -96,17 +130,6 @@ async function bindingFor(
       'capability_unavailable',
       'Lifecycle providers support only explicitly configured Compose or Kubernetes targets.'
     )
-  if (requiresMutation) {
-    const domain = ownershipDomain(action)
-    const policy = (await listProjectOwnershipPolicies(projectRef)).find(
-      (item) => item.domain === domain
-    )
-    if (!policy || policy.ownershipMode !== 'direct-managed')
-      throw new LifecycleConflict(
-        'ownership_conflict',
-        `Set the ${domain} ownership policy to direct-managed before executing this lifecycle action.`
-      )
-  }
   return binding
 }
 
@@ -117,7 +140,7 @@ export async function createLifecycleImpactPlan(input: {
   correlationId: string
 }) {
   const value = lifecyclePlanInputSchema.parse(input.value)
-  const binding = await bindingFor(input.projectRef, value.action, false, input)
+  const binding = await bindingFor(input.projectRef, value.action, input)
   const response = await requestManagementDomain(binding, 'fleet-control', {
     method: 'POST',
     path: `/platform/fleet/v1/projects/${encodeURIComponent(input.projectRef)}/lifecycle/impact-plans`,
@@ -150,7 +173,7 @@ export async function executeLifecyclePlan(input: {
       'plan_confirmation_invalid',
       'The lifecycle impact plan is expired or belongs to another project.'
     )
-  const binding = await bindingFor(input.projectRef, value.plan.action, true, input)
+  const binding = await bindingFor(input.projectRef, value.plan.action, input)
   if (binding.deploymentKind !== value.plan.adapter)
     throw new LifecycleConflict(
       'plan_confirmation_invalid',
@@ -162,6 +185,13 @@ export async function executeLifecyclePlan(input: {
       'plan_confirmation_invalid',
       'Component versions changed after impact planning; create a new plan.'
     )
+  // Last check before committing, so a rejected plan never changes ownership.
+  await ensureLifecycleOwnership(
+    input.projectRef,
+    value.plan.action,
+    value.confirmOwnership === true,
+    input
+  )
   const document = {
     schema: 'supabase.fleet.lifecycle.execute.v1' as const,
     action: value.plan.action,

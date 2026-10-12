@@ -9,6 +9,7 @@ import {
   createLifecycleImpactPlan,
   executeLifecyclePlan,
   getLifecycleGeneration,
+  getLifecycleOwnership,
   LifecycleConflict,
   lifecycleExecuteInputSchema,
   lifecyclePlanInputSchema,
@@ -17,6 +18,7 @@ import {
   ManagementTrustConflict,
   ManagementTrustDownstreamError,
 } from '@/lib/api/self-platform/management-trust'
+import { OwnershipPolicyConflict } from '@/lib/api/self-platform/ownership-policy'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { STUDIO_CAPABILITIES, STUDIO_DEPLOYMENT_PROFILE } from '@/lib/constants/deployment-profile'
 
@@ -58,11 +60,16 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
           message: 'Lifecycle plan input is invalid',
           details: parsed.error.flatten(),
         })
-      const [plan, expectedGeneration] = await Promise.all([
+      const [plan, expectedGeneration, ownership] = await Promise.all([
         createLifecycleImpactPlan({ projectRef, value: parsed.data, actor, correlationId }),
         getLifecycleGeneration(projectRef, parsed.data.action),
+        getLifecycleOwnership(projectRef, parsed.data.action),
       ])
-      return res.status(201).json({ plan, expectedGeneration })
+      return res.status(201).json({
+        plan,
+        expectedGeneration,
+        ownership: { domain: ownership.domain, isOwnedByFleet: ownership.isOwnedByFleet },
+      })
     }
     if (req.body?.phase === 'execute') {
       const idempotencyKey = req.headers['idempotency-key']
@@ -102,7 +109,11 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
       return res
         .status(409)
         .json({ code: 'capability_unavailable', message: error.message, blockers: error.blockers })
-    if (error instanceof LifecycleConflict || error instanceof ManagementTrustConflict)
+    if (
+      error instanceof LifecycleConflict ||
+      error instanceof ManagementTrustConflict ||
+      error instanceof OwnershipPolicyConflict
+    )
       return res.status(409).json({ code: error.code, message: error.message })
     if (error instanceof ManagementTrustDownstreamError)
       return res.status(error.status).json({ code: error.code, message: error.message })

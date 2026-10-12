@@ -4,8 +4,10 @@ import { z } from 'zod'
 import { constructHeaders } from '@/data/fetchers'
 import {
   lifecycleImpactPlanSchema,
+  lifecycleOwnershipSchema,
   type LifecycleExecuteInput,
   type LifecycleImpactPlan,
+  type LifecycleOwnership,
   type LifecyclePlanInput,
 } from '@/lib/api/self-platform/lifecycle-contract'
 import { ResponseError } from '@/types'
@@ -13,6 +15,7 @@ import { ResponseError } from '@/types'
 const planResponseSchema = z.object({
   plan: lifecycleImpactPlanSchema,
   expectedGeneration: z.number().int().nonnegative(),
+  ownership: lifecycleOwnershipSchema,
 })
 const operationResponseSchema = z.object({
   operation: z.object({
@@ -38,18 +41,28 @@ async function postLifecycle(projectRef: string, body: unknown, idempotencyKey?:
   )
   const data: unknown = await response.json().catch(() => ({}))
   if (!response.ok) {
-    const parsed = z.object({ message: z.string().optional() }).passthrough().safeParse(data)
-    throw new ResponseError(
+    const parsed = z
+      .object({ code: z.string().optional(), message: z.string().optional() })
+      .passthrough()
+      .safeParse(data)
+    const error = new ResponseError(
       parsed.success
         ? (parsed.data.message ?? 'Lifecycle request failed')
         : 'Lifecycle request failed',
       response.status
     )
+    // For example `aal2_required` or `ownership_confirmation_required`.
+    error.errorType = parsed.success ? parsed.data.code : undefined
+    throw error
   }
   return data
 }
 
-type LifecyclePlanResponse = { plan: LifecycleImpactPlan; expectedGeneration: number }
+export type LifecyclePlanResponse = {
+  plan: LifecycleImpactPlan
+  expectedGeneration: number
+  ownership: LifecycleOwnership
+}
 type LifecycleOperationResponse = {
   operation: {
     operationId: string
