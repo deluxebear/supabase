@@ -17,6 +17,9 @@ vi.mock('@/lib/api/self-platform/auth-config', () => ({
   readAuthConfig: vi.fn(),
   writeAuthConfig: vi.fn(),
 }))
+vi.mock('@/lib/api/self-platform/auth-live-settings', () => ({
+  readLiveAuthSettings: vi.fn().mockResolvedValue({ SMS_AUTOCONFIRM: true }),
+}))
 
 const claimsOf = (sub: string) => ({ sub }) as JwtPayload
 
@@ -41,7 +44,7 @@ describe('GET/PATCH /platform/auth/[ref]/config (self-platform)', () => {
     })
     expect(res._getStatusCode()).toBe(200)
     expect(res._getJSONData()).toEqual({ DISABLE_SIGNUP: false })
-    expect(readAuthConfig).toHaveBeenCalledWith('default')
+    expect(readAuthConfig).toHaveBeenCalledWith('default', { SMS_AUTOCONFIRM: true })
   })
 
   it('GET denied → guard short-circuits, data layer untouched', async () => {

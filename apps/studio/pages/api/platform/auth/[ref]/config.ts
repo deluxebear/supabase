@@ -8,6 +8,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 import apiWrapper from '@/lib/api/apiWrapper'
 import { readAuthConfig, writeAuthConfig } from '@/lib/api/self-platform/auth-config'
+import { readLiveAuthSettings } from '@/lib/api/self-platform/auth-live-settings'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 import { IS_SELF_PLATFORM } from '@/lib/constants/self-platform'
 
@@ -39,7 +40,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
       resource: 'custom_config_gotrue',
     })
     if (!ok) return
-    return res.status(200).json(await readAuthConfig(ref))
+    return res.status(200).json(await readAuthConfig(ref, await readLiveAuthSettings(ref)))
   }
 
   const body = (req.body ?? {}) as Partial<UpdateGoTrueConfigBody>

@@ -37,7 +37,9 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
   try {
     if (req.method === 'GET') {
       res.setHeader('Cache-Control', 'no-store')
-      return res.status(200).json({ policy: await getDatabaseSecurityPolicy(projectRef) })
+      return res.status(200).json({
+        policy: await getDatabaseSecurityPolicy(projectRef, { withLiveValues: true }),
+      })
     }
     const idempotencyKey = req.headers['idempotency-key']
     if (typeof idempotencyKey !== 'string' || idempotencyKey.length === 0) {
@@ -47,13 +49,11 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
     }
     const parsed = updateDatabaseSecuritySchema.safeParse(req.body)
     if (!parsed.success) {
-      return res
-        .status(400)
-        .json({
-          code: 'validation_failed',
-          message: 'Database security settings are invalid',
-          details: parsed.error.flatten(),
-        })
+      return res.status(400).json({
+        code: 'validation_failed',
+        message: 'Database security settings are invalid',
+        details: parsed.error.flatten(),
+      })
     }
     const result = await updateDatabaseSecurity({
       projectRef,

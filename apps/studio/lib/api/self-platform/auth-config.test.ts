@@ -66,6 +66,16 @@ describe('readAuthConfig', () => {
     expect(executePlatformQuery.mock.calls[0][0].parameters).toEqual(['default'])
   })
 
+  it('shows live values for fields without a stored override', async () => {
+    executePlatformQuery.mockResolvedValue({
+      data: [{ config: { MAILER_AUTOCONFIRM: false }, secrets: {} }],
+      error: undefined,
+    })
+    const cfg = await readAuthConfig('default', { SMS_AUTOCONFIRM: true, MAILER_AUTOCONFIRM: true })
+    expect(cfg.SMS_AUTOCONFIRM).toBe(true) // live value instead of the type-zero default
+    expect(cfg.MAILER_AUTOCONFIRM).toBe(false) // stored override wins over live
+  })
+
   it('returns DEFAULTS (secrets masked) when no row exists', async () => {
     executePlatformQuery.mockResolvedValue({ data: [], error: undefined })
     const cfg = await readAuthConfig('ghost')

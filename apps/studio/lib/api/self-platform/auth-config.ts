@@ -379,10 +379,16 @@ export async function readStoredAuthSecrets(projectRef: string): Promise<Record<
   )
 }
 
-export async function readAuthConfig(projectRef: string): Promise<GoTrueConfigResponse> {
+// `live` holds values Auth currently runs with (see auth-live-settings.ts). They
+// fill fields without a stored override; stored overrides always win.
+export async function readAuthConfig(
+  projectRef: string,
+  live: Record<string, unknown> = {}
+): Promise<GoTrueConfigResponse> {
   const row = await loadRow(projectRef)
   const merged: Record<string, unknown> = {
     ...(DEFAULTS as Record<string, unknown>),
+    ...live,
     ...row.config,
   }
   // Always-mask: never decrypt for the API. Mask only keys already present so the

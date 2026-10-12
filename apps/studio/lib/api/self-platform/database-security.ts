@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import { z } from 'zod'
 
 import { requireProjectCapability } from './attachment'
+import { readLiveDatabaseSecurity } from './database-security-live'
 import { executePlatformQuery } from './db'
 import { fleetOperationSchema, getFleetOperation } from './fleet-operations'
 import {
@@ -72,7 +73,14 @@ function rowToPolicy(row: PolicyRow): Policy {
   })
 }
 
-export async function getDatabaseSecurityPolicy(projectRef: string): Promise<Policy> {
+/**
+ * The stored policy. Until Fleet has applied one, `withLiveValues` shows the
+ * running Supavisor settings instead of the column defaults, so a save keeps them.
+ */
+export async function getDatabaseSecurityPolicy(
+  projectRef: string,
+  { withLiveValues = false }: { withLiveValues?: boolean } = {}
+): Promise<Policy> {
   const result = await executePlatformQuery<PolicyRow>({
     query: `insert into platform.database_security_policies(project_ref) values ($1)
       on conflict (project_ref) do update set project_ref = excluded.project_ref
@@ -82,7 +90,10 @@ export async function getDatabaseSecurityPolicy(projectRef: string): Promise<Pol
     parameters: [projectRef],
   })
   if (result.error) throw result.error
-  return rowToPolicy(result.data?.[0] as PolicyRow)
+  const policy = rowToPolicy(result.data?.[0] as PolicyRow)
+  if (!withLiveValues || policy.operationId !== null || policy.observedAt !== null) return policy
+  const live = await readLiveDatabaseSecurity(projectRef)
+  return live ? { ...policy, ...live } : policy
 }
 
 async function requireDatabaseBinding(projectRef: string, actor: string, correlationId: string) {
